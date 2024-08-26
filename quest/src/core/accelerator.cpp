@@ -57,6 +57,11 @@ using std::vector;
     [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS - 1)]
 
 
+#define GET_FUNC_OPTIMISED_FOR_NUM_TARGS(f, numtargs) \
+    (vector <decltype(&f<0>)> {&f<0>, &f<1>, &f<2>, &f<3>, &f<4>, &f<5>, &f<-1>}) \
+    [std::min((int) numtargs, MAX_OPTIMISED_NUM_TARGS - 1)]
+
+
 #define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(f, numctrls, numtargs) \
     (vector <ARR(f)> { \
         ARR(f) {&f<0,0>,  &f<0,1>,  &f<0,2>,  &f<0,3>,  &f<0,4>,  &f<0,5>,  &f<0,-1>}, \
@@ -69,7 +74,6 @@ using std::vector;
     [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS - 1)] \
     [std::min((int) numtargs, MAX_OPTIMISED_NUM_TARGS - 1)]
 
-
 #define ARR(f) vector<decltype(&f<0,0>)>
 
 
@@ -77,6 +81,12 @@ using std::vector;
     ((qureg).isGpuAccelerated)? \
         GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_##funcsuffix, numctrls ) : \
         GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_##funcsuffix, numctrls )
+
+
+#define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS(funcsuffix, qureg, numtargs) \
+    ((qureg).isGpuAccelerated)? \
+        GET_FUNC_OPTIMISED_FOR_NUM_TARGS( cpu_##funcsuffix, numtargs ) : \
+        GET_FUNC_OPTIMISED_FOR_NUM_TARGS( gpu_##funcsuffix, numtargs )
 
 
 #define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(funcsuffix, qureg, numctrls, numtargs) \
@@ -99,8 +109,8 @@ qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector
     if (qubitStates.empty())
         error_noCtrlsGivenToBufferPacker();
 
-    // packing treats all qubits as if they were ctrl qubits
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_packAmpsIntoBuffer, qureg, qubits.size() );
+    // note qubits may incidentally be ctrls or targs; it doesn't matter
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( statevec_packAmpsIntoBuffer, qureg, qubits.size() );
     
     // return the number of packed amps, for caller convenience
     return func(qureg, qubits, qubitStates);
@@ -355,4 +365,21 @@ void accel_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob) {
     (qureg.isGpuAccelerated)?
         gpu_densmatr_oneQubitDamping_subD(qureg, qubit, prob):
         cpu_densmatr_oneQubitDamping_subD(qureg, qubit, prob);
+}
+
+
+
+/*
+ * PARTIAL TRACE
+ */
+
+
+void accel_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> targs, vector<int> pairTargs) {
+
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_TARGS( cpu_densmatr_partialTrace_sub, targs.size() );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_TARGS( gpu_densmatr_partialTrace_sub, targs.size() );
+    
+    // GPU-acceleration only possible if both Quregs are GPU-enabled
+    auto useFunc = (inQureg.isGpuAccelerated && outQureg.isGpuAccelerated)? gpuFunc : cpuFunc;
+    useFunc(inQureg, outQureg, targs, pairTargs);
 }

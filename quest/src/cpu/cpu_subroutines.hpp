@@ -100,4 +100,11 @@ void cpu_densmatr_oneQubitDamping_subC(Qureg qureg, int qubit, qreal prob);
 void cpu_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob);
 
 
+/*
+ * PARTIAL TRACE
+ */
+
+template <int NumTargs> void cpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> targs, vector<int> pairTargs);
+
+
 #endif // CPU_SUBROUTINES_HPP

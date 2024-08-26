@@ -184,6 +184,21 @@ void assert_localiserGivenDensMatr(Qureg qureg) {
         raiseInternalError("The localiser received a statevector to a function defined only upon density matrices.");
 }
 
+void assert_localiserPartialTraceGivenCompatibleQuregs(Qureg inQureg, Qureg outQureg, int numTargs) {
+
+    if (!inQureg.isDensityMatrix || !outQureg.isDensityMatrix)
+        raiseInternalError("A non-density matrix was given to localiser's partial trace function.");
+
+    if (inQureg.isDistributed != outQureg.isDistributed)
+        raiseInternalError("Quregs of different distributions (one distributed, one not) was given to localiser's partial trace function.");
+
+    if (inQureg.isGpuAccelerated != outQureg.isGpuAccelerated)
+        raiseInternalError("Quregs of different GPU-accelerations (one accelerated, the other not) was given to localiser's partial trace function.");
+
+    if (inQureg.numQubits - numTargs != outQureg.numQubits)
+        raiseInternalError("Inconsistent Qureg sizes and number of traced qubits given to localiser's partial trace function.");
+}
+
 
 
 /*

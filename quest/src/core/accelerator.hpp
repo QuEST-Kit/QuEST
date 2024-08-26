@@ -31,7 +31,7 @@ using std::vector;
 #define MAX_OPTIMISED_NUM_CTRLS 5
 #define MAX_OPTIMISED_NUM_TARGS 5
 
-#define INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS(returntype, funcname, args) \
+#define INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS(returntype, funcname, args) \
     template returntype funcname <0> args; \
     template returntype funcname <1> args; \
     template returntype funcname <2> args; \
@@ -39,6 +39,9 @@ using std::vector;
     template returntype funcname <4> args; \
     template returntype funcname <5> args; \
     template returntype funcname<-1> args;
+
+#define INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS(returntype, funcname, args) \
+    INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS(returntype, funcname, args)
 
 #define INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(returntype, funcname, args) \
     private_INSTANTIATE(returntype, funcname, 0, args); \
@@ -155,6 +158,15 @@ void accel_densmatr_oneQubitDamping_subA(Qureg qureg, int qubit, qreal prob);
 void accel_densmatr_oneQubitDamping_subB(Qureg qureg, int qubit, qreal prob);
 void accel_densmatr_oneQubitDamping_subC(Qureg qureg, int qubit, qreal prob);
 void accel_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob);
+
+
+
+/*
+ * PARTIAL TRACE
+ */
+
+void accel_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> targs, vector<int> pairTargs);
+
 
 
 #endif // ACCELERATOR_HPP

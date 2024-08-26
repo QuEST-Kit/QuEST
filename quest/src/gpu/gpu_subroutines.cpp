@@ -118,7 +118,7 @@ qindex gpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qu
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( qindex, gpu_statevec_packAmpsIntoBuffer, (Qureg, vector<int>, vector<int>) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qindex, gpu_statevec_packAmpsIntoBuffer, (Qureg, vector<int>, vector<int>) )
 
 
 
@@ -915,3 +915,37 @@ void gpu_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob) {
     error_gpuSimButGpuNotCompiled();
 #endif
 }
+
+
+
+/*
+ * PARTIAL TRACE
+ */
+
+
+template <int NumTargs> 
+void gpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> targs, vector<int> pairTargs) {
+
+    assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    qindex numThreads = outQureg.numAmpsPerNode;
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    devicevec devTargs = targs;
+    devicevec devPairTargs = pairTargs;
+    devicevec devAllTargs = util_getSorted(targs, pairTargs);
+
+    kernel_densmatr_partialTrace_sub <NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(inQureg.gpuAmps), toCuQcomps(outQureg.gpuAmps), numThreads,
+        getPtr(devTargs), getPtr(devPairTargs), getPtr(devAllTargs), targs.size()
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_densmatr_partialTrace_sub, (Qureg, Qureg, vector<int>, vector<int>) )

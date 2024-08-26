@@ -159,7 +159,13 @@ void removePrefixQubitsAndStates(Qureg qureg, vector<int> &qubits, vector<int> &
 }
 
 
-auto getCtrlsAndTargsSwappedToSuffix(Qureg qureg, vector<int> ctrls, vector<int> targs) {
+auto getCtrlsAndTargsSwappedToMinSuffix(Qureg qureg, vector<int> ctrls, vector<int> targs) {
+
+    // this function is called by multi-target dense matrix, and is used to find
+    // targets in the prefix substate and where they can be swapped into the suffix
+    // to enable subsequent embarrassingly parallel simulation. Note we seek the MIN
+    // available indices in the suffix, since this minimises the stride of the local
+    // simulation, improving caching performance.
 
     // nothing to do if all targs are already in suffix
     if (!doesGateRequireComm(qureg, targs))
@@ -170,42 +176,81 @@ auto getCtrlsAndTargsSwappedToSuffix(Qureg qureg, vector<int> ctrls, vector<int>
     qindex ctrlMask = getBitMask(ctrls.data(), ctrls.size());
     int minNonTarg = getIndOfNextRightmostZeroBit(targMask, -1);
 
-    // prepare indices of ctrls in the given list (i.e. the inverse of ctrls)
-    int maxCtrlInd = *std::max_element(ctrls.begin(), ctrls.end());
+    // prepare indices of ctrls in the given list (i.e. the inverse of ctrls), if any exist
+    int maxCtrlInd = (ctrls.empty())? -1 : *std::max_element(ctrls.begin(), ctrls.end());
     vector<int> ctrlInds(maxCtrlInd+1); // bounded by ~64
     for (size_t i=0; i<ctrls.size(); i++)
         ctrlInds[ctrls[i]] = i;
 
-    // check every target in arbitrary order
+    // check every target in arbitrary order, modifying our copies of targs and ctrls as we go
     for (size_t i=0; i<targs.size(); i++) {
+        int targ = targs[i];
 
         // consider only targs in the prefix substate
-        if (util_isQubitInSuffix(targs[i], qureg))
+        if (util_isQubitInSuffix(targ, qureg))
             continue;
             
         // if our replacement targ happens to be a ctrl... 
-        if (getBit(ctrlMask, minNonTarg)) {
+        if (getBit(ctrlMask, minNonTarg) == 1) {
 
             // find and swap that ctrl with the old targ
             int ctrlInd = ctrlInds[minNonTarg];
-            ctrls[ctrlInd] = targs[i];
+            ctrls[ctrlInd] = targ;
 
             // update our ctrl trackers
-            ctrlInds[targs[i]] = ctrlInd;
+            ctrlInds[targ] = ctrlInd;
             ctrlInds[minNonTarg] = -1; // for clarity
-            ctrlMask = flipTwoBits(ctrlMask, minNonTarg, targs[i]);
+            ctrlMask = flipTwoBits(ctrlMask, minNonTarg, targ);
         }
 
         // swap the prefix targ with the smallest available suffix targ
         targs[i] = minNonTarg;
 
         // update our targ trackers
-        targMask = flipTwoBits(targMask, targs[i], minNonTarg);
+        targMask = flipTwoBits(targMask, targ, minNonTarg);
         minNonTarg = getIndOfNextRightmostZeroBit(targMask, minNonTarg);
     }
 
     // the ordering in ctrls relative to the caller's ctrlStates is unchanged
     return std::tuple{ctrls, targs};
+}
+
+
+auto getQubitsSwappedToMaxSuffix(Qureg qureg, vector<int> qubits) {
+
+    // this function is called by any-targ partial trace, and is used to find
+    // targets in the prefix substate and where they can be swapped into the suffix
+    // to enable subsequent embarrassingly parallel simulation. Note we seek the MAX
+    // available indices in the suffix, since this heuristically reduces the
+    // disordering of the surviving qubits after the trace, reduces the number of
+    // subsequent order-restoring SWAPs
+
+    // nothing to do if all qubits are already in suffix
+    if (!doesGateRequireComm(qureg, qubits))
+        return qubits;
+
+    // prepare mask to avoid quadratic nested looping
+    qindex qubitMask = getBitMask(qubits.data(), qubits.size());
+    int maxFreeSuffixQubit = getIndOfNextLeftmostZeroBit(qubitMask, qureg.logNumAmpsPerNode);
+
+    // enumerate qubits backward, modifying our copy of qubits as we go
+    for (size_t i=qubits.size()-1; i-- != 0; ) {
+        int qubit = qubits[i];
+
+        // consider only qubits in the prefix substate
+        if (util_isQubitInSuffix(qubit, qureg))
+            continue;
+
+        // swap the prefix qubit into the largest available suffix position
+        qubits[i] = maxFreeSuffixQubit;
+
+        // update trackers
+        qubitMask = flipTwoBits(qubitMask, qubit, maxFreeSuffixQubit);
+        maxFreeSuffixQubit = getIndOfNextLeftmostZeroBit(qubitMask, maxFreeSuffixQubit);
+    }
+
+    // return our modified copy
+    return qubits;
 }
 
 
@@ -317,6 +362,35 @@ void localiser_statevec_anyCtrlSwap(Qureg qureg, vector<int> ctrls, vector<int> 
 
 
 /*
+ * MULTI-SWAP
+ */
+
+
+void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targsA, vector<int> targsB) {
+
+    // this is an internal function called by the below routines which require
+    // performing a sequence of SWAPs to reorder qubits, or move them into suffix.
+    // the SWAPs act on unique qubit pairs and so commute.
+
+    // TODO:
+    //   - the sequence of pair-wise full-swaps should be more efficient as a
+    //     "single" sequence of smaller messages sending amps directly to their
+    //     final destination node. This could use a new "multiSwap" function.
+    //   - if the user has compiled cuQuantum, and Qureg is GPU-accelerated, the
+    //     multiSwap function should use custatevecSwapIndexBits() if local,
+    //     or custatevecDistIndexBitSwapSchedulerSetIndexBitSwaps() if distributed,
+    //     although the latter requires substantially more work like setting up
+    //     a communicator which may be inelegant alongside our own distribution scheme.
+
+    // perform necessary swaps to move all targets into suffix, each of which invokes communication
+    for (size_t i=0; i<targsA.size(); i++)
+        if (targsA[i] != targsB[i])
+            anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, targsA[i], targsB[i]);
+}
+
+
+
+/*
  * ONE-TARGET DENSE MATRIX
  */
 
@@ -363,25 +437,13 @@ void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, 
 void anyCtrlAnyTargDenseMatrOnPrefix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
 
     // find suffix positions for all prefix targs, moving colliding ctrls out of the way
-    auto [newCtrls, newTargs] = getCtrlsAndTargsSwappedToSuffix(qureg, ctrls, targs);
+    auto [newCtrls, newTargs] = getCtrlsAndTargsSwappedToMinSuffix(qureg, ctrls, targs);
 
     // only unmoved ctrls can be applied to the swaps, to accelerate them
     auto [unmovedCtrls, unmovedCtrlStates] = getNonSwappedCtrlsAndStates(newCtrls, ctrlStates, newTargs); 
 
-    // TODO:
-    //   - the sequence of pair-wise full-swaps should be more efficient as a
-    //     "single" sequence of smaller messages sending amps directly to their
-    //     final destination node. This could use a new "multiSwap" function.
-    //   - if the user has compiled cuQuantum, and Qureg is GPU-accelerated, the
-    //     multiSwap function should use custatevecSwapIndexBits() if local,
-    //     or custatevecDistIndexBitSwapSchedulerSetIndexBitSwaps() if distributed,
-    //     although the latter requires substantially more work like setting up
-    //     a communicator which may be inelegant alongside our own distribution scheme
-
-    // perform necessary swaps to move all targets into suffix, each of which invokes communication
-    for (size_t i=0; i<targs.size(); i++)
-        if (targs[i] != newTargs[i])
-            anyCtrlSwapBetweenPrefixAndSuffix(qureg, unmovedCtrls, unmovedCtrlStates, targs[i], newTargs[i]);
+    // perform necessary swaps to move all targets into suffix, invoking communication
+    anyCtrlMultiSwapBetweenPrefixAndSuffix(qureg, unmovedCtrls, unmovedCtrlStates, targs, newTargs);
 
     // if the moved ctrls do not eliminate this node's need for local simulation...
     if (doAnyLocalAmpsSatisfyCtrls(qureg, newCtrls, ctrlStates)) {
@@ -391,10 +453,8 @@ void anyCtrlAnyTargDenseMatrOnPrefix(Qureg qureg, vector<int> ctrls, vector<int>
         accel_statevec_anyCtrlAnyTargDenseMatr_sub(qureg, newCtrls, ctrlStates, newTargs, matr);
     }
 
-    // undo swaps, each invoking communication
-    for (size_t i=0; i<targs.size(); i++)
-        if (targs[i] != newTargs[i])
-            anyCtrlSwapBetweenPrefixAndSuffix(qureg, unmovedCtrls, unmovedCtrlStates, targs[i], newTargs[i]);
+    // undo swaps, again invoking communication
+    anyCtrlMultiSwapBetweenPrefixAndSuffix(qureg, unmovedCtrls, unmovedCtrlStates, targs, newTargs);
 }
 
 
@@ -777,4 +837,131 @@ void localiser_densmatr_oneQubitDamping(Qureg qureg, int qubit, qreal prob) {
     (doesChannelRequireComm(qureg, qubit))?
         oneQubitDampingOnPrefix(qureg, qubit, prob):
         accel_densmatr_oneQubitDamping_subA(qureg, qubit, prob);
+}
+
+
+
+/*
+ * PARTIAL TRACE
+ */
+
+
+auto getNonTracedQubitOrder(Qureg qureg, vector<int> originalTargs, vector<int> revisedTargs) {
+
+    // prepare a list of all the qureg's qubits when treated as a statevector
+    vector<int> allQubits(2*qureg.numQubits);
+    for (size_t q=0; q<allQubits.size(); q++)
+        allQubits[q] = q;
+    
+    // determine the ordering of all the Qureg's qubits after swaps
+    for (size_t i=0; i<originalTargs.size(); i++) {
+        int qb1 = originalTargs[i];
+        int qb2 = revisedTargs[i];
+        if (qb1 != qb2)
+            std::swap(allQubits[qb1], allQubits[qb2]);
+    }
+
+    // use a mask to avoid quadratic nested iteration below
+    qindex revisedMask = util_getBitMask(revisedTargs);
+
+    // retain only non-targeted qubits
+    vector<int> remainingQubits(allQubits.size() - originalTargs.size());
+    for (size_t q=0; q<allQubits.size(); q++)
+        if (!getBit(revisedMask, q))
+            remainingQubits.push_back(allQubits[q]);
+
+    // shift down remaining qubits to be contiguous...
+    qindex remainingMask = util_getBitMask(remainingQubits);
+    for (int &qubit : remainingQubits) {
+        int bound = qubit;
+
+        // by subtracting the number of smaller un-targeted qubits from each qubit index
+        for (int i=0; i<bound; i++)
+            qubit -= ! getBit(remainingMask, i);
+    }
+
+    // return the ordering, i.e. a list [0, #final-qubits)
+    return remainingQubits;
+}
+
+
+void reorderReducedQureg(Qureg inQureg, Qureg outQureg, vector<int> allTargs, vector<int> suffixTargs) {
+
+    // TODO: 
+    // this function performs a sequence of SWAPs which are NOT necessarily upon disjoint qubits,
+    // and ergo do not commute. We still however may be able to effect this more efficiently in
+    // a single communicating operation rather than this sequence of SWAP gates, and might still
+    // even be able to use cuQuantum's distributed bit index swaps API. Check this!
+
+    // determine the relative ordering of outQureg's remaining qubits
+    auto remainingQubits = getNonTracedQubitOrder(inQureg, allTargs, suffixTargs);
+
+   // perform additional swaps to re-order the remaining qubits (heuristically starting from back)
+    for (size_t qubit=remainingQubits.size(); qubit-- != 0; ) {
+
+        // locate the next qubit which is out of its sorted position
+        if (remainingQubits[qubit] == qubit)
+            continue;
+
+        // qubit is misplaced; locate its position among the remaining qubits
+        int pair = 0;
+        while (remainingQubits[pair] != qubit)
+            pair++;
+        
+        // and swap it directly to its required position, triggering any communication scenario (I think)
+        localiser_statevec_anyCtrlSwap(outQureg, {}, {}, qubit, pair);
+        std::swap(remainingQubits[qubit], remainingQubits[pair]);
+    }
+}
+
+
+void partialTraceOnSuffix(Qureg inQureg, Qureg outQureg, vector<int> ketTargs) {
+
+    auto braTargs = util_getBraQubits(ketTargs, inQureg);
+    accel_densmatr_partialTrace_sub(inQureg, outQureg, ketTargs, braTargs);
+}
+
+
+void partialTraceOnPrefix(Qureg inQureg, Qureg outQureg, vector<int> ketTargs) {
+
+    // all ketTargs (pre-sorted) are in the suffix, but one or more braTargs are in the prefix
+    auto braTargs = util_getBraQubits(ketTargs, inQureg); // sorted
+    auto allTargs = util_getSorted(ketTargs, braTargs);   // sorted
+    auto sufTargs = getQubitsSwappedToMaxSuffix(inQureg, allTargs); // arbitrarily ordered
+
+    // swap iniQureg's prefix bra-qubits into suffix, invoking communication
+    anyCtrlMultiSwapBetweenPrefixAndSuffix(inQureg, {}, {}, sufTargs, allTargs);
+
+    // use the second half of sufTargs as the pair targs, which are now all in the suffix,
+    // to perform embarrassingly parallel overwriting of outQureg
+    vector<int> pairTargs(sufTargs.begin() + ketTargs.size(), sufTargs.end()); // arbitrarily ordered
+    accel_densmatr_partialTrace_sub(inQureg, outQureg, ketTargs, pairTargs);
+
+    // restore the relative order of outQureg's remaining qubits using SWAPs
+    reorderReducedQureg(inQureg, outQureg, allTargs, sufTargs);
+
+    // undo the swaps on inQureg
+    anyCtrlMultiSwapBetweenPrefixAndSuffix(inQureg, {}, {}, sufTargs, allTargs);
+}
+
+
+void localiser_densmatr_partialTrace(Qureg inQureg, Qureg outQureg, vector<int> targs) {
+    assert_localiserPartialTraceGivenCompatibleQuregs(inQureg, outQureg, targs.size());
+
+    // TODO: 
+    // this function requires inQureg and outQureg are both or neither distributed;
+    // it does not support the (potentially reasonable) situation when only outQureg
+    // is not-distributed, perhaps because it is too small. It is not simple to
+    // extend our method to this case. We could force distribution of inQureg until
+    // the end of the routine (where we might broadcast it back to non-distributed),
+    // and even temporarily relax the condition that each node contains >=1 column,
+    // but we would still be restricted by the requirement each node contains >=1 amp.
+    // Think about whether we can relax this!
+
+    // sorted targets needed by subsequent bitwise insertions
+    targs = util_getSorted(targs);
+
+    (doesChannelRequireComm(inQureg, targs.back()))?
+        partialTraceOnPrefix(inQureg, outQureg, targs):
+        partialTraceOnSuffix(inQureg, outQureg, targs);
 }
