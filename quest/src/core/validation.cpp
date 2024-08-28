@@ -1195,7 +1195,7 @@ void validate_newMatrixAllocs(CompMatr matr, qindex numBytes, const char* caller
     
     // optionally assert GPU memory was malloc'd successfully
     if (getQuESTEnv().isGpuAccelerated)
-        assertAllNodesAgreeThat(matr.gpuElems != NULL, report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
+        assertAllNodesAgreeThat(matr.gpuElemsFlat != NULL, report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
 }
 
 void validate_newMatrixAllocs(DiagMatr matr, qindex numBytes, const char* caller) {
@@ -1208,7 +1208,7 @@ void validate_newMatrixAllocs(DiagMatr matr, qindex numBytes, const char* caller
 
     // optionally assert GPU memory was malloc'd successfully
     if (getQuESTEnv().isGpuAccelerated)
-        assertAllNodesAgreeThat(matr.gpuElems != NULL, report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
+        assertAllNodesAgreeThat(matr.gpuElemsFlat != NULL, report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
 }
 
 void validate_newMatrixAllocs(FullStateDiagMatr matr, qindex numBytes, const char* caller) {
@@ -1221,7 +1221,7 @@ void validate_newMatrixAllocs(FullStateDiagMatr matr, qindex numBytes, const cha
 
     // optionally assert GPU memory was malloc'd successfully
     if (getQuESTEnv().isGpuAccelerated)
-        assertAllNodesAgreeThat(matr.gpuElems != NULL, report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
+        assertAllNodesAgreeThat(matr.gpuElemsFlat != NULL, report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
 }
 
 
@@ -1271,7 +1271,7 @@ void assertMatrixAllocsAreValid(T matr, string cpuErrMsg, string gpuErrMsg, cons
     // optionally assert GPU memory is allocated
     validate_envIsInit(caller);
     if (getQuESTEnv().isGpuAccelerated)
-        assertThat(matr.gpuElems != NULL, gpuErrMsg, caller);
+        assertThat(matr.gpuElemsFlat != NULL, gpuErrMsg, caller);
 }
 
 void validate_matrixFields(CompMatr1 matr, const char* caller) {
@@ -1384,11 +1384,11 @@ void assertMatrixIsSynced(T matr, string errMsg, const char* caller) {
     validate_matrixFields(matr, caller);
 
     // we don't need to perform any sync check in CPU-only mode
-    if (matr.gpuElems == NULL)
+    if (matr.gpuElemsFlat == NULL)
         return;
 
     // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though
-    assertThat(gpu_haveGpuAmpsBeenSynced(matr.gpuElems), errMsg, caller);
+    assertThat(gpu_haveGpuAmpsBeenSynced(matr.gpuElemsFlat), errMsg, caller);
 }
 
 

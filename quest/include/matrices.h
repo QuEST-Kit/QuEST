@@ -94,7 +94,7 @@ typedef struct {
 
     // row-flattened elems in GPU memory, allocated only
     // and always in GPU-enabled QuEST environments
-    qcomp* gpuElems;
+    qcomp* gpuElemsFlat;
 
 } CompMatr;
 
@@ -145,7 +145,7 @@ typedef struct {
     qcomp* cpuElems;
 
     // GPU memory, allocated only and always in GPU-enabled QuEST environments
-    qcomp* gpuElems;
+    qcomp* gpuElemsFlat;
 
 } DiagMatr;
 
@@ -176,14 +176,14 @@ typedef struct {
     qcomp* cpuElems;
 
     // GPU memory, allocated only and always in GPU-enabled QuEST environments
-    qcomp* gpuElems;
+    qcomp* gpuElemsFlat;
 
 } FullStateDiagMatr;
 
 
 
 /*
- * EXPLICIT FIXED-SIZE COMPLEX MATRIX INITIALISERS
+ * EXPLICIT FIZED-SIZE DENSE MATRIX INITIALISERS
  *
  * which are defined here in the header because the 'qcomp' type is interpreted
  * distinctly by C++ (the backend) and C (user code). The C and C++ ABIs do not
@@ -191,18 +191,21 @@ typedef struct {
  * cannot be directly passed between C and C++ compiled binaries; nor can a CompMatr1
  * struct which unwraps the qcomp[][] array. However, the C and C++ complex types have 
  * identical memory layouts, so pointers to qcomp types can safely be passed between
- * C and C++ binaries. Ordinarily we leverage this by defining all qcomp-handling API
- * functions in C++, and defining additional C-only wrappers in wrappers.h, which
- * pass only pointers to qcomp.
+ * C and C++ binaries. 
  * 
- * Alas, we cannot use this trick for CompMatr, because they are declared 'const';
- * we cannot modify them through pointers, nor should we try to address them. Ergo
- * we directly define these functions below (static inline to avoid symbol duplication),
- * initializing the const CompMatr in one line. The functions are separately interpreted 
- * by the C and C++ compilers, resolving to their individual native types.
+ * Ordinarily we leverage this by defining all qcomp-handling API
+ * functions in C++, and defining additional C-only wrappers in wrappers.h, which pass 
+ * only pointers to qcomp. Alas, we cannot use this trick here, because the CompMatr1/2 
+ * fields are declared 'const'; we cannot modify them through pointers, nor should we 
+ * try to address them. Ergo we directly define these functions below (static inline to 
+ * avoid symbol duplication), initializing the struct in one line. These functions will be 
+ * separately interpreted by the C and C++ compilers, resolving qcomp to their individual 
+ * native complex types.
  * 
  * Note separate pointer and array definitions are not necessary for DiagMatr, since
- * it 1D array field decays to a pointer.
+ * it 1D array field decays to a pointer. Finally, we mention these methods need never
+ * be directly called by the user, who should instead call the overloaded getCompMatr1()
+ * which will automatically dispatch to the below methods - even in C, using generics!
  */
 
 
@@ -260,14 +263,14 @@ static inline CompMatr2 getCompMatr2FromPtr(qcomp** in) {
 /*
  * OVERLOADED FIXED-SIZE MATRIX INITIALISERS
  *
- * which permit both C and C++ users to call getCompMatr1() and pass
+ * which permit both C and C++ users to call getCompMatr1/2() and pass
  * arrays or pointers, without having to call the above specialised
  * functions. We are effectively using macros to extend C++'s
  * overloaded API to C, though C++ users can additionally pass vectors.
  * 
  * The situation is simpler for DiagMatr since 1D array references
  * decay to pointers. We still wish to enable C++ users to pass
- * vectors and their in-place initialiser lists, so we overload it.
+ * vectors and their in-place initialiser lists, so we overload those.
  */
 
 
@@ -286,38 +289,35 @@ static inline CompMatr2 getCompMatr2FromPtr(qcomp** in) {
 
 #else
 
-    // C uses a header macro with C11 compile-time type inspection to expand
+    // C uses a header macro with C11 generic inspection to expand the macro
     // (at compile-time, rather than during pre-processing) with one of
-    // the above inlined definitions. Note:
+    // the above explicit definitions. Note:
     // - we cannot accept C++ vectors (duh) so direct {{...}} initialisation
-    //   isn't possible; users have to use C99 compound literals instead,
-    //   which we address with a subsequent definition of getInlineCompMatr().
-    // - the _Generic does not require a map for the qcomp[2][2] type, because
-    //   a passed qcomp[2][2] decays to qcomp(*)[2], indistinguishable from
-    //   an array of pointers which is already in the map.
-    // - we use __VA_ARGS__ to accept multiple-token compound literals,
-    //   i.e. C99 temporary arrays of syntax (qcomp[][]) {{...}}
+    //   isn't possible; users have to use C99 compound literals instead, or
+    //   our subsequent definition of getInlineCompMatr().
+    // - we explicitly check for pointers (qcomp**), but we use default to catch
+    //   all array types (qcomp[][n], and qcomp(*)[] due to Generic pointer decay
+    //   in GCC). This is to avoid dealing with VLA (illegal) in the variable
+    //   size matrices, to avoid having to alias qcomp (because qcomp(*)[] 
+    //   out qcomp(re,im) macro), and to spare the user from the _Generic
+    //   compilation error (a bit hard to read) when passing an incorrect type.
+    // - we use __VA_ARGS__ to accept both prefined variables and multiple-token 
+    //   compound literals, i.e. C99 temporary arrays of syntax (qcomp[][]) {{...}}
     // - we cannot use _Generic's 'default' to catch unrecognised types at compile
     //   time (although that would be lovely) because we must expand _Generic to a 
     //   function (not a macro; preprocessing is finished by the time _Generic
-    //   evaluates). Such a function could only throw an error at runtime, which is
-    //   worse than letting _Generic throw an error at compile-time.
-
-    // Another problem: type qcomp(*) below would erroneously invoke the qcomp(re,im) macro.
-    // Preventing expansion using (qcomp)(*) leads to _Generic not recognising the type.
-    // So, in desperation, we alias the type qcomp with a name that has no colliding macro.
-    typedef qcomp qalias;
+    //   evaluates). Such a function could only throw an error at runtime.
 
     #define getCompMatr1(...) \
         _Generic((__VA_ARGS__), \
-            qalias(*)[2] : getCompMatr1FromArr, \
-            qcomp**      : getCompMatr1FromPtr  \
+            qcomp** : getCompMatr1FromPtr, \
+            default : getCompMatr1FromArr \
         )((__VA_ARGS__))
 
     #define getCompMatr2(...) \
         _Generic((__VA_ARGS__), \
-            qalias(*)[4] : getCompMatr2FromArr, \
-            qcomp**      : getCompMatr2FromPtr  \
+            qcomp** : getCompMatr2FromPtr, \
+            default : getCompMatr2FromArr \
         )((__VA_ARGS__))
 
 #endif
@@ -530,30 +530,12 @@ extern "C" {
 
 #else
 
-    // C uses a header macro with C11 compile-time type inspection to expand
-    // (at compile-time, rather than during pre-processing) with one of
-    // the above inlined definitions. Note:
-    // - we cannot accept C++ vectors (duh) so direct {{...}} initialisation
-    //   isn't possible; users have to use C99 compound literals instead,
-    //   which we address with a subsequent definition of setInlineCompMatr().
-    // - the _Generic does not require a map for the qcomp[][] type, because
-    //   a passed qcomp[][] decays to qcomp(*)[], indistinguishable from
-    //   an array of pointers which is already in the map.
-    // - we use __VA_ARGS__ to accept multiple-token compound literals,
-    //   i.e. C99 temporary arrays of syntax (qcomp[][]) {{...}}
-    // - we cannot use _Generic's 'default' to catch unrecognised types at compile
-    //   time (although that would be lovely) because we must expand _Generic to a 
-    //   function (not a macro; preprocessing is finished by the time _Generic
-    //   evaluates). Such a function could only throw an error at runtime, which is
-    //   worse than letting _Generic throw an error at compile-time.
-
-    // Another problem: type qcomp(*) below would erroneously invoke the qcomp(re,im) macro,
-    // so we re-use 'qalias = qcomp' as defined at getCompMatr1.
+    // C uses C11 generics, resolved at compile-time (after preprocessing)
 
     #define setCompMatr(matr, ...) \
-        _Generic((__VA_ARGS__),   \
-            qalias(*)[] : setCompMatrFromArr, \
-            qcomp**     : setCompMatrFromPtr  \
+        _Generic((__VA_ARGS__), \
+            qcomp** : setCompMatrFromPtr, \
+            default : setCompMatrFromArr \
         )((matr), (__VA_ARGS__))
 
 #endif
