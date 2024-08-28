@@ -10,6 +10,7 @@
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/memory.hpp"
+#include "quest/src/core/utilities.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
@@ -344,7 +345,7 @@ void gpu_copyGpuToCpu(Qureg qureg) {
 void gpu_copyCpuToGpu(CompMatr matr) {
 #if COMPILE_CUDA
 
-    if (matr.gpuElemsFlat == NULL || ! getQuESTEnv().isGpuAccelerated)
+    if (util_getGpuMemPtr(matr) == NULL || ! getQuESTEnv().isGpuAccelerated)
         error_gpuCopyButMatrixNotGpuAccelerated();
 
     // copy each CPU row into flattened GPU memory. we make each memcpy asynch,
@@ -354,7 +355,7 @@ void gpu_copyCpuToGpu(CompMatr matr) {
 
     for (qindex r=0; r<matr.numRows; r++) {
         qcomp* cpuRow = matr.cpuElems[r];
-        qcomp* gpuSlice = &matr.gpuElemsFlat[r*matr.numRows];
+        qcomp* gpuSlice = &util_getGpuMemPtr(matr)[r*matr.numRows];
         CUDA_CHECK( cudaMemcpyAsync(gpuSlice, cpuRow, numBytesPerRow, cudaMemcpyHostToDevice) );
     }
 
@@ -369,11 +370,11 @@ void gpu_copyCpuToGpu(CompMatr matr) {
 void gpu_copyCpuToGpu(DiagMatr matr) {
 #if COMPILE_CUDA
 
-    if (matr.gpuElemsFlat == NULL || ! getQuESTEnv().isGpuAccelerated)
+    if (util_getGpuMemPtr(matr) == NULL || ! getQuESTEnv().isGpuAccelerated)
         error_gpuCopyButMatrixNotGpuAccelerated();
 
     size_t numBytes = matr.numElems * sizeof(qcomp);
-    CUDA_CHECK( cudaMemcpy(matr.gpuElemsFlat, matr.cpuElems, numBytes, cudaMemcpyHostToDevice) );
+    CUDA_CHECK( cudaMemcpy(util_getGpuMemPtr(matr), matr.cpuElems, numBytes, cudaMemcpyHostToDevice) );
     
 #else
     error_gpuCopyButGpuNotCompiled();
@@ -384,11 +385,11 @@ void gpu_copyCpuToGpu(DiagMatr matr) {
 void gpu_copyCpuToGpu(FullStateDiagMatr matr) {
 #if COMPILE_CUDA
 
-    if (matr.gpuElemsFlat == NULL || ! getQuESTEnv().isGpuAccelerated)
+    if (util_getGpuMemPtr(matr) == NULL || ! getQuESTEnv().isGpuAccelerated)
         error_gpuCopyButMatrixNotGpuAccelerated();
 
     size_t numBytes = matr.numElemsPerNode * sizeof(qcomp);
-    CUDA_CHECK( cudaMemcpy(matr.gpuElemsFlat, matr.cpuElems, numBytes, cudaMemcpyHostToDevice) );
+    CUDA_CHECK( cudaMemcpy(util_getGpuMemPtr(matr), matr.cpuElems, numBytes, cudaMemcpyHostToDevice) );
     
 #else
     error_gpuCopyButGpuNotCompiled();

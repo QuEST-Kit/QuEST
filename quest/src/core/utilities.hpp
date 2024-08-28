@@ -157,6 +157,17 @@ qcomp util_getFirstLocalElem(T matr) {
         return matr.cpuElems[0];
 }
 
+// T can be CompMatr, DiagMatr, FullStateDiagMatr (i.e. matrices with GPU memory)
+template<class T>
+qcomp* util_getGpuMemPtr(T matr) {
+
+    // 2D CUDA structures are always stored as 1D
+    if constexpr (util_isDenseMatrixType<T>())
+        return matr.gpuElemsFlat;
+    else
+        return matr.gpuElems;
+}
+
 
 
 /*

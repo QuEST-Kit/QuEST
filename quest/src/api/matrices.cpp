@@ -84,7 +84,7 @@ bool didAnyLocalAllocsFail(T matr) {
                 return true;
 
     // if env is GPU-accelerated, we should have allocated persistent GPU memory
-    if (getQuESTEnv().isGpuAccelerated && matr.gpuElemsFlat == NULL)
+    if (getQuESTEnv().isGpuAccelerated && util_getGpuMemPtr(matr) == NULL)
         return true;
 
     // otherwise, all pointers were non-NULL and ergo all allocs were successful
@@ -121,7 +121,7 @@ void freeAllMemoryIfAnyAllocsFailed(T matr) {
     // freeing NULL is legal
     free(matr.cpuElems);
     free(matr.isUnitary);
-    gpu_deallocAmps(matr.gpuElemsFlat);
+    gpu_deallocAmps(util_getGpuMemPtr(matr));
 }
 
 
@@ -146,7 +146,7 @@ void validateAndSyncMatrix(T matr, const char* caller) {
     validate_matrixNewElemsDontContainUnsyncFlag(util_getFirstLocalElem(matr), caller);
 
     // optionally overwrite GPU elements with user-modified CPU elements
-    if (matr.gpuElemsFlat != NULL)
+    if (util_getGpuMemPtr(matr) != NULL)
         gpu_copyCpuToGpu(matr);
 
     // optionally determine unitarity
@@ -169,8 +169,8 @@ void validateAndDestroyMatrix(T matrix, const char* caller) {
     free(matrix.cpuElems);
 
     // free flat GPU array if it exists
-    if (matrix.gpuElemsFlat != NULL)
-        gpu_deallocAmps(matrix.gpuElemsFlat);
+    if (util_getGpuMemPtr(matrix) != NULL)
+        gpu_deallocAmps(util_getGpuMemPtr(matrix));
 }
 
 
@@ -318,7 +318,7 @@ extern "C" DiagMatr createDiagMatr(int numQubits) {
         .cpuElems = cpu_allocAmps(numElems), // NULL if failed,
 
         // const 1D GPU memory (NULL if failed or not needed)
-        .gpuElemsFlat = (getQuESTEnv().isGpuAccelerated)? gpu_allocAmps(numElems) : NULL // first amp will be un-sync'd flag
+        .gpuElems = (getQuESTEnv().isGpuAccelerated)? gpu_allocAmps(numElems) : NULL // first amp will be un-sync'd flag
     };
 
     validateMatrixAllocsAndSetUnitarity(out, numBytes, __func__);
@@ -376,7 +376,7 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
         .cpuElems = cpu_allocAmps(numElemsPerNode),
 
         // 1D GPU memory (NULL if failed or deliberately not allocated)
-        .gpuElemsFlat = (env.isGpuAccelerated)? gpu_allocAmps(numElemsPerNode) : NULL, // first amp will be un-sync'd flag
+        .gpuElems = (env.isGpuAccelerated)? gpu_allocAmps(numElemsPerNode) : NULL, // first amp will be un-sync'd flag
     };
 
     validateMatrixAllocsAndSetUnitarity(out, numBytesPerNode, __func__);
