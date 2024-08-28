@@ -89,4 +89,16 @@ bool gpu_haveGpuAmpsBeenSynced(qcomp* gpuArr);
 
 
 
+/*
+ * CACHE MANAGEMENT
+ */
+
+qcomp* gpu_getCacheOfSize(qindex numElemsPerThread, qindex numThreads);
+
+void gpu_clearCache();
+
+size_t gpu_getCacheMemoryInBytes();
+
+
+
 #endif // GPU_CONFIG_HPP

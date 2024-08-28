@@ -151,6 +151,105 @@ void assert_pairRankIsDistinct(Qureg qureg, int pairRank) {
         error_commWithSameRank();
 }
 
+void assert_bufferSendRecvDoesNotOverlap(qindex sendInd, qindex recvInd, qindex numAmps) {
+
+    if (sendInd + numAmps > recvInd)
+        raiseInternalError("A distributed function attempted to send and receive portions of the buffer which overlapped.");
+}
+
+
+
+/*
+ * LOCALISER ERRORS
+ */
+
+void error_localiserNumCtrlStatesInconsistentWithNumCtrls() {
+
+    raiseInternalError("An inconsistent number of ctrls and ctrlStates were passed to a function in localiser.cpp.");
+}
+
+void error_localiserGivenPauliTensorOrGadgetWithoutXOrY() {
+
+    raiseInternalError("The localiser was asked to simulate a Pauli tensor or gadget which contained no X or Y Paulis, which is a special case reserved for phase gadgets.");
+}
+
+void error_localiserPassedStateVecToChannelComCheck() {
+
+    raiseInternalError("The localiser queried whether a channel would invoke communication upon a statevector.");
+}
+
+void assert_localiserGivenDensMatr(Qureg qureg) {
+
+    if (!qureg.isDensityMatrix)
+        raiseInternalError("The localiser received a statevector to a function defined only upon density matrices.");
+}
+
+void assert_localiserPartialTraceGivenCompatibleQuregs(Qureg inQureg, Qureg outQureg, int numTargs) {
+
+    if (!inQureg.isDensityMatrix || !outQureg.isDensityMatrix)
+        raiseInternalError("A non-density matrix was given to localiser's partial trace function.");
+
+    if (inQureg.isDistributed != outQureg.isDistributed)
+        raiseInternalError("Quregs of different distributions (one distributed, one not) was given to localiser's partial trace function.");
+
+    if (inQureg.isGpuAccelerated != outQureg.isGpuAccelerated)
+        raiseInternalError("Quregs of different GPU-accelerations (one accelerated, the other not) was given to localiser's partial trace function.");
+
+    if (inQureg.numQubits - numTargs != outQureg.numQubits)
+        raiseInternalError("Inconsistent Qureg sizes and number of traced qubits given to localiser's partial trace function.");
+}
+
+
+
+/*
+ * ACCELERATOR ERRORS
+ */
+
+void assert_numQubitsMatchesQubitStatesAndTemplateParam(int numQubits, int numQubitStates, int templateParam, string label) {
+
+    if (numQubits != numQubitStates)
+        raiseInternalError("A CPU or GPU subroutine received an inconsistent number of " + label + "s and " + label + "-states from accelerator.cpp.");
+
+    // template parameter of -1 is always valid (it indicates the routine has not been compile-time optimised)
+    if (templateParam == -1)
+        return;
+
+    if (templateParam != numQubits)
+        raiseInternalError("A CPU or GPU subroutine received a number of qubits inconsistent with its compile-time template parameter, as dispatched by accelerator.cpp.");
+}
+
+void assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(int numCtrls, int numCtrlStates, int templateParam) {
+
+    assert_numQubitsMatchesQubitStatesAndTemplateParam(numCtrls, numCtrlStates, templateParam, "control");
+}
+
+void assert_numTargsMatchesTemplateParam(int numTargs, int templateParam) {
+
+    // template parameter of -1 is always valid (it indicates the routine has not been compile-time optimised)
+    if (templateParam == -1)
+        return;
+
+    if (templateParam != numTargs)
+        raiseInternalError("A CPU or GPU subroutine received a number of targets inconsistent with its compile-time template parameter, as dispatched by accelerator.cpp.");
+}
+
+
+
+/*
+ * BUFFER PACKING ERRORS
+ */
+
+void error_noCtrlsGivenToBufferPacker() {
+
+    raiseInternalError("A function attempted to (superfluously) pack the communication buffer but specified no control qubits, which would lead to the buffer being entirely filled and leave no room to receive amps.");
+}
+
+void assert_bufferPackerGivenIncreasingQubits(int qubit1, int qubit2, int qubit3) {
+
+    if (qubit1 >= qubit2 || qubit2 >= qubit3)
+        raiseInternalError("A function attempted to pack a buffer using non-increasing qubit indices.");
+}
+
 
 
 /*
@@ -196,6 +295,11 @@ void error_gpuCopyButGpuNotCompiled() {
 void error_gpuSimButGpuNotCompiled() {
 
     raiseInternalError("A function attempted to dispatch a simulation to the GPU but QuEST was not compiled with GPU acceleration enabled.");
+}
+
+void error_gpuCacheModifiedButGpuNotCompiled() {
+
+    raiseInternalError("A function attempted to allocate or clear the GPU cache memory but QuEST was not compiled with GPU acceleration enabled.");
 }
 
 void error_gpuCopyButQuregNotGpuAccelerated() {
@@ -276,11 +380,31 @@ void error_nodeUnexpectedlyContainedNoElems() {
     raiseInternalError("A function queried which distributed elements within a specified range overlapped the node's stored elements, but the node contained no overlap. This situation should have been prior handled."); 
 }
 
-void assert_shiftedQuregIsDensMatr(Qureg qureg) {
-    if (!qureg.isDensityMatrix)
-        raiseInternalError("A function attempted to obtain the shifted Choi indices of a state-vector, as if it were a density matrix.");
+void error_utilsGetBraIndGivenNonDensMatr() {
+
+    raiseInternalError("A function attempted to obtain the index of a bra-qubit of a state-vector, as if it were a density matrix.");
 }
 
+void error_utilsGetPrefixIndGivenSuffixQubit() {
+
+    raiseInternalError("A function passed a suffix qubit to a utilities function expecting a prefix qubit.");
+}
+
+void error_utilsGetPrefixBraIndGivenNonDensMatr() {
+
+    raiseInternalError("A function attempted to obtain the prefix index of a bra-qubit of a state-vector, as if it were a density matrix.");
+
+}
+
+void error_utilsGetPrefixBraIndGivenSuffixQubit() {
+
+    raiseInternalError("A function attmpted to obtain the prefix index of a bra-qubit, but passed a suffix qubit.");
+}
+
+void error_utilsIsBraQubitInSuffixGivenNonDensMatr() {
+
+    raiseInternalError("A functiion queried whether a qubit's corresponding bra-qubit was in the suffix substate, but the Qureg was not a density matrix.");
+}
 
 
 /*

@@ -112,24 +112,16 @@ void freeAllMemoryIfAnyAllocsFailed(T matr) {
     if (!didAnyAllocsFailOnAnyNode(matr))
         return;
 
-    // otherwise, free the single-integer isUnitary flag malloc (hehe)
-    if (matr.isUnitary != NULL)
-        free(matr.isUnitary);
-
-    // and all successfully allocated rows of 2D structures (if outer list allocated)
+    // otherwise free all successfully allocated rows of 2D structures (if outer list allocated)
     if constexpr (util_isDenseMatrixType<T>())
         if (matr.cpuElems != NULL)
             for (qindex r=0; r<matr.numRows; r++)
-                if (matr.cpuElems[r] != NULL)
-                    free(matr.cpuElems[r]);
+                free(matr.cpuElems[r]);
 
-    // free the outer CPU array itself
-    if (matr.cpuElems != NULL)
-        free(matr.cpuElems);
-    
-    // and the GPU memory (gauranteed NULL in non-GPU mode)
-    if (matr.gpuElems != NULL)
-        gpu_deallocAmps(matr.gpuElems);
+    // freeing NULL is legal
+    free(matr.cpuElems);
+    free(matr.isUnitary);
+    gpu_deallocAmps(matr.gpuElems);
 }
 
 

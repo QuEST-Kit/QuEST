@@ -17,12 +17,13 @@ extern "C" {
 
 
 void unitary(Qureg qureg, int target, CompMatr1 matrix) {
+    validate_quregFields(qureg, __func__);
     validate_target(qureg, target, __func__);
     validate_matrixIsUnitary(matrix, __func__);
 
-    statevec_oneTargetGate(qureg, target, matrix);
+    localiser_statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, target, matrix);
     if (qureg.isDensityMatrix)
-        statevec_oneTargetGate(qureg, util_getShifted(target, qureg), util_getConj(matrix));
+        localiser_statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, util_getBraQubit(target, qureg), util_getConj(matrix));
 }
 
 

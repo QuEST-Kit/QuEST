@@ -71,6 +71,46 @@ void assert_quregIsDistributed(Qureg qureg);
 
 void assert_pairRankIsDistinct(Qureg qureg, int pairRank);
 
+void assert_bufferSendRecvDoesNotOverlap(qindex sendInd, qindex recvInd, qindex numAmps);
+
+
+
+/*
+ * LOCALISER ERRORS
+ */
+
+void error_localiserNumCtrlStatesInconsistentWithNumCtrls();
+
+void error_localiserGivenPauliTensorOrGadgetWithoutXOrY();
+
+void error_localiserPassedStateVecToChannelComCheck();
+
+void assert_localiserGivenDensMatr(Qureg qureg);
+
+void assert_localiserPartialTraceGivenCompatibleQuregs(Qureg inQureg, Qureg outQureg, int numTargs);
+
+
+
+/*
+ * ACCELERATOR ERRORS
+ */
+
+void assert_numQubitsMatchesQubitStatesAndTemplateParam(int numQubits, int numQubitStates, int templateParam, string label="qubit");
+
+void assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(int numCtrls, int numCtrlStates, int templateParam);
+
+void assert_numTargsMatchesTemplateParam(int numTargs, int templateParam);
+
+
+
+/*
+ * BUFFER PACKING ERRORS
+ */
+
+void error_noCtrlsGivenToBufferPacker();
+
+void assert_bufferPackerGivenIncreasingQubits(int qubit1, int qubit2, int qubit3);
+
 
 
 /*
@@ -96,6 +136,8 @@ void error_gpuDeallocButGpuNotCompiled();
 void error_gpuCopyButGpuNotCompiled();
 
 void error_gpuSimButGpuNotCompiled();
+
+void error_gpuCacheModifiedButGpuNotCompiled();
 
 void error_gpuCopyButQuregNotGpuAccelerated();
 
@@ -133,7 +175,15 @@ void error_cuQuantumInitOrFinalizedButNotCompiled();
 
 void error_nodeUnexpectedlyContainedNoElems();
 
-void assert_shiftedQuregIsDensMatr(Qureg qureg);
+void error_utilsGetBraIndGivenNonDensMatr();
+
+void error_utilsGetPrefixIndGivenSuffixQubit();
+
+void error_utilsGetPrefixBraIndGivenNonDensMatr();
+
+void error_utilsGetPrefixBraIndGivenSuffixQubit();
+
+void error_utilsIsBraQubitInSuffixGivenNonDensMatr();
 
 
 

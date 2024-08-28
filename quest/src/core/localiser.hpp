@@ -12,16 +12,68 @@
 #define LOCALISER_HPP
 
 #include "quest/include/qureg.h"
+#include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 
+#include <vector>
+
+using std::vector;
 
 
 /*
- * OPERATORS
+ * SWAP
  */
 
-void statevec_oneTargetGate(Qureg qureg, int target, CompMatr1 matrix);
 
+void localiser_statevec_anyCtrlSwap(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2);
+
+
+/*
+ * MATRICES
+ */
+
+void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);
+
+void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr);
+
+void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr);
+
+
+/*
+ * PAULI TENSORS AND GADGETS
+ */
+
+void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str);
+
+void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qreal angle);
+
+void localiser_statevec_anyCtrlAnyTargZ(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs);
+
+void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qreal angle);
+
+
+/*
+ * DECOHERENCE
+ */
+
+void localiser_densmatr_oneQubitDephasing(Qureg qureg, int qubit, qreal prob);
+
+void localiser_densmatr_twoQubitDephasing(Qureg qureg, int qubitA, int qubitB, qreal prob);
+
+void localiser_densmatr_oneQubitDepolarising(Qureg qureg, int qubit, qreal prob);
+
+void localiser_densmatr_twoQubitDepolarising(Qureg qureg, int qubitA, int qubitB, qreal prob);
+
+void localiser_densmatr_oneQubitPauliChannel(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ);
+
+void localiser_densmatr_oneQubitDamping(Qureg qureg, int qubit, qreal prob);
+
+
+/*
+ * PARTIAL TRACE
+ */
+
+void localiser_densmatr_partialTrace(Qureg inQureg, Qureg outQureg, vector<int> targs);
 
 
 #endif // LOCALISER_HPP

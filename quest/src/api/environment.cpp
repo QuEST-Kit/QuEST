@@ -129,6 +129,8 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     if (globalEnvPtr == NULL)
         error_allocOfQuESTEnvFailed();
 
+    // TODO: the below memcpy is naughty (QuESTEnv has no trivial copy-assignment) and causes compiler warning. Fix!
+
     // initialise it to our local env
     memcpy(globalEnvPtr, &env, sizeof(QuESTEnv));
 }
@@ -214,7 +216,8 @@ void printGpuInfo() {
         {"gpuDirect",     (gpu_isGpuCompiled())? printer_toStr(gpu_isDirectGpuCommPossible()) : na},
         {"gpuMemPools",   (gpu_isGpuCompiled())? printer_toStr(gpu_doesGpuSupportMemPools()) : na},
         {"gpuMemory",     (gpu_isGpuCompiled())? printer_toStr(gpu_getTotalMemoryInBytes()) + by + pg : na},
-        {"gpuMemoryFree", (gpu_isGpuCompiled())? printer_toStr(gpu_getTotalMemoryInBytes()) + by + pg : na},
+        {"gpuMemoryFree", (gpu_isGpuCompiled())? printer_toStr(gpu_getCurrentAvailableMemoryInBytes()) + by + pg : na},
+        {"gpuCache",      (gpu_isGpuCompiled())? printer_toStr(gpu_getCacheMemoryInBytes()) + by + pg : na},
     });
 }
 

@@ -6,10 +6,11 @@
 #include "types.h"
 #include "qureg.h"
 
-#include "../core/errors.hpp"
-#include "../src/core/bitwise.hpp"
-#include "../src/gpu/gpu_config.hpp"
-#include "../src/comm/comm_config.hpp"
+#include "quest/src/core/errors.hpp"
+#include "quest/src/core/bitwise.hpp"
+#include "quest/src/gpu/gpu_config.hpp"
+#include "quest/src/comm/comm_config.hpp"
+#include "quest/src/comm/comm_indices.hpp"
 
 #include <vector>
 
@@ -22,7 +23,8 @@
 /*
  * TODO:
  *
- * - assert internal succes of all MPI calls for robustness
+ * - create an MPI error handler for custom comm internal error messages:
+ *   https://docs.open-mpi.org/en/v5.0.x/man-openmpi/man3/MPI_Comm_create_errhandler.3.html#mpi-comm-create-errhandler
  * 
  * - we may wish to adjust communication design when supporting MPI+cuQuantum,
  *   wherein we must define our own Communicator type.
@@ -31,6 +33,9 @@
  * - apparently we can perform better than UCX's intra-socket inter-GPU
  *   communication, achieving 1.5-3x speedups. See this thesis:
  *   https://www.queensu.ca/academia/afsahi/pprl/thesis/Yiltan_Temucin_MASc_thesis.pdf
+ * 
+ * - we may wish to think more explicitly about memory affinity, using hwloc:
+ *   https://www.open-mpi.org/projects/hwloc/
  * 
  * - when CUDA-aware MPI (via UCX) attempting to exchange VRAM-to-VRAM has to fall
  *   back upon routing through RAM (because e.g. there is no direct
@@ -160,7 +165,7 @@ void exchangeArrays(qcomp* send, qcomp* recv, qindex numElems, int pairRank) {
 
 
 /*
- * PRIVATE ASYNCH SEND AND RECEIVE
+ * PRIVATE ASYNC SEND AND RECEIVE
  */
 
 
@@ -239,7 +244,9 @@ void exchangeGpuAmpsToGpuBuffers(Qureg qureg, qindex sendInd, qindex recvInd, qi
 }
 
 
-void exchangeGpuBuffers(Qureg qureg, qindex numAmpsAndRecvInd, int pairRank) {
+void exchangeGpuSubBuffers(Qureg qureg, qindex numAmps, int pairRank) {
+
+    auto [sendInd, recvInd] = getSubBufferSendRecvInds(qureg);
 
     // exchange GPU memory directly if possible
     if (gpu_isDirectGpuCommPossible()) {
@@ -248,24 +255,26 @@ void exchangeGpuBuffers(Qureg qureg, qindex numAmpsAndRecvInd, int pairRank) {
         gpu_sync();
 
         // communicate via GPUDirect or Peer-to-Peer
-        exchangeArrays(&qureg.gpuCommBuffer[0], &qureg.gpuCommBuffer[numAmpsAndRecvInd], numAmpsAndRecvInd, pairRank);
+        exchangeArrays(&qureg.gpuCommBuffer[sendInd], &qureg.gpuCommBuffer[recvInd], numAmps, pairRank);
     
     // otherwise route the memory through the CPU
     } else {
 
-        // copy GPU memory (buffer) into CPU memory (amps), beginning from 0
-        gpu_copyGpuToCpu(qureg, &qureg.gpuCommBuffer[0], &qureg.cpuAmps[0], numAmpsAndRecvInd);
+        // copy GPU memory (buffer) into CPU memory (amps), preserving offset
+        gpu_copyGpuToCpu(qureg, &qureg.gpuCommBuffer[sendInd], &qureg.cpuAmps[sendInd], numAmps);
 
-        // exchange CPU memory (amps) to other node's CPU memory (buffer), beginning from 0
-        exchangeArrays(qureg.cpuAmps, qureg.cpuCommBuffer, numAmpsAndRecvInd, pairRank);
+        // exchange CPU memory (amps) to other node's CPU memory (buffer), receiving at index 0
+        exchangeArrays(&qureg.cpuAmps[sendInd], &qureg.cpuCommBuffer[recvInd], numAmps, pairRank);
 
-        // copy CPU memory (buffer) to GPU memory (buffer), beginning from numAmpsAndRecvInd
-        gpu_copyCpuToGpu(qureg, &qureg.cpuCommBuffer[0], &qureg.gpuCommBuffer[numAmpsAndRecvInd], numAmpsAndRecvInd);
+        // copy CPU memory (buffer) to GPU memory (buffer), receiving at index 0
+        gpu_copyCpuToGpu(qureg, &qureg.cpuCommBuffer[recvInd], &qureg.gpuCommBuffer[recvInd], numAmps);
     }
 }
 
 
-void asynchSendGpuBuffer(Qureg qureg, qindex numElems, int pairRank) {
+void asynchSendGpuSubBuffer(Qureg qureg, qindex numElems, int pairRank) {
+
+    qindex sendInd = getSubBufferSendInd(qureg);
 
     // send GPU memory directly if possible
     if (gpu_isDirectGpuCommPossible()) {
@@ -274,21 +283,23 @@ void asynchSendGpuBuffer(Qureg qureg, qindex numElems, int pairRank) {
         gpu_sync();
 
         // communicate via GPUDirect or Peer-to-Peer
-        asynchSendArray(qureg.gpuCommBuffer, numElems, pairRank);
+        asynchSendArray(&qureg.gpuCommBuffer[sendInd], numElems, pairRank);
 
     // otherwise route the memory through the CPU
     } else {
 
-        // copy GPU memory (buffer) into CPU memory (amps)
-        gpu_copyGpuToCpu(qureg, qureg.gpuCommBuffer, qureg.cpuAmps, numElems);
+        // copy GPU memory (buffer) into CPU memory (amps), at offset
+        gpu_copyGpuToCpu(qureg, &qureg.gpuCommBuffer[sendInd], &qureg.cpuAmps[sendInd], numElems);
 
         // send CPU memory (amps) to other node
-        asynchSendArray(qureg.cpuAmps, numElems, pairRank);
+        asynchSendArray(&qureg.cpuAmps[sendInd], numElems, pairRank);
     }
 }
 
 
 void receiveArrayToGpuBuffer(Qureg qureg, qindex numElems, int pairRank) {
+
+    qindex recvInd = getBufferRecvInd();
 
     // receive to GPU memory directly if possible
     if (gpu_isDirectGpuCommPossible()) {
@@ -296,16 +307,16 @@ void receiveArrayToGpuBuffer(Qureg qureg, qindex numElems, int pairRank) {
         // GPU synchronisation is not necessary; we're merely receiving to buffer
 
         // communicate via GPUDirect or Peer-to-Peer
-        receiveArray(qureg.gpuCommBuffer, numElems, pairRank);
+        receiveArray(&qureg.gpuCommBuffer[recvInd], numElems, pairRank);
 
     // otherwise, route through CPU
     } else {
 
-        // receive array to CPU memory (buffer)
-        receiveArray(qureg.cpuCommBuffer, numElems, pairRank);
+        // receive array to CPU memory (buffer), at offset
+        receiveArray(&qureg.cpuCommBuffer[recvInd], numElems, pairRank);
 
-        // copy CPU memory (buffer) to GPU memory (buffer)
-        gpu_copyCpuToGpu(qureg, qureg.cpuCommBuffer, qureg.gpuCommBuffer, numElems);
+        // copy CPU memory (buffer) to GPU memory (buffer), at offset
+        gpu_copyCpuToGpu(qureg, &qureg.cpuCommBuffer[recvInd], &qureg.gpuCommBuffer[recvInd], numElems);
     }
 }
 
@@ -328,39 +339,51 @@ void comm_exchangeAmpsToBuffers(Qureg qureg, qindex sendInd, qindex recvInd, qin
 }
 
 
-void comm_exchangeBuffers(Qureg qureg, qindex numAmpsAndRecvInd, int pairRank) {
-    assert_validCommBounds(qureg, 0, numAmpsAndRecvInd, numAmpsAndRecvInd);
+void comm_exchangeSubBuffers(Qureg qureg, qindex numAmps, int pairRank) {
+    
+    auto [sendInd, recvInd] = getSubBufferSendRecvInds(qureg);
+
+    assert_validCommBounds(qureg, sendInd, recvInd, numAmps);
+    assert_bufferSendRecvDoesNotOverlap(sendInd, recvInd, numAmps);
     assert_quregIsDistributed(qureg);
     assert_pairRankIsDistinct(qureg, pairRank);
 
     if (qureg.isGpuAccelerated)
-        exchangeGpuBuffers(qureg, numAmpsAndRecvInd, pairRank);
+        exchangeGpuSubBuffers(qureg, numAmps, pairRank);
     else 
-        exchangeArrays(&qureg.cpuCommBuffer[0], &qureg.cpuCommBuffer[numAmpsAndRecvInd], numAmpsAndRecvInd, pairRank);
+        exchangeArrays(&qureg.cpuCommBuffer[sendInd], &qureg.cpuCommBuffer[recvInd], numAmps, pairRank);
 }
 
 
-void comm_asynchSendBuffer(Qureg qureg, qindex numElems, int pairRank) {
-    assert_validCommBounds(qureg, 0, 0, numElems);
+void comm_asynchSendSubBuffer(Qureg qureg, qindex numElems, int pairRank) {
+
+    auto [sendInd, recvInd] = getSubBufferSendRecvInds(qureg);
+
+    assert_validCommBounds(qureg, sendInd, recvInd, numElems);
+    assert_bufferSendRecvDoesNotOverlap(sendInd, recvInd, numElems);
     assert_quregIsDistributed(qureg);
     assert_pairRankIsDistinct(qureg, pairRank);
 
     if (qureg.isGpuAccelerated)
-        asynchSendGpuBuffer(qureg, numElems, pairRank);
+        asynchSendGpuSubBuffer(qureg, numElems, pairRank);
     else
-        asynchSendArray(qureg.cpuCommBuffer, numElems, pairRank);
+        asynchSendArray(&qureg.cpuCommBuffer[sendInd], numElems, pairRank);
 }
 
 
 void comm_receiveArrayToBuffer(Qureg qureg, qindex numElems, int pairRank) {
-    assert_validCommBounds(qureg, 0, 0, numElems);
+
+    auto [sendInd, recvInd] = getSubBufferSendRecvInds(qureg);
+
+    assert_validCommBounds(qureg, sendInd, recvInd, numElems);
+    assert_bufferSendRecvDoesNotOverlap(sendInd, recvInd, numElems);
     assert_quregIsDistributed(qureg);
     assert_pairRankIsDistinct(qureg, pairRank);
 
     if (qureg.isGpuAccelerated)
         receiveArrayToGpuBuffer(qureg, numElems, pairRank);
     else
-        receiveArray(qureg.cpuCommBuffer, numElems, pairRank);
+        receiveArray(&qureg.cpuCommBuffer[recvInd], numElems, pairRank);
 }
 
 
@@ -374,7 +397,9 @@ void comm_exchangeAmpsToBuffers(Qureg qureg, int pairRank) {
     assert_quregIsDistributed(qureg);
     assert_pairRankIsDistinct(qureg, pairRank);
 
-    comm_exchangeAmpsToBuffers(qureg, 0, 0, qureg.numAmpsPerNode, pairRank);
+    qindex sendInd = 0;
+    qindex recvInd = 0;
+    comm_exchangeAmpsToBuffers(qureg, sendInd, recvInd, qureg.numAmpsPerNode, pairRank);
 }
 
 
@@ -423,7 +448,7 @@ void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps)
 void comm_reduceAmp(qcomp* localAmp) {
 #if COMPILE_MPI
 
-    qcomp* globalAmp;
+    qcomp* globalAmp = nullptr;
     MPI_Allreduce(localAmp, globalAmp, 1, MPI_QCOMP, MPI_SUM, MPI_COMM_WORLD);
     *localAmp = *globalAmp;
 

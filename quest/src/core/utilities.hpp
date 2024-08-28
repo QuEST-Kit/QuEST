@@ -11,8 +11,43 @@
 
 #include <type_traits>
 #include <string>
+#include <vector>
+#include <array>
 
 using std::is_same_v;
+using std::vector;
+using std::array;
+
+
+
+/*
+ * QUBIT PROCESSING
+ */
+
+bool util_isQubitInSuffix(int qubit, Qureg qureg);
+bool util_isBraQubitInSuffix(int ketQubit, Qureg qureg);
+
+int util_getBraQubit(int ketQubit, Qureg qureg);
+
+int util_getPrefixInd(int qubit, Qureg qureg);
+int util_getPrefixBraInd(int ketQubit, Qureg qureg);
+
+int util_getRankBitOfQubit(int ketQubit, Qureg qureg);
+int util_getRankBitOfBraQubit(int ketQubit, Qureg qureg);
+
+int util_getRankWithQubitFlipped(int ketQubit, Qureg qureg);
+int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg);
+
+vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg);
+
+vector<int> util_getVector(int* qubits, int numQubits);
+
+vector<int> util_getSorted(vector<int> list);
+vector<int> util_getSorted(vector<int> ctrls, vector<int> targs);
+
+qindex util_getBitMask(vector<int> qubits);
+qindex util_getBitMask(vector<int> qubits, vector<int> states);
+qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, vector<int> targStates);
 
 
 
@@ -50,6 +85,13 @@ constexpr bool util_isDenseMatrixType() {
 
 // T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template<class T>
+constexpr bool util_isDiagonalMatrixType() {
+
+    return !util_isDenseMatrixType<T>();
+}
+
+// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
+template<class T>
 constexpr bool util_isFixedSizeMatrixType() {
 
     return (
@@ -81,24 +123,17 @@ bool util_isDistributedMatrix(T matr) {
 template<class T>
 std::string util_getMatrixTypeName() {
     
-    if constexpr (is_same_v<T, CompMatr1>)
-        return "CompMatr1";
-    if constexpr (is_same_v<T, CompMatr2>)
-        return "CompMatr2";
-    if constexpr (is_same_v<T, CompMatr>)
-        return "CompMatr";
-    
-    if constexpr (is_same_v<T, DiagMatr1>)
-        return "DiagMatr1";
-    if constexpr (is_same_v<T, DiagMatr2>)
-        return "DiagMatr2";
-    if constexpr (is_same_v<T, DiagMatr>)
-        return "DiagMatr";
+    if constexpr (is_same_v<T, CompMatr1>) return "CompMatr1";
+    if constexpr (is_same_v<T, CompMatr2>) return "CompMatr2";
+    if constexpr (is_same_v<T, CompMatr >) return "CompMatr" ;
+    if constexpr (is_same_v<T, DiagMatr1>) return "DiagMatr1";
+    if constexpr (is_same_v<T, DiagMatr2>) return "DiagMatr2";
+    if constexpr (is_same_v<T, DiagMatr >) return "DiagMatr" ;
 
     if constexpr (is_same_v<T, FullStateDiagMatr>)
         return "FullStateDiagMatr";
 
-    // no need to create a new error for this situation I think
+    // no need to create a new error for this situation
     return "UnrecognisedMatrix";
 }
 
@@ -151,18 +186,10 @@ bool util_isUnitary(DiagMatr matrix);
 bool util_isUnitary(FullStateDiagMatr matrix);
 
 
-/*
- * QUBIT SHIFTING
- */
-
-int util_getShifted(int qubit, Qureg qureg);
-
-
 
 /*
  * DISTRIBUTED ELEMENTS INDEXING
  */
-
 
 typedef struct {
 
@@ -180,6 +207,23 @@ typedef struct {
 bool util_areAnyElemsWithinThisNode(int numElemsPerNode, qindex startInd, qindex numInds);
 
 util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, qindex elemStartInd, qindex numInds);
+
+
+
+/*
+ * OPERATOR PARAMETERS
+ */
+
+qreal util_getOneQubitDephasingFactor(qreal prob);
+qreal util_getTwoQubitDephasingTerm(qreal prob);
+
+array<qreal,3> util_getOneQubitDepolarisingFactors(qreal prob);
+array<qreal,3> util_getTwoQubitDepolarisingFactors(qreal prob);
+array<qreal,2> util_getFirstTwoFactorsOfTwoQubitDepolarising(qreal prob);
+
+array<qreal,4> util_getOneQubitPauliChannelFactors(qreal pI, qreal pX, qreal pY, qreal pZ);
+
+array<qcomp,2> util_getOneQubitDampingFactors(qreal prob);
 
 
 

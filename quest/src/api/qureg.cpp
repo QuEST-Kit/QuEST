@@ -70,18 +70,11 @@ void freeAllMemoryIfAnyAllocsFailed(Qureg qureg) {
     if (!didAnyAllocsFailOnAnyNode(qureg))
         return;
 
-    // otherwise, free everything that was successfully allocated
-    if (qureg.cpuAmps != NULL)
-        cpu_deallocAmps(qureg.cpuAmps);
-
-    if (qureg.cpuCommBuffer != NULL)
-        cpu_deallocAmps(qureg.cpuCommBuffer);
-
-    if (qureg.gpuAmps != NULL)
-        gpu_deallocAmps(qureg.gpuAmps);
-
-    if (qureg.gpuCommBuffer != NULL)
-        gpu_deallocAmps(qureg.gpuCommBuffer);
+    // otherwise, free everything that was successfully allocated (freeing NULL is legal)
+    cpu_deallocAmps(qureg.cpuAmps);
+    cpu_deallocAmps(qureg.cpuCommBuffer);
+    gpu_deallocAmps(qureg.gpuAmps);
+    gpu_deallocAmps(qureg.gpuCommBuffer);
 }
 
 
@@ -122,14 +115,14 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
 
         // set dimensions
         .isDensityMatrix = isDensMatr,
-        .numQubits = numQubits,
-        .numAmps = (isDensMatr)? 
-            powerOf2(2*numQubits) : 
-            powerOf2(  numQubits),
+        .numQubits  = numQubits,
+        .numAmps    = (isDensMatr)? powerOf2(2*numQubits) : powerOf2(numQubits),
+        .logNumAmps = (isDensMatr)?          2*numQubits  :          numQubits,
 
         // set dimensions per node (even if not distributed)
         .numAmpsPerNode = powerOf2(logNumAmpsPerNode),
         .logNumAmpsPerNode = logNumAmpsPerNode,
+        .logNumColsPerNode = (isDensMatr)? numQubits - logNumNodes : 0, // used only by density matrices
 
         // always allocate CPU memory
         .cpuAmps = cpu_allocAmps(qureg.numAmpsPerNode), // NULL if failed

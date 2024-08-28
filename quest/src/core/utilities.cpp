@@ -7,12 +7,138 @@
 #include "quest/include/matrices.h"
 
 #include "quest/src/core/errors.hpp"
+#include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 
 #include <algorithm>
 #include <complex>
+#include <vector>
+#include <array>
+
+using std::vector;
+using std::array;
+
+
+
+/*
+ * QUBIT PROCESSING
+ */
+
+int util_getPrefixInd(int qubit, Qureg qureg) {
+    if (qubit < qureg.logNumAmpsPerNode)
+        error_utilsGetPrefixIndGivenSuffixQubit();
+
+    return qubit - qureg.logNumAmpsPerNode;
+}
+
+int util_getBraQubit(int ketQubit, Qureg qureg) {
+    if (!qureg.isDensityMatrix)
+        error_utilsGetBraIndGivenNonDensMatr();
+
+    return ketQubit + qureg.numQubits;
+}
+
+int util_getPrefixBraInd(int ketQubit, Qureg qureg) {
+    if (!qureg.isDensityMatrix)
+        error_utilsGetPrefixBraIndGivenNonDensMatr();
+    if (ketQubit < qureg.logNumColsPerNode)
+        error_utilsGetPrefixBraIndGivenSuffixQubit();
+    
+    // equivalent to util_getPrefixInd of util_getBraQubit
+    return ketQubit - qureg.logNumColsPerNode;
+}
+
+bool util_isQubitInSuffix(int qubit, Qureg qureg) {
+
+    return qubit < qureg.logNumAmpsPerNode;
+}
+
+bool util_isBraQubitInSuffix(int ketQubit, Qureg qureg) {
+    if (!qureg.isDensityMatrix)
+        error_utilsIsBraQubitInSuffixGivenNonDensMatr();
+
+    return ketQubit < qureg.logNumColsPerNode;
+}
+
+int util_getRankBitOfQubit(int ketQubit, Qureg qureg) {
+
+    int rankInd = util_getPrefixInd(ketQubit, qureg);
+    int rankBit = getBit(qureg.rank, rankInd);
+    return rankBit;
+}
+
+int util_getRankBitOfBraQubit(int ketQubit, Qureg qureg) {
+    
+    int rankInd = util_getPrefixBraInd(ketQubit, qureg);
+    int rankBit = getBit(qureg.rank, rankInd);
+    return rankBit;
+}
+
+int util_getRankWithQubitFlipped(int ketQubit, Qureg qureg) {
+
+    int rankInd = util_getPrefixInd(ketQubit, qureg);
+    int rankFlip = flipBit(qureg.rank, rankInd);
+    return rankFlip;
+}
+
+int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg) {
+
+    int rankInd = util_getPrefixBraInd(ketQubit, qureg);
+    int rankFlip = flipBit(qureg.rank, rankInd);
+    return rankFlip;
+}
+
+vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg) {
+
+    vector<int> braInds(0);
+    braInds.reserve(ketQubits.size());
+
+    for (int qubit : ketQubits)
+        braInds.push_back(util_getBraQubit(qubit, qureg));
+
+    return braInds;
+}
+
+vector<int> util_getSorted(vector<int> qubits) {
+    vector<int> copy = qubits;
+    std::sort(copy.begin(), copy.end());
+    return copy;
+}
+
+vector<int> util_getSorted(vector<int> ctrls, vector<int> targs) {
+    vector<int> qubits = ctrls;
+    qubits.insert(qubits.end(), targs.begin(), targs.end());
+    return util_getSorted(qubits);
+}
+
+qindex util_getBitMask(vector<int> qubits) {
+
+    // inserts qubits in state 1
+    return getBitMask(qubits.data(), qubits.size());
+}
+
+qindex util_getBitMask(vector<int> qubits, vector<int> states) {
+
+    return getBitMask(qubits.data(), states.data(), states.size());
+}
+
+qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, vector<int> targStates) {
+
+    auto qubits = ctrls;
+    qubits.insert(qubits.end(), targs.begin(), targs.end());
+
+    auto states = ctrlStates;
+    states.insert(states.end(), targStates.begin(), targStates.end());
+
+    return util_getBitMask(qubits, states);
+}
+
+vector<int> util_getVector(int* qubits, int numQubits) {
+
+    return vector<int> (qubits, qubits + numQubits);
+}
 
 
 
@@ -143,18 +269,6 @@ bool util_isUnitary(FullStateDiagMatr matrix) {
 
 
 /*
- * QUBIT SHIFTING
- */
-
-int util_getShifted(int qubit, Qureg qureg) {
-    assert_shiftedQuregIsDensMatr(qureg);
-    
-    return qubit + qureg.numQubits;
-}
-
-
-
-/*
  * DISTRIBUTED ELEMENTS INDEXING
  */
 
@@ -195,8 +309,7 @@ util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, 
 
     // local indices of user's targeted elements to overwrite
     qindex localRangeStartInd = globalRangeStartInd % numElemsPerNode;
-    qindex localRangeEndInd   = localRangeStartInd + numLocalElems;
-
+    
     // local indices of user's passed elements that correspond to above
     qindex localOffsetInd = globalRangeStartInd - elemStartInd;
     
@@ -205,4 +318,69 @@ util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, 
         .localDuplicStartInd = localOffsetInd,
         .numElems = numLocalElems
     };
+}
+
+
+
+/*
+ * OPERATOR PARAMETERS
+ */
+
+qreal util_getOneQubitDephasingFactor(qreal prob) {
+
+    return 1 - (2 * prob);
+}
+
+qreal util_getTwoQubitDephasingTerm(qreal prob) {
+
+    return - 4 * prob / 3;
+}
+
+array<qreal,3> util_getOneQubitDepolarisingFactors(qreal prob) {
+
+    // effected where braQubit == ketQubit
+    qreal facAA = 1 - (2 * prob / 3);
+    qreal facBB = 2 * prob / 3;
+
+    // effected where braQubit != ketQubit
+    qreal facAB  = 1 - (4 * prob / 3);
+
+    return {facAA, facBB, facAB};
+}
+
+array<qreal,3> util_getTwoQubitDepolarisingFactors(qreal prob) {
+
+    qreal fac1 = 1 - (4 * prob / 5);
+    qreal fac2 = 4 * prob / 15;
+    qreal fac3 = - (16 * prob / 15);
+
+    return {fac1, fac2, fac3};
+}
+
+array<qreal,2> util_getFirstTwoFactorsOfTwoQubitDepolarising(qreal prob) {
+
+    auto facs = util_getTwoQubitDepolarisingFactors(prob);
+    return {facs[0], facs[1]};
+}
+
+array<qreal,4> util_getOneQubitPauliChannelFactors(qreal pI, qreal pX, qreal pY, qreal pZ) {
+
+    // effected where braQubit == ketQubit
+    qreal facAA = pI + pZ;
+    qreal facBB = pX + pY;
+
+    // effected where braQubit != ketQubit
+    qreal facAB = pI - pZ;
+    qreal facBA = pX - pY;
+
+    return {facAA, facBB, facAB, facBA};
+}
+
+array<qcomp,2> util_getOneQubitDampingFactors(qreal prob) {
+
+    // sqrt() can return complex for unnnormalised prob
+    qcomp c1 = sqrt(1 - qcomp(prob,0));
+    qcomp c2 = 1 - prob;
+
+    return {c1, c2};
 }

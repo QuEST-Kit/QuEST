@@ -24,6 +24,9 @@ void setValidationOff();
 
 void setNumReportedItems(qindex num);
 
+qindex getGpuCacheSize();
+void clearGpuCache();
+
 
 
 // end de-mangler
