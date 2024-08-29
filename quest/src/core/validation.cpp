@@ -180,6 +180,14 @@ namespace report {
 
 
     /*
+     * QUREG INITIALISATIONS
+     */
+
+    string INVALID_STATE_INDEX = 
+        "Classical state index ${STATE_IND} is invalid for the given ${NUM_QUBITS} qubit Qureg. Index must be greater than or equal to zero, and cannot equal nor exceed the number of unique classical states (2^${NUM_QUBITS} = ${NUM_STATES}).";
+
+
+    /*
      * EXISTING QUREG
      */
 
@@ -242,6 +250,9 @@ namespace report {
     string NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED = 
         "Attempted allocation of GPU memory (${NUM_BYTES} bytes in VRAM) failed.";
 
+    string NEW_MATRIX_IS_UNITARY_FLAG_ALLOC_FAILED = 
+        "Attempted allocation of the 'isUnitary' heap field (a mere ${NUM_BYTES} bytes) failed! This is unprecedentedly unlikely - go and have your fortune read at once.";
+
 
     string NEW_DISTRIB_MATRIX_IN_NON_DISTRIB_ENV = 
         "Cannot distribute a matrix in a non-distributed environment.";
@@ -256,7 +267,7 @@ namespace report {
      */
 
     string MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG = 
-        "The new elements contained a reserved, forbidden value as the first element, used internally to detect that whether GPU memory has not synchronised. The value was intended to be extremely unlikely to be used by users - go buy a lottery ticket! If you insist on using this value in the first element, add a numerically insignificant perturbation.";
+        "The new matrix elements contained a reserved, forbidden value as the first element, used internally to detect that whether GPU memory has not synchronised. The value was intended to be extremely unlikely to be used by users - go buy a lottery ticket! If you insist on using this value in the first element, add a numerically insignificant perturbation.";
 
 
     string COMP_MATR_NEW_ELEMS_WRONG_NUM_ROWS =
@@ -329,7 +340,7 @@ namespace report {
 
 
     string COMP_MATR_NOT_SYNCED_TO_GPU = 
-        "The CompMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please first call syncCompMatr() after manually modifying elements, or overwrite all elements with setCompMatr().";
+        "The CompMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncCompMatr() after manually modifying elements, or overwrite all elements with setCompMatr() which automatically synchronises.";
 
     string DIAG_MATR_NOT_SYNCED_TO_GPU = 
         "The DiagMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please first call syncDiagMatr() after manually modifying elements, or overwrite all elements with setDiagMatr().";
@@ -338,8 +349,12 @@ namespace report {
         "The FullStateDiagMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please first call syncFullStateDiagMatr() after manually modifying elements, or overwrite elements in batch with setFullStateDiagMatr().";
 
 
+    string INVALID_MATRIX_IS_UNITARY_FLAG = 
+        "The 'isUnitary' field of the given matrix had invalid value ${BAD_FLAG}, suggesting it was manually modified. Valid values are 0, 1 and ${UNKNOWN_FLAG} (to indicate that unitarity is not yet known, deferring evaluation) although this need never be modified by the user.";
+
     string MATRIX_NOT_UNITARY = 
         "The given matrix was not (approximately) unitary.";
+
 
     string FULL_STATE_DIAG_MATR_MISMATCHES_QUREG_DIM =
         "The given FullStateDiagMatr operates upon a different number of qubits (${NUM_MATR_QUBITS}) than exists in the Qureg (${NUM_QUREG_QUBITS}).";
@@ -415,14 +430,6 @@ namespace report {
 
     string INVALID_PAULI_STR_SUM_FIELDS =
         "The given PauliStrSum had invalid fields (.numTerms=${NUM_TERMS}), which is likely a result from not being correctly initialised by createPauliStrSum().";
-
-
-    /*
-     * QUREG INITIALISATIONS
-     */
-
-    string INVALID_STATE_INDEX = 
-        "Classical state index ${STATE_IND} is invalid for the given ${NUM_QUBITS} qubit Qureg. Index must be greater than or equal to zero, and cannot equal nor exceed the number of unique classical states (2^${NUM_QUBITS} = ${NUM_STATES}).";
 
     
     /*
@@ -739,7 +746,7 @@ void assertQuregDeploysEnabledByEnv(int isDistrib, int isGpuAccel, int isMultith
 
 void assertQuregTotalNumAmpsDontExceedMaxIndex(int numQubits, int isDensMatr, const char* caller) {
 
-    int maxNumQubits = mem_getMaxNumQubitsBeforeIndexOverflow(isDensMatr);
+    int maxNumQubits = mem_getMaxNumQuregQubitsBeforeIndexOverflow(isDensMatr);
 
     // make message specific to statevector or density matrix
     string msg = (isDensMatr)? 
@@ -758,7 +765,7 @@ void assertQuregLocalMemDoesntExceedMaxSizeof(int numQubits, int isDensMatr, int
     // per node and is ergo more permissive - and the auto-deployer would never choose non-distribution
     // in a distributed env if the memory would exceed the max sizeof!
     int numQuregNodes = (isDistrib == 0 || ! env.isDistributed)? 1 : env.numNodes;
-    int maxNumQubits = (int) mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDensMatr, numQuregNodes);
+    int maxNumQubits = (int) mem_getMaxNumQuregQubitsBeforeLocalMemSizeofOverflow(isDensMatr, numQuregNodes);
 
     tokenSubs vars = {
         {"${NUM_QUBITS}", numQubits},
@@ -878,6 +885,12 @@ void validate_newQuregNotBothMultithreadedAndGpuAccel(int useGpu, int useMultith
 }
 
 void validate_newQuregParams(int numQubits, int isDensMatr, int isDistrib, int isGpuAccel, int isMultithread, QuESTEnv env, const char* caller) {
+
+    // some of the below validation involves getting distributed node consensus, which
+    // can be an expensive synchronisation, which we avoid if validation is anyway disabled
+    if (!isValidationEnabled)
+        return;
+
     assertQuregNonEmpty(numQubits, caller);
     assertQuregDeployFlagsRecognised(isDensMatr, isDistrib, isGpuAccel, isMultithread, caller);
     assertQuregDeploysEnabledByEnv(isDistrib, isGpuAccel, isMultithread, env, caller);
@@ -965,12 +978,12 @@ void assertMatrixDeploysEnabledByEnv(int isDistrib, int envIsDistrib, const char
 
 void assertMatrixNonEmpty(int numQubits, const char* caller) {
 
-    assertThat(numQubits >= 1, report::NEW_MATRIX_NUM_QUBITS_NOT_POSITIVE, caller);
+    assertThat(numQubits >= 1, report::NEW_MATRIX_NUM_QUBITS_NOT_POSITIVE, {{"${NUM_QUBITS}",numQubits}}, caller);
 }
 
 void assertMatrixTotalNumElemsDontExceedMaxIndex(int numQubits, bool isDense, const char* caller) {
 
-    int maxNumQubits = mem_getMaxNumQubitsBeforeIndexOverflow(isDense);
+    int maxNumQubits = mem_getMaxNumMatrixQubitsBeforeIndexOverflow(isDense);
 
     string msg = (isDense)?
         report::NEW_DIAG_MATR_NUM_ELEMS_WOULD_EXCEED_QINDEX :
@@ -986,9 +999,9 @@ void assertMatrixTotalNumElemsDontExceedMaxIndex(int numQubits, bool isDense, co
 void assertMatrixLocalMemDoesntExceedMaxSizeof(int numQubits, bool isDense, int isDistrib, int numEnvNodes, const char* caller) {
 
     // 'isDistrib' can be 0 (user-disabled, or matrix is a local type), 1 (user-forced)
-    // or -1 (automatic; the type can be distributed but the user has not forced it). 
-    // Currently, only distributed diagonal matrices are supported, so isDistrib must be
-    // concreely 0 for dense matrices.
+    // or modeflag::USE_AUTO=-1 (automatic; the type can be distributed but the user has 
+    // not forced it). Currently, only distributed diagonal matrices are supported, so 
+    // isDistrib must be specifically 0 for dense matrices.
     if (isDense && isDistrib != 0)
         error_validationEncounteredUnsupportedDistributedDenseMatrix();
 
@@ -996,9 +1009,7 @@ void assertMatrixLocalMemDoesntExceedMaxSizeof(int numQubits, bool isDense, int 
     // per node and is ergo more permissive - and the auto-deployer would never choose non-distribution
     // in a distributed env if the memory would exceed the max sizeof!
     int numMatrNodes = (isDistrib == 0)? 1 : numEnvNodes;
-
-    // the diag matrix would have the same cost as a statevector Qureg, and be distributed as such
-    int maxNumQubits = mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDense, numMatrNodes);
+    int maxNumQubits = mem_getMaxNumMatrixQubitsBeforeLocalMemSizeofOverflow(isDense, numMatrNodes);
 
     // make error message specific to whether the matrix is distributed or non-distributed type;
     // non-distributed matrices (e.g. CompMatr) should only ever cause the local error message
@@ -1020,9 +1031,9 @@ void assertMatrixLocalMemDoesntExceedMaxSizeof(int numQubits, bool isDense, int 
 void assertMatrixNotDistributedOverTooManyNodes(int numQubits, bool isDense, int isDistrib, int numEnvNodes, const char* caller) {
 
     // 'isDistrib' can be 0 (user-disabled, or matrix is a local type), 1 (user-forced)
-    // or -1 (automatic; the type can be distributed but the user has not forced it). 
-    // Currently, only distributed diagonal matrices are supported, so isDistrib must be
-    // concreely 0 for dense matrices.
+    // or modeflag::USE_AUTO=-1 (automatic; the type can be distributed but the user has 
+    // not forced it). Currently, only distributed diagonal matrices are supported, so 
+    // isDistrib must be specifically 0 for dense matrices.
     if (isDense && isDistrib != 0)
         error_validationEncounteredUnsupportedDistributedDenseMatrix();
 
@@ -1048,9 +1059,9 @@ void assertMatrixNotDistributedOverTooManyNodes(int numQubits, bool isDense, int
 void assertMatrixFitsInCpuMem(int numQubits, bool isDense, int isDistrib, int numEnvNodes, const char* caller) {
 
     // 'isDistrib' can be 0 (user-disabled, or matrix is a local type), 1 (user-forced)
-    // or -1 (automatic; the type can be distributed but the user has not forced it). 
-    // Currently, only distributed diagonal matrices are supported, so isDistrib must be
-    // concreely 0 for dense matrices.
+    // or modeflag::USE_AUTO=-1 (automatic; the type can be distributed but the user has 
+    // not forced it). Currently, only distributed diagonal matrices are supported, so 
+    // isDistrib must be specifically 0 for dense matrices.
     if (isDense && isDistrib != 0)
         error_validationEncounteredUnsupportedDistributedDenseMatrix();
 
@@ -1091,6 +1102,7 @@ void assertMatrixFitsInCpuMem(int numQubits, bool isDense, int isDistrib, int nu
         vars["${NUM_QB_MINUS_LOG_NODES}"] = numQubits - logBase2(numMatrNodes);
     }
     
+    // TODO:
     // seek expensive node consensus in case of heterogeneous RAM - alas this may induce
     // unnecessary slowdown (due to sync and broadcast) in applications allocating many
     // small matrices in the heap. If this turns out to be the case, we could opt to
@@ -1102,9 +1114,9 @@ void assertMatrixFitsInCpuMem(int numQubits, bool isDense, int isDistrib, int nu
 void assertMatrixFitsInGpuMem(int numQubits, bool isDense, int isDistrib, int isEnvGpuAccel, int numEnvNodes, const char* caller) {
 
     // 'isDistrib' can be 0 (user-disabled, or matrix is a local type), 1 (user-forced)
-    // or -1 (automatic; the type can be distributed but the user has not forced it). 
-    // Currently, only distributed diagonal matrices are supported, so isDistrib must be
-    // concreely 0 for dense matrices.
+    // or modeflag::USE_AUTO=-1 (automatic; the type can be distributed but the user has 
+    // not forced it). Currently, only distributed diagonal matrices are supported, so 
+    // isDistrib must be specifically 0 for dense matrices.
     if (isDense && isDistrib != 0)
         error_validationEncounteredUnsupportedDistributedDenseMatrix();
 
@@ -1143,6 +1155,7 @@ void assertMatrixFitsInGpuMem(int numQubits, bool isDense, int isDistrib, int is
         vars["${NUM_QB_MINUS_LOG_NODES}"] = numQubits - logBase2(numMatrNodes);
     }
     
+    // TODO:
     // seek expensive node consensus in case of heterogeneous GPU hardware - alas this may 
     // induce unnecessary slowdown (due to sync and broadcast) in applications allocating many
     // small matrices in the GPU. If this turns out to be the case, we could opt to
@@ -1152,6 +1165,12 @@ void assertMatrixFitsInGpuMem(int numQubits, bool isDense, int isDistrib, int is
 }
 
 void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, bool isDenseType, const char* caller) {
+
+    // some of the below validation involves getting distributed node consensus, which
+    // can be an expensive synchronisation, which we avoid if validation is anyway disabled
+    if (!isValidationEnabled)
+        return;
+
     validate_envIsInit(caller);
     QuESTEnv env = getQuESTEnv();
 
@@ -1181,123 +1200,49 @@ void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, const ch
     assertNewMatrixParamsAreValid(numQubits, useDistrib, isDenseType, caller);
 }
 
-void validate_newMatrixAllocs(CompMatr matr, qindex numBytes, const char* caller) {
-    tokenSubs vars = {{"${NUM_BYTES}", numBytes}};
+// T can be CompMatr, DiagMatr, FullStateDiagMatr (i.e. heap-based matrices)
+template <typename T>
+void assertNewMatrixAllocsSucceeded(T matr, qindex numBytes, const char* caller) {
 
-    // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads
+    // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads,
+    // but we avoid this potetially expensive synchronisation if validation is anyway disabled
+    // (which also avoids us enumerating the matrix rows)
+    if (!isValidationEnabled)
+        return;
 
     // assert CPU array of rows was malloc'd successfully
+    tokenSubs vars = {{"${NUM_BYTES}", numBytes}};
     assertAllNodesAgreeThat(matr.cpuElems != NULL, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
 
-    // assert each CPU row was calloc'd successfully
-    for (qindex r=0; r<matr.numRows; r++)
-        assertAllNodesAgreeThat(matr.cpuElems[r] != NULL, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
+    // assert each CPU row was calloc'd successfully (if matrix is dense)
+    if constexpr (util_isDenseMatrixType<T>())
+        for (qindex r=0; r<matr.numRows; r++)
+            assertAllNodesAgreeThat(matr.cpuElems[r] != NULL, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
     
     // optionally assert GPU memory was malloc'd successfully
     if (getQuESTEnv().isGpuAccelerated)
-        assertAllNodesAgreeThat(matr.gpuElems != NULL, report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
+        assertAllNodesAgreeThat(util_getGpuMemPtr(matr) != NULL, report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
+
+    // assert the teeny-tiny isUnitary flag was alloc'd
+    vars["${NUM_BYTES}"] = sizeof(*(matr.isUnitary));
+    assertAllNodesAgreeThat(matr.isUnitary != NULL, report::NEW_MATRIX_IS_UNITARY_FLAG_ALLOC_FAILED, vars, caller);
 }
 
+void validate_newMatrixAllocs(CompMatr matr, qindex numBytes, const char* caller) {
+    assertNewMatrixAllocsSucceeded(matr, numBytes, caller);
+}
 void validate_newMatrixAllocs(DiagMatr matr, qindex numBytes, const char* caller) {
-    tokenSubs vars = {{"${NUM_BYTES}", numBytes}};
-
-    // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads
-
-    // assert CPU array of rows was malloc'd successfully
-    assertAllNodesAgreeThat(matr.cpuElems != NULL, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
-
-    // optionally assert GPU memory was malloc'd successfully
-    if (getQuESTEnv().isGpuAccelerated)
-        assertAllNodesAgreeThat(matr.gpuElems != NULL, report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
+    assertNewMatrixAllocsSucceeded(matr, numBytes, caller);
 }
-
 void validate_newMatrixAllocs(FullStateDiagMatr matr, qindex numBytes, const char* caller) {
-    tokenSubs vars = {{"${NUM_BYTES}", numBytes}};
-
-    // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads
-
-    // assert CPU array of rows was malloc'd successfully
-    assertAllNodesAgreeThat(matr.cpuElems != NULL, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
-
-    // optionally assert GPU memory was malloc'd successfully
-    if (getQuESTEnv().isGpuAccelerated)
-        assertAllNodesAgreeThat(matr.gpuElems != NULL, report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
+    assertNewMatrixAllocsSucceeded(matr, numBytes, caller);
 }
 
 
 
 /*
- * EXISTING MATRICES
+ * MATRIX INITIALISATION
  */
-
-// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr
-template <class T>
-void assertMatrixFieldsAreValid(T matr, int expectedNumQb, string errMsg, const char* caller) {
-
-    qindex dim = util_getMatrixDim(matr);
-    tokenSubs vars = {
-        {"${NUM_QUBITS}", matr.numQubits},
-        {"${NUM_ROWS}",   dim}};
-
-    // assert correct fixed-size numQubits (caller gaurantees this passes for dynamic-size),
-    // where the error message string already contains the expected numQb
-    assertThat(matr.numQubits == expectedNumQb, errMsg, vars, caller);
-
-    // validate .numQubits and .numRows or .numElems
-    qindex expectedDim = powerOf2(matr.numQubits);
-    assertThat(matr.numQubits >= 1, errMsg, vars, caller);
-    assertThat(dim == expectedDim,  errMsg, vars, caller);
-
-    // we do not bother checking slightly more involved fields like numAmpsPerNode - there's
-    // no risk that they're wrong (because they're constant), we've only sought to ensure the
-    // matrix was properly initialised and doesn't contain random data, which we have already.
-}
-
-// T can be CompMatr or DiagMatr (the only matrix structs with pointers)
-template <class T>
-void assertMatrixAllocsAreValid(T matr, string cpuErrMsg, string gpuErrMsg, const char* caller) {
-
-    // assert CPU memory is allocated
-    assertThat(matr.cpuElems != NULL, cpuErrMsg, caller);
-
-    // we do not check that each CPU memory row (of CompMatr; irrelevant to DiagMatr)
-    // is not-NULL because it's really unlikely that inner memory wasn't allocaed but
-    // outer was and this wasn't somehow caught by post-creation validation (i.e. the 
-    // user manually malloc'd memory after somehow getting around const fields). Further,
-    // since this function is called many times (i.e. each time the user passes a matrix
-    // to a simulation function like multiQubitUnitary()), it may be inefficient to 
-    // serially process each row pointer.
-
-    // optionally assert GPU memory is allocated
-    validate_envIsInit(caller);
-    if (getQuESTEnv().isGpuAccelerated)
-        assertThat(matr.gpuElems != NULL, gpuErrMsg, caller);
-}
-
-void validate_matrixFields(CompMatr1 matr, const char* caller) {
-    assertMatrixFieldsAreValid(matr, 1, report::INVALID_COMP_MATR_1_FIELDS, caller);
-}
-void validate_matrixFields(CompMatr2 matr, const char* caller) {
-    assertMatrixFieldsAreValid(matr, 2, report::INVALID_COMP_MATR_2_FIELDS, caller);
-}
-void validate_matrixFields(CompMatr matr, const char* caller) {
-    assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_COMP_MATR_FIELDS, caller);
-    assertMatrixAllocsAreValid(matr, report::INVALID_COMP_MATR_CPU_MEM_ALLOC, report::INVALID_COMP_MATR_GPU_MEM_ALLOC, caller);
-}
-void validate_matrixFields(DiagMatr1 matr, const char* caller) {
-    assertMatrixFieldsAreValid(matr, 1, report::INVALID_DIAG_MATR_1_FIELDS, caller);
-}
-void validate_matrixFields(DiagMatr2 matr, const char* caller) {
-    assertMatrixFieldsAreValid(matr, 2, report::INVALID_DIAG_MATR_2_FIELDS, caller);
-}
-void validate_matrixFields(DiagMatr matr, const char* caller) {
-    assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_DIAG_MATR_FIELDS, caller);
-    assertMatrixAllocsAreValid(matr, report::INVALID_DIAG_MATR_CPU_MEM_ALLOC, report::INVALID_DIAG_MATR_GPU_MEM_ALLOC, caller);
-}
-void validate_matrixFields(FullStateDiagMatr matr, const char* caller) {
-    assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_FULL_STATE_DIAG_MATR_FIELDS, caller);
-    assertMatrixAllocsAreValid(matr, report::INVALID_FULL_STATE_DIAG_MATR_CPU_MEM_ALLOC, report::INVALID_FULL_STATE_DIAG_MATR_GPU_MEM_ALLOC, caller);
-}
 
 void validate_matrixNumNewElems(int numQubits, vector<vector<qcomp>> elems, const char* caller) {
 
@@ -1365,6 +1310,10 @@ void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd,
 
 void validate_matrixNewElemsDontContainUnsyncFlag(qcomp firstElem, const char* caller) {
 
+    // avoid potentially expensive node-consensus if validation anyway disabled
+    if (!isValidationEnabled)
+        return;
+
     // we permit the matrix to contain the GPU-mem-unsync flag in CPU-only mode,
     // to avoid astonishing a CPU-only user with a GPU-related error message
     if (!getQuESTEnv().isGpuAccelerated)
@@ -1376,28 +1325,113 @@ void validate_matrixNewElemsDontContainUnsyncFlag(qcomp firstElem, const char* c
     assertAllNodesAgreeThat(!gpu_doCpuAmpsHaveUnsyncMemFlag(firstElem), report::MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG, caller);
 }
 
+
+
+/*
+ * EXISTING MATRICES
+ */
+
+// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
+template <class T>
+void assertMatrixFieldsAreValid(T matr, int expectedNumQb, string errMsg, const char* caller) {
+
+    qindex dim = util_getMatrixDim(matr);
+    tokenSubs vars = {
+        {"${NUM_QUBITS}", matr.numQubits},
+        {"${NUM_ROWS}",   dim}};
+
+    // assert correct fixed-size numQubits (caller gaurantees this passes for dynamic-size),
+    // where the error message string already contains the expected numQb
+    assertThat(matr.numQubits == expectedNumQb, errMsg, vars, caller);
+
+    // validate .numQubits and .numRows or .numElems
+    qindex expectedDim = powerOf2(matr.numQubits);
+    assertThat(matr.numQubits >= 1, errMsg, vars, caller);
+    assertThat(dim == expectedDim,  errMsg, vars, caller);
+
+    // assert isUnitary flag is valid; it is user-modifiable (if they are naughty)!
+    if constexpr (util_doesMatrixHaveIsUnitaryFlag<T>()) {
+        int flag = (matr.isUnitary == NULL)? 0 : *matr.isUnitary; // lazy segfault if failed allocation (caught below)
+        assertThat(
+            flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_MATRIX_IS_UNITARY_FLAG,
+            {{"${BAD_FLAG}", flag}, {"${UNKNOWN_FLAG}", validate_STRUCT_PROPERTY_UNKNOWN_FLAG}}, caller);
+    }
+
+    // we do not bother checking slightly more involved fields like numAmpsPerNode - there's
+    // no risk that they're wrong (because they're constant) unless the struct was unitialised,
+    // which we have already validated against
+}
+
+// T can be CompMatr, DiagMatr, FullStateDiagMatr (i.e. matrix structs with heap pointers)
+template <class T>
+void assertMatrixAllocsAreValid(T matr, string cpuErrMsg, string gpuErrMsg, const char* caller) {
+
+    // TODO:
+    // I'm fairly sure this validation is completely pointless - the memory being unallocated
+    // being the struct was manually initialised cannot be determined reliably by a NULL check,
+    // because the pointer fields will be un-initialised i.e. random. Only malloc will sensibly
+    // set the fields to NULL, which immediately post-allocation validation would capture. Eh!
+
+    // assert CPU memory is allocated
+    assertThat(matr.cpuElems != NULL, cpuErrMsg, caller);
+
+    // we do not check that each CPU memory row (of CompMatr; irrelevant to DiagMatr)
+    // is not-NULL because it's really unlikely that inner memory wasn't allocaed but
+    // outer was and this wasn't somehow caught by post-creation validation (i.e. the 
+    // user manually malloc'd memory after somehow getting around const fields). Further,
+    // since this function is called many times (i.e. each time the user passes a matrix
+    // to a simulation function like multiQubitUnitary()), it may be inefficient to 
+    // serially process each row pointer.
+
+    // optionally assert GPU memory is allocated
+    validate_envIsInit(caller);
+    if (getQuESTEnv().isGpuAccelerated)
+        assertThat(util_getGpuMemPtr(matr) != NULL, gpuErrMsg, caller);
+}
+
+void validate_matrixFields(CompMatr1 matr, const char* caller) {
+    assertMatrixFieldsAreValid(matr, 1, report::INVALID_COMP_MATR_1_FIELDS, caller);
+}
+void validate_matrixFields(CompMatr2 matr, const char* caller) {
+    assertMatrixFieldsAreValid(matr, 2, report::INVALID_COMP_MATR_2_FIELDS, caller);
+}
+void validate_matrixFields(CompMatr matr, const char* caller) {
+    assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_COMP_MATR_FIELDS, caller);
+    assertMatrixAllocsAreValid(matr, report::INVALID_COMP_MATR_CPU_MEM_ALLOC, report::INVALID_COMP_MATR_GPU_MEM_ALLOC, caller);
+}
+void validate_matrixFields(DiagMatr1 matr, const char* caller) {
+    assertMatrixFieldsAreValid(matr, 1, report::INVALID_DIAG_MATR_1_FIELDS, caller);
+}
+void validate_matrixFields(DiagMatr2 matr, const char* caller) {
+    assertMatrixFieldsAreValid(matr, 2, report::INVALID_DIAG_MATR_2_FIELDS, caller);
+}
+void validate_matrixFields(DiagMatr matr, const char* caller) {
+    assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_DIAG_MATR_FIELDS, caller);
+    assertMatrixAllocsAreValid(matr, report::INVALID_DIAG_MATR_CPU_MEM_ALLOC, report::INVALID_DIAG_MATR_GPU_MEM_ALLOC, caller);
+}
+void validate_matrixFields(FullStateDiagMatr matr, const char* caller) {
+    assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_FULL_STATE_DIAG_MATR_FIELDS, caller);
+    assertMatrixAllocsAreValid(matr, report::INVALID_FULL_STATE_DIAG_MATR_CPU_MEM_ALLOC, report::INVALID_FULL_STATE_DIAG_MATR_GPU_MEM_ALLOC, caller);
+}
+
 // type T can be CompMatr or DiagMatr
 template <class T>
 void assertMatrixIsSynced(T matr, string errMsg, const char* caller) {
 
-    // checks fields (including memory allocations)
-    validate_matrixFields(matr, caller);
-
     // we don't need to perform any sync check in CPU-only mode
-    if (matr.gpuElems == NULL)
+    if (util_getGpuMemPtr(matr) == NULL)
         return;
 
     // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though
-    assertThat(gpu_haveGpuAmpsBeenSynced(matr.gpuElems), errMsg, caller);
+    assertThat(gpu_haveGpuAmpsBeenSynced(util_getGpuMemPtr(matr)), errMsg, caller);
 }
-
 
 // type T can be CompMatr, DiagMatr, FullStateDiagMatr
 template <class T> 
 void ensureMatrixUnitarityIsKnown(T matr) {
 
     // do nothing if we already know unitarity
-    if (*(matr.isUnitary) != validate_UNITARITY_UNKNOWN_FLAG)
+    if (*(matr.isUnitary) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
         return;
 
     // determine local unitarity, modifying matr.isUnitary
@@ -1408,7 +1442,6 @@ void ensureMatrixUnitarityIsKnown(T matr) {
         if (matr.isDistributed)
             *(matr.isUnitary) = comm_isTrueOnAllNodes(*(matr.isUnitary));
 }
-
 
 // type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template <class T> 
@@ -1425,13 +1458,12 @@ void assertMatrixIsUnitary(T matr, const char* caller) {
     if constexpr (util_isFixedSizeMatrixType<T>())
         isUnitary = util_isUnitary(matr);
 
-    // dynamic matrices have their field consulted, which may need lazy eval
+    // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
     else {
         ensureMatrixUnitarityIsKnown(matr);
         isUnitary = *(matr.isUnitary);
     }
 
-    // assert CPU amps are unitary
     assertThat(isUnitary, report::MATRIX_NOT_UNITARY, caller);
 }
 
@@ -1454,7 +1486,8 @@ void validate_matrixIsUnitary(CompMatr2 matr, const char* caller) {
     assertMatrixIsUnitary(matr, caller);
 }
 void validate_matrixIsUnitary(CompMatr matr, const char* caller) {
-    validate_matrixIsSynced(matr, caller); // also checks fields
+    validate_matrixFields(matr, caller);
+    validate_matrixIsSynced(matr, caller);
     assertMatrixIsUnitary(matr, caller);
 }
 void validate_matrixIsUnitary(DiagMatr1 matr, const char* caller) {
@@ -1466,11 +1499,13 @@ void validate_matrixIsUnitary(DiagMatr2 matr, const char* caller) {
     assertMatrixIsUnitary(matr, caller);
 }
 void validate_matrixIsUnitary(DiagMatr matr, const char* caller) {
-    validate_matrixIsSynced(matr, caller); // also checks fields
+    validate_matrixFields(matr, caller);
+    validate_matrixIsSynced(matr, caller);
     assertMatrixIsUnitary(matr, caller);
 }
 void validate_matrixIsUnitary(FullStateDiagMatr matr, const char* caller) {
-    validate_matrixIsSynced(matr, caller); // also checks fields
+    validate_matrixIsSynced(matr, caller);
+    validate_matrixFields(matr, caller);
     assertMatrixIsUnitary(matr, caller);
 }
 
@@ -1493,8 +1528,8 @@ void validate_matrixIsCompatibleWithQureg(FullStateDiagMatr matr, Qureg qureg, c
     if (!matr.isDistributed)
         return;
 
-    // but when it's distributed, so too must be the qureg so that comm isn't necessary (don't pass vars)
-    assertThat(qureg.isDistributed, report::FULL_STATE_DIAG_MATR_IS_DISTRIB_BUT_QUREG_ISNT, caller);
+    // but when it's distributed, so too must be the qureg so that comm isn't necessary
+    assertThat(qureg.isDistributed, report::FULL_STATE_DIAG_MATR_IS_DISTRIB_BUT_QUREG_ISNT, caller); // did not pass vars
 }
 
 

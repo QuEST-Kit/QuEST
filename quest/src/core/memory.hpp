@@ -20,6 +20,7 @@
  * HARDWARE QUERYING
  */
 
+
 namespace mem { typedef bool COULD_NOT_QUERY_RAM; }
 
 qindex mem_tryGetLocalRamCapacityInBytes();
@@ -27,29 +28,59 @@ qindex mem_tryGetLocalRamCapacityInBytes();
 
 
 /*
- * MEMORY COST QUERYING
+ * MEMORY USAGE
  */
 
-bool mem_canQuregFitInMemory(int numQubits, bool isDensMatr, int numNodes, qindex memBytesPerNode);
-
-bool mem_canMatrixFitInMemory(int numQubits, bool isDense, int numNodes, qindex memBytesPerNode);
 
 int mem_getEffectiveNumStateVecQubitsPerNode(int numQubits, bool isDensMatr, int numNodes);
 
-int mem_getMinNumQubitsForDistribution(int numNodes);
+qindex mem_getTotalGlobalMemoryUsed(Qureg qureg);
 
-int mem_getMaxNumQuregQubitsWhichCanFitInMemory(bool isDensMatr, int numNodes, qindex memBytesPerNode);
 
-int mem_getMaxNumQubitsBeforeIndexOverflow(bool isDensMatr);
 
-int mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(bool isDensMatr, int numNodes);
-
-size_t mem_getLocalMatrixMemoryRequired(int numQubits, bool isDenseMatrix, int numNodes);
+/*
+ * MEMORY REQUIRED
+ */
 
 size_t mem_getLocalQuregMemoryRequired(int numQubits, bool isDensityMatr, int numNodes);
 size_t mem_getLocalQuregMemoryRequired(qindex numAmpsPerNode);
 
-qindex mem_getTotalGlobalMemoryUsed(Qureg qureg);
+size_t mem_getLocalMatrixMemoryRequired(int numQubits, bool isDenseMatrix, int numNodes);
+
+
+
+/*
+ * QUBIT BOUNDS
+ */
+
+
+int mem_getMaxNumQuregQubitsWhichCanFitInMemory(bool isDensityMatrix, int numNodes, qindex memBytesPerNode);
+
+int mem_getMaxNumMatrixQubitsWhichCanFitInMemory(bool isDenseMatrix, int numNodes, qindex memBytesPerNode);
+
+
+int mem_getMinNumQubitsForDistribution(int numNodes);
+
+
+int mem_getMaxNumQuregQubitsBeforeIndexOverflow(bool isDensityMatrix);
+
+int mem_getMaxNumMatrixQubitsBeforeIndexOverflow(bool isDenseMatrix);
+
+
+int mem_getMaxNumQuregQubitsBeforeLocalMemSizeofOverflow(bool isDensityMatrix, int numNodes);
+
+int mem_getMaxNumMatrixQubitsBeforeLocalMemSizeofOverflow(bool isDenseMatrix, int numNodes);
+
+
+
+/*
+ * SUFFICIENT MEMORY QUERYING
+ */
+
+
+bool mem_canQuregFitInMemory(int numQubits, bool isDensMatr, int numNodes, qindex memBytesPerNode);
+
+bool mem_canMatrixFitInMemory(int numQubits, bool isDense, int numNodes, qindex memBytesPerNode);
 
 
 

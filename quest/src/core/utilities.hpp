@@ -57,7 +57,6 @@ qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> ta
  * defined here in the header since templated, and which use compile-time inspection.
  */
 
-// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template<class T>
 constexpr bool util_isDenseMatrixType() {
 
@@ -83,14 +82,12 @@ constexpr bool util_isDenseMatrixType() {
     return false;
 }
 
-// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template<class T>
 constexpr bool util_isDiagonalMatrixType() {
 
     return !util_isDenseMatrixType<T>();
 }
 
-// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template<class T>
 constexpr bool util_isFixedSizeMatrixType() {
 
@@ -102,14 +99,12 @@ constexpr bool util_isFixedSizeMatrixType() {
     );
 }
 
-// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template<class T>
 constexpr bool util_isDistributableMatrixType() {
 
     return (is_same_v<T, FullStateDiagMatr>);
 }
 
-// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template<class T>
 bool util_isDistributedMatrix(T matr) {
 
@@ -119,7 +114,16 @@ bool util_isDistributedMatrix(T matr) {
     return false;
 }
 
-// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
+template<class T>
+constexpr bool util_doesMatrixHaveIsUnitaryFlag() {
+
+    return (
+        is_same_v<T, CompMatr> ||
+        is_same_v<T, DiagMatr> ||
+        is_same_v<T, FullStateDiagMatr>
+    );
+}
+
 template<class T>
 std::string util_getMatrixTypeName() {
     
@@ -137,7 +141,6 @@ std::string util_getMatrixTypeName() {
     return "UnrecognisedMatrix";
 }
 
-// T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template<class T>
 qindex util_getMatrixDim(T matr) {
     
@@ -155,6 +158,17 @@ qcomp util_getFirstLocalElem(T matr) {
         return matr.cpuElems[0][0];
     else
         return matr.cpuElems[0];
+}
+
+// T can be CompMatr, DiagMatr, FullStateDiagMatr (i.e. matrices with GPU memory)
+template<class T>
+qcomp* util_getGpuMemPtr(T matr) {
+
+    // 2D CUDA structures are always stored as 1D
+    if constexpr (util_isDenseMatrixType<T>())
+        return matr.gpuElemsFlat;
+    else
+        return matr.gpuElems;
 }
 
 

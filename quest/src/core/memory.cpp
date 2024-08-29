@@ -17,7 +17,6 @@
 
 
 
-
 /*
  * HARDWARE QUERYING
  */
@@ -36,7 +35,7 @@ qindex mem_tryGetLocalRamCapacityInBytes() {
 
 
 /*
- * MEMORY COST QUERYING
+ * MEMORY USAGE
  */
 
 
@@ -46,132 +45,6 @@ int mem_getEffectiveNumStateVecQubitsPerNode(int numQubits, bool isDensMatr, int
     qindex logNumAmpsTotal = ((isDensMatr)? 2 : 1) * numQubits;
     qindex logNumAmpsPerNode = logNumAmpsTotal - logBase2(numNodes);
     return logNumAmpsPerNode;
-}
-
-
-int mem_getMinNumQubitsForDistribution(int numNodes) {
-
-    return logBase2(numNodes);
-}
-
-
-int mem_getMaxNumQuregQubitsWhichCanFitInMemory(bool isDensMatr, int numNodes, qindex memBytesPerNode) {
-
-    // distribution requires communication buffers, doubling costs, halving fittable amps-per-qureg
-    qindex maxLocalNumAmps = memBytesPerNode / sizeof(qcomp); // floors
-    if (numNodes > 1)
-        maxLocalNumAmps = maxLocalNumAmps / 2; // floors
-
-    // density matrices require square more memory, so halve (flooring) the number of qubits
-    int maxLocalNumQubits = std::floor(std::log2(maxLocalNumAmps));
-    if (isDensMatr)
-        maxLocalNumQubits /= 2; // floors
-
-    // doubling nodes permits 1 additional qubit
-    int maxGlobalNumQubits = maxLocalNumQubits + logBase2(numNodes);
-    return maxGlobalNumQubits;
-}
-
-
-bool mem_canQuregFitInMemory(int numQubits, bool isDensMatr, int numNodes, qindex memBytesPerNode) {
-
-    return numQubits <= mem_getMaxNumQuregQubitsWhichCanFitInMemory(isDensMatr, numNodes, memBytesPerNode);
-}
-
-
-bool mem_canMatrixFitInMemory(int numQubits, bool isDense, int numNodes, qindex memBytesPerNode) {
-
-    // this function's logic is similar to mem_canQuregFitInMemory(), where diagonal matrices are
-    // like statevectors and dense matrices are like density-matrices, except that distributed
-    // matrices (numNodes > 1) do not store (nor need to account for) communication buffers
-
-    // distributing the matrix shrinks the local number of qubits stored, effectively
-    int localNumQubits = numQubits - logBase2(numNodes);
-
-    // work out the maximum "local" qubits that can fit in memory
-    qindex maxLocalNumElems = memBytesPerNode / sizeof(qcomp); // floors
-    int maxLocalNumQubits  = std::floor(std::log2(maxLocalNumElems));
-
-    // dense matrices (as opposed to diagonals) require square more memory
-    if (isDense)
-        maxLocalNumQubits /= 2; // floors
-
-    return localNumQubits <= maxLocalNumQubits;
-}
-
-
-int mem_getMaxNumQubitsBeforeIndexOverflow(bool isDensMatr) {
-
-    // cannot store more amplitudes than can be counted by the qindex type (even when distributed)
-    qindex maxNumAmps = std::numeric_limits<qindex>::max();
-    int maxNumQubits = std::floor(std::log2(maxNumAmps) / (qreal) ((isDensMatr)? 2 : 1));
-    return maxNumQubits;
-}
-
-
-int mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(bool isDensMatr, int numNodes) {
-
-    // we return largest N satisfying 2^(2N + [numNodes > 1]) * sizeof(qcomp) / numNodes <= max[sizeof]
-    size_t maxSizeof = std::numeric_limits<size_t>::max();
-    size_t maxLocalNumAmps = maxSizeof / sizeof(qcomp); // floors
-    size_t maxLocalNumQubits = std::floor(std::log2(maxLocalNumAmps));
-    size_t maxGlobalNumQubits = maxLocalNumQubits + logBase2(numNodes);
-
-    // distribution requires communication buffers, doubling memory, decreasing qubits by 1
-    if (numNodes > 1)
-        maxGlobalNumQubits -= 1;
-
-    // density matrices have square-more amps, halving the number of qubtis (AFTER buffer subtraction)
-    if (isDensMatr)
-        maxGlobalNumQubits = maxGlobalNumQubits / 2; // floors
-
-    return maxGlobalNumQubits;
-}
-
-size_t getLocalMemoryRequired(int numQubits, int numNodes, bool isDenseMatrix, bool needsCommBuffers) {
-
-    // assert no-overflow precondition
-    if (numQubits > mem_getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDenseMatrix, numNodes))
-        error_memSizeQueriedButWouldOverflow();
-
-    // no risk of overflow; we have already validated numAmpsTotal fits in qindex
-    qindex numAmpsTotal = (isDenseMatrix)? powerOf2(2*numQubits) : powerOf2(numQubits);
-    qindex numAmpsPerNode = numAmpsTotal / numNodes; // divides evenly
-
-    // communication buffers double costs
-    if (needsCommBuffers && numNodes > 1)
-        numAmpsPerNode *= 2;
-
-    // return number of bytes to store local amps
-    return numAmpsPerNode * sizeof(qcomp);
-}
-
-
-size_t mem_getLocalMatrixMemoryRequired(int numQubits, bool isDenseMatrix, int numNodes) {
-
-    // matrix types don't store buffers - they'll use those of Quregs they're applied to
-    bool needsCommBuffers = false;
-    return getLocalMemoryRequired(numQubits, numNodes, isDenseMatrix, needsCommBuffers);
-}
-
-
-size_t mem_getLocalQuregMemoryRequired(int numQubits, bool isDensityMatr, int numNodes) {
-
-    // Quregs may need buffers for inter-node communication, depending on numNodes > 1
-    bool needsCommBuffers = true;
-    return getLocalMemoryRequired(numQubits, numNodes, isDensityMatr, needsCommBuffers);
-}
-
-
-size_t mem_getLocalQuregMemoryRequired(qindex numAmpsPerNode) {
-
-    // assert no-overflow precondition
-    qindex maxNumAmpsPerNode = std::numeric_limits<size_t>::max() / sizeof(qcomp); // floors
-    if (numAmpsPerNode > maxNumAmpsPerNode)
-        error_memSizeQueriedButWouldOverflow();
-
-    // return number of bytes to store local array, EXCLUDING communication buffer
-    return numAmpsPerNode * sizeof(qcomp);
 }
 
 
@@ -208,4 +81,194 @@ qindex mem_getTotalGlobalMemoryUsed(Qureg qureg) {
     // else compute total costs between all nodes
     qindex memGlobalTotal = memLocalTotal * qureg.numNodes;
     return memGlobalTotal;
+}
+
+
+
+/*
+ * MEMORY REQUIRED
+ */
+
+
+size_t getLocalMemoryRequired(int numQubits, int numNodes, bool isDenseMatrix, bool hasBuffers) {
+
+    // assert no-overflow precondition
+    if (numQubits > mem_getMaxNumQuregQubitsBeforeLocalMemSizeofOverflow(isDenseMatrix, numNodes))
+        error_memSizeQueriedButWouldOverflow();
+
+    // no risk of overflow; we have already validated numAmpsTotal fits in qindex
+    qindex numAmpsTotal = (isDenseMatrix)? powerOf2(2*numQubits) : powerOf2(numQubits);
+    qindex numAmpsPerNode = numAmpsTotal / numNodes; // divides evenly
+
+    // communication buffers double costs
+    if (hasBuffers && numNodes > 1)
+        numAmpsPerNode *= 2;
+
+    // return number of bytes to store local amps
+    return numAmpsPerNode * sizeof(qcomp);
+}
+
+
+size_t mem_getLocalQuregMemoryRequired(int numQubits, bool isDensityMatr, int numNodes) {
+
+    // Quregs may need buffers for inter-node communication, depending on numNodes > 1
+    bool hasBuffers = true;
+    return getLocalMemoryRequired(numQubits, numNodes, isDensityMatr, hasBuffers);
+}
+
+
+size_t mem_getLocalQuregMemoryRequired(qindex numAmpsPerNode) {
+
+    // assert no-overflow precondition
+    qindex maxNumAmpsPerNode = std::numeric_limits<size_t>::max() / sizeof(qcomp); // floors
+    if (numAmpsPerNode > maxNumAmpsPerNode)
+        error_memSizeQueriedButWouldOverflow();
+
+    // return number of bytes to store local array, EXCLUDING communication buffer
+    return numAmpsPerNode * sizeof(qcomp);
+}
+
+
+size_t mem_getLocalMatrixMemoryRequired(int numQubits, bool isDenseMatrix, int numNodes) {
+
+    // matrix types don't store buffers - they'll use those of Quregs they're applied to
+    bool hasBuffers = false;
+    return getLocalMemoryRequired(numQubits, numNodes, isDenseMatrix, hasBuffers);
+}
+
+
+
+/*
+ * QUBIT BOUNDS
+ */
+
+
+int getMaxNumQubitsWhichCanFitInMemory(bool isDensMatr, int numNodes, bool hasBuffer, bool isSuperOp, qindex memBytesPerNode) {
+
+    // distribution requires communication buffers, doubling costs, halving fittable amps-per-qureg
+    qindex maxLocalNumAmps = memBytesPerNode / sizeof(qcomp); // floors
+    if (hasBuffer && numNodes > 1)
+        maxLocalNumAmps /= 2; // floors
+
+    // density matrices require square more memory, so halve (flooring) the number of qubits
+    int maxLocalNumQubits = std::floor(std::log2(maxLocalNumAmps));
+    if (isDensMatr)
+        maxLocalNumQubits /= 2; // floors
+
+    // superoperators require square more memory still, so halve (flooring) the number of qubits
+    if (isSuperOp)
+        maxLocalNumQubits /= 2; // floors
+
+    // doubling nodes permits 1 additional qubit
+    int maxGlobalNumQubits = maxLocalNumQubits + logBase2(numNodes);
+    return maxGlobalNumQubits;
+}
+
+
+int mem_getMaxNumQuregQubitsWhichCanFitInMemory(bool isDensityMatrix, int numNodes, qindex memBytesPerNode) {
+
+    bool hasBuffer = true;
+    bool isSuperOp = false;
+    return getMaxNumQubitsWhichCanFitInMemory(isDensityMatrix, numNodes, hasBuffer, isSuperOp, memBytesPerNode);
+}
+
+int mem_getMaxNumMatrixQubitsWhichCanFitInMemory(bool isDenseMatrix, int numNodes, qindex memBytesPerNode) {
+
+    // matrix types don't store buffers - they'll use those of Quregs they're applied to
+    bool hasBuffer = false;
+    bool isSuperOp = false;
+    return getMaxNumQubitsWhichCanFitInMemory(isDenseMatrix, numNodes, hasBuffer, isSuperOp, memBytesPerNode);
+}
+
+
+int mem_getMinNumQubitsForDistribution(int numNodes) {
+
+    return logBase2(numNodes);
+}
+
+
+int mem_getMaxNumQuregQubitsBeforeIndexOverflow(bool isDensityMatrix) {
+
+    // cannot store more amplitudes than can be counted by the qindex type (even when distributed)
+    qindex maxNumAmps = std::numeric_limits<qindex>::max();
+    int maxNumQubits = std::floor(std::log2(maxNumAmps) / (qreal) ((isDensityMatrix)? 2 : 1));
+    return maxNumQubits;
+}
+
+int mem_getMaxNumMatrixQubitsBeforeIndexOverflow(bool isDenseMatrix) {
+
+    // matrices have the same number of amplitudes as a same-dimension Qureg
+    return mem_getMaxNumQuregQubitsBeforeIndexOverflow(isDenseMatrix);
+}
+
+
+int getMaxNumQubitsBeforeLocalMemSizeofOverflow(bool isDensMatr, int numNodes, bool hasBuffer, bool isSuperOp) {
+
+    // we return largest N satisfying 2^(2N + [numNodes > 1]) * sizeof(qcomp) / numNodes <= max[sizeof]
+    size_t maxSizeof = std::numeric_limits<size_t>::max();
+    size_t maxLocalNumAmps = maxSizeof / sizeof(qcomp); // floors
+    size_t maxLocalNumQubits = std::floor(std::log2(maxLocalNumAmps));
+    size_t maxGlobalNumQubits = maxLocalNumQubits + logBase2(numNodes);
+
+    // distributing Quregs requires communication buffers, doubling memory, decreasing qubits by 1
+    if (hasBuffer && numNodes > 1)
+        maxGlobalNumQubits -= 1;
+
+    // density matrices have square-more amps, halving the number of qubtis (AFTER buffer subtraction)
+    if (isDensMatr)
+        maxGlobalNumQubits /= 2; // floors
+
+    // superoperators are square-bigger than their constituent dense matrices
+    if (isSuperOp)
+        maxGlobalNumQubits /= 2; // floors
+
+    return maxGlobalNumQubits;
+}
+
+int mem_getMaxNumQuregQubitsBeforeLocalMemSizeofOverflow(bool isDensityMatrix, int numNodes) {
+
+    bool hasBuffer = true;
+    bool isSuperOp = false;
+    return getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDensityMatrix, numNodes, hasBuffer, isSuperOp);
+}
+
+int mem_getMaxNumMatrixQubitsBeforeLocalMemSizeofOverflow(bool isDenseMatrix, int numNodes) {
+
+    // matrix types don't store buffers - they'll use those of Quregs they're applied to
+    bool hasBuffer = false;
+    bool isSuperOp = false;
+    return getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDenseMatrix, numNodes, hasBuffer, isSuperOp);
+}
+
+
+
+/*
+ * SUFFICIENT MEMORY QUERYING
+ */
+
+
+bool mem_canQuregFitInMemory(int numQubits, bool isDensMatr, int numNodes, qindex memBytesPerNode) {
+
+    return numQubits <= mem_getMaxNumQuregQubitsWhichCanFitInMemory(isDensMatr, numNodes, memBytesPerNode);
+}
+
+
+bool mem_canMatrixFitInMemory(int numQubits, bool isDense, int numNodes, qindex memBytesPerNode) {
+
+    // this function's logic is similar to mem_canQuregFitInMemory(), where diagonal matrices are
+    // like statevectors and dense matrices are like density-matrices, except that distributed
+    // matrices (numNodes > 1) do not store (nor need to account for) communication buffers
+
+    // distributing the matrix shrinks the local number of qubits stored, effectively
+    int localNumQubits = numQubits - logBase2(numNodes);
+
+    // work out the maximum "local" qubits that can fit in memory
+    qindex maxLocalNumElems = memBytesPerNode / sizeof(qcomp); // floors
+    int maxLocalNumQubits  = std::floor(std::log2(maxLocalNumElems));
+
+    // dense matrices (as opposed to diagonals) require square more memory
+    if (isDense)
+        maxLocalNumQubits /= 2; // floors
+
+    return localNumQubits <= maxLocalNumQubits;
 }
