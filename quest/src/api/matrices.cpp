@@ -144,8 +144,7 @@ void validateMatrixAllocsAndSetUnitarity(T matr, size_t numBytes, const char* ca
     validate_newMatrixAllocs(matr, numBytes, caller);
 
     // set initial unitarity of the newly created matrix to unknown
-    if (matr.isUnitary != NULL)
-        *(matr.isUnitary) = validate_UNITARITY_UNKNOWN_FLAG;
+    *(matr.isUnitary) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
 }
 
 
@@ -281,9 +280,9 @@ void validateAndSyncMatrix(T matr, const char* caller) {
     if (util_getGpuMemPtr(matr) != NULL)
         gpu_copyCpuToGpu(matr);
 
-    // optionally determine unitarity
-    if (validate_isEnabled())
-        *(matr.isUnitary) = util_isUnitary(matr);
+    // indicate that we do not know whether the revised matrix is
+    // is unitarity; we defer establishing that until a unitarity check
+    *(matr.isUnitary) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
 }
 
 
@@ -397,21 +396,6 @@ extern "C" void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qco
 /*
  * VARIABLE-SIZE MATRIX SETTERS VIA VECTORS
  */
-
-
-// the corresponding setCompMatrFromArr() function must use VLAs and so
-// is C++ incompatible, and is consequentially defined inline in the header file.
-// Because it needs to create stack memory with size given by a CompMatr field,
-// we need to first validate that field via this exposed validation function. Blegh!
-
-extern "C" void validate_setCompMatrFromArr(CompMatr out) {
-
-    // the user likely invoked this function from the setInlineCompMatr()
-    // macro, but we cannot know for sure; they may have called the overloaded
-    // setCompMatr(), or even in the intendedly internal but user-facing func
-    // setCompMatrFromArr(), so we'll report setCompMatr() for clarity.
-    validate_matrixFields(out, "setCompMatr");
-}
 
 
 void setCompMatr(CompMatr out, vector<vector<qcomp>> in) {

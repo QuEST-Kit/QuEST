@@ -65,7 +65,9 @@ typedef struct {
     const int numQubits;
     const qindex numRows;
 
-    // unitarity determined at sync; 0 or 1, or -1 to indicate unknown (when validation disabled).
+    // unitarity of the matrix (0, 1, or -1 to indicate unknown) which is lazily evaluated,
+    // deferred until a function actually asserts unitarity, at which point it is computed
+    // and the flag fixed until the user modifies the matrix (through sync() or setAmps() etc).
     // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* const isUnitary;
@@ -118,8 +120,11 @@ typedef struct {
     const int numQubits;
     const qindex numElems;
 
-    // unitarity determined at sync; 0 or 1, or -1 to indicate unknown (when validation disabled).
-    // flag is stored in heap so even copies of structs are mutable, but pointer is immutable
+    // unitarity of the matrix (0, 1, or -1 to indicate unknown) which is lazily evaluated,
+    // deferred until a function actually asserts unitarity, at which point it is computed
+    // and the flag fixed until the user modifies the matrix (through sync() or setAmps() etc).
+    // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
+    // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* const isUnitary;
 
     // CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
@@ -149,8 +154,11 @@ typedef struct {
     // will equal numElems if distribution is disabled at runtime (e.g. via autodeployment)
     const qindex numElemsPerNode;
 
-    // unitarity determined at sync; 0 or 1, or -1 to indicate unknown (when validation disabled).
-    // flag is stored in heap so even copies of structs are mutable, but pointer is immutable
+    // unitarity of the matrix (0, 1, or -1 to indicate unknown) which is lazily evaluated,
+    // deferred until a function actually asserts unitarity, at which point it is computed
+    // and the flag fixed until the user modifies the matrix (through sync() or setAmps() etc).
+    // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
+    // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* const isUnitary;
 
     // CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
@@ -489,15 +497,16 @@ extern "C" {
     // the header becauses the C++ source cannot use VLA, nor should we pass a 2D qcomp array
     // directly between C and C++ binaries (due to limited interoperability)
 
-    // expose this function's bespoke validation
-    extern void validate_setCompMatrFromArr(CompMatr out);
+    extern void validate_matrixFields(CompMatr matr, const char* caller);
 
      // static inline to avoid header-symbol duplication
     static inline void setCompMatrFromArr(CompMatr matr, qcomp arr[matr.numRows][matr.numRows]) {
 
         // this function will allocate stack memory of size matr.numRows, but that field could
-        // be invalid since matr hasn't been validated, so we must invoke bespoke validation
-        validate_setCompMatrFromArr(matr);
+        // be invalid since matr hasn't been validated, so we must first invoke validation. Note
+        // the caller will likely have called setCompMatr() or setInlineCompMatr(); we'll just
+        // report the former for relative clarity.
+        validate_matrixFields(matr, "setCompMatr");
 
         // new ptrs array safely fits in stack, since it's sqrt-smaller than user's passed stack array
         qcomp* ptrs[matr.numRows];
