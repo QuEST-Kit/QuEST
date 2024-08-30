@@ -42,57 +42,57 @@ option(BUILD_SHARED_LIBS "Build shared library. Turned ON by default." ON)
 message(STATUS "Shared library is turned ${BUILD_SHARED_LIBS}. Set BUILD_SHARED_LIBS to modify.")
 
 # Precision
-set(PRECISION 2 
+set(FLOAT_PRECISION 2 
   CACHE 
   STRING 
   "Whether to use single, double, or quad floating point precision in the state vector. {1,2,4}"
 )
-set_property(CACHE PRECISION PROPERTY STRINGS
+set_property(CACHE FLOAT_PRECISION PROPERTY STRINGS
   1
   2
   4
 )
-message(STATUS "Precision set to ${PRECISION}. Set PRECISION to modify.")
+message(STATUS "Precision set to ${FLOAT_PRECISION}. Set FLOAT_PRECISION to modify.")
 
 # Testing
 option(
-  TESTING
+  ENABLE_TESTING
   "whether the test suite will be built alongside the QuEST library. Turned ON by default."
   ON
 )
-message(STATUS "Testing is turned ${TESTING}. Set TESTING to modify.")
+message(STATUS "Testing is turned ${ENABLE_TESTING}. Set ENABLE_TESTING to modify.")
 
 # Multithreading
 option(
-  MULTITHREADED 
+  ENABLE_MULTITHREADING 
   "Whether QuEST will be built with shared-memory parallelism support using OpenMP. Turned ON by default." 
   ON
 )
-message(STATUS "Multithreading is turned ${MULTITHREADED}. Set MULTITHREADED to modify.")
+message(STATUS "Multithreading is turned ${ENABLE_MULTITHREADING}. Set ENABLE_MULTITHREADING to modify.")
 
 # Distribution
 option(
-  DISTRIBUTED 
+  ENABLE_DISTRIBUTION 
   "Whether QuEST will be built with distributed parallelism support using MPI. Turned OFF by default." 
   OFF
 )
-message(STATUS "Distribution is turned ${DISTRIBUTED}. Set DISTRIBUTED to modify.")
+message(STATUS "Distribution is turned ${ENABLE_DISTRIBUTION}. Set ENABLE_DISTRIBUTION to modify.")
 
 # GPU Acceleration
 option(
-  GPUACCELERATED 
+  ENABLE_GPU_ACCELERATION 
   "Whether QuEST will be built with support for GPU acceleration. Turned OFF by default."
   OFF
 )
-message(STATUS "GPU Acceleration is turned ${GPUACCELERATED}. Set GPUACCELERATED to modify.")
+message(STATUS "GPU Acceleration is turned ${ENABLE_GPU_ACCELERATION}. Set ENABLE_GPU_ACCELERATION to modify.")
 
 # CuQuantum
 option(
-  CUQUANTUM
+  ENABLE_CUQUANTUM
   "Whether QuEST will be built with support for NVIDIA CuQuantum. Turned OFF by default."
   OFF
 )
-message(STATUS "CuQuantum support is turned ${CUQUANTUM}. Set CUQUANTUM to modify.")
+message(STATUS "CuQuantum support is turned ${ENABLE_CUQUANTUM}. Set ENABLE_CUQUANTUM to modify.")
 
 ## Library
 
@@ -126,9 +126,9 @@ else()
 endif()
 
 # Set user options
-target_compile_definitions(QuEST PUBLIC FLOAT_PRECISION=${PRECISION})
+target_compile_definitions(QuEST PUBLIC FLOAT_PRECISION=${FLOAT_PRECISION})
 
-if (MULTITHREADED)
+if (ENABLE_MULTITHREADING)
   find_package(OpenMP REQUIRED)
   target_compile_definitions(QuEST PUBLIC COMPILE_OPENMP=1)
   target_link_libraries(QuEST
@@ -140,17 +140,17 @@ else()
   target_compile_definitions(QuEST PUBLIC COMPILE_OPENMP=0)
 endif()
 
-if (DISTRIBUTED)
+if (ENABLE_DISTRIBUTION)
 else()
   target_compile_definitions(QuEST PUBLIC COMPILE_MPI=0)
 endif()
 
-if (GPUACCELERATED)
+if (ENABLE_GPU_ACCELERATION)
 else()
   target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=0)
 endif()
 
-if (CUQUANTUM)
+if (ENABLE_CUQUANTUM)
 else()
   target_compile_definitions(QuEST PUBLIC COMPILE_CUQUANTUM=0)
 endif()
@@ -184,7 +184,7 @@ if (USER_SOURCE AND OUTPUT_EXE)
 endif()
 
 ## Tests
-if (TESTING)
+if (ENABLE_TESTING)
   add_subdirectory(tests)
 endif()
 
