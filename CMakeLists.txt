@@ -141,6 +141,14 @@ else()
 endif()
 
 if (ENABLE_DISTRIBUTION)
+  find_package(MPI REQUIRED
+    COMPONENTS CXX
+  )
+  target_compile_definitions(QuEST PUBLIC COMPILE_MPI=1)
+  target_link_libraries(QuEST
+    PUBLIC
+    MPI::MPI_CXX
+  )
 else()
   target_compile_definitions(QuEST PUBLIC COMPILE_MPI=0)
 endif()
@@ -186,11 +194,13 @@ if (USER_SOURCE AND OUTPUT_EXE)
 endif()
 
 ## Tests
+
 if (ENABLE_TESTING)
   add_subdirectory(tests)
 endif()
 
 ## Install
+
 install(TARGETS QuEST
   EXPORT QuESTTargets
   LIBRARY DESTINATION quest/${CMAKE_INSTALL_LIBDIR}
@@ -205,6 +215,7 @@ install(EXPORT QuESTTargets
 )
 
 ## Export
+
 # Write CMake version file for QuEST
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
