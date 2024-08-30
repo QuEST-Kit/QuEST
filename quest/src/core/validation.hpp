@@ -24,7 +24,7 @@ using std::string;
  *  MATRIX ATTRIBUTE FLAGS
  */
 
-const int validate_UNITARITY_UNKNOWN_FLAG = -1;
+const int validate_STRUCT_PROPERTY_UNKNOWN_FLAG = -1;
 
 
 
@@ -105,6 +105,19 @@ void validate_newMatrixAllocs(FullStateDiagMatr matr, qindex numBytes, const cha
 
 
 /*
+ * MATRIX INITIALISATION
+ */
+
+void validate_matrixNumNewElems(int numQubits, vector<vector<qcomp>> elems, const char* caller);
+void validate_matrixNumNewElems(int numQubits, vector<qcomp> elems, const char* caller);
+
+void validate_matrixNewElemsDontContainUnsyncFlag(qcomp firstElem, const char* caller);
+
+void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd, qindex numElems, const char* caller);
+
+
+
+/*
  * EXISTING MATRIX
  */
 
@@ -115,13 +128,6 @@ void validate_matrixFields(DiagMatr1 matr, const char* caller);
 void validate_matrixFields(DiagMatr2 matr, const char* caller);
 void validate_matrixFields(DiagMatr  matr, const char* caller);
 void validate_matrixFields(FullStateDiagMatr matr, const char* caller);
-
-void validate_matrixNumNewElems(int numQubits, vector<vector<qcomp>> elems, const char* caller);
-void validate_matrixNumNewElems(int numQubits, vector<qcomp> elems, const char* caller);
-
-void validate_matrixNewElemsDontContainUnsyncFlag(qcomp firstElem, const char* caller);
-
-void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd, qindex numElems, const char* caller);
 
 void validate_matrixIsSynced(CompMatr matr, const char* caller);
 void validate_matrixIsSynced(DiagMatr matr, const char* caller);
@@ -162,6 +168,7 @@ void validate_newPauliStrSumParams(qindex numTerms, const char* caller);
 void validate_newPauliStrSumMatchingListLens(qindex numStrs, qindex numCoeffs, const char* caller); // called by C++ only
 
 void validate_newPauliStrSumAllocs(PauliStrSum sum, qindex numBytesStrings, qindex numBytesCoeffs, const char* caller);
+
 
 
 /*

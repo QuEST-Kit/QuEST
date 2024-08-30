@@ -270,7 +270,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
 
         // i = nth local index where ctrls are active and targs form value k
         qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
-        amps[i] = {0, 0}; // zero comp literal
+        amps[i] = {0, 0}; // zero cu_comp literal
     
         // loop may be unrolled
         for (qindex l=0; l<numTargAmps; l++) {
@@ -801,7 +801,7 @@ __global__ void kernel_densmatr_oneQubitDamping_subD(
 
 
 template <int NumTargs>
-void kernel_densmatr_partialTrace_sub(
+__global__ void kernel_densmatr_partialTrace_sub(
     cu_qcomp* ampsIn, cu_qcomp* ampsOut, qindex numThreads,
     int* ketTargs, int* pairTargs, int* allTargs, int numKetTargs
 ) {
@@ -823,7 +823,7 @@ void kernel_densmatr_partialTrace_sub(
     qindex k = insertBits(n, allTargs, numAllTargs, 0); // loop may be unrolled
 
     // each outQureg amp results from summing 2^targs inQureg amps
-    cu_qcomp outAmp = 0;
+    cu_qcomp outAmp = {0, 0}; // zero cu_comp literal
 
     // loop may be unrolled
     for (qindex j=0; j<numIts; j++) {

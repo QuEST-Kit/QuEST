@@ -897,7 +897,7 @@ void reorderReducedQureg(Qureg inQureg, Qureg outQureg, vector<int> allTargs, ve
     auto remainingQubits = getNonTracedQubitOrder(inQureg, allTargs, suffixTargs);
 
    // perform additional swaps to re-order the remaining qubits (heuristically starting from back)
-    for (size_t qubit=remainingQubits.size(); qubit-- != 0; ) {
+    for (int qubit=(int)remainingQubits.size(); qubit-- != 0; ) {
 
         // locate the next qubit which is out of its sorted position
         if (remainingQubits[qubit] == qubit)
