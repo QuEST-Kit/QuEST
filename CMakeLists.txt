@@ -41,6 +41,17 @@ endif()
 option(BUILD_SHARED_LIBS "Build shared library. Turned ON by default." ON)
 message(STATUS "Shared library is turned ${BUILD_SHARED_LIBS}. Set BUILD_SHARED_LIBS to modify.")
 
+# Library naming
+set(LIB_NAME QuEST 
+  CACHE 
+  STRING
+  "Change library name. LIB_NAME is QuEST by default."
+)
+message(STATUS "Library will be named lib${LIB_NAME}. Set LIB_NAME to modify.")
+
+option(VERBOSE_LIB_NAME "Modify library name based on compilation configuration. Turned OFF by default." OFF)
+message(STATUS "Verbose library naming is turned ${VERBOSE_LIB_NAME}. Set VERBOSE_LIB_NAME to modify.")
+
 # Precision
 set(FLOAT_PRECISION 2 
   CACHE 
@@ -53,6 +64,10 @@ set_property(CACHE FLOAT_PRECISION PROPERTY STRINGS
   4
 )
 message(STATUS "Precision set to ${FLOAT_PRECISION}. Set FLOAT_PRECISION to modify.")
+
+if (VERBOSE_LIB_NAME)
+  string(CONCAT LIB_NAME ${LIB_NAME} "-fp${FLOAT_PRECISION}")
+endif()
 
 # Testing
 option(
@@ -136,6 +151,9 @@ if (ENABLE_MULTITHREADING)
     OpenMP::OpenMP_CXX
     OpenMP::OpenMP_C
   )
+  if (VERBOSE_LIB_NAME)
+    string(CONCAT LIB_NAME ${LIB_NAME} "+mt")
+  endif()
 else()
   target_compile_definitions(QuEST PUBLIC COMPILE_OPENMP=0)
 endif()
@@ -149,6 +167,9 @@ if (ENABLE_DISTRIBUTION)
     PUBLIC
     MPI::MPI_CXX
   )
+  if (VERBOSE_LIB_NAME)
+    string(CONCAT LIB_NAME ${LIB_NAME} "+mpi")
+  endif()
 else()
   target_compile_definitions(QuEST PUBLIC COMPILE_MPI=0)
 endif()
@@ -156,6 +177,9 @@ endif()
 if (ENABLE_GPU_ACCELERATION)
   enable_language(CUDA)
   target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=1)
+  if (VERBOSE_LIB_NAME)
+    string(CONCAT LIB_NAME ${LIB_NAME} "+cuda")
+  endif()
 else()
   target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=0)
 endif()
@@ -170,6 +194,10 @@ if (NOT MSVC)
   target_link_libraries(QuEST PUBLIC ${MATH_LIBRARY})
 endif()
 
+# Set output name
+set_target_properties(QuEST PROPERTIES OUTPUT_NAME ${LIB_NAME})
+
+# Add source files
 add_subdirectory(quest)
 
 ## Examples
