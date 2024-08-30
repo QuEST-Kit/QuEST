@@ -4,7 +4,7 @@
 # author : Tyson Jones (testing)
 # author : Oliver Thomson Brown (v4)
 
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.18)
 
 project(QuEST
   VERSION 4.0.0
@@ -25,7 +25,7 @@ find_library(MATH_LIBRARY m REQUIRED)
 # Build type
 # Default to "Release"
 # Using recipe from Kitware Blog post
-# https://www.kitware.com//cmake-and-the-default-build-type/
+# https://www.kitware.com/cmake-and-the-default-build-type/
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
@@ -146,6 +146,8 @@ else()
 endif()
 
 if (ENABLE_GPU_ACCELERATION)
+  enable_language(CUDA)
+  target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=1)
 else()
   target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=0)
 endif()
