@@ -12,11 +12,9 @@
 #include <type_traits>
 #include <string>
 #include <vector>
-#include <array>
 
 using std::is_same_v;
 using std::vector;
-using std::array;
 
 
 
@@ -228,16 +226,26 @@ util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, 
  * OPERATOR PARAMETERS
  */
 
+typedef struct {
+
+    qreal c1;
+    qreal c2;
+    qreal c3;
+    qreal c4;
+
+} util_Scalars;
+
 qreal util_getOneQubitDephasingFactor(qreal prob);
+
 qreal util_getTwoQubitDephasingTerm(qreal prob);
 
-array<qreal,3> util_getOneQubitDepolarisingFactors(qreal prob);
-array<qreal,3> util_getTwoQubitDepolarisingFactors(qreal prob);
-array<qreal,2> util_getFirstTwoFactorsOfTwoQubitDepolarising(qreal prob);
+util_Scalars util_getOneQubitDepolarisingFactors(qreal prob);
 
-array<qreal,4> util_getOneQubitPauliChannelFactors(qreal pI, qreal pX, qreal pY, qreal pZ);
+util_Scalars util_getTwoQubitDepolarisingFactors(qreal prob);
 
-array<qcomp,2> util_getOneQubitDampingFactors(qreal prob);
+util_Scalars util_getOneQubitDampingFactors(qreal prob);
+
+util_Scalars util_getOneQubitPauliChannelFactors(qreal pI, qreal pX, qreal pY, qreal pZ);
 
 
 
