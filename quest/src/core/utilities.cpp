@@ -15,10 +15,8 @@
 #include <algorithm>
 #include <complex>
 #include <vector>
-#include <array>
 
 using std::vector;
-using std::array;
 
 
 
@@ -336,7 +334,7 @@ qreal util_getTwoQubitDephasingTerm(qreal prob) {
     return - 4 * prob / 3;
 }
 
-array<qreal,3> util_getOneQubitDepolarisingFactors(qreal prob) {
+util_Scalars util_getOneQubitDepolarisingFactors(qreal prob) {
 
     // effected where braQubit == ketQubit
     qreal facAA = 1 - (2 * prob / 3);
@@ -345,25 +343,20 @@ array<qreal,3> util_getOneQubitDepolarisingFactors(qreal prob) {
     // effected where braQubit != ketQubit
     qreal facAB  = 1 - (4 * prob / 3);
 
-    return {facAA, facBB, facAB};
+    return {.c1=facAA, .c2=facBB, .c3=facAB, .c4=0}; // c4 ignored
 }
 
-array<qreal,3> util_getTwoQubitDepolarisingFactors(qreal prob) {
+util_Scalars util_getTwoQubitDepolarisingFactors(qreal prob) {
 
-    qreal fac1 = 1 - (4 * prob / 5);
-    qreal fac2 = 4 * prob / 15;
-    qreal fac3 = - (16 * prob / 15);
-
-    return {fac1, fac2, fac3};
+    return {
+        .c1 = 1 - (4 * prob / 5), 
+        .c2 = 4 * prob / 15, 
+        .c3 = - (16 * prob / 15), 
+        .c4 = 0 // ignored
+    };
 }
 
-array<qreal,2> util_getFirstTwoFactorsOfTwoQubitDepolarising(qreal prob) {
-
-    auto facs = util_getTwoQubitDepolarisingFactors(prob);
-    return {facs[0], facs[1]};
-}
-
-array<qreal,4> util_getOneQubitPauliChannelFactors(qreal pI, qreal pX, qreal pY, qreal pZ) {
+util_Scalars util_getOneQubitPauliChannelFactors(qreal pI, qreal pX, qreal pY, qreal pZ) {
 
     // effected where braQubit == ketQubit
     qreal facAA = pI + pZ;
@@ -373,14 +366,14 @@ array<qreal,4> util_getOneQubitPauliChannelFactors(qreal pI, qreal pX, qreal pY,
     qreal facAB = pI - pZ;
     qreal facBA = pX - pY;
 
-    return {facAA, facBB, facAB, facBA};
+    return {.c1=facAA, .c2=facBB, .c3=facAB, .c4=facBA};
 }
 
-array<qcomp,2> util_getOneQubitDampingFactors(qreal prob) {
+util_Scalars util_getOneQubitDampingFactors(qreal prob) {
 
-    // sqrt() can return complex for unnnormalised prob
-    qcomp c1 = sqrt(1 - qcomp(prob,0));
-    qcomp c2 = 1 - prob;
+    // we assume 0 < prob < 1 (true even of the inverse channel), so c1 is always real
+    qreal c1 = sqrt(1 - prob);
+    qreal c2 = 1 - prob;
 
-    return {c1, c2};
+    return {.c1=c1, .c2=c2, .c3=0, .c4=0}; //c3 and c4 ignored
 }

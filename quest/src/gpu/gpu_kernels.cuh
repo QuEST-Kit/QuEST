@@ -728,7 +728,7 @@ __global__ void kernel_densmatr_oneQubitPauliChannel_subB(
 
 __global__ void kernel_densmatr_oneQubitDamping_subA(
     cu_qcomp* amps, qindex numThreads,
-    int ketQubit, int braQubit, qreal prob, cu_qcomp c1, cu_qcomp c2
+    int ketQubit, int braQubit, qreal prob, qreal c1, qreal c2
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -750,7 +750,7 @@ __global__ void kernel_densmatr_oneQubitDamping_subA(
 
 __global__ void kernel_densmatr_oneQubitDamping_subB(
     cu_qcomp* amps, qindex numThreads,
-    int qubit, cu_qcomp c2
+    int qubit, qreal c2
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -767,7 +767,7 @@ __global__ void kernel_densmatr_oneQubitDamping_subB(
 
 __global__ void kernel_densmatr_oneQubitDamping_subC(
     cu_qcomp* amps, qindex numThreads,
-    int ketQubit, int braBit, cu_qcomp c1
+    int ketQubit, int braBit, qreal c1
 ) {
     GET_THREAD_IND(n, numThreads);
 
