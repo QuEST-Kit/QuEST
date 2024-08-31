@@ -6,6 +6,11 @@
 #define CPU_CONFIG_HPP
 
 #include "quest/include/types.h"
+#include "quest/include/paulis.h"
+
+#include <vector>
+
+using std::vector;
 
 
 
@@ -22,12 +27,33 @@ int cpu_getNumOpenmpProcessors();
 
 
 /*
- * MEMORY MANAGEMENT
+ * MEMORY ALLOCATION
  */
 
-qcomp* cpu_allocAmps(qindex numLocalAmps);
+qcomp* cpu_allocArray(qindex length);
+void cpu_deallocArray(qcomp* arr);
 
-void cpu_deallocAmps(qcomp* amps);
+qcomp** cpu_allocMatrix(qindex dim);
+void cpu_deallocMatrix(qcomp** matrix, qindex dim);
+
+int* cpu_allocHeapFlag();
+void cpu_deallocHeapFlag(int* ptr);
+
+PauliStr* cpu_allocPauliStrings(qindex numStrings);
+void cpu_deallocPauliStrings(PauliStr* strings);
+
+
+
+/*
+ * MEMORY MOVEMENT
+ */
+
+void cpu_copyArray(qcomp* out, qcomp* in, qindex dim);
+
+void cpu_copyMatrix(qcomp** out, qcomp** in, qindex dim);
+void cpu_copyMatrix(qcomp** out, vector<vector<qcomp>> in, qindex dim);
+
+void cpu_copyPauliStrSum(PauliStrSum out, PauliStr* strings, qcomp* coeffs); 
 
 
 

@@ -72,7 +72,7 @@ typedef struct {
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* const isUnitary;
 
-    // 2D CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
+    // 2D CPU memory; not const, so users can overwrite addresses (e.g. with nullptr)
     qcomp** cpuElems;
 
     // row-flattened elems in GPU memory, allocated only
@@ -127,7 +127,7 @@ typedef struct {
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* const isUnitary;
 
-    // CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
+    // CPU memory; not const, so users can overwrite addresses (e.g. with nullptr)
     qcomp* cpuElems;
 
     // GPU memory, allocated only and always in GPU-enabled QuEST environments
@@ -161,7 +161,7 @@ typedef struct {
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* const isUnitary;
 
-    // CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
+    // CPU memory; not const, so users can overwrite addresses (e.g. with nullptr)
     qcomp* cpuElems;
 
     // GPU memory, allocated only and always in GPU-enabled QuEST environments
@@ -473,7 +473,7 @@ extern "C" {
  *   - int n=8; std::vector vec(n); setCompMatr(vec);
  *   - setCompMatr( {...} );
  * An unintended but harmless side-effect is the exposure of functions setCompMatrFromArr() and 
- * validate_setCompMatrFromArr() to the user.
+ * validate_matrixFields() to the user.
  */
 
 
@@ -497,16 +497,14 @@ extern "C" {
     // the header becauses the C++ source cannot use VLA, nor should we pass a 2D qcomp array
     // directly between C and C++ binaries (due to limited interoperability)
 
-    extern void validate_matrixFields(CompMatr matr, const char* caller);
+    extern void validate_setCompMatrFromArr(CompMatr matr);
 
      // static inline to avoid header-symbol duplication
     static inline void setCompMatrFromArr(CompMatr matr, qcomp arr[matr.numRows][matr.numRows]) {
 
         // this function will allocate stack memory of size matr.numRows, but that field could
-        // be invalid since matr hasn't been validated, so we must first invoke validation. Note
-        // the caller will likely have called setCompMatr() or setInlineCompMatr(); we'll just
-        // report the former for relative clarity.
-        validate_matrixFields(matr, "setCompMatr");
+        // be invalid since matr hasn't been validated, so we must first invoke validation.
+        validate_setCompMatrFromArr(matr);
 
         // new ptrs array safely fits in stack, since it's sqrt-smaller than user's passed stack array
         qcomp* ptrs[matr.numRows];
