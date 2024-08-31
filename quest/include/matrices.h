@@ -72,7 +72,7 @@ typedef struct {
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* const isUnitary;
 
-    // 2D CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
+    // 2D CPU memory; not const, so users can overwrite addresses (e.g. with nullptr)
     qcomp** cpuElems;
 
     // row-flattened elems in GPU memory, allocated only
@@ -127,7 +127,7 @@ typedef struct {
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* const isUnitary;
 
-    // CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
+    // CPU memory; not const, so users can overwrite addresses (e.g. with nullptr)
     qcomp* cpuElems;
 
     // GPU memory, allocated only and always in GPU-enabled QuEST environments
@@ -161,7 +161,7 @@ typedef struct {
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* const isUnitary;
 
-    // CPU memory; not const, so users can overwrite addresses (e.g. with NULL)
+    // CPU memory; not const, so users can overwrite addresses (e.g. with nullptr)
     qcomp* cpuElems;
 
     // GPU memory, allocated only and always in GPU-enabled QuEST environments

@@ -276,9 +276,9 @@ qcomp* gpu_allocArray(qindex length) {
     qcomp* ptr;
     cudaError_t errCode = cudaMalloc(&ptr, numBytes);
 
-    // intercept memory-alloc error and merely return NULL pointer (to be handled by validation)
+    // intercept memory-alloc error and merely return nullptr pointer (to be handled by validation)
     if (errCode == cudaErrorMemoryAllocation)
-        return NULL;
+        return nullptr;
 
     // pass all other unexpected errors to internal error handling
     CUDA_CHECK(errCode);
@@ -290,7 +290,7 @@ qcomp* gpu_allocArray(qindex length) {
 
 #else
     error_gpuAllocButGpuNotCompiled();
-    return NULL;
+    return nullptr;
 #endif
 }
 
@@ -298,7 +298,7 @@ qcomp* gpu_allocArray(qindex length) {
 void gpu_deallocArray(qcomp* amps) {
 #if COMPILE_CUDA
 
-    // cudaFree on NULL is fine
+    // cudaFree on nullptr is fine
     CUDA_CHECK( cudaFree(amps) );
 
 #else
@@ -369,7 +369,7 @@ void copyMatrixIfGpuCompiled(qcomp** cpuMatr, qcomp* gpuArr, qindex matrDim, enu
 template <typename T>
 void assertHeapObjectHasGpuMem(T obj) {
 
-    if (util_getGpuMemPtr(obj) == NULL || ! getQuESTEnv().isGpuAccelerated)
+    if (util_getGpuMemPtr(obj) == nullptr || ! getQuESTEnv().isGpuAccelerated)
         error_gpuCopyButMatrixNotGpuAccelerated();
 }
 
@@ -426,7 +426,7 @@ void gpu_copyCpuToGpu(KrausMap map) {
 bool gpu_haveGpuAmpsBeenSynced(qcomp* gpuArr) {
 #if COMPILE_CUDA
 
-    if (gpuArr == NULL || ! getQuESTEnv().isGpuAccelerated)
+    if (gpuArr == nullptr || ! getQuESTEnv().isGpuAccelerated)
         error_gpuCopyButMatrixNotGpuAccelerated();
 
     // obtain first element from device memory
@@ -467,7 +467,7 @@ bool gpu_doCpuAmpsHaveUnsyncMemFlag(qcomp firstCpuAmp) {
 // persistent but variably-sized cache memory used by the any-targ dense
 // matrix kernel as working memory, which is lazily runtime expanded when
 // necessary, and only ever cleared when triggered by the user
-qcomp* gpuCache = NULL;
+qcomp* gpuCache = nullptr;
 qindex gpuCacheLen = 0;
 
 
@@ -489,7 +489,7 @@ qcomp* gpu_getCacheOfSize(qindex numElemsPerThread, qindex numThreads) {
 
 #else
     error_gpuCacheModifiedButGpuNotCompiled();
-    return NULL;
+    return nullptr;
 #endif
 }
 
@@ -498,10 +498,10 @@ void gpu_clearCache() {
 
 #if COMPILE_CUDA
 
-    // cudaFree on NULL is fine
+    // cudaFree on nullptr is fine
     CUDA_CHECK( cudaFree(gpuCache) );
 
-    gpuCache = NULL;
+    gpuCache = nullptr;
     gpuCacheLen = 0;
 
 #else

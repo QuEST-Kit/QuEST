@@ -34,19 +34,19 @@ using std::string;
 bool didAnyLocalAllocsFail(Qureg qureg) {
 
     // CPU memory should always be allocated
-    if (qureg.cpuAmps == NULL)
+    if (qureg.cpuAmps == nullptr)
         return true;
 
     // when distributed, the CPU communication buffer must be allocated
-    if (qureg.isDistributed && qureg.cpuCommBuffer == NULL)
+    if (qureg.isDistributed && qureg.cpuCommBuffer == nullptr)
         return true;
 
     // when GPU-accelerated, the GPU memory should be allocated
-    if (qureg.isGpuAccelerated && qureg.gpuAmps == NULL)
+    if (qureg.isGpuAccelerated && qureg.gpuAmps == nullptr)
         return true;
 
     // when both distributed and GPU-accelerated, the GPU communication buffer must be allocated
-    if (qureg.isDistributed && qureg.isGpuAccelerated && qureg.gpuCommBuffer == NULL)
+    if (qureg.isDistributed && qureg.isGpuAccelerated && qureg.gpuCommBuffer == nullptr)
         return true;
 
     // otherwise all pointers were non-NULL so no allocations failed
@@ -70,7 +70,7 @@ void freeAllMemoryIfAnyAllocsFailed(Qureg qureg) {
     if (!didAnyAllocsFailOnAnyNode(qureg))
         return;
 
-    // otherwise, free everything that was successfully allocated (freeing NULL is legal)
+    // otherwise, free everything that was successfully allocated (freeing nullptr is legal)
     cpu_deallocArray(qureg.cpuAmps);
     cpu_deallocArray(qureg.cpuCommBuffer);
 
@@ -129,17 +129,17 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
         .logNumColsPerNode = (isDensMatr)? numQubits - logNumNodes : 0, // used only by density matrices
 
         // always allocate CPU memory
-        .cpuAmps = cpu_allocArray(qureg.numAmpsPerNode), // NULL if failed
+        .cpuAmps = cpu_allocArray(qureg.numAmpsPerNode), // nullptr if failed
 
         // conditionally allocate GPU memory and communication buffers (even if numNodes == 1).
         // note that in distributed settings but where useDistrib=false, each node will have a
         // full copy of the amplitudes, but will NOT have the communication buffers allocated.
-        .gpuAmps       = (useGpuAccel)?               gpu_allocArray(qureg.numAmpsPerNode) : NULL,
-        .cpuCommBuffer = (useDistrib)?                cpu_allocArray(qureg.numAmpsPerNode) : NULL,
-        .gpuCommBuffer = (useGpuAccel && useDistrib)? gpu_allocArray(qureg.numAmpsPerNode) : NULL,
+        .gpuAmps       = (useGpuAccel)?               gpu_allocArray(qureg.numAmpsPerNode) : nullptr,
+        .cpuCommBuffer = (useDistrib)?                cpu_allocArray(qureg.numAmpsPerNode) : nullptr,
+        .gpuCommBuffer = (useGpuAccel && useDistrib)? gpu_allocArray(qureg.numAmpsPerNode) : nullptr,
     };
 
-    // if any of the above mallocs failed, below validation will memory leak; so free first (but don't set to NULL)
+    // if any of the above mallocs failed, below validation will memory leak; so free first (but don't set to nullptr)
     freeAllMemoryIfAnyAllocsFailed(qureg);
     validate_newQuregAllocs(qureg, __func__);
 
@@ -216,10 +216,10 @@ void printMemoryInfo(Qureg qureg) {
 
     print_table(
         "memory", {
-        {"cpuAmps",       (qureg.cpuAmps       == NULL)? na : localMemStr},
-        {"gpuAmps",       (qureg.gpuAmps       == NULL)? na : localMemStr},
-        {"cpuCommBuffer", (qureg.cpuCommBuffer == NULL)? na : localMemStr},
-        {"gpuCommBuffer", (qureg.gpuCommBuffer == NULL)? na : localMemStr},
+        {"cpuAmps",       (qureg.cpuAmps       == nullptr)? na : localMemStr},
+        {"gpuAmps",       (qureg.gpuAmps       == nullptr)? na : localMemStr},
+        {"cpuCommBuffer", (qureg.cpuCommBuffer == nullptr)? na : localMemStr},
+        {"gpuCommBuffer", (qureg.gpuCommBuffer == nullptr)? na : localMemStr},
         {"globalTotal",   globalMemStr},
     });
 }
@@ -274,7 +274,7 @@ void destroyQureg(Qureg qureg) {
     if (qureg.isGpuAccelerated && qureg.isDistributed)
         gpu_deallocArray(qureg.gpuCommBuffer);
 
-    // cannot set free'd fields to NULL because qureg
+    // cannot set free'd fields to nullptr because qureg
     // wasn't passed-by-reference, and isn't returned.
 }
 

@@ -46,7 +46,7 @@ int getPauliFromMaskAt(PAULI_MASK_TYPE mask, int ind) {
 
 bool didAnyAllocsFailOnAnyNode(PauliStrSum sum) {
 
-    bool anyFail = (sum.strings == NULL) || (sum.coeffs == NULL);
+    bool anyFail = (sum.strings == nullptr) || (sum.coeffs == nullptr);
     if (comm_isInit())
         anyFail = comm_isTrueOnAllNodes(anyFail);
 
@@ -60,7 +60,7 @@ void freeAllMemoryIfAnyAllocsFailed(PauliStrSum sum) {
     if (!didAnyAllocsFailOnAnyNode(sum))
         return;
 
-    // otherwise free every successful allocation (freeing NULL is legal)
+    // otherwise free every successful allocation (freeing nullptr is legal)
     cpu_deallocPauliStrings(sum.strings);
     cpu_deallocArray(sum.coeffs);
 }
@@ -222,8 +222,8 @@ extern "C" PauliStrSum createPauliStrSum(PauliStr* strings, qcomp* coeffs, qinde
 
     // create struct
     PauliStrSum out = {
-        .strings = (PauliStr*) cpu_allocPauliStrings(numTerms), // NULL if failed
-        .coeffs  = (qcomp*)    cpu_allocArray(numTerms),        // NULL if failed
+        .strings = (PauliStr*) cpu_allocPauliStrings(numTerms), // nullptr if failed
+        .coeffs  = (qcomp*)    cpu_allocArray(numTerms),        // nullptr if failed
         .numTerms = numTerms
     };
 

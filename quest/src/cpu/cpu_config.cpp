@@ -80,14 +80,14 @@ int cpu_getNumOpenmpProcessors() {
 qcomp* cpu_allocArray(qindex length) {
 
     // we call calloc over malloc in order to fail immediately if mem isn't available;
-    // caller must handle NULL result
+    // caller must handle nullptr result
     return (qcomp*) calloc(length, sizeof(qcomp));
 }
 
 
 void cpu_deallocArray(qcomp* arr) {
 
-    // arr can safely be NULL
+    // arr can safely be nullptr
     free(arr);
 }
 
@@ -105,12 +105,12 @@ qcomp** cpu_allocMatrix(qindex dim) {
     // validation; no more enumerating nested pointers! Benchmark this scenario.
 
     // allocate outer array
-    qcomp** rows = (qcomp**) malloc(dim * sizeof *rows); // NULL if failed
+    qcomp** rows = (qcomp**) malloc(dim * sizeof *rows); // nullptr if failed
 
     // if that did not fail, allocate each inner array
-    if (rows != NULL)
+    if (rows != nullptr)
         for (qindex r=0; r<dim; r++)
-            rows[r] = cpu_allocArray(dim); // NULL if failed
+            rows[r] = cpu_allocArray(dim); // nullptr if failed
 
     // caller will validate whether mallocs were successful
     return rows;
@@ -121,9 +121,9 @@ void cpu_deallocMatrix(qcomp** matrix, qindex dim) {
 
     // we attempt to deallocate every row (assuming the outer array was
     // successfully allocated), regardless of whether they are actually
-    // allocated; it is legal to call free() on NULL
+    // allocated; it is legal to call free() on nullptr
 
-    if (matrix != NULL)
+    if (matrix != nullptr)
         for (qindex r=0; r<dim; r++)
             cpu_deallocArray(matrix[r]);
 
@@ -135,26 +135,26 @@ int* cpu_allocHeapFlag() {
 
     // we use int over bool for the flag, because often we use
     // value -1 as a third value
-    return (int*) malloc(sizeof(int)); // may be NULL, caller will handle
+    return (int*) malloc(sizeof(int)); // may be nullptr, caller will handle
 }
 
 
 void cpu_deallocHeapFlag(int* ptr) {
 
-    // safe to free if NULL
+    // safe to free if nullptr
     free(ptr);
 }
 
 
 PauliStr* cpu_allocPauliStrings(qindex numStrings) {
 
-    return (PauliStr*) malloc(numStrings * sizeof(PauliStr)); // may be NULL, caller will handle
+    return (PauliStr*) malloc(numStrings * sizeof(PauliStr)); // may be nullptr, caller will handle
 }
 
 
 void cpu_deallocPauliStrings(PauliStr* strings) {
 
-    // safe to free if NULL
+    // safe to free if nullptr
     free(strings);
 }
 
