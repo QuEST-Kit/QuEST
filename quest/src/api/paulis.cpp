@@ -9,6 +9,7 @@
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/printer.hpp"
 #include "quest/src/core/parser.hpp"
+#include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 
@@ -60,8 +61,8 @@ void freeAllMemoryIfAnyAllocsFailed(PauliStrSum sum) {
         return;
 
     // otherwise free every successful allocation (freeing NULL is legal)
-    free(sum.strings);
-    free(sum.coeffs);
+    cpu_deallocPauliStrings(sum.strings);
+    cpu_deallocArray(sum.coeffs);
 }
 
 
@@ -219,27 +220,19 @@ extern "C" PauliStrSum createPauliStrSum(PauliStr* strings, qcomp* coeffs, qinde
     // note we do not require nor impose the strings to be unique
     validate_newPauliStrSumParams(numTerms, __func__);
 
-    // memory needed, as is reported to user after alloc failure
-    qindex numBytesStrings = numTerms * sizeof(PauliStr);
-    qindex numBytesCoeffs  = numTerms * sizeof(qcomp);
-
     // create struct
     PauliStrSum out = {
-        .strings = (PauliStr*) malloc(numBytesStrings), // NULL if failed
-        .coeffs  = (qcomp*)    malloc(numBytesCoeffs),  // NULL if failed
+        .strings = (PauliStr*) cpu_allocPauliStrings(numTerms), // NULL if failed
+        .coeffs  = (qcomp*)    cpu_allocArray(numTerms),        // NULL if failed
         .numTerms = numTerms
     };
 
     // if either alloc failed, clear both before validation to avoid leak
     freeAllMemoryIfAnyAllocsFailed(out);
-    validate_newPauliStrSumAllocs(out, numBytesStrings, numBytesCoeffs, __func__);
+    validate_newPauliStrSumAllocs(out, numTerms*sizeof(PauliStr), numTerms*sizeof(qcomp), __func__);
 
-    // serially copy data over to new heap memory
-    for (int i=0; i<numTerms; i++) {
-        out.strings[i] = strings[i];
-        out.coeffs[i] = coeffs[i];
-    }
-
+    // otherwise copy given data into new heap structure
+    cpu_copyPauliStrSum(out, strings, coeffs);
     return out;
 }
 
@@ -304,8 +297,8 @@ PauliStrSum createPauliStrSumFromReversedFile(string fn) {
 extern "C" void destroyPauliStrSum(PauliStrSum sum) {
     validate_pauliStrSumFields(sum, __func__);
 
-    free(sum.strings);
-    free(sum.coeffs);
+    cpu_deallocPauliStrings(sum.strings);
+    cpu_deallocArray(sum.coeffs);
 }
 
 

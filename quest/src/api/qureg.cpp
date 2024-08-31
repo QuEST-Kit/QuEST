@@ -71,10 +71,14 @@ void freeAllMemoryIfAnyAllocsFailed(Qureg qureg) {
         return;
 
     // otherwise, free everything that was successfully allocated (freeing NULL is legal)
-    cpu_deallocAmps(qureg.cpuAmps);
-    cpu_deallocAmps(qureg.cpuCommBuffer);
-    gpu_deallocAmps(qureg.gpuAmps);
-    gpu_deallocAmps(qureg.gpuCommBuffer);
+    cpu_deallocArray(qureg.cpuAmps);
+    cpu_deallocArray(qureg.cpuCommBuffer);
+
+    // although we avoid calling GPU deallocation in non-GPU mode
+    if (qureg.isGpuAccelerated) {
+        gpu_deallocArray(qureg.gpuAmps);
+        gpu_deallocArray(qureg.gpuCommBuffer);
+    }
 }
 
 
@@ -125,14 +129,14 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
         .logNumColsPerNode = (isDensMatr)? numQubits - logNumNodes : 0, // used only by density matrices
 
         // always allocate CPU memory
-        .cpuAmps = cpu_allocAmps(qureg.numAmpsPerNode), // NULL if failed
+        .cpuAmps = cpu_allocArray(qureg.numAmpsPerNode), // NULL if failed
 
         // conditionally allocate GPU memory and communication buffers (even if numNodes == 1).
         // note that in distributed settings but where useDistrib=false, each node will have a
         // full copy of the amplitudes, but will NOT have the communication buffers allocated.
-        .gpuAmps       = (useGpuAccel)?               gpu_allocAmps(qureg.numAmpsPerNode) : NULL,
-        .cpuCommBuffer = (useDistrib)?                cpu_allocAmps(qureg.numAmpsPerNode) : NULL,
-        .gpuCommBuffer = (useGpuAccel && useDistrib)? gpu_allocAmps(qureg.numAmpsPerNode) : NULL,
+        .gpuAmps       = (useGpuAccel)?               gpu_allocArray(qureg.numAmpsPerNode) : NULL,
+        .cpuCommBuffer = (useDistrib)?                cpu_allocArray(qureg.numAmpsPerNode) : NULL,
+        .gpuCommBuffer = (useGpuAccel && useDistrib)? gpu_allocArray(qureg.numAmpsPerNode) : NULL,
     };
 
     // if any of the above mallocs failed, below validation will memory leak; so free first (but don't set to NULL)
@@ -256,19 +260,19 @@ void destroyQureg(Qureg qureg) {
     validate_quregFields(qureg, __func__);
 
     // free CPU memory
-    cpu_deallocAmps(qureg.cpuAmps);
+    cpu_deallocArray(qureg.cpuAmps);
 
     // free CPU communication buffer
     if (qureg.isDistributed)
-        cpu_deallocAmps(qureg.cpuCommBuffer);
+        cpu_deallocArray(qureg.cpuCommBuffer);
 
     // free GPU memory
     if (qureg.isGpuAccelerated)
-        gpu_deallocAmps(qureg.gpuAmps);
+        gpu_deallocArray(qureg.gpuAmps);
 
     // free GPU communication buffer
     if (qureg.isGpuAccelerated && qureg.isDistributed)
-        gpu_deallocAmps(qureg.gpuCommBuffer);
+        gpu_deallocArray(qureg.gpuCommBuffer);
 
     // cannot set free'd fields to NULL because qureg
     // wasn't passed-by-reference, and isn't returned.

@@ -6,6 +6,7 @@
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
+#include "quest/include/krausmaps.h"
 #include "quest/include/environment.h"
 
 #include "quest/src/core/errors.hpp"
@@ -253,7 +254,7 @@ void gpu_sync() {
 
 
 /*
- * MEMORY MANAGEMENT
+ * MEMORY ALLOCATION
  */
 
 
@@ -266,10 +267,10 @@ void gpu_sync() {
 const qcomp UNSYNCED_GPU_MEM_FLAG = qcomp(3.141592653, 12345.67890);
 
 
-qcomp* gpu_allocAmps(qindex numLocalAmps) {
+qcomp* gpu_allocArray(qindex length) {
 #if COMPILE_CUDA
 
-    size_t numBytes = mem_getLocalQuregMemoryRequired(numLocalAmps);
+    size_t numBytes = mem_getLocalQuregMemoryRequired(length);
 
     // attempt to malloc
     qcomp* ptr;
@@ -294,7 +295,7 @@ qcomp* gpu_allocAmps(qindex numLocalAmps) {
 }
 
 
-void gpu_deallocAmps(qcomp* amps) {
+void gpu_deallocArray(qcomp* amps) {
 #if COMPILE_CUDA
 
     // cudaFree on NULL is fine
@@ -306,95 +307,120 @@ void gpu_deallocAmps(qcomp* amps) {
 }
 
 
-void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems) {
+
+/*
+ * MEMORY MOVEMENT
+ */
+
+
+// flags to make the memory transfer direction visually distinct
+enum CopyDirection {
+    TO_HOST,
+    TO_DEVICE
+};
+
+
+void copyArrayIfGpuCompiled(qcomp* cpuArr, qcomp* gpuArr, qindex numElems, enum CopyDirection direction) {
 #if COMPILE_CUDA
 
-    assert_quregIsGpuAccelerated(qureg);
+    auto flag = (direction == TO_HOST)? 
+        cudaMemcpyDeviceToHost:
+        cudaMemcpyHostToDevice;
 
+    // synchronous memory copy
     size_t numBytes = numElems * sizeof(qcomp);
-    CUDA_CHECK( cudaMemcpy(gpuArr, cpuArr, numBytes, cudaMemcpyHostToDevice) );
+    CUDA_CHECK( cudaMemcpy(gpuArr, cpuArr, numBytes, flag) );
 
 #else
     error_gpuCopyButGpuNotCompiled();
 #endif
 }
 
+
+void copyMatrixIfGpuCompiled(qcomp** cpuMatr, qcomp* gpuArr, qindex matrDim, enum CopyDirection direction) {
+#if COMPILE_CUDA
+
+    // for completeness, we permit copying from the 1D GPU memory to the 2D CPU memory,
+    // although we never actually have the need to do this!
+    auto flag = (direction == TO_HOST)? 
+        cudaMemcpyDeviceToHost:
+        cudaMemcpyHostToDevice;
+
+    // copy each CPU row into flattened GPU memory. we make each memcpy asynch,
+    // but it's unclear it helps, nor whether single-stream sync is necessary
+    size_t numBytesPerRow = matrDim * sizeof(**cpuMatr);
+    gpu_sync();
+
+    for (qindex r=0; r<matrDim; r++) {
+        qcomp* cpuRow = cpuMatr[r];
+        qcomp* gpuSlice = &gpuArr[r*matrDim];
+        CUDA_CHECK( cudaMemcpyAsync(gpuSlice, cpuRow, numBytesPerRow, flag) );
+    }
+
+    // wait for async copies to complete
+    gpu_sync();
+
+#else
+    error_gpuCopyButGpuNotCompiled();
+#endif
+}
+
+
+template <typename T>
+void assertHeapObjectHasGpuMem(T obj) {
+
+    if (util_getGpuMemPtr(obj) == NULL || ! getQuESTEnv().isGpuAccelerated)
+        error_gpuCopyButMatrixNotGpuAccelerated();
+}
+
+
+void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems) {
+
+    // these functions unusually accept a Qureg just to run internal error validation,
+    // to ensure that the given gpuArr can be read/write without segmentation fault
+    assert_quregIsGpuAccelerated(qureg);
+    copyArrayIfGpuCompiled(cpuArr, gpuArr, numElems, TO_DEVICE);
+}
 void gpu_copyCpuToGpu(Qureg qureg) {
     gpu_copyCpuToGpu(qureg, qureg.cpuAmps, qureg.gpuAmps, qureg.numAmpsPerNode);
 }
-
-
 void gpu_copyGpuToCpu(Qureg qureg, qcomp* gpuArr, qcomp* cpuArr, qindex numElems) {
-#if COMPILE_CUDA
-
     assert_quregIsGpuAccelerated(qureg);
-
-    size_t numBytes = numElems * sizeof(qcomp);
-    CUDA_CHECK( cudaMemcpy(cpuArr, gpuArr, numBytes, cudaMemcpyDeviceToHost) );
-
-#else
-    error_gpuCopyButGpuNotCompiled();
-#endif
+    copyArrayIfGpuCompiled(cpuArr, gpuArr, numElems, TO_HOST);
 }
-
 void gpu_copyGpuToCpu(Qureg qureg) {
     gpu_copyGpuToCpu(qureg, qureg.gpuAmps, qureg.cpuAmps, qureg.numAmpsPerNode);
 }
 
 
 void gpu_copyCpuToGpu(CompMatr matr) {
-#if COMPILE_CUDA
-
-    if (util_getGpuMemPtr(matr) == NULL || ! getQuESTEnv().isGpuAccelerated)
-        error_gpuCopyButMatrixNotGpuAccelerated();
-
-    // copy each CPU row into flattened GPU memory. we make each memcpy asynch,
-    // but it's unclear it helps, nor whether single-stream sync is necessary
-    size_t numBytesPerRow = matr.numRows * sizeof(**matr.cpuElems);
-    gpu_sync();
-
-    for (qindex r=0; r<matr.numRows; r++) {
-        qcomp* cpuRow = matr.cpuElems[r];
-        qcomp* gpuSlice = &util_getGpuMemPtr(matr)[r*matr.numRows];
-        CUDA_CHECK( cudaMemcpyAsync(gpuSlice, cpuRow, numBytesPerRow, cudaMemcpyHostToDevice) );
-    }
-
-    gpu_sync();
-    
-#else
-    error_gpuCopyButGpuNotCompiled();
-#endif
+    assertHeapObjectHasGpuMem(matr);
+    copyMatrixIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numRows, TO_DEVICE);
 }
 
 
 void gpu_copyCpuToGpu(DiagMatr matr) {
-#if COMPILE_CUDA
-
-    if (util_getGpuMemPtr(matr) == NULL || ! getQuESTEnv().isGpuAccelerated)
-        error_gpuCopyButMatrixNotGpuAccelerated();
-
-    size_t numBytes = matr.numElems * sizeof(qcomp);
-    CUDA_CHECK( cudaMemcpy(util_getGpuMemPtr(matr), matr.cpuElems, numBytes, cudaMemcpyHostToDevice) );
-    
-#else
-    error_gpuCopyButGpuNotCompiled();
-#endif
+    assertHeapObjectHasGpuMem(matr);
+    copyArrayIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numElems, TO_DEVICE);
 }
 
 
 void gpu_copyCpuToGpu(FullStateDiagMatr matr) {
-#if COMPILE_CUDA
-
-    if (util_getGpuMemPtr(matr) == NULL || ! getQuESTEnv().isGpuAccelerated)
-        error_gpuCopyButMatrixNotGpuAccelerated();
-
-    size_t numBytes = matr.numElemsPerNode * sizeof(qcomp);
-    CUDA_CHECK( cudaMemcpy(util_getGpuMemPtr(matr), matr.cpuElems, numBytes, cudaMemcpyHostToDevice) );
-    
-#else
-    error_gpuCopyButGpuNotCompiled();
-#endif
+    assertHeapObjectHasGpuMem(matr);
+    copyArrayIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numElemsPerNode, TO_DEVICE);
 }
+
+
+void gpu_copyCpuToGpu(KrausMap map) {
+    assertHeapObjectHasGpuMem(map);
+    copyMatrixIfGpuCompiled(map.cpuSuperopElems, util_getGpuMemPtr(map), map.numSuperopRows, TO_DEVICE);
+}
+
+
+
+/*
+ * MEMORY MANAGEMENT
+ */
 
 
 bool gpu_haveGpuAmpsBeenSynced(qcomp* gpuArr) {

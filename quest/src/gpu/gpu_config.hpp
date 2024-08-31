@@ -10,6 +10,7 @@
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
+#include "quest/include/krausmaps.h"
 
 #include <cstdlib>
 
@@ -69,23 +70,22 @@ void gpu_sync();
  * MEMORY MANAGEMENT
  */
 
-qcomp* gpu_allocAmps(qindex numLocalAmps);
-
-void gpu_deallocAmps(qcomp* amps);
+qcomp* gpu_allocArray(qindex numLocalAmps);
+void gpu_deallocArray(qcomp* amps);
 
 bool gpu_doCpuAmpsHaveUnsyncMemFlag(qcomp  firstCpuAmp);
-
-void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems);
-void gpu_copyCpuToGpu(Qureg qureg);
+bool gpu_haveGpuAmpsBeenSynced(qcomp* gpuArr);
 
 void gpu_copyGpuToCpu(Qureg qureg, qcomp* gpuArr, qcomp* cpuArr, qindex numElems);
 void gpu_copyGpuToCpu(Qureg qureg);
 
+void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems);
+void gpu_copyCpuToGpu(Qureg qureg);
+
 void gpu_copyCpuToGpu(CompMatr matr);
 void gpu_copyCpuToGpu(DiagMatr matr);
 void gpu_copyCpuToGpu(FullStateDiagMatr matr);
-
-bool gpu_haveGpuAmpsBeenSynced(qcomp* gpuArr);
+void gpu_copyCpuToGpu(KrausMap map);
 
 
 

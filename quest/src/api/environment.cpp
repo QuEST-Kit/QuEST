@@ -390,7 +390,7 @@ void finalizeQuESTEnv() {
     if (globalEnvPtr->isDistributed)
         comm_end();
 
-    // free global env's heap memory and flag as not active
+    // free global env's heap memory and flag it as unallocated
     free(globalEnvPtr);
     globalEnvPtr = NULL;
 
