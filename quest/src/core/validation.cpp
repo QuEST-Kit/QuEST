@@ -907,16 +907,16 @@ void validate_newQuregAllocs(Qureg qureg, const char* caller) {
 
     // we get node consensus in case mallocs fail on some nodes but not others, as may occur
     // in heterogeneous settings, or where nodes may have other processes and loads hogging RAM. 
-    assertAllNodesAgreeThat(qureg.cpuAmps != NULL, report::NEW_QUREG_CPU_AMPS_ALLOC_FAILED, caller);
+    assertAllNodesAgreeThat(qureg.cpuAmps != nullptr, report::NEW_QUREG_CPU_AMPS_ALLOC_FAILED, caller);
 
     if (qureg.isGpuAccelerated)
-        assertAllNodesAgreeThat(qureg.gpuAmps != NULL, report::NEW_QUREG_GPU_AMPS_ALLOC_FAILED, caller);
+        assertAllNodesAgreeThat(qureg.gpuAmps != nullptr, report::NEW_QUREG_GPU_AMPS_ALLOC_FAILED, caller);
 
     if (qureg.isDistributed)
-        assertAllNodesAgreeThat(qureg.cpuCommBuffer != NULL, report::NEW_QUREG_CPU_COMM_BUFFER_ALLOC_FAILED, caller);
+        assertAllNodesAgreeThat(qureg.cpuCommBuffer != nullptr, report::NEW_QUREG_CPU_COMM_BUFFER_ALLOC_FAILED, caller);
 
     if (qureg.isDistributed && qureg.isGpuAccelerated)
-        assertAllNodesAgreeThat(qureg.gpuCommBuffer != NULL, report::NEW_QUREG_GPU_COMM_BUFFER_ALLOC_FAILED, caller);
+        assertAllNodesAgreeThat(qureg.gpuCommBuffer != nullptr, report::NEW_QUREG_GPU_COMM_BUFFER_ALLOC_FAILED, caller);
 }
 
 
@@ -1212,20 +1212,20 @@ void assertNewMatrixAllocsSucceeded(T matr, qindex numBytes, const char* caller)
 
     // assert CPU array of rows was malloc'd successfully
     tokenSubs vars = {{"${NUM_BYTES}", numBytes}};
-    assertAllNodesAgreeThat(matr.cpuElems != NULL, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
+    assertAllNodesAgreeThat(matr.cpuElems != nullptr, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
 
     // assert each CPU row was calloc'd successfully (if matrix is dense)
     if constexpr (util_isDenseMatrixType<T>())
         for (qindex r=0; r<matr.numRows; r++)
-            assertAllNodesAgreeThat(matr.cpuElems[r] != NULL, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
+            assertAllNodesAgreeThat(matr.cpuElems[r] != nullptr, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
     
     // optionally assert GPU memory was malloc'd successfully
     if (getQuESTEnv().isGpuAccelerated)
-        assertAllNodesAgreeThat(util_getGpuMemPtr(matr) != NULL, report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
+        assertAllNodesAgreeThat(util_getGpuMemPtr(matr) != nullptr, report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
 
     // assert the teeny-tiny isUnitary flag was alloc'd
     vars["${NUM_BYTES}"] = sizeof(*(matr.isUnitary));
-    assertAllNodesAgreeThat(matr.isUnitary != NULL, report::NEW_MATRIX_IS_UNITARY_FLAG_ALLOC_FAILED, vars, caller);
+    assertAllNodesAgreeThat(matr.isUnitary != nullptr, report::NEW_MATRIX_IS_UNITARY_FLAG_ALLOC_FAILED, vars, caller);
 }
 
 void validate_newMatrixAllocs(CompMatr matr, qindex numBytes, const char* caller) {
@@ -1351,7 +1351,7 @@ void assertMatrixFieldsAreValid(T matr, int expectedNumQb, string errMsg, const 
 
     // assert isUnitary flag is valid; it is user-modifiable (if they are naughty)!
     if constexpr (util_doesMatrixHaveIsUnitaryFlag<T>()) {
-        int flag = (matr.isUnitary == NULL)? 0 : *matr.isUnitary; // lazy segfault if failed allocation (caught below)
+        int flag = (matr.isUnitary == nullptr)? 0 : *matr.isUnitary; // lazy segfault if failed allocation (caught below)
         assertThat(
             flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_MATRIX_IS_UNITARY_FLAG,
             {{"${BAD_FLAG}", flag}, {"${UNKNOWN_FLAG}", validate_STRUCT_PROPERTY_UNKNOWN_FLAG}}, caller);
@@ -1373,7 +1373,7 @@ void assertMatrixAllocsAreValid(T matr, string cpuErrMsg, string gpuErrMsg, cons
     // set the fields to NULL, which immediately post-allocation validation would capture. Eh!
 
     // assert CPU memory is allocated
-    assertThat(matr.cpuElems != NULL, cpuErrMsg, caller);
+    assertThat(matr.cpuElems != nullptr, cpuErrMsg, caller);
 
     // we do not check that each CPU memory row (of CompMatr; irrelevant to DiagMatr)
     // is not-NULL because it's really unlikely that inner memory wasn't allocaed but
@@ -1386,7 +1386,7 @@ void assertMatrixAllocsAreValid(T matr, string cpuErrMsg, string gpuErrMsg, cons
     // optionally assert GPU memory is allocated
     validate_envIsInit(caller);
     if (getQuESTEnv().isGpuAccelerated)
-        assertThat(util_getGpuMemPtr(matr) != NULL, gpuErrMsg, caller);
+        assertThat(util_getGpuMemPtr(matr) != nullptr, gpuErrMsg, caller);
 }
 
 void validate_matrixFields(CompMatr1 matr, const char* caller) {
@@ -1419,7 +1419,7 @@ template <class T>
 void assertMatrixIsSynced(T matr, string errMsg, const char* caller) {
 
     // we don't need to perform any sync check in CPU-only mode
-    if (util_getGpuMemPtr(matr) == NULL)
+    if (util_getGpuMemPtr(matr) == nullptr)
         return;
 
     // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though
@@ -1653,11 +1653,11 @@ void validate_newPauliStrSumMatchingListLens(qindex numStrs, qindex numCoeffs, c
 void validate_newPauliStrSumAllocs(PauliStrSum sum, qindex numBytesStrings, qindex numBytesCoeffs, const char* caller) {
 
     assertThat(
-        sum.strings != NULL, report::NEW_PAULI_STR_SUM_STRINGS_ALLOC_FAILED, 
+        sum.strings != nullptr, report::NEW_PAULI_STR_SUM_STRINGS_ALLOC_FAILED, 
         {{"${NUM_TERMS}", sum.numTerms}, {"${NUM_BYTES}", numBytesStrings}}, caller);
 
     assertThat(
-        sum.coeffs != NULL, report::NEW_PAULI_STR_SUM_COEFFS_ALLOC_FAILED, 
+        sum.coeffs != nullptr, report::NEW_PAULI_STR_SUM_COEFFS_ALLOC_FAILED, 
         {{"${NUM_TERMS}", sum.numTerms}, {"${NUM_BYTES}", numBytesCoeffs}}, caller);
 }
 
@@ -1709,7 +1709,7 @@ void validate_pauliStrSumFields(PauliStrSum sum, const char* caller) {
 
     assertThat(sum.numTerms > 0, report::INVALID_PAULI_STR_SUM_FIELDS, {{"${NUM_TERMS}", sum.numTerms}}, caller);
 
-    // no point checking sum's pointers are not NULL; see the explanation in validate_quregFields()
+    // no point checking sum's pointers are not nullptr; see the explanation in validate_quregFields()
 }
 
 

@@ -39,13 +39,13 @@ using std::string;
  * The use of static ensures we never accidentally expose the "true"
  * runtime single instance to other files. We allocate the env
  * in heap memory (hence the pointer) so that we can defer 
- * initialisation of the const fields. The address being NULL
+ * initialisation of the const fields. The address being nullptr
  * indicates the QuESTEnv is not currently initialised; perhaps never,
  * or it was but has since been finalized.
  */
 
 
-static QuESTEnv* globalEnvPtr = NULL;
+static QuESTEnv* globalEnvPtr = nullptr;
 
 
 
@@ -72,7 +72,7 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
 
     // ensure that we are never re-initialising QuEST (even after finalize) because
     // this leads to undefined behaviour in distributed mode, as per the MPI
-    validate_envNeverInit(globalEnvPtr != NULL, hasEnvBeenFinalized, caller);
+    validate_envNeverInit(globalEnvPtr != nullptr, hasEnvBeenFinalized, caller);
 
     // ensure the chosen deployment is compiled and supported by hardware.
     // note that these error messages will be printed by every node because
@@ -122,11 +122,11 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
 
     // TODO: setup RNG
 
-    // allocate space for the global QuESTEnv singleton (overwriting NULL, unless malloc fails)
+    // allocate space for the global QuESTEnv singleton (overwriting nullptr, unless malloc fails)
     globalEnvPtr = (QuESTEnv*) malloc(sizeof(QuESTEnv));
 
     // pedantically check that teeny tiny malloc just succeeded
-    if (globalEnvPtr == NULL)
+    if (globalEnvPtr == nullptr)
         error_allocOfQuESTEnvFailed();
 
     // TODO: the below memcpy is naughty (QuESTEnv has no trivial copy-assignment) and causes compiler warning. Fix!
@@ -369,7 +369,7 @@ void initQuESTEnv() {
 
 int isQuESTEnvInit() {
 
-    return (int) (globalEnvPtr != NULL);
+    return (int) (globalEnvPtr != nullptr);
 }
 
 
@@ -390,9 +390,9 @@ void finalizeQuESTEnv() {
     if (globalEnvPtr->isDistributed)
         comm_end();
 
-    // free global env's heap memory and flag as not active
+    // free global env's heap memory and flag it as unallocated
     free(globalEnvPtr);
-    globalEnvPtr = NULL;
+    globalEnvPtr = nullptr;
 
     // flag that the environment was finalised, to ensure it is never re-initialised
     hasEnvBeenFinalized = true;

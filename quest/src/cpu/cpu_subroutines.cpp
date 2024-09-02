@@ -667,7 +667,11 @@ void cpu_densmatr_oneQubitDepolarising_subA(Qureg qureg, int ketQubit, qreal pro
     qcomp* amps = qureg.cpuAmps;
 
     int braQubit = util_getBraQubit(ketQubit, qureg);
-    auto [facAA, facBB, facAB] = util_getOneQubitDepolarisingFactors(prob);
+    auto factors = util_getOneQubitDepolarisingFactors(prob);
+
+    auto facAA = factors.c1;
+    auto facBB = factors.c2;
+    auto facAB = factors.c3;
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -680,10 +684,11 @@ void cpu_densmatr_oneQubitDepolarising_subA(Qureg qureg, int ketQubit, qreal pro
 
         // modify 4 amps, mixing a pair, and scaling the other
         qcomp amp00 = amps[i00];
-        amps[i00] = (facAA * amp00) + (facBB * amps[i11]);
+        qcomp amp11 = amps[i11];
+        amps[i00] = (facAA * amp00) + (facBB * amp11);
         amps[i01] *= facAB;
         amps[i10] *= facAB;
-        amps[i11] = (facAA * amps[i11]) + (facBB * amp00);
+        amps[i11] = (facAA * amp11) + (facBB * amp00);
     }
 }
 
@@ -697,7 +702,11 @@ void cpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal pro
     qindex offset = getBufferRecvInd();
 
     int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
-    auto [facAA, facBB, facAB] = util_getOneQubitDepolarisingFactors(prob);
+    auto factors = util_getOneQubitDepolarisingFactors(prob);
+
+    auto facAA = factors.c1;
+    auto facBB = factors.c2;
+    auto facAB = factors.c3;
 
     // TODO:
     // each iteration below modifies 2 independent amps without mixing,
@@ -739,7 +748,7 @@ void cpu_densmatr_twoQubitDepolarising_subA(Qureg qureg, int ketQb1, int ketQb2,
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braQb2 = util_getBraQubit(ketQb2, qureg);
 
-    qreal c3 = util_getTwoQubitDepolarisingFactors(prob)[2];
+    auto c3 = util_getTwoQubitDepolarisingFactors(prob).c3;
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -764,7 +773,9 @@ void cpu_densmatr_twoQubitDepolarising_subB(Qureg qureg, int ketQb1, int ketQb2,
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braQb2 = util_getBraQubit(ketQb2, qureg);
 
-    auto [c1, c2] = util_getFirstTwoFactorsOfTwoQubitDepolarising(prob);
+    auto factors = util_getTwoQubitDepolarisingFactors(prob);
+    auto c1 = factors.c1;
+    auto c2 = factors.c2;
 
     // for brevity
     qcomp* amps = qureg.cpuAmps;
@@ -797,7 +808,7 @@ void cpu_densmatr_twoQubitDepolarising_subC(Qureg qureg, int ketQb1, int ketQb2,
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    qreal c3 = util_getTwoQubitDepolarisingFactors(prob)[2];
+    auto c3 = util_getTwoQubitDepolarisingFactors(prob).c3;
 
     // TODO:
     // are we really inefficiently enumerating all amps and applying a non-unity
@@ -830,7 +841,9 @@ void cpu_densmatr_twoQubitDepolarising_subD(Qureg qureg, int ketQb1, int ketQb2,
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    auto [c1, c2] = util_getFirstTwoFactorsOfTwoQubitDepolarising(prob);
+    auto factors = util_getTwoQubitDepolarisingFactors(prob);
+    auto c1 = factors.c1;
+    auto c2 = factors.c2;
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -861,7 +874,7 @@ void cpu_densmatr_twoQubitDepolarising_subE(Qureg qureg, int ketQb1, int ketQb2,
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    qreal c3 = util_getTwoQubitDepolarisingFactors(prob)[2];
+    qreal c3 = util_getTwoQubitDepolarisingFactors(prob).c3;
 
     // TODO:
     // are we really inefficiently enumerating all amps and applying a non-unity
@@ -894,7 +907,9 @@ void cpu_densmatr_twoQubitDepolarising_subF(Qureg qureg, int ketQb1, int ketQb2,
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    auto [c1, c2] = util_getFirstTwoFactorsOfTwoQubitDepolarising(prob);
+    auto factors = util_getTwoQubitDepolarisingFactors(prob);
+    auto c1 = factors.c1;
+    auto c2 = factors.c2;
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -923,7 +938,9 @@ void cpu_densmatr_twoQubitDepolarising_subG(Qureg qureg, int ketQb1, int ketQb2,
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    auto [c1, c2] = util_getFirstTwoFactorsOfTwoQubitDepolarising(prob);
+    auto factors = util_getTwoQubitDepolarisingFactors(prob);
+    auto c1 = factors.c1;
+    auto c2 = factors.c2;
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -952,7 +969,12 @@ void cpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int ketQubit, qreal pI,
     qindex numIts = qureg.numAmpsPerNode / 4;
 
     int braQubit = util_getBraQubit(ketQubit, qureg);
-    auto [facAA, facBB, facAB, facBA] = util_getOneQubitPauliChannelFactors(pI, pX, pY, pZ);
+
+    auto factors = util_getOneQubitPauliChannelFactors(pI, pX, pY, pZ);
+    auto facAA = factors.c1;
+    auto facBB = factors.c2;
+    auto facAB = factors.c3;
+    auto facBA = factors.c4;
 
     // for brevity
     qcomp* amps = qureg.cpuAmps;
@@ -996,7 +1018,12 @@ void cpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI,
 
     int braInd = util_getPrefixBraInd(ketQubit, qureg);
     int braBit = getBit(qureg.rank, braInd);
-    auto [facAA, facBB, facAB, facBA] = util_getOneQubitPauliChannelFactors(pI, pX, pY, pZ);
+
+    auto factors = util_getOneQubitPauliChannelFactors(pI, pX, pY, pZ);
+    auto facAA = factors.c1;
+    auto facBB = factors.c2;
+    auto facAB = factors.c3;
+    auto facBA = factors.c4;
 
     // TODO:
     // each iteration below modifies 2 independent amps without mixing,
@@ -1037,7 +1064,10 @@ void cpu_densmatr_oneQubitDamping_subA(Qureg qureg, int ketQubit, qreal prob) {
     qindex numIts = qureg.numAmpsPerNode / 4;
 
     int braQubit = util_getBraQubit(ketQubit, qureg);
-    auto [c1, c2] = util_getOneQubitDampingFactors(prob);
+
+    auto factors = util_getOneQubitDampingFactors(prob);
+    auto c1 = factors.c1;
+    auto c2 = factors.c2;
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -1064,7 +1094,7 @@ void cpu_densmatr_oneQubitDamping_subB(Qureg qureg, int qubit, qreal prob) {
     // half of all local amps are scaled
     qindex numIts = qureg.numAmpsPerNode / 2;
 
-    auto c2 = util_getOneQubitDampingFactors(prob)[1];
+    auto c2 = util_getOneQubitDampingFactors(prob).c2;
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -1082,7 +1112,7 @@ void cpu_densmatr_oneQubitDamping_subC(Qureg qureg, int ketQubit, qreal prob) {
     qindex numIts = qureg.numAmpsPerNode / 2;
 
     int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
-    auto c1 = util_getOneQubitDampingFactors(prob)[0];
+    auto c1 = util_getOneQubitDampingFactors(prob).c1;
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {

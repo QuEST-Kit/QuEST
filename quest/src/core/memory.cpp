@@ -4,7 +4,10 @@
  * querents. Note GPU memory querying is performed by 
  * the dedicated GPU backend, though this file is always 
  * compiled (even in GPU mode) because GPU-acceleration still 
- * requires accompanying CPU memory arrays.
+ * requires accompanying CPU memory arrays. This file does not
+ * perform any allocation of memory; that is instead performed
+ * by cpu_config.cpp, to be symmetric with the GPU-memory
+ * allocators in gpu_config.cpp.
  */
 
 #include "quest/include/types.h"
@@ -59,8 +62,8 @@ qindex mem_getTotalGlobalMemoryUsed(Qureg qureg) {
     // work out individual array costs
     qindex memLocalArray = (qindex) mem_getLocalQuregMemoryRequired(qureg.numAmpsPerNode); // never overflows
     int numLocalArrays = 
-        (qureg.cpuAmps != NULL) + (qureg.cpuCommBuffer != NULL) + 
-        (qureg.gpuAmps != NULL) + (qureg.gpuCommBuffer != NULL);  // but *4 might
+        (qureg.cpuAmps != nullptr) + (qureg.cpuCommBuffer != nullptr) + 
+        (qureg.gpuAmps != nullptr) + (qureg.gpuCommBuffer != nullptr);  // but *4 might
 
     // if total local costs would overflow qindex, return 0
     qindex maxQindex = std::numeric_limits<qindex>::max();
