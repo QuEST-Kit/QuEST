@@ -277,10 +277,6 @@ namespace report {
      * MATRIX INITIALISATION
      */
 
-    string MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG = 
-        "The new matrix elements contained a reserved, forbidden value as the first element, used internally to detect that whether GPU memory has not synchronised. The value was intended to be extremely unlikely to be used by users - go buy a lottery ticket! If you insist on using this value in the first element, add a numerically insignificant perturbation.";
-
-
     string COMP_MATR_NEW_ELEMS_WRONG_NUM_ROWS =
         "Incompatible number of rows (${NUM_GIVEN_ROWS}) of elements given to overwrite a ${NUM_QUBITS}-qubit CompMatr, which expects ${NUM_EXPECTED_ROWS} rows.";
 
@@ -336,11 +332,10 @@ namespace report {
         "The CompMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncCompMatr() after manually modifying elements, or overwrite all elements with setCompMatr() which automatically synchronises.";
 
     string DIAG_MATR_NOT_SYNCED_TO_GPU = 
-        "The DiagMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please first call syncDiagMatr() after manually modifying elements, or overwrite all elements with setDiagMatr().";
+        "The DiagMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncDiagMatr() after manually modifying elements, or overwrite all elements with setDiagMatr() which automatically synchronises.";
 
     string FULL_STATE_DIAG_MATR_NOT_SYNCED_TO_GPU = 
-        "The FullStateDiagMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please first call syncFullStateDiagMatr() after manually modifying elements, or overwrite elements in batch with setFullStateDiagMatr().";
-
+        "The FullStateDiagMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncFullStateDiagMatr() after manually modifying elements, or overwrite elements in batch with setFullStateDiagMatr() which automatically synchronises.";
 
 
     string MATRIX_NOT_UNITARY = 
@@ -1344,6 +1339,11 @@ void assertAdditionalHeapMatrixFieldsAreValid(T matr, const char* caller) {
     int flag = *matr.isUnitary;
     vars["${BAD_FLAG}"] = flag;
     assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
+
+    // assert wasGpuSynced has a valid value
+    flag = *matr.wasGpuSynced;
+    vars["${BAD_FLAG}"] = flag;
+    assertThat(flag == 0 || flag == 1, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
 
     // checks whether users have, after destroying their struct, manually set the outer
     // heap-memory pointers to NULL. We do not check inner pointers of 2D structures (which may
