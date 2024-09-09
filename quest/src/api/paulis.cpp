@@ -9,6 +9,7 @@
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/printer.hpp"
 #include "quest/src/core/parser.hpp"
+#include "quest/src/core/memory.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
@@ -46,7 +47,8 @@ int getPauliFromMaskAt(PAULI_MASK_TYPE mask, int ind) {
 
 bool didAnyAllocsFailOnAnyNode(PauliStrSum sum) {
 
-    bool anyFail = (sum.strings == nullptr) || (sum.coeffs == nullptr);
+    bool anyFail = ! mem_isAllocated(sum.strings) || ! mem_isAllocated(sum.coeffs);
+    
     if (comm_isInit())
         anyFail = comm_isTrueOnAllNodes(anyFail);
 

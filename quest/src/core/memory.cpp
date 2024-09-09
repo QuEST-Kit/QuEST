@@ -11,6 +11,7 @@
  */
 
 #include "quest/include/types.h"
+#include "quest/include/paulis.h"
 
 #include "quest/src/core/memory.hpp"
 #include "quest/src/core/bitwise.hpp"
@@ -62,8 +63,8 @@ qindex mem_getTotalGlobalMemoryUsed(Qureg qureg) {
     // work out individual array costs
     qindex memLocalArray = (qindex) mem_getLocalQuregMemoryRequired(qureg.numAmpsPerNode); // never overflows
     int numLocalArrays = 
-        (qureg.cpuAmps != nullptr) + (qureg.cpuCommBuffer != nullptr) + 
-        (qureg.gpuAmps != nullptr) + (qureg.gpuCommBuffer != nullptr);  // but *4 might
+        mem_isAllocated(qureg.cpuAmps) + mem_isAllocated(qureg.cpuCommBuffer) +
+        mem_isAllocated(qureg.gpuAmps) + mem_isAllocated(qureg.gpuCommBuffer);  // but 4*memLocalArray might overflow
 
     // if total local costs would overflow qindex, return 0
     qindex maxQindex = std::numeric_limits<qindex>::max();
@@ -275,3 +276,58 @@ bool mem_canMatrixFitInMemory(int numQubits, bool isDense, int numNodes, qindex 
 
     return localNumQubits <= maxLocalNumQubits;
 }
+
+
+
+/*
+ * MEMORY ALLOCATION SUCCESS
+ *
+ * which check that some or all nested pointers are
+ * non-NULL, indicating that all allocations involved
+ * in a multidimensional data structure were successful.
+ * Some of these functions are trivial NULL checks, but
+ * are still abstracted here so that data structures can
+ * later be adjusted (e.g. CPU matrices may be flattened).
+ */
+
+
+template <typename T>
+bool isNonNull(T ptr) {
+
+    // note that (ptr == None) implies (ptr == nullptr)
+    return ptr != nullptr;
+}
+
+
+// fast checks which can be used in validation of existing
+// heap objects, which check only the outer alloc is valid.
+// this is useful for checking whether a user has manually
+// modified a heap pointer to be NULL because they are 
+// tracking freed objects, but they cannot be used to check
+// intiail memory mallocs were successful.
+
+bool mem_isOuterAllocated(qcomp*   ptr) { return isNonNull(ptr); }
+bool mem_isOuterAllocated(qcomp**  ptr) { return isNonNull(ptr); }
+
+
+// slow checks that all nested pointers in the heap structure 
+// are non-NULL, implying all of them point to valid, existing
+// heap memory. This is used by validation after allocation.
+
+bool mem_isAllocated(int* heapflag)   { return isNonNull(heapflag); }
+bool mem_isAllocated(qcomp* array )   { return isNonNull(array); }
+bool mem_isAllocated(PauliStr* array) { return isNonNull(array); }
+
+bool mem_isAllocated(qcomp** matrix, qindex numRows) {
+
+    if (matrix == nullptr)
+        return false;
+
+    // avoid recursing for insignificant speedup
+    for (qindex r=0; r<numRows; r++)
+        if (matrix[r] == nullptr)
+            return false;
+
+    return true;
+}
+

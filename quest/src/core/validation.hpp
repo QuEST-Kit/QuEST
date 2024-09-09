@@ -98,9 +98,9 @@ void validate_newCompMatrParams(int numQubits, const char* caller);
 void validate_newDiagMatrParams(int numQubits, const char* caller);
 void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, const char* caller);
 
-void validate_newMatrixAllocs(CompMatr matr, qindex numBytes, const char* caller);
-void validate_newMatrixAllocs(DiagMatr matr, qindex numBytes, const char* caller);
-void validate_newMatrixAllocs(FullStateDiagMatr matr, qindex numBytes, const char* caller);
+void validate_newMatrixAllocs(CompMatr matr, const char* caller);
+void validate_newMatrixAllocs(DiagMatr matr, const char* caller);
+void validate_newMatrixAllocs(FullStateDiagMatr matr, const char* caller);
 
 
 
@@ -110,8 +110,6 @@ void validate_newMatrixAllocs(FullStateDiagMatr matr, qindex numBytes, const cha
 
 void validate_matrixNumNewElems(int numQubits, vector<vector<qcomp>> elems, const char* caller);
 void validate_matrixNumNewElems(int numQubits, vector<qcomp> elems, const char* caller);
-
-void validate_matrixNewElemsDontContainUnsyncFlag(qcomp firstElem, const char* caller);
 
 void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd, qindex numElems, const char* caller);
 

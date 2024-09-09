@@ -98,6 +98,13 @@ constexpr bool util_isFixedSizeMatrixType() {
 }
 
 template<class T>
+constexpr bool util_isHeapMatrixType() {
+
+    // all non-fixed size matrices are stored in the heap (never the stack)
+    return ! util_isFixedSizeMatrixType<T>();
+}
+
+template<class T>
 constexpr bool util_isDistributableMatrixType() {
 
     return (is_same_v<T, FullStateDiagMatr>);
@@ -110,16 +117,6 @@ bool util_isDistributedMatrix(T matr) {
         return matr.isDistributed;
 
     return false;
-}
-
-template<class T>
-constexpr bool util_doesMatrixHaveIsUnitaryFlag() {
-
-    return (
-        is_same_v<T, CompMatr> ||
-        is_same_v<T, DiagMatr> ||
-        is_same_v<T, FullStateDiagMatr>
-    );
 }
 
 template<class T>

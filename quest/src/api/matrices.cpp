@@ -85,11 +85,13 @@ void freeHeapMatrix(T matr) {
         cpu_deallocArray(matr.cpuElems);
 
     // we avoid invoking a GPU function in non-GPU mode
-    if (util_getGpuMemPtr(matr) != nullptr)
-        gpu_deallocArray(util_getGpuMemPtr(matr));
+    auto gpuPtr = util_getGpuMemPtr(matr);
+    if (mem_isAllocated(gpuPtr))
+        gpu_deallocArray(gpuPtr);
 
-    // free the teeny tiny heap flag
+    // free the teeny tiny heap flags
     cpu_deallocHeapFlag(matr.isUnitary);
+    cpu_deallocHeapFlag(matr.wasGpuSynced);
 }
 
 
@@ -97,22 +99,32 @@ void freeHeapMatrix(T matr) {
 template <class T>
 bool didAnyLocalAllocsFail(T matr) {
 
-    // god help us if this single-integer malloc failed
-    if (matr.isUnitary == nullptr)
+    // god help us if these single-integer malloc failed
+    if (!mem_isAllocated(matr.isUnitary))
+        return true;
+    if (!mem_isAllocated(matr.wasGpuSynced))
         return true;
 
     // outer CPU memory should always be allocated
-    if (matr.cpuElems == nullptr)
-        return true;
+    if constexpr (util_isDenseMatrixType<T>()) {
+        if (!mem_isAllocated(matr.cpuElems, matr.numRows))
+            return true;
+    } else {
+        if (!mem_isAllocated(matr.cpuElems))
+            return true;
+    }
 
     // if memory is 2D, we must also check each inner array was allocated
-    if constexpr (util_isDenseMatrixType<T>())
-        for (qindex r=0; r<matr.numRows; r++)
-            if (matr.cpuElems[r] == nullptr)
-                return true;
+    if constexpr (util_isDenseMatrixType<T>()) {
+        if (!mem_isAllocated(matr.cpuElems, matr.numRows))
+            return true;
+    } else {
+        if (!mem_isAllocated(matr.cpuElems))
+            return true;
+    }
 
     // if env is GPU-accelerated, we should have allocated persistent GPU memory
-    if (getQuESTEnv().isGpuAccelerated && util_getGpuMemPtr(matr) == nullptr)
+    if (getQuESTEnv().isGpuAccelerated && !mem_isAllocated(util_getGpuMemPtr(matr)))
         return true;
 
     // otherwise, all pointers were non-NULL and ergo all allocs were successful
@@ -137,14 +149,23 @@ void freeAllMemoryIfAnyAllocsFailed(T matr) {
 
 // type T can be CompMatr, DiagMatr or FullStateDiagMatr
 template <class T>
-void validateMatrixAllocsAndSetUnitarityUnknown(T matr, size_t numBytes, const char* caller) {
+void validateMatrixAllocs(T matr, const char* caller) {
 
     // free memory before throwing validation error to avoid memory leaks
     freeAllMemoryIfAnyAllocsFailed(matr);
-    validate_newMatrixAllocs(matr, numBytes, caller);
+    validate_newMatrixAllocs(matr, caller);
+}
+
+
+// type T can be CompMatr, DiagMatr or FullStateDiagMatr
+template <class T>
+void setInitialHeapFlags(T matr) {
 
     // set initial unitarity of the newly created matrix to unknown
     *(matr.isUnitary) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+
+    // indicate that GPU memory has not yet been synchronised
+    *(matr.wasGpuSynced) = 0;
 }
 
 
@@ -158,27 +179,28 @@ extern "C" CompMatr createCompMatr(int numQubits) {
     validate_envIsInit(__func__);
     validate_newCompMatrParams(numQubits, __func__);
 
-    // validation ensures these (and below mem sizes) never overflow
+    // validation ensures these never overflow
     qindex numRows = powerOf2(numQubits);
     qindex numElems = numRows * numRows;
-    qindex numBytes = numElems * sizeof(qcomp); // used only by validation report
 
     // initialise all CompMatr fields inline because most are const
     CompMatr out = {
         .numQubits = numQubits,
         .numRows = numRows,
 
-        // allocate flag in the heap so that struct copies are mutable
+        // allocate flags in the heap so that struct copies are mutable
         .isUnitary = cpu_allocHeapFlag(), // nullptr if failed
+        .wasGpuSynced = cpu_allocHeapFlag(), // nullptr if failed
 
         // 2D CPU memory
         .cpuElems = cpu_allocMatrix(numRows), // nullptr if failed, or may contain nullptr
 
-        // 1D GPU memory (nullptr if failed or not needed)
-        .gpuElemsFlat = (getQuESTEnv().isGpuAccelerated)? gpu_allocArray(numElems) : nullptr // first amp will be un-sync'd flag
+        // 1D GPU memory (first amp will be un-sync'd flag)
+        .gpuElemsFlat = (getQuESTEnv().isGpuAccelerated)? gpu_allocArray(numElems) : nullptr // nullptr if failed or not needed
     };
 
-    validateMatrixAllocsAndSetUnitarityUnknown(out, numBytes, __func__);
+    validateMatrixAllocs(out, __func__);
+    setInitialHeapFlags(out);
     return out;
 }
 
@@ -187,26 +209,27 @@ extern "C" DiagMatr createDiagMatr(int numQubits) {
     validate_envIsInit(__func__);
     validate_newDiagMatrParams(numQubits, __func__);
 
-    // validation ensures these (and below mem sizes) never overflow
+    // validation ensures this never overflows
     qindex numElems = powerOf2(numQubits);
-    qindex numBytes = numElems * sizeof(qcomp);
 
     // initialise all CompMatr fields inline because most are const
     DiagMatr out = {
         .numQubits = numQubits,
         .numElems = numElems,
 
-        // store unitary flag in the heap so that struct copies are mutable
+        // allocate flags in the heap so that struct copies are mutable
         .isUnitary = cpu_allocHeapFlag(), // nullptr if failed
+        .wasGpuSynced = cpu_allocHeapFlag(), // nullptr if failed
 
         // 1D CPU memory
         .cpuElems = cpu_allocArray(numElems), // nullptr if failed
 
-        // 1D GPU memory (nullptr if failed or not needed)
-        .gpuElems = (getQuESTEnv().isGpuAccelerated)? gpu_allocArray(numElems) : nullptr // first amp will be un-sync'd flag
+        // 1D GPU memory (first amp will be un-sync'd flag)
+        .gpuElems = (getQuESTEnv().isGpuAccelerated)? gpu_allocArray(numElems) : nullptr // nullptr if failed or not needed
     };
 
-    validateMatrixAllocsAndSetUnitarityUnknown(out, numBytes, __func__);
+    validateMatrixAllocs(out, __func__);
+    setInitialHeapFlags(out);
     return out;
 }
 
@@ -221,9 +244,9 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
     // overwrite useDistrib if it was left as AUTO_FLAG
     autodep_chooseFullStateDiagMatrDeployment(numQubits, useDistrib, env);
 
+    // validation ensures this never overflows
     qindex numElems = powerOf2(numQubits);
     qindex numElemsPerNode = numElems / (useDistrib? env.numNodes : 1); // divides evenly
-    qindex numBytesPerNode = numElemsPerNode * sizeof(qcomp);
 
     FullStateDiagMatr out = {
 
@@ -234,17 +257,19 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
         .numElems = numElems,
         .numElemsPerNode = numElemsPerNode,
 
-        // store unitary flag in the heap so that struct copies are mutable
+        // allocate flags in the heap so that struct copies are mutable
         .isUnitary = cpu_allocHeapFlag(), // nullptr if failed
+        .wasGpuSynced = cpu_allocHeapFlag(), // nullptr if failed
 
-        // 1D CPU memory (nullptr if failed)
+        // 1D CPU memory
         .cpuElems = cpu_allocArray(numElemsPerNode), // nullptr if failed
 
-        // 1D GPU memory (nullptr if failed or deliberately not allocated)
-        .gpuElems = (env.isGpuAccelerated)? gpu_allocArray(numElemsPerNode) : nullptr, // first amp will be un-sync'd flag
+        // 1D GPU memory (first amp will be un-sync'd flag)
+        .gpuElems = (env.isGpuAccelerated)? gpu_allocArray(numElemsPerNode) : nullptr, // nullptr if failed or not needed
     };
 
-    validateMatrixAllocsAndSetUnitarityUnknown(out, numBytesPerNode, __func__);
+    validateMatrixAllocs(out, __func__);
+    setInitialHeapFlags(out);
     return out;
 }
 
@@ -269,15 +294,18 @@ extern "C" FullStateDiagMatr createFullStateDiagMatr(int numQubits) {
 template <class T>
 void validateAndSyncMatrix(T matr, const char* caller) {
     validate_matrixFields(matr, caller);
-    validate_matrixNewElemsDontContainUnsyncFlag(util_getFirstLocalElem(matr), caller);
 
     // optionally overwrite GPU elements with user-modified CPU elements
-    if (util_getGpuMemPtr(matr) != nullptr)
+    if (mem_isAllocated(util_getGpuMemPtr(matr)))
         gpu_copyCpuToGpu(matr);
 
     // indicate that we do not know whether the revised matrix is
     // is unitarity; we defer establishing that until a unitarity check
     *(matr.isUnitary) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+
+    // indicate that the matrix is now permanently GPU synchronised, even
+    // if we are not in GPU-accelerated mode (in which case it's never consulted)
+    *(matr.wasGpuSynced) = 1;
 }
 
 
@@ -326,7 +354,6 @@ extern "C" {
 template <typename T> 
 void validateAndSetDenseMatrElems(CompMatr out, T elems, const char* caller) {
     validate_matrixFields(out, __func__);
-    validate_matrixNewElemsDontContainUnsyncFlag(elems[0][0], caller);
 
     // copy elems into matrix's CPU memory
     cpu_copyMatrix(out.cpuElems, elems, out.numRows);
@@ -345,7 +372,6 @@ extern "C" void setCompMatr(CompMatr out, qcomp** in) {
 
 extern "C" void setDiagMatr(DiagMatr out, qcomp* in) {
     validate_matrixFields(out, __func__);
-    validate_matrixNewElemsDontContainUnsyncFlag(in[0], __func__);
 
     // overwrite CPU memory
     cpu_copyArray(out.cpuElems, in, out.numElems);
@@ -357,7 +383,6 @@ extern "C" void setDiagMatr(DiagMatr out, qcomp* in) {
 
 extern "C" void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qcomp* in, qindex numElems) {
     validate_matrixFields(out, __func__);
-    validate_matrixNewElemsDontContainUnsyncFlag(in[0], __func__);
     validate_fullStateDiagMatrNewElems(out, startInd, numElems, __func__);
 
     // if the matrix is non-distributed, we update every node's duplicated CPU amps

@@ -258,15 +258,6 @@ void gpu_sync() {
  */
 
 
-// initial value of first element of freshly GPU-allocated memory which
-// indicates memory has not yet been synced/overwritten since creation.
-// This is used by validation to detect users forgetting to sync memory
-// of API structures, so should be an arbitrary value users are unlikely 
-// to set as the first element (which we will validate anyway). We don't
-// do this for Quregs which are always overwritten at creation.
-const qcomp UNSYNCED_GPU_MEM_FLAG = qcomp(3.141592653, 12345.67890);
-
-
 qcomp* gpu_allocArray(qindex length) {
 #if COMPILE_CUDA
 
@@ -367,9 +358,9 @@ void copyMatrixIfGpuCompiled(qcomp** cpuMatr, qcomp* gpuArr, qindex matrDim, enu
 
 
 template <typename T>
-void assertHeapObjectHasGpuMem(T obj) {
+void assertHeapObjectGpuMemIsAllocated(T obj) {
 
-    if (util_getGpuMemPtr(obj) == nullptr || ! getQuESTEnv().isGpuAccelerated)
+    if (! mem_isAllocated(util_getGpuMemPtr(obj)) || ! getQuESTEnv().isGpuAccelerated)
         error_gpuCopyButMatrixNotGpuAccelerated();
 }
 
@@ -379,6 +370,7 @@ void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems
     // these functions unusually accept a Qureg just to run internal error validation,
     // to ensure that the given gpuArr can be read/write without segmentation fault
     assert_quregIsGpuAccelerated(qureg);
+
     copyArrayIfGpuCompiled(cpuArr, gpuArr, numElems, TO_DEVICE);
 }
 void gpu_copyCpuToGpu(Qureg qureg) {
@@ -394,67 +386,30 @@ void gpu_copyGpuToCpu(Qureg qureg) {
 
 
 void gpu_copyCpuToGpu(CompMatr matr) {
-    assertHeapObjectHasGpuMem(matr);
+    assertHeapObjectGpuMemIsAllocated(matr);
+
     copyMatrixIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numRows, TO_DEVICE);
 }
 
 
 void gpu_copyCpuToGpu(DiagMatr matr) {
-    assertHeapObjectHasGpuMem(matr);
+    assertHeapObjectGpuMemIsAllocated(matr);
+
     copyArrayIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numElems, TO_DEVICE);
 }
 
 
 void gpu_copyCpuToGpu(FullStateDiagMatr matr) {
-    assertHeapObjectHasGpuMem(matr);
+    assertHeapObjectGpuMemIsAllocated(matr);
+
     copyArrayIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numElemsPerNode, TO_DEVICE);
 }
 
 
-void gpu_copyCpuToGpu(KrausMap map) {
-    assertHeapObjectHasGpuMem(map);
-    copyMatrixIfGpuCompiled(map.cpuSuperopElems, util_getGpuMemPtr(map), map.numSuperopRows, TO_DEVICE);
-}
+void gpu_copyCpuToGpu(SuperOp op) {
+    assertHeapObjectGpuMemIsAllocated(op);
 
-
-
-/*
- * MEMORY MANAGEMENT
- */
-
-
-bool gpu_haveGpuAmpsBeenSynced(qcomp* gpuArr) {
-#if COMPILE_CUDA
-
-    if (gpuArr == nullptr || ! getQuESTEnv().isGpuAccelerated)
-        error_gpuCopyButMatrixNotGpuAccelerated();
-
-    // obtain first element from device memory
-    qcomp firstElem;
-    CUDA_CHECK( cudaMemcpy(&firstElem, gpuArr, sizeof(qcomp), cudaMemcpyDeviceToHost) );
-
-    // check whether it is still the unsync'd flag
-    return firstElem != UNSYNCED_GPU_MEM_FLAG;
-
-#else
-    error_gpuCopyButGpuNotCompiled();
-    return false;
-#endif
-}
-
-
-bool gpu_doCpuAmpsHaveUnsyncMemFlag(qcomp firstCpuAmp) {
-
-    // we permit the unsync flag to appear in CPU-only matrices, so we
-    // should never be asking this question unless env is GPU-accelerated. 
-    // Indeed permitting the flag when CPU-only could astonish users
-    // if they later enabled GPU-accel and encounter a validation error
-    // (not actually this internal error), but that's less astonishing then 
-    // getting a GPU-related error message when running in CPU-mode!
-    if (!getQuESTEnv().isGpuAccelerated)
-        error_gpuMemSyncQueriedButEnvNotGpuAccelerated();
-
-    return firstCpuAmp == UNSYNCED_GPU_MEM_FLAG;
+    copyMatrixIfGpuCompiled(op.cpuElems, util_getGpuMemPtr(op), op.numRows, TO_DEVICE);
 }
 
 
