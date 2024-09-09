@@ -367,9 +367,9 @@ void copyMatrixIfGpuCompiled(qcomp** cpuMatr, qcomp* gpuArr, qindex matrDim, enu
 
 
 template <typename T>
-void assertHeapObjectHasGpuMem(T obj) {
+void assertHeapObjectGpuMemIsAllocated(T obj) {
 
-    if (util_getGpuMemPtr(obj) == nullptr || ! getQuESTEnv().isGpuAccelerated)
+    if (! mem_isAllocated(util_getGpuMemPtr(obj)) || ! getQuESTEnv().isGpuAccelerated)
         error_gpuCopyButMatrixNotGpuAccelerated();
 }
 
@@ -379,6 +379,7 @@ void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems
     // these functions unusually accept a Qureg just to run internal error validation,
     // to ensure that the given gpuArr can be read/write without segmentation fault
     assert_quregIsGpuAccelerated(qureg);
+
     copyArrayIfGpuCompiled(cpuArr, gpuArr, numElems, TO_DEVICE);
 }
 void gpu_copyCpuToGpu(Qureg qureg) {
@@ -394,13 +395,15 @@ void gpu_copyGpuToCpu(Qureg qureg) {
 
 
 void gpu_copyCpuToGpu(CompMatr matr) {
-    assertHeapObjectHasGpuMem(matr);
+    assertHeapObjectGpuMemIsAllocated(matr);
+
     copyMatrixIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numRows, TO_DEVICE);
 }
 
 
 void gpu_copyCpuToGpu(DiagMatr matr) {
-    assertHeapObjectHasGpuMem(matr);
+    assertHeapObjectGpuMemIsAllocated(matr);
+
     copyArrayIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numElems, TO_DEVICE);
 }
 
