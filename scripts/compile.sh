@@ -87,6 +87,7 @@ CORE_DIR="${SRC_DIR}/core"
 # files in API_DIR
 API_FILES=(
     "calculations"
+    "channels"
     "debug"
     "decoherence"
     "environment"

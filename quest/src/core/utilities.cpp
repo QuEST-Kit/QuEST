@@ -5,6 +5,7 @@
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
+#include "quest/include/channels.h"
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
@@ -99,16 +100,23 @@ vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg) {
     return braInds;
 }
 
+vector<int> util_getConcatenated(vector<int> list1, vector<int> list2) {
+
+    // modify the copy of list1
+    list1.insert(list1.end(), list2.begin(), list2.end());
+    return list1;
+}
+
 vector<int> util_getSorted(vector<int> qubits) {
+
     vector<int> copy = qubits;
     std::sort(copy.begin(), copy.end());
     return copy;
 }
 
 vector<int> util_getSorted(vector<int> ctrls, vector<int> targs) {
-    vector<int> qubits = ctrls;
-    qubits.insert(qubits.end(), targs.begin(), targs.end());
-    return util_getSorted(qubits);
+
+    return util_getSorted(util_getConcatenated(ctrls, targs));
 }
 
 qindex util_getBitMask(vector<int> qubits) {
@@ -124,12 +132,8 @@ qindex util_getBitMask(vector<int> qubits, vector<int> states) {
 
 qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, vector<int> targStates) {
 
-    auto qubits = ctrls;
-    qubits.insert(qubits.end(), targs.begin(), targs.end());
-
-    auto states = ctrlStates;
-    states.insert(states.end(), targStates.begin(), targStates.end());
-
+    auto qubits = util_getConcatenated(ctrls, targs);
+    auto states = util_getConcatenated(ctrlStates, targStates);
     return util_getBitMask(qubits, states);
 }
 
@@ -262,6 +266,76 @@ bool util_isUnitary(FullStateDiagMatr matrix) {
         res = comm_isTrueOnAllNodes(res);
 
     return res;
+}
+
+
+
+/*
+ * KRAUS MAPS
+ */
+
+bool util_isCPTP(KrausMap map) {
+
+    qreal epsSquared = VALIDATION_EPSILON * VALIDATION_EPSILON;
+
+    // each whether each element satisfies Identity = sum dagger(m)*m
+    for (qindex r=0; r<map.numRows; r++) {
+        for (qindex c=0; c<map.numRows; c++) {
+
+            // calculate (r,c)-th element of sum dagger(m)*m
+            qcomp elem = 0;
+            for (int n=0; n<map.numMatrices; n++)
+                for (qindex k=0; k<map.numRows; k++)
+                    elem += conj(map.matrices[n][k][r]) * map.matrices[n][k][c];
+
+            // fail if too distant from Identity element
+            qreal distSquared = norm(elem - (r==c));
+            if (distSquared > epsSquared)   
+                return false;
+        }
+    }
+    
+    return true;
+}
+
+// T can be qcomp*** or vector<vector<vector<qcomp>>>
+template <typename T> 
+void setSuperoperator(qcomp** superop, T matrices, int numMatrices, qindex logMatrixDim) {
+
+    // TODO:
+    // we initialise the superoperator completely serially, under the assumption that the
+    // superoperator will be small in size and initialised infrequently. Still, it would
+    // be better to provide backend initialisation functions (OpenMP and CUDA accelerated),
+    // called when the superoperator size is above some threshold!
+
+    qindex matrixDim = powerOf2(logMatrixDim);
+    qindex superopDim = matrixDim * matrixDim;
+
+    // clear superoperator
+    for (qindex r=0; r<superopDim; r++)
+        for (qindex c=0; c<superopDim; c++)
+            superop[r][c] = 0;
+
+    // add each matrix's contribution to the superoperator
+    for (int n=0; n<numMatrices; n++) {
+        auto matrix = matrices[n];
+        
+        // superop += conj(matrix) (tensor) matrix
+        for (qindex i=0; i<matrixDim; i++)
+            for (qindex j=0; j<matrixDim; j++)
+                for (qindex k=0; k<matrixDim; k++)
+                    for (qindex l=0; l<matrixDim; l++) {
+                        qindex r = i*matrixDim + k;
+                        qindex c = j*matrixDim + l;
+                        superop[r][c] += conj(matrix[i][j]) * matrix[k][l];
+                    }
+    }
+}
+void util_setSuperoperator(qcomp** superop, vector<vector<vector<qcomp>>> matrices, int numMatrices, int numQubits) {
+    setSuperoperator(superop, matrices, numMatrices, numQubits);
+}
+void util_setSuperoperator(qcomp** superop, qcomp*** matrices, int numMatrices, int numQubits) {
+    setSuperoperator(superop, matrices, numMatrices, numQubits);
 }
 
 

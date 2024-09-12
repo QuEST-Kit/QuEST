@@ -131,6 +131,32 @@ void cpu_deallocMatrix(qcomp** matrix, qindex dim) {
 }
 
 
+qcomp*** cpu_allocMatrixList(int numMatrices, qindex numRows) {
+
+    // attempt to allocate the outer list
+    qcomp*** matrices = (qcomp***) malloc(numMatrices * sizeof *matrices); // nullptr if failed
+
+    // attempt to allocate each matrix
+    if (matrices != nullptr)
+        for (int n=0; n<numMatrices; n++)
+            matrices[n] = cpu_allocMatrix(numRows); // nullptr if failed
+
+    return matrices; // may be or contain nullptrs, user will handle
+}
+
+
+void cpu_deallocMatrixList(qcomp*** matrices, int numMatrices, qindex numRows) {
+
+    // free everything that allocated (but permit anything to have failed)
+    if (matrices != nullptr)
+        for (int n=0; n<numMatrices; n++)
+            cpu_deallocMatrix(matrices[n], numRows);
+
+    // legal to free nullptr
+    free(matrices);
+}
+
+
 int* cpu_allocHeapFlag() {
 
     // we use int over bool for the flag, because often we use
