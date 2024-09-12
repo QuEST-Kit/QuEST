@@ -7,6 +7,7 @@
 
 #include "quest/include/types.h"
 #include "quest/include/matrices.h"
+#include "quest/include/channels.h"
 #include "quest/include/paulis.h"
 
 #include <tuple>
@@ -95,6 +96,7 @@ namespace printer_substrings {
  */
 
 static string defaultMatrIndent  = "    ";
+static string defaultKrausIndent = "  ";
 static string defaultTableIndent = "  ";
 
 
@@ -126,10 +128,24 @@ void print_matrix(FullStateDiagMatr matr, string indent=defaultMatrIndent);
 
 
 /*
+ * CHANNEL PRINTING
+ */
+
+void print_superOpInfo(SuperOp op);
+
+void print_superOp(SuperOp op, string indent=defaultMatrIndent);
+
+void print_krausMapInfo(KrausMap map);
+
+void print_krausMap(KrausMap map, string indIndent=defaultKrausIndent, string matrIndent=defaultKrausIndent+defaultMatrIndent);
+
+
+
+/*
  * TABLE PRINTING
  */
 
-void print_table(string title, vector<tuple<string, string>>   rows, string indent=defaultTableIndent);
+void print_table(string title, vector<tuple<string, string       >> rows, string indent=defaultTableIndent);
 void print_table(string title, vector<tuple<string, long long int>> rows, string indent=defaultTableIndent);
 
 

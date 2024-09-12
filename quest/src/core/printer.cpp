@@ -4,9 +4,11 @@
 
 #include "quest/include/types.h"
 #include "quest/include/matrices.h"
+#include "quest/include/channels.h"
 #include "quest/include/paulis.h"
 
 #include "quest/src/core/printer.hpp"
+#include "quest/src/core/memory.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
@@ -190,7 +192,7 @@ string floatToStr(T num, bool hideSign=false) {
             num *= -1;
     }
 
-    // return 0, 1, .1, 1.2e-5
+    // return 0, 1, 0.1, 1.2e-5, -1e+5
     buffer << num;
     return buffer.str();
 }
@@ -208,8 +210,12 @@ string printer_toStr(complex<T> num) {
     if (imag(num) == 0)
         return floatToStr(real(num));
 
-    // imaginary complex-floats neglect real component
+    // imaginary complex-floats neglect real component entirely (instead of 0+3i)
     string realStr = (real(num) == 0)? "" : floatToStr(real(num));
+
+    // scientific-notation real component (when followed by any imaginary component) gets brackets
+    if (realStr.find('e') != string::npos)
+        realStr = '(' + realStr + ')';
 
     // -1i is abbreviated to -i
     if constexpr (std::is_signed_v<T>)
@@ -256,9 +262,26 @@ template string printer_toStr<double>(complex<double> num);
 template string printer_toStr<long double>(complex<long double> num);
 
 
+// alias as toStr() just for internal brevity
+// (this seems backward; ordinarily we would define toStr() as
+// the templated inner-function and define concretely-typed public
+// printer_toStr() overloads. This current implementation, where
+// we expose the templated printer_toStr() in the header, avoids
+// polluting the header with the above precision-agnostic 
+// instantiations (which would become overloads). Stinky!)
+
+template <class T> string toStr(T num) {
+
+    return printer_toStr(num);
+}
+
+
 
 /*
  * PRIMITIVE PRINTING
+ *
+ * used by other files which need to directly print
+ * unformatted strings (from root node only)
  */
 
 
@@ -272,7 +295,51 @@ void print(string str) {
 }
 
 void print(qcomp num) {
-    print(printer_toStr(num));
+    print(toStr(num));
+}
+
+
+
+/*
+ * INTERNAL FUNCTIONS
+ *
+ * used by the below public functions for preparing substrings 
+ */
+
+
+string getNumQubitsStr(int numQubits) {
+
+    // e.g. "1 qubit" or "2 qubits"
+    return toStr(numQubits) + " qubit" + ((numQubits>1)? "s":"");
+}
+
+
+string getNumMatrixElemsStr(qindex dim, bool isDiag, int numNodes) {
+
+    // we do not bother handling the dim=1 non-plural case, because it
+    // never occurs! We always receive power-of-2 dimension matrices
+
+    // e.g. "2 qcomps" or "2x2 qcomps"
+    string out = toStr(dim) + (isDiag? "" : mu + toStr(dim)) + " qcomps";
+
+    // FullStateDiagMatr may be distributed over >1 numNodes (for other matrix types, numNodes=1 always)
+    if (numNodes > 1)
+        out += " over " + toStr(numNodes) + " nodes";
+
+    return out;
+}
+
+
+string getMemoryCostsStr(size_t numMainBytes, size_t numOverheadBytes, int numNodes) {
+
+    // e.g. "1024 + 32 bytes"
+    string out = toStr(numMainBytes) + pl + toStr(numOverheadBytes) + by;
+
+    // FullStateDiagMatr may be distributed over >1 numNodes (for other matrix types, numNodes=1 always)
+    if (numNodes > 1)
+        out += " per node";
+
+    return out;
 }
 
 
@@ -291,25 +358,21 @@ void print_matrixInfo(string nameStr, int numQubits, qindex dim, size_t elemMem,
         return;
 
     // please don't tell anyone how I live
+    // edit: Tyson from 2 months in the future has found this and is appalled, but is somewhat
+    // sated by the potential bug (a matrix being incorrectly assessed as diagonal if its name
+    // changes) causing only a minor printed/typeset error (e.g. showing "5x5" instead of "5") 
     bool isDiag = nameStr.find("Diag") != string::npos;
-
-    // prepare substrings
-    string sepStr  = ", ";
-    string qbStr   = printer_toStr(numQubits) + " qubit" + ((numQubits>1)? "s":"");
-    string dimStr  = printer_toStr(dim) + (isDiag? "" : mu + printer_toStr(dim)) + " qcomps";
-    string memStr  = printer_toStr(elemMem) + pl + printer_toStr(otherMem) + by;
-
-    if (numNodes > 1) {
-        dimStr += " over " + printer_toStr(numNodes) + " nodes";
-        memStr += " per node";
-    }
 
     // print e.g. FullStateDiagMatr (8 qubits, 256 qcomps over 4 nodes, 1024 + 32 bytes per node):
     cout 
-        << nameStr << " (" 
-        << qbStr   << sepStr 
-        << dimStr  << sepStr 
-        << memStr  << "):" 
+        << nameStr 
+        << " (" 
+        << getNumQubitsStr(numQubits)
+        << ", " 
+        << getNumMatrixElemsStr(dim, isDiag, numNodes)
+        << ", "  
+        << getMemoryCostsStr(elemMem, otherMem, numNodes) 
+        << "):"  // colon, since caller will hereafter print matrix elements
         << endl;
 }
 
@@ -352,7 +415,7 @@ void rootPrintTruncatedDenseMatrixElems(T elems, qindex dim, string indent) {
 
         // by considering the top-most rows
         for (qindex r=0; r<numTopElems; r++) {
-            int width = printer_toStr(elems[r][c]).length();
+            int width = toStr(elems[r][c]).length();
             if (width > maxColWidths[c])
                 maxColWidths[c] = width;
         }
@@ -360,7 +423,7 @@ void rootPrintTruncatedDenseMatrixElems(T elems, qindex dim, string indent) {
         // and the bottom-most rows
         for (qindex i=0; i<numBotElems; i++) {
             int r = dim - i - 1;
-            int width = printer_toStr(elems[r][c]).length();
+            int width = toStr(elems[r][c]).length();
             if (width > maxColWidths[c])
                 maxColWidths[c] = width;
         }
@@ -374,7 +437,7 @@ void rootPrintTruncatedDenseMatrixElems(T elems, qindex dim, string indent) {
             cout << left
                 << setw(maxColWidths[c] + MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS) 
                 << setfill(MATRIX_SPACE_CHAR)
-                << printer_toStr(elems[r][c]);
+                << toStr(elems[r][c]);
 
         // print a trailing ellipsis after the top-most row
         if (isTruncated && r == 0)
@@ -402,7 +465,7 @@ void rootPrintTruncatedDenseMatrixElems(T elems, qindex dim, string indent) {
             cout << left
                 << setw(maxColWidths[c] + MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS) 
                 << setfill(MATRIX_SPACE_CHAR)
-                << printer_toStr(elems[r][c]);
+                << toStr(elems[r][c]);
 
         // print a trailing ellipsis after the bottom-most row
         if (r == dim-1)
@@ -443,7 +506,7 @@ void rootPrintAllDiagonalElems(qcomp* elems, qindex len, qindex indentOffset, st
         cout 
             << indent
             << string((i + indentOffset) * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR)
-            << printer_toStr(elems[i])
+            << toStr(elems[i])
             << endl;
 }
 
@@ -656,6 +719,91 @@ void print_matrix(FullStateDiagMatr matr, string indent) {
 
 
 /*
+ * CHANNEL PRINTING
+ */
+
+
+void print_superOpInfo(SuperOp op) {
+
+    // only root node prints
+    if (!comm_isRootNode())
+        return;
+
+    // determine memory costs
+    size_t elemMem = mem_getLocalSuperOpMemoryRequired(op.numQubits);
+    size_t structMem = sizeof(op);
+
+    // print e.g. SuperOp (1 qubit, 4 x 4 qcomps, 256 + 40 bytes)
+    cout 
+        << "SuperOp" 
+        << " (" 
+        << getNumQubitsStr(op.numQubits)
+        << ", " 
+        << getNumMatrixElemsStr(op.numRows, false, 1)  // superoperator is a non-diagonal non-distributed matrix
+        << ", "  
+        << getMemoryCostsStr(elemMem, structMem, 1) 
+        << "):"  // colon, since caller will hereafter print superoperator elements
+        << endl;
+}
+
+void print_superOp(SuperOp op, string indent) {
+
+    // only root node prints
+    if (!comm_isRootNode())
+        return;
+
+    rootPrintTruncatedDenseMatrixElems(op.cpuElems, op.numRows, indent);
+}
+
+void print_krausMapInfo(KrausMap map) {
+
+    // only root node prints
+    if (!comm_isRootNode())
+        return;
+
+    // determine memory costs (gauranteed not to overflow)
+    size_t krausMem = mem_getLocalMatrixMemoryRequired(map.numQubits, true, 1) * map.numMatrices;
+    size_t superMem = mem_getLocalSuperOpMemoryRequired(map.superop.numQubits);
+    size_t strucMem = sizeof(map);
+
+
+
+
+    // print e.g. 
+    cout 
+        << "KrausMap" 
+        << " (" 
+        << getNumQubitsStr(map.numQubits)
+        << ", " 
+        << toStr(map.numMatrices) + " " + ((map.numMatrices>1)? "matrices" : "matrix")
+        << ", " 
+        << getNumMatrixElemsStr(map.numRows, false, 1) 
+        << ", "  
+        << toStr(krausMem) << " + " << getMemoryCostsStr(superMem, strucMem, 1) 
+        << "):"  // colon, since caller will thereafter print Kraus matrices (via print_krausMap())
+        << endl;
+}
+
+void print_krausMap(KrausMap map, string indexIndent, string matrixIndent) {
+
+    // only root node prints
+    if (!comm_isRootNode())
+        return;
+
+    // print every Kraus operator in-turn (regardless of reporter truncation settings)
+    for (int n=0; n<map.numMatrices; n++) {
+
+        // print the Kraus map index
+        cout << indexIndent << "[" << toStr(n) << "]" << endl;
+
+        // then its corresponding matrix (which may be truncated)
+        rootPrintTruncatedDenseMatrixElems(map.matrices[n], map.numRows, matrixIndent);
+    }
+}
+
+
+
+/*
  * TABLE PRINTING
  */
 
@@ -740,7 +888,12 @@ void print_pauliStrSumInfo(qindex numTerms, qindex numBytes) {
         return;
 
     // print e.g. PauliStrSum (3 terms, 24 bytes)
-    cout << "PauliStrSum (" << numTerms << " terms, " << numBytes << by << ")" << endl;
+    cout 
+        << "PauliStrSum (" 
+        << numTerms << " terms, " 
+        << numBytes << by 
+        << "):"  // colon, since caller will hereafter print each pauli string
+        << endl;
 }
 
 
@@ -749,7 +902,7 @@ int getWidthOfWidestElem(qcomp* elems, qindex numElems) {
     int maxWidth = 0;
 
     for (qindex i=0; i<numElems; i++) {
-        int width = printer_toStr(elems[i]).size();
+        int width = toStr(elems[i]).size();
         if (width > maxWidth)
             maxWidth = width;
     }
@@ -780,7 +933,7 @@ void printPauliStrSumSubset(PauliStrSum sum, qindex startInd, qindex endIndExcl,
             << indent << left 
             << setw(coeffWidth + MIN_SPACE_BETWEEN_COEFF_AND_PAULI_STR) 
             << setfill(PAULI_STR_SPACE_CHAR) 
-            << printer_toStr(sum.coeffs[i]) 
+            << toStr(sum.coeffs[i]) 
             << getPauliStrAsString(sum.strings[i], maxNumPaulis)
             << endl;
 }

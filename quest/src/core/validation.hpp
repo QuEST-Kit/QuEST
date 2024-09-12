@@ -11,6 +11,7 @@
 #include "quest/include/qureg.h"
 #include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
+#include "quest/include/channels.h"
 
 #include <vector>
 #include <string>
@@ -140,6 +141,64 @@ void validate_matrixIsUnitary(DiagMatr  matr, const char* caller);
 void validate_matrixIsUnitary(FullStateDiagMatr matr, const char* caller);
 
 void validate_matrixIsCompatibleWithQureg(FullStateDiagMatr matr, Qureg qureg, const char* caller);
+
+
+
+/*
+ * SUPEROPERATOR CREATION
+ */
+
+void validate_newSuperOpParams(int numQubits, const char* caller);
+
+void validate_newSuperOpAllocs(SuperOp op, const char* caller);
+
+
+
+/*
+ * SUPEROPERATOR INITIALISATION
+ */
+
+void validate_superOpNewMatrixDims(SuperOp op, vector<vector<qcomp>> matrix, const char* caller);
+
+
+
+/*
+ * EXISTING SUPEROPERATOR
+ */
+
+void validate_superOpFields(SuperOp op, const char* caller);
+
+void validate_superOpIsSynced(SuperOp op, const char* caller);
+
+
+
+/*
+ * KRAUS MAP CREATION
+ */
+
+void validate_newKrausMapParams(int numQubits, int numMatrices, const char* caller);
+
+void validate_newKrausMapAllocs(KrausMap map, const char* caller);
+
+
+
+/*
+ * KRAUS MAP INITIALISATION
+ */
+
+void validate_krausMapNewMatrixDims(KrausMap map, vector<vector<vector<qcomp>>> matrices, const char* caller);
+
+
+
+/*
+ * EXISTING KRAUS MAP
+ */
+
+void validate_krausMapFields(KrausMap map, const char* caller);
+
+void validate_krausMapIsSynced(KrausMap map, const char* caller);
+
+void validate_krausMapIsCPTP(KrausMap map, const char* caller);
 
 
 

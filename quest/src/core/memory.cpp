@@ -141,6 +141,16 @@ size_t mem_getLocalMatrixMemoryRequired(int numQubits, bool isDenseMatrix, int n
 }
 
 
+size_t mem_getLocalSuperOpMemoryRequired(int numQubits) {
+
+    // superoperators have square-bigger superoperators than dense matrices, and are never distributed
+    int numMatrixQubits = 2 * numQubits;
+    bool isDense = true;
+    int numNodes = 1;
+    return mem_getLocalMatrixMemoryRequired(numMatrixQubits, isDense, numNodes);
+}
+
+
 
 /*
  * QUBIT BOUNDS
@@ -184,6 +194,16 @@ int mem_getMaxNumMatrixQubitsWhichCanFitInMemory(bool isDenseMatrix, int numNode
     return getMaxNumQubitsWhichCanFitInMemory(isDenseMatrix, numNodes, hasBuffer, isSuperOp, memBytesPerNode);
 }
 
+int mem_getMaxNumSuperOpQubitsWhichCanFitInMemory(qindex memBytesPerNode) {
+
+    // superoperators have square-bigger superoperators than dense matrices, and are never distributed
+    int numNodes = 1;
+    bool isDense = true;
+    bool hasBuffer = false;
+    bool isSuperOp = true;
+    return getMaxNumQubitsWhichCanFitInMemory(isDense, numNodes, hasBuffer, isSuperOp, memBytesPerNode);
+}
+
 
 int mem_getMinNumQubitsForDistribution(int numNodes) {
 
@@ -203,6 +223,23 @@ int mem_getMaxNumMatrixQubitsBeforeIndexOverflow(bool isDenseMatrix) {
 
     // matrices have the same number of amplitudes as a same-dimension Qureg
     return mem_getMaxNumQuregQubitsBeforeIndexOverflow(isDenseMatrix);
+}
+
+int mem_getMaxNumSuperOpQubitsBeforeIndexOverflow() {
+
+    // the superoperator is square-bigger than a dense matrix
+    bool isDense = true;
+    int maxMatrixQubits = mem_getMaxNumMatrixQubitsBeforeIndexOverflow(isDense);
+    int maxSuperOpQubits = maxMatrixQubits / 2; // floors
+    return maxSuperOpQubits;
+}
+
+qindex mem_getMaxNumKrausMapMatricesBeforeIndexOverflow(int numQubits) {
+
+    qindex numElemPerMatrix = powerOf2(2 * numQubits);
+    qindex maxNumTotalElems = std::numeric_limits<qindex>::max();
+    qindex maxNumMatrices = maxNumTotalElems / numElemPerMatrix; // floors
+    return maxNumMatrices;
 }
 
 
@@ -244,6 +281,23 @@ int mem_getMaxNumMatrixQubitsBeforeLocalMemSizeofOverflow(bool isDenseMatrix, in
     return getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDenseMatrix, numNodes, hasBuffer, isSuperOp);
 }
 
+int mem_getMaxNumSuperOpQubitsBeforeLocalMemSizeofOverflow() {
+
+    // superoperators have square-bigger superoperators than dense matrices, and are never distributed
+    int numNodes = 1;
+    bool isDense = true;
+    bool hasBuffer = false;
+    bool isSuperOp = true;
+    return getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDense, numNodes, hasBuffer, isSuperOp);
+}
+
+qindex mem_getMaxNumKrausMapMatricesBeforeLocalMemSizeofOverflow(int numQubits) {
+
+    qindex numMatrWithMaxTotalElems = mem_getMaxNumKrausMapMatricesBeforeIndexOverflow(numQubits);
+    qindex numMatrWithMaxTotalMem = numMatrWithMaxTotalElems / sizeof(qcomp); // floors
+    return numMatrWithMaxTotalMem;
+}
+
 
 
 /*
@@ -278,6 +332,16 @@ bool mem_canMatrixFitInMemory(int numQubits, bool isDense, int numNodes, qindex 
 }
 
 
+bool mem_canSuperOpFitInMemory(int numQubits, qindex numBytesPerNode) {
+
+    // superoperators are square-bigger than their constituent dense matrices, and are never distributed
+    int numMatrixQubits = 2 * numQubits;
+    int numNodes = 1;
+    bool isDense = true;
+    return mem_canMatrixFitInMemory(numMatrixQubits, isDense, numNodes, numBytesPerNode);
+}
+
+
 
 /*
  * MEMORY ALLOCATION SUCCESS
@@ -308,6 +372,7 @@ bool isNonNull(T ptr) {
 
 bool mem_isOuterAllocated(qcomp*   ptr) { return isNonNull(ptr); }
 bool mem_isOuterAllocated(qcomp**  ptr) { return isNonNull(ptr); }
+bool mem_isOuterAllocated(qcomp*** ptr) { return isNonNull(ptr); }
 
 
 // slow checks that all nested pointers in the heap structure 
@@ -331,3 +396,15 @@ bool mem_isAllocated(qcomp** matrix, qindex numRows) {
     return true;
 }
 
+bool mem_isAllocated(qcomp*** matrixList, qindex numMatrices, qindex numRows) {
+
+    if (matrixList == nullptr)
+        return false;
+
+    // fine to recurse because we expect few matrices
+    for (qindex n=0; n<numMatrices; n++)
+        if (!mem_isAllocated(matrixList[n], numRows))
+            return false;
+
+    return true;
+}

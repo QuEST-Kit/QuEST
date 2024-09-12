@@ -36,6 +36,9 @@ void cpu_deallocArray(qcomp* arr);
 qcomp** cpu_allocMatrix(qindex dim);
 void cpu_deallocMatrix(qcomp** matrix, qindex dim);
 
+qcomp*** cpu_allocMatrixList(int numMatrices, qindex numRows);
+void cpu_deallocMatrixList(qcomp*** matrices, int numMatrices, qindex numRows);
+
 int* cpu_allocHeapFlag();
 void cpu_deallocHeapFlag(int* ptr);
 
