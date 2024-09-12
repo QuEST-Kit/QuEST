@@ -274,9 +274,6 @@ qcomp* gpu_allocArray(qindex length) {
     // pass all other unexpected errors to internal error handling
     CUDA_CHECK(errCode);
 
-    // mark that the gpu memory is fresh and needs overwriting, by overwriting ptr[0] to unsyc flag
-    CUDA_CHECK( cudaMemcpy(ptr, &UNSYNCED_GPU_MEM_FLAG, sizeof(qcomp), cudaMemcpyHostToDevice) );
-
     return ptr;
 
 #else
