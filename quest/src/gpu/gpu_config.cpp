@@ -6,7 +6,7 @@
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
-#include "quest/include/krausmaps.h"
+#include "quest/include/channels.h"
 #include "quest/include/environment.h"
 
 #include "quest/src/core/errors.hpp"

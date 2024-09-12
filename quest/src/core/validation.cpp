@@ -1994,7 +1994,7 @@ void validate_krausMapNewMatrixDims(KrausMap map, vector<vector<vector<qcomp>>> 
     if (!isValidationEnabled)
         return;
     
-    assertThat(matrices.size() == map.numMatrices, report::KRAUS_MAP_INCOMPATIBLE_NUM_NEW_MATRICES,
+    assertThat(map.numMatrices == (int) matrices.size(), report::KRAUS_MAP_INCOMPATIBLE_NUM_NEW_MATRICES,
         {{"${NUM_GIVEN}", matrices.size()}, {"${NUM_EXPECTED}", map.numMatrices}}, caller);
 
     // check each given matrix...
