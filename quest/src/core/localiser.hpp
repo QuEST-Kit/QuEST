@@ -24,7 +24,6 @@ using std::vector;
  * SWAP
  */
 
-
 void localiser_statevec_anyCtrlSwap(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2);
 
 
@@ -67,6 +66,15 @@ void localiser_densmatr_twoQubitDepolarising(Qureg qureg, int qubitA, int qubitB
 void localiser_densmatr_oneQubitPauliChannel(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ);
 
 void localiser_densmatr_oneQubitDamping(Qureg qureg, int qubit, qreal prob);
+
+
+/*
+ * GENERAL CHANNELS
+ */
+
+void localiser_densmatr_superoperator(Qureg qureg, SuperOp op, vector<int> ketTargs);
+
+void localiser_densmatr_krausMap(Qureg qureg, KrausMap map, vector<int> qubits);
 
 
 /*

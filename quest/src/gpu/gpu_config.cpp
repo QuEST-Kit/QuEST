@@ -6,7 +6,7 @@
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
-#include "quest/include/krausmaps.h"
+#include "quest/include/channels.h"
 #include "quest/include/environment.h"
 
 #include "quest/src/core/errors.hpp"
@@ -273,9 +273,6 @@ qcomp* gpu_allocArray(qindex length) {
 
     // pass all other unexpected errors to internal error handling
     CUDA_CHECK(errCode);
-
-    // mark that the gpu memory is fresh and needs overwriting, by overwriting ptr[0] to unsyc flag
-    CUDA_CHECK( cudaMemcpy(ptr, &UNSYNCED_GPU_MEM_FLAG, sizeof(qcomp), cudaMemcpyHostToDevice) );
 
     return ptr;
 

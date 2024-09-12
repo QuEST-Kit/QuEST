@@ -842,6 +842,47 @@ void localiser_densmatr_oneQubitDamping(Qureg qureg, int qubit, qreal prob) {
 
 
 /*
+ * GENERAL CHANNELS
+ */
+
+
+CompMatr getCompMatrFromSuperOp(SuperOp op) {
+
+    return (CompMatr) {
+        // superoperator acts on twice as many qubits
+        .numQubits = 2 * op.numQubits,
+        .numRows = op.numRows,
+
+        // isUnitary will not be consulted (we have passed validation)
+        .isUnitary = nullptr,
+
+        // copy pointers (noting cpuElems is 2D/nested)
+        .cpuElems = op.cpuElems,
+        .gpuElemsFlat = op.gpuElemsFlat
+    };
+}
+
+
+void localiser_densmatr_superoperator(Qureg qureg, SuperOp op, vector<int> ketTargs) {
+    assert_localiserGivenDensMatr(qureg);
+
+    // effect the superoperator as a dense matrix on the ket + bra qubits
+    auto braTargs = util_getBraQubits(ketTargs, qureg);
+    auto allTargs = util_getConcatenated(ketTargs, braTargs);
+    CompMatr matr = getCompMatrFromSuperOp(op);
+    localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, {}, {}, allTargs, matr);
+}
+
+
+void localiser_densmatr_krausMap(Qureg qureg, KrausMap map, vector<int> ketTargs) {
+    
+    // Kraus map is simulated through its existing superoperator
+    localiser_densmatr_superoperator(qureg, map.superop, ketTargs);
+}
+
+
+
+/*
  * PARTIAL TRACE
  */
 

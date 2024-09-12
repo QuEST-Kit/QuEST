@@ -1,7 +1,7 @@
 /** @file
  * Definitions of all dense and diagonal matrices, their getters and setters,
  * as well as their reporting utilities. Note that Kraus maps are treated in
- * a bespoke file (krausmaps.h).
+ * a bespoke file (channels.h).
  * 
  * This file uses extensive preprocessor trickery to achieve overloaded,
  * platform agnostic, C and C++ compatible, precision agnostic, getters 
