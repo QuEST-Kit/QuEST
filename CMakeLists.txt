@@ -4,7 +4,7 @@
 # author : Tyson Jones (testing)
 # author : Oliver Thomson Brown (v4)
 
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.21)
 
 project(QuEST
   VERSION 4.0.0
@@ -101,13 +101,23 @@ option(
 )
 message(STATUS "GPU Acceleration is turned ${ENABLE_GPU_ACCELERATION}. Set ENABLE_GPU_ACCELERATION to modify.")
 
-# CuQuantum
-option(
-  ENABLE_CUQUANTUM
-  "Whether QuEST will be built with support for NVIDIA CuQuantum. Turned OFF by default."
-  OFF
-)
-message(STATUS "CuQuantum support is turned ${ENABLE_CUQUANTUM}. Set ENABLE_CUQUANTUM to modify.")
+if (ENABLE_GPU_ACCELERATION)
+  # HIP for AMD GPUs
+  option(
+    ENABLE_HIP
+    "Whether QuEST will be built with support for AMD GPUs. Turned OFF by default."
+    OFF
+  )
+  message(STATUS "AMD GPU support is turned ${ENABLE_HIP}. Set ENABLE_HIP to modify.")
+
+  # CuQuantum
+  option(
+    ENABLE_CUQUANTUM
+    "Whether QuEST will be built with support for NVIDIA CuQuantum. Turned OFF by default."
+    OFF
+  )
+  message(STATUS "CuQuantum support is turned ${ENABLE_CUQUANTUM}. Set ENABLE_CUQUANTUM to modify.")
+endif()
 
 ## Library
 
@@ -175,8 +185,16 @@ else()
 endif()
 
 if (ENABLE_GPU_ACCELERATION)
-  enable_language(CUDA)
   target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=1)
+  if (ENABLE_HIP)
+    enable_language(HIP)
+    target_compile_definitions(QuEST 
+      PUBLIC USE_HIP=1
+      PRIVATE __HIP_PLATFORM_AMD__
+    )
+  else()
+    enable_language(CUDA)
+  endif()
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+cuda")
   endif()
