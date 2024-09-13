@@ -34,19 +34,19 @@ using std::string;
 bool didAnyLocalAllocsFail(Qureg qureg) {
 
     // CPU memory should always be allocated
-    if (qureg.cpuAmps == nullptr)
+    if (! mem_isAllocated(qureg.cpuAmps))
         return true;
 
     // when distributed, the CPU communication buffer must be allocated
-    if (qureg.isDistributed && qureg.cpuCommBuffer == nullptr)
+    if (qureg.isDistributed && ! mem_isAllocated(qureg.cpuCommBuffer))
         return true;
 
     // when GPU-accelerated, the GPU memory should be allocated
-    if (qureg.isGpuAccelerated && qureg.gpuAmps == nullptr)
+    if (qureg.isGpuAccelerated && ! mem_isAllocated(qureg.gpuAmps))
         return true;
 
     // when both distributed and GPU-accelerated, the GPU communication buffer must be allocated
-    if (qureg.isDistributed && qureg.isGpuAccelerated && qureg.gpuCommBuffer == nullptr)
+    if (qureg.isDistributed && qureg.isGpuAccelerated && ! mem_isAllocated(qureg.gpuCommBuffer))
         return true;
 
     // otherwise all pointers were non-NULL so no allocations failed
@@ -216,10 +216,10 @@ void printMemoryInfo(Qureg qureg) {
 
     print_table(
         "memory", {
-        {"cpuAmps",       (qureg.cpuAmps       == nullptr)? na : localMemStr},
-        {"gpuAmps",       (qureg.gpuAmps       == nullptr)? na : localMemStr},
-        {"cpuCommBuffer", (qureg.cpuCommBuffer == nullptr)? na : localMemStr},
-        {"gpuCommBuffer", (qureg.gpuCommBuffer == nullptr)? na : localMemStr},
+        {"cpuAmps",       mem_isAllocated(qureg.cpuAmps)?       localMemStr : na},
+        {"gpuAmps",       mem_isAllocated(qureg.gpuAmps)?       localMemStr : na},
+        {"cpuCommBuffer", mem_isAllocated(qureg.cpuCommBuffer)? localMemStr : na},
+        {"gpuCommBuffer", mem_isAllocated(qureg.gpuCommBuffer)? localMemStr : na},
         {"globalTotal",   globalMemStr},
     });
 }

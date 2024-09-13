@@ -9,6 +9,7 @@
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 #include "quest/include/paulis.h"
+#include "quest/include/channels.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/errors.hpp"
@@ -196,6 +197,20 @@ namespace report {
 
 
     /*
+     * MUTABLE OBJECT FLAGS
+     */
+
+    string NEW_HEAP_FLAG_ALLOC_FAILED =
+        "Attempted allocation of a heap flag (such as 'isUnitary', 'isCPTP', 'wasGpuSynced') miraculously failed, despite being a mere ${NUM_BYTES} bytes. This is unfathomably unlikely - go and have your fortune read at once!";
+
+    string INVALID_HEAP_FLAG_PTR =
+        "A flag (e.g. 'isUnitary', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) was a NULL pointer, instead of an expected pointer to persistent heap memory. This may imply the structure has already been destroyed and its fields manually overwritten by the user.";
+
+    string INVALID_HEAP_FLAG_VALUE = 
+        "A flag (e.g. 'isUnitary', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) had an invalid value of ${BAD_FLAG}. Allowed values are '0' and '1', and the 'isUnitary' and 'isCPTP' fields can additionally be set to the \"unknown\" value of '${UNKNOWN_FLAG} to defer their evaluation. However, these flags should never be modified directly by the user.";
+
+
+    /*
      * MATRIX CREATION
      */
 
@@ -245,13 +260,10 @@ namespace report {
 
 
     string NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED = 
-        "Attempted allocation of memory (${NUM_BYTES} bytes in RAM) failed.";
+        "Attempted allocation of memory for one or more rows of the matrix (a total of ${NUM_BYTES} bytes in RAM) failed.";
 
     string NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED = 
-        "Attempted allocation of GPU memory (${NUM_BYTES} bytes in VRAM) failed.";
-
-    string NEW_MATRIX_IS_UNITARY_FLAG_ALLOC_FAILED = 
-        "Attempted allocation of the 'isUnitary' heap field (a mere ${NUM_BYTES} bytes) failed! This is unprecedentedly unlikely - go and have your fortune read at once.";
+        "Attempted allocation of the matrix's GPU memory (${NUM_BYTES} bytes in VRAM) failed.";
 
 
     string NEW_DISTRIB_MATRIX_IN_NON_DISTRIB_ENV = 
@@ -265,10 +277,6 @@ namespace report {
     /*
      * MATRIX INITIALISATION
      */
-
-    string MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG = 
-        "The new matrix elements contained a reserved, forbidden value as the first element, used internally to detect that whether GPU memory has not synchronised. The value was intended to be extremely unlikely to be used by users - go buy a lottery ticket! If you insist on using this value in the first element, add a numerically insignificant perturbation.";
-
 
     string COMP_MATR_NEW_ELEMS_WRONG_NUM_ROWS =
         "Incompatible number of rows (${NUM_GIVEN_ROWS}) of elements given to overwrite a ${NUM_QUBITS}-qubit CompMatr, which expects ${NUM_EXPECTED_ROWS} rows.";
@@ -306,12 +314,6 @@ namespace report {
     string INVALID_COMP_MATR_FIELDS =
         "Invalid CompMatr. Targeted ${NUM_QUBITS} qubits and had a dimension of ${NUM_ROWS}x${NUM_ROWS}. It is likely this matrix was not created with createCompMatr().";
 
-    string INVALID_COMP_MATR_CPU_MEM_ALLOC =
-        "Invalid CompMatr. One or more rows of the 2D CPU memory (RAM) was seemingly unallocated. It is likely this matrix was not initialised with createCompMatr().";
-
-    string INVALID_COMP_MATR_GPU_MEM_ALLOC =
-        "Invalid CompMatr. The GPU memory (VRAM) was seemingly unallocated. It is likely this matrix was not initialised with createCompMatr().";
-
 
     string INVALID_DIAG_MATR_1_FIELDS =
         "Invalid DiagMatr1. Targeted ${NUM_QUBITS} qubits (instead of 1) and had a dimension of ${NUM_ROWS}x${NUM_ROWS} (instead of 2x2). It is likely this matrix was not initialised with getDiagMatr1().";
@@ -322,38 +324,30 @@ namespace report {
     string INVALID_DIAG_MATR_FIELDS =
         "Invalid DiagMatr. Targeted ${NUM_QUBITS} qubits and had a dimension of ${NUM_ROWS}x${NUM_ROWS}. It is likely this matrix was not created with createDiagMatr().";
 
-    string INVALID_DIAG_MATR_CPU_MEM_ALLOC =
-        "Invalid DiagMatr. The CPU memory (RAM) was seemingly unallocated. It is likely this matrix was not initialised with createDiagMatr().";
-
-    string INVALID_DIAG_MATR_GPU_MEM_ALLOC =
-        "Invalid DiagMatr. The GPU memory (VRAM) was seemingly unallocated. It is likely this matrix was not initialised with createDiagMatr().";
-
 
     string INVALID_FULL_STATE_DIAG_MATR_FIELDS = 
         "Invalid FullStateDiagMatr. Targeted ${NUM_QUBITS} qubits and had a dimension of ${NUM_ROWS}x${NUM_ROWS}. It is likely this matrix was not created with createFullStateDiagMatr().";
-
-    string INVALID_FULL_STATE_DIAG_MATR_CPU_MEM_ALLOC =
-        "Invalid FullStateDiagMatr. The CPU memory (RAM) was seemingly unallocated. It is likely this matrix was not initialised with createFullStateDiagMatr().";
-
-    string INVALID_FULL_STATE_DIAG_MATR_GPU_MEM_ALLOC =
-        "Invalid FullStateDiagMatr. The GPU memory (VRAM) was seemingly unallocated. It is likely this matrix was not initialised with createFullStateDiagMatr().";
 
 
     string COMP_MATR_NOT_SYNCED_TO_GPU = 
         "The CompMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncCompMatr() after manually modifying elements, or overwrite all elements with setCompMatr() which automatically synchronises.";
 
     string DIAG_MATR_NOT_SYNCED_TO_GPU = 
-        "The DiagMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please first call syncDiagMatr() after manually modifying elements, or overwrite all elements with setDiagMatr().";
+        "The DiagMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncDiagMatr() after manually modifying elements, or overwrite all elements with setDiagMatr() which automatically synchronises.";
 
     string FULL_STATE_DIAG_MATR_NOT_SYNCED_TO_GPU = 
-        "The FullStateDiagMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please first call syncFullStateDiagMatr() after manually modifying elements, or overwrite elements in batch with setFullStateDiagMatr().";
+        "The FullStateDiagMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncFullStateDiagMatr() after manually modifying elements, or overwrite elements in batch with setFullStateDiagMatr() which automatically synchronises.";
 
-
-    string INVALID_MATRIX_IS_UNITARY_FLAG = 
-        "The 'isUnitary' field of the given matrix had invalid value ${BAD_FLAG}, suggesting it was manually modified. Valid values are 0, 1 and ${UNKNOWN_FLAG} (to indicate that unitarity is not yet known, deferring evaluation) although this need never be modified by the user.";
 
     string MATRIX_NOT_UNITARY = 
         "The given matrix was not (approximately) unitary.";
+
+
+    string INVALID_MATRIX_CPU_ELEMS_PTR =
+        "The given matrix's outer CPU heap-memory pointer was NULL. This implies the matrix was prior destroyed and its pointers were manually cleared.";
+
+    string INVALID_MATRIX_GPU_ELEMS_PTR =
+        "The given matrix's GPU memory pointer was NULL. This implies the matrix was prior destroyed and its pointer was manually cleared.";
 
 
     string FULL_STATE_DIAG_MATR_MISMATCHES_QUREG_DIM =
@@ -362,6 +356,157 @@ namespace report {
     string FULL_STATE_DIAG_MATR_IS_DISTRIB_BUT_QUREG_ISNT =
         "The given FullStateDiagMatr is distributed but the Qureg is not, which is forbidden. Consider disabling distribution for this matrix via createCustomFullStateDiagMatr().";
 
+
+    /*
+     * SUPEROPERATOR CREATION
+     */
+
+    string NEW_SUPER_OP_NUM_QUBITS_NOT_POSITIVE =
+        "Cannot create a superoperator of ${NUM_QUBITS} qubits. The operator must act upon one or more qubits.";
+
+
+    string NEW_SUPER_OP_NUM_ELEMS_WOULD_EXCEED_QINDEX =
+        "Cannot create a superoperator of ${NUM_QUBITS} qubits because the matrix would contain a total of 16^${NUM_QUBITS} elements which exceeds the maximum representable index of 'qindex' (permitting up to ${MAX_QUBITS} qubits).";
+    
+    string NEW_SUPER_OP_MEM_WOULD_EXCEED_SIZEOF =
+        "Cannot create a superoperator of ${NUM_QUBITS} because the total required memory (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the maximum representable by size_t. In this deployment, the maximum number of qubits in such a superoperator is ${MAX_QUBITS}";
+
+
+    string NEW_SUPER_OP_CANNOT_FIT_INTO_CPU_MEM =
+        "Cannot create a superoperator of ${NUM_QUBITS} because the total memory required (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds that available.";
+
+    string NEW_SUPER_OP_CANNOT_FIT_INTO_GPU_MEM =
+        "Cannot create a GPU-accelerated superoperator of ${NUM_QUBITS} because the total memory required (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available GPU memory.";
+
+
+    string NEW_SUPER_OP_CPU_ELEMS_ALLOC_FAILED =
+        "Attempted allocation of memory for one or more rows of superoperator matrix (a total of ${NUM_BYTES} bytes in RAM) failed.";
+        
+    string NEW_SUPER_OP_GPU_ELEMS_ALLOC_FAILED =
+        "Attempted allocation of GPU memory (a total of ${NUM_BYTES} in VRAM) for the superoperator matrix failed.";
+
+
+    /*
+     * SUPEROPERATOR INITIALISATION
+     */
+
+    string SUPER_OP_NEW_MATRIX_ELEMS_WRONG_NUM_ROWS =
+        "Incompatible number of rows (${GIVEN_DIM}) of elements given to overwrite a ${NUM_QUBITS}-qubit SuperOp, which expects ${EXPECTED_DIM} rows.";
+
+    string SUPER_OP_NEW_MATRIX_ELEMS_WRONG_NUM_COLS =
+        "Incompatible number of columns (${GIVEN_DIM}) in one or more rows of a matrix given to overwrite a ${NUM_QUBITS}-qubit SuperOp, which expects ${EXPECTED_DIM} rows.";
+        
+
+    /*
+     * EXISTING SUPEROPERATOR
+     */
+
+    string INVALID_SUPER_OP_FIELDS =
+        "The given SuperOp had invalid fields (${NUM_QUBITS} qubits and ${NUM_ROWS} rows), suggesting it was not initialised with createSuperOp().";
+
+    string INVALID_SUPER_OP_CPU_MEM_PTR =
+        "The given SuperOp's pointer to its CPU memory was NULL. This may imply the superoperator was already destroyed and had its memory pointers manually overwritten by the user.";
+
+    string INVALID_SUPER_OP_GPU_MEM_PTR =
+        "The given SuperOp's pointer to its GPU memory was NULL. This may imply the superoperator was already destroyed and had its memory pointers manually overwritten by the user.";
+
+    string SUPER_OP_NOT_SYNCED_TO_GPU =
+        "The SuperOp has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncSuperOp() after manually modifying the superoperator elements, or overwrite all elements with setSuperOp() which will automatically syncrhonise.";
+
+
+    /*
+     * KRAUS MAP CREATION
+     */
+
+    string NEW_KRAUS_MAP_NUM_QUBITS_NOT_POSITIVE = 
+        "Cannot create a Kraus map which acts upon ${NUM_QUBITS} qubits; must target one or more qubits.";
+
+
+    string KRAUS_MAP_MATRICES_TOTAL_ELEMS_WOULD_EXCEED_QINDEX =
+        "Cannot create a KrausMap with the given number of Kraus operators. The total number of elements between the ${NUM_MATRICES} given ${NUM_QUBITS}-qubit matrices would exceed the maximum number representing by the qindex type. At most, ${MAX_NUM_MATRICES} matrices of that size may be specified.";
+        
+    string KRAUS_MAP_MATRICES_TOTAL_MEM_WOULD_EXCEED_SIZEOF =
+        "Cannot create a KrausMap with the given number of Kraus operators. The total memory to store ${NUM_MATRICES} ${NUM_QUBITS}-qubit matrices exceeds that representable by the size_t type. At most, ${MAX_NUM_MATRICES} matrices of that size may be specified.";
+
+    string NEW_KRAUS_MAPS_SUPER_OP_NUM_ELEMS_WOULD_EXCEED_QINDEX =
+        "Cannot create a Kraus map of ${NUM_QUBITS} qubits because the corresponding superoperator would contain more elements (16^${NUM_QUBITS}) than the maximum which can be addressed by the qindex type (16^${MAX_QUBITS}).";
+
+    string NEW_KRAUS_MAPS_SUPER_OP_MEM_WOULD_EXCEED_SIZEOF =
+        "Cannot create a Kraus map of ${NUM_QUBITS} qubits because the necessary memory for its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) would overflow size_t. In this deployment, the maximum number of qubits in a Kraus map is ${MAX_QUBITS}.";
+
+
+    string NEW_KRAUS_MAPS_SUPER_OP_CANNOT_FIT_INTO_CPU_MEM =
+        "Cannot create a Kraus map of ${NUM_QUBITS} because the total memory required by its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available memory.";
+        
+    string NEW_KRAUS_MAPS_SUPER_OP_CANNOT_FIT_INTO_GPU_MEM =
+        "Cannot create a GPU-accelerated Kraus map of ${NUM_QUBITS} because the total memory required by its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available GPU memory.";
+
+
+    string NEW_KRAUS_MAPS_SUPER_OP_CPU_ELEMS_ALLOC_FAILED =
+        "Attempted allocation of memory for one or more rows of the Kraus map's correspondng superoperator matrix (a total of ${NUM_BYTES} bytes in RAM) failed.";
+                
+    string NEW_KRAUS_MAPS_SUPER_OP_GPU_ELEMS_ALLOC_FAILED =
+        "Attempted allocation of GPU memory (a total of ${NUM_BYTES} bytes in VRAM) for the Kraus map's corresponding superoperator matrix failed.";
+
+    string NEW_KRAUS_MAP_CPU_MATRICES_ALLOC_FAILED =
+        "Failed to allocate memory (a total of ${NUM_BYTES} bytes) for the KrausMap's ${NUM_MATRICES} ${NUM_QUBITS}-qubit Kraus operator matrices.";
+
+
+    /*
+     * KRAUS MAP INITIALISATION
+     */
+
+    string KRAUS_MAP_NUM_GIVEN_NEW_MATRICES_NOT_POSITIVE =
+        "Cannot create a Kraus map from ${NUM_MATRICES} matrices; must be given a strictly positive number of matrices.";
+
+    string KRAUS_MAP_INCOMPATIBLE_NUM_NEW_MATRICES =
+        "Passed a number of matrices (${NUM_GIVEN}) which is inconsistent with the number of Kraus operators defined in the map (${NUM_EXPECTED}).";
+
+
+    string KRAUS_MAP_NEW_MATRIX_ELEMS_WRONG_NUM_ROWS =
+        "One or more of the given matrices had a matrix dimension (${NUM_GIVEN_ROWS} rows) incompatible with the given Kraus map of ${NUM_QUBITS} qubits, which expects matrices with ${NUM_EXPECTED_ROWS} rows.";
+
+    string KRAUS_MAP_NEW_MATRIX_ELEMS_WRONG_ROW_DIM =
+        "One or more of the given matrices had a matrix dimension (${NUM_GIVEN_COLS} columns) incompatible with the given Kraus map of ${NUM_QUBITS} qubits, which expects matrices with ${NUM_EXPECTED_COLS} columns.";
+
+
+    /*
+     * EXISTING KRAUS MAP
+     */
+
+    string INVALID_KRAUS_MAP_FIELDS = 
+        "Invalid KrausMap. One or more of its fields are invalid or inconsistent; it consists of ${NUM_MATRICES} Kraus operators, each upon ${NUM_QUBITS} qubits, with matrices of dimension ${NUM_ROWS}x${NUM_ROWS}. It is likely this Kraus map was not created with createKrausMap().";
+
+    string INVALID_KRAUS_MAPS_SUPER_OP_FIELDS =
+        "The given KrausMap's superoperator had invalid fields (${NUM_QUBITS} qubits and ${NUM_ROWS} rows), suggesting the map was not initialised with createKrausMap().";
+
+    string INVALID_KRAUS_MAP_SUPER_OP_NUM_QUBITS =
+        "Invalid KrausMap. The ${MAP_QUBITS}-qubit KrausMap's superoperator had an incompatible dimension of ${SUPER_OP_QUBITS}. This suggests the Kraus map was not created using createKrausMap(), or was not initialised with setKrausMap().";
+
+
+    string INVALID_KRAUS_MAP_IS_CPTP_PTR = 
+        "The 'isCPTP' field of the given KrausMap was a NULL pointer, instead of the expected pointer to persistent heap memory. This suggests the KrausMap was already destroyed and had its fields overwritten by the user.";
+
+    string INVALID_KRAUS_MAP_IS_CPTP_FLAG = 
+        "The 'isCPTP' field of the given Kraus map had invalid value ${BAD_FLAG}, suggesting it was manually modified. Valid values are 0, 1 and ${UNKNOWN_FLAG} (to indicate that unitarity is not yet known, deferring evaluation) although this need never be modified by the user.";
+
+
+    string INVALID_KRAUS_MAPS_SUPER_OP_CPU_MEM_PTR =
+        "The given KrausMap's superoperator had a NULL pointer where its CPU memory address was expected. This may imply the Kraus map was already destroyed and had its memory pointers manually overwritten by the user.";
+        
+    string INVALID_KRAUS_MAPS_SUPER_OP_GPU_MEM_PTR =
+        "The given KrausMap's superoperator had a NULL pointer where its GPU memory address was expected. This may imply the Kraus map was already destroyed and had its memory pointers manually overwritten by the user.";
+
+    string INVALID_KRAUS_MAP_MATRIX_LIST_MEM_PTR =
+        "The KrausMap's list of Kraus operator matrices was unexpectedly a NULL pointer. This might imply the map was already destroyed and had its CPU memory pointers manually overwritten by the user.";
+
+
+    string KRAUS_MAP_NOT_SYNCED_TO_GPU =
+        "The KrausMap has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncKrausMap() after manually modifying the superoperator elements, or overwrite all elements with setKrausMap() which will automatically syncrhonise.";
+
+    string KRAUS_MAP_NOT_CPTP =
+        "The KrausMap was not (approximately) completely positive and trace preserving (CPTP).";
+    
 
     /*
      * PAULI STRING CREATION
@@ -431,7 +576,10 @@ namespace report {
     string INVALID_PAULI_STR_SUM_FIELDS =
         "The given PauliStrSum had invalid fields (.numTerms=${NUM_TERMS}), which is likely a result from not being correctly initialised by createPauliStrSum().";
 
-    
+    string INVALID_PAULI_STR_HEAP_PTR =
+        "One or more of the PauliStrumSum's heap pointers was unexpectedly NULL. This might imply the PauliStrSum was already destroyed and had its pointers manually overwritten by the user.";
+
+
     /*
      * OPERATOR PARAMETERS
      */
@@ -574,8 +722,17 @@ void assertThat(bool valid, string msg, const char* func) {
 
 void assertThat(bool valid, string msg, tokenSubs vars, const char* func) {
 
-    string newMsg = getStringWithSubstitutedVars(msg, vars);
-    assertThat(valid, newMsg, func);
+    // substitute the vars into the error message ONLY if the error message
+    // is actually going to be thrown; otherwise we're needlessly increasing
+    // the time to pass validation with superfluous string manipulation
+    if (!valid)
+        msg = getStringWithSubstitutedVars(msg, vars);
+
+    // commenting out the above if-statement is convenient during development, 
+    // because it ensures that even passed validation was going to otherwise
+    // throw a well-formed error message - useful for quickly catching typos!
+
+    assertThat(valid, msg, func);
 }
 
 void assertAllNodesAgreeThat(bool valid, string msg, const char* func) {
@@ -752,6 +909,7 @@ void assertQuregTotalNumAmpsDontExceedMaxIndex(int numQubits, int isDensMatr, co
     string msg = (isDensMatr)? 
         report::NEW_DENSMATR_QUREG_NUM_AMPS_WOULD_EXCEED_QINDEX : 
         report::NEW_STATEVEC_QUREG_NUM_AMPS_WOULD_EXCEED_QINDEX ;
+
     tokenSubs vars = {
         {"${NUM_QUBITS}", numQubits}, 
         {"${MAX_QUBITS}", maxNumQubits}};
@@ -907,16 +1065,16 @@ void validate_newQuregAllocs(Qureg qureg, const char* caller) {
 
     // we get node consensus in case mallocs fail on some nodes but not others, as may occur
     // in heterogeneous settings, or where nodes may have other processes and loads hogging RAM. 
-    assertAllNodesAgreeThat(qureg.cpuAmps != nullptr, report::NEW_QUREG_CPU_AMPS_ALLOC_FAILED, caller);
+    assertAllNodesAgreeThat(mem_isAllocated(qureg.cpuAmps), report::NEW_QUREG_CPU_AMPS_ALLOC_FAILED, caller);
 
     if (qureg.isGpuAccelerated)
-        assertAllNodesAgreeThat(qureg.gpuAmps != nullptr, report::NEW_QUREG_GPU_AMPS_ALLOC_FAILED, caller);
+        assertAllNodesAgreeThat(mem_isAllocated(qureg.gpuAmps), report::NEW_QUREG_GPU_AMPS_ALLOC_FAILED, caller);
 
     if (qureg.isDistributed)
-        assertAllNodesAgreeThat(qureg.cpuCommBuffer != nullptr, report::NEW_QUREG_CPU_COMM_BUFFER_ALLOC_FAILED, caller);
+        assertAllNodesAgreeThat(mem_isAllocated(qureg.cpuCommBuffer), report::NEW_QUREG_CPU_COMM_BUFFER_ALLOC_FAILED, caller);
 
     if (qureg.isDistributed && qureg.isGpuAccelerated)
-        assertAllNodesAgreeThat(qureg.gpuCommBuffer != nullptr, report::NEW_QUREG_GPU_COMM_BUFFER_ALLOC_FAILED, caller);
+        assertAllNodesAgreeThat(mem_isAllocated(qureg.gpuCommBuffer), report::NEW_QUREG_GPU_COMM_BUFFER_ALLOC_FAILED, caller);
 }
 
 
@@ -1210,31 +1368,45 @@ void assertNewMatrixAllocsSucceeded(T matr, qindex numBytes, const char* caller)
     if (!isValidationEnabled)
         return;
 
-    // assert CPU array of rows was malloc'd successfully
     tokenSubs vars = {{"${NUM_BYTES}", numBytes}};
-    assertAllNodesAgreeThat(matr.cpuElems != nullptr, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
 
-    // assert each CPU row was calloc'd successfully (if matrix is dense)
+    // assert CPU array (which may be nested arrays) all allocated successfully
+    bool isAlloc;
     if constexpr (util_isDenseMatrixType<T>())
-        for (qindex r=0; r<matr.numRows; r++)
-            assertAllNodesAgreeThat(matr.cpuElems[r] != nullptr, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
-    
+        isAlloc = mem_isAllocated(matr.cpuElems, matr.numRows);
+    else
+        isAlloc = mem_isAllocated(matr.cpuElems);
+    assertAllNodesAgreeThat(isAlloc, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
+
     // optionally assert GPU memory was malloc'd successfully
     if (getQuESTEnv().isGpuAccelerated)
-        assertAllNodesAgreeThat(util_getGpuMemPtr(matr) != nullptr, report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
+        assertAllNodesAgreeThat(mem_isAllocated(util_getGpuMemPtr(matr)), report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
 
-    // assert the teeny-tiny isUnitary flag was alloc'd
+    // assert the teeny-tiny heap flags are alloc'd
     vars["${NUM_BYTES}"] = sizeof(*(matr.isUnitary));
-    assertAllNodesAgreeThat(matr.isUnitary != nullptr, report::NEW_MATRIX_IS_UNITARY_FLAG_ALLOC_FAILED, vars, caller);
+    assertAllNodesAgreeThat(mem_isAllocated(matr.isUnitary),    report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+    assertAllNodesAgreeThat(mem_isAllocated(matr.wasGpuSynced), report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
 }
 
-void validate_newMatrixAllocs(CompMatr matr, qindex numBytes, const char* caller) {
+void validate_newMatrixAllocs(CompMatr matr, const char* caller) {
+
+    bool isDenseMatrix = true;
+    int numNodes = 1;
+    qindex numBytes = mem_getLocalMatrixMemoryRequired(matr.numQubits, isDenseMatrix, numNodes);
     assertNewMatrixAllocsSucceeded(matr, numBytes, caller);
 }
-void validate_newMatrixAllocs(DiagMatr matr, qindex numBytes, const char* caller) {
+void validate_newMatrixAllocs(DiagMatr matr, const char* caller) {
+
+    bool isDenseMatrix = false;
+    int numNodes = 1;
+    qindex numBytes = mem_getLocalMatrixMemoryRequired(matr.numQubits, isDenseMatrix, numNodes);
     assertNewMatrixAllocsSucceeded(matr, numBytes, caller);
 }
-void validate_newMatrixAllocs(FullStateDiagMatr matr, qindex numBytes, const char* caller) {
+void validate_newMatrixAllocs(FullStateDiagMatr matr, const char* caller) {
+
+    bool isDenseMatrix = false;
+    int numNodes = (matr.isDistributed)? getQuESTEnv().numNodes : 1;
+    qindex numBytes = mem_getLocalMatrixMemoryRequired(matr.numQubits, isDenseMatrix, numNodes);
     assertNewMatrixAllocsSucceeded(matr, numBytes, caller);
 }
 
@@ -1308,32 +1480,46 @@ void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd,
         vars, caller);
 }
 
-void validate_matrixNewElemsDontContainUnsyncFlag(qcomp firstElem, const char* caller) {
-
-    // avoid potentially expensive node-consensus if validation anyway disabled
-    if (!isValidationEnabled)
-        return;
-
-    // we permit the matrix to contain the GPU-mem-unsync flag in CPU-only mode,
-    // to avoid astonishing a CPU-only user with a GPU-related error message
-    if (!getQuESTEnv().isGpuAccelerated)
-        return;
-
-    // to work with distributed FullStateDiagMatr, whereby we wish to check that
-    // every node's GPU elems have been overwritten (not just e.g. the root node's),
-    // we need to gather expensive consensus on the validity. 
-    assertAllNodesAgreeThat(!gpu_doCpuAmpsHaveUnsyncMemFlag(firstElem), report::MATRIX_NEW_ELEMS_CONTAINED_GPU_SYNC_FLAG, caller);
-}
-
 
 
 /*
  * EXISTING MATRICES
  */
 
+// T can be CompMatr, DiagMatr, FullStateDiagMatr
+template <class T>
+void assertAdditionalHeapMatrixFieldsAreValid(T matr, const char* caller) {
+
+    // assert heap pointers are not NULL
+    assertThat(mem_isAllocated(matr.isUnitary),    report::INVALID_HEAP_FLAG_PTR, caller);
+    assertThat(mem_isAllocated(matr.wasGpuSynced), report::INVALID_HEAP_FLAG_PTR, caller);
+
+    tokenSubs vars = {{"${BAD_FLAG}", 0}, {"${UNKNOWN_FLAG}", validate_STRUCT_PROPERTY_UNKNOWN_FLAG}};
+
+    // assert isUnitary has valid value
+    int flag = *matr.isUnitary;
+    vars["${BAD_FLAG}"] = flag;
+    assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
+
+    // assert wasGpuSynced has a valid value
+    flag = *matr.wasGpuSynced;
+    vars["${BAD_FLAG}"] = flag;
+    assertThat(flag == 0 || flag == 1, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
+
+    // checks whether users have, after destroying their struct, manually set the outer
+    // heap-memory pointers to NULL. We do not check inner pointers of 2D structures (which may
+    // be too expensive to enumerate), and we cannot determine whether the struct was not validly
+    // created because un-initialised structs will have random non-NULL pointers.
+    assertThat(mem_isOuterAllocated(matr.cpuElems), report::INVALID_MATRIX_CPU_ELEMS_PTR, caller);
+
+    validate_envIsInit(caller);
+    if (getQuESTEnv().isGpuAccelerated)
+        assertThat(mem_isOuterAllocated(util_getGpuMemPtr(matr)), report::INVALID_MATRIX_GPU_ELEMS_PTR, caller);
+}
+
 // T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template <class T>
-void assertMatrixFieldsAreValid(T matr, int expectedNumQb, string errMsg, const char* caller) {
+void assertMatrixFieldsAreValid(T matr, int expectedNumQb, string badFieldMsg, const char* caller) {
 
     qindex dim = util_getMatrixDim(matr);
     tokenSubs vars = {
@@ -1342,88 +1528,39 @@ void assertMatrixFieldsAreValid(T matr, int expectedNumQb, string errMsg, const 
 
     // assert correct fixed-size numQubits (caller gaurantees this passes for dynamic-size),
     // where the error message string already contains the expected numQb
-    assertThat(matr.numQubits == expectedNumQb, errMsg, vars, caller);
+    assertThat(matr.numQubits == expectedNumQb, badFieldMsg, vars, caller);
 
     // validate .numQubits and .numRows or .numElems
     qindex expectedDim = powerOf2(matr.numQubits);
-    assertThat(matr.numQubits >= 1, errMsg, vars, caller);
-    assertThat(dim == expectedDim,  errMsg, vars, caller);
+    assertThat(matr.numQubits >= 1, badFieldMsg, vars, caller);
+    assertThat(dim == expectedDim,  badFieldMsg, vars, caller);
 
-    // assert isUnitary flag is valid; it is user-modifiable (if they are naughty)!
-    if constexpr (util_doesMatrixHaveIsUnitaryFlag<T>()) {
-        int flag = (matr.isUnitary == nullptr)? 0 : *matr.isUnitary; // lazy segfault if failed allocation (caught below)
-        assertThat(
-            flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_MATRIX_IS_UNITARY_FLAG,
-            {{"${BAD_FLAG}", flag}, {"${UNKNOWN_FLAG}", validate_STRUCT_PROPERTY_UNKNOWN_FLAG}}, caller);
-    }
+    if constexpr (util_isHeapMatrixType<T>())
+        assertAdditionalHeapMatrixFieldsAreValid(matr, caller);
 
     // we do not bother checking slightly more involved fields like numAmpsPerNode - there's
-    // no risk that they're wrong (because they're constant) unless the struct was unitialised,
-    // which we have already validated against
+    // no risk that they're wrong (because they're const so users cannot modify them) unless 
+    // the struct was unitialised, which we have already validated against
 }
 
-// T can be CompMatr, DiagMatr, FullStateDiagMatr (i.e. matrix structs with heap pointers)
-template <class T>
-void assertMatrixAllocsAreValid(T matr, string cpuErrMsg, string gpuErrMsg, const char* caller) {
+void validate_matrixFields(CompMatr1 matr, const char* caller) { assertMatrixFieldsAreValid(matr, 1,              report::INVALID_COMP_MATR_1_FIELDS, caller); }
+void validate_matrixFields(CompMatr2 matr, const char* caller) { assertMatrixFieldsAreValid(matr, 2,              report::INVALID_COMP_MATR_2_FIELDS, caller); }
+void validate_matrixFields(CompMatr  matr, const char* caller) { assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_COMP_MATR_FIELDS,   caller); }
+void validate_matrixFields(DiagMatr1 matr, const char* caller) { assertMatrixFieldsAreValid(matr, 1,              report::INVALID_DIAG_MATR_1_FIELDS, caller); }
+void validate_matrixFields(DiagMatr2 matr, const char* caller) { assertMatrixFieldsAreValid(matr, 2,              report::INVALID_DIAG_MATR_2_FIELDS, caller); }
+void validate_matrixFields(DiagMatr  matr, const char* caller) { assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_DIAG_MATR_FIELDS,   caller); }
+void validate_matrixFields(FullStateDiagMatr matr, const char* caller) { assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_FULL_STATE_DIAG_MATR_FIELDS, caller); }
 
-    // TODO:
-    // I'm fairly sure this validation is completely pointless - the memory being unallocated
-    // being the struct was manually initialised cannot be determined reliably by a NULL check,
-    // because the pointer fields will be un-initialised i.e. random. Only malloc will sensibly
-    // set the fields to NULL, which immediately post-allocation validation would capture. Eh!
-
-    // assert CPU memory is allocated
-    assertThat(matr.cpuElems != nullptr, cpuErrMsg, caller);
-
-    // we do not check that each CPU memory row (of CompMatr; irrelevant to DiagMatr)
-    // is not-NULL because it's really unlikely that inner memory wasn't allocaed but
-    // outer was and this wasn't somehow caught by post-creation validation (i.e. the 
-    // user manually malloc'd memory after somehow getting around const fields). Further,
-    // since this function is called many times (i.e. each time the user passes a matrix
-    // to a simulation function like multiQubitUnitary()), it may be inefficient to 
-    // serially process each row pointer.
-
-    // optionally assert GPU memory is allocated
-    validate_envIsInit(caller);
-    if (getQuESTEnv().isGpuAccelerated)
-        assertThat(util_getGpuMemPtr(matr) != nullptr, gpuErrMsg, caller);
-}
-
-void validate_matrixFields(CompMatr1 matr, const char* caller) {
-    assertMatrixFieldsAreValid(matr, 1, report::INVALID_COMP_MATR_1_FIELDS, caller);
-}
-void validate_matrixFields(CompMatr2 matr, const char* caller) {
-    assertMatrixFieldsAreValid(matr, 2, report::INVALID_COMP_MATR_2_FIELDS, caller);
-}
-void validate_matrixFields(CompMatr matr, const char* caller) {
-    assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_COMP_MATR_FIELDS, caller);
-    assertMatrixAllocsAreValid(matr, report::INVALID_COMP_MATR_CPU_MEM_ALLOC, report::INVALID_COMP_MATR_GPU_MEM_ALLOC, caller);
-}
-void validate_matrixFields(DiagMatr1 matr, const char* caller) {
-    assertMatrixFieldsAreValid(matr, 1, report::INVALID_DIAG_MATR_1_FIELDS, caller);
-}
-void validate_matrixFields(DiagMatr2 matr, const char* caller) {
-    assertMatrixFieldsAreValid(matr, 2, report::INVALID_DIAG_MATR_2_FIELDS, caller);
-}
-void validate_matrixFields(DiagMatr matr, const char* caller) {
-    assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_DIAG_MATR_FIELDS, caller);
-    assertMatrixAllocsAreValid(matr, report::INVALID_DIAG_MATR_CPU_MEM_ALLOC, report::INVALID_DIAG_MATR_GPU_MEM_ALLOC, caller);
-}
-void validate_matrixFields(FullStateDiagMatr matr, const char* caller) {
-    assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_FULL_STATE_DIAG_MATR_FIELDS, caller);
-    assertMatrixAllocsAreValid(matr, report::INVALID_FULL_STATE_DIAG_MATR_CPU_MEM_ALLOC, report::INVALID_FULL_STATE_DIAG_MATR_GPU_MEM_ALLOC, caller);
-}
-
-// type T can be CompMatr or DiagMatr
+// type T can be CompMatr, DiagMatr or FullStateDiagMatr
 template <class T>
 void assertMatrixIsSynced(T matr, string errMsg, const char* caller) {
 
     // we don't need to perform any sync check in CPU-only mode
-    if (util_getGpuMemPtr(matr) == nullptr)
+    if (!mem_isAllocated(util_getGpuMemPtr(matr)))
         return;
 
     // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though
-    assertThat(gpu_haveGpuAmpsBeenSynced(util_getGpuMemPtr(matr)), errMsg, caller);
+    assertThat(*(matr.wasGpuSynced) == 1, errMsg, caller);
 }
 
 // type T can be CompMatr, DiagMatr, FullStateDiagMatr
@@ -1531,6 +1668,413 @@ void validate_matrixIsCompatibleWithQureg(FullStateDiagMatr matr, Qureg qureg, c
     // but when it's distributed, so too must be the qureg so that comm isn't necessary
     assertThat(qureg.isDistributed, report::FULL_STATE_DIAG_MATR_IS_DISTRIB_BUT_QUREG_ISNT, caller); // did not pass vars
 }
+
+
+
+/*
+ * SUPEROPERATOR CREATION
+ */
+
+void assertSuperOpNonEmpty(int numQubits, const char* caller) {
+
+    assertThat(numQubits >= 1, report::NEW_SUPER_OP_NUM_QUBITS_NOT_POSITIVE, {{"${NUM_QUBITS}",numQubits}}, caller);
+}
+
+void assertSuperOpTotalNumElemsDontExceedMaxIndex(int numQubits, bool isInKrausMap, const char* caller) {
+
+    int maxQubits = mem_getMaxNumSuperOpQubitsBeforeIndexOverflow();
+
+    tokenSubs vars = {
+        {"${NUM_QUBITS}", numQubits}, 
+        {"${MAX_QUBITS}", maxQubits}};
+
+    auto msg = (isInKrausMap)? 
+        report::NEW_KRAUS_MAPS_SUPER_OP_NUM_ELEMS_WOULD_EXCEED_QINDEX: 
+        report::NEW_SUPER_OP_NUM_ELEMS_WOULD_EXCEED_QINDEX;
+    assertThat(numQubits <= maxQubits, msg, vars, caller);
+}
+
+void assertSuperOpLocalMemDoesntExceedMaxSizeof(int numQubits, bool isInKrausMap, const char* caller) {
+
+    int maxNumQubits = mem_getMaxNumSuperOpQubitsBeforeLocalMemSizeofOverflow();
+
+    tokenSubs vars = {
+        {"${NUM_QUBITS}", numQubits},
+        {"${MAX_QUBITS}", maxNumQubits},
+        {"${QCOMP_BYTES}", sizeof(qcomp)}};
+
+    auto msg = (isInKrausMap)?
+        report::NEW_KRAUS_MAPS_SUPER_OP_MEM_WOULD_EXCEED_SIZEOF:
+        report::NEW_SUPER_OP_MEM_WOULD_EXCEED_SIZEOF;
+    assertThat(numQubits <= maxNumQubits, msg, vars, caller);
+}
+
+void assertSuperOpFitsInCpuMem(int numQubits, bool isInKrausMap, const char* caller) {
+
+    // attempt to fetch RAM, and simply return if we fail; if we unknowingly
+    // didn't have enough RAM, then alloc validation will trigger later
+    size_t memPerNode = 0;
+    try {
+        memPerNode = mem_tryGetLocalRamCapacityInBytes();
+    } catch(mem::COULD_NOT_QUERY_RAM e) {
+        return;
+    }
+
+    bool matrFitsInMem = mem_canSuperOpFitInMemory(numQubits, memPerNode);
+
+    tokenSubs vars = {
+        {"${NUM_QUBITS}",  numQubits},
+        {"${QCOMP_BYTES}", sizeof(qcomp)},
+        {"${RAM_SIZE}",    memPerNode}};
+    
+    // TODO:
+    // seek expensive node consensus in case of heterogeneous RAM - alas this may induce
+    // unnecessary slowdown (due to sync and broadcast) in applications allocating many
+    // small matrices in the heap. If this turns out to be the case, we could opt to
+    // enforce consensus only when the needed memory is large (e.g. >1GB) and ergo the 
+    // chance of it fitting into some node RAM but not others isn't negligible.
+    auto msg = (isInKrausMap)?
+        report::NEW_KRAUS_MAPS_SUPER_OP_CANNOT_FIT_INTO_CPU_MEM:
+        report::NEW_SUPER_OP_CANNOT_FIT_INTO_CPU_MEM;
+    assertAllNodesAgreeThat(matrFitsInMem, msg, vars, caller);
+}
+
+void assertSuperOpFitsInGpuMem(int numQubits, int isEnvGpuAccel, bool isInKrausMap, const char* caller) {
+
+    // kraus map GPU memory will always be allocated when env is GPU-accelerated
+    if (!isEnvGpuAccel)
+        return;
+
+    // we consult the current available local GPU memory (being more strict than is possible for RAM)
+    size_t localCurrGpuMem = gpu_getCurrentAvailableMemoryInBytes();
+    bool matrFitsInMem = mem_canSuperOpFitInMemory(numQubits, localCurrGpuMem);
+
+    tokenSubs vars = {
+        {"${NUM_QUBITS}",  numQubits},
+        {"${QCOMP_BYTES}", sizeof(qcomp)},
+        {"${VRAM_SIZE}",   localCurrGpuMem}};
+
+    auto msg = (isInKrausMap)?
+        report::NEW_KRAUS_MAPS_SUPER_OP_CANNOT_FIT_INTO_GPU_MEM:
+        report::NEW_SUPER_OP_CANNOT_FIT_INTO_GPU_MEM;
+
+    // TODO:
+    // seek expensive node consensus in case of heterogeneous GPU hardware - alas this may 
+    // induce unnecessary slowdown (due to sync and broadcast) in applications allocating many
+    // small matrices in the GPU. If this turns out to be the case, we could opt to
+    // enforce consensus only when the needed memory is large (e.g. >1GB) and ergo the 
+    // chance of it fitting into some GPU's memory but not others isn't negligible.
+    assertAllNodesAgreeThat(matrFitsInMem, msg, vars, caller);
+}
+
+void validate_newSuperOpParams(int numQubits, const char* caller) {
+
+    // some of the below validation involves getting distributed node consensus, which
+    // can be an expensive synchronisation, which we avoid if validation is anyway disabled
+    if (!isValidationEnabled)
+        return;
+
+    validate_envIsInit(caller);
+    QuESTEnv env = getQuESTEnv();
+
+    bool isInKrausMap = false;
+    assertSuperOpNonEmpty(numQubits, caller);
+    assertSuperOpTotalNumElemsDontExceedMaxIndex(numQubits, isInKrausMap, caller);
+    assertSuperOpLocalMemDoesntExceedMaxSizeof(numQubits, isInKrausMap, caller);
+    assertSuperOpFitsInCpuMem(numQubits, isInKrausMap, caller);
+    assertSuperOpFitsInGpuMem(numQubits, env.isGpuAccelerated, isInKrausMap, caller);
+}
+
+void assertNewSuperOpAllocs(SuperOp op, bool isInKrausMap, const char* caller) {
+    tokenSubs vars = {{"${NUM_BYTES}", mem_getLocalSuperOpMemoryRequired(op.numQubits)}};
+
+    // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads,
+    // but we avoid this if validation is anyway disabled
+    if (!isValidationEnabled)
+        return;
+
+    // assert CPU array of rows was alloc'd successfully
+    auto msg = (isInKrausMap)?
+        report::NEW_KRAUS_MAPS_SUPER_OP_CPU_ELEMS_ALLOC_FAILED:
+        report::NEW_SUPER_OP_CPU_ELEMS_ALLOC_FAILED;
+    assertAllNodesAgreeThat(mem_isAllocated(op.cpuElems, op.numRows), msg, vars, caller);
+
+    // optionally assert GPU memory was malloc'd successfully
+    msg = (isInKrausMap)?
+        report::NEW_KRAUS_MAPS_SUPER_OP_GPU_ELEMS_ALLOC_FAILED:
+        report::NEW_SUPER_OP_GPU_ELEMS_ALLOC_FAILED;
+    if (getQuESTEnv().isGpuAccelerated)
+        assertAllNodesAgreeThat(mem_isAllocated(util_getGpuMemPtr(op)), msg, vars, caller);
+
+    // assert the teeny-tiny heap flag was alloc'd
+    vars["${NUM_BYTES}"] = sizeof(*(op.wasGpuSynced));
+    assertAllNodesAgreeThat(mem_isAllocated(op.wasGpuSynced), report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+}
+
+void validate_newSuperOpAllocs(SuperOp op, const char* caller) {
+
+    bool isInKrausMap = false;
+    assertNewSuperOpAllocs(op, isInKrausMap, caller);
+}
+
+
+
+/*
+ * SUPEROPERATOR INITIALISATION
+ */
+
+void validate_superOpNewMatrixDims(SuperOp op, vector<vector<qcomp>> matrix, const char* caller) {
+
+    // avoid potentially expensive matrix enumeration if validation is anyway disabled
+    if (!isValidationEnabled)
+        return;
+
+    tokenSubs vars = {
+        {"${NUM_QUBITS}", op.numQubits},
+        {"${EXPECTED_DIM}", op.numRows},
+        {"${GIVEN_DIM}", matrix.size()}};
+
+    // assert the matrix has the correct number of rows
+    assertThat(op.numRows == (qindex) matrix.size(), report::SUPER_OP_NEW_MATRIX_ELEMS_WRONG_NUM_ROWS, vars, caller);
+
+    // and that each row has the correct length
+    for (qindex r=0; r<op.numRows; r++) {
+        qindex numCols = matrix[r].size();
+        vars["${GIVEN_DIM}"] = numCols;
+        assertThat(op.numRows == numCols, report::SUPER_OP_NEW_MATRIX_ELEMS_WRONG_NUM_COLS, vars, caller);
+    }
+}
+
+
+
+/*
+ * EXISTING SUPEROPERATORS
+ */
+
+void assertSuperOpFieldsAreValid(SuperOp op, bool isInKrausMap, const char* caller) {
+
+    tokenSubs vars = {
+        {"${NUM_QUBITS}", op.numQubits},
+        {"${NUM_ROWS}",   op.numRows}
+    };
+
+    // assert valid fields
+    auto msg = (isInKrausMap)? report::INVALID_KRAUS_MAPS_SUPER_OP_FIELDS : report::INVALID_SUPER_OP_FIELDS;
+    assertThat(op.numQubits >= 1, msg, vars, caller);
+    assertThat(op.numRows == powerOf2(2 * op.numQubits), msg, vars, caller);
+    
+    // only check outer point is allocated, to avoid inefficiently enumerating matrix rows
+    msg = (isInKrausMap)? report::INVALID_KRAUS_MAPS_SUPER_OP_CPU_MEM_PTR : report::INVALID_SUPER_OP_CPU_MEM_PTR;
+    assertThat(mem_isOuterAllocated(op.cpuElems), msg, caller);
+
+    validate_envIsInit(caller);
+    msg = (isInKrausMap)? report::INVALID_KRAUS_MAPS_SUPER_OP_GPU_MEM_PTR : report::INVALID_SUPER_OP_GPU_MEM_PTR;
+    if (getQuESTEnv().isGpuAccelerated)
+        assertThat(mem_isOuterAllocated(util_getGpuMemPtr(op)), msg, caller);
+
+    // check the teeny tiny heap pointer is not NULL
+    assertThat(mem_isAllocated(op.wasGpuSynced), report::INVALID_HEAP_FLAG_PTR, caller);
+
+    // and that its value is a boolean
+    int flag = *op.wasGpuSynced;
+    tokenSubs moreVars = {{"${BAD_FLAG}", flag}, {"${UNKNOWN_FLAG}", validate_STRUCT_PROPERTY_UNKNOWN_FLAG}};
+    assertThat(flag == 0 || flag == 1, report::INVALID_HEAP_FLAG_VALUE, moreVars, caller);
+
+}
+
+void validate_superOpFields(SuperOp op, const char* caller) {
+
+    bool isInKrausMap = false;
+    assertSuperOpFieldsAreValid(op, isInKrausMap, caller);
+}
+
+void validate_superOpIsSynced(SuperOp op, const char* caller) {
+
+    // we don't need to perform any sync check in CPU-only mode
+    if (!mem_isAllocated(op.gpuElemsFlat))
+        return;
+
+    // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though
+    assertThat(*(op.wasGpuSynced), report::SUPER_OP_NOT_SYNCED_TO_GPU, caller);
+}
+
+
+
+/*
+ * KRAUS MAP CREATION
+ */
+
+void assertKrausMapNonEmpty(int numQubits, const char* caller) {
+
+    assertThat(numQubits >= 1, report::NEW_KRAUS_MAP_NUM_QUBITS_NOT_POSITIVE, {{"${NUM_QUBITS}",numQubits}}, caller);
+}
+
+void assertKrausMapValidNumMatrices(int numQubits, int numMatrices, const char* caller) {
+
+    assertThat(
+        numMatrices >= 1, report::KRAUS_MAP_NUM_GIVEN_NEW_MATRICES_NOT_POSITIVE, {{"${NUM_MATRICES}", numMatrices}}, caller);
+
+    // this won't overflow given huge 'numQubits', because we prior validate the implied superoperator
+    qindex maxNumBeforeIndOverflow = mem_getMaxNumKrausMapMatricesBeforeIndexOverflow(numQubits);
+
+    assertThat(
+        numMatrices <= maxNumBeforeIndOverflow, report::KRAUS_MAP_MATRICES_TOTAL_ELEMS_WOULD_EXCEED_QINDEX, 
+        {{"${NUM_MATRICES}", numMatrices}, {"${NUM_QUBITS}", numQubits}, {"${MAX_NUM_MATRICES}", maxNumBeforeIndOverflow}}, caller);
+
+    qindex maxNumBeforeMemOverflow = mem_getMaxNumKrausMapMatricesBeforeLocalMemSizeofOverflow(numQubits);
+    assertThat(
+        numMatrices <= maxNumBeforeMemOverflow, report::KRAUS_MAP_MATRICES_TOTAL_MEM_WOULD_EXCEED_SIZEOF, 
+        {{"${NUM_MATRICES}", numMatrices}, {"${NUM_QUBITS}", numQubits}, {"${MAX_NUM_MATRICES}", maxNumBeforeMemOverflow}}, caller);
+}
+
+void validate_newKrausMapParams(int numQubits, int numMatrices, const char* caller) {
+
+    // some of the below validation involves getting distributed node consensus, which
+    // can be an expensive synchronisation, which we avoid if validation is anyway disabled
+    if (!isValidationEnabled)
+        return;
+
+    validate_envIsInit(caller);
+    QuESTEnv env = getQuESTEnv();
+
+    // first ensure that numQubits is >0 so below validation algebra is correct/safe
+    assertKrausMapNonEmpty(numQubits, caller);
+    
+    // then ensure the Kraus map's superoperator has safe non-overflowing dimensions
+    bool isInKrausMap = true;
+    assertSuperOpTotalNumElemsDontExceedMaxIndex(numQubits, isInKrausMap, caller);
+    assertSuperOpLocalMemDoesntExceedMaxSizeof(numQubits, isInKrausMap, caller);
+
+    // ensure the superoperator can fit into current memory - we do NOT bother checking
+    // whether the Kraus operator matrix list fits in memory since that's a very rare
+    // scenario (the memory is linear with the user's numMatrices parameter, so they will 
+    // not be asonisthed) and will be posteriori caught after memory allocation failure
+    assertSuperOpFitsInCpuMem(numQubits, isInKrausMap, caller);
+    assertSuperOpFitsInGpuMem(numQubits, env.isGpuAccelerated, isInKrausMap, caller);
+
+    // ensure the number of Kraus operators isn't invalid, nor will cause overflows/seg-faults
+    assertKrausMapValidNumMatrices(numQubits, numMatrices, caller);
+}
+
+void validate_newKrausMapAllocs(KrausMap map, const char* caller) {
+
+    // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads,
+    // but we avoid this if validation is anyway disabled
+    if (!isValidationEnabled)
+        return;
+
+    // prior validation gaurantees this will not overflow
+    qindex matrListMem = map.numMatrices * mem_getLocalMatrixMemoryRequired(map.numQubits, true, 1);
+    tokenSubs vars = {
+        {"${NUM_BYTES}", matrListMem},
+        {"${NUM_MATRICES}", map.numMatrices},
+        {"${NUM_QUBITS}", map.numQubits}};
+
+    // assert the list of Kraus operator matrices, and all matrices nad rows therein, were allocated
+    bool krausAreAlloc = mem_isAllocated(map.matrices, map.numMatrices, map.numQubits);
+    assertAllNodesAgreeThat(krausAreAlloc, report::NEW_KRAUS_MAP_CPU_MATRICES_ALLOC_FAILED, vars, caller);
+
+    // assert the teeny-tiny heap flag was alloc'd
+    assertAllNodesAgreeThat(mem_isAllocated(map.isCPTP), report::NEW_HEAP_FLAG_ALLOC_FAILED, {{"${NUM_BYTES}", sizeof(*(map.isCPTP))}}, caller);
+
+    // assert that the superoperator itself was allocated (along with its own heap fields)
+    bool isInKrausMap = true;
+    assertNewSuperOpAllocs(map.superop, isInKrausMap, caller);
+}
+
+
+
+/*
+ * KRAUS MAP INITIALISATION
+ */
+
+void validate_krausMapNewMatrixDims(KrausMap map, vector<vector<vector<qcomp>>> matrices, const char* caller) {
+
+    // avoid potentially expensive matrix enumeration if validation is anyway disabled
+    if (!isValidationEnabled)
+        return;
+    
+    assertThat(map.numMatrices == (int) matrices.size(), report::KRAUS_MAP_INCOMPATIBLE_NUM_NEW_MATRICES,
+        {{"${NUM_GIVEN}", matrices.size()}, {"${NUM_EXPECTED}", map.numMatrices}}, caller);
+
+    // check each given matrix...
+    for (int i=0; i<map.numMatrices; i++) {
+        
+        // has a correct number of rows
+        assertThat(map.numRows == (qindex) matrices[i].size(), report::KRAUS_MAP_NEW_MATRIX_ELEMS_WRONG_NUM_ROWS, 
+            {{"${NUM_QUBITS}", map.numQubits}, {"${NUM_EXPECTED_ROWS}", map.numRows}, {"${NUM_GIVEN_ROWS}", matrices[i].size()}}, caller);
+
+        // and that each row has a correct number of elements/columns
+        for (qindex r=0; r<map.numRows; r++)
+            assertThat(map.numRows == (qindex) matrices[i][r].size(), report::KRAUS_MAP_NEW_MATRIX_ELEMS_WRONG_ROW_DIM,
+                {{"${NUM_QUBITS}", map.numQubits}, {"${NUM_EXPECTED_COLS}", map.numRows}, {"${NUM_GIVEN_COLS}", matrices[i][r].size()}}, caller);
+    }
+}
+
+
+
+/*
+ * EXISTING KRAUS MAPS
+ */
+
+void validate_krausMapFields(KrausMap map, const char* caller) {
+
+    tokenSubs vars = {
+        {"${NUM_QUBITS}",   map.numQubits},
+        {"${NUM_MATRICES}", map.numMatrices},
+        {"${NUM_ROWS}",     map.numRows}};
+
+    // assert valid fields
+    auto msg = report::INVALID_KRAUS_MAP_FIELDS;
+    assertThat(map.numQubits >= 1, msg, vars, caller);
+    assertThat(map.numMatrices >= 1, msg, vars, caller);
+    assertThat(map.numRows == powerOf2(map.numQubits), msg, vars, caller);
+
+    // check only outer CPU matrix list is allocated, to avoid expensive enumerating of matrices/rows
+    assertThat(mem_isOuterAllocated(map.matrices), report::INVALID_KRAUS_MAP_MATRIX_LIST_MEM_PTR, caller);
+
+    // assert isCPTP heap flag allocated, and that is has a valid value
+    assertThat(mem_isAllocated(map.isCPTP), report::INVALID_HEAP_FLAG_PTR, caller);
+
+    // and that its value is a boolean
+    int flag = *map.isCPTP;
+    bool valid = flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    tokenSubs moreVars = {{"${BAD_FLAG}", flag}, {"${UNKNOWN_FLAG}", validate_STRUCT_PROPERTY_UNKNOWN_FLAG}};
+    assertThat(valid, report::INVALID_HEAP_FLAG_VALUE, moreVars, caller);
+
+    // assert the superoperator dimension matches the map's
+    assertThat(map.numQubits == map.superop.numQubits, report::INVALID_KRAUS_MAP_SUPER_OP_NUM_QUBITS, 
+        {{"${MAP_QUBITS}", map.numQubits}, {"${SUPER_OP_QUBITS}", map.superop.numQubits}}, caller);
+
+    // assert the superoperator fields are valid (e.g. dims match, ptrs are valid)
+    bool isInKrausMap = true;
+    assertSuperOpFieldsAreValid(map.superop, isInKrausMap, caller);
+}
+
+void validate_krausMapIsSynced(KrausMap map, const char* caller) {
+
+    // we don't need to perform any sync check in CPU-only mode
+    if (!mem_isAllocated(util_getGpuMemPtr(map.superop)))
+        return;
+
+    // assert the map's superoperator has been synced
+    assertThat(*(map.superop.wasGpuSynced), report::KRAUS_MAP_NOT_SYNCED_TO_GPU, caller);
+}
+
+void validate_krausMapIsCPTP(KrausMap map, const char* caller) {
+    validate_krausMapIsSynced(map, caller);
+
+    // avoid expensive CPTP check if validation is anyway disabled
+    if (!isValidationEnabled)
+        return;
+
+    // evaluate CPTPness if it isn't already known 
+    if (*(map.isCPTP) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        *(map.isCPTP) = util_isCPTP(map);
+
+    assertThat(*(map.isCPTP), report::KRAUS_MAP_NOT_CPTP, caller);
+}
+
 
 
 /*
@@ -1653,11 +2197,11 @@ void validate_newPauliStrSumMatchingListLens(qindex numStrs, qindex numCoeffs, c
 void validate_newPauliStrSumAllocs(PauliStrSum sum, qindex numBytesStrings, qindex numBytesCoeffs, const char* caller) {
 
     assertThat(
-        sum.strings != nullptr, report::NEW_PAULI_STR_SUM_STRINGS_ALLOC_FAILED, 
+        mem_isAllocated(sum.strings), report::NEW_PAULI_STR_SUM_STRINGS_ALLOC_FAILED, 
         {{"${NUM_TERMS}", sum.numTerms}, {"${NUM_BYTES}", numBytesStrings}}, caller);
 
     assertThat(
-        sum.coeffs != nullptr, report::NEW_PAULI_STR_SUM_COEFFS_ALLOC_FAILED, 
+        mem_isAllocated(sum.coeffs), report::NEW_PAULI_STR_SUM_COEFFS_ALLOC_FAILED, 
         {{"${NUM_TERMS}", sum.numTerms}, {"${NUM_BYTES}", numBytesCoeffs}}, caller);
 }
 
@@ -1709,7 +2253,8 @@ void validate_pauliStrSumFields(PauliStrSum sum, const char* caller) {
 
     assertThat(sum.numTerms > 0, report::INVALID_PAULI_STR_SUM_FIELDS, {{"${NUM_TERMS}", sum.numTerms}}, caller);
 
-    // no point checking sum's pointers are not nullptr; see the explanation in validate_quregFields()
+    assertThat(mem_isAllocated(sum.coeffs),  report::INVALID_PAULI_STR_HEAP_PTR, caller);
+    assertThat(mem_isAllocated(sum.strings), report::INVALID_PAULI_STR_HEAP_PTR, caller);
 }
 
 

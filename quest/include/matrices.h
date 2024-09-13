@@ -1,7 +1,7 @@
 /** @file
  * Definitions of all dense and diagonal matrices, their getters and setters,
  * as well as their reporting utilities. Note that Kraus maps are treated in
- * a bespoke file (krausmaps.h).
+ * a bespoke file (channels.h).
  * 
  * This file uses extensive preprocessor trickery to achieve overloaded,
  * platform agnostic, C and C++ compatible, precision agnostic, getters 
@@ -72,6 +72,13 @@ typedef struct {
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* const isUnitary;
 
+    // whether the user has ever synchronised memory to the GPU, which is performed automatically
+    // when calling functions like setCompMatr(), but which requires manual invocation with
+    // syncCompMatr() after manual modification of the cpuElem. Note this can only indicate whether
+    // the matrix has EVER been synced; it cannot be used to detect whether manual modifications
+    // made after an initial sync have been re-synched. This is a heap pointer, as above.
+    int* const wasGpuSynced;
+
     // 2D CPU memory; not const, so users can overwrite addresses (e.g. with nullptr)
     qcomp** cpuElems;
 
@@ -127,6 +134,13 @@ typedef struct {
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* const isUnitary;
 
+    // whether the user has ever synchronised memory to the GPU, which is performed automatically
+    // when calling functions like setCompMatr(), but which requires manual invocation with
+    // syncCompMatr() after manual modification of the cpuElem. Note this can only indicate whether
+    // the matrix has EVER been synced; it cannot be used to detect whether manual modifications
+    // made after an initial sync have been re-synched. This is a heap pointer, as above.
+    int* const wasGpuSynced;
+
     // CPU memory; not const, so users can overwrite addresses (e.g. with nullptr)
     qcomp* cpuElems;
 
@@ -160,6 +174,13 @@ typedef struct {
     // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* const isUnitary;
+
+    // whether the user has ever synchronised memory to the GPU, which is performed automatically
+    // when calling functions like setCompMatr(), but which requires manual invocation with
+    // syncCompMatr() after manual modification of the cpuElem. Note this can only indicate whether
+    // the matrix has EVER been synced; it cannot be used to detect whether manual modifications
+    // made after an initial sync have been re-synched. This is a heap pointer, as above.
+    int* const wasGpuSynced;
 
     // CPU memory; not const, so users can overwrite addresses (e.g. with nullptr)
     qcomp* cpuElems;

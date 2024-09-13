@@ -11,6 +11,7 @@
 #include "quest/include/qureg.h"
 #include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
+#include "quest/include/channels.h"
 
 #include <vector>
 #include <string>
@@ -98,9 +99,9 @@ void validate_newCompMatrParams(int numQubits, const char* caller);
 void validate_newDiagMatrParams(int numQubits, const char* caller);
 void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, const char* caller);
 
-void validate_newMatrixAllocs(CompMatr matr, qindex numBytes, const char* caller);
-void validate_newMatrixAllocs(DiagMatr matr, qindex numBytes, const char* caller);
-void validate_newMatrixAllocs(FullStateDiagMatr matr, qindex numBytes, const char* caller);
+void validate_newMatrixAllocs(CompMatr matr, const char* caller);
+void validate_newMatrixAllocs(DiagMatr matr, const char* caller);
+void validate_newMatrixAllocs(FullStateDiagMatr matr, const char* caller);
 
 
 
@@ -110,8 +111,6 @@ void validate_newMatrixAllocs(FullStateDiagMatr matr, qindex numBytes, const cha
 
 void validate_matrixNumNewElems(int numQubits, vector<vector<qcomp>> elems, const char* caller);
 void validate_matrixNumNewElems(int numQubits, vector<qcomp> elems, const char* caller);
-
-void validate_matrixNewElemsDontContainUnsyncFlag(qcomp firstElem, const char* caller);
 
 void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd, qindex numElems, const char* caller);
 
@@ -142,6 +141,64 @@ void validate_matrixIsUnitary(DiagMatr  matr, const char* caller);
 void validate_matrixIsUnitary(FullStateDiagMatr matr, const char* caller);
 
 void validate_matrixIsCompatibleWithQureg(FullStateDiagMatr matr, Qureg qureg, const char* caller);
+
+
+
+/*
+ * SUPEROPERATOR CREATION
+ */
+
+void validate_newSuperOpParams(int numQubits, const char* caller);
+
+void validate_newSuperOpAllocs(SuperOp op, const char* caller);
+
+
+
+/*
+ * SUPEROPERATOR INITIALISATION
+ */
+
+void validate_superOpNewMatrixDims(SuperOp op, vector<vector<qcomp>> matrix, const char* caller);
+
+
+
+/*
+ * EXISTING SUPEROPERATOR
+ */
+
+void validate_superOpFields(SuperOp op, const char* caller);
+
+void validate_superOpIsSynced(SuperOp op, const char* caller);
+
+
+
+/*
+ * KRAUS MAP CREATION
+ */
+
+void validate_newKrausMapParams(int numQubits, int numMatrices, const char* caller);
+
+void validate_newKrausMapAllocs(KrausMap map, const char* caller);
+
+
+
+/*
+ * KRAUS MAP INITIALISATION
+ */
+
+void validate_krausMapNewMatrixDims(KrausMap map, vector<vector<vector<qcomp>>> matrices, const char* caller);
+
+
+
+/*
+ * EXISTING KRAUS MAP
+ */
+
+void validate_krausMapFields(KrausMap map, const char* caller);
+
+void validate_krausMapIsSynced(KrausMap map, const char* caller);
+
+void validate_krausMapIsCPTP(KrausMap map, const char* caller);
 
 
 
