@@ -4,16 +4,7 @@ target_sources(QuEST
   gpu_subroutines.cpp
 )
 
-if (ENABLE_GPU_ACCELERATION)
-  if (ENABLE_HIP)
-    set_source_files_properties(
-      gpu_config.cpp
-      gpu_subroutines.cpp
-      TARGET_DIRECTORY QuEST
-      PROPERTIES
-      LANGUAGE HIP
-    )
-  else()
+if (ENABLE_CUDA)
     set_source_files_properties(
       gpu_config.cpp
       gpu_subroutines.cpp
@@ -21,5 +12,14 @@ if (ENABLE_GPU_ACCELERATION)
       PROPERTIES
       LANGUAGE CUDA
     )
-  endif()
+endif()
+
+if (ENABLE_HIP)
+  set_source_files_properties(
+    gpu_config.cpp
+    gpu_subroutines.cpp
+    TARGET_DIRECTORY QuEST
+    PROPERTIES
+    LANGUAGE HIP
+  )
 endif()

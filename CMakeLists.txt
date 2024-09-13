@@ -95,28 +95,34 @@ message(STATUS "Distribution is turned ${ENABLE_DISTRIBUTION}. Set ENABLE_DISTRI
 
 # GPU Acceleration
 option(
-  ENABLE_GPU_ACCELERATION 
-  "Whether QuEST will be built with support for GPU acceleration. Turned OFF by default."
+  ENABLE_CUDA
+  "Whether QuEST will be built with support for NVIDIA GPU acceleration. Turned OFF by default."
   OFF
 )
-message(STATUS "GPU Acceleration is turned ${ENABLE_GPU_ACCELERATION}. Set ENABLE_GPU_ACCELERATION to modify.")
+message(STATUS "NVIDIA GPU acceleration is turned ${ENABLE_CUDA}. Set ENABLE_CUDA to modify.")
 
-if (ENABLE_GPU_ACCELERATION)
-  # HIP for AMD GPUs
-  option(
-    ENABLE_HIP
-    "Whether QuEST will be built with support for AMD GPUs. Turned OFF by default."
-    OFF
-  )
-  message(STATUS "AMD GPU support is turned ${ENABLE_HIP}. Set ENABLE_HIP to modify.")
-
-  # CuQuantum
+if (ENABLE_CUDA)
   option(
     ENABLE_CUQUANTUM
     "Whether QuEST will be built with support for NVIDIA CuQuantum. Turned OFF by default."
     OFF
   )
   message(STATUS "CuQuantum support is turned ${ENABLE_CUQUANTUM}. Set ENABLE_CUQUANTUM to modify.")
+endif()
+
+option(
+  ENABLE_HIP
+  "Whether QuEST will be built with support for AMD GPU acceleration. Turned OFF by default."
+)
+message(STATUS "AMD GPU acceleration is turned ${ENABLE_HIP}. Set ENABLE_HIP to modify.")
+
+# Throw on disallowed combinations
+if (ENABLE_CUDA AND ENABLE_HIP)
+  message(FATAL_ERROR "QuEST cannot support CUDA and HIP simultaneously.")
+endif()
+
+if ((ENABLE_CUDA OR ENABLE_HIP) AND FLOAT_PRECISION STREQUAL 4)
+  message(FATAL_ERROR "Quad precision is not supported on GPU. Please disable GPU acceleration or lower precision.")
 endif()
 
 ## Library
@@ -184,27 +190,43 @@ else()
   target_compile_definitions(QuEST PUBLIC COMPILE_MPI=0)
 endif()
 
-if (ENABLE_GPU_ACCELERATION)
+if (ENABLE_CUDA)
+  enable_language(CUDA)
+  set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+  set_property(TARGET QuEST PROPERTY CUDA_STANDARD 17)
+
   target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=1)
-  if (ENABLE_HIP)
-    enable_language(HIP)
-    target_compile_definitions(QuEST 
-      PUBLIC USE_HIP=1
-      PRIVATE __HIP_PLATFORM_AMD__
-    )
+
+  if (ENABLE_CUQUANTUM)
+    target_compile_definitions(QuEST PUBLIC COMPILE_CUQUANTUM=1)
+    if (VERBOSE_LIB_NAME)
+      string(CONCAT LIB_NAME ${LIB_NAME} "+cuquantum")
+    endif()
   else()
-    enable_language(CUDA)
-  endif()
-  if (VERBOSE_LIB_NAME)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+cuda")
+    target_compile_definitions(QuEST PUBLIC COMPILE_CUQUANTUM=0)
+    if (VERBOSE_LIB_NAME)
+      string(CONCAT LIB_NAME ${LIB_NAME} "+cuda")
+    endif()
   endif()
 else()
   target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=0)
 endif()
 
-if (ENABLE_CUQUANTUM)
-else()
-  target_compile_definitions(QuEST PUBLIC COMPILE_CUQUANTUM=0)
+if (ENABLE_HIP)
+  enable_language(HIP)
+  set(CMAKE_HIP_STANDARD_REQUIRED ON)
+  set_property(TARGET QuEST PROPERTY HIP_STANDARD 17)
+  
+  target_compile_definitions(QuEST
+    PUBLIC COMPILE_CUDA=1
+    PUBLIC COMPILE_CUQUANTUM=0
+    PUBLIC USE_HIP=1
+    PUBLIC __HIP_PLATFORM_AMD__
+  )
+
+  if (VERBOSE_LIB_NAME)
+    string(CONCAT LIB_NAME ${LIB_NAME} "+hip")
+  endif()
 endif()
 
 # add math library
