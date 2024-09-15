@@ -3,6 +3,10 @@
  * superoperators and Kraus maps, including their constructors, 
  * getters, setters and reporters. Note the functions to
  * actually simulate these channels are exposed in decoherence.h
+ * 
+ * Like matrices.h, this file makes extensive use of macros to
+ * overload struct initialisers for user convenience. All macros
+ * herein expand to single-line definitions for safety.
  */
 
 #ifndef CHANNELS_H
@@ -111,6 +115,11 @@ extern "C" {
 
 /*
  * POINTER INITIALISERS
+ *
+ * which permit users to pass heap and stack pointers in both C and C++, e.g.
+ *   - qcomp** ptr = malloc(...); setSuperOp(m, ptr);
+ *   - qcomp* ptrs[16]; setSuperOp(m, ptrs);
+ *   - qcomp*** ptr = malloc(...); setKrausMap(m, ptr);
  */
 
 
@@ -131,6 +140,18 @@ extern "C" {
 
 /*
  * ARRAY, VECTOR, MATRIX INITIALISERS
+ *
+ * which define additional overloads for arrays, VLAs, vectors and vector initialisation lists.
+ * They permit C users to additionally call e.g.
+ *   - qcomp arr[16][16]; setSuperOp(m, arr);
+ *   - int n=16; qcomp arr[n][n]; setSuperOp(m, arr);
+ *   - setKrausMap(m, (qcomp[5][16][16]) {{{...}}});
+ *   - inline temporary VLA remains impossible even in C99, however
+ * and C++ users gain overloads:
+ *   - int n=8; std::vector vec(n); setSuperOp(m, vec);
+ *   - setKrausMap(m, {{{...}}} );
+ * An unintended but harmless side-effect is the exposure of functions setKrausMapFromArr(),
+ * setSuperOpFromArr(), validate_setCompMatrFromArr() and validate_setSuperOpFromArr to the user.
  */
 
 
@@ -159,7 +180,9 @@ extern "C" {
 
         // we validate map's fields before the below stack allocation, since the fields could be 
         // invalid (like when the user declared struct without calling createKrausMap()), which
-        // would otherwise trigger a seg-fault
+        // would otherwise trigger a seg-fault. It is fine that 'matrices' is already declared as 
+        // a potentially invalid dimension (e.g. matrices[-1][-1][-1]) as long as we do not access 
+        // any elements before validation
         validate_setKrausMapFromArr(map);
 
         // create stack space for 2D collection of pointers, one to each input row
@@ -178,8 +201,9 @@ extern "C" {
 
     static inline void setSuperOpFromArr(SuperOp op, qcomp matrix[op.numRows][op.numRows]) {
 
-        // we validate op's fields before the below stack allocation,
-        // since the fields could be invalid (e.g. if user hasn't created)
+        // we validate op's fields before the below stack allocation, since the fields could be 
+        // invalid (e.g. if op was declared but not initialised). The passed 'matrix' arrays
+        // are invalid in that case, but it's fine if we do not access them pre-validation
         validate_setSuperOpFromArr(op);
 
         // create stack space for pointers, one for each input row
@@ -214,6 +238,14 @@ extern "C" {
 
 /*
  * LITERAL INITIALISERS
+ *
+ * which enable C users to give inline 2D and 3D array literals without having to use the
+ * VLA compound literal syntax. We expose these macros to C++ too for API consistency,
+ * although C++'s vector overloads achieve the same thing.
+ * 
+ * These empower C and C++ users to call
+ *   - setInlineSuperOp(m, 1, {{...}});
+ *   - setInlineKrausMap(m, 2, 16, {{{...}}});
  */
 
 

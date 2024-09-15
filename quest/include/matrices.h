@@ -6,6 +6,7 @@
  * This file uses extensive preprocessor trickery to achieve overloaded,
  * platform agnostic, C and C++ compatible, precision agnostic, getters 
  * and setters of complex matrices. Read on to begin your adventure.
+ * All macros herein expand to single-line definitions, for safety.
  */
 
 #ifndef MATRICES_H
@@ -490,11 +491,13 @@ extern "C" {
  * C users can call:
  *   - qcomp arr[8][8]; setCompMatr(m, arr);
  *   - int n=8; qcomp arr[n][n]; setCompMatr(m, arr);
+ *   - setCompMatr(m, (qcomp[8][8]) {{...}});
+ *   - inline temporary VLA remains impossible even in C99, however
  * and C++ users can call:
- *   - int n=8; std::vector vec(n); setCompMatr(vec);
- *   - setCompMatr( {...} );
+ *   - int n=8; std::vector vec(n); setCompMatr(m, vec);
+ *   - setCompMatr(m, {{...}} );
  * An unintended but harmless side-effect is the exposure of functions setCompMatrFromArr() and 
- * validate_matrixFields() to the user.
+ * validate_setCompMatrFromArr() to the user.
  */
 
 
@@ -525,6 +528,8 @@ extern "C" {
 
         // this function will allocate stack memory of size matr.numRows, but that field could
         // be invalid since matr hasn't been validated, so we must first invoke validation.
+        // Note it is fine that 'arr' is already declared as a potentially invalid dimension,
+        // e.g. arr[-1][-1], as long as we do not access any elements before validation
         validate_setCompMatrFromArr(matr);
 
         // new ptrs array safely fits in stack, since it's sqrt-smaller than user's passed stack array
@@ -563,7 +568,7 @@ extern "C" {
  * although C++'s vector overloads achieve the same thing.
  * 
  * These empower C and C++ users to call
- *   - setCompMatr(m, {{1,2},{3,4}} )
+ *   - setInlineCompMatr(m, 1, {{1,2},{3,4}})
  */
 
 
@@ -590,7 +595,11 @@ extern "C" {
         setCompMatrFromArr(matr, (qcomp[1<<numQb][1<<numQb]) __VA_ARGS__)
 
 
-    // 1D array arguments fortunately decay to pointers 
+    // 1D array arguments fortunately decay to pointers. Note the 'numQb' arg is
+    // not necessary for diagonals at all because of this decay, but we still 
+    // require it for API consistency with the dense matrix functions, and so that
+    // non-specified elements are defaulted to 0 (otherwise truncated literals will
+    // cause a seg-fault)
 
     #define setInlineDiagMatr(matr, numQb, ...) \
         setDiagMatr(matr, (qcomp[1<<numQb]) __VA_ARGS__)
