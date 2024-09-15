@@ -198,7 +198,7 @@ extern "C" {
 
     #define setKrausMap(map, ...) \
         _Generic((__VA_ARGS__), \
-            qcomp** : setKrausMap, \
+            qcomp*** : setKrausMap, \
             default : setKrausMapFromArr \
         )((map), (__VA_ARGS__))
 
@@ -222,10 +222,10 @@ extern "C" {
     // C++ uses the vector overloads, ignoring numOps and numQb parameters (blegh)
 
     #define setInlineKrausMap(map, numQb, numOps, ...) \
-        setKrausMap(map, __VA_ARGS__);
+        setKrausMap((map), __VA_ARGS__);
 
     #define setInlineSuperOp(map, numQb, ...) \
-        setSuperOp(map, __VA_ARGS__);
+        setSuperOp((map), __VA_ARGS__);
 
 #else
 
@@ -233,10 +233,19 @@ extern "C" {
     // (we sadly cannot use inline VLAs to preclude passing numQb and numOp)
 
     #define setInlineKrausMap(map, numQb, numOps, ...) \
-        setKrausMapFromArr(map, (qcomp[numOps][1<<numQb][1<<numQb]) __VA_ARGS__)
+        setKrausMapFromArr((map), (qcomp[numOps][1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
     #define setInlineSuperOp(map, numQb, ...) \
-        setSuperOpFromArr(map, (qcomp[1<<(2*numQb)][1<<(2*numQb)]) __VA_ARGS__)
+        setSuperOpFromArr((map), (qcomp[1<<(2*(numQb))][1<<(2*(numQb))]) __VA_ARGS__)
+
+
+    // TODO: currently, the macro parameters above are used only to create the 
+    // temporary arrays given to setKrausMapFromArr() and are then discarded,
+    // but in principle we could additionally validate that they match the
+    // fields of argument map (a KrausMap). Mismatch is a reasonable error;
+    // the user simply has to pass different numbers to create() and set(),
+    // as they might do from copying code, and without validation, will
+    // encounter an uninterpretable seg-fault. Admittedly, I did it myself!
 
 #endif
 

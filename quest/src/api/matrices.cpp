@@ -195,7 +195,7 @@ extern "C" CompMatr createCompMatr(int numQubits) {
         // 2D CPU memory
         .cpuElems = cpu_allocMatrix(numRows), // nullptr if failed, or may contain nullptr
 
-        // 1D GPU memory (first amp will be un-sync'd flag)
+        // 1D GPU memory
         .gpuElemsFlat = (getQuESTEnv().isGpuAccelerated)? gpu_allocArray(numElems) : nullptr // nullptr if failed or not needed
     };
 
@@ -224,7 +224,7 @@ extern "C" DiagMatr createDiagMatr(int numQubits) {
         // 1D CPU memory
         .cpuElems = cpu_allocArray(numElems), // nullptr if failed
 
-        // 1D GPU memory (first amp will be un-sync'd flag)
+        // 1D GPU memory
         .gpuElems = (getQuESTEnv().isGpuAccelerated)? gpu_allocArray(numElems) : nullptr // nullptr if failed or not needed
     };
 
@@ -264,7 +264,7 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
         // 1D CPU memory
         .cpuElems = cpu_allocArray(numElemsPerNode), // nullptr if failed
 
-        // 1D GPU memory (first amp will be un-sync'd flag)
+        // 1D GPU memory
         .gpuElems = (env.isGpuAccelerated)? gpu_allocArray(numElemsPerNode) : nullptr, // nullptr if failed or not needed
     };
 
@@ -358,7 +358,7 @@ void validateAndSetDenseMatrElems(CompMatr out, T elems, const char* caller) {
     // copy elems into matrix's CPU memory
     cpu_copyMatrix(out.cpuElems, elems, out.numRows);
 
-    // overwrite GPU elements (including unsync flag); validation gauranteed to pass
+    // overwrite GPU elements; validation gauranteed to pass
     syncCompMatr(out); 
 }
 
@@ -376,7 +376,7 @@ extern "C" void setDiagMatr(DiagMatr out, qcomp* in) {
     // overwrite CPU memory
     cpu_copyArray(out.cpuElems, in, out.numElems);
 
-    // overwrite GPU elements (including unsync flag); validation gauranteed to pass
+    // overwrite GPU elements; validation gauranteed to pass
     syncDiagMatr(out);
 }
 

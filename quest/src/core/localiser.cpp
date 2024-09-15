@@ -569,7 +569,10 @@ void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrl
 
     // total number of Y determines a phase factor on all updated amps (because Y contains i)
     int numY = paulis_getTargsWithEitherPaulis(targs, str, Y, Y).size();
-    qcomp powI = std::pow(qcomp(0,1), numY);
+
+    // precision-agnostic calculation of i^numY
+    vector<qcomp> powersOfI = {1, 1_i, -1, -1_i};
+    qcomp powI = powersOfI[numY % 4];
 
     // parity of Y and Z on all qubits determines phase factor on updated amps (because Y and Z contain -1)
     auto allTargsYZ = paulis_getTargsWithEitherPaulis(targs, str, Y, Z);

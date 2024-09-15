@@ -598,6 +598,15 @@ extern "C" {
     #define setInlineFullStateDiagMatr(matr, startInd, numElems, ...) \
         setFullStateDiagMatr(matr, startInd, (qcomp[numElems]) __VA_ARGS__, numElems)
 
+
+    // TODO: currently, the above macro parameters are used only to create 
+    // temporary arrays and are then discarded, but in principle we could 
+    // additionally validate that they match the fields of the given matrix
+    // structs. A mismatch is a reasonable user error; the user simply has to 
+    // pass different numbers to create() and set(), as they might do from 
+    // copying code, and without validation, they will encounter an 
+    // uninterpretable seg-fault.
+
 #endif
 
 

@@ -35,6 +35,9 @@ void freeSuperOp(SuperOp op) {
     // free CPU memory, even if it is NULL
     cpu_deallocMatrix(op.cpuElems, op.numRows);
 
+    // free teeniy-tiny heap flag
+    cpu_deallocHeapFlag(op.wasGpuSynced);
+
     // we avoid invoking a GPU function in non-GPU mode
     auto gpuPtr = util_getGpuMemPtr(op);
     if (mem_isAllocated(gpuPtr))
@@ -64,6 +67,10 @@ void freeObj(KrausMap map) {
 
 
 bool didAnyLocalAllocsFail(SuperOp op) {
+
+    // god help us if this single-integer malloc failed
+    if (!mem_isAllocated(op.wasGpuSynced))
+        return true;
 
     if (!mem_isAllocated(op.cpuElems, op.numRows))
         return true;
@@ -129,7 +136,7 @@ SuperOp allocSuperOp(int numQubits) {
         .numRows = numRows,
 
         .cpuElems = cpu_allocMatrix(numRows), // nullptr if failed
-        .gpuElemsFlat = (getQuESTEnv().isGpuAccelerated)? gpu_allocArray(numElems) : nullptr, // first amp will be un-sync'd flag
+        .gpuElemsFlat = (getQuESTEnv().isGpuAccelerated)? gpu_allocArray(numElems) : nullptr, // nullptr if failed or not needed
 
         .wasGpuSynced = cpu_allocHeapFlag() // nullptr if failed
     };
