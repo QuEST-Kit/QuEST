@@ -248,38 +248,29 @@ extern "C" void syncKrausMap(KrausMap map) {
  */
 
 
-extern "C" void validate_setSuperOpFromArr(SuperOp op) {
-
-    // we define bespoke validation used by setSuperOpFromArr(), which
-    // is necessarily exposed in the header. We report the caller as setSuperOp(),
-    // although the user may have actually called setInlineSuperOps()
-    validate_superOpFields(op, "setSuperOp");
-}
-
-
 // T can be qcomp** or vector<vector<qcomp>>
 template <typename T> 
-void validateAndSetSuperOp(SuperOp op, T matrix, const char* caller) {
-    validate_superOpFields(op, caller);
-
-    // overwrite the CPU matrix, and sync it to GPU
+void setAndSyncSuperOpElems(SuperOp op, T matrix) {
+    
+    // overwrite the CPU matrix
     cpu_copyMatrix(op.cpuElems, matrix, op.numRows);
+
+    // sync CPU matrix to flat GPU array
     syncSuperOp(op);
 }
 
 
 extern "C" void setSuperOp(SuperOp op, qcomp** matrix) {
+    validate_superOpFields(op, __func__);
 
-    validateAndSetSuperOp(op, matrix, __func__);
+    setAndSyncSuperOpElems(op, matrix);
 }
 
 void setSuperOp(SuperOp op, vector<vector<qcomp>> matrix) {
-
-    // perform additional validation needed for vectors (which might have different sizes)
     validate_superOpFields(op, __func__);
     validate_superOpNewMatrixDims(op, matrix, __func__);
 
-    validateAndSetSuperOp(op, matrix, __func__);
+    setAndSyncSuperOpElems(op, matrix);
 }
 
 
@@ -293,19 +284,9 @@ void setSuperOp(SuperOp op, vector<vector<qcomp>> matrix) {
  */
 
 
-extern "C" void validate_setKrausMapFromArr(KrausMap map) {
-
-    // we define bespoke validation used by setKrausMapFromArr(), which
-    // is necessarily exposed in the header. We report the caller as setKrausMap(),
-    // although the user may have actually called setInlineKrausMap()
-    validate_krausMapFields(map, "setKrausMap");
-}
-
-
 // type T can be qcomp*** or vector<vector<vector<qcomp>>>
 template <typename T> 
-void validateAndSetKrausMap(KrausMap map, T matrices, const char* caller) {
-    validate_krausMapFields(map, caller);
+void setAndSyncKrausMapElems(KrausMap map, T matrices) {
 
     // copy over the given matrices into the map's CPU mmemory
     for (int n=0; n<map.numMatrices; n++)
@@ -317,18 +298,86 @@ void validateAndSetKrausMap(KrausMap map, T matrices, const char* caller) {
 
 
 extern "C" void setKrausMap(KrausMap map, qcomp*** matrices) {
+    validate_krausMapFields(map, __func__);
 
-    validateAndSetKrausMap(map, matrices, __func__);
+    setAndSyncKrausMapElems(map, matrices);
 }
 
 
 void setKrausMap(KrausMap map, vector<vector<vector<qcomp>>> matrices) {
-
-    // perform additional validation needed for vectors (which might have different sizes)
     validate_krausMapFields(map, __func__);
     validate_krausMapNewMatrixDims(map, matrices, __func__);
 
-    validateAndSetKrausMap(map, matrices, __func__);
+    setAndSyncKrausMapElems(map, matrices);
+}
+
+
+
+/*
+ * VARIABLE-SIZE SETTERS VIA LITERALS
+ *
+ * Only the C++ versions are defined here, because the C versions are macros
+ * defined in the header. Note the C++ versions themselves are entirely
+ * superfluous and merely call the above vector setters, but we still define
+ * them for API consistency, and we additionally validate the superfluous
+ * additional parameters they pass.
+ */
+
+
+void setInlineKrausMap(KrausMap map, int numQb, int numOps, vector<vector<vector<qcomp>>> matrices) {
+    validate_krausMapFields(map, __func__);
+    validate_krausMapFieldsMatchPassedParams(map, numQb, numOps, __func__);
+    validate_krausMapNewMatrixDims(map, matrices, __func__);
+
+    setAndSyncKrausMapElems(map, matrices);
+}
+
+
+void setInlineSuperOp(SuperOp op, int numQb, vector<vector<qcomp>> matrix) {
+    validate_superOpFields(op, __func__);
+    validate_superOpFieldsMatchPassedParams(op, numQb, __func__);
+    validate_superOpNewMatrixDims(op, matrix, __func__);
+
+    setAndSyncSuperOpElems(op, matrix);
+}
+
+
+
+/*
+ * EXPOSING SOME SETTER VALIDATION TO HEADER
+ *
+ * Some setters are necessarily defined in the header, because they accept 
+ * C-only VLAs which need to be cast into pointers before being passed to 
+ * this C++ backend (which does not support VLA). These setters need their
+ * validators exposed, though we cannot expose the entirety of validation.hpp 
+ * because it cannot be parsed by C; so we here wrap specific functions.
+ */
+
+
+extern "C" {
+
+    void _validateParamsToSetKrausMapFromArr(KrausMap map) {
+        validate_krausMapFields(map, "setKrausMap");
+    }
+
+    void _validateParamsToSetSuperOpFromArr(SuperOp op) {
+        validate_superOpFields(op, "setSuperOp");
+    }
+
+    void _validateParamsToSetInlineKrausMap(KrausMap map, int numQb, int numOps) {
+
+        const char* caller = "setInlineKrausMap";
+        validate_krausMapFields(map, caller);
+        validate_krausMapFieldsMatchPassedParams(map, numQb, numOps, caller);
+    }
+
+    void _validateParamsToSetInlineSuperOp(SuperOp op, int numQb) {
+
+        const char* caller = "setInlineSuperOp";
+        validate_superOpFields(op, caller);
+        validate_superOpFieldsMatchPassedParams(op, numQb, caller);
+    }
+
 }
 
 
