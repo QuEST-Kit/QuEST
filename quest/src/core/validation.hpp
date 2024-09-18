@@ -114,6 +114,9 @@ void validate_matrixNumNewElems(int numQubits, vector<qcomp> elems, const char* 
 
 void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd, qindex numElems, const char* caller);
 
+void validate_matrixNumQubitsMatchesParam(int numMatrQubits, int numSetterQubits, const char* caller);
+void validate_declaredNumElemsMatchesVectorLength(qindex numElems, qindex vecLength, const char* caller);
+
 
 
 /*
@@ -160,6 +163,8 @@ void validate_newSuperOpAllocs(SuperOp op, const char* caller);
 
 void validate_superOpNewMatrixDims(SuperOp op, vector<vector<qcomp>> matrix, const char* caller);
 
+void validate_superOpFieldsMatchPassedParams(SuperOp op, int numQb, const char* caller);
+
 
 
 /*
@@ -187,6 +192,8 @@ void validate_newKrausMapAllocs(KrausMap map, const char* caller);
  */
 
 void validate_krausMapNewMatrixDims(KrausMap map, vector<vector<vector<qcomp>>> matrices, const char* caller);
+
+void validate_krausMapFieldsMatchPassedParams(KrausMap map, int numQb, int numOps, const char* caller);
 
 
 

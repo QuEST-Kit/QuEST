@@ -148,6 +148,22 @@ void demo_setCompMatr() {
 }
 
 
+void demo_syncCompMatr() {
+
+    CompMatr a = createCompMatr(2);
+
+    // manually modify the elems
+    a.cpuElems[0][0] = 1;
+    a.cpuElems[1][1] = 2i;
+    a.cpuElems[2][2] = -3i;
+    a.cpuElems[3][3] = -2+4i;
+    
+    syncCompMatr(a);
+    reportCompMatr(a);
+    destroyCompMatr(a);
+}
+
+
 
 /*
  * DiagMatr
@@ -256,8 +272,31 @@ void demo_setDiagMatr() {
 }
 
 
+void demo_syncDiagMatr() {
+
+    DiagMatr a = createDiagMatr(2);
+
+    // manually modify the elems
+    a.cpuElems[0] = 1;
+    a.cpuElems[1] = 2i;
+    a.cpuElems[2] = -3i;
+    a.cpuElems[3] = -2+4i;
+
+    syncDiagMatr(a);
+    reportDiagMatr(a);
+    destroyDiagMatr(a);
+}
+
+
+
+/*
+ * FullStateDiagMatr
+ */
+
+
 void demo_setInlineFullStateDiagMatr() {
 
+    // using custom instead of createFullStateDiagMatr() to force distribution
     FullStateDiagMatr matr = createCustomFullStateDiagMatr(5, 1);
 
     // inline literal; identical to setFullStateDiagMatr() for consistencty with C API
@@ -271,6 +310,7 @@ void demo_setInlineFullStateDiagMatr() {
 
 void demo_setFullStateDiagMatr() {
 
+    // using custom instead of createFullStateDiagMatr() to force distribution
     FullStateDiagMatr matr = createCustomFullStateDiagMatr(5, 1);
 
     // VLA (C only)
@@ -296,6 +336,20 @@ void demo_setFullStateDiagMatr() {
 }
 
 
+void demo_syncFullStateDiagMatr() {
+
+    // using custom instead of createFullStateDiagMatr() to force distribution
+    FullStateDiagMatr a = createCustomFullStateDiagMatr(5, 1);
+
+    // every node modifies its first local element
+    a.cpuElems[0] = -10i * (1+getQuESTEnv().rank);
+
+    syncFullStateDiagMatr(a);
+    reportFullStateDiagMatr(a);
+    destroyFullStateDiagMatr(a);
+}
+
+
 
 /*
  * main
@@ -310,14 +364,17 @@ int main() {
     demo_getCompMatr();
     demo_setInlineCompMatr();
     demo_setCompMatr();
+    demo_syncCompMatr();
 
     demo_getInlineDiagMatr();
     demo_getDiagMatr();
     demo_setInlineDiagMatr();
     demo_setDiagMatr();
+    demo_syncDiagMatr();
 
     demo_setInlineFullStateDiagMatr();
     demo_setFullStateDiagMatr();
+    demo_syncFullStateDiagMatr();
 
     finalizeQuESTEnv();
     return 0;

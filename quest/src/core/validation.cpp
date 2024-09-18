@@ -301,6 +301,13 @@ namespace report {
         "The specified range of elements to set (at indices ${START_IND} to ${END_IND_EXCL} exclusive) exceeds the bounds of the diagonal matrix (of ${MATR_NUM_ELEMS} total elements).";
 
 
+    string MATR_NUM_QUBITS_MISMATCHES_INLINE_SETTER =
+        "The declared number of qubits (${NUM_SETTER_QUBITS}) differs from the number of qubits of the matrix (${NUM_MATRIX_QUBITS}).";
+
+    string MATR_NUM_ELEMS_MISMATCHES_VEC_LENGTH_IN_INLINE_SETTER =
+        "The declared number of passed elements (${NUM_ELEMS}) differs from the length of the given list (${VEC_LENGTH}).";
+
+
     /*
      * EXISTING MATRIX
      */
@@ -369,14 +376,14 @@ namespace report {
         "Cannot create a superoperator of ${NUM_QUBITS} qubits because the matrix would contain a total of 16^${NUM_QUBITS} elements which exceeds the maximum representable index of 'qindex' (permitting up to ${MAX_QUBITS} qubits).";
     
     string NEW_SUPER_OP_MEM_WOULD_EXCEED_SIZEOF =
-        "Cannot create a superoperator of ${NUM_QUBITS} because the total required memory (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the maximum representable by size_t. In this deployment, the maximum number of qubits in such a superoperator is ${MAX_QUBITS}";
+        "Cannot create a superoperator of ${NUM_QUBITS} qubits because the total required memory (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the maximum representable by size_t. In this deployment, the maximum number of qubits in such a superoperator is ${MAX_QUBITS}";
 
 
     string NEW_SUPER_OP_CANNOT_FIT_INTO_CPU_MEM =
-        "Cannot create a superoperator of ${NUM_QUBITS} because the total memory required (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds that available.";
+        "Cannot create a superoperator of ${NUM_QUBITS} qubits because the total memory required (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds that available (${RAM_SIZE} bytes).";
 
     string NEW_SUPER_OP_CANNOT_FIT_INTO_GPU_MEM =
-        "Cannot create a GPU-accelerated superoperator of ${NUM_QUBITS} because the total memory required (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available GPU memory.";
+        "Cannot create a GPU-accelerated superoperator of ${NUM_QUBITS} qubits because the total memory required (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available GPU memory (${VRAM_SIZE} bytes).";
 
 
     string NEW_SUPER_OP_CPU_ELEMS_ALLOC_FAILED =
@@ -395,6 +402,9 @@ namespace report {
 
     string SUPER_OP_NEW_MATRIX_ELEMS_WRONG_NUM_COLS =
         "Incompatible number of columns (${GIVEN_DIM}) in one or more rows of a matrix given to overwrite a ${NUM_QUBITS}-qubit SuperOp, which expects ${EXPECTED_DIM} rows.";
+
+    string SUPER_OP_FIELDS_MISMATCH_PARAMS =
+        "The specified number of qubits (${NUM_PASSED_QUBITS}) differs from the number in the SuperOp (${NUM_OP_QUBITS}).";
         
 
     /*
@@ -436,10 +446,10 @@ namespace report {
 
 
     string NEW_KRAUS_MAPS_SUPER_OP_CANNOT_FIT_INTO_CPU_MEM =
-        "Cannot create a Kraus map of ${NUM_QUBITS} because the total memory required by its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available memory.";
+        "Cannot create a Kraus map of ${NUM_QUBITS} qubits because the total memory required by its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available memory (${RAM_SIZE} bytes).";
         
     string NEW_KRAUS_MAPS_SUPER_OP_CANNOT_FIT_INTO_GPU_MEM =
-        "Cannot create a GPU-accelerated Kraus map of ${NUM_QUBITS} because the total memory required by its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available GPU memory.";
+        "Cannot create a GPU-accelerated Kraus map of ${NUM_QUBITS} qubits because the total memory required by its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available GPU memory (${VRAM_SIZE} bytes).";
 
 
     string NEW_KRAUS_MAPS_SUPER_OP_CPU_ELEMS_ALLOC_FAILED =
@@ -468,6 +478,9 @@ namespace report {
 
     string KRAUS_MAP_NEW_MATRIX_ELEMS_WRONG_ROW_DIM =
         "One or more of the given matrices had a matrix dimension (${NUM_GIVEN_COLS} columns) incompatible with the given Kraus map of ${NUM_QUBITS} qubits, which expects matrices with ${NUM_EXPECTED_COLS} columns.";
+
+    string KRAUS_MAP_FIELDS_MISMATCH_PARAMS =
+        "The specified number of Kraus operators (${NUM_PASSED_OPS}) and qubits (${NUM_PASSED_QUBITS}) differs from the number in the KrausMap (respectively ${NUM_MAP_OPS} and ${NUM_MAP_QUBITS}).";
 
 
     /*
@@ -1480,6 +1493,24 @@ void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd,
         vars, caller);
 }
 
+void validate_matrixNumQubitsMatchesParam(int numMatrQubits, int numSetterQubits, const char* caller) {
+
+    tokenSubs vars = {
+        {"${NUM_SETTER_QUBITS}", numSetterQubits},
+        {"${NUM_MATRIX_QUBITS}", numMatrQubits}};
+
+    assertThat(numMatrQubits == numSetterQubits, report::MATR_NUM_QUBITS_MISMATCHES_INLINE_SETTER, vars, caller);
+}
+
+void validate_declaredNumElemsMatchesVectorLength(qindex numElems, qindex vecLength, const char* caller) {
+
+    tokenSubs vars = {
+        {"${NUM_ELEMS}", numElems},
+        {"${VEC_LENGTH}", vecLength}};
+
+    assertThat(numElems == vecLength, report::MATR_NUM_ELEMS_MISMATCHES_VEC_LENGTH_IN_INLINE_SETTER, vars, caller);
+}
+
 
 
 /*
@@ -1845,6 +1876,15 @@ void validate_superOpNewMatrixDims(SuperOp op, vector<vector<qcomp>> matrix, con
     }
 }
 
+void validate_superOpFieldsMatchPassedParams(SuperOp op, int numQb, const char* caller) {
+
+    tokenSubs vars = {
+        {"${NUM_PASSED_QUBITS}", numQb},
+        {"${NUM_OP_QUBITS}",     op.numQubits}};
+
+    assertThat(op.numQubits == numQb, report::SUPER_OP_FIELDS_MISMATCH_PARAMS, vars, caller);
+}
+
 
 
 /*
@@ -2009,6 +2049,18 @@ void validate_krausMapNewMatrixDims(KrausMap map, vector<vector<vector<qcomp>>> 
             assertThat(map.numRows == (qindex) matrices[i][r].size(), report::KRAUS_MAP_NEW_MATRIX_ELEMS_WRONG_ROW_DIM,
                 {{"${NUM_QUBITS}", map.numQubits}, {"${NUM_EXPECTED_COLS}", map.numRows}, {"${NUM_GIVEN_COLS}", matrices[i][r].size()}}, caller);
     }
+}
+
+void validate_krausMapFieldsMatchPassedParams(KrausMap map, int numQb, int numOps, const char* caller) {
+
+    tokenSubs vars = {
+        {"${NUM_MAP_QUBITS}",    map.numQubits},
+        {"${NUM_MAP_OPS}",       map.numMatrices},
+        {"${NUM_PASSED_QUBITS}", numQb},
+        {"${NUM_PASSED_OPS}",    numOps}};
+
+    bool valid = (map.numQubits == numQb) && (map.numMatrices == numOps);
+    assertThat(valid, report::KRAUS_MAP_FIELDS_MISMATCH_PARAMS, vars, caller);
 }
 
 

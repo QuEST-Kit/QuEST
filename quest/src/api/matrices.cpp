@@ -195,7 +195,7 @@ extern "C" CompMatr createCompMatr(int numQubits) {
         // 2D CPU memory
         .cpuElems = cpu_allocMatrix(numRows), // nullptr if failed, or may contain nullptr
 
-        // 1D GPU memory (first amp will be un-sync'd flag)
+        // 1D GPU memory
         .gpuElemsFlat = (getQuESTEnv().isGpuAccelerated)? gpu_allocArray(numElems) : nullptr // nullptr if failed or not needed
     };
 
@@ -224,7 +224,7 @@ extern "C" DiagMatr createDiagMatr(int numQubits) {
         // 1D CPU memory
         .cpuElems = cpu_allocArray(numElems), // nullptr if failed
 
-        // 1D GPU memory (first amp will be un-sync'd flag)
+        // 1D GPU memory
         .gpuElems = (getQuESTEnv().isGpuAccelerated)? gpu_allocArray(numElems) : nullptr // nullptr if failed or not needed
     };
 
@@ -264,7 +264,7 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
         // 1D CPU memory
         .cpuElems = cpu_allocArray(numElemsPerNode), // nullptr if failed
 
-        // 1D GPU memory (first amp will be un-sync'd flag)
+        // 1D GPU memory
         .gpuElems = (env.isGpuAccelerated)? gpu_allocArray(numElemsPerNode) : nullptr, // nullptr if failed or not needed
     };
 
@@ -352,21 +352,20 @@ extern "C" {
 
 // type T can be qcomp** or vector<vector<qcomp>>, but qcomp(*)[] is handled by header
 template <typename T> 
-void validateAndSetDenseMatrElems(CompMatr out, T elems, const char* caller) {
-    validate_matrixFields(out, __func__);
-
+void setAndSyncDenseMatrElems(CompMatr out, T elems) {
+    
     // copy elems into matrix's CPU memory
     cpu_copyMatrix(out.cpuElems, elems, out.numRows);
 
-    // overwrite GPU elements (including unsync flag); validation gauranteed to pass
+    // overwrite GPU elements; validation gauranteed to pass
     syncCompMatr(out); 
 }
 
 
 extern "C" void setCompMatr(CompMatr out, qcomp** in) {
+    validate_matrixFields(out, __func__);
 
-    // use the above template, which we will reuse for the vector overloads
-    validateAndSetDenseMatrElems(out, in, __func__);
+    setAndSyncDenseMatrElems(out, in);
 }
 
 
@@ -376,7 +375,7 @@ extern "C" void setDiagMatr(DiagMatr out, qcomp* in) {
     // overwrite CPU memory
     cpu_copyArray(out.cpuElems, in, out.numElems);
 
-    // overwrite GPU elements (including unsync flag); validation gauranteed to pass
+    // overwrite GPU elements; validation gauranteed to pass
     syncDiagMatr(out);
 }
 
@@ -406,23 +405,11 @@ extern "C" void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qco
  */
 
 
-extern "C" void validate_setCompMatrFromArr(CompMatr matr) {
-
-    // we define bespoke validation used by setCompMatrFromArr(), which
-    // is necessarily exposed in the header. We report the caller as setCompMatr
-    // although the user may have actually called setInlineCompMatr()
-    validate_matrixFields(matr, "setCompMatr");
-}
-
-
 void setCompMatr(CompMatr out, vector<vector<qcomp>> in) {
-
-    // we validate dimension of 'in', which first requires validating 'out' fields
     validate_matrixFields(out, __func__);
     validate_matrixNumNewElems(out.numQubits, in, __func__);
 
-    // then we unimportantly repeat some of this validation; alas!
-    validateAndSetDenseMatrElems(out, in, __func__);
+    setAndSyncDenseMatrElems(out, in);
 }
 
 
@@ -445,6 +432,86 @@ void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, vector<qcomp> 
 
 // no bespoke array functions are necessary for diagonal matrices initialisation, 
 // since passed arrays automatically decay to pointers
+
+
+
+/*
+ * VARIABLE-SIZE MATRIX SETTERS VIA LITERALS
+ *
+ * Only the C++ versions are defined here, while the C versions are macros
+ * defined in the header. Note the C++ versions themselves are entirely
+ * superfluous and merely call the above vector setters, but we still define
+ * them for API consistency, and we additionally validate the superfluous
+ * additional parameters they pass.
+ */
+
+
+void setInlineCompMatr(CompMatr matr, int numQb, std::vector<std::vector<qcomp>> in) {
+    validate_matrixFields(matr, __func__);
+    validate_matrixNumQubitsMatchesParam(matr.numQubits, numQb, __func__);
+    validate_matrixNumNewElems(matr.numQubits, in, __func__);
+
+    setAndSyncDenseMatrElems(matr, in);
+}
+
+void setInlineDiagMatr(DiagMatr matr, int numQb, std::vector<qcomp> in) {
+    validate_matrixFields(matr, __func__);
+    validate_matrixNumQubitsMatchesParam(matr.numQubits, numQb, __func__);
+    validate_matrixNumNewElems(matr.numQubits, in, __func__);
+
+    setDiagMatr(matr, in.data()); // validation gauranteed to pass
+}
+
+void setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, std::vector<qcomp> in) {
+    validate_matrixFields(matr, __func__);
+    validate_declaredNumElemsMatchesVectorLength(numElems, in.size(), __func__);
+    validate_fullStateDiagMatrNewElems(matr, startInd, numElems, __func__);
+
+    setFullStateDiagMatr(matr, startInd, in); // validation gauranteed to pass
+}
+
+
+
+/*
+ * EXPOSING SOME SETTER VALIDATION TO HEADER
+ *
+ * Some setters are necessarily defined in the header, because they accept 
+ * C-only VLAs which need to be cast into pointers before being passed to 
+ * this C++ backend (which does not support VLA). These setters need their
+ * validators exposed, though we cannot expose the entirety of validation.hpp 
+ * because it cannot be parsed by C; so we here wrap specific functions.
+ */
+
+
+extern "C" {
+
+    void _validateParamsOfSetCompMatrFromArr(CompMatr matr) { 
+
+        validate_matrixFields(matr, "setCompMatr");
+    }
+
+    void _validateParamsOfSetInlineCompMatr(CompMatr matr, int numQb) {
+
+        const char* caller = "setInlineCompMatr";
+        validate_matrixFields(matr, caller);
+        validate_matrixNumQubitsMatchesParam(matr.numQubits, numQb, caller);
+    }
+
+    void _validateParamsOfSetInlineDiagMatr(DiagMatr matr, int numQb) {
+
+        const char* caller = "setInlineDiagMatr";
+        validate_matrixFields(matr, caller);
+        validate_matrixNumQubitsMatchesParam(matr.numQubits, numQb, caller);
+    }
+
+    void _validateParamsOfSetInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems) {
+
+        const char* caller = "setInlineFullStateDiagMatr";
+        validate_matrixFields(matr, caller);
+        validate_fullStateDiagMatrNewElems(matr, startInd, numElems, caller);
+    }
+
+}
 
 
 
