@@ -282,6 +282,7 @@ void demo_syncDiagMatr() {
     a.cpuElems[2] = -3i;
     a.cpuElems[3] = -2+4i;
 
+    syncDiagMatr(a);
     reportDiagMatr(a);
     destroyDiagMatr(a);
 }
