@@ -380,7 +380,7 @@ namespace report {
 
 
     string NEW_SUPER_OP_CANNOT_FIT_INTO_CPU_MEM =
-        "Cannot create a superoperator of ${NUM_QUBITS} qubits because the total memory required (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds that available.";
+        "Cannot create a superoperator of ${NUM_QUBITS} qubits because the total memory required (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds that available (${RAM_SIZE} bytes).";
 
     string NEW_SUPER_OP_CANNOT_FIT_INTO_GPU_MEM =
         "Cannot create a GPU-accelerated superoperator of ${NUM_QUBITS} qubits because the total memory required (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available GPU memory (${VRAM_SIZE} bytes).";
@@ -446,10 +446,10 @@ namespace report {
 
 
     string NEW_KRAUS_MAPS_SUPER_OP_CANNOT_FIT_INTO_CPU_MEM =
-        "Cannot create a Kraus map of ${NUM_QUBITS} qubits because the total memory required by its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available memory.";
+        "Cannot create a Kraus map of ${NUM_QUBITS} qubits because the total memory required by its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available memory (${RAM_SIZE} bytes).";
         
     string NEW_KRAUS_MAPS_SUPER_OP_CANNOT_FIT_INTO_GPU_MEM =
-        "Cannot create a GPU-accelerated Kraus map of ${NUM_QUBITS} qubits because the total memory required by its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available GPU memory.";
+        "Cannot create a GPU-accelerated Kraus map of ${NUM_QUBITS} qubits because the total memory required by its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available GPU memory (${VRAM_BYTES} bytes).";
 
 
     string NEW_KRAUS_MAPS_SUPER_OP_CPU_ELEMS_ALLOC_FAILED =
