@@ -29,9 +29,9 @@ void demo_setInlineSuperOp() {
 	SuperOp a = createSuperOp(1);
 	setInlineSuperOp(a, 1, {
 		{1,2,3,4},
-		{5,0.0000000006-(10E-11) * 3.14i,7,8},
+		{5,0.0000000006-(10E-11) * 3.14_i,7,8},
 		{9,10,11,12},
-		{13,14,15,16+1.23i}
+		{13,14,15,16+1.23_i}
 	});
 	reportSuperOp(a);
 	destroySuperOp(a); 
@@ -44,9 +44,9 @@ void demo_setSuperOp() {
     SuperOp a = createSuperOp(1);
     setSuperOp(a, {
 		{1,2,3,4},
-		{5,0.0000000006-(10E-11) * 3.14i,7,8},
+		{5,0.0000000006-(10E-11) * 3.14_i,7,8},
 		{9,10,11,12},
-		{13,14,15,16+1.23i}});
+		{13,14,15,16+1.23_i}});
 	reportSuperOp(a);
 	destroySuperOp(a); 
 
@@ -69,7 +69,7 @@ void demo_setSuperOp() {
     for (int i=0; i<d; i++) {
         ptrs[i] = (qcomp*) malloc(d * sizeof **ptrs);
         for (int j=0; j<d; j++)
-            ptrs[i][j] = (j==5)*(i + j*1i);
+            ptrs[i][j] = (j==5)*(i + j*1_i);
     }
     SuperOp c = createSuperOp(n);
     setSuperOp(c, ptrs);
@@ -97,8 +97,8 @@ void demo_syncSuperOp() {
     // manually modify the superoperator elements
     SuperOp a = createSuperOp(1);
     a.cpuElems[0][0] = 1;
-    a.cpuElems[1][1] = 2i;
-    a.cpuElems[2][2] = 3i;
+    a.cpuElems[1][1] = 2_i;
+    a.cpuElems[2][2] = 3_i;
     syncSuperOp(a);
     reportSuperOp(a);
     destroySuperOp(a);

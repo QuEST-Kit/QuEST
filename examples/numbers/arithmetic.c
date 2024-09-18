@@ -93,4 +93,5 @@ int main() {
     reportQcomp(x);
 
     finalizeQuESTEnv();
+    return 0;
 }
