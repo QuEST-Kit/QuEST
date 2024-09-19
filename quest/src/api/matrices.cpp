@@ -446,7 +446,7 @@ void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, vector<qcomp> 
  */
 
 
-void setInlineCompMatr(CompMatr matr, int numQb, std::vector<std::vector<qcomp>> in) {
+void setInlineCompMatr(CompMatr matr, int numQb, vector<vector<qcomp>> in) {
     validate_matrixFields(matr, __func__);
     validate_matrixNumQubitsMatchesParam(matr.numQubits, numQb, __func__);
     validate_matrixNumNewElems(matr.numQubits, in, __func__);
@@ -454,7 +454,7 @@ void setInlineCompMatr(CompMatr matr, int numQb, std::vector<std::vector<qcomp>>
     setAndSyncDenseMatrElems(matr, in);
 }
 
-void setInlineDiagMatr(DiagMatr matr, int numQb, std::vector<qcomp> in) {
+void setInlineDiagMatr(DiagMatr matr, int numQb, vector<qcomp> in) {
     validate_matrixFields(matr, __func__);
     validate_matrixNumQubitsMatchesParam(matr.numQubits, numQb, __func__);
     validate_matrixNumNewElems(matr.numQubits, in, __func__);
@@ -462,12 +462,46 @@ void setInlineDiagMatr(DiagMatr matr, int numQb, std::vector<qcomp> in) {
     setDiagMatr(matr, in.data()); // validation gauranteed to pass
 }
 
-void setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, std::vector<qcomp> in) {
+void setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, vector<qcomp> in) {
     validate_matrixFields(matr, __func__);
     validate_declaredNumElemsMatchesVectorLength(numElems, in.size(), __func__);
     validate_fullStateDiagMatrNewElems(matr, startInd, numElems, __func__);
 
     setFullStateDiagMatr(matr, startInd, in); // validation gauranteed to pass
+}
+
+
+
+/*
+ * VARIABLE-SIZE MATRIX INLINE-SETTER CONSTRUCTORS 
+ *
+ * Only the C++ versions are defined here; the C versions are header macros
+ */
+
+
+CompMatr createInlineCompMatr(int numQb, vector<vector<qcomp>> elems) {
+    validate_envIsInit(__func__);
+    validate_newCompMatrParams(numQb, __func__);
+    validate_matrixNumNewElems(numQb, elems, __func__);
+
+    // pre-validation gauranteed to pass, but malloc failures will trigger an error 
+    // message specific to 'createCompMatr', rather than this 'inline' version. Alas!
+    CompMatr matr = createCompMatr(numQb);
+    setAndSyncDenseMatrElems(matr, elems);
+    return matr;
+}
+
+
+DiagMatr createInlineDiagMatr(int numQb, vector<qcomp> elems) {
+    validate_envIsInit(__func__);
+    validate_newDiagMatrParams(numQb, __func__);
+    validate_matrixNumNewElems(numQb, elems, __func__);
+
+    // pre-validation gauranteed to pass, but malloc failures will trigger an error 
+    // message specific to 'createCompMatr', rather than this 'inline' version. Alas!
+    DiagMatr matr = createDiagMatr(numQb);
+    setDiagMatr(matr, elems.data()); // validation gauranteed to pass
+    return matr;
 }
 
 
@@ -485,30 +519,44 @@ void setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex 
 
 extern "C" {
 
-    void _validateParamsOfSetCompMatrFromArr(CompMatr matr) { 
+    void _validateParamsToSetCompMatrFromArr(CompMatr matr) { 
 
         validate_matrixFields(matr, "setCompMatr");
     }
 
-    void _validateParamsOfSetInlineCompMatr(CompMatr matr, int numQb) {
+    void _validateParamsToSetInlineCompMatr(CompMatr matr, int numQb) {
 
         const char* caller = "setInlineCompMatr";
         validate_matrixFields(matr, caller);
         validate_matrixNumQubitsMatchesParam(matr.numQubits, numQb, caller);
     }
 
-    void _validateParamsOfSetInlineDiagMatr(DiagMatr matr, int numQb) {
+    void _validateParamsToSetInlineDiagMatr(DiagMatr matr, int numQb) {
 
         const char* caller = "setInlineDiagMatr";
         validate_matrixFields(matr, caller);
         validate_matrixNumQubitsMatchesParam(matr.numQubits, numQb, caller);
     }
 
-    void _validateParamsOfSetInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems) {
+    void _validateParamsToSetInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems) {
 
         const char* caller = "setInlineFullStateDiagMatr";
         validate_matrixFields(matr, caller);
         validate_fullStateDiagMatrNewElems(matr, startInd, numElems, caller);
+    }
+
+    void _validateParamsToCreateInlineCompMatr(int numQb) {
+
+        const char* caller = "createInlineCompMatr";
+        validate_envIsInit(caller);
+        validate_newCompMatrParams(numQb, caller);
+    }
+
+    void _validateParamsToCreateInlineDiagMatr(int numQb) {
+
+        const char* caller = "createInlineDiagMatr";
+        validate_envIsInit(caller);
+        validate_newDiagMatrParams(numQb, caller);
     }
 
 }

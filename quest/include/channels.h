@@ -269,22 +269,78 @@ extern "C" {
     extern void _validateParamsToSetInlineSuperOp(SuperOp op, int numQb);
 
 
-    static inline void _validateAndSetInlineKrausMap(KrausMap map, int numQb, int numOps, qcomp elems[numOps][1<<numQb][1<<numQb]) {
+    static inline void _setInlineKrausMap(KrausMap map, int numQb, int numOps, qcomp elems[numOps][1<<numQb][1<<numQb]) {
         _validateParamsToSetInlineKrausMap(map, numQb, numOps);
         _setKrausMapFromArr(map, elems);
     }
 
-    static inline void _validateAndSetInlineSuperOp(SuperOp op, int numQb, qcomp elems[1<<(2*numQb)][1<<(2*numQb)] ) {
+    static inline void _setInlineSuperOp(SuperOp op, int numQb, qcomp elems[1<<(2*numQb)][1<<(2*numQb)] ) {
         _validateParamsToSetInlineSuperOp(op, numQb);
         _setSuperOpFromArr(op, elems);
     }
 
 
     #define setInlineKrausMap(map, numQb, numOps, ...) \
-        _validateAndSetInlineKrausMap((map), (numQb), (numOps), (qcomp[(numOps)][1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
+        _setInlineKrausMap((map), (numQb), (numOps), (qcomp[(numOps)][1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
     #define setInlineSuperOp(matr, numQb, ...) \
-        _validateAndSetInlineSuperOp((matr), (numQb), (qcomp[1<<(2*(numQb))][1<<(2*(numQb))]) __VA_ARGS__)
+        _setInlineSuperOp((matr), (numQb), (qcomp[1<<(2*(numQb))][1<<(2*(numQb))]) __VA_ARGS__)
+
+#endif
+
+
+
+/*
+ * LITERAL CREATORS
+ *
+ * which combine creators and the inline initialisation functions, so that
+ * both C and C++ users can call e.g.
+ *   - SuperOp op = createInlineSuperOp(2, {{...}});
+ */
+
+
+#ifdef __cplusplus
+
+    // C++ accepts vector initialiser lists
+
+    KrausMap createInlineKrausMap(int numQubits, int numOperators, std::vector<std::vector<std::vector<qcomp>>> matrices);
+
+    SuperOp createInlineSuperOp(int numQubits, std::vector<std::vector<qcomp>> matrix);
+
+#else
+
+    // C defines macros which add compound literal syntax so that the user's passed lists
+    // become compile-time-sized temporary arrays. We use bespoke validation so that the
+    // error messages reflect the name of the macro, rather than the inner called functions.
+    // We define a private inner function per macro, in lieu of writing multiline macros
+    // using do-while, just to better emulate a function call for users - e.g. they
+    // can wrap the macro invocation with another function call.
+
+
+    extern void _validateParamsToCreateInlineKrausMap(int numQb, int numOps);
+    extern void _validateParamsToCreateInlineSuperOp(int numQb);
+
+
+    static inline KrausMap _createInlineKrausMap(int numQb, int numOps, qcomp matrices[numOps][1<<numQb][1<<numQb]) {
+        _validateParamsToCreateInlineKrausMap(numQb, numOps);
+        KrausMap out = createKrausMap(numQb, numOps); // malloc failures will report 'createKrausMap', rather than 'inline' version. Alas!
+        _setKrausMapFromArr(out, matrices);
+        return out;
+    }
+
+    static inline SuperOp _createInlineSuperOp(int numQb, qcomp matrix[1<<numQb][1<<numQb]) {
+        _validateParamsToCreateInlineSuperOp(numQb);
+        SuperOp out = createSuperOp(numQb); // malloc failures will report 'createSuperOp', rather than 'inline' version. Alas!
+        _setSuperOpFromArr(out, matrix);
+        return out;
+    }
+
+
+    #define createInlineKrausMap(numQb, numOps, ...) \
+        _createInlineKrausMap((numQb), (numOps), (qcomp[(numOps)][1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
+
+    #define createInlineSuperOp(numQb, ...) \
+        _createInlineSuperOp((numQb), (qcomp[1<<(2*(numQb))][1<<(2*(numQb))]) __VA_ARGS__)
 
 #endif
 

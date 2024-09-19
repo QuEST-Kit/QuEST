@@ -393,6 +393,13 @@ namespace report {
         "Attempted allocation of GPU memory (a total of ${NUM_BYTES} in VRAM) for the superoperator matrix failed.";
 
 
+    string NEW_INLINE_SUPER_OP_MATRIX_WRONG_NUM_ROWS =
+        "The specified number of qubits (${NUM_DECLARED_QUBITS}) in the superoperator is inconsistent with the number of rows in the given matrix (expected ${NUM_DECLARED_ROWS}, received ${GIVEN_DIM}).";
+
+    string NEW_INLINE_SUPER_OP_MATRIX_WRONG_NUM_COLS =
+        "The specified number of qubits (${NUM_DECLARED_QUBITS}) in the superoperator is inconsistent with the number of columns in one or more rows of the given matrix (expected ${NUM_DECLARED_ROWS} columns, received ${GIVEN_DIM}).";
+
+
     /*
      * SUPEROPERATOR INITIALISATION
      */
@@ -462,6 +469,16 @@ namespace report {
         "Failed to allocate memory (a total of ${NUM_BYTES} bytes) for the KrausMap's ${NUM_MATRICES} ${NUM_QUBITS}-qubit Kraus operator matrices.";
 
 
+    string NEW_INLINE_KRAUS_MAP_INCOMPATIBLE_NUM_NEW_MATRICES =
+        "Specified ${NUM_EXPECTED} Kraus operators, but passed ${NUM_GIVEN} matrices.";
+
+    string NEW_INLINE_KRAUS_MAP_MATRIX_WRONG_NUM_ROWS =
+        "Specified ${NUM_QUBITS} qubits, but one or more passed matrices have ${NUM_GIVEN_ROWS} rows instead of the expected ${NUM_EXPECTED_ROWS}.";
+
+    string NEW_INLINE_KRAUS_MAP_MATRIX_WRONG_NUM_COLS =
+        "The number of given columns (${NUM_GIVEN_COLS}) in one or more matrices was inconsistent with the specified number of qubits (${NUM_QUBITS}). Every Kraus operator must be specified as a ${NUM_EXPECTED_COLS}x${NUM_EXPECTED_COLS} matrix.";
+
+    
     /*
      * KRAUS MAP INITIALISATION
      */
@@ -1848,6 +1865,29 @@ void validate_newSuperOpAllocs(SuperOp op, const char* caller) {
     assertNewSuperOpAllocs(op, isInKrausMap, caller);
 }
 
+void validate_newInlineSuperOpDimMatchesVectors(int numDeclaredQubits, vector<vector<qcomp>> matrix, const char* caller) {
+
+    // avoid potentially expensive matrix enumeration if validation is anyway disabled
+    if (!isValidationEnabled)
+        return;
+
+    qindex numDeclaredRows = powerOf2(2*numDeclaredQubits);
+    tokenSubs vars = {
+        {"${NUM_DECLARED_QUBITS}", numDeclaredQubits},
+        {"${NUM_DECLARED_ROWS}",   numDeclaredRows},
+        {"${GIVEN_DIM}",           matrix.size()}};
+
+    // assert the given matrix has the correct number of rows
+    assertThat(numDeclaredRows == (qindex) matrix.size(), report::NEW_INLINE_SUPER_OP_MATRIX_WRONG_NUM_ROWS, vars, caller);
+
+    // and that each row has the correct length
+    for (qindex r=0; r<numDeclaredRows; r++) {
+        qindex numGivenCols = matrix[r].size();
+        vars["${GIVEN_DIM}"] = numGivenCols;
+        assertThat(numDeclaredRows == numGivenCols, report::NEW_INLINE_SUPER_OP_MATRIX_WRONG_NUM_COLS, vars, caller);
+    }
+}
+
 
 
 /*
@@ -1861,9 +1901,9 @@ void validate_superOpNewMatrixDims(SuperOp op, vector<vector<qcomp>> matrix, con
         return;
 
     tokenSubs vars = {
-        {"${NUM_QUBITS}", op.numQubits},
+        {"${NUM_QUBITS}",   op.numQubits},
         {"${EXPECTED_DIM}", op.numRows},
-        {"${GIVEN_DIM}", matrix.size()}};
+        {"${GIVEN_DIM}",    matrix.size()}};
 
     // assert the matrix has the correct number of rows
     assertThat(op.numRows == (qindex) matrix.size(), report::SUPER_OP_NEW_MATRIX_ELEMS_WRONG_NUM_ROWS, vars, caller);
@@ -2020,6 +2060,31 @@ void validate_newKrausMapAllocs(KrausMap map, const char* caller) {
     // assert that the superoperator itself was allocated (along with its own heap fields)
     bool isInKrausMap = true;
     assertNewSuperOpAllocs(map.superop, isInKrausMap, caller);
+}
+
+void validate_newInlineKrausMapDimMatchesVectors(int numQubits, int numOperators, vector<vector<vector<qcomp>>> matrices, const char* caller) {
+
+    // avoid potentially expensive matrix enumeration if validation is anyway disabled
+    if (!isValidationEnabled)
+        return;
+
+    qindex numRows = powerOf2(numQubits);
+    
+    assertThat(numOperators == (int) matrices.size(), report::NEW_INLINE_KRAUS_MAP_INCOMPATIBLE_NUM_NEW_MATRICES,
+        {{"${NUM_GIVEN}", matrices.size()}, {"${NUM_EXPECTED}", numOperators}}, caller);
+
+    // check each given matrix...
+    for (int i=0; i<numOperators; i++) {
+        
+        // has a correct number of rows
+        assertThat(numRows == (qindex) matrices[i].size(), report::NEW_INLINE_KRAUS_MAP_MATRIX_WRONG_NUM_ROWS, 
+            {{"${NUM_QUBITS}", numQubits}, {"${NUM_EXPECTED_ROWS}", numRows}, {"${NUM_GIVEN_ROWS}", matrices[i].size()}}, caller);
+
+        // and that each row has a correct number of elements/columns
+        for (qindex r=0; r<numRows; r++)
+            assertThat(numRows == (qindex) matrices[i][r].size(), report::NEW_INLINE_KRAUS_MAP_MATRIX_WRONG_NUM_COLS,
+                {{"${NUM_QUBITS}", numQubits}, {"${NUM_EXPECTED_COLS}", numRows}, {"${NUM_GIVEN_COLS}", matrices[i][r].size()}}, caller);
+    }
 }
 
 

@@ -25,7 +25,7 @@ using std::vector;
 
 
 /*
- * CompMatr
+ * CompMatr1, CompMatr2
  */
 
 
@@ -84,6 +84,37 @@ void demo_getCompMatr() {
     for (int i=0; i<dim; i++)
         free(ptrs[i]);
     free(ptrs);
+}
+
+
+
+/*
+ * CompMatr
+ */
+
+
+void demo_createInlineCompMatr() {
+
+    // inline literal
+    CompMatr a = createInlineCompMatr(2, {
+        {1,2,3_i,4},
+        {4,5,6,7},
+        {9,8,7,6},
+        {1_i,2_i,0,0}
+    });
+    reportCompMatr(a);
+    destroyCompMatr(a);
+
+    // existing vector (C++ only)
+    vector<vector<qcomp>> elems = {
+        {1,2},
+        {3,4}
+    };
+    CompMatr b = createInlineCompMatr(1, elems);
+    reportCompMatr(b);
+    destroyCompMatr(b);
+
+    // must specify every element (unlike in C) otherwise runtime validation is triggered
 }
 
 
@@ -179,7 +210,7 @@ void demo_syncCompMatr() {
 
 
 /*
- * DiagMatr
+ * DiagMatr1, DiagMatr2
  */
 
 void demo_getInlineDiagMatr() {
@@ -236,6 +267,29 @@ void demo_setInlineDiagMatr() {
     setInlineDiagMatr(b, 3, {4,5,4,5,6,7,6,7_i});
     reportDiagMatr(b);
     destroyDiagMatr(b);
+}
+
+
+
+/*
+ * DiagMatr
+ */
+
+
+void demo_createInlineDiagMatr() {
+
+    // inline literal
+    DiagMatr a = createInlineDiagMatr(2, {1,2,3_i,4});
+    reportDiagMatr(a);
+    destroyDiagMatr(a);
+
+    // existing vector (C++ only)
+    vector<qcomp> elems = {1,2,3,4,5,6,7,8};
+    DiagMatr b = createInlineDiagMatr(3, elems);
+    reportDiagMatr(b);
+    destroyDiagMatr(b);
+
+    // must specify every element (unlike in C) otherwise runtime validation is triggered
 }
 
 
@@ -365,12 +419,16 @@ int main() {
 
     demo_getInlineCompMatr();
     demo_getCompMatr();
+
+    demo_createInlineCompMatr();
     demo_setInlineCompMatr();
     demo_setCompMatr();
     demo_syncCompMatr();
 
     demo_getInlineDiagMatr();
     demo_getDiagMatr();
+
+    demo_createInlineDiagMatr();
     demo_setInlineDiagMatr();
     demo_setDiagMatr();
     demo_syncDiagMatr();

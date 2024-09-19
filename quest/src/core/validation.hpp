@@ -155,6 +155,8 @@ void validate_newSuperOpParams(int numQubits, const char* caller);
 
 void validate_newSuperOpAllocs(SuperOp op, const char* caller);
 
+void validate_newInlineSuperOpDimMatchesVectors(int numDeclaredQubits, vector<vector<qcomp>> matrix, const char* caller);
+
 
 
 /*
@@ -184,6 +186,8 @@ void validate_superOpIsSynced(SuperOp op, const char* caller);
 void validate_newKrausMapParams(int numQubits, int numMatrices, const char* caller);
 
 void validate_newKrausMapAllocs(KrausMap map, const char* caller);
+
+void validate_newInlineKrausMapDimMatchesVectors(int numQubits, int numOperators, vector<vector<vector<qcomp>>> matrices, const char* caller);
 
 
 

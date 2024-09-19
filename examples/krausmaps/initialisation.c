@@ -3,6 +3,36 @@
 #include <stdlib.h>
 
 
+void demo_createInlineKrausMap() {
+
+    // inline literal without C99 compound-literal syntax
+    KrausMap a = createInlineKrausMap(1, 3, {
+        {{1,2},{3,4}},
+        {{5,5},{6,6}},
+        {{1i,2i},{-3i,-4i}}
+    });
+    reportKrausMap(a);
+    destroyKrausMap(a);
+
+    // unspecified elements/rows/matrices will be defaulted to all 0 (C only)
+    KrausMap b = createInlineKrausMap(2, 5, {
+        {
+            {1,2,3,4},
+            {1i,2i,3i},
+            {4i,5i},
+            {6}
+        }, {
+            {6,7,8,9},
+            {9,8,7,6},
+        }, {
+            {1}
+        }
+    });
+    reportKrausMap(b);
+    destroyKrausMap(b);
+}
+
+
 void demo_setInlineKrausMap() {
 
     // inline literal without C99 compound-literal syntax
@@ -135,6 +165,7 @@ int main() {
     
     initQuESTEnv();
 
+    demo_createInlineKrausMap();
     demo_setInlineKrausMap();
     demo_setKrausMap();
     demo_syncKrausMap();

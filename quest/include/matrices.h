@@ -522,12 +522,12 @@ extern "C" {
 
 
     // C must validate struct fields before accessing passed 2D arrays to avoid seg-faults
-    extern void _validateParamsOfSetCompMatrFromArr(CompMatr matr);
+    extern void _validateParamsToSetCompMatrFromArr(CompMatr matr);
 
 
      // static inline to avoid header-symbol duplication
     static inline void _setCompMatrFromArr(CompMatr matr, qcomp arr[matr.numRows][matr.numRows]) {
-        _validateParamsOfSetCompMatrFromArr(matr);
+        _validateParamsToSetCompMatrFromArr(matr);
 
         // new ptrs array safely fits in stack, since it's sqrt-smaller than user's passed stack array
         qcomp* ptrs[matr.numRows];
@@ -593,35 +593,97 @@ extern "C" {
 
 
     // the C validators check 'numQb' is consistent with the struct, but cannot check the user's passed literal sizes
-    extern void _validateParamsOfSetInlineCompMatr(CompMatr matr, int numQb);
-    extern void _validateParamsOfSetInlineDiagMatr(DiagMatr matr, int numQb);
-    extern void _validateParamsOfSetInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems);
+    extern void _validateParamsToSetInlineCompMatr(CompMatr matr, int numQb);
+    extern void _validateParamsToSetInlineDiagMatr(DiagMatr matr, int numQb);
+    extern void _validateParamsToSetInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems);
 
 
-    static inline void _validateAndSetInlineCompMatr(CompMatr matr, int numQb, qcomp elems[1<<numQb][1<<numQb]) {
-        _validateParamsOfSetInlineCompMatr(matr, numQb);
+    static inline void _setInlineCompMatr(CompMatr matr, int numQb, qcomp elems[1<<numQb][1<<numQb]) {
+        _validateParamsToSetInlineCompMatr(matr, numQb);
         _setCompMatrFromArr(matr, elems); // validation gauranteed to pass
     }
 
-    static inline void _validateAndSetInlineDiagMatr(DiagMatr matr, int numQb, qcomp elems[1<<numQb]) {
-        _validateParamsOfSetInlineDiagMatr(matr, numQb);
+    static inline void _setInlineDiagMatr(DiagMatr matr, int numQb, qcomp elems[1<<numQb]) {
+        _validateParamsToSetInlineDiagMatr(matr, numQb);
         setDiagMatr(matr, elems); // 1D array decays into pointer, validation gauranteed to pass
     }
 
-    static inline void _validateAndSetInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, qcomp elems[numElems]) {
-        _validateParamsOfSetInlineFullStateDiagMatr(matr, startInd, numElems);
+    static inline void _setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, qcomp elems[numElems]) {
+        _validateParamsToSetInlineFullStateDiagMatr(matr, startInd, numElems);
         setFullStateDiagMatr(matr, startInd, elems, numElems); // 1D array decays into pointer, validation gauranteed to pass
     }
 
 
     #define setInlineCompMatr(matr, numQb, ...) \
-        _validateAndSetInlineCompMatr(matr, numQb, (qcomp[1<<numQb][1<<numQb]) __VA_ARGS__)
+        _setInlineCompMatr((matr), (numQb), (qcomp[1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
     #define setInlineDiagMatr(matr, numQb, ...) \
-        _validateAndSetInlineDiagMatr(matr, numQb, (qcomp[1<<numQb]) __VA_ARGS__)
+        _setInlineDiagMatr((matr), (numQb), (qcomp[1<<(numQb)]) __VA_ARGS__)
 
     #define setInlineFullStateDiagMatr(matr, startInd, numElems, ...) \
-        _validateAndSetInlineFullStateDiagMatr(matr, startInd, numElems, (qcomp[numElems]) __VA_ARGS__)
+        _setInlineFullStateDiagMatr((matr), (startInd), (numElems), (qcomp[(numElems)]) __VA_ARGS__)
+
+#endif
+
+
+
+/*
+ * VARIABLE-SIZE MATRIX CREATORS VIA LITERALS
+ *
+ * which simply combine the create*() and setInline*() functions, for
+ * user convenience, and to reduce their risk of passing inconsistent params.
+ * We do not define inline creators for FullStateDiagMatr, since the
+ * creator automatically decides whether or not to distribute the matrix;
+ * ergo the user cannot know how many elements to pass in their literal
+ * (nor should they ever distribute data which fits into a single literal!)
+ * 
+ * These empower C and C++ users to call e.g.
+ *   - CompMatr m = createInlineCompMatr(1, {{1,2},{3,4}})
+ */
+
+
+#ifdef __cplusplus
+
+    // C++ accepts vector initialiser lists
+
+    CompMatr createInlineCompMatr(int numQb, std::vector<std::vector<qcomp>> elems);
+
+    DiagMatr createInlineDiagMatr(int numQb, std::vector<qcomp> elems);
+
+#else
+
+    // C defines macros which add compound literal syntax so that the user's passed lists
+    // become compile-time-sized temporary arrays. We use bespoke validation so that the
+    // error messages reflect the name of the macro, rather than the inner called functions.
+    // We define a private inner function per macro, in lieu of writing multiline macros
+    // using do-while, just to better emulate a function call for users - e.g. they
+    // can wrap the macro invocation with another function call.
+
+
+    extern void _validateParamsToCreateInlineCompMatr(int numQb);
+    extern void _validateParamsToCreateInlineDiagMatr(int numQb);
+
+
+    static inline CompMatr _createInlineCompMatr(int numQb, qcomp elems[1<<numQb][1<<numQb]) {
+        _validateParamsToCreateInlineCompMatr(numQb);
+        CompMatr out = createCompMatr(numQb); // malloc failures will report 'createCompMatr', rather than 'inline' version. Alas!
+        _setCompMatrFromArr(out, elems);
+        return out;
+    }
+
+    static inline DiagMatr _createInlineDiagMatr(int numQb, qcomp elems[1<<numQb]) {
+        _validateParamsToCreateInlineDiagMatr(numQb);
+        DiagMatr out = createDiagMatr(numQb); // malloc failures will report 'createCompMatr', rather than 'inline' version. Alas!
+        setDiagMatr(out, elems); // 1D array decays to ptr
+        return out;
+    }
+
+
+    #define createInlineCompMatr(numQb, ...) \
+        _createInlineCompMatr((numQb), (qcomp[1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
+
+    #define createInlineDiagMatr(numQb, ...) \
+        _createInlineDiagMatr((numQb), (qcomp[1<<(numQb)]) __VA_ARGS__)
 
 #endif
 
