@@ -23,6 +23,30 @@ using std::vector;
  */
 
 
+void demo_createInlineKrausMap() {
+
+    // inline literal
+    KrausMap a = createInlineKrausMap(1, 3, {
+        {{1,2},{3,4}},
+        {{5,5},{6,6}},
+        {{1_i,2_i},{-3_i,-4_i}}
+    });
+    reportKrausMap(a);
+    destroyKrausMap(a);
+
+    // existing vector (C++ only)
+    vector<vector<vector<qcomp>>> elems = {
+        {{1,2},{3,4}},
+        {{5,5},{6,6}},
+        {{1_i,2_i},{-3_i,-4_i}}
+    };
+    KrausMap b = createInlineKrausMap(1, 3, elems);
+    reportKrausMap(b);
+    destroyKrausMap(b);
+
+    // must specify every element (unlike in C) otherwise runtime validation is triggered
+}
+
 
 void demo_setInlineKrausMap() {
 
@@ -127,6 +151,7 @@ void demo_syncKrausMap() {
 int main() {
     initQuESTEnv();
 
+    demo_createInlineKrausMap();
     demo_setInlineKrausMap();
     demo_setKrausMap();
     demo_syncKrausMap();

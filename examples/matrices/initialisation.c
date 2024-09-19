@@ -5,7 +5,7 @@
 
 
 /*
- * CompMatr
+ * CompMatr1, CompMatr2
  */
 
 
@@ -68,6 +68,36 @@ void demo_getCompMatr() {
     for (int i=0; i<dim; i++)
         free(ptrs[i]);
     free(ptrs);
+}
+
+
+
+/*
+ * CompMatr
+ */
+
+
+void demo_createInlineCompMatr() {
+
+    // inline literal without gross C compound literal syntax
+    CompMatr a = createInlineCompMatr(2, {
+        {1,2,3i,4},
+        {4,5,6,7},
+        {9,8,7,6},
+        {1i,2i,0,0}
+    });
+    reportCompMatr(a);
+    destroyCompMatr(a);
+
+    // unspecified elements default to 0 (C only)
+    CompMatr b = createInlineCompMatr(3, {
+        {1,2,3,4,5,6,7,8},
+        {8i, 7i, 6i, 5i},
+        {9,9,9},
+        {10}      
+    });
+    reportCompMatr(b);
+    destroyCompMatr(b);
 }
 
 
@@ -166,7 +196,7 @@ void demo_syncCompMatr() {
 
 
 /*
- * DiagMatr
+ * DiagMatr1, DiagMatr2
  */
 
 
@@ -213,6 +243,26 @@ void demo_getDiagMatr() {
 
     // cleanup
     free(ptr);
+}
+
+
+
+/*
+ * DiagMatr
+ */
+
+
+void demo_createInlineDiagMatr() {
+
+    // inline literal without gross C compound-literal syntax
+    DiagMatr a = createInlineDiagMatr(1, {3i,5i});
+    reportDiagMatr(a);
+    destroyDiagMatr(a);
+
+    // unspecified elemenrts default to 0 (C only)
+    DiagMatr b = createInlineDiagMatr(4, {1, 2, 3});
+    reportDiagMatr(b);
+    destroyDiagMatr(b);
 }
 
 
@@ -362,12 +412,16 @@ int main() {
 
     demo_getInlineCompMatr();
     demo_getCompMatr();
+
+    demo_createInlineCompMatr();
     demo_setInlineCompMatr();
     demo_setCompMatr();
     demo_syncCompMatr();
 
     demo_getInlineDiagMatr();
     demo_getDiagMatr();
+    
+    demo_createInlineDiagMatr();
     demo_setInlineDiagMatr();
     demo_setDiagMatr();
     demo_syncDiagMatr();

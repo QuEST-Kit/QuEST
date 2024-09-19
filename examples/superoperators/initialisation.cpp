@@ -23,18 +23,38 @@ using std::vector;
  */
 
 
+void demo_createInlineSuperOp() {
+
+    // inline literal
+    SuperOp a = createInlineSuperOp(1, {
+        {1,2,3,4},
+        {5,0.0000000006-(10E-11) * 3.14_i,7,8},
+        {9,10,11,12},
+        {13,14,15,16+1.23_i}
+    });
+    reportSuperOp(a);
+    destroySuperOp(a);
+
+    // existing vector (C++ only)
+    vector<vector<qcomp>> elems(16, vector<qcomp>(16,5_i));
+    SuperOp b = createInlineSuperOp(2, elems);
+    reportSuperOp(b);
+    destroySuperOp(b);
+}
+
+
 void demo_setInlineSuperOp() {
 
     // inline literal; achieves the same as setSuperOp(), and exists for consistencty with C API
-	SuperOp a = createSuperOp(1);
-	setInlineSuperOp(a, 1, {
-		{1,2,3,4},
-		{5,0.0000000006-(10E-11) * 3.14_i,7,8},
-		{9,10,11,12},
-		{13,14,15,16+1.23_i}
-	});
-	reportSuperOp(a);
-	destroySuperOp(a); 
+    SuperOp a = createSuperOp(1);
+    setInlineSuperOp(a, 1, {
+        {1,2,3,4},
+        {5,0.0000000006-(10E-11) * 3.14_i,7,8},
+        {9,10,11,12},
+        {13,14,15,16+1.23_i}
+    });
+    reportSuperOp(a);
+    destroySuperOp(a); 
 }
 
 
@@ -43,12 +63,12 @@ void demo_setSuperOp() {
     // inline literal (C++ only)
     SuperOp a = createSuperOp(1);
     setSuperOp(a, {
-		{1,2,3,4},
-		{5,0.0000000006-(10E-11) * 3.14_i,7,8},
-		{9,10,11,12},
-		{13,14,15,16+1.23_i}});
-	reportSuperOp(a);
-	destroySuperOp(a); 
+        {1,2,3,4},
+        {5,0.0000000006-(10E-11) * 3.14_i,7,8},
+        {9,10,11,12},
+        {13,14,15,16+1.23_i}});
+    reportSuperOp(a);
+    destroySuperOp(a); 
 
     // 2D vector (C++ only)
     vector<vector<qcomp>> vec {
@@ -109,6 +129,7 @@ int main() {
     
     initQuESTEnv();
 
+    demo_createInlineSuperOp();
     demo_setInlineSuperOp();
     demo_setSuperOp();
     demo_syncSuperOp();

@@ -3,18 +3,41 @@
 #include <stdlib.h>
 
 
+void demo_createInlineSuperOp() {
+
+    // inline literal without gross C99 compound-literal syntax
+    SuperOp a = createInlineSuperOp(1, {
+        {1,2,3,4},
+        {5,0.0000000006-(10E-11) * 3.14i,7,8},
+        {9,10,11,12},
+        {13,14,15,16+1.23i}
+    });
+    reportSuperOp(a);
+    destroySuperOp(a);
+
+    // unspecified elements default to 0 (C only)
+    SuperOp b = createInlineSuperOp(3, {
+        {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16},
+        {5},
+        {7,8,9}
+    });
+    reportSuperOp(b);
+    destroySuperOp(b);
+}
+
+
 void demo_setInlineSuperOp() {
 
-    // // inline literal without gross C99 compound-literal syntax
-	SuperOp a = createSuperOp(1);
-	setInlineSuperOp(a, 1, {
-		{1,2,3,4},
-		{5,0.0000000006-(10E-11) * 3.14i,7,8},
-		{9,10,11,12},
-		{13,14,15,16+1.23i}
-	});
-	reportSuperOp(a);
-	destroySuperOp(a);
+    // inline literal without gross C99 compound-literal syntax
+    SuperOp a = createSuperOp(1);
+    setInlineSuperOp(a, 1, {
+        {1,2,3,4},
+        {5,0.0000000006-(10E-11) * 3.14i,7,8},
+        {9,10,11,12},
+        {13,14,15,16+1.23i}
+    });
+    reportSuperOp(a);
+    destroySuperOp(a);
 
     // unspecified elements default to 0 (C only)
     SuperOp b = createSuperOp(3);
@@ -23,8 +46,8 @@ void demo_setInlineSuperOp() {
         {5},
         {7,8,9}
     });
-	reportSuperOp(b);
-	destroySuperOp(b);
+    reportSuperOp(b);
+    destroySuperOp(b);
 }
 
 
@@ -112,6 +135,7 @@ int main() {
     
     initQuESTEnv();
 
+    demo_createInlineSuperOp();
     demo_setInlineSuperOp();
     demo_setSuperOp();
     demo_syncSuperOp();

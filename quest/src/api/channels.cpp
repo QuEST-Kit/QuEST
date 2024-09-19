@@ -314,7 +314,7 @@ void setKrausMap(KrausMap map, vector<vector<vector<qcomp>>> matrices) {
 
 
 /*
- * VARIABLE-SIZE SETTERS VIA LITERALS
+ * LITERAL SETTERS
  *
  * Only the C++ versions are defined here, because the C versions are macros
  * defined in the header. Note the C++ versions themselves are entirely
@@ -339,6 +339,40 @@ void setInlineSuperOp(SuperOp op, int numQb, vector<vector<qcomp>> matrix) {
     validate_superOpNewMatrixDims(op, matrix, __func__);
 
     setAndSyncSuperOpElems(op, matrix);
+}
+
+
+
+/*
+ * LITERAL CREATORS
+ *
+ * Only the C++ versions are defined here; the C versions are in-header macros.
+ */
+
+
+KrausMap createInlineKrausMap(int numQubits, int numOperators, vector<vector<vector<qcomp>>> matrices) {
+    validate_envIsInit(__func__);
+    validate_newKrausMapParams(numQubits, numOperators, __func__);
+    validate_newInlineKrausMapDimMatchesVectors(numQubits, numOperators, matrices, __func__);
+
+    // pre-validation gauranteed to pass, but malloc failures will trigger an error 
+    // message specific to 'createKrausMap', rather than this 'inline' version. Alas!
+    KrausMap map = createKrausMap(numQubits, numOperators);
+    setAndSyncKrausMapElems(map, matrices);
+    return map;
+}
+
+
+SuperOp createInlineSuperOp(int numQubits, vector<vector<qcomp>> matrix) {
+    validate_envIsInit(__func__);
+    validate_newSuperOpParams(numQubits, __func__);
+    validate_newInlineSuperOpDimMatchesVectors(numQubits, matrix, __func__);
+
+    // pre-validation gauranteed to pass, but malloc failures will trigger an error 
+    // message specific to 'createSuperOp', rather than this 'inline' version. Alas!
+    SuperOp op = createSuperOp(numQubits);
+    setAndSyncSuperOpElems(op, matrix);
+    return op;
 }
 
 
@@ -376,6 +410,20 @@ extern "C" {
         const char* caller = "setInlineSuperOp";
         validate_superOpFields(op, caller);
         validate_superOpFieldsMatchPassedParams(op, numQb, caller);
+    }
+
+    void _validateParamsToCreateInlineKrausMap(int numQb, int numOps) {
+
+        const char* caller = "createInlineKrausMap";
+        validate_envIsInit(caller);
+        validate_newKrausMapParams(numQb, numOps, caller);
+    }
+
+    void _validateParamsToCreateInlineSuperOp(int numQb) {
+
+        const char* caller = "createInlineSuperOp";
+        validate_envIsInit(caller);
+        validate_newSuperOpParams(numQb, caller);
     }
 
 }
