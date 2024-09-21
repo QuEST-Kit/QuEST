@@ -47,12 +47,24 @@ int getPauliFromMaskAt(PAULI_MASK_TYPE mask, int ind) {
 
 bool didAnyAllocsFailOnAnyNode(PauliStrSum sum) {
 
-    bool anyFail = ! mem_isAllocated(sum.strings) || ! mem_isAllocated(sum.coeffs);
+    bool anyFail = (
+        ! mem_isAllocated(sum.strings) || 
+        ! mem_isAllocated(sum.coeffs)  || 
+        ! mem_isAllocated(sum.isHermitian) );
     
     if (comm_isInit())
         anyFail = comm_isTrueOnAllNodes(anyFail);
 
     return anyFail;
+}
+
+
+void freePauliStrSum(PauliStrSum sum) {
+
+    // these do not need to be allocated (freeing nullptr is legal)
+    cpu_deallocPauliStrings(sum.strings);
+    cpu_deallocArray(sum.coeffs);
+    cpu_deallocHeapFlag(sum.isHermitian);
 }
 
 
@@ -63,8 +75,7 @@ void freeAllMemoryIfAnyAllocsFailed(PauliStrSum sum) {
         return;
 
     // otherwise free every successful allocation (freeing nullptr is legal)
-    cpu_deallocPauliStrings(sum.strings);
-    cpu_deallocArray(sum.coeffs);
+    freePauliStrSum(sum);
 }
 
 
@@ -224,17 +235,20 @@ extern "C" PauliStrSum createPauliStrSum(PauliStr* strings, qcomp* coeffs, qinde
 
     // create struct
     PauliStrSum out = {
-        .strings = (PauliStr*) cpu_allocPauliStrings(numTerms), // nullptr if failed
-        .coeffs  = (qcomp*)    cpu_allocArray(numTerms),        // nullptr if failed
-        .numTerms = numTerms
+        .numTerms = numTerms,
+        .strings =     cpu_allocPauliStrings(numTerms), // nullptr if failed
+        .coeffs  =     cpu_allocArray(numTerms),        // nullptr if failed
+        .isHermitian = cpu_allocHeapFlag(),             // nullptr if failed
     };
 
     // if either alloc failed, clear both before validation to avoid leak
     freeAllMemoryIfAnyAllocsFailed(out);
     validate_newPauliStrSumAllocs(out, numTerms*sizeof(PauliStr), numTerms*sizeof(qcomp), __func__);
 
-    // otherwise copy given data into new heap structure
+    // otherwise copy given data into new heap structure, and set initial flags
     cpu_copyPauliStrSum(out, strings, coeffs);
+    *(out.isHermitian) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+
     return out;
 }
 
@@ -299,8 +313,7 @@ PauliStrSum createPauliStrSumFromReversedFile(string fn) {
 extern "C" void destroyPauliStrSum(PauliStrSum sum) {
     validate_pauliStrSumFields(sum, __func__);
 
-    cpu_deallocPauliStrings(sum.strings);
-    cpu_deallocArray(sum.coeffs);
+    freePauliStrSum(sum);
 }
 
 

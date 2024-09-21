@@ -41,12 +41,18 @@ typedef struct {
 
 typedef struct {
 
+    const qindex numTerms;
+
     // arbitrarily-sized collection of Pauli strings and their
     // coefficients are stored in heap memory.
     PauliStr* strings;
     qcomp* coeffs;
 
-    const qindex numTerms;
+    // whether the sum constitutes a Hermitian operator (0, 1, or -1 to indicate unknown),
+    // which is lazily evaluated when a function validates Hermiticity them. The flag is 
+    // stored in heap so even copies of structs are mutable, but the pointer is immutable;
+    // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
+    int* const isHermitian;
 
 } PauliStrSum;
 

@@ -211,6 +211,28 @@ bool util_isUnitary(FullStateDiagMatr matrix);
 
 
 /*
+ * MATRIX HERMITICITY
+ */
+
+bool util_isHermitian(CompMatr1 matrix);
+bool util_isHermitian(CompMatr2 matrix);
+bool util_isHermitian(CompMatr matrix);
+bool util_isHermitian(DiagMatr1 matrix);
+bool util_isHermitian(DiagMatr2 matrix);
+bool util_isHermitian(DiagMatr matrix);
+bool util_isHermitian(FullStateDiagMatr matrix);
+
+
+
+/*
+ * PAULI STR SUM HERMITICITY
+ */
+
+bool util_isHermitian(PauliStrSum sum);
+
+
+
+/*
  * KRAUS MAPS AND SUPEROPERATORS
  */
 

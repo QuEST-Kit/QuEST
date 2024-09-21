@@ -201,13 +201,13 @@ namespace report {
      */
 
     string NEW_HEAP_FLAG_ALLOC_FAILED =
-        "Attempted allocation of a heap flag (such as 'isUnitary', 'isCPTP', 'wasGpuSynced') miraculously failed, despite being a mere ${NUM_BYTES} bytes. This is unfathomably unlikely - go and have your fortune read at once!";
+        "Attempted allocation of a heap flag (such as 'isUnitary', 'isHermitian', 'isCPTP', 'wasGpuSynced') miraculously failed, despite being a mere ${NUM_BYTES} bytes. This is unfathomably unlikely - go and have your fortune read at once!";
 
     string INVALID_HEAP_FLAG_PTR =
-        "A flag (e.g. 'isUnitary', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) was a NULL pointer, instead of an expected pointer to persistent heap memory. This may imply the structure has already been destroyed and its fields manually overwritten by the user.";
+        "A flag (e.g. 'isUnitary', 'isHermitian', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) was a NULL pointer, instead of an expected pointer to persistent heap memory. This may imply the structure has already been destroyed and its fields manually overwritten by the user.";
 
     string INVALID_HEAP_FLAG_VALUE = 
-        "A flag (e.g. 'isUnitary', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) had an invalid value of ${BAD_FLAG}. Allowed values are '0' and '1', and the 'isUnitary' and 'isCPTP' fields can additionally be set to the \"unknown\" value of '${UNKNOWN_FLAG} to defer their evaluation. However, these flags should never be modified directly by the user.";
+        "A flag (e.g. 'isUnitary', 'isHermitian', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) had an invalid value of ${BAD_FLAG}. Allowed values are '0', '1', and (except for 'wasGpuSynced') '${UNKNOWN_FLAG}' which indicates the flag is currently unknown because its evaluation has been deferred. However, these flags should never be modified directly by the user.";
 
 
     /*
@@ -348,6 +348,9 @@ namespace report {
 
     string MATRIX_NOT_UNITARY = 
         "The given matrix was not (approximately) unitary.";
+
+    string MATRIX_NOT_HERMITIAN =
+        "THe given matrix was not (approximately) Hermitian.";
 
 
     string INVALID_MATRIX_CPU_ELEMS_PTR =
@@ -608,6 +611,10 @@ namespace report {
 
     string INVALID_PAULI_STR_HEAP_PTR =
         "One or more of the PauliStrumSum's heap pointers was unexpectedly NULL. This might imply the PauliStrSum was already destroyed and had its pointers manually overwritten by the user.";
+
+    
+    string PAULI_STR_SUM_NOT_HERMITIAN =
+        "THe given PauliStrSum is not Hermitian.";
 
 
     /*
@@ -1415,6 +1422,7 @@ void assertNewMatrixAllocsSucceeded(T matr, qindex numBytes, const char* caller)
     // assert the teeny-tiny heap flags are alloc'd
     vars["${NUM_BYTES}"] = sizeof(*(matr.isUnitary));
     assertAllNodesAgreeThat(mem_isAllocated(matr.isUnitary),    report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+    assertAllNodesAgreeThat(mem_isAllocated(matr.isHermitian),  report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
     assertAllNodesAgreeThat(mem_isAllocated(matr.wasGpuSynced), report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
 }
 
@@ -1540,12 +1548,18 @@ void assertAdditionalHeapMatrixFieldsAreValid(T matr, const char* caller) {
 
     // assert heap pointers are not NULL
     assertThat(mem_isAllocated(matr.isUnitary),    report::INVALID_HEAP_FLAG_PTR, caller);
+    assertThat(mem_isAllocated(matr.isHermitian),  report::INVALID_HEAP_FLAG_PTR, caller);
     assertThat(mem_isAllocated(matr.wasGpuSynced), report::INVALID_HEAP_FLAG_PTR, caller);
 
     tokenSubs vars = {{"${BAD_FLAG}", 0}, {"${UNKNOWN_FLAG}", validate_STRUCT_PROPERTY_UNKNOWN_FLAG}};
 
     // assert isUnitary has valid value
     int flag = *matr.isUnitary;
+    vars["${BAD_FLAG}"] = flag;
+    assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
+
+    // assert isHermitian has valid value
+    flag = *matr.isHermitian;
     vars["${BAD_FLAG}"] = flag;
     assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
 
@@ -1611,6 +1625,16 @@ void assertMatrixIsSynced(T matr, string errMsg, const char* caller) {
     assertThat(*(matr.wasGpuSynced) == 1, errMsg, caller);
 }
 
+void validate_matrixIsSynced(CompMatr matr, const char* caller) {
+    assertMatrixIsSynced(matr, report::COMP_MATR_NOT_SYNCED_TO_GPU, caller);
+}
+void validate_matrixIsSynced(DiagMatr matr, const char* caller) {
+    assertMatrixIsSynced(matr, report::DIAG_MATR_NOT_SYNCED_TO_GPU, caller);
+}
+void validate_matrixIsSynced(FullStateDiagMatr matr, const char* caller) {
+    assertMatrixIsSynced(matr, report::FULL_STATE_DIAG_MATR_NOT_SYNCED_TO_GPU, caller);
+}
+
 // type T can be CompMatr, DiagMatr, FullStateDiagMatr
 template <class T> 
 void ensureMatrixUnitarityIsKnown(T matr) {
@@ -1619,13 +1643,9 @@ void ensureMatrixUnitarityIsKnown(T matr) {
     if (*(matr.isUnitary) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
         return;
 
-    // determine local unitarity, modifying matr.isUnitary
+    // determine local unitarity, modifying matr.isUnitary. This will
+    // involve MPI communication if matr is a distributed type
     *(matr.isUnitary) = util_isUnitary(matr);
-
-    // get node consensus on global unitarity, if necessary
-    if constexpr (util_isDistributableMatrixType<T>())
-        if (matr.isDistributed)
-            *(matr.isUnitary) = comm_isTrueOnAllNodes(*(matr.isUnitary));
 }
 
 // type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
@@ -1650,16 +1670,6 @@ void assertMatrixIsUnitary(T matr, const char* caller) {
     }
 
     assertThat(isUnitary, report::MATRIX_NOT_UNITARY, caller);
-}
-
-void validate_matrixIsSynced(CompMatr matr, const char* caller) {
-    assertMatrixIsSynced(matr, report::COMP_MATR_NOT_SYNCED_TO_GPU, caller);
-}
-void validate_matrixIsSynced(DiagMatr matr, const char* caller) {
-    assertMatrixIsSynced(matr, report::DIAG_MATR_NOT_SYNCED_TO_GPU, caller);
-}
-void validate_matrixIsSynced(FullStateDiagMatr matr, const char* caller) {
-    assertMatrixIsSynced(matr, report::FULL_STATE_DIAG_MATR_NOT_SYNCED_TO_GPU, caller);
 }
 
 void validate_matrixIsUnitary(CompMatr1 matr, const char* caller) {
@@ -1692,6 +1702,74 @@ void validate_matrixIsUnitary(FullStateDiagMatr matr, const char* caller) {
     validate_matrixIsSynced(matr, caller);
     validate_matrixFields(matr, caller);
     assertMatrixIsUnitary(matr, caller);
+}
+
+// type T can be CompMatr, DiagMatr, FullStateDiagMatr
+template <class T> 
+void ensureMatrHermiticityIsKnown(T matr) {
+
+    // do nothing if we already know hermiticity
+    if (*(matr.isHermitian) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        return;
+
+    // determine local unitarity, modifying matr.isHermitian
+    *(matr.isHermitian) = util_isHermitian(matr);
+}
+
+// type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
+template <class T> 
+void assertMatrixIsHermitian(T matr, const char* caller) {
+
+    // avoid expensive unitarity check if validation is anyway disabled
+    if (!isValidationEnabled)
+        return;
+
+    // unitarity is determined differently depending on matrix type
+    bool isHermitian = false;
+
+    // fixed-size matrices have their hermiticity calculated afresh (since cheap)
+    if constexpr (util_isFixedSizeMatrixType<T>())
+        isHermitian = util_isHermitian(matr);
+
+    // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
+    else {
+        ensureMatrHermiticityIsKnown(matr);
+        isHermitian = *(matr.isHermitian);
+    }
+
+    assertThat(isHermitian, report::MATRIX_NOT_HERMITIAN, caller);
+}
+
+void validate_matrixIsHermitian(CompMatr1 matr, const char* caller) {
+    validate_matrixFields(matr, caller);
+    assertMatrixIsHermitian(matr, caller);
+}
+void validate_matrixIsHermitian(CompMatr2 matr, const char* caller) {
+    validate_matrixFields(matr, caller);
+    assertMatrixIsHermitian(matr, caller);
+}
+void validate_matrixIsHermitian(CompMatr matr, const char* caller) {
+    validate_matrixFields(matr, caller);
+    validate_matrixIsSynced(matr, caller);
+    assertMatrixIsHermitian(matr, caller);
+}
+void validate_matrixIsHermitian(DiagMatr1 matr, const char* caller) {
+    validate_matrixFields(matr, caller);
+    assertMatrixIsHermitian(matr, caller);
+}
+void validate_matrixIsHermitian(DiagMatr2 matr, const char* caller) {
+    validate_matrixFields(matr, caller);
+    assertMatrixIsHermitian(matr, caller);
+}
+void validate_matrixIsHermitian(DiagMatr matr, const char* caller) {
+    validate_matrixFields(matr, caller);
+    validate_matrixIsSynced(matr, caller);
+    assertMatrixIsHermitian(matr, caller);
+}
+void validate_matrixIsHermitian(FullStateDiagMatr matr, const char* caller) {
+    validate_matrixIsSynced(matr, caller);
+    validate_matrixFields(matr, caller);
+    assertMatrixIsHermitian(matr, caller);
 }
 
 void validate_matrixIsCompatibleWithQureg(FullStateDiagMatr matr, Qureg qureg, const char* caller) {
@@ -2320,6 +2398,10 @@ void validate_newPauliStrSumAllocs(PauliStrSum sum, qindex numBytesStrings, qind
     assertThat(
         mem_isAllocated(sum.coeffs), report::NEW_PAULI_STR_SUM_COEFFS_ALLOC_FAILED, 
         {{"${NUM_TERMS}", sum.numTerms}, {"${NUM_BYTES}", numBytesCoeffs}}, caller);
+
+    assertThat(
+        mem_isAllocated(sum.isHermitian), report::NEW_HEAP_FLAG_ALLOC_FAILED, 
+        {{"${NUM_BYTES}", sizeof(*(sum.isHermitian))}}, caller);
 }
 
 
@@ -2372,6 +2454,24 @@ void validate_pauliStrSumFields(PauliStrSum sum, const char* caller) {
 
     assertThat(mem_isAllocated(sum.coeffs),  report::INVALID_PAULI_STR_HEAP_PTR, caller);
     assertThat(mem_isAllocated(sum.strings), report::INVALID_PAULI_STR_HEAP_PTR, caller);
+
+    assertThat(mem_isAllocated(sum.isHermitian), report::INVALID_HEAP_FLAG_PTR, caller);
+
+    // assert isHermitian has valid value
+    int flag = *sum.isHermitian;
+    tokenSubs vars = {
+        {"${BAD_FLAG}", flag}, 
+        {"${UNKNOWN_FLAG}", validate_STRUCT_PROPERTY_UNKNOWN_FLAG}};
+    assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
+}
+
+void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
+
+    // ensure hermiticity is known (if not; compute it)
+    if (*(sum.isHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        *(sum.isHermitian) = util_isHermitian(sum);
+
+    assertThat(*(sum.isHermitian), report::PAULI_STR_SUM_NOT_HERMITIAN, caller);
 }
 
 

@@ -67,12 +67,13 @@ typedef struct {
     const int numQubits;
     const qindex numRows;
 
-    // unitarity of the matrix (0, 1, or -1 to indicate unknown) which is lazily evaluated,
-    // deferred until a function actually asserts unitarity, at which point it is computed
-    // and the flag fixed until the user modifies the matrix (through sync() or setAmps() etc).
+    // properties of the matrix (0, 1, or -1 to indicate unknown) which are lazily evaluated,
+    // deferred until a function actually validates them, at which point they are computed
+    // and the flags fixed until the user modifies the matrix (through sync() or setAmps() etc).
     // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* const isUnitary;
+    int* const isHermitian;
 
     // whether the user has ever synchronised memory to the GPU, which is performed automatically
     // when calling functions like setCompMatr(), but which requires manual invocation with
@@ -129,12 +130,13 @@ typedef struct {
     const int numQubits;
     const qindex numElems;
 
-    // unitarity of the matrix (0, 1, or -1 to indicate unknown) which is lazily evaluated,
-    // deferred until a function actually asserts unitarity, at which point it is computed
-    // and the flag fixed until the user modifies the matrix (through sync() or setAmps() etc).
+    // properties of the matrix (0, 1, or -1 to indicate unknown) which are lazily evaluated,
+    // deferred until a function actually validates them, at which point they are computed
+    // and the flags fixed until the user modifies the matrix (through sync() or setAmps() etc).
     // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* const isUnitary;
+    int* const isHermitian;
 
     // whether the user has ever synchronised memory to the GPU, which is performed automatically
     // when calling functions like setCompMatr(), but which requires manual invocation with
@@ -170,12 +172,13 @@ typedef struct {
     // will equal numElems if distribution is disabled at runtime (e.g. via autodeployment)
     const qindex numElemsPerNode;
 
-    // unitarity of the matrix (0, 1, or -1 to indicate unknown) which is lazily evaluated,
-    // deferred until a function actually asserts unitarity, at which point it is computed
-    // and the flag fixed until the user modifies the matrix (through sync() or setAmps() etc).
+    // properties of the matrix (0, 1, or -1 to indicate unknown) which are lazily evaluated,
+    // deferred until a function actually validates them, at which point they are computed
+    // and the flags fixed until the user modifies the matrix (through sync() or setAmps() etc).
     // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* const isUnitary;
+    int* const isHermitian;
 
     // whether the user has ever synchronised memory to the GPU, which is performed automatically
     // when calling functions like setCompMatr(), but which requires manual invocation with
