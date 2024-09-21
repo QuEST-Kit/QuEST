@@ -4,6 +4,7 @@
 
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
+#include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 #include "quest/include/channels.h"
 
@@ -214,8 +215,8 @@ bool isUnitary(T elems, qindex dim) {
 
             // check if further than epsilon from identity[r,c]
             qcomp dif = elem - qcomp(r == c, 0);
-            qreal dist = real(dif)*real(dif) + imag(dif)*imag(dif);
-            if (dist > epsSq)
+            qreal distSq = norm(dif);
+            if (distSq > epsSq)
                 return false;
         }
     }
@@ -262,10 +263,89 @@ bool util_isUnitary(FullStateDiagMatr matrix) {
 
     // we must check all node's sub-diagonals satisfy unitarity
     bool res = isUnitary(matrix.cpuElems, matrix.numElems);
-    if (comm_isInit())
+    if (matrix.isDistributed)
         res = comm_isTrueOnAllNodes(res);
 
     return res;
+}
+
+
+
+/*
+ * MATRIX HERMITICITY
+ */
+
+// type T can be qcomp** or qcomp*[]
+template <typename T>
+bool isHermitian(T elems, qindex dim) {
+
+    qreal epsSq = VALIDATION_EPSILON * VALIDATION_EPSILON;
+
+    // check adj(elems) == elems
+    for (qindex r=0; r<dim; r++) {
+        for (qindex c=0; c<r; c++) {
+
+            qcomp dif = elems[r][c] - conj(elems[c][r]);
+            qreal distSq = norm(dif);
+            if (distSq > epsSq)
+                return false;
+        }
+    }
+
+    return true;
+}
+
+// diagonal version doesn't need templating because array decays to pointer, yay!
+bool isHermitian(qcomp* diags, qindex dim) {
+
+    // check every element has a zero (or <eps) imaginary component
+    for (qindex i=0; i<dim; i++)
+        if (std::abs(imag(diags[i])) > VALIDATION_EPSILON)
+        return false;
+
+    return true;
+}
+
+bool util_isHermitian(CompMatr1 matrix) {
+    return isHermitian(matrix.elems, matrix.numRows);
+}
+bool util_isHermitian(CompMatr2 matrix) {
+    return isHermitian(matrix.elems, matrix.numRows);
+}
+bool util_isHermitian(CompMatr matrix) {
+    return isHermitian(matrix.cpuElems, matrix.numRows);
+}
+
+bool util_isHermitian(DiagMatr1 matrix) {
+    return isHermitian(matrix.elems, matrix.numElems);
+}
+bool util_isHermitian(DiagMatr2 matrix) {
+    return isHermitian(matrix.elems, matrix.numElems);
+}
+bool util_isHermitian(DiagMatr matrix) {
+    return isHermitian(matrix.cpuElems, matrix.numElems);
+}
+
+bool util_isHermitian(FullStateDiagMatr matrix) {
+
+    // we must check all node's sub-diagonals satisfy unitarity
+    bool res = isHermitian(matrix.cpuElems, matrix.numElems);
+    if (matrix.isDistributed)
+        res = comm_isTrueOnAllNodes(res);
+
+    return res;
+}
+
+
+
+/*
+ * PAULI STR SUM HERMITICITY
+ */
+
+bool util_isHermitian(PauliStrSum sum) {
+
+    // check whether all coefficients are real (just like a diagonal matrix)
+    return isHermitian(sum.coeffs, sum.numTerms);
 }
 
 

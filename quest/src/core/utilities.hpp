@@ -7,6 +7,7 @@
 
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
+#include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 #include "quest/include/channels.h"
 
@@ -207,6 +208,28 @@ bool util_isUnitary(DiagMatr1 matrix);
 bool util_isUnitary(DiagMatr2 matrix);
 bool util_isUnitary(DiagMatr matrix);
 bool util_isUnitary(FullStateDiagMatr matrix);
+
+
+
+/*
+ * MATRIX HERMITICITY
+ */
+
+bool util_isHermitian(CompMatr1 matrix);
+bool util_isHermitian(CompMatr2 matrix);
+bool util_isHermitian(CompMatr matrix);
+bool util_isHermitian(DiagMatr1 matrix);
+bool util_isHermitian(DiagMatr2 matrix);
+bool util_isHermitian(DiagMatr matrix);
+bool util_isHermitian(FullStateDiagMatr matrix);
+
+
+
+/*
+ * PAULI STR SUM HERMITICITY
+ */
+
+bool util_isHermitian(PauliStrSum sum);
 
 
 

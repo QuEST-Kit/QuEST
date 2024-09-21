@@ -91,6 +91,7 @@ void freeHeapMatrix(T matr) {
 
     // free the teeny tiny heap flags
     cpu_deallocHeapFlag(matr.isUnitary);
+    cpu_deallocHeapFlag(matr.isHermitian);
     cpu_deallocHeapFlag(matr.wasGpuSynced);
 }
 
@@ -100,10 +101,9 @@ template <class T>
 bool didAnyLocalAllocsFail(T matr) {
 
     // god help us if these single-integer malloc failed
-    if (!mem_isAllocated(matr.isUnitary))
-        return true;
-    if (!mem_isAllocated(matr.wasGpuSynced))
-        return true;
+    if (!mem_isAllocated(matr.isUnitary))    return true;
+    if (!mem_isAllocated(matr.isHermitian))  return true;
+    if (!mem_isAllocated(matr.wasGpuSynced)) return true;
 
     // outer CPU memory should always be allocated
     if constexpr (util_isDenseMatrixType<T>()) {
@@ -161,8 +161,9 @@ void validateMatrixAllocs(T matr, const char* caller) {
 template <class T>
 void setInitialHeapFlags(T matr) {
 
-    // set initial unitarity of the newly created matrix to unknown
-    *(matr.isUnitary) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    // set initial propreties of the newly created matrix to unknown
+    *(matr.isUnitary)   = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    *(matr.isHermitian) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
 
     // indicate that GPU memory has not yet been synchronised
     *(matr.wasGpuSynced) = 0;
@@ -189,7 +190,8 @@ extern "C" CompMatr createCompMatr(int numQubits) {
         .numRows = numRows,
 
         // allocate flags in the heap so that struct copies are mutable
-        .isUnitary = cpu_allocHeapFlag(), // nullptr if failed
+        .isUnitary    = cpu_allocHeapFlag(), // nullptr if failed
+        .isHermitian  = cpu_allocHeapFlag(), // nullptr if failed
         .wasGpuSynced = cpu_allocHeapFlag(), // nullptr if failed
 
         // 2D CPU memory
@@ -218,7 +220,8 @@ extern "C" DiagMatr createDiagMatr(int numQubits) {
         .numElems = numElems,
 
         // allocate flags in the heap so that struct copies are mutable
-        .isUnitary = cpu_allocHeapFlag(), // nullptr if failed
+        .isUnitary    = cpu_allocHeapFlag(), // nullptr if failed
+        .isHermitian  = cpu_allocHeapFlag(), // nullptr if failed
         .wasGpuSynced = cpu_allocHeapFlag(), // nullptr if failed
 
         // 1D CPU memory
@@ -258,7 +261,8 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
         .numElemsPerNode = numElemsPerNode,
 
         // allocate flags in the heap so that struct copies are mutable
-        .isUnitary = cpu_allocHeapFlag(), // nullptr if failed
+        .isUnitary    = cpu_allocHeapFlag(), // nullptr if failed
+        .isHermitian  = cpu_allocHeapFlag(), // nullptr if failed
         .wasGpuSynced = cpu_allocHeapFlag(), // nullptr if failed
 
         // 1D CPU memory
@@ -299,9 +303,10 @@ void validateAndSyncMatrix(T matr, const char* caller) {
     if (mem_isAllocated(util_getGpuMemPtr(matr)))
         gpu_copyCpuToGpu(matr);
 
-    // indicate that we do not know whether the revised matrix is
-    // is unitarity; we defer establishing that until a unitarity check
-    *(matr.isUnitary) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    // indicate that we do not know the revised matrix properties;
+    // we defer establishing that until validation needs to check them
+    *(matr.isUnitary)   = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    *(matr.isHermitian) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
 
     // indicate that the matrix is now permanently GPU synchronised, even
     // if we are not in GPU-accelerated mode (in which case it's never consulted)
