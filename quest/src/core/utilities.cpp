@@ -4,6 +4,7 @@
 
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
+#include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 #include "quest/include/channels.h"
 
