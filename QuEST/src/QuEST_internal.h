@@ -96,6 +96,8 @@ void densmatr_mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal
 
 void densmatr_mixPauli(Qureg qureg, int qubit, qreal pX, qreal pY, qreal pZ);
 
+void densmatr_mixArbitraryPauli(Qureg qureg, int qubit, qreal probI, qreal probX, qreal probY, qreal probZ);
+
 void densmatr_mixDensityMatrix(Qureg combineQureg, qreal otherProb, Qureg otherQureg);
 
 void densmatr_mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps);

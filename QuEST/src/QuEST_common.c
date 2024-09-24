@@ -737,7 +737,7 @@ void densmatr_mixMultiQubitKrausMap(Qureg qureg, int* targets, int numTargets, C
      #endif
 }
 
-void densmatr_mixPauli(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {
+void densmatr_mixArbitraryPauli(Qureg qureg, int qubit, qreal probI, qreal probX, qreal probY, qreal probZ) {
     
     // convert pauli probabilities into Kraus map
     const int numOps = 4;
@@ -746,7 +746,7 @@ void densmatr_mixPauli(Qureg qureg, int qubit, qreal probX, qreal probY, qreal p
         ops[n] = (ComplexMatrix2) {.real={{0}}, .imag={{0}}};
     
     qreal facs[4] = { // literal numOps=4 for valid initialisation
-		sqrt(1-(probX + probY + probZ)),
+		sqrt(probI),
 		sqrt(probX),
 		sqrt(probY),
 		sqrt(probZ)
@@ -757,6 +757,11 @@ void densmatr_mixPauli(Qureg qureg, int qubit, qreal probX, qreal probY, qreal p
     ops[3].real[0][0] =  facs[3]; ops[3].real[1][1] = -facs[3];
     
     densmatr_mixKrausMap(qureg, qubit, ops, numOps);
+}
+
+void densmatr_mixPauli(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {
+    
+    densmatr_mixArbitraryPauli(qureg, qubit, 1 - (probX+probY+probZ), probX, probY, probZ);
 }
 
 void applyExponentiatedPauliHamil(Qureg qureg, PauliHamil hamil, qreal fac, int reverse) {
