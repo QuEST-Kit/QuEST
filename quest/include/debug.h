@@ -6,14 +6,23 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-
 #include "quest/include/types.h"
-
 
 // enable invocation by both C and C++ binaries
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+/*
+ * SEEDING
+ */
+
+void setSeeds(unsigned* seeds, int numSeeds);
+void setSeedsToDefault();
+
+void getSeeds(unsigned* seeds);
+int getNumSeeds();
 
 
 
