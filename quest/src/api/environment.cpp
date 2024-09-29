@@ -407,6 +407,13 @@ void finalizeQuESTEnv() {
 }
 
 
+void syncQuESTEnv() {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+}
+
+
 void reportQuESTEnv() {
     validate_envIsInit(__func__);
 
@@ -430,6 +437,13 @@ void reportQuESTEnv() {
     printQuregSizeLimits(densmatr);
     printQuregAutoDeployments(statevec);
     printQuregAutoDeployments(densmatr);
+}
+
+
+void getEnvironmentString(char str[200]) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
 }
 
 
