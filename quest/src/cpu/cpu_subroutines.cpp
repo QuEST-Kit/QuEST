@@ -19,12 +19,9 @@
 #include "quest/src/comm/comm_indices.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
 
-#include <tuple>
 #include <vector>
 #include <algorithm>
 
-using std::tie;
-using std::ignore;
 using std::vector;
 
 
@@ -277,7 +274,7 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDense
  */
 
 
-template <int NumCtrls, int NumTargs>
+template <int NumCtrls, int NumTargs, bool ApplyConj>
 void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
     
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
@@ -344,24 +341,31 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
                 qureg.cpuAmps[i] = 0;
             
                 // loop may be unrolled
-                for (qindex j=0; j<numTargAmps; j++)
-                    qureg.cpuAmps[i] += matr.cpuElems[k][j] * cache[j];
+                for (qindex j=0; j<numTargAmps; j++) {
+
+                    // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
+                    qcomp elem = matr.cpuElems[k][j];
+                    if constexpr (ApplyConj)
+                        elem = conj(elem);
+
+                    qureg.cpuAmps[i] += elem * cache[j];
+                }
             }
         }
     }
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevec_anyCtrlAnyTargDenseMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, CompMatr) )
+INSTANTIATE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevec_anyCtrlAnyTargDenseMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, CompMatr) )
 
 
 
 /*
- * DIAGONAL MATRIX
+ * ANY-TARG DIAGONAL MATRIX
  */
 
 
-template <int NumCtrls, int NumTargs>
+template <int NumCtrls, int NumTargs, bool ApplyConj>
 void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {
     
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
@@ -389,12 +393,17 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         // t = value of targeted bits, which may be in the prefix substate
         qindex t = getValueOfBits(i, targs.data(), numTargBits);
 
-        qureg.cpuAmps[i] *= matr.cpuElems[t];
+        // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
+        qcomp elem = matr.cpuElems[t];
+        if constexpr (ApplyConj)
+            elem = conj(elem);
+
+        qureg.cpuAmps[i] *= elem;
     }
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevec_anyCtrlAnyTargDiagMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, DiagMatr) )
+INSTANTIATE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevec_anyCtrlAnyTargDiagMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, DiagMatr) )
 
 
 
