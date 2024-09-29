@@ -19,12 +19,9 @@
 #include "quest/src/comm/comm_indices.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
 
-#include <tuple>
 #include <vector>
 #include <algorithm>
 
-using std::tie;
-using std::ignore;
 using std::vector;
 
 
@@ -347,7 +344,9 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
                 for (qindex j=0; j<numTargAmps; j++) {
 
                     // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
-                    SET_CONJ_AT_COMPILE_TIME(qcomp, elem, matr.cpuElems[k][j], ApplyConj);
+                    qcomp elem = matr.cpuElems[k][j];
+                    if constexpr (ApplyConj)
+                        elem = conj(elem);
 
                     qureg.cpuAmps[i] += elem * cache[j];
                 }
@@ -395,9 +394,11 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         qindex t = getValueOfBits(i, targs.data(), numTargBits);
 
         // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
-        SET_CONJ_AT_COMPILE_TIME(qcomp, elem, matr.cpuElems[t], ApplyConj);
+        qcomp elem = matr.cpuElems[t];
+        if constexpr (ApplyConj)
+            elem = conj(elem);
 
-        qureg.cpuAmps[i] *= matr.cpuElems[t];
+        qureg.cpuAmps[i] *= elem;
     }
 }
 

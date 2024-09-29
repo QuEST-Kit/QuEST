@@ -279,7 +279,9 @@ __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
             qindex h = getFlattenedMatrInd(k, l, numTargAmps);
 
             // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
-            SET_CONJ_AT_COMPILE_TIME(cu_qcomp, elem, flatMatrElems[h], ApplyConj);
+            cu_qcomp elem = flatMatrElems[h];
+            if constexpr (ApplyConj)
+                elem.y *= -1;
 
             amps[i] += elem * cache[j];
         }
@@ -315,7 +317,9 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     qindex t = getValueOfBits(i, targs, numTargBits);
 
     // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
-    SET_CONJ_AT_COMPILE_TIME(cu_qcomp, elem, elems[t], ApplyConj);
+    cu_qcomp elem = elems[t];
+    if constexpr (ApplyConj)
+        elem.y *= -1;
 
     amps[i] *= elem;
 }
