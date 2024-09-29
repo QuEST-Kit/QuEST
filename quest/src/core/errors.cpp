@@ -39,6 +39,18 @@ void raiseInternalError(string errorMsg) {
 
 
 /*
+ * DEVELOPMENT ERRORS
+ */
+
+void error_functionNotImplemented(const char* caller) {
+
+    string name = caller;
+    raiseInternalError("The function '" + name + "' has not yet been implemented.");
+}
+
+
+
+/*
  * VALIDATION ERRORS
  */
 

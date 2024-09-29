@@ -148,7 +148,7 @@ void gpu_finalizeCuQuantum() {
 
 
 /*
- * MATRICES
+ * GATES
  */
 
 
@@ -169,6 +169,12 @@ void cuquantum_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<
 
 
 // there is no bespoke cuquantum_statevec_anyCtrlSwap_subB()
+
+
+
+/*
+ * MATRICES
+ */
 
 
 void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, cu_qcomp* flatMatrElems) {
@@ -222,6 +228,9 @@ void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrl
 
 /*
  * DECOHERENCE
+ *
+ * which is mostly unsupported by the cuStateVec backend, although we repurpose
+ * the templated diagonal-matrix functions to effect diagonal superoperators
  */
 
 

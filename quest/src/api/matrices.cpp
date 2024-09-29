@@ -21,6 +21,8 @@
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
+#include "quest/src/core/errors.hpp" // only needed for not-implemented functions
+
 #include <iostream>
 #include <cstdlib>
 #include <string>
@@ -564,6 +566,27 @@ extern "C" {
         validate_newDiagMatrParams(numQb, caller);
     }
 
+}
+
+
+
+/*
+ * SPECIAL CREATORS AND SETTERS
+ */
+
+
+extern "C" void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, PauliStrSum in) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+}
+
+
+extern "C" FullStateDiagMatr createFullStateDiagMatrFromPauliStrSumFile(char* fn) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+    return createFullStateDiagMatr(-1);
 }
 
 

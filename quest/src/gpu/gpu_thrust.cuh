@@ -14,6 +14,7 @@
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
 
+#include "quest/src/core/errors.hpp"
 #include "quest/src/gpu/gpu_types.cuh"
 
 
@@ -21,6 +22,7 @@
 void thrust_setElemsToConjugate(cu_qcomp* matrElemsPtr, qindex matrElemsLen) {
 
     // TODO
+    error_functionNotImplemented();
 }
 
 

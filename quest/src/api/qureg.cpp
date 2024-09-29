@@ -17,6 +17,8 @@
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
+#include "quest/src/core/errors.hpp" // only needed for function-not-implemented error
+
 #include <string>
 
 // provides substrings (by, na, pm, etc) used by reportQureg
@@ -256,6 +258,24 @@ Qureg createDensityQureg(int numQubits) {
 }
 
 
+Qureg createCloneQureg(Qureg qureg) {
+
+    // create a new Qureg with identical fields, but zero'd memory
+    Qureg clone = validateAndCreateCustomQureg(
+        qureg.numQubits, qureg.isDensityMatrix, qureg.isDistributed, 
+        qureg.isGpuAccelerated, qureg.isMultithreaded, __func__);
+
+    // copy CPU memory from qureg to clone
+    cpu_copyArray(clone.cpuAmps, qureg.cpuAmps, qureg.numAmpsPerNode);
+
+    // update clone's GPU memory
+    if (clone.isGpuAccelerated)
+        gpu_copyCpuToGpu(clone);
+
+    return clone;
+}
+
+
 void destroyQureg(Qureg qureg) {
     validate_quregFields(qureg, __func__);
 
@@ -279,7 +299,7 @@ void destroyQureg(Qureg qureg) {
 }
 
 
-void reportQureg(Qureg qureg) {
+void reportQuregParams(Qureg qureg) {
     validate_quregFields(qureg, __func__);
 
     // TODO: add function to write this output to file (useful for HPC debugging)
@@ -292,5 +312,95 @@ void reportQureg(Qureg qureg) {
 }
 
 
+void reportQureg(Qureg qureg) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+}
+
+void reportQuregToFile(Qureg qureg, char* fn) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+}
+
+
+void syncQuregToGpu(Qureg qureg) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+}
+
+void syncQuregFromGpu(Qureg qureg) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+}
+
+
+void syncSubQuregToGpu  (Qureg qureg, qindex startInd, qindex numAmps) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+}
+void syncSubQuregFromGpu(Qureg qureg, qindex startInd, qindex numAmps) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+}
+
+void syncSubDensityQuregToGpu  (Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+}
+void syncSubDensityQuregFromGpu(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+}
+
+
+
+
+
 // end de-mangler
+}
+
+
+
+
+/*
+ * C++ ONLY FUNCTIONS
+ *
+ * which are not directly C-compatible because of limited
+ * interoperability of the qcomp type. See calculations.h 
+ * for more info. We here define a C++-only signature (with
+ * name-mangling), and a C-friendly wrapper which passes by
+ * pointer; the C-friendly interface in wrappers.h which itself
+ * wrap this.
+ */
+
+
+qcomp getQuregAmp(Qureg qureg, qindex index) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+    return -1;
+}
+extern "C" void _wrap_getQuregAmp(qcomp* out, Qureg qureg, qindex index) {
+
+    *out = getQuregAmp(qureg, index);
+}
+
+
+qcomp getDensityQuregAmp(Qureg qureg, qindex row, qindex column) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+    return -1;
+}
+extern "C" void _wrap_getDensityQuregAmp(qcomp* out, Qureg qureg, qindex row, qindex column) {
+
+    *out = getDensityQuregAmp(qureg, row, column);
 }
