@@ -346,10 +346,8 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
                 // loop may be unrolled
                 for (qindex j=0; j<numTargAmps; j++) {
 
-                    // conjugate matrix elements on the fly to avoid pre-modifying heap structure
-                    qcomp elem = matr.cpuElems[k][j];
-                    if constexpr(ApplyConj)
-                        elem = conj(elem);
+                    // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
+                    SET_CONJ_AT_COMPILE_TIME(qcomp, elem, matr.cpuElems[k][j], ApplyConj);
 
                     qureg.cpuAmps[i] += elem * cache[j];
                 }
@@ -396,10 +394,8 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         // t = value of targeted bits, which may be in the prefix substate
         qindex t = getValueOfBits(i, targs.data(), numTargBits);
 
-        // conjugate matrix elements on the fly to avoid pre-modifying heap structure
-        qcomp elem = matr.cpuElems[t];
-        if constexpr(ApplyConj)
-            elem = conj(elem);
+        // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
+        SET_CONJ_AT_COMPILE_TIME(qcomp, elem, matr.cpuElems[t], ApplyConj);
 
         qureg.cpuAmps[i] *= matr.cpuElems[t];
     }

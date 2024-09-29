@@ -107,6 +107,12 @@ using std::vector;
     else \
         name = compileval;
 
+#define SET_CONJ_AT_COMPILE_TIME(type, name, runtimeval, compileconj) \
+    type name = runtimeval; \
+    if constexpr (compileconj) \
+        name = conj(name);
+
+
 
 /*
  * COMMUNICATION BUFFER PACKING

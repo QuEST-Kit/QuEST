@@ -238,7 +238,7 @@ __forceinline__ __device__ qindex getFlattenedMatrInd(qindex row, qindex col, qi
 }
 
 
-template <int NumCtrls, int NumTargs>
+template <int NumCtrls, int NumTargs, bool ApplyConj>
 __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
     cu_qcomp* amps, cu_qcomp* cache, qindex numThreads,
     int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int* targs, int numTargs,
@@ -277,7 +277,11 @@ __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
 
             qindex j = getThreadsNthGlobalArrInd(l, n, stride);
             qindex h = getFlattenedMatrInd(k, l, numTargAmps);
-            amps[i] += flatMatrElems[h] * cache[j];
+
+            // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
+            SET_CONJ_AT_COMPILE_TIME(qcomp, elem, flatMatrElems[h], ApplyConj);
+
+            amps[i] += elem * cache[j];
         }
     }
 }
@@ -289,7 +293,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
  */
 
 
-template <int NumCtrls, int NumTargs>
+template <int NumCtrls, int NumTargs, bool ApplyConj>
 __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
     int* ctrls, int numCtrls, qindex ctrlStateMask, int* targs, int numTargs,
@@ -310,7 +314,10 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     // t = value of targeted bits, which may be in the prefix substate
     qindex t = getValueOfBits(i, targs, numTargBits);
 
-    amps[i] *= elems[t];
+    // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
+    SET_CONJ_AT_COMPILE_TIME(qcomp, elem, elems[t], ApplyConj);
+
+    amps[i] *= elem;
 }
 
 
