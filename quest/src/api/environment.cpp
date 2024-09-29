@@ -12,6 +12,7 @@
 #include "quest/src/core/printer.hpp"
 #include "quest/src/core/autodeployer.hpp"
 #include "quest/src/core/validation.hpp"
+#include "quest/src/core/randomiser.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
@@ -120,7 +121,8 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     if (useGpuAccel && gpu_isCuQuantumCompiled())
         gpu_initCuQuantum();
 
-    // TODO: setup RNG
+    // initialise RNG, used by measurements and random-state generation
+    rand_setSeedsToDefault();
 
     // allocate space for the global QuESTEnv singleton (overwriting nullptr, unless malloc fails)
     globalEnvPtr = (QuESTEnv*) malloc(sizeof(QuESTEnv));
@@ -152,9 +154,15 @@ void printPrecisionInfo() {
     print_table(
         "precision", {
         {"qreal",  printer_getQrealType()  + " (" + printer_toStr(sizeof(qreal))  + by + ")"},
+
+        // TODO: this is showing the backend C++ qcomp type, rather than that actually wieldable
+        // by the user which could the C-type. No idea how to solve this however!
         {"qcomp",  printer_getQcompType()  + " (" + printer_toStr(sizeof(qcomp))  + by + ")"},
+
         {"qindex", printer_getQindexType() + " (" + printer_toStr(sizeof(qindex)) + by + ")"},
-        {"validationEpsilon", printer_toStr(VALIDATION_EPSILON)},
+
+        // TODO: this currently prints 0 when epsilon is inf (encoded by zero), i.e. disabled
+        {"validationEpsilon", printer_toStr(validateconfig_getEpsilon())},
     });
 }
 

@@ -5,6 +5,7 @@
 
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
+#include "quest/include/precision.h"
 #include "quest/include/environment.h"
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
@@ -95,6 +96,9 @@ namespace report {
     /*
      * DEBUG UTILITIES
      */
+
+    string INVALID_NEW_EPSILON =
+        "Invalid new epsilon value (${NEW_EPS}). Must specifiy a positive number, or zero to disable numerical validation (as if the epsilon is infinity).";
 
     string INVALID_NUM_REPORTED_ITEMS =
         "Invalid parameter (${NUM_ITEMS}). Must specify a positive number of items to be reported, or 0 to indicate that all items should be reported.";
@@ -687,14 +691,35 @@ extern "C" {
 
 static bool isValidationEnabled = true;
 
-void validate_enable() {
+void validateconfig_enable() {
     isValidationEnabled = true;
 }
-void validate_disable() {
+void validateconfig_disable() {
     isValidationEnabled = false;
 }
-bool validate_isEnabled() {
+bool validateconfig_isEnabled() {
     return isValidationEnabled;
+}
+
+
+
+/*
+ * VALIDATION PRECISION
+ *
+ * which influences how strict unitarity, 
+ * Hermiticity and CPTP checks are performed
+ */
+
+static qreal validationEpsilon = DEAULT_VALIDATION_EPSILON;
+
+void validateconfig_setEpsilon(qreal eps) {
+    validationEpsilon = eps;
+}
+void validateconfig_setEpsilonToDefault() {
+    validationEpsilon = DEAULT_VALIDATION_EPSILON;
+}
+qreal validateconfig_getEpsilon() {
+    return validationEpsilon;
 }
 
 
@@ -899,7 +924,12 @@ void validate_envIsInit(const char* caller) {
  * DEBUG UTILITIES
  */
 
-void validate_numReportedItems(qindex num, const char* caller) {
+void validate_newEpsilonValue(qreal eps, const char* caller) {
+
+    assertThat(eps >= 0, report::INVALID_NEW_EPSILON, {{"${NEW_EPS}", eps}}, caller);
+}
+
+void validate_newNumReportedItems(qindex num, const char* caller) {
 
     assertThat(num >= 0, report::INVALID_NUM_REPORTED_ITEMS, {{"${NUM_ITEMS}", num}}, caller);
 }
@@ -1645,7 +1675,7 @@ void ensureMatrixUnitarityIsKnown(T matr) {
 
     // determine local unitarity, modifying matr.isUnitary. This will
     // involve MPI communication if matr is a distributed type
-    *(matr.isUnitary) = util_isUnitary(matr);
+    *(matr.isUnitary) = util_isUnitary(matr, validationEpsilon);
 }
 
 // type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
@@ -1661,7 +1691,7 @@ void assertMatrixIsUnitary(T matr, const char* caller) {
 
     // fixed-size matrices have their unitarity calculated afresh (since cheap)
     if constexpr (util_isFixedSizeMatrixType<T>())
-        isUnitary = util_isUnitary(matr);
+        isUnitary = util_isUnitary(matr, validationEpsilon);
 
     // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
     else {
@@ -1713,7 +1743,7 @@ void ensureMatrHermiticityIsKnown(T matr) {
         return;
 
     // determine local unitarity, modifying matr.isHermitian
-    *(matr.isHermitian) = util_isHermitian(matr);
+    *(matr.isHermitian) = util_isHermitian(matr, validationEpsilon);
 }
 
 // type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
@@ -1729,7 +1759,7 @@ void assertMatrixIsHermitian(T matr, const char* caller) {
 
     // fixed-size matrices have their hermiticity calculated afresh (since cheap)
     if constexpr (util_isFixedSizeMatrixType<T>())
-        isHermitian = util_isHermitian(matr);
+        isHermitian = util_isHermitian(matr, validationEpsilon);
 
     // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
     else {
@@ -2265,7 +2295,7 @@ void validate_krausMapIsCPTP(KrausMap map, const char* caller) {
 
     // evaluate CPTPness if it isn't already known 
     if (*(map.isCPTP) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        *(map.isCPTP) = util_isCPTP(map);
+        *(map.isCPTP) = util_isCPTP(map, validationEpsilon);
 
     assertThat(*(map.isCPTP), report::KRAUS_MAP_NOT_CPTP, caller);
 }
@@ -2469,7 +2499,7 @@ void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
 
     // ensure hermiticity is known (if not; compute it)
     if (*(sum.isHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        *(sum.isHermitian) = util_isHermitian(sum);
+        *(sum.isHermitian) = util_isHermitian(sum, validationEpsilon);
 
     assertThat(*(sum.isHermitian), report::PAULI_STR_SUM_NOT_HERMITIAN, caller);
 }

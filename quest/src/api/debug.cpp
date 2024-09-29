@@ -3,6 +3,8 @@
  * input validation.
  */
 
+#include "quest/include/types.h"
+
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/printer.hpp"
 #include "quest/src/core/randomiser.hpp"
@@ -53,11 +55,27 @@ void getSeeds(unsigned* seeds) {
 
 
 void setValidationOn() {
-    validate_enable();
+    validateconfig_enable();
 }
 
 void setValidationOff() {
-    validate_disable();
+    validateconfig_disable();
+}
+
+
+void setValidationEpsilon(qreal eps) {
+    validate_newEpsilonValue(eps, __func__);
+
+    validateconfig_setEpsilon(eps);
+}
+
+void setValidationEpsilonToDefault() {
+
+    validateconfig_setEpsilonToDefault();
+}
+
+qreal getValidationEpsilon() {
+    return validateconfig_getEpsilon();
 }
 
 
@@ -68,7 +86,7 @@ void setValidationOff() {
 
 
 void setNumReportedItems(qindex num) {
-    validate_numReportedItems(num, __func__);
+    validate_newNumReportedItems(num, __func__);
 
     printer_setMaxNumPrintedItems(num);
 }

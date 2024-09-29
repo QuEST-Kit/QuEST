@@ -33,11 +33,23 @@ const int validate_STRUCT_PROPERTY_UNKNOWN_FLAG = -1;
  * VALIDATION TOGGLE
  */
 
-void validate_enable();
+void validateconfig_enable();
 
-void validate_disable();
+void validateconfig_disable();
 
-bool validate_isEnabled();
+bool validateconfig_isEnabled();
+
+
+
+/*
+ * VALIDATION PRECISION
+ */
+
+void validateconfig_setEpsilon(qreal eps);
+
+void validateconfig_setEpsilonToDefault();
+
+qreal validateconfig_getEpsilon();
 
 
 
@@ -67,7 +79,9 @@ void validate_envIsInit(const char* caller);
  * DEBUG UTILITIES
  */
 
-void validate_numReportedItems(qindex num, const char* caller);
+void validate_newEpsilonValue(qreal eps, const char* caller);
+
+void validate_newNumReportedItems(qindex num, const char* caller);
 
 
 

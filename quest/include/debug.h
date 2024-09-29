@@ -25,13 +25,30 @@ void getSeeds(unsigned* seeds);
 int getNumSeeds();
 
 
+/*
+ * VALIDATION
+ */
 
 void invalidQuESTInputError(const char* msg, const char* func);
 
 void setValidationOn();
 void setValidationOff();
 
+void setValidationEpsilonToDefault();
+void setValidationEpsilon(qreal eps);
+qreal getValidationEpsilon();
+
+
+/*
+ * REPORTING
+ */
+
 void setNumReportedItems(qindex num);
+
+
+/*
+ * CACHING
+ */
 
 qindex getGpuCacheSize();
 void clearGpuCache();
