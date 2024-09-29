@@ -43,7 +43,12 @@ refactor your code to v4, and should absolutely not continue to use the old v3 A
  * users can define precompiler constant DISABLE_DEPRECATION_WARNINGS=1
  * in order to disable compile-time deprecation warnings. This will
  * make most of the QuEST v3 API silently work by casting to the 
- * v4 API at compile-time.
+ * v4 API at compile-time. Note that _Pragma() are resolved at
+ * compile-time, AFTER pre-processing; some compilers (like gcc) will
+ * ergo treat them like statements which can fill an 'if() (token)', so
+ * that (e.g.) 'if(..) oldFunc()' will issue a warning but execute
+ * 'oldFunc()' outside of the conditional. That won't compile if the
+ * function depends on control-flow params like a for-loop index. Yuck!
  */
 
 
@@ -105,9 +110,22 @@ refactor your code to v4, and should absolutely not continue to use the old v3 A
     _FORCING_UNKNOWN_SYMBOL_ERROR_TO_STOP_COMPILATION
     
 
-#define _ERROR_FUNC_REMOVED(funcname) \
+#define _ERROR_FUNC_REMOVED(oldname) \
     _EFFECT_PRAGMA(message( \
         "The QuEST function '" oldname "' is deprecated, and has no replacement.")) \
+    _FORCING_UNKNOWN_SYMBOL_ERROR_TO_STOP_COMPILATION
+
+
+#define _ERROR_PREPROCESSOR_RENAMED(oldname, newname) \
+    _EFFECT_PRAGMA(message( \
+        "The QuEST preprocessor '" oldname "' is deprecated. " \
+        "Please instead use '" newname "' which could not here be automatically invoked.")) \
+    _FORCING_UNKNOWN_SYMBOL_ERROR_TO_STOP_COMPILATION
+
+
+#define _ERROR_PREPROCESSOR_REMOVED(oldname) \
+    _EFFECT_PRAGMA(message( \
+        "The QuEST preprocessor '" oldname "' is deprecated, and has no replacement.")) \
     _FORCING_UNKNOWN_SYMBOL_ERROR_TO_STOP_COMPILATION
 
 
@@ -118,20 +136,33 @@ refactor your code to v4, and should absolutely not continue to use the old v3 A
 
 
 /*
- * PREPROCESSOR CONSTANTS 
+ * PREPROCESSOR CONSTANTS
+ *
+ * We cannot simply replace format specifiers like 'REAL_STRING_FORMAT' because our
+ * warning code interrupts the string joining done by the preprocessor. For example,
+ * '"x = " REAL_STRING_FORMAT' would not compile due to the warning inside REAL_*.
  */
 
 #define REAL_STRING_FORMAT \
-    _WARN_GENERAL_MSG( \
-        "The QuEST constant 'REAL_STRING_FORMAT' is deprecated, and replaced with 'QREAL_FORMAT_SPECIFIER' " \
-        "which has here been automatically invoked.") \
-    QREAL_FORMAT_SPECIFIER
+    _ERROR_PREPROCESSOR_RENAMED("REAL_STRING_FORMAT",  "QREAL_FORMAT_SPECIFIER")
 
 #define REAL_QASM_FORMAT \
-    _WARN_GENERAL_MSG( \
-        "The QuEST constant 'REAL_QASM_FORMAT' is deprecated, and replaced with 'QREAL_FORMAT_SPECIFIER' " \
-        "which has here been automatically invoked.") \
-    QREAL_FORMAT_SPECIFIER
+    _ERROR_PREPROCESSOR_REMOVED("REAL_QASM_FORMAT")
+
+#define MPI_QuEST_REAL \
+    _ERROR_PREPROCESSOR_REMOVED("MPI_QuEST_REAL")
+
+#define MPI_MAX_AMPS_IN_MSG \
+    _ERROR_PREPROCESSOR_REMOVED("MPI_MAX_AMPS_IN_MSG")
+
+#define REAL_EPS \
+    _ERROR_PREPROCESSOR_REMOVED("REAL_EPS")
+
+#define REAL_SPECIFIER \
+    _ERROR_PREPROCESSOR_REMOVED("REAL_SPECIFIER")
+
+#define absReal(...) \
+    _ERROR_PREPROCESSOR_REMOVED("absReal()")
 
 
 
