@@ -22,7 +22,8 @@
 
 #if COMPILE_CUDA
 
-#define CUDA_CHECK(cmd) do { assertCudaCallSucceeded((int) (cmd), #cmd, __func__, __FILE__, __LINE__); } while (0)
+#define CUDA_CHECK(cmd) \
+    assertCudaCallSucceeded((int) (cmd), #cmd, __func__, __FILE__, __LINE__)
 
 void assertCudaCallSucceeded(int code, const char* call, const char* caller, const char* file, int line);
 

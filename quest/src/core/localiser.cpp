@@ -434,7 +434,7 @@ void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, 
  */
 
 
-void anyCtrlAnyTargDenseMatrOnPrefix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
+void anyCtrlAnyTargDenseMatrOnPrefix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr, bool conj) {
 
     // find suffix positions for all prefix targs, moving colliding ctrls out of the way
     auto [newCtrls, newTargs] = getCtrlsAndTargsSwappedToMinSuffix(qureg, ctrls, targs);
@@ -442,7 +442,7 @@ void anyCtrlAnyTargDenseMatrOnPrefix(Qureg qureg, vector<int> ctrls, vector<int>
     // only unmoved ctrls can be applied to the swaps, to accelerate them
     auto [unmovedCtrls, unmovedCtrlStates] = getNonSwappedCtrlsAndStates(newCtrls, ctrlStates, newTargs); 
 
-    // perform necessary swaps to move all targets into suffix, invoking communication
+    // perform necessary swaps to move all targets into suffix, invoking communication (swaps are real, so no need to conj)
     anyCtrlMultiSwapBetweenPrefixAndSuffix(qureg, unmovedCtrls, unmovedCtrlStates, targs, newTargs);
 
     // if the moved ctrls do not eliminate this node's need for local simulation...
@@ -450,7 +450,7 @@ void anyCtrlAnyTargDenseMatrOnPrefix(Qureg qureg, vector<int> ctrls, vector<int>
 
         // perform embarrassingly parallel simulation using only the new suffix ctrls
         removePrefixQubitsAndStates(qureg, newCtrls, ctrlStates);     
-        accel_statevec_anyCtrlAnyTargDenseMatr_sub(qureg, newCtrls, ctrlStates, newTargs, matr);
+        accel_statevec_anyCtrlAnyTargDenseMatr_sub(qureg, newCtrls, ctrlStates, newTargs, matr, conj);
     }
 
     // undo swaps, again invoking communication
@@ -458,7 +458,7 @@ void anyCtrlAnyTargDenseMatrOnPrefix(Qureg qureg, vector<int> ctrls, vector<int>
 }
 
 
-void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
+void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr, bool conj) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
 
@@ -475,12 +475,12 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
 
     // otherwise if any target requires communication, we invoke SWAPS
     else if (doesGateRequireComm(qureg, targs))
-        anyCtrlAnyTargDenseMatrOnPrefix(qureg, ctrls, ctrlStates, targs, matr);
+        anyCtrlAnyTargDenseMatrOnPrefix(qureg, ctrls, ctrlStates, targs, matr, conj);
 
     // else we happily perform embarrassingly parallel simulation using only the suffix ctrls
     else {
         removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
-        accel_statevec_anyCtrlAnyTargDenseMatr_sub(qureg, ctrls, ctrlStates, targs, matr);
+        accel_statevec_anyCtrlAnyTargDenseMatr_sub(qureg, ctrls, ctrlStates, targs, matr, conj);
     }
 }
 
@@ -491,7 +491,7 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
  */
 
 
-void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {
+void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, bool conj) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
 
@@ -503,7 +503,7 @@ void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, v
     removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
     
     // diagonal matrices are always embarrassingly parallel, regardless of whether any targs are in prefix
-    accel_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, matr);
+    accel_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, matr, conj);
 }
 
 
@@ -869,11 +869,12 @@ CompMatr getCompMatrFromSuperOp(SuperOp op) {
 void localiser_densmatr_superoperator(Qureg qureg, SuperOp op, vector<int> ketTargs) {
     assert_localiserGivenDensMatr(qureg);
 
-    // effect the superoperator as a dense matrix on the ket + bra qubits
+    // effect the superoperator as a (non-conjugated) dense matrix on the ket + bra qubits
+    bool conj = false;
     auto braTargs = util_getBraQubits(ketTargs, qureg);
     auto allTargs = util_getConcatenated(ketTargs, braTargs);
     CompMatr matr = getCompMatrFromSuperOp(op);
-    localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, {}, {}, allTargs, matr);
+    localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, {}, {}, allTargs, matr, conj);
 }
 
 

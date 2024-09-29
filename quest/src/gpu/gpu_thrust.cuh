@@ -11,6 +11,17 @@
     #error "A file being compiled somehow included gpu_thrust.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 
+#include "quest/include/modes.h"
+#include "quest/include/types.h"
+
+#include "quest/src/gpu/gpu_types.cuh"
+
+
+
+void thrust_setElemsToConjugate(cu_qcomp* matrElemsPtr, qindex matrElemsLen) {
+
+    // TODO
+}
 
 
 

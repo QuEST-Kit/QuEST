@@ -31,6 +31,7 @@ using std::vector;
 #define MAX_OPTIMISED_NUM_CTRLS 5
 #define MAX_OPTIMISED_NUM_TARGS 5
 
+
 #define INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS(returntype, funcname, args) \
     template returntype funcname <0> args; \
     template returntype funcname <1> args; \
@@ -42,6 +43,7 @@ using std::vector;
 
 #define INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS(returntype, funcname, args) \
     INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS(returntype, funcname, args)
+
 
 #define INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(returntype, funcname, args) \
     private_INSTANTIATE(returntype, funcname, 0, args); \
@@ -60,6 +62,30 @@ using std::vector;
     template returntype funcname <4, numtargs> args; \
     template returntype funcname <5, numtargs> args; \
     template returntype funcname <-1,numtargs> args;
+
+
+#define INSTANTIATE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(returntype, funcname, args) \
+    private_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, true,  args) \
+    private_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, false, args)
+
+#define private_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, conj, args) \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 0, conj, args); \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 1, conj, args); \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 2, conj, args); \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 3, conj, args); \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 4, conj, args); \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 5, conj, args); \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname,-1, conj, args);
+
+#define private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, numtargs, conj, args) \
+    template returntype funcname <0, numtargs, conj>  args; \
+    template returntype funcname <1, numtargs, conj>  args; \
+    template returntype funcname <2, numtargs, conj>  args; \
+    template returntype funcname <3, numtargs, conj>  args; \
+    template returntype funcname <4, numtargs, conj>  args; \
+    template returntype funcname <5, numtargs, conj>  args; \
+    template returntype funcname <-1,numtargs, conj>  args;
+
 
 
 /*
@@ -107,9 +133,9 @@ void accel_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int>
 void accel_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);
 void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1);
 
-void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr);
+void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr, bool conj);
 
-void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr);
+void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, bool conj);
 
 
 /*
