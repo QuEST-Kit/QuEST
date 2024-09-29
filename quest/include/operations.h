@@ -284,14 +284,47 @@ void applyMultiStateControlledPhaseGadget(Qureg qureg, int* controls, int* state
 
 
 /*
- * phase shift
+ * phase shifts and flips (aliases for Z)
  */
 
+void applyPhaseFlip (Qureg qureg, int target);
 void applyPhaseShift(Qureg qureg, int target, qreal angle);
 
+void applyTwoQubitPhaseFlip( Qureg qureg, int target1, int target2);
 void applyTwoQubitPhaseShift(Qureg qureg, int target1, int target2, qreal angle);
 
+void applyMultiQubitPhaseFlip (Qureg qureg, int* targets, int numTargets);
 void applyMultiQubitPhaseShift(Qureg qureg, int* targets, int numTargets, qreal angle);
+
+
+
+/*
+ * many-qubit CNOTs (aliases for X)
+ */
+
+void applyNot(Qureg qureg, int target);
+
+void applyControlledNot(Qureg qureg, int control, int target);
+
+void applyMultiControlledNot(Qureg qureg, int* controls, int numControls, int target);
+
+void applyMultiStateControlledNot(Qureg qureg, int* controls, int* states, int numControls, int target);
+
+void applyMultiQubitNot(Qureg, int* targets, int numTargets);
+
+void applyControlledMultiQubitNot(Qureg, int control, int* targets, int numTargets);
+
+void applyMultiControlledMultiQubitNot(Qureg, int* controls, int numControls, int* targets, int numTargets);
+
+void applyMultiStateControlledMultiQubitNot(Qureg, int* controls, int* states, int numControls, int* targets, int numTargets);
+
+
+
+/*
+ * superoperator
+ */
+
+void applySuperOp(Qureg qureg, SuperOp superop);
 
 
 
@@ -301,7 +334,7 @@ void applyMultiQubitPhaseShift(Qureg qureg, int* targets, int numTargets, qreal 
 
 int applyQubitMeasurement(Qureg qureg, int target);
 
-int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qcomp* probability);
+int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability);
 
 void applyForcedQubitMeasurement(Qureg qureg, int target, int outcome);
 

@@ -1,8 +1,8 @@
 /** @file
- * API definitions for effecting non-unitary non-decoherence 
- * operations (such as measurements
- * upon Quregs which are instantiated as either statevectors or 
- * density matrices.
+ * API definitions for effecting operators (including
+ * unitaries, projectors, channels, Hermitians, and
+ * arbitrary matrices) upon Quregs, which can be
+ * statevectors or density matrices
  */
 
 #include "quest/include/qureg.h"
@@ -20,6 +20,18 @@ extern "C" {
 
 
 #define _NOT_IMPLEMENTED_ERROR_DEF { error_functionNotImplemented(__func__); }
+/*
+ * Named gates
+ */
+
+void applyS(Qureg qureg, int target)
+    _NOT_IMPLEMENTED_ERROR_DEF
+
+void applyT(Qureg qureg, int target)
+    _NOT_IMPLEMENTED_ERROR_DEF
+
+void applyHadamard(Qureg qureg, int target)
+    _NOT_IMPLEMENTED_ERROR_DEF
 
 
 
@@ -336,6 +348,51 @@ void applyMultiQubitPhaseShift(Qureg qureg, int* targets, int numTargets, qreal 
 
 
 /*
+ * phase flips
+ */
+
+void applyPhaseFlip(Qureg qureg, int target)
+    _NOT_IMPLEMENTED_ERROR_DEF
+
+void applyTwoQubitPhaseFlip(Qureg qureg, int target1, int target2)
+    _NOT_IMPLEMENTED_ERROR_DEF
+
+void applyMultiQubitPhaseFlip(Qureg qureg, int* targets, int numTargets)
+    _NOT_IMPLEMENTED_ERROR_DEF
+
+
+
+/*
+ * many-qubit CNOTs
+ */
+
+void applyNot(Qureg qureg, int target)
+    _NOT_IMPLEMENTED_ERROR_DEF
+
+void applyControlledNot(Qureg qureg, int control, int target)
+    _NOT_IMPLEMENTED_ERROR_DEF
+
+void applyMultiControlledNot(Qureg qureg, int* controls, int numControls, int target)
+    _NOT_IMPLEMENTED_ERROR_DEF
+
+void applyMultiStateControlledNot(Qureg qureg, int* controls, int* states, int numControls, int target)
+    _NOT_IMPLEMENTED_ERROR_DEF
+
+void applyMultiQubitNot(Qureg, int* targets, int numTargets)
+    _NOT_IMPLEMENTED_ERROR_DEF
+
+void applyControlledMultiQubitNot(Qureg, int control, int* targets, int numTargets)
+    _NOT_IMPLEMENTED_ERROR_DEF
+
+void applyMultiControlledMultiQubitNot(Qureg, int* controls, int numControls, int* targets, int numTargets)
+    _NOT_IMPLEMENTED_ERROR_DEF
+
+void applyMultiStateControlledMultiQubitNot(Qureg, int* controls, int* states, int numControls, int* targets, int numTargets)
+    _NOT_IMPLEMENTED_ERROR_DEF
+
+
+
+/*
  * superoperator
  */
 
@@ -347,6 +404,32 @@ void applySuperOp(Qureg qureg, SuperOp superop) {
     // TODO
     error_functionNotImplemented(__func__);
 }
+
+
+
+/*
+ * measurement
+ */
+
+int applyQubitMeasurement(Qureg qureg, int target) {
+
+    // // TODO
+    // error_functionNotImplemented(__func__);
+    return -1;
+}
+
+int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability) {
+
+    // // TODO
+    // error_functionNotImplemented(__func__);
+    return -1;
+}
+
+void applyForcedQubitMeasurement(Qureg qureg, int target, int outcome)
+    _NOT_IMPLEMENTED_ERROR_DEF
+
+void applyQubitProjector(Qureg qureg, int target, int outcome)
+    _NOT_IMPLEMENTED_ERROR_DEF
 
 
 
