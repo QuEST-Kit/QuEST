@@ -68,10 +68,13 @@ typedef struct {
     // C++ users can access the base C method
     extern "C" PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis);
 
-    // but also get overloads to accept natural C++ string types (like literals)
+    // and get a direct overload to accept integers
+    PauliStr getPauliStr(int* paulis, int* indices, int numPaulis);
+
+    // They also get overloads to accept natural C++ string types (like literals)
     PauliStr getPauliStr(std::string paulis, int* indices, int numPaulis);
 
-    // and an additional overload to use vectors for brevity
+    // and additional overloads to use vectors for brevity
     PauliStr getPauliStr(std::string paulis, std::vector<int> indices);
 
     // and an overload assuming indices={n,...,2,1,0}, used internally by parsers
@@ -81,10 +84,23 @@ typedef struct {
     #define getInlinePauliStr(str, ...) \
         getPauliStr(str, __VA_ARGS__)
 
+    // note that C++ does not get an overload where the pauli codes (integers) are
+    // passed as a vector; this is because integer literal initialiser lists like
+    // {0,3,1} are valid std::string instances, causing overload ambiguity. Blegh!
+
 #else
 
-    // C only supports passing a char array or string literal with a specified number of Paulis
+    // C supports passing a char array or string literal with a specified number of Paulis
     PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis);
+
+    // or an overload accepting ints, achieved using a C11 _Generic
+    PauliStr _getPauliStrFromInts(int* paulis, int* indices, int numPaulis);
+
+    #define getPauliStr(paulis, ...) \
+        _Generic((paulis), \
+            int*    : _getPauliStrFromInts, \
+            default : getPauliStr \
+        )(paulis, __VA_ARGS__) 
 
     // inline macro exploits the compile-time size of a string literal, and enables array
     // literals without the C99 inline temporary array syntax; we further give the array

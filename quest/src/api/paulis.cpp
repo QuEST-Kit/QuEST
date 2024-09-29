@@ -190,6 +190,30 @@ extern "C" PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis)
 
 }
 
+
+PauliStr getPauliStr(int* paulis, int* indices, int numPaulis) {
+    validate_newPauliStrParams(paulis, indices, numPaulis, MAX_NUM_PAULIS_PER_STR, __func__);
+
+    // validation ensures never causes stack overflow
+    char pauliChars[MAX_NUM_PAULIS_PER_STR + 1]; // +1 for null-terminal
+
+    // made a char array from the pauli codes
+    for (int i=0; i<numPaulis; i++)
+        pauliChars[i] = "IXYZ"[paulis[i]];
+
+    // including the trailing null char, used to infer string end/length
+    pauliChars[numPaulis] = '\0';
+
+    return getPauliStr(pauliChars, indices, numPaulis);
+}
+
+
+extern "C" PauliStr _getPauliStrFromInts(int* paulis, int* indices, int numPaulis) {
+
+    return getPauliStr(paulis, indices, numPaulis);
+}
+
+
 PauliStr getPauliStr(string paulis, int* indices, int numPaulis) {
 
     // additionally validate 'paulis' string has 'numPaulis' chars

@@ -69,8 +69,23 @@ void demo_getPauliStr() {
     reportPauliStr(
         getPauliStr(p, q, n)
     );
+
+    // as above, but with pauli-code integers; they must not be an inline temporary array
+    int codes[] = {3,2,1};
+    reportPauliStr(
+        getPauliStr(codes, (int[]) {5,6,7}, 3)
+    );
+
+    int* c = malloc(n * sizeof *c);
+    for (int i=0; i<n; i++)
+        c[i] = i % 4;
+    reportPauliStr(
+        getPauliStr(c, q, n)
+    );
+
     free(p);
     free(q);
+    free(c);
 }
 
 

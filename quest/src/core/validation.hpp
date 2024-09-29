@@ -248,6 +248,7 @@ void validate_initClassicalStateIndex(Qureg qureg, qindex ind, const char* calle
  */
 
 void validate_newPauliStrParams(const char* paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller);
+void validate_newPauliStrParams(int*        paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller);
 
 void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* caller); // called by C++ only
 
@@ -280,6 +281,8 @@ void validate_parsedStringIsNotEmpty(bool stringIsNotEmpty, const char* caller);
  */
 
 void validate_pauliStrSumFields(PauliStrSum sum, const char* caller);
+
+void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller);
 
 
 

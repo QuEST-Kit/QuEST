@@ -81,6 +81,13 @@ void demo_getPauliStr() {
     );
     free(p);
     free(q);
+
+    // can also pass integer Pauli codes, alas using the C API, because
+    // integer initializer literals resemble both vector<int> and 
+    // std::string types, leading to ambiguous overload invocation :(
+    int codes[] = {2,0,3};
+    int targs[] = {5,6,7};
+    reportPauliStr( getPauliStr(codes, targs, 3) );
 }
 
 

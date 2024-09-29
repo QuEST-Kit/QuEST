@@ -559,6 +559,9 @@ namespace report {
     string NEW_PAULI_STR_UNRECOGNISED_PAULI_CHAR = 
         "Given an unrecognised Pauli character (ASCII code ${BAD_CHAR}) at index ${CHAR_IND}. Each character must be one of I X Y Z (or lower case), or equivalently 0 1 2 3'.";
 
+    string NEW_PAULI_STR_INVALID_PAULI_CODE =
+        "Given an invalid Pauli code (${BAD_CODE}) at index ${CODE_IND}. Each code must be one of 0 1 2 3, corresponding respectively to I X Y Z.";
+
     string NEW_PAULI_STR_TERMINATION_CHAR_TOO_EARLY =
         "The given string contained fewer characters (${TERM_IND}) than the specified number of Pauli operators (${NUM_PAULIS}).";
 
@@ -2356,6 +2359,18 @@ void assertRecognisedNewPaulis(const char* paulis, int numPaulis, const char* ca
     }
 }
 
+void assertValidNewPauliCodes(int* paulis, int numPaulis, const char* caller) {
+
+    for (int i=0; i<numPaulis; i++) {
+        int code = paulis[i];
+
+        assertThat(
+            code>=0 && code<=3, 
+            report::NEW_PAULI_STR_INVALID_PAULI_CODE, 
+            {{"${BAD_CODE}", code}, {"${CODE_IND}", i}}, caller);
+    }
+}
+
 void assertValidNewPauliIndices(int* indices, int numInds, int maxIndExcl, const char* caller) {
 
     // check each index is valid
@@ -2381,16 +2396,15 @@ void validate_newPauliStrNumPaulis(int numPaulis, int maxNumPaulis, const char* 
 
 void validate_newPauliStrParams(const char* paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller) {
 
-    // note we do not bother checking whether RAM has enough memory to contain
-    // the new Pauli string, because the caller to this function has already
-    // been passed data of the same size (and it's unlikely the user is about
-    // to max RAM), and the memory requirements scale only linearly with the
-    // parameters (e.g. numTerms), unlike the exponential scaling of the memory
-    // of Qureg and CompMatr, for example
-
     validate_newPauliStrNumPaulis(numPaulis, maxNumPaulis, caller);
     assertCorrectNumPauliCharsBeforeTerminationChar(paulis, numPaulis, caller);
     assertRecognisedNewPaulis(paulis, numPaulis, caller);
+    assertValidNewPauliIndices(indices, numPaulis, maxNumPaulis, caller);
+}
+void validate_newPauliStrParams(int* paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller) {
+
+    validate_newPauliStrNumPaulis(numPaulis, maxNumPaulis, caller);
+    assertValidNewPauliCodes(paulis, numPaulis, caller);
     assertValidNewPauliIndices(indices, numPaulis, maxNumPaulis, caller);
 }
 
@@ -2409,6 +2423,13 @@ void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* cal
  */
 
 void validate_newPauliStrSumParams(qindex numTerms, const char* caller) {
+
+    // note we do not bother checking whether RAM has enough memory to contain
+    // the new Pauli sum, because the caller to this function has already
+    // been passed data of the same size (and it's unlikely the user is about
+    // to max RAM), and the memory requirements scale only linearly with the
+    // parameters (e.g. numTerms), unlike the exponential scaling of the memory
+    // of Qureg and CompMatr, for example
 
     assertThat(numTerms > 0, report::NEW_PAULI_STR_SUM_NON_POSITIVE_NUM_STRINGS, {{"${NUM_TERMS}", numTerms}}, caller);
 }
