@@ -49,6 +49,8 @@ void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread);
 
 void finalizeQuESTEnv();
 
+void syncQuESTEnv();
+
 void reportQuESTEnv();
 
 int isQuESTEnvInit();

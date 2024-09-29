@@ -14,6 +14,7 @@
 #define MATRICES_H
 
 #include "quest/include/types.h"
+#include "quest/include/paulis.h"
 
 // C++ gets vector initialiser overloads, whereas C gets a macro
 #ifdef __cplusplus
@@ -350,7 +351,9 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
     //   a compile-time error, it will always be triggered. A function error however
     //   would compile fine, but the error message would only be triggered at runtime
     //   when the user actually calls getCompMatr1() which is much worse than a slightly
-    //   less clear compile-time error!
+    //   less clear compile-time error! A non-portable solution to this is to use
+    //   _Pragma() in the RHS which is evaluated at compile-time (NOT pre-procesing),
+    //   e.g. default: _Pragma("GCC error \"arg not allowed\"").
     
     #define getCompMatr1(...) \
         _Generic((__VA_ARGS__), \
@@ -688,6 +691,25 @@ extern "C" {
     #define createInlineDiagMatr(numQb, ...) \
         _createInlineDiagMatr((numQb), (qcomp[1<<(numQb)]) __VA_ARGS__)
 
+#endif
+
+
+
+/*
+ * SPECIAL CREATORS AND SETTERS
+ */
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, PauliStrSum in);
+
+    FullStateDiagMatr createFullStateDiagMatrFromPauliStrSumFile(char* fn);
+
+#ifdef __cplusplus
+}
 #endif
 
 

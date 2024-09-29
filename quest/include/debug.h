@@ -54,6 +54,12 @@ qindex getGpuCacheSize();
 void clearGpuCache();
 
 
+/*
+ * ENVIRONMENT
+ */
+
+void getEnvironmentString(char str[200]);
+
 
 // end de-mangler
 #ifdef __cplusplus
