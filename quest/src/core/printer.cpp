@@ -890,7 +890,7 @@ void print_pauliStrSumInfo(qindex numTerms, qindex numBytes) {
     // print e.g. PauliStrSum (3 terms, 24 bytes)
     cout 
         << "PauliStrSum (" 
-        << numTerms << " terms, " 
+        << numTerms << " term" << ((numTerms>1)? "s":"") << ", "
         << numBytes << by 
         << "):"  // colon, since caller will hereafter print each pauli string
         << endl;

@@ -15,6 +15,8 @@
 #include "../core/bitwise.hpp"
 #include "../src/gpu/gpu_config.hpp"
 
+#include "quest/src/core/errors.hpp" // only needed for not-implemented functions
+
 #include <algorithm>
 #include <cmath>
 
@@ -67,6 +69,13 @@ void initPlusState(Qureg qureg) {
 }
 
 
+void initPureState(Qureg qureg, Qureg pure) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+}
+
+
 void initClassicalState(Qureg qureg, qindex ind) {
     validate_quregFields(qureg, __func__);
     validate_initClassicalStateIndex(qureg, ind, __func__);
@@ -86,6 +95,60 @@ void initClassicalState(Qureg qureg, qindex ind) {
     if (qureg.isGpuAccelerated)
         gpu_copyCpuToGpu(qureg);
 }
+
+
+void initDebugState(Qureg qureg) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+}
+
+
+void initArbitraryState(Qureg qureg, qcomp* amps) {
+
+    // TODO
+    error_functionNotImplemented(__func__); 
+}
+
+
+
+
+
+void setQuregAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+
+    // re-use code/logic for FullStateDiagMatr (obviously)
+}
+
+void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qcomp** amps, qindex numRows, qindex numCols) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+}
+
+
+void setQuregToPauliStrSum(Qureg qureg, PauliStrSum sum) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+}
+
+
+void setQuregToClone(Qureg targetQureg, Qureg copyQureg) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+}
+
+
+void setQuregToSuperposition(qcomp facOut, Qureg out, qcomp fac1, Qureg qureg1, qcomp fac2, Qureg qureg2) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+}
+
 
 
 } // end de-mangler

@@ -5,7 +5,7 @@
 
 
 /*
- * CompMatr
+ * CompMatr1, CompMatr2
  */
 
 
@@ -68,6 +68,36 @@ void demo_getCompMatr() {
     for (int i=0; i<dim; i++)
         free(ptrs[i]);
     free(ptrs);
+}
+
+
+
+/*
+ * CompMatr
+ */
+
+
+void demo_createInlineCompMatr() {
+
+    // inline literal without gross C compound literal syntax
+    CompMatr a = createInlineCompMatr(2, {
+        {1,2,3i,4},
+        {4,5,6,7},
+        {9,8,7,6},
+        {1i,2i,0,0}
+    });
+    reportCompMatr(a);
+    destroyCompMatr(a);
+
+    // unspecified elements default to 0 (C only)
+    CompMatr b = createInlineCompMatr(3, {
+        {1,2,3,4,5,6,7,8},
+        {8i, 7i, 6i, 5i},
+        {9,9,9},
+        {10}      
+    });
+    reportCompMatr(b);
+    destroyCompMatr(b);
 }
 
 
@@ -148,9 +178,25 @@ void demo_setCompMatr() {
 }
 
 
+void demo_syncCompMatr() {
+
+    CompMatr a = createCompMatr(2);
+
+    // manually modify the elems
+    a.cpuElems[0][0] = 1;
+    a.cpuElems[1][1] = 2i;
+    a.cpuElems[2][2] = -3i;
+    a.cpuElems[3][3] = -2+4i;
+    
+    syncCompMatr(a);
+    reportCompMatr(a);
+    destroyCompMatr(a);
+}
+
+
 
 /*
- * DiagMatr
+ * DiagMatr1, DiagMatr2
  */
 
 
@@ -197,6 +243,26 @@ void demo_getDiagMatr() {
 
     // cleanup
     free(ptr);
+}
+
+
+
+/*
+ * DiagMatr
+ */
+
+
+void demo_createInlineDiagMatr() {
+
+    // inline literal without gross C compound-literal syntax
+    DiagMatr a = createInlineDiagMatr(1, {3i,5i});
+    reportDiagMatr(a);
+    destroyDiagMatr(a);
+
+    // unspecified elemenrts default to 0 (C only)
+    DiagMatr b = createInlineDiagMatr(4, {1, 2, 3});
+    reportDiagMatr(b);
+    destroyDiagMatr(b);
 }
 
 
@@ -256,8 +322,31 @@ void demo_setDiagMatr() {
 }
 
 
+void demo_syncDiagMatr() {
+
+    DiagMatr a = createDiagMatr(2);
+
+    // manually modify the elems
+    a.cpuElems[0] = 1;
+    a.cpuElems[1] = 2i;
+    a.cpuElems[2] = -3i;
+    a.cpuElems[3] = -2+4i;
+
+    syncDiagMatr(a);
+    reportDiagMatr(a);
+    destroyDiagMatr(a);
+}
+
+
+
+/*
+ * FullStateDiagMatr
+ */
+
+
 void demo_setInlineFullStateDiagMatr() {
 
+    // using custom instead of createFullStateDiagMatr() to force distribution
     FullStateDiagMatr matr = createCustomFullStateDiagMatr(5, 1);
 
     // inline literal; identical to setFullStateDiagMatr() for consistencty with C API
@@ -271,6 +360,7 @@ void demo_setInlineFullStateDiagMatr() {
 
 void demo_setFullStateDiagMatr() {
 
+    // using custom instead of createFullStateDiagMatr() to force distribution
     FullStateDiagMatr matr = createCustomFullStateDiagMatr(5, 1);
 
     // VLA (C only)
@@ -296,6 +386,20 @@ void demo_setFullStateDiagMatr() {
 }
 
 
+void demo_syncFullStateDiagMatr() {
+
+    // using custom instead of createFullStateDiagMatr() to force distribution
+    FullStateDiagMatr a = createCustomFullStateDiagMatr(5, 1);
+
+    // every node modifies its first local element
+    a.cpuElems[0] = -10i * (1+getQuESTEnv().rank);
+
+    syncFullStateDiagMatr(a);
+    reportFullStateDiagMatr(a);
+    destroyFullStateDiagMatr(a);
+}
+
+
 
 /*
  * main
@@ -308,16 +412,23 @@ int main() {
 
     demo_getInlineCompMatr();
     demo_getCompMatr();
+
+    demo_createInlineCompMatr();
     demo_setInlineCompMatr();
     demo_setCompMatr();
+    demo_syncCompMatr();
 
     demo_getInlineDiagMatr();
     demo_getDiagMatr();
+    
+    demo_createInlineDiagMatr();
     demo_setInlineDiagMatr();
     demo_setDiagMatr();
+    demo_syncDiagMatr();
 
     demo_setInlineFullStateDiagMatr();
     demo_setFullStateDiagMatr();
+    demo_syncFullStateDiagMatr();
 
     finalizeQuESTEnv();
     return 0;

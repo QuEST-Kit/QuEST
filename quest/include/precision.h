@@ -84,19 +84,23 @@
 
 
 /*
- * RE-CONFIGURABLE VALIDATION PRECISION
+ * RE-CONFIGURABLE DEFAULT VALIDATION PRECISION
+ *
+ * which is compile-time overridable by pre-defining DEAULT_VALIDATION_EPSILON (e.g. 
+ * in user code before importing QuEST, or passed as a preprocessor constant by the
+ * compiler using argument -D), and runtime overridable using setValidationEpsilon()
  */
 
-#ifndef VALIDATION_EPSILON
+#ifndef DEAULT_VALIDATION_EPSILON
 
-    #if (FLOAT_PRECISION == 1)
-        #define VALIDATION_EPSILON 1E-5
+    #if FLOAT_PRECISION == 1
+        #define DEAULT_VALIDATION_EPSILON 1E-5
 
-    #elif (FLOAT_PRECISION == 2)
-        #define VALIDATION_EPSILON 1E-13
+    #elif FLOAT_PRECISION == 2
+        #define DEAULT_VALIDATION_EPSILON 1E-13
 
-    #elif (FLOAT_PRECISION == 4)
-        #define VALIDATION_EPSILON 1E-14
+    #elif FLOAT_PRECISION == 4
+        #define DEAULT_VALIDATION_EPSILON 1E-14
 
     #endif
 

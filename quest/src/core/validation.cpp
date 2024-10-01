@@ -5,6 +5,7 @@
 
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
+#include "quest/include/precision.h"
 #include "quest/include/environment.h"
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
@@ -95,6 +96,9 @@ namespace report {
     /*
      * DEBUG UTILITIES
      */
+
+    string INVALID_NEW_EPSILON =
+        "Invalid new epsilon value (${NEW_EPS}). Must specifiy a positive number, or zero to disable numerical validation (as if the epsilon is infinity).";
 
     string INVALID_NUM_REPORTED_ITEMS =
         "Invalid parameter (${NUM_ITEMS}). Must specify a positive number of items to be reported, or 0 to indicate that all items should be reported.";
@@ -201,13 +205,13 @@ namespace report {
      */
 
     string NEW_HEAP_FLAG_ALLOC_FAILED =
-        "Attempted allocation of a heap flag (such as 'isUnitary', 'isCPTP', 'wasGpuSynced') miraculously failed, despite being a mere ${NUM_BYTES} bytes. This is unfathomably unlikely - go and have your fortune read at once!";
+        "Attempted allocation of a heap flag (such as 'isUnitary', 'isHermitian', 'isCPTP', 'wasGpuSynced') miraculously failed, despite being a mere ${NUM_BYTES} bytes. This is unfathomably unlikely - go and have your fortune read at once!";
 
     string INVALID_HEAP_FLAG_PTR =
-        "A flag (e.g. 'isUnitary', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) was a NULL pointer, instead of an expected pointer to persistent heap memory. This may imply the structure has already been destroyed and its fields manually overwritten by the user.";
+        "A flag (e.g. 'isUnitary', 'isHermitian', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) was a NULL pointer, instead of an expected pointer to persistent heap memory. This may imply the structure has already been destroyed and its fields manually overwritten by the user.";
 
     string INVALID_HEAP_FLAG_VALUE = 
-        "A flag (e.g. 'isUnitary', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) had an invalid value of ${BAD_FLAG}. Allowed values are '0' and '1', and the 'isUnitary' and 'isCPTP' fields can additionally be set to the \"unknown\" value of '${UNKNOWN_FLAG} to defer their evaluation. However, these flags should never be modified directly by the user.";
+        "A flag (e.g. 'isUnitary', 'isHermitian', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) had an invalid value of ${BAD_FLAG}. Allowed values are '0', '1', and (except for 'wasGpuSynced') '${UNKNOWN_FLAG}' which indicates the flag is currently unknown because its evaluation has been deferred. However, these flags should never be modified directly by the user.";
 
 
     /*
@@ -301,6 +305,13 @@ namespace report {
         "The specified range of elements to set (at indices ${START_IND} to ${END_IND_EXCL} exclusive) exceeds the bounds of the diagonal matrix (of ${MATR_NUM_ELEMS} total elements).";
 
 
+    string MATR_NUM_QUBITS_MISMATCHES_INLINE_SETTER =
+        "The declared number of qubits (${NUM_SETTER_QUBITS}) differs from the number of qubits of the matrix (${NUM_MATRIX_QUBITS}).";
+
+    string MATR_NUM_ELEMS_MISMATCHES_VEC_LENGTH_IN_INLINE_SETTER =
+        "The declared number of passed elements (${NUM_ELEMS}) differs from the length of the given list (${VEC_LENGTH}).";
+
+
     /*
      * EXISTING MATRIX
      */
@@ -342,6 +353,9 @@ namespace report {
     string MATRIX_NOT_UNITARY = 
         "The given matrix was not (approximately) unitary.";
 
+    string MATRIX_NOT_HERMITIAN =
+        "THe given matrix was not (approximately) Hermitian.";
+
 
     string INVALID_MATRIX_CPU_ELEMS_PTR =
         "The given matrix's outer CPU heap-memory pointer was NULL. This implies the matrix was prior destroyed and its pointers were manually cleared.";
@@ -369,14 +383,14 @@ namespace report {
         "Cannot create a superoperator of ${NUM_QUBITS} qubits because the matrix would contain a total of 16^${NUM_QUBITS} elements which exceeds the maximum representable index of 'qindex' (permitting up to ${MAX_QUBITS} qubits).";
     
     string NEW_SUPER_OP_MEM_WOULD_EXCEED_SIZEOF =
-        "Cannot create a superoperator of ${NUM_QUBITS} because the total required memory (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the maximum representable by size_t. In this deployment, the maximum number of qubits in such a superoperator is ${MAX_QUBITS}";
+        "Cannot create a superoperator of ${NUM_QUBITS} qubits because the total required memory (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the maximum representable by size_t. In this deployment, the maximum number of qubits in such a superoperator is ${MAX_QUBITS}";
 
 
     string NEW_SUPER_OP_CANNOT_FIT_INTO_CPU_MEM =
-        "Cannot create a superoperator of ${NUM_QUBITS} because the total memory required (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds that available.";
+        "Cannot create a superoperator of ${NUM_QUBITS} qubits because the total memory required (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds that available (${RAM_SIZE} bytes).";
 
     string NEW_SUPER_OP_CANNOT_FIT_INTO_GPU_MEM =
-        "Cannot create a GPU-accelerated superoperator of ${NUM_QUBITS} because the total memory required (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available GPU memory.";
+        "Cannot create a GPU-accelerated superoperator of ${NUM_QUBITS} qubits because the total memory required (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available GPU memory (${VRAM_SIZE} bytes).";
 
 
     string NEW_SUPER_OP_CPU_ELEMS_ALLOC_FAILED =
@@ -384,6 +398,13 @@ namespace report {
         
     string NEW_SUPER_OP_GPU_ELEMS_ALLOC_FAILED =
         "Attempted allocation of GPU memory (a total of ${NUM_BYTES} in VRAM) for the superoperator matrix failed.";
+
+
+    string NEW_INLINE_SUPER_OP_MATRIX_WRONG_NUM_ROWS =
+        "The specified number of qubits (${NUM_DECLARED_QUBITS}) in the superoperator is inconsistent with the number of rows in the given matrix (expected ${NUM_DECLARED_ROWS}, received ${GIVEN_DIM}).";
+
+    string NEW_INLINE_SUPER_OP_MATRIX_WRONG_NUM_COLS =
+        "The specified number of qubits (${NUM_DECLARED_QUBITS}) in the superoperator is inconsistent with the number of columns in one or more rows of the given matrix (expected ${NUM_DECLARED_ROWS} columns, received ${GIVEN_DIM}).";
 
 
     /*
@@ -395,6 +416,9 @@ namespace report {
 
     string SUPER_OP_NEW_MATRIX_ELEMS_WRONG_NUM_COLS =
         "Incompatible number of columns (${GIVEN_DIM}) in one or more rows of a matrix given to overwrite a ${NUM_QUBITS}-qubit SuperOp, which expects ${EXPECTED_DIM} rows.";
+
+    string SUPER_OP_FIELDS_MISMATCH_PARAMS =
+        "The specified number of qubits (${NUM_PASSED_QUBITS}) differs from the number in the SuperOp (${NUM_OP_QUBITS}).";
         
 
     /*
@@ -436,10 +460,10 @@ namespace report {
 
 
     string NEW_KRAUS_MAPS_SUPER_OP_CANNOT_FIT_INTO_CPU_MEM =
-        "Cannot create a Kraus map of ${NUM_QUBITS} because the total memory required by its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available memory.";
+        "Cannot create a Kraus map of ${NUM_QUBITS} qubits because the total memory required by its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available memory (${RAM_SIZE} bytes).";
         
     string NEW_KRAUS_MAPS_SUPER_OP_CANNOT_FIT_INTO_GPU_MEM =
-        "Cannot create a GPU-accelerated Kraus map of ${NUM_QUBITS} because the total memory required by its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available GPU memory.";
+        "Cannot create a GPU-accelerated Kraus map of ${NUM_QUBITS} qubits because the total memory required by its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) exceeds the available GPU memory (${VRAM_SIZE} bytes).";
 
 
     string NEW_KRAUS_MAPS_SUPER_OP_CPU_ELEMS_ALLOC_FAILED =
@@ -452,6 +476,16 @@ namespace report {
         "Failed to allocate memory (a total of ${NUM_BYTES} bytes) for the KrausMap's ${NUM_MATRICES} ${NUM_QUBITS}-qubit Kraus operator matrices.";
 
 
+    string NEW_INLINE_KRAUS_MAP_INCOMPATIBLE_NUM_NEW_MATRICES =
+        "Specified ${NUM_EXPECTED} Kraus operators, but passed ${NUM_GIVEN} matrices.";
+
+    string NEW_INLINE_KRAUS_MAP_MATRIX_WRONG_NUM_ROWS =
+        "Specified ${NUM_QUBITS} qubits, but one or more passed matrices have ${NUM_GIVEN_ROWS} rows instead of the expected ${NUM_EXPECTED_ROWS}.";
+
+    string NEW_INLINE_KRAUS_MAP_MATRIX_WRONG_NUM_COLS =
+        "The number of given columns (${NUM_GIVEN_COLS}) in one or more matrices was inconsistent with the specified number of qubits (${NUM_QUBITS}). Every Kraus operator must be specified as a ${NUM_EXPECTED_COLS}x${NUM_EXPECTED_COLS} matrix.";
+
+    
     /*
      * KRAUS MAP INITIALISATION
      */
@@ -468,6 +502,9 @@ namespace report {
 
     string KRAUS_MAP_NEW_MATRIX_ELEMS_WRONG_ROW_DIM =
         "One or more of the given matrices had a matrix dimension (${NUM_GIVEN_COLS} columns) incompatible with the given Kraus map of ${NUM_QUBITS} qubits, which expects matrices with ${NUM_EXPECTED_COLS} columns.";
+
+    string KRAUS_MAP_FIELDS_MISMATCH_PARAMS =
+        "The specified number of Kraus operators (${NUM_PASSED_OPS}) and qubits (${NUM_PASSED_QUBITS}) differs from the number in the KrausMap (respectively ${NUM_MAP_OPS} and ${NUM_MAP_QUBITS}).";
 
 
     /*
@@ -521,6 +558,9 @@ namespace report {
     // TODO: replace BAD_CHAR ascii code with actual character, once tokenSubs is generalised to any-type
     string NEW_PAULI_STR_UNRECOGNISED_PAULI_CHAR = 
         "Given an unrecognised Pauli character (ASCII code ${BAD_CHAR}) at index ${CHAR_IND}. Each character must be one of I X Y Z (or lower case), or equivalently 0 1 2 3'.";
+
+    string NEW_PAULI_STR_INVALID_PAULI_CODE =
+        "Given an invalid Pauli code (${BAD_CODE}) at index ${CODE_IND}. Each code must be one of 0 1 2 3, corresponding respectively to I X Y Z.";
 
     string NEW_PAULI_STR_TERMINATION_CHAR_TOO_EARLY =
         "The given string contained fewer characters (${TERM_IND}) than the specified number of Pauli operators (${NUM_PAULIS}).";
@@ -578,6 +618,10 @@ namespace report {
 
     string INVALID_PAULI_STR_HEAP_PTR =
         "One or more of the PauliStrumSum's heap pointers was unexpectedly NULL. This might imply the PauliStrSum was already destroyed and had its pointers manually overwritten by the user.";
+
+    
+    string PAULI_STR_SUM_NOT_HERMITIAN =
+        "THe given PauliStrSum is not Hermitian.";
 
 
     /*
@@ -650,14 +694,35 @@ extern "C" {
 
 static bool isValidationEnabled = true;
 
-void validate_enable() {
+void validateconfig_enable() {
     isValidationEnabled = true;
 }
-void validate_disable() {
+void validateconfig_disable() {
     isValidationEnabled = false;
 }
-bool validate_isEnabled() {
+bool validateconfig_isEnabled() {
     return isValidationEnabled;
+}
+
+
+
+/*
+ * VALIDATION PRECISION
+ *
+ * which influences how strict unitarity, 
+ * Hermiticity and CPTP checks are performed
+ */
+
+static qreal validationEpsilon = DEAULT_VALIDATION_EPSILON;
+
+void validateconfig_setEpsilon(qreal eps) {
+    validationEpsilon = eps;
+}
+void validateconfig_setEpsilonToDefault() {
+    validationEpsilon = DEAULT_VALIDATION_EPSILON;
+}
+qreal validateconfig_getEpsilon() {
+    return validationEpsilon;
 }
 
 
@@ -862,7 +927,12 @@ void validate_envIsInit(const char* caller) {
  * DEBUG UTILITIES
  */
 
-void validate_numReportedItems(qindex num, const char* caller) {
+void validate_newEpsilonValue(qreal eps, const char* caller) {
+
+    assertThat(eps >= 0, report::INVALID_NEW_EPSILON, {{"${NEW_EPS}", eps}}, caller);
+}
+
+void validate_newNumReportedItems(qindex num, const char* caller) {
 
     assertThat(num >= 0, report::INVALID_NUM_REPORTED_ITEMS, {{"${NUM_ITEMS}", num}}, caller);
 }
@@ -1385,6 +1455,7 @@ void assertNewMatrixAllocsSucceeded(T matr, qindex numBytes, const char* caller)
     // assert the teeny-tiny heap flags are alloc'd
     vars["${NUM_BYTES}"] = sizeof(*(matr.isUnitary));
     assertAllNodesAgreeThat(mem_isAllocated(matr.isUnitary),    report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+    assertAllNodesAgreeThat(mem_isAllocated(matr.isHermitian),  report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
     assertAllNodesAgreeThat(mem_isAllocated(matr.wasGpuSynced), report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
 }
 
@@ -1480,6 +1551,24 @@ void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd,
         vars, caller);
 }
 
+void validate_matrixNumQubitsMatchesParam(int numMatrQubits, int numSetterQubits, const char* caller) {
+
+    tokenSubs vars = {
+        {"${NUM_SETTER_QUBITS}", numSetterQubits},
+        {"${NUM_MATRIX_QUBITS}", numMatrQubits}};
+
+    assertThat(numMatrQubits == numSetterQubits, report::MATR_NUM_QUBITS_MISMATCHES_INLINE_SETTER, vars, caller);
+}
+
+void validate_declaredNumElemsMatchesVectorLength(qindex numElems, qindex vecLength, const char* caller) {
+
+    tokenSubs vars = {
+        {"${NUM_ELEMS}", numElems},
+        {"${VEC_LENGTH}", vecLength}};
+
+    assertThat(numElems == vecLength, report::MATR_NUM_ELEMS_MISMATCHES_VEC_LENGTH_IN_INLINE_SETTER, vars, caller);
+}
+
 
 
 /*
@@ -1492,12 +1581,18 @@ void assertAdditionalHeapMatrixFieldsAreValid(T matr, const char* caller) {
 
     // assert heap pointers are not NULL
     assertThat(mem_isAllocated(matr.isUnitary),    report::INVALID_HEAP_FLAG_PTR, caller);
+    assertThat(mem_isAllocated(matr.isHermitian),  report::INVALID_HEAP_FLAG_PTR, caller);
     assertThat(mem_isAllocated(matr.wasGpuSynced), report::INVALID_HEAP_FLAG_PTR, caller);
 
     tokenSubs vars = {{"${BAD_FLAG}", 0}, {"${UNKNOWN_FLAG}", validate_STRUCT_PROPERTY_UNKNOWN_FLAG}};
 
     // assert isUnitary has valid value
     int flag = *matr.isUnitary;
+    vars["${BAD_FLAG}"] = flag;
+    assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
+
+    // assert isHermitian has valid value
+    flag = *matr.isHermitian;
     vars["${BAD_FLAG}"] = flag;
     assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
 
@@ -1563,6 +1658,16 @@ void assertMatrixIsSynced(T matr, string errMsg, const char* caller) {
     assertThat(*(matr.wasGpuSynced) == 1, errMsg, caller);
 }
 
+void validate_matrixIsSynced(CompMatr matr, const char* caller) {
+    assertMatrixIsSynced(matr, report::COMP_MATR_NOT_SYNCED_TO_GPU, caller);
+}
+void validate_matrixIsSynced(DiagMatr matr, const char* caller) {
+    assertMatrixIsSynced(matr, report::DIAG_MATR_NOT_SYNCED_TO_GPU, caller);
+}
+void validate_matrixIsSynced(FullStateDiagMatr matr, const char* caller) {
+    assertMatrixIsSynced(matr, report::FULL_STATE_DIAG_MATR_NOT_SYNCED_TO_GPU, caller);
+}
+
 // type T can be CompMatr, DiagMatr, FullStateDiagMatr
 template <class T> 
 void ensureMatrixUnitarityIsKnown(T matr) {
@@ -1571,13 +1676,9 @@ void ensureMatrixUnitarityIsKnown(T matr) {
     if (*(matr.isUnitary) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
         return;
 
-    // determine local unitarity, modifying matr.isUnitary
-    *(matr.isUnitary) = util_isUnitary(matr);
-
-    // get node consensus on global unitarity, if necessary
-    if constexpr (util_isDistributableMatrixType<T>())
-        if (matr.isDistributed)
-            *(matr.isUnitary) = comm_isTrueOnAllNodes(*(matr.isUnitary));
+    // determine local unitarity, modifying matr.isUnitary. This will
+    // involve MPI communication if matr is a distributed type
+    *(matr.isUnitary) = util_isUnitary(matr, validationEpsilon);
 }
 
 // type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
@@ -1593,7 +1694,7 @@ void assertMatrixIsUnitary(T matr, const char* caller) {
 
     // fixed-size matrices have their unitarity calculated afresh (since cheap)
     if constexpr (util_isFixedSizeMatrixType<T>())
-        isUnitary = util_isUnitary(matr);
+        isUnitary = util_isUnitary(matr, validationEpsilon);
 
     // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
     else {
@@ -1602,16 +1703,6 @@ void assertMatrixIsUnitary(T matr, const char* caller) {
     }
 
     assertThat(isUnitary, report::MATRIX_NOT_UNITARY, caller);
-}
-
-void validate_matrixIsSynced(CompMatr matr, const char* caller) {
-    assertMatrixIsSynced(matr, report::COMP_MATR_NOT_SYNCED_TO_GPU, caller);
-}
-void validate_matrixIsSynced(DiagMatr matr, const char* caller) {
-    assertMatrixIsSynced(matr, report::DIAG_MATR_NOT_SYNCED_TO_GPU, caller);
-}
-void validate_matrixIsSynced(FullStateDiagMatr matr, const char* caller) {
-    assertMatrixIsSynced(matr, report::FULL_STATE_DIAG_MATR_NOT_SYNCED_TO_GPU, caller);
 }
 
 void validate_matrixIsUnitary(CompMatr1 matr, const char* caller) {
@@ -1644,6 +1735,74 @@ void validate_matrixIsUnitary(FullStateDiagMatr matr, const char* caller) {
     validate_matrixIsSynced(matr, caller);
     validate_matrixFields(matr, caller);
     assertMatrixIsUnitary(matr, caller);
+}
+
+// type T can be CompMatr, DiagMatr, FullStateDiagMatr
+template <class T> 
+void ensureMatrHermiticityIsKnown(T matr) {
+
+    // do nothing if we already know hermiticity
+    if (*(matr.isHermitian) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        return;
+
+    // determine local unitarity, modifying matr.isHermitian
+    *(matr.isHermitian) = util_isHermitian(matr, validationEpsilon);
+}
+
+// type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
+template <class T> 
+void assertMatrixIsHermitian(T matr, const char* caller) {
+
+    // avoid expensive unitarity check if validation is anyway disabled
+    if (!isValidationEnabled)
+        return;
+
+    // unitarity is determined differently depending on matrix type
+    bool isHermitian = false;
+
+    // fixed-size matrices have their hermiticity calculated afresh (since cheap)
+    if constexpr (util_isFixedSizeMatrixType<T>())
+        isHermitian = util_isHermitian(matr, validationEpsilon);
+
+    // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
+    else {
+        ensureMatrHermiticityIsKnown(matr);
+        isHermitian = *(matr.isHermitian);
+    }
+
+    assertThat(isHermitian, report::MATRIX_NOT_HERMITIAN, caller);
+}
+
+void validate_matrixIsHermitian(CompMatr1 matr, const char* caller) {
+    validate_matrixFields(matr, caller);
+    assertMatrixIsHermitian(matr, caller);
+}
+void validate_matrixIsHermitian(CompMatr2 matr, const char* caller) {
+    validate_matrixFields(matr, caller);
+    assertMatrixIsHermitian(matr, caller);
+}
+void validate_matrixIsHermitian(CompMatr matr, const char* caller) {
+    validate_matrixFields(matr, caller);
+    validate_matrixIsSynced(matr, caller);
+    assertMatrixIsHermitian(matr, caller);
+}
+void validate_matrixIsHermitian(DiagMatr1 matr, const char* caller) {
+    validate_matrixFields(matr, caller);
+    assertMatrixIsHermitian(matr, caller);
+}
+void validate_matrixIsHermitian(DiagMatr2 matr, const char* caller) {
+    validate_matrixFields(matr, caller);
+    assertMatrixIsHermitian(matr, caller);
+}
+void validate_matrixIsHermitian(DiagMatr matr, const char* caller) {
+    validate_matrixFields(matr, caller);
+    validate_matrixIsSynced(matr, caller);
+    assertMatrixIsHermitian(matr, caller);
+}
+void validate_matrixIsHermitian(FullStateDiagMatr matr, const char* caller) {
+    validate_matrixIsSynced(matr, caller);
+    validate_matrixFields(matr, caller);
+    assertMatrixIsHermitian(matr, caller);
 }
 
 void validate_matrixIsCompatibleWithQureg(FullStateDiagMatr matr, Qureg qureg, const char* caller) {
@@ -1817,6 +1976,29 @@ void validate_newSuperOpAllocs(SuperOp op, const char* caller) {
     assertNewSuperOpAllocs(op, isInKrausMap, caller);
 }
 
+void validate_newInlineSuperOpDimMatchesVectors(int numDeclaredQubits, vector<vector<qcomp>> matrix, const char* caller) {
+
+    // avoid potentially expensive matrix enumeration if validation is anyway disabled
+    if (!isValidationEnabled)
+        return;
+
+    qindex numDeclaredRows = powerOf2(2*numDeclaredQubits);
+    tokenSubs vars = {
+        {"${NUM_DECLARED_QUBITS}", numDeclaredQubits},
+        {"${NUM_DECLARED_ROWS}",   numDeclaredRows},
+        {"${GIVEN_DIM}",           matrix.size()}};
+
+    // assert the given matrix has the correct number of rows
+    assertThat(numDeclaredRows == (qindex) matrix.size(), report::NEW_INLINE_SUPER_OP_MATRIX_WRONG_NUM_ROWS, vars, caller);
+
+    // and that each row has the correct length
+    for (qindex r=0; r<numDeclaredRows; r++) {
+        qindex numGivenCols = matrix[r].size();
+        vars["${GIVEN_DIM}"] = numGivenCols;
+        assertThat(numDeclaredRows == numGivenCols, report::NEW_INLINE_SUPER_OP_MATRIX_WRONG_NUM_COLS, vars, caller);
+    }
+}
+
 
 
 /*
@@ -1830,9 +2012,9 @@ void validate_superOpNewMatrixDims(SuperOp op, vector<vector<qcomp>> matrix, con
         return;
 
     tokenSubs vars = {
-        {"${NUM_QUBITS}", op.numQubits},
+        {"${NUM_QUBITS}",   op.numQubits},
         {"${EXPECTED_DIM}", op.numRows},
-        {"${GIVEN_DIM}", matrix.size()}};
+        {"${GIVEN_DIM}",    matrix.size()}};
 
     // assert the matrix has the correct number of rows
     assertThat(op.numRows == (qindex) matrix.size(), report::SUPER_OP_NEW_MATRIX_ELEMS_WRONG_NUM_ROWS, vars, caller);
@@ -1843,6 +2025,15 @@ void validate_superOpNewMatrixDims(SuperOp op, vector<vector<qcomp>> matrix, con
         vars["${GIVEN_DIM}"] = numCols;
         assertThat(op.numRows == numCols, report::SUPER_OP_NEW_MATRIX_ELEMS_WRONG_NUM_COLS, vars, caller);
     }
+}
+
+void validate_superOpFieldsMatchPassedParams(SuperOp op, int numQb, const char* caller) {
+
+    tokenSubs vars = {
+        {"${NUM_PASSED_QUBITS}", numQb},
+        {"${NUM_OP_QUBITS}",     op.numQubits}};
+
+    assertThat(op.numQubits == numQb, report::SUPER_OP_FIELDS_MISMATCH_PARAMS, vars, caller);
 }
 
 
@@ -1982,6 +2173,31 @@ void validate_newKrausMapAllocs(KrausMap map, const char* caller) {
     assertNewSuperOpAllocs(map.superop, isInKrausMap, caller);
 }
 
+void validate_newInlineKrausMapDimMatchesVectors(int numQubits, int numOperators, vector<vector<vector<qcomp>>> matrices, const char* caller) {
+
+    // avoid potentially expensive matrix enumeration if validation is anyway disabled
+    if (!isValidationEnabled)
+        return;
+
+    qindex numRows = powerOf2(numQubits);
+    
+    assertThat(numOperators == (int) matrices.size(), report::NEW_INLINE_KRAUS_MAP_INCOMPATIBLE_NUM_NEW_MATRICES,
+        {{"${NUM_GIVEN}", matrices.size()}, {"${NUM_EXPECTED}", numOperators}}, caller);
+
+    // check each given matrix...
+    for (int i=0; i<numOperators; i++) {
+        
+        // has a correct number of rows
+        assertThat(numRows == (qindex) matrices[i].size(), report::NEW_INLINE_KRAUS_MAP_MATRIX_WRONG_NUM_ROWS, 
+            {{"${NUM_QUBITS}", numQubits}, {"${NUM_EXPECTED_ROWS}", numRows}, {"${NUM_GIVEN_ROWS}", matrices[i].size()}}, caller);
+
+        // and that each row has a correct number of elements/columns
+        for (qindex r=0; r<numRows; r++)
+            assertThat(numRows == (qindex) matrices[i][r].size(), report::NEW_INLINE_KRAUS_MAP_MATRIX_WRONG_NUM_COLS,
+                {{"${NUM_QUBITS}", numQubits}, {"${NUM_EXPECTED_COLS}", numRows}, {"${NUM_GIVEN_COLS}", matrices[i][r].size()}}, caller);
+    }
+}
+
 
 
 /*
@@ -2009,6 +2225,18 @@ void validate_krausMapNewMatrixDims(KrausMap map, vector<vector<vector<qcomp>>> 
             assertThat(map.numRows == (qindex) matrices[i][r].size(), report::KRAUS_MAP_NEW_MATRIX_ELEMS_WRONG_ROW_DIM,
                 {{"${NUM_QUBITS}", map.numQubits}, {"${NUM_EXPECTED_COLS}", map.numRows}, {"${NUM_GIVEN_COLS}", matrices[i][r].size()}}, caller);
     }
+}
+
+void validate_krausMapFieldsMatchPassedParams(KrausMap map, int numQb, int numOps, const char* caller) {
+
+    tokenSubs vars = {
+        {"${NUM_MAP_QUBITS}",    map.numQubits},
+        {"${NUM_MAP_OPS}",       map.numMatrices},
+        {"${NUM_PASSED_QUBITS}", numQb},
+        {"${NUM_PASSED_OPS}",    numOps}};
+
+    bool valid = (map.numQubits == numQb) && (map.numMatrices == numOps);
+    assertThat(valid, report::KRAUS_MAP_FIELDS_MISMATCH_PARAMS, vars, caller);
 }
 
 
@@ -2070,7 +2298,7 @@ void validate_krausMapIsCPTP(KrausMap map, const char* caller) {
 
     // evaluate CPTPness if it isn't already known 
     if (*(map.isCPTP) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        *(map.isCPTP) = util_isCPTP(map);
+        *(map.isCPTP) = util_isCPTP(map, validationEpsilon);
 
     assertThat(*(map.isCPTP), report::KRAUS_MAP_NOT_CPTP, caller);
 }
@@ -2131,6 +2359,18 @@ void assertRecognisedNewPaulis(const char* paulis, int numPaulis, const char* ca
     }
 }
 
+void assertValidNewPauliCodes(int* paulis, int numPaulis, const char* caller) {
+
+    for (int i=0; i<numPaulis; i++) {
+        int code = paulis[i];
+
+        assertThat(
+            code>=0 && code<=3, 
+            report::NEW_PAULI_STR_INVALID_PAULI_CODE, 
+            {{"${BAD_CODE}", code}, {"${CODE_IND}", i}}, caller);
+    }
+}
+
 void assertValidNewPauliIndices(int* indices, int numInds, int maxIndExcl, const char* caller) {
 
     // check each index is valid
@@ -2156,16 +2396,15 @@ void validate_newPauliStrNumPaulis(int numPaulis, int maxNumPaulis, const char* 
 
 void validate_newPauliStrParams(const char* paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller) {
 
-    // note we do not bother checking whether RAM has enough memory to contain
-    // the new Pauli string, because the caller to this function has already
-    // been passed data of the same size (and it's unlikely the user is about
-    // to max RAM), and the memory requirements scale only linearly with the
-    // parameters (e.g. numTerms), unlike the exponential scaling of the memory
-    // of Qureg and CompMatr, for example
-
     validate_newPauliStrNumPaulis(numPaulis, maxNumPaulis, caller);
     assertCorrectNumPauliCharsBeforeTerminationChar(paulis, numPaulis, caller);
     assertRecognisedNewPaulis(paulis, numPaulis, caller);
+    assertValidNewPauliIndices(indices, numPaulis, maxNumPaulis, caller);
+}
+void validate_newPauliStrParams(int* paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller) {
+
+    validate_newPauliStrNumPaulis(numPaulis, maxNumPaulis, caller);
+    assertValidNewPauliCodes(paulis, numPaulis, caller);
     assertValidNewPauliIndices(indices, numPaulis, maxNumPaulis, caller);
 }
 
@@ -2185,6 +2424,13 @@ void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* cal
 
 void validate_newPauliStrSumParams(qindex numTerms, const char* caller) {
 
+    // note we do not bother checking whether RAM has enough memory to contain
+    // the new Pauli sum, because the caller to this function has already
+    // been passed data of the same size (and it's unlikely the user is about
+    // to max RAM), and the memory requirements scale only linearly with the
+    // parameters (e.g. numTerms), unlike the exponential scaling of the memory
+    // of Qureg and CompMatr, for example
+
     assertThat(numTerms > 0, report::NEW_PAULI_STR_SUM_NON_POSITIVE_NUM_STRINGS, {{"${NUM_TERMS}", numTerms}}, caller);
 }
 
@@ -2203,6 +2449,10 @@ void validate_newPauliStrSumAllocs(PauliStrSum sum, qindex numBytesStrings, qind
     assertThat(
         mem_isAllocated(sum.coeffs), report::NEW_PAULI_STR_SUM_COEFFS_ALLOC_FAILED, 
         {{"${NUM_TERMS}", sum.numTerms}, {"${NUM_BYTES}", numBytesCoeffs}}, caller);
+
+    assertThat(
+        mem_isAllocated(sum.isHermitian), report::NEW_HEAP_FLAG_ALLOC_FAILED, 
+        {{"${NUM_BYTES}", sizeof(*(sum.isHermitian))}}, caller);
 }
 
 
@@ -2255,6 +2505,24 @@ void validate_pauliStrSumFields(PauliStrSum sum, const char* caller) {
 
     assertThat(mem_isAllocated(sum.coeffs),  report::INVALID_PAULI_STR_HEAP_PTR, caller);
     assertThat(mem_isAllocated(sum.strings), report::INVALID_PAULI_STR_HEAP_PTR, caller);
+
+    assertThat(mem_isAllocated(sum.isHermitian), report::INVALID_HEAP_FLAG_PTR, caller);
+
+    // assert isHermitian has valid value
+    int flag = *sum.isHermitian;
+    tokenSubs vars = {
+        {"${BAD_FLAG}", flag}, 
+        {"${UNKNOWN_FLAG}", validate_STRUCT_PROPERTY_UNKNOWN_FLAG}};
+    assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
+}
+
+void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
+
+    // ensure hermiticity is known (if not; compute it)
+    if (*(sum.isHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        *(sum.isHermitian) = util_isHermitian(sum, validationEpsilon);
+
+    assertThat(*(sum.isHermitian), report::PAULI_STR_SUM_NOT_HERMITIAN, caller);
 }
 
 

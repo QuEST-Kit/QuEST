@@ -33,11 +33,23 @@ const int validate_STRUCT_PROPERTY_UNKNOWN_FLAG = -1;
  * VALIDATION TOGGLE
  */
 
-void validate_enable();
+void validateconfig_enable();
 
-void validate_disable();
+void validateconfig_disable();
 
-bool validate_isEnabled();
+bool validateconfig_isEnabled();
+
+
+
+/*
+ * VALIDATION PRECISION
+ */
+
+void validateconfig_setEpsilon(qreal eps);
+
+void validateconfig_setEpsilonToDefault();
+
+qreal validateconfig_getEpsilon();
 
 
 
@@ -67,7 +79,9 @@ void validate_envIsInit(const char* caller);
  * DEBUG UTILITIES
  */
 
-void validate_numReportedItems(qindex num, const char* caller);
+void validate_newEpsilonValue(qreal eps, const char* caller);
+
+void validate_newNumReportedItems(qindex num, const char* caller);
 
 
 
@@ -114,6 +128,9 @@ void validate_matrixNumNewElems(int numQubits, vector<qcomp> elems, const char* 
 
 void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd, qindex numElems, const char* caller);
 
+void validate_matrixNumQubitsMatchesParam(int numMatrQubits, int numSetterQubits, const char* caller);
+void validate_declaredNumElemsMatchesVectorLength(qindex numElems, qindex vecLength, const char* caller);
+
 
 
 /*
@@ -140,6 +157,14 @@ void validate_matrixIsUnitary(DiagMatr2 matr, const char* caller);
 void validate_matrixIsUnitary(DiagMatr  matr, const char* caller);
 void validate_matrixIsUnitary(FullStateDiagMatr matr, const char* caller);
 
+void validate_matrixIsHermitian(CompMatr1 matr, const char* caller);
+void validate_matrixIsHermitian(CompMatr2 matr, const char* caller);
+void validate_matrixIsHermitian(CompMatr  matr, const char* caller);
+void validate_matrixIsHermitian(DiagMatr1 matr, const char* caller);
+void validate_matrixIsHermitian(DiagMatr2 matr, const char* caller);
+void validate_matrixIsHermitian(DiagMatr  matr, const char* caller);
+void validate_matrixIsHermitian(FullStateDiagMatr matr, const char* caller);
+
 void validate_matrixIsCompatibleWithQureg(FullStateDiagMatr matr, Qureg qureg, const char* caller);
 
 
@@ -152,6 +177,8 @@ void validate_newSuperOpParams(int numQubits, const char* caller);
 
 void validate_newSuperOpAllocs(SuperOp op, const char* caller);
 
+void validate_newInlineSuperOpDimMatchesVectors(int numDeclaredQubits, vector<vector<qcomp>> matrix, const char* caller);
+
 
 
 /*
@@ -159,6 +186,8 @@ void validate_newSuperOpAllocs(SuperOp op, const char* caller);
  */
 
 void validate_superOpNewMatrixDims(SuperOp op, vector<vector<qcomp>> matrix, const char* caller);
+
+void validate_superOpFieldsMatchPassedParams(SuperOp op, int numQb, const char* caller);
 
 
 
@@ -180,6 +209,8 @@ void validate_newKrausMapParams(int numQubits, int numMatrices, const char* call
 
 void validate_newKrausMapAllocs(KrausMap map, const char* caller);
 
+void validate_newInlineKrausMapDimMatchesVectors(int numQubits, int numOperators, vector<vector<vector<qcomp>>> matrices, const char* caller);
+
 
 
 /*
@@ -187,6 +218,8 @@ void validate_newKrausMapAllocs(KrausMap map, const char* caller);
  */
 
 void validate_krausMapNewMatrixDims(KrausMap map, vector<vector<vector<qcomp>>> matrices, const char* caller);
+
+void validate_krausMapFieldsMatchPassedParams(KrausMap map, int numQb, int numOps, const char* caller);
 
 
 
@@ -215,6 +248,7 @@ void validate_initClassicalStateIndex(Qureg qureg, qindex ind, const char* calle
  */
 
 void validate_newPauliStrParams(const char* paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller);
+void validate_newPauliStrParams(int*        paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller);
 
 void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* caller); // called by C++ only
 
@@ -247,6 +281,8 @@ void validate_parsedStringIsNotEmpty(bool stringIsNotEmpty, const char* caller);
  */
 
 void validate_pauliStrSumFields(PauliStrSum sum, const char* caller);
+
+void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller);
 
 
 

@@ -18,6 +18,14 @@ using std::string;
 
 
 /*
+ * DEVELOPMENT ERRORS
+ */
+
+void error_functionNotImplemented(const char* caller);
+
+
+
+/*
  * VALIDATION ERRORS
  */
 

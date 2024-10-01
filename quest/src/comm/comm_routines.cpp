@@ -439,6 +439,18 @@ void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps)
 }
 
 
+void comm_broadcastUnsignedsFromRoot(unsigned* arr, qindex length) {
+#if COMPILE_MPI
+
+    int sendRank = 0;
+    MPI_Bcast(arr, length, MPI_UNSIGNED, sendRank, MPI_COMM_WORLD);
+
+#else
+    error_commButEnvNotDistributed();
+#endif
+}
+
+
 
 /*
  * PUBLIC REDUCTION METHODS

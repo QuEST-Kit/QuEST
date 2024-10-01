@@ -7,6 +7,7 @@
 
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
+#include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 #include "quest/include/channels.h"
 
@@ -200,13 +201,35 @@ void util_setConj(DiagMatr matrix);
  * MATRIX UNITARITY
  */
 
-bool util_isUnitary(CompMatr1 matrix);
-bool util_isUnitary(CompMatr2 matrix);
-bool util_isUnitary(CompMatr matrix);
-bool util_isUnitary(DiagMatr1 matrix);
-bool util_isUnitary(DiagMatr2 matrix);
-bool util_isUnitary(DiagMatr matrix);
-bool util_isUnitary(FullStateDiagMatr matrix);
+bool util_isUnitary(CompMatr1 matrix, qreal epsilon);
+bool util_isUnitary(CompMatr2 matrix, qreal epsilon);
+bool util_isUnitary(CompMatr  matrix, qreal epsilon);
+bool util_isUnitary(DiagMatr1 matrix, qreal epsilon);
+bool util_isUnitary(DiagMatr2 matrix, qreal epsilon);
+bool util_isUnitary(DiagMatr  matrix, qreal epsilon);
+bool util_isUnitary(FullStateDiagMatr matrix, qreal epsilon);
+
+
+
+/*
+ * MATRIX HERMITICITY
+ */
+
+bool util_isHermitian(CompMatr1 matrix, qreal epsilon);
+bool util_isHermitian(CompMatr2 matrix, qreal epsilon);
+bool util_isHermitian(CompMatr  matrix, qreal epsilon);
+bool util_isHermitian(DiagMatr1 matrix, qreal epsilon);
+bool util_isHermitian(DiagMatr2 matrix, qreal epsilon);
+bool util_isHermitian(DiagMatr  matrix, qreal epsilon);
+bool util_isHermitian(FullStateDiagMatr matrix, qreal epsilon);
+
+
+
+/*
+ * PAULI STR SUM HERMITICITY
+ */
+
+bool util_isHermitian(PauliStrSum sum, qreal epsilon);
 
 
 
@@ -214,7 +237,7 @@ bool util_isUnitary(FullStateDiagMatr matrix);
  * KRAUS MAPS AND SUPEROPERATORS
  */
 
-bool util_isCPTP(KrausMap map);
+bool util_isCPTP(KrausMap map, qreal epsilon);
 
 void util_setSuperoperator(qcomp** superop, vector<vector<vector<qcomp>>> matrices, int numMatrices, int numQubits);
 void util_setSuperoperator(qcomp** superop, qcomp*** matrices, int numMatrices, int numQubits);

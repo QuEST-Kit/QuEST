@@ -43,6 +43,8 @@ void comm_receiveArrayToBuffer(Qureg qureg, qindex numElems, int pairRank);
 
 void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps);
 
+void comm_broadcastUnsignedsFromRoot(unsigned* arr, qindex length);
+
 
 
 /*

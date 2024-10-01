@@ -110,6 +110,7 @@ CORE_FILES=(
     "memory"
     "parser"
     "printer"
+    "randomiser"
     "utilities"
     "validation"
 )

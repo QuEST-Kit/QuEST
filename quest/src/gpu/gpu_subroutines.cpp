@@ -284,7 +284,7 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_anyCtrlOneTargDense
  */
 
 
-template <int NumCtrls, int NumTargs>
+template <int NumCtrls, int NumTargs, bool ApplyConj>
 void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
@@ -292,7 +292,18 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
 
 #if COMPILE_CUQUANTUM
 
-    cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(qureg, ctrls, ctrlStates, targs, toCuQcomps(util_getGpuMemPtr(matr)));
+    auto matrElemsPtr = toCuQcomps(util_getGpuMemPtr(matr));
+    auto matrElemsLen = powerOf2(2 * targs.size());
+
+    // conjugate every matrix element if necessary (cuStateVec cannot conj for us; only adjoint)
+    if (ApplyConj)
+        thrust_setElemsToConjugate(matrElemsPtr, matrElemsLen);
+
+    cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(qureg, ctrls, ctrlStates, targs, matrElemsPtr);
+
+    // undo conjugation (which is only not done if cuQuantum encounters a non-recoverable internal error)
+    if (ApplyConj)
+        thrust_setElemsToConjugate(matrElemsPtr, matrElemsLen);
 
 #elif COMPILE_CUDA
 
@@ -305,7 +316,7 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     
     qcomp* cache = gpu_getCacheOfSize(powerOf2(targs.size()), numThreads);
 
-    kernel_statevec_anyCtrlAnyTargDenseMatr_sub <NumCtrls, NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_anyCtrlAnyTargDenseMatr_sub <NumCtrls, NumTargs, ApplyConj> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), toCuQcomps(cache), numThreads,
         getPtr(deviceQubits), ctrls.size(), qubitStateMask, getPtr(deviceTargs), targs.size(),
         toCuQcomps(util_getGpuMemPtr(matr))
@@ -317,7 +328,7 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevec_anyCtrlAnyTargDenseMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, CompMatr) )
+INSTANTIATE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevec_anyCtrlAnyTargDenseMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, CompMatr) )
 
 
 
@@ -326,7 +337,7 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevec_anyCtrlAn
  */
 
 
-template <int NumCtrls, int NumTargs>
+template <int NumCtrls, int NumTargs, bool ApplyConj>
 void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
@@ -334,7 +345,18 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
 #if COMPILE_CUQUANTUM
 
-    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, toCuQcomps(util_getGpuMemPtr(matr)));
+    auto matrElemsPtr = toCuQcomps(util_getGpuMemPtr(matr));
+    auto matrElemsLen = powerOf2(targs.size());
+
+    // conjugate every matrix element if necessary (cuStateVec cannot conj for us; only adjoint)
+    if (ApplyConj)
+        thrust_setElemsToConjugate(matrElemsPtr, matrElemsLen);
+
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, matrElemsPtr);
+
+    // undo conjugation (which is only not done if cuQuantum encounters a non-recoverable internal error)
+    if (ApplyConj)
+        thrust_setElemsToConjugate(matrElemsPtr, matrElemsLen);
 
 #elif COMPILE_CUDA
 
@@ -345,7 +367,7 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     devicevec deviceCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
 
-    kernel_statevec_anyCtrlAnyTargDiagMatr_sub <NumCtrls, NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_anyCtrlAnyTargDiagMatr_sub <NumCtrls, NumTargs, ApplyConj> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
         getPtr(deviceCtrls), ctrls.size(), ctrlStateMask, getPtr(deviceTargs), targs.size(), 
         toCuQcomps(util_getGpuMemPtr(matr))
@@ -357,7 +379,7 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevec_anyCtrlAnyTargDiagMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, DiagMatr) )
+INSTANTIATE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevec_anyCtrlAnyTargDiagMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, DiagMatr) )
 
 
 

@@ -4,6 +4,7 @@
 
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
+#include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 #include "quest/include/channels.h"
 
@@ -199,9 +200,13 @@ void util_setConj(DiagMatr matrix) {
 
 // type T can be qcomp** or qcomp*[]
 template <typename T>
-bool isUnitary(T elems, qindex dim) {
+bool isUnitary(T elems, qindex dim, qreal eps) {
 
-    qreal epsSq = VALIDATION_EPSILON * VALIDATION_EPSILON;
+    // skip expensive unitarity check if eps is infinite (encoded by 0)
+    if (eps == 0)
+        return true;
+
+    qreal epsSq = eps * eps;
 
     // check m * dagger(m) == identity
     for (qindex r=0; r<dim; r++) {
@@ -214,8 +219,8 @@ bool isUnitary(T elems, qindex dim) {
 
             // check if further than epsilon from identity[r,c]
             qcomp dif = elem - qcomp(r == c, 0);
-            qreal dist = real(dif)*real(dif) + imag(dif)*imag(dif);
-            if (dist > epsSq)
+            qreal distSq = norm(dif);
+            if (distSq > epsSq)
                 return false;
         }
     }
@@ -224,45 +229,49 @@ bool isUnitary(T elems, qindex dim) {
 }
 
 // diagonal version doesn't need templating because array decays to pointer, yay!
-bool isUnitary(qcomp* diags, qindex dim) {
+bool isUnitary(qcomp* diags, qindex dim, qreal eps) {
+
+    // skip expensive unitarity check if eps is infinite (encoded by 0)
+    if (eps == 0)
+        return true;
 
     // check every element has unit magnitude
     for (qindex i=0; i<dim; i++) {
         qreal mag = std::abs(diags[i]);
         qreal dif = std::abs(1 - mag);
 
-        if (dif > VALIDATION_EPSILON)
+        if (dif > eps)
             return false;
     }
 
     return true;
 }
 
-bool util_isUnitary(CompMatr1 matrix) {
-    return isUnitary(matrix.elems, matrix.numRows);
+bool util_isUnitary(CompMatr1 matrix, qreal eps) {
+    return isUnitary(matrix.elems, matrix.numRows, eps);
 }
-bool util_isUnitary(CompMatr2 matrix) {
-    return isUnitary(matrix.elems, matrix.numRows);
+bool util_isUnitary(CompMatr2 matrix, qreal eps) {
+    return isUnitary(matrix.elems, matrix.numRows, eps);
 }
-bool util_isUnitary(CompMatr matrix) {
-    return isUnitary(matrix.cpuElems, matrix.numRows);
-}
-
-bool util_isUnitary(DiagMatr1 matrix) {
-    return isUnitary(matrix.elems, matrix.numElems);
-}
-bool util_isUnitary(DiagMatr2 matrix) {
-    return isUnitary(matrix.elems, matrix.numElems);
-}
-bool util_isUnitary(DiagMatr matrix) {
-    return isUnitary(matrix.cpuElems, matrix.numElems);
+bool util_isUnitary(CompMatr matrix, qreal eps) {
+    return isUnitary(matrix.cpuElems, matrix.numRows, eps);
 }
 
-bool util_isUnitary(FullStateDiagMatr matrix) {
+bool util_isUnitary(DiagMatr1 matrix, qreal eps) {
+    return isUnitary(matrix.elems, matrix.numElems, eps);
+}
+bool util_isUnitary(DiagMatr2 matrix, qreal eps) {
+    return isUnitary(matrix.elems, matrix.numElems, eps);
+}
+bool util_isUnitary(DiagMatr matrix, qreal eps) {
+    return isUnitary(matrix.cpuElems, matrix.numElems, eps);
+}
+
+bool util_isUnitary(FullStateDiagMatr matrix, qreal eps) {
 
     // we must check all node's sub-diagonals satisfy unitarity
-    bool res = isUnitary(matrix.cpuElems, matrix.numElems);
-    if (comm_isInit())
+    bool res = isUnitary(matrix.cpuElems, matrix.numElems, eps);
+    if (matrix.isDistributed)
         res = comm_isTrueOnAllNodes(res);
 
     return res;
@@ -271,12 +280,103 @@ bool util_isUnitary(FullStateDiagMatr matrix) {
 
 
 /*
+ * MATRIX HERMITICITY
+ */
+
+// type T can be qcomp** or qcomp*[]
+template <typename T>
+bool isHermitian(T elems, qindex dim, qreal eps) {
+
+    // skip expensive Hermiticity check if eps is infinite (encoded by 0)
+    if (eps == 0)
+        return true;
+
+    qreal epsSq = eps * eps;
+
+    // check adj(elems) == elems
+    for (qindex r=0; r<dim; r++) {
+        for (qindex c=0; c<r; c++) {
+
+            qcomp dif = elems[r][c] - conj(elems[c][r]);
+            qreal distSq = norm(dif);
+            if (distSq > epsSq)
+                return false;
+        }
+    }
+
+    return true;
+}
+
+// diagonal version doesn't need templating because array decays to pointer, yay!
+bool isHermitian(qcomp* diags, qindex dim, qreal eps) {
+
+    // skip expensive Hermiticity check if eps is infinite (encoded by 0)
+    if (eps == 0)
+        return true;
+
+    // check every element has a zero (or <eps) imaginary component
+    for (qindex i=0; i<dim; i++)
+        if (std::abs(imag(diags[i])) > eps)
+        return false;
+
+    return true;
+}
+
+bool util_isHermitian(CompMatr1 matrix, qreal eps) {
+    return isHermitian(matrix.elems, matrix.numRows, eps);
+}
+bool util_isHermitian(CompMatr2 matrix, qreal eps) {
+    return isHermitian(matrix.elems, matrix.numRows, eps);
+}
+bool util_isHermitian(CompMatr matrix, qreal eps) {
+    return isHermitian(matrix.cpuElems, matrix.numRows, eps);
+}
+
+bool util_isHermitian(DiagMatr1 matrix, qreal eps) {
+    return isHermitian(matrix.elems, matrix.numElems, eps);
+}
+bool util_isHermitian(DiagMatr2 matrix, qreal eps) {
+    return isHermitian(matrix.elems, matrix.numElems, eps);
+}
+bool util_isHermitian(DiagMatr matrix, qreal eps) {
+    return isHermitian(matrix.cpuElems, matrix.numElems, eps);
+}
+
+bool util_isHermitian(FullStateDiagMatr matrix, qreal eps) {
+
+    // we must check all node's sub-diagonals satisfy unitarity
+    bool res = isHermitian(matrix.cpuElems, matrix.numElems, eps);
+    if (matrix.isDistributed)
+        res = comm_isTrueOnAllNodes(res);
+
+    return res;
+}
+
+
+
+/*
+ * PAULI STR SUM HERMITICITY
+ */
+
+bool util_isHermitian(PauliStrSum sum, qreal eps) {
+
+    // check whether all coefficients are real (just like a diagonal matrix)
+    return isHermitian(sum.coeffs, sum.numTerms, eps);
+}
+
+
+
+/*
  * KRAUS MAPS
  */
 
-bool util_isCPTP(KrausMap map) {
+bool util_isCPTP(KrausMap map, qreal eps) {
 
-    qreal epsSquared = VALIDATION_EPSILON * VALIDATION_EPSILON;
+    // skip expensive CPTP check if eps is infinite (encoded by 0)
+    if (eps == 0)
+        return true;
+
+    qreal epsSquared = eps * eps;
 
     // each whether each element satisfies Identity = sum dagger(m)*m
     for (qindex r=0; r<map.numRows; r++) {
