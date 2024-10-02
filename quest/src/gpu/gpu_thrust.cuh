@@ -22,7 +22,7 @@
 void thrust_setElemsToConjugate(cu_qcomp* matrElemsPtr, qindex matrElemsLen) {
 
     // TODO
-    error_functionNotImplemented();
+    error_functionNotImplemented(__func__);
 }
 
 

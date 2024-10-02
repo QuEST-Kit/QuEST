@@ -64,8 +64,6 @@ refactor your code to v4, and should absolutely not continue to use the old v3 A
 
 #else
 
-    #define _EFFECT_PRAGMA(cmd) _Pragma(#cmd)
-
     #define _WARN_TYPE_RENAMED(oldname, newname) \
         _EFFECT_PRAGMA(message( \
             "The QuEST type '" oldname "' is deprecated. " \
@@ -85,6 +83,8 @@ refactor your code to v4, and should absolutely not continue to use the old v3 A
         _EFFECT_PRAGMA(message(msg))
 
 #endif
+
+#define _EFFECT_PRAGMA(cmd) _Pragma(#cmd)
 
 
 
@@ -807,19 +807,19 @@ static inline QuESTEnv _createQuESTEnv() {
 
 #define copyStateToGPU(...) \
     _WARN_FUNC_RENAMED("copyStateToGPU()", "syncQuregToGpu()") \
-    syncQuregToGpu()
+    syncQuregToGpu(__VA_ARGS__)
 
 #define copyStateFromGPU(...) \
     _WARN_FUNC_RENAMED("copyStateFromGPU()", "syncQuregFromGpu()") \
-    syncQuregFromGpu()
+    syncQuregFromGpu(__VA_ARGS__)
 
 #define copySubstateToGPU(...) \
     _WARN_FUNC_RENAMED("copySubstateToGPU()", "syncSubQuregToGpu()") \
-    syncSubQuregToGpu()
+    syncSubQuregToGpu(__VA_ARGS__)
 
 #define copySubstateFromGPU(...) \
     _WARN_FUNC_RENAMED("copySubstateFromGPU()", "syncSubQuregFromGpu()") \
-    syncSubQuregFromGpu()
+    syncSubQuregFromGpu(__VA_ARGS__)
 
 
 

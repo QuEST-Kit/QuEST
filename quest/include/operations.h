@@ -336,7 +336,7 @@ int applyQubitMeasurement(Qureg qureg, int target);
 
 int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability);
 
-void applyForcedQubitMeasurement(Qureg qureg, int target, int outcome);
+qreal applyForcedQubitMeasurement(Qureg qureg, int target, int outcome);
 
 void applyQubitProjector(Qureg qureg, int target, int outcome);
 
