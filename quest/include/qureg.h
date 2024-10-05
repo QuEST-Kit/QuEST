@@ -17,25 +17,25 @@ extern "C" {
 typedef struct {
 
     // deployment configuration
-    const int isMultithreaded;
-    const int isGpuAccelerated;
-    const int isDistributed;
+    int isMultithreaded;
+    int isGpuAccelerated;
+    int isDistributed;
 
     // distributed configuration
-    const int rank;
-    const int numNodes;
-    const int logNumNodes;
+    int rank;
+    int numNodes;
+    int logNumNodes;
 
     // dimension
-    const int isDensityMatrix;
-    const int numQubits;
-    const qindex numAmps;
-    const qindex logNumAmps;
+    int isDensityMatrix;
+    int numQubits;
+    qindex numAmps;
+    qindex logNumAmps;
 
     // distributed load
-    const qindex numAmpsPerNode;
-    const qindex logNumAmpsPerNode;
-    const qindex logNumColsPerNode;
+    qindex numAmpsPerNode;
+    qindex logNumAmpsPerNode;
+    qindex logNumColsPerNode;
 
     // amplitudes in CPU and GPU memory
     qcomp* cpuAmps;

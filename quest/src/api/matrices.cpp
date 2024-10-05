@@ -255,11 +255,11 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
 
     FullStateDiagMatr out = {
 
-        // data deployment configuration; disable distrib if deployed to 1 node
-        .isDistributed = useDistrib && (env.numNodes > 1),
-
         .numQubits = numQubits,
         .numElems = numElems,
+
+        // data deployment configuration; disable distrib if deployed to 1 node
+        .isDistributed = useDistrib && (env.numNodes > 1),
         .numElemsPerNode = numElemsPerNode,
 
         // allocate flags in the heap so that struct copies are mutable

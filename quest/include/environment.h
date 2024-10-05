@@ -11,33 +11,25 @@ extern "C" {
 #endif
 
 
+
 /*
  * QuESTEnv is a struct of which there will be a single, immutable
  * main instance, statically instantiated inside environment.cpp,
  * accessible anywhere via a getter, and which is consulted for
  * determining the deployment configuration. Users can obtain a
  * local copy of this struct with getQuESTEnv().
- * 
- * QuESTEnv is not declared const, because it is impossible to 
- * runtime initialise a const global variable like a singleton.
- * A shame, but this poses no risk; the internal singleton is not 
- * obtainable nor modifiable outside of environment.cpp since its 
- * getter returns a copy. 
  */
-
 
 typedef struct {
 
     // deployment mode
-    const int isMultithreaded;
-    const int isGpuAccelerated;
-    const int isDistributed;
+    int isMultithreaded;
+    int isGpuAccelerated;
+    int isDistributed;
 
     // distributed configuration
-    const int rank;
-    const int numNodes;
-
-    // TODO: RNG seeds
+    int rank;
+    int numNodes;
 
 } QuESTEnv;
 
