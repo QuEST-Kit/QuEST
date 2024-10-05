@@ -30,9 +30,8 @@
 
 typedef struct {
 
-    // fields are const to prevent user modification
-    const int numQubits;
-    const qindex numRows;
+    int numQubits;
+    qindex numRows;
     
     qcomp** cpuElems;
     qcomp* gpuElemsFlat;
@@ -42,20 +41,19 @@ typedef struct {
     // syncCompMatr() after manual modification of the cpuElem. Note this can only indicate whether
     // the matrix has EVER been synced; it cannot be used to detect whether manual modifications
     // made after an initial sync have been re-synched. This is a heap pointer to remain mutable.
-    int* const wasGpuSynced;
+    int* wasGpuSynced;
 
 } SuperOp;
 
 
 typedef struct {
 
-    // fields are const to prevent user modification
-    const int numQubits;
+    int numQubits;
 
     // representation of the map as a collection of Kraus operators, kept exclusively 
     // in CPU memory, and used only for CPTP validation and reporting the map
-    const qindex numMatrices;
-    const qindex numRows;
+    qindex numMatrices;
+    qindex numRows;
     qcomp*** matrices;
 
     // representation of the map as a single superoperator, used for simulation
@@ -63,7 +61,7 @@ typedef struct {
 
     // CPTP-ness is determined at validation; 0 or 1, or -1 to indicate unknown. The flag is 
     // stored in heap so even copies of structs are mutable, but pointer itself is immutable.
-    int* const isCPTP;
+    int* isCPTP;
 
 } KrausMap;
 
