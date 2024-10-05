@@ -25,5 +25,10 @@
 #include "quest/include/wrappers.h"
 
 
+#if INCLUDE_DEPRECATED_FUNCTIONS
+    #include "quest/include/deprecated.h"
+#endif
+
+
 
 #endif // QUEST_H

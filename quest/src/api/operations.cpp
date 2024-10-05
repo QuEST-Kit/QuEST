@@ -414,19 +414,23 @@ void applySuperOp(Qureg qureg, SuperOp superop) {
 int applyQubitMeasurement(Qureg qureg, int target) {
 
     // // TODO
-    // error_functionNotImplemented(__func__);
+    error_functionNotImplemented(__func__);
     return -1;
 }
 
 int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability) {
 
     // // TODO
-    // error_functionNotImplemented(__func__);
+    error_functionNotImplemented(__func__);
     return -1;
 }
 
-void applyForcedQubitMeasurement(Qureg qureg, int target, int outcome)
-    _NOT_IMPLEMENTED_ERROR_DEF
+qreal applyForcedQubitMeasurement(Qureg qureg, int target, int outcome) {
+
+    // // TODO
+    error_functionNotImplemented(__func__);
+    return -1;
+}
 
 void applyQubitProjector(Qureg qureg, int target, int outcome)
     _NOT_IMPLEMENTED_ERROR_DEF
