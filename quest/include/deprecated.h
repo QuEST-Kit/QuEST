@@ -254,7 +254,7 @@ enum pauliOpType {PAULI_I=0, PAULI_X=1, PAULI_Y=2, PAULI_Z=3};
         "The QuEST enum '" #enum "' is deprecated, although has been defined in the deprecation header for convenience. " \
         "Please instead use integer " #intcode " or characters '" #char1 "', '" #char2 "', '" #char3 "'.") \
 
-typedef pauliOpType _NoWarnPauliOpType;
+typedef enum pauliOpType _NoWarnPauliOpType;
 
 #define pauliOpType \
     _WARN_GENERAL_MSG("The QuEST type 'enum pauliOpType' is deprecated, although it is still defined in the deprecation header for convenience.") \
