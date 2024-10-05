@@ -51,7 +51,6 @@ refactor your code to v4, and should absolutely not continue to use the old v3 A
  * function depends on control-flow params like a for-loop index. Yuck!
  */
 
-
 #if DISABLE_DEPRECATION_WARNINGS
 
     #define _WARN_TYPE_RENAMED(oldname, newname)
@@ -103,35 +102,47 @@ refactor your code to v4, and should absolutely not continue to use the old v3 A
 // referring to an undefined symbol. Ew!
 
 
-#define _ERROR_FUNC_RENAMED(oldname, newfunc) \
-    _EFFECT_PRAGMA(message( \
-        "The QuEST function '" oldname "' is deprecated. " \
-        "Please instead use '" newfunc "' which could not here be automatically invoked.")) \
-    _FORCING_UNKNOWN_SYMBOL_ERROR_TO_STOP_COMPILATION
-    
-
-#define _ERROR_FUNC_REMOVED(oldname) \
-    _EFFECT_PRAGMA(message( \
-        "The QuEST function '" oldname "' is deprecated, and has no replacement.")) \
-    _FORCING_UNKNOWN_SYMBOL_ERROR_TO_STOP_COMPILATION
-
-
-#define _ERROR_PREPROCESSOR_RENAMED(oldname, newname) \
-    _EFFECT_PRAGMA(message( \
-        "The QuEST preprocessor '" oldname "' is deprecated. " \
-        "Please instead use '" newname "' which could not here be automatically invoked.")) \
-    _FORCING_UNKNOWN_SYMBOL_ERROR_TO_STOP_COMPILATION
-
-
-#define _ERROR_PREPROCESSOR_REMOVED(oldname) \
-    _EFFECT_PRAGMA(message( \
-        "The QuEST preprocessor '" oldname "' is deprecated, and has no replacement.")) \
+#define _FORCE_COMPILATION_TO_FAIL() \
     _FORCING_UNKNOWN_SYMBOL_ERROR_TO_STOP_COMPILATION
 
 
 #define _ERROR_GENERAL_MSG(msg) \
     _EFFECT_PRAGMA(message(msg)) \
-    _FORCING_UNKNOWN_SYMBOL_ERROR_TO_STOP_COMPILATION
+    _FORCE_COMPILATION_TO_FAIL()
+
+
+#define _ERROR_FUNC_RENAMED(oldname, newfunc) \
+    _ERROR_GENERAL_MSG( \
+        "The QuEST function '" oldname "' is deprecated. " \
+        "Please instead use '" newfunc "' which could not here be automatically invoked.") \
+    _FORCE_COMPILATION_TO_FAIL()
+    
+
+#define _ERROR_FUNC_REMOVED(oldname) \
+    _ERROR_GENERAL_MSG( \
+        "The QuEST function '" oldname "' is deprecated, and has no replacement.") \
+    _FORCE_COMPILATION_TO_FAIL()
+
+
+#define _ERROR_PREPROCESSOR_RENAMED(oldname, newname) \
+    _ERROR_GENERAL_MSG( \
+        "The QuEST preprocessor '" oldname "' is deprecated. " \
+        "Please instead use '" newname "' which could not here be automatically invoked.") \
+    _FORCE_COMPILATION_TO_FAIL()
+
+
+#define _ERROR_PREPROCESSOR_REMOVED(oldname) \
+    _ERROR_GENERAL_MSG( \
+        "The QuEST preprocessor '" oldname "' is deprecated, and has no replacement.") \
+    _FORCE_COMPILATION_TO_FAIL()
+
+
+#define _ERROR_PHASE_FUNC_REMOVED(oldname) \
+    _ERROR_GENERAL_MSG( \
+        "The QuEST function '" oldname "' is deprecated. Please instead create a 'DiagMatr' or 'FullStateDiagMatr', initialise it " \
+        "via functions' setDiagMatrFromMultiVarFunc()' or 'setDiagMatrFromMultiDimArray()', and apply it via 'applyDiagMatr() or " \
+        "'applyFullStateDiagMatr()'. This procedure cannot be automatically performed here." ) \
+    _FORCE_COMPILATION_TO_FAIL()
 
 
 
@@ -224,7 +235,7 @@ typedef ComplexMatrix4 _NoWarnComplexMatrix4;
         {qcomp(m.real[1][0], m.imag[1][0]), qcomp(m.real[1][1], m.imag[1][1])}}) 
 
 #define _GET_COMP_MATR_2_FROM_COMPLEX_MATRIX_4(m) \
-    getCompMatr1( (qcomp[4][4]) { \
+    getCompMatr2( (qcomp[4][4]) { \
         {qcomp(m.real[0][0], m.imag[0][0]), qcomp(m.real[0][1], m.imag[0][1]), qcomp(m.real[0][2], m.imag[0][2]), qcomp(m.real[0][3], m.imag[0][3])}, \
         {qcomp(m.real[1][0], m.imag[1][0]), qcomp(m.real[1][1], m.imag[1][1]), qcomp(m.real[1][2], m.imag[1][2]), qcomp(m.real[1][3], m.imag[1][3])}, \
         {qcomp(m.real[2][0], m.imag[2][0]), qcomp(m.real[2][1], m.imag[2][1]), qcomp(m.real[2][2], m.imag[2][2]), qcomp(m.real[2][3], m.imag[2][3])}, \
@@ -242,6 +253,8 @@ enum pauliOpType {PAULI_I=0, PAULI_X=1, PAULI_Y=2, PAULI_Z=3};
     _WARN_GENERAL_MSG( \
         "The QuEST enum '" #enum "' is deprecated, although has been defined in the deprecation header for convenience. " \
         "Please instead use integer " #intcode " or characters '" #char1 "', '" #char2 "', '" #char3 "'.") \
+
+typedef pauliOpType _NoWarnPauliOpType;
 
 #define pauliOpType \
     _WARN_GENERAL_MSG("The QuEST type 'enum pauliOpType' is deprecated, although it is still defined in the deprecation header for convenience.") \
@@ -306,14 +319,32 @@ enum pauliOpType {PAULI_I=0, PAULI_X=1, PAULI_Y=2, PAULI_Z=3};
     struct { qreal x; qreal y; qreal z; }
 
 
+#define phaseFunc \
+    _ERROR_GENERAL_MSG( \
+        "The QuEST type 'enum phaseFunc' is deprecated. The functions which replace the 'applyPhaseFunc' family, such as " \
+        "'setDiagMatrFromMultiVarFunc()' and 'setDiagMatrFromMultiDimArray()', do not use pre-defined enums." )
+    
+#define bitEncoding \
+    _ERROR_GENERAL_MSG( \
+        "The QuEST type 'enum bitEncoding' is deprecated. The new v4 function 'setDiagMatrFromMultiVarFunc()' instead accepts " \
+        "an int flag to indicate whether (1) or not (0) to interpret the basis state bits under two's complement singed encoding." )
+
+
 
 /*
  * REMOVED FUNCTIONS WITH NO REPLACEMENT
  */
 
 
+#define toComplex(...) \
+    _ERROR_FUNC_REMOVED("toComplex()")
+
+#define fromComplex(...) \
+    _ERROR_FUNC_REMOVED("fromComplex()")
+
+
 #define applyMultiControlledMatrixN(...) \
-    _ERROR_FUNC_REMOVED("applyMultiControlledMatrixN()")
+    _ERROR_FUNC_REMOVED("applyMultiControlledMatrixN()") // our new multiplyCompMatr doesn't accept controls
 
 
 #define syncQuESTSuccess(...) \
@@ -389,6 +420,38 @@ enum pauliOpType {PAULI_I=0, PAULI_X=1, PAULI_Y=2, PAULI_Z=3};
 
 #define reportState(qureg) \
     _ERROR_FUNC_RENAMED("reportState(qureg)", "reportQuregToFile(qureg, char* fn)")
+
+
+#define getQuESTSeeds(...) \
+    _ERROR_GENERAL_MSG( \
+        "The QuEST function 'getQuESTSeeds(QuESTEnv env, unsigned long int* out, int numOut)' has been deprecated. " \
+        "Please instead use 'getSeeds(unsigned* out)' which accepts a pointer to pre-allocated memory of length " \
+        "equal to that returned by 'getNumSeeds()'. We cannot automatically invoke this replacement routine." )
+
+
+#define applyPhaseFunc(...) \
+    _ERROR_PHASE_FUNC_REMOVED("applyPhaseFunc")
+
+#define applyPhaseFuncOverrides(...) \
+    _ERROR_PHASE_FUNC_REMOVED("applyPhaseFuncOverrides")
+
+#define applyMultiVarPhaseFunc(...) \
+    _ERROR_PHASE_FUNC_REMOVED("applyMultiVarPhaseFunc")
+
+#define applyMultiVarPhaseFuncOverrides(...) \
+    _ERROR_PHASE_FUNC_REMOVED("applyMultiVarPhaseFuncOverrides")
+
+#define applyNamedPhaseFunc(...) \
+    _ERROR_PHASE_FUNC_REMOVED("applyNamedPhaseFunc")
+
+#define applyNamedPhaseFuncOverrides(...) \
+    _ERROR_PHASE_FUNC_REMOVED("applyNamedPhaseFuncOverrides")
+
+#define applyParamNamedPhaseFunc(...) \
+    _ERROR_PHASE_FUNC_REMOVED("applyParamNamedPhaseFunc")
+
+#define applyParamNamedPhaseFuncOverrides(...) \
+    _ERROR_PHASE_FUNC_REMOVED("applyParamNamedPhaseFuncOverrides")
 
 
 
@@ -727,13 +790,23 @@ static inline QuESTEnv _createQuESTEnv() {
     _WARN_FUNC_RENAMED("diagonalUnitary()", "applyDiagMatr()") \
     applyDiagMatr(__VA_ARGS__)
 
-#define applyGateSubDiagonalOp(...) \
-    _WARN_FUNC_RENAMED("applyGateSubDiagonalOp()", "applyNonUnitaryDiagMatr()") \
-    applyNonUnitaryDiagMatr(__VA_ARGS__)
-
 #define applySubDiagonalOp(...) \
     _WARN_FUNC_RENAMED("applySubDiagonalOp()", "multiplyDiagMatr()") \
     multiplyDiagMatr(__VA_ARGS__)
+
+static inline void _applyGateSubDiagonalOp(Qureg qureg, int* targets, int numTargets, DiagMatr op) {
+    qreal eps = getValidationEpsilon();
+    setValidationEpsilon(0);
+    applyDiagMatr(qureg, targets, numTargets, op);
+    setValidationEpsilon(eps);
+}
+#define applyGateSubDiagonalOp(...) \
+    _WARN_GENERAL_MSG( \
+        "The QuEST function 'applyGateSubDiagonalOp()' is deprecated. To achieve the same thing, disable " \
+        "numerical validation via 'setValidationEpsilon(0)' before calling 'applyDiagMatr()'. You can " \
+        "save the existing epsilon via 'getValidationEpsilon()' to thereafter restore. This procedure " \
+        "has been performed here automatically.") \
+    applyDiagMatr(__VA_ARGS__)
 
 
 
@@ -797,11 +870,11 @@ static inline QuESTEnv _createQuESTEnv() {
 
 #define sGate(...) \
     _WARN_FUNC_RENAMED("sGate()", "applyS()") \
-    applyS(__VA_ARGS__);
+    applyS(__VA_ARGS__)
 
 #define tGate(...) \
     _WARN_FUNC_RENAMED("tGate()", "applyT()") \
-    applyT(__VA_ARGS__);
+    applyT(__VA_ARGS__)
 
 
 
@@ -855,27 +928,42 @@ static inline QuESTEnv _createQuESTEnv() {
     _WARN_FUNC_RENAMED("calcDensityInnerProduct()", "calcInnerProduct()") \
     calcInnerProduct(__VA_ARGS__)
 
-#define calcExpecPauliProd(qureg, targs, paulis, numTargs, workspace) \
-    _WARN_FUNC_RENAMED( \
-        "calcExpecPauliProd(qureg, targs, paulis, numTargs, workspace)", \
-        "calcExpecPauliStr(qureg, getPauliStr(paulis, targs, numTargs))") \
-    calcExpecPauliStr(qureg, getPauliStr(paulis, targs, numTargs))
-
 #define calcExpecPauliHamil(qureg, hamil, workspace) \
     _WARN_FUNC_RENAMED("calcExpecPauliHamil(Qureg, PauliHamil, Qureg)", "calcExpecPauliStrSum(Qureg, PauliStrSum)") \
     calcExpecPauliStrSum(qureg, hamil)
 
 
 
-static inline PauliStrSum _createPauliStrSumFromCodes(int numQubits, int* allPauliCodes, qreal* termCoeffs, int numTerms) {
+static inline qreal _calcExpecPauliStr(Qureg qureg, int* targs, _NoWarnPauliOpType* enums, int numTargs) {
+    
+    int codes[100];
+    for (int i=0; i<numTargs && i<100; i++)
+        codes[i] = enums[i];
+    
+    return calcExpecPauliStr(qureg, getPauliStr(codes, targs, numTargs));
+}
+
+#define calcExpecPauliProd(qureg, targs, paulis, numTargs, workspace) \
+    _WARN_FUNC_RENAMED( \
+        "calcExpecPauliProd(qureg, targs, paulis, numTargs, workspace)", \
+        "calcExpecPauliStr(qureg, getPauliStr(paulis, targs, numTargs))") \
+    _calcExpecPauliStr(qureg, targs, paulis, numTargs)
+
+
+
+static inline PauliStrSum _createPauliStrSumFromCodes(int numQubits, _NoWarnPauliOpType* allPauliCodes, qreal* termCoeffs, int numTerms) {
 
     int* targs = (int*) malloc(numQubits * sizeof *targs);
     for (int i=0; i<numQubits; i++)
         targs[i] = i;
 
     PauliStr* strings = (PauliStr*) malloc(numTerms * sizeof *strings);
-    for (int i=0; i<numTerms; i++)
-        strings[i] = getPauliStr(&allPauliCodes[i*numQubits], targs, numQubits);
+    for (int i=0; i<numTerms; i++) {
+        int codes[100];
+        for (int j=0; j<numQubits && j<100; j++)
+            codes[i] = (int) allPauliCodes[i*numQubits+j];
+        strings[i] = getPauliStr(codes, targs, numQubits);
+    }
 
     qcomp* coeffs = (qcomp*) malloc(numTerms * sizeof *coeffs);
     for (int i=0; i<numTerms; i++)
@@ -889,7 +977,7 @@ static inline PauliStrSum _createPauliStrSumFromCodes(int numQubits, int* allPau
     return sum;
 }
 
-static inline qreal _calcExpecPauliSum(Qureg qureg, int* allPauliCodes, qreal* termCoeffs, int numTerms) {
+static inline qreal _calcExpecPauliSum(Qureg qureg, _NoWarnPauliOpType* allPauliCodes, qreal* termCoeffs, int numTerms) {
     PauliStrSum sum = _createPauliStrSumFromCodes(qureg.numQubits, allPauliCodes, termCoeffs, numTerms);
     qreal out = calcExpecPauliStrSum(qureg, sum);
     destroyPauliStrSum(sum);
@@ -900,7 +988,7 @@ static inline qreal _calcExpecPauliSum(Qureg qureg, int* allPauliCodes, qreal* t
     _WARN_FUNC_RENAMED("calcExpecPauliSum(Qureg, ...)", "calcExpecPauliStrSum(Qureg, PauliStrSum)") \
     _calcExpecPauliSum(qureg, paulis, coeffs, numTerms)
 
-static inline void _applyPauliSum(Qureg inQureg, int* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg) {
+static inline void _applyPauliSum(Qureg inQureg, _NoWarnPauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg) {
     PauliStrSum sum = _createPauliStrSumFromCodes(inQureg.numQubits, allPauliCodes, termCoeffs, numSumTerms);
     setQuregToClone(outQureg, inQureg); 
     multiplyPauliStrSum(outQureg, sum);
@@ -988,7 +1076,7 @@ static inline void _applyPauliHamil(Qureg inQureg, PauliStrSum hamil, Qureg outQ
 
 #define applyMatrix4(qureg, targ1, targ2, ...) \
     _WARN_FUNC_RENAMED("applyMatrix4()", "multiplyCompMatr2()") \
-    multiplyCompMatr1(qureg, targ1, targ2, _GET_COMP_MATR_2_FROM_COMPLEX_MATRIX_4(__VA_ARGS__))
+    multiplyCompMatr2(qureg, targ1, targ2, _GET_COMP_MATR_2_FROM_COMPLEX_MATRIX_4(__VA_ARGS__))
 
 #define applyMatrixN(...) \
     _WARN_FUNC_RENAMED("applyMatrixN()", "multiplyCompMatr()") \
@@ -1005,7 +1093,7 @@ static inline void _applyGateMatrixN(Qureg qureg, int* targs, int numTargs, Comp
 
 #define applyGateMatrixN(...) \
     _WARN_GENERAL_MSG( \
-        "The QuEST function 'applyGateMatrixN(t)' is deprecated. To achieve the same thing, disable " \
+        "The QuEST function 'applyGateMatrixN()' is deprecated. To achieve the same thing, disable " \
         "numerical validation via 'setValidationEpsilon(0)' before calling 'applyCompMatr()'. You can " \
         "save the existing epsilon via 'getValidationEpsilon()' to thereafter restore. This procedure " \
         "has been performed here automatically.") \
@@ -1020,7 +1108,7 @@ static inline void _applyMultiControlledGateMatrixN(Qureg qureg, int* ctrls, int
 
 #define applyMultiControlledGateMatrixN(...) \
     _WARN_GENERAL_MSG( \
-        "The QuEST function 'applyMultiControlledGateMatrixN(t)' is deprecated. To achieve the same thing, disable " \
+        "The QuEST function 'applyMultiControlledGateMatrixN()' is deprecated. To achieve the same thing, disable " \
         "numerical validation via 'setValidationEpsilon(0)' before calling 'applyMultiControlledCompMatr()'. You can " \
         "save the existing epsilon via 'getValidationEpsilon()' to thereafter restore. This procedure has been " \
         "performed here automatically.") \
@@ -1072,6 +1160,18 @@ static inline void _applyMultiControlledGateMatrixN(Qureg qureg, int* ctrls, int
         "applyRotateAroundAxis(Qureg, int, qreal, qreal vx, qreal vy, qreal vz)") \
     applyRotateAroundAxis(q, t, a, v.x, v.y, v.z)
 
+#define controlledRotateX(...) \
+    _WARN_FUNC_RENAMED("controlledRotateX()", "applyControlledRotateX()") \
+    applyControlledRotateX(__VA_ARGS__)
+
+#define controlledRotateY(...) \
+    _WARN_FUNC_RENAMED("controlledRotateY()", "applyControlledRotateY()") \
+    applyControlledRotateY(__VA_ARGS__)
+
+#define controlledRotateZ(...) \
+    _WARN_FUNC_RENAMED("controlledRotateZ()", "applyControlledRotateZ()") \
+    applyControlledRotateZ(__VA_ARGS__)
+
 #define controlledRotateAroundAxis(q, c, t, a, v) \
     _WARN_FUNC_RENAMED( \
         "controlledRotateAroundAxis(Qureg, int, int, qreal, Vector)", \
@@ -1098,17 +1198,29 @@ static inline void _applyMultiControlledGateMatrixN(Qureg qureg, int* ctrls, int
     _WARN_FUNC_RENAMED("multiControlledMultiRotateZ()", "applyMultiControlledPhaseGadget()") \
     applyMultiControlledPhaseGadget(__VA_ARGS__)
 
-#define multiRotatePauli(qureg, targs, paulis, numTargs, angle) \
+static inline void _multiRotatePauli(Qureg qureg, int* targs, _NoWarnPauliOpType* enums, int numTargs, qreal angle) {
+    int codes[100];
+    for (int i=0; i<numTargs && i<100; i++)
+        codes[i] = enums[i];
+    applyPauliGadget(qureg, getPauliStr(codes, targs, numTargs), angle);
+}
+#define multiRotatePauli(...) \
     _WARN_FUNC_RENAMED( \
         "multiRotatePauli(qureg, targs, paulis, numTargs, angle)", \
         "applyPauliGadget(qureg, getPauliStr(paulis, targs, numTargs), angle)") \
-    applyPauliGadget(qureg, getPauliStr(paulis, (int*) targs, numTargs), angle)
+    _multiRotatePauli(__VA_ARGS__)
 
-#define multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, angle) \
+static inline void _multiControlledMultiRotatePauli(Qureg qureg, int* ctrls, int numCtrls, int* targs, _NoWarnPauliOpType* enums, int numTargs, qreal angle) {
+    int codes[100];
+    for (int i=0; i<numTargs && i<100; i++)
+        codes[i] = enums[i];
+    applyMultiControlledPauliGadget(qureg, ctrls, numCtrls, getPauliStr(codes, targs, numTargs), angle);
+}
+#define multiControlledMultiRotatePauli(...) \
     _WARN_FUNC_RENAMED( \
         "multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, angle)", \
         "applyMultiControlledPauliGadget(qureg, ctrls, numCtrls, getPauliStr(paulis, targs, numTargs), angle)") \
-    applyMultiControlledPauliGadget(qureg, ctrls, numCtrls, getPauliStr(paulis, (int*) targs, numTargs), angle)
+    _multiControlledMultiRotatePauli(__VA_ARGS__)
 
 #define multiQubitNot(...) \
     _WARN_FUNC_RENAMED("multiQubitNot()", "applyMultiQubitNot()") \
@@ -1162,6 +1274,14 @@ static inline void _applyMultiControlledGateMatrixN(Qureg qureg, int* ctrls, int
     _WARN_FUNC_RENAMED("applyTrotterCircuit(..., PauliHamil, ...)", "applyTrotterizedTimeEvol(..., PauliStrSum, ...)") \
     applyTrotterizedTimeEvol(__VA_ARGS__)
 
+#define applyFullQFT(...) \
+    _WARN_FUNC_RENAMED("applyFullQFT()", "applyFullQuantumFourierTransform()") \
+    applyFullQuantumFourierTransform(__VA_ARGS__)
+
+#define applyQFT(...) \
+    _WARN_FUNC_RENAMED("applyQFT()", "applyQuantumFourierTransform()") \
+    applyQuantumFourierTransform(__VA_ARGS__)
+
 
 
 #define seedQuESTDefault(...) \
@@ -1171,21 +1291,6 @@ static inline void _applyMultiControlledGateMatrixN(Qureg qureg, int* ctrls, int
 #define seedQuEST(env, seeds, numSeeds) \
     _WARN_FUNC_RENAMED("seedQuEST(QuESTEnv, unsigned long int*, int)", "setSeeds(unsigned*, int)") \
     setSeeds(seeds, numSeeds)
-
-#define getQuESTSeeds(...) \
-    _ERROR_GENERAL_MSG( \
-        "The QuEST function 'getQuESTSeeds(QuESTEnv env, unsigned long int* out, int numOut)' has been deprecated. " \
-        "Please instead use 'getSeeds(unsigned* out)' which accepts a pointer to pre-allocated memory of length " \
-        "equal to that returned by 'getNumSeeds()'. We cannot automatically invoke this replacement routine." )
-
-
-
-
-
-
-// PHASE FUNCS
-
-
 
 
 
