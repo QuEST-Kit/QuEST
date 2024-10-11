@@ -62,35 +62,30 @@ typedef INDEX_TYPE qindex;
 
 /*
  * COMPLEX TYPE INSTANTIATION
+ *
+ * which is already elegantly possible in C++ using qcomp(re,im),
+ * but which cannot be extended nicely to C using a macro qcomp(),
+ * because it will break compilation of function signatures which
+ * accept funciton pointers which return qcomp. For example:
+ * myfunc( qcomp (*callback)(int,int) )
+ * So instead, we define a new, ugly 'getQcomp()' helper. Aw! :(
+ * We define it here in the header, inlining directly into user
+ * code, to avoid C & C++ qcomp interoperability issues.
  */
 
-#ifdef __cplusplus
+static inline qcomp getQcomp(qreal re, qreal im) {
 
-    // qcomp() C++ instantiation is already enabled
+    #if defined(__cplusplus)
+        return qcomp(re, im);
 
-#else
-
-    // TODO: below we define macros qcomp(re,im) to spoof
-    // C++'s initializer, but this is an antipattern! It
-    // causes code like qcomp(*)[] (a valid type) to be
-    // attemptedly substituted with the macro at 
-    // pre-processing which fails and throws an error.
-    // This might plague user code, and also forces us to
-    // use smelly type aliasing in matrices.h. Fix this!
-
-    #ifdef _MSC_VER
-
-        // enable qcomp() C instantiation
-        #define qcomp(re,im) = (qcomp) {(re), (im)}
+    #elif defined(_MSC_VER)
+        return (qcomp) {re, im};
 
     #else
-
-        // enable qcomp() C instantiation
-        #define qcomp(re,im) ( (qreal) (re) + I*((qreal) (im)) )
-
+        return re + I*im;
+        
     #endif
-
-#endif
+}
 
 
 

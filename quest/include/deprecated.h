@@ -231,15 +231,15 @@ typedef ComplexMatrix4 _NoWarnComplexMatrix4;
 
 #define _GET_COMP_MATR_1_FROM_COMPLEX_MATRIX_2(m) \
     getCompMatr1( (qcomp[2][2]) { \
-        {qcomp(m.real[0][0], m.imag[0][0]), qcomp(m.real[0][1], m.imag[0][1])}, \
-        {qcomp(m.real[1][0], m.imag[1][0]), qcomp(m.real[1][1], m.imag[1][1])}}) 
+        {getQcomp(m.real[0][0], m.imag[0][0]), getQcomp(m.real[0][1], m.imag[0][1])}, \
+        {getQcomp(m.real[1][0], m.imag[1][0]), getQcomp(m.real[1][1], m.imag[1][1])}}) 
 
 #define _GET_COMP_MATR_2_FROM_COMPLEX_MATRIX_4(m) \
     getCompMatr2( (qcomp[4][4]) { \
-        {qcomp(m.real[0][0], m.imag[0][0]), qcomp(m.real[0][1], m.imag[0][1]), qcomp(m.real[0][2], m.imag[0][2]), qcomp(m.real[0][3], m.imag[0][3])}, \
-        {qcomp(m.real[1][0], m.imag[1][0]), qcomp(m.real[1][1], m.imag[1][1]), qcomp(m.real[1][2], m.imag[1][2]), qcomp(m.real[1][3], m.imag[1][3])}, \
-        {qcomp(m.real[2][0], m.imag[2][0]), qcomp(m.real[2][1], m.imag[2][1]), qcomp(m.real[2][2], m.imag[2][2]), qcomp(m.real[2][3], m.imag[2][3])}, \
-        {qcomp(m.real[3][0], m.imag[3][0]), qcomp(m.real[3][1], m.imag[3][1]), qcomp(m.real[3][2], m.imag[3][2]), qcomp(m.real[3][3], m.imag[3][3])}})
+        {getQcomp(m.real[0][0], m.imag[0][0]), getQcomp(m.real[0][1], m.imag[0][1]), getQcomp(m.real[0][2], m.imag[0][2]), getQcomp(m.real[0][3], m.imag[0][3])}, \
+        {getQcomp(m.real[1][0], m.imag[1][0]), getQcomp(m.real[1][1], m.imag[1][1]), getQcomp(m.real[1][2], m.imag[1][2]), getQcomp(m.real[1][3], m.imag[1][3])}, \
+        {getQcomp(m.real[2][0], m.imag[2][0]), getQcomp(m.real[2][1], m.imag[2][1]), getQcomp(m.real[2][2], m.imag[2][2]), getQcomp(m.real[2][3], m.imag[2][3])}, \
+        {getQcomp(m.real[3][0], m.imag[3][0]), getQcomp(m.real[3][1], m.imag[3][1]), getQcomp(m.real[3][2], m.imag[3][2]), getQcomp(m.real[3][3], m.imag[3][3])}})
 
 
 
@@ -284,7 +284,7 @@ typedef enum pauliOpType _NoWarnPauliOpType;
 
 
 #define _GET_QCOMP_FROM_COMPLEX_STRUCT(x) \
-    qcomp((x).real, (x).imag)
+    getQcomp((x).real, (x).imag)
 
 #define Complex \
     _WARN_GENERAL_MSG( \
@@ -592,7 +592,7 @@ typedef enum pauliOpType _NoWarnPauliOpType;
         for (int r=0; r<dim; r++) { \
             ptrs[n][r] = (qcomp*) malloc(dim * sizeof ***ptrs); \
             for (int c=0; c<dim; c++) \
-                ptrs[n][r][c] = qcomp(ops[n].real[r][c], ops[n].imag[r][c]); \
+                ptrs[n][r][c] = getQcomp(ops[n].real[r][c], ops[n].imag[r][c]); \
         } \
     } \
     \
@@ -840,9 +840,9 @@ static inline void _applyGateSubDiagonalOp(Qureg qureg, int* targets, int numTar
         "'setQuregToSuperposition(fOut,qOut, f1,q1, f2,q2)' which has been automatically invoked. Beware " \
         "that the order of the arguments has changed, so that the first supplied Qureg is modified." ) \
     setQuregToSuperposition( \
-        qcomp(fOut.real, fOut.imag), qOut, \
-        qcomp(f1.real, f1.imag), q1, \
-        qcomp(f2.real, f2.imag), q2)
+        getQcomp(fOut.real, fOut.imag), qOut, \
+        getQcomp(f1.real, f1.imag), q1, \
+        getQcomp(f2.real, f2.imag), q2)
 
 
 
