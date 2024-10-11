@@ -238,7 +238,7 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
-    // each control qubit halves the needed iterations
+    // each control qubit halves the needed iterations, and each iteration modifies one amplitude
     qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     
     // received amplitudes may begin at an arbitrary offset in the buffer
@@ -266,6 +266,53 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
 
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDenseMatr_subA, (Qureg, vector<int>, vector<int>, int, CompMatr1) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDenseMatr_subB, (Qureg, vector<int>, vector<int>, qcomp, qcomp) )
+
+
+
+/*
+ * TWO-TARGET DENSE MATRIX
+ */
+
+
+template <int NumCtrls> 
+void cpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, CompMatr2 matr) {
+
+    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
+
+    // each control qubit halves the needed iterations, and each iteration modifies four amplitudes
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size() + 2);
+
+    auto sortedQubits   = util_getSorted(ctrls, {targ1, targ2});
+    auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ1, targ2}, {0, 0});
+
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    int numQubitBits = numCtrlBits + 2;
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i0 = nth local index where ctrl bits are in specified states and both targs are 0
+        qindex i00 = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitStateMask);
+        qindex i01 = flipBit(i00, targ1);
+        qindex i10 = flipBit(i00, targ2);
+        qindex i11 = flipBit(i01, targ2);
+
+        // note amplitudes are not necessarily adjacent, nor uniformly spaced
+        qcomp amp00 = qureg.cpuAmps[i00];
+        qcomp amp01 = qureg.cpuAmps[i01];
+        qcomp amp10 = qureg.cpuAmps[i10];
+        qcomp amp11 = qureg.cpuAmps[i11];
+
+        // amps[i_n] = sum_j elems[n][j] amp[i_n]
+        qureg.cpuAmps[i00] = matr.elems[0][0]*amp00 + matr.elems[0][1]*amp01 + matr.elems[0][2]*amp10 + matr.elems[0][3]*amp11;
+        qureg.cpuAmps[i01] = matr.elems[1][0]*amp00 + matr.elems[1][1]*amp01 + matr.elems[1][2]*amp10 + matr.elems[1][3]*amp11;
+        qureg.cpuAmps[i10] = matr.elems[2][0]*amp00 + matr.elems[2][1]*amp01 + matr.elems[2][2]*amp10 + matr.elems[2][3]*amp11;
+        qureg.cpuAmps[i11] = matr.elems[3][0]*amp00 + matr.elems[3][1]*amp01 + matr.elems[3][2]*amp10 + matr.elems[3][3]*amp11;
+    }
+}
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlTwoTargDenseMatr_sub, (Qureg, vector<int>, vector<int>, int, int, CompMatr2) )
 
 
 
@@ -357,6 +404,82 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
 
 
 INSTANTIATE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevec_anyCtrlAnyTargDenseMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, CompMatr) )
+
+
+
+/*
+ * ONE-TARG DIAGONAL MATRIX
+ */
+
+
+template <int NumCtrls>
+void cpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr) {
+
+    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
+
+    // each control qubit halves the needed iterations, each of which will modify 1 amplitude
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
+
+    auto sortedCtrls   = util_getSorted(ctrls);
+    auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
+
+    // use template params to compile-time unroll loops in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // j = nth local index where ctrls are active (in the specified states)
+        qindex j = insertBitsWithMaskedValues(n, sortedCtrls.data(), numCtrlBits, ctrlStateMask);
+
+        // i = global index corresponding to j
+        qindex i = concatenateBits(qureg.rank, j, qureg.logNumAmpsPerNode);
+
+        int b = getBit(i, targ);
+        qureg.cpuAmps[i] *= matr.elems[b];
+    }
+}
+
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDiagMatr_sub, (Qureg, vector<int>, vector<int>, int, DiagMatr1) )
+
+
+
+/*
+ * TWO-TARG DIAGONAL MATRIX
+ */
+
+
+template <int NumCtrls>
+void cpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, DiagMatr2 matr) {
+
+    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
+
+    // each control qubit halves the needed iterations, each of which will modify 1 amplitude
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
+
+    auto sortedCtrls   = util_getSorted(ctrls);
+    auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
+
+    // use template params to compile-time unroll loops in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // j = nth local index where ctrls are active (in the specified states)
+        qindex j = insertBitsWithMaskedValues(n, sortedCtrls.data(), numCtrlBits, ctrlStateMask);
+
+        // i = global index corresponding to j
+        qindex i = concatenateBits(qureg.rank, j, qureg.logNumAmpsPerNode);
+
+        int k = getTwoBits(i, targ2, targ1);
+        qureg.cpuAmps[i] *= matr.elems[k];
+    }
+}
+
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlTwoTargDiagMatr_sub, (Qureg, vector<int>, vector<int>, int, int, DiagMatr2) )
 
 
 

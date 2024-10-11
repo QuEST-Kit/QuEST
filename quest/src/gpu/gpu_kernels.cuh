@@ -219,6 +219,46 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
 
 
 /*
+ * TWO-TARGET DENSE MATRIX
+ */
+
+
+template <int NumCtrls>
+__global__ void kernel_statevec_anyCtrlTwoTargDenseMatr_sub(
+    cu_qcomp* amps, qindex numThreads, 
+    int* ctrlsAndTarg, int numCtrls, qindex ctrlStateMask, int targ1, int targ2,
+    cu_qcomp m00, cu_qcomp m01, cu_qcomp m02, cu_qcomp m03,
+    cu_qcomp m10, cu_qcomp m11, cu_qcomp m12, cu_qcomp m13,
+    cu_qcomp m20, cu_qcomp m21, cu_qcomp m22, cu_qcomp m23,
+    cu_qcomp m30, cu_qcomp m31, cu_qcomp m32, cu_qcomp m33
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+
+    // i00 = nth local index where ctrls are active and both targs are 0
+    qindex i00 = insertBitsWithMaskedValues(n, ctrlsAndTarg, numCtrlBits + 2, ctrlStateMask);
+    qindex i01 = flipBit(i00, targ1);
+    qindex i10 = flipBit(i00, targ2);
+    qindex i11 = flipBit(i01, targ2);
+
+    // note amps00 and amps01 are strided by 2^targ1, and amps00 and amps10 are strided by 2^targ2
+    cu_qcomp amp00 = amps[i00];
+    cu_qcomp amp01 = amps[i01];
+    cu_qcomp amp10 = amps[i10];
+    cu_qcomp amp11 = amps[i11];
+
+    // amps[i_n] = sum_j elems[n][j] amp[i_n]
+    amps[i00] = m00*amp00 + m01*amp01 + m02*amp10 + m03*amp11;
+    amps[i01] = m10*amp00 + m11*amp01 + m12*amp10 + m13*amp11;
+    amps[i10] = m20*amp00 + m21*amp01 + m22*amp10 + m23*amp11;
+    amps[i11] = m30*amp00 + m31*amp01 + m32*amp10 + m33*amp11;
+}
+
+
+
+/*
  * ANY-TARGET DENSE MATRIX
  */
 
@@ -286,6 +326,64 @@ __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
             amps[i] += elem * cache[j];
         }
     }
+}
+
+
+
+/*
+ * ONE-TARG DIAGONAL MATRIX
+ */
+
+
+template <int NumCtrls>
+__global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
+    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
+    int* ctrls, int numCtrls, qindex ctrlStateMask, int targ1, 
+    cu_qcomp m1, cu_qcomp m2
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // use template params to compile-time unroll loops in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+
+    // j = nth local index where ctrls are active (in the specified states)
+    qindex j = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, ctrlStateMask);
+
+    // i = global index corresponding to j
+    qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
+
+    int b = getBit(i, targ);
+    amps[i] *= m1 + b * (m2 - m1);
+}
+
+
+
+/*
+ * TWO-TARG DIAGONAL MATRIX
+ */
+
+
+template <int NumCtrls>
+__global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
+    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
+    int* ctrls, int numCtrls, qindex ctrlStateMask, int targ1, int targ2,
+    cu_qcomp m1, cu_qcomp m2, cu_qcomp m3, cu_qcomp m4
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // use template params to compile-time unroll loops in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+
+    // j = nth local index where ctrls are active (in the specified states)
+    qindex j = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, ctrlStateMask);
+
+    // i = global index corresponding to j
+    qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
+
+    // k = local elem index
+    int k = getTwoBits(i, targ2, targ1);
+    cu_qcomp elems[] = {m1, m2, m3, m4};
+    amps[i] *= elems[k];
 }
 
 
