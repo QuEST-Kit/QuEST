@@ -320,13 +320,10 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
     //   defining the _getCompMatr1FromArr() inner functions to avoid exposing them.
     // - our Generics explicitly check for pointer types (qcomp**), but we use default 
     //   to catch all array types (qcomp[][n], or qcomp(*)[] due to automatic Generic 
-    //   pointer decay in GCC). This avoids us using qcomp(*)[] in the macro which
-    //   would get expanded into our qcomp(re,im) macro and become invalid Generic
-    //   syntax, unless we use a qcomp alias macro (which is gross). It also makes 
-    //   the code more consistent with our variable-size CompMatr macros later in this 
-    //   file, which cannot use VLA in Generics at all. And finally, it avoids the user
-    //   having to see a Generic compilation error message when they pass an invalid
-    //   type. 
+    //   pointer decay in GCC). This makes the code more consistent with our variable-size 
+    //   CompMatr macros later in this  file, which cannot use VLA in Generics at all. It
+    //   also avoids the user having to see a Generic compilation error message when they 
+    //   pass an invalid type. 
     // - Generic expansion does not recurse, hence our macro safely has the same name
     //   (e.g. getCompMatr1) as the inner function, defining a true overload 
     // - we could not have _Generic's 'default' to catch unrecognised types at compile
@@ -692,6 +689,15 @@ extern "C" {
     void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, PauliStrSum in);
 
     FullStateDiagMatr createFullStateDiagMatrFromPauliStrSumFile(char* fn);
+
+    
+    void setDiagMatrFromMultiVarFunc(DiagMatr out, qcomp (*func)(qindex*), int* numQubitsPerVar, int numVars, int areSigned);
+
+    void setDiagMatrFromMultiDimLists(DiagMatr out, void* lists, int* numQubitsPerDim, int numDims);
+
+    void setFullStateDiagMatrFromMultiVarFunc(FullStateDiagMatr out, qcomp (*func)(qindex*), int* numQubitsPerVar, int numVars, int areSigned);
+
+    void setFullStateDiagMatrFromMultiDimLists(FullStateDiagMatr out, void* lists, int* numQubitsPerDim, int numDims);
 
 #ifdef __cplusplus
 }

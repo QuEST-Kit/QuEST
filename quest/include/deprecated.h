@@ -140,7 +140,7 @@ refactor your code to v4, and should absolutely not continue to use the old v3 A
 #define _ERROR_PHASE_FUNC_REMOVED(oldname) \
     _ERROR_GENERAL_MSG( \
         "The QuEST function '" oldname "' is deprecated. Please instead create a 'DiagMatr' or 'FullStateDiagMatr', initialise it " \
-        "via functions' setDiagMatrFromMultiVarFunc()' or 'setDiagMatrFromMultiDimArray()', and apply it via 'applyDiagMatr() or " \
+        "via functions like 'setDiagMatrFromMultiVarFunc()' or 'setDiagMatrFromMultiDimLists()', and apply it via 'applyDiagMatr() or " \
         "'applyFullStateDiagMatr()'. This procedure cannot be automatically performed here." ) \
     _FORCE_COMPILATION_TO_FAIL()
 

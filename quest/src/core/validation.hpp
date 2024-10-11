@@ -131,6 +131,9 @@ void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd,
 void validate_matrixNumQubitsMatchesParam(int numMatrQubits, int numSetterQubits, const char* caller);
 void validate_declaredNumElemsMatchesVectorLength(qindex numElems, qindex vecLength, const char* caller);
 
+void validate_multiVarFuncQubits(int numMatrQubits, int* numQubitsPerVar, int numVars, const char* caller);
+void validate_funcVarSignedFlag(int areSigned, const char* caller);
+
 
 
 /*
