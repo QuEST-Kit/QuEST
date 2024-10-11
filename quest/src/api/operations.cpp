@@ -8,9 +8,9 @@
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 
-#include "quest/src/core/validation.hpp"
-#include "quest/src/core/utilities.hpp"
-#include "quest/src/core/localiser.hpp"
+#include "../core/validation.hpp"
+#include "../core/utilities.hpp"
+#include "../core/localiser.hpp"
 
 #include "quest/src/core/errors.hpp" // only needed for not-implemented functions
 

@@ -3,8 +3,8 @@
  * nodes, when running in distributed mode, using the C MPI standard.
  */
 
-#include "quest/include/types.h"
-#include "quest/include/qureg.h"
+#include "types.h"
+#include "qureg.h"
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"

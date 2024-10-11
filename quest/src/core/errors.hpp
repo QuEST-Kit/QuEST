@@ -8,8 +8,8 @@
 #ifndef ERRORS_HPP
 #define ERRORS_HPP
 
-#include "quest/include/types.h"
-#include "quest/include/qureg.h"
+#include "types.h"
+#include "qureg.h"
 
 #include <string>
 
