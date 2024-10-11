@@ -312,6 +312,19 @@ namespace report {
         "The declared number of passed elements (${NUM_ELEMS}) differs from the length of the given list (${VEC_LENGTH}).";
 
 
+    string MULTI_VAR_FUNC_INVALID_NUM_VARS = 
+        "Invalid number of variables or dimensions (${NUM_VARS}). Must be a positive integer.";
+
+    string MULTI_VAR_FUNC_INVALID_NUM_QUBITS_PER_VAR =
+        "The variable/dimension at index ${VAR_IND} was constituted by an invalid number of qubits (${VAR_QUBITS}). Each must correspond to 1 or more qubits.";
+
+    string MULTI_VAR_FUNC_MISMATCHING_NUM_QUBITS =
+        "The total number of qubits constituting all variables/dimensions (${NUM_VAR_QUBITS}) does not match the number of qubits in the matrix (${NUM_MATR_QUBITS}).";
+
+    string MULTI_VAR_FUNC_INVALID_ARE_SIGNED_FLAG =
+        "Invalid value for the 'areSigned' flag (${ARE_SIGNED}), which must instead be 1 or 0 to indicate whether or not to interpret the variable sub-register basis states as signed integers (encoded with two's complement).";
+
+
     /*
      * EXISTING MATRIX
      */
@@ -1567,6 +1580,26 @@ void validate_declaredNumElemsMatchesVectorLength(qindex numElems, qindex vecLen
         {"${VEC_LENGTH}", vecLength}};
 
     assertThat(numElems == vecLength, report::MATR_NUM_ELEMS_MISMATCHES_VEC_LENGTH_IN_INLINE_SETTER, vars, caller);
+}
+
+void validate_multiVarFuncQubits(int numMatrQubits, int* numQubitsPerVar, int numVars, const char* caller) {
+
+    assertThat(numVars > 0, report::MULTI_VAR_FUNC_INVALID_NUM_VARS, {{"${NUM_VARS}", numVars}}, caller);
+
+    for (int v=0; v<numVars; v++)
+        assertThat(numQubitsPerVar[v] > 0, report::MULTI_VAR_FUNC_INVALID_NUM_QUBITS_PER_VAR, {{"${VAR_IND}",v},{"${VAR_QUBITS}",numQubitsPerVar[v]}}, caller);
+
+    int numVarQubits = 0;
+    for (int v=0; v<numVars; v++)
+        numVarQubits += numQubitsPerVar[v];
+
+    assertThat(numMatrQubits == numVarQubits, report::MULTI_VAR_FUNC_MISMATCHING_NUM_QUBITS, 
+        {{"${NUM_MATR_QUBITS}", numMatrQubits}, {"${NUM_VAR_QUBITS}", numVarQubits}}, caller);
+}
+
+void validate_funcVarSignedFlag(int areSigned, const char* caller) {
+
+    assertThat(areSigned == 0 || areSigned == 1, report::MULTI_VAR_FUNC_INVALID_ARE_SIGNED_FLAG, {{"${ARE_SIGNED}", areSigned}}, caller);
 }
 
 
