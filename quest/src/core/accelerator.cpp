@@ -170,7 +170,7 @@ void accel_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int>
 
 
 /*
- * ONE-TARGET MATRIX
+ * DENSE MATRIX
  */
 
 
@@ -186,16 +186,37 @@ void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls,
 }
 
 
+void accel_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, CompMatr2 matr) {
 
-/*
- * ANY-TARGET MATRIX
- */
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlTwoTargDenseMatr_sub, qureg, ctrls.size() );
+    func(qureg, ctrls, ctrlStates, targ1, targ2, matr);
+}
 
 
 void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr, bool conj) {
 
     auto func = GET_CPU_OR_GPU_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( statevec_anyCtrlAnyTargDenseMatr_sub, qureg, ctrls.size(), targs.size(), conj );
     func(qureg, ctrls, ctrlStates, targs, matr);
+}
+
+
+
+/*
+ * DIAGONAL MATRIX
+ */
+
+
+void accel_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr) {
+
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlOneTargDiagMatr_sub, qureg, ctrls.size() );
+    func(qureg, ctrls, ctrlStates, targ, matr);
+}
+
+
+void accel_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, DiagMatr2 matr) {
+
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlTwoTargDiagMatr_sub, qureg, ctrls.size() );
+    func(qureg, ctrls, ctrlStates, targ1, targ2, matr);
 }
 
 

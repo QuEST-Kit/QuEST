@@ -166,6 +166,15 @@ INLINE qindex insertBitsWithMaskedValues(qindex number, int* bitInds, int numBit
 }
 
 
+INLINE int getTwoBits(qindex number, int highInd, int lowInd) {
+
+    int b1 = getBit(number, lowInd);
+    int b2 = getBit(number, highInd);
+    int v = concatenateBits(b2, b1, 1);
+    return v;
+}
+
+
 INLINE qindex insertTwoBits(qindex number, int highInd, int highBit, int lowInd, int lowBit) {
     
     // assumes highInd > lowInd
@@ -191,6 +200,7 @@ INLINE qindex insertFourZeroBits(qindex number, int i4, int i3, int i2, int i1) 
     number = insertTwoBits(number, i4, 0, i3, 0);
     return number;
 }
+
 
 INLINE qindex flipTwoBits(qindex number, int i1, int i0) {
     

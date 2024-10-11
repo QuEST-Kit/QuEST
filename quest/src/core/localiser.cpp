@@ -410,7 +410,7 @@ void anyCtrlOneTargDenseMatrOnPrefix(Qureg qureg, vector<int> ctrls, vector<int>
 }
 
 
-void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
+void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr, bool conj) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
 
@@ -421,6 +421,9 @@ void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, 
     // retain only suffix control qubits as relevant to communication and local amp modification
     removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
 
+    if (conj) 
+        matr = util_getConj(matr);
+
     // perform embarrassingly parallel routine or communication-inducing swaps
     doesGateRequireComm(qureg, targ)?
         anyCtrlOneTargDenseMatrOnPrefix(qureg, ctrls, ctrlStates, targ, matr) :
@@ -430,11 +433,38 @@ void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, 
 
 
 /*
- * ANY-TARGET DENSE MATRIX
+ * TWO-TARGET & ANY-TARGET DENSE MATRIX
+ *
+ * which are intermixed, despite each having their own local backend 
+ * implementations, because they use identical communication logic
  */
 
 
-void anyCtrlAnyTargDenseMatrOnPrefix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr, bool conj) {
+void anyCtrlTwoOrAnyTargDenseMatrOnSuffix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr2 matr, bool conj) {
+    if (conj) matr = util_getConj(matr);
+    accel_statevec_anyCtrlTwoTargDenseMatr_sub(qureg, ctrls, ctrlStates, targs[0], targs[1], matr);
+}
+void anyCtrlTwoOrAnyTargDenseMatrOnSuffix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr  matr, bool conj) {
+    accel_statevec_anyCtrlAnyTargDenseMatr_sub(qureg, ctrls, ctrlStates, targs, matr, conj);
+}
+
+
+// T can be CompMatr2 or CompMatr
+template <typename T>
+void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, T matr, bool conj) {
+
+    // node has nothing to do if all local amps violate control condition
+    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+        return;
+
+    // skip straight to embarrasingly parallel simulation if possible
+    if (!doesGateRequireComm(qureg, targs)) {
+
+        // using only the suffix ctrls
+        removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
+        anyCtrlTwoOrAnyTargDenseMatrOnSuffix(qureg, ctrls, ctrlStates, targs, matr, conj);
+        return;
+    }
 
     // find suffix positions for all prefix targs, moving colliding ctrls out of the way
     auto [newCtrls, newTargs] = getCtrlsAndTargsSwappedToMinSuffix(qureg, ctrls, targs);
@@ -449,8 +479,8 @@ void anyCtrlAnyTargDenseMatrOnPrefix(Qureg qureg, vector<int> ctrls, vector<int>
     if (doAnyLocalAmpsSatisfyCtrls(qureg, newCtrls, ctrlStates)) {
 
         // perform embarrassingly parallel simulation using only the new suffix ctrls
-        removePrefixQubitsAndStates(qureg, newCtrls, ctrlStates);     
-        accel_statevec_anyCtrlAnyTargDenseMatr_sub(qureg, newCtrls, ctrlStates, newTargs, matr, conj);
+        removePrefixQubitsAndStates(qureg, newCtrls, ctrlStates);
+        anyCtrlTwoOrAnyTargDenseMatrOnSuffix(qureg, newCtrls, ctrlStates, newTargs, matr, conj);
     }
 
     // undo swaps, again invoking communication
@@ -458,7 +488,51 @@ void anyCtrlAnyTargDenseMatrOnPrefix(Qureg qureg, vector<int> ctrls, vector<int>
 }
 
 
+void localiser_statevec_anyCtrlTwoTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, CompMatr2 matr, bool conj) {
+    assertValidCtrlStates(ctrls, ctrlStates);
+    setDefaultCtrlStates(ctrls, ctrlStates);
+
+    anyCtrlTwoOrAnyTargDenseMatr(qureg, ctrls, ctrlStates, {targ1,targ2}, matr, conj);
+}
+
+
 void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr, bool conj) {
+    assertValidCtrlStates(ctrls, ctrlStates);
+    setDefaultCtrlStates(ctrls, ctrlStates);
+
+    // despite our use of compile-time templating, the bespoke one-targ routines are still faster 
+    // than this any-targ routine when given a single target, because they can leverage a bespoke
+    // communication pattern (rather than swapping qubits into suffix), and pass the matrix elems
+    // to GPU kernels via arguments rather than global memory, which is faster for threads to read.
+    // Callers may however still choose this function (rather than the one-qubit specific one) for 
+    // its convenient generality, so we divert to the one-targ routine when possible, copying the 
+    // heap CPU matrix (assumed consistent with GPU memory) into stack memory
+    if (targs.size() == 1)
+        localiser_statevec_anyCtrlOneTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], getCompMatr1(matr.cpuElems), conj);
+    
+    // similarly, bespoke two-targ routines are preferable although they offer no communication
+    // benefit because they call the same any-targ localiser, but still accelerate GPU memory access
+    else if (targs.size() == 2)
+        localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], targs[1], getCompMatr2(matr.cpuElems), conj);
+    
+    // call the any-targ routine when given 3 or more targs, which may still invoke bespoke,
+    // fixed-targ instances of backend templated functions depending the number of targs
+    else
+        anyCtrlTwoOrAnyTargDenseMatr(qureg, ctrls, ctrlStates, targs, matr, conj);
+}
+
+
+
+/*
+ * ALL-TARGET DIAGONAL MATRIX
+ *
+ * which have num-target specific implementations (e.g. for avoiding
+ * GOU memory, if possible), but identical communication logic
+ * because diagonals are always embarrassingly parallel
+ */
+
+
+void localiser_statevec_anyCtrlOneTargDiagMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr, bool conj) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
 
@@ -466,29 +540,30 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
     if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
         return;
 
-    // despite our use of compile-time templating, the bespoke one-targ routines are still faster 
-    // than this any-targ routine when given a single target. Callers may however still choose this 
-    // function for its convenient generality, so we divert to the one-targ routine when possible,
-    // copying the heap CPU matrix (assumed consistent with GPU memory) into stack memory
-    if (targs.size() == 1)
-        localiser_statevec_anyCtrlOneTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], getCompMatr1(matr.cpuElems));
+    if (conj)
+        matr = util_getConj(matr);
 
-    // otherwise if any target requires communication, we invoke SWAPS
-    else if (doesGateRequireComm(qureg, targs))
-        anyCtrlAnyTargDenseMatrOnPrefix(qureg, ctrls, ctrlStates, targs, matr, conj);
-
-    // else we happily perform embarrassingly parallel simulation using only the suffix ctrls
-    else {
-        removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
-        accel_statevec_anyCtrlAnyTargDenseMatr_sub(qureg, ctrls, ctrlStates, targs, matr, conj);
-    }
+    // retain only suffix control qubits, as relevant to local amp modification
+    removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
+    accel_statevec_anyCtrlOneTargDiagMatr_sub(qureg, ctrls, ctrlStates, targ, matr);
 }
 
 
+void localiser_statevec_anyCtrlTwoTargDiagMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, DiagMatr2 matr, bool conj) {
+    assertValidCtrlStates(ctrls, ctrlStates);
+    setDefaultCtrlStates(ctrls, ctrlStates);
 
-/*
- * ANY-TARGET DIAGONAL MATRIX
- */
+    // node has nothing to do if all local amps violate control condition
+    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+        return;
+
+    if (conj)
+        matr = util_getConj(matr);
+
+    // retain only suffix control qubits, as relevant to local amp modification
+    removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
+    accel_statevec_anyCtrlTwoTargDiagMatr_sub(qureg, ctrls, ctrlStates, targ1, targ2, matr);
+}
 
 
 void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, bool conj) {
@@ -501,8 +576,6 @@ void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, v
 
     // retain only suffix control qubits, as relevant to local amp modification
     removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
-    
-    // diagonal matrices are always embarrassingly parallel, regardless of whether any targs are in prefix
     accel_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, matr, conj);
 }
 

@@ -199,5 +199,15 @@ __host__ inline std::array<cu_qcomp,4> unpackMatrixToCuQcomps(CompMatr1 in) {
 }
 
 
+__host__ inline std::array<cu_qcomp,16> unpackMatrixToCuQcomps(CompMatr2 in) {
+
+    std::array<cu_qcomp,16> arr{};
+    for (int i=0; i<16; i++)
+        arr[i] = toCuQcomp(in.elems[i/4][i%4]);
+
+    return arr;
+}
+
+
 
 #endif // GPU_TYPES_HPP

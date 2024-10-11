@@ -280,6 +280,48 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_anyCtrlOneTargDense
 
 
 /*
+ * TWO-TARGET DENSE MATRIX
+ */
+
+
+template <int NumCtrls> 
+void gpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, CompMatr2 matr) {
+
+    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
+
+#if COMPILE_CUQUANTUM
+
+    auto arr = unpackMatrixToCuQcomps(matr);
+    cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(qureg, ctrls, ctrlStates, {targ1, targ2}, arr.data());
+
+#elif COMPILE_CUDA
+
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size() + 2);
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    devicevec sortedQubits = util_getSorted(ctrls, {targ1,targ2});
+    qindex qubitStateMask  = util_getBitMask(ctrls, ctrlStates, {targ1,targ2}, {0,0});
+
+    // unpack matrix elems which are more efficiently accessed by kernels as args than shared mem (... maybe...)
+    auto m = unpackMatrixToCuQcomps(matr);
+
+    kernel_statevec_anyCtrlTwoTargDenseMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), numThreads, 
+        getPtr(sortedQubits), ctrls.size(), qubitStateMask, targ1, targ2,
+        m[0], m[1], m[2],  m[3],  m[4],  m[5],  m[6],  m[7],
+        m[8], m[9], m[10], m[11], m[12], m[13], m[14], m[15]
+    );
+ 
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_anyCtrlTwoTargDenseMatr_sub, (Qureg, vector<int>, vector<int>, int, int, CompMatr2) )
+
+
+
+/*
  * MANY-TARGET DENSE MATRIX
  */
 
@@ -333,7 +375,92 @@ INSTANTIATE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_stateve
 
 
 /*
- * DIAGONAL MATRIX
+ * ONE-TARGET DIAG MATRIX
+ */
+
+
+template <int NumCtrls> 
+void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr) {
+
+    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
+
+#if COMPILE_CUQUANTUM
+
+    // we never conjugate DiagMatr1 at this level; the caller will have already conjugated
+    bool conj = false;
+
+    // we can pass 1D CPU array directly to cuQuantum, and it will recognise host pointers
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, {targ}, matr.elems, conj);
+
+#elif COMPILE_CUDA
+
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    devicevec deviceCtrls = util_getSorted(ctrls);
+    qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
+    cu_qcomp* elems = toCuQcomps(matr.elems);
+
+    kernel_statevec_anyCtrlOneTargDiagMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
+        getPtr(deviceCtrls), ctrls.size(), ctrlStateMask, targ, elems[0], elems[1]
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_anyCtrlOneTargDiagMatr_sub, (Qureg, vector<int>, vector<int>, int, DiagMatr1) )
+
+
+
+/*
+ * TWO-TARGET DIAG MATRIX
+ */
+
+
+template <int NumCtrls> 
+void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, DiagMatr2 matr) {
+
+    assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
+
+#if COMPILE_CUQUANTUM
+
+    // we never conjugate DiagMatr2 at this level; the caller will have already conjugated
+    bool conj = false;
+
+    // we can pass 1D CPU array directly to cuQuantum, and it will recognise host pointers
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, {targ1, targ2}, matr.elems, conj);
+
+#elif COMPILE_CUDA
+
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    devicevec deviceCtrls = util_getSorted(ctrls);
+    qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
+    cu_qcomp* elems = toCuQcomps(matr.elems);
+
+    kernel_statevec_anyCtrlTwoTargDiagMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
+        getPtr(deviceCtrls), ctrls.size(), ctrlStateMask, targ1, targ2,
+        elems[0], elems[1], elems[2], elems[3];
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_anyCtrlTwoTargDiagMatr_sub, (Qureg, vector<int>, vector<int>, int, int, DiagMatr2) )
+
+
+
+/*
+ * MANY-TARGET DIAG MATRIX
  */
 
 
@@ -345,18 +472,7 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
 #if COMPILE_CUQUANTUM
 
-    auto matrElemsPtr = toCuQcomps(util_getGpuMemPtr(matr));
-    auto matrElemsLen = powerOf2(targs.size());
-
-    // conjugate every matrix element if necessary (cuStateVec cannot conj for us; only adjoint)
-    if (ApplyConj)
-        thrust_setElemsToConjugate(matrElemsPtr, matrElemsLen);
-
-    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, matrElemsPtr);
-
-    // undo conjugation (which is only not done if cuQuantum encounters a non-recoverable internal error)
-    if (ApplyConj)
-        thrust_setElemsToConjugate(matrElemsPtr, matrElemsLen);
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, toCuQcomps(util_getGpuMemPtr(matr)), ApplyConj);
 
 #elif COMPILE_CUDA
 

@@ -203,13 +203,13 @@ void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> 
 // there is no bespoke cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subB()
 
 
-void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, cu_qcomp* flatMatrElems) {
+void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, cu_qcomp* flatMatrElems, bool conj) {
 
     // apply no permutation matrix
     custatevecIndex_t *perm = nullptr;
 
-    // do not adjoint elems
-    int adj = 0;
+    // effect conjugate by adjointing, which is equivalent for a diagonal matrix
+    int adj = conj;
 
     // use automatic workspace management
     void* work = nullptr;
