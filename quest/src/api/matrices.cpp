@@ -125,9 +125,19 @@ bool didAnyLocalAllocsFail(T matr) {
             return true;
     }
 
-    // if env is GPU-accelerated, we should have allocated persistent GPU memory
-    if (getQuESTEnv().isGpuAccelerated && !mem_isAllocated(util_getGpuMemPtr(matr)))
-        return true;
+    // if GPU memory is not allocated in a GPU environment...
+    bool isGpuAlloc = mem_isAllocated(util_getGpuMemPtr(matr));
+    if (getQuESTEnv().isGpuAccelerated && !isGpuAlloc) {
+
+        // then FullStateDiagMatr GPU alloc failed only if it tried...
+        if constexpr (util_isFullStateDiagMatr<T>()) {
+            if (matr.isGpuAccelerated)
+                return true;
+            
+        // but all other matrices always try to alloc, so must have failed
+        } else
+            return true;
+    }
 
     // otherwise, all pointers were non-NULL and ergo all allocs were successful
     return false;
@@ -239,15 +249,15 @@ extern "C" DiagMatr createDiagMatr(int numQubits) {
 }
 
 
-FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int useDistrib, const char* caller) {
+FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel, const char* caller) {
     validate_envIsInit(caller);
     QuESTEnv env = getQuESTEnv();
 
-    // must validate parameters before passing them to autodeployer
-    validate_newFullStateDiagMatrParams(numQubits, useDistrib, caller);
+    // validate parameters before passing them to autodeployer
+    validate_newFullStateDiagMatrParams(numQubits, useDistrib, useGpuAccel, caller);
 
-    // overwrite useDistrib if it was left as AUTO_FLAG
-    autodep_chooseFullStateDiagMatrDeployment(numQubits, useDistrib, env);
+    // overwrite useDistrib and useGpuAccel if they were left as AUTO_FLAG
+    autodep_chooseFullStateDiagMatrDeployment(numQubits, useDistrib, useGpuAccel, env);
 
     // validation ensures this never overflows
     qindex numElems = powerOf2(numQubits);
@@ -259,6 +269,7 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
         .numElems = numElems,
 
         // data deployment configuration; disable distrib if deployed to 1 node
+        .isGpuAccelerated = useGpuAccel,
         .isDistributed = useDistrib && (env.numNodes > 1),
         .numElemsPerNode = numElemsPerNode,
 
@@ -271,7 +282,7 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
         .cpuElems = cpu_allocArray(numElemsPerNode), // nullptr if failed
 
         // 1D GPU memory
-        .gpuElems = (env.isGpuAccelerated)? gpu_allocArray(numElemsPerNode) : nullptr, // nullptr if failed or not needed
+        .gpuElems = (useGpuAccel)? gpu_allocArray(numElemsPerNode) : nullptr, // nullptr if failed or not needed
     };
 
     validateMatrixAllocs(out, __func__);
@@ -279,14 +290,14 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
     return out;
 }
 
-extern "C" FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib) {
+extern "C" FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel) {
 
-    return validateAndCreateCustomFullStateDiagMatr(numQubits, useDistrib, __func__);
+    return validateAndCreateCustomFullStateDiagMatr(numQubits, useDistrib, useGpuAccel, __func__);
 }
 
 extern "C" FullStateDiagMatr createFullStateDiagMatr(int numQubits) {
 
-    return validateAndCreateCustomFullStateDiagMatr(numQubits, modeflag::USE_AUTO, __func__);
+    return validateAndCreateCustomFullStateDiagMatr(numQubits, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
 }
 
 
@@ -727,7 +738,11 @@ void printMatrixHeader(T matr) {
     if (util_isFixedSizeMatrixType<T>())
         otherMem -= elemMem;
 
-    print_matrixInfo(util_getMatrixTypeName<T>(), matr.numQubits, util_getMatrixDim(matr), elemMem, otherMem, numNodes);
+    auto name = util_getMatrixTypeName<T>();
+    auto dim = util_getMatrixDim(matr);
+    auto hasGpuMem = util_isGpuAcceleratedMatrix(matr);
+    
+    print_matrixInfo(name, matr.numQubits, dim, elemMem, otherMem, numNodes, hasGpuMem);
 }
 
 

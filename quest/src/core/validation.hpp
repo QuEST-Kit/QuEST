@@ -111,7 +111,7 @@ void validate_quregFields(Qureg qureg, const char* caller);
 
 void validate_newCompMatrParams(int numQubits, const char* caller);
 void validate_newDiagMatrParams(int numQubits, const char* caller);
-void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, const char* caller);
+void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, int useGpu, const char* caller);
 
 void validate_newMatrixAllocs(CompMatr matr, const char* caller);
 void validate_newMatrixAllocs(DiagMatr matr, const char* caller);

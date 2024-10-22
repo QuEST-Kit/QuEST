@@ -351,7 +351,7 @@ string getMemoryCostsStr(size_t numMainBytes, size_t numOverheadBytes, int numNo
  */
 
 
-void print_matrixInfo(string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem, int numNodes) {
+void print_matrixInfo(string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem, int numNodes, bool hasGpuMem) {
 
     // only root node prints
     if (!comm_isRootNode())
@@ -371,7 +371,8 @@ void print_matrixInfo(string nameStr, int numQubits, qindex dim, size_t elemMem,
         << ", " 
         << getNumMatrixElemsStr(dim, isDiag, numNodes)
         << ", "  
-        << getMemoryCostsStr(elemMem, otherMem, numNodes) 
+        << getMemoryCostsStr(elemMem, otherMem, numNodes)
+        << (hasGpuMem? (" in GPU") : "") 
         << "):"  // colon, since caller will hereafter print matrix elements
         << endl;
 }
@@ -599,7 +600,9 @@ void print_matrix(FullStateDiagMatr matr, string indent) {
     int numRanks = comm_getNumNodes();
 
     // prevent truncation if user has disabled by imitating a sufficiently large truncation threshold
-    qindex maxPrintedElems = (isTruncationEnabled)? maxNumPrintedItems : matr.numElems;
+    qindex maxPrintedElems = matr.numElems;
+    if (isTruncationEnabled && maxNumPrintedItems < maxPrintedElems)
+        maxPrintedElems = maxNumPrintedItems;
 
     // when distributed, multiple nodes may print their elements depending on the matrix truncation
     int numNodesWorth = maxPrintedElems / matr.numElemsPerNode; // floors
