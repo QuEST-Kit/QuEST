@@ -679,6 +679,66 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlAnyTargZO
 
 
 /*
+ * QUREG COMBINATION
+ */
+
+
+void cpu_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, Qureg inDensMatr) {
+
+    qindex numIts = outQureg.numAmpsPerNode;
+    qcomp* out = outQureg.cpuAmps;
+    qcomp* in = inDensMatr.cpuAmps;
+    
+    #pragma omp parallel for if(outQureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++)
+        out[n] = (outProb * out[n]) + (inProb * in[n]);
+}
+
+
+void cpu_densmatr_mixQureg_subB(qreal outProb, Qureg outQureg, qreal inProb, Qureg inStateVec) {
+
+    qindex numIts = outQureg.numAmpsPerNode;
+    qindex dim = inStateVec.numAmps;
+    qcomp* out = outQureg.cpuAmps;
+    qcomp* in = inStateVec.cpuAmps;
+    
+    #pragma omp parallel for if(outQureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // (i,j) = row & column of outQureg corresponding to n
+        qindex i = n % dim;
+        qindex j = n / dim; // floors
+
+        out[n] = (outProb * out[n]) + (inProb * in[i] * conj(in[j]));
+    }
+}
+
+
+void cpu_densmatr_mixQureg_subC(qreal outProb, Qureg outQureg, qreal inProb) {
+
+    // received inQureg's entire statevector amplitudes into every node's buffer
+    qindex numIts = outQureg.numAmpsPerNode;
+    qindex dim = powerOf2(outQureg.numQubits);
+    qcomp* out = outQureg.cpuAmps;
+    qcomp* in = outQureg.cpuCommBuffer;
+
+    #pragma omp parallel for if(outQureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // m = global index of local index n
+        qindex m = concatenateBits(outQureg.rank, n, outQureg.logNumAmpsPerNode);
+
+        // (i,j) = global row & column of outQureg corresponding to n
+        qindex i = m % dim;
+        qindex j = m / dim; // floors
+
+        out[n] = (outProb * out[n]) + (inProb * in[i] * conj(in[j]));
+    }
+}
+
+
+
+/*
  * ONE-QUBIT DEPHASING
  */
 

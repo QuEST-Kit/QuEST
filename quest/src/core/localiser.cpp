@@ -710,6 +710,49 @@ void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vecto
 
 
 /*
+ * QUREG COMBINATION
+ */
+
+
+void mixDensityMatrixWithStatevector(qreal outProb, Qureg out, qreal inProb, Qureg in) {
+
+    // we can handle 3 out of 4 possible combinations of distribution,
+    // and accelerator.hpp will handle every combination of GPU-accel
+    bool outDist = out.isDistributed;
+    bool inDist = in.isDistributed;
+
+    // illegal to distribute only the smaller Qureg ('out' has no buffer space to receive it)
+    if (!outDist && inDist)
+        error_mixQuregsAreLocalDensMatrAndDistribStatevec();
+
+    // both non-distributed is trivial
+    if (!outDist && !inDist)
+        accel_densmatr_mixQureg_subB(outProb, out, inProb, in);
+
+    // both distributed requires broadcasting 'in' into every node's 'out' buffer
+    if (outDist && inDist) {
+        comm_combineAmpsIntoBuffer(out, in); // uses same buffer that subC() consults
+        accel_densmatr_mixQureg_subC(outProb, out, inProb);
+    }
+
+    // only 'out' being distributed means simulation is embarrasingly parallel, 
+    // because the full 'in' is already known on every node
+    if (outDist && !inDist)
+        accel_densmatr_mixQureg_subD(outProb, out, inProb, in);
+}
+
+
+void localiser_densmatr_mixQureg(qreal outProb, Qureg out, qreal inProb, Qureg in) {
+    assert_localiserGivenDensMatr(out);
+
+    (in.isDensityMatrix)?
+        accel_densmatr_mixQureg_subA(outProb, out, inProb, in): // trivial
+        mixDensityMatrixWithStatevector(outProb, out, inProb, in);
+}
+
+
+
+/*
  * DEPHASING
  */
 

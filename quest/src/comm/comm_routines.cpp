@@ -8,6 +8,7 @@
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_indices.hpp"
@@ -154,7 +155,7 @@ void exchangeArrays(qcomp* send, qcomp* recv, qindex numElems, int pairRank) {
         MPI_Irecv(&recv[m*messageSize], messageSize, MPI_QCOMP, pairRank, NULL_TAG, MPI_COMM_WORLD, &requests[2*m+1]);
     }
 
-    // wait for all exchanges to complete (MPI willl automatically free the request memory)
+    // wait for all exchanges to complete (MPI will automatically free the request memory)
     MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
 
 #else
@@ -204,6 +205,54 @@ void receiveArray(qcomp* dest, qindex numElems, int pairRank) {
         MPI_Irecv(&dest[m*messageSize], messageSize, MPI_QCOMP, pairRank, NULL_TAG, MPI_COMM_WORLD, &requests[m]);
 
     // receivers wait for all messages to be received (while sender asynch proceeds)
+    MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
+
+#else
+    error_commButEnvNotDistributed();
+#endif
+}
+
+
+
+/*
+ * PRIVATE GLOBAL COMBINATION
+ */
+
+
+void globallyCombineSubArrays(qcomp* recv, qcomp* send, qindex numAmpsPerRank) {
+#if COMPILE_MPI
+
+    int numNodes = comm_getNumNodes();
+    int myRank = comm_getRank();
+    qindex myOffset = myRank * numAmpsPerRank;
+
+    // every node first copies their 'send' portion into a distinct part of their local 'recv',
+    // which they will subsequently broadcast to the other nodes
+    cpu_copyArray(&recv[myOffset], send, numAmpsPerRank);
+
+    // determine how many broadcasts are needed per sending rank due to message-size restrictions
+    // (it is almost definitely one, but we'll be rigorous for defensive design)
+    qindex messageSize, numMessagesPerSender;
+    getMessageConfig(&messageSize, &numMessagesPerSender, numAmpsPerRank);
+
+    // all broadcasts will be asynch, and each involve one request per message
+    qindex totalNumMessages = numMessagesPerSender * numNodes;
+    std::vector<MPI_Request> requests(totalNumMessages, MPI_REQUEST_NULL);
+
+    // each node broadcasts their partition (in-turn, but each is asynch)
+    for (int senderRank=0; senderRank<numNodes; senderRank++) {
+        qindex senderOffset = senderRank * numAmpsPerRank;
+
+        // divided into many asynchronous messages
+        for (int m=0; m<numMessagesPerSender; m++) {
+            qindex messageOffset = senderOffset + (m * messageSize);
+            qindex requestIndex = m + (senderRank * numMessagesPerSender);
+
+            MPI_Ibcast(&recv[messageOffset], messageSize, MPI_QCOMP, senderRank, MPI_COMM_WORLD, &requests[requestIndex]);
+        }
+    }
+
+    // wait for all boradcasts to complete (MPI will automatically free the request memory)
     MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
 
 #else
@@ -329,7 +378,7 @@ void receiveArrayToGpuBuffer(Qureg qureg, qindex numElems, int pairRank) {
 
 void comm_exchangeAmpsToBuffers(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps, int pairRank) {
     assert_validCommBounds(qureg, sendInd, recvInd, numAmps);
-    assert_quregIsDistributed(qureg);
+    assert_commQuregIsDistributed(qureg);
     assert_pairRankIsDistinct(qureg, pairRank);
 
     if (qureg.isGpuAccelerated)
@@ -345,7 +394,7 @@ void comm_exchangeSubBuffers(Qureg qureg, qindex numAmps, int pairRank) {
 
     assert_validCommBounds(qureg, sendInd, recvInd, numAmps);
     assert_bufferSendRecvDoesNotOverlap(sendInd, recvInd, numAmps);
-    assert_quregIsDistributed(qureg);
+    assert_commQuregIsDistributed(qureg);
     assert_pairRankIsDistinct(qureg, pairRank);
 
     if (qureg.isGpuAccelerated)
@@ -361,7 +410,7 @@ void comm_asynchSendSubBuffer(Qureg qureg, qindex numElems, int pairRank) {
 
     assert_validCommBounds(qureg, sendInd, recvInd, numElems);
     assert_bufferSendRecvDoesNotOverlap(sendInd, recvInd, numElems);
-    assert_quregIsDistributed(qureg);
+    assert_commQuregIsDistributed(qureg);
     assert_pairRankIsDistinct(qureg, pairRank);
 
     if (qureg.isGpuAccelerated)
@@ -377,13 +426,45 @@ void comm_receiveArrayToBuffer(Qureg qureg, qindex numElems, int pairRank) {
 
     assert_validCommBounds(qureg, sendInd, recvInd, numElems);
     assert_bufferSendRecvDoesNotOverlap(sendInd, recvInd, numElems);
-    assert_quregIsDistributed(qureg);
+    assert_commQuregIsDistributed(qureg);
     assert_pairRankIsDistinct(qureg, pairRank);
 
     if (qureg.isGpuAccelerated)
         receiveArrayToGpuBuffer(qureg, numElems, pairRank);
     else
         receiveArray(&qureg.cpuCommBuffer[recvInd], numElems, pairRank);
+}
+
+
+void comm_combineAmpsIntoBuffer(Qureg receiver, Qureg sender) {
+    assert_commQuregIsDistributed(receiver);
+    assert_commQuregIsDistributed(sender);
+    assert_receiverCanFitSendersEntireState(receiver, sender);
+
+    // all configurations involve broadcasting the entirety of sender's per-node amps
+    qindex numSendAmps = sender.numAmpsPerNode;
+    qindex numRecvAmps = sender.numAmps;
+
+    // note that CUDA-aware MPI permits direct GPU-to-GPU (device-to-device) exchange,
+    // but does not generally permit CPU-to-GPU (host-to-device). So if only one
+    // Qureg is GPU-accelerated, we have to fall back entirely to copying through host.
+    // There is ergo only a single scenario possible when we can directly GPU-exchange:
+
+    if (gpu_isDirectGpuCommPossible() && receiver.isGpuAccelerated && sender.isGpuAccelerated) {
+        globallyCombineSubArrays(receiver.gpuCommBuffer, sender.gpuAmps, numSendAmps);
+        return;
+    }
+
+    // otherwise, we must always transmit amps through CPU buffer memory, and merely
+    // have to decide whether CPU-GPU pre- and post-copies are necessary
+
+    if (sender.isGpuAccelerated)
+        gpu_copyGpuToCpu(sender, sender.gpuAmps, sender.cpuCommBuffer, numSendAmps);
+
+    globallyCombineSubArrays(receiver.cpuCommBuffer, sender.cpuCommBuffer, numSendAmps);
+
+    if (receiver.isGpuAccelerated)
+        gpu_copyCpuToGpu(receiver, receiver.cpuCommBuffer, receiver.gpuCommBuffer, numRecvAmps);
 }
 
 
@@ -394,7 +475,7 @@ void comm_receiveArrayToBuffer(Qureg qureg, qindex numElems, int pairRank) {
 
 
 void comm_exchangeAmpsToBuffers(Qureg qureg, int pairRank) {
-    assert_quregIsDistributed(qureg);
+    assert_commQuregIsDistributed(qureg);
     assert_pairRankIsDistinct(qureg, pairRank);
 
     qindex sendInd = 0;
@@ -430,7 +511,7 @@ void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps)
         else
             MPI_Irecv(&recv[m*messageSize], messageSize, MPI_QCOMP, sendRank, NULL_TAG, MPI_COMM_WORLD, &requests[m]);
 
-    // wait for all exchanges to complete (MPI willl automatically free the request memory)
+    // wait for all exchanges to complete (MPI will automatically free the request memory)
     MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
 
 #else

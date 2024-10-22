@@ -12,16 +12,6 @@
 
 
 /*
- * MESSAGE INDICES
- */
-
-qindex getSubBufferSendInd(Qureg qureg);
-
-qindex getSubBufferRecvInd();
-
-
-
-/*
  * STATE EXCHANGE METHODS
  */
 
@@ -34,6 +24,8 @@ void comm_exchangeSubBuffers(Qureg qureg, qindex numAmpsAndRecvInd, int pairRank
 void comm_asynchSendSubBuffer(Qureg qureg, qindex numElems, int pairRank);
 
 void comm_receiveArrayToBuffer(Qureg qureg, qindex numElems, int pairRank);
+
+void comm_combineAmpsIntoBuffer(Qureg receiver, Qureg sender);
 
 
 

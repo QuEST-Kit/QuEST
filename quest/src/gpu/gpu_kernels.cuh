@@ -338,7 +338,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
     cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
-    int* ctrls, int numCtrls, qindex ctrlStateMask, int targ1, 
+    int* ctrls, int numCtrls, qindex ctrlStateMask, int targ, 
     cu_qcomp m1, cu_qcomp m2
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -530,6 +530,54 @@ __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
 
     cu_qcomp facs[] = {fac0, fac1};
     amps[j] *= facs[p];
+}
+
+
+
+/*
+ * QUREG COMBINATION 
+ */
+
+
+// kernel_densmatr_mixQureg_subA() is avoided; we instead use
+// Thrust for this common circumstances (mixing density matrices),
+// which should be significantly more optimisex
+
+
+__global__ void kernel_densmatr_mixQureg_subB(
+    qreal outProb, cu_qcomp* outAmps, qreal inProb, cu_qcomp* inAmps,
+    qindex numThreads, qindex numInAmps
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // (i,j) = row & column of outAmps corresponding to n
+    qindex i = n % numInAmps;
+    qindex j = n / numInAmps;
+
+    cu_qcomp iAmp = inAmps[i];
+    cu_qcomp jAmp = inAmps[j]; jAmp.y *= -1; // conj
+    
+    outAmps[n] = (outProb * outAmps[n]) + (inProb * iAmp * jAmp);
+}
+
+
+__global__ void kernel_densmatr_mixQureg_subC(
+    qreal outProb, cu_qcomp* outAmps, qreal inProb, cu_qcomp* inAmps,
+    qindex numThreads, int rank, qindex numInAmps, qindex logNumOutAmpsPerNode
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // m = global index of local 'out' index n
+    qindex m = concatenateBits(rank, n, logNumOutAmpsPerNode);
+
+    // (i,j) = row & column of outAmps corresponding to n
+    qindex i = m % numInAmps;
+    qindex j = m / numInAmps;
+
+    cu_qcomp iAmp = inAmps[i];
+    cu_qcomp jAmp = inAmps[j]; jAmp.y *= -1; // conj
+    
+    outAmps[n] = (outProb * outAmps[n]) + (inProb * iAmp * jAmp);
 }
 
 

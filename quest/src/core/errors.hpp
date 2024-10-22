@@ -75,11 +75,13 @@ void error_commWithSameRank();
 
 void assert_validCommBounds(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps);
 
-void assert_quregIsDistributed(Qureg qureg);
+void assert_commQuregIsDistributed(Qureg qureg);
 
 void assert_pairRankIsDistinct(Qureg qureg, int pairRank);
 
 void assert_bufferSendRecvDoesNotOverlap(qindex sendInd, qindex recvInd, qindex numAmps);
+
+void assert_receiverCanFitSendersEntireState(Qureg receiver, Qureg sender);
 
 
 
@@ -122,6 +124,24 @@ void assert_bufferPackerGivenIncreasingQubits(int qubit1, int qubit2, int qubit3
 
 
 /*
+ * BACKEND PRECONDITION ERRORS
+ */
+
+void assert_mixedQuregIsDensityMatrix(Qureg qureg);
+
+void assert_mixedQuregIsStatevector(Qureg qureg);
+
+void assert_mixedQuregIsDistributed(Qureg qureg);
+
+void assert_mixedQuregIsLocal(Qureg qureg);
+
+void assert_mixedQuregsAreBothOrNeitherDistributed(Qureg a, Qureg b);
+
+void error_mixQuregsAreLocalDensMatrAndDistribStatevec();
+
+
+
+/*
  * CPU ERRORS
  */
 
@@ -158,6 +178,8 @@ void error_gpuUnexpectedlyInaccessible();
 void assert_gpuIsAccessible();
 
 void assert_quregIsGpuAccelerated(Qureg qureg);
+
+void assert_mixQuregTempGpuAllocSucceeded(qcomp* gpuPtr);
 
 
 
