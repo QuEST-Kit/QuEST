@@ -37,6 +37,7 @@
 #include "quest/include/matrices.h"
 
 #include "quest/src/core/errors.hpp"
+#include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/comm/comm_indices.hpp"
@@ -617,21 +618,51 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevector_anyCtrlAnyTargZO
  */
 
 
-void gpu_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, Qureg inDensMatr) {
+void gpu_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, Qureg inQureg) {
 
-    // TODO
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    thrust_densmatr_mixQureg_subA(outProb, outQureg, inProb, inQureg);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
 }
 
 
-void gpu_densmatr_mixQureg_subB(qreal outProb, Qureg outQureg, qreal inProb, Qureg inStateVec) {
+void gpu_densmatr_mixQureg_subB(qreal outProb, Qureg outQureg, qreal inProb, Qureg inQureg) {
 
-    // TODO
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    qindex numThreads = outQureg.numAmpsPerNode;
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    kernel_densmatr_mixQureg_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        outProb, toCuQcomps(outQureg.gpuAmps), inProb, toCuQcomps(inQureg.gpuAmps),
+        numThreads, inQureg.numAmps
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
 }
 
 
 void gpu_densmatr_mixQureg_subC(qreal outProb, Qureg outQureg, qreal inProb) {
 
-    // TODO
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    qindex numThreads = outQureg.numAmpsPerNode;
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    kernel_densmatr_mixQureg_subC <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        outProb, toCuQcomps(outQureg.gpuAmps), inProb, toCuQcomps(inQureg.gpuCommBuffer),
+        numThreads, outQureg.rank, powerOf2(outQureg.numQubits), outQureg.logNumAmpsPerNode        
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
 }
 
 
