@@ -312,6 +312,7 @@ void cpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     }
 }
 
+
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlTwoTargDenseMatr_sub, (Qureg, vector<int>, vector<int>, int, int, CompMatr2) )
 
 
@@ -488,11 +489,12 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlTwoTargDiagM
  */
 
 
-template <int NumCtrls, int NumTargs, bool ApplyConj>
-void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {
+template <int NumCtrls, int NumTargs, bool ApplyConj, bool HasPower>
+void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, qcomp exponent) {
     
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
     assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
+    assert_exponentMatchesTemplateParam(exponent, HasPower);
 
     // each control qubit halves the needed iterations, each of which will modify 1 amplitude
     qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
@@ -515,9 +517,11 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
         // t = value of targeted bits, which may be in the prefix substate
         qindex t = getValueOfBits(i, targs.data(), numTargBits);
-
-        // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
         qcomp elem = matr.cpuElems[t];
+
+        // decide whether to power and conj at compile-time, to avoid branching in hot-loop
+        if constexpr (HasPower)
+            elem = pow(elem, exponent);
         if constexpr (ApplyConj)
             elem = conj(elem);
 
@@ -526,7 +530,7 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 }
 
 
-INSTANTIATE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevec_anyCtrlAnyTargDiagMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, DiagMatr) )
+INSTANTIATE_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevec_anyCtrlAnyTargDiagMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, DiagMatr, qcomp) )
 
 
 
@@ -799,7 +803,6 @@ void cpu_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal prob) 
 /*
  * TWO-QUBIT DEPHASING
  */
-
 
 
 void cpu_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubitB, qreal prob) {

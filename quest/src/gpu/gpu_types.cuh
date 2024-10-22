@@ -147,6 +147,38 @@ INLINE void operator *= (cu_qcomp& a, const qreal& b) {
 
 
 /*
+ * cu_qcomp UNARY FUNCTIONS
+ */
+
+
+__device__ cu_qcomp getCompPower(cu_qcomp base, cu_qcomp exponent) {
+
+    // using https://mathworld.wolfram.com/ComplexExponentiation.html,
+    // and the principal argument of 'base'
+
+    // base = a + b i, exponent = c + d i
+    qreal a = base.x;
+    qreal b = base.y;
+    qreal c = exponent.x;
+    qreal d = exponent.y;
+
+    // intermediate quantities
+    qreal arg = atan2(b, a);
+    qreal mag = a*a + b*b;
+    qreal ln = log(mag);
+    qreal fac = pow(mag, c/2) * exp(-d * arg);
+    qreal ang = c*arg + d*ln/2;
+
+    // output scalar
+    qreal re = fac * cos(ang);
+    qreal im = fac * sin(ang);
+    cu_qcomp out = {.x = re, .y = im};
+    return out;
+}
+
+
+
+/*
  * CASTS BETWEEN qcomp AND cu_qcomp
  */
 

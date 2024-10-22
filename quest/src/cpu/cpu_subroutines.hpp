@@ -53,7 +53,7 @@ template <int NumCtrls> void cpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg
 
 template <int NumCtrls> void cpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, DiagMatr2 matr);
 
-template <int NumCtrls, int NumTargs, bool ApplyConj> void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr);
+template <int NumCtrls, int NumTargs, bool ApplyConj, bool HasPower> void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, qcomp exponent);
 
 
 /*

@@ -343,6 +343,17 @@ __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
 ) {
     GET_THREAD_IND(n, numThreads);
 
+    // TODO:
+    // we have implemented a custom kernel, rather than a thrust
+    // functor, for efficient treatment of control qubits (even
+    // when not exploiting the compile-time parameter NumCtrls).
+    // Our kernel enumerates only amps which satisfy the control
+    // condition, whereas a natural Thrust functor would involve
+    // enumerating all amplitudes and skipping some via a condition.
+    // This might still be beneficial in memory-bandwidth-bound
+    // regimes, but is expected inferior for many control qubits.
+    // We should verify this!
+
     // use template params to compile-time unroll loops in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
 
@@ -371,6 +382,17 @@ __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
 ) {
     GET_THREAD_IND(n, numThreads);
 
+    // TODO:
+    // we have implemented a custom kernel, rather than a thrust
+    // functor, for efficient treatment of control qubits (even
+    // when not exploiting the compile-time parameter NumCtrls).
+    // Our kernel enumerates only amps which satisfy the control
+    // condition, whereas a natural Thrust functor would involve
+    // enumerating all amplitudes and skipping some via a condition.
+    // This might still be beneficial in memory-bandwidth-bound
+    // regimes, but is expected inferior for many control qubits.
+    // We should verify this!
+
     // use template params to compile-time unroll loops in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
 
@@ -393,13 +415,24 @@ __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
  */
 
 
-template <int NumCtrls, int NumTargs, bool ApplyConj>
+template <int NumCtrls, int NumTargs, bool ApplyConj, bool HasPower>
 __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
     int* ctrls, int numCtrls, qindex ctrlStateMask, int* targs, int numTargs,
-    cu_qcomp* elems
+    cu_qcomp* elems, cu_qcomp exponent
 ) {
     GET_THREAD_IND(n, numThreads);
+
+    // TODO:
+    // we have implemented a custom kernel, rather than a thrust
+    // functor, for efficient treatment of control qubits (even
+    // when not exploiting the compile-time parameter NumCtrls).
+    // Our kernel enumerates only amps which satisfy the control
+    // condition, whereas a natural Thrust functor would involve
+    // enumerating all amplitudes and skipping some via a condition.
+    // This might still be beneficial in memory-bandwidth-bound
+    // regimes, but is expected inferior for many control qubits.
+    // We should verify this!
 
     // use template params to compile-time unroll loops in insertBits() and getValueOfBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
@@ -414,8 +447,11 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     // t = value of targeted bits, which may be in the prefix substate
     qindex t = getValueOfBits(i, targs, numTargBits);
 
-    // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
     cu_qcomp elem = elems[t];
+
+    if constexpr (HasPower)
+        elem = getCompPower(elem, exponent);
+
     if constexpr (ApplyConj)
         elem.y *= -1;
 
@@ -614,8 +650,9 @@ __global__ void kernel_densmatr_oneQubitDephasing_subB(
     GET_THREAD_IND(n, numThreads);
 
     // TODO:
-    // we're just modifying every 2*2^(ketQubit)-th element; turn
-    // this into a trivial thrust call (to reduce boilerplate)
+    // this extremely simple kernel can be definitely
+    // be replaced with a Thrust invocation, to reduce
+    // boilerplate
 
     // i = nth local index where bra-qubit differs from ket-qubit
     qindex i = insertBit(n, ketQubit, ! braBit);

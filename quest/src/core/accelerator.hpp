@@ -46,13 +46,13 @@ using std::vector;
 
 
 #define INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(returntype, funcname, args) \
-    private_INSTANTIATE(returntype, funcname, 0, args); \
-    private_INSTANTIATE(returntype, funcname, 1, args); \
-    private_INSTANTIATE(returntype, funcname, 2, args); \
-    private_INSTANTIATE(returntype, funcname, 3, args); \
-    private_INSTANTIATE(returntype, funcname, 4, args); \
-    private_INSTANTIATE(returntype, funcname, 5, args); \
-    private_INSTANTIATE(returntype, funcname,-1, args);
+    private_INSTANTIATE(returntype, funcname, 0, args) \
+    private_INSTANTIATE(returntype, funcname, 1, args) \
+    private_INSTANTIATE(returntype, funcname, 2, args) \
+    private_INSTANTIATE(returntype, funcname, 3, args) \
+    private_INSTANTIATE(returntype, funcname, 4, args) \
+    private_INSTANTIATE(returntype, funcname, 5, args) \
+    private_INSTANTIATE(returntype, funcname,-1, args)
 
 #define private_INSTANTIATE(returntype, funcname, numtargs, args) \
     template returntype funcname <0, numtargs> args; \
@@ -69,13 +69,13 @@ using std::vector;
     private_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, false, args)
 
 #define private_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, conj, args) \
-    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 0, conj, args); \
-    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 1, conj, args); \
-    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 2, conj, args); \
-    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 3, conj, args); \
-    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 4, conj, args); \
-    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 5, conj, args); \
-    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname,-1, conj, args);
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 0, conj, args) \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 1, conj, args) \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 2, conj, args) \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 3, conj, args) \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 4, conj, args) \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 5, conj, args) \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname,-1, conj, args)
 
 #define private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, numtargs, conj, args) \
     template returntype funcname <0, numtargs, conj>  args; \
@@ -85,6 +85,31 @@ using std::vector;
     template returntype funcname <4, numtargs, conj>  args; \
     template returntype funcname <5, numtargs, conj>  args; \
     template returntype funcname <-1,numtargs, conj>  args;
+
+
+#define INSTANTIATE_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(returntype, funcname, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, true,  true,  args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, true,  false, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, false, true,  args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, false, false, args)
+
+#define private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, conj, haspower, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 0, conj, haspower, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 1, conj, haspower, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 2, conj, haspower, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 3, conj, haspower, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 4, conj, haspower, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 5, conj, haspower, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname,-1, conj, haspower, args)
+
+#define private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, numtargs, conj, haspower, args) \
+    template returntype funcname <0, numtargs, conj, haspower>  args; \
+    template returntype funcname <1, numtargs, conj, haspower>  args; \
+    template returntype funcname <2, numtargs, conj, haspower>  args; \
+    template returntype funcname <3, numtargs, conj, haspower>  args; \
+    template returntype funcname <4, numtargs, conj, haspower>  args; \
+    template returntype funcname <5, numtargs, conj, haspower>  args; \
+    template returntype funcname <-1,numtargs, conj, haspower>  args;
 
 
 
@@ -147,7 +172,7 @@ void accel_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, v
 
 void accel_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, DiagMatr2 matr);
 
-void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, bool conj);
+void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, qcomp exponent, bool conj);
 
 
 /*

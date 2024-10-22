@@ -251,6 +251,13 @@ void assert_numTargsMatchesTemplateParam(int numTargs, int templateParam) {
         raiseInternalError("A CPU or GPU subroutine received a number of targets inconsistent with its compile-time template parameter, as dispatched by accelerator.cpp.");
 }
 
+void assert_exponentMatchesTemplateParam(qcomp exponent, bool hasPower) {
+
+    // require hasPower==false => exponent==1
+    if (!hasPower && exponent != qcomp(1,0))
+        raiseInternalError("A CPU or GPU subroutine received a matrix exponent that was inconsistent with its compile-time template parameter, as dispatched by accelerator.cpp.");
+}
+
 
 
 /*
@@ -421,6 +428,13 @@ void error_cudaCallFailed(const char* msg, const char* func, const char* caller,
     err += msg;
     err += "\". ";
     raiseInternalError(err);
+}
+
+void error_cuQuantumCompiledButNotCuda() {
+
+    raiseInternalError(
+        "Preprocessor COMPILE_CUQUANTUM was set, but COMPILE_CUDA was not. These are not intended to be exclusive fields, so "
+        "a function which depended upon both flags could not continue");
 }
 
 

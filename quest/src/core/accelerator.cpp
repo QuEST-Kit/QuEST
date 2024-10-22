@@ -29,6 +29,7 @@
 #include <algorithm>
 
 using std::vector;
+using std::min;
 
 
 
@@ -56,11 +57,11 @@ using std::vector;
 
 #define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS(f, numctrls) \
     (vector <decltype(&f<0>)> {&f<0>, &f<1>, &f<2>, &f<3>, &f<4>, &f<5>, &f<-1>}) \
-    [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS - 1)]
+    [min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS - 1)]
 
 #define GET_FUNC_OPTIMISED_FOR_NUM_TARGS(f, numtargs) \
     (vector <decltype(&f<0>)> {&f<0>, &f<1>, &f<2>, &f<3>, &f<4>, &f<5>, &f<-1>}) \
-    [std::min((int) numtargs, MAX_OPTIMISED_NUM_TARGS - 1)]
+    [min((int) numtargs, MAX_OPTIMISED_NUM_TARGS - 1)]
 
 #define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(f, numctrls, numtargs) \
     (vector <ARR(f)> { \
@@ -71,8 +72,8 @@ using std::vector;
         ARR(f) {&f<4,0>,  &f<4,1>,  &f<4,2>,  &f<4,3>,  &f<4,4>,  &f<4,5>,  &f<4,-1>}, \
         ARR(f) {&f<5,0>,  &f<5,1>,  &f<5,2>,  &f<5,3>,  &f<5,4>,  &f<5,5>,  &f<5,-1>}, \
         ARR(f) {&f<-1,0>, &f<-1,1>, &f<-1,2>, &f<-1,3>, &f<-1,4>, &f<-1,5>, &f<-1,-1>}}) \
-    [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS - 1)] \
-    [std::min((int) numtargs, MAX_OPTIMISED_NUM_TARGS - 1)]
+    [min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS - 1)] \
+    [min((int) numtargs, MAX_OPTIMISED_NUM_TARGS - 1)]
 
 #define ARR(f) vector<decltype(&f<0,0>)>
 
@@ -94,27 +95,66 @@ using std::vector;
 
 
 #define GET_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(f, numctrls, numtargs, c) \
-    (vector <ARR_CONJ(f)> { \
-        ARR_CONJ(f) {&f<0,0,c>,  &f<0,1,c>,  &f<0,2,c>,  &f<0,3,c>,  &f<0,4,c>,  &f<0,5,c>,  &f<0,-1,c>}, \
-        ARR_CONJ(f) {&f<1,0,c>,  &f<1,1,c>,  &f<1,2,c>,  &f<1,3,c>,  &f<1,4,c>,  &f<1,5,c>,  &f<1,-1,c>}, \
-        ARR_CONJ(f) {&f<2,0,c>,  &f<2,1,c>,  &f<2,2,c>,  &f<2,3,c>,  &f<2,4,c>,  &f<2,5,c>,  &f<2,-1,c>}, \
-        ARR_CONJ(f) {&f<3,0,c>,  &f<3,1,c>,  &f<3,2,c>,  &f<3,3,c>,  &f<3,4,c>,  &f<3,5,c>,  &f<3,-1,c>}, \
-        ARR_CONJ(f) {&f<4,0,c>,  &f<4,1,c>,  &f<4,2,c>,  &f<4,3,c>,  &f<4,4,c>,  &f<4,5,c>,  &f<4,-1,c>}, \
-        ARR_CONJ(f) {&f<5,0,c>,  &f<5,1,c>,  &f<5,2,c>,  &f<5,3,c>,  &f<5,4,c>,  &f<5,5,c>,  &f<5,-1,c>}, \
-        ARR_CONJ(f) {&f<-1,0,c>, &f<-1,1,c>, &f<-1,2,c>, &f<-1,3,c>, &f<-1,4,c>, &f<-1,5,c>, &f<-1,-1,c>}}) \
-    [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS - 1)] \
-    [std::min((int) numtargs, MAX_OPTIMISED_NUM_TARGS - 1)]
+    (vector <CONJ_ARR(f)> { \
+        CONJ_ARR(f) {&f<0,0,c>,  &f<0,1,c>,  &f<0,2,c>,  &f<0,3,c>,  &f<0,4,c>,  &f<0,5,c>,  &f<0,-1,c>}, \
+        CONJ_ARR(f) {&f<1,0,c>,  &f<1,1,c>,  &f<1,2,c>,  &f<1,3,c>,  &f<1,4,c>,  &f<1,5,c>,  &f<1,-1,c>}, \
+        CONJ_ARR(f) {&f<2,0,c>,  &f<2,1,c>,  &f<2,2,c>,  &f<2,3,c>,  &f<2,4,c>,  &f<2,5,c>,  &f<2,-1,c>}, \
+        CONJ_ARR(f) {&f<3,0,c>,  &f<3,1,c>,  &f<3,2,c>,  &f<3,3,c>,  &f<3,4,c>,  &f<3,5,c>,  &f<3,-1,c>}, \
+        CONJ_ARR(f) {&f<4,0,c>,  &f<4,1,c>,  &f<4,2,c>,  &f<4,3,c>,  &f<4,4,c>,  &f<4,5,c>,  &f<4,-1,c>}, \
+        CONJ_ARR(f) {&f<5,0,c>,  &f<5,1,c>,  &f<5,2,c>,  &f<5,3,c>,  &f<5,4,c>,  &f<5,5,c>,  &f<5,-1,c>}, \
+        CONJ_ARR(f) {&f<-1,0,c>, &f<-1,1,c>, &f<-1,2,c>, &f<-1,3,c>, &f<-1,4,c>, &f<-1,5,c>, &f<-1,-1,c>}}) \
+    [min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS - 1)] \
+    [min((int) numtargs, MAX_OPTIMISED_NUM_TARGS - 1)]
 
-#define ARR_CONJ(f) vector<decltype(&f<0,0,false>)>
+#define CONJ_ARR(f) vector<decltype(&f<0,0,false>)>
 
 #define GET_CPU_OR_GPU_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(funcsuffix, qureg, numctrls, numtargs, conj) \
     ((qureg.isGpuAccelerated)? \
         ((conj)? \
-            GET_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs, true ) : \
-            GET_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_##funcsuffix, numctrls, numtargs, true ) ) : \
+            GET_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_##funcsuffix, numctrls, numtargs, true ) : \
+            GET_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_##funcsuffix, numctrls, numtargs, false ) ) : \
         ((conj)? \
-            GET_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs, false ) : \
-            GET_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_##funcsuffix, numctrls, numtargs, false ) ) )
+            GET_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs, true ) : \
+            GET_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs, false ) ) )
+
+
+// TODO:
+// This has gotten a bit ridiculous. Is there a way to use (likely)
+// more abominable pre-processor mischief which negates the need
+// to repeat the entire macro(s) when the number of templated
+// parameters grows?
+
+
+#define GET_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(f, numctrls, numtargs, c, h) \
+    (vector <POWER_CONJ_ARR(f)> { \
+        POWER_CONJ_ARR(f) {&f<0,0,c,h>,  &f<0,1,c,h>,  &f<0,2,c,h>,  &f<0,3,c,h>,  &f<0,4,c,h>,  &f<0,5,c,h>,  &f<0,-1,c,h>}, \
+        POWER_CONJ_ARR(f) {&f<1,0,c,h>,  &f<1,1,c,h>,  &f<1,2,c,h>,  &f<1,3,c,h>,  &f<1,4,c,h>,  &f<1,5,c,h>,  &f<1,-1,c,h>}, \
+        POWER_CONJ_ARR(f) {&f<2,0,c,h>,  &f<2,1,c,h>,  &f<2,2,c,h>,  &f<2,3,c,h>,  &f<2,4,c,h>,  &f<2,5,c,h>,  &f<2,-1,c,h>}, \
+        POWER_CONJ_ARR(f) {&f<3,0,c,h>,  &f<3,1,c,h>,  &f<3,2,c,h>,  &f<3,3,c,h>,  &f<3,4,c,h>,  &f<3,5,c,h>,  &f<3,-1,c,h>}, \
+        POWER_CONJ_ARR(f) {&f<4,0,c,h>,  &f<4,1,c,h>,  &f<4,2,c,h>,  &f<4,3,c,h>,  &f<4,4,c,h>,  &f<4,5,c,h>,  &f<4,-1,c,h>}, \
+        POWER_CONJ_ARR(f) {&f<5,0,c,h>,  &f<5,1,c,h>,  &f<5,2,c,h>,  &f<5,3,c,h>,  &f<5,4,c,h>,  &f<5,5,c,h>,  &f<5,-1,c,h>}, \
+        POWER_CONJ_ARR(f) {&f<-1,0,c,h>, &f<-1,1,c,h>, &f<-1,2,c,h>, &f<-1,3,c,h>, &f<-1,4,c,h>, &f<-1,5,c,h>, &f<-1,-1,c,h>}}) \
+    [min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS - 1)] \
+    [min((int) numtargs, MAX_OPTIMISED_NUM_TARGS - 1)]
+
+#define POWER_CONJ_ARR(f) vector<decltype(&f<0,0,false,false>)>
+
+#define GET_CPU_OR_GPU_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(funcsuffix, qureg, numctrls, numtargs, conj, haspower) \
+    ((qureg.isGpuAccelerated)? \
+        ((conj)? \
+            ((haspower)? \
+                GET_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_##funcsuffix, numctrls, numtargs, true, true ) : \
+                GET_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_##funcsuffix, numctrls, numtargs, true, false ) ) : \
+            ((haspower)? \
+                GET_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_##funcsuffix, numctrls, numtargs, false, true ) : \
+                GET_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_##funcsuffix, numctrls, numtargs, false, false ) ) ) : \
+        ((conj)? \
+            ((haspower)? \
+                GET_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs, true, true ) : \
+                GET_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs, true, false ) ) : \
+            ((haspower)? \
+                GET_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs, false, true ) : \
+                GET_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs, false, false ) ) ) )
 
 
 
@@ -204,7 +244,7 @@ void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, 
 
 
 /*
- * DIAGONAL MATRIX
+ * ANY-TARG DIAGONAL MATRIX
  */
 
 
@@ -222,10 +262,12 @@ void accel_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, v
 }
 
 
-void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, bool conj) {
+void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, qcomp exponent, bool conj) {
 
-    auto func = GET_CPU_OR_GPU_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( statevec_anyCtrlAnyTargDiagMatr_sub, qureg, ctrls.size(), targs.size(), conj );
-    func(qureg, ctrls, ctrlStates, targs, matr);
+    bool hasPower = exponent != qcomp(1, 0);
+
+    auto func = GET_CPU_OR_GPU_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( statevec_anyCtrlAnyTargDiagMatr_sub, qureg, ctrls.size(), targs.size(), conj, hasPower );
+    func(qureg, ctrls, ctrlStates, targs, matr, exponent);
 }
 
 
@@ -389,8 +431,8 @@ void accel_densmatr_mixQureg_subD(qreal outProb, Qureg out, qreal inProb, Qureg 
     if (!outGPU && inGPU)
         gpu_copyGpuToCpu(in, in.gpuAmps, out.cpuCommBuffer, len); // first arg ignored
 
-    // however, when 'in' and 'out' are identically deployed, we can
-    // avoid a copy by temporarily re-assigning pointers
+    // when 'in' and 'out' are identically deployed, we can
+    // avoid copies by temporarily re-assigning pointers
     qcomp* cpuPtr = out.cpuCommBuffer;
     qcomp* gpuPtr = out.gpuCommBuffer; // may be nullptr
 
