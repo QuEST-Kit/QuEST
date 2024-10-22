@@ -455,7 +455,7 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     kernel_statevec_anyCtrlTwoTargDiagMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
         getPtr(deviceCtrls), ctrls.size(), ctrlStateMask, targ1, targ2,
-        elems[0], elems[1], elems[2], elems[3];
+        elems[0], elems[1], elems[2], elems[3]
     );
 
 #else
