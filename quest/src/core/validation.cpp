@@ -240,7 +240,7 @@ namespace report {
 
 
     string NEW_DISTRIB_DIAG_MATR_HAS_TOO_FEW_AMPS =
-        "Cannot create a diagonal matrix of ${NUM_QUBITS} distributed between ${NUM_NODES} nodes because each node would contain fewer than one element. The minimum number of qubits in such a matrix is ${MIN_QUBITS}. Consider disabling distribution for this matrix.";
+        "Cannot create a diagonal matrix of ${NUM_QUBITS} qubits distributed between ${NUM_NODES} nodes because each node would contain fewer than one element. The minimum number of qubits in such a matrix is ${MIN_QUBITS}. Consider disabling distribution for this matrix.";
 
 
     string NEW_LOCAL_COMP_MATR_CANNOT_FIT_INTO_CPU_MEM =
