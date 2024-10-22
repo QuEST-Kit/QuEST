@@ -242,7 +242,8 @@ void cuquantum_densmatr_oneQubitDephasing_subA(Qureg qureg, int qubit, qreal pro
     cu_qcomp elems[] = {a, b, b, a};
     vector<int> targs {qubit, qubit + qureg.numQubits};
 
-    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {}, {}, targs, elems);
+    bool conj = false;
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {}, {}, targs, elems, conj);
 }
 
 
@@ -258,7 +259,8 @@ void cuquantum_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal 
     // we choose to target the largest possible qubit, expecting best cuStateVec performance
     int targ = qureg.numQubits * 2 - 1; // leftmost bra qubit
 
-    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {ketQubit}, {!braBit}, {targ}, elems);
+    bool conj = false;
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {ketQubit}, {!braBit}, {targ}, elems, conj);
 }
 
 
@@ -276,7 +278,8 @@ void cuquantum_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubi
     cu_qcomp elems[] = {a,b,b,b, b,a,b,b, b,b,a,b, b,b,b,a};
     vector<int> targs {qubitA, qubitB, qubitA + qureg.numQubits, qubitB + qureg.numQubits};
 
-    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {}, {}, targs, elems);
+    bool conj = false;
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {}, {}, targs, elems, conj);
 }
 
 
