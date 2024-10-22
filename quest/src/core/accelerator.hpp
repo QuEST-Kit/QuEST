@@ -169,6 +169,16 @@ void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
 
 
 /*
+ * QUREG COMBINATION
+ */
+
+void accel_densmatr_mixQureg_subA(qreal outProb, Qureg out, qreal inProb, Qureg in);
+void accel_densmatr_mixQureg_subB(qreal outProb, Qureg out, qreal inProb, Qureg in);
+void accel_densmatr_mixQureg_subC(qreal outProb, Qureg out, qreal inProb);
+void accel_densmatr_mixQureg_subD(qreal outProb, Qureg out, qreal inProb, Qureg in);
+
+
+/*
  * DECOHERENCE
  */
 

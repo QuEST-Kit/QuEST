@@ -151,7 +151,7 @@ void assert_validCommBounds(Qureg qureg, qindex sendInd, qindex recvInd, qindex 
         error_commOutOfBounds();
 }
 
-void assert_quregIsDistributed(Qureg qureg) {
+void assert_commQuregIsDistributed(Qureg qureg) {
 
     if (!qureg.isDistributed)
         error_commButQuregNotDistributed();
@@ -167,6 +167,12 @@ void assert_bufferSendRecvDoesNotOverlap(qindex sendInd, qindex recvInd, qindex 
 
     if (sendInd + numAmps > recvInd)
         raiseInternalError("A distributed function attempted to send and receive portions of the buffer which overlapped.");
+}
+
+void assert_receiverCanFitSendersEntireState(Qureg receiver, Qureg sender) {
+
+    if (receiver.numAmpsPerNode < sender.numAmps)
+        raiseInternalError("A distributed function attempted to broadcast a Qureg's entire state into another Qureg's buffer, which could not fit all global amps.");
 }
 
 
@@ -260,6 +266,53 @@ void assert_bufferPackerGivenIncreasingQubits(int qubit1, int qubit2, int qubit3
 
     if (qubit1 >= qubit2 || qubit2 >= qubit3)
         raiseInternalError("A function attempted to pack a buffer using non-increasing qubit indices.");
+}
+
+
+
+/*
+ * BACKEND PRECONDITION ERRORS
+ */
+
+void assert_mixedQuregIsDensityMatrix(Qureg qureg) {
+
+    if (!qureg.isDensityMatrix)
+        raiseInternalError("An internal function invoked by mixQuregs() received a statevector where a density matrix was expected.");
+}
+
+void assert_mixedQuregIsStatevector(Qureg qureg) {
+
+    if (qureg.isDensityMatrix)
+        raiseInternalError("An internal function invoked by mixQuregs() received a density matrix where a statevector was expected.");
+}
+
+void assert_mixedQuregIsDistributed(Qureg qureg) {
+
+    if (!qureg.isDistributed)
+        raiseInternalError("An internal function invoked by mixQuregs() received a non-distributed Qureg where a distributed one was expected.");
+}
+
+void assert_mixedQuregIsLocal(Qureg qureg) {
+
+    if (qureg.isDistributed)
+        raiseInternalError("An internal function invoked by mixQuregs() received a distributed Qureg where a non-distributed one was expected.");
+}
+
+void assert_mixedQuregsAreBothOrNeitherDistributed(Qureg a, Qureg b) {
+
+    if (a.isDistributed != b.isDistributed)
+        raiseInternalError("An internal function invoked by mixQuregs() received density-matrix Quregs of inconsistent distribution.");
+}
+
+void assert_mixQuregTempGpuAllocSucceeded(qcomp* gpuPtr) {
+
+    if (gpuPtr == nullptr)
+        raiseInternalError("An internal function invoked by mixQuregs() attempted to allocate temporary GPU memory but failed.");
+}
+
+void error_mixQuregsAreLocalDensMatrAndDistribStatevec() {
+
+    raiseInternalError("An internal function invoked by mixQuregs() received a non-distributed density matrix and a distributed statevector, which is an illegal combination.");
 }
 
 

@@ -613,6 +613,30 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevector_anyCtrlAnyTargZO
 
 
 /*
+ * QUREG COMBINATION
+ */
+
+
+void gpu_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, Qureg inDensMatr) {
+
+    // TODO
+}
+
+
+void gpu_densmatr_mixQureg_subB(qreal outProb, Qureg outQureg, qreal inProb, Qureg inStateVec) {
+
+    // TODO
+}
+
+
+void gpu_densmatr_mixQureg_subC(qreal outProb, Qureg outQureg, qreal inProb) {
+
+    // TODO
+}
+
+
+
+/*
  * ONE-QUBIT DEPHASING
  */
 

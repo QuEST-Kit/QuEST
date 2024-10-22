@@ -76,6 +76,16 @@ template <int NumCtrls> void gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
 );
 
 
+
+/*
+ * QUREG COMBINATION
+ */
+
+void gpu_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, Qureg inDensMatr);
+void gpu_densmatr_mixQureg_subB(qreal outProb, Qureg outQureg, qreal inProb, Qureg inStateVec);
+void gpu_densmatr_mixQureg_subC(qreal outProb, Qureg outQureg, qreal inProb);
+
+
 /*
  * DECOHERENCE
  */

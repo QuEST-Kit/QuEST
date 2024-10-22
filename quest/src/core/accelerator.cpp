@@ -20,6 +20,8 @@
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/cpu/cpu_config.hpp"
+#include "quest/src/gpu/gpu_config.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
 #include "quest/src/gpu/gpu_subroutines.hpp"
 
@@ -256,6 +258,152 @@ void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     // no template nor compile-time optimisation necessary for the number of targs
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevector_anyCtrlAnyTargZOrPhaseGadget_sub, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targs, fac0, fac1);
+}
+
+
+
+/*
+ * QUREG COMBINATION
+ */
+
+
+void accel_densmatr_mixQureg_subA(qreal outProb, Qureg out, qreal inProb, Qureg in) {
+
+    // quregs are equally-sized density matrices and are equally-distributed... 
+    assert_mixedQuregIsDensityMatrix(out);
+    assert_mixedQuregIsDensityMatrix(in);
+    assert_mixedQuregsAreBothOrNeitherDistributed(out, in);
+
+    // but may differ in GPU accel
+    bool outGPU = out.isGpuAccelerated;
+    bool inGPU = in.isGpuAccelerated;
+
+    // when deployments match, we trivially call the common backend
+    if (outGPU && inGPU)
+        gpu_densmatr_mixQureg_subA(outProb, out, inProb, in);
+    if (!outGPU && !inGPU)
+        cpu_densmatr_mixQureg_subA(outProb, out, inProb, in);
+
+    // deployments differing is a strange and expected rare scenario;
+    // why use GPU-acceleration for one Qureg but not the equally-sized
+    // other qureg? We provide the below fallbacks for defensive design.
+
+    // When GPU-accel differs, we fall-back to copying memory to RAM and
+    // using the CPU backend. In theory, we could instead copy
+    // the non-GPU qureg into the VRAM buffer of the GPU qureg and
+    // always use the GPU backend, but this is only possible when
+    // the buffer exists (GPU qureg is distributed), and complicates
+    // the backend; unworthwhile for such a rare scenario.
+
+    if (!outGPU && inGPU) {
+        gpu_copyGpuToCpu(in);
+        cpu_densmatr_mixQureg_subA(outProb, out, inProb, in);
+    }
+
+    if (outGPU && !inGPU) {
+        gpu_copyGpuToCpu(out);
+        cpu_densmatr_mixQureg_subA(outProb, out, inProb, in);
+        gpu_copyCpuToGpu(out);
+    }
+}
+
+
+void accel_densmatr_mixQureg_subB(qreal outProb, Qureg out, qreal inProb, Qureg in) {
+
+    // quregs are densmatr and statevec, and are both non-distributed...
+    assert_mixedQuregIsDensityMatrix(out);
+    assert_mixedQuregIsStatevector(in);
+    assert_mixedQuregIsLocal(out);
+    assert_mixedQuregIsLocal(in);
+
+    // but may differ in GPU accel
+    bool outGPU = out.isGpuAccelerated;
+    bool inGPU = in.isGpuAccelerated;
+
+    // when deployments match, we trivially call the common backend
+    if (outGPU && inGPU)
+        gpu_densmatr_mixQureg_subB(outProb, out, inProb, in);
+    if (!outGPU && !inGPU)
+        cpu_densmatr_mixQureg_subB(outProb, out, inProb, in);
+
+    // GPU-accelarated smaller register defaults to CPU
+    if (!outGPU && inGPU) {
+        gpu_copyGpuToCpu(in);
+        cpu_densmatr_mixQureg_subB(outProb, out, inProb, in);
+    }
+    
+    // GPU-accelerated larger register is a very common scenario,
+    // but is irksome because without communication buffers, there
+    // is no existing GPU memory to copy CPU-only small register to.
+    // So we regrettably create temporary GPU memory, which will 
+    // thankfully be very small; quadratically smaller than 'out')
+    if (outGPU && !inGPU) {
+
+        // temporarily graft GPU memory onto 'in'
+        in.isGpuAccelerated = 1; // to fool gpu_copyCpuToGpu()
+        in.gpuAmps = gpu_allocArray(in.numAmps);
+        assert_mixQuregTempGpuAllocSucceeded(in.gpuAmps);
+
+        // copy into new GPU memory and perform GPU simulation
+        gpu_copyCpuToGpu(in, in.cpuAmps, in.gpuAmps, in.numAmps);
+        gpu_densmatr_mixQureg_subB(outProb, out, inProb, in);
+
+        // undo changes to 'in'
+        gpu_deallocArray(in.gpuAmps);
+        in.gpuAmps = nullptr;
+        in.isGpuAccelerated = 0;
+    }
+}
+
+
+void accel_densmatr_mixQureg_subC(qreal outProb, Qureg out, qreal inProb) {
+
+    // statevector has been copied to out's GPU or CPU buffer
+    assert_mixedQuregIsDensityMatrix(out);
+    assert_mixedQuregIsDistributed(out);
+
+    (out.isGpuAccelerated)?
+        gpu_densmatr_mixQureg_subC(outProb, out, inProb):
+        cpu_densmatr_mixQureg_subC(outProb, out, inProb);
+}
+
+
+void accel_densmatr_mixQureg_subD(qreal outProb, Qureg out, qreal inProb, Qureg in) {
+
+    // 'in' is local statevec and 'out' is a distributed density matrix...
+    assert_mixedQuregIsDensityMatrix(out);
+    assert_mixedQuregIsStatevector(in);
+    assert_mixedQuregIsDistributed(out);
+    assert_mixedQuregIsLocal(in);
+
+    // but they may differ in GPU deployment
+    bool outGPU = out.isGpuAccelerated;
+    bool inGPU = in.isGpuAccelerated;
+
+    // we copy 'in' into 'out's communication buffer and invoke subC;
+    // the choice of buffer (CPU or GPU) depends on 'out's deployment
+    qindex len = in.numAmps;
+
+    if (outGPU && !inGPU)
+        gpu_copyCpuToGpu(out, in.cpuAmps, out.gpuCommBuffer, len); // first arg ignored
+    if (!outGPU && inGPU)
+        gpu_copyGpuToCpu(in, in.gpuAmps, out.cpuCommBuffer, len); // first arg ignored
+
+    // however, when 'in' and 'out' are identically deployed, we can
+    // avoid a copy by temporarily re-assigning pointers
+    qcomp* cpuPtr = out.cpuCommBuffer;
+    qcomp* gpuPtr = out.gpuCommBuffer; // may be nullptr
+
+    if (outGPU && inGPU)
+        out.gpuCommBuffer = in.gpuAmps;
+    if (!outGPU && !inGPU)
+        out.cpuCommBuffer = in.cpuAmps;
+
+    accel_densmatr_mixQureg_subC(outProb, out, inProb);
+
+    // restore pointers in case they were modified
+    out.cpuCommBuffer = cpuPtr;
+    out.gpuCommBuffer = gpuPtr;
 }
 
 
