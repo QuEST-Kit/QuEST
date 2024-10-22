@@ -87,11 +87,11 @@ struct functor_conj : public thrust::unary_function<cu_qcomp,cu_qcomp> {
 };
 
 
-struct functor_mixDensityMatrixAmps : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qcomp> {
+struct functor_mixDensityQuregs : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qcomp> {
 
     qreal inProb;
     qreal outProb;
-    functor_mixQureg(qreal in, qreal out) : inProb(in), outProb(out) {}
+    functor_mixDensityQuregs(qreal in, qreal out) : inProb(in), outProb(out) {}
 
     __host__ __device__ cu_qcomp operator()(cu_qcomp inAmp, cu_qcomp outAmp) {
         return (inProb * inAmp) + (outProb * outAmp);
@@ -116,7 +116,7 @@ void thrust_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, 
     thrust::transform(
         getStartPtr(inQureg),  getEndPtr(inQureg), 
         getStartPtr(outQureg), getStartPtr(outQureg), // 4th arg is output pointer
-        functor_mixDensityMatrixAmps(inProb, outProb));
+        functor_mixDensityQuregs(inProb, outProb));
 }
 
 
