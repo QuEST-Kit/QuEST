@@ -10,6 +10,7 @@
 #include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 #include "quest/include/channels.h"
+#include "quest/include/environment.h"
 
 #include <type_traits>
 #include <string>
@@ -58,6 +59,8 @@ qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> ta
  *
  * defined here in the header since templated, and which use compile-time inspection.
  */
+
+template <class T> constexpr bool util_isFullStateDiagMatr () { return is_same_v<T, FullStateDiagMatr >; }
 
 template<class T>
 constexpr bool util_isDenseMatrixType() {
@@ -121,6 +124,18 @@ bool util_isDistributedMatrix(T matr) {
 
     if constexpr (util_isDistributableMatrixType<T>())
         return matr.isDistributed;
+
+    return false;
+}
+
+template<class T>
+bool util_isGpuAcceleratedMatrix(T matr) {
+
+    if constexpr (util_isFullStateDiagMatr<T>())
+        return matr.isGpuAccelerated;
+
+    if constexpr (util_isHeapMatrixType<T>())
+        return getQuESTEnv().isGpuAccelerated;
 
     return false;
 }

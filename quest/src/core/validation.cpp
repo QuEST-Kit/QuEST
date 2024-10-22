@@ -240,7 +240,7 @@ namespace report {
 
 
     string NEW_DISTRIB_DIAG_MATR_HAS_TOO_FEW_AMPS =
-        "Cannot create a diagonal matrix of ${NUM_QUBITS} distributed between ${NUM_NODES} nodes because each node would contain fewer than one element. The minimum number of qubits in such a matrix is ${MIN_QUBITS}. Consider disabling distribution for this matrix.";
+        "Cannot create a diagonal matrix of ${NUM_QUBITS} qubits distributed between ${NUM_NODES} nodes because each node would contain fewer than one element. The minimum number of qubits in such a matrix is ${MIN_QUBITS}. Consider disabling distribution for this matrix.";
 
 
     string NEW_LOCAL_COMP_MATR_CANNOT_FIT_INTO_CPU_MEM =
@@ -352,6 +352,9 @@ namespace report {
     string INVALID_FULL_STATE_DIAG_MATR_FIELDS = 
         "Invalid FullStateDiagMatr. Targeted ${NUM_QUBITS} qubits and had a dimension of ${NUM_ROWS}x${NUM_ROWS}. It is likely this matrix was not created with createFullStateDiagMatr().";
 
+    string FULL_STATE_DIAG_MATR_GPU_ACCEL_IN_NON_GPU_ENV =
+        "Invalid FullStateDiagMatr. Was marked as GPU-accelerated in a non-GPU-accelerated environment, which is impossible. It is likely this matrix was manually modified and/or corrupted.";
+
 
     string COMP_MATR_NOT_SYNCED_TO_GPU = 
         "The CompMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncCompMatr() after manually modifying elements, or overwrite all elements with setCompMatr() which automatically synchronises.";
@@ -371,10 +374,13 @@ namespace report {
 
 
     string INVALID_MATRIX_CPU_ELEMS_PTR =
-        "The given matrix's outer CPU heap-memory pointer was NULL. This implies the matrix was prior destroyed and its pointers were manually cleared.";
+        "The given matrix's outer CPU heap-memory pointer was NULL. This may imply the matrix was prior destroyed and its pointers were manually cleared.";
 
-    string INVALID_MATRIX_GPU_ELEMS_PTR =
-        "The given matrix's GPU memory pointer was NULL. This implies the matrix was prior destroyed and its pointer was manually cleared.";
+    string MATRIX_GPU_ELEMS_PTR_UNEXPECTEDLY_NULL =
+        "The given matrix's GPU memory pointer was unexpectedly NULL. This may imply the matrix was prior destroyed and its pointer was manually cleared.";
+
+    string MATRIX_GPU_ELEMS_PTR_UNEXPECTEDLY_NOT_NULL =
+        "The given matrix's GPU memory pointer was non-NULL, implying an allocation, despite the QuEST environment being non-GPU-accelerated. This implies the matrix fields were manually modified and corrupted.";
 
 
     string FULL_STATE_DIAG_MATR_MISMATCHES_QUREG_DIM =
@@ -1352,7 +1358,7 @@ void assertMatrixFitsInCpuMem(int numQubits, bool isDense, int isDistrib, int nu
     assertAllNodesAgreeThat(matrFitsInMem, msg, vars, caller);
 }
 
-void assertMatrixFitsInGpuMem(int numQubits, bool isDense, int isDistrib, int isEnvGpuAccel, int numEnvNodes, const char* caller) {
+void assertMatrixFitsInGpuMem(int numQubits, bool isDense, int isDistrib, int isGpu, int numEnvNodes, const char* caller) {
 
     // 'isDistrib' can be 0 (user-disabled, or matrix is a local type), 1 (user-forced)
     // or modeflag::USE_AUTO=-1 (automatic; the type can be distributed but the user has 
@@ -1361,8 +1367,11 @@ void assertMatrixFitsInGpuMem(int numQubits, bool isDense, int isDistrib, int is
     if (isDense && isDistrib != 0)
         error_validationEncounteredUnsupportedDistributedDenseMatrix();
 
-    // matrix GPU memory will always be allocated when env is GPU-accelerated
-    if (!isEnvGpuAccel)
+    // 'isGpu' can be 0 (user-disabled, or matrix is a local type), 1 (user-forced), or
+    // modeflag::USE_AUTO=-1 (automatic; the type can be GPU-accel but the user has not forced it).
+    // Whenever GPU isn't forced, we do not need to check there's sufficient GPU memory, because
+    // if there's insufficient, the auto-deployer will never choose it. So proceed only if GPU is forced.
+    if (isGpu != 1)
         return;
 
     // we consult the current available local GPU memory (being more strict than is possible for RAM)
@@ -1405,14 +1414,13 @@ void assertMatrixFitsInGpuMem(int numQubits, bool isDense, int isDistrib, int is
     assertAllNodesAgreeThat(matrFitsInMem, msg, vars, caller);
 }
 
-void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, bool isDenseType, const char* caller) {
+void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, int useGpu, bool isDenseType, const char* caller) {
 
     // some of the below validation involves getting distributed node consensus, which
     // can be an expensive synchronisation, which we avoid if validation is anyway disabled
     if (!isValidationEnabled)
         return;
 
-    validate_envIsInit(caller);
     QuESTEnv env = getQuESTEnv();
 
     assertMatrixNonEmpty(numQubits, caller);
@@ -1420,25 +1428,44 @@ void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, bool isDenseTy
     assertMatrixLocalMemDoesntExceedMaxSizeof(numQubits,  isDenseType, useDistrib, env.numNodes, caller);
     assertMatrixNotDistributedOverTooManyNodes(numQubits, isDenseType, useDistrib, env.numNodes, caller);
     assertMatrixFitsInCpuMem(numQubits, isDenseType, useDistrib, env.numNodes, caller);
-    assertMatrixFitsInGpuMem(numQubits, isDenseType, useDistrib, env.isGpuAccelerated, env.numNodes, caller);
+    assertMatrixFitsInGpuMem(numQubits, isDenseType, useDistrib, useGpu, env.numNodes, caller);
 }
 
 void validate_newCompMatrParams(int numQubits, const char* caller) {
+    validate_envIsInit(caller);
 
+    // CompMatr can never be distributed
     int useDistrib = 0;
+
+    // CompMatr is always GPU accelerated whenever enabled by the environment
+    bool useGpu = getQuESTEnv().isGpuAccelerated;
+
+    // CompMatr stores 2^(2*numQubits) elems
     bool isDenseType = true;
-    assertNewMatrixParamsAreValid(numQubits, useDistrib, isDenseType, caller);
+
+    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, isDenseType, caller);
 }
 void validate_newDiagMatrParams(int numQubits, const char* caller) {
+    validate_envIsInit(caller);
 
+    // DiagMatr can never be distributed
     int useDistrib = 0;
-    bool isDenseType = false;
-    assertNewMatrixParamsAreValid(numQubits, useDistrib, isDenseType, caller);
-}
-void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, const char* caller) {
 
+    // DiagMatr is always GPU accelerated whenever enabled by the environment
+    bool useGpu = getQuESTEnv().isGpuAccelerated;
+
+    // DiagMatr stores only the diagonals; 2^numQubits elems
     bool isDenseType = false;
-    assertNewMatrixParamsAreValid(numQubits, useDistrib, isDenseType, caller);
+
+    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, isDenseType, caller);
+}
+void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, int useGpu, const char* caller) {
+    validate_envIsInit(caller);
+
+    // FullStateDiagMatr stores only the diagonals
+    bool isDenseType = false;
+
+    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, isDenseType, caller);
 }
 
 // T can be CompMatr, DiagMatr, FullStateDiagMatr (i.e. heap-based matrices)
@@ -1462,7 +1489,11 @@ void assertNewMatrixAllocsSucceeded(T matr, qindex numBytes, const char* caller)
     assertAllNodesAgreeThat(isAlloc, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
 
     // optionally assert GPU memory was malloc'd successfully
-    if (getQuESTEnv().isGpuAccelerated)
+    bool gpuShouldBeAlloc = getQuESTEnv().isGpuAccelerated;
+    if constexpr (util_isFullStateDiagMatr<T>())
+        gpuShouldBeAlloc &= matr.isGpuAccelerated;
+        
+    if (gpuShouldBeAlloc)
         assertAllNodesAgreeThat(mem_isAllocated(util_getGpuMemPtr(matr)), report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
 
     // assert the teeny-tiny heap flags are alloc'd
@@ -1640,9 +1671,26 @@ void assertAdditionalHeapMatrixFieldsAreValid(T matr, const char* caller) {
     // created because un-initialised structs will have random non-NULL pointers.
     assertThat(mem_isOuterAllocated(matr.cpuElems), report::INVALID_MATRIX_CPU_ELEMS_PTR, caller);
 
+    // check whether GPU status/memory pointers are consistent with env
     validate_envIsInit(caller);
-    if (getQuESTEnv().isGpuAccelerated)
-        assertThat(mem_isOuterAllocated(util_getGpuMemPtr(matr)), report::INVALID_MATRIX_GPU_ELEMS_PTR, caller);
+    bool envIsGpuAccel = getQuESTEnv().isGpuAccelerated;
+    bool matrHasGpuAlloc = mem_isOuterAllocated(util_getGpuMemPtr(matr));
+
+    // FullStateDiagMatr can disable GPU-accel even in GPU-accelerated environments
+    if constexpr (util_isFullStateDiagMatr<T>()) {
+        if (matr.isGpuAccelerated) {
+            assertThat(envIsGpuAccel, report::FULL_STATE_DIAG_MATR_GPU_ACCEL_IN_NON_GPU_ENV, caller);
+            assertThat(matrHasGpuAlloc, report::MATRIX_GPU_ELEMS_PTR_UNEXPECTEDLY_NULL, caller);
+        } else
+            assertThat( ! matrHasGpuAlloc, report::MATRIX_GPU_ELEMS_PTR_UNEXPECTEDLY_NOT_NULL, caller);
+
+    // all other heap-matrices always GPU-accel in GPU-accelerated envs
+    } else {
+        if (envIsGpuAccel)
+            assertThat(matrHasGpuAlloc, report::MATRIX_GPU_ELEMS_PTR_UNEXPECTEDLY_NULL, caller);
+        else
+            assertThat( ! matrHasGpuAlloc, report::MATRIX_GPU_ELEMS_PTR_UNEXPECTEDLY_NOT_NULL, caller);
+    }
 }
 
 // T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr

@@ -115,7 +115,7 @@ void print(qcomp num);
  * MATRIX PRINTING
  */
 
-void print_matrixInfo(string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem, int numNodes=1);
+void print_matrixInfo(string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem, int numNodes, bool hasGpuMem);
 
 void print_matrix(CompMatr1 matr, string indent=defaultMatrIndent);
 void print_matrix(CompMatr2 matr, string indent=defaultMatrIndent);
