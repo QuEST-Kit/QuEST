@@ -338,7 +338,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
     cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
-    int* ctrls, int numCtrls, qindex ctrlStateMask, int targ1, 
+    int* ctrls, int numCtrls, qindex ctrlStateMask, int targ, 
     cu_qcomp m1, cu_qcomp m2
 ) {
     GET_THREAD_IND(n, numThreads);

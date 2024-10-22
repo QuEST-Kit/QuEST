@@ -59,7 +59,7 @@ thrust::device_ptr<cu_qcomp> getStartPtr(cu_qcomp* amps) {
 
 thrust::device_ptr<cu_qcomp> getStartPtr(Qureg qureg) {
 
-    return getStartPtr(qureg.gpuAmps);
+    return getStartPtr(toCuQcomps(qureg.gpuAmps));
 }
 
 
@@ -78,6 +78,15 @@ thrust::device_ptr<cu_qcomp> getEndPtr(Qureg qureg) {
  */
 
 
+struct functor_conj : public thrust::unary_function<cu_qcomp,cu_qcomp> {
+
+    __host__ __device__ cu_qcomp operator()(cu_qcomp amp) {
+        amp.y *= -1;
+        return amp;
+    }
+};
+
+
 struct functor_mixDensityMatrixAmps : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qcomp> {
 
     qreal inProb;
@@ -90,7 +99,6 @@ struct functor_mixDensityMatrixAmps : public thrust::binary_function<cu_qcomp,cu
 };
 
 
-
 /*
  * FUNCTIONS 
  */
@@ -99,7 +107,7 @@ struct functor_mixDensityMatrixAmps : public thrust::binary_function<cu_qcomp,cu
 void thrust_setElemsToConjugate(cu_qcomp* matrElemsPtr, qindex matrElemsLen) {
 
     auto ptr = getStartPtr(matrElemsPtr);
-    thrust::transform(ptr, ptr + matrElemsLen, ptr, thrust::conj);
+    thrust::transform(ptr, ptr + matrElemsLen, ptr, functor_conj());
 }
 
 
