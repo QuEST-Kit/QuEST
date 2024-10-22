@@ -395,6 +395,10 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
 #elif COMPILE_CUDA
 
+    // TODO:
+    // when NumCtrls==0, a Thrust functor would be undoubtedly more
+    // efficient (because of improved parallelisation granularity) 
+
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
 
@@ -437,6 +441,10 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
 #elif COMPILE_CUDA
 
+    // TODO:
+    // when NumCtrls==0, a Thrust functor would be undoubtedly more
+    // efficient (because of improved parallelisation granularity) 
+
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
 
@@ -447,7 +455,7 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     kernel_statevec_anyCtrlTwoTargDiagMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
         getPtr(deviceCtrls), ctrls.size(), ctrlStateMask, targ1, targ2,
-        elems[0], elems[1], elems[2], elems[3];
+        elems[0], elems[1], elems[2], elems[3]
     );
 
 #else
@@ -461,21 +469,40 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_anyCtrlTwoTargDiagM
 
 
 /*
- * MANY-TARGET DIAG MATRIX
+ * ANY-TARGET DIAG MATRIX
  */
 
 
-template <int NumCtrls, int NumTargs, bool ApplyConj>
-void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr) {
+template <int NumCtrls, int NumTargs, bool ApplyConj, bool HasPower>
+void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, qcomp exponent) {
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
     assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
+    assert_exponentMatchesTemplateParam(exponent, HasPower);
 
 #if COMPILE_CUQUANTUM
 
-    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, toCuQcomps(util_getGpuMemPtr(matr)), ApplyConj);
+    // cuQuantum cannot handle HasPower, in which case we fall back to custom kernel
+    if (!HasPower) {
+        cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, toCuQcomps(util_getGpuMemPtr(matr)), ApplyConj);
 
-#elif COMPILE_CUDA
+        // must return to avoid re-simulation below
+        return;
+    }
+
+    // this is the only function (so far) which will fail to operate correctly if
+    // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
+    // true but the latter is not), so we explicitly ensure this is the case
+    if (!COMPILE_CUDA)
+        error_cuQuantumCompiledButNotCuda();
+
+#endif
+
+#if COMPILE_CUDA
+
+    // TODO:
+    // when NumCtrls==0, a Thrust functor would be undoubtedly more
+    // efficient (because of improved parallelisation granularity) 
 
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
@@ -484,10 +511,10 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     devicevec deviceCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
 
-    kernel_statevec_anyCtrlAnyTargDiagMatr_sub <NumCtrls, NumTargs, ApplyConj> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_anyCtrlAnyTargDiagMatr_sub <NumCtrls, NumTargs, ApplyConj, HasPower> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
         getPtr(deviceCtrls), ctrls.size(), ctrlStateMask, getPtr(deviceTargs), targs.size(), 
-        toCuQcomps(util_getGpuMemPtr(matr))
+        toCuQcomps(util_getGpuMemPtr(matr)), toCuQcomp(exponent)
     );
 
 #else
@@ -496,7 +523,7 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 }
 
 
-INSTANTIATE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevec_anyCtrlAnyTargDiagMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, DiagMatr) )
+INSTANTIATE_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevec_anyCtrlAnyTargDiagMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, DiagMatr, qcomp) )
 
 
 

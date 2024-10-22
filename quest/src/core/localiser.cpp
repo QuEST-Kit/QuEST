@@ -524,7 +524,7 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
 
 
 /*
- * ALL-TARGET DIAGONAL MATRIX
+ * ANY-TARGET DIAGONAL MATRIX
  *
  * which have num-target specific implementations (e.g. for avoiding
  * GOU memory, if possible), but identical communication logic
@@ -566,7 +566,7 @@ void localiser_statevec_anyCtrlTwoTargDiagMatr(Qureg qureg, vector<int> ctrls, v
 }
 
 
-void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, bool conj) {
+void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, qcomp exponent, bool conj) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
 
@@ -576,7 +576,7 @@ void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, v
 
     // retain only suffix control qubits, as relevant to local amp modification
     removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
-    accel_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, matr, conj);
+    accel_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, matr, exponent, conj);
 }
 
 

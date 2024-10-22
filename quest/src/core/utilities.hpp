@@ -155,21 +155,6 @@ qindex util_getMatrixDim(T matr) {
         return matr.numElems;
 }
 
-// T can be CompMatr, DiagMatr, FullStateDiagMatr, KrausMap, SuperOp (i.e. heap-based non-Qureg structures)
-template<class T>
-qcomp util_getFirstLocalElem(T obj) {
-
-    // Kraus map elements never reach the GPU; their superoperator elements do, so query those
-    if constexpr (is_same_v<T, KrausMap>)
-        return util_getFirstLocalElem(obj.superop);
-
-    // otherwise the elems field dimension depends on the matrix type
-    else if constexpr (util_isDenseMatrixType<T>())
-        return obj.cpuElems[0][0];
-    else
-        return obj.cpuElems[0];
-}
-
 // T can be CompMatr, DiagMatr, FullStateDiagMatr, SuperOp (but NOT KrausMap)
 template<class T>
 qcomp* util_getGpuMemPtr(T matr) {
