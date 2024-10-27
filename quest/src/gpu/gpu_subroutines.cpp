@@ -528,6 +528,64 @@ INSTANTIATE_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( voi
 
 
 /*
+ * ALL-TARGS DIAGONAL MATRIX
+ */
+
+
+template <bool HasPower>
+void gpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+    assert_exponentMatchesTemplateParam(exponent, HasPower);
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    // we always use Thrust because we are doubtful that cuQuantum's
+    // diagonal-matrix facilities are optimised for the all-qubit case
+
+    thrust_statevec_allTargDiagMatr_sub<HasPower>(qureg, matr, exponent);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+template <bool HasPower, bool MultiplyOnly>
+void gpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+    assert_exponentMatchesTemplateParam(exponent, HasPower);
+
+    // in theory, we could use cuQuantum when HasPower=MultiplyOnly=true,
+    // treating FullStateDiagMatr like an N/2-qubit DiagMatr upon a SV,
+    // but this scenario is not worth the code complication
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    qindex numThreads = qureg.numAmpsPerNode;
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    kernel_densmatr_allTargDiagMatr_sub <HasPower, MultiplyOnly> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
+        toCuQcomps(util_getGpuMemPtr(matr)), matr.numElems, toCuQcomp(exponent)
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+template void gpu_statevec_allTargDiagMatr_sub<true >(Qureg, FullStateDiagMatr, qcomp);
+template void gpu_statevec_allTargDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
+
+template void gpu_densmatr_allTargDiagMatr_sub<true, true>  (Qureg, FullStateDiagMatr, qcomp);
+template void gpu_densmatr_allTargDiagMatr_sub<true, false> (Qureg, FullStateDiagMatr, qcomp);
+template void gpu_densmatr_allTargDiagMatr_sub<false, true> (Qureg, FullStateDiagMatr, qcomp);
+template void gpu_densmatr_allTargDiagMatr_sub<false, false>(Qureg, FullStateDiagMatr, qcomp);
+
+
+
+/*
  * PAULI TENSOR AND GADGET
  */
 

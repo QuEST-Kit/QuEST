@@ -7,6 +7,7 @@
 
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
+#include "quest/include/matrices.h"
 
 #include "quest/src/core/printer.hpp"
 #include "quest/src/comm/comm_config.hpp"
@@ -157,6 +158,12 @@ void assert_commQuregIsDistributed(Qureg qureg) {
         error_commButQuregNotDistributed();
 }
 
+void assert_commFullStateDiagMatrIsDistributed(FullStateDiagMatr matr) {
+    
+    if (!matr.isDistributed)
+        raiseInternalError("A function attempted to invoke communication of a FullStateDiagMatr which was not distributed.");
+}
+
 void assert_pairRankIsDistinct(Qureg qureg, int pairRank) {
 
     if (pairRank == qureg.rank)
@@ -173,6 +180,12 @@ void assert_receiverCanFitSendersEntireState(Qureg receiver, Qureg sender) {
 
     if (receiver.numAmpsPerNode < sender.numAmps)
         raiseInternalError("A distributed function attempted to broadcast a Qureg's entire state into another Qureg's buffer, which could not fit all global amps.");
+}
+
+void assert_receiverCanFitSendersEntireElems(Qureg receiver, FullStateDiagMatr sender) {
+
+    if (receiver.numAmpsPerNode < sender.numElems)
+        raiseInternalError("A distributed function attempted to broadcast the entirety of a FullStateDiagMatr's elements into a Qureg's buffer, which is too small to contain all global elements.");
 }
 
 
@@ -194,6 +207,17 @@ void error_localiserGivenPauliTensorOrGadgetWithoutXOrY() {
 void error_localiserPassedStateVecToChannelComCheck() {
 
     raiseInternalError("The localiser queried whether a channel would invoke communication upon a statevector.");
+}
+
+void error_localiserGivenDistribMatrixAndLocalQureg() {
+
+    raiseInternalError("A localiser function was given a distributed FullStateDiagMatr but a non-distributed Qureg, which are incompatible.");
+}
+
+void assert_localiserGivenStateVec(Qureg qureg) {
+
+    if (qureg.isDensityMatrix)
+        raiseInternalError("The localiser received a density matrix to a function defined strictly for statevectors.");
 }
 
 void assert_localiserGivenDensMatr(Qureg qureg) {
@@ -320,6 +344,63 @@ void assert_mixQuregTempGpuAllocSucceeded(qcomp* gpuPtr) {
 void error_mixQuregsAreLocalDensMatrAndDistribStatevec() {
 
     raiseInternalError("An internal function invoked by mixQuregs() received a non-distributed density matrix and a distributed statevector, which is an illegal combination.");
+}
+
+void assert_fullStateDiagMatrIsLocal(FullStateDiagMatr matr) {
+
+    if (matr.isDistributed)
+        raiseInternalError("An accelerator function received a distributed FullStateDiagMatr where a non-distributed one was expected.");
+}
+
+void assert_fullStateDiagMatrIsDistributed(FullStateDiagMatr matr) {
+
+    if (!matr.isDistributed)
+        raiseInternalError("An accelerator function received a non-distributed FullStateDiagMatr where a distributed one was expected.");
+}
+
+void assert_acceleratorQuregIsDistributed(Qureg qureg) {
+
+    if (!qureg.isDistributed)
+        raiseInternalError("An accelerator function invoked received non-distributed Qureg where a distributed one was expected.");
+}
+
+void assert_quregAndFullStateDiagMatrAreBothOrNeitherDistrib(Qureg qureg, FullStateDiagMatr matr) {
+
+    if (qureg.isDistributed != matr.isDistributed)
+        raiseInternalError("An accelerator function unexpectedly received a Qureg and FullStateDiagMatr with different distributions.");
+}
+
+void assert_quregGpuBufferIsNotGraftedToMatrix(Qureg qureg, FullStateDiagMatr matr) {
+
+    if (matr.gpuElems == qureg.gpuCommBuffer)
+        raiseInternalError("An accelerator function received a FullStateDiagMatr with a GPU pointer which was a Qureg's GPU communication buffer, in a setting where the buffer was separately needed.");
+}
+
+void assert_applyFullStateDiagMatrTempGpuAllocSucceeded(qcomp* gpuPtr) {
+
+    if (gpuPtr == nullptr)
+        raiseInternalError("An internal function invoked by applying a FullStateDiagMatr upon a density matrix attempted to allocate temporary GPU memory but failed.");
+}
+
+
+
+/*
+ * BACKEND PRECONDITION ERRORS
+ */
+
+void assert_quregAndFullStateDiagMatrHaveSameDistrib(Qureg qureg, FullStateDiagMatr matr) {
+
+    if (qureg.isDistributed != matr.isDistributed)
+        raiseInternalError("A Qureg and FullStateDiagMatr had unexpectedly mismatching distribution statuses.");
+}
+
+void assert_quregDistribAndFullStateDiagMatrLocal(Qureg qureg, FullStateDiagMatr matr) {
+
+    if (!qureg.isDistributed)
+        raiseInternalError("The Qureg was unexpectedly non-distributed.");
+        
+    if (matr.isDistributed)
+        raiseInternalError("The FullStateDiagMatr was unexpectedly distributed.");
 }
 
 

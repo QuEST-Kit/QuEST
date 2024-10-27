@@ -535,6 +535,88 @@ INSTANTIATE_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( voi
 
 
 /*
+ * ALL-TARGS DIAGONAL MATRIX
+ */
+
+
+template <bool HasPower>
+void cpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+    assert_quregAndFullStateDiagMatrHaveSameDistrib(qureg, matr);
+    assert_exponentMatchesTemplateParam(exponent, HasPower);
+
+    // suppress warnings that 'exponent' is unused when HasPower=false (we cannot use C++17 [[maybe_unused]])
+    (void) exponent;
+
+    // every iteration modifies one amp, using one element
+    qindex numIts = qureg.numAmpsPerNode;
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // compile-time decide if applying power to avoid in-loop branching
+        qcomp elem = matr.cpuElems[n];
+        if constexpr (HasPower)
+            elem = pow(elem, exponent);
+
+        qureg.cpuAmps[n] *= elem;
+    }
+}
+
+
+template <bool HasPower, bool MultiplyOnly>
+void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+    assert_exponentMatchesTemplateParam(exponent, HasPower);
+
+    // suppress warnings that 'exponent' is unused when HasPower=false (we cannot use C++17 [[maybe_unused]])
+    (void) exponent;
+
+    // every iteration modifies one qureg amp, using one matr element
+    qindex numIts = qureg.numAmpsPerNode;
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = global row of nth local index
+        qindex i = n % matr.numElems;
+        qcomp fac = matr.cpuElems[i];
+
+        if constexpr (HasPower)
+            fac = pow(fac, exponent);
+
+        if constexpr (!MultiplyOnly) {
+
+            // m = global index corresponding to n
+            qindex m = concatenateBits(qureg.rank, n, qureg.numAmpsPerNode);
+
+            // j = global column corresponding to n
+            qindex j = m / matr.numElems;
+            qcomp term = matr.cpuElems[j];
+
+            if constexpr(HasPower)
+                term = pow(term, exponent);
+
+            // conj after pow
+            fac *= conj(term);
+        }
+
+        qureg.cpuAmps[n] *= fac;
+    }
+}
+
+
+template void cpu_statevec_allTargDiagMatr_sub<true> (Qureg, FullStateDiagMatr, qcomp);
+template void cpu_statevec_allTargDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
+
+template void cpu_densmatr_allTargDiagMatr_sub<true, true>  (Qureg, FullStateDiagMatr, qcomp);
+template void cpu_densmatr_allTargDiagMatr_sub<true, false> (Qureg, FullStateDiagMatr, qcomp);
+template void cpu_densmatr_allTargDiagMatr_sub<false, true> (Qureg, FullStateDiagMatr, qcomp);
+template void cpu_densmatr_allTargDiagMatr_sub<false, false>(Qureg, FullStateDiagMatr, qcomp);
+
+
+
+/*
  * PAULI TENSOR AND GADGET
  */
 

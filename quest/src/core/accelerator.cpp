@@ -50,6 +50,16 @@ using std::min;
  */
 
 
+#define GET_FUNC_OPTIMISED_FOR_BOOL(funcname, value) \
+    ((value)? funcname<true> : funcname<false>)
+
+
+#define GET_FUNC_OPTIMISED_FOR_TWO_BOOLS(funcname, b1, b2) \
+    ((b1)? \
+        ((b2)? funcname<true, true> : funcname<true, false>) : \
+        ((b2)? funcname<false,true> : funcname<false,false>))
+
+
 #if (MAX_OPTIMISED_NUM_CTRLS != 5) || (MAX_OPTIMISED_NUM_TARGS != 5)
     #error "The number of optimised, templated QuEST functions was inconsistent between accelerator's source and header."
 #endif
@@ -268,6 +278,148 @@ void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, v
 
     auto func = GET_CPU_OR_GPU_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( statevec_anyCtrlAnyTargDiagMatr_sub, qureg, ctrls.size(), targs.size(), conj, hasPower );
     func(qureg, ctrls, ctrlStates, targs, matr, exponent);
+}
+
+
+
+/*
+ * ALL-TARGS DIAGONAL MATRIX
+ */
+
+
+void accel_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+    // qureg and matr are equal size and identically distributed...
+    assert_quregAndFullStateDiagMatrAreBothOrNeitherDistrib(qureg, matr);
+    
+    // but they may have differing GPU deployments
+    bool quregGPU = qureg.isGpuAccelerated;
+    bool matrGPU = matr.isGpuAccelerated;
+
+    // our chosen function must be correctly templated
+    bool hasPower = exponent != qcomp(1, 0);
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_BOOL( cpu_statevec_allTargDiagMatr_sub, hasPower );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_BOOL( gpu_statevec_allTargDiagMatr_sub, hasPower );
+
+    // when deployments match, we trivially call the common backend
+    if ( quregGPU &&  matrGPU) gpuFunc(qureg, matr, exponent);
+    if (!quregGPU && !matrGPU) cpuFunc(qureg, matr, exponent);
+
+    // deployments differing is a strange and expectedly rare scenario;
+    // why use GPU-acceleration for a Qureg but not the equally-sized
+    // matrix? We provide the below fallbacks for defensive design.
+
+    // When GPU-accel differs, we fall-back to copying memory to RAM and
+    // using the CPU backend. In theory, we could leverage exsting GPU 
+    // memory of the Qureg's communication buffer (if it existed), but
+    // this is an even rarer situation and is hacky. We could also 
+    // create new, temporary GPU memory and graft it to the non-
+    // accelerated object, but the new allocation would be the same
+    // size as the objects and ergo be dangerously large.
+
+    if (!quregGPU && matrGPU) {
+
+        // copying matr GPU memory to CPU is unnecessary,
+        // because it should never have diverged
+        cpuFunc(qureg, matr, exponent);
+    }
+
+    if (quregGPU && !matrGPU) {
+        gpu_copyGpuToCpu(qureg);
+        cpuFunc(qureg, matr, exponent);
+        gpu_copyCpuToGpu(qureg);
+    }
+}
+
+
+void accel_densmatr_allTargDiagMatr_subA(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool multiplyOnly) {
+
+    // matr is always local, qureg can be local or distributed...
+    assert_fullStateDiagMatrIsLocal(matr);
+
+    // and their GPU deployments can differ
+    bool quregGPU = qureg.isGpuAccelerated;
+    bool matrGPU = matr.isGpuAccelerated;
+
+    // our chosen CPU or GPU dispatched function must be correctly templated
+    bool hasPower = exponent != qcomp(1, 0);
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( cpu_densmatr_allTargDiagMatr_sub, hasPower, multiplyOnly );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( cpu_densmatr_allTargDiagMatr_sub, hasPower, multiplyOnly );
+
+    // when deployments match, we trivially call the common backend
+    if ( quregGPU &&  matrGPU) gpuFunc(qureg, matr, exponent);
+    if (!quregGPU && !matrGPU) cpuFunc(qureg, matr, exponent);
+
+    // when only the matr is GPU-accelerated (which is strange, but
+    // supported for defensive design), we must use CPU simulation. 
+    // No need to copy memory; matr's CPU copy should be unchanged
+    if (!quregGPU && matrGPU)
+        cpuFunc(qureg, matr, exponent);
+
+    // the most common scenario is that qureg (which is quadratically 
+    // larger than matr) is GPU-accelerated, while matr is not. In that
+    // case, we graft GPU memory onto matr and call gpuFunc(). If
+    // qureg is distributed, we can re-use its existing GPU communication
+    // buffer memory, otherwise we will have to allocate temporary memory; 
+    // not a big deal given it is quadratically smaller than Qureg's memory
+    if (quregGPU && !matrGPU) {
+
+        // binding qureg's GPU communication buffer to matrix is safe,
+        // even when subB() below (which itself grafts qureg's buffer to matr)
+        // calls this function; that scenario never triggers condition (GPU
+        // deployments will match) and instead calls the both-gpu function above.
+        assert_quregGpuBufferIsNotGraftedToMatrix(qureg, matr);
+
+        // spoof a GPU-accelerated matrix, grafting buffer or new memory
+        // (we use a paranoid copy of matr, even though matr is already a 
+        // mere copy of the user's matrix, in case this code changes to
+        // accept a reference. Still, beware addressing temp's ptr fields!)
+        FullStateDiagMatr temp = matr;
+        temp.isGpuAccelerated = 1;
+        temp.gpuElems = (qureg.isDistributed)?
+            qureg.gpuCommBuffer : 
+            gpu_allocArray(temp.numElems);
+
+        // error if that (relatively) small allocation failed (always succeeds if buffer)
+        assert_applyFullStateDiagMatrTempGpuAllocSucceeded(temp.gpuElems);
+
+        // harmlessly overwrite new memory or qureg's buffer, and call GPU routine
+        gpu_copyCpuToGpu(temp);
+        gpuFunc(qureg, temp, exponent);
+
+        // free new GPU memory, but do NOT free qureg's communication buffer
+        if (!qureg.isDistributed)
+            gpu_deallocArray(temp.gpuElems);
+    }
+}
+
+
+void accel_densmatr_allTargDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool multiplyOnly) {
+
+    assert_fullStateDiagMatrIsDistributed(matr);
+    assert_acceleratorQuregIsDistributed(qureg);
+
+    // qureg's communication buffer (matching its own CPU or GPU deployment) 
+    // already contains all elements of matr; so we simply spoof matr having
+    // its own full-size local memory (matching qureg's GPU/CPU), by grafting 
+    // qureg's buffer to it, and call _subA() above. It's ergo crucial _subA()
+    // does not try to access qureg's communication buffer, which it safely
+    // does not in this "qureg deployment = matr deployment" scenario.
+
+    // we use a paranoid copy of matr, even though it is already a mere copy
+    // of the user's matr, in case this one day changes to a reference
+    FullStateDiagMatr temp = matr;
+
+    // which is non-distributed
+    temp.isDistributed = 0;
+    temp.numElemsPerNode = temp.numElems;
+
+    // and matches qureg's CPU vs GPU deployment
+    temp.isGpuAccelerated = qureg.isGpuAccelerated;
+    temp.cpuElems = qureg.cpuCommBuffer;
+    temp.gpuElems = qureg.gpuCommBuffer;
+
+    accel_densmatr_allTargDiagMatr_subA(qureg, temp, exponent, multiplyOnly);
 }
 
 

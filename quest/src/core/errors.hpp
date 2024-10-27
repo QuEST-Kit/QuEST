@@ -10,6 +10,7 @@
 
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
+#include "quest/include/matrices.h"
 
 #include <string>
 
@@ -77,11 +78,15 @@ void assert_validCommBounds(Qureg qureg, qindex sendInd, qindex recvInd, qindex 
 
 void assert_commQuregIsDistributed(Qureg qureg);
 
+void assert_commFullStateDiagMatrIsDistributed(FullStateDiagMatr matr);
+
 void assert_pairRankIsDistinct(Qureg qureg, int pairRank);
 
 void assert_bufferSendRecvDoesNotOverlap(qindex sendInd, qindex recvInd, qindex numAmps);
 
 void assert_receiverCanFitSendersEntireState(Qureg receiver, Qureg sender);
+
+void assert_receiverCanFitSendersEntireElems(Qureg receiver, FullStateDiagMatr sender);
 
 
 
@@ -94,6 +99,10 @@ void error_localiserNumCtrlStatesInconsistentWithNumCtrls();
 void error_localiserGivenPauliTensorOrGadgetWithoutXOrY();
 
 void error_localiserPassedStateVecToChannelComCheck();
+
+void error_localiserGivenDistribMatrixAndLocalQureg();
+
+void assert_localiserGivenStateVec(Qureg qureg);
 
 void assert_localiserGivenDensMatr(Qureg qureg);
 
@@ -113,6 +122,26 @@ void assert_numTargsMatchesTemplateParam(int numTargs, int templateParam);
 
 void assert_exponentMatchesTemplateParam(qcomp exponent, bool hasPower);
 
+void assert_mixedQuregIsDensityMatrix(Qureg qureg);
+
+void assert_mixedQuregIsStatevector(Qureg qureg);
+
+void assert_mixedQuregIsDistributed(Qureg qureg);
+
+void assert_mixedQuregIsLocal(Qureg qureg);
+
+void assert_mixedQuregsAreBothOrNeitherDistributed(Qureg a, Qureg b);
+
+void error_mixQuregsAreLocalDensMatrAndDistribStatevec();
+
+void assert_fullStateDiagMatrIsLocal(FullStateDiagMatr matr);
+
+void assert_fullStateDiagMatrIsDistributed(FullStateDiagMatr matr);
+
+void assert_acceleratorQuregIsDistributed(Qureg qureg);
+
+void assert_quregAndFullStateDiagMatrAreBothOrNeitherDistrib(Qureg qureg, FullStateDiagMatr matr);
+
 
 
 /*
@@ -129,17 +158,10 @@ void assert_bufferPackerGivenIncreasingQubits(int qubit1, int qubit2, int qubit3
  * BACKEND PRECONDITION ERRORS
  */
 
-void assert_mixedQuregIsDensityMatrix(Qureg qureg);
+void assert_quregAndFullStateDiagMatrHaveSameDistrib(Qureg qureg, FullStateDiagMatr matr);
 
-void assert_mixedQuregIsStatevector(Qureg qureg);
+void assert_quregDistribAndFullStateDiagMatrLocal(Qureg qureg, FullStateDiagMatr matr);
 
-void assert_mixedQuregIsDistributed(Qureg qureg);
-
-void assert_mixedQuregIsLocal(Qureg qureg);
-
-void assert_mixedQuregsAreBothOrNeitherDistributed(Qureg a, Qureg b);
-
-void error_mixQuregsAreLocalDensMatrAndDistribStatevec();
 
 
 
@@ -182,6 +204,10 @@ void assert_gpuIsAccessible();
 void assert_quregIsGpuAccelerated(Qureg qureg);
 
 void assert_mixQuregTempGpuAllocSucceeded(qcomp* gpuPtr);
+
+void assert_quregGpuBufferIsNotGraftedToMatrix(Qureg qureg, FullStateDiagMatr matr);
+
+void assert_applyFullStateDiagMatrTempGpuAllocSucceeded(qcomp* gpuPtr);
 
 
 

@@ -55,8 +55,10 @@ template <int NumCtrls> void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg
 
 template <int NumCtrls, int NumTargs, bool ApplyConj, bool HasPower> void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, qcomp exponent);
 
-template <bool HasPower> void gpu_statevec_fullStateDiagMatr_subA(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
-template <bool HasPower> void gpu_statevec_fullStateDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+template <bool HasPower> void gpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+
+template <bool HasPower, bool MultiplyOnly> void gpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+
 
 
 /*

@@ -461,6 +461,46 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
 
 
 /*
+ * ALL-TARG DIAGONAL MATRIX
+ */
+
+
+template <bool HasPower, bool MultiplyOnly>
+__global__ void kernel_densmatr_allTargDiagMatr_sub(
+    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
+    cu_qcomp* elems, qindex numElems, cu_qcomp exponent
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // i = global row of nth local index
+    qindex i = n % numElems;
+    qcomp fac = elems[i];
+
+    if constexpr (HasPower)
+        elem = getCompPower(elem, exponent);
+
+    if constexpr (!MultiplyOnly) {
+
+        // m = global index corresponding to n
+        qindex m = concatenateBits(rank, n, numAmpsPerNode);
+
+        // j = global column corresponding to n
+        qindex j = m / numElems;
+        qcomp term = elems[j];
+
+        if constexpr(HasPower)
+            term = getCompPower(term, exponent);
+
+        // conj after pow
+        fac *= conj(term);
+    }
+
+    amps[n] *= fac;
+}
+
+
+
+/*
  * PAULI/PHASE TENSORS/GADGETS
  */
 
