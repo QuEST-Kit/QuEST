@@ -477,7 +477,7 @@ __global__ void kernel_densmatr_allTargDiagMatr_sub(
     cu_qcomp fac = elems[i];
 
     if constexpr (HasPower)
-        elem = getCompPower(elem, exponent);
+        fac = getCompPower(fac, exponent);
 
     if constexpr (!MultiplyOnly) {
 
@@ -492,7 +492,8 @@ __global__ void kernel_densmatr_allTargDiagMatr_sub(
             term = getCompPower(term, exponent);
 
         // conj after pow
-        fac *= conj(term);
+        term.y *= -1;
+        fac *= term;
     }
 
     amps[n] *= fac;

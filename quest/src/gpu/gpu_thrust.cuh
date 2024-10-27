@@ -142,7 +142,7 @@ struct functor_multiplyElemPowerWithAmp : public thrust::binary_function<cu_qcom
         cu_qcomp newAmp = quregAmp * matrElem;
         return newAmp;
     }
-}
+};
 
 
 
@@ -168,7 +168,7 @@ void thrust_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, 
 
 
 template <bool HasPower>
-void gpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+void thrust_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
 
     thrust::transform(
         getStartPtr(qureg), getEndPtr(qureg), 
