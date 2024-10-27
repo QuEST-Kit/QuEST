@@ -542,7 +542,7 @@ void gpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
     // we always use Thrust because we are doubtful that cuQuantum's
     // diagonal-matrix facilities are optimised for the all-qubit case
 
-    thrust_statevec_allTargDiagMatr_sub<HasPower>(qureg, matr, exponent);
+    thrust_statevec_allTargDiagMatr_sub<HasPower>(qureg, matr, toCuQcomp(exponent));
 
 #else
     error_gpuSimButGpuNotCompiled();
