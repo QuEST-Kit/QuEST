@@ -474,7 +474,7 @@ __global__ void kernel_densmatr_allTargDiagMatr_sub(
 
     // i = global row of nth local index
     qindex i = n % numElems;
-    qcomp fac = elems[i];
+    cu_qcomp fac = elems[i];
 
     if constexpr (HasPower)
         elem = getCompPower(elem, exponent);
@@ -482,11 +482,11 @@ __global__ void kernel_densmatr_allTargDiagMatr_sub(
     if constexpr (!MultiplyOnly) {
 
         // m = global index corresponding to n
-        qindex m = concatenateBits(rank, n, numAmpsPerNode);
+        qindex m = concatenateBits(rank, n, logNumAmpsPerNode);
 
         // j = global column corresponding to n
         qindex j = m / numElems;
-        qcomp term = elems[j];
+        cu_qcomp term = elems[j];
 
         if constexpr(HasPower)
             term = getCompPower(term, exponent);

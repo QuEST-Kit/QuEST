@@ -117,7 +117,7 @@ struct functor_mixAmps : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qco
     functor_mixAmps(qreal out, qreal in) : outProb(out), inProb(in) {}
 
     __host__ __device__ cu_qcomp operator()(cu_qcomp outAmp, cu_qcomp inAmp) {
-        qcomp newAmp = (outProb * outAmp) + (inProb * inAmp);
+        cu_qcomp newAmp = (outProb * outAmp) + (inProb * inAmp);
         return newAmp;
     }
 };
@@ -132,14 +132,14 @@ struct functor_multiplyElemPowerWithAmp : public thrust::binary_function<cu_qcom
     // a statevector amp, used to modify the statevector
 
     qcomp exponent;
-    functor_applyFullStateDiagMatrPower(qcomp power) : exponent(power) {}
+    functor_multiplyElemPowerWithAmp(qcomp power) : exponent(power) {}
 
     __host__ __device__ cu_qcomp operator()(cu_qcomp quregAmp, cu_qcomp matrElem) {
 
         if constexpr (HasPower)
             matrElem = getCompPower(matrElem, exponent);
 
-        qcomp newAmp = quregAmp * matrElem;
+        cu_qcomp newAmp = quregAmp * matrElem;
         return newAmp;
     }
 }
