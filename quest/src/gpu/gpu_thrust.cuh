@@ -131,8 +131,8 @@ struct functor_multiplyElemPowerWithAmp : public thrust::binary_function<cu_qcom
     // exponentiation at compile-time when power==1) upon
     // a statevector amp, used to modify the statevector
 
-    qcomp exponent;
-    functor_multiplyElemPowerWithAmp(qcomp power) : exponent(power) {}
+    cu_qcomp exponent;
+    functor_multiplyElemPowerWithAmp(cu_qcomp power) : exponent(power) {}
 
     __host__ __device__ cu_qcomp operator()(cu_qcomp quregAmp, cu_qcomp matrElem) {
 
@@ -168,7 +168,7 @@ void thrust_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, 
 
 
 template <bool HasPower>
-void thrust_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+void thrust_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu_qcomp exponent) {
 
     thrust::transform(
         getStartPtr(qureg), getEndPtr(qureg), 
