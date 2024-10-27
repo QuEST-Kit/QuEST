@@ -1886,17 +1886,17 @@ void validate_matrixIsHermitian(FullStateDiagMatr matr, const char* caller) {
     assertMatrixIsHermitian(matr, caller);
 }
 
-void validate_matrixIsCompatibleWithQureg(FullStateDiagMatr matr, Qureg qureg, const char* caller) {
+void validate_matrixAndQuregAreCompatible(FullStateDiagMatr matr, Qureg qureg, const char* caller) {
 
     // we do not need to define this function for the other matrix types,
-    // since their validation will happen through validaiton of the
+    // since their validation will happen through validation of the
     // user-given list of target qubits. But we do need to define it for
     // FullStatedDiagMatr to check both distribution compatibility, and
     // that dimensions match
 
     tokenSubs vars = {
-        {"${MATR_NUM_QUBITS}",  matr.numQubits},
-        {"${QUREG_NUM_QUBITS}", qureg.numQubits}};
+        {"${NUM_MATR_QUBITS}",  matr.numQubits},
+        {"${NUM_QUREG_QUBITS}", qureg.numQubits}};
 
     // dimensions must match
     assertThat(matr.numQubits == qureg.numQubits, report::FULL_STATE_DIAG_MATR_MISMATCHES_QUREG_DIM, vars, caller);
@@ -1905,7 +1905,9 @@ void validate_matrixIsCompatibleWithQureg(FullStateDiagMatr matr, Qureg qureg, c
     if (!matr.isDistributed)
         return;
 
-    // but when it's distributed, so too must be the qureg so that comm isn't necessary
+    // but when it's distributed, so too must be the qureg; the precise reason why is 
+    // specific to whether qureg is a statevector or density matrix, but boils down
+    // to there being no communication buffers available to broadcast matr
     assertThat(qureg.isDistributed, report::FULL_STATE_DIAG_MATR_IS_DISTRIB_BUT_QUREG_ISNT, caller); // did not pass vars
 }
 

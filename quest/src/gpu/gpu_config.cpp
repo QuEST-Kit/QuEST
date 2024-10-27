@@ -362,20 +362,27 @@ void assertHeapObjectGpuMemIsAllocated(T obj) {
 }
 
 
-void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems) {
-
-    // these functions unusually accept a Qureg just to run internal error validation,
-    // to ensure that the given gpuArr can be read/write without segmentation fault
-    assert_quregIsGpuAccelerated(qureg);
-
+void gpu_copyCpuToGpu(qcomp* cpuArr, qcomp* gpuArr, qindex numElems) {
     copyArrayIfGpuCompiled(cpuArr, gpuArr, numElems, TO_DEVICE);
 }
-void gpu_copyCpuToGpu(Qureg qureg) {
-    gpu_copyCpuToGpu(qureg, qureg.cpuAmps, qureg.gpuAmps, qureg.numAmpsPerNode);
+void gpu_copyGpuToCpu(qcomp* gpuArr, qcomp* cpuArr, qindex numElems) {
+    copyArrayIfGpuCompiled(cpuArr, gpuArr, numElems, TO_HOST);
+}
+
+
+void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems) {
+    // used for moving memory within the same Qureg, hence the Qureg arg only for assertion
+    assert_quregIsGpuAccelerated(qureg);
+    copyArrayIfGpuCompiled(cpuArr, gpuArr, numElems, TO_DEVICE);
 }
 void gpu_copyGpuToCpu(Qureg qureg, qcomp* gpuArr, qcomp* cpuArr, qindex numElems) {
     assert_quregIsGpuAccelerated(qureg);
     copyArrayIfGpuCompiled(cpuArr, gpuArr, numElems, TO_HOST);
+}
+
+
+void gpu_copyCpuToGpu(Qureg qureg) {
+    gpu_copyCpuToGpu(qureg, qureg.cpuAmps, qureg.gpuAmps, qureg.numAmpsPerNode);
 }
 void gpu_copyGpuToCpu(Qureg qureg) {
     gpu_copyGpuToCpu(qureg, qureg.gpuAmps, qureg.cpuAmps, qureg.numAmpsPerNode);

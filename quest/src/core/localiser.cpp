@@ -582,6 +582,101 @@ void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, v
 
 
 /*
+ * ALL-TARGET DIAGONAL MATRIX
+ */
+
+
+void localAllTargDiagMatrOnDistribStatevector(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+    // this is a strange scenario (why distribute qureg but not
+    // an equally-sized matrix?) we support merely for defensive-
+    // design. In this scenario, every node has the full matrix
+    // amps and needs only to consult a contiguous subset. To
+    // avoid bespoke but trivially different backend functions,
+    // we spoof a distributed copy of 'matr' with pointers
+    // offset to the elements needed by this node, and call the
+    // equally-distributed backend function.
+
+    qindex offset = qureg.rank * qureg.numAmpsPerNode;
+
+    // cheaply copy matr, spoofed as distributed (to pass internal checks)
+    FullStateDiagMatr copy = matr;
+    copy.isDistributed = true;
+    copy.numElemsPerNode = qureg.numAmpsPerNode; // not consulted, but for safety
+
+    // offset pointers to qureg's existing memory, avoiding de-referencing nullptr (illegal)
+    copy.cpuElems = &copy.cpuElems[offset];
+    copy.gpuElems = (copy.gpuElems == nullptr)? copy.gpuElems : &copy.gpuElems[offset];
+
+    // invoke backend; copy is in stack and will be auto-freed
+    accel_statevec_allTargDiagMatr_sub(qureg, copy, exponent);
+}
+
+
+void localiser_statevec_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+    assert_localiserGivenStateVec(qureg);
+
+    // matr and qureg are equal dimension, but may be distributed differently
+    bool quregDist = qureg.isDistributed;
+    bool matrDist = matr.isDistributed;
+
+    // cannot distribute only matr; qureg has no buffer space to receive a broadcast.
+    // allocating temporary buffer space is too dangerous, since it would be the same
+    // size as matr and qureg, potentially increasing user memory by a factor x1.5.
+    if (!quregDist && matrDist)
+        error_localiserGivenDistribMatrixAndLocalQureg();
+
+    // embarrassingly parallel when both distributed or both local
+    if (quregDist == matrDist)
+        accel_statevec_allTargDiagMatr_sub(qureg, matr, exponent);
+    
+    // embarrasingly parallel when only qureg is distributed (all nodes have all needed matr elems)
+    if (quregDist && !matrDist)
+        localAllTargDiagMatrOnDistribStatevector(qureg, matr, exponent);
+}
+
+
+void localiser_densmatr_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool multiplyOnly) {
+    assert_localiserGivenDensMatr(qureg);
+
+    // the diagonal matr has quadratically fewer elements than the density-matrix
+    // qureg, so could in-theory be effected (without catastrophic performance) as
+    // an N/2-qubit DiagMatr upon an N-qubit statevector. This requires O(N) bitwise
+    // operations per-iteration which might cause a slowdown in non-memory-bandwidth
+    // bound settings (e.g. 8 qubit Quregs). So we here use an O(1) bespoke method.
+
+    // since Qureg is quadratically bigger than matr, it is likely they have different
+    // distributions (matr is probably local). Because every column of qureg is 
+    // dot-multiplied with the full matr, every node requires all matr elements
+    bool quregDist = qureg.isDistributed;
+    bool matrDist = matr.isDistributed;
+
+    // cannot distribute only matr; qureg has no buffer space to receive a broadcast.
+    // in theory, we could allocate temporary buffer space which would only be 
+    // quadratically smaller than qureg; but this is a ludicrous scenario to support.
+    if (!quregDist && matrDist) {
+        error_localiserGivenDistribMatrixAndLocalQureg();
+        return;
+    }
+
+    // when the matrix is not distributed, we call the same routine despite whether qureg 
+    // is distributed or not; that merely changes how many qureg columns get updated
+    if (!matrDist) {
+        accel_densmatr_allTargDiagMatr_subA(qureg, matr, exponent, multiplyOnly);
+        return;
+    }
+
+    // finally, when both are distributed, qureg has buffer space to receive all matr
+    comm_combineElemsIntoBuffer(qureg, matr);
+
+    // matr elems are inside qureg buffer, but we still pass matr struct along to
+    // accelerator, because it is going to perform mischief to re-use subA().
+    accel_densmatr_allTargDiagMatr_subB(qureg, matr, exponent, multiplyOnly); 
+}
+
+
+
+/*
  * PAULI TENSORS AND GADGETS
  */
 

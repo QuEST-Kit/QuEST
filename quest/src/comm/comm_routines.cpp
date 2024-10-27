@@ -5,6 +5,7 @@
 
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
+#include "quest/include/matrices.h"
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
@@ -449,7 +450,6 @@ void comm_combineAmpsIntoBuffer(Qureg receiver, Qureg sender) {
     // but does not generally permit CPU-to-GPU (host-to-device). So if only one
     // Qureg is GPU-accelerated, we have to fall back entirely to copying through host.
     // There is ergo only a single scenario possible when we can directly GPU-exchange:
-
     if (gpu_isDirectGpuCommPossible() && receiver.isGpuAccelerated && sender.isGpuAccelerated) {
         globallyCombineSubArrays(receiver.gpuCommBuffer, sender.gpuAmps, numSendAmps);
         return;
@@ -457,11 +457,33 @@ void comm_combineAmpsIntoBuffer(Qureg receiver, Qureg sender) {
 
     // otherwise, we must always transmit amps through CPU buffer memory, and merely
     // have to decide whether CPU-GPU pre- and post-copies are necessary
-
     if (sender.isGpuAccelerated)
         gpu_copyGpuToCpu(sender, sender.gpuAmps, sender.cpuCommBuffer, numSendAmps);
 
     globallyCombineSubArrays(receiver.cpuCommBuffer, sender.cpuCommBuffer, numSendAmps);
+
+    if (receiver.isGpuAccelerated)
+        gpu_copyCpuToGpu(receiver, receiver.cpuCommBuffer, receiver.gpuCommBuffer, numRecvAmps);
+}
+
+
+void comm_combineElemsIntoBuffer(Qureg receiver, FullStateDiagMatr sender) {
+    assert_commQuregIsDistributed(receiver);
+    assert_commFullStateDiagMatrIsDistributed(sender);
+    assert_receiverCanFitSendersEntireElems(receiver, sender);
+
+    // all configurations involve broadcasting the entirety of sender's per-node amps
+    qindex numSendAmps = sender.numElemsPerNode;
+    qindex numRecvAmps = sender.numElems;
+
+    // like in comm_combineAmpsIntoBuffer(), direct-GPU comm only possible if both ptrs are GPU
+    if (gpu_isDirectGpuCommPossible() && receiver.isGpuAccelerated && sender.isGpuAccelerated) {
+        globallyCombineSubArrays(receiver.gpuCommBuffer, sender.gpuElems, numSendAmps);
+        return;
+    }
+
+    // even if sender is GPU-accelerated, we safely assume its CPU elements are unchanged from GPU
+    globallyCombineSubArrays(receiver.cpuCommBuffer, sender.cpuElems, numSendAmps);
 
     if (receiver.isGpuAccelerated)
         gpu_copyCpuToGpu(receiver, receiver.cpuCommBuffer, receiver.gpuCommBuffer, numRecvAmps);

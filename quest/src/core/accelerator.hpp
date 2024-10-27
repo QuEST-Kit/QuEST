@@ -174,6 +174,12 @@ void accel_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, v
 
 void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, qcomp exponent, bool conj);
 
+void accel_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+
+void accel_densmatr_allTargDiagMatr_subA(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool multiplyOnly);
+void accel_densmatr_allTargDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool multiplyOnly);
+
+
 
 /*
  * PAULI TENSOR AND GADGET

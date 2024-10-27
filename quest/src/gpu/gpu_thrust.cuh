@@ -14,6 +14,7 @@
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
+#include "quest/include/matrices.h"
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/gpu/gpu_types.cuh"
@@ -45,9 +46,10 @@ int* getPtr(devicevec qubits) {
 
 
 /*
- * AMP AND QUREG POINTERS
+ * AMP POINTERS
  *
- * used to enumerate GPU amps inside thrust functions
+ * used to enumerate GPU amps of matrices, quregs and
+ * full-state diagonal matrices inside thrust functions
  */
 
 
@@ -55,17 +57,29 @@ thrust::device_ptr<cu_qcomp> getStartPtr(cu_qcomp* amps) {
 
     return thrust::device_pointer_cast(amps);
 }
+auto getStartPtr(qcomp* amps) {
 
-
-thrust::device_ptr<cu_qcomp> getStartPtr(Qureg qureg) {
-
-    return getStartPtr(toCuQcomps(qureg.gpuAmps));
+    return getStartPtr(toCuQcomps(amps));
 }
 
 
-thrust::device_ptr<cu_qcomp> getEndPtr(Qureg qureg) {
+auto getStartPtr(Qureg qureg) {
+
+    return getStartPtr(qureg.gpuAmps);
+}
+auto getEndPtr(Qureg qureg) {
 
     return getStartPtr(qureg) + qureg.numAmpsPerNode;
+}
+
+
+auto getStartPtr(FullStateDiagMatr matr) {
+
+    return getStartPtr(matr.gpuElems);
+}
+auto getEndPtr(FullStateDiagMatr matr) {
+
+    return getStartPtr(matr) + matr.numElemsPerNode;
 }
 
 
@@ -78,7 +92,12 @@ thrust::device_ptr<cu_qcomp> getEndPtr(Qureg qureg) {
  */
 
 
-struct functor_conj : public thrust::unary_function<cu_qcomp,cu_qcomp> {
+struct functor_conjAmp : public thrust::unary_function<cu_qcomp,cu_qcomp> {
+
+    // this functor merely complex-conjugates an amplitude,
+    // and is used to conjugate any-targ matrix elements.
+    // indeed, there is no inbuilt functor despite Thrust
+    // defining conj() upon a complex<T>. Yes, really! 
 
     __host__ __device__ cu_qcomp operator()(cu_qcomp amp) {
         amp.y *= -1;
@@ -87,16 +106,44 @@ struct functor_conj : public thrust::unary_function<cu_qcomp,cu_qcomp> {
 };
 
 
-struct functor_mixDensityQuregs : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qcomp> {
+struct functor_mixAmps : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qcomp> {
 
-    qreal inProb;
+    // this functor linearly combines the given pair
+    // of amplitudes, weighted by the fixed qreals,
+    // and is used by mixQureg upon density matrices
+
     qreal outProb;
-    functor_mixDensityQuregs(qreal in, qreal out) : inProb(in), outProb(out) {}
+    qreal inProb;
+    functor_mixAmps(qreal out, qreal in) : outProb(out), inProb(in) {}
 
-    __host__ __device__ cu_qcomp operator()(cu_qcomp inAmp, cu_qcomp outAmp) {
-        return (inProb * inAmp) + (outProb * outAmp);
+    __host__ __device__ cu_qcomp operator()(cu_qcomp outAmp, cu_qcomp inAmp) {
+        cu_qcomp newAmp = (outProb * outAmp) + (inProb * inAmp);
+        return newAmp;
     }
 };
+
+
+template <bool HasPower>
+struct functor_multiplyElemPowerWithAmp : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qcomp> {
+
+    // this functor multiplies a diagonal matrix element 
+    // raised to a power (templated to optimise away the 
+    // exponentiation at compile-time when power==1) upon
+    // a statevector amp, used to modify the statevector
+
+    cu_qcomp exponent;
+    functor_multiplyElemPowerWithAmp(cu_qcomp power) : exponent(power) {}
+
+    __host__ __device__ cu_qcomp operator()(cu_qcomp quregAmp, cu_qcomp matrElem) {
+
+        if constexpr (HasPower)
+            matrElem = getCompPower(matrElem, exponent);
+
+        cu_qcomp newAmp = quregAmp * matrElem;
+        return newAmp;
+    }
+};
+
 
 
 /*
@@ -107,18 +154,27 @@ struct functor_mixDensityQuregs : public thrust::binary_function<cu_qcomp,cu_qco
 void thrust_setElemsToConjugate(cu_qcomp* matrElemsPtr, qindex matrElemsLen) {
 
     auto ptr = getStartPtr(matrElemsPtr);
-    thrust::transform(ptr, ptr + matrElemsLen, ptr, functor_conj());
+    thrust::transform(ptr, ptr + matrElemsLen, ptr, functor_conjAmp());
 }
 
 
 void thrust_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, Qureg inQureg) {
 
     thrust::transform(
-        getStartPtr(inQureg),  getEndPtr(inQureg), 
-        getStartPtr(outQureg), getStartPtr(outQureg), // 4th arg is output pointer
-        functor_mixDensityQuregs(inProb, outProb));
+        getStartPtr(outQureg), getEndPtr(outQureg), 
+        getStartPtr(inQureg),  getStartPtr(outQureg), // 4th arg is output pointer
+        functor_mixAmps(outProb, inProb));
 }
 
+
+template <bool HasPower>
+void thrust_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu_qcomp exponent) {
+
+    thrust::transform(
+        getStartPtr(qureg), getEndPtr(qureg), 
+        getStartPtr(matr),  getStartPtr(qureg), // 4th arg is output pointer
+        functor_multiplyElemPowerWithAmp<HasPower>(exponent));
+}
 
 
 

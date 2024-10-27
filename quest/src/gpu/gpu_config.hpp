@@ -74,6 +74,9 @@ void gpu_sync();
 qcomp* gpu_allocArray(qindex numLocalAmps);
 void gpu_deallocArray(qcomp* amps);
 
+void gpu_copyCpuToGpu(qcomp* cpuArr, qcomp* gpuArr, qindex numElems);
+void gpu_copyGpuToCpu(qcomp* gpuArr, qcomp* cpuArr, qindex numElems);
+
 void gpu_copyGpuToCpu(Qureg qureg, qcomp* gpuArr, qcomp* cpuArr, qindex numElems);
 void gpu_copyGpuToCpu(Qureg qureg);
 

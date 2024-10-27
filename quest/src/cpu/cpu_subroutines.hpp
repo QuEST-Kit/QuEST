@@ -55,6 +55,10 @@ template <int NumCtrls> void cpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg
 
 template <int NumCtrls, int NumTargs, bool ApplyConj, bool HasPower> void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, qcomp exponent);
 
+template <bool HasPower> void cpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+
+template <bool HasPower, bool MultiplyOnly> void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+
 
 /*
  * PAULI TENSOR AND GADGET

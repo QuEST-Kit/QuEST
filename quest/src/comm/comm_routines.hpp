@@ -8,6 +8,7 @@
 
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
+#include "quest/include/matrices.h"
 
 
 
@@ -26,6 +27,8 @@ void comm_asynchSendSubBuffer(Qureg qureg, qindex numElems, int pairRank);
 void comm_receiveArrayToBuffer(Qureg qureg, qindex numElems, int pairRank);
 
 void comm_combineAmpsIntoBuffer(Qureg receiver, Qureg sender);
+
+void comm_combineElemsIntoBuffer(Qureg receiver, FullStateDiagMatr sender);
 
 
 
