@@ -76,7 +76,7 @@ qindex gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector<i
     qindex numBlocks = getNumBlocks(numThreads);
     qindex sendInd = getSubBufferSendInd(qureg);
 
-    devicevec sortedQubits = util_getSorted(qubits);
+    devints sortedQubits = util_getSorted(qubits);
     qindex qubitStateMask  = util_getBitMask(qubits, qubitStates);
 
     kernel_statevec_packAmpsIntoBuffer <NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
@@ -142,8 +142,8 @@ void gpu_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> c
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(2 + ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devicevec sortedQubits = util_getSorted(ctrls, {targ2, targ1});
-    qindex qubitStateMask  = util_getBitMask(ctrls, ctrlStates, {targ2, targ1}, {0, 1});
+    devints sortedQubits = util_getSorted(ctrls, {targ2, targ1});
+    qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ2, targ1}, {0, 1});
 
     kernel_statevec_anyCtrlSwap_subA <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, 
@@ -167,8 +167,8 @@ void gpu_statevec_anyCtrlSwap_subB(Qureg qureg, vector<int> ctrls, vector<int> c
     qindex numBlocks = getNumBlocks(numThreads);
     qindex recvInd = getBufferRecvInd();
 
-    devicevec sortedCtrls = util_getSorted(ctrls);
-    qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
+    devints sortedCtrls = util_getSorted(ctrls);
+    qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
     kernel_statevec_anyCtrlSwap_subB <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
@@ -192,8 +192,8 @@ void gpu_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int> c
     qindex numBlocks = getNumBlocks(numThreads);
     qindex recvInd = getBufferRecvInd();
 
-    devicevec sortedQubits = util_getSorted(ctrls, {targ});
-    qindex qubitStateMask  = util_getBitMask(ctrls, ctrlStates, {targ}, {targState});
+    devints sortedQubits = util_getSorted(ctrls, {targ});
+    qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ}, {targState});
 
     kernel_statevec_anyCtrlSwap_subC <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
@@ -232,8 +232,8 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size() + 1);
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devicevec sortedQubits = util_getSorted(ctrls, {targ});
-    qindex qubitStateMask  = util_getBitMask(ctrls, ctrlStates, {targ}, {0});
+    devints sortedQubits = util_getSorted(ctrls, {targ});
+    qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ}, {0});
 
     auto [m00, m01, m10, m11] = unpackMatrixToCuQcomps(matr);
 
@@ -260,8 +260,8 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
     qindex numBlocks = getNumBlocks(numThreads);
     qindex recvInd = getBufferRecvInd();
 
-    devicevec sortedCtrls = util_getSorted(ctrls);
-    qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
+    devints sortedCtrls = util_getSorted(ctrls);
+    qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
     kernel_statevec_anyCtrlOneTargDenseMatr_subB <NumCtrls> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
@@ -300,8 +300,8 @@ void gpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size() + 2);
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devicevec sortedQubits = util_getSorted(ctrls, {targ1,targ2});
-    qindex qubitStateMask  = util_getBitMask(ctrls, ctrlStates, {targ1,targ2}, {0,0});
+    devints sortedQubits = util_getSorted(ctrls, {targ1,targ2});
+    qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ1,targ2}, {0,0});
 
     // unpack matrix elems which are more efficiently accessed by kernels as args than shared mem (... maybe...)
     auto m = unpackMatrixToCuQcomps(matr);
@@ -353,9 +353,9 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size() + targs.size());
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devicevec deviceTargs  = targs;
-    devicevec deviceQubits = util_getSorted(ctrls, targs);
-    qindex qubitStateMask  = util_getBitMask(ctrls, ctrlStates, targs, vector<int>(targs.size(),0));
+    devints deviceTargs = targs;
+    devints deviceQubits = util_getSorted(ctrls, targs);
+    qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, targs, vector<int>(targs.size(),0));
     
     qcomp* cache = gpu_getCacheOfSize(powerOf2(targs.size()), numThreads);
 
@@ -402,8 +402,8 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devicevec deviceCtrls = util_getSorted(ctrls);
-    qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
+    devints deviceCtrls = util_getSorted(ctrls);
+    qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
     cu_qcomp* elems = toCuQcomps(matr.elems);
 
     kernel_statevec_anyCtrlOneTargDiagMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
@@ -448,8 +448,8 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devicevec deviceCtrls = util_getSorted(ctrls);
-    qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
+    devints deviceCtrls = util_getSorted(ctrls);
+    qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
     cu_qcomp* elems = toCuQcomps(matr.elems);
 
     kernel_statevec_anyCtrlTwoTargDiagMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
@@ -490,7 +490,7 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         return;
     }
 
-    // this is the only function (so far) which will fail to operate correctly if
+    // this is one of few functions which will fail to operate correctly if
     // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
     // true but the latter is not), so we explicitly ensure this is the case
     if (!COMPILE_CUDA)
@@ -507,9 +507,9 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devicevec deviceTargs = targs;
-    devicevec deviceCtrls = util_getSorted(ctrls);
-    qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
+    devints deviceTargs = targs;
+    devints deviceCtrls = util_getSorted(ctrls);
+    qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
     kernel_statevec_anyCtrlAnyTargDiagMatr_sub <NumCtrls, NumTargs, ApplyConj, HasPower> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
@@ -616,9 +616,9 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size() + suffixTargsXY.size());
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devicevec deviceTargs = suffixTargsXY;
-    devicevec deviceQubits = util_getSorted(ctrls, suffixTargsXY);
-    qindex qubitStateMask  = util_getBitMask(ctrls, ctrlStates, suffixTargsXY, vector<int>(suffixTargsXY.size(),0));
+    devints deviceTargs = suffixTargsXY;
+    devints deviceQubits = util_getSorted(ctrls, suffixTargsXY);
+    qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, suffixTargsXY, vector<int>(suffixTargsXY.size(),0));
 
     kernel_statevector_anyCtrlPauliTensorOrGadget_subA <NumCtrls, NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
@@ -647,8 +647,8 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subB(
     qindex numBlocks = getNumBlocks(numThreads);
     qindex recvInd = getBufferRecvInd();
 
-    devicevec sortedCtrls = util_getSorted(ctrls);
-    qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
+    devints sortedCtrls = util_getSorted(ctrls);
+    qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
     kernel_statevector_anyCtrlPauliTensorOrGadget_subB <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], 
@@ -676,9 +676,9 @@ void gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devicevec sortedCtrls = util_getSorted(ctrls);
-    qindex ctrlStateMask  = util_getBitMask(ctrls, ctrlStates);
-    qindex targMask       = util_getBitMask(targs);
+    devints sortedCtrls = util_getSorted(ctrls);
+    qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
+    qindex targMask = util_getBitMask(targs);
 
     kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
@@ -1212,9 +1212,9 @@ void gpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> ta
     qindex numThreads = outQureg.numAmpsPerNode;
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devicevec devTargs = targs;
-    devicevec devPairTargs = pairTargs;
-    devicevec devAllTargs = util_getSorted(targs, pairTargs);
+    devints devTargs = targs;
+    devints devPairTargs = pairTargs;
+    devints devAllTargs = util_getSorted(targs, pairTargs);
 
     kernel_densmatr_partialTrace_sub <NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(inQureg.gpuAmps), toCuQcomps(outQureg.gpuAmps), numThreads,

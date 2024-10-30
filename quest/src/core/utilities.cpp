@@ -140,6 +140,10 @@ qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> ta
 
 vector<int> util_getVector(int* qubits, int numQubits) {
 
+    // permit qubits=nullptr, overriding numQubits (might be non-zero)
+    if (qubits == nullptr)
+        return {};
+
     return vector<int> (qubits, qubits + numQubits);
 }
 
@@ -254,6 +258,13 @@ bool util_isUnitary(CompMatr2 matrix, qreal eps) {
     return isUnitary(matrix.elems, matrix.numRows, eps);
 }
 bool util_isUnitary(CompMatr matrix, qreal eps) {
+
+    // TODO:
+    // if matrix is GPU-accelerated, we should maybe
+    // instead perform this calculation using the GPU.
+    // otherwise, if matrix is large, we should potentially
+    // use a multithreaded routine
+
     return isUnitary(matrix.cpuElems, matrix.numRows, eps);
 }
 
@@ -264,10 +275,21 @@ bool util_isUnitary(DiagMatr2 matrix, qreal eps) {
     return isUnitary(matrix.elems, matrix.numElems, eps);
 }
 bool util_isUnitary(DiagMatr matrix, qreal eps) {
+
+    // TODO:
+    // if matrix is GPU-accelerated, we should maybe
+    // instead perform this calculation using the GPU.
+    // otherwise, if matrix is large, we should potentially
+    // use a multithreaded routine
+
     return isUnitary(matrix.cpuElems, matrix.numElems, eps);
 }
 
 bool util_isUnitary(FullStateDiagMatr matrix, qreal eps) {
+
+    // TODO:
+    // we should definitely be using an accelerated routine
+    // here, e.g. GPU-acceleration or multithreading
 
     // we must check all node's sub-diagonals satisfy unitarity
     bool res = isUnitary(matrix.cpuElems, matrix.numElems, eps);
@@ -329,6 +351,13 @@ bool util_isHermitian(CompMatr2 matrix, qreal eps) {
     return isHermitian(matrix.elems, matrix.numRows, eps);
 }
 bool util_isHermitian(CompMatr matrix, qreal eps) {
+
+    // TODO:
+    // if matrix is GPU-accelerated, we should maybe
+    // instead perform this calculation using the GPU.
+    // otherwise, if matrix is large, we should potentially
+    // use a multithreaded routine
+
     return isHermitian(matrix.cpuElems, matrix.numRows, eps);
 }
 
@@ -339,10 +368,21 @@ bool util_isHermitian(DiagMatr2 matrix, qreal eps) {
     return isHermitian(matrix.elems, matrix.numElems, eps);
 }
 bool util_isHermitian(DiagMatr matrix, qreal eps) {
+
+    // TODO:
+    // if matrix is GPU-accelerated, we should maybe
+    // instead perform this calculation using the GPU.
+    // otherwise, if matrix is large, we should potentially
+    // use a multithreaded routine
+
     return isHermitian(matrix.cpuElems, matrix.numElems, eps);
 }
 
 bool util_isHermitian(FullStateDiagMatr matrix, qreal eps) {
+
+    // TODO:
+    // we should definitely be using an accelerated routine
+    // here, e.g. GPU-acceleration or multithreading
 
     // we must check all node's sub-diagonals satisfy unitarity
     bool res = isHermitian(matrix.cpuElems, matrix.numElems, eps);
@@ -371,6 +411,12 @@ bool util_isHermitian(PauliStrSum sum, qreal eps) {
  */
 
 bool util_isCPTP(KrausMap map, qreal eps) {
+
+    // TODO:
+    // if KrausMap is GPU-accelerated, we should maybe
+    // instead perform this calculation using the GPU.
+    // otherwise, if matrix is large, we should potentially
+    // use a multithreaded routine
 
     // skip expensive CPTP check if eps is infinite (encoded by 0)
     if (eps == 0)
@@ -495,7 +541,7 @@ util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, 
 
 
 /*
- * OPERATOR PARAMETERS
+ * DECOHERENCE FACTORS
  */
 
 qreal util_getOneQubitDephasingFactor(qreal prob) {

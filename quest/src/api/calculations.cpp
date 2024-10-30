@@ -6,10 +6,63 @@
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
 #include "quest/include/paulis.h"
+#include "quest/include/calculations.h"
 
 #include "quest/src/core/validation.hpp"
+#include "quest/src/core/utilities.hpp"
+#include "quest/src/core/localiser.hpp"
+#include "quest/src/core/bitwise.hpp"
 
 #include "quest/src/core/errors.hpp" // only needed for not-implemented functions
+
+
+
+/*
+ * C++ ONLY FUNCTIONS
+ *
+ * which are not directly C-compatible because of limited
+ * interoperability of the qcomp type. See calculations.h 
+ * for more info. We here define a C++-only signature (with
+ * name-mangling), and a C-friendly wrapper which passes by
+ * pointer; the C-friendly interface in wrappers.h which itself
+ * wrap this.
+ */
+
+
+qcomp calcInnerProduct(Qureg qureg1, Qureg qureg2) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+    return -1;
+}
+extern "C" void _wrap_calcInnerProduct(Qureg bra, Qureg ket, qcomp* out) {
+
+    *out = calcInnerProduct(bra, ket);
+}
+
+
+qcomp calcExpecNonHermitianPauliStrSum(Qureg qureg, PauliStrSum sum) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+    return -1;
+}
+extern "C" void _wrap_calcExpecNonHermitianPauliStrSum(qcomp* out, Qureg qureg, PauliStrSum sum) {
+
+    *out = calcExpecNonHermitianPauliStrSum(qureg, sum);
+}
+
+
+qcomp calcExpecNonHermitianFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr) {
+
+    // TODO
+    error_functionNotImplemented(__func__);
+    return -1;
+}
+extern "C" void _wrap_calcExpecNonHermitianFullStateDiagMatr(qcomp* out, Qureg qureg, FullStateDiagMatr matr) {
+
+    *out = calcExpecNonHermitianFullStateDiagMatr(qureg, matr);
+}
 
 
 
@@ -20,6 +73,10 @@
 // enable invocation by both C and C++ binaries
 extern "C" {
 
+
+/*
+ * EXPECTED VALUES
+ */
 
 qreal calcExpecPauliStr(Qureg qureg, PauliStr str) {
 
@@ -51,12 +108,18 @@ qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr) {
 }
 
 
+/*
+ * PROBABILITIES
+ */
+
+
 qreal calcProbOfBasisState(Qureg qureg, qindex index) {
 
     // TODO
     error_functionNotImplemented(__func__);
     return -1;
 }
+
 
 qreal calcProbOfQubitOutcome(Qureg qureg, int qubit, int outcome) {
 
@@ -66,10 +129,14 @@ qreal calcProbOfQubitOutcome(Qureg qureg, int qubit, int outcome) {
 }
 
 
-void calcProbOfAllQubitOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
+qreal calcProbOfMultiQubitOutcome(Qureg qureg, int* qubits, int* outcomes, int numQubits) {
 
     // TODO
     error_functionNotImplemented(__func__);
+}
+
+
+void calcProbsOfAllMultiQubitOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
 }
 
 
@@ -79,6 +146,12 @@ qreal calcTotalProb(Qureg qureg) {
     error_functionNotImplemented(__func__);    
     return -1;
 }
+
+
+
+/*
+ * MEASURES
+ */
 
 
 qreal calcPurity(Qureg qureg) {
@@ -114,65 +187,17 @@ qreal calcHilbertSchmidtDistance(Qureg qureg1, Qureg qureg2) {
 }
 
 
-} // end de-name mangler
-
-
-
 
 /*
- * C++ ONLY FUNCTIONS
- *
- * which are not directly C-compatible because of limited
- * interoperability of the qcomp type. See calculations.h 
- * for more info. We here define a C++-only signature (with
- * name-mangling), and a C-friendly wrapper which passes by
- * pointer; the C-friendly interface in wrappers.h which itself
- * wrap this.
+ * PARTIAL TRACE
  */
 
+Qureg calcPartialTrace(Qureg qureg, int* qubits, int numQubits) {
 
-qcomp calcInnerProduct(Qureg qureg1, Qureg qureg2) {
-
-    // TODO:
-    // this is now gonna accept...
-    //  - two statevectors, returning bra-ket <qureg1|qureg2>
-    //  - two density matrices, returning Hilbert-Schmidt inner-product T(qureg1^adj qureg2)
-    //  - one statevector and density matrix, the fidelity between them:
-    //       <qureg1|qureg2|qureg1>
-    //       <qureg2|qureg1^adj|qureg2>   (=conj of complex fidelity-like scalar when qureg1 unnormalised)
-    //
-    // Although: do I have to assume Hermiticity of dens-matr to even calc this without complicated distribution? I forget
-
-
-    // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
-}
-extern "C" void _wrap_calcInnerProduct(Qureg bra, Qureg ket, qcomp* out) {
-
-    *out = calcInnerProduct(bra, ket);
+    // BIG TODO
+    error_functionNotImplemented(__func__);    
+    return createQureg(0);
 }
 
 
-qcomp calcExpecNonHermitianPauliStrSum(Qureg qureg, PauliStrSum sum) {
-
-    // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
-}
-extern "C" void _wrap_calcExpecNonHermitianPauliStrSum(qcomp* out, Qureg qureg, PauliStrSum sum) {
-
-    *out = calcExpecNonHermitianPauliStrSum(qureg, sum);
-}
-
-
-qcomp calcExpecNonHermitianFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr) {
-
-    // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
-}
-extern "C" void _wrap_calcExpecNonHermitianFullStateDiagMatr(qcomp* out, Qureg qureg, FullStateDiagMatr matr) {
-
-    *out = calcExpecNonHermitianFullStateDiagMatr(qureg, matr);
-}
+} // end de-name mangler

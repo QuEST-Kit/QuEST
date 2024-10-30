@@ -94,7 +94,7 @@ bool doesChannelRequireComm(Qureg qureg, int ketQubit) {
 }
 
 
-bool doAnyLocalAmpsSatisfyCtrls(Qureg qureg, vector<int> ctrls, vector<int> states) {
+bool doAnyLocalStatesHaveQubitValues(Qureg qureg, vector<int> ctrls, vector<int> states) {
 
     // this answers the generic question of "do any of the given qubits lie in the
     // prefix substate with node-fixed values inconsistent with the given states?"
@@ -341,7 +341,7 @@ void localiser_statevec_anyCtrlSwap(Qureg qureg, vector<int> ctrls, vector<int> 
         std::swap(targ1, targ2);
 
     // node has nothing to do if all local amps violate control condition
-    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+    if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
         return;
 
     // retain only suffix control qubits as relevant to communication and local amp modification
@@ -415,7 +415,7 @@ void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, 
     setDefaultCtrlStates(ctrls, ctrlStates);
 
     // node has nothing to do if all local amps violate control condition
-    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+    if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
         return;
 
     // retain only suffix control qubits as relevant to communication and local amp modification
@@ -454,7 +454,7 @@ template <typename T>
 void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, T matr, bool conj) {
 
     // node has nothing to do if all local amps violate control condition
-    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+    if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
         return;
 
     // skip straight to embarrasingly parallel simulation if possible
@@ -476,7 +476,7 @@ void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ct
     anyCtrlMultiSwapBetweenPrefixAndSuffix(qureg, unmovedCtrls, unmovedCtrlStates, targs, newTargs);
 
     // if the moved ctrls do not eliminate this node's need for local simulation...
-    if (doAnyLocalAmpsSatisfyCtrls(qureg, newCtrls, ctrlStates)) {
+    if (doAnyLocalStatesHaveQubitValues(qureg, newCtrls, ctrlStates)) {
 
         // perform embarrassingly parallel simulation using only the new suffix ctrls
         removePrefixQubitsAndStates(qureg, newCtrls, ctrlStates);
@@ -537,7 +537,7 @@ void localiser_statevec_anyCtrlOneTargDiagMatr(Qureg qureg, vector<int> ctrls, v
     setDefaultCtrlStates(ctrls, ctrlStates);
 
     // node has nothing to do if all local amps violate control condition
-    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+    if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
         return;
 
     if (conj)
@@ -554,7 +554,7 @@ void localiser_statevec_anyCtrlTwoTargDiagMatr(Qureg qureg, vector<int> ctrls, v
     setDefaultCtrlStates(ctrls, ctrlStates);
 
     // node has nothing to do if all local amps violate control condition
-    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+    if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
         return;
 
     if (conj)
@@ -571,7 +571,7 @@ void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, v
     setDefaultCtrlStates(ctrls, ctrlStates);
 
     // node has nothing to do if all local amps violate control condition
-    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+    if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
         return;
 
     // retain only suffix control qubits, as relevant to local amp modification
@@ -692,7 +692,7 @@ void anyCtrlAnyTargZOrPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ct
     setDefaultCtrlStates(ctrls, ctrlStates);
 
     // node has nothing to do if all local amps violate control condition
-    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+    if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
         return;
 
     // retain only suffix control qubits, as relevant to local amp modification
@@ -726,7 +726,7 @@ void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrl
     setDefaultCtrlStates(ctrls, ctrlStates);
 
     // node has nothing to do if all local amps violate control condition
-    if (!doAnyLocalAmpsSatisfyCtrls(qureg, ctrls, ctrlStates))
+    if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
         return;
 
     // retain only suffix control qubits, as relevant to local amp modification
@@ -816,7 +816,10 @@ void mixDensityMatrixWithStatevector(qreal outProb, Qureg out, qreal inProb, Qur
     bool outDist = out.isDistributed;
     bool inDist = in.isDistributed;
 
-    // illegal to distribute only the smaller Qureg ('out' has no buffer space to receive it)
+    // illegal to distribute only the smaller Qureg; 'out' has no buffer space to receive it.
+    // in theory, we could allocate a temporary receive buffer since it is merely quadratically
+    // smaller than 'out' so will be a negligible memory overhead; but this scenario (having a
+    // smaller distributed Qureg) is completely ludicrous and unworth supporting
     if (!outDist && inDist)
         error_mixQuregsAreLocalDensMatrAndDistribStatevec();
 
@@ -991,8 +994,11 @@ void oneQubitPauliChannelOnPrefix(Qureg qureg, int ketQubit, qreal probI, qreal 
 }
 
 
-void localiser_densmatr_oneQubitPauliChannel(Qureg qureg, int qubit, qreal probI, qreal probX, qreal probY, qreal probZ) {
+void localiser_densmatr_oneQubitPauliChannel(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {
     assert_localiserGivenDensMatr(qureg);
+
+    // infer the no-error probability
+    qreal probI = 1 - probX - probY - probZ;
 
     (doesChannelRequireComm(qureg, qubit))?
         oneQubitPauliChannelOnPrefix(qureg, qubit, probI, probX, probY, probZ):
@@ -1003,7 +1009,7 @@ void localiser_densmatr_oneQubitPauliChannel(Qureg qureg, int qubit, qreal probI
 // twoQubitPauliChannel() is regrettably too difficult; the communication model cannot be 
 // simplified the way it was in twoQubitDepolarising() which levereaged the uniform
 // coefficients. It is not clear whether arbitrary coefficients, which cause many more
-// amplitudes to mix, can eve be performed in a sequence of pairwise communication
+// amplitudes to mix, can ever be performed in a sequence of pairwise communication
 
 
 
@@ -1056,7 +1062,7 @@ void localiser_densmatr_oneQubitDamping(Qureg qureg, int qubit, qreal prob) {
 
 
 /*
- * GENERAL CHANNELS
+ * SUPEROPERATORS AND KRAUS
  */
 
 

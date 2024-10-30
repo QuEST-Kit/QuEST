@@ -1,7 +1,8 @@
 /** @file
  * Subroutines which invoke Thrust. This file is only ever included
- * when COMPILE_CUDA=1 so it can safely invoke CUDA
- * signatures without guards.
+ * when COMPILE_CUDA=1 so it can safely invoke CUDA signatures without 
+ * guards. Further, as it is entirely a header, it can declare templated
+ * times without explicitly instantiating them across all parameter values.
  */
 
 #ifndef GPU_THRUST_HPP
@@ -35,10 +36,9 @@
  */
 
 
-using devicevec = thrust::device_vector<int>;
+using devints = thrust::device_vector<int>;
 
-
-int* getPtr(devicevec qubits) {
+int* getPtr(devints qubits) {
 
     return thrust::raw_pointer_cast(qubits.data());
 }
@@ -92,16 +92,24 @@ auto getEndPtr(FullStateDiagMatr matr) {
  */
 
 
-struct functor_conjAmp : public thrust::unary_function<cu_qcomp,cu_qcomp> {
-
-    // this functor merely complex-conjugates an amplitude,
-    // and is used to conjugate any-targ matrix elements.
-    // indeed, there is no inbuilt functor despite Thrust
-    // defining conj() upon a complex<T>. Yes, really! 
+struct functor_getAmpConj : public thrust::unary_function<cu_qcomp,cu_qcomp> {
 
     __host__ __device__ cu_qcomp operator()(cu_qcomp amp) {
-        amp.y *= -1;
-        return amp;
+        return getCompConj(amp);
+    }
+};
+
+struct functor_getAmpNorm : public thrust::unary_function<cu_qcomp,qreal> {
+
+    __host__ __device__ qreal operator()(cu_qcomp amp) {
+        return getCompNorm(amp);
+    }
+};
+
+struct functor_getAmpReal : public thrust::unary_function<cu_qcomp,qreal> {
+
+    __host__ __device__ qreal operator()(cu_qcomp amp) {
+        return getCompReal(amp);
     }
 };
 
@@ -117,8 +125,8 @@ struct functor_mixAmps : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qco
     functor_mixAmps(qreal out, qreal in) : outProb(out), inProb(in) {}
 
     __host__ __device__ cu_qcomp operator()(cu_qcomp outAmp, cu_qcomp inAmp) {
-        cu_qcomp newAmp = (outProb * outAmp) + (inProb * inAmp);
-        return newAmp;
+        
+        return (outProb * outAmp) + (inProb * inAmp);
     }
 };
 
@@ -139,22 +147,21 @@ struct functor_multiplyElemPowerWithAmp : public thrust::binary_function<cu_qcom
         if constexpr (HasPower)
             matrElem = getCompPower(matrElem, exponent);
 
-        cu_qcomp newAmp = quregAmp * matrElem;
-        return newAmp;
+        return quregAmp * matrElem;
     }
 };
 
 
 
 /*
- * FUNCTIONS 
+ * STATE MODIFICATION 
  */
 
 
 void thrust_setElemsToConjugate(cu_qcomp* matrElemsPtr, qindex matrElemsLen) {
 
     auto ptr = getStartPtr(matrElemsPtr);
-    thrust::transform(ptr, ptr + matrElemsLen, ptr, functor_conjAmp());
+    thrust::transform(ptr, ptr + matrElemsLen, ptr, functor_getAmpConj());
 }
 
 

@@ -268,7 +268,7 @@ util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, 
 
 
 /*
- * OPERATOR PARAMETERS
+ * DECOHERENCE FACTORS
  */
 
 typedef struct { qreal c1; qreal c2; qreal c3; qreal c4; } util_Scalars;

@@ -185,14 +185,6 @@ namespace report {
 
 
     /*
-     * QUREG INITIALISATIONS
-     */
-
-    string INVALID_STATE_INDEX = 
-        "Classical state index ${STATE_IND} is invalid for the given ${NUM_QUBITS} qubit Qureg. Index must be greater than or equal to zero, and cannot equal nor exceed the number of unique classical states (2^${NUM_QUBITS} = ${NUM_STATES}).";
-
-
-    /*
      * EXISTING QUREG
      */
 
@@ -563,6 +555,9 @@ namespace report {
     string KRAUS_MAP_NOT_CPTP =
         "The KrausMap was not (approximately) completely positive and trace preserving (CPTP).";
     
+    string KRAUS_MAP_SIZE_MISMATCHES_TARGETS =
+        "The KrausMap has a size (${KRAUS_QUBITS} qubits) inconsistent with the specified number of target qubits (${TARG_QUBITS}).";
+    
 
     /*
      * PAULI STRING CREATION
@@ -644,11 +639,19 @@ namespace report {
 
 
     /*
-     * OPERATOR PARAMETERS
+     * BASIS STATE INDICES
      */
+
+    string INVALID_BASIS_STATE_INDEX = 
+        "Classical state index ${STATE_IND} is invalid for the given ${NUM_QUBITS} qubit Qureg. Index must be greater than or equal to zero, and cannot equal nor exceed the number of unique classical states (2^${NUM_QUBITS} = ${NUM_STATES}).";
+
+    string INVALID_BASIS_STATE_ROW_OR_COL =
+        "The row and column indices (${ROW_IND}, ${COL_IND}) are invalid for the given ${NUM_QUBITS} qubit Qureg. Both indices must be greater than or equal to zero, and neither can equal nor exceed the number of unique classical states (2^${NUM_QUBITS} = ${NUM_STATES}).";
+
+
     
     string INVALID_TARGET_QUBIT = 
-        "Invalid target qubit (${TARGET}). Must be greater than or equal to zero, and less than the number of qubits in the Qureg (${NUM_QUBITS}).";
+        "Invalid target qubit (${QUBIT_IND}). Must be greater than or equal to zero, and less than the number of qubits in the Qureg (${NUM_QUBITS}).";
 
 
     /*
@@ -1422,7 +1425,6 @@ void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, int useGpu, bo
         return;
 
     QuESTEnv env = getQuESTEnv();
-
     assertMatrixNonEmpty(numQubits, caller);
     assertMatrixTotalNumElemsDontExceedMaxIndex(numQubits, isDenseType, caller);
     assertMatrixLocalMemDoesntExceedMaxSizeof(numQubits,  isDenseType, useDistrib, env.numNodes, caller);
@@ -2165,7 +2167,7 @@ void validate_superOpFields(SuperOp op, const char* caller) {
 void validate_superOpIsSynced(SuperOp op, const char* caller) {
 
     // we don't need to perform any sync check in CPU-only mode
-    if (!mem_isAllocated(op.gpuElemsFlat))
+    if (!mem_isAllocated(util_getGpuMemPtr(op)))
         return;
 
     // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though
@@ -2373,6 +2375,7 @@ void validate_krausMapIsSynced(KrausMap map, const char* caller) {
 }
 
 void validate_krausMapIsCPTP(KrausMap map, const char* caller) {
+    validate_krausMapFields(map, caller);
     validate_krausMapIsSynced(map, caller);
 
     // avoid expensive CPTP check if validation is anyway disabled
@@ -2386,22 +2389,10 @@ void validate_krausMapIsCPTP(KrausMap map, const char* caller) {
     assertThat(*(map.isCPTP), report::KRAUS_MAP_NOT_CPTP, caller);
 }
 
+void validate_krausMapMatchesTargets(KrausMap map, int numTargets, const char* caller) {
 
-
-/*
- * QUREG INITIALISATIONS
- */
-
-void validate_initClassicalStateIndex(Qureg qureg, qindex ind, const char* caller) {
-
-    qindex maxIndExcl = powerOf2(qureg.numQubits);
-
-    tokenSubs vars = {
-        {"${STATE_IND}",  ind},
-        {"${NUM_QUBITS}", qureg.numQubits},
-        {"${NUM_STATES}", maxIndExcl}};
-
-    assertThat(ind >= 0 && ind < maxIndExcl, report::INVALID_STATE_INDEX, vars, caller);
+    tokenSubs vars = {{"${KRAUS_QUBITS}", map.numQubits}, {"${TARG_QUBITS}", numTargets}};
+    assertThat(map.numQubits == numTargets, report::KRAUS_MAP_SIZE_MISMATCHES_TARGETS, vars, caller);
 }
 
 
@@ -2611,16 +2602,53 @@ void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
 
 
 /*
- * OPERATOR PARAMETERS
+ * BASIS STATE INDICES
  */
+
+void validate_basisStateIndex(Qureg qureg, qindex ind, const char* caller) {
+
+    qindex maxIndExcl = powerOf2(qureg.numQubits);
+
+    tokenSubs vars = {
+        {"${STATE_IND}",  ind},
+        {"${NUM_QUBITS}", qureg.numQubits},
+        {"${NUM_STATES}", maxIndExcl}};
+
+    assertThat(ind >= 0 && ind < maxIndExcl, report::INVALID_BASIS_STATE_INDEX, vars, caller);
+}
+
+void validate_basisStateRowCol(Qureg qureg, qindex row, qindex col, const char* caller) {
+
+    qindex maxIndExcl = powerOf2(qureg.numQubits);
+
+    tokenSubs vars = {
+        {"${ROW_IND}",  row},
+        {"${COL_IND}",  col},
+        {"${NUM_QUBITS}", qureg.numQubits},
+        {"${NUM_STATES}", maxIndExcl}};
+
+    bool valid = row >= 0 && row < maxIndExcl && col >= 0 && col < maxIndExcl;
+    assertThat(valid, report::INVALID_BASIS_STATE_ROW_OR_COL, vars, caller);
+}
+
+
+
+/*
+ * QUBIT INDICES
+ */
+
+void assertValidQubit(Qureg qureg, int qubitInd, string msg, const char* caller) {
+
+    tokenSubs vars = {
+        {"${QUBIT_IND}",  qubitInd},
+        {"${NUM_QUBITS}", qureg.numQubits}};
+
+    assertThat(qubitInd >= 0 && qubitInd < qureg.numQubits, msg, vars, caller);
+}
 
 void validate_target(Qureg qureg, int target, const char* caller) {
 
-    tokenSubs vars = {
-        {"${TARGET}",  target},
-        {"${NUM_QUBITS}", qureg.numQubits}};
-
-    assertThat(target >= 0 && target < qureg.numQubits, report::INVALID_TARGET_QUBIT, vars, caller);
+    assertValidQubit(qureg, target, report::INVALID_TARGET_QUBIT, caller);
 }
 
 

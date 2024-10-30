@@ -1065,7 +1065,7 @@ __global__ void kernel_densmatr_partialTrace_sub(
 
         // i = nth local index of inQureg where targs=j and pairTargs=j
         qindex i = k;
-        i = setBits(i, ketTargs, numTargPairs, j); // loops may be unrolled
+        i = setBits(i, ketTargs,  numTargPairs, j); // loops may be unrolled
         i = setBits(i, pairTargs, numTargPairs, j);
 
         outAmp += ampsIn[i];
