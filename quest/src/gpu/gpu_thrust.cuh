@@ -213,7 +213,7 @@ struct functor_insertBits : public thrust::unary_function<qindex,qindex> {
         SET_VAR_AT_COMPILE_TIME(int, nbits, NumBits, numBits);
 
         // return ith local index where bits have the specified values at the specified indices
-        return insertBitsWithMaskedValues(i, sortedInds.data(), nbits, valueMask);
+        return insertBitsWithMaskedValues(i, sortedIndsPtr, nbits, valueMask);
     }
 };
 
