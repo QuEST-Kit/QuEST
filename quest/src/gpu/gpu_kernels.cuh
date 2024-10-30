@@ -1113,7 +1113,7 @@ __global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
 template <int NumQubits>
 __global__ void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
     qreal* outProbs, cu_qcomp* amps, qindex numThreads, 
-    qindex rank, qindex logNumAmpsPerNode,
+    qindex numColsPerNode, int rank, qindex logNumAmpsPerNode,
     int* qubits, int numQubits
 ) {
     GET_THREAD_IND(n, numThreads);

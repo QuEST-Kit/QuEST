@@ -1309,8 +1309,7 @@ qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
 
 #if COMPILE_CUDA 
 
-    // thrust uses template parameter to accelerate iterators, and does not need RealOnly at compile-time
-    return thrust_statevec_calcProbOfMultiQubitOutcome_sub<NumQubits>(qureg, qubits, outcomes, RealOnly);
+    return thrust_statevec_calcProbOfMultiQubitOutcome_sub<NumQubits, RealOnly>(qureg, qubits, outcomes);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1352,8 +1351,8 @@ void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
     // we decouple numColsPerNode and numThreads for clarity
     // (and in case parallelisation granularity ever changes)
-    qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode)
-    qindex numThreads = numColsPerNode; 
+    qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
+    qindex numThreads = numColsPerNode;
     qindex numBlocks = getNumBlocks(numThreads);
 
     // allocate exponentially-big temporary memory (error if failed)
@@ -1372,7 +1371,7 @@ void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     );
 
     // overwrite outProbs with GPU memory
-    copyFromDeviceVec(devreals, outProbs);
+    copyFromDeviceVec(devProbs, outProbs);
 
 #else
     error_gpuSimButGpuNotCompiled();
