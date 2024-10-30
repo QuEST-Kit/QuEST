@@ -299,6 +299,21 @@ void validate_basisStateRowCol(Qureg qureg, qindex row, qindex col, const char* 
  */
 
 void validate_target(Qureg qureg, int target, const char* caller);
+void validate_targets(Qureg qureg, int* targets, int numTargets, const char* caller);
+
+
+
+/*
+ * MEASUREMENT PARAMETERS
+ */
+
+void validate_measurementOutcomeIsValid(int outcome, const char* caller);
+
+void validate_measurementOutcomesAreValid(int* outcomes, int numOutcomes, const char* caller);
+
+void validate_measurementOutcomeIsPossible(int outcome, qreal prob, const char* caller);
+
+void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const char* caller);
 
 
 

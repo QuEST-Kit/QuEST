@@ -1241,3 +1241,76 @@ void localiser_densmatr_partialTrace(Qureg inQureg, Qureg outQureg, vector<int> 
         partialTraceOnPrefix(inQureg, outQureg, targs):
         partialTraceOnSuffix(inQureg, outQureg, targs);
 }
+
+
+
+/*
+ * PROBABILITIES
+ */
+
+
+qreal localiser_statevec_calcTotalProb(Qureg qureg) {
+    assert_localiserGivenStateVec(qureg);
+
+    qreal prob = accel_statevec_calcTotalProb_sub(qureg);
+    if (qureg.isDistributed)
+        comm_reduceReal(&prob);
+
+    return prob;
+}
+
+
+qreal localiser_densmatr_calcTotalProb(Qureg qureg) {
+    assert_localiserGivenDensMatr(qureg);
+
+    qreal prob = accel_densmatr_calcTotalProb_sub(qureg);
+    if (qureg.isDistributed)
+        comm_reduceReal(&prob);
+
+    return prob;
+}
+
+
+qreal localiser_statevec_calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qubits, vector<int> outcomes, bool realOnly) {
+    assert_localiserGivenStateVec(qureg);
+
+    qreal prob = 0;
+
+    // only nodes containing amps with the specified outcomes need to compute probs
+    if (doAnyLocalStatesHaveQubitValues(qureg, qubits, outcomes)) {
+
+        // and do so using only the suffix qubits/outcomes
+        removePrefixQubitsAndStates(qureg, qubits, outcomes);
+        prob += accel_statevec_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes, realOnly);
+    }
+
+    // but all nodes must sum their probabilities (unless qureg was cloned per-node)
+    if (qureg.isDistributed)
+        comm_reduceReal(&prob);
+
+    return prob;
+}
+
+
+void localiser_statevec_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg qureg, vector<int> qubits) {
+    assert_localiserGivenStateVec(qureg);
+
+    // each node independently populates local outProbs
+    accel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(outProbs, qureg, qubits);
+
+    // nodes sum their arrays
+    if (qureg.isDistributed)
+        comm_reduceReals(outProbs, powerOf2(qubits.size()));
+}
+
+
+void localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg qureg, vector<int> qubits) {
+    assert_localiserGivenDensMatr(qureg);
+
+    // each node independently populates local outProbs
+    accel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(outProbs, qureg, qubits);
+
+    // nodes sum their arrays
+    if (qureg.isDistributed)
+        comm_reduceReals(outProbs, powerOf2(qubits.size()));
+}

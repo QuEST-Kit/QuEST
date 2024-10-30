@@ -1495,3 +1495,152 @@ void cpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> ta
 
 
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_partialTrace_sub, (Qureg, Qureg, vector<int>, vector<int>) )
+
+
+
+/*
+ * PROBABILITIES
+ */
+
+
+qreal cpu_statevec_calcTotalProb_sub(Qureg qureg) {
+
+    // each iteration collects one probability amp
+    qindex numIts = qureg.numAmpsPerNode;
+    qreal prob = 0;
+
+    #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++)
+        prob += std::norm(qureg.cpuAmps[n]);
+
+    return prob;
+}
+
+
+qreal cpu_densmatr_calcTotalProb_sub(Qureg qureg) {
+
+    // each iteration collects one real diagonal
+    qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
+    qindex startInd = qureg.rank * numColsPerNode;
+    qindex numIts = numColsPerNode;
+    qreal prob = 0;
+
+    #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = local index of nth local diagonal element
+        qindex i = startInd + n * (numColsPerNode + 1);
+        prob += real(qureg.cpuAmps[i]);
+    }
+
+    return prob;
+}
+
+
+template <int NumQubits, bool RealOnly>
+qreal cpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+
+    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
+
+    // each iteration visits one amp, which is one of the 2^qubits.size() values possible
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(qubits.size());
+    qreal prob = 0;
+
+    auto sortedQubits = util_getSorted(qubits); // all in suffix
+    auto qubitStateMask = util_getBitMask(qubits, outcomes);
+
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numQubits, NumQubits, qubits.size());
+
+    #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = nth local index where qubits are in the specified outcome state
+        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubits, qubitStateMask);
+
+        // collect real(amp) or |amp|^2, for density matrices and statevectors respectively
+        if constexpr (RealOnly)
+            prob += real(qureg.cpuAmps[i]);
+        else
+            prob += std::norm(qureg.cpuAmps[i]);
+    }
+
+    return prob;
+}
+
+
+template <int NumQubits>
+void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits) {
+
+    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
+
+    // every amp contributes to a statevector prob
+    qindex numIts = qureg.numAmpsPerNode;
+
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numQubits, NumQubits, qubits.size());
+    qindex numOutcomes = powerOf2(numQubits);
+
+    // clear amps; be compile-time unrolled, and/or parallelised (independent of qureg)
+    #pragma omp parallel for
+    for (int i=0; i<numOutcomes; i++)
+        outProbs[i] = 0;
+    
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        qreal prob = std::norm(qureg.cpuAmps[n]);
+
+        // i = global index corresponding to n
+        qindex i = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
+
+        // j = outcome index corresponding to prob
+        qindex j = getValueOfBits(i, qubits.data(), numQubits); // loop therein may be unrolled
+
+        #pragma omp atomic
+        outProbs[j] += prob;
+    }
+}
+
+
+template <int NumQubits>
+void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits) {
+
+    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
+
+    // every and only diagonal elem contributes
+    qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
+    qindex startInd = qureg.rank * numColsPerNode; // = first local diag ind
+    qindex numIts = numColsPerNode;
+    
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numQubits, NumQubits, qubits.size());
+    qindex numOutcomes = powerOf2(numQubits);
+    
+    // clear amps; be compile-time unrolled, and/or parallelised (independent of qureg)
+    #pragma omp parallel for
+    for (int i=0; i<numOutcomes; i++)
+        outProbs[i] = 0;
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = local index of nth local diagonal element
+        qindex i = startInd + n * (numColsPerNode + 1);
+        qreal prob = std::real(qureg.cpuAmps[i]);
+
+        // j = global index of i
+        qindex j = concatenateBits(qureg.rank, i, qureg.logNumAmpsPerNode);
+
+        // k = outcome index corresponding to 
+        qindex k = getValueOfBits(j, qubits.data(), numQubits); // loop therein may be unrolled
+
+        #pragma omp atomic
+        outProbs[k] += prob;
+    }
+}
+
+
+INSTANTIATE_BOOLEAN_FUNC_OPTIMISED_FOR_NUM_TARGS( qreal, cpu_statevec_calcProbOfMultiQubitOutcome_sub, (Qureg, vector<int>, vector<int>) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub, (qreal* outProbs, Qureg, vector<int>) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub, (qreal* outProbs, Qureg, vector<int>) )

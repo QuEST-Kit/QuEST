@@ -588,6 +588,30 @@ void comm_reduceAmp(qcomp* localAmp) {
 }
 
 
+void comm_reduceReal(qreal* localReal) {
+#if COMPILE_MPI
+
+    qreal* globalReal = nullptr;
+    MPI_Allreduce(localReal, globalReal, 1, MPI_QREAL, MPI_SUM, MPI_COMM_WORLD);
+    *localReal = *globalReal;
+
+#else
+    error_commButEnvNotDistributed();
+#endif
+}
+
+
+void comm_reduceReals(qreal* localReals, qindex numLocalReals) {
+#if COMPILE_MPI
+
+    MPI_Allreduce(MPI_IN_PLACE, localReals, numLocalReals, MPI_QREAL, MPI_SUM, MPI_COMM_WORLD);
+
+#else
+    error_commButEnvNotDistributed();
+#endif
+}
+
+
 bool comm_isTrueOnAllNodes(bool val) {
 #if COMPILE_MPI
 

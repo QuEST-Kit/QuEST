@@ -655,9 +655,42 @@ namespace report {
         "The row and column indices (${ROW_IND}, ${COL_IND}) are invalid for the given ${NUM_QUBITS} qubit Qureg. Both indices must be greater than or equal to zero, and neither can equal nor exceed the number of unique classical states (2^${NUM_QUBITS} = ${NUM_STATES}).";
 
 
+    /*
+     * QUBIT INDICES
+     */
+
+    string NEGATIVE_OR_ZERO_NUM_TARGETS =
+        "The specified number of target qubits (${NUM_QUBITS}) is invalid. Must specify one or more targets.";
     
+    string NUM_TARGETS_EXCEEDS_QUREG_SIZE =
+        "The specified number of target qubits (${NUM_QUBITS}) exceeds the number of qubits in the Qureg (${QUREG_QUBITS}).";
+
+    string TARGET_LIST_WAS_NULL_PTR =
+        "Received a NULL pointer where a list of target qubits was expected. It is only valid to pass NULL or nullptr for control qubit lists.";
+
     string INVALID_TARGET_QUBIT = 
         "Invalid target qubit (${QUBIT_IND}). Must be greater than or equal to zero, and less than the number of qubits in the Qureg (${NUM_QUBITS}).";
+
+    string DUPLICATE_TARGET_QUBITS =
+        "The list of target qubits contained duplicates. All qubits must be unique.";
+
+
+    /*
+    * MEASUREMENT PARAMETERS
+    */
+
+    string ONE_QUBIT_MEASUREMENT_OUTCOME_INVALID =
+        "The given qubit measurement outcome (${OUTCOME}) is invalid. Valid outcomes are 0 and 1.";
+
+    string MANY_QUBIT_MEASUREMENTS_OUTCOME_INVALID =
+        "The given qubit measurement outcome (${OUTCOME}) at index ${INDEX}$ is invalid. Valid outcomes are 0 and 1.";
+
+    string ONE_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLE =
+        "The specified measurement outcome (${OUTCOME}) is impossibly unlikely (i.e. has probability less than epsilon), so the post-measurement state cannot be reliably renormalised.";
+
+    string GPU_CANNOT_FIT_TEMP_MEASUREMENT_OUTCOME_PROBS =
+        "The GPU has less available memory (${MEM_AVAIL} bytes) than that needed (${MEM_NEEDED} bytes) to temporarily store the ${NUM_OUTCOMES} outcome probabilities of the specified ${NUM_QUBITS} qubits.";
+
 
 
     /*
@@ -2653,6 +2686,32 @@ void validate_basisStateRowCol(Qureg qureg, qindex row, qindex col, const char* 
  * QUBIT INDICES
  */
 
+bool areQubitsUnique(int* qubits, int numQubits) {
+
+    // assumes all elemtns of qubits are < 64
+    qindex mask = 0;
+
+    for (int n=0; n<numQubits; n++)
+        if (getBit(mask, qubits[n]))
+            return false;
+        else
+            mask = setBit(mask, qubits[n], 1);
+
+    return true;
+}
+
+bool areQubitsDisjoint(int* qubitsA, int numQubitsA, int* qubitsB, int numQubitsB) {
+
+    // assumes all elemtns of qubits are < 64
+    qindex maskA = getBitMask(qubitsA, numQubitsA);
+
+    for (int n=0; n<numQubitsB; n++)
+        if (getBit(maskA, qubitsB[n]))
+            return false;
+    
+    return true;
+}
+
 void assertValidQubit(Qureg qureg, int qubitInd, string msg, const char* caller) {
 
     tokenSubs vars = {
@@ -2662,10 +2721,77 @@ void assertValidQubit(Qureg qureg, int qubitInd, string msg, const char* caller)
     assertThat(qubitInd >= 0 && qubitInd < qureg.numQubits, msg, vars, caller);
 }
 
+void assertValidQubits(
+    Qureg qureg, int* qubits, int numQubits, bool canNumIncludeZero, const char* caller,
+    string msgNegNum, string msgNumExceedsQureg, string msgNullPtr, string msgBadInd, string msgDuplicates
+) {
+    assertThat(numQubits > (canNumIncludeZero? -1 : 0), msgNegNum, {{"${NUM_QUBITS}", numQubits}}, caller);
+    assertThat(numQubits <= qureg.numQubits, msgNumExceedsQureg, {{"${NUM_QUBITS}", numQubits}, {"${QUREG_QUBITS}", qureg.numQubits}}, caller);
+
+    if (numQubits > 0)
+        assertThat(qubits != nullptr, msgNullPtr, caller);
+
+    for (int n=0; n<numQubits; n++)
+        assertValidQubit(qureg, qubits[n], msgBadInd, caller);
+    
+    assertThat(areQubitsUnique(qubits, numQubits), msgDuplicates, caller);
+}
+
 void validate_target(Qureg qureg, int target, const char* caller) {
 
     assertValidQubit(qureg, target, report::INVALID_TARGET_QUBIT, caller);
 }
+
+void validate_targets(Qureg qureg, int* targets, int numTargets, const char* caller) {
+
+    // must always have at least 1 target
+    bool numCanBeZero = false;
+
+    assertValidQubits(
+        qureg, targets, numTargets, numCanBeZero, caller, 
+        report::NEGATIVE_OR_ZERO_NUM_TARGETS, report::NUM_TARGETS_EXCEEDS_QUREG_SIZE, report::TARGET_LIST_WAS_NULL_PTR,
+        report::INVALID_TARGET_QUBIT,         report::DUPLICATE_TARGET_QUBITS);
+}
+/*
+ * MEASUREMENT PARAMETERS
+ */
+
+void validate_measurementOutcomeIsValid(int outcome, const char* caller) {
+
+    assertThat(outcome == 0 || outcome == 1, report::ONE_QUBIT_MEASUREMENT_OUTCOME_INVALID, {{"${OUTCOME}", outcome}}, caller);
+}
+
+void validate_measurementOutcomesAreValid(int* outcomes, int numOutcomes, const char* caller) {
+
+    // no need to validate numOutcomes; it is already validated by caller (e.g. through numTargets)
+
+    for (int i=0; i<numOutcomes; i++)
+        assertThat(
+            outcomes[i] == 0 || outcomes[i]== 1, report::MANY_QUBIT_MEASUREMENTS_OUTCOME_INVALID, 
+            {{"${INDEX}", i}, {"${OUTCOME}", outcomes[i]}}, caller);
+}
+
+void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const char* caller) {
+
+    // only GPU backend needs temp memory
+    if (!qureg.isGpuAccelerated)
+        return;
+
+    qindex numOutcomes = powerOf2(numQubits);
+    size_t memAvail = gpu_getCurrentAvailableMemoryInBytes();
+    size_t memNeeded = sizeof(qreal) * numOutcomes;
+
+    tokenSubs vars = {
+        {"{NUM_QUBITS}",    numQubits}, 
+        {"${NUM_OUTCOMES}", numOutcomes}, 
+        {"${MEM_NEEDED}",   memNeeded}, 
+        {"${MEM_AVAIL}",    memAvail}
+    };
+
+    assertThat(memAvail > memNeeded, report::GPU_CANNOT_FIT_TEMP_MEASUREMENT_OUTCOME_PROBS, vars, caller);
+}
+
+
 
 
 

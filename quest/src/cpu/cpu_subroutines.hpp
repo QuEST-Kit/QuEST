@@ -135,4 +135,17 @@ void cpu_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob);
 template <int NumTargs> void cpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> targs, vector<int> pairTargs);
 
 
+/*
+ * PROBABILITIES
+ */
+
+qreal cpu_statevec_calcTotalProb_sub(Qureg qureg);
+qreal cpu_densmatr_calcTotalProb_sub(Qureg qureg);
+
+template <int NumQubits, bool RealOnly> qreal cpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes);
+
+template <int NumQubits> void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits);
+template <int NumQubits> void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits);
+
+
 #endif // CPU_SUBROUTINES_HPP

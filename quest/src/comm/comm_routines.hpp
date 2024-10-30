@@ -50,6 +50,10 @@ void comm_broadcastUnsignedsFromRoot(unsigned* arr, qindex length);
 
 void comm_reduceAmp(qcomp* localAmp);
 
+void comm_reduceReal(qreal* localReal);
+
+void comm_reduceReals(qreal* localReals, qindex numLocalReals);
+
 bool comm_isTrueOnAllNodes(bool val);
 
 

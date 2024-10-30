@@ -1076,4 +1076,63 @@ __global__ void kernel_densmatr_partialTrace_sub(
 
 
 
+/*
+ * PROBABILITIES
+ */
+
+
+template <int NumQubits>
+__global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
+    qreal* outProbs, cu_qcomp* amps, qindex numThreads, 
+    int rank, qindex logNumAmpsPerNode,
+    int* qubits, int numQubits
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // TODO:
+    // it might be possible to replace this custom kernel 
+    // with an invocation of Thrust's reduce_by_key(),
+    // where the key is j as computed below. Look into
+    // whether this is worthwhile and faster!
+
+    // use template param to compile-time unroll below loops
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, numQubits);
+
+    qreal prob = getCompReal(amps[n]);
+
+    // i = global index corresponding to n
+    qindex i = concatenateBits(rank, n, logNumAmpsPerNode);
+
+    // j = outcome index corresponding to prob
+    qindex j = getValueOfBits(i, qubits, numBits); // loop therein may be unrolled
+
+    atomicAdd(&outProbs[j], prob);
+}
+
+
+template <int NumQubits>
+__global__ void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
+    qreal* outProbs, cu_qcomp* amps, qindex numThreads, 
+    qindex numColsPerNode, int rank, qindex logNumAmpsPerNode,
+    int* qubits, int numQubits
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, numQubits);
+
+    // i = index of nth local diagonal elem
+    qindex i = (rank * numColsPerNode) + n * (numColsPerNode + 1);
+    qreal prob = getCompReal(amps[i]);
+
+    // j = global index of i
+    qindex j = concatenateBits(rank, i, logNumAmpsPerNode);
+
+    // k = outcome index corresponding to 
+    qindex k = getValueOfBits(j, qubits, numBits); // loop therein may be unrolled
+
+    atomicAdd(&outProbs[k], prob);
+}
+
+
 #endif // GPU_KERNELS_HPP

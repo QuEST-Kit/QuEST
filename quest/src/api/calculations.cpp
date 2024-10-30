@@ -114,37 +114,68 @@ qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr) {
 
 
 qreal calcProbOfBasisState(Qureg qureg, qindex index) {
+    validate_quregFields(qureg, __func__);
+    validate_basisStateIndex(qureg, index, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
+    if (qureg.isDensityMatrix)
+        index *= 1 + powerOf2(qureg.numQubits);
+
+    qcomp amp = localiser_statevec_getAmp(qureg, index);
+    qreal prob = std::norm(amp);
+    return prob;
 }
 
 
 qreal calcProbOfQubitOutcome(Qureg qureg, int qubit, int outcome) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, qubit, __func__);
+    validate_measurementOutcomeIsValid(outcome, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
+    int numQubits = 1;
+    return calcProbOfMultiQubitOutcome(qureg, &qubit, &outcome, numQubits);
 }
 
 
 qreal calcProbOfMultiQubitOutcome(Qureg qureg, int* qubits, int* outcomes, int numQubits) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, qubits, numQubits, __func__);
+    validate_measurementOutcomesAreValid(outcomes, numQubits, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    bool realOnly = false;
+    auto qubitVec = util_getVector(qubits, numQubits);
+    auto outcomeVec = util_getVector(outcomes, numQubits);
+
+    // statevector basis states |i> become density matrix diagonals |i><i| = |i>|i>
+    if (qureg.isDensityMatrix) {
+        realOnly = true;
+        qubitVec = util_getConcatenated(qubitVec, util_getBraQubits(qubitVec, qureg));
+        outcomeVec = util_getConcatenated(outcomeVec, outcomeVec);
+    }
+
+    qreal prob = localiser_statevec_calcProbOfMultiQubitOutcome(qureg, qubitVec, outcomeVec, realOnly);
+    return prob;
 }
 
 
 void calcProbsOfAllMultiQubitOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, qubits, numQubits, __func__);
+    validate_measurementOutcomesFitInGpuMem(qureg, numQubits, __func__);
+
+    auto qubitVec = util_getVector(qubits, numQubits);
+
+    (qureg.isDensityMatrix)?
+        localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(outcomeProbs, qureg, qubitVec):
+        localiser_statevec_calcProbsOfAllMultiQubitOutcomes(outcomeProbs, qureg, qubitVec);
 }
 
 
 qreal calcTotalProb(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);    
-    return -1;
+    return (qureg.isDensityMatrix)?
+        localiser_densmatr_calcTotalProb(qureg): 
+        localiser_statevec_calcTotalProb(qureg);
 }
 
 

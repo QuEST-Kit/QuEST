@@ -1253,3 +1253,141 @@ void gpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> ta
 
 
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_densmatr_partialTrace_sub, (Qureg, Qureg, vector<int>, vector<int>) )
+
+
+
+/*
+ * PROBABILITIES
+ */
+
+
+qreal gpu_statevec_calcTotalProb_sub(Qureg qureg) {
+
+#if COMPILE_CUQUANTUM
+    return cuquantum_statevec_calcTotalProb_sub(qureg);
+
+#elif COMPILE_CUDA
+    return thrust_statevec_calcTotalProb_sub(qureg);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+    return -1;
+#endif
+}
+
+
+qreal gpu_densmatr_calcTotalProb_sub(Qureg qureg) {
+
+#if COMPILE_CUQUANTUM || COMPILE_CUDA
+    return thrust_densmatr_calcTotalProb_sub(qureg);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+    return -1;
+#endif
+}
+
+
+template <int NumQubits, bool RealOnly> 
+qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+
+    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
+
+#if COMPILE_CUQUANTUM
+
+    // cuQuantum discards NumQubits template parameter, and can only handle RealOnly=false
+    if constexpr (!RealOnly)
+        return cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes);
+
+    // this is one of few functions which will fail to operate correctly if
+    // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
+    // true but the latter is not), so we explicitly ensure this is the case
+    if (!COMPILE_CUDA)
+        error_cuQuantumCompiledButNotCuda();
+
+#endif
+
+#if COMPILE_CUDA 
+
+    return thrust_statevec_calcProbOfMultiQubitOutcome_sub<NumQubits, RealOnly>(qureg, qubits, outcomes);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+    return -1;
+#endif
+}
+
+
+template <int NumQubits> 
+void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits) {
+
+    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    qindex numThreads = qureg.numAmpsPerNode;
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    // allocate exponentially-big temporary memory (error if failed)
+    devints devQubits = qubits;
+    devreals devProbs;
+    try  {
+        devProbs = devreals(powerOf2(qubits.size()), 0);
+    } catch (thrust::system_error &e) { 
+        error_thrustTempGpuAllocFailed();
+    }
+
+    kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        getPtr(devProbs), toCuQcomps(qureg.gpuAmps), numThreads, 
+        qureg.rank, qureg.logNumAmpsPerNode, getPtr(devQubits), devQubits.size()
+    );
+
+    // overwrite outProbs with GPU memory
+    copyFromDeviceVec(devProbs, outProbs);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+template <int NumQubits> 
+void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits) {
+
+    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    // we decouple numColsPerNode and numThreads for clarity
+    // (and in case parallelisation granularity ever changes)
+    qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
+    qindex numThreads = numColsPerNode;
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    // allocate exponentially-big temporary memory (error if failed)
+    devints devQubits = qubits;
+    devreals devProbs;
+    try  {
+        devProbs = devreals(powerOf2(qubits.size()), 0);
+    } catch (thrust::system_error &e) { 
+        error_thrustTempGpuAllocFailed();
+    }
+
+    kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        getPtr(devProbs), toCuQcomps(qureg.gpuAmps), numThreads, 
+        numColsPerNode, qureg.rank, qureg.logNumAmpsPerNode, 
+        getPtr(devQubits), devQubits.size()
+    );
+
+    // overwrite outProbs with GPU memory
+    copyFromDeviceVec(devProbs, outProbs);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+INSTANTIATE_BOOLEAN_FUNC_OPTIMISED_FOR_NUM_TARGS( qreal, gpu_statevec_calcProbOfMultiQubitOutcome_sub, (Qureg, vector<int>, vector<int>) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub, (qreal* outProbs, Qureg, vector<int>) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub, (qreal* outProbs, Qureg, vector<int>) )
