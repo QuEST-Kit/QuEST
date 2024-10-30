@@ -1113,7 +1113,7 @@ __global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
 template <int NumQubits>
 __global__ void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
     qreal* outProbs, cu_qcomp* amps, qindex numThreads, 
-    qindex numColsPerNode, qindex startInd, qindex logNumAmpsPerNode,
+    qindex rank, qindex logNumAmpsPerNode,
     int* qubits, int numQubits
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -1122,7 +1122,7 @@ __global__ void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, numQubits);
 
     // i = index of nth local diagonal elem
-    qindex i = startInd + n * (numColsPerNode + 1);
+    qindex i = (rank * numColsPerNode) + n * (numColsPerNode + 1);
     qreal prob = getCompReal(amps[i]);
 
     // j = global index of i

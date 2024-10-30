@@ -1350,10 +1350,10 @@ void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
-    qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
-    qindex startInd = qureg.rank * numColsPerNode;
-
-    qindex numThreads = numColsPerNode;
+    // we decouple numColsPerNode and numThreads for clarity
+    // (and in case parallelisation granularity ever changes)
+    qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode)
+    qindex numThreads = numColsPerNode; 
     qindex numBlocks = getNumBlocks(numThreads);
 
     // allocate exponentially-big temporary memory (error if failed)
@@ -1367,7 +1367,7 @@ void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
     kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         getPtr(devProbs), toCuQcomps(qureg.gpuAmps), numThreads, 
-        numColsPerNode, startInd, qureg.logNumAmpsPerNode, 
+        numColsPerNode, qureg.rank, qureg.logNumAmpsPerNode, 
         getPtr(devQubits), devQubits.size()
     );
 
