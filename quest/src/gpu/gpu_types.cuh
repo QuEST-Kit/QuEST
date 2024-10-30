@@ -151,7 +151,20 @@ INLINE void operator *= (cu_qcomp& a, const qreal& b) {
  */
 
 
-__device__ cu_qcomp getCompPower(cu_qcomp base, cu_qcomp exponent) {
+INLINE qreal getCompReal(cu_qcomp num) {
+    return num.x;
+}
+
+INLINE cu_qcomp getCompConj(cu_qcomp num) {
+    num.y *= -1;
+    return num;
+}
+
+INLINE qreal getCompNorm(cu_qcomp num) {
+    return (num.x * num.x) + (num.y * num.y);
+}
+
+INLINE cu_qcomp getCompPower(cu_qcomp base, cu_qcomp exponent) {
 
     // using https://mathworld.wolfram.com/ComplexExponentiation.html,
     // and the principal argument of 'base'

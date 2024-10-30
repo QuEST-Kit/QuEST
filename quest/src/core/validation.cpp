@@ -185,14 +185,6 @@ namespace report {
 
 
     /*
-     * QUREG INITIALISATIONS
-     */
-
-    string INVALID_STATE_INDEX = 
-        "Classical state index ${STATE_IND} is invalid for the given ${NUM_QUBITS} qubit Qureg. Index must be greater than or equal to zero, and cannot equal nor exceed the number of unique classical states (2^${NUM_QUBITS} = ${NUM_STATES}).";
-
-
-    /*
      * EXISTING QUREG
      */
 
@@ -644,11 +636,19 @@ namespace report {
 
 
     /*
-     * OPERATOR PARAMETERS
+     * BASIS STATE INDICES
      */
+
+    string INVALID_BASIS_STATE_INDEX = 
+        "Classical state index ${STATE_IND} is invalid for the given ${NUM_QUBITS} qubit Qureg. Index must be greater than or equal to zero, and cannot equal nor exceed the number of unique classical states (2^${NUM_QUBITS} = ${NUM_STATES}).";
+
+    string INVALID_BASIS_STATE_ROW_OR_COL =
+        "The row and column indices (${ROW_IND}, ${COL_IND}) are invalid for the given ${NUM_QUBITS} qubit Qureg. Both indices must be greater than or equal to zero, and neither can equal nor exceed the number of unique classical states (2^${NUM_QUBITS} = ${NUM_STATES}).";
+
+
     
     string INVALID_TARGET_QUBIT = 
-        "Invalid target qubit (${TARGET}). Must be greater than or equal to zero, and less than the number of qubits in the Qureg (${NUM_QUBITS}).";
+        "Invalid target qubit (${QUBIT_IND}). Must be greater than or equal to zero, and less than the number of qubits in the Qureg (${NUM_QUBITS}).";
 
 
     /*
@@ -2165,7 +2165,7 @@ void validate_superOpFields(SuperOp op, const char* caller) {
 void validate_superOpIsSynced(SuperOp op, const char* caller) {
 
     // we don't need to perform any sync check in CPU-only mode
-    if (!mem_isAllocated(op.gpuElemsFlat))
+    if (!mem_isAllocated(util_getGpuMemPtr(op)))
         return;
 
     // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though
@@ -2387,21 +2387,6 @@ void validate_krausMapIsCPTP(KrausMap map, const char* caller) {
 }
 
 
-
-/*
- * QUREG INITIALISATIONS
- */
-
-void validate_initClassicalStateIndex(Qureg qureg, qindex ind, const char* caller) {
-
-    qindex maxIndExcl = powerOf2(qureg.numQubits);
-
-    tokenSubs vars = {
-        {"${STATE_IND}",  ind},
-        {"${NUM_QUBITS}", qureg.numQubits},
-        {"${NUM_STATES}", maxIndExcl}};
-
-    assertThat(ind >= 0 && ind < maxIndExcl, report::INVALID_STATE_INDEX, vars, caller);
 }
 
 
@@ -2611,16 +2596,41 @@ void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
 
 
 /*
- * OPERATOR PARAMETERS
+ * BASIS STATE INDICES
  */
 
-void validate_target(Qureg qureg, int target, const char* caller) {
+void validate_basisStateIndex(Qureg qureg, qindex ind, const char* caller) {
+
+    qindex maxIndExcl = powerOf2(qureg.numQubits);
+
+    tokenSubs vars = {
+        {"${STATE_IND}",  ind},
+        {"${NUM_QUBITS}", qureg.numQubits},
+        {"${NUM_STATES}", maxIndExcl}};
+
+    assertThat(ind >= 0 && ind < maxIndExcl, report::INVALID_BASIS_STATE_INDEX, vars, caller);
+}
+
 
     tokenSubs vars = {
         {"${TARGET}",  target},
+/*
+ * QUBIT INDICES
+ */
+
+void assertValidQubit(Qureg qureg, int qubitInd, string msg, const char* caller) {
+
+    tokenSubs vars = {
+        {"${QUBIT_IND}",  qubitInd},
         {"${NUM_QUBITS}", qureg.numQubits}};
 
-    assertThat(target >= 0 && target < qureg.numQubits, report::INVALID_TARGET_QUBIT, vars, caller);
+    assertThat(qubitInd >= 0 && qubitInd < qureg.numQubits, msg, vars, caller);
+}
+
+void validate_target(Qureg qureg, int target, const char* caller) {
+
+    assertValidQubit(qureg, target, report::INVALID_TARGET_QUBIT, caller);
+}
 }
 
 

@@ -102,7 +102,7 @@ int rand_getRandomSingleQubitOutcome(qreal probOfZero) {
 
     // assumes 0 <= probOfZero <= 1
 
-    // advances generator on every node
+    // advances generator on every node, retaining consensus
     qreal uniformSample = distribution(generator);
 
     // produces 0 with probOfZero probability

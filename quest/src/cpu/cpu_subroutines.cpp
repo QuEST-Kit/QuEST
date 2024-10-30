@@ -588,7 +588,7 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
         if constexpr (!MultiplyOnly) {
 
             // m = global index corresponding to n
-            qindex m = concatenateBits(qureg.rank, n, qureg.numAmpsPerNode);
+            qindex m = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
 
             // j = global column corresponding to n
             qindex j = m / matr.numElems;

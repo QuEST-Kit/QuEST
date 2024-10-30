@@ -78,21 +78,14 @@ void localiser_densmatr_mixQureg(qreal outProb, Qureg out, qreal inProb, Qureg i
  */
 
 void localiser_densmatr_oneQubitDephasing(Qureg qureg, int qubit, qreal prob);
-
 void localiser_densmatr_twoQubitDephasing(Qureg qureg, int qubitA, int qubitB, qreal prob);
 
 void localiser_densmatr_oneQubitDepolarising(Qureg qureg, int qubit, qreal prob);
-
 void localiser_densmatr_twoQubitDepolarising(Qureg qureg, int qubitA, int qubitB, qreal prob);
 
-void localiser_densmatr_oneQubitPauliChannel(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ);
+void localiser_densmatr_oneQubitPauliChannel(Qureg qureg, int qubit, qreal pX, qreal pY, qreal pZ);
 
 void localiser_densmatr_oneQubitDamping(Qureg qureg, int qubit, qreal prob);
-
-
-/*
- * GENERAL CHANNELS
- */
 
 void localiser_densmatr_superoperator(Qureg qureg, SuperOp op, vector<int> ketTargs);
 

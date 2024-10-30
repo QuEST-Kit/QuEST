@@ -238,13 +238,6 @@ void validate_krausMapIsCPTP(KrausMap map, const char* caller);
 
 
 
-/*
- * QUREG INITIALISATIONS
- */
-
-void validate_initClassicalStateIndex(Qureg qureg, qindex ind, const char* caller);
-
-
 
 /*
  * PAULI STRINGS AND SUMS CREATION
@@ -253,13 +246,12 @@ void validate_initClassicalStateIndex(Qureg qureg, qindex ind, const char* calle
 void validate_newPauliStrParams(const char* paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller);
 void validate_newPauliStrParams(int*        paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller);
 
-void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* caller); // called by C++ only
-
-void validate_newPauliStrNumPaulis(int numPaulis, int maxNumPaulis, const char* caller); // called by C++ only
+void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* caller); // used by C++ only API
+void validate_newPauliStrNumPaulis(int numPaulis, int maxNumPaulis, const char* caller); // used by C++ only API
 
 void validate_newPauliStrSumParams(qindex numTerms, const char* caller);
 
-void validate_newPauliStrSumMatchingListLens(qindex numStrs, qindex numCoeffs, const char* caller); // called by C++ only
+void validate_newPauliStrSumMatchingListLens(qindex numStrs, qindex numCoeffs, const char* caller); // used by C++ only API
 
 void validate_newPauliStrSumAllocs(PauliStrSum sum, qindex numBytesStrings, qindex numBytesCoeffs, const char* caller);
 
@@ -290,7 +282,15 @@ void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller);
 
 
 /*
- * OPERATOR PARAMETERS
+ * BASIS STATE INDICES
+ */
+
+void validate_basisStateIndex(Qureg qureg, qindex ind, const char* caller);
+
+
+
+/*
+ * QUBIT INDICES
  */
 
 void validate_target(Qureg qureg, int target, const char* caller);

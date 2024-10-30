@@ -239,7 +239,6 @@ void accel_densmatr_oneQubitDamping_subC(Qureg qureg, int qubit, qreal prob);
 void accel_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob);
 
 
-
 /*
  * PARTIAL TRACE
  */

@@ -478,7 +478,7 @@ void accel_densmatr_mixQureg_subA(qreal outProb, Qureg out, qreal inProb, Qureg 
     if (!outGPU && !inGPU)
         cpu_densmatr_mixQureg_subA(outProb, out, inProb, in);
 
-    // deployments differing is a strange and expected rare scenario;
+    // deployments differing is a strange and expectedly rare scenario;
     // why use GPU-acceleration for one Qureg but not the equally-sized
     // other qureg? We provide the below fallbacks for defensive design.
 
@@ -487,7 +487,10 @@ void accel_densmatr_mixQureg_subA(qreal outProb, Qureg out, qreal inProb, Qureg 
     // the non-GPU qureg into the VRAM buffer of the GPU qureg and
     // always use the GPU backend, but this is only possible when
     // the buffer exists (GPU qureg is distributed), and complicates
-    // the backend; unworthwhile for such a rare scenario.
+    // the backend; unworthwhile for such a rare scenario. We could
+    // also create new, temporary GPU memory and attach it to the
+    // non-GPU Qureg, but the new allocation is the same size of
+    // the Quregs so is dangerously large, and may fail.
 
     if (!outGPU && inGPU) {
         gpu_copyGpuToCpu(in);
@@ -530,22 +533,23 @@ void accel_densmatr_mixQureg_subB(qreal outProb, Qureg out, qreal inProb, Qureg 
     // but is irksome because without communication buffers, there
     // is no existing GPU memory to copy CPU-only small register to.
     // So we regrettably create temporary GPU memory, which will 
-    // thankfully be very small; quadratically smaller than 'out')
+    // thankfully be very small; quadratically smaller than 'out').
+    // Because quregs are local, there are no buffers to re-use
     if (outGPU && !inGPU) {
 
-        // temporarily graft GPU memory onto 'in'
-        in.isGpuAccelerated = 1; // to fool gpu_copyCpuToGpu()
-        in.gpuAmps = gpu_allocArray(in.numAmps);
-        assert_mixQuregTempGpuAllocSucceeded(in.gpuAmps);
+        // make a cheap copy of 'in' but with GPU memory
+        // (we use a paranoid copy of 'in', even though 'in'' is already a 
+        // mere copy of the user's qureg, in case this code changes to
+        // accept a reference. Still, beware addressing in's ptr fields!)
+        Qureg temp = in;
+        temp.isGpuAccelerated = 1;
+        temp.gpuAmps = gpu_allocArray(temp.numAmpsPerNode);
+        assert_mixQuregTempGpuAllocSucceeded(temp.gpuAmps);
 
-        // copy into new GPU memory and perform GPU simulation
-        gpu_copyCpuToGpu(in, in.cpuAmps, in.gpuAmps, in.numAmps);
-        gpu_densmatr_mixQureg_subB(outProb, out, inProb, in);
-
-        // undo changes to 'in'
-        gpu_deallocArray(in.gpuAmps);
-        in.gpuAmps = nullptr;
-        in.isGpuAccelerated = 0;
+        // clone in's CPU memory to copy's new GPU memory, simulate, then free
+        gpu_copyCpuToGpu(temp);
+        gpu_densmatr_mixQureg_subB(outProb, out, inProb, temp);
+        gpu_deallocArray(temp.gpuAmps);
     }
 }
 
@@ -579,19 +583,17 @@ void accel_densmatr_mixQureg_subD(qreal outProb, Qureg out, qreal inProb, Qureg 
     qindex len = in.numAmps;
 
     if (outGPU && !inGPU)
-        gpu_copyCpuToGpu(out, in.cpuAmps, out.gpuCommBuffer, len); // first arg ignored
+        gpu_copyCpuToGpu(in.cpuAmps, out.gpuCommBuffer, len);
     if (!outGPU && inGPU)
-        gpu_copyGpuToCpu(in, in.gpuAmps, out.cpuCommBuffer, len); // first arg ignored
+        gpu_copyGpuToCpu(in.gpuAmps, out.cpuCommBuffer, len);
 
     // when 'in' and 'out' are identically deployed, we can
     // avoid copies by temporarily re-assigning pointers
     qcomp* cpuPtr = out.cpuCommBuffer;
     qcomp* gpuPtr = out.gpuCommBuffer; // may be nullptr
 
-    if (outGPU && inGPU)
-        out.gpuCommBuffer = in.gpuAmps;
-    if (!outGPU && !inGPU)
-        out.cpuCommBuffer = in.cpuAmps;
+    if ( outGPU &&  inGPU) out.gpuCommBuffer = in.gpuAmps;
+    if (!outGPU && !inGPU) out.cpuCommBuffer = in.cpuAmps;
 
     accel_densmatr_mixQureg_subC(outProb, out, inProb);
 

@@ -78,7 +78,7 @@ void initPureState(Qureg qureg, Qureg pure) {
 
 void initClassicalState(Qureg qureg, qindex ind) {
     validate_quregFields(qureg, __func__);
-    validate_initClassicalStateIndex(qureg, ind, __func__);
+    validate_basisStateIndex(qureg, ind, __func__);
 
     // fill CPU memory with 0
     std::fill(qureg.cpuAmps, qureg.cpuAmps + qureg.numAmpsPerNode, qcomp(0,0));
