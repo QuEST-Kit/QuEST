@@ -169,6 +169,20 @@ using std::min;
 
 
 /*
+ * GETTERS 
+ */
+
+
+qcomp accel_statevec_getAmp_sub(Qureg qureg, qindex ind) {
+
+    return (qureg.isGpuAccelerated)?
+        gpu_statevec_getAmp_sub(qureg, ind):
+        cpu_statevec_getAmp_sub(qureg, ind);
+}
+
+
+
+/*
  * COMMUNICATION BUFFER PACKING
  */
 

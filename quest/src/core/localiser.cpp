@@ -292,6 +292,20 @@ void exchangeAmpsToBuffersWhereQubitsAreInStates(Qureg qureg, int pairRank, vect
 
 
 /*
+ * GETTERS
+ */
+
+
+qcomp localiser_statevec_getAmp(Qureg qureg, qindex ind) {
+
+    qcomp amp = accel_statevec_getAmp_sub(qureg, ind);
+    comm_broadcastAmp(ind / qureg.numAmpsPerNode, &amp);
+    return amp;
+}
+
+
+
+/*
  * SWAP
  */
 

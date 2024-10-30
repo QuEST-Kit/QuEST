@@ -22,6 +22,13 @@ using std::vector;
 
 
 /*
+ * GETTERS
+ */
+
+qcomp localiser_statevec_getAmp(Qureg qureg, qindex ind);
+
+
+/*
  * SWAP
  */
 

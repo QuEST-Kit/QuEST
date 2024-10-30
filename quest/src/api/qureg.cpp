@@ -12,6 +12,7 @@
 #include "quest/src/core/printer.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
+#include "quest/src/core/localiser.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
@@ -383,10 +384,11 @@ void syncSubDensityQuregFromGpu(Qureg qureg, qindex startRow, qindex startCol, q
 
 
 qcomp getQuregAmp(Qureg qureg, qindex index) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsStateVector(qureg, __func__);
+    validate_basisStateIndex(qureg, index, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
+    return localiser_statevec_getAmp(qureg, index);
 }
 extern "C" void _wrap_getQuregAmp(qcomp* out, Qureg qureg, qindex index) {
 
@@ -395,10 +397,13 @@ extern "C" void _wrap_getQuregAmp(qcomp* out, Qureg qureg, qindex index) {
 
 
 qcomp getDensityQuregAmp(Qureg qureg, qindex row, qindex column) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_basisStateRowCol(qureg, row, column, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
+    qindex dim = powerOf2(qureg.numQubits);
+    qindex ind = row + column * dim;
+    return localiser_statevec_getAmp(qureg, ind);
 }
 extern "C" void _wrap_getDensityQuregAmp(qcomp* out, Qureg qureg, qindex row, qindex column) {
 

@@ -133,6 +133,12 @@ using std::vector;
         name = compileval;
 
 
+/*
+ * GETTERS 
+ */
+
+qcomp accel_statevec_getAmp_sub(Qureg qureg, qindex ind);
+
 
 /*
  * COMMUNICATION BUFFER PACKING

@@ -191,6 +191,12 @@ namespace report {
     string INVALID_QUREG_FIELDS = 
         "Invalid Qureg; invalid or incompatible fields isDensityMatrix=${DENS_MATR}, numQubits=${NUM_QUBITS}, numAmps=${NUM_AMPS}. It is likely this Qureg was not initialised with createQureg().";
 
+    string QUREG_NOT_DENSITY_MATRIX =
+        "Expected a density matrix Qureg but received a statevector.";
+
+    string QUREG_NOT_STATE_VECTOR =
+        "Expected a statevector Qureg but received a density matrix.";
+
 
     /*
      * MUTABLE OBJECT FLAGS
