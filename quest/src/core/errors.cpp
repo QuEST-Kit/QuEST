@@ -521,6 +521,18 @@ void error_cuQuantumCompiledButNotCuda() {
 
 
 /*
+ * THRUST ERRORS
+ */
+
+
+void error_thrustTempGpuAllocFailed() {
+
+    raiseInternalError("Thrust failed to allocate temporary GPU memory.");
+}
+
+
+
+/*
  * CUQUANTUM ERRORS
  */
 

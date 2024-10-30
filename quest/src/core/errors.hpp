@@ -222,6 +222,14 @@ void error_cuQuantumCompiledButNotCuda();
 
 
 /*
+ * THRUST ERRORS
+ */
+
+void error_thrustTempGpuAllocFailed();
+
+
+
+/*
  * CUQUANTUM ERRORS
  */
 

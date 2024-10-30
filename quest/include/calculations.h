@@ -31,7 +31,9 @@ qreal calcProbOfBasisState(Qureg qureg, qindex index);
 
 qreal calcProbOfQubitOutcome(Qureg qureg, int qubit, int outcome);
 
-void  calcProbOfAllQubitOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
+qreal calcProbOfMultiQubitOutcome(Qureg qureg, int* qubits, int* outcomes, int numQubits);
+
+void  calcProbsOfAllMultiQubitOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
 
 
 qreal calcPurity(Qureg qureg);

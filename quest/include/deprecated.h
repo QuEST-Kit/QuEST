@@ -921,8 +921,8 @@ static inline void _applyGateSubDiagonalOp(Qureg qureg, int* targets, int numTar
     calcProbOfQubitOutcome(__VA_ARGS__)
 
 #define calcProbOfAllOutcomes(...) \
-    _WARN_FUNC_RENAMED("calcProbOfAllOutcomes()", "calcProbOfAllQubitOutcomes()") \
-    calcProbOfAllQubitOutcomes(__VA_ARGS__)
+    _WARN_FUNC_RENAMED("calcProbOfAllOutcomes()", "calcProbsOfAllMultiQubitOutcomes()") \
+    calcProbsOfAllMultiQubitOutcomes(__VA_ARGS__)
 
 #define calcDensityInnerProduct(...) \
     _WARN_FUNC_RENAMED("calcDensityInnerProduct()", "calcInnerProduct()") \

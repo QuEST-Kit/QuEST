@@ -18,10 +18,12 @@
 #include "quest/include/matrices.h"
 
 #include "quest/src/core/errors.hpp"
+#include "quest/src/core/bitwise.hpp"
 #include "quest/src/gpu/gpu_types.cuh"
 
 #include <thrust/device_ptr.h>
 #include <thrust/device_vector.h>
+#include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
 
 
@@ -41,6 +43,19 @@ using devints = thrust::device_vector<int>;
 int* getPtr(devints qubits) {
 
     return thrust::raw_pointer_cast(qubits.data());
+}
+
+
+using devreals = thrust::device_vector<qreal>;
+
+qreal* getPtr(devreals reals) {
+
+    return thrust::raw_pointer_cast(reals.data());
+}
+
+void copyFromDeviceVec(devreals reals, qreal* out) {
+
+    thrust::copy(reals.begin(), reals.end(), out);
 }
 
 
@@ -152,6 +167,54 @@ struct functor_multiplyElemPowerWithAmp : public thrust::binary_function<cu_qcom
 };
 
 
+struct functor_getDiagInd : public thrust::unary_function<qindex,qindex> {
+
+    // this functor accepts the index of a statevector 
+    // basis-state and produces the index of a density 
+    // matrix's corresponding diagonal basis-state
+
+    qindex numRows;
+    functor_getDiagInd(Qureg qureg) : numRows(powerOf2(qureg.numQubits)) {}
+
+    __host__ __device__ qindex operator()(qindex i) {
+
+        return i * (numRows + 1);
+    }
+};
+
+
+template <int NumBits>
+struct functor_insertBits : public thrust::unary_function<qindex,qindex> {
+
+    // this functor inserts bits into a qindex value, and
+    // is used to enumerate specific basis-state indices
+    // with qubits in the specified bit values 
+
+    vector<int> sortedInds;
+    qindex valueMask;
+    int numBits;
+
+    functor_insertBits(vector<int> indices, vector<int> bits) {
+        assert_numTargsMatchesTemplateParam(indices.size(), NumBits);
+
+        sortedInds = util_getSorted(indices);
+        valueMask = util_getBitMask(indices, bits);
+
+        // only consulted when compile-time NumBits==-1
+        numBits = indices.size();
+    }
+
+    __host__ __device__ qindex operator()(qindex i) {
+
+        // use the compile-time value if possible, to auto-unroll the insertBits loop
+        SET_VAR_AT_COMPILE_TIME(int, nbits, NumBits, numBits);
+
+        // return ith local index where bits have the specified values at the specified indices
+        return insertBitsWithMaskedValues(i, sortedInds.data(), nbits, valueMask);
+    }
+};
+
+
 
 /*
  * STATE MODIFICATION 
@@ -181,6 +244,52 @@ void thrust_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu
         getStartPtr(qureg), getEndPtr(qureg), 
         getStartPtr(matr),  getStartPtr(qureg), // 4th arg is output pointer
         functor_multiplyElemPowerWithAmp<HasPower>(exponent));
+}
+
+
+
+/*
+ * PROBABILITIES
+ */
+
+
+template <int NumQubits>
+qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, bool realOnly) {
+
+    qindex numIters = qureg.numAmpsPerNode / powerOf2(qubits.size());
+    auto indFunctor = functor_insertBits<NumQubits>(qubits, outcomes);
+    auto valFunctor = (realOnly)? functor_getAmpReal() : functor_getAmpNorm();
+
+    auto rawIter = thrust::make_counting_iterator(0);
+    auto indIter = thrust::make_transform_iterator(rawIter, indFunctor);
+    auto ampIter = thrust::make_permutation_iterator(getStartPtr(qureg), indIter);
+    auto probIter= thrust::make_transform_iterator(ampIter, valFunctor);
+
+    qreal prob = thrust::reduce(probIter, probIter + numIters, getQComp(0,0));
+    return prob;
+}
+
+
+qreal thrust_statevec_calcTotalProb_sub(Qureg qureg) {
+
+    qreal prob = thrust::transform_reduce(
+        getStartPtr(qureg), getEndPtr(qureg), 
+        functor_getAmpNorm(), getQComp(0,0));
+}
+
+
+qreal thrust_densmatr_calcTotalProb_sub(Qureg qureg) {
+
+    qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
+    qindex startInd = qureg.rank * numColsPerNode;
+
+    auto rawIter = thrust::make_counting_iterator(startInd);
+    auto indIter = thrust::make_transform_iterator(rawIter, functor_getDiagInd());
+    auto ampIter = thrust::make_permutation_iterator(getStartPtr(qureg), indIter);
+    auto probIter= thrust::make_transform_iterator(ampIter, functor_getAmpReal());
+
+    qreal prob = thrust::reduce(probIter, probIter + numColsPerNode, getQComp(0,0));
+    return prob;
 }
 
 

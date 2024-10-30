@@ -287,4 +287,43 @@ void cuquantum_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubi
 
 
 
+/*
+ * PROBABILITIES
+ */
+
+
+qreal cuquantum_statevec_calcTotalProb_sub(Qureg qureg) {
+
+    qreal prob0;
+    qreal prob1;
+
+    // find probablity of leftmost qubit, so that reduction is 
+    // contiguous, which we expect has the optimum performance
+    int qubit = qureg.numQubits - 1;
+    int numQubits = 1;
+
+    CUDA_CHECK( custatevecAbs2SumOnZBasis(
+        config.cuQuantumHandle,
+        toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
+        &prob0, &prob1, &qubit, numQubits );
+
+    qreal total = prob0 + prob1;
+    return total;
+}
+
+
+qreal cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+
+    qreal prob0;
+    qreal* prob1 = nullptr; // don't compute 1-prob0, because we assume normalisation
+
+    CUDA_CHECK( custatevecAbs2SumOnZBasis(
+        config.cuQuantumHandle,
+        toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
+        &prob0, prob1, qubits.data(), qubits.size() );
+
+    return prob0;
+}
+
+
 #endif // GPU_CUQUANTUM_HPP

@@ -104,6 +104,21 @@ using std::min;
         GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_##funcsuffix, numctrls, numtargs ))
 
 
+#define GET_BOOLEAN_FUNC_OPTIMISED_FOR_NUM_TARGS(f, numtargs, boolval) \
+    ((boolval)? \
+        GET_BOOLEAN_FUNC_LIST( f, numtargs, true ) : \
+        GET_BOOLEAN_FUNC_LIST( f, numtargs, false ))
+
+#define GET_BOOLEAN_FUNC_LIST(f, numtargs, b) \
+    (vector <decltype(&f<0,b>)> {&f<0,b>, &f<1,b>, &f<2,b>, &f<3,b>, &f<4,b>, &f<5,b>, &f<-1,b>}) \
+    [min((int) numtargs, MAX_OPTIMISED_NUM_TARGS - 1)]
+
+#define GET_CPU_OR_GPU_BOOLEAN_FUNC_OPTIMISED_FOR_NUM_TARGS(funcsuffix, qureg, numtargs, boolval) \
+    ((qureg.isGpuAccelerated)? \
+        GET_BOOLEAN_FUNC_OPTIMISED_FOR_NUM_TARGS( gpu_##funcsuffix, numtargs, boolval ) : \
+        GET_BOOLEAN_FUNC_OPTIMISED_FOR_NUM_TARGS( cpu_##funcsuffix, numtargs, boolval ))
+
+
 #define GET_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(f, numctrls, numtargs, c) \
     (vector <CONJ_ARR(f)> { \
         CONJ_ARR(f) {&f<0,0,c>,  &f<0,1,c>,  &f<0,2,c>,  &f<0,3,c>,  &f<0,4,c>,  &f<0,5,c>,  &f<0,-1,c>}, \
@@ -781,4 +796,43 @@ void accel_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> 
     // GPU-acceleration only possible if both Quregs are GPU-enabled
     auto useFunc = (inQureg.isGpuAccelerated && outQureg.isGpuAccelerated)? gpuFunc : cpuFunc;
     useFunc(inQureg, outQureg, targs, pairTargs);
+}
+
+
+
+/*
+ * PROBABILITIES
+ */
+
+
+qreal accel_statevec_calcTotalProb_sub(Qureg qureg) {
+
+    return (qureg.isGpuAccelerated)?
+        gpu_statevec_calcTotalProb_sub(qureg):
+        cpu_statevec_calcTotalProb_sub(qureg);
+}
+qreal accel_densmatr_calcTotalProb_sub(Qureg qureg) {
+
+    return (qureg.isGpuAccelerated)?
+        gpu_densmatr_calcTotalProb_sub(qureg):
+        cpu_densmatr_calcTotalProb_sub(qureg);
+}
+
+
+qreal accel_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, bool realOnly) {
+
+    auto func = GET_CPU_OR_GPU_BOOLEAN_FUNC_OPTIMISED_FOR_NUM_TARGS( statevec_calcProbOfMultiQubitOutcome_sub, qureg, qubits.size(), realOnly );
+    return func(qureg, qubits, outcomes);
+}
+
+
+void accel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits) {
+
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( statevec_calcProbsOfAllMultiQubitOutcomes_sub, qureg, qubits.size() );
+    return func(outProbs, qureg, qubits);
+}
+void accel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits) {
+
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( densmatr_calcProbsOfAllMultiQubitOutcomes_sub, qureg, qubits.size() );
+    return func(outProbs, qureg, qubits);
 }
