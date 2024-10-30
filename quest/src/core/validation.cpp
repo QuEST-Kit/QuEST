@@ -2910,7 +2910,10 @@ void validate_oneQubitPauliChannelProbs(qreal pX, qreal pY, qreal pZ, const char
     assertThat(pXYZ <= 1, report::ONE_QUBIT_PAULI_CHANNEL_TOTAL_PROBS_EXCEED_ONE, caller);
 
     qreal probI = 1 - pX - pY - pZ;
-    qreal probM = std::max({pX, pY, pZ});
+    qreal probM = 0;
+    if (pX > probM) probM = pX;
+    if (pY > probM) probM = pY;
+    if (pZ > probM) probM = pZ;
     assertThat(probM <= probI, report::ONE_QUBIT_PAULI_CHANNEL_PROBS_EXCEED_MAXIMAL_MIXING, caller);
 }
 
