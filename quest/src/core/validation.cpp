@@ -1422,7 +1422,6 @@ void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, int useGpu, bo
         return;
 
     QuESTEnv env = getQuESTEnv();
-
     assertMatrixNonEmpty(numQubits, caller);
     assertMatrixTotalNumElemsDontExceedMaxIndex(numQubits, isDenseType, caller);
     assertMatrixLocalMemDoesntExceedMaxSizeof(numQubits,  isDenseType, useDistrib, env.numNodes, caller);
@@ -2373,6 +2372,7 @@ void validate_krausMapIsSynced(KrausMap map, const char* caller) {
 }
 
 void validate_krausMapIsCPTP(KrausMap map, const char* caller) {
+    validate_krausMapFields(map, caller);
     validate_krausMapIsSynced(map, caller);
 
     // avoid expensive CPTP check if validation is anyway disabled
@@ -2386,7 +2386,10 @@ void validate_krausMapIsCPTP(KrausMap map, const char* caller) {
     assertThat(*(map.isCPTP), report::KRAUS_MAP_NOT_CPTP, caller);
 }
 
+void validate_krausMapMatchesTargets(KrausMap map, int numTargets, const char* caller) {
 
+    tokenSubs vars = {{"${KRAUS_QUBITS}", map.numQubits}, {"${TARG_QUBITS}", numTargets}};
+    assertThat(map.numQubits == numTargets, report::KRAUS_MAP_SIZE_MISMATCHES_TARGETS, vars, caller);
 }
 
 
@@ -2613,7 +2616,6 @@ void validate_basisStateIndex(Qureg qureg, qindex ind, const char* caller) {
 
 
     tokenSubs vars = {
-        {"${TARGET}",  target},
 /*
  * QUBIT INDICES
  */
