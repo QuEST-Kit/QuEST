@@ -259,10 +259,15 @@ qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> q
 
     qindex numIters = qureg.numAmpsPerNode / powerOf2(qubits.size());
     auto indFunctor = functor_insertBits<NumQubits>(qubits, outcomes);
+
+
+    thrust::unary_function<cu_qcomp,qreal> valFunctor;
     if constexpr (RealOnly)
-        auto valFunctor = functor_getAmpReal();
+        valFunctor = functor_getAmpReal();
     else
-        auto valFunctor = functor_getAmpNorm();
+        valFunctor = functor_getAmpNorm();
+
+
 
     auto rawIter = thrust::make_counting_iterator(0);
     auto indIter = thrust::make_transform_iterator(rawIter, indFunctor);
