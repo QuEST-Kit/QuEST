@@ -189,10 +189,11 @@ struct functor_insertBits : public thrust::unary_function<qindex,qindex> {
 
     // this functor inserts bits into a qindex value, and
     // is used to enumerate specific basis-state indices
-    // with qubits in the specified bit values 
+    // with qubits in the specified bit values
 
-    devints sortedInds;
+    devints sortedInds; // kept so ptr survives
     qindex valueMask;
+    int* sortedIndsPtr;
     int numBits;
 
     functor_insertBits(vector<int> indices, vector<int> bits) {
@@ -200,6 +201,7 @@ struct functor_insertBits : public thrust::unary_function<qindex,qindex> {
 
         sortedInds = util_getSorted(indices);
         valueMask = util_getBitMask(indices, bits);
+        sortedIndsPtr = getPtr(sortedInds);
 
         // only consulted when compile-time NumBits==-1
         numBits = indices.size();
