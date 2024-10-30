@@ -256,21 +256,24 @@ void thrust_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu
  */
 
 
-template <int NumQubits>
-qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, bool realOnly) {
+template <int NumQubits, bool RealOnly>
+qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
 
+    qindex numIters = qureg.numAmpsPerNode / powerOf2(qubits.size());
     auto indFunctor = functor_insertBits<NumQubits>(qubits, outcomes);
 
     auto rawIter = thrust::make_counting_iterator(0);
     auto indIter = thrust::make_transform_iterator(rawIter, indFunctor);
     auto ampIter = thrust::make_permutation_iterator(getStartPtr(qureg), indIter);
-    auto probIter = (realOnly)?
-        thrust::make_transform_iterator(ampIter, functor_getAmpReal()):
-        thrust::make_transform_iterator(ampIter, functor_getAmpNorm());
 
-    qindex numIters = qureg.numAmpsPerNode / powerOf2(qubits.size());
-    qreal prob = thrust::reduce(probIter, probIter + numIters);
-    return prob;
+    // RealOnly determines functor, but distinct typing prevents a ternary :(
+    if constexpr (RealOnly) {
+        auto probIter = thrust::make_transform_iterator(ampIter, functor_getAmpReal());
+        return thrust::reduce(probIter, probIter + numIters);
+    else {
+        auto probIter = thrust::make_transform_iterator(ampIter, functor_getAmpNorm());
+        return thrust::reduce(probIter, probIter + numIters);
+    }
 }
 
 

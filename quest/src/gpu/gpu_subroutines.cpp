@@ -1309,8 +1309,7 @@ qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
 
 #if COMPILE_CUDA 
 
-    // thrust does not need RealOnly at compile-time, so casts it to a runtime param
-    return thrust_statevec_calcProbOfMultiQubitOutcome_sub<NumQubits>(qureg, qubits, outcomes, RealOnly);
+    return thrust_statevec_calcProbOfMultiQubitOutcome_sub<NumQubits, RealOnly>(qureg, qubits, outcomes);
 
 #else
     error_gpuSimButGpuNotCompiled();
