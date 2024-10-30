@@ -1328,13 +1328,22 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     qindex numThreads = qureg.numAmpsPerNode;
     qindex numBlocks = getNumBlocks(numThreads);
 
+    // allocate exponentially-big temporary memory (error if failed)
     devints devQubits = qubits;
-    devreals devProbs = outProbs;
+    devreals devProbs;
+    try  {
+        devProbs(powerOf2(qubits.size()), 0);
+    } catch (thrust::system_error &e) { 
+        error_thrustTempGpuAllocFailed();
+    }
 
     kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         getPtr(devProbs), toCuQcomps(qureg.gpuAmps), numThreads, 
         qureg.rank, qureg.logNumAmpsPerNode, getPtr(devQubits), devQubits.size()
     );
+
+    // overwrite outProbs with GPU memory
+    copyFromDeviceVec(devProbs, outProbs);
 
 #else
     error_gpuSimButGpuNotCompiled();

@@ -259,18 +259,17 @@ qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> q
 
     qindex numIters = qureg.numAmpsPerNode / powerOf2(qubits.size());
     auto indFunctor = functor_insertBits<NumQubits>(qubits, outcomes);
-    auto valFunctor;
     if constexpr (RealOnly)
-        valFunctor = functor_getAmpReal();
+        auto valFunctor = functor_getAmpReal();
     else
-        valFunctor = functor_getAmpNorm();
+        auto valFunctor = functor_getAmpNorm();
 
     auto rawIter = thrust::make_counting_iterator(0);
     auto indIter = thrust::make_transform_iterator(rawIter, indFunctor);
     auto ampIter = thrust::make_permutation_iterator(getStartPtr(qureg), indIter);
     auto probIter= thrust::make_transform_iterator(ampIter, valFunctor);
 
-    qreal prob = thrust::reduce(probIter, probIter + numIters, getQcomp(0,0));
+    qreal prob = thrust::reduce(probIter, probIter + numIters);
     return prob;
 }
 
@@ -279,7 +278,9 @@ qreal thrust_statevec_calcTotalProb_sub(Qureg qureg) {
 
     qreal prob = thrust::transform_reduce(
         getStartPtr(qureg), getEndPtr(qureg), 
-        functor_getAmpNorm(), getQcomp(0,0));
+        functor_getAmpNorm());
+
+    return prob;
 }
 
 
@@ -293,7 +294,7 @@ qreal thrust_densmatr_calcTotalProb_sub(Qureg qureg) {
     auto ampIter = thrust::make_permutation_iterator(getStartPtr(qureg), indIter);
     auto probIter= thrust::make_transform_iterator(ampIter, functor_getAmpReal());
 
-    qreal prob = thrust::reduce(probIter, probIter + numColsPerNode, getQcomp(0,0));
+    qreal prob = thrust::reduce(probIter, probIter + numColsPerNode);
     return prob;
 }
 
