@@ -191,20 +191,16 @@ struct functor_insertBits : public thrust::unary_function<qindex,qindex> {
     // is used to enumerate specific basis-state indices
     // with qubits in the specified bit values
 
-    devints sortedInds; // kept so ptr survives
-    qindex valueMask;
     int* sortedIndsPtr;
+    qindex valueMask;
     int numBits;
 
-    functor_insertBits(vector<int> indices, vector<int> bits) {
+    functor_insertBits(int* ptr, qindex mask, int numBits) {
         assert_numTargsMatchesTemplateParam(indices.size(), NumBits);
 
-        sortedInds = util_getSorted(indices);
-        valueMask = util_getBitMask(indices, bits);
-        sortedIndsPtr = getPtr(sortedInds);
-
-        // only consulted when compile-time NumBits==-1
-        numBits = indices.size();
+        sortedIndsPtr = ptr;
+        valueMask = mask;
+        numBits = numBits; // consulted only when NumBits=-1
     }
 
     __host__ __device__ qindex operator()(qindex i) {
@@ -260,7 +256,9 @@ template <int NumQubits, bool RealOnly>
 qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
 
     qindex numIters = qureg.numAmpsPerNode / powerOf2(qubits.size());
-    auto indFunctor = functor_insertBits<NumQubits>(qubits, outcomes);
+    devints sortedQubits = util_getSorted(qubits);
+    qindex valueMask = util_getBitMask(qubits, outcomes);
+    auto indFunctor = functor_insertBits<NumQubits>(getPtr(sortedQubits), valueMask, qubits.size());
 
     auto rawIter = thrust::make_counting_iterator(0);
     auto indIter = thrust::make_transform_iterator(rawIter, indFunctor);
