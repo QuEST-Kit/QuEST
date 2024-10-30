@@ -240,6 +240,7 @@ void validate_krausMapIsSynced(KrausMap map, const char* caller);
 
 void validate_krausMapIsCPTP(KrausMap map, const char* caller);
 
+void validate_krausMapMatchesTargets(KrausMap map, int numTargets, const char* caller);
 
 
 
@@ -301,6 +302,7 @@ void validate_basisStateRowCol(Qureg qureg, qindex row, qindex col, const char* 
 void validate_target(Qureg qureg, int target, const char* caller);
 void validate_targets(Qureg qureg, int* targets, int numTargets, const char* caller);
 
+void validate_twoTargets(Qureg qureg, int target1, int target2, const char* caller);
 
 
 /*
@@ -314,6 +316,26 @@ void validate_measurementOutcomesAreValid(int* outcomes, int numOutcomes, const 
 void validate_measurementOutcomeIsPossible(int outcome, qreal prob, const char* caller);
 
 void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const char* caller);
+
+
+
+/*
+ * DECOHERENCE 
+ */
+
+void validate_probability(qreal prob, const char* caller);
+
+void validate_oneQubitDepashingProb(qreal prob, const char* caller);
+void validate_twoQubitDepashingProb(qreal prob, const char* caller);
+
+void validate_oneQubitDepolarisingProb(qreal prob, const char* caller);
+void validate_twoQubitDepolarisingProb(qreal prob, const char* caller);
+
+void validate_oneQubitDampingProb(qreal prob, const char* caller);
+
+void validate_oneQubitPauliChannelProbs(qreal pX, qreal pY, qreal pZ, const char* caller);
+
+void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller);
 
 
 

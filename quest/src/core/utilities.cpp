@@ -597,3 +597,23 @@ util_Scalars util_getOneQubitDampingFactors(qreal prob) {
 
     return {.c1=c1, .c2=c2, .c3=0, .c4=0}; //c3 and c4 ignored
 }
+
+qreal util_getMaxProbOfOneQubitDephasing() {
+    return 1/2.;
+}
+
+qreal util_getMaxProbOfTwoQubitDephasing() {
+    return 3/4.;
+}
+
+qreal util_getMaxProbOfOneQubitDepolarising() {
+    return 3/4.;
+}
+
+qreal util_getMaxProbOfTwoQubitDepolarising() {
+    return 15/16.;
+}
+
+// no equivalent function for oneQubitDamping, which
+// can accept any valid probability, because we permit
+// it to exceed maximal-mixing and induce purity

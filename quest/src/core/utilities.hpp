@@ -285,6 +285,14 @@ util_Scalars util_getOneQubitDampingFactors(qreal prob);
 
 util_Scalars util_getOneQubitPauliChannelFactors(qreal pI, qreal pX, qreal pY, qreal pZ);
 
+qreal util_getMaxProbOfOneQubitDephasing();
+
+qreal util_getMaxProbOfTwoQubitDephasing();
+
+qreal util_getMaxProbOfOneQubitDepolarising();
+
+qreal util_getMaxProbOfTwoQubitDepolarising();
+
 
 
 #endif // UTILITIES_HPP
