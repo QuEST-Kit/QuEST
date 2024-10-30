@@ -240,6 +240,7 @@ void validate_krausMapIsSynced(KrausMap map, const char* caller);
 
 void validate_krausMapIsCPTP(KrausMap map, const char* caller);
 
+void validate_krausMapMatchesTargets(KrausMap map, int numTargets, const char* caller);
 
 
 
