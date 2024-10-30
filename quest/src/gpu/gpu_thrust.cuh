@@ -270,7 +270,7 @@ qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> q
     if constexpr (RealOnly) {
         auto probIter = thrust::make_transform_iterator(ampIter, functor_getAmpReal());
         return thrust::reduce(probIter, probIter + numIters);
-    else {
+    } else {
         auto probIter = thrust::make_transform_iterator(ampIter, functor_getAmpNorm());
         return thrust::reduce(probIter, probIter + numIters);
     }
