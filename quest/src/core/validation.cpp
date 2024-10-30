@@ -555,6 +555,9 @@ namespace report {
     string KRAUS_MAP_NOT_CPTP =
         "The KrausMap was not (approximately) completely positive and trace preserving (CPTP).";
     
+    string KRAUS_MAP_SIZE_MISMATCHES_TARGETS =
+        "The KrausMap has a size (${KRAUS_QUBITS} qubits) inconsistent with the specified number of target qubits (${TARG_QUBITS}).";
+    
 
     /*
      * PAULI STRING CREATION
@@ -2614,8 +2617,22 @@ void validate_basisStateIndex(Qureg qureg, qindex ind, const char* caller) {
     assertThat(ind >= 0 && ind < maxIndExcl, report::INVALID_BASIS_STATE_INDEX, vars, caller);
 }
 
+void validate_basisStateRowCol(Qureg qureg, qindex row, qindex col, const char* caller) {
+
+    qindex maxIndExcl = powerOf2(qureg.numQubits);
 
     tokenSubs vars = {
+        {"${ROW_IND}",  row},
+        {"${COL_IND}",  col},
+        {"${NUM_QUBITS}", qureg.numQubits},
+        {"${NUM_STATES}", maxIndExcl}};
+
+    bool valid = row >= 0 && row < maxIndExcl && col >= 0 && col < maxIndExcl;
+    assertThat(valid, report::INVALID_BASIS_STATE_ROW_OR_COL, vars, caller);
+}
+
+
+
 /*
  * QUBIT INDICES
  */
