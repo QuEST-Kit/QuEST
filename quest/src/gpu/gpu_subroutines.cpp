@@ -1318,6 +1318,10 @@ qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
 }
 
 
+// DEBUG
+#include <iostream>
+
+
 template <int NumQubits> 
 void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits) {
 
@@ -1328,6 +1332,12 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     qindex numThreads = qureg.numAmpsPerNode;
     qindex numBlocks = getNumBlocks(numThreads);
 
+
+
+    // DEBUG
+    std::cout << "pre alloc " << std::endl;
+
+
     // allocate exponentially-big temporary memory (error if failed)
     devints devQubits = qubits;
     devreals devProbs;
@@ -1337,13 +1347,26 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
         error_thrustTempGpuAllocFailed();
     }
 
+
+    // DEBUG
+    std::cout << "pre kernel " << std::endl;
+
+
     kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         getPtr(devProbs), toCuQcomps(qureg.gpuAmps), numThreads, 
         qureg.rank, qureg.logNumAmpsPerNode, getPtr(devQubits), devQubits.size()
     );
 
+
+    // DEBUG
+    std::cout << "pre copy " << std::endl;
+
     // overwrite outProbs with GPU memory
     copyFromDeviceVec(devProbs, outProbs);
+
+
+    // DEBUG
+    std::cout << "pre auto free " << std::endl;
 
 #else
     error_gpuSimButGpuNotCompiled();
