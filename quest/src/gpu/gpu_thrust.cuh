@@ -25,6 +25,7 @@
 #include <thrust/device_vector.h>
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
+#include <thrust/iterator/transform_reduce.h>
 
 
 
@@ -265,7 +266,7 @@ qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> q
     auto ampIter = thrust::make_permutation_iterator(getStartPtr(qureg), indIter);
     auto probIter= thrust::make_transform_iterator(ampIter, valFunctor);
 
-    qreal prob = thrust::reduce(probIter, probIter + numIters, getQComp(0,0));
+    qreal prob = thrust::reduce(probIter, probIter + numIters, getQcomp(0,0));
     return prob;
 }
 
@@ -274,7 +275,7 @@ qreal thrust_statevec_calcTotalProb_sub(Qureg qureg) {
 
     qreal prob = thrust::transform_reduce(
         getStartPtr(qureg), getEndPtr(qureg), 
-        functor_getAmpNorm(), getQComp(0,0));
+        functor_getAmpNorm(), getQcomp(0,0));
 }
 
 
@@ -284,11 +285,11 @@ qreal thrust_densmatr_calcTotalProb_sub(Qureg qureg) {
     qindex startInd = qureg.rank * numColsPerNode;
 
     auto rawIter = thrust::make_counting_iterator(startInd);
-    auto indIter = thrust::make_transform_iterator(rawIter, functor_getDiagInd());
+    auto indIter = thrust::make_transform_iterator(rawIter, functor_getDiagInd(qureg));
     auto ampIter = thrust::make_permutation_iterator(getStartPtr(qureg), indIter);
     auto probIter= thrust::make_transform_iterator(ampIter, functor_getAmpReal());
 
-    qreal prob = thrust::reduce(probIter, probIter + numColsPerNode, getQComp(0,0));
+    qreal prob = thrust::reduce(probIter, probIter + numColsPerNode, getQcomp(0,0));
     return prob;
 }
 

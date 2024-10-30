@@ -1082,7 +1082,7 @@ __global__ void kernel_densmatr_partialTrace_sub(
 
 
 template <int NumQubits>
-void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
+__global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
     qreal* outProbs, cu_qcomp* amps, qindex numThreads, 
     int rank, qindex logNumAmpsPerNode,
     int* qubits, int numQubits
@@ -1111,7 +1111,7 @@ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
 
 
 template <int NumQubits>
-void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
+__global__ void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
     qreal* outProbs, cu_qcomp* amps, qindex numThreads, 
     qindex numColsPerNode, qindex startInd, qindex logNumAmpsPerNode,
     int* qubits, int numQubits

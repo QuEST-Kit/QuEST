@@ -1326,7 +1326,7 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
-    qindex numThreads = outQureg.numAmpsPerNode;
+    qindex numThreads = qureg.numAmpsPerNode;
     qindex numBlocks = getNumBlocks(numThreads);
 
     devints devQubits = qubits;
