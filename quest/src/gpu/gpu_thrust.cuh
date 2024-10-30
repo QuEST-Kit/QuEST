@@ -196,7 +196,7 @@ struct functor_insertBits : public thrust::unary_function<qindex,qindex> {
     int numBits;
 
     functor_insertBits(int* ptr, qindex mask, int numBits) {
-        assert_numTargsMatchesTemplateParam(indices.size(), NumBits);
+        assert_numTargsMatchesTemplateParam(numBits, NumBits);
 
         sortedIndsPtr = ptr;
         valueMask = mask;
