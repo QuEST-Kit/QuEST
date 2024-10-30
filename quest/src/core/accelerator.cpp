@@ -90,18 +90,18 @@ using std::min;
 
 #define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS(funcsuffix, qureg, numctrls) \
     ((qureg.isGpuAccelerated)? \
-        GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_##funcsuffix, numctrls ) : \
-        GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_##funcsuffix, numctrls ))
+        GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_##funcsuffix, numctrls ) : \
+        GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_##funcsuffix, numctrls ))
 
 #define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS(funcsuffix, qureg, numtargs) \
     ((qureg.isGpuAccelerated)? \
-        GET_FUNC_OPTIMISED_FOR_NUM_TARGS( cpu_##funcsuffix, numtargs ) : \
-        GET_FUNC_OPTIMISED_FOR_NUM_TARGS( gpu_##funcsuffix, numtargs ))
+        GET_FUNC_OPTIMISED_FOR_NUM_TARGS( gpu_##funcsuffix, numtargs ) : \
+        GET_FUNC_OPTIMISED_FOR_NUM_TARGS( cpu_##funcsuffix, numtargs ))
 
 #define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(funcsuffix, qureg, numctrls, numtargs) \
     ((qureg.isGpuAccelerated)? \
-        GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs ) : \
-        GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_##funcsuffix, numctrls, numtargs ))
+        GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_##funcsuffix, numctrls, numtargs ) : \
+        GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs ))
 
 
 #define GET_BOOLEAN_FUNC_OPTIMISED_FOR_NUM_TARGS(f, numtargs, boolval) \
