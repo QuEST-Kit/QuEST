@@ -2650,8 +2650,6 @@ void validate_target(Qureg qureg, int target, const char* caller) {
 
     assertValidQubit(qureg, target, report::INVALID_TARGET_QUBIT, caller);
 }
-void ree() {
-}
 
 
 
