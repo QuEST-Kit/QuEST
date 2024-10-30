@@ -64,6 +64,7 @@ using std::vector;
  * GETTERS
  */
 
+
 qcomp gpu_statevec_getAmp_sub(Qureg qureg, qindex ind) {
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
@@ -72,7 +73,7 @@ qcomp gpu_statevec_getAmp_sub(Qureg qureg, qindex ind) {
     qcomp amp = 0;
 
     gpu_sync();
-    CUDA_CHECK( cudaMemcpy(qureg.gpuAmps[ind], &amp, sizeof(amp), cudaMemcpyDeviceToHost) );
+    CUDA_CHECK( cudaMemcpy(&qureg.gpuAmps[ind], &amp, sizeof(amp), cudaMemcpyDeviceToHost) );
 
     return amp;
 
