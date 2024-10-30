@@ -191,7 +191,7 @@ struct functor_insertBits : public thrust::unary_function<qindex,qindex> {
     // is used to enumerate specific basis-state indices
     // with qubits in the specified bit values 
 
-    vector<int> sortedInds;
+    devints sortedInds;
     qindex valueMask;
     int numBits;
 
