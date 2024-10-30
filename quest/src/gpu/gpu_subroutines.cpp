@@ -61,6 +61,31 @@ using std::vector;
 
 
 /*
+ * GETTERS
+ */
+
+
+qcomp gpu_statevec_getAmp_sub(Qureg qureg, qindex ind) {
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    ind %= qureg.numAmpsPerNode;
+    qcomp amp = 0;
+
+    gpu_sync();
+    CUDA_CHECK( cudaMemcpy(&qureg.gpuAmps[ind], &amp, sizeof(amp), cudaMemcpyDeviceToHost) );
+
+    return amp;
+
+#else
+    error_gpuSimButGpuNotCompiled();
+    return -1;
+#endif
+}
+
+
+
+/*
  * COMMUNICATION BUFFER PACKING
  */
 

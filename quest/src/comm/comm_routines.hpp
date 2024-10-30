@@ -36,6 +36,8 @@ void comm_combineElemsIntoBuffer(Qureg receiver, FullStateDiagMatr sender);
  * MISC COMMUNICATION METHODS
  */
 
+void comm_broadcastAmp(int sendRank, qcomp* sendAmp);
+
 void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps);
 
 void comm_broadcastUnsignedsFromRoot(unsigned* arr, qindex length);

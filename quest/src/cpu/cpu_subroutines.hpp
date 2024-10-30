@@ -16,6 +16,13 @@ using std::vector;
 
 
 /*
+ * GETTERS
+ */
+
+qcomp cpu_statevec_getAmp_sub(Qureg qureg, qindex ind);
+
+
+/*
  * COMMUNICATION BUFFER PACKING
  */
 

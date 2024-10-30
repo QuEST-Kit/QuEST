@@ -191,6 +191,12 @@ namespace report {
     string INVALID_QUREG_FIELDS = 
         "Invalid Qureg; invalid or incompatible fields isDensityMatrix=${DENS_MATR}, numQubits=${NUM_QUBITS}, numAmps=${NUM_AMPS}. It is likely this Qureg was not initialised with createQureg().";
 
+    string QUREG_NOT_DENSITY_MATRIX =
+        "Expected a density matrix Qureg but received a statevector.";
+
+    string QUREG_NOT_STATE_VECTOR =
+        "Expected a statevector Qureg but received a density matrix.";
+
 
     /*
      * MUTABLE OBJECT FLAGS
@@ -1202,6 +1208,16 @@ void validate_quregFields(Qureg qureg, const char* caller) {
     // C passes a struct copy). So NULL checks could only check for the specific
     // scenario of the user explicitly overwriting valid pointers with NULL - 
     // this is not worth catching (the eventual NULL segfault might be better)
+}
+
+void validate_quregIsStateVector(Qureg qureg, const char* caller) {
+
+    assertThat(!qureg.isDensityMatrix, report::QUREG_NOT_STATE_VECTOR, caller);
+}
+
+void validate_quregIsDensityMatrix(Qureg qureg, const char* caller) {
+
+    assertThat(qureg.isDensityMatrix, report::QUREG_NOT_DENSITY_MATRIX, caller);
 }
 
 

@@ -27,6 +27,20 @@ using std::vector;
 
 
 /*
+ * GETTERS
+ */
+
+
+qcomp cpu_statevec_getAmp_sub(Qureg qureg, qindex ind) {
+
+    // caller will only consult node with true global amp, 
+    // but will still pass the global index, beware!
+    return qureg.cpuAmps[ind % qureg.numAmpsPerNode];
+}
+
+
+
+/*
  * COMMUNICATION BUFFER PACKING
  */
 
