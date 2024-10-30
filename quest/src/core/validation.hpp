@@ -103,6 +103,10 @@ void validate_newQuregAllocs(Qureg qureg, const char* caller);
 
 void validate_quregFields(Qureg qureg, const char* caller);
 
+void validate_quregIsStateVector(Qureg qureg, const char* caller);
+
+void validate_quregIsDensityMatrix(Qureg qureg, const char* caller);
+
 
 
 /*
@@ -286,6 +290,7 @@ void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller);
  */
 
 void validate_basisStateIndex(Qureg qureg, qindex ind, const char* caller);
+void validate_basisStateRowCol(Qureg qureg, qindex row, qindex col, const char* caller);
 
 
 

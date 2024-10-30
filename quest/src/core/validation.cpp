@@ -1210,6 +1210,16 @@ void validate_quregFields(Qureg qureg, const char* caller) {
     // this is not worth catching (the eventual NULL segfault might be better)
 }
 
+void validate_quregIsStateVector(Qureg qureg, const char* caller) {
+
+    assertThat(!qureg.isDensityMatrix, report::QUREG_NOT_STATE_VECTOR, caller);
+}
+
+void validate_quregIsDensityMatrix(Qureg qureg, const char* caller) {
+
+    assertThat(qureg.isDensityMatrix, report::QUREG_NOT_DENSITY_MATRIX, caller);
+}
+
 
 
 /*
