@@ -683,7 +683,7 @@ namespace report {
         "The given qubit measurement outcome (${OUTCOME}) is invalid. Valid outcomes are 0 and 1.";
 
     string MANY_QUBIT_MEASUREMENTS_OUTCOME_INVALID =
-        "The given qubit measurement outcome (${OUTCOME}) at index ${INDEX}$ is invalid. Valid outcomes are 0 and 1.";
+        "The given qubit measurement outcome (${OUTCOME}) at index ${INDEX} is invalid. Valid outcomes are 0 and 1.";
 
     string ONE_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLE =
         "The specified measurement outcome (${OUTCOME}) is impossibly unlikely (i.e. has probability less than epsilon), so the post-measurement state cannot be reliably renormalised.";
@@ -691,6 +691,45 @@ namespace report {
     string GPU_CANNOT_FIT_TEMP_MEASUREMENT_OUTCOME_PROBS =
         "The GPU has less available memory (${MEM_AVAIL} bytes) than that needed (${MEM_NEEDED} bytes) to temporarily store the ${NUM_OUTCOMES} outcome probabilities of the specified ${NUM_QUBITS} qubits.";
 
+
+    /*
+     * CHANNEL PARAMETERS 
+     */
+
+    string INVALID_PROBABILITY =
+        "The given probability is invalid, and must instead be between 0 and 1 (both inclusive).";
+
+
+    string ONE_QUBIT_DEPHASING_PROB_EXCEEDS_MAXIMAL_MIXING =
+        "The given one-qubit dephasing probability exceeds that which induces maximal mixing, i.e. 1/2.";
+
+    string TWO_QUBIT_DEPHASING_PROB_EXCEEDS_MAXIMAL_MIXING =
+        "The given two-qubit dephasing probability exceeds that which induces maximal mixing, i.e. 3/4.";
+
+    string ONE_QUBIT_DEPOLARISING_PROB_EXCEEDS_MAXIMAL_MIXING =
+        "The given one-qubit depolarising probability exceeds that which induces maximal mixing, i.e. 3/4.";
+
+    string TWO_QUBIT_DEPOLARISING_PROB_EXCEEDS_MAXIMAL_MIXING =
+        "The given two-qubit depolarising probability exceeds that which induces maximal mixing, i.e. 15/16.";
+
+    string ONE_QUBIT_PAULI_CHANNEL_TOTAL_PROBS_EXCEED_ONE =
+        "The given Pauli error probabilities combine to exceed one.";
+
+    string ONE_QUBIT_PAULI_CHANNEL_PROBS_EXCEED_MAXIMAL_MIXING =
+        "The given Pauli error probabilities exceed that which induce maximal mixing. That is, the probability of any particular X, Y or Z error exceeds that of I (no error).";
+
+
+    string MIXED_QUREG_NOT_DENSITY_MATRIX =
+        "The first Qureg, which will undergo mixing, must be a density matrx.";
+
+    string MIXED_QUREGS_HAVE_DIFFERENT_NUM_QUBITS =
+        "The given Quregs contain an inconsistent number of qubits (${NUM_A} and ${NUM_B}) and cannot be mixed.";
+
+    string MIXED_DENSITY_MATRICES_ARE_DIFFERENTLY_DISTRIBUED =
+        "The given density matrix Quregs are differently distributed and cannot be mixed.";
+
+    string MIXED_DENSITY_MATRIX_LOCAL_BUT_STATEVEC_DISTRIBUTED =
+        "THe given density matrix was local, but the statevector was distributed; this configuration is unsupported (and is ridiculous!).";
 
 
     /*
@@ -2752,6 +2791,12 @@ void validate_targets(Qureg qureg, int* targets, int numTargets, const char* cal
         report::NEGATIVE_OR_ZERO_NUM_TARGETS, report::NUM_TARGETS_EXCEEDS_QUREG_SIZE, report::TARGET_LIST_WAS_NULL_PTR,
         report::INVALID_TARGET_QUBIT,         report::DUPLICATE_TARGET_QUBITS);
 }
+void validate_twoTargets(Qureg qureg, int target1, int target2, const char* caller) {
+
+    int targs[] = {target1, target2};
+    validate_targets(qureg, targs, 2, caller);
+}
+
 /*
  * MEASUREMENT PARAMETERS
  */
@@ -2792,6 +2837,100 @@ void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const c
 }
 
 
+
+/*
+ * CHANNEL PARAMETERS 
+ */
+
+void validate_probability(qreal prob, const char* caller) {
+
+    // TODO: report 'prob' once validation reporting can handle floats
+
+    assertThat(prob >= 0 && prob <= 1, report::INVALID_PROBABILITY, caller);
+}
+
+void validate_oneQubitDepashingProb(qreal prob, const char* caller) {
+
+    // TODO: report 'prob' once validation reporting can handle floats
+
+    validate_probability(prob, caller);
+    assertThat(
+        prob <= util_getMaxProbOfOneQubitDephasing(), 
+        report::ONE_QUBIT_DEPHASING_PROB_EXCEEDS_MAXIMAL_MIXING, caller);
+}
+
+void validate_twoQubitDepashingProb(qreal prob, const char* caller) {
+
+    // TODO: report 'prob' once validation reporting can handle floats
+
+    validate_probability(prob, caller);
+    assertThat(
+        prob <= util_getMaxProbOfTwoQubitDephasing(), 
+        report::TWO_QUBIT_DEPHASING_PROB_EXCEEDS_MAXIMAL_MIXING, caller);
+}
+
+void validate_oneQubitDepolarisingProb(qreal prob, const char* caller) {
+
+    // TODO: report 'prob' once validation reporting can handle floats
+
+    validate_probability(prob, caller);
+    assertThat(
+        prob <= util_getMaxProbOfOneQubitDepolarising(), 
+        report::ONE_QUBIT_DEPOLARISING_PROB_EXCEEDS_MAXIMAL_MIXING, caller);
+}
+
+void validate_twoQubitDepolarisingProb(qreal prob, const char* caller) {
+
+    // TODO: report 'prob' once validation reporting can handle floats
+
+    validate_probability(prob, caller);
+    assertThat(
+        prob <= util_getMaxProbOfTwoQubitDepolarising(), 
+        report::TWO_QUBIT_DEPOLARISING_PROB_EXCEEDS_MAXIMAL_MIXING, caller);
+}
+
+void validate_oneQubitDampingProb(qreal prob, const char* caller) {
+
+    // TODO: report 'prob' once validation reporting can handle floats
+
+    // permit one-qubit amplitude damping of any valid probability, 
+    // so that it can surpass maximal mixing and induce purity
+    validate_probability(prob, caller);
+}
+
+void validate_oneQubitPauliChannelProbs(qreal pX, qreal pY, qreal pZ, const char* caller) {
+
+    validate_probability(pX, caller);
+    validate_probability(pY, caller);
+    validate_probability(pZ, caller);
+
+    // TODO: report 'prob' once validation reporting can handle floats
+
+    qreal pXYZ = pX + pY + pZ;
+    assertThat(pXYZ <= 1, report::ONE_QUBIT_PAULI_CHANNEL_TOTAL_PROBS_EXCEED_ONE, caller);
+
+    qreal probI = 1 - pX - pY - pZ;
+    qreal probM = std::max({pX, pY, pZ});
+    assertThat(probM <= probI, report::ONE_QUBIT_PAULI_CHANNEL_PROBS_EXCEED_MAXIMAL_MIXING, caller);
+}
+
+void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller) {
+
+    // mixing must be mathematically possible; dims are compatible, but quregIn can be a statevector
+    assertThat(quregOut.isDensityMatrix, report::MIXED_QUREG_NOT_DENSITY_MATRIX, caller);
+    assertThat(
+        quregOut.numQubits == quregIn.numQubits, report::MIXED_QUREGS_HAVE_DIFFERENT_NUM_QUBITS, 
+        {{"${NUM_A}", quregOut.numQubits}, {"${NUM_B}", quregIn.numQubits}}, caller);
+
+    // density matrices must be equally distributed (because there is insufficient buffer to broadcast),
+    // but they may differ in GPU deployment (because accelerator will copy memory as is necessary)
+    if (quregIn.isDensityMatrix)
+        assertThat(quregOut.isDistributed == quregIn.isDistributed, report::MIXED_DENSITY_MATRICES_ARE_DIFFERENTLY_DISTRIBUED, caller);
+
+    // the statevector can only be distributed if the density matrix is (because there is otherwise no buffer to receive broadcast)
+    if (!quregOut.isDistributed)
+        assertThat(!quregOut.isDistributed, report::MIXED_DENSITY_MATRIX_LOCAL_BUT_STATEVEC_DISTRIBUTED, caller);
+}
 
 
 
