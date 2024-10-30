@@ -675,6 +675,23 @@ namespace report {
         "The list of target qubits contained duplicates. All qubits must be unique.";
 
 
+    /*
+    * MEASUREMENT PARAMETERS
+    */
+
+    string ONE_QUBIT_MEASUREMENT_OUTCOME_INVALID =
+        "The given qubit measurement outcome (${OUTCOME}) is invalid. Valid outcomes are 0 and 1.";
+
+    string MANY_QUBIT_MEASUREMENTS_OUTCOME_INVALID =
+        "The given qubit measurement outcome (${OUTCOME}) at index ${INDEX}$ is invalid. Valid outcomes are 0 and 1.";
+
+    string ONE_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLE =
+        "The specified measurement outcome (${OUTCOME}) is impossibly unlikely (i.e. has probability less than epsilon), so the post-measurement state cannot be reliably renormalised.";
+
+    string GPU_CANNOT_FIT_TEMP_MEASUREMENT_OUTCOME_PROBS =
+        "The GPU has less available memory (${MEM_AVAIL} bytes) than that needed (${MEM_NEEDED} bytes) to temporarily store the ${NUM_OUTCOMES} outcome probabilities of the specified ${NUM_QUBITS} qubits.";
+
+
 
     /*
      * FILE IO
