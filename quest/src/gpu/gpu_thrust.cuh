@@ -152,10 +152,6 @@ struct functor_multiplyElemPowerWithAmp : public thrust::binary_function<cu_qcom
 };
 
 
-    }
-};
-
-
 
 /*
  * STATE MODIFICATION 
