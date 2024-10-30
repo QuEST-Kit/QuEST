@@ -254,20 +254,18 @@ void thrust_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu
  */
 
 
-template <int NumQubits, bool RealOnly>
-qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+template <int NumQubits>
+qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, bool realOnly) {
 
     qindex numIters = qureg.numAmpsPerNode / powerOf2(qubits.size());
     auto indFunctor = functor_insertBits<NumQubits>(qubits, outcomes);
 
-
+    // the functors have distinct types so cannot be in a ternary op :(s
     thrust::unary_function<cu_qcomp,qreal> valFunctor;
-    if constexpr (RealOnly)
+    if (realOnly)
         valFunctor = functor_getAmpReal();
     else
         valFunctor = functor_getAmpNorm();
-
-
 
     auto rawIter = thrust::make_counting_iterator(0);
     auto indIter = thrust::make_transform_iterator(rawIter, indFunctor);
@@ -283,7 +281,7 @@ qreal thrust_statevec_calcTotalProb_sub(Qureg qureg) {
 
     qreal prob = thrust::transform_reduce(
         getStartPtr(qureg), getEndPtr(qureg), 
-        functor_getAmpNorm());
+        functor_getAmpNorm(), 0, thrust::plus<qreal>());
 
     return prob;
 }

@@ -1309,7 +1309,8 @@ qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
 
 #if COMPILE_CUDA 
 
-    return thrust_statevec_calcProbOfMultiQubitOutcome_sub<NumQubits, RealOnly>(qureg, qubits, outcomes);
+    // thrust does not need RealOnly at compile-time, so casts it to a runtime param
+    return thrust_statevec_calcProbOfMultiQubitOutcome_sub<NumQubits>(qureg, qubits, outcomes, RealOnly);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1332,7 +1333,7 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     devints devQubits = qubits;
     devreals devProbs;
     try  {
-        devProbs(powerOf2(qubits.size()), 0);
+        devProbs = devreals(powerOf2(qubits.size()), 0);
     } catch (thrust::system_error &e) { 
         error_thrustTempGpuAllocFailed();
     }
@@ -1368,7 +1369,7 @@ void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     devints devQubits = qubits;
     devreals devProbs;
     try  {
-        devProbs(powerOf2(qubits.size()), 0);
+        devProbs = devreals(powerOf2(qubits.size()), 0);
     } catch (thrust::system_error &e) { 
         error_thrustTempGpuAllocFailed();
     }
