@@ -305,7 +305,7 @@ qreal cuquantum_statevec_calcTotalProb_sub(Qureg qureg) {
     CUDA_CHECK( custatevecAbs2SumOnZBasis(
         config.cuQuantumHandle,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
-        &prob0, &prob1, &qubit, numQubits );
+        &prob0, &prob1, &qubit, numQubits ) );
 
     qreal total = prob0 + prob1;
     return total;
@@ -320,7 +320,7 @@ qreal cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int
     CUDA_CHECK( custatevecAbs2SumOnZBasis(
         config.cuQuantumHandle,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
-        &prob0, prob1, qubits.data(), qubits.size() );
+        &prob0, prob1, qubits.data(), qubits.size() ) );
 
     return prob0;
 }
