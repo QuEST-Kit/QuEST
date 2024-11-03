@@ -156,7 +156,7 @@ struct functor_superposeAmps {
     cu_qcomp fac0;
     cu_qcomp fac1;
     cu_qcomp fac2;
-    functor_setWeightedQureg(cu_qcomp f0, cu_qcomp f1, cu_qcomp f2) : fac0(f0), fac1(f1), fac2(f2) {}
+    functor_superposeAmps(cu_qcomp f0, cu_qcomp f1, cu_qcomp f2) : fac0(f0), fac1(f1), fac2(f2) {}
 
     template <typename Tuple> __host__ __device__ void operator()(Tuple t) {
         thrust::get<0>(t) = fac0*thrust::get<0>(t) + fac1*thrust::get<1>(t) + fac2*thrust::get<2>(t);
@@ -258,7 +258,7 @@ void thrust_statevec_setQuregToSuperposition_sub(cu_qcomp facOut, Qureg outQureg
     thrust::for_each(
         thrust::make_zip_iterator(thrust::make_tuple(getStartPtr(outQureg), getStartPtr(inQureg1), getStartPtr(inQureg2))),
         thrust::make_zip_iterator(thrust::make_tuple(getEndPtr(outQureg),   getEndPtr(inQureg1),   getEndPtr(inQureg2))),
-        functor_setWeightedQureg(facOut, fac1, fac2));
+        functor_superposeAmps(facOut, fac1, fac2));
 }
 
 
