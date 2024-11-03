@@ -769,6 +769,10 @@ namespace report {
         "The given Pauli error probabilities exceed that which induce maximal mixing. That is, the probability of any particular X, Y or Z error exceeds that of I (no error).";
 
 
+    /*
+     * QUREG COMBINATION
+     */
+
     string MIXED_QUREG_NOT_DENSITY_MATRIX =
         "The first Qureg, which will undergo mixing, must be a density matrx.";
 
@@ -780,6 +784,19 @@ namespace report {
 
     string MIXED_DENSITY_MATRIX_LOCAL_BUT_STATEVEC_DISTRIBUTED =
         "THe given density matrix was local, but the statevector was distributed; this configuration is unsupported (and is ridiculous!).";
+
+
+    string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_TYPE =
+        "Cannot superpose a statevector with a density matrix. Quregs must all be statevectors, or all density matrices.";
+
+    string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_NUM_QUBITS =
+        "Cannot superpose Quregs with differing numbers of qubits.";
+
+    string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_GPU_DEPLOYMENT =
+        "Cannot superpose Quregs with inconsistent GPU deployments. All or no quregs must be GPU-accelerated.";
+
+    string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_DISTRIBUTION =
+        "Cannot superpose Quregs which are inconsistently distributed. All or no quregs must be distributed.";
 
 
     /*
@@ -3102,6 +3119,12 @@ void validate_oneQubitPauliChannelProbs(qreal pX, qreal pY, qreal pZ, const char
     assertThat(probM <= probI, report::ONE_QUBIT_PAULI_CHANNEL_PROBS_EXCEED_MAXIMAL_MIXING, caller);
 }
 
+
+
+/*
+ * QUREG COMBINATION
+ */
+
 void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller) {
 
     // mixing must be mathematically possible; dims are compatible, but quregIn can be a statevector
@@ -3119,6 +3142,32 @@ void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller
     if (!quregOut.isDistributed)
         assertThat(!quregOut.isDistributed, report::MIXED_DENSITY_MATRIX_LOCAL_BUT_STATEVEC_DISTRIBUTED, caller);
 }
+
+void validate_quregsCanBeSuperposed(Qureg qureg1, Qureg qureg2, Qureg qureg3, const char* caller) {
+
+    // quregs must all be the same type (sv vs dm) 
+    int isDM = qureg1.isDensityMatrix;
+    assertThat(
+        qureg2.isDensityMatrix == isDM && qureg3.isDensityMatrix == isDM, 
+        report::SUPERPOSED_QUREGS_HAVE_INCONSISTENT_TYPE, caller);
+
+    // and the same dimension
+    int nQb = qureg1.numQubits;
+    assertThat(
+        qureg2.numQubits == nQb && qureg3.numQubits == nQb, 
+        report::SUPERPOSED_QUREGS_HAVE_INCONSISTENT_NUM_QUBITS, caller);
+
+    // and all the same deployment (GPU & distribution; multithreading doesn't matter)
+    int isGpu = qureg1.isGpuAccelerated;
+    assertThat(
+        qureg2.isGpuAccelerated == isGpu && qureg3.isGpuAccelerated == isGpu, 
+        report::SUPERPOSED_QUREGS_HAVE_INCONSISTENT_GPU_DEPLOYMENT, caller);
+
+    int isDis = qureg1.isDistributed;
+    assertThat(
+        qureg2.isDistributed == isDis && qureg3.isDistributed == isDis, 
+        report::SUPERPOSED_QUREGS_HAVE_INCONSISTENT_DISTRIBUTION, caller);
+} 
 
 
 

@@ -859,6 +859,13 @@ void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vecto
  */
 
 
+void localiser_statevec_setQuregToSuperposition(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2) {
+
+    // given Qureg dimensions must match, this is always embarrassingly parallel
+    accel_statevec_setQuregToSuperposition_sub(facOut, outQureg, fac1, inQureg1, fac2, inQureg2);
+}
+
+
 void mixDensityMatrixWithStatevector(qreal outProb, Qureg out, qreal inProb, Qureg in) {
 
     // we can handle 3 out of 4 possible combinations of distribution,

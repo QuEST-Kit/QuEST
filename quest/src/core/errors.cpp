@@ -403,6 +403,17 @@ void assert_quregDistribAndFullStateDiagMatrLocal(Qureg qureg, FullStateDiagMatr
         raiseInternalError("The FullStateDiagMatr was unexpectedly distributed.");
 }
 
+void assert_superposedQuregDimsAndDeploysMatch(Qureg facOut, Qureg in1, Qureg in2) {
+
+    if (
+        facOut.isDistributed    != in1.isDistributed    || in1.isDistributed    != in2.isDistributed    ||
+        facOut.isDensityMatrix  != in1.isDensityMatrix  || in1.isDensityMatrix  != in2.isDensityMatrix  ||
+        facOut.isGpuAccelerated != in1.isGpuAccelerated || in1.isGpuAccelerated != in2.isGpuAccelerated ||
+        facOut.numQubits        != in1.numQubits        || in1.numQubits        != in2.numQubits
+    )
+        raiseInternalError("An internal function *_setQuregToSuperposition() received Quregs of mismatching dimensions and/or deployments.");
+}
+
 
 
 /*

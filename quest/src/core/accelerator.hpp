@@ -223,6 +223,8 @@ void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
  * QUREG COMBINATION
  */
 
+void accel_statevec_setQuregToSuperposition_sub(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2);
+
 void accel_densmatr_mixQureg_subA(qreal outProb, Qureg out, qreal inProb, Qureg in);
 void accel_densmatr_mixQureg_subB(qreal outProb, Qureg out, qreal inProb, Qureg in);
 void accel_densmatr_mixQureg_subC(qreal outProb, Qureg out, qreal inProb);
