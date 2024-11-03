@@ -335,7 +335,7 @@ qreal thrust_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> q
 
     auto basisIndFunctor = functor_insertBits<NumQubits>(getPtr(sortedQubits), valueMask, qubits.size());
     auto diagIndFunctor = functor_getDiagInd(qureg);
-    auto probFunctor = functor_getAmReal();
+    auto probFunctor = functor_getAmpReal();
 
     auto rawIter = thrust::make_counting_iterator(0);
     auto indIter = thrust::make_transform_iterator(rawIter, basisIndFunctor);
