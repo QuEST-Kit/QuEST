@@ -10,6 +10,8 @@
 #include "quest/src/core/printer.hpp"
 #include "quest/src/core/parser.hpp"
 #include "quest/src/core/memory.hpp"
+#include "quest/src/core/errors.hpp"
+#include "quest/src/core/bitwise.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
@@ -140,6 +142,12 @@ bool paulis_containsXOrY(PauliStr str) {
 }
 
 
+bool paulis_containsOnlyI(PauliStr str) {
+
+    return (str.lowPaulis == 0 && str.highPaulis == 0);
+}
+
+
 vector<int> paulis_getTargsWithEitherPaulis(vector<int> targs, PauliStr str, int pauliA, int pauliB) {
 
     vector<int> subsetTargs(0);  subsetTargs.reserve(targs.size());
@@ -151,6 +159,42 @@ vector<int> paulis_getTargsWithEitherPaulis(vector<int> targs, PauliStr str, int
     }
 
     return subsetTargs;
+}
+
+
+bool paulis_hasOddNumY(PauliStr str) {
+
+    bool odd = false;
+    for (int targ=0; targ < MAX_NUM_PAULIS_PER_MASK; targ++) 
+        if (paulis_getPauliAt(str, targ) == 2)
+            odd = !odd;
+
+    return odd;
+}
+
+
+PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift) {
+
+    if (pauliShift <= 0 || pauliShift >= MAX_NUM_PAULIS_PER_MASK)
+        error_pauliStrShiftedByIllegalAmount();
+
+    int numBitsPerPauli = 2;
+    int numMaskBits = numBitsPerPauli * MAX_NUM_PAULIS_PER_MASK;
+    int bitShift    = numBitsPerPauli * pauliShift;
+
+    // record the bits we will lose from lowPaulis, to move to highPaulis
+    PAULI_MASK_TYPE lostBits = getBitsLeftOfIndex(str.lowPaulis, numMaskBits - bitShift - 1);
+
+    // ensure we actually lose these bits from lowPaulis
+    PAULI_MASK_TYPE lowerBits = getBitsRightOfIndex(str.lowPaulis, numMaskBits - bitShift) << bitShift;
+
+    // and add them to highPaulis; we don't have to force lose upper bits of high paulis
+    PAULI_MASK_TYPE upperBits = concatenateBits(str.highPaulis, lostBits, bitShift);
+
+    return (PauliStr) {
+        .lowPaulis = lowerBits,
+        .highPaulis = upperBits
+    };
 }
 
 

@@ -238,6 +238,14 @@ void error_cuQuantumInitOrFinalizedButNotCompiled();
 
 
 /*
+ * PAULI ERRORS 
+ */
+
+void error_pauliStrShiftedByIllegalAmount();
+
+
+
+/*
  * UTILITY ERRORS 
  */
 

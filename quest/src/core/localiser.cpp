@@ -724,6 +724,7 @@ template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, vector<int>, vecto
 
 extern int  paulis_getPauliAt(PauliStr str, int ind);
 extern bool paulis_containsXOrY(PauliStr str);
+extern bool paulis_containsOnlyI(PauliStr str);
 extern vector<int> paulis_getSortedIndsOfNonIdentityPaulis(PauliStr str);
 extern vector<int> paulis_getTargsWithEitherPaulis(vector<int> targs, PauliStr str, int pauliA, int pauliB);
 
@@ -806,6 +807,10 @@ void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrl
 
 void localiser_statevec_anyCtrlAnyTargZ(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs) {
 
+    // NOTE: I think this is not used by the API, because there is no dedicated
+    // all-Z Pauli function. Instead, users would call the generic Pauli tensor
+    // which redirects to anyCtrlAnyTargZOrPhaseGadget
+
     qcomp fac0 = qcomp(+1, 0); // even parity
     qcomp fac1 = qcomp(-1, 0); // odd parity
     anyCtrlAnyTargZOrPhaseGadget(qureg, ctrls, ctrlStates, targs, fac0, fac1);
@@ -825,6 +830,10 @@ void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vecto
     qcomp fac0 = 0; // even parity
     qcomp fac1 = 1; // odd parity
     auto targs = paulis_getSortedIndsOfNonIdentityPaulis(str);
+
+    // all Id PauliStr does not nothing
+    if (paulis_containsOnlyI(str))
+        return;
 
     (paulis_containsXOrY(str))?
         anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, targs, str, fac0, fac1):

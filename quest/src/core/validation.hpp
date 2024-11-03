@@ -286,6 +286,18 @@ void validate_parsedStringIsNotEmpty(bool stringIsNotEmpty, const char* caller);
 
 
 /*
+ * EXISTING PAULI STRING
+ */
+
+void validate_pauliStrTargets(Qureg qureg, PauliStr str, const char* caller);
+
+void validate_controlAndPauliStrTargets(Qureg qureg, int ctrl, PauliStr str, const char* caller);
+
+void validate_controlsAndPauliStrTargets(Qureg qureg, int* ctrls, int numCtrls, PauliStr str, const char* caller);
+
+
+
+/*
  * EXISTING PAULI STRING SUMS
  */
 
