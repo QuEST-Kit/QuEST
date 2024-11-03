@@ -544,6 +544,17 @@ void error_cuQuantumInitOrFinalizedButNotCompiled() {
 
 
 /*
+ * PAULI ERRORS 
+ */
+
+void error_pauliStrShiftedByIllegalAmount() {
+
+    raiseInternalError("A PauliStr was attemptedly shifted (likely invoked by its application upon a density matrix) by an illegal amount (e.g. negative, or that exceeding the PauliStr bitmask length).");
+}
+
+
+
+/*
  * UTILITY ERRORS 
  */
 

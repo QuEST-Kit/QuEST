@@ -279,7 +279,7 @@ void applyControlledRotateAroundAxis(Qureg qureg, int control, int target, qreal
  * Pauli gadgets
  */
 
-// don't think users will ever want to left-multiply only
+void multiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
 
 void applyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
 
@@ -294,6 +294,8 @@ void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* state
 /*
  * phase gadgets
  */
+
+void multiplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle);
 
 void applyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle);
 

@@ -604,6 +604,17 @@ namespace report {
 
 
     /*
+     * EXISTING PAULI STRING
+     */
+
+    string PAULI_STR_TARGETS_EXCEED_QUREG =
+        "The highest-index non-identity Pauli operator (index ${MAX_TARG}) in the given PauliStr exceeds the maximum target of the ${QUREG_QUBITS}-qubit Qureg.";
+
+    string PAULI_STR_OVERLAPS_CONTROLS =
+        "A control qubit overlaps a non-identity Pauli operator in the given PauliStr.";
+
+
+    /*
      * PAULI STRING SUM CREATION
      */
 
@@ -2639,6 +2650,41 @@ void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* cal
     // the passed string length (C char arrays might not contain termination char)
     tokenSubs vars = {{"${NUM_PAULIS}", numPaulis}, {"${NUM_INDS}", numIndices}};
     assertThat(numPaulis == numIndices, report::NEW_PAULI_STR_DIFFERENT_NUM_CHARS_AND_INDS, vars, caller);
+}
+
+
+
+/*
+ * EXISTING PAULI STRING
+ */
+
+extern int paulis_getPauliAt(PauliStr str, int ind);
+extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
+
+void validate_pauliStrTargets(Qureg qureg, PauliStr str, const char* caller) {
+
+    // avoid producing a list of targets which requires enumerating all bits
+    int maxTarg = paulis_getIndOfLefmostNonIdentityPauli(str);
+
+    tokenSubs vars = {{"${MAX_TARG}", maxTarg}, {"${QUREG_QUBITS}", qureg.numQubits}};
+    assertThat(maxTarg < qureg.numQubits, report::PAULI_STR_TARGETS_EXCEED_QUREG, vars, caller);
+}
+
+void validate_controlsAndPauliStrTargets(Qureg qureg, int* ctrls, int numCtrls, PauliStr str, const char* caller) {
+
+    // validate targets and controls in isolation
+    validate_pauliStrTargets(qureg, str, caller);
+    validate_controls(qureg, ctrls, numCtrls, caller);
+
+    // validate that they do not overlap (i.e. str has only I at ctrls, never X Y Z)
+    const int I = 0;
+    for (int n=0; n<numCtrls; n++)
+        assertThat(paulis_getPauliAt(str, ctrls[n]) == I, report::PAULI_STR_OVERLAPS_CONTROLS, caller);
+}
+
+void validate_controlAndPauliStrTargets(Qureg qureg, int ctrl, PauliStr str, const char* caller) {
+
+    validate_controlsAndPauliStrTargets(qureg, &ctrl, 1, str, caller);
 }
 
 

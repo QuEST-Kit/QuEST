@@ -21,6 +21,10 @@
  * PRVIATE UTILITIES
  */
 
+extern bool paulis_hasOddNumY(PauliStr str);
+
+extern PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift);
+
 // T can be CompMatr, CompMatr1, CompMatr2, DiagMatr, DiagMatr1, DiagMatr2
 template <class T>
 void validateAndApplyAnyCtrlAnyTargUnitaryMatrix(Qureg qureg, int* ctrls, int* states, int numCtrls, int* targs, int numTargs, T matr, const char* caller) {
@@ -430,27 +434,111 @@ void applyMultiStateControlledSwap(Qureg qureg, int* controls, int* states, int 
 
 /*
  * individual Paulis
+ *
+ * where Y and Z are most efficiently effected as DiagMatr1,
+ * but where X is best effected as a 1-qubit PauliStr.
  */
 
-void multiplyPauliX(Qureg qureg, int target) _NOT_IMPLEMENTED_ERROR_DEF
-void multiplyPauliY(Qureg qureg, int target) _NOT_IMPLEMENTED_ERROR_DEF
-void multiplyPauliZ(Qureg qureg, int target) _NOT_IMPLEMENTED_ERROR_DEF
+void applyPauliX(Qureg qureg, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
 
-void applyPauliX(Qureg qureg, int target) _NOT_IMPLEMENTED_ERROR_DEF
-void applyPauliY(Qureg qureg, int target) _NOT_IMPLEMENTED_ERROR_DEF
-void applyPauliZ(Qureg qureg, int target) _NOT_IMPLEMENTED_ERROR_DEF
+    // harmlessly re-validates
+    applyMultiStateControlledPauliX(qureg, nullptr, nullptr, 0, target);
+}
 
-void applyControlledPauliX(Qureg qureg, int control, int target) _NOT_IMPLEMENTED_ERROR_DEF
-void applyControlledPauliY(Qureg qureg, int control, int target) _NOT_IMPLEMENTED_ERROR_DEF
-void applyControlledPauliZ(Qureg qureg, int control, int target) _NOT_IMPLEMENTED_ERROR_DEF
+void applyPauliY(Qureg qureg, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
 
-void applyMultiControlledPauliX(Qureg qureg, int* controls, int numControls, int target) _NOT_IMPLEMENTED_ERROR_DEF
-void applyMultiControlledPauliY(Qureg qureg, int* controls, int numControls, int target) _NOT_IMPLEMENTED_ERROR_DEF
-void applyMultiControlledPauliZ(Qureg qureg, int* controls, int numControls, int target) _NOT_IMPLEMENTED_ERROR_DEF
+    // harmlessly re-validates
+    applyMultiStateControlledPauliY(qureg, nullptr, nullptr, 0, target);
+}
 
-void applyMultiStateControlledPauliX(Qureg qureg, int* controls, int* states, int numControls, int target) _NOT_IMPLEMENTED_ERROR_DEF
-void applyMultiStateControlledPauliY(Qureg qureg, int* controls, int* states, int numControls, int target) _NOT_IMPLEMENTED_ERROR_DEF
-void applyMultiStateControlledPauliZ(Qureg qureg, int* controls, int* states, int numControls, int target) _NOT_IMPLEMENTED_ERROR_DEF
+void applyPauliZ(Qureg qureg, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledPauliZ(qureg, nullptr, nullptr, 0, target);
+}
+
+void applyControlledPauliX(Qureg qureg, int control, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_controlAndTarget(qureg, control, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledPauliX(qureg, &control, nullptr, 1, target);
+}
+
+void applyControlledPauliY(Qureg qureg, int control, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_controlAndTarget(qureg, control, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledPauliY(qureg, &control, nullptr, 1, target);
+}
+
+void applyControlledPauliZ(Qureg qureg, int control, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_controlAndTarget(qureg, control, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledPauliZ(qureg, &control, nullptr, 1, target);
+}
+
+void applyMultiControlledPauliX(Qureg qureg, int* controls, int numControls, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledPauliX(qureg, controls, nullptr, numControls, target);
+}
+
+void applyMultiControlledPauliY(Qureg qureg, int* controls, int numControls, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledPauliY(qureg, controls, nullptr, numControls, target);
+}
+
+void applyMultiControlledPauliZ(Qureg qureg, int* controls, int numControls, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledPauliZ(qureg, controls, nullptr, numControls, target);
+}
+
+void applyMultiStateControlledPauliX(Qureg qureg, int* controls, int* states, int numControls, int target)  {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
+    validate_controlStates(states, numControls, __func__); // permits states==nullptr
+
+    // harmlessly re-validates
+    applyMultiStateControlledPauliStr(qureg, controls, states, numControls, getPauliStr("X", {target}));
+}
+
+void applyMultiStateControlledPauliY(Qureg qureg, int* controls, int* states, int numControls, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
+    validate_controlStates(states, numControls, __func__); // permits states==nullptr
+
+    // harmlessly re-validates
+    DiagMatr1 matr = getDiagMatr1({-1_i, 1_i});
+    applyMultiStateControlledDiagMatr1(qureg, controls, states, numControls, target, matr);
+}
+
+void applyMultiStateControlledPauliZ(Qureg qureg, int* controls, int* states, int numControls, int target)  {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
+    validate_controlStates(states, numControls, __func__); // permits states==nullptr
+
+    // harmlessly re-validates
+    DiagMatr1 matr = getDiagMatr1({1, -1});
+    applyMultiStateControlledDiagMatr1(qureg, controls, states, numControls, target, matr);
+}
 
 
 
@@ -458,20 +546,57 @@ void applyMultiStateControlledPauliZ(Qureg qureg, int* controls, int* states, in
  * Pauli strings
  */
 
-void multiplyPauliStr(Qureg qureg, PauliStr str)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void multiplyPauliStr(Qureg qureg, PauliStr str) {
+    validate_quregFields(qureg, __func__);
+    validate_pauliStrTargets(qureg, str, __func__);
 
-void applyPauliStr(Qureg qureg, PauliStr str)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str);
+}
 
-void applyControlledPauliStr(Qureg qureg, int control, PauliStr str)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyPauliStr(Qureg qureg, PauliStr str) {
+    validate_quregFields(qureg, __func__);
+    validate_pauliStrTargets(qureg, str, __func__);
 
-void applyMultiControlledPauliStr(Qureg qureg, int* controls, int numControls, PauliStr str)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    // harmlessly re-validates
+    applyMultiStateControlledPauliStr(qureg, nullptr, nullptr, 0, str);
+}
 
-void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, int numControls, PauliStr str)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyControlledPauliStr(Qureg qureg, int control, PauliStr str) {
+    validate_quregFields(qureg, __func__);
+    validate_controlAndPauliStrTargets(qureg, control, str, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledPauliStr(qureg, &control, nullptr, 1, str);
+}
+
+void applyMultiControlledPauliStr(Qureg qureg, int* controls, int numControls, PauliStr str) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndPauliStrTargets(qureg, controls, numControls, str, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledPauliStr(qureg, controls, nullptr, numControls, str);
+}
+
+void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, int numControls, PauliStr str) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndPauliStrTargets(qureg, controls, numControls, str, __func__);
+    validate_controlStates(states, numControls, __func__); // permits states==nullptr
+
+    auto ctrlVec = util_getVector(controls, numControls);
+    auto stateVec = util_getVector(states, numControls); // empty if states==nullptr
+    localiser_statevec_anyCtrlPauliTensor(qureg, ctrlVec, stateVec, str);
+
+    if (!qureg.isDensityMatrix)
+        return;
+
+    ctrlVec = util_getBraQubits(ctrlVec, qureg);
+    str = paulis_getShiftedPauliStr(str, qureg.numQubits);
+    localiser_statevec_anyCtrlPauliTensor(qureg, ctrlVec, stateVec, str); // excludes conj
+
+    // effect conj by qureg *= -1
+    if (paulis_hasOddNumY(str))
+        localiser_statevec_setWeightedQureg(-1, qureg, 0, qureg, 0, qureg);
+}
 
 
 
@@ -498,21 +623,104 @@ void applyTrotterizedTimeEvol(Qureg qureg, PauliStrSum hamiltonian, qreal time, 
 
 // don't think users will ever want to left-multiply only
 
-void applyRotateX(Qureg qureg, int target, qreal angle) _NOT_IMPLEMENTED_ERROR_DEF
-void applyRotateY(Qureg qureg, int target, qreal angle) _NOT_IMPLEMENTED_ERROR_DEF
-void applyRotateZ(Qureg qureg, int target, qreal angle) _NOT_IMPLEMENTED_ERROR_DEF
+void applyRotateX(Qureg qureg, int target, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
 
-void applyControlledRotateX(Qureg qureg, int control, int target, qreal angle) _NOT_IMPLEMENTED_ERROR_DEF
-void applyControlledRotateY(Qureg qureg, int control, int target, qreal angle) _NOT_IMPLEMENTED_ERROR_DEF
-void applyControlledRotateZ(Qureg qureg, int control, int target, qreal angle) _NOT_IMPLEMENTED_ERROR_DEF
+    // harmlessly re-validates
+    applyMultiStateControlledRotateX(qureg, nullptr, nullptr, 0, target, angle);
+}
 
-void applyMultiControlledRotateX(Qureg qureg, int* controls, int numControls, int target, qreal angle) _NOT_IMPLEMENTED_ERROR_DEF
-void applyMultiControlledRotateY(Qureg qureg, int* controls, int numControls, int target, qreal angle) _NOT_IMPLEMENTED_ERROR_DEF
-void applyMultiControlledRotateZ(Qureg qureg, int* controls, int numControls, int target, qreal angle) _NOT_IMPLEMENTED_ERROR_DEF
+void applyRotateY(Qureg qureg, int target, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
 
-void applyMultiStateControlledRotateX(Qureg qureg, int* controls, int* states, int numControls, int target, qreal angle) _NOT_IMPLEMENTED_ERROR_DEF
-void applyMultiStateControlledRotateY(Qureg qureg, int* controls, int* states, int numControls, int target, qreal angle) _NOT_IMPLEMENTED_ERROR_DEF
-void applyMultiStateControlledRotateZ(Qureg qureg, int* controls, int* states, int numControls, int target, qreal angle) _NOT_IMPLEMENTED_ERROR_DEF
+    // harmlessly re-validates
+    applyMultiStateControlledRotateY(qureg, nullptr, nullptr, 0, target, angle);
+}
+
+void applyRotateZ(Qureg qureg, int target, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledRotateZ(qureg, nullptr, nullptr, 0, target, angle);
+}
+
+void applyControlledRotateX(Qureg qureg, int control, int target, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_controlAndTarget(qureg, control, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledRotateX(qureg, &control, nullptr, 1, target, angle);
+}
+
+void applyControlledRotateY(Qureg qureg, int control, int target, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_controlAndTarget(qureg, control, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledRotateY(qureg, &control, nullptr, 1, target, angle);
+}
+
+void applyControlledRotateZ(Qureg qureg, int control, int target, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_controlAndTarget(qureg, control, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledRotateZ(qureg, &control, nullptr, 1, target, angle);
+}
+
+void applyMultiControlledRotateX(Qureg qureg, int* controls, int numControls, int target, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledRotateX(qureg, controls, nullptr, numControls, target, angle);
+}
+
+void applyMultiControlledRotateY(Qureg qureg, int* controls, int numControls, int target, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledRotateY(qureg, controls, nullptr, numControls, target, angle);
+}
+
+void applyMultiControlledRotateZ(Qureg qureg, int* controls, int numControls, int target, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledRotateZ(qureg, controls, nullptr, numControls, target, angle);
+}
+
+void applyMultiStateControlledRotateX(Qureg qureg, int* controls, int* states, int numControls, int target, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
+    validate_controlStates(states, numControls, __func__); // permits states==nullptr
+
+    // harmlessly re-validates
+    applyMultiStateControlledPauliGadget(qureg, controls, states, numControls, getPauliStr("X", {target}), angle);
+}
+
+void applyMultiStateControlledRotateY(Qureg qureg, int* controls, int* states, int numControls, int target, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
+    validate_controlStates(states, numControls, __func__); // permits states==nullptr
+
+    // harmlessly re-validates
+    applyMultiStateControlledPauliGadget(qureg, controls, states, numControls, getPauliStr("Y", {target}), angle);
+}
+
+void applyMultiStateControlledRotateZ(Qureg qureg, int* controls, int* states, int numControls, int target, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
+    validate_controlStates(states, numControls, __func__); // permits states==nullptr
+
+    // harmlessly re-validates
+    applyMultiStateControlledPauliGadget(qureg, controls, states, numControls, getPauliStr("Z", {target}), angle);
+}
 
 
 
@@ -532,19 +740,57 @@ void applyControlledRotateAroundAxis(Qureg qureg, int control, int target, qreal
  * Pauli gadgets
  */
 
-// don't think users will ever want to left-multiply only
+void multiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_pauliStrTargets(qureg, str, __func__);
 
-void applyPauliGadget(Qureg qureg, PauliStr str, qreal angle)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    localiser_statevec_anyCtrlPauliGadget(qureg, {}, {}, str, angle);
+}
 
-void applyControlledPauliGadget(Qureg qureg, int control, PauliStr str, qreal angle)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_pauliStrTargets(qureg, str, __func__);
+    
+    applyMultiStateControlledPauliGadget(qureg, nullptr, nullptr, 0, str, angle);
+}
 
-void applyMultiControlledPauliGadget(Qureg qureg, int* controls, int numControls, PauliStr str, qreal angle)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyControlledPauliGadget(Qureg qureg, int control, PauliStr str, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_controlAndPauliStrTargets(qureg, control, str, __func__);
+    
+    applyMultiStateControlledPauliGadget(qureg, &control, nullptr, 1, str, angle);
+}
 
-void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStr str, qreal angle)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyMultiControlledPauliGadget(Qureg qureg, int* controls, int numControls, PauliStr str, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndPauliStrTargets(qureg, controls, numControls, str, __func__);
+    
+    applyMultiStateControlledPauliGadget(qureg, controls, nullptr, numControls, str, angle);
+}
+
+void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStr str, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndPauliStrTargets(qureg, controls, numControls, str, __func__);
+    validate_controlStates(states, numControls, __func__); // permits states==nullptr
+
+    // TODO:
+    // CRUCIAL NOTE:
+    // exp(theta I..I) might be algorithmically ok (I'm not sure), but it WILL NOT
+    // effect a global phase change of theta (I think). Should validate against this
+    // sitaution just in case, or make the doc extremely explicit
+
+    auto ctrlVec = util_getVector(controls, numControls);
+    auto stateVec = util_getVector(states, numControls); // empty if states==nullptr
+    localiser_statevec_anyCtrlPauliGadget(qureg, ctrlVec, stateVec, str, angle);
+
+    if (!qureg.isDensityMatrix)
+        return;
+
+    angle *= paulis_hasOddNumY(str) ? -1 : +1;
+    ctrlVec = util_getBraQubits(ctrlVec, qureg);
+    str = paulis_getShiftedPauliStr(str, qureg.numQubits);
+    localiser_statevec_anyCtrlPauliGadget(qureg, ctrlVec, stateVec, str, angle);
+}
 
 
 
@@ -552,17 +798,55 @@ void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* state
  * phase gadgets
  */
 
-void applyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void multiplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, targets, numTargets, __func__);
 
-void applyControlledPhaseGadget(Qureg qureg, int control, int* targets, int numTargets, qreal angle)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    localiser_statevec_anyCtrlPhaseGadget(qureg, {}, {}, util_getVector(targets,numTargets), angle);
+}
 
-void applyMultiControlledPhaseGadget(Qureg qureg, int* controls, int numControls, int* targets, int numTargets, qreal angle)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, targets, numTargets, __func__);
 
-void applyMultiStateControlledPhaseGadget(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets, qreal angle)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    // harmlessly re-validates
+    applyMultiStateControlledPhaseGadget(qureg, nullptr, nullptr, 0, targets, numTargets, angle);
+}
+
+void applyControlledPhaseGadget(Qureg qureg, int control, int* targets, int numTargets, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_controlAndTargets(qureg, control, targets, numTargets, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledPhaseGadget(qureg, &control, nullptr, 1, targets, numTargets, angle);
+}
+
+void applyMultiControlledPhaseGadget(Qureg qureg, int* controls, int numControls, int* targets, int numTargets, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTargets(qureg, controls, numControls, targets, numTargets, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledPhaseGadget(qureg, controls, nullptr, numControls, targets, numTargets, angle);
+}
+
+void applyMultiStateControlledPhaseGadget(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTargets(qureg, controls, numControls, targets, numTargets, __func__);
+    validate_controlStates(states, numControls, __func__);
+
+    auto ctrlVec = util_getVector(controls, numControls);
+    auto targVec = util_getVector(targets,  numTargets);
+    auto stateVec = util_getVector(states,  numControls); // empty if states==nullptr
+    localiser_statevec_anyCtrlPhaseGadget(qureg, ctrlVec, stateVec, targVec, angle);
+
+    if (!qureg.isDensityMatrix)
+        return;
+
+    angle *= -1;
+    ctrlVec = util_getBraQubits(ctrlVec, qureg);
+    targVec = util_getBraQubits(ctrlVec, qureg);
+    localiser_statevec_anyCtrlPhaseGadget(qureg, ctrlVec, stateVec, targVec, angle);
+}
 
 
 
@@ -570,14 +854,33 @@ void applyMultiStateControlledPhaseGadget(Qureg qureg, int* controls, int* state
  * phase shift
  */
 
-void applyPhaseShift(Qureg qureg, int target, qreal angle)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyPhaseShift(Qureg qureg, int target, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
 
-void applyTwoQubitPhaseShift(Qureg qureg, int target1, int target2, qreal angle)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    // harmlessly re-validates
+    applyMultiQubitPhaseShift(qureg, &target, 1, angle);
+}
 
-void applyMultiQubitPhaseShift(Qureg qureg, int* targets, int numTargets, qreal angle)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyTwoQubitPhaseShift(Qureg qureg, int target1, int target2, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_twoTargets(qureg, target1, target2, __func__);
+
+    // harmlessly re-validates
+    int targets[] = {target1, target2};
+    applyMultiQubitPhaseShift(qureg, targets, 2, angle);
+}
+
+void applyMultiQubitPhaseShift(Qureg qureg, int* targets, int numTargets, qreal angle) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, targets, numTargets, __func__);
+
+    // treat as a (numTargets-1)-controlled 1-target diagonal matrix
+    DiagMatr1 matr = getDiagMatr1({1, exp(1_i * angle)});
+
+    // harmlessly re-validates
+    applyMultiStateControlledDiagMatr1(qureg, &targets[1], nullptr, numTargets-1, targets[0], matr);
+}
 
 
 
@@ -585,14 +888,33 @@ void applyMultiQubitPhaseShift(Qureg qureg, int* targets, int numTargets, qreal 
  * phase flips
  */
 
-void applyPhaseFlip(Qureg qureg, int target)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyPhaseFlip(Qureg qureg, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
 
-void applyTwoQubitPhaseFlip(Qureg qureg, int target1, int target2)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    // harmlessly re-validates
+    applyMultiQubitPhaseFlip(qureg, &target, 1);
+}
 
-void applyMultiQubitPhaseFlip(Qureg qureg, int* targets, int numTargets)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyTwoQubitPhaseFlip(Qureg qureg, int target1, int target2) {
+    validate_quregFields(qureg, __func__);
+    validate_twoTargets(qureg, target1, target2, __func__);
+
+    // harmlessly re-validates
+    int targets[] = {target1, target2};
+    applyMultiQubitPhaseFlip(qureg, targets, 2);
+}
+
+void applyMultiQubitPhaseFlip(Qureg qureg, int* targets, int numTargets) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, targets, numTargets, __func__);
+
+    // treat as a (numTargets-1)-controlled 1-target Pauli Z
+    DiagMatr1 matr = getDiagMatr1({1, -1});
+
+    // harmlessly re-validates
+    applyMultiStateControlledDiagMatr1(qureg, &targets[1], nullptr, numTargets-1, targets[0], matr);
+}
 
 
 
