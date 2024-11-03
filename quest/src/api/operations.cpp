@@ -412,23 +412,215 @@ void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp ex
 
 
 /*
- * swaps
+ * S gate
  */
 
-void multiplySwap(Qureg qureg, int qubit1, int qubit2)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyS(Qureg qureg, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
 
-void applySwap(Qureg qureg, int qubit1, int qubit2)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    // harmlessly re-validates
+    applyMultiStateControlledS(qureg, nullptr, nullptr, 0, target);
+}
 
-void applyControlledSwap(Qureg qureg, int control, int qubit1, int qubit2)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyControlledS(Qureg qureg, int control, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_controlAndTarget(qureg, control, target, __func__);
 
-void applyMultiControlledSwap(Qureg qureg, int* controls, int numControls, int qubit1, int qubit2)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    // harmlessly re-validates
+    applyMultiStateControlledS(qureg, &control, nullptr, 1, target);
+}
 
-void applyMultiStateControlledSwap(Qureg qureg, int* controls, int* states, int numControls, int qubit1, int qubit2)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyMultiControlledS(Qureg qureg, int* controls, int numControls, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledS(qureg, controls, nullptr, numControls, target);
+}
+
+void applyMultiStateControlledS(Qureg qureg, int* controls, int* states, int numControls, int target) {
+
+    DiagMatr1 matr = getDiagMatr1({1, 1_i});
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
+}
+
+
+
+/*
+ * T gate
+ */
+
+void applyT(Qureg qureg, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledT(qureg, nullptr, nullptr, 0, target);
+}
+
+void applyControlledT(Qureg qureg, int control, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_controlAndTarget(qureg, control, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledT(qureg, &control, nullptr, 1, target);
+}
+
+void applyMultiControlledT(Qureg qureg, int* controls, int numControls, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledT(qureg, controls, nullptr, numControls, target);
+}
+
+void applyMultiStateControlledT(Qureg qureg, int* controls, int* states, int numControls, int target) {
+
+    DiagMatr1 matr = getDiagMatr1({1, 1/sqrt(2) - 1_i/sqrt(2)});
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
+}
+
+
+
+/*
+ * Hadamard 
+ */
+
+void applyHadamard(Qureg qureg, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledHadamard(qureg, nullptr, nullptr, 0, target);
+}
+
+void applyControlledHadamard(Qureg qureg, int control, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_controlAndTarget(qureg, control, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledHadamard(qureg, &control, nullptr, 1, target);
+}
+
+void applyMultiControlledHadamard(Qureg qureg, int* controls, int numControls, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledHadamard(qureg, controls, nullptr, numControls, target);
+}
+
+void applyMultiStateControlledHadamard(Qureg qureg, int* controls, int* states, int numControls, int target) {
+
+    CompMatr1 matr = getCompMatr1({
+        {1/sqrt(2), 1/sqrt(2)}, 
+        {1/sqrt(2), -1/sqrt(2)}});
+
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
+}
+
+
+
+/*
+ * swap
+ */
+
+void multiplySwap(Qureg qureg, int qubit1, int qubit2) {
+    validate_quregFields(qureg, __func__);
+    validate_twoTargets(qureg, qubit1, qubit2, __func__);
+
+    localiser_statevec_anyCtrlSwap(qureg, {}, {}, qubit1, qubit2);
+}
+
+void applySwap(Qureg qureg, int qubit1, int qubit2) {
+    validate_quregFields(qureg, __func__);
+    validate_twoTargets(qureg, qubit1, qubit2, __func__);
+
+    // harmlessly re-valdiates
+    applyMultiStateControlledSwap(qureg, nullptr, nullptr, 0, qubit1, qubit2);
+}
+
+void applyControlledSwap(Qureg qureg, int control, int qubit1, int qubit2) {
+    validate_quregFields(qureg, __func__);
+    validate_controlAndTwoTargets(qureg, control, qubit1, qubit2, __func__);
+
+    // harmlessly re-valdiates
+    applyMultiStateControlledSwap(qureg, &control, nullptr, 1, qubit1, qubit2);
+}
+
+void applyMultiControlledSwap(Qureg qureg, int* controls, int numControls, int qubit1, int qubit2) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTwoTargets(qureg, controls, numControls, qubit1, qubit2, __func__);
+
+    // harmlessly re-valdiates
+    applyMultiStateControlledSwap(qureg, controls, nullptr, numControls, qubit1, qubit2);
+}
+
+void applyMultiStateControlledSwap(Qureg qureg, int* controls, int* states, int numControls, int qubit1, int qubit2) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTwoTargets(qureg, controls, numControls, qubit1, qubit2, __func__);
+    validate_controlStates(states, numControls, __func__); // permits states==nullptr
+
+    auto ctrlVec = util_getVector(controls, numControls);
+    auto stateVec = util_getVector(states, numControls); // empty if states==nullptr
+    localiser_statevec_anyCtrlSwap(qureg, ctrlVec, stateVec, qubit1, qubit2);
+
+    if (!qureg.isDensityMatrix)
+        return;
+
+    ctrlVec = util_getBraQubits(ctrlVec, qureg);
+    qubit1 = util_getBraQubit(qubit1, qureg);
+    qubit2 = util_getBraQubit(qubit2, qureg);
+    localiser_statevec_anyCtrlSwap(qureg, ctrlVec, stateVec, qubit1, qubit2);
+}
+
+
+
+/*
+ * sqrt swap
+ */
+
+void applySqrtSwap(Qureg qureg, int target1, int target2) {
+    validate_quregFields(qureg, __func__);
+    validate_twoTargets(qureg,target1, target2, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledSqrtSwap(qureg, nullptr, nullptr, 0, target1, target2);
+}
+
+void applyControlledSqrtSwap(Qureg qureg, int control, int target1, int target2) {
+    validate_quregFields(qureg, __func__);
+    validate_controlAndTwoTargets(qureg, control, target1, target2, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledSqrtSwap(qureg, &control, nullptr, 1, target1, target2);
+}
+
+void applyMultiControlledSqrtSwap(Qureg qureg, int* controls, int numControls, int target1, int target2) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTwoTargets(qureg, controls, numControls, target1, target2, __func__);
+
+    // harmlessly re-validates
+    applyMultiStateControlledSqrtSwap(qureg, controls, nullptr, numControls, target1, target2);
+}
+
+void applyMultiStateControlledSqrtSwap(Qureg qureg, int* controls, int* states, int numControls, int target1, int target2) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTwoTargets(qureg, controls, numControls, target1, target2, __func__);
+    validate_controlStates(states, numControls, __func__); // permits states==nullptr
+
+    // this is likely suboptimal, and there must exist a more 
+    // efficient bespoke strategy for sqrt-SWAP, although given
+    // it is a little esoteric, optimisation is not worthwhile
+    CompMatr2 matr = getCompMatr2({
+        {1, 0, 0, 0},
+        {0, .5+.5_i, .5-.5_i, 0},
+        {0, .5-.5_i, .5+.5_i, 0},
+        {0, 0, 0, 1}});
+
+    applyMultiStateControlledCompMatr2(qureg, controls, states, numControls, target1, target2, matr);
+}
 
 
 
@@ -728,11 +920,52 @@ void applyMultiStateControlledRotateZ(Qureg qureg, int* controls, int* states, i
  * arbitrary axis rotation
  */
 
-void applyRotateAroundAxis(Qureg qureg, int target, qreal angle, qreal axisX, qreal axisY, qreal axisZ)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyRotateAroundAxis(Qureg qureg, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, targ, __func__);
+    validate_rotationAxisNotZeroVector(axisX, axisY, axisZ, __func__);
 
-void applyControlledRotateAroundAxis(Qureg qureg, int control, int target, qreal angle, qreal axisX, qreal axisY, qreal axisZ)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    applyMultiStateControlledRotateAroundAxis(qureg, nullptr, nullptr, 0, targ, angle, axisX, axisY, axisZ);
+}
+
+void applyControlledRotateAroundAxis(Qureg qureg, int ctrl, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ) {
+    validate_quregFields(qureg, __func__);
+    validate_controlAndTarget(qureg, ctrl, targ, __func__);
+    validate_rotationAxisNotZeroVector(axisX, axisY, axisZ, __func__);
+
+    applyMultiStateControlledRotateAroundAxis(qureg, &ctrl, nullptr, 1, targ, angle, axisX, axisY, axisZ);
+}
+
+void applyMultiControlledRotateAroundAxis(Qureg qureg, int* ctrls, int numCtrls, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTarget(qureg, ctrls, numCtrls, targ, __func__);
+    validate_rotationAxisNotZeroVector(axisX, axisY, axisZ, __func__);
+
+    applyMultiStateControlledRotateAroundAxis(qureg, ctrls, nullptr, numCtrls, targ, angle, axisX, axisY, axisZ);
+}
+
+void applyMultiStateControlledRotateAroundAxis(Qureg qureg, int* ctrls, int* states, int numCtrls, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTarget(qureg, ctrls, numCtrls, targ, __func__);
+    validate_controlStates(states, numCtrls, __func__); // permits states==nullptr
+    validate_rotationAxisNotZeroVector(axisX, axisY, axisZ, __func__);
+
+    // normalise vector
+    qreal norm = sqrt(pow(axisX,2) + pow(axisY,2) + pow(axisZ,2)); // != 0
+    axisX /= norm;
+    axisY /= norm;
+    axisZ /= norm;
+
+    // treat as generic 1-qubit matrix
+    qreal c = cos(angle/2);
+    qreal s = sin(angle/2);
+    auto matr = getCompMatr1({
+        {c - axisZ * 1_i, - axisY * s - axisX * s * 1_i},
+        {axisY * s - axisX * s * 1_i, c + axisZ * s * 1_i}});
+
+    // harmlessly re-validates, and checks unitarity of matr
+    applyMultiStateControlledCompMatr1(qureg, ctrls, states, numCtrls, targ, matr);
+}
 
 
 
@@ -922,29 +1155,49 @@ void applyMultiQubitPhaseFlip(Qureg qureg, int* targets, int numTargets) {
  * many-qubit CNOTs
  */
 
-void applyNot(Qureg qureg, int target)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void multiplyMultiQubitNot(Qureg qureg, int* targets, int numTargets) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, targets, numTargets, __func__);
 
-void applyControlledNot(Qureg qureg, int control, int target)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    // harmlessly re-validates
+    multiplyPauliStr(qureg, getPauliStr(std::string(numTargets, 'X'), targets, numTargets));
+}
 
-void applyMultiControlledNot(Qureg qureg, int* controls, int numControls, int target)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyMultiQubitNot(Qureg qureg, int* targets, int numTargets) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, targets, numTargets, __func__);
 
-void applyMultiStateControlledNot(Qureg qureg, int* controls, int* states, int numControls, int target)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    // harmlessly re-validates
+    applyMultiStateControlledMultiQubitNot(qureg, nullptr, nullptr, 0, targets, numTargets);
+}
 
-void applyMultiQubitNot(Qureg, int* targets, int numTargets)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyControlledMultiQubitNot(Qureg qureg, int control, int* targets, int numTargets) {
+    validate_quregFields(qureg, __func__);
+    validate_controlAndTargets(qureg, control, targets, numTargets, __func__);
 
-void applyControlledMultiQubitNot(Qureg, int control, int* targets, int numTargets)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    // harmlessly re-validates
+    applyMultiStateControlledMultiQubitNot(qureg, &control, nullptr, 1, targets, numTargets);
+}
 
-void applyMultiControlledMultiQubitNot(Qureg, int* controls, int numControls, int* targets, int numTargets)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyMultiControlledMultiQubitNot(Qureg qureg, int* controls, int numControls, int* targets, int numTargets) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTargets(qureg, controls, numControls, targets, numTargets, __func__);
 
-void applyMultiStateControlledMultiQubitNot(Qureg, int* controls, int* states, int numControls, int* targets, int numTargets)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    // harmlessly re-validates
+    applyMultiStateControlledMultiQubitNot(qureg, controls, nullptr, numControls, targets, numTargets);
+}
+
+void applyMultiStateControlledMultiQubitNot(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTargets(qureg, controls, numControls, targets, numTargets, __func__);
+    validate_controlStates(states, numControls, __func__);
+
+    // treat as an all-X PauliStr
+    PauliStr str = getPauliStr(std::string(numTargets, 'X'), targets, numTargets);
+
+    // harmlessly re-validates
+    applyMultiStateControlledPauliStr(qureg, controls, states, numControls, str);
+}
 
 
 
