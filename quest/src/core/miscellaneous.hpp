@@ -40,16 +40,20 @@ INLINE qindex misc_getLocalIndexOfDiagonalAmp(
 
 /*
  * CONVENIENCE FUNCTIONS
+ *
+ * which cannot be inlined since some call non-CUDA-compatible
+ * utility functions. We declare them static to avoid to
+ * avoid symbol duplication when invoked by multiple files
  */
 
 
-qindex misc_getLocalIndexOfFirstDiagonalAmp(Qureg qureg) {
+static qindex misc_getLocalIndexOfFirstDiagonalAmp(Qureg qureg) {
 
     return qureg.rank * powerOf2(qureg.logNumColsPerNode);
 }
 
 
-qindex misc_getNumLocalDiagonalsWithBits(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+static qindex misc_getNumLocalDiagonalsWithBits(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
 
     // a corresponding bra-qubit in the prefix with an inconsistent outcome means the node
     // contains no diagonal basis states consistent with the given outcomes
