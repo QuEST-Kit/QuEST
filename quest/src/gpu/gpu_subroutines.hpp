@@ -144,7 +144,8 @@ template <int NumTargs> void gpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg 
 qreal gpu_statevec_calcTotalProb_sub(Qureg qureg);
 qreal gpu_densmatr_calcTotalProb_sub(Qureg qureg);
 
-template <int NumQubits, bool RealOnly> qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes);
+template <int NumQubits> qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes);
+template <int NumQubits> qreal gpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes);
 
 template <int NumQubits> void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits);
 template <int NumQubits> void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits);

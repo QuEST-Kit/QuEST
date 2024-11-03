@@ -408,9 +408,11 @@ void finalizeQuESTEnv() {
 
 
 void syncQuESTEnv() {
+    validate_envIsInit(__func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    // user can safely call sync even when not distributed
+    if (globalEnvPtr->isDistributed)
+        comm_sync();
 }
 
 

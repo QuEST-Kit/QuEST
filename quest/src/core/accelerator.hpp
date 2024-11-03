@@ -64,20 +64,6 @@ using std::vector;
     template returntype funcname <-1,numtargs> args;
 
 
-#define INSTANTIATE_BOOLEAN_FUNC_OPTIMISED_FOR_NUM_TARGS(returntype, funcname, args) \
-    private_BOOLEAN_INSTANTIATE(returntype, funcname, true,  args) \
-    private_BOOLEAN_INSTANTIATE(returntype, funcname, false, args)
-    
-#define private_BOOLEAN_INSTANTIATE(returntype, funcname, boolval, args) \
-    template returntype funcname <0,boolval> args; \
-    template returntype funcname <1,boolval> args; \
-    template returntype funcname <2,boolval> args; \
-    template returntype funcname <3,boolval> args; \
-    template returntype funcname <4,boolval> args; \
-    template returntype funcname <5,boolval> args; \
-    template returntype funcname<-1,boolval> args;
-
-
 #define INSTANTIATE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(returntype, funcname, args) \
     private_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, true,  args) \
     private_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, false, args)
@@ -275,7 +261,8 @@ void accel_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> 
 qreal accel_statevec_calcTotalProb_sub(Qureg qureg);
 qreal accel_densmatr_calcTotalProb_sub(Qureg qureg);
 
-qreal accel_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, bool realOnly);
+qreal accel_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes);
+qreal accel_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes);
 
 void accel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits);
 void accel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits);

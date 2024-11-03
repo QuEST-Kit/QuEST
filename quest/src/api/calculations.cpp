@@ -141,19 +141,12 @@ qreal calcProbOfMultiQubitOutcome(Qureg qureg, int* qubits, int* outcomes, int n
     validate_targets(qureg, qubits, numQubits, __func__);
     validate_measurementOutcomesAreValid(outcomes, numQubits, __func__);
 
-    bool realOnly = false;
     auto qubitVec = util_getVector(qubits, numQubits);
     auto outcomeVec = util_getVector(outcomes, numQubits);
 
-    // statevector basis states |i> become density matrix diagonals |i><i| = |i>|i>
-    if (qureg.isDensityMatrix) {
-        realOnly = true;
-        qubitVec = util_getConcatenated(qubitVec, util_getBraQubits(qubitVec, qureg));
-        outcomeVec = util_getConcatenated(outcomeVec, outcomeVec);
-    }
-
-    qreal prob = localiser_statevec_calcProbOfMultiQubitOutcome(qureg, qubitVec, outcomeVec, realOnly);
-    return prob;
+    return (qureg.isDensityMatrix)?
+        localiser_densmatr_calcProbOfMultiQubitOutcome(qureg, qubitVec, outcomeVec):
+        localiser_statevec_calcProbOfMultiQubitOutcome(qureg, qubitVec, outcomeVec);
 }
 
 
