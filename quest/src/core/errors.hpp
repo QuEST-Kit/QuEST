@@ -162,6 +162,7 @@ void assert_quregAndFullStateDiagMatrHaveSameDistrib(Qureg qureg, FullStateDiagM
 
 void assert_quregDistribAndFullStateDiagMatrLocal(Qureg qureg, FullStateDiagMatr matr);
 
+void assert_superposedQuregDimsAndDeploysMatch(Qureg facOut, Qureg in1, Qureg in2);
 
 
 
