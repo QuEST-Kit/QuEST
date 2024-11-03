@@ -40,19 +40,16 @@ INLINE qindex misc_getLocalIndexOfDiagonalAmp(
 
 /*
  * CONVENIENCE FUNCTIONS
- *
- * which are not performance critical, but which we
- * still inline for consistency
  */
 
 
-INLINE qindex misc_getLocalIndexOfFirstDiagonalAmp(Qureg qureg) {
+qindex misc_getLocalIndexOfFirstDiagonalAmp(Qureg qureg) {
 
     return qureg.rank * powerOf2(qureg.logNumColsPerNode);
 }
 
 
-INLINE qindex misc_getNumLocalDiagonalsWithBits(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+qindex misc_getNumLocalDiagonalsWithBits(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
 
     // a corresponding bra-qubit in the prefix with an inconsistent outcome means the node
     // contains no diagonal basis states consistent with the given outcomes
