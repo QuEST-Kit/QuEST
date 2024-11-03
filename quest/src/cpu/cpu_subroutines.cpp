@@ -16,6 +16,7 @@
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/accelerator.hpp"
+#include "quest/src/core/miscellaneous.hpp"
 #include "quest/src/comm/comm_indices.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
 
@@ -1520,9 +1521,10 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_partialTrace_sub, (
 
 qreal cpu_statevec_calcTotalProb_sub(Qureg qureg) {
 
-    // each iteration collects one probability amp
-    qindex numIts = qureg.numAmpsPerNode;
     qreal prob = 0;
+
+    // every amp, iterated independently, contributes to the probability
+    qindex numIts = qureg.numAmpsPerNode;
 
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++)
@@ -1534,17 +1536,18 @@ qreal cpu_statevec_calcTotalProb_sub(Qureg qureg) {
 
 qreal cpu_densmatr_calcTotalProb_sub(Qureg qureg) {
 
-    // each iteration collects one real diagonal
-    qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
-    qindex startInd = qureg.rank * numColsPerNode;
-    qindex numIts = numColsPerNode;
     qreal prob = 0;
+
+    // iterate each column, of which one amp (the diagonal) contributes
+    qindex numIts = powerOf2(qureg.logNumColsPerNode);
+    qindex numAmpsPerCol = powerOf2(qureg.numQubits);
+    qindex firstDiagInd = misc_getLocalIndexOfFirstDiagonalAmp(qureg);
 
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-        // i = local index of nth local diagonal element
-        qindex i = startInd + n * (numColsPerNode + 1);
+         // i = local index of nth local diagonal element
+        qindex i = misc_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
         prob += real(qureg.cpuAmps[i]);
     }
 
@@ -1552,14 +1555,15 @@ qreal cpu_densmatr_calcTotalProb_sub(Qureg qureg) {
 }
 
 
-template <int NumQubits, bool RealOnly>
+template <int NumQubits>
 qreal cpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
-    // each iteration visits one amp, which is one of the 2^qubits.size() values possible
-    qindex numIts = qureg.numAmpsPerNode / powerOf2(qubits.size());
     qreal prob = 0;
+
+    // each iteration visits one amp per 2^qubits.size() amps
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(qubits.size());
 
     auto sortedQubits = util_getSorted(qubits); // all in suffix
     auto qubitStateMask = util_getBitMask(qubits, outcomes);
@@ -1573,11 +1577,41 @@ qreal cpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
         // i = nth local index where qubits are in the specified outcome state
         qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubits, qubitStateMask);
 
-        // collect real(amp) or |amp|^2, for density matrices and statevectors respectively
-        if constexpr (RealOnly)
-            prob += real(qureg.cpuAmps[i]);
-        else
-            prob += std::norm(qureg.cpuAmps[i]);
+        prob += std::norm(qureg.cpuAmps[i]);
+    }
+
+    return prob;
+}
+
+
+template <int NumQubits>
+qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+
+    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
+
+    qreal prob = 0;
+
+    // each iteration visits one column (contributing one diagonal amp) per 2^qubits.size() possible
+    qindex numIts = misc_getNumLocalDiagonalsWithBits(qureg, qubits, outcomes);
+    qindex firstDiagInd = misc_getLocalIndexOfFirstDiagonalAmp(qureg);
+    qindex numAmpsPerCol = powerOf2(qureg.numQubits);
+
+    auto sortedQubits = util_getSorted(qubits); // all in suffix
+    auto qubitStateMask = util_getBitMask(qubits, outcomes);
+
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
+
+    #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = local column index of the nth local pure state which contributes to the probability
+        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitStateMask);
+
+        // j = local flat index of the diagonal element corresponding to i
+        qindex j = misc_getLocalIndexOfDiagonalAmp(i, firstDiagInd, numAmpsPerCol);
+
+        prob += std::real(qureg.cpuAmps[j]);
     }
 
     return prob;
@@ -1623,10 +1657,10 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
-    // every and only diagonal elem contributes
-    qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
-    qindex startInd = qureg.rank * numColsPerNode; // = first local diag ind
-    qindex numIts = numColsPerNode;
+    // iterate every column, each contributing one element (the diagonal)
+    qindex numIts = powerOf2(qureg.logNumColsPerNode);
+    qindex numAmpsPerCol = powerOf2(qureg.numQubits);
+    qindex firstDiagInd = misc_getLocalIndexOfFirstDiagonalAmp(qureg);
     
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numQubits, NumQubits, qubits.size());
@@ -1640,8 +1674,8 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-        // i = local index of nth local diagonal element
-        qindex i = startInd + n * (numColsPerNode + 1);
+         // i = local index of nth local diagonal element
+        qindex i = misc_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
         qreal prob = std::real(qureg.cpuAmps[i]);
 
         // j = global index of i
@@ -1656,6 +1690,7 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 }
 
 
-INSTANTIATE_BOOLEAN_FUNC_OPTIMISED_FOR_NUM_TARGS( qreal, cpu_statevec_calcProbOfMultiQubitOutcome_sub, (Qureg, vector<int>, vector<int>) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qreal, cpu_statevec_calcProbOfMultiQubitOutcome_sub, (Qureg, vector<int>, vector<int>) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qreal, cpu_densmatr_calcProbOfMultiQubitOutcome_sub, (Qureg, vector<int>, vector<int>) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub, (qreal* outProbs, Qureg, vector<int>) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub, (qreal* outProbs, Qureg, vector<int>) )

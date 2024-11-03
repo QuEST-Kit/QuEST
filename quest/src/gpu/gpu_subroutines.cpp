@@ -1300,28 +1300,35 @@ qreal gpu_densmatr_calcTotalProb_sub(Qureg qureg) {
 }
 
 
-template <int NumQubits, bool RealOnly> 
+template <int NumQubits> 
 qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
 #if COMPILE_CUQUANTUM
 
-    // cuQuantum discards NumQubits template parameter, and can only handle RealOnly=false
-    if constexpr (!RealOnly)
-        return cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes);
+    // cuQuantum discards NumQubits template parameter
+    return cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes);
 
-    // this is one of few functions which will fail to operate correctly if
-    // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
-    // true but the latter is not), so we explicitly ensure this is the case
-    if (!COMPILE_CUDA)
-        error_cuQuantumCompiledButNotCuda();
+#elif COMPILE_CUDA 
 
+    return thrust_statevec_calcProbOfMultiQubitOutcome_sub<NumQubits>(qureg, qubits, outcomes);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+    return -1;
 #endif
+}
 
-#if COMPILE_CUDA 
 
-    return thrust_statevec_calcProbOfMultiQubitOutcome_sub<NumQubits, RealOnly>(qureg, qubits, outcomes);
+template <int NumQubits> 
+qreal gpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+
+    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
+
+#if COMPILE_CUQUANTUM || COMPILE_CUDA 
+
+    return thrust_densmatr_calcProbOfMultiQubitOutcome_sub<NumQubits>(qureg, qubits, outcomes);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1400,6 +1407,8 @@ void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 }
 
 
-INSTANTIATE_BOOLEAN_FUNC_OPTIMISED_FOR_NUM_TARGS( qreal, gpu_statevec_calcProbOfMultiQubitOutcome_sub, (Qureg, vector<int>, vector<int>) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qreal, gpu_statevec_calcProbOfMultiQubitOutcome_sub, (Qureg, vector<int>, vector<int>) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qreal, gpu_densmatr_calcProbOfMultiQubitOutcome_sub, (Qureg, vector<int>, vector<int>) )
+
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub, (qreal* outProbs, Qureg, vector<int>) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub, (qreal* outProbs, Qureg, vector<int>) )

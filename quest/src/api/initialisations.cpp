@@ -12,6 +12,7 @@
 #include "quest/include/qureg.h"
 
 #include "quest/src/core/validation.hpp"
+#include "quest/src/core/localiser.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
@@ -144,6 +145,12 @@ void setQuregToClone(Qureg targetQureg, Qureg copyQureg) {
 
 
 void setQuregToSuperposition(qcomp facOut, Qureg out, qcomp fac1, Qureg qureg1, qcomp fac2, Qureg qureg2) {
+    validate_quregFields(out, __func__);
+    validate_quregFields(qureg1, __func__);
+    validate_quregFields(qureg2, __func__);
+    validate_quregsCanBeSuperposed(out, qureg1, qureg2, __func__);
+
+    localiser_statevec_setQuregToSuperposition(facOut, out, fac1, qureg1, fac2, qureg2);
 
     // TODO
     error_functionNotImplemented(__func__);

@@ -136,6 +136,11 @@ void autodep_chooseQuregDeployment(int numQubits, int isDensMatr, int &useDistri
     if (!env.isMultithreaded)
         useMultithread = 0;
 
+    // disable distribution if env is distributed over 1 node. this can occur
+    // because env auto-deployer does not know the number of nodes in advance
+    if (env.numNodes == 1)
+        useDistrib = 0;
+
     // overwrite any auto options (== modeflag::USE_AUTO)
     chooseWhetherToDistributeQureg(numQubits, isDensMatr, useDistrib, useGpuAccel, env.numNodes);
     int numQuregNodes = (useDistrib)? env.numNodes : 1;

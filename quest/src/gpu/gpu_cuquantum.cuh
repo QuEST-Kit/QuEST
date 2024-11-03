@@ -294,8 +294,9 @@ void cuquantum_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubi
 
 qreal cuquantum_statevec_calcTotalProb_sub(Qureg qureg) {
 
-    qreal prob0;
-    qreal prob1;
+    // cuQuantum probabilities are always double (not qreal)
+    double prob0;
+    double prob1;
 
     // find probablity of leftmost qubit, so that reduction is 
     // contiguous, which we expect has the optimum performance
@@ -314,15 +315,16 @@ qreal cuquantum_statevec_calcTotalProb_sub(Qureg qureg) {
 
 qreal cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
 
-    qreal prob0;
-    qreal* prob1 = nullptr; // don't compute 1-prob0, because we assume normalisation
+    // cuQuantum probabilities are always double (not qreal)
+    double prob0;
+    double* prob1 = nullptr; // don't compute 1-prob0, because we assume normalisation
 
     CUDA_CHECK( custatevecAbs2SumOnZBasis(
         config.cuQuantumHandle,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         &prob0, prob1, qubits.data(), qubits.size() ) );
 
-    return prob0;
+    return (qreal) prob0;
 }
 
 

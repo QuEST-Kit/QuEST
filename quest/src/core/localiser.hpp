@@ -123,7 +123,8 @@ void localiser_densmatr_partialTrace(Qureg inQureg, Qureg outQureg, vector<int> 
 qreal localiser_statevec_calcTotalProb(Qureg qureg);
 qreal localiser_densmatr_calcTotalProb(Qureg qureg);
 
-qreal localiser_statevec_calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qubits, vector<int> outcomes, bool realOnly);
+qreal localiser_statevec_calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qubits, vector<int> outcomes);
+qreal localiser_densmatr_calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qubits, vector<int> outcomes);
 
 void localiser_statevec_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg qureg, vector<int> qubits);
 void localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg qureg, vector<int> qubits);

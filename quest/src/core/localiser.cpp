@@ -94,7 +94,7 @@ bool doesChannelRequireComm(Qureg qureg, int ketQubit) {
 }
 
 
-bool doAnyLocalStatesHaveQubitValues(Qureg qureg, vector<int> ctrls, vector<int> states) {
+bool doAnyLocalStatesHaveQubitValues(Qureg qureg, vector<int> qubits, vector<int> states) {
 
     // this answers the generic question of "do any of the given qubits lie in the
     // prefix substate with node-fixed values inconsistent with the given states?"
@@ -104,18 +104,18 @@ bool doAnyLocalStatesHaveQubitValues(Qureg qureg, vector<int> ctrls, vector<int>
         return true;
 
     // check each ctrl qubit
-    for (size_t i=0; i<ctrls.size(); i++) {
+    for (size_t i=0; i<qubits.size(); i++) {
 
         // consider only ctrls which operate on the prefix substate
-        if (util_isQubitInSuffix(ctrls[i], qureg))
+        if (util_isQubitInSuffix(qubits[i], qureg))
             continue;
 
         // abort if any prefix ctrl has wrong bit value
-        if (util_getRankBitOfQubit(ctrls[i], qureg) != states[i])
+        if (util_getRankBitOfQubit(qubits[i], qureg) != states[i])
             return false;
     }
 
-    // otherwise all prefix ctrls have the specified values
+    // otherwise all prefix qubits have the specified values
     return true;
 }
 
@@ -1314,7 +1314,7 @@ qreal localiser_densmatr_calcTotalProb(Qureg qureg) {
 }
 
 
-qreal localiser_statevec_calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qubits, vector<int> outcomes, bool realOnly) {
+qreal localiser_statevec_calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
     assert_localiserGivenStateVec(qureg);
 
     qreal prob = 0;
@@ -1324,10 +1324,34 @@ qreal localiser_statevec_calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qu
 
         // and do so using only the suffix qubits/outcomes
         removePrefixQubitsAndStates(qureg, qubits, outcomes);
-        prob += accel_statevec_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes, realOnly);
+        prob += accel_statevec_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes);
     }
 
-    // but all nodes must sum their probabilities (unless qureg was cloned per-node)
+    // but all nodes must sum their probabilities (unless qureg was cloned per-node), for conensus
+    if (qureg.isDistributed)
+        comm_reduceReal(&prob);
+
+    return prob;
+}
+
+
+qreal localiser_densmatr_calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+    assert_localiserGivenDensMatr(qureg);
+
+    qreal prob = 0;
+
+    // only some nodes contain columns wherein the diagonal element corresponds to
+    // the given qubit configuration; this is determined by the bra-qubits (because
+    // the ket-qubits are always in the suffix partition)
+    auto braQubits = util_getBraQubits(qubits, qureg);
+
+    if (doAnyLocalStatesHaveQubitValues(qureg, braQubits, outcomes)) {
+
+        // such nodes need to know all ket qubits (which are all suffix)
+        prob += accel_densmatr_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes);
+    }
+
+    // all nodes must sum their probabilities (unless qureg was cloned per-node), for consensus
     if (qureg.isDistributed)
         comm_reduceReal(&prob);
 

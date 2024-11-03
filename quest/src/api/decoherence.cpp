@@ -22,8 +22,12 @@ void mixDephasing(Qureg qureg, int qubit, qreal prob) {
     validate_quregFields(qureg, __func__);
     validate_target(qureg, qubit, __func__);
     validate_oneQubitDepashingProb(prob, __func__);
-    if (prob != 0) 
-        validate_quregIsDensityMatrix(qureg, __func__); // permit non-decohered statevecs
+
+    // permit but do not change non-decohering statevecs
+    if (prob == 0) 
+        return;
+    
+    validate_quregIsDensityMatrix(qureg, __func__);
 
     localiser_densmatr_oneQubitDephasing(qureg, qubit, prob);
 }
@@ -33,8 +37,12 @@ void mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob) {
     validate_quregFields(qureg, __func__);
     validate_twoTargets(qureg, qubit1, qubit2, __func__);
     validate_twoQubitDepashingProb(prob, __func__);
-    if (prob != 0) 
-        validate_quregIsDensityMatrix(qureg, __func__); // permit non-decohered statevecs
+
+    // permit but do not change non-decohering statevecs
+    if (prob == 0) 
+        return;
+    
+    validate_quregIsDensityMatrix(qureg, __func__);
 
     localiser_densmatr_twoQubitDephasing(qureg, qubit1, qubit2, prob);
 }
@@ -44,8 +52,12 @@ void mixDepolarising(Qureg qureg, int qubit, qreal prob) {
     validate_quregFields(qureg, __func__);
     validate_target(qureg, qubit, __func__);
     validate_oneQubitDepolarisingProb(prob, __func__);
-    if (prob != 0) 
-        validate_quregIsDensityMatrix(qureg, __func__); // permit non-decohered statevecs
+
+    // permit but do not change non-decohering statevecs
+    if (prob == 0) 
+        return;
+    
+    validate_quregIsDensityMatrix(qureg, __func__);
 
     localiser_densmatr_oneQubitDepolarising(qureg, qubit, prob);
 }
@@ -55,8 +67,12 @@ void mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal prob) {
     validate_quregFields(qureg, __func__);
     validate_twoTargets(qureg, qubit1, qubit2, __func__);
     validate_twoQubitDepolarisingProb(prob, __func__);
-    if (prob != 0) 
-        validate_quregIsDensityMatrix(qureg, __func__); // permit non-decohered statevecs
+
+    // permit but do not change non-decohering statevecs
+    if (prob == 0) 
+        return;
+    
+    validate_quregIsDensityMatrix(qureg, __func__);
 
     localiser_densmatr_twoQubitDepolarising(qureg, qubit1, qubit2, prob);
 }
@@ -66,8 +82,12 @@ void mixDamping(Qureg qureg, int qubit, qreal prob) {
     validate_quregFields(qureg, __func__);
     validate_target(qureg, qubit, __func__);
     validate_oneQubitDampingProb(prob, __func__);
-    if (prob != 0) 
-        validate_quregIsDensityMatrix(qureg, __func__); // permit non-decohered statevecs
+
+    // permit but do not change non-decohering statevecs
+    if (prob == 0) 
+        return;
+    
+    validate_quregIsDensityMatrix(qureg, __func__);
 
     localiser_densmatr_oneQubitDamping(qureg, qubit, prob);
 }
@@ -77,8 +97,12 @@ void mixPaulis(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {
     validate_quregFields(qureg, __func__);
     validate_target(qureg, qubit, __func__);
     validate_oneQubitPauliChannelProbs(probX, probY, probZ, __func__);
-    if (probX >= 0 || probY >= 0 || probZ >= 0)
-        validate_quregIsDensityMatrix(qureg, __func__); // permit non-decohered statevecs
+
+    // permit but do not change non-decohering statevecs
+    if (probX == 0 && probY == 0 && probZ == 0)
+        return;
+
+    validate_quregIsDensityMatrix(qureg, __func__);
 
     localiser_densmatr_oneQubitPauliChannel(qureg, qubit, probX, probY, probZ);
 }
@@ -86,6 +110,7 @@ void mixPaulis(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ) {
 
 void mixKrausMap(Qureg qureg, int* qubits, int numQubits, KrausMap map) {
     validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
     validate_targets(qureg, qubits, numQubits, __func__);
     validate_krausMapIsCPTP(map, __func__); // also checks fields and is-sync
     validate_krausMapMatchesTargets(map, numQubits, __func__);
@@ -98,6 +123,7 @@ void mixQureg(Qureg outQureg, Qureg inQureg, qreal inProb) {
     validate_quregFields(outQureg, __func__);
     validate_quregFields(inQureg, __func__);
     validate_probability(inProb, __func__);
+    validate_quregIsDensityMatrix(outQureg, __func__);
     validate_quregsCanBeMixed(outQureg, inQureg, __func__);
 
     qreal outProb = 1 - inProb;
