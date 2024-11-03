@@ -336,6 +336,15 @@ void validate_controlAndTwoTargets(Qureg qureg, int ctrl, int targ1, int targ2, 
 void validate_controlsAndTwoTargets(Qureg qureg, int* ctrls, int numCtrls, int targ1, int targ2, const char* caller);
 
 
+
+/*
+ * ROTATION PARAMETERS
+ */
+
+void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller);
+
+
+
 /*
  * MEASUREMENT PARAMETERS
  */

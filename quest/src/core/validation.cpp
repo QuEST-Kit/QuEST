@@ -718,6 +718,14 @@ namespace report {
 
 
     /*
+    * ROTATION PARAMETERS
+    */
+
+    string ROTATION_AXIS_VECTOR_IS_ZERO =
+        "The rotation axis vector was all zero, or within epsilion magnitude to the zero vector.";
+
+
+    /*
     * MEASUREMENT PARAMETERS
     */
 
@@ -2957,6 +2965,19 @@ void validate_controlStates(int* states, int numCtrls, const char* caller) {
 
     for (int n=0; n<numCtrls; n++)
         assertThat(states[n] == 0 || states[n] == 1, report::INVALID_CONTROL_STATE, {{"${INDEX}", n}, {"${STATE}", states[n]}}, caller);
+}
+
+
+
+/*
+ * ROTATION PARAMETERS
+ */
+
+void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller) {
+
+    qreal norm = pow(x,2) + pow(y,2) + pow(z,2);
+
+    assertThat(norm > validationEpsilon, report::ROTATION_AXIS_VECTOR_IS_ZERO, caller);
 }
 
 
