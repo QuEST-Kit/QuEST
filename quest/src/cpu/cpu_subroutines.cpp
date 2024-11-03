@@ -783,6 +783,21 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlAnyTargZO
  */
 
 
+void cpu_statevec_setQuregToSuperposition_sub(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2) {
+
+    assert_superposedQuregDimsAndDeploysMatch(outQureg, inQureg1, inQureg2);
+
+    qindex numIts = outQureg.numAmpsPerNode;
+    qcomp* out = outQureg.cpuAmps;
+    qcomp* in1 = inQureg1.cpuAmps;
+    qcomp* in2 = inQureg2.cpuAmps;
+
+    #pragma omp parallel for if(outQureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++)
+        out[n] = (facOut * out[n]) + (fac1 * in1[n]) + (fac2 * in2[n]);
+}
+
+
 void cpu_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, Qureg inDensMatr) {
 
     qindex numIts = outQureg.numAmpsPerNode;

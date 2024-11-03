@@ -375,7 +375,15 @@ void validate_oneQubitDampingProb(qreal prob, const char* caller);
 
 void validate_oneQubitPauliChannelProbs(qreal pX, qreal pY, qreal pZ, const char* caller);
 
+
+
+/*
+ * QUREG COMBINATION
+ */
+
 void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller);
+
+void validate_quregsCanBeSuperposed(Qureg qureg1, Qureg qureg2, Qureg qureg3, const char* caller);
 
 
 

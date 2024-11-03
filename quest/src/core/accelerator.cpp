@@ -490,6 +490,15 @@ void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
  */
 
 
+void accel_statevec_setQuregToSuperposition_sub(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2) {
+
+    // consult outQureg's deployment (other quregs are gauranteed to match, which below calls will assert)
+    (outQureg.isGpuAccelerated)?
+        gpu_statevec_setQuregToSuperposition_sub(facOut, outQureg, fac1, inQureg1, fac2, inQureg2):
+        cpu_statevec_setQuregToSuperposition_sub(facOut, outQureg, fac1, inQureg1, fac2, inQureg2); 
+}
+
+
 void accel_densmatr_mixQureg_subA(qreal outProb, Qureg out, qreal inProb, Qureg in) {
 
     // quregs are equally-sized density matrices and are equally-distributed... 
