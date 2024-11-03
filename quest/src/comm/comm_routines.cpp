@@ -589,7 +589,7 @@ void comm_reduceAmp(qcomp* localAmp) {
 void comm_reduceReal(qreal* localReal) {
 #if COMPILE_MPI
 
-    MPI_Allreduce(MPI_IN_PLACE, localAmp, 1, MPI_QREAL, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, localReal, 1, MPI_QREAL, MPI_SUM, MPI_COMM_WORLD);
 
 #else
     error_commButEnvNotDistributed();
