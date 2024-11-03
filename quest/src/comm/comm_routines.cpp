@@ -578,9 +578,7 @@ void comm_broadcastUnsignedsFromRoot(unsigned* arr, qindex length) {
 void comm_reduceAmp(qcomp* localAmp) {
 #if COMPILE_MPI
 
-    qcomp* globalAmp = nullptr;
-    MPI_Allreduce(localAmp, globalAmp, 1, MPI_QCOMP, MPI_SUM, MPI_COMM_WORLD);
-    *localAmp = *globalAmp;
+    MPI_Allreduce(MPI_IN_PLACE, localAmp, 1, MPI_QCOMP, MPI_SUM, MPI_COMM_WORLD);
 
 #else
     error_commButEnvNotDistributed();
@@ -591,9 +589,7 @@ void comm_reduceAmp(qcomp* localAmp) {
 void comm_reduceReal(qreal* localReal) {
 #if COMPILE_MPI
 
-    qreal* globalReal = nullptr;
-    MPI_Allreduce(localReal, globalReal, 1, MPI_QREAL, MPI_SUM, MPI_COMM_WORLD);
-    *localReal = *globalReal;
+    MPI_Allreduce(MPI_IN_PLACE, localAmp, 1, MPI_QREAL, MPI_SUM, MPI_COMM_WORLD);
 
 #else
     error_commButEnvNotDistributed();
