@@ -114,9 +114,12 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
         .isGpuAccelerated = useGpuAccel,
         .isDistributed    = useDistrib,
 
-        // optionally bind distributed info, but always etain the env's rank because non-distributed
-        // quregs are still duplicated between every node, and have duplicate processes
-        .rank        = env.rank,
+        // optionally bind distributed info, noting that in distributed environments,
+        // the non-distributed quregs are duplicated on each node and each believe
+        // they are the root node, with no other nodes existing; this is essential so
+        // that these quregs can agnostically use distributed routines which consult
+        // the rank, but it will interfere with naive root-only printing logic
+        .rank        = (useDistrib)? env.rank : 0,
         .numNodes    = (useDistrib)? env.numNodes : 1,
         .logNumNodes = (useDistrib)? logBase2(env.numNodes) : 0, // duplicated for clarity
 
@@ -305,6 +308,7 @@ void reportQuregParams(Qureg qureg) {
 
     // TODO: add function to write this output to file (useful for HPC debugging)
 
+    // printer routines will consult env rank to avoid duplicate printing
     print("Qureg:");
     printDeploymentInfo(qureg);
     printDimensionInfo(qureg);
