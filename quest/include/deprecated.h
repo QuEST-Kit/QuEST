@@ -806,7 +806,7 @@ static inline void _applyGateSubDiagonalOp(Qureg qureg, int* targets, int numTar
         "numerical validation via 'setValidationEpsilon(0)' before calling 'applyDiagMatr()'. You can " \
         "save the existing epsilon via 'getValidationEpsilon()' to thereafter restore. This procedure " \
         "has been performed here automatically.") \
-    applyDiagMatr(__VA_ARGS__)
+    _applyGateSubDiagonalOp(__VA_ARGS__)
 
 
 

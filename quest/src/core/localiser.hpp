@@ -61,6 +61,14 @@ void localiser_densmatr_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qco
 
 
 /*
+ * CONVENIENCE GATEWAY TO MATRICES
+ */
+
+template <class T>
+void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, T matr, bool conj);
+
+
+/*
  * PAULI TENSORS AND GADGETS
  */
 

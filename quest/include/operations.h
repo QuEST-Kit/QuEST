@@ -8,7 +8,9 @@
 #define OPERATIONS_H
 
 #include "quest/include/qureg.h"
+#include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
+#include "quest/include/channels.h"
 
 // enable invocation by both C and C++ binaries
 #ifdef __cplusplus
@@ -126,12 +128,32 @@ void applyMultiStateControlledDiagMatr(Qureg, int* controls, int* states, int nu
 
 
 /*
+ * DiagMatrPower
+ */
+
+void multiplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
+
+void applyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
+
+void applyControlledDiagMatrPower(Qureg qureg, int control, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
+
+void applyMultiControlledDiagMatrPower(Qureg qureg, int* controls, int numControls, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
+
+void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
+
+
+
+/*
  * FullStateDiagMatr
  */
 
 void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
 
 void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
+
+void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
+
+
 
 
 
@@ -324,7 +346,7 @@ void applyMultiStateControlledMultiQubitNot(Qureg, int* controls, int* states, i
  * superoperator
  */
 
-void applySuperOp(Qureg qureg, SuperOp superop);
+void applySuperOp(Qureg qureg, SuperOp superop, int* targets, int numTargets);
 
 
 

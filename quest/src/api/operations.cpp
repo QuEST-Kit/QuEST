@@ -7,6 +7,7 @@
 
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
+#include "quest/include/operations.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/utilities.hpp"
@@ -15,23 +16,50 @@
 #include "quest/src/core/errors.hpp" // only needed for not-implemented functions
 
 
+
+/*
+ * PRVIATE UTILITIES
+ */
+
+// T can be CompMatr, CompMatr1, CompMatr2, DiagMatr, DiagMatr1, DiagMatr2
+template <class T>
+void validateAndApplyAnyCtrlAnyTargUnitaryMatrix(Qureg qureg, int* ctrls, int* states, int numCtrls, int* targs, int numTargs, T matr, const char* caller) {
+    validate_quregFields(qureg, caller);
+    validate_controlsAndTargets(qureg, ctrls, numCtrls, targs, numTargs, caller);
+    validate_controlStates(states, numCtrls, caller);
+    validate_matrixDimMatchesTargets(matr, numTargs, caller); // also checks fields and is-synced
+    validate_matrixIsUnitary(matr, caller); // harmlessly rechecks fields and is-synced
+
+    auto ctrlVec  = util_getVector(ctrls,  numCtrls);
+    auto stateVec = util_getVector(states, numCtrls);
+    auto targVec  = util_getVector(targs,  numTargs);
+
+    bool conj = false;
+    localiser_statevec_anyCtrlAnyTargAnyMatr(qureg, ctrlVec, stateVec, targVec, matr, conj);
+
+    if (!qureg.isDensityMatrix)
+        return;
+
+    conj = true;
+    ctrlVec = util_getBraQubits(ctrlVec, qureg);
+    targVec = util_getBraQubits(targVec, qureg);
+    localiser_statevec_anyCtrlAnyTargAnyMatr(qureg, ctrlVec, stateVec, targVec, matr, conj);
+}
+
+
+
+/*
+ * API
+ */
+
 // enable invocation by both C and C++ binaries
 extern "C" {
 
 
+
+// DEBUG
 #define _NOT_IMPLEMENTED_ERROR_DEF { error_functionNotImplemented(__func__); }
-/*
- * Named gates
- */
 
-void applyS(Qureg qureg, int target)
-    _NOT_IMPLEMENTED_ERROR_DEF
-
-void applyT(Qureg qureg, int target)
-    _NOT_IMPLEMENTED_ERROR_DEF
-
-void applyHadamard(Qureg qureg, int target)
-    _NOT_IMPLEMENTED_ERROR_DEF
 
 
 
@@ -39,20 +67,34 @@ void applyHadamard(Qureg qureg, int target)
  * CompMatr1
  */
 
-void multiplyCompMatr1(Qureg qureg, int target, CompMatr1 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void multiplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
+    validate_matrixFields(matrix, __func__); // matrix can be non-unitary
 
-void applyCompMatr1(Qureg qureg, int target, CompMatr1 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    bool conj = false;
+    localiser_statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, target, matrix, conj);
+}
 
-void applyControlledCompMatr1(Qureg qureg, int control, int target, CompMatr1 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyCompMatr1(Qureg qureg, int target, CompMatr1 matrix) {
 
-void applyMultiControlledCompMatr1(Qureg qureg, int* controls, int numControls, int target, CompMatr1 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, nullptr, nullptr, 0, &target, 1, matrix, __func__);
+}
 
-void applyMultiStateControlledCompMatr1(Qureg qureg, int* controls, int* states, int numControls, int target, CompMatr1 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyControlledCompMatr1(Qureg qureg, int control, int target, CompMatr1 matrix) {
+
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, &control, nullptr, 1, &target, 1, matrix, __func__);
+}
+
+void applyMultiControlledCompMatr1(Qureg qureg, int* controls, int numControls, int target, CompMatr1 matrix) {
+
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, nullptr, numControls, &target, 1, matrix, __func__);
+}
+
+void applyMultiStateControlledCompMatr1(Qureg qureg, int* controls, int* states, int numControls, int target, CompMatr1 matrix) {
+
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matrix, __func__);
+}
 
 
 
@@ -60,20 +102,38 @@ void applyMultiStateControlledCompMatr1(Qureg qureg, int* controls, int* states,
  * CompMatr2
  */
 
-void multiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void multiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix) {
+    validate_quregFields(qureg, __func__);
+    validate_twoTargets(qureg, target1, target2, __func__);
+    validate_matrixFields(matrix, __func__); // matrix can be non-unitary
 
-void applyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    bool conj = false;
+    localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, {}, {}, target1, target2, matrix, conj);
+}
 
-void applyControlledCompMatr2(Qureg qureg, int control, int target1, int target2, CompMatr2 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix) {
 
-void applyMultiControlledCompMatr2(Qureg qureg, int* controls, int numControls, int target1, int target2, CompMatr2 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    int targs[] = {target1, target2};
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, nullptr, nullptr, 0, targs, 2, matrix, __func__);
+}
 
-void applyMultiStateControlledCompMatr2(Qureg qureg, int* controls, int* states, int numControls, int target1, int target2, CompMatr2 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyControlledCompMatr2(Qureg qureg, int control, int target1, int target2, CompMatr2 matrix) {
+
+    int targs[] = {target1, target2};
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, &control, nullptr, 1, targs, 2, matrix, __func__);
+}
+
+void applyMultiControlledCompMatr2(Qureg qureg, int* controls, int numControls, int target1, int target2, CompMatr2 matrix) {
+
+    int targs[] = {target1, target2};
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, nullptr, numControls, targs, 2, matrix, __func__);
+}
+
+void applyMultiStateControlledCompMatr2(Qureg qureg, int* controls, int* states, int numControls, int target1, int target2, CompMatr2 matrix) {
+
+    int targs[] = {target1, target2};
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, targs, 2, matrix, __func__);
+}
 
 
 
@@ -81,20 +141,34 @@ void applyMultiStateControlledCompMatr2(Qureg qureg, int* controls, int* states,
  * CompMatr
  */
 
-void multiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void multiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, targets, numTargets, __func__);
+    validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also validates fields and is-sync, but not unitarity
 
-void applyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    bool conj = false;
+    localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, {}, {}, util_getVector(targets, numTargets), matrix, conj);
+}
 
-void applyControlledCompMatr(Qureg qureg, int control, int* targets, int numTargets, CompMatr matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix) {
 
-void applyMultiControlledCompMatr(Qureg qureg, int* controls, int numControls, int* targets, int numTargets, CompMatr matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, nullptr, nullptr, 0, targets, numTargets, matrix, __func__);
+}
 
-void applyMultiStateControlledCompMatr(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets, CompMatr matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyControlledCompMatr(Qureg qureg, int control, int* targets, int numTargets, CompMatr matrix) {
+
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, &control, nullptr, 1, targets, numTargets, matrix, __func__);
+}
+
+void applyMultiControlledCompMatr(Qureg qureg, int* controls, int numControls, int* targets, int numTargets, CompMatr matrix) {
+
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, nullptr, numControls, targets, numTargets, matrix, __func__);
+}
+
+void applyMultiStateControlledCompMatr(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets, CompMatr matrix) {
+
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, targets, numTargets, matrix, __func__);
+}
 
 
 
@@ -102,20 +176,34 @@ void applyMultiStateControlledCompMatr(Qureg qureg, int* controls, int* states, 
  * DiagMatr1
  */
 
-void multiplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void multiplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matrix) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
+    validate_matrixFields(matrix, __func__); // matrix can be non-unitary
 
-void applyDiagMatr1(Qureg qureg, int target, DiagMatr1 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    bool conj = false;
+    localiser_statevec_anyCtrlOneTargDiagMatr(qureg, {}, {}, target, matrix, conj);
+}
 
-void applyControlledDiagMatr1(Qureg qureg, int control, int target, DiagMatr1 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyDiagMatr1(Qureg qureg, int target, DiagMatr1 matrix) {
 
-void applyMultiControlledDiagMatr1(Qureg qureg, int* controls, int numControls, int target, DiagMatr1 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, nullptr, nullptr, 0, &target, 1, matrix, __func__);
+}
 
-void applyMultiStateControlledDiagMatr1(Qureg qureg, int* controls, int* states, int numControls, int target, DiagMatr1 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyControlledDiagMatr1(Qureg qureg, int control, int target, DiagMatr1 matrix) {
+
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, &control, nullptr, 1, &target, 1, matrix, __func__);
+}
+
+void applyMultiControlledDiagMatr1(Qureg qureg, int* controls, int numControls, int target, DiagMatr1 matrix) {
+
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, nullptr, numControls, &target, 1, matrix, __func__);
+}
+
+void applyMultiStateControlledDiagMatr1(Qureg qureg, int* controls, int* states, int numControls, int target, DiagMatr1 matrix) {
+
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matrix, __func__);
+}
 
 
 
@@ -123,20 +211,38 @@ void applyMultiStateControlledDiagMatr1(Qureg qureg, int* controls, int* states,
  * DiagMatr2
  */
 
-void multiplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void multiplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matrix) {
+    validate_quregFields(qureg, __func__);
+    validate_twoTargets(qureg, target1, target2, __func__);
+    validate_matrixFields(matrix, __func__); // matrix can be non-unitary
 
-void applyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    bool conj = false;
+    localiser_statevec_anyCtrlTwoTargDiagMatr(qureg, {}, {}, target1, target2, matrix, conj);
+}
 
-void applyControlledDiagMatr2(Qureg qureg, int control, int target1, int target2, DiagMatr2 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matrix) {
 
-void applyMultiControlledDiagMatr2(Qureg qureg, int* controls, int numControls, int target1, int target2, DiagMatr2 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    int targs[] = {target1, target2};
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, nullptr, nullptr, 0, targs, 2, matrix, __func__);
+}
 
-void applyMultiStateControlledDiagMatr2(Qureg qureg, int* controls, int* states, int numControls, int target1, int target2, DiagMatr2 matr)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyControlledDiagMatr2(Qureg qureg, int control, int target1, int target2, DiagMatr2 matrix) {
+
+    int targs[] = {target1, target2};
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, &control, nullptr, 1, targs, 2, matrix, __func__);
+}
+
+void applyMultiControlledDiagMatr2(Qureg qureg, int* controls, int numControls, int target1, int target2, DiagMatr2 matrix) {
+
+    int targs[] = {target1, target2};
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, nullptr, numControls, targs, 2, matrix, __func__);
+}
+
+void applyMultiStateControlledDiagMatr2(Qureg qureg, int* controls, int* states, int numControls, int target1, int target2, DiagMatr2 matrix) {
+
+    int targs[] = {target1, target2};
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, targs, 2, matrix, __func__);
+}
 
 
 
@@ -144,20 +250,106 @@ void applyMultiStateControlledDiagMatr2(Qureg qureg, int* controls, int* states,
  * DiagMatr
  */
 
-void multiplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void multiplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, targets, numTargets, __func__);
+    validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also validates fields and is-sync, but not unitarity
 
-void applyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    bool conj = false;
+    qcomp exponent = 1;
+    localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, {}, {}, util_getVector(targets, numTargets), matrix, exponent, conj);
+}
 
-void applyControlledDiagMatr(Qureg, int control, int* targets, int numTargets, DiagMatr matrix)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix) {
 
-void applyMultiControlledDiagMatr(Qureg, int* controls, int numControls, int* targets, int numTargets, DiagMatr matrix)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, nullptr, nullptr, 0, targets, numTargets, matrix, __func__);
+}
 
-void applyMultiStateControlledDiagMatr(Qureg, int* controls, int* states, int numControls, int* targets, int numTargets, DiagMatr matrix)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyControlledDiagMatr(Qureg qureg, int control, int* targets, int numTargets, DiagMatr matrix) {
+
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, &control, nullptr, 1, targets, numTargets, matrix, __func__);
+}
+
+void applyMultiControlledDiagMatr(Qureg qureg, int* controls, int numControls, int* targets, int numTargets, DiagMatr matrix) {
+
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, nullptr, numControls, targets, numTargets, matrix, __func__);
+}
+
+void applyMultiStateControlledDiagMatr(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets, DiagMatr matrix) {
+
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, targets, numTargets, matrix, __func__);
+}
+
+
+
+/*
+ * DiagMatrPower
+ *
+ * which still (except for multiply) assert unitarity,
+ * even though a non-real exponent is possible
+ */
+
+void multiplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, targets, numTargets, __func__);
+    validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also validates fields and is-sync, but not unitarity
+
+    bool conj = false;
+    localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, {}, {}, util_getVector(targets, numTargets), matrix, exponent, conj);
+}
+
+void applyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent)  {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, targets, numTargets, __func__);
+    validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also checks fields and is-synced
+    validate_matrixIsUnitary(matrix, __func__); // harmlessly rechecks fields and is-synced
+
+    // harmlessly re-validates
+    applyMultiStateControlledDiagMatrPower(qureg, nullptr, nullptr, 0, targets, numTargets, matrix, exponent);
+}
+
+void applyControlledDiagMatrPower(Qureg qureg, int control, int* targets, int numTargets, DiagMatr matrix, qcomp exponent) {
+    validate_quregFields(qureg, __func__);
+    validate_controlAndTargets(qureg, control, targets, numTargets, __func__);
+    validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also checks fields and is-synced
+    validate_matrixIsUnitary(matrix, __func__); // harmlessly rechecks fields and is-synced
+
+    // harmlessly re-validates
+    applyMultiStateControlledDiagMatrPower(qureg, &control, nullptr, 1, targets, numTargets, matrix, exponent);
+}
+
+void applyMultiControlledDiagMatrPower(Qureg qureg, int* controls, int numControls, int* targets, int numTargets, DiagMatr matrix, qcomp exponent) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTargets(qureg, controls, numControls, targets, numTargets, __func__);
+    validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also checks fields and is-synced
+    validate_matrixIsUnitary(matrix, __func__); // harmlessly rechecks fields and is-synced
+
+    // harmlessly re-validates
+    applyMultiStateControlledDiagMatrPower(qureg, controls, nullptr, numControls, targets, numTargets, matrix, exponent);
+}
+
+void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets, DiagMatr matrix, qcomp exponent) {
+    validate_quregFields(qureg, __func__);
+    validate_controlsAndTargets(qureg, controls, numControls, targets, numTargets, __func__);
+    validate_controlStates(states, numControls, __func__); // can be nullptr, ignoring numControls
+    validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also checks fields and is-synced
+    validate_matrixIsUnitary(matrix, __func__); // harmlessly rechecks fields and is-synced
+
+    bool conj = false;
+    auto ctrlVec = util_getVector(controls, numControls);
+    auto stateVec = util_getVector(states,  numControls); // empty if states==nullptr
+    auto targVec = util_getVector(targets,  numTargets);
+    localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, ctrlVec, stateVec, targVec, matrix, exponent, conj);
+
+    if (!qureg.isDensityMatrix)
+        return;
+
+    conj = true;
+    ctrlVec = util_getBraQubits(ctrlVec, qureg);
+    targVec = util_getBraQubits(targVec, qureg);
+    localiser_statevec_anyCtrlAnyTargAnyMatr(qureg, {}, {}, targVec, matrix, conj);
+    localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, ctrlVec, stateVec, targVec, matrix, exponent, conj);
+}
 
 
 
@@ -165,11 +357,53 @@ void applyMultiStateControlledDiagMatr(Qureg, int* controls, int* states, int nu
  * FullStateDiagMatr
  */
 
-void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
+    validate_quregFields(qureg, __func__);
+    validate_matrixFields(matrix, __func__);
+    validate_matrixAndQuregAreCompatible(matrix, qureg, __func__); // matrix can be non-unitary
 
-void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    bool onlyMultiply = true;
+    qcomp exponent = qcomp(1, 0);
+    (qureg.isDensityMatrix)?
+        localiser_statevec_allTargDiagMatr(qureg, matrix, exponent) :
+        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply);
+}
+
+void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent) {
+    validate_quregFields(qureg, __func__);
+    validate_matrixFields(matrix, __func__);
+    validate_matrixAndQuregAreCompatible(matrix, qureg, __func__); // matrix can be non-unitary
+
+    bool onlyMultiply = true;
+    (qureg.isDensityMatrix)?
+        localiser_statevec_allTargDiagMatr(qureg, matrix, exponent) :
+        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply);
+}
+
+void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
+    validate_quregFields(qureg, __func__);
+    validate_matrixFields(matrix, __func__);
+    validate_matrixAndQuregAreCompatible(matrix, qureg, __func__);
+    validate_matrixIsUnitary(matrix, __func__);
+
+    bool onlyMultiply = false;
+    qcomp exponent = qcomp(1, 0);
+    (qureg.isDensityMatrix)?
+        localiser_statevec_allTargDiagMatr(qureg, matrix, exponent) :
+        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply);
+}
+
+void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent) {
+    validate_quregFields(qureg, __func__);
+    validate_matrixFields(matrix, __func__);
+    validate_matrixAndQuregAreCompatible(matrix, qureg, __func__);
+    validate_matrixIsUnitary(matrix, __func__);
+
+    bool onlyMultiply = false;
+    (qureg.isDensityMatrix)?
+        localiser_statevec_allTargDiagMatr(qureg, matrix, exponent) :
+        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply);
+}
 
 
 
@@ -396,13 +630,14 @@ void applyMultiStateControlledMultiQubitNot(Qureg, int* controls, int* states, i
  * superoperator
  */
 
-void applySuperOp(Qureg qureg, SuperOp superop) { 
+void applySuperOp(Qureg qureg, SuperOp superop, int* targets, int numTargets) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, targets, numTargets, __func__);
+    validate_superOpFields(superop, __func__);
+    validate_superOpIsSynced(superop, __func__);
+    validate_superOpDimMatchesTargs(superop, numTargets, __func__);
 
-    // we only ever left-apply it (of course), so it
-    // has no equivalent multiplySuperOp
-    
-    // TODO
-    error_functionNotImplemented(__func__);
+    localiser_densmatr_superoperator(qureg, superop, util_getVector(targets, numTargets));
 }
 
 

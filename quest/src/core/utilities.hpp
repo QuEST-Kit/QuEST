@@ -60,6 +60,12 @@ qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> ta
  * defined here in the header since templated, and which use compile-time inspection.
  */
 
+template <class T> constexpr bool util_isCompMatr1() { return is_same_v<T, CompMatr1>; }
+template <class T> constexpr bool util_isCompMatr2() { return is_same_v<T, CompMatr2>; }
+template <class T> constexpr bool util_isCompMatr () { return is_same_v<T, CompMatr >; }
+template <class T> constexpr bool util_isDiagMatr1() { return is_same_v<T, DiagMatr1>; }
+template <class T> constexpr bool util_isDiagMatr2() { return is_same_v<T, DiagMatr2>; }
+template <class T> constexpr bool util_isDiagMatr () { return is_same_v<T, DiagMatr >; }
 template <class T> constexpr bool util_isFullStateDiagMatr () { return is_same_v<T, FullStateDiagMatr >; }
 
 template<class T>
