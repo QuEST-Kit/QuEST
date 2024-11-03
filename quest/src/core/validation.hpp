@@ -172,6 +172,13 @@ void validate_matrixIsHermitian(DiagMatr2 matr, const char* caller);
 void validate_matrixIsHermitian(DiagMatr  matr, const char* caller);
 void validate_matrixIsHermitian(FullStateDiagMatr matr, const char* caller);
 
+void validate_matrixDimMatchesTargets(CompMatr1 matr, int numTargs, const char* caller);
+void validate_matrixDimMatchesTargets(CompMatr2 matr, int numTargs, const char* caller);
+void validate_matrixDimMatchesTargets(CompMatr  matr, int numTargs, const char* caller);
+void validate_matrixDimMatchesTargets(DiagMatr1 matr, int numTargs, const char* caller);
+void validate_matrixDimMatchesTargets(DiagMatr2 matr, int numTargs, const char* caller);
+void validate_matrixDimMatchesTargets(DiagMatr  matr, int numTargs, const char* caller);
+
 void validate_matrixAndQuregAreCompatible(FullStateDiagMatr matr, Qureg qureg, const char* caller);
 
 
@@ -205,6 +212,8 @@ void validate_superOpFieldsMatchPassedParams(SuperOp op, int numQb, const char* 
 void validate_superOpFields(SuperOp op, const char* caller);
 
 void validate_superOpIsSynced(SuperOp op, const char* caller);
+
+void validate_superOpDimMatchesTargs(SuperOp op, int numTargets, const char* caller);
 
 
 
@@ -302,7 +311,17 @@ void validate_basisStateRowCol(Qureg qureg, qindex row, qindex col, const char* 
 void validate_target(Qureg qureg, int target, const char* caller);
 void validate_targets(Qureg qureg, int* targets, int numTargets, const char* caller);
 
+void validate_controls(Qureg qureg, int* ctrls, int numCtrls, const char* caller);
+void validate_controlStates(int* states, int numCtrls, const char* caller);
+
+void validate_controlAndTarget(Qureg qureg, int ctrl, int targ, const char* caller);
+void validate_controlsAndTarget(Qureg qureg, int* ctrls, int numCtrls, int targ, const char* caller);
+void validate_controlAndTargets(Qureg qureg, int ctrl, int* targs, int numTargs, const char* caller);
+void validate_controlsAndTargets(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs, const char* caller);
+
 void validate_twoTargets(Qureg qureg, int target1, int target2, const char* caller);
+void validate_controlAndTwoTargets(Qureg qureg, int ctrl, int targ1, int targ2, const char* caller);
+void validate_controlsAndTwoTargets(Qureg qureg, int* ctrls, int numCtrls, int targ1, int targ2, const char* caller);
 
 
 /*

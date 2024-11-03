@@ -24,6 +24,7 @@
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <cstdlib>
 #include <string>
@@ -364,6 +365,9 @@ namespace report {
         "The FullStateDiagMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncFullStateDiagMatr() after manually modifying elements, or overwrite elements in batch with setFullStateDiagMatr() which automatically synchronises.";
 
 
+    string MATRIX_SIZE_MISMATCHES_NUM_TARGETS =
+        "The given matrix has an inconsistent size (${MATRIX_NUM_QUBITS}) with the specified number of target qubits (${NUM_TARGS}).";
+
     string MATRIX_NOT_UNITARY = 
         "The given matrix was not (approximately) unitary.";
 
@@ -453,6 +457,10 @@ namespace report {
 
     string SUPER_OP_NOT_SYNCED_TO_GPU =
         "The SuperOp has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncSuperOp() after manually modifying the superoperator elements, or overwrite all elements with setSuperOp() which will automatically syncrhonise.";
+
+
+    string SUPER_OP_SIZE_MISMATCHES_NUM_TARGETS =
+        "The SuperOp dimension (${OP_QUBITS} qubits) is inconsistent with the specified number of target qubits (${NUM_TARGS}).";
 
 
     /*
@@ -673,6 +681,29 @@ namespace report {
 
     string DUPLICATE_TARGET_QUBITS =
         "The list of target qubits contained duplicates. All qubits must be unique.";
+
+
+    string NEGATIVE_NUM_CONTROLS =
+        "The specified number of control qubits (${NUM_QUBITS}) is invalid. Must specify zero or more controls.";
+
+    string NUM_CONTROLS_EXCEEDS_QUREG_SIZE =
+        "The specified number of control qubits (${NUM_QUBITS}) exceeds the number of qubits in the Qureg (${QUREG_QUBITS}).";
+
+    string NON_EMPTY_CONTROL_LIST_WAS_NULL_PTR =
+        "Received a NULL pointer for a list of control qubits which was declared to have a non-zero length.";
+
+    string INVALID_CONTROL_QUBIT = 
+        "Invalid control qubit (${QUBIT_IND}). Must be greater than or equal to zero, and less than the number of qubits in the Qureg (${NUM_QUBITS}).";
+
+    string DUPLICATE_CONTROL_QUBITS =
+        "The list of control qubits contained duplicates. All qubits must be unique.";
+
+    
+    string CONTROLS_OVERLAP_TARGETS =
+        "A qubit appeared in both the control and target qubit lists.";
+
+    string INVALID_CONTROL_STATE =
+        "The control qubit at index ${INDEX} has an invalidly specified control-state of ${STATE}. Valid states are 0 and 1.";
 
 
     /*
@@ -1976,6 +2007,32 @@ void validate_matrixIsHermitian(FullStateDiagMatr matr, const char* caller) {
     assertMatrixIsHermitian(matr, caller);
 }
 
+template <class T>
+void assertMatrixDimMatchesTargs(T matr, int numTargs, const char* caller) {
+
+    validate_matrixFields(matr, caller);
+
+    if constexpr (util_isHeapMatrixType<T>())
+        validate_matrixIsSynced(matr, caller);
+
+    int numMatrQubits = 1; // CompMatr1 or DiagMatr1
+    if constexpr (util_isCompMatr2<T>() || util_isDiagMatr2<T>())
+        numMatrQubits = 2;
+    if constexpr (util_isHeapMatrixType<T>())
+        numMatrQubits = matr.numQubits;
+
+    // note (numMatrQubits <= qureg.numQubits) was prior validated by numTargs <= qureg.numQubits
+    tokenSubs vars = {{"${MATRIX_NUM_QUBITS}", numMatrQubits}, {"${NUM_TARGS}", numTargs}};
+    assertThat(numMatrQubits == numTargs, report::MATRIX_SIZE_MISMATCHES_NUM_TARGETS, vars, caller);
+}
+
+void validate_matrixDimMatchesTargets(CompMatr1 matr, int numTargs, const char* caller) { assertMatrixDimMatchesTargs(matr, numTargs, caller); }
+void validate_matrixDimMatchesTargets(CompMatr2 matr, int numTargs, const char* caller) { assertMatrixDimMatchesTargs(matr, numTargs, caller); }
+void validate_matrixDimMatchesTargets(CompMatr  matr, int numTargs, const char* caller) { assertMatrixDimMatchesTargs(matr, numTargs, caller); }
+void validate_matrixDimMatchesTargets(DiagMatr1 matr, int numTargs, const char* caller) { assertMatrixDimMatchesTargs(matr, numTargs, caller); }
+void validate_matrixDimMatchesTargets(DiagMatr2 matr, int numTargs, const char* caller) { assertMatrixDimMatchesTargs(matr, numTargs, caller); }
+void validate_matrixDimMatchesTargets(DiagMatr  matr, int numTargs, const char* caller) { assertMatrixDimMatchesTargs(matr, numTargs, caller); }
+
 void validate_matrixAndQuregAreCompatible(FullStateDiagMatr matr, Qureg qureg, const char* caller) {
 
     // we do not need to define this function for the other matrix types,
@@ -2260,6 +2317,12 @@ void validate_superOpIsSynced(SuperOp op, const char* caller) {
 
     // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though
     assertThat(*(op.wasGpuSynced), report::SUPER_OP_NOT_SYNCED_TO_GPU, caller);
+}
+
+void validate_superOpDimMatchesTargs(SuperOp op, int numTargets, const char* caller) {
+
+    tokenSubs vars = {{"${OP_QUBITS}", op.numQubits}, {"{NUM_TARGS}", numTargets}};
+    assertThat(op.numQubits == numTargets, report::SUPER_OP_SIZE_MISMATCHES_NUM_TARGETS, vars, caller);
 }
 
 
@@ -2796,6 +2859,61 @@ void validate_twoTargets(Qureg qureg, int target1, int target2, const char* call
     int targs[] = {target1, target2};
     validate_targets(qureg, targs, 2, caller);
 }
+
+void validate_controls(Qureg qureg, int* ctrls, int numCtrls, const char* caller) {
+
+    // it is fine to have zero controls
+    bool numCanBeZero = true;
+
+    assertValidQubits(
+        qureg, ctrls, numCtrls, numCanBeZero, caller, 
+        report::NEGATIVE_NUM_CONTROLS, report::NUM_CONTROLS_EXCEEDS_QUREG_SIZE, report::NON_EMPTY_CONTROL_LIST_WAS_NULL_PTR,
+        report::INVALID_CONTROL_QUBIT, report::DUPLICATE_CONTROL_QUBITS);
+}
+
+void validate_controlsAndTargets(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs, const char* caller) {
+
+    // validate controls and targets in isolation
+    validate_targets(qureg, targs, numTargs, caller);
+    validate_controls(qureg, ctrls, numCtrls, caller);
+
+    // validate that they do not intersect
+    assertThat(areQubitsDisjoint(ctrls, numCtrls, targs, numTargs), report::CONTROLS_OVERLAP_TARGETS, caller);
+}
+void validate_controlAndTarget(Qureg qureg, int ctrl, int targ, const char* caller) {
+
+    validate_controlsAndTargets(qureg, &ctrl, 1, &targ, 1, caller);
+}
+void validate_controlAndTargets(Qureg qureg, int ctrl, int* targs, int numTargs, const char* caller) {
+
+    validate_controlsAndTargets(qureg, &ctrl, 1, targs, numTargs, caller);
+}
+void validate_controlsAndTarget(Qureg qureg, int* ctrls, int numCtrls, int targ, const char* caller) {
+
+    validate_controlsAndTargets(qureg, ctrls, numCtrls, &targ, 1, caller);
+}
+void validate_controlAndTwoTargets(Qureg qureg, int ctrl, int targ1, int targ2, const char* caller) {
+
+    int targs[] = {targ1, targ2};
+    validate_controlsAndTargets(qureg, &ctrl, 1, targs, 2, caller);
+}
+void validate_controlsAndTwoTargets(Qureg qureg, int* ctrls, int numCtrls, int targ1, int targ2, const char* caller) {
+
+    int targs[] = {targ1, targ2};
+    validate_controlsAndTargets(qureg, ctrls, numCtrls, targs, 2, caller);
+}
+
+void validate_controlStates(int* states, int numCtrls, const char* caller) {
+
+    // states is permittedly nullptr even when numCtrls != 0
+    if (states == nullptr)
+        return;
+
+    for (int n=0; n<numCtrls; n++)
+        assertThat(states[n] == 0 || states[n] == 1, report::INVALID_CONTROL_STATE, {{"${INDEX}", n}, {"${STATE}", states[n]}}, caller);
+}
+
+
 
 /*
  * MEASUREMENT PARAMETERS
