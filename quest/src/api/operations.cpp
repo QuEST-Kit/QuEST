@@ -787,7 +787,7 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
 
     // effect conj by qureg *= -1
     if (paulis_hasOddNumY(str))
-        localiser_statevec_setWeightedQureg(-1, qureg, 0, qureg, 0, qureg);
+        localiser_statevec_setQuregToSuperposition(-1, qureg, 0, qureg, 0, qureg);
 }
 
 
