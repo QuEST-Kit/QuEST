@@ -1307,21 +1307,10 @@ qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
 
 #if COMPILE_CUQUANTUM
 
-    // cuQuantum can only handle homogeneous multi-qubit outcomes; when all
-    // are zero or one. We exploit that support, otherwise fall back to using
-    // Thrust below. Note also cuQuantum discards NumQubits template parameter
-    if (util_areOutcomesHomogeneous(outcomes))
-        return cuquantum_statevec_calcProbOfHomoMultiQubitOutcome_sub(qureg, qubits, outcomes[0]);
+    // cuQuantum disregards NumQubits compile-time param
+    gpu_statevec_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes);
 
-    // this is one of few functions which will fail to operate correctly if
-    // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
-    // true but the latter is not), so we explicitly ensure this is the case
-    if (!COMPILE_CUDA)
-        error_cuQuantumCompiledButNotCuda();
-
-#endif
-
-#if COMPILE_CUDA 
+#elif COMPILE_CUDA 
 
     return thrust_statevec_calcProbOfMultiQubitOutcome_sub<NumQubits>(qureg, qubits, outcomes);
 
@@ -1353,7 +1342,12 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
-#if COMPILE_CUDA || COMPILE_CUQUANTUM
+#if COMPILE_CUQUANTUM
+
+    // cuQuantum discards NumQubits template param
+    cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(outProbs, qureg, qubits);
+
+#elif COMPILE_CUDA
 
     qindex numThreads = qureg.numAmpsPerNode;
     qindex numBlocks = getNumBlocks(numThreads);
@@ -1362,7 +1356,7 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     devints devQubits = qubits;
     devreals devProbs;
     try  {
-        devProbs = devreals(powerOf2(qubits.size()), 0);
+        devProbs.reserve(powerOf2(qubits.size()));
     } catch (thrust::system_error &e) { 
         error_thrustTempGpuAllocFailed();
     }
@@ -1440,20 +1434,8 @@ void gpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 
 #if COMPILE_CUQUANTUM
 
-    // cuQuantum can only handle homogeneous multi-qubit outcomes; when all
-    // are zero or one. So we partition our target outcomes into all-zero and
-    // all-one, projecting to each in-turn with a sqrt probability. This works
-    // because every non-zeroed amplitude gets multiplied with 1/sqrt(prob).
-    // Note cuQuantum also discards the NumQubits template parameter
-
-    vector<int> qubits0 = util_getQubitsWithOutcome(qubits, outcomes, 0);
-    vector<int> qubits1 = util_getQubitsWithOutcome(qubits, outcomes, 1);
-    norm = (util_areOutcomesHomogeneous(outcomes))? norm : sqrt(norm);
-
-    if (!qubits0.empty())
-        cuquantum_statevec_homoMultiQubitProjector_sub(qureg, qubits0, 0, norm);
-    if (!qubits1.empty())
-        cuquantum_statevec_homoMultiQubitProjector_sub(qureg, qubits1, 1, norm);
+    // cuQuantum disregards NumQubits template param
+    cuquantum_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, norm);
 
 #elif COMPILE_CUDA
 
@@ -1471,7 +1453,7 @@ void gpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
-    qreal norm = 1 / sqrt(prob);
+    qreal norm = 1 / prob;
     thrust_densmatr_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, norm);
 
 #else

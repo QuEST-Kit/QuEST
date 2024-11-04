@@ -552,6 +552,11 @@ void error_cuQuantumInitOrFinalizedButNotCompiled() {
     raiseInternalError("Attempted to initialize or finalize cuQuantum, but cuQuantum was not compiled.");
 }
 
+void error_cuQuantumTempCpuAllocFailed() {
+
+    raiseInternalError("Attempted allocation of temporary host-memory for a cuQuantum routine failed.");
+}
+
 
 
 /*
