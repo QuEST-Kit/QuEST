@@ -1471,6 +1471,7 @@ void gpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
+    qreal norm = 1 / sqrt(prob);
     thrust_densmatr_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, norm);
 
 #else

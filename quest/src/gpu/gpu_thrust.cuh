@@ -270,7 +270,7 @@ struct functor_projectStateVec : public thrust::binary_function<qindex,cu_qcomp,
         qindex i = concatenateBits(rank, n, logNumAmpsPerNode);
 
         // return amp scaled by zero or renorm, depending on whether n has projected substate
-        qindex val = getValueOfBits(i, qubitsPtr, numBits);
+        qindex val = getValueOfBits(i, targetsPtr, numBits);
         qreal fac = renorm * (val == retainValue);
         return fac * amp;
     }
@@ -448,12 +448,12 @@ void thrust_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, ve
 
     devints devQubits = qubits;
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
-    auto projFunctor = functor_projectStateVec<int NumQubits>(
+    auto projFunctor = functor_projectStateVec<NumQubits>(
         devQubits.data(), qubits.size(), qureg.rank, 
         qureg.logNumAmpsPerNode, retainValue, norm);
 
     auto indIter = thrust::make_counting_iterator(0);
-    auto ampIter = qetStartPtr(qureg);
+    auto ampIter = getStartPtr(qureg);
 
     qindex numIts = qureg.numAmpsPerNode;
     thrust::transform(indIter, indIter + numIts, ampIter, ampIter, projFunctor); // 4th arg gets modified
@@ -465,12 +465,12 @@ void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, ve
 
     devints devQubits = qubits;
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
-    auto projFunctor = functor_projectDensMatr<int NumQubits>(
+    auto projFunctor = functor_projectDensMatr<NumQubits>(
         devQubits.data(), qubits.size(), qureg.rank, qureg.numQubits,
         qureg.logNumAmpsPerNode, retainValue, norm);
 
     auto indIter = thrust::make_counting_iterator(0);
-    auto ampIter = qetStartPtr(qureg);
+    auto ampIter = getStartPtr(qureg);
 
     qindex numIts = qureg.numAmpsPerNode;
     thrust::transform(indIter, indIter + numIts, ampIter, ampIter, projFunctor); // 4th arg gets modified
