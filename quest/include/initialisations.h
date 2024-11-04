@@ -42,6 +42,8 @@ void setQuregToClone(Qureg targetQureg, Qureg copyQureg);
 
 void setQuregToSuperposition(qcomp facOut, Qureg out, qcomp fac1, Qureg qureg1, qcomp fac2, Qureg qureg2);
 
+qreal setQuregToRenormalized(Qureg qureg);
+
 
 
 // end de-mangler

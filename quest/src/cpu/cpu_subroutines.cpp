@@ -1626,9 +1626,9 @@ void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     // every amp contributes to a statevector prob
     qindex numIts = qureg.numAmpsPerNode;
 
-    // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numQubits, NumQubits, qubits.size());
-    qindex numOutcomes = powerOf2(numQubits);
+    // use template param to compile-time unroll loop in getValueOfBits()
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
+    qindex numOutcomes = powerOf2(numBits);
 
     // clear amps; be compile-time unrolled, and/or parallelised (independent of qureg)
     #pragma omp parallel for
@@ -1644,7 +1644,7 @@ void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
         qindex i = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
 
         // j = outcome index corresponding to prob
-        qindex j = getValueOfBits(i, qubits.data(), numQubits); // loop therein may be unrolled
+        qindex j = getValueOfBits(i, qubits.data(), numBits); // loop therein may be unrolled
 
         #pragma omp atomic
         outProbs[j] += prob;
@@ -1662,9 +1662,9 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
     qindex firstDiagInd = misc_getLocalIndexOfFirstDiagonalAmp(qureg);
     
-    // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numQubits, NumQubits, qubits.size());
-    qindex numOutcomes = powerOf2(numQubits);
+    // use template param to compile-time unroll loop in getValueOfBits()
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
+    qindex numOutcomes = powerOf2(numBits);
     
     // clear amps; be compile-time unrolled, and/or parallelised (independent of qureg)
     #pragma omp parallel for
@@ -1682,7 +1682,7 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
         qindex j = concatenateBits(qureg.rank, i, qureg.logNumAmpsPerNode);
 
         // k = outcome index corresponding to 
-        qindex k = getValueOfBits(j, qubits.data(), numQubits); // loop therein may be unrolled
+        qindex k = getValueOfBits(j, qubits.data(), numBits); // loop therein may be unrolled
 
         #pragma omp atomic
         outProbs[k] += prob;
@@ -1694,3 +1694,77 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qreal, cpu_statevec_calcProbOfMultiQub
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qreal, cpu_densmatr_calcProbOfMultiQubitOutcome_sub, (Qureg, vector<int>, vector<int>) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub, (qreal* outProbs, Qureg, vector<int>) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub, (qreal* outProbs, Qureg, vector<int>) )
+
+
+
+/*
+ * PROJECTORS
+ */
+
+
+template <int NumQubits>
+void cpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
+
+    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
+
+    // visit every amp, setting to zero or multiplying it by renorm
+    qindex numIts = qureg.numAmpsPerNode;
+    qreal renorm = 1 / sqrt(prob);
+
+    // binary value of targeted qubits in basis states which are to be retained
+    qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
+
+    // use template param to compile-time unroll loop in getValueOfBits()
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = global index of nth local amp
+        qindex i = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
+        qindex val = getValueOfBits(i, qubits.data(), numBits);
+
+        // multiply amp with renorm or zero, if qubit value matches or disagrees
+        qcomp fac = renorm * (val == retainValue);
+        qureg.cpuAmps[n] *= fac;
+    }
+}
+
+
+template <int NumQubits>
+void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
+
+    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
+
+    // visit every amp, setting most to zero and multiplying the remainder by renorm
+    qindex numIts = qureg.numAmpsPerNode;
+    qreal renorm = 1 / prob;
+
+    // binary value of targeted qubits in basis states which are to be retained
+    qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
+
+    // use template param to compile-time unroll loops in getValueOfBits()
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = global index of nth local amp
+        qindex i = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
+
+        // r, c = global row and column indices of nth local amp
+        qindex r = getBitsRightOfIndex(i, qureg.numQubits);
+        qindex c = getBitsLeftOfIndex(i, qureg.numQubits-1);
+
+        qindex v1 = getValueOfBits(r, qubits.data(), numBits);
+        qindex v2 = getValueOfBits(c, qubits.data(), numBits);
+
+        // multiply amp with renorm or zero if values disagree with given outcomes
+        qcomp fac = renorm * (v1 == v2) * (retainValue == v1);
+        qureg.cpuAmps[n] *= fac;
+    }
+}
+
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_statevec_multiQubitProjector_sub, (Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_multiQubitProjector_sub, (Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) )

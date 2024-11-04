@@ -151,4 +151,13 @@ template <int NumQubits> void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
 template <int NumQubits> void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits);
 
 
+/*
+ * PROJECTORS
+ */
+
+template <int NumQubits> void gpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob);
+template <int NumQubits> void gpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob);
+
+
+
 #endif // GPU_SUBROUTINES_HPP

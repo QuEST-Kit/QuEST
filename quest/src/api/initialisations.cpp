@@ -10,6 +10,7 @@
  */
 
 #include "quest/include/qureg.h"
+#include "quest/include/calculations.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/localiser.hpp"
@@ -151,9 +152,20 @@ void setQuregToSuperposition(qcomp facOut, Qureg out, qcomp fac1, Qureg qureg1, 
     validate_quregsCanBeSuperposed(out, qureg1, qureg2, __func__);
 
     localiser_statevec_setQuregToSuperposition(facOut, out, fac1, qureg1, fac2, qureg2);
+}
 
-    // TODO
-    error_functionNotImplemented(__func__);
+
+qreal setQuregToRenormalized(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
+
+    qreal prob = calcTotalProb(qureg); // harmlessly re-validates
+    validate_quregRenormProbIsNotZero(prob, __func__);
+
+    qreal norm = (qureg.isDensityMatrix)? prob : sqrt(prob);
+    qreal fac = 1 / norm;
+    localiser_statevec_setQuregToSuperposition(fac, qureg, 0, qureg, 0, qureg);
+
+    return fac;
 }
 
 

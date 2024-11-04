@@ -732,11 +732,14 @@ namespace report {
     string ONE_QUBIT_MEASUREMENT_OUTCOME_INVALID =
         "The given qubit measurement outcome (${OUTCOME}) is invalid. Valid outcomes are 0 and 1.";
 
+    string ONE_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY =
+        "The specified measurement outcome (${OUTCOME}) is impossibly unlikely (i.e. has probability less than epsilon), so the post-measurement state cannot be reliably renormalised.";
+
     string MANY_QUBIT_MEASUREMENTS_OUTCOME_INVALID =
         "The given qubit measurement outcome (${OUTCOME}) at index ${INDEX} is invalid. Valid outcomes are 0 and 1.";
 
-    string ONE_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLE =
-        "The specified measurement outcome (${OUTCOME}) is impossibly unlikely (i.e. has probability less than epsilon), so the post-measurement state cannot be reliably renormalised.";
+    string MANY_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY =
+        "The specified multi-qubit measurement outcome (with binary value ${OUTCOME_VALUE}) is impossibly unlikely (i.e. has probability less than epsilon), so the post-measurement state cannot be reliably renormalised.";
 
     string GPU_CANNOT_FIT_TEMP_MEASUREMENT_OUTCOME_PROBS =
         "The GPU has less available memory (${MEM_AVAIL} bytes) than that needed (${MEM_NEEDED} bytes) to temporarily store the ${NUM_OUTCOMES} outcome probabilities of the specified ${NUM_QUBITS} qubits.";
@@ -797,6 +800,14 @@ namespace report {
 
     string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_DISTRIBUTION =
         "Cannot superpose Quregs which are inconsistently distributed. All or no quregs must be distributed.";
+
+
+    /*
+     * QUREG MODIFICATION
+     */
+
+    string QUREG_RENORM_PROB_IS_ZERO =
+        "Could not renormalise the Qureg because the current total probability is zero, or within epsilon to zero.";
 
 
     /*
@@ -3018,6 +3029,21 @@ void validate_measurementOutcomesAreValid(int* outcomes, int numOutcomes, const 
             {{"${INDEX}", i}, {"${OUTCOME}", outcomes[i]}}, caller);
 }
 
+void validate_measurementOutcomeProbNotZero(int outcome, qreal prob, const char* caller) {
+
+    // TODO: report 'prob' once validation reporting can handle floats
+
+    assertThat(prob >= validationEpsilon, report::ONE_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY, {{"${OUTCOME}", outcome}}, caller);
+}
+
+void validate_measurementOutcomesProbNotZero(int* outcomes, int numQubits, qreal prob, const char* caller) {
+
+    // TODO: report 'prob' and 'outcomes' (as binary sequence) once validation reporting can handle floats
+    qindex outcomeValue = getIntegerFromBits(outcomes, numQubits);
+
+    assertThat(prob >= validationEpsilon, report::MANY_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY, {{"${OUTCOME_VALUE}", outcomeValue}}, caller);
+}
+
 void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const char* caller) {
 
     // only GPU backend needs temp memory
@@ -3168,6 +3194,19 @@ void validate_quregsCanBeSuperposed(Qureg qureg1, Qureg qureg2, Qureg qureg3, co
         qureg2.isDistributed == isDis && qureg3.isDistributed == isDis, 
         report::SUPERPOSED_QUREGS_HAVE_INCONSISTENT_DISTRIBUTION, caller);
 } 
+
+
+
+/*
+ * QUREG MODIFICATION
+ */
+
+void validate_quregRenormProbIsNotZero(qreal prob, const char* caller) {
+
+    // TODO: include 'prob' in error message when non-integers are supported
+
+    assertThat(prob > validationEpsilon, report::QUREG_RENORM_PROB_IS_ZERO, caller);
+}
 
 
 
