@@ -1308,7 +1308,7 @@ qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
 #if COMPILE_CUQUANTUM
 
     // cuQuantum disregards NumQubits compile-time param
-    gpu_statevec_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes);
+    return gpu_statevec_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes);
 
 #elif COMPILE_CUDA 
 
