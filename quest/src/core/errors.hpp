@@ -236,6 +236,8 @@ void error_thrustTempGpuAllocFailed();
 
 void error_cuQuantumInitOrFinalizedButNotCompiled();
 
+void error_cuQuantumTempCpuAllocFailed();
+
 
 
 /*

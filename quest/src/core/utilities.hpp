@@ -300,15 +300,4 @@ qreal util_getMaxProbOfOneQubitDepolarising();
 qreal util_getMaxProbOfTwoQubitDepolarising();
 
 
-
-/*
- * MEASUREMENT OUTCOMES
- */
-
-bool util_areOutcomesHomogeneous(vector<int> outcomes);
-
-vector<int> util_getQubitsWithOutcome(vector<int> allQubits, vector<int> allOutcomes, int targetOutcome);
-
-
-
 #endif // UTILITIES_HPP

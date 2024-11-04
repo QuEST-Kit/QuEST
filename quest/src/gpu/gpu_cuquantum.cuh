@@ -31,11 +31,14 @@
 #endif
 
 
+#include "quest/include/precision.h"
+
 #include "quest/src/gpu/gpu_config.hpp"
 #include "quest/src/gpu/gpu_types.cuh"
 
 #include <custatevec.h>
 #include <vector>
+#include <new>
 
 using std::vector;
 
@@ -313,18 +316,46 @@ qreal cuquantum_statevec_calcTotalProb_sub(Qureg qureg) {
 }
 
 
-qreal cuquantum_statevec_calcProbOfHomoMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, bool outcome) {
+qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
 
-    // cuQuantum probabilities are always double (not qreal)
-    double prob0;
-    double* prob1 = nullptr; // don't compute 1-prob0, because we assume normalisation
+    // cuQuantum probabilities are always double
+    double prob;
 
-    CUDA_CHECK( custatevecAbs2SumOnZBasis(
+    CUDA_CHECK( custatevecAbs2SumArray(
         config.cuQuantumHandle,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
-        &prob0, prob1, qubits.data(), qubits.size() ) );
+        &prob, nullptr, 0, outcomes.data(), qubits.data(), qubits.size()) );
 
-    return (outcome == 0)? prob0 : 1 - prob0;
+    return (qreal) prob;
+}
+
+
+void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits) {
+
+    // cuQuantum can accept a host-pointer (like outProbs), but only
+    // double precision; if qreal != double, we use temporary memory
+    #if (FLOAT_PRECISION == 2)
+        double* outPtr = outProbs;
+    #else
+        vector<double> tmpProbs;
+        try { 
+            tmpProbs.reserve(powerOf2(qubits.size()));
+        } catch (std::bad_alloc &e) { 
+            error_cuQuantumTempCpuAllocFailed();
+        }
+        double* outPtr = tmpProbs.data();
+    #endif
+
+    CUDA_CHECK( custatevecAbs2SumArray(
+        config.cuQuantumHandle,
+        toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
+        outPtr, qubits.data(), qubits.size(), nullptr, nullptr, 0) );
+
+    // serially cast and copy output probabilities, if necessary
+    #if (FLOAT_PRECISION != 2)
+        for (size_t i=0; i<tmpProbs.size(); i++)
+            outProbs[i] = (qreal) tmpProbs[i];
+    #endif
 }
 
 
@@ -334,12 +365,12 @@ qreal cuquantum_statevec_calcProbOfHomoMultiQubitOutcome_sub(Qureg qureg, vector
  */
 
 
-void cuquantum_statevec_homoMultiQubitProjector_sub(Qureg qureg, vector<int> qubits, bool outcome, qreal norm) {
+void cuquantum_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal norm) {
 
-    CUDA_CHECK( custatevecCollapseOnZBasis(
+    CUDA_CHECK( custatevecCollapseByBitString(
         config.cuQuantumHandle,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
-        outcome, qubits.data(), qubits.size(), norm) );
+        outcomes.data(), qubits.data(), qubits.size(), norm) );
 }
 
 
