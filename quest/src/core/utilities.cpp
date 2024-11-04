@@ -617,3 +617,33 @@ qreal util_getMaxProbOfTwoQubitDepolarising() {
 // no equivalent function for oneQubitDamping, which
 // can accept any valid probability, because we permit
 // it to exceed maximal-mixing and induce purity
+
+
+
+/*
+ * MEASUREMENT OUTCOMES
+ */
+
+bool util_areOutcomesHomogeneous(vector<int> outcomes) {
+
+    if (outcomes.empty())
+        return true;
+
+    for (int x : outcomes)
+        if (x != outcomes[0])
+            return false; 
+
+    return true;
+}
+
+vector<int> util_getQubitsWithOutcome(vector<int> allQubits, vector<int> allOutcomes, int targetOutcome) {
+
+    vector<int> targetQubits;
+    targetQubits.reserve(allQubits.size());
+
+    for (size_t i=0; i<allQubits.size(); i++)
+        if (allOutcomes[i] == targetOutcome)
+            targetQubits.push_back(allQubits[i]);
+
+    return targetQubits;
+}

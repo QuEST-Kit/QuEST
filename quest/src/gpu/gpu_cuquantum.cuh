@@ -313,7 +313,7 @@ qreal cuquantum_statevec_calcTotalProb_sub(Qureg qureg) {
 }
 
 
-qreal cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+qreal cuquantum_statevec_calcProbOfHomoMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, bool outcome) {
 
     // cuQuantum probabilities are always double (not qreal)
     double prob0;
@@ -324,8 +324,24 @@ qreal cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         &prob0, prob1, qubits.data(), qubits.size() ) );
 
-    return (qreal) prob0;
+    return (outcome == 0)? prob0 : 1 - prob0;
 }
+
+
+
+/*
+ * PROJECTORS
+ */
+
+
+void cuquantum_statevec_homoMultiQubitProjector_sub(Qureg qureg, vector<int> qubits, bool outcome, qreal norm) {
+
+    CUDA_CHECK( custatevecCollapseOnZBasis(
+        config.cuQuantumHandle,
+        toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
+        outcome, qubits.data(), qubits.size(), norm) );
+}
+
 
 
 #endif // GPU_CUQUANTUM_HPP

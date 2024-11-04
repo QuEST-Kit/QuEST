@@ -635,3 +635,13 @@ void error_couldNotReadFile() {
     raiseInternalError("A function failed to open and read a file that previous validation confirmed was readable.");
 }
 
+
+
+/*
+ * RANDOMISER ERRORS
+ */
+
+void error_randomiserGivenNonNormalisedProbList() {
+
+    raiseInternalError("Randomiser was asked to sample from a list of probabilities which did not sum to one, within epsilon error.");
+}

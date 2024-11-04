@@ -1307,10 +1307,21 @@ qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
 
 #if COMPILE_CUQUANTUM
 
-    // cuQuantum discards NumQubits template parameter
-    return cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes);
+    // cuQuantum can only handle homogeneous multi-qubit outcomes; when all
+    // are zero or one. We exploit that support, otherwise fall back to using
+    // Thrust below. Note also cuQuantum discards NumQubits template parameter
+    if (util_areOutcomesHomogeneous(outcomes))
+        return cuquantum_statevec_calcProbOfHomoMultiQubitOutcome_sub(qureg, qubits, outcomes[0]);
 
-#elif COMPILE_CUDA 
+    // this is one of few functions which will fail to operate correctly if
+    // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
+    // true but the latter is not), so we explicitly ensure this is the case
+    if (!COMPILE_CUDA)
+        error_cuQuantumCompiledButNotCuda();
+
+#endif
+
+#if COMPILE_CUDA 
 
     return thrust_statevec_calcProbOfMultiQubitOutcome_sub<NumQubits>(qureg, qubits, outcomes);
 
@@ -1412,3 +1423,61 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qreal, gpu_densmatr_calcProbOfMultiQub
 
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub, (qreal* outProbs, Qureg, vector<int>) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub, (qreal* outProbs, Qureg, vector<int>) )
+
+
+
+/*
+ * PROJECTORS
+ */
+
+
+template <int NumQubits> 
+void gpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
+
+    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
+
+    qreal norm = 1 / sqrt(prob);
+
+#if COMPILE_CUQUANTUM
+
+    // cuQuantum can only handle homogeneous multi-qubit outcomes; when all
+    // are zero or one. So we partition our target outcomes into all-zero and
+    // all-one, projecting to each in-turn with a sqrt probability. This works
+    // because every non-zeroed amplitude gets multiplied with 1/sqrt(prob).
+    // Note cuQuantum also discards the NumQubits template parameter
+
+    vector<int> qubits0 = util_getQubitsWithOutcome(qubits, outcomes, 0);
+    vector<int> qubits1 = util_getQubitsWithOutcome(qubits, outcomes, 1);
+    norm = (util_areOutcomesHomogeneous(outcomes))? norm : sqrt(norm);
+
+    if (!qubits0.empty())
+        cuquantum_statevec_homoMultiQubitProjector_sub(qureg, qubits0, 0, norm);
+    if (!qubits1.empty())
+        cuquantum_statevec_homoMultiQubitProjector_sub(qureg, qubits1, 1, norm);
+
+#elif COMPILE_CUDA
+
+    thrust_statevec_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, norm);
+
+#else
+    (void) norm; // silence not-used
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+template <int NumQubits> 
+void gpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    thrust_densmatr_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, norm);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_statevec_multiQubitProjector_sub, (Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_densmatr_multiQubitProjector_sub, (Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) )

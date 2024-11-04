@@ -282,4 +282,12 @@ void error_couldNotReadFile();
 
 
 
+/*
+ * RANDOMISER ERRORS
+ */
+
+void error_randomiserGivenNonNormalisedProbList();
+
+
+
 #endif // ERRORS_HPP

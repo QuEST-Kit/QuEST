@@ -8,12 +8,19 @@
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 #include "quest/include/operations.h"
+#include "quest/include/calculations.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/utilities.hpp"
+#include "quest/src/core/randomiser.hpp"
 #include "quest/src/core/localiser.hpp"
+#include "quest/src/core/bitwise.hpp"
 
 #include "quest/src/core/errors.hpp" // only needed for not-implemented functions
+
+#include <vector>
+
+using std::vector;
 
 
 
@@ -785,7 +792,11 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
     str = paulis_getShiftedPauliStr(str, qureg.numQubits);
     localiser_statevec_anyCtrlPauliTensor(qureg, ctrlVec, stateVec, str); // excludes conj
 
-    // effect conj by qureg *= -1
+    // effect conj by qureg *= -1. This involves re-enumerating the amps after
+    // the above backend functions, so is not ideal, but simplififes the backend.
+    // note the use of setQuregToSuperposition() needlessly involves three flops
+    // per amplitude (instead of the needed one), but this slowdown will almost
+    // definitely be occluded by the memory movement costs
     if (paulis_hasOddNumY(str))
         localiser_statevec_setQuregToSuperposition(-1, qureg, 0, qureg, 0, qureg);
 }
@@ -1222,28 +1233,133 @@ void applySuperOp(Qureg qureg, SuperOp superop, int* targets, int numTargets) {
  */
 
 int applyQubitMeasurement(Qureg qureg, int target) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
 
-    // // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
+    qreal prob = 0; // ignored
+    return applyQubitMeasurementAndGetProb(qureg, target, &prob); // harmlessly re-validates
 }
 
 int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
 
-    // // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
+    // find only the outcome=0 probability, to avoid reducing all amps;
+    // this halves the total iterations though assumes normalisation
+    int outcome = 0;
+    qreal prob = calcProbOfQubitOutcome(qureg, target, outcome);
+
+    // randomly choose the outcome
+    outcome = rand_getRandomSingleQubitOutcome(prob);
+    if (outcome == 1)
+        prob = 1 - prob;
+
+    // collapse to the outcome
+    (qureg.isDensityMatrix)?
+        localiser_densmatr_multiQubitProjector_sub(qureg, {target}, {outcome}, prob):
+        localiser_statevec_multiQubitProjector_sub(qureg, {target}, {outcome}, prob);
+
+    return outcome;
 }
 
 qreal applyForcedQubitMeasurement(Qureg qureg, int target, int outcome) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
+    validate_measurementOutcomeIsValid(outcome, __func__);
 
-    // // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
+    // note that we do not merely invoke applyForcedMultiQubitMeasurement()
+    // because we must validate the renormalising probability and
+    // report this function's name during the error message
+    qreal prob = calcProbOfQubitOutcome(qureg, target, outcome); // harmlessly re-validates
+    validate_measurementOutcomeProbNotZero(outcome, prob, __func__);
+
+    // project to the outcome, renormalising the surviving states
+    (qureg.isDensityMatrix)?
+        localiser_densmatr_multiQubitProjector_sub(qureg, {target}, {outcome}, prob):
+        localiser_statevec_multiQubitProjector_sub(qureg, {target}, {outcome}, prob);
+
+    return prob;
 }
 
-void applyQubitProjector(Qureg qureg, int target, int outcome)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyQubitProjector(Qureg qureg, int target, int outcome) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
+    validate_measurementOutcomeIsValid(outcome, __func__); 
+    
+    // we permit the outcome to be negligibly likely, leaving state = null
+    qreal prob = 1;
+    (qureg.isDensityMatrix)?
+        localiser_densmatr_multiQubitProjector_sub(qureg, {target}, {outcome}, prob):
+        localiser_statevec_multiQubitProjector_sub(qureg, {target}, {outcome}, prob);
+}
+
+qindex applyMultiQubitMeasurement(Qureg qureg, int* qubits, int numQubits) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, qubits, numQubits, __func__);
+
+    qreal prob = 0; // ignored
+    return applyMultiQubitMeasurementAndGetProb(qureg, qubits, numQubits, &prob); // harmlessly re-validates
+}
+
+qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQubits, qreal* probability) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, qubits, numQubits, __func__);
+
+    // find the probability of all possible outcomes
+    qindex numProbs = powerOf2(numQubits);
+    vector<qreal> probs(numProbs);
+    calcProbsOfAllMultiQubitOutcomes(probs.data(), qureg, qubits, numQubits); // harmlessly re-validates
+
+    // randomly choose an outcome
+    qindex outcome = rand_getRandomMultiQubitOutcome(probs);
+    *probability = probs[outcome];
+
+    // map outcome to individual qubit outcomes
+    auto qubitVec = util_getVector(qubits, numQubits);
+    auto outcomeVec = vector<int>(numQubits);
+    getBitsFromInteger(outcomeVec.data(), outcome, numQubits);
+
+    // project to the outcomes, renormalising the surviving states
+    (qureg.isDensityMatrix)?
+        localiser_densmatr_multiQubitProjector_sub(qureg, qubitVec, outcomeVec, *probability):
+        localiser_statevec_multiQubitProjector_sub(qureg, qubitVec, outcomeVec, *probability);
+
+    return outcome;
+}
+
+qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, int numQubits) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, qubits, numQubits, __func__);
+    validate_measurementOutcomesAreValid(outcomes, numQubits, __func__);
+
+    auto qubitVec = util_getVector(qubits, numQubits);
+    auto outcomeVec = util_getVector(outcomes, numQubits);
+
+    // ensure probability of the forced measurement outcome is not negligible
+    qreal prob = calcProbOfMultiQubitOutcome(qureg, qubits, outcomes, numQubits); // harmlessly re-validates
+    validate_measurementOutcomesProbNotZero(outcomes, numQubits, prob, __func__);
+
+    // project to the outcome, renormalising the surviving states
+    (qureg.isDensityMatrix)?
+        localiser_densmatr_multiQubitProjector_sub(qureg, qubitVec, outcomeVec, prob):
+        localiser_statevec_multiQubitProjector_sub(qureg, qubitVec, outcomeVec, prob);
+
+    return prob;
+}
+
+void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, qubits, numQubits, __func__);
+    validate_measurementOutcomesAreValid(outcomes, numQubits, __func__);
+
+    qreal prob = 1;
+    auto qubitVec = util_getVector(qubits, numQubits);
+    auto outcomeVec = util_getVector(outcomes, numQubits);
+
+    (qureg.isDensityMatrix)?
+        localiser_densmatr_multiQubitProjector_sub(qureg, qubitVec, outcomeVec, prob):
+        localiser_statevec_multiQubitProjector_sub(qureg, qubitVec, outcomeVec, prob);
+}
 
 
 

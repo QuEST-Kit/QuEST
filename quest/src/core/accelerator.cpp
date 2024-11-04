@@ -835,3 +835,21 @@ void accel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( densmatr_calcProbsOfAllMultiQubitOutcomes_sub, qureg, qubits.size() );
     return func(outProbs, qureg, qubits);
 }
+
+
+
+/*
+ * PROJECTORS 
+ */
+
+
+void accel_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
+
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( statevec_multiQubitProjector_sub, qureg, qubits.size() );
+    return func(qureg, qubits, outcomes, prob);
+}
+void accel_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
+
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( densmatr_multiQubitProjector_sub, qureg, qubits.size() );
+    return func(qureg, qubits, outcomes, prob);
+}

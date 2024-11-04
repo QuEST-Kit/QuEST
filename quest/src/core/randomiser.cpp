@@ -6,6 +6,9 @@
 
 #include "quest/include/types.h"
 
+#include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/errors.hpp"
+#include "quest/src/core/validation.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 
@@ -103,9 +106,34 @@ int rand_getRandomSingleQubitOutcome(qreal probOfZero) {
     // assumes 0 <= probOfZero <= 1
 
     // advances generator on every node, retaining consensus
-    qreal uniformSample = distribution(generator);
+    qreal sample = distribution(generator);
 
     // produces 0 with probOfZero probability
-    int biasedSample = uniformSample > probOfZero;
-    return biasedSample;
+    return sample > probOfZero;
+}
+
+
+qindex rand_getRandomMultiQubitOutcome(vector<qreal> probs) {
+
+    // assumes sum(probs) = 1
+
+    // advances generator on every node, retaining consensus
+    qreal sample = distribution(generator);
+
+    // map sample to an element of probs
+    qreal cumProb = 0;
+    for (size_t i=0; i<probs.size(); i++) {
+        cumProb += probs[i];
+
+        if (sample < cumProb)
+            return i;
+    }
+
+    // it is principally possible that cumProb == 1 - eps, and that
+    // sample lies within [1-eps, 1], and should take final elem
+    if (1 - cumProb <= validateconfig_getEpsilon())
+        return probs.size() - 1;
+
+    error_randomiserGivenNonNormalisedProbList();
+    return probs.size();
 }

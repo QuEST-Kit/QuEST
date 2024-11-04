@@ -130,4 +130,12 @@ void localiser_statevec_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg 
 void localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg qureg, vector<int> qubits);
 
 
+/*
+ * PROJECTORS 
+ */
+
+void localiser_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob);
+void localiser_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob);
+
+
 #endif // LOCALISER_HPP

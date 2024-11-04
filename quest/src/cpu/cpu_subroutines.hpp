@@ -149,4 +149,12 @@ template <int NumQubits> void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
 template <int NumQubits> void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits);
 
 
+/*
+ * PROJECTORS
+ */
+
+template <int NumQubits> void cpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob);
+template <int NumQubits> void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob);
+
+
 #endif // CPU_SUBROUTINES_HPP

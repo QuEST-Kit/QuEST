@@ -353,7 +353,9 @@ void validate_measurementOutcomeIsValid(int outcome, const char* caller);
 
 void validate_measurementOutcomesAreValid(int* outcomes, int numOutcomes, const char* caller);
 
-void validate_measurementOutcomeIsPossible(int outcome, qreal prob, const char* caller);
+void validate_measurementOutcomeProbNotZero(int outcome, qreal prob, const char* caller);
+
+void validate_measurementOutcomesProbNotZero(int* outcomes, int numQubits, qreal prob, const char* caller);
 
 void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const char* caller);
 
@@ -384,6 +386,14 @@ void validate_oneQubitPauliChannelProbs(qreal pX, qreal pY, qreal pZ, const char
 void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller);
 
 void validate_quregsCanBeSuperposed(Qureg qureg1, Qureg qureg2, Qureg qureg3, const char* caller);
+
+
+
+/*
+ * QUREG MODIFICATION
+ */
+
+void validate_quregRenormProbIsNotZero(qreal prob, const char* caller);
 
 
 

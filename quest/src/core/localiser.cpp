@@ -1381,3 +1381,33 @@ void localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg 
     if (qureg.isDistributed)
         comm_reduceReals(outProbs, powerOf2(qubits.size()));
 }
+
+
+
+/*
+ * PROJECTORS 
+ */
+
+
+void localiser_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
+    assert_localiserGivenStateVec(qureg);
+
+    // we pass all qubits (including prefixes) to backend, which enumerates every
+    // local amp and decides whether to multiply 0 or a renormalisation thereupon.
+    // In distributed settings, it may be that some nodes zero their entire local
+    // partition, while others renormalise; in theory, we could make bespoke routines
+    // for these scenarios, eliminating superfluous flops. This is an unworthwhile
+    // optimisation; there would very likely remain nodes that must do zero-and-renorm
+    // iteration, for which all other nodes would later have to wait at next sync.
+
+    // always embarrassingly parallel
+    accel_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, prob);
+}
+
+
+void localiser_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
+    assert_localiserGivenDensMatr(qureg);
+
+    // always embarrassingly parallel
+    accel_densmatr_multiQubitProjector_sub(qureg, qubits, outcomes, prob);
+}

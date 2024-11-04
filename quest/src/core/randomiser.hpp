@@ -37,6 +37,8 @@ vector<unsigned> rand_getSeeds();
 
 int rand_getRandomSingleQubitOutcome(qreal probOfZero);
 
+qindex rand_getRandomMultiQubitOutcome(vector<qreal> probs);
+
 
 
 #endif // RANDOMISER_HPP

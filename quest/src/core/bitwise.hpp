@@ -313,5 +313,24 @@ INLINE int logBase2(qindex powerOf2) {
 }
 
 
+INLINE qindex getIntegerFromBits(int* bits, int numBits) {
+
+    // first bit is treated as least significant
+    qindex value = 0;
+
+    for (int i=0; i<numBits; i++)
+        value |= bits[i] << i;
+
+    return value;
+}
+
+
+INLINE void getBitsFromInteger(int* bits, qindex number, int numBits) {
+
+    for (int i=0; i<numBits; i++)
+        bits[i] = getBit(number, i);
+}
+
+
 
 #endif // BITWISE_HPP

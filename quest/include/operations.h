@@ -386,6 +386,14 @@ qreal applyForcedQubitMeasurement(Qureg qureg, int target, int outcome);
 
 void applyQubitProjector(Qureg qureg, int target, int outcome);
 
+qindex applyMultiQubitMeasurement(Qureg qureg, int* qubits, int numQubits);
+
+qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQubits, qreal* probability);
+
+qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, int numQubits);
+
+void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits);
+
 
 
 /*
