@@ -449,7 +449,7 @@ void thrust_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, ve
     devints devQubits = qubits;
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
     auto projFunctor = functor_projectStateVec<NumQubits>(
-        devQubits.data(), qubits.size(), qureg.rank, 
+        getPtr(devQubits), qubits.size(), qureg.rank, 
         qureg.logNumAmpsPerNode, retainValue, norm);
 
     auto indIter = thrust::make_counting_iterator(0);
@@ -466,7 +466,7 @@ void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, ve
     devints devQubits = qubits;
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
     auto projFunctor = functor_projectDensMatr<NumQubits>(
-        devQubits.data(), qubits.size(), qureg.rank, qureg.numQubits,
+        getPtr(devQubits), qubits.size(), qureg.rank, qureg.numQubits,
         qureg.logNumAmpsPerNode, retainValue, norm);
 
     auto indIter = thrust::make_counting_iterator(0);
