@@ -72,6 +72,9 @@ void syncSubQuregFromGpu(Qureg qureg, qindex startInd, qindex numAmps);
 void syncSubDensityQuregToGpu  (Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);
 void syncSubDensityQuregFromGpu(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);
 
+void getQuregAmps(qcomp* outAmps, Qureg qureg, qindex startInd, qindex numAmps);
+void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);
+
 
 // end de-mangler
 #ifdef __cplusplus

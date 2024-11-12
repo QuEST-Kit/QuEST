@@ -367,6 +367,23 @@ void syncSubDensityQuregFromGpu(Qureg qureg, qindex startRow, qindex startCol, q
 
 
 
+void getQuregAmps(qcomp* outAmps, Qureg qureg, qindex startInd, qindex numAmps) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsStateVector(qureg, __func__);
+    validate_basisStateIndices(qureg, startInd, numAmps, __func__);
+
+    localiser_statevec_getAmps(outAmps, qureg, startInd, numAmps);
+}
+
+
+void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_basisStateRowCols(qureg, startRow, startCol, numRows, numCols, __func__);
+
+    localiser_densmatr_getAmps(outAmps, qureg, startRow, startCol, numRows, numCols);
+}
+
 
 
 // end de-mangler

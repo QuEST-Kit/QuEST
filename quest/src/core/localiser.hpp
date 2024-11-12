@@ -27,6 +27,11 @@ using std::vector;
 
 qcomp localiser_statevec_getAmp(Qureg qureg, qindex ind);
 
+void localiser_statevec_getAmps(qcomp* outAmps, Qureg qureg, qindex globalStartInd, qindex globalNumAmps);
+void localiser_densmatr_getAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);
+
+void localiser_fullstatediagmatr_getAmps(qcomp* outAmps, FullStateDiagMatr matr, qindex globalStartInd, qindex globalNumAmps);
+
 
 /*
  * SWAP

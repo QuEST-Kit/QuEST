@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <complex>
 #include <vector>
+#include <new>
 
 using std::vector;
 
@@ -145,6 +146,58 @@ vector<int> util_getVector(int* qubits, int numQubits) {
         return {};
 
     return vector<int> (qubits, qubits + numQubits);
+}
+
+
+
+/*
+ * INDEX ALGEBRA
+ */
+
+qindex util_getLocalIndexOfFirstDiagonalAmp(Qureg qureg) {
+    assert_utilsGivenDensMatr(qureg);
+
+    return qureg.rank * powerOf2(qureg.logNumColsPerNode);
+}
+
+qindex util_getNumLocalDiagonalAmpsWithBits(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+    assert_utilsGivenDensMatr(qureg);
+
+    // a corresponding bra-qubit in the prefix with an inconsistent outcome means the node
+    // contains no diagonal basis states consistent with the given outcomes
+    for (size_t i=0; i<qubits.size(); i++)
+        if (!util_isBraQubitInSuffix(qubits[i], qureg))
+            if (util_getRankBitOfBraQubit(qubits[i], qureg) != outcomes[i])
+                return 0;
+
+    // otherwise, every 2^#qubits local diagonal is consistent with outcomes
+    qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
+    qindex numDiags = numColsPerNode / powerOf2(qubits.size());
+    return numDiags;
+}
+
+qindex util_getGlobalFlatIndex(Qureg qureg, qindex globalRow, qindex globalCol) {
+    assert_utilsGivenDensMatr(qureg);
+
+    qindex numAmpsPerCol = powerOf2(qureg.numQubits);
+    return (globalCol * numAmpsPerCol) + globalRow;
+}
+
+int util_getRankContainingIndex(Qureg qureg, qindex globalInd) {
+    assert_utilsGivenStateVec(qureg);
+
+    return globalInd / qureg.numAmpsPerNode; // floors
+}
+int util_getRankContainingIndex(FullStateDiagMatr matr, qindex globalInd) {
+
+    return globalInd / matr.numElemsPerNode; // floors
+}
+
+int util_getRankContainingColumn(Qureg qureg, qindex globalCol) {
+    assert_utilsGivenDensMatr(qureg);
+
+    qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
+    return globalCol / numColsPerNode; // floors
 }
 
 
@@ -490,10 +543,10 @@ void util_setSuperoperator(qcomp** superop, qcomp*** matrices, int numMatrices, 
  * DISTRIBUTED ELEMENTS INDEXING
  */
 
-bool util_areAnyElemsWithinThisNode(int numElemsPerNode, qindex elemStartInd, qindex numInds) {
+bool util_areAnyVectorElemsWithinNode(int rank, qindex numElemsPerNode, qindex elemStartInd, qindex numInds) {
 
     qindex elemEndIndExcl = elemStartInd + numInds;
-    qindex nodeStartInd = comm_getRank() * numElemsPerNode;
+    qindex nodeStartInd = numElemsPerNode * rank;
     qindex nodeEndIndExcl = nodeStartInd + numElemsPerNode;
 
     // 'no' if all targeted elems occur after this node
@@ -508,16 +561,16 @@ bool util_areAnyElemsWithinThisNode(int numElemsPerNode, qindex elemStartInd, qi
     return true;
 }
 
-util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, qindex elemStartInd, qindex numInds) {
+util_VectorIndexRange util_getLocalIndRangeOfVectorElemsWithinNode(int rank, qindex numElemsPerNode, qindex elemStartInd, qindex numInds) {
 
-    if (!util_areAnyElemsWithinThisNode(numElemsPerNode, elemStartInd, numInds))
+    if (!util_areAnyVectorElemsWithinNode(rank, numElemsPerNode, elemStartInd, numInds))
         error_nodeUnexpectedlyContainedNoElems();
 
     // global indices of the user's targeted elements
     qindex elemEndInd = elemStartInd + numInds;
 
     // global indices of all elements contained in the node
-    qindex nodeStartInd = numElemsPerNode * comm_getRank();
+    qindex nodeStartInd = numElemsPerNode * rank;
     qindex nodeEndInd   = nodeStartInd + numElemsPerNode;
 
     // global indices of user's targeted elements which are contained within node
@@ -531,7 +584,7 @@ util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, 
     // local indices of user's passed elements that correspond to above
     qindex localOffsetInd = globalRangeStartInd - elemStartInd;
     
-    return (util_IndexRange) {
+    return {
         .localDistribStartInd = localRangeStartInd,
         .localDuplicStartInd = localOffsetInd,
         .numElems = numLocalElems
@@ -617,3 +670,56 @@ qreal util_getMaxProbOfTwoQubitDepolarising() {
 // no equivalent function for oneQubitDamping, which
 // can accept any valid probability, because we permit
 // it to exceed maximal-mixing and induce purity
+
+
+
+/*
+ * TEMPORARY MEMORY ALLOCATION
+ */
+
+template <typename T>
+void tryAllocVector(vector<T> &vec, qindex size, void (*errFunc)()) {
+
+    // this function resizes the vector, not only reserving it,
+    // such that vec.size() will subsequently return 'size'
+
+    if (size == 0)
+        return;
+
+    try {
+        vec.resize(size);
+
+    } catch (std::bad_alloc &e) { 
+        errFunc();
+    } catch (std::length_error &e) {
+        errFunc();
+    }
+}
+
+void util_tryAllocVector(vector<qreal > &vec, qindex size, void (*errFunc)()) { tryAllocVector(vec, size, errFunc); }
+void util_tryAllocVector(vector<qcomp > &vec, qindex size, void (*errFunc)()) { tryAllocVector(vec, size, errFunc); }
+void util_tryAllocVector(vector<qcomp*> &vec, qindex size, void (*errFunc)()) { tryAllocVector(vec, size, errFunc); }
+
+void util_tryAllocMatrix(vector<vector<qcomp>> &matr, qindex numRows, qindex numCols, void (*errFunc)()) {
+
+    // this function resizes the matrix, not only reserving it,
+    // such that matr.size() will subsequently return 'numRows'
+    // (unless numCols=0), and matr[0].size() will return 'numCols'
+
+    if (numRows == 0 || numCols == 0)
+        return;
+
+    try {
+        // alloc span of rows
+        matr.resize(numRows);
+
+        // alloc each row (serially enumerate since we expected matrix is small/tractable)
+        for (qindex r=0; r<numRows; r++)
+            matr[r].resize(numCols);
+
+    } catch (std::bad_alloc &e) { 
+        errFunc();
+    } catch (std::length_error &e) {
+        errFunc();
+    }
+}

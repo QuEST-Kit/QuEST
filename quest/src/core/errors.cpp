@@ -10,6 +10,7 @@
 #include "quest/include/matrices.h"
 
 #include "quest/src/core/printer.hpp"
+#include "quest/src/core/bitwise.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
@@ -138,7 +139,12 @@ void error_commWithSameRank() {
     raiseInternalError("A distributed function attempted to communicate to a pair rank equal to its own rank.");
 }
 
-void assert_validCommBounds(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps) {
+void error_commGivenInconsistentNumSubArraysANodes() {
+
+    raiseInternalError("A distributed function was given a different number of per-node subarray lengths than exist nodes.");
+}
+
+void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps) {
 
     bool valid = (
         sendInd >= 0 &&
@@ -150,6 +156,12 @@ void assert_validCommBounds(Qureg qureg, qindex sendInd, qindex recvInd, qindex 
 
     if (!valid)
         error_commOutOfBounds();
+}
+
+void assert_commPayloadIsPowerOf2(qindex numAmps) {
+
+    if (!isPowerOf2(numAmps))
+        raiseInternalError("A communication function was given a payload which was unexpectedly not a power of 2, as implied by preconditions.");
 }
 
 void assert_commQuregIsDistributed(Qureg qureg) {
@@ -212,6 +224,11 @@ void error_localiserPassedStateVecToChannelComCheck() {
 void error_localiserGivenDistribMatrixAndLocalQureg() {
 
     raiseInternalError("A localiser function was given a distributed FullStateDiagMatr but a non-distributed Qureg, which are incompatible.");
+}
+
+void error_localiserFailedToAllocTempMemory() {
+
+    raiseInternalError("A localiser function attempted and failed to allocate temporary memory.");
 }
 
 void assert_localiserGivenStateVec(Qureg qureg) {
@@ -604,6 +621,19 @@ void error_utilsIsBraQubitInSuffixGivenNonDensMatr() {
 
     raiseInternalError("A functiion queried whether a qubit's corresponding bra-qubit was in the suffix substate, but the Qureg was not a density matrix.");
 }
+
+void assert_utilsGivenStateVec(Qureg qureg) {
+
+    if (qureg.isDensityMatrix)
+        raiseInternalError("A utility function was given a density matrix where a statevector was expected.");
+}
+
+void assert_utilsGivenDensMatr(Qureg qureg) {
+
+    if (!qureg.isDensityMatrix)
+        raiseInternalError("A utility function was given a statevector where a density matrix was expected.");
+}
+
 
 
 /*

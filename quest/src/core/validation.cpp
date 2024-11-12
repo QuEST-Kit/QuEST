@@ -668,10 +668,31 @@ namespace report {
      */
 
     string INVALID_BASIS_STATE_INDEX = 
-        "Classical state index ${STATE_IND} is invalid for the given ${NUM_QUBITS} qubit Qureg. Index must be greater than or equal to zero, and cannot equal nor exceed the number of unique classical states (2^${NUM_QUBITS} = ${NUM_STATES}).";
+        "Basis state index ${STATE_IND} is invalid for the given ${NUM_QB} qubit Qureg. Index must be greater than or equal to zero, and cannot equal nor exceed the number of unique classical states (2^${NUM_QB} = ${NUM_STATES}).";
 
     string INVALID_BASIS_STATE_ROW_OR_COL =
-        "The row and column indices (${ROW_IND}, ${COL_IND}) are invalid for the given ${NUM_QUBITS} qubit Qureg. Both indices must be greater than or equal to zero, and neither can equal nor exceed the number of unique classical states (2^${NUM_QUBITS} = ${NUM_STATES}).";
+        "The row and column indices (${ROW_IND}, ${COL_IND}) are invalid for the given ${NUM_QB} qubit Qureg. Both indices must be greater than or equal to zero, and neither can equal nor exceed the number of unique classical states (2^${NUM_QB} = ${NUM_STATES}).";
+
+
+    string INVALID_STARTING_BASIS_STATE_INDEX =
+        "The starting basis state index ${START_IND} is invalid for the given ${NUM_QB} qubit Qureg. Index must be greater than or equal to zero, and cannot equal nor exceed the number of unique classical states (2^${NUM_QB} = ${MAX_IND_EXCL}).";
+
+    string INVALID_NUM_BASIS_STATE_INDICES =
+        "The specified number of amplitudes or basis states (${NUM_INDS}) is invalid for the given ${NUM_QB} qubit Qureg, which contains ${MAX_NUM_INDS_INCL} amplitudes.";
+
+    string INVALID_ENDING_BASIS_STATE_INDEX =
+        "The combination of the starting basis state index (${START_IND}) and the number of amplitudes (${NUM_INDS}) implies an end index of ${END_IND_EXCL} (exclusive) which is invalid for the ${NUM_QB}-qubit ${MAX_IND_EXCL}-amplitude Qureg.";
+
+
+    string INVALID_STARTING_BASIS_ROW_OR_COL =
+        "Either or both of the starting row and column (${START_ROW} and ${START_COL} respectively) are invalid for the given ${NUM_QB} qubit Qureg. Both indices must be greater than or equal to zero, and cannot exceed equal nor exceed the density matrix dimension of 2^${NUM_QB} = ${MAX_IND_EXCL}.";
+
+    string INVALID_NUM_BASIS_ROWS_OR_COLS =
+        "Either or both of the number of rows and columns (${NUM_ROWS} and ${NUM_COLS} respectively) are invalid for the given ${NUM_QB} qubit Qureg, which has a dimension of ${MAX_NUM_INCL}.";
+
+    string INVALID_ENDING_BASIS_ROW_OR_COL =
+        "The combination of starting (row, column) = (${START_ROW}, ${START_COL}) and number of rows and columns (${NUM_ROWS} and ${NUM_COLS} respectively) implies final (row, column) = (${END_ROW_EXCL}, ${END_COL_EXCL}), which is invalid for the given ${NUM_QB}-qubit ${MAX_END_INCL}-dimension density matrix.";
+
 
 
     /*
@@ -2862,6 +2883,70 @@ void validate_basisStateRowCol(Qureg qureg, qindex row, qindex col, const char* 
 
     bool valid = row >= 0 && row < maxIndExcl && col >= 0 && col < maxIndExcl;
     assertThat(valid, report::INVALID_BASIS_STATE_ROW_OR_COL, vars, caller);
+}
+
+void validate_basisStateIndices(Qureg qureg, qindex startInd, qindex numInds, const char* caller) {
+
+    assertThat(
+        startInd >= 0 && startInd < qureg.numAmps, 
+        report::INVALID_STARTING_BASIS_STATE_INDEX, 
+        {{"${START_IND}", startInd}, {"${MAX_IND_EXCL}", qureg.numAmps}, {"${NUM_QB}", qureg.numQubits}},
+        caller);
+
+    assertThat(
+        numInds > 0 && numInds <= qureg.numAmps,
+        report::INVALID_NUM_BASIS_STATE_INDICES, 
+        {{"${NUM_INDS}", numInds}, {"${MAX_NUM_INDS_INCL}", qureg.numAmps}, {"${NUM_QB}", qureg.numQubits}}, caller);
+
+    qindex endIndExcl = startInd + numInds;
+    tokenSubs vars = {
+        {"${NUM_QB}",       qureg.numQubits},
+        {"${START_IND}",    startInd},
+        {"${NUM_INDS}",     numInds},
+        {"${MAX_IND_EXCL}", qureg.numAmps},
+        {"${END_IND_EXCL}", endIndExcl}};
+       
+    assertThat(
+        endIndExcl <= qureg.numAmps, 
+        report::INVALID_ENDING_BASIS_STATE_INDEX,  
+        vars, caller);
+}
+
+void validate_basisStateRowCols(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols, const char* caller) {
+
+    qindex maxRowOrColExcl = powerOf2(qureg.numQubits);
+
+    assertThat(
+        (startRow >= 0 && startRow < maxRowOrColExcl) && 
+        (startCol >= 0 && startCol < maxRowOrColExcl), 
+        report::INVALID_STARTING_BASIS_ROW_OR_COL, 
+        {{"${START_ROW}", startRow}, {"${START_COL}", startCol}, {"${MAX_IND_EXCL}", maxRowOrColExcl}, {"${NUM_QB}", qureg.numQubits}}, 
+        caller);
+
+    assertThat(
+        (numRows > 0 && numRows <= maxRowOrColExcl) &&
+        (numCols > 0 && numCols <= maxRowOrColExcl),
+        report::INVALID_NUM_BASIS_ROWS_OR_COLS, 
+        {{"${NUM_ROWS}", numRows}, {"${NUM_COLS}", numCols}, {"${MAX_NUM_INCL}", maxRowOrColExcl}, {"${NUM_QB}", qureg.numQubits}}, 
+        caller);
+
+    qindex endRowExcl = startRow + numRows;
+    qindex endColExcl = startCol + numCols;
+
+    tokenSubs vars = {
+        {"${NUM_QB}", qureg.numQubits},
+        {"${START_ROW}", startRow}, 
+        {"${START_COL}", startCol},
+        {"${NUM_ROWS}", numRows},
+        {"${NUM_COLS}", numCols},
+        {"${END_ROW_EXCL}", endRowExcl},
+        {"${END_COL_EXCL}", endColExcl},
+        {"${MAX_END_INCL}", maxRowOrColExcl}};
+       
+    assertThat(
+        endRowExcl <= maxRowOrColExcl && endColExcl <= maxRowOrColExcl,
+        report::INVALID_ENDING_BASIS_ROW_OR_COL,  
+        vars, caller);
 }
 
 

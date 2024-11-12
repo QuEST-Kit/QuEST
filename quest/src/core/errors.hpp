@@ -74,7 +74,11 @@ void error_commOutOfBounds();
 
 void error_commWithSameRank();
 
-void assert_validCommBounds(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps);
+void error_commGivenInconsistentNumSubArraysANodes();
+
+void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps);
+
+void assert_commPayloadIsPowerOf2(qindex numAmps);
 
 void assert_commQuregIsDistributed(Qureg qureg);
 
@@ -101,6 +105,8 @@ void error_localiserGivenPauliTensorOrGadgetWithoutXOrY();
 void error_localiserPassedStateVecToChannelComCheck();
 
 void error_localiserGivenDistribMatrixAndLocalQureg();
+
+void error_localiserFailedToAllocTempMemory();
 
 void assert_localiserGivenStateVec(Qureg qureg);
 
@@ -263,6 +269,10 @@ void error_utilsGetPrefixBraIndGivenNonDensMatr();
 void error_utilsGetPrefixBraIndGivenSuffixQubit();
 
 void error_utilsIsBraQubitInSuffixGivenNonDensMatr();
+
+void assert_utilsGivenStateVec(Qureg qureg);
+
+void assert_utilsGivenDensMatr(Qureg qureg);
 
 
 

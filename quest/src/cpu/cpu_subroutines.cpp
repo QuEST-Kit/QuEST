@@ -16,9 +16,9 @@
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/accelerator.hpp"
-#include "quest/src/core/miscellaneous.hpp"
-#include "quest/src/comm/comm_indices.hpp"
+#include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
+#include "quest/src/comm/comm_indices.hpp"
 
 #include <vector>
 #include <algorithm>
@@ -1541,13 +1541,13 @@ qreal cpu_densmatr_calcTotalProb_sub(Qureg qureg) {
     // iterate each column, of which one amp (the diagonal) contributes
     qindex numIts = powerOf2(qureg.logNumColsPerNode);
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
-    qindex firstDiagInd = misc_getLocalIndexOfFirstDiagonalAmp(qureg);
+    qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
 
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
          // i = local index of nth local diagonal element
-        qindex i = misc_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
+        qindex i = util_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol); // inlined, safely callable
         prob += real(qureg.cpuAmps[i]);
     }
 
@@ -1592,8 +1592,8 @@ qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
     qreal prob = 0;
 
     // each iteration visits one column (contributing one diagonal amp) per 2^qubits.size() possible
-    qindex numIts = misc_getNumLocalDiagonalsWithBits(qureg, qubits, outcomes);
-    qindex firstDiagInd = misc_getLocalIndexOfFirstDiagonalAmp(qureg);
+    qindex numIts = util_getNumLocalDiagonalAmpsWithBits(qureg, qubits, outcomes);
+    qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
 
     auto sortedQubits = util_getSorted(qubits); // all in suffix
@@ -1609,7 +1609,7 @@ qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
         qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitStateMask);
 
         // j = local flat index of the diagonal element corresponding to i
-        qindex j = misc_getLocalIndexOfDiagonalAmp(i, firstDiagInd, numAmpsPerCol);
+        qindex j = util_getLocalIndexOfDiagonalAmp(i, firstDiagInd, numAmpsPerCol); // inlined, safely callable
 
         prob += std::real(qureg.cpuAmps[j]);
     }
@@ -1660,7 +1660,7 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     // iterate every column, each contributing one element (the diagonal)
     qindex numIts = powerOf2(qureg.logNumColsPerNode);
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
-    qindex firstDiagInd = misc_getLocalIndexOfFirstDiagonalAmp(qureg);
+    qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
     
     // use template param to compile-time unroll loop in getValueOfBits()
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
@@ -1675,7 +1675,7 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     for (qindex n=0; n<numIts; n++) {
 
          // i = local index of nth local diagonal element
-        qindex i = misc_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
+        qindex i = util_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol); // inlined, safely callable
         qreal prob = std::real(qureg.cpuAmps[i]);
 
         // j = global index of i

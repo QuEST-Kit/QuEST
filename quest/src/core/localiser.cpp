@@ -304,6 +304,84 @@ qcomp localiser_statevec_getAmp(Qureg qureg, qindex ind) {
 }
 
 
+void localiser_statevec_getAmps(qcomp* outAmps, Qureg qureg, qindex globalStartInd, qindex globalNumAmps) {
+    
+    // we do not assert state-vec, since the density matrix routine re-uses this function
+
+    // when not distributed, all nodes merely perform direct local overwrite and finish
+    if (!qureg.isDistributed) {
+        accel_statevec_getAmps(outAmps, qureg, globalStartInd, globalNumAmps);
+        return;
+    }
+
+    // when distributed, each node will broadcast their overlap (which may be zero) with the global range
+    int myRank = comm_getRank();
+    int numNodes = comm_getNumNodes();
+
+    // which they first overwrite into their local copies of out (may involve a GPU-to-CPU copy)
+    if (util_areAnyVectorElemsWithinNode(myRank, qureg.numAmpsPerNode, globalStartInd, globalNumAmps)) {
+        auto localInds = util_getLocalIndRangeOfVectorElemsWithinNode(myRank, qureg.numAmpsPerNode, globalStartInd, globalNumAmps);
+        accel_statevec_getAmps(&outAmps[localInds.localDuplicStartInd], qureg, localInds.localDistribStartInd, localInds.numElems);
+    }
+
+    // determine the overlap with each node (i.e. which amps, if any, they contribute)
+    vector<qindex> globalRecvInds(numNodes);
+    vector<qindex> localSendInds (numNodes);
+    vector<qindex> numAmpsPerRank(numNodes, 0); // default = zero contributed amps
+
+    for (int sendRank=0; sendRank<numNodes; sendRank++) {
+
+        if (!util_areAnyVectorElemsWithinNode(sendRank, qureg.numAmpsPerNode, globalStartInd, globalNumAmps))
+            continue;
+
+        auto inds = util_getLocalIndRangeOfVectorElemsWithinNode(sendRank, qureg.numAmpsPerNode, globalStartInd, globalNumAmps);
+        globalRecvInds[sendRank] = inds.localDuplicStartInd;
+        localSendInds [sendRank] = inds.localDistribStartInd;
+        numAmpsPerRank[sendRank] = inds.numElems;
+    }
+
+    // contributor nodes broadcast, all nodes receive, so that every node populates 'outAmps' fully
+    comm_combineSubArrays(outAmps, globalRecvInds, localSendInds, numAmpsPerRank);
+}
+
+
+void localiser_densmatr_getAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
+    assert_localiserGivenDensMatr(qureg);
+
+    // this function simply serially invokes localiser_statevec_getAmps() upon 
+    // every indicated column, for simplicity, and since we believe this function
+    // will only ever be called upon tractably small sub-matrices. After all, the
+    // user is likely to serially process outAmps themselves. Our method incurs the
+    // below insignificant performance penalties:
+    // - we must allocate temporary memory that is the same size as outAmps,
+    //   but transposed, because we cannot make a pointer to a column of outAmps
+    //   in order to invoke localiser_statevec_getAmps() thereupon. Thereafter, we
+    //   serially populate outAmps with the transposed temp memory.
+    // - every invocation of localiser_statevec_getAmps() invokes synchronous
+    //   GPU-CPU copying (a total of #numCols), whereas a bespoke implementation
+    //   could perform each non-contiguous copy asynchronously then wait
+    // - every invocation invokes synchronous MPI broadcasting, whereas a bespoke
+    //   method could asynch all per-col broadcasts before a final wait
+    // A custom function to remedy these issues is complicated; it would involve
+    // e.g. exposing MPI_Request outside of comm_routines.cpp (unacceptable for
+    // compiler compatibility), or having comm_routines cache un-fulfilled asynch
+    // requests, etc.
+
+    vector<vector<qcomp>> tempOut;
+    util_tryAllocMatrix(tempOut, numCols, numRows, error_localiserFailedToAllocTempMemory); // transposed dim of outAmps
+
+    for (qindex c=0; c<numCols; c++) {
+        qindex flatInd = util_getGlobalFlatIndex(qureg, startRow, startCol + c);
+        localiser_statevec_getAmps(tempOut[c].data(), qureg, flatInd, numRows);
+    }
+
+    // serially overwrite outAmps = transpose(tempOut)
+    for (qindex r=0; r<numRows; r++)
+        for (qindex c=0; c<numCols; c++)
+            outAmps[r][c] = tempOut[c][r];
+}
+
+
 
 /*
  * SWAP

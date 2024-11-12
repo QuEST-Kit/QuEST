@@ -139,6 +139,8 @@ using std::vector;
 
 qcomp accel_statevec_getAmp_sub(Qureg qureg, qindex ind);
 
+void accel_statevec_getAmps(qcomp* outAmps, Qureg qureg, qindex localStartInd, qindex numAmps);
+
 
 /*
  * COMMUNICATION BUFFER PACKING
