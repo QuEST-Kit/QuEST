@@ -314,6 +314,9 @@ void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller);
 void validate_basisStateIndex(Qureg qureg, qindex ind, const char* caller);
 void validate_basisStateRowCol(Qureg qureg, qindex row, qindex col, const char* caller);
 
+void validate_basisStateIndices(Qureg qureg, qindex startInd, qindex numInds, const char* caller);
+void validate_basisStateRowCols(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols, const char* caller);
+
 
 
 /*

@@ -403,12 +403,12 @@ extern "C" void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qco
     validate_fullStateDiagMatrNewElems(out, startInd, numElems, __func__);
 
     // if the matrix is non-distributed, we update every node's duplicated CPU amps
-    if (!out.isDistributed)
+    if (!out.isDistributed) {
         cpu_copyArray(&out.cpuElems[startInd], in, numElems);
 
     // only distributed nodes containing targeted elements need to do anything
-    else if (util_areAnyElemsWithinThisNode(out.numElemsPerNode, startInd, numElems)) {
-        util_IndexRange range = util_getLocalIndRangeOfElemsWithinThisNode(out.numElemsPerNode, startInd, numElems);
+    } else if (util_areAnyVectorElemsWithinNode(rank, out.numElemsPerNode, startInd, numElems)) {
+        auto range = util_getLocalIndRangeOfVectorElemsWithinNode(rank, out.numElemsPerNode, startInd, numElems);
         cpu_copyArray(&out.cpuElems[range.localDistribStartInd], &in[range.localDuplicStartInd], range.numElems);
     }
 

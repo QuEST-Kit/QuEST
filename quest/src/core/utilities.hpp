@@ -12,6 +12,8 @@
 #include "quest/include/channels.h"
 #include "quest/include/environment.h"
 
+#include "quest/src/core/inliner.hpp"
+
 #include <type_traits>
 #include <string>
 #include <vector>
@@ -55,7 +57,31 @@ qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> ta
 
 
 /*
- * MATRIX TYPING
+ * INDEX ALGEBRA
+ */
+
+qindex util_getLocalIndexOfFirstDiagonalAmp(Qureg qureg);
+
+qindex util_getNumLocalDiagonalAmpsWithBits(Qureg qureg, vector<int> qubits, vector<int> outcomes);
+
+qindex util_getGlobalFlatIndex(Qureg qureg, qindex globalRow, qindex globalCol);
+
+int util_getRankContainingIndex(Qureg qureg, qindex globalInd);
+int util_getRankContainingColumn(Qureg qureg, qindex globalCol);
+int util_getRankContainingIndex(FullStateDiagMatr matr, qindex globalInd);
+
+INLINE qindex util_getLocalIndexOfDiagonalAmp(
+    qindex localIndOfBasisState, qindex localIndOfFirstDiagAmp, qindex numAmpsPerCol
+) {
+    // inlined since invoked in hot loops and CUDA kernels
+    qindex interDiagSpace = 1 + numAmpsPerCol;
+    return localIndOfFirstDiagAmp + (localIndOfBasisState * interDiagSpace);
+}
+
+
+
+/*
+ * STRUCT TYPING
  *
  * defined here in the header since templated, and which use compile-time inspection.
  */
@@ -254,22 +280,21 @@ void util_setSuperoperator(qcomp** superop, qcomp*** matrices, int numMatrices, 
  * DISTRIBUTED ELEMENTS INDEXING
  */
 
-typedef struct {
+struct util_VectorIndexRange {
 
-    // the starting local index among the node's distributed elements
+    // the first local index of this node's amps which are in the queried distributed range
     qindex localDistribStartInd;
 
-    // the corresponding local index of in the duplicated (non-distributed) elements 
+    // the corresponding local index of the non-distributed (i.e. duplicated on every node) data structure
     qindex localDuplicStartInd;
 
-    // the number of elements in the range, all of which are in this node's distributed elements
+    // the number of this node's amps which are within the queried distributed range
     qindex numElems;
+};
 
-} util_IndexRange;
+bool util_areAnyVectorElemsWithinNode(int rank, qindex numElemsPerNode, qindex startInd, qindex numInds);
 
-bool util_areAnyElemsWithinThisNode(int numElemsPerNode, qindex startInd, qindex numInds);
-
-util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, qindex elemStartInd, qindex numInds);
+util_VectorIndexRange util_getLocalIndRangeOfVectorElemsWithinNode(int rank, qindex numElemsPerNode, qindex elemStartInd, qindex numInds);
 
 
 
@@ -277,7 +302,7 @@ util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, 
  * DECOHERENCE FACTORS
  */
 
-typedef struct { qreal c1; qreal c2; qreal c3; qreal c4; } util_Scalars;
+struct util_Scalars { qreal c1; qreal c2; qreal c3; qreal c4; };
 
 qreal util_getOneQubitDephasingFactor(qreal prob);
 
@@ -298,6 +323,19 @@ qreal util_getMaxProbOfTwoQubitDephasing();
 qreal util_getMaxProbOfOneQubitDepolarising();
 
 qreal util_getMaxProbOfTwoQubitDepolarising();
+
+
+
+/*
+ * TEMPORARY MEMORY ALLOCATION
+ */
+
+void util_tryAllocVector(vector<qreal > &vec, qindex size, void (*errFunc)());
+void util_tryAllocVector(vector<qcomp > &vec, qindex size, void (*errFunc)());
+void util_tryAllocVector(vector<qcomp*> &vec, qindex size, void (*errFunc)());
+
+void util_tryAllocMatrix(vector<vector<qcomp>> &vec, qindex numRows, qindex numCols, void (*errFunc)());
+
 
 
 #endif // UTILITIES_HPP

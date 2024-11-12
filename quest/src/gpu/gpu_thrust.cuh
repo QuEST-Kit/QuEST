@@ -19,7 +19,6 @@
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
-#include "quest/src/core/miscellaneous.hpp"
 #include "quest/src/gpu/gpu_types.cuh"
 
 #include <thrust/device_ptr.h>
@@ -196,13 +195,13 @@ struct functor_getDiagInd : public thrust::unary_function<qindex,qindex> {
     qindex firstDiagInd;
 
     functor_getDiagInd(Qureg qureg) {
-        firstDiagInd = misc_getLocalIndexOfFirstDiagonalAmp(qureg);
+        firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
         numAmpsPerCol = powerOf2(qureg.numQubits);
     }
 
     __host__ __device__ qindex operator()(qindex i) {
 
-        return misc_getLocalIndexOfDiagonalAmp(i, firstDiagInd, numAmpsPerCol);
+        return util_getLocalIndexOfDiagonalAmp(i, firstDiagInd, numAmpsPerCol); // inlined, safely CUDA-callable
     }
 };
 

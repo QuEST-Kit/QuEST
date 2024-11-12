@@ -181,6 +181,15 @@ qcomp accel_statevec_getAmp_sub(Qureg qureg, qindex ind) {
 }
 
 
+void accel_statevec_getAmps(qcomp* outAmps, Qureg qureg, qindex localStartInd, qindex numAmps) {
+
+    // copy directly from GPU/CPU to outAmps
+    (qureg.isGpuAccelerated)?
+        gpu_copyGpuToCpu(&qureg.gpuAmps[localStartInd], outAmps, numAmps):
+        cpu_copyArray(outAmps, &qureg.cpuAmps[localStartInd], numAmps); // (in,out) order is reversed
+}
+
+
 
 /*
  * COMMUNICATION BUFFER PACKING
