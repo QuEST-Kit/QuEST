@@ -243,7 +243,7 @@ void globallyCombineNonUniformSubArrays(
     int myRank = comm_getRank();
     int numNodes = comm_getNumNodes();
 
-    if (globalRecvIndPerRank.size() != numNodes)
+    if (globalRecvIndPerRank.size() != (size_t) numNodes)
         error_commGivenInconsistentNumSubArraysANodes();
 
     // every node first copies their 'send' portion into a distinct part of their local 'recv',
