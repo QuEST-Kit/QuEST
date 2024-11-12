@@ -402,6 +402,8 @@ extern "C" void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qco
     validate_matrixFields(out, __func__);
     validate_fullStateDiagMatrNewElems(out, startInd, numElems, __func__);
 
+    int rank = comm_getRank();
+
     // if the matrix is non-distributed, we update every node's duplicated CPU amps
     if (!out.isDistributed) {
         cpu_copyArray(&out.cpuElems[startInd], in, numElems);
