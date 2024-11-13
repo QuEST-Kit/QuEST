@@ -86,6 +86,7 @@ INLINE qindex util_getLocalIndexOfDiagonalAmp(
  * defined here in the header since templated, and which use compile-time inspection.
  */
 
+template <class T> constexpr bool util_isQuregType() { return is_same_v<T, Qureg>; }
 template <class T> constexpr bool util_isCompMatr1() { return is_same_v<T, CompMatr1>; }
 template <class T> constexpr bool util_isCompMatr2() { return is_same_v<T, CompMatr2>; }
 template <class T> constexpr bool util_isCompMatr () { return is_same_v<T, CompMatr >; }
@@ -116,15 +117,8 @@ constexpr bool util_isDenseMatrixType() {
     )
         return false;
 
-    // this line is unreachable but throwing errors in a template expansion is ludicrous;
-    // above type checks are explicit in case we add more matrix types later
+    // this line is reached if the type is not a matrix
     return false;
-}
-
-template<class T>
-constexpr bool util_isDiagonalMatrixType() {
-
-    return !util_isDenseMatrixType<T>();
 }
 
 template<class T>
@@ -146,15 +140,15 @@ constexpr bool util_isHeapMatrixType() {
 }
 
 template<class T>
-constexpr bool util_isDistributableMatrixType() {
+constexpr bool util_isDistributableType() {
 
-    return (is_same_v<T, FullStateDiagMatr>);
+    return (is_same_v<T, FullStateDiagMatr> || is_same_v<T, Qureg>);
 }
 
 template<class T>
 bool util_isDistributedMatrix(T matr) {
 
-    if constexpr (util_isDistributableMatrixType<T>())
+    if constexpr (util_isDistributableType<T>())
         return matr.isDistributed;
 
     return false;

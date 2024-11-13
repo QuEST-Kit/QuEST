@@ -11,9 +11,11 @@
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/memory.hpp"
+#include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
+
 
 
 #if COMPILE_CUDA && ! (defined(__NVCC__) || defined(__HIPCC__))
@@ -391,29 +393,37 @@ void gpu_copyGpuToCpu(Qureg qureg) {
 
 void gpu_copyCpuToGpu(CompMatr matr) {
     assertHeapObjectGpuMemIsAllocated(matr);
-
     copyMatrixIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numRows, TO_DEVICE);
+}
+void gpu_copyGpuToCpu(CompMatr matr) {
+    assertHeapObjectGpuMemIsAllocated(matr);
+    copyMatrixIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numRows, TO_HOST);
 }
 
 
 void gpu_copyCpuToGpu(DiagMatr matr) {
     assertHeapObjectGpuMemIsAllocated(matr);
-
     copyArrayIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numElems, TO_DEVICE);
 }
-
-
-void gpu_copyCpuToGpu(FullStateDiagMatr matr) {
+void gpu_copyGpuToCpu(DiagMatr matr) {
     assertHeapObjectGpuMemIsAllocated(matr);
-
-    copyArrayIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numElemsPerNode, TO_DEVICE);
+    copyArrayIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numElems, TO_HOST);
 }
 
 
 void gpu_copyCpuToGpu(SuperOp op) {
     assertHeapObjectGpuMemIsAllocated(op);
-
     copyMatrixIfGpuCompiled(op.cpuElems, util_getGpuMemPtr(op), op.numRows, TO_DEVICE);
+}
+void gpu_copyGpuToCpu(SuperOp op) {
+    assertHeapObjectGpuMemIsAllocated(op);
+    copyMatrixIfGpuCompiled(op.cpuElems, util_getGpuMemPtr(op), op.numRows, TO_HOST);
+}
+
+
+void gpu_copyCpuToGpu(FullStateDiagMatr matr) {
+    assertHeapObjectGpuMemIsAllocated(matr);
+    copyArrayIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numElemsPerNode, TO_DEVICE);
 }
 
 

@@ -382,6 +382,49 @@ void localiser_densmatr_getAmps(qcomp** outAmps, Qureg qureg, qindex startRow, q
 }
 
 
+void localiser_fullstatediagmatr_getAmps(qcomp* outAmps, FullStateDiagMatr matr, qindex globalStartInd, qindex globalNumAmps) {
+
+    // printer.cpp sometimes needs to broadcast the elements of a FullStateDiagMatr;
+    // since it has the same memory layout as a statevector Qureg, we very cheekily
+    // spoof a similarly distributed Qureg. This is poor design; we are here mimicking
+    // the initialisation in qureg.cpp of a Qureg, so a change to Qureg now means a
+    // necessary edit here. A happy consequence however is that outAmps will be
+    // overwritten with the GPU amps of matr if they were inconsistent with the CPU
+    // amps, which is actually desirable; the printed amps (when this function is
+    // invoked by printer.cpp) will be those that are actually used in the GPU backend.
+
+    // spoof a Qureg, pointing memory to matr's. not all fields are consulted,
+    // but we update everything for defensive design (and to avoid compiler warnings)
+    Qureg qureg = {
+        .isMultithreaded = 0,
+        .isGpuAccelerated = matr.isGpuAccelerated,
+        .isDistributed = matr.isDistributed,
+
+        .rank = (matr.isDistributed)? comm_getRank() : 0,
+        .numNodes = (matr.isDistributed)? comm_getNumNodes() : 1,
+
+        .isDensityMatrix = 0,
+        .numQubits = matr.numQubits,
+        .numAmps = matr.numElems,
+        .logNumAmps = logBase2(matr.numElems),
+
+        .numAmpsPerNode = matr.numElemsPerNode,
+        .logNumAmpsPerNode = logBase2(matr.numElemsPerNode),
+        .logNumColsPerNode = 0,
+
+        .cpuAmps = matr.cpuElems,
+        .gpuAmps = matr.gpuElems,
+
+        // beware; FullStateDiagMatr never have buffers whereas Quregs
+        // do, so this Qureg is corrupted and would fail validation
+        .cpuCommBuffer = nullptr,
+        .gpuCommBuffer = nullptr
+    };
+
+    localiser_statevec_getAmps(outAmps, qureg, globalStartInd, globalNumAmps);
+}
+
+
 
 /*
  * SWAP

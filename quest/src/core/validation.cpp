@@ -101,8 +101,8 @@ namespace report {
     string INVALID_NEW_EPSILON =
         "Invalid new epsilon value (${NEW_EPS}). Must specifiy a positive number, or zero to disable numerical validation (as if the epsilon is infinity).";
 
-    string INVALID_NUM_REPORTED_ITEMS =
-        "Invalid parameter (${NUM_ITEMS}). Must specify a positive number of items to be reported, or 0 to indicate that all items should be reported.";
+    string INVALID_NUM_REPORTED_SCALARS =
+        "Invalid parameter (${NUM_ITEMS}). Must specify a positive number of scalars to be reported, or 0 to indicate that all scalars should be reported.";
 
 
     /*
@@ -1131,7 +1131,7 @@ void validate_newEpsilonValue(qreal eps, const char* caller) {
     assertThat(eps >= 0, report::INVALID_NEW_EPSILON, {{"${NEW_EPS}", eps}}, caller);
 }
 
-void validate_newNumReportedItems(qindex num, const char* caller) {
+void validate_newMaxNumReportedScalars(qindex numRows, qindex numCols, const char* caller) {
 
     assertThat(num >= 0, report::INVALID_NUM_REPORTED_ITEMS, {{"${NUM_ITEMS}", num}}, caller);
 }

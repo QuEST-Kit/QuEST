@@ -92,7 +92,7 @@ void demo_PauliStrSum() {
     for (int num : numReportElems) {
         rootPrint(num);
 
-        setNumReportedItems(num);
+        setMaxNumReportedItems(num, num);
         reportPauliStrSum(sum);
     }
 

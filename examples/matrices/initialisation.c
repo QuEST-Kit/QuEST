@@ -346,8 +346,9 @@ void demo_syncDiagMatr() {
 
 void demo_setInlineFullStateDiagMatr() {
 
-    // using custom instead of createFullStateDiagMatr() to force distribution
-    FullStateDiagMatr matr = createCustomFullStateDiagMatr(5, 1);
+    // force use of available hardware acceleration
+    QuESTEnv env = getQuESTEnv();
+    FullStateDiagMatr matr = createCustomFullStateDiagMatr(5, env.isDistributed, env.isGpuAccelerated);
 
     // inline literal; identical to setFullStateDiagMatr() for consistencty with C API
     setInlineFullStateDiagMatr(matr, 3, 10, {3,4,5,6,7,8,9,1,12,13});
@@ -360,8 +361,9 @@ void demo_setInlineFullStateDiagMatr() {
 
 void demo_setFullStateDiagMatr() {
 
-    // using custom instead of createFullStateDiagMatr() to force distribution
-    FullStateDiagMatr matr = createCustomFullStateDiagMatr(5, 1);
+    // force use of available hardware acceleration
+    QuESTEnv env = getQuESTEnv();
+    FullStateDiagMatr matr = createCustomFullStateDiagMatr(5, env.isDistributed, env.isGpuAccelerated);
 
     // VLA (C only)
     int n = 10;
@@ -388,8 +390,9 @@ void demo_setFullStateDiagMatr() {
 
 void demo_syncFullStateDiagMatr() {
 
-    // using custom instead of createFullStateDiagMatr() to force distribution
-    FullStateDiagMatr a = createCustomFullStateDiagMatr(5, 1);
+    // force use of available hardware acceleration
+    QuESTEnv env = getQuESTEnv();
+    FullStateDiagMatr a = createCustomFullStateDiagMatr(5, env.isDistributed, env.isGpuAccelerated);
 
     // every node modifies its first local element
     a.cpuElems[0] = -10i * (1+getQuESTEnv().rank);

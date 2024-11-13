@@ -84,10 +84,18 @@ void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems
 void gpu_copyCpuToGpu(Qureg qureg);
 
 void gpu_copyCpuToGpu(CompMatr matr);
-void gpu_copyCpuToGpu(DiagMatr matr);
-void gpu_copyCpuToGpu(FullStateDiagMatr matr);
-void gpu_copyCpuToGpu(SuperOp op);
+void gpu_copyGpuToCpu(CompMatr matr);
 
+void gpu_copyCpuToGpu(DiagMatr matr);
+void gpu_copyGpuToCpu(DiagMatr matr);
+
+void gpu_copyCpuToGpu(SuperOp op);
+void gpu_copyGpuToCpu(SuperOp op);
+
+// funnily, there is no need for GPU-to-CPU or FullStateDiagMatr;
+// the invoking printer.cpp function uses localiser_fullstatediagamtr_...
+// copying to handle the distributed nuisance, which spoofs a Qureg
+void gpu_copyCpuToGpu(FullStateDiagMatr matr);
 
 
 /*

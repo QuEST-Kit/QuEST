@@ -680,3 +680,14 @@ void error_randomiserGivenNonNormalisedProbList() {
 
     raiseInternalError("Randomiser was asked to sample from a list of probabilities which did not sum to one, within epsilon error.");
 }
+
+
+
+/*
+ * PRINTER ERRORS
+ */
+
+void error_printerFailedToAllocTempMemory() {
+
+    raiseInternalError("A printer utility attempted and failed to allocate temporary memory, which likely results from the attemptedly printed object being too large.");
+}

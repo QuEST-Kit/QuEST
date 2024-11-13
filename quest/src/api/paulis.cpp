@@ -351,8 +351,10 @@ extern "C" PauliStrSum createPauliStrSumFromFile(const char* fn) {
 PauliStrSum createPauliStrSumFromFile(string fn) {
     validate_canReadFile(fn, __func__);
 
-    bool rightIsLeastSig = true;
+    // all distributed nodes will simultaneously read the file (that's fine)
     string str = parser_loadFile(fn);
+
+    bool rightIsLeastSig = true;
     return parser_validateAndParsePauliStrSum(str, rightIsLeastSig, __func__);
 }
 
@@ -366,8 +368,10 @@ extern "C" PauliStrSum createPauliStrSumFromReversedFile(const char* fn) {
 PauliStrSum createPauliStrSumFromReversedFile(string fn) {
     validate_canReadFile(fn, __func__);
 
-    bool rightIsLeastSig = false;
+    // all distributed nodes will simultaneously read the file (that's fine)
     string str = parser_loadFile(fn);
+
+    bool rightIsLeastSig = false;
     return parser_validateAndParsePauliStrSum(str, rightIsLeastSig, __func__);
 }
 
@@ -395,22 +399,22 @@ extern "C" void reportPauliStr(PauliStr str) {
 
     // avoid printing leftmost superfluous I operators
     int numPaulis = 1 + paulis_getIndOfLefmostNonIdentityPauli(str);
-    print_pauliStr(str, numPaulis);
+    print_elems(str, numPaulis);
 }
 
 
-extern "C" void reportPauliStrSum(PauliStrSum str) {
-    validate_pauliStrSumFields(str, __func__);
+extern "C" void reportPauliStrSum(PauliStrSum sum) {
+    validate_pauliStrSumFields(sum, __func__);
 
     // calculate memory usage
-    qindex numStrBytes   = str.numTerms * sizeof *str.strings;
-    qindex numCoeffBytes = str.numTerms * sizeof *str.coeffs;
-    qindex numStrucBytes = sizeof(str);
+    qindex numStrBytes   = sum.numTerms * sizeof *sum.strings;
+    qindex numCoeffBytes = sum.numTerms * sizeof *sum.coeffs;
+    qindex numStrucBytes = sizeof(sum);
 
     // we don't bother checking for overflow since total memory scales
     // linearly with user input parameters, unlike Qureg and matrices.
     qindex numTotalBytes = numStrBytes + numCoeffBytes + numStrucBytes;
 
-    print_pauliStrSumInfo(str.numTerms, numTotalBytes);
-    print_pauliStrSum(str);
+    print_header(sum, numTotalBytes);
+    print_elems(sum);
 }

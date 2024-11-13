@@ -81,7 +81,7 @@ void validate_envIsInit(const char* caller);
 
 void validate_newEpsilonValue(qreal eps, const char* caller);
 
-void validate_newNumReportedItems(qindex num, const char* caller);
+void validate_newMaxNumReportedScalars(qindex numRows, qindex numCols, const char* caller);
 
 
 

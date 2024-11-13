@@ -39,7 +39,7 @@ void demo_CompMatr() {
     for (int i=0; i<len; i++) {
         qindex num = numReportElems[i];
         rootPrint(num);
-        setNumReportedItems(num);
+        setMaxNumReportedItems(num, num);
         reportCompMatr(matr);
     }
 }
@@ -59,7 +59,7 @@ void demo_DiagMatr() {
     for (int i=0; i<len; i++) {
         qindex num = numReportElems[i];
         rootPrint(num);
-        setNumReportedItems(num);
+        setMaxNumReportedItems(num, num);
         reportDiagMatr(matr);
     }
 }
@@ -68,8 +68,9 @@ void demo_DiagMatr() {
 
 void demo_FullStateDiagMatr() {
 
-    // force distribution to make reporting interesting
-    FullStateDiagMatr matr = createCustomFullStateDiagMatr(6, 1);
+    // force use of available hardware acceleration
+    QuESTEnv env = getQuESTEnv();
+    FullStateDiagMatr matr = createCustomFullStateDiagMatr(6, env.isDistributed, env.isGpuAccelerated);
 
     // lazily set each element individually
     for (qindex i=0; i<matr.numElems; i++)
@@ -80,7 +81,7 @@ void demo_FullStateDiagMatr() {
     for (int i=0; i<6; i++) {
         qindex num = numReportElems[i];
         rootPrint(num);
-        setNumReportedItems(num);
+        setMaxNumReportedItems(num, num);
         reportFullStateDiagMatr(matr);
     }
 }
