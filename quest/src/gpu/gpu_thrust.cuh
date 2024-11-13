@@ -22,6 +22,7 @@
 #include "quest/src/core/randomiser.hpp"
 #include "quest/src/gpu/gpu_types.cuh"
 
+#include <thrust/random.h>
 #include <thrust/device_ptr.h>
 #include <thrust/device_vector.h>
 #include <thrust/transform_reduce.h>
@@ -347,7 +348,7 @@ struct functor_setRandomStateVecAmp : public thrust::unary_function<qindex,cu_qc
     unsigned baseSeed;
     functor_setRandomStateVecAmp(unsigned seed) : baseSeed(seed) {}
 
-    __host__ __device__ qindex operator()(qindex ampInd) {
+    __host__ __device__ cu_qcomp operator()(qindex ampInd) {
 
         // wastefully create new distributions for every amp
         auto pi = std::acos(-1);
