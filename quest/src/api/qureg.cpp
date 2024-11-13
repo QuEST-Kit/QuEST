@@ -354,34 +354,48 @@ void reportQuregToFile(Qureg qureg, char* fn) {
 
 void syncQuregToGpu(Qureg qureg) {
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    // permit this to be called even in non-GPU mode
+    if (qureg.isGpuAccelerated)
+        gpu_copyCpuToGpu(qureg);
 }
 
 void syncQuregFromGpu(Qureg qureg) {
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    if (qureg.isGpuAccelerated)
+        gpu_copyGpuToCpu(qureg);
 }
 
 
-void syncSubQuregToGpu  (Qureg qureg, qindex startInd, qindex numAmps) {
+void syncSubQuregToGpu(Qureg qureg, qindex startInd, qindex numAmps) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsStateVector(qureg, __func__);
+    validate_basisStateIndices(qureg, startInd, numAmps, __func__);
+
 
     // TODO
     error_functionNotImplemented(__func__);
 }
 void syncSubQuregFromGpu(Qureg qureg, qindex startInd, qindex numAmps) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsStateVector(qureg, __func__);
+    validate_basisStateIndices(qureg, startInd, numAmps, __func__);
 
     // TODO
     error_functionNotImplemented(__func__);
 }
 
-void syncSubDensityQuregToGpu  (Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
+void syncSubDensityQuregToGpu(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_basisStateRowCols(qureg, startRow, startCol, numRows, numCols, __func__);
 
     // TODO
     error_functionNotImplemented(__func__);
 }
 void syncSubDensityQuregFromGpu(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_basisStateRowCols(qureg, startRow, startCol, numRows, numCols, __func__);
 
     // TODO
     error_functionNotImplemented(__func__);

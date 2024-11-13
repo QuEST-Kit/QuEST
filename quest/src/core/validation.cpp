@@ -104,6 +104,18 @@ namespace report {
     string INVALID_NUM_REPORTED_SCALARS =
         "Invalid parameter (${NUM_ITEMS}). Must specify a positive number of scalars to be reported, or 0 to indicate that all scalars should be reported.";
 
+    string INVALID_NUM_REPORTED_SIG_FIGS =
+        "Invalid number of significant figures (${NUM_SIG_FIGS}). Cannot be less than one.";
+
+    string INVALID_NUM_RANDOM_SEEDS =
+        "Invalid number of random seeds (${NUM_SEEDS}). Must specify one or more.";
+
+    string INCONSISTENT_NUM_RANDOM_SEEDS_ACROSS_NODES =
+        "The specified number of random seeds was inconsistent between nodes. All nodes must receive the same number of identical seeds.";
+
+    string INCONSISTENT_RANDOM_SEEDS_ACROSS_NODES =
+        "The random seeds must be consistent between all nodes. Please call this function without rank-specific logic.";
+
 
     /*
      * QUREG CREATION
@@ -126,10 +138,10 @@ namespace report {
         "Cannot create density Qureg of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the necessary local memory (in bytes) of each node would overflow size_t. In this deployment, the maximum number of qubits in a density-matrix Qureg is ${MAX_QUBITS}. See reportQuESTEnv().";
 
     string NEW_DISTRIB_STATEVEC_QUREG_HAS_TOO_FEW_AMPS = 
-        "Cannot create a distributed Qureg of only ${NUM_QUBITS} qubits between ${NUM_NODES} nodes, because each node would contain fewer than one amplitude of the statevector. The minimum size is ${MIN_QUBITS} qubits; see reportQuESTEnv(). Consider disabling distribution for this Qureg.";
+        "Cannot create a distributed Qureg of only ${NUM_QUBITS} qubits between ${NUM_NODES} nodes, because each node would contain fewer than one amplitude of the statevector. The minimum size in this deployment is ${MIN_QUBITS} qubits; see reportQuESTEnv(). Consider disabling distribution for this Qureg.";
 
     string NEW_DISTRIB_DENSMATR_QUREG_HAS_TOO_FEW_AMPS = 
-        "Cannot create a distributed density Qureg of only ${NUM_QUBITS} qubits between ${NUM_NODES} nodes, because each node would contain fewer than a column's worth of amplitudes of the density matrix. The minimum size is ${MIN_QUBITS} qubits; see reportQuESTEnv(). Consider disabling distribution for this Qureg.";
+        "Cannot create a distributed density Qureg of only ${NUM_QUBITS} qubits between ${NUM_NODES} nodes, because each node would contain fewer than a column's worth of amplitudes of the density matrix. The minimum size in this deployment is ${MIN_QUBITS} qubits; see reportQuESTEnv(). Consider disabling distribution for this Qureg.";
 
 
     string INVALID_OPTION_FOR_QUREG_IS_DENSMATR = 
@@ -766,6 +778,7 @@ namespace report {
         "The GPU has less available memory (${MEM_AVAIL} bytes) than that needed (${MEM_NEEDED} bytes) to temporarily store the ${NUM_OUTCOMES} outcome probabilities of the specified ${NUM_QUBITS} qubits.";
 
 
+
     /*
      * CHANNEL PARAMETERS 
      */
@@ -891,16 +904,16 @@ extern "C" {
  * validation functions to avoid superfluous compute
  */
 
-static bool isValidationEnabled = true;
+static bool global_isValidationEnabled = true;
 
 void validateconfig_enable() {
-    isValidationEnabled = true;
+    global_isValidationEnabled = true;
 }
 void validateconfig_disable() {
-    isValidationEnabled = false;
+    global_isValidationEnabled = false;
 }
 bool validateconfig_isEnabled() {
-    return isValidationEnabled;
+    return global_isValidationEnabled;
 }
 
 
@@ -912,16 +925,16 @@ bool validateconfig_isEnabled() {
  * Hermiticity and CPTP checks are performed
  */
 
-static qreal validationEpsilon = DEAULT_VALIDATION_EPSILON;
+static qreal global_validationEpsilon = DEAULT_VALIDATION_EPSILON;
 
 void validateconfig_setEpsilon(qreal eps) {
-    validationEpsilon = eps;
+    global_validationEpsilon = eps;
 }
 void validateconfig_setEpsilonToDefault() {
-    validationEpsilon = DEAULT_VALIDATION_EPSILON;
+    global_validationEpsilon = DEAULT_VALIDATION_EPSILON;
 }
 qreal validateconfig_getEpsilon() {
-    return validationEpsilon;
+    return global_validationEpsilon;
 }
 
 
@@ -971,7 +984,7 @@ string getStringWithSubstitutedVars(string oldStr, tokenSubs varsAndVals) {
 void assertThat(bool valid, string msg, const char* func) {
 
     // skip validation if user has disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     // this function does not seek consensus among nodes in distributed 
@@ -1002,7 +1015,7 @@ void assertThat(bool valid, string msg, tokenSubs vars, const char* func) {
 void assertAllNodesAgreeThat(bool valid, string msg, const char* func) {
 
     // skip below consensus broadcast if user has disabled validation
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     // this function seeks consensus among distributed nodes before validation,
@@ -1126,6 +1139,31 @@ void validate_envIsInit(const char* caller) {
  * DEBUG UTILITIES
  */
 
+void validate_randomSeeds(unsigned* seeds, int numSeeds, const char* caller) {
+
+    // we rigorously check that all seeds globally agree, since it is
+    // conceivable users could erroneously attempt to seed unique per-node
+    assertThat(numSeeds > 0, report::INVALID_NUM_RANDOM_SEEDS, {{"${NUM_SEEDS}", numSeeds}}, caller);
+
+    if (!getQuESTEnv().isDistributed)
+        return;
+
+    // assert every node received the same number of seeds
+    unsigned numRootSeeds = (unsigned) numSeeds;
+    comm_broadcastUnsignedsFromRoot(&numRootSeeds, 1);
+    assertThat(numRootSeeds == numSeeds, report::INCONSISTENT_NUM_RANDOM_SEEDS_ACROSS_NODES, caller);
+
+    // assert every node has the same seeds as root (ergo as one another)
+    vector<unsigned> rootSeeds(seeds, seeds + numSeeds);
+    comm_broadcastUnsignedsFromRoot(rootSeeds.data(), numSeeds);
+
+    bool agrees = true;
+    for (int i=0; i<numSeeds && agrees; i++)
+        agrees &= seeds[i] == rootSeeds[i];
+    
+    assertThat(agrees, report::INCONSISTENT_RANDOM_SEEDS_ACROSS_NODES, caller);
+}
+
 void validate_newEpsilonValue(qreal eps, const char* caller) {
 
     assertThat(eps >= 0, report::INVALID_NEW_EPSILON, {{"${NEW_EPS}", eps}}, caller);
@@ -1135,6 +1173,11 @@ void validate_newMaxNumReportedScalars(qindex numRows, qindex numCols, const cha
 
     assertThat(numRows >= 0, report::INVALID_NUM_REPORTED_SCALARS, {{"${NUM_ITEMS}", numRows}}, caller);
     assertThat(numCols >= 0, report::INVALID_NUM_REPORTED_SCALARS, {{"${NUM_ITEMS}", numCols}}, caller);
+}
+
+void validate_newMaxNumReportedSigFigs(int numSigFigs, const char* caller) {
+
+    assertThat(numSigFigs >= 1, report::INVALID_NUM_REPORTED_SIG_FIGS, {{"${NUM_SIG_FIGS}", numSigFigs}}, caller);
 }
 
 
@@ -1316,7 +1359,7 @@ void validate_newQuregParams(int numQubits, int isDensMatr, int isDistrib, int i
 
     // some of the below validation involves getting distributed node consensus, which
     // can be an expensive synchronisation, which we avoid if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     assertQuregNonEmpty(numQubits, caller);
@@ -1609,7 +1652,7 @@ void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, int useGpu, bo
 
     // some of the below validation involves getting distributed node consensus, which
     // can be an expensive synchronisation, which we avoid if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     QuESTEnv env = getQuESTEnv();
@@ -1665,7 +1708,7 @@ void assertNewMatrixAllocsSucceeded(T matr, qindex numBytes, const char* caller)
     // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads,
     // but we avoid this potetially expensive synchronisation if validation is anyway disabled
     // (which also avoids us enumerating the matrix rows)
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     tokenSubs vars = {{"${NUM_BYTES}", numBytes}};
@@ -1710,7 +1753,7 @@ void validate_newMatrixAllocs(DiagMatr matr, const char* caller) {
 void validate_newMatrixAllocs(FullStateDiagMatr matr, const char* caller) {
 
     bool isDenseMatrix = false;
-    int numNodes = (matr.isDistributed)? getQuESTEnv().numNodes : 1;
+    int numNodes = (matr.isDistributed)? comm_getNumNodes() : 1;
     qindex numBytes = mem_getLocalMatrixMemoryRequired(matr.numQubits, isDenseMatrix, numNodes);
     assertNewMatrixAllocsSucceeded(matr, numBytes, caller);
 }
@@ -1949,7 +1992,7 @@ void ensureMatrixUnitarityIsKnown(T matr) {
 
     // determine local unitarity, modifying matr.isUnitary. This will
     // involve MPI communication if matr is a distributed type
-    *(matr.isUnitary) = util_isUnitary(matr, validationEpsilon);
+    *(matr.isUnitary) = util_isUnitary(matr, global_validationEpsilon);
 }
 
 // type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
@@ -1957,7 +2000,7 @@ template <class T>
 void assertMatrixIsUnitary(T matr, const char* caller) {
 
     // avoid expensive unitarity check if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     // unitarity is determined differently depending on matrix type
@@ -1965,7 +2008,7 @@ void assertMatrixIsUnitary(T matr, const char* caller) {
 
     // fixed-size matrices have their unitarity calculated afresh (since cheap)
     if constexpr (util_isFixedSizeMatrixType<T>())
-        isUnitary = util_isUnitary(matr, validationEpsilon);
+        isUnitary = util_isUnitary(matr, global_validationEpsilon);
 
     // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
     else {
@@ -2017,7 +2060,7 @@ void ensureMatrHermiticityIsKnown(T matr) {
         return;
 
     // determine local unitarity, modifying matr.isHermitian
-    *(matr.isHermitian) = util_isHermitian(matr, validationEpsilon);
+    *(matr.isHermitian) = util_isHermitian(matr, global_validationEpsilon);
 }
 
 // type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
@@ -2025,7 +2068,7 @@ template <class T>
 void assertMatrixIsHermitian(T matr, const char* caller) {
 
     // avoid expensive unitarity check if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     // unitarity is determined differently depending on matrix type
@@ -2033,7 +2076,7 @@ void assertMatrixIsHermitian(T matr, const char* caller) {
 
     // fixed-size matrices have their hermiticity calculated afresh (since cheap)
     if constexpr (util_isFixedSizeMatrixType<T>())
-        isHermitian = util_isHermitian(matr, validationEpsilon);
+        isHermitian = util_isHermitian(matr, global_validationEpsilon);
 
     // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
     else {
@@ -2229,7 +2272,7 @@ void validate_newSuperOpParams(int numQubits, const char* caller) {
 
     // some of the below validation involves getting distributed node consensus, which
     // can be an expensive synchronisation, which we avoid if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     validate_envIsInit(caller);
@@ -2248,7 +2291,7 @@ void assertNewSuperOpAllocs(SuperOp op, bool isInKrausMap, const char* caller) {
 
     // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads,
     // but we avoid this if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     // assert CPU array of rows was alloc'd successfully
@@ -2278,7 +2321,7 @@ void validate_newSuperOpAllocs(SuperOp op, const char* caller) {
 void validate_newInlineSuperOpDimMatchesVectors(int numDeclaredQubits, vector<vector<qcomp>> matrix, const char* caller) {
 
     // avoid potentially expensive matrix enumeration if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     qindex numDeclaredRows = powerOf2(2*numDeclaredQubits);
@@ -2307,7 +2350,7 @@ void validate_newInlineSuperOpDimMatchesVectors(int numDeclaredQubits, vector<ve
 void validate_superOpNewMatrixDims(SuperOp op, vector<vector<qcomp>> matrix, const char* caller) {
 
     // avoid potentially expensive matrix enumeration if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     tokenSubs vars = {
@@ -2427,7 +2470,7 @@ void validate_newKrausMapParams(int numQubits, int numMatrices, const char* call
 
     // some of the below validation involves getting distributed node consensus, which
     // can be an expensive synchronisation, which we avoid if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     validate_envIsInit(caller);
@@ -2456,7 +2499,7 @@ void validate_newKrausMapAllocs(KrausMap map, const char* caller) {
 
     // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads,
     // but we avoid this if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     // prior validation gaurantees this will not overflow
@@ -2481,7 +2524,7 @@ void validate_newKrausMapAllocs(KrausMap map, const char* caller) {
 void validate_newInlineKrausMapDimMatchesVectors(int numQubits, int numOperators, vector<vector<vector<qcomp>>> matrices, const char* caller) {
 
     // avoid potentially expensive matrix enumeration if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     qindex numRows = powerOf2(numQubits);
@@ -2512,7 +2555,7 @@ void validate_newInlineKrausMapDimMatchesVectors(int numQubits, int numOperators
 void validate_krausMapNewMatrixDims(KrausMap map, vector<vector<vector<qcomp>>> matrices, const char* caller) {
 
     // avoid potentially expensive matrix enumeration if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
     
     assertThat(map.numMatrices == (int) matrices.size(), report::KRAUS_MAP_INCOMPATIBLE_NUM_NEW_MATRICES,
@@ -2599,12 +2642,12 @@ void validate_krausMapIsCPTP(KrausMap map, const char* caller) {
     validate_krausMapIsSynced(map, caller);
 
     // avoid expensive CPTP check if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     // evaluate CPTPness if it isn't already known 
     if (*(map.isCPTP) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        *(map.isCPTP) = util_isCPTP(map, validationEpsilon);
+        *(map.isCPTP) = util_isCPTP(map, global_validationEpsilon);
 
     assertThat(*(map.isCPTP), report::KRAUS_MAP_NOT_CPTP, caller);
 }
@@ -2849,7 +2892,7 @@ void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
 
     // ensure hermiticity is known (if not; compute it)
     if (*(sum.isHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        *(sum.isHermitian) = util_isHermitian(sum, validationEpsilon);
+        *(sum.isHermitian) = util_isHermitian(sum, global_validationEpsilon);
 
     assertThat(*(sum.isHermitian), report::PAULI_STR_SUM_NOT_HERMITIAN, caller);
 }
@@ -3091,7 +3134,7 @@ void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* c
 
     qreal norm = pow(x,2) + pow(y,2) + pow(z,2);
 
-    assertThat(norm > validationEpsilon, report::ROTATION_AXIS_VECTOR_IS_ZERO, caller);
+    assertThat(norm > global_validationEpsilon, report::ROTATION_AXIS_VECTOR_IS_ZERO, caller);
 }
 
 
@@ -3119,7 +3162,7 @@ void validate_measurementOutcomeProbNotZero(int outcome, qreal prob, const char*
 
     // TODO: report 'prob' once validation reporting can handle floats
 
-    assertThat(prob >= validationEpsilon, report::ONE_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY, {{"${OUTCOME}", outcome}}, caller);
+    assertThat(prob >= global_validationEpsilon, report::ONE_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY, {{"${OUTCOME}", outcome}}, caller);
 }
 
 void validate_measurementOutcomesProbNotZero(int* outcomes, int numQubits, qreal prob, const char* caller) {
@@ -3127,7 +3170,7 @@ void validate_measurementOutcomesProbNotZero(int* outcomes, int numQubits, qreal
     // TODO: report 'prob' and 'outcomes' (as binary sequence) once validation reporting can handle floats
     qindex outcomeValue = getIntegerFromBits(outcomes, numQubits);
 
-    assertThat(prob >= validationEpsilon, report::MANY_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY, {{"${OUTCOME_VALUE}", outcomeValue}}, caller);
+    assertThat(prob >= global_validationEpsilon, report::MANY_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY, {{"${OUTCOME_VALUE}", outcomeValue}}, caller);
 }
 
 void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const char* caller) {
@@ -3291,7 +3334,7 @@ void validate_quregRenormProbIsNotZero(qreal prob, const char* caller) {
 
     // TODO: include 'prob' in error message when non-integers are supported
 
-    assertThat(prob > validationEpsilon, report::QUREG_RENORM_PROB_IS_ZERO, caller);
+    assertThat(prob > global_validationEpsilon, report::QUREG_RENORM_PROB_IS_ZERO, caller);
 }
 
 

@@ -31,6 +31,8 @@ using std::complex;
 
 void printer_setMaxNumPrintedScalars(qindex numRows, qindex numCols);
 
+void printer_setMaxNumPrintedSigFig(int numSigFigs);
+
 
 
 /*

@@ -79,9 +79,13 @@ void validate_envIsInit(const char* caller);
  * DEBUG UTILITIES
  */
 
+void validate_randomSeeds(unsigned* seeds, int numSeeds, const char* caller);
+
 void validate_newEpsilonValue(qreal eps, const char* caller);
 
 void validate_newMaxNumReportedScalars(qindex numRows, qindex numCols, const char* caller);
+
+void validate_newMaxNumReportedSigFigs(int numSigFigs, const char* caller);
 
 
 
