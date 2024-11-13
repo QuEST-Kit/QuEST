@@ -19,6 +19,7 @@
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/randomiser.hpp"
 #include "quest/src/gpu/gpu_types.cuh"
 
 #include <thrust/device_ptr.h>
@@ -26,6 +27,8 @@
 #include <thrust/transform_reduce.h>
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
+
+#include <cmath>
 
 
 
@@ -325,6 +328,60 @@ struct functor_projectDensMatr : public thrust::binary_function<qindex,cu_qcomp,
 };
 
 
+struct functor_setRandomStateVecAmp : public thrust::unary_function<qindex,cu_qcomp> {
+
+    // this functor generates a random, unnormalised
+    // statevector amplitude which, after normalisation
+    // of all amps, produces uniformly-random pure states
+
+    // TODO:
+    // this method of parallel RNG is slow, since every
+    // amplitude uses an independent freshly-created 
+    // generator, as per the limitations of Thrust. A
+    // lower-level method like use of cuRAND may prove
+    // faster, though we should ensure continued compatibility
+    // with AMD GPUs via HIP/ROCm and RocThrust. We should
+    // first quantify the speed of this function in comparison to
+    // a single-qubit gate; being slower than <5 gates is acceptable
+
+    unsigned baseSeed;
+    functor_setRandomStateVecAmp(unsigned seed) : baseSeed(seed) {}
+
+    __host__ __device__ qindex operator()(qindex ampInd) {
+
+        // wastefully create new distributions for every amp
+        auto pi = std::acos(-1);
+        thrust::normal_distribution<qreal> normDist(0, 1); // mean=0, var=1
+        thrust::uniform_real_distribution<qreal> phaseDist(0, 2*pi); // ~ [0, 2pi]
+
+        // wastefully initialise a new generator for every amp...
+        thrust::default_random_engine gen;
+
+        // which we uniquely seed, as opposed to commonly-seeding and advancing
+        // each thread by a different amount; this avoids gen.discard() having 
+        // to serially perform 2^N advances in the final thread. Alas, we have to
+        // prepare the unique seed (combining baseSeed and ampInd) ourselves, being 
+        // unable to use std::seed_seq; we'll use SplitMix64, adapted from:
+        // https://xoshiro.di.unimi.it/splitmix64.c
+
+        unsigned long long uniqueSeed = ampInd + baseSeed;
+        uniqueSeed = (uniqueSeed ^ (uniqueSeed >> 30)) * 0xbf58476d1ce4e5b9ULL;
+        uniqueSeed = (uniqueSeed ^ (uniqueSeed >> 27)) * 0x94d049bb133111ebULL;
+        uniqueSeed = (uniqueSeed ^ (uniqueSeed >> 31));
+        gen.seed(uniqueSeed);
+
+        // using the uniquely-seeded generator, produce a few variates to inform one amp;
+        // see an explanation of the maths in randomiser.cpp's rand_getThreadPrivateRandomAmp()
+        qreal n1 = normDist(gen);
+        qreal n2 = normDist(gen);
+        qreal prob = n1*n1 + n2*n2;
+        qreal phase = phaseDist(gen);
+        qcomp amp = sqrt(prob) * std::exp(qcomp(0, phase));
+        return amp;
+    }
+};
+
+
 
 /*
  * STATE MODIFICATION 
@@ -473,6 +530,26 @@ void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, ve
 
     qindex numIts = qureg.numAmpsPerNode;
     thrust::transform(indIter, indIter + numIts, ampIter, ampIter, projFunctor); // 4th arg gets modified
+}
+
+
+
+/*
+ * RANDOM INITIALISATION
+ */
+
+
+void thrust_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg) {
+
+    // thread amp generators uniquely perturb a common base seed
+    unsigned seed = rand_getThreadSharedRandomSeed(qureg.isDistributed);
+    auto functor = functor_setRandomStateVecAmp(seed);
+
+    auto indIter = thrust::make_counting_iterator(0);
+    auto ampIter = getStartPtr(qureg);
+
+    qindex numIts = qureg.numAmpsPerNode;
+    thrust::transform(indIter, indIter + numIts, ampIter, ampIter, functor); // 4th arg gets modified
 }
 
 

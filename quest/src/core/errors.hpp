@@ -108,6 +108,8 @@ void error_localiserGivenDistribMatrixAndLocalQureg();
 
 void error_localiserFailedToAllocTempMemory();
 
+void assert_localiserSuccessfullyAllocatedTempMemory(qcomp* ptr, bool isGpu);
+
 void assert_localiserGivenStateVec(Qureg qureg);
 
 void assert_localiserGivenDensMatr(Qureg qureg);

@@ -27,6 +27,58 @@ using std::string;
 
 
 /*
+ * INTERNALLY EXPOSED FUNCTION
+ */
+
+
+Qureg qureg_populateNonHeapFields(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread) {
+
+    QuESTEnv env = getQuESTEnv();
+
+    // pre-prepare some struct fields (to avoid circular initialisation)
+    int logNumNodes = (useDistrib)? 
+        logBase2(env.numNodes) : 0;
+    qindex logNumAmpsPerNode = (isDensMatr)? 
+        (2*numQubits - logNumNodes) :
+        (  numQubits - logNumNodes);
+
+    return {
+        // bind deployment info
+        .isMultithreaded  = useMultithread,
+        .isGpuAccelerated = useGpuAccel,
+        .isDistributed    = useDistrib,
+
+        // optionally bind distributed info, noting that in distributed environments,
+        // the non-distributed quregs are duplicated on each node and each believe
+        // they are the root node, with no other nodes existing; this is essential so
+        // that these quregs can agnostically use distributed routines which consult
+        // the rank, but it will interfere with naive root-only printing logic
+        .rank        = (useDistrib)? env.rank : 0,
+        .numNodes    = (useDistrib)? env.numNodes : 1,
+        .logNumNodes = (useDistrib)? logBase2(env.numNodes) : 0, // duplicated for clarity
+
+        // set dimensions
+        .isDensityMatrix = isDensMatr,
+        .numQubits  = numQubits,
+        .numAmps    = (isDensMatr)? powerOf2(2*numQubits) : powerOf2(numQubits),
+        .logNumAmps = (isDensMatr)?          2*numQubits  :          numQubits,
+
+        // set dimensions per node (even if not distributed)
+        .numAmpsPerNode = powerOf2(logNumAmpsPerNode),
+        .logNumAmpsPerNode = logNumAmpsPerNode,
+        .logNumColsPerNode = (isDensMatr)? numQubits - logNumNodes : 0, // used only by density matrices
+
+        // caller will allocate heap memory as necessary
+        .cpuAmps       = nullptr,
+        .gpuAmps       = nullptr,
+        .cpuCommBuffer = nullptr,
+        .gpuCommBuffer = nullptr
+    };
+}
+
+
+
+/*
  * PRIVATE INNER FUNCTIONS (C++)
  */
 
@@ -96,51 +148,17 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
     // throw error if the user had forced multithreading but GPU accel was auto-chosen
     validate_newQuregNotBothMultithreadedAndGpuAccel(useGpuAccel, useMultithread, caller);
 
-    // pre-prepare some struct fields (to avoid circular initialisation)
-    int logNumNodes = (useDistrib)? 
-        logBase2(env.numNodes) : 0;
-    qindex logNumAmpsPerNode = (isDensMatr)? 
-        (2*numQubits - logNumNodes) :
-        (  numQubits - logNumNodes);
+    Qureg qureg = qureg_populateNonHeapFields(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread);
 
-    // const struct fields must be initialised inline
-    Qureg qureg = {
+    // always allocate CPU memory
+    qureg.cpuAmps = cpu_allocArray(qureg.numAmpsPerNode); // nullptr if failed
 
-        // bind deployment info
-        .isMultithreaded  = useMultithread,
-        .isGpuAccelerated = useGpuAccel,
-        .isDistributed    = useDistrib,
-
-        // optionally bind distributed info, noting that in distributed environments,
-        // the non-distributed quregs are duplicated on each node and each believe
-        // they are the root node, with no other nodes existing; this is essential so
-        // that these quregs can agnostically use distributed routines which consult
-        // the rank, but it will interfere with naive root-only printing logic
-        .rank        = (useDistrib)? env.rank : 0,
-        .numNodes    = (useDistrib)? env.numNodes : 1,
-        .logNumNodes = (useDistrib)? logBase2(env.numNodes) : 0, // duplicated for clarity
-
-        // set dimensions
-        .isDensityMatrix = isDensMatr,
-        .numQubits  = numQubits,
-        .numAmps    = (isDensMatr)? powerOf2(2*numQubits) : powerOf2(numQubits),
-        .logNumAmps = (isDensMatr)?          2*numQubits  :          numQubits,
-
-        // set dimensions per node (even if not distributed)
-        .numAmpsPerNode = powerOf2(logNumAmpsPerNode),
-        .logNumAmpsPerNode = logNumAmpsPerNode,
-        .logNumColsPerNode = (isDensMatr)? numQubits - logNumNodes : 0, // used only by density matrices
-
-        // always allocate CPU memory
-        .cpuAmps = cpu_allocArray(qureg.numAmpsPerNode), // nullptr if failed
-
-        // conditionally allocate GPU memory and communication buffers (even if numNodes == 1).
-        // note that in distributed settings but where useDistrib=false, each node will have a
-        // full copy of the amplitudes, but will NOT have the communication buffers allocated.
-        .gpuAmps       = (useGpuAccel)?               gpu_allocArray(qureg.numAmpsPerNode) : nullptr,
-        .cpuCommBuffer = (useDistrib)?                cpu_allocArray(qureg.numAmpsPerNode) : nullptr,
-        .gpuCommBuffer = (useGpuAccel && useDistrib)? gpu_allocArray(qureg.numAmpsPerNode) : nullptr,
-    };
+    // conditionally allocate GPU memory and communication buffers (even if numNodes == 1).
+    // note that in distributed settings but where useDistrib=false, each node will have a
+    // full copy of the amplitudes, but will NOT have the communication buffers allocated.
+    qureg.gpuAmps       = (useGpuAccel)?               gpu_allocArray(qureg.numAmpsPerNode) : nullptr;
+    qureg.cpuCommBuffer = (useDistrib)?                cpu_allocArray(qureg.numAmpsPerNode) : nullptr;
+    qureg.gpuCommBuffer = (useGpuAccel && useDistrib)? gpu_allocArray(qureg.numAmpsPerNode) : nullptr;
 
     // if any of the above mallocs failed, below validation will memory leak; so free first (but don't set to nullptr)
     freeAllMemoryIfAnyAllocsFailed(qureg);
@@ -281,13 +299,9 @@ Qureg createCloneQureg(Qureg qureg) {
         qureg.numQubits, qureg.isDensityMatrix, qureg.isDistributed, 
         qureg.isGpuAccelerated, qureg.isMultithreaded, __func__);
 
-    // copy CPU memory from qureg to clone
-    cpu_copyArray(clone.cpuAmps, qureg.cpuAmps, qureg.numAmpsPerNode);
+    setQuregToClone(clone, qureg); // harmlessly re-validates
 
-    // update clone's GPU memory
-    if (clone.isGpuAccelerated)
-        gpu_copyCpuToGpu(clone);
-
+    // if GPU-accelerated, clone's CPU amps are NOT updated
     return clone;
 }
 

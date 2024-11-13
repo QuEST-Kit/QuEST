@@ -27,6 +27,14 @@ int cpu_getNumOpenmpProcessors();
 
 
 /*
+ * OPENMP SUBROUTINES
+ */
+
+int cpu_getOpenmpThreadInd();
+
+
+
+/*
  * MEMORY ALLOCATION
  */
 

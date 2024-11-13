@@ -11,6 +11,7 @@
 #include "quest/include/qureg.h"
 #include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
+#include "quest/include/initialisations.h"
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
@@ -18,6 +19,8 @@
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
+#include "quest/src/cpu/cpu_config.hpp"
+#include "quest/src/gpu/gpu_config.hpp"
 
 #include <tuple>
 #include <vector>
@@ -31,6 +34,10 @@ using std::vector;
 /*
  * PRIVATE FUNCTIONS
  */
+
+
+// some localiser functions cheekily spoof Quregs for code-reuse
+extern Qureg qureg_populateNonHeapFields(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread);
 
 
 void assertValidCtrlStates(vector<int> ctrls, vector<int> ctrlStates) {
@@ -385,41 +392,18 @@ void localiser_densmatr_getAmps(qcomp** outAmps, Qureg qureg, qindex startRow, q
 void localiser_fullstatediagmatr_getAmps(qcomp* outAmps, FullStateDiagMatr matr, qindex globalStartInd, qindex globalNumAmps) {
 
     // printer.cpp sometimes needs to broadcast the elements of a FullStateDiagMatr;
-    // since it has the same memory layout as a statevector Qureg, we very cheekily
-    // spoof a similarly distributed Qureg. This is poor design; we are here mimicking
-    // the initialisation in qureg.cpp of a Qureg, so a change to Qureg now means a
-    // necessary edit here. A happy consequence however is that outAmps will be
-    // overwritten with the GPU amps of matr if they were inconsistent with the CPU
-    // amps, which is actually desirable; the printed amps (when this function is
-    // invoked by printer.cpp) will be those that are actually used in the GPU backend.
+    // since it has the same memory layout as a statevector Qureg, we spoof one!
+    bool isDensMatr = false;
+    bool useMultithr = false;
+    bool useDistrib = matr.isDistributed;
+    bool useGpuAccel = matr.isGpuAccelerated;
+    Qureg qureg = qureg_populateNonHeapFields(matr.numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithr);
 
-    // spoof a Qureg, pointing memory to matr's. not all fields are consulted,
-    // but we update everything for defensive design (and to avoid compiler warnings)
-    Qureg qureg = {
-        .isMultithreaded = 0,
-        .isGpuAccelerated = matr.isGpuAccelerated,
-        .isDistributed = matr.isDistributed,
-
-        .rank = (matr.isDistributed)? comm_getRank() : 0,
-        .numNodes = (matr.isDistributed)? comm_getNumNodes() : 1,
-
-        .isDensityMatrix = 0,
-        .numQubits = matr.numQubits,
-        .numAmps = matr.numElems,
-        .logNumAmps = logBase2(matr.numElems),
-
-        .numAmpsPerNode = matr.numElemsPerNode,
-        .logNumAmpsPerNode = logBase2(matr.numElemsPerNode),
-        .logNumColsPerNode = 0,
-
-        .cpuAmps = matr.cpuElems,
-        .gpuAmps = matr.gpuElems,
-
-        // beware; FullStateDiagMatr never have buffers whereas Quregs
-        // do, so this Qureg is corrupted and would fail validation
-        .cpuCommBuffer = nullptr,
-        .gpuCommBuffer = nullptr
-    };
+    // bind matr's existing CPU and GPU memory to Qureg. note that qureg's
+    // comm-buffers remain null, which may be inconsistent with its distributed
+    // status and would ergo fail validation; that's fine for our internal use
+    qureg.cpuAmps = matr.cpuElems;
+    qureg.gpuAmps = matr.gpuElems;
 
     localiser_statevec_getAmps(outAmps, qureg, globalStartInd, globalNumAmps);
 }
@@ -1024,6 +1008,89 @@ void localiser_densmatr_mixQureg(qreal outProb, Qureg out, qreal inProb, Qureg i
     (in.isDensityMatrix)?
         accel_densmatr_mixQureg_subA(outProb, out, inProb, in): // trivial
         mixDensityMatrixWithStatevector(outProb, out, inProb, in);
+}
+
+
+/*
+ * STATE INITIALISATION
+ */
+
+
+void localiser_densmatr_initPureState(Qureg qureg, Qureg pure) {
+    assert_localiserGivenDensMatr(qureg);
+    assert_localiserGivenStateVec(pure);
+
+    // we sneakily re-use the above mixing functions, since the
+    // superfluous flops (multiplication of existing qureg amps
+    // with zero) are completely eclipsed by the memory move costs
+    qreal quregProb = 0;
+    qreal pureProb = 1;
+    mixDensityMatrixWithStatevector(quregProb, qureg, pureProb, pure);
+}
+
+
+void localiser_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg) {
+    assert_localiserGivenStateVec(qureg);
+
+    // generation of unnormalised states is embarrassingly parallel;
+    // subsequent normalisation will require reduction/communication
+    accel_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(qureg);
+}
+
+
+void localiser_densmatr_setUniformlyRandomPureStateAmps_sub(Qureg qureg) {
+    assert_localiserGivenDensMatr(qureg);
+
+    // we require a random, normalised statevector, duplicated on every
+    // node, from which to initialise the density-matrix. We obtain this
+    // by first spoofing a new non-distributed pure state. We inherit qureg's
+    // parallelisations (GPU & multithread), although pure is sqrt smaller
+    // so likely does not need these facilities, but does need to reside in
+    // GPU memory for later GPU-parallel access.
+    bool isDensMatr = false;
+    bool useDistrib = false;
+    bool useMultithr = qureg.isMultithreaded;  // unnecessary
+    bool useGpuAccel = qureg.isGpuAccelerated; // necessary
+    Qureg pure = qureg_populateNonHeapFields(qureg.numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithr);
+
+    // if it exists, we repurpose qureg's existing buffer space to store
+    // pure's statevector, since every node contains >=1 columns; it can fit!
+    if (qureg.isDistributed) {
+        pure.cpuAmps = qureg.cpuCommBuffer; // accelerator decides which is used
+        pure.gpuAmps = qureg.gpuCommBuffer; // may be null
+
+    //otherwise, we must create temporary memory for pure; not a big deal because 
+    // pure is quadratically smaller than density-matrix qureg. Even if we need only
+    // create GPU memory, we create the matching CPU memory too for defensive design,
+    // since the subsequently invoked accelerator backend does complicated copying
+    } else {
+        pure.cpuAmps = cpu_allocArray(pure.numAmps);
+        assert_localiserSuccessfullyAllocatedTempMemory(pure.cpuAmps, false); // CPU
+
+        if (pure.isGpuAccelerated) {
+            pure.gpuAmps = gpu_allocArray(pure.numAmps);
+            assert_localiserSuccessfullyAllocatedTempMemory(pure.gpuAmps, true); // GPU
+        }
+    }
+
+    // initialise pure to a normalised, uniformly random statevector; this is calling
+    // the same API function which invoked THIS very function, but passing a statevector
+    initRandomPureState(pure);
+
+    // then, we simply initialise the density matrix in this pure state. 
+    // Note that initPureState() calls mixDensityMatrixWithStatevector()
+    // which writes to qureg's communication buffer only when the pure
+    // qureg is distributed; we safely avoid that scenario, which would
+    // conflict with our hijacking of qureg's buffer when allocated.
+    localiser_densmatr_initPureState(qureg, pure);
+
+    // if we allocated temporary memory, free it
+    if (!qureg.isDistributed) {
+        cpu_deallocArray(pure.cpuAmps);
+
+        if (pure.isGpuAccelerated)
+            gpu_deallocArray(pure.gpuAmps);
+    }
 }
 
 

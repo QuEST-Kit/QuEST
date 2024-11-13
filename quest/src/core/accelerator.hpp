@@ -278,4 +278,11 @@ void accel_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vec
 void accel_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob);
 
 
+/*
+ * RANDOM INITIALISATION
+ */
+
+void accel_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg);
+
+
 #endif // ACCELERATOR_HPP

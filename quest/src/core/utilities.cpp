@@ -184,8 +184,8 @@ qindex util_getGlobalFlatIndex(Qureg qureg, qindex globalRow, qindex globalCol) 
 }
 
 int util_getRankContainingIndex(Qureg qureg, qindex globalInd) {
-    assert_utilsGivenStateVec(qureg);
 
+    // accepts flat density matrix index too
     return globalInd / qureg.numAmpsPerNode; // floors
 }
 int util_getRankContainingIndex(FullStateDiagMatr matr, qindex globalInd) {

@@ -1356,7 +1356,7 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     devints devQubits = qubits;
     devreals devProbs;
     try  {
-        devProbs.reserve(powerOf2(qubits.size()));
+        devProbs.resize(powerOf2(qubits.size()));
     } catch (thrust::system_error &e) { 
         error_thrustTempGpuAllocFailed();
     }
@@ -1464,3 +1464,21 @@ void gpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_statevec_multiQubitProjector_sub, (Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_densmatr_multiQubitProjector_sub, (Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) )
+
+
+
+/*
+ * RANDOM INITIALISATION
+ */
+
+
+void gpu_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg) {
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    thrust_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(qureg);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}

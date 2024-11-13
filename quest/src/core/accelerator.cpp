@@ -862,3 +862,16 @@ void accel_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vec
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( densmatr_multiQubitProjector_sub, qureg, qubits.size() );
     return func(qureg, qubits, outcomes, prob);
 }
+
+
+
+/*
+ * RANDOM INITIALISATION
+ */
+
+void accel_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(qureg):
+        cpu_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(qureg);
+}

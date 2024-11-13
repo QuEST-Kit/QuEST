@@ -830,10 +830,39 @@ namespace report {
         "Cannot superpose Quregs with differing numbers of qubits.";
 
     string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_GPU_DEPLOYMENT =
-        "Cannot superpose Quregs with inconsistent GPU deployments. All or no quregs must be GPU-accelerated.";
+        "Cannot superpose Quregs with inconsistent GPU deployments. All or no Quregs must be GPU-accelerated.";
 
     string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_DISTRIBUTION =
-        "Cannot superpose Quregs which are inconsistently distributed. All or no quregs must be distributed.";
+        "Cannot superpose Quregs which are inconsistently distributed. All or no Quregs must be distributed.";
+
+
+    string INIT_PURE_STATE_IS_DENSMATR =
+        "The pure-state Qureg (the second argument) must be a statevector, not a density matrix.";
+
+    string INIT_QUREG_HAS_DIFFERENT_NUM_QUBITS_TO_PURE_STATE =
+        "The pure-state Qureg (the second argument) contained a differing number of qubits (${NUM_PURE_QUBITS}) as the modified Qureg (the first argument) which contained ${NUM_QUREG_QUBITS} qubits.";
+
+    string INIT_DENSMATR_LOCAL_BUT_PURE_STATE_DISTRIBUTED = 
+        "The pure-state Qureg cannot be distributed if the larger density-matrix Qureg is not.";
+
+    string INIT_STATEVEC_DIFFERING_GPU_DEPLOYMENT_TO_PURE_STATE =
+        "When the modified Qureg (the first argument) is a statevector, it must have the same GPU deployment as the pure-state Qureg (the second argument).";
+
+    string INIT_STATEVEC_DIFFERING_DISTRIBUTION_TO_PURE_STATE =
+        "When the modified Qureg (the first argument) is a statevector, it must be identically distributed to the pure-state Qureg (the second argument).";
+
+
+    string CLONED_QUREGS_DIFFER_IN_NUM_QUBITS =
+        "The cloned Qureg has a different number of qubits (${NUM_COPY_QUBITS}) than the target Qureg (${NUM_TARGET_QUBITS}).";
+
+    string CLONED_QUREGS_INCONSISTENT_TYPES = 
+        "The cloned and target Quregs must both be statevectors, or both be density matrices.";
+
+    string CLONED_QUREGS_HAVE_DIFFERENT_DISTRIBUTIONS =
+        "The cloned and target Quregs cannot be differently distributed.";
+
+    string CLONED_STATEVECS_HAVE_DIFFERENT_GPU_DEPLOYMENTS =
+        "The cloned and target Quregs (when both are statevectors) must have the same GPU deployment.";
 
 
     /*
@@ -3322,7 +3351,66 @@ void validate_quregsCanBeSuperposed(Qureg qureg1, Qureg qureg2, Qureg qureg3, co
     assertThat(
         qureg2.isDistributed == isDis && qureg3.isDistributed == isDis, 
         report::SUPERPOSED_QUREGS_HAVE_INCONSISTENT_DISTRIBUTION, caller);
-} 
+}
+
+void validateDensMatrCanBeInitialisedToPureState(Qureg qureg, Qureg pure, const char* caller) {
+
+    // initPureState calls mixQureg which only additionally
+    // constrains that pure.isDistributed only if qureg.isDistributed
+
+    if (qureg.isDistributed)
+        assertThat(!pure.isDistributed, report::INIT_DENSMATR_LOCAL_BUT_PURE_STATE_DISTRIBUTED, caller);
+}
+
+void validateStateVecCanBeInitialisedToPureState(Qureg qureg, Qureg pure, const char* caller) {
+
+    // statevectors must be identically distributed and GPU-accelerated
+
+    assertThat(
+        qureg.isGpuAccelerated == pure.isGpuAccelerated,
+        report::INIT_STATEVEC_DIFFERING_GPU_DEPLOYMENT_TO_PURE_STATE, caller);
+
+    assertThat(
+        qureg.isDistributed == pure.isDistributed,
+        report::INIT_STATEVEC_DIFFERING_DISTRIBUTION_TO_PURE_STATE, caller);
+}
+
+void validate_quregCanBeInitialisedToPureState(Qureg qureg, Qureg pure, const char* caller) {
+
+    assertThat(!pure.isDensityMatrix, report::INIT_PURE_STATE_IS_DENSMATR, caller);
+
+    // quregs must have the same number of qubits, regardless of dimension
+    assertThat(
+        qureg.numQubits == pure.numQubits,
+        report::INIT_QUREG_HAS_DIFFERENT_NUM_QUBITS_TO_PURE_STATE, 
+        {{"${NUM_QUREG_QUBITS}", qureg.numQubits}, {"${NUM_PURE_QUBITS}", pure.numQubits}},
+        caller);
+
+    (qureg.isDensityMatrix)?
+        validateDensMatrCanBeInitialisedToPureState(qureg, pure, caller):
+        validateStateVecCanBeInitialisedToPureState(qureg, pure, caller);
+}
+
+void validate_quregsCanBeCloned(Qureg quregA, Qureg quregB, const char* caller) {
+
+    // quregs must have identical sizes... 
+    assertThat(
+        quregA.numQubits == quregB.numQubits, report::CLONED_QUREGS_DIFFER_IN_NUM_QUBITS, 
+        {{"${NUM_TARGET_QUBITS}", quregA.numQubits}, {"${NUM_COPY_QUBITS}", quregB.numQubits}}, caller);
+    
+    // and types...
+    assertThat(quregA.isDensityMatrix == quregB.isDensityMatrix, report::CLONED_QUREGS_INCONSISTENT_TYPES, caller);
+
+    // and distributions...
+    assertThat(quregA.isDistributed == quregB.isDistributed, report::CLONED_QUREGS_HAVE_DIFFERENT_DISTRIBUTIONS, caller);
+
+    // but density matrices may differ in GPU-deployments, because cloning 
+    // invokes mixQureg which supports heterogeneous deployment
+    if (quregA.isDensityMatrix)
+        return;
+
+    assertThat(quregA.isGpuAccelerated == quregB.isGpuAccelerated, report::CLONED_STATEVECS_HAVE_DIFFERENT_GPU_DEPLOYMENTS, caller);
+}
 
 
 

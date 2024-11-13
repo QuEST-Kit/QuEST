@@ -15,6 +15,7 @@
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/utilities.hpp"
+#include "quest/src/core/randomiser.hpp"
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
@@ -1768,3 +1769,34 @@ void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_statevec_multiQubitProjector_sub, (Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_multiQubitProjector_sub, (Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) )
+
+
+
+/*
+ * RANDOM INITIALISATION
+ */
+
+
+void cpu_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg) {
+
+    // all amplitudes are re-randomised, one per iteration
+    qindex numIts = qureg.numAmpsPerNode;
+
+    // thread seeds uniquely deviate from a random base seed, which may be node-specific
+    unsigned seed = rand_getThreadSharedRandomSeed(qureg.isDistributed);
+
+    // create an explicit parallel region to avoid re-initialisation of RNG every iteration
+    #pragma omp parallel if(qureg.isMultithreaded)
+    {
+        int id = cpu_getOpenmpThreadInd(); // zero if OpenMP not compiled
+
+        // prepare uniquely-seeded thread-private generator
+        auto gen = rand_getThreadPrivateGenerator(seed, id);
+        auto normDist = rand_getThreadPrivateAmpAbsDistribution();
+        auto phaseDist = rand_getThreadPrivateAmpPhaseDistribution();
+
+        #pragma omp for
+        for (qindex i=0; i<numIts; i++)
+            qureg.cpuAmps[i] = rand_getThreadPrivateRandomAmp(gen, normDist, phaseDist); // advances gen
+    }
+}

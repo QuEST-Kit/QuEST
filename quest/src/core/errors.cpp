@@ -11,6 +11,7 @@
 
 #include "quest/src/core/printer.hpp"
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/memory.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
@@ -31,7 +32,7 @@ void raiseInternalError(string errorMsg) {
         + "\n\n"
         + "A fatal internal QuEST error occurred. "
         + errorMsg + " "
-        + "Please report this to the developers. QuEST will now exit..."
+        + "Please report this to the QuEST developers. QuEST will now exit..."
         + "\n"
     );
 
@@ -229,6 +230,15 @@ void error_localiserGivenDistribMatrixAndLocalQureg() {
 void error_localiserFailedToAllocTempMemory() {
 
     raiseInternalError("A localiser function attempted and failed to allocate temporary memory.");
+}
+
+void assert_localiserSuccessfullyAllocatedTempMemory(qcomp* ptr, bool isGpu) {
+
+    if (mem_isAllocated(ptr))
+        return;
+
+    string platform = (isGpu)? "GPU" : "CPU";
+    raiseInternalError("A localiser function attempted and failed to allocate temporary " + platform + " memory.");
 }
 
 void assert_localiserGivenStateVec(Qureg qureg) {
@@ -678,7 +688,7 @@ void error_couldNotReadFile() {
 
 void error_randomiserGivenNonNormalisedProbList() {
 
-    raiseInternalError("Randomiser was asked to sample from a list of probabilities which did not sum to one, within epsilon error.");
+    raiseInternalError("The randomiser was asked to sample from a list of probabilities which did not sum to one, within epsilon error.");
 }
 
 
