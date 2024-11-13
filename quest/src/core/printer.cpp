@@ -101,6 +101,15 @@ void printer_setMaxNumPrintedScalars(qindex numRows, qindex numCols) {
 }
 
 
+// user configuration of printed scalars
+int global_maxNumPrintedSigFigs = 5;
+
+void printer_setMaxNumPrintedSigFig(int numSigFigs) {
+
+    global_maxNumPrintedSigFigs = numSigFigs;
+}
+
+
 
 /*
  * TYPE NAME STRINGS
@@ -186,7 +195,7 @@ string printer_getFloatPrecisionFlag() {
 
 // type T can be any number, e.g. int, qindex, float, double, long double
 template <typename T>
-string floatToStr(T num, bool hideSign=false) {
+string floatToStr(T num, bool hideSign=false, int overrideSigFigs=-1) {
 
     // write to stream (instead of calling to_string()) to auto-use scientific notation
     std::stringstream buffer;
@@ -198,9 +207,22 @@ string floatToStr(T num, bool hideSign=false) {
             num *= -1;
     }
 
-    // return 0, 1, 0.1, 1.2e-5, -1e+5
+    // impose user-set significant figures, unless caller overrode
+    int sigFigs = (overrideSigFigs != -1)? overrideSigFigs : global_maxNumPrintedSigFigs;
+    buffer << std::setprecision(sigFigs);
+
+    // get string of e.g. 0, 1, 0.1, 1.2e-05, -1e+05
     buffer << num;
-    return buffer.str();
+    string out = buffer.str();
+
+    // remove superflous 0 prefix in scientific notation exponent
+    size_t ePos = out.find('e');
+    if (ePos != string::npos && (out[ePos + 2] == '0'))
+        out.erase(ePos + 2, 1);
+
+    // permit superflous + prefix of scientific notatio exponent, e.g. 2e+6
+
+    return out;
 }
 
 
@@ -316,10 +338,24 @@ void print(qcomp num) {
 
 string printer_getMemoryWithUnitStr(size_t numBytes) {
 
-    // TODO: automatically choose ideal units
-    // (e.g. B, KiB, MiB, GiB, TiB, etc)
+    // retain "bytes" instead of "B" since more recognisable
+    vector<string> units = {"bytes", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
 
-    return toStr(numBytes) + " bytes";
+    // unit sizes (in bytes) may overflow; but then so too will numBytes
+    vector<size_t> sizes(units.size());
+    for (size_t i=0; i<units.size(); i++)
+        sizes[i] = powerOf2(10 * i); // = 1024^i
+
+    // find the biggest unit for which numBytes/sizes[ind] > 1
+    int ind = 0;
+    while (numBytes > sizes[ind])
+        ind++;
+    ind--;
+
+    // express numBytes in terms of new unit, forcefully rounding to 2 sig-figs max,
+    // except when the chosen unit is bytes (then we permit all 4 digits)
+    qreal frac = numBytes / (qreal) sizes[ind];
+    return floatToStr(frac, false, (ind==0)? 4 : 2) + " " + units[ind];
 }
 
 
@@ -502,6 +538,7 @@ void printPerRowIndent(string baseIndent, size_t row, string indentPerRow) {
 
     cout << baseIndent;
 
+    // K. I. S. S.
     for (size_t r=0; r<row; r++)
         cout << indentPerRow;
 }
