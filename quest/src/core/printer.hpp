@@ -138,6 +138,7 @@ void print_header(FullStateDiagMatr m, size_t numBytesPerNode);
 void print_header(Qureg qureg, size_t numBytesPerNode);
 
 
+
 /*
  * STRUCT ELEMENT PRINTING
  */
