@@ -180,17 +180,20 @@ void demo_createPauliStrSumFromFile() {
     std::string fn = "test.txt";
 
     // file contents can be identical to createInlinePauliStrSum input
-    std::ofstream file;
-    file.open(fn);
-    file << R"(
-        + 5E2-1i     XYZ 
-        - 1E-50i     IXY 
-        + 1 - 6E-5i  IIX 
-          0          III 
-          5.         IXX
-           .5        ZYX 
-    )";
-    file.close();
+    if (getQuESTEnv().rank == 0) {
+        std::ofstream file;
+        file.open(fn);
+        file << R"(
+            + 5E2-1i     XYZ 
+            - 1E-50i     IXY 
+            + 1 - 6E-5i  IIX 
+            0          III 
+            5.         IXX
+            .5        ZYX 
+        )";
+        file.close();
+    }
+    syncQuESTEnv();
 
     PauliStrSum a = createPauliStrSumFromFile(fn);
     reportPauliStrSum(a);

@@ -85,10 +85,16 @@ qreal getValidationEpsilon() {
  */
 
 
-void setNumReportedItems(qindex num) {
-    validate_newNumReportedItems(num, __func__);
+void setMaxNumReportedItems(qindex numRows, qindex numCols) {
+    validate_newMaxNumReportedScalars(numRows, numCols, __func__);
 
-    printer_setMaxNumPrintedItems(num);
+    // replace 0 values (indicating no truncation) with max-val,
+    // since there can never be max(qindex)-many amps
+    qindex max = std::numeric_limits<qindex>::max();
+    numRows = (numRows == 0)? max : numRows;
+    numCols = (numCols == 0)? max : numCols;
+
+    printer_setMaxNumPrintedScalars(numRows, numCols);
 }
 
 

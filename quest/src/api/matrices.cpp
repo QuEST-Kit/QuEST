@@ -726,40 +726,30 @@ extern "C" void setFullStateDiagMatrFromMultiDimLists(FullStateDiagMatr out, voi
 
 
 // type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
-template <class T>
-void printMatrixHeader(T matr) {
-
-    // determine how many nodes the matrix is distributed between (if it's a distributable type)
-    int numNodes = (util_isDistributedMatrix(matr))? getQuESTEnv().numNodes : 1;
-
-    // find memory (bytes) to store elements
-    size_t elemMem = mem_getLocalMatrixMemoryRequired(matr.numQubits, util_isDenseMatrixType<T>(), numNodes);
-
-    // find memory (bytes) of other struct fields; fixed-size sizeof includes arrays, var-size does not
-    size_t otherMem = sizeof(matr);
-    if (util_isFixedSizeMatrixType<T>())
-        otherMem -= elemMem;
-
-    auto name = util_getMatrixTypeName<T>();
-    auto dim = util_getMatrixDim(matr);
-    auto hasGpuMem = util_isGpuAcceleratedMatrix(matr);
-    
-    print_matrixInfo(name, matr.numQubits, dim, elemMem, otherMem, numNodes, hasGpuMem);
-}
-
-
-// type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template<class T> 
 void validateAndPrintMatrix(T matr, const char* caller) {
     validate_matrixFields(matr, caller);
 
     // syncable matrices must be synced before reporting (though only CPU elems are printed)
-    if constexpr (!util_isFixedSizeMatrixType<T>())
+    if constexpr (util_isHeapMatrixType<T>())
         validate_matrixIsSynced(matr, caller);
 
-    // print_ functions will handle distributed coordination
-    printMatrixHeader(matr);
-    print_matrix(matr);
+    // calculate the total memory (in bytes) consumed by the matrix on each
+    // node, which will depend on whether the matrix is distributed, and
+    // includes the size of the matrix struct itself. Note that GPU memory
+    // is not included since it is less than or equal to the CPU memory, and
+    // occupies different memory spaces, confusing capacity accounting
+    int numNodes = (util_isDistributedMatrix(matr))? comm_getNumNodes() : 1;
+    size_t elemMem = mem_getLocalMatrixMemoryRequired(matr.numQubits, util_isDenseMatrixType<T>(), numNodes);
+    size_t structMem = sizeof(matr);
+
+    // struct memory includes fixed-size arrays (qcomp[][]), so we undo double-counting
+    if (util_isFixedSizeMatrixType<T>())
+        structMem -= elemMem;
+
+    size_t numBytesPerNode = elemMem + structMem;
+    print_header(matr, numBytesPerNode);
+    print_elems(matr);
 }
 
 

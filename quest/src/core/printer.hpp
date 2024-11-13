@@ -6,6 +6,7 @@
 #define PRINTER_HPP
 
 #include "quest/include/types.h"
+#include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 #include "quest/include/channels.h"
 #include "quest/include/paulis.h"
@@ -28,7 +29,7 @@ using std::complex;
  * USER-CONFIGURABLE GLOBALS
  */
 
-void printer_setMaxNumPrintedItems(qindex num);
+void printer_setMaxNumPrintedScalars(qindex numRows, qindex numCols);
 
 
 
@@ -50,7 +51,6 @@ string printer_getFloatPrecisionFlag();
  * STRING CASTS
  */
 
-
 // type T can be int, qindex, float, double, long double.
 // this more specific printer_toStr() definition is called when passing complex
 template <typename T>
@@ -68,21 +68,29 @@ string printer_toStr(T expr) {
 }
 
 
+/*
+ * SUBSTRING PREPARATION
+ */
+
+string printer_getMemoryWithUnitStr(size_t numBytes);
+
+
 
 /*
  * SUBSTRINGS USED BY REPORTERS
+ *
+ * which are padded with 1 whitespace either side
  */
 
 namespace printer_substrings { 
-    extern string eq;
-    extern string mu;
-    extern string by;
-    extern string pn;
-    extern string pg;
-    extern string pm;
-    extern string bt;
-    extern string na;
-    extern string un;
+    extern string eq; // =
+    extern string pn; // per node
+    extern string pg; // per gpu
+    extern string ig; // in gpu
+    extern string pm; // per machine
+    extern string bt; // 2^
+    extern string na; // N/A
+    extern string un; // unknown
 }
 
 
@@ -96,6 +104,7 @@ namespace printer_substrings {
  */
 
 static string defaultMatrIndent  = "    ";
+static string defaultQuregIndent = "    ";
 static string defaultKrausIndent = "  ";
 static string defaultTableIndent = "  ";
 
@@ -112,32 +121,40 @@ void print(qcomp num);
 
 
 /*
- * MATRIX PRINTING
+ * STRUCT HEADER PRINTING
  */
 
-void print_matrixInfo(string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem, int numNodes, bool hasGpuMem);
+void print_header(CompMatr1 m,  size_t numBytes);
+void print_header(CompMatr2 m,  size_t numBytes);
+void print_header(CompMatr  m,  size_t numBytes);
+void print_header(DiagMatr1 m,  size_t numBytes);
+void print_header(DiagMatr2 m,  size_t numBytes);
+void print_header(DiagMatr  m,  size_t numBytes);
+void print_header(SuperOp  op,  size_t numBytes);
+void print_header(KrausMap map, size_t numBytes);
+void print_header(PauliStrSum sum, size_t numBytes);
 
-void print_matrix(CompMatr1 matr, string indent=defaultMatrIndent);
-void print_matrix(CompMatr2 matr, string indent=defaultMatrIndent);
-void print_matrix(CompMatr  matr, string indent=defaultMatrIndent);
-void print_matrix(DiagMatr1 matr, string indent=defaultMatrIndent);
-void print_matrix(DiagMatr2 matr, string indent=defaultMatrIndent);
-void print_matrix(DiagMatr  matr, string indent=defaultMatrIndent);
-void print_matrix(FullStateDiagMatr matr, string indent=defaultMatrIndent);
+void print_header(FullStateDiagMatr m, size_t numBytesPerNode);
+void print_header(Qureg qureg, size_t numBytesPerNode);
 
 
 
 /*
- * CHANNEL PRINTING
+ * STRUCT ELEMENT PRINTING
  */
 
-void print_superOpInfo(SuperOp op);
-
-void print_superOp(SuperOp op, string indent=defaultMatrIndent);
-
-void print_krausMapInfo(KrausMap map);
-
-void print_krausMap(KrausMap map, string indIndent=defaultKrausIndent, string matrIndent=defaultKrausIndent+defaultMatrIndent);
+void print_elems(CompMatr1 matr, string indent=defaultMatrIndent);
+void print_elems(CompMatr2 matr, string indent=defaultMatrIndent);
+void print_elems(CompMatr  matr, string indent=defaultMatrIndent);
+void print_elems(DiagMatr1 matr, string indent=defaultMatrIndent);
+void print_elems(DiagMatr2 matr, string indent=defaultMatrIndent);
+void print_elems(DiagMatr  matr, string indent=defaultMatrIndent);
+void print_elems(KrausMap map,   string indent=defaultMatrIndent);
+void print_elems(SuperOp op,     string indent=defaultMatrIndent);
+void print_elems(Qureg qureg,    string indent=defaultMatrIndent);
+void print_elems(PauliStrSum sum, string indent=defaultMatrIndent);
+void print_elems(PauliStr str, int numQubits);
+void print_elems(FullStateDiagMatr qureg, string indent=defaultMatrIndent);
 
 
 
@@ -147,18 +164,6 @@ void print_krausMap(KrausMap map, string indIndent=defaultKrausIndent, string ma
 
 void print_table(string title, vector<tuple<string, string       >> rows, string indent=defaultTableIndent);
 void print_table(string title, vector<tuple<string, long long int>> rows, string indent=defaultTableIndent);
-
-
-
-/*
- * PAULI PRINTING
- */
-
-void print_pauliStr(PauliStr str, int numQubits);
-
-void print_pauliStrSumInfo(qindex numTerms, qindex numBytes);
-
-void print_pauliStrSum(PauliStrSum sum, string indent=defaultMatrIndent);
 
 
 

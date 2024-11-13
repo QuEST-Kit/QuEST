@@ -338,11 +338,7 @@ void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qu
         double* outPtr = outProbs;
     #else
         vector<double> tmpProbs;
-        try { 
-            tmpProbs.reserve(powerOf2(qubits.size()));
-        } catch (std::bad_alloc &e) { 
-            error_cuQuantumTempCpuAllocFailed();
-        }
+        util_tryAllocVector(tmpProbs, powerOf2(qubits.size()), error_cuQuantumTempCpuAllocFailed);
         double* outPtr = tmpProbs.data();
     #endif
 
@@ -372,7 +368,6 @@ void cuquantum_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         outcomes.data(), qubits.data(), qubits.size(), norm) );
 }
-
 
 
 #endif // GPU_CUQUANTUM_HPP

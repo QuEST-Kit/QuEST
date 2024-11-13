@@ -22,9 +22,6 @@
 
 #include <string>
 
-// provides substrings (by, na, pm, etc) used by reportQureg
-using namespace printer_substrings;
-
 using std::string;
 
 
@@ -174,37 +171,50 @@ void printDeploymentInfo(Qureg qureg) {
 
 void printDimensionInfo(Qureg qureg) {
 
-    // 2^N = M or 2^N x 2^N = M
-    string str;
-    str  = bt + printer_toStr(qureg.numQubits);
-    str += (qureg.isDensityMatrix)? mu + str : "";
-    str += eq + printer_toStr(qureg.numAmps);
+    using namespace printer_substrings;
+
+    // 2^N = M
+    string ampsStr;
+    ampsStr  = bt + printer_toStr(qureg.numQubits * (qureg.isDensityMatrix? 2 : 1));
+    ampsStr += eq + printer_toStr(qureg.numAmps);
+    
+    string colsStr = na;
+    if (qureg.isDensityMatrix)
+        colsStr = (
+            bt + printer_toStr(qureg.numQubits) + 
+            eq + printer_toStr(powerOf2(qureg.numQubits)));
 
     print_table(
         "dimension", {
         {"isDensMatr", printer_toStr(qureg.isDensityMatrix)},
         {"numQubits",  printer_toStr(qureg.numQubits)},
-        {"numAmps",    str},
+        {"numCols",    colsStr},
+        {"numAmps",    ampsStr},
     });
 }
 
 
 void printDistributionInfo(Qureg qureg) {
 
+    using namespace printer_substrings;
+
     // not applicable when not distributed
     string nodesStr = na;
     string ampsStr  = na;
+    string colsStr  = na;
 
     // 2^N = M per node
     if (qureg.isDistributed) {
         nodesStr = bt + printer_toStr(qureg.logNumNodes)       + eq + printer_toStr(qureg.numNodes);
-        ampsStr  = bt + printer_toStr(qureg.logNumAmpsPerNode) + eq + printer_toStr(qureg.numAmpsPerNode);
-        ampsStr += pn;
+        ampsStr  = bt + printer_toStr(qureg.logNumAmpsPerNode) + eq + printer_toStr(qureg.numAmpsPerNode) + pn;
+        if (qureg.isDensityMatrix)
+            colsStr = bt + printer_toStr(qureg.logNumColsPerNode) + eq + printer_toStr(powerOf2(qureg.logNumColsPerNode)) + pn;
     }
 
     print_table(
         "distribution", {
         {"numNodes", nodesStr},
+        {"numCols",  colsStr},
         {"numAmps",  ampsStr},
     });
 }
@@ -212,13 +222,15 @@ void printDistributionInfo(Qureg qureg) {
 
 void printMemoryInfo(Qureg qureg) {
 
+    using namespace printer_substrings;
+
     size_t localArrayMem = mem_getLocalQuregMemoryRequired(qureg.numAmpsPerNode);
-    string localMemStr = printer_toStr(localArrayMem) + by + ((qureg.isDistributed)? pn : "");
+    string localMemStr = printer_getMemoryWithUnitStr(localArrayMem) + (qureg.isDistributed? pn : "");
 
     // precondition: no reportable fields are at risk of overflow as a qindex
     // type, EXCEPT aggregate total memory between distributed nodes (in bytes)
     qindex globalTotalMem = mem_getTotalGlobalMemoryUsed(qureg);
-    string globalMemStr = (globalTotalMem == 0)? "overflowed" : (printer_toStr(globalTotalMem) + by);
+    string globalMemStr = (globalTotalMem == 0)? "overflowed" : printer_getMemoryWithUnitStr(globalTotalMem);
 
     print_table(
         "memory", {
@@ -318,9 +330,19 @@ void reportQuregParams(Qureg qureg) {
 
 
 void reportQureg(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    // account all local CPU memory (including buffer), neglecting GPU memory
+    // because it occupies distinct memory spaces, confusing accounting
+    size_t localMem = mem_getLocalQuregMemoryRequired(qureg.numAmpsPerNode);
+    if (qureg.isDistributed)
+        localMem *= 2; // include buffer. TODO: will this ever overflow?!?!
+    
+    // include struct size (expected negligibly tiny)
+    localMem += sizeof(qureg);
+
+    print_header(qureg, localMem);
+    print_elems(qureg);
 }
 
 void reportQuregToFile(Qureg qureg, char* fn) {

@@ -438,12 +438,16 @@ extern "C" {
 extern "C" void reportSuperOp(SuperOp op) {
     validate_superOpFields(op, __func__);
 
-    // pedantically demand that the SuperOp is GPU-synced, 
-    // even though only the CPU elements are printed
+    // demand that SuperOp is GPU-synced, since the
+    // to-be-printed GPU elems will overwrite CPU
     validate_superOpIsSynced(op, __func__);
 
-    print_superOpInfo(op);
-    print_superOp(op);
+    // determine memory costs; heap memory and struct fields
+    size_t elemMem = mem_getLocalSuperOpMemoryRequired(op.numQubits);
+    size_t structMem = sizeof(op);
+
+    print_header(op, elemMem + structMem);
+    print_elems(op);
 }
 
 
@@ -453,7 +457,16 @@ extern "C" void reportKrausMap(KrausMap map) {
     // pedantically demand that the map's SuperOP is GPU-synced,
     // even though only the CPU Kraus operators are printed
     validate_krausMapIsSynced(map, __func__);
-    
-    print_krausMapInfo(map);
-    print_krausMap(map);
+
+    // determine memory costs (gauranteed not to overflow)
+    bool isDense = true;
+    int numNodes = 1;
+    size_t krausMem = mem_getLocalMatrixMemoryRequired(map.numQubits, isDense, numNodes) * map.numMatrices;
+    size_t superMem = mem_getLocalSuperOpMemoryRequired(map.superop.numQubits);
+    size_t strucMem = sizeof(map);
+
+    // gauranteed not to overflow
+    size_t totalMem = krausMem + superMem + strucMem;
+    print_header(map, totalMem);
+    print_elems(map);
 }

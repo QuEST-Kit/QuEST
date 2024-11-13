@@ -302,4 +302,12 @@ void error_randomiserGivenNonNormalisedProbList();
 
 
 
+/*
+ * PRINTER ERRORS
+ */
+
+void error_printerFailedToAllocTempMemory();
+
+
+
 #endif // ERRORS_HPP
