@@ -552,7 +552,7 @@ void thrust_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg
     auto ampIter = getStartPtr(qureg);
 
     qindex numIts = qureg.numAmpsPerNode;
-    thrust::transform(indIter, indIter + numIts, ampIter, ampIter, functor); // 4th arg gets modified
+    thrust::transform(indIter, indIter + numIts, ampIter, functor); // 3rd arg gets modified
 }
 
 
