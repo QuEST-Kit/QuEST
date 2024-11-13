@@ -1133,7 +1133,8 @@ void validate_newEpsilonValue(qreal eps, const char* caller) {
 
 void validate_newMaxNumReportedScalars(qindex numRows, qindex numCols, const char* caller) {
 
-    assertThat(num >= 0, report::INVALID_NUM_REPORTED_ITEMS, {{"${NUM_ITEMS}", num}}, caller);
+    assertThat(numRows >= 0, report::INVALID_NUM_REPORTED_SCALARS, {{"${NUM_ITEMS}", numRows}}, caller);
+    assertThat(numCols >= 0, report::INVALID_NUM_REPORTED_SCALARS, {{"${NUM_ITEMS}", numCols}}, caller);
 }
 
 
