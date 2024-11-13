@@ -171,7 +171,7 @@ unsigned rand_getThreadSharedRandomSeed(bool distinctPerNode) {
 
     // a single uniform seed suffices to seed local random amp generation
     unsigned maxSeed = std::numeric_limits<unsigned>::max();
-    std::uniform_real_distribution<unsigned> distrib(0, maxSeed); // ~[0 .. max]
+    std::uniform_int_distribution<unsigned> distrib(0, maxSeed); // ~[0 .. max]
 
     // if we want the same seed on every node, advance all generators
     if (!distinctPerNode)
