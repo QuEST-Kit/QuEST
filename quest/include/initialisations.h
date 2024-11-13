@@ -30,6 +30,8 @@ void initDebugState(Qureg qureg);
 
 void initArbitraryState(Qureg qureg, qcomp* amps);
 
+void initRandomPureState(Qureg qureg);
+
 
 
 void setQuregAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps);

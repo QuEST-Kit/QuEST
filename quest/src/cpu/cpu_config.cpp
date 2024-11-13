@@ -31,7 +31,7 @@ using std::vector;
  */
 
 #if defined(COMPILE_OPENMP) && !defined(_MSC_VER)
-     #pragma omp declare reduction(+ : qcomp : omp_out += omp_in ) initializer( omp_priv = omp_orig )
+    #pragma omp declare reduction(+ : qcomp : omp_out += omp_in ) initializer( omp_priv = omp_orig )
 #endif
 
 
@@ -67,6 +67,25 @@ int cpu_getNumOpenmpProcessors() {
 #else
     error_cpuThreadsQueriedButEnvNotMultithreaded();
     return -1;
+#endif
+}
+
+
+
+/*
+ * OPENMP SUBROUTINES
+ *
+ * which must be queried within OpenMP parallel
+ * regions to get reliable results, but which are
+ * safely invoked when OpenMP is not compiled
+ */
+
+
+int cpu_getOpenmpThreadInd() {
+#if COMPILE_OPENMP
+    return omp_get_thread_num();
+#else
+    return 0;
 #endif
 }
 
@@ -183,6 +202,7 @@ void cpu_deallocPauliStrings(PauliStr* strings) {
     // safe to free if nullptr
     free(strings);
 }
+
 
 
 /*

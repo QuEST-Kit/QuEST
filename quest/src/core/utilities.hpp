@@ -328,6 +328,11 @@ void util_tryAllocVector(vector<qreal > &vec, qindex size, void (*errFunc)());
 void util_tryAllocVector(vector<qcomp > &vec, qindex size, void (*errFunc)());
 void util_tryAllocVector(vector<qcomp*> &vec, qindex size, void (*errFunc)());
 
+// cuQuantum needs a vector<double> overload, which we additionally define when qreal!=double. Gross!
+#if FLOAT_PRECISION != 2
+void util_tryAllocVector(vector<double> &vec, qindex size, void (*errFunc)());
+#endif
+
 void util_tryAllocMatrix(vector<vector<qcomp>> &vec, qindex numRows, qindex numCols, void (*errFunc)());
 
 

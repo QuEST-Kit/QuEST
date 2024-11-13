@@ -11,9 +11,11 @@
 
 #include "quest/include/qureg.h"
 #include "quest/include/calculations.h"
+#include "quest/include/initialisations.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/localiser.hpp"
+#include "quest/src/core/utilities.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
@@ -30,6 +32,11 @@ extern "C" {
 void initBlankState(Qureg qureg) {
     validate_quregFields(qureg, __func__);
 
+    // TODO:
+    // this invokes a slow, non-parallel overwrite;
+    // bespoke GPU functions (and maybe even OpenMP)
+    // are likely much faster
+
     // fill CPU memory with 0
     std::fill(qureg.cpuAmps, qureg.cpuAmps + qureg.numAmpsPerNode, qcomp(0,0));
 
@@ -41,6 +48,11 @@ void initBlankState(Qureg qureg) {
 
 void initZeroState(Qureg qureg) {
     validate_quregFields(qureg, __func__);
+
+    // TODO:
+    // this invokes a slow, non-parallel overwrite;
+    // bespoke GPU functions (and maybe even OpenMP)
+    // are likely much faster
 
     // fill CPU memory with 0
     std::fill(qureg.cpuAmps, qureg.cpuAmps + qureg.numAmpsPerNode, qcomp(0,0));
@@ -58,6 +70,11 @@ void initZeroState(Qureg qureg) {
 void initPlusState(Qureg qureg) {
     validate_quregFields(qureg, __func__);
 
+    // TODO:
+    // this invokes a slow, non-parallel overwrite;
+    // bespoke GPU functions (and maybe even OpenMP)
+    // are likely much faster
+
     // |+>    = sum_i 1/sqrt(2^N) |i>  where 2^N = numAmps
     // |+><+| = sum_ij 1/2^N |i><j|    where 2^N = sqrt(numAmps)
     qreal elem = 1.0 / sqrt(qureg.numAmps);
@@ -72,9 +89,16 @@ void initPlusState(Qureg qureg) {
 
 
 void initPureState(Qureg qureg, Qureg pure) {
+    validate_quregFields(qureg, __func__);
+    validate_quregFields(pure, __func__);
+    validate_quregCanBeInitialisedToPureState(qureg, pure, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    // when qureg=statevec, we lazily invoke setQuregToSuperposition which
+    // invokes superfluous floating-point operations which will be happily
+    // occluded by the memory movement costs
+    (qureg.isDensityMatrix)?
+        localiser_densmatr_initPureState(qureg, pure):
+        localiser_statevec_setQuregToSuperposition(0, qureg, 1, pure, 0, pure);
 }
 
 
@@ -82,15 +106,20 @@ void initClassicalState(Qureg qureg, qindex ind) {
     validate_quregFields(qureg, __func__);
     validate_basisStateIndex(qureg, ind, __func__);
 
+    // TODO:
+    // this invokes a slow, non-parallel overwrite;
+    // bespoke GPU functions (and maybe even OpenMP)
+    // are likely much faster
+
     // fill CPU memory with 0
     std::fill(qureg.cpuAmps, qureg.cpuAmps + qureg.numAmpsPerNode, qcomp(0,0));
 
-    // on-diagonal |ind><ind| = ||(2^N+1)ind >>
+    // |ind><ind| = ||ind'>>
     if (qureg.isDensityMatrix)
-        ind *= (1 + powerOf2(qureg.numQubits));
+        ind = util_getGlobalFlatIndex(qureg, ind, ind);
 
     // only one node needs to write a 1 elem
-    if (qureg.rank == ind / qureg.numAmpsPerNode) // floors
+    if (qureg.rank == util_getRankContainingIndex(qureg, ind))
         qureg.cpuAmps[ind % qureg.numAmpsPerNode] = 1;
 
     // all nodes overwrite GPU memory
@@ -113,7 +142,16 @@ void initArbitraryState(Qureg qureg, qcomp* amps) {
 }
 
 
+void initRandomPureState(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
 
+    if (qureg.isDensityMatrix)
+        localiser_densmatr_setUniformlyRandomPureStateAmps_sub(qureg); // harmlessly recalls API and re-validates
+    else {
+        localiser_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(qureg);
+        setQuregToRenormalized(qureg); // harmlessly re-validates
+    }
+}
 
 
 void setQuregAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps) {
@@ -139,9 +177,13 @@ void setQuregToPauliStrSum(Qureg qureg, PauliStrSum sum) {
 
 
 void setQuregToClone(Qureg targetQureg, Qureg copyQureg) {
+    validate_quregFields(targetQureg, __func__);
+    validate_quregFields(copyQureg, __func__);
+    validate_quregsCanBeCloned(targetQureg, copyQureg, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    (targetQureg.isDensityMatrix)?
+        localiser_densmatr_mixQureg(0, targetQureg, 1, copyQureg):
+        localiser_statevec_setQuregToSuperposition(0, targetQureg, 1, copyQureg, 0, copyQureg);
 }
 
 

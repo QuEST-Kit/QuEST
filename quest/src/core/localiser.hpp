@@ -96,6 +96,17 @@ void localiser_densmatr_mixQureg(qreal outProb, Qureg out, qreal inProb, Qureg i
 
 
 /*
+ * QUREG INITIALISATION
+ */
+
+void localiser_densmatr_initPureState(Qureg qureg, Qureg pure);
+
+void localiser_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg);
+
+void localiser_densmatr_setUniformlyRandomPureStateAmps_sub(Qureg qureg);
+
+
+/*
  * DECOHERENCE
  */
 

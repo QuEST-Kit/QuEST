@@ -7,6 +7,7 @@
 #include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 #include "quest/include/channels.h"
+#include "quest/include/precision.h"
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
@@ -184,8 +185,8 @@ qindex util_getGlobalFlatIndex(Qureg qureg, qindex globalRow, qindex globalCol) 
 }
 
 int util_getRankContainingIndex(Qureg qureg, qindex globalInd) {
-    assert_utilsGivenStateVec(qureg);
 
+    // accepts flat density matrix index too
     return globalInd / qureg.numAmpsPerNode; // floors
 }
 int util_getRankContainingIndex(FullStateDiagMatr matr, qindex globalInd) {
@@ -699,6 +700,12 @@ void tryAllocVector(vector<T> &vec, qindex size, void (*errFunc)()) {
 void util_tryAllocVector(vector<qreal > &vec, qindex size, void (*errFunc)()) { tryAllocVector(vec, size, errFunc); }
 void util_tryAllocVector(vector<qcomp > &vec, qindex size, void (*errFunc)()) { tryAllocVector(vec, size, errFunc); }
 void util_tryAllocVector(vector<qcomp*> &vec, qindex size, void (*errFunc)()) { tryAllocVector(vec, size, errFunc); }
+
+// cuQuantum needs a vector<double> overload, which we additionally define when qreal!=double. Gross!
+#if FLOAT_PRECISION != 2
+    void util_tryAllocVector(vector<double> &vec, qindex size, void (*errFunc)()) { tryAllocVector(vec, size, errFunc); }
+#endif
+
 
 void util_tryAllocMatrix(vector<vector<qcomp>> &matr, qindex numRows, qindex numCols, void (*errFunc)()) {
 
