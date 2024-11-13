@@ -351,7 +351,7 @@ void copyMatrixIfGpuCompiled(qcomp** cpuMatr, qcomp* gpuArr, qindex matrDim, enu
         auto src = TO_HOST? gpuSlice : cpuRow;
         auto dst = TO_HOST? cpuRow   : gpuSlice;
 
-        CUDA_CHECK( cudaMemcpyAsync(src, dst, numBytesPerRow, flag) );
+        CUDA_CHECK( cudaMemcpyAsync(dst, src, numBytesPerRow, flag) );
     }
 
     // wait for async copies to complete
