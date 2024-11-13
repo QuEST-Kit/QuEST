@@ -230,9 +230,7 @@ std::uniform_real_distribution<qreal> rand_getThreadPrivateAmpPhaseDistribution(
     // per-thread just to avoid inefficient re-instantiation
     // per iteration of a hot-loop
 
-    // avoiding the nuisance of platform-specific M_PI, grr
-    auto pi = std::acos(-1);
-
+    qreal pi = 3.141592653589793238462643383279;
     return std::uniform_real_distribution<qreal>(0, 2*pi); // ~[0, 2 pi]
 }
 

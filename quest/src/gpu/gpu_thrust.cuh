@@ -350,7 +350,7 @@ struct functor_setRandomStateVecAmp : public thrust::unary_function<qindex,cu_qc
     __host__ __device__ cu_qcomp operator()(qindex ampInd) {
 
         // wastefully create new distributions for every amp
-        auto pi = thrust::acos(-1).real();
+        qreal pi = 3.141592653589793238462643383279;
         thrust::random::normal_distribution<qreal> normDist(0, 1); // mean=0, var=1
         thrust::random::uniform_real_distribution<qreal> phaseDist(0, 2*pi); // ~ [0, 2pi]
 
@@ -376,7 +376,7 @@ struct functor_setRandomStateVecAmp : public thrust::unary_function<qindex,cu_qc
         qreal n2 = normDist(gen);
         qreal prob = n1*n1 + n2*n2;
         qreal phase = phaseDist(gen);
-        auto iphase = thrust::complex(0, phase);
+        auto iphase = thrust::complex<qreal>(0, phase);
         auto amp = sqrt(prob) * thrust::exp(iphase);
 
         // cast thrust::complex to cu_qcomp
