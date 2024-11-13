@@ -351,11 +351,11 @@ struct functor_setRandomStateVecAmp : public thrust::unary_function<qindex,cu_qc
 
         // wastefully create new distributions for every amp
         auto pi = std::acos(-1);
-        thrust::normal_distribution<qreal> normDist(0, 1); // mean=0, var=1
-        thrust::uniform_real_distribution<qreal> phaseDist(0, 2*pi); // ~ [0, 2pi]
+        thrust::random::normal_distribution<qreal> normDist(0, 1); // mean=0, var=1
+        thrust::random::uniform_real_distribution<qreal> phaseDist(0, 2*pi); // ~ [0, 2pi]
 
         // wastefully initialise a new generator for every amp...
-        thrust::default_random_engine gen;
+        thrust::random::default_random_engine gen;
 
         // which we uniquely seed, as opposed to commonly-seeding and advancing
         // each thread by a different amount; this avoids gen.discard() having 
