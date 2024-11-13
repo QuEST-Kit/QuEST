@@ -23,13 +23,12 @@
 #include "quest/src/gpu/gpu_types.cuh"
 
 #include <thrust/random.h>
+#include <thrust/complex.h>
 #include <thrust/device_ptr.h>
 #include <thrust/device_vector.h>
 #include <thrust/transform_reduce.h>
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
-
-#include <cmath>
 
 
 
@@ -351,7 +350,7 @@ struct functor_setRandomStateVecAmp : public thrust::unary_function<qindex,cu_qc
     __host__ __device__ cu_qcomp operator()(qindex ampInd) {
 
         // wastefully create new distributions for every amp
-        auto pi = std::acos(-1);
+        auto pi = thrust::acos(-1).real();
         thrust::random::normal_distribution<qreal> normDist(0, 1); // mean=0, var=1
         thrust::random::uniform_real_distribution<qreal> phaseDist(0, 2*pi); // ~ [0, 2pi]
 
@@ -377,8 +376,11 @@ struct functor_setRandomStateVecAmp : public thrust::unary_function<qindex,cu_qc
         qreal n2 = normDist(gen);
         qreal prob = n1*n1 + n2*n2;
         qreal phase = phaseDist(gen);
-        qcomp amp = sqrt(prob) * std::exp(qcomp(0, phase));
-        return amp;
+        auto iphase = thrust::complex(0, phase);
+        auto amp = sqrt(prob) * thrust::exp(iphase);
+
+        // cast thrust::complex to cu_qcomp
+        return {.x = amp.real(), .y=amp.imag()};
     }
 };
 

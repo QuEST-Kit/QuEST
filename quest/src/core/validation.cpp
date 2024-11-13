@@ -1180,7 +1180,7 @@ void validate_randomSeeds(unsigned* seeds, int numSeeds, const char* caller) {
     // assert every node received the same number of seeds
     unsigned numRootSeeds = (unsigned) numSeeds;
     comm_broadcastUnsignedsFromRoot(&numRootSeeds, 1);
-    assertThat(numRootSeeds == numSeeds, report::INCONSISTENT_NUM_RANDOM_SEEDS_ACROSS_NODES, caller);
+    assertThat(numRootSeeds == (unsigned) numSeeds, report::INCONSISTENT_NUM_RANDOM_SEEDS_ACROSS_NODES, caller);
 
     // assert every node has the same seeds as root (ergo as one another)
     vector<unsigned> rootSeeds(seeds, seeds + numSeeds);
