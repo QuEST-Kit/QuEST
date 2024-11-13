@@ -317,8 +317,8 @@ void copyArrayIfGpuCompiled(qcomp* cpuArr, qcomp* gpuArr, qindex numElems, enum 
         cudaMemcpyDeviceToHost:
         cudaMemcpyHostToDevice;
 
-    auto src = TO_HOST? gpuArr : cpuArr;
-    auto dst = TO_HOST? cpuArr : gpuArr;
+    auto src = (direction == TO_HOST)? gpuArr : cpuArr;
+    auto dst = (direction == TO_HOST)? cpuArr : gpuArr;
 
     // synchronous memory copy
     size_t numBytes = numElems * sizeof(qcomp);
@@ -348,8 +348,8 @@ void copyMatrixIfGpuCompiled(qcomp** cpuMatr, qcomp* gpuArr, qindex matrDim, enu
         qcomp* cpuRow = cpuMatr[r];
         qcomp* gpuSlice = &gpuArr[r*matrDim];
 
-        auto src = TO_HOST? gpuSlice : cpuRow;
-        auto dst = TO_HOST? cpuRow   : gpuSlice;
+        auto src = (direction == TO_HOST)? gpuSlice : cpuRow;
+        auto dst = (direction == TO_HOST)? cpuRow   : gpuSlice;
 
         CUDA_CHECK( cudaMemcpyAsync(dst, src, numBytesPerRow, flag) );
     }
