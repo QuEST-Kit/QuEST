@@ -406,6 +406,8 @@ void validate_quregsCanBeCloned(Qureg quregA, Qureg quregB, const char* caller);
 
 void validate_quregRenormProbIsNotZero(qreal prob, const char* caller);
 
+void validate_numInitRandomPureStates(qindex numPureStates,  const char* caller);
+
 
 
 /*

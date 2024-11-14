@@ -872,6 +872,9 @@ namespace report {
     string QUREG_RENORM_PROB_IS_ZERO =
         "Could not renormalise the Qureg because the current total probability is zero, or within epsilon to zero.";
 
+    string INVALID_NUM_INIT_PURE_STATES =
+        "The specified number of random pure states to mix (${NUM_STATES}) is invalid. Must specify 1 or more states.";
+
 
     /*
      * FILE IO
@@ -3423,6 +3426,11 @@ void validate_quregRenormProbIsNotZero(qreal prob, const char* caller) {
     // TODO: include 'prob' in error message when non-integers are supported
 
     assertThat(prob > global_validationEpsilon, report::QUREG_RENORM_PROB_IS_ZERO, caller);
+}
+
+void validate_numInitRandomPureStates(qindex numPureStates,  const char* caller) {
+
+    assertThat(numPureStates >= 1, report::INVALID_NUM_INIT_PURE_STATES, {{"${NUM_STATES}", numPureStates}}, caller);
 }
 
 

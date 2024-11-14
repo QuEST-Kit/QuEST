@@ -1029,7 +1029,7 @@ void localiser_densmatr_initPureState(Qureg qureg, Qureg pure) {
 }
 
 
-void localiser_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg) {
+void localiser_statevec_setUnnormalisedUniformlyRandomPureStateAmps(Qureg qureg) {
     assert_localiserGivenStateVec(qureg);
 
     // generation of unnormalised states is embarrassingly parallel;
@@ -1038,32 +1038,37 @@ void localiser_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qu
 }
 
 
-void localiser_densmatr_setUniformlyRandomPureStateAmps_sub(Qureg qureg) {
-    assert_localiserGivenDensMatr(qureg);
+Qureg createSpoofedLocalStateVecFromDensMatr(Qureg densmatr, bool &memWasAlloc) {
+    assert_localiserGivenDensMatr(densmatr);
 
-    // we require a random, normalised statevector, duplicated on every
-    // node, from which to initialise the density-matrix. We obtain this
-    // by first spoofing a new non-distributed pure state. We inherit qureg's
-    // parallelisations (GPU & multithread), although pure is sqrt smaller
-    // so likely does not need these facilities, but does need to reside in
-    // GPU memory for later GPU-parallel access.
+    // this function spoofs a non-distributed statevector Qureg with the 
+    // same number of qubits as the given densmatr. It uses densmatr's
+    // mutlithread and GPU status, and if they exist, re-uses densmatr's
+    // CPU and GPU communication buffers for its main memory. If densmatr
+    // has no communication buffers, temporary memory is created, which is
+    // acceptable since it is expected much smaller than densmatr's local
+    // memory (a factor densmatr.numColsPerNode). In that scenario,
+    // memWasAlloc is overwritten to be true.
+
     bool isDensMatr = false;
     bool useDistrib = false;
-    bool useMultithr = qureg.isMultithreaded;  // unnecessary
-    bool useGpuAccel = qureg.isGpuAccelerated; // necessary
-    Qureg pure = qureg_populateNonHeapFields(qureg.numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithr);
+    bool useMultithr = densmatr.isMultithreaded;  // unnecessary
+    bool useGpuAccel = densmatr.isGpuAccelerated; // necessary
+    Qureg pure = qureg_populateNonHeapFields(densmatr.numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithr);
 
-    // if it exists, we repurpose qureg's existing buffer space to store
+    // if it exists, we repurpose densmatr's existing buffer space to store
     // pure's statevector, since every node contains >=1 columns; it can fit!
-    if (qureg.isDistributed) {
-        pure.cpuAmps = qureg.cpuCommBuffer; // accelerator decides which is used
-        pure.gpuAmps = qureg.gpuCommBuffer; // may be null
+    if (densmatr.isDistributed) {
+        memWasAlloc = false;
 
-    //otherwise, we must create temporary memory for pure; not a big deal because 
-    // pure is quadratically smaller than density-matrix qureg. Even if we need only
-    // create GPU memory, we create the matching CPU memory too for defensive design,
-    // since the subsequently invoked accelerator backend does complicated copying
+        pure.cpuAmps = densmatr.cpuCommBuffer;
+        pure.gpuAmps = densmatr.gpuCommBuffer; // may be null
+
+    // otherwise, we must create temporary memory for pure. Even if we need only
+    // create GPU memory, we create the matching CPU memory too for defensive design
     } else {
+        memWasAlloc = true;
+
         pure.cpuAmps = cpu_allocArray(pure.numAmps);
         assert_localiserSuccessfullyAllocatedTempMemory(pure.cpuAmps, false); // CPU
 
@@ -1073,9 +1078,36 @@ void localiser_densmatr_setUniformlyRandomPureStateAmps_sub(Qureg qureg) {
         }
     }
 
-    // initialise pure to a normalised, uniformly random statevector; this is calling
-    // the same API function which invoked THIS very function, but passing a statevector
-    initRandomPureState(pure);
+    return pure;
+}
+
+
+void freeSpoofedLocalStateVec(Qureg spoof, bool wasMemAlloc) {
+
+    if (!wasMemAlloc)
+        return;
+
+    cpu_deallocArray(spoof.cpuAmps);
+
+    if (spoof.isGpuAccelerated)
+        gpu_deallocArray(spoof.gpuAmps);
+}
+
+
+void localiser_densmatr_setUniformlyRandomPureStateAmps(Qureg qureg) {
+    assert_localiserGivenDensMatr(qureg);
+
+    // we require a random, normalised statevector, duplicated on every
+    // node, from which to initialise the density-matrix. We obtain this
+    // by first spoofing a new non-distributed pure state, re-using qureg's
+    // communication buffers if they exist, else creating temp memory
+    bool wasMemAlloc = false;
+    Qureg pure = createSpoofedLocalStateVecFromDensMatr(qureg, wasMemAlloc);
+
+    // initialise the spoofed pure Qureg to a normalised, uniformly random 
+    // statevector; this is calling the same API function which invoked THIS 
+    // very function, but instead passing a statevector
+    initRandomPureState(pure); // harmlessly re-valdates
 
     // then, we simply initialise the density matrix in this pure state. 
     // Note that initPureState() calls mixDensityMatrixWithStatevector()
@@ -1085,12 +1117,43 @@ void localiser_densmatr_setUniformlyRandomPureStateAmps_sub(Qureg qureg) {
     localiser_densmatr_initPureState(qureg, pure);
 
     // if we allocated temporary memory, free it
-    if (!qureg.isDistributed) {
-        cpu_deallocArray(pure.cpuAmps);
+    freeSpoofedLocalStateVec(pure, wasMemAlloc);
+}
 
-        if (pure.isGpuAccelerated)
-            gpu_deallocArray(pure.gpuAmps);
+
+void localiser_densmatr_setMixtureOfUniformlyRandomPureStates(Qureg qureg, qindex numPureStates) {
+    assert_localiserGivenDensMatr(qureg);
+
+    // this function merely generates a random pure state, uniformly
+    // mixes it into qureg (initially blank), and sequentially
+    // repeats this process, increasingly mixing qureg.
+    initBlankState(qureg);
+
+    // spoof a statevector Qureg we can rnadomise, re-using
+    // qureg's communication buffer memory if possible, else
+    // creating temporary memory we must later free
+    bool wasMemAlloc = false;
+    Qureg pure = createSpoofedLocalStateVecFromDensMatr(qureg, wasMemAlloc);
+
+    // we wish to create qureg = sum_n^N P pure_n, where P = 1/N is
+    // the uniform probability, which we achieve through repeated
+    // mixing of qureg_n = a qureg_(n-1) + b_n pure_n, where
+    // a = P^(1/N) = 1/N^(1/N) and b_n = a^n
+    qreal a = 1. / pow(numPureStates, 1 / numPureStates);
+
+    for (qindex n=0; n<numPureStates; n++) {
+        
+        qreal b = pow(a, n);
+        initRandomPureState(pure); // harmlessly re-valdates
+        mixDensityMatrixWithStatevector(a, qureg, b, pure);
     }
+
+    // for large numPureStates, the above process is likely to
+    // be numerically imprecise, so we finally renormalise
+    setQuregToRenormalized(qureg);
+
+    // free any allocated temp memory
+    freeSpoofedLocalStateVec(pure, wasMemAlloc);
 }
 
 
@@ -1577,7 +1640,7 @@ void localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg 
  */
 
 
-void localiser_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
+void localiser_statevec_multiQubitProjector(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
     assert_localiserGivenStateVec(qureg);
 
     // we pass all qubits (including prefixes) to backend, which enumerates every
@@ -1593,7 +1656,7 @@ void localiser_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits,
 }
 
 
-void localiser_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
+void localiser_densmatr_multiQubitProjector(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
     assert_localiserGivenDensMatr(qureg);
 
     // always embarrassingly parallel
