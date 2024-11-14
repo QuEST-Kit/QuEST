@@ -146,15 +146,27 @@ void initRandomPureState(Qureg qureg) {
     validate_quregFields(qureg, __func__);
 
     if (qureg.isDensityMatrix)
-        localiser_densmatr_setUniformlyRandomPureStateAmps_sub(qureg); // harmlessly recalls API and re-validates
+        localiser_densmatr_setUniformlyRandomPureStateAmps(qureg); // harmlessly recalls API and re-validates
     else {
-        localiser_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(qureg);
+        localiser_statevec_setUnnormalisedUniformlyRandomPureStateAmps(qureg);
         setQuregToRenormalized(qureg); // harmlessly re-validates
     }
 }
 
 
+void initRandomMixedState(Qureg qureg, qindex numPureStates) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_numInitRandomPureStates(numPureStates, __func__);
+
+    localiser_densmatr_setMixtureOfUniformlyRandomPureStates(qureg, numPureStates);
+}
+
+
 void setQuregAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsStateVector(qureg, __func__);
+    validate_basisStateIndices(qureg, startInd, numAmps, __func__);
 
     // TODO
     error_functionNotImplemented(__func__);
@@ -163,6 +175,9 @@ void setQuregAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps) {
 }
 
 void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qcomp** amps, qindex numRows, qindex numCols) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_basisStateRowCols(qureg, startRow, startCol, numRows, numCols, __func__);
 
     // TODO
     error_functionNotImplemented(__func__);

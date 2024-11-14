@@ -32,6 +32,8 @@ void initArbitraryState(Qureg qureg, qcomp* amps);
 
 void initRandomPureState(Qureg qureg);
 
+void initRandomMixedState(Qureg qureg, qindex numPureStates);
+
 
 
 void setQuregAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps);

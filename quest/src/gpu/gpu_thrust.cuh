@@ -434,9 +434,13 @@ void thrust_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu
 
 qreal thrust_statevec_calcTotalProb_sub(Qureg qureg) {
 
+    // this being a 0 integral literal instead of a 0. float 
+    // literal causes a silent Thrust error. Grr...
+    qreal init = 0.0;
+
     qreal prob = thrust::transform_reduce(
         getStartPtr(qureg), getEndPtr(qureg), 
-        functor_getAmpNorm(), 0, thrust::plus<qreal>());
+        functor_getAmpNorm(), init, thrust::plus<qreal>());
 
     return prob;
 }

@@ -1256,8 +1256,8 @@ int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability)
 
     // collapse to the outcome
     (qureg.isDensityMatrix)?
-        localiser_densmatr_multiQubitProjector_sub(qureg, {target}, {outcome}, prob):
-        localiser_statevec_multiQubitProjector_sub(qureg, {target}, {outcome}, prob);
+        localiser_densmatr_multiQubitProjector(qureg, {target}, {outcome}, prob):
+        localiser_statevec_multiQubitProjector(qureg, {target}, {outcome}, prob);
 
     return outcome;
 }
@@ -1275,8 +1275,8 @@ qreal applyForcedQubitMeasurement(Qureg qureg, int target, int outcome) {
 
     // project to the outcome, renormalising the surviving states
     (qureg.isDensityMatrix)?
-        localiser_densmatr_multiQubitProjector_sub(qureg, {target}, {outcome}, prob):
-        localiser_statevec_multiQubitProjector_sub(qureg, {target}, {outcome}, prob);
+        localiser_densmatr_multiQubitProjector(qureg, {target}, {outcome}, prob):
+        localiser_statevec_multiQubitProjector(qureg, {target}, {outcome}, prob);
 
     return prob;
 }
@@ -1289,8 +1289,8 @@ void applyQubitProjector(Qureg qureg, int target, int outcome) {
     // we permit the outcome to be negligibly likely, leaving state = null
     qreal prob = 1;
     (qureg.isDensityMatrix)?
-        localiser_densmatr_multiQubitProjector_sub(qureg, {target}, {outcome}, prob):
-        localiser_statevec_multiQubitProjector_sub(qureg, {target}, {outcome}, prob);
+        localiser_densmatr_multiQubitProjector(qureg, {target}, {outcome}, prob):
+        localiser_statevec_multiQubitProjector(qureg, {target}, {outcome}, prob);
 }
 
 qindex applyMultiQubitMeasurement(Qureg qureg, int* qubits, int numQubits) {
@@ -1321,8 +1321,8 @@ qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQub
 
     // project to the outcomes, renormalising the surviving states
     (qureg.isDensityMatrix)?
-        localiser_densmatr_multiQubitProjector_sub(qureg, qubitVec, outcomeVec, *probability):
-        localiser_statevec_multiQubitProjector_sub(qureg, qubitVec, outcomeVec, *probability);
+        localiser_densmatr_multiQubitProjector(qureg, qubitVec, outcomeVec, *probability):
+        localiser_statevec_multiQubitProjector(qureg, qubitVec, outcomeVec, *probability);
 
     return outcome;
 }
@@ -1341,8 +1341,8 @@ qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, 
 
     // project to the outcome, renormalising the surviving states
     (qureg.isDensityMatrix)?
-        localiser_densmatr_multiQubitProjector_sub(qureg, qubitVec, outcomeVec, prob):
-        localiser_statevec_multiQubitProjector_sub(qureg, qubitVec, outcomeVec, prob);
+        localiser_densmatr_multiQubitProjector(qureg, qubitVec, outcomeVec, prob):
+        localiser_statevec_multiQubitProjector(qureg, qubitVec, outcomeVec, prob);
 
     return prob;
 }
@@ -1357,8 +1357,8 @@ void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQu
     auto outcomeVec = util_getVector(outcomes, numQubits);
 
     (qureg.isDensityMatrix)?
-        localiser_densmatr_multiQubitProjector_sub(qureg, qubitVec, outcomeVec, prob):
-        localiser_statevec_multiQubitProjector_sub(qureg, qubitVec, outcomeVec, prob);
+        localiser_densmatr_multiQubitProjector(qureg, qubitVec, outcomeVec, prob):
+        localiser_statevec_multiQubitProjector(qureg, qubitVec, outcomeVec, prob);
 }
 
 
