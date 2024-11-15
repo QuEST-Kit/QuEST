@@ -27,16 +27,6 @@ using std::vector;
 
 
 /*
- * ENABLE OPENMP REDUCTION OF qcomp (except on MSVC compilers)
- */
-
-#if defined(COMPILE_OPENMP) && !defined(_MSC_VER)
-    #pragma omp declare reduction(+ : qcomp : omp_out += omp_in ) initializer( omp_priv = omp_orig )
-#endif
-
-
-
-/*
  * OPENMP CONFIG
  */
 
