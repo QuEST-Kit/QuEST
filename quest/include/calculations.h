@@ -40,7 +40,7 @@ qreal calcPurity(Qureg qureg);
 
 qreal calcFidelity(Qureg qureg, Qureg other);
 
-qreal calcHilbertSchmidtDistance(Qureg qureg1, Qureg qureg2);
+qreal calcDistance(Qureg qureg1, Qureg qureg2);
 
 
 // end de-mangler

@@ -13,6 +13,7 @@
 
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
+#include "quest/include/precision.h"
 
 #include "quest/src/core/inliner.hpp"
 
@@ -49,12 +50,38 @@
 
 
 /*
+ * CASTS BETWEEN qcomp AND cu_qcomp
+ */
+
+
+INLINE cu_qcomp getCuQcomp(qreal re, qreal im) {
+    return {.x=re, .y=im};
+}
+
+
+__host__ inline cu_qcomp toCuQcomp(qcomp a) {
+    return getCuQcomp(real(a), imag(a));
+}
+__host__ inline qcomp toQcomp(cu_qcomp a) {
+    return getQcomp(a.x, a.y);
+}
+
+
+__host__ inline cu_qcomp* toCuQcomps(qcomp* a) {
+    return reinterpret_cast<cu_qcomp*>(a);
+}
+
+
+
+/*
  * cu_qcomp ARITHMETIC OVERLOADS
  */
 
 
 // TODO:
-// clean this up with templates!
+// - clean this up (with templates?)
+// - use getCuQcomp() rather than struct creation,
+//   to make the algebra implementation-agnostic
 
 
 INLINE cu_qcomp operator + (const cu_qcomp& a, const cu_qcomp& b) {
@@ -185,24 +212,7 @@ INLINE cu_qcomp getCompPower(cu_qcomp base, cu_qcomp exponent) {
     // output scalar
     qreal re = fac * cos(ang);
     qreal im = fac * sin(ang);
-    cu_qcomp out = {.x = re, .y = im};
-    return out;
-}
-
-
-
-/*
- * CASTS BETWEEN qcomp AND cu_qcomp
- */
-
-
-__host__ inline cu_qcomp toCuQcomp(qcomp a) {
-    return (cu_qcomp) {.x = real(a), .y = imag(a)};
-}
-
-
-__host__ inline cu_qcomp* toCuQcomps(qcomp* a) {
-    return reinterpret_cast<cu_qcomp*>(a);
+    return getCuQcomp(re, im);
 }
 
 

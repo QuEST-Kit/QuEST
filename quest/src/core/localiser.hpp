@@ -149,6 +149,17 @@ void localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg 
 
 
 /*
+ * INNER PRODUCTS
+ */
+
+qcomp localiser_statevec_calcInnerProduct(Qureg quregA, Qureg quregB);
+
+qcomp localiser_densmatr_calcFidelityWithPureState(Qureg rho, Qureg psi, bool conj);
+
+qreal localiser_densmatr_calcHilbertSchmidtDistance(Qureg quregA, Qureg quregB);
+
+
+/*
  * PROJECTORS 
  */
 

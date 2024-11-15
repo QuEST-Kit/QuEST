@@ -928,6 +928,10 @@ static inline void _applyGateSubDiagonalOp(Qureg qureg, int* targets, int numTar
     _WARN_FUNC_RENAMED("calcDensityInnerProduct()", "calcInnerProduct()") \
     calcInnerProduct(__VA_ARGS__)
 
+#define calcHilbertSchmidtDistance(...) \
+    _WARN_FUNC_RENAMED("calcHilbertSchmidtDistance()", "calcDistance()") \
+    calcDistance(__VA_ARGS__)
+
 #define calcExpecPauliHamil(qureg, hamil, workspace) \
     _WARN_FUNC_RENAMED("calcExpecPauliHamil(Qureg, PauliHamil, Qureg)", "calcExpecPauliStrSum(Qureg, PauliStrSum)") \
     calcExpecPauliStrSum(qureg, hamil)

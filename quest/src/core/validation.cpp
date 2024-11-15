@@ -865,6 +865,32 @@ namespace report {
         "The cloned and target Quregs (when both are statevectors) must have the same GPU deployment.";
 
 
+    string PRODUCTED_QUREGS_HAVE_DIFFERENT_NUM_QUBITS =
+        "The given Quregs contained differing numbers of qubits (${NUM_A} and ${NUM_B} qubits respectively) and are incompatible.";
+
+    string PRODUCTED_SAME_TYPE_QUREGS_HAVE_DIFFERING_GPU_ACCELS =
+        "The given Quregs were both statevectors or both density matrices but had differing GPU-accelerations. This is an illegal (and nonsensical) configuration which would invoke unexpectedly poor performance. Consider enabling GPU-aceleration for both registers.";
+
+    string PRODUCTED_STATEVEC_DISTRIB_BUT_DENSMATR_LOCAL =
+        "The given statevector Qureg was distributed while the larger density matrix Qureg was not. This is an illegal (and nonsensical) configuration. Consider distributing the density matrix.";
+
+
+    string CALC_FIDELITY_OF_DENSITY_MATRICES_NOT_YET_SUPPORTED =
+        "Quregs cannot both be density matrices. Calculation of the fidelity between two mixed states is not currently supported.";
+
+    string CALC_FIDELITY_NOT_APPROX_REAL =
+        "The calculated fidelity between the given statevector and density matrix was not approximately real (the imaginary component was beyond epsilon), suggesting the density matrix was unnormalised and/or not Hermitian. Use calcInnerProduct() to find the unnormalised fidelity.";
+
+    string CALC_BURES_DISTANCE_MAG_EXCEEDED_ONE =
+        "The calculation of the Bures distance between statevectors failed, because the magnitude of their inner-product exceeded one (suggesting a complex distance), indicating one or both Quregs were unnormalised.";
+
+    string CALC_PURIFIED_DISTANCE_NOT_APPROX_REAL =
+        "The fidelity between the given statevector and density matrix was not approximately real (suggesting a complex purified distance), indicating the density matrix was unnormalised and/or not Hermitian.";
+
+    string CALC_PURIFIED_DISTANCE_REAL_EXCEEDED_ONE =
+        "The fidelity between the given statevector and density matrix exceed one (suggesting a complex purified distance), indicating either or both Quregs were unnormalised.";
+
+
     /*
      * QUREG MODIFICATION
      */
@@ -3415,6 +3441,63 @@ void validate_quregsCanBeCloned(Qureg quregA, Qureg quregB, const char* caller) 
     assertThat(quregA.isGpuAccelerated == quregB.isGpuAccelerated, report::CLONED_STATEVECS_HAVE_DIFFERENT_GPU_DEPLOYMENTS, caller);
 }
 
+void validate_quregsCanBeProducted(Qureg quregA, Qureg quregB, const char* caller) {
+
+   // number of qubits must always match
+    assertThat(
+        quregA.numQubits == quregB.numQubits, 
+        report::PRODUCTED_QUREGS_HAVE_DIFFERENT_NUM_QUBITS,
+        {{"${NUM_A}", quregA.numQubits}, {"${NUM_B}", quregB.numQubits}}, caller);
+
+    // if both are statevecs or both are densmatr...
+    if (quregA.isDensityMatrix == quregB.isDensityMatrix) {
+
+        // then they must have the same GPU accel (because falling back to CPU is slow)
+        assertThat(
+            quregA.isGpuAccelerated == quregB.isGpuAccelerated,
+            report::PRODUCTED_SAME_TYPE_QUREGS_HAVE_DIFFERING_GPU_ACCELS, caller);
+
+        // but their distributions may differ, so finish
+        return;
+    }
+
+    // when one is a statevector and the other is a density matrix...
+    Qureg dm = (quregA.isDensityMatrix)? quregA : quregB;
+    Qureg sv = (quregA.isDensityMatrix)? quregB : quregA;
+
+    // then statevec can only be distributed if density matrix is
+    if (sv.isDistributed)
+        assertThat(dm.isDistributed, report::PRODUCTED_STATEVEC_DISTRIB_BUT_DENSMATR_LOCAL, caller); 
+
+    // their GPU accelerations may differ however
+}
+
+void validate_throwErrorBecauseCalcFidOfDensMatrNotYetImplemented(const char* caller) {
+
+    assertThat(false, report::CALC_FIDELITY_OF_DENSITY_MATRICES_NOT_YET_SUPPORTED, caller);
+}
+
+void validate_fidelityIsReal(qcomp fid, const char* caller) {
+
+    // TODO: include imag(fid) in error message when non-integers are supported
+
+    assertThat(abs(imag(fid)) < global_validationEpsilon, report::CALC_FIDELITY_NOT_APPROX_REAL, caller);
+}
+
+void validate_buresDistanceInnerProdIsNormalised(qreal mag, const char* caller) {
+
+    // TODO: include mag in error message when non-integers are supported
+
+    assertThat(mag <= 1 + global_validationEpsilon, report::CALC_BURES_DISTANCE_MAG_EXCEEDED_ONE, caller);
+}
+
+void validate_purifiedDistanceIsNormalised(qcomp fid, const char* caller) {
+
+    // TODO: include scalars in error message when non-integers are supported
+    
+    assertThat(abs(imag(fid)) < global_validationEpsilon, report::CALC_PURIFIED_DISTANCE_NOT_APPROX_REAL, caller);
+    assertThat(real(fid) <= 1 + global_validationEpsilon, report::CALC_PURIFIED_DISTANCE_REAL_EXCEEDED_ONE, caller);
+}
 
 
 /*

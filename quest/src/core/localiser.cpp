@@ -1544,7 +1544,10 @@ void localiser_densmatr_partialTrace(Qureg inQureg, Qureg outQureg, vector<int> 
 
 
 qreal localiser_statevec_calcTotalProb(Qureg qureg) {
-    assert_localiserGivenStateVec(qureg);
+    
+    // not restricted to statevecs; density matrices use
+    // a different routine for calcTotalProb, but they use
+    // this routine for calcHilbertSchmidtDistance
 
     qreal prob = accel_statevec_calcTotalProb_sub(qureg);
     if (qureg.isDistributed)
@@ -1631,6 +1634,129 @@ void localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg 
     // nodes sum their arrays
     if (qureg.isDistributed)
         comm_reduceReals(outProbs, powerOf2(qubits.size()));
+}
+
+
+
+/*
+ * INNER PRODUCTS
+ */
+
+
+qcomp calcInnerProdOfSameDistribQuregs(Qureg quregA, Qureg quregB) {
+
+    // both are statevectors/density-matrices, and both are local/distributed
+    qcomp prod = accel_statevec_calcInnerProduct_sub(quregA, quregB);
+
+    // unless quregs were cloned per-node, all nodes must sum their amp
+    if (quregA.isDistributed)
+        comm_reduceAmp(&prod);
+
+    return prod;
+}
+
+
+Qureg spoofDistributedQuregFromLocalQureg(Qureg local, Qureg distrib) {
+
+    // overwrite spoof's fields with distrib's, setting correct dimensions
+    Qureg spoof = distrib;
+
+    // set spoof's pointers to a rank-specific offset of local's
+    qindex offset = distrib.rank * distrib.numAmpsPerNode;
+    spoof.cpuAmps = &local.cpuAmps[offset];
+    spoof.gpuAmps = (local.isGpuAccelerated)? &local.gpuAmps[offset] : nullptr;
+
+    return spoof;
+}
+
+
+qcomp localiser_statevec_calcInnerProduct(Qureg quregA, Qureg quregB) {
+
+    // trivial when identically distributed
+    if (quregA.isDistributed == quregB.isDistributed)
+        return calcInnerProdOfSameDistribQuregs(quregA, quregB); // broadcasts
+
+    // when only one qureg is distributed, we spoof a distributed
+    // qureg from the local one, offsetting its amp pointers. In
+    // defensive design, we modify a copy of quregA or quregB (even
+    // though they themselves are mere copies of the user structs),
+    // in case this function is modified in the future to mutate args
+    Qureg copyA = (quregA.isDistributed)? quregA : spoofDistributedQuregFromLocalQureg(quregA, quregB);
+    Qureg copyB = (quregB.isDistributed)? quregB : spoofDistributedQuregFromLocalQureg(quregB, quregA);
+
+    return calcInnerProdOfSameDistribQuregs(copyA, copyB); // broadcasts
+}
+
+
+qcomp localiser_densmatr_calcFidelityWithPureState(Qureg rho, Qureg psi, bool conj) {
+    assert_localiserGivenDensMatr(rho);
+    assert_localiserGivenStateVec(psi);
+
+    // each node will first compute their local fidelity contribution
+    qcomp fid = 0;
+    
+    // rho and psi may have different distributions, though we
+    // ultimately require psi to be duplicated on every node
+    bool rhoDist = rho.isDistributed;
+    bool psiDist = psi.isDistributed;
+
+    // when psi is duplicated on every node, local eval is trivial
+    if (!psiDist)
+        fid = accel_densmatr_calcFidelityWithPureState_sub(rho, psi, conj);
+
+    // psi distributed but rho duplicated is illegal
+    else if (!rhoDist)
+        error_calcFidStateVecDistribWhileDensMatrLocal();
+
+    // when both are distributed...
+    else {
+        // we broadcast psi to every node's rho comm buffer...
+        comm_combineAmpsIntoBuffer(rho, psi);
+
+        // and spoof non-distributed statevector
+        int isDense = 0;
+        int isDistrib = 0;
+        Qureg spoof = qureg_populateNonHeapFields(
+            psi.numQubits, isDense, isDistrib, 
+            rho.isGpuAccelerated, rho.isMultithreaded);
+
+        // to which we bind rho's buffers containing psi's amps
+        spoof.cpuAmps = rho.cpuCommBuffer;
+        spoof.gpuAmps = rho.gpuCommBuffer;
+        fid = accel_densmatr_calcFidelityWithPureState_sub(rho, spoof, conj);
+    }
+
+    // if rho was distributed, combine node contributions
+    if (rho.isDistributed)
+        comm_reduceAmp(&fid);
+
+    return fid;
+}
+
+
+qreal localiser_densmatr_calcHilbertSchmidtDistance(Qureg quregA, Qureg quregB) {
+    assert_localiserGivenDensMatr(quregA);
+    assert_localiserGivenDensMatr(quregB);
+
+    qreal dist = 0;
+
+    // when distributions match, routine is embarrassingly parallel
+    if (quregA.isDistributed == quregB.isDistributed)
+        dist = accel_densmatr_calcHilbertSchmidtDistance_sub(quregA, quregB);
+
+    // otherwise, we simply spoof a distributed qureg from the local 
+    // one, offsetting its amp pointers, modifying copies in defensive design
+    else {
+        Qureg copyA = (quregA.isDistributed)? quregA : spoofDistributedQuregFromLocalQureg(quregA, quregB);
+        Qureg copyB = (quregB.isDistributed)? quregB : spoofDistributedQuregFromLocalQureg(quregB, quregA);
+        dist = accel_densmatr_calcHilbertSchmidtDistance_sub(copyA, copyB);
+    }
+
+    // combine node contributions unless both quregs were duplicated
+    if (quregA.isDistributed || quregB.isDistributed)
+        comm_reduceReal(&dist);
+
+    return dist; // no sqrt
 }
 
 

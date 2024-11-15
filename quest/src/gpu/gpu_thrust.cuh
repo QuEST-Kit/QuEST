@@ -26,6 +26,7 @@
 #include <thrust/complex.h>
 #include <thrust/device_ptr.h>
 #include <thrust/device_vector.h>
+#include <thrust/inner_product.h>
 #include <thrust/transform_reduce.h>
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
@@ -133,6 +134,21 @@ struct functor_getAmpReal : public thrust::unary_function<cu_qcomp,qreal> {
 };
 
 
+struct functor_getAmpConjProd : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qcomp>
+{
+    __host__ __device__ cu_qcomp operator()(cu_qcomp braAmp, cu_qcomp ketAmp) { 
+        return getCompConj(braAmp) * ketAmp;
+    }
+};
+
+struct functor_getNormOfAmpDif : public thrust::binary_function<cu_qcomp,cu_qcomp,qreal>
+{
+    __host__ __device__ qreal operator()(cu_qcomp amp1, cu_qcomp amp2) { 
+        return getCompNorm(amp1 - amp2);
+    }
+};
+
+
 struct functor_mixAmps : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qcomp> {
 
     // this functor linearly combines the given pair
@@ -233,6 +249,50 @@ struct functor_insertBits : public thrust::unary_function<qindex,qindex> {
 
         // return ith local index where bits have the specified values at the specified indices
         return insertBitsWithMaskedValues(i, sortedIndsPtr, nbits, valueMask);
+    }
+};
+
+
+template <bool Conj>
+struct functor_getFidelityTerm : public thrust::unary_function<qindex,cu_qcomp>
+{
+    int rank;
+    int numQubits;
+    qindex logNumAmpsPerNode;
+    qindex numAmpsPerCol;
+
+    cu_qcomp* rho;
+    cu_qcomp* psi;
+
+    functor_getFidelityTerm(
+        int _rank, int _numQubits, qindex _logNumAmpsPerNode, qindex _numAmpsPerCol, cu_qcomp* _rho, cu_qcomp* _psi
+    ) :
+        rank(_rank), numQubits(_numQubits), logNumAmpsPerNode(_logNumAmpsPerNode), numAmpsPerCol(_numAmpsPerCol), rho(_rho), psi(_psi)
+    {}
+
+    __host__ __device__ cu_qcomp operator()(qindex n) {
+
+        // i = global index of nth local amp of rho
+        qindex i = concatenateBits(rank, n, logNumAmpsPerNode);
+
+        // r, c = global row and column indices corresponding to i
+        qindex r = getBitsRightOfIndex(i, numQubits);
+        qindex c = getBitsLeftOfIndex(i, numQubits-1);
+
+        // collect amps involved in this term
+        cu_qcomp rhoAmp = rho[n];
+        cu_qcomp rowAmp = psi[r];
+        cu_qcomp colAmp = psi[c];
+
+        // compute term of <psi|rho^dagger|psi> or <psi|rho|psi>
+        if constexpr (Conj) {
+            rhoAmp = getCompConj(rhoAmp);
+            colAmp = getCompConj(colAmp);
+        } else
+            rowAmp = getCompConj(rowAmp);
+
+        cu_qcomp fid = rhoAmp * rowAmp * colAmp;
+        return fid;
     }
 };
 
@@ -454,7 +514,8 @@ qreal thrust_densmatr_calcTotalProb_sub(Qureg qureg) {
     auto probIter= thrust::make_transform_iterator(ampIter, functor_getAmpReal());
 
     qindex numIts = powerOf2(qureg.logNumColsPerNode);
-    return thrust::reduce(probIter, probIter + numIts);
+    qreal prob = thrust::reduce(probIter, probIter + numIts);
+    return prob;
 }
 
 
@@ -473,7 +534,8 @@ qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> q
     auto probIter = thrust::make_transform_iterator(ampIter, probFunctor);
 
     qindex numIts = qureg.numAmpsPerNode / powerOf2(qubits.size());
-    return thrust::reduce(probIter, probIter + numIts);
+    qreal prob = thrust::reduce(probIter, probIter + numIts);
+    return prob;
 }
 
 
@@ -496,7 +558,58 @@ qreal thrust_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> q
     auto probIter = thrust::make_transform_iterator(ampIter, probFunctor);
 
     qindex numIts = util_getNumLocalDiagonalAmpsWithBits(qureg, qubits, outcomes);
-    return thrust::reduce(probIter, probIter + numIts);
+    qreal prob = thrust::reduce(probIter, probIter + numIts);
+    return prob;
+}
+
+
+
+/*
+ * INNER PRODUCTS AND MEASURES
+ */
+
+
+cu_qcomp thrust_statevec_calcInnerProduct_sub(Qureg quregA, Qureg quregB) {
+
+    cu_qcomp init = getCuQcomp(0, 0);
+
+    cu_qcomp prod = thrust::inner_product(
+        getStartPtr(quregA), getEndPtr(quregA), getStartPtr(quregB), 
+        init, thrust::plus<cu_qcomp>(), functor_getAmpConjProd());
+
+    return prod;
+}
+
+
+qreal thrust_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB) {
+
+    qreal init = 0;
+
+    qreal dist = thrust::inner_product(
+        getStartPtr(quregA), getEndPtr(quregA), getStartPtr(quregB), 
+        init, thrust::plus<qreal>(), functor_getNormOfAmpDif());
+
+    return dist;
+}
+
+
+template <bool Conj>
+cu_qcomp thrust_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
+
+    // functor accepts an index and produces a cu_qcomp
+    auto functor = functor_getFidelityTerm<Conj>(
+        rho.rank, rho.numQubits, rho.logNumAmpsPerNode, 
+        psi.numAmps, toCuQcomps(rho.gpuAmps), toCuQcomps(psi.gpuAmps));
+
+    auto indIter = thrust::make_counting_iterator(0);
+    qindex numIts = rho.numAmpsPerNode;
+
+    cu_qcomp init = getCuQcomp(0, 0);
+    cu_qcomp fid = thrust::transform_reduce(
+        indIter, indIter + numIts, 
+        functor, init, thrust::plus<cu_qcomp>());
+
+    return fid;
 }
 
 

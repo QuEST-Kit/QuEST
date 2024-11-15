@@ -116,6 +116,8 @@ void assert_localiserGivenDensMatr(Qureg qureg);
 
 void assert_localiserPartialTraceGivenCompatibleQuregs(Qureg inQureg, Qureg outQureg, int numTargs);
 
+void error_calcFidStateVecDistribWhileDensMatrLocal();
+
 
 
 /*
@@ -149,6 +151,12 @@ void assert_fullStateDiagMatrIsDistributed(FullStateDiagMatr matr);
 void assert_acceleratorQuregIsDistributed(Qureg qureg);
 
 void assert_quregAndFullStateDiagMatrAreBothOrNeitherDistrib(Qureg qureg, FullStateDiagMatr matr);
+
+void assert_calcFidStateVecIsLocal(Qureg qureg);
+
+void assert_calcFidTempGpuAllocSucceeded(qcomp* ptr);
+
+void assert_innerProductedSameDimQuregsHaveSameGpuAccel(Qureg quregA, Qureg quregB);
 
 
 

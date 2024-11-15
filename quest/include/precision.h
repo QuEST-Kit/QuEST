@@ -97,10 +97,10 @@
         #define DEAULT_VALIDATION_EPSILON 1E-5
 
     #elif FLOAT_PRECISION == 2
-        #define DEAULT_VALIDATION_EPSILON 1E-13
+        #define DEAULT_VALIDATION_EPSILON 1E-12
 
     #elif FLOAT_PRECISION == 4
-        #define DEAULT_VALIDATION_EPSILON 1E-14
+        #define DEAULT_VALIDATION_EPSILON 1E-13
 
     #endif
 

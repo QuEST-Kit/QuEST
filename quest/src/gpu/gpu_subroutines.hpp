@@ -152,6 +152,17 @@ template <int NumQubits> void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
 
 
 /*
+ * INNER PRODUCTS
+ */
+
+qcomp gpu_statevec_calcInnerProduct_sub(Qureg quregA, Qureg quregB);
+
+qreal gpu_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB);
+
+template <bool Conj> qcomp gpu_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi);
+
+
+/*
  * PROJECTORS
  */
 

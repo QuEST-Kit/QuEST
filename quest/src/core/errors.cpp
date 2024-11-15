@@ -268,6 +268,11 @@ void assert_localiserPartialTraceGivenCompatibleQuregs(Qureg inQureg, Qureg outQ
         raiseInternalError("Inconsistent Qureg sizes and number of traced qubits given to localiser's partial trace function.");
 }
 
+void error_calcFidStateVecDistribWhileDensMatrLocal() {
+
+    raiseInternalError("A localiser function attempted to compute the fidelity between a local density matrix and a distributed statevector, which is an illegal combination.");
+}
+
 
 
 /*
@@ -408,6 +413,25 @@ void assert_applyFullStateDiagMatrTempGpuAllocSucceeded(qcomp* gpuPtr) {
     if (gpuPtr == nullptr)
         raiseInternalError("An internal function invoked by applying a FullStateDiagMatr upon a density matrix attempted to allocate temporary GPU memory but failed.");
 }
+
+void assert_calcFidStateVecIsLocal(Qureg qureg) {
+
+    if (qureg.isDistributed)
+        raiseInternalError("An accelerator function involved with calculating the fidelity between a density matrix and statevector was given an illegally distributed statevector.");
+}
+
+void assert_calcFidTempGpuAllocSucceeded(qcomp* ptr) {
+
+    if (!mem_isAllocated(ptr))
+        raiseInternalError("An accelerator function involved with calculating the fidelity between a density matrix and statevector failed to allocate temporary GPU memory.");
+}
+
+void assert_innerProductedSameDimQuregsHaveSameGpuAccel(Qureg quregA, Qureg quregB) {
+
+    if (quregA.isGpuAccelerated != quregB.isGpuAccelerated)
+        raiseInternalError("The accelerator was asked to compute the inner product between a GPU-accelerated and non-accelerated Qureg, where were both statevectors or density matrices, which is an illegal combination.");
+}
+
 
 
 

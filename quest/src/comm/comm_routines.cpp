@@ -505,17 +505,17 @@ void comm_combineAmpsIntoBuffer(Qureg receiver, Qureg sender) {
     // but does not generally permit CPU-to-GPU (host-to-device). So if only one
     // Qureg is GPU-accelerated, we have to fall back entirely to copying through host.
     // There is ergo only a single scenario possible when we can directly GPU-exchange:
-    if (gpu_isDirectGpuCommPossible() && receiver.isGpuAccelerated && sender.isGpuAccelerated) {
+    if (receiver.isGpuAccelerated && sender.isGpuAccelerated && gpu_isDirectGpuCommPossible()) {
         globallyCombineSubArrays(receiver.gpuCommBuffer, sender.gpuAmps, numSendAmps);
         return;
     }
 
-    // otherwise, we must always transmit amps through CPU buffer memory, and merely
-    // have to decide whether CPU-GPU pre- and post-copies are necessary
+    // otherwise, we must always transmit amps through CPU memory (NOT buffer), and 
+    // merely have to decide whether CPU-GPU pre- and post-copies are necessary
     if (sender.isGpuAccelerated)
-        gpu_copyGpuToCpu(sender, sender.gpuAmps, sender.cpuCommBuffer, numSendAmps);
+        gpu_copyGpuToCpu(sender, sender.gpuAmps, sender.cpuAmps, numSendAmps);
 
-    globallyCombineSubArrays(receiver.cpuCommBuffer, sender.cpuCommBuffer, numSendAmps);
+    globallyCombineSubArrays(receiver.cpuCommBuffer, sender.cpuAmps, numSendAmps);
 
     if (receiver.isGpuAccelerated)
         gpu_copyCpuToGpu(receiver, receiver.cpuCommBuffer, receiver.gpuCommBuffer, numRecvAmps);
@@ -532,7 +532,7 @@ void comm_combineElemsIntoBuffer(Qureg receiver, FullStateDiagMatr sender) {
     qindex numRecvAmps = sender.numElems;
 
     // like in comm_combineAmpsIntoBuffer(), direct-GPU comm only possible if both ptrs are GPU
-    if (gpu_isDirectGpuCommPossible() && receiver.isGpuAccelerated && sender.isGpuAccelerated) {
+    if (receiver.isGpuAccelerated && sender.isGpuAccelerated && gpu_isDirectGpuCommPossible() ) {
         globallyCombineSubArrays(receiver.gpuCommBuffer, sender.gpuElems, numSendAmps);
         return;
     }
