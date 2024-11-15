@@ -7,6 +7,7 @@
  * of their needed versions within this translation unit for later linkage.
  */
 
+#include "quest/include/modes.h"
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
 #include "quest/include/paulis.h"
@@ -25,6 +26,21 @@
 #include <algorithm>
 
 using std::vector;
+
+
+
+/*
+ * ENABLE OPENMP REDUCTION OF qcomp
+ * 
+ * which is incompatible with MSVC; we have not yet decided
+ * how to remedy this - force Windows users who seek multithreading
+ * to compile using another compiler?
+ */
+
+
+#if defined(COMPILE_OPENMP) && !defined(_MSC_VER)
+    #pragma omp declare reduction(+ : qcomp : omp_out += omp_in ) initializer( omp_priv = omp_orig )
+#endif
 
 
 
