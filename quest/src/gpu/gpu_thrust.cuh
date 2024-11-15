@@ -593,10 +593,10 @@ qreal thrust_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB)
 }
 
 
-cu_qcomp thrust_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
+cu_qcomp thrust_densmatr_calcFidelityWithPureState_sub<Conj>(Qureg rho, Qureg psi) {
 
     // functor accepts an index and produces a cu_qcomp
-    auto functor = functor_getFidelityTerm(
+    auto functor = functor_getFidelityTerm<Conj>(
         rho.rank, rho.numQubits, rho.logNumAmpsPerNode, 
         psi.numAmps, toCuQcomps(rho.gpuAmps), toCuQcomps(psi.gpuAmps));
 
