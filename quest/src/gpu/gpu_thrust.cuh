@@ -141,9 +141,9 @@ struct functor_getAmpConjProd : public thrust::binary_function<cu_qcomp,cu_qcomp
     }
 };
 
-struct functor_getNormOfAmpDif : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qcomp>
+struct functor_getNormOfAmpDif : public thrust::binary_function<cu_qcomp,cu_qcomp,qreal>
 {
-    __host__ __device__ cu_qcomp operator()(cu_qcomp amp1, cu_qcomp amp2) { 
+    __host__ __device__ qreal operator()(cu_qcomp amp1, cu_qcomp amp2) { 
         return getCompNorm(amp1 - amp2);
     }
 };
@@ -587,7 +587,7 @@ qreal thrust_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB)
 
     qreal dist = thrust::inner_product(
         getStartPtr(quregA), getEndPtr(quregA), getStartPtr(quregB), 
-        init, thrust::plus<cu_qcomp>(), functor_getNormOfAmpDif());
+        init, thrust::plus<qreal>(), functor_getNormOfAmpDif());
 
     return dist;
 }
@@ -598,7 +598,7 @@ cu_qcomp thrust_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
     // functor accepts an index and produces a cu_qcomp
     auto functor = functor_getFidelityTerm(
         rho.rank, rho.numQubits, rho.logNumAmpsPerNode, 
-        psi.numAmps, rho.gpuAmps, psi.gpuAmps);
+        psi.numAmps, toCuQcomps(rho.gpuAmps), toCuQcomps(psi.gpuAmps));
 
     auto indIter = thrust::make_counting_iterator(0);
     qindex numIts = rho.numAmpsPerNode;

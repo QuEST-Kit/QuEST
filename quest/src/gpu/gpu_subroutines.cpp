@@ -1457,7 +1457,7 @@ qcomp gpu_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
 
 #if COMPILE_CUQUANTUM || COMPILE_CUDA
 
-    cu_qcomp fid = thrust_densmatr_calcFidelityWithPureState_sub(quregA, quregB);
+    cu_qcomp fid = thrust_densmatr_calcFidelityWithPureState_sub(rho, psi);
     return toQcomp(fid);
 
 #else
