@@ -16,24 +16,6 @@
 
 
 /*
- * MANUAL CHANGES NEEDED FOR DEPRECATED TO COMPILE:
- *
- * - qureg.stateVec.real[i] -> real(qureg.cpuAmps[i])
- * - qureg.stateVec.imag[i] -> imag(qureg.cpuAmps[i])
- * - Complex (returned by API funtions) to qcomp
- * - custom define absReal()                                HMMM MAYBE WE SHOULD DEFINE SOMETHING FOR USERS?!
- * - PauliHamil.termCoeffs -> .coeffs
- * - PauliHamil.numSumTerms -> .numTerms
- * - initStateFromAmps(Querg, qreal*, qreal*) -> initArbitraryState(Qureg, qcomp*)
- * - setAmps(Qureg, qindex, qreal*, qreal*, qindex) -> setQuregAmps(Qureg, qindex, qcomp*, qindex)
- * - setQuregToPauliHamil 
-
- */
-
-
-
-
-/*
  * INITIAL WARNING
  */
 
