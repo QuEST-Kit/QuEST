@@ -29,11 +29,18 @@
  */
 
 
-qcomp calcInnerProduct(Qureg qureg1, Qureg qureg2) {
+qcomp calcInnerProduct(Qureg quregA, Qureg quregB) {
+    validate_quregFields(quregA, __func__);
+    validate_quregFields(quregB, __func__);
+    validate_quregsCanBeProducted(quregA, quregB, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
+    // <A|B> or Tr(A^dagger B)
+    if (quregA.isDensityMatrix == quregB.isDensityMatrix)
+        return localiser_statevec_calcInnerProduct(quregA, quregB);
+
+    return (quregA.isDensityMatrix)?
+        localiser_densmatr_calcFidelityWithPureState(quregA, quregB, true):  // <B|A^dagger|B>
+        localiser_densmatr_calcFidelityWithPureState(quregB, quregA, false); // <A|B|A>
 }
 extern "C" void _wrap_calcInnerProduct(Qureg bra, Qureg ket, qcomp* out) {
 
@@ -74,9 +81,11 @@ extern "C" void _wrap_calcExpecNonHermitianFullStateDiagMatr(qcomp* out, Qureg q
 extern "C" {
 
 
+
 /*
  * EXPECTED VALUES
  */
+
 
 qreal calcExpecPauliStr(Qureg qureg, PauliStr str) {
 
@@ -179,35 +188,76 @@ qreal calcTotalProb(Qureg qureg) {
 
 
 qreal calcPurity(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
 
-    // TODO: how can I have an equivalent that works when density-matrix qureg is unnormalised?
-    // Can it call calcInnerProduct(qureg,qureg)??
-
-    // TODO
-    error_functionNotImplemented(__func__);    
-    return -1;
+    // assuming Hermiticity, Tr(rho^2) = sum_ij |rho_ij|^2,
+    // and Tr(|x><x|x><x|) = (sum_i |x_i|^2)^2
+    qreal prob = localiser_statevec_calcTotalProb(qureg);
+    return (qureg.isDensityMatrix)? prob : prob * prob;
 }
 
 
-qreal calcFidelity(Qureg qureg, Qureg other) {
+qreal calcFidelity(Qureg quregA, Qureg quregB) {
+    validate_quregFields(quregA, __func__);
+    validate_quregFields(quregB, __func__);
+    validate_quregsCanBeProducted(quregA, quregB, __func__);
 
-    // TODO: how can I have an equivalent that works when density-matrix qureg is unnormalised?
-    // Just direct users to use calcInnerProduct(qureg, other)??
+    bool isDensA = quregA.isDensityMatrix;
+    bool isDensB = quregB.isDensityMatrix;
 
-    // TODO
-    error_functionNotImplemented(__func__);    
-    return -1;
+    // F(rho,sigma) not yet supported
+    if (isDensA && isDensB)
+        validate_throwErrorBecauseCalcFidOfDensMatrNotYetImplemented(__func__);
+
+    // |<A|B>|^2
+    if (!isDensA && !isDensB) {
+        qcomp prod = localiser_statevec_calcInnerProduct(quregA, quregB);
+        return std::norm(prod);
+    }
+
+    // Re[<B|A|B>] or Re[<A|B|A>]
+    qcomp fid = (quregA.isDensityMatrix)?
+        localiser_densmatr_calcFidelityWithPureState(quregA, quregB, false): // no conj
+        localiser_densmatr_calcFidelityWithPureState(quregB, quregA, false); // no conj
+
+    validate_fidelityIsReal(fid, __func__);
+    return std::real(fid);
 }
 
 
-qreal calcHilbertSchmidtDistance(Qureg qureg1, Qureg qureg2) {
+qreal calcDistance(Qureg quregA, Qureg quregB) {
+    validate_quregFields(quregA, __func__);
+    validate_quregFields(quregB, __func__);
+    validate_quregsCanBeProducted(quregA, quregB, __func__);
 
-    // TODO: we could eval this for pure sttes too - waht is it?
+    bool isDensA = quregA.isDensityMatrix;
+    bool isDensB = quregB.isDensityMatrix;
 
+    // Hilbert-Schmidt = sqrt( Tr((A-B)(A-B)^dagger) = sqrt(sum_ij |A_ij - B_ij|^2)
+    if (isDensA && isDensB) {
+        qreal dif = localiser_densmatr_calcHilbertSchmidtDistance(quregA, quregB);
+        return sqrt(dif);
+    }
 
-    // TODO
-    error_functionNotImplemented(__func__);    
-    return -1;
+    // Bures = sqrt(2 - 2 |<A|B>|) (even when unnormalised)
+    if (!isDensA && !isDensB) {
+        qcomp prod = localiser_statevec_calcInnerProduct(quregA, quregB);
+        qreal mag = std::abs(prod);
+
+        validate_buresDistanceInnerProdIsNormalised(mag, __func__);
+        mag = (mag > 1)? 1 : mag; // forgive eps error to avoid complex
+        return std::sqrt(2 - 2 * mag);
+    }
+
+    // purified distance = sqrt(1 - <psi|rho|psi>)
+    qcomp fid = (quregA.isDensityMatrix)?
+        localiser_densmatr_calcFidelityWithPureState(quregA, quregB, false): // no conj
+        localiser_densmatr_calcFidelityWithPureState(quregB, quregA, false); // no conj
+
+    validate_purifiedDistanceIsNormalised(fid, __func__); 
+    qreal re = std::real(fid);
+    re = (re > 1)? 1 : re; // forgive eps error to avoid complex
+    return std::sqrt(1 - re);
 }
 
 

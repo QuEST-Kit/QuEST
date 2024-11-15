@@ -271,6 +271,17 @@ void accel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg 
 
 
 /*
+ * INNER PRODUCTS
+ */
+
+qcomp accel_statevec_calcInnerProduct_sub(Qureg quregA, Qureg quregB);
+
+qcomp accel_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi, bool conj);
+
+qreal accel_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB);
+
+
+/*
  * PROJECTORS 
  */
 

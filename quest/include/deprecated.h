@@ -16,6 +16,24 @@
 
 
 /*
+ * MANUAL CHANGES NEEDED FOR DEPRECATED TO COMPILE:
+ *
+ * - qureg.stateVec.real[i] -> real(qureg.cpuAmps[i])
+ * - qureg.stateVec.imag[i] -> imag(qureg.cpuAmps[i])
+ * - Complex (returned by API funtions) to qcomp
+ * - custom define absReal()                                HMMM MAYBE WE SHOULD DEFINE SOMETHING FOR USERS?!
+ * - PauliHamil.termCoeffs -> .coeffs
+ * - PauliHamil.numSumTerms -> .numTerms
+ * - initStateFromAmps(Querg, qreal*, qreal*) -> initArbitraryState(Qureg, qcomp*)
+ * - setAmps(Qureg, qindex, qreal*, qreal*, qindex) -> setQuregAmps(Qureg, qindex, qcomp*, qindex)
+ * - setQuregToPauliHamil 
+
+ */
+
+
+
+
+/*
  * INITIAL WARNING
  */
 
@@ -927,6 +945,10 @@ static inline void _applyGateSubDiagonalOp(Qureg qureg, int* targets, int numTar
 #define calcDensityInnerProduct(...) \
     _WARN_FUNC_RENAMED("calcDensityInnerProduct()", "calcInnerProduct()") \
     calcInnerProduct(__VA_ARGS__)
+
+#define calcHilbertSchmidtDistance(...) \
+    _WARN_FUNC_RENAMED("calcHilbertSchmidtDistance()", "calcDistance()") \
+    calcDistance(__VA_ARGS__)
 
 #define calcExpecPauliHamil(qureg, hamil, workspace) \
     _WARN_FUNC_RENAMED("calcExpecPauliHamil(Qureg, PauliHamil, Qureg)", "calcExpecPauliStrSum(Qureg, PauliStrSum)") \

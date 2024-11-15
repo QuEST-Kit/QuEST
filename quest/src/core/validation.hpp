@@ -398,6 +398,16 @@ void validate_quregCanBeInitialisedToPureState(Qureg qureg, Qureg pure, const ch
 
 void validate_quregsCanBeCloned(Qureg quregA, Qureg quregB, const char* caller);
 
+void validate_quregsCanBeProducted(Qureg quregA, Qureg quregB, const char* caller);
+
+void validate_throwErrorBecauseCalcFidOfDensMatrNotYetImplemented(const char* caller);
+
+void validate_fidelityIsReal(qcomp fid, const char* caller);
+
+void validate_buresDistanceInnerProdIsNormalised(qreal mag, const char* caller); // may modify mag
+
+void validate_purifiedDistanceIsNormalised(qcomp fid, const char* caller); // may modify mag
+
 
 
 /*

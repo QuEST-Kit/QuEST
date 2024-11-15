@@ -1,7 +1,10 @@
 /** @file
  * Subroutines which invoke cuQuantum. This file is only ever included
- * when COMPILE_CUQUANTUM=1 and COMPILE_CUDA=1 so it can 
- * safely invoke CUDA signatures without guards.
+ * when COMPILE_CUQUANTUM=1 and COMPILE_CUDA=1 so it can safely invoke 
+ * CUDA signatures without guards. Note that many of the statevector
+ * functions herein will be re-leveraged by QuEST's density matrix
+ * simulation, so it important we do not pass Qureg.numQubits to
+ * the cuStateVec API, and instead pass qureg.logNumAmpsPerNode
  */
 
 

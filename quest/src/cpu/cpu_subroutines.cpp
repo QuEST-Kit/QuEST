@@ -1699,6 +1699,83 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_calcProbsOfAllMulti
 
 
 /*
+ * INNER PRODUCTS
+ */
+
+
+qcomp cpu_statevec_calcInnerProduct_sub(Qureg quregA, Qureg quregB) {
+
+    qcomp prod = 0;
+
+    // every local amp contributes to the reduction
+    qindex numIts = quregA.numAmpsPerNode;
+
+    #pragma omp parallel for reduction(+:prod) if(quregA.isMultithreaded||quregA.isMultithreaded)
+    for (qindex n=0; n<numIts; n++)
+        prod += conj(quregA.cpuAmps[n]) * quregB.cpuAmps[n];
+
+    return prod;
+}
+
+
+qreal cpu_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB) {
+
+    qreal dist = 0;
+
+    // every local amp contributes to the reduction
+    qindex numIts = quregA.numAmpsPerNode;
+
+    #pragma omp parallel for reduction(+:dist) if(quregA.isMultithreaded||quregA.isMultithreaded)
+    for (qindex n=0; n<numIts; n++)
+        dist += std::norm(quregA.cpuAmps[n] - quregB.cpuAmps[n]); // |A-B|^2
+
+    return dist; // do not sqrt yet
+}
+
+
+template <bool Conj>
+qcomp cpu_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
+
+    qcomp fid = 0;
+
+    // every local density matrix amp contributes to the reduction
+    qindex numIts = rho.numAmpsPerNode;
+
+    #pragma omp parallel for reduction(+:fid) if(rho.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = global index of nth local amp of rho
+        qindex i = concatenateBits(rho.rank, n, rho.logNumAmpsPerNode);
+
+        // r, c = global row and column indices corresponding to i
+        qindex r = getBitsRightOfIndex(i, rho.numQubits);
+        qindex c = getBitsLeftOfIndex(i, rho.numQubits-1);
+
+        // collect amps involved in this term
+        qcomp rhoAmp = rho.cpuAmps[n];
+        qcomp rowAmp = psi.cpuAmps[r];
+        qcomp colAmp = psi.cpuAmps[c]; // likely to be last iteration's amp in cache
+
+        // compute term of <psi|rho^dagger|psi> or <psi|rho|psi>
+        if constexpr (Conj) {
+            rhoAmp = conj(rhoAmp);
+            colAmp = conj(colAmp);
+        } else
+            rowAmp = conj(rowAmp);
+
+        fid += rhoAmp * rowAmp * colAmp;
+    }
+
+    return fid;
+}
+
+
+template qcomp cpu_densmatr_calcFidelityWithPureState_sub<true >(Qureg, Qureg);
+template qcomp cpu_densmatr_calcFidelityWithPureState_sub<false>(Qureg, Qureg);
+
+
+
+/*
  * PROJECTORS
  */
 

@@ -846,6 +846,81 @@ void accel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg 
 }
 
 
+qreal accel_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB) {
+
+    // quregs are gauranteed to be identically deployed
+    return (quregA.isGpuAccelerated)?
+        gpu_densmatr_calcHilbertSchmidtDistance_sub(quregA, quregB):
+        cpu_densmatr_calcHilbertSchmidtDistance_sub(quregA, quregB);
+}
+
+
+
+/*
+ * INNER PRODUCTS
+ */
+
+
+qcomp accel_statevec_calcInnerProduct_sub(Qureg quregA, Qureg quregB) {
+    assert_innerProductedSameDimQuregsHaveSameGpuAccel(quregA, quregB);
+
+    // in theory, we could permit them to differ in GPU-acceleration
+    // if one (or both) is distributed; we could then hijack the
+    // GPU communication buffer and copy over the CPU-only Qureg's
+    // amps. But this is a nonsensical and inefficient scenario to support.
+
+    return (quregA.isGpuAccelerated)?
+        gpu_statevec_calcInnerProduct_sub(quregA, quregB):
+        cpu_statevec_calcInnerProduct_sub(quregA, quregB);
+}
+
+
+qcomp accel_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi, bool conj) {
+    assert_calcFidStateVecIsLocal(psi);
+
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_BOOL( cpu_densmatr_calcFidelityWithPureState_sub, conj );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_BOOL( gpu_densmatr_calcFidelityWithPureState_sub, conj );
+
+    // quregs may differ in their GPU vs CPU deployments
+    bool rhoGpu = rho.isGpuAccelerated;
+    bool psiGpu = psi.isGpuAccelerated;
+
+    // if deployments agree, trivially call the common backend
+    if (rhoGpu == psiGpu)
+        return (rhoGpu)? gpuFunc(rho,psi) : cpuFunc(rho,psi);
+
+    // if only the smaller psi is GPU-accel (which is sensible when the larger
+    // rho is distributed and/or exceeds the GPU memory capacity), copy psi's
+    // GPU memory to CPU and proceed with CPU calculation
+    if (!rhoGpu && psiGpu) {
+        gpu_copyGpuToCpu(psi);
+        return cpuFunc(rho, psi);
+    }
+
+    // it is also possible/sensible that rho is GPU-accelerated while the quadratically-smaller
+    // psi is not. In that case, we spoof a GPU-accelerated psi which re-uses rho's
+    // GPU communication buffer if it exists, else creates temporary memory (not so big).
+    Qureg temp = psi;
+    temp.isGpuAccelerated = 1;
+    temp.gpuAmps = (rho.isDistributed)?
+        rho.gpuCommBuffer :
+        gpu_allocArray(temp.numAmps);
+
+    // error if that (relatively) small allocation failed (always succeeds if buffer)
+    assert_calcFidTempGpuAllocSucceeded(temp.gpuAmps);
+
+    // harmlessly overwrite new memory or rho's buffer, and call GPU routine
+    gpu_copyCpuToGpu(temp);
+    qcomp prod = gpuFunc(rho, psi);
+    
+    // free new GPU memory, but do NOT free rho's communication buffer
+    if (!rho.isDistributed)
+        gpu_deallocArray(temp.gpuAmps);
+
+    return prod;
+}
+
+
 
 /*
  * PROJECTORS 

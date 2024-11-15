@@ -150,6 +150,17 @@ template <int NumQubits> void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
 
 
 /*
+ * INNER PRODUCTS
+ */
+
+qcomp cpu_statevec_calcInnerProduct_sub(Qureg quregA, Qureg quregB);
+
+qreal cpu_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB);
+
+template <bool Conj> qcomp cpu_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi);
+
+
+/*
  * PROJECTORS
  */
 

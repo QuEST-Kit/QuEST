@@ -1421,6 +1421,58 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_densmatr_calcProbsOfAllMulti
 
 
 /*
+ * INNER PRODUCTS
+ */
+
+
+qcomp gpu_statevec_calcInnerProduct_sub(Qureg quregA, Qureg quregB) {
+
+#if COMPILE_CUQUANTUM || COMPILE_CUDA
+
+    cu_qcomp prod = thrust_statevec_calcInnerProduct_sub(quregA, quregB);
+    return toQcomp(prod);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+    return -1;
+#endif
+}
+
+
+qreal gpu_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB) {
+
+#if COMPILE_CUQUANTUM || COMPILE_CUDA
+
+    return thrust_densmatr_calcHilbertSchmidtDistance_sub(quregA, quregB);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+    return -1;
+#endif
+}
+
+
+template <bool Conj>
+qcomp gpu_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
+
+#if COMPILE_CUQUANTUM || COMPILE_CUDA
+
+    cu_qcomp fid = thrust_densmatr_calcFidelityWithPureState_sub(quregA, quregB);
+    return toQcomp(fid);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+    return -1;
+#endif
+}
+
+
+template qcomp gpu_densmatr_calcFidelityWithPureState_sub<true >(Qureg, Qureg);
+template qcomp gpu_densmatr_calcFidelityWithPureState_sub<false>(Qureg, Qureg);
+
+
+
+/*
  * PROJECTORS
  */
 
