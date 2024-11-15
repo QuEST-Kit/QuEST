@@ -54,7 +54,7 @@
  */
 
 
-__host__ inline cu_qcomp getCuQcomp(qreal re, qreal im) {
+INLINE cu_qcomp getCuQcomp(qreal re, qreal im) {
     return {.x=re, .y=im};
 }
 
