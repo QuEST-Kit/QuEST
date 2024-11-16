@@ -611,7 +611,7 @@ namespace report {
     string NEW_PAULI_STR_DUPLICATED_INDEX =
         "The Pauli indices contained a duplicate. Indices must be unique.";
 
-    string NEW_PAULI_STR_DIFFERENT_NUM_CHARS_AND_INDS = 
+    string NEW_PAULI_STR_DIFFERENT_NUM_CHARS_AND_INDICES = 
         "Given a different number of Pauli operators (${NUM_PAULIS}) and their qubit indices (${NUM_INDS}).";
 
 
@@ -705,6 +705,15 @@ namespace report {
     string INVALID_ENDING_BASIS_ROW_OR_COL =
         "The combination of starting (row, column) = (${START_ROW}, ${START_COL}) and number of rows and columns (${NUM_ROWS} and ${NUM_COLS} respectively) implies final (row, column) = (${END_ROW_EXCL}, ${END_COL_EXCL}), which is invalid for the given ${NUM_QB}-qubit ${MAX_END_INCL}-dimension density matrix.";
 
+
+    string INVALID_STARTING_LOCAL_AMP_INDEX =
+        "The starting local amplitude index ${START_IND} is invalid for the given ${NUM_QB}-qubit ${NUM_AMPS_TOTAL}-amplitude Qureg, distributed as ${MAX_IND_EXCL} amplitudes in each of ${NUM_NODES} nodes. Valid local indices are between 0 (inclusive) and ${MAX_IND_EXCL} (exclusive).";
+
+    string INVALID_NUM_LOCAL_AMP_INDICES =
+        "The specified number of local amplitudes (${NUM_INDS}) to synchronise is invalid for the given ${NUM_QB}-qubit ${NUM_AMPS_TOTAL}-amplitude Qureg, distributed as ${MAX_IND_EXCL} amplitudes in each of ${NUM_NODES} nodes. A valid number of amplitudes is between 0 (inclusive) and ${MAX_IND_EXCL} (inclusive).";
+
+    string INVALID_ENDING_LOCAL_AMP_INDEX =
+        "The combination of the starting local amplitude index (${START_IND}) and the number of amplitudes (${NUM_INDS}) implies an end local index of ${END_IND_EXCL} (exclusive) which is invalid for the ${NUM_QB}-qubit ${NUM_AMPS_TOTAL}-amplitude Qureg distributed over ${NUM_NODES} nodes. Valid end indices must be less than the nmber of local amplitudes, i.e. ${MAX_IND_EXCL}.";
 
 
     /*
@@ -823,8 +832,8 @@ namespace report {
         "THe given density matrix was local, but the statevector was distributed; this configuration is unsupported (and is ridiculous!).";
 
 
-    string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_TYPE =
-        "Cannot superpose a statevector with a density matrix. Quregs must all be statevectors, or all density matrices.";
+    string SUPERPOSED_QUREGS_ARE_NOT_ALL_STATEVECTORS =
+        "Cannot superpose a density matrix. All quregs must be statevectors.";
 
     string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_NUM_QUBITS =
         "Cannot superpose Quregs with differing numbers of qubits.";
@@ -1054,7 +1063,6 @@ void assertThat(bool valid, string msg, const char* func) {
     if (!valid)
         invalidQuESTInputError(msg.c_str(), func);
 }
-
 void assertThat(bool valid, string msg, tokenSubs vars, const char* func) {
 
     // substitute the vars into the error message ONLY if the error message
@@ -1070,9 +1078,9 @@ void assertThat(bool valid, string msg, tokenSubs vars, const char* func) {
     assertThat(valid, msg, func);
 }
 
-void assertAllNodesAgreeThat(bool valid, string msg, const char* func) {
+void assertAllNodesAgreeThat(bool valid, string msg, tokenSubs vars, const char* func) {
 
-    // skip below consensus broadcast if user has disabled validation
+    // avoid communication if validation not enabled anyway
     if (!global_isValidationEnabled)
         return;
 
@@ -1081,17 +1089,23 @@ void assertAllNodesAgreeThat(bool valid, string msg, const char* func) {
     // when performing validation that may be non-uniform between nodes. For
     // example, mallocs may succeed on one node but fail on another due to
     // inhomogeneous loads.
-
     if (comm_isInit())
         valid = comm_isTrueOnAllNodes(valid);
 
+    // prepare error message only if validation will fail
+    if (!valid)
+        if (!vars.empty())
+            msg = getStringWithSubstitutedVars(msg, vars);
+
+    // commenting out the top if-statement above (preserving the bottom one)
+    // is convenient during development, since it ensures that even validation
+    // which passed has a correctly formatted error message, else errors.
+
     assertThat(valid, msg, func);
 }
+void assertAllNodesAgreeThat(bool valid, string msg, const char* func) {
 
-void assertAllNodesAgreeThat(bool valid, string msg, tokenSubs vars, const char* func) {
-
-    string newMsg = getStringWithSubstitutedVars(msg, vars);
-    assertAllNodesAgreeThat(valid, newMsg, func);
+    assertAllNodesAgreeThat(valid, msg, {}, func);
 }
 
 bool isIndexListUnique(int* list, int len) {
@@ -2808,7 +2822,7 @@ void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* cal
     // this is a C++-only validation, because only std::string gaurantees we can know
     // the passed string length (C char arrays might not contain termination char)
     tokenSubs vars = {{"${NUM_PAULIS}", numPaulis}, {"${NUM_INDS}", numIndices}};
-    assertThat(numPaulis == numIndices, report::NEW_PAULI_STR_DIFFERENT_NUM_CHARS_AND_INDS, vars, caller);
+    assertThat(numPaulis == numIndices, report::NEW_PAULI_STR_DIFFERENT_NUM_CHARS_AND_INDICES, vars, caller);
 }
 
 
@@ -2967,7 +2981,7 @@ void validate_basisStateIndex(Qureg qureg, qindex ind, const char* caller) {
 
     tokenSubs vars = {
         {"${STATE_IND}",  ind},
-        {"${NUM_QUBITS}", qureg.numQubits},
+        {"${NUM_QB}", qureg.numQubits},
         {"${NUM_STATES}", maxIndExcl}};
 
     assertThat(ind >= 0 && ind < maxIndExcl, report::INVALID_BASIS_STATE_INDEX, vars, caller);
@@ -2980,7 +2994,7 @@ void validate_basisStateRowCol(Qureg qureg, qindex row, qindex col, const char* 
     tokenSubs vars = {
         {"${ROW_IND}",  row},
         {"${COL_IND}",  col},
-        {"${NUM_QUBITS}", qureg.numQubits},
+        {"${NUM_QB}", qureg.numQubits},
         {"${NUM_STATES}", maxIndExcl}};
 
     bool valid = row >= 0 && row < maxIndExcl && col >= 0 && col < maxIndExcl;
@@ -3050,6 +3064,41 @@ void validate_basisStateRowCols(Qureg qureg, qindex startRow, qindex startCol, q
         report::INVALID_ENDING_BASIS_ROW_OR_COL,  
         vars, caller);
 }
+
+void validate_localAmpIndices(Qureg qureg, qindex localStartInd, qindex numInds, const char* caller) {
+
+    // note that localStartInd and numInds can validly DIFFER between nodes,
+    // so we use assertAllNodesAgreeThat() in lieu of assertThat()
+
+    tokenSubs baseVars = {
+        {"${NUM_QB}", qureg.numQubits},
+        {"${NUM_AMPS_TOTAL}", qureg.numAmps},
+        {"${MAX_IND_EXCL}", qureg.numAmpsPerNode},
+        {"${NUM_NODES}", qureg.numNodes}
+    };
+
+    // when numInds=0, we permit startInd to be anything (even something invalid)
+    if (numInds == 0)
+        return;
+
+    // unlike validate_basisStateIndices(), we limit to #amps per node
+    tokenSubs firstVars = baseVars;
+    firstVars["${START_IND}"] = localStartInd;
+    assertAllNodesAgreeThat(localStartInd >= 0 && localStartInd < qureg.numAmpsPerNode, report::INVALID_STARTING_LOCAL_AMP_INDEX, firstVars, caller);
+
+    // unlike validate_basisStateIndices(), we permit numInds == 0
+    tokenSubs secondVars = baseVars;
+    secondVars["${NUM_INDS}"] = numInds;
+    assertAllNodesAgreeThat(numInds >= 0 && numInds <= qureg.numAmps, report::INVALID_NUM_LOCAL_AMP_INDICES, secondVars, caller);
+
+    qindex endIndExcl = localStartInd + numInds;
+    baseVars["${START_IND}"] = localStartInd;
+    baseVars["${NUM_INDS}"] = numInds;
+    baseVars["${END_IND_EXCL}"] = endIndExcl;
+    assertAllNodesAgreeThat(endIndExcl <= qureg.numAmpsPerNode, report::INVALID_ENDING_LOCAL_AMP_INDEX, baseVars, caller);
+}
+
+
 
 
 
@@ -3358,11 +3407,10 @@ void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller
 
 void validate_quregsCanBeSuperposed(Qureg qureg1, Qureg qureg2, Qureg qureg3, const char* caller) {
 
-    // quregs must all be the same type (sv vs dm) 
-    int isDM = qureg1.isDensityMatrix;
+    // all quregs must be statevectors
     assertThat(
-        qureg2.isDensityMatrix == isDM && qureg3.isDensityMatrix == isDM, 
-        report::SUPERPOSED_QUREGS_HAVE_INCONSISTENT_TYPE, caller);
+        !qureg1.isDensityMatrix && !qureg2.isDensityMatrix && !qureg3.isDensityMatrix,
+        report::SUPERPOSED_QUREGS_ARE_NOT_ALL_STATEVECTORS, caller);
 
     // and the same dimension
     int nQb = qureg1.numQubits;
@@ -3438,6 +3486,7 @@ void validate_quregsCanBeCloned(Qureg quregA, Qureg quregB, const char* caller) 
     if (quregA.isDensityMatrix)
         return;
 
+    // statevectors however MUST be identically GPU-accelerated
     assertThat(quregA.isGpuAccelerated == quregB.isGpuAccelerated, report::CLONED_STATEVECS_HAVE_DIFFERENT_GPU_DEPLOYMENTS, caller);
 }
 

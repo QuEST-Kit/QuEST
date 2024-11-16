@@ -66,11 +66,8 @@ void reportQuregToFile(Qureg qureg, char* fn);
 void syncQuregToGpu  (Qureg qureg);
 void syncQuregFromGpu(Qureg qureg);
 
-void syncSubQuregToGpu  (Qureg qureg, qindex startInd, qindex numAmps);
-void syncSubQuregFromGpu(Qureg qureg, qindex startInd, qindex numAmps);
-
-void syncSubDensityQuregToGpu  (Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);
-void syncSubDensityQuregFromGpu(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);
+void syncSubQuregToGpu  (Qureg qureg, qindex localStartInd, qindex numLocalAmps);
+void syncSubQuregFromGpu(Qureg qureg, qindex localStartInd, qindex numLocalAmps);
 
 void getQuregAmps(qcomp* outAmps, Qureg qureg, qindex startInd, qindex numAmps);
 void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);

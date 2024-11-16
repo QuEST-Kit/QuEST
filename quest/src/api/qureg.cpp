@@ -12,6 +12,7 @@
 #include "quest/src/core/printer.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
+#include "quest/src/core/utilities.hpp"
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
@@ -293,6 +294,7 @@ Qureg createDensityQureg(int numQubits) {
 
 
 Qureg createCloneQureg(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
 
     // create a new Qureg with identical fields, but zero'd memory
     Qureg clone = validateAndCreateCustomQureg(
@@ -359,6 +361,7 @@ void reportQureg(Qureg qureg) {
     print_elems(qureg);
 }
 
+
 void reportQuregToFile(Qureg qureg, char* fn) {
 
     // TODO
@@ -367,54 +370,59 @@ void reportQuregToFile(Qureg qureg, char* fn) {
 
 
 void syncQuregToGpu(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
 
     // permit this to be called even in non-GPU mode
     if (qureg.isGpuAccelerated)
-        gpu_copyCpuToGpu(qureg);
+        gpu_copyCpuToGpu(qureg); // overwrites all local GPU amps
 }
-
 void syncQuregFromGpu(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
 
+    // permit this to be called even in non-GPU mode
     if (qureg.isGpuAccelerated)
-        gpu_copyGpuToCpu(qureg);
+        gpu_copyGpuToCpu(qureg); // overwrites all local CPU amps
 }
 
 
-void syncSubQuregToGpu(Qureg qureg, qindex startInd, qindex numAmps) {
+void syncSubQuregToGpu(Qureg qureg, qindex localStartInd, qindex numLocalAmps) {
     validate_quregFields(qureg, __func__);
-    validate_quregIsStateVector(qureg, __func__);
-    validate_basisStateIndices(qureg, startInd, numAmps, __func__);
+    validate_localAmpIndices(qureg, localStartInd, numLocalAmps, __func__); 
+    
+    // the above validation communicates for node consensus in
+    // distributed settings, because params can differ per-node.
+    // note also this function accepts statevectors AND density
+    // matrices, because the latter does not need a bespoke
+    // (row,col) interface, because the user can only access/modify
+    // local density matrix amps via a flat index anyway!
 
+    // we permit this function to do nothing when not GPU-accelerated
+    if (!qureg.isGpuAccelerated)
+        return;
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    // otherwise, every node merely copies its local subset, which
+    // may differ per-node, in an embarrassingly parallel manner
+    gpu_copyCpuToGpu(&qureg.cpuAmps[localStartInd], &qureg.gpuAmps[localStartInd], numLocalAmps);
 }
-void syncSubQuregFromGpu(Qureg qureg, qindex startInd, qindex numAmps) {
+void syncSubQuregFromGpu(Qureg qureg, qindex localStartInd, qindex numLocalAmps) {
     validate_quregFields(qureg, __func__);
-    validate_quregIsStateVector(qureg, __func__);
-    validate_basisStateIndices(qureg, startInd, numAmps, __func__);
+    validate_localAmpIndices(qureg, localStartInd, numLocalAmps, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    // the above validation communicates for node consensus in
+    // distributed settings, because params can differ per-node.
+    // note also this function accepts statevectors AND density
+    // matrices, because the latter does not need a bespoke
+    // (row,col) interface, because the user can only access/modify
+    // local density matrix amps via a flat index anyway!
+
+    // we permit this function to do nothing when not GPU-accelerated
+    if (!qureg.isGpuAccelerated)
+        return;
+
+    // otherwise, every node merely copies its local subset, which
+    // may differ per-node, in an embarrassingly parallel manner
+    gpu_copyGpuToCpu(&qureg.gpuAmps[localStartInd], &qureg.cpuAmps[localStartInd], numLocalAmps);
 }
-
-void syncSubDensityQuregToGpu(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
-    validate_quregFields(qureg, __func__);
-    validate_quregIsDensityMatrix(qureg, __func__);
-    validate_basisStateRowCols(qureg, startRow, startCol, numRows, numCols, __func__);
-
-    // TODO
-    error_functionNotImplemented(__func__);
-}
-void syncSubDensityQuregFromGpu(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
-    validate_quregFields(qureg, __func__);
-    validate_quregIsDensityMatrix(qureg, __func__);
-    validate_basisStateRowCols(qureg, startRow, startCol, numRows, numCols, __func__);
-
-    // TODO
-    error_functionNotImplemented(__func__);
-}
-
 
 
 void getQuregAmps(qcomp* outAmps, Qureg qureg, qindex startInd, qindex numAmps) {
@@ -472,9 +480,9 @@ qcomp getDensityQuregAmp(Qureg qureg, qindex row, qindex column) {
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_basisStateRowCol(qureg, row, column, __func__);
 
-    qindex dim = powerOf2(qureg.numQubits);
-    qindex ind = row + column * dim;
-    return localiser_statevec_getAmp(qureg, ind);
+    qindex ind = util_getGlobalFlatIndex(qureg, row, column);
+    qcomp amp = localiser_statevec_getAmp(qureg, ind);
+    return amp;
 }
 extern "C" void _wrap_getDensityQuregAmp(qcomp* out, Qureg qureg, qindex row, qindex column) {
 

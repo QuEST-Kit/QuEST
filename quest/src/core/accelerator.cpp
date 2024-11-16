@@ -173,20 +173,46 @@ using std::min;
  */
 
 
-qcomp accel_statevec_getAmp_sub(Qureg qureg, qindex ind) {
+qcomp accel_statevec_getAmp_sub(Qureg qureg, qindex localInd) {
+
+    // we use a bespoke function, rather than merely invoking
+    // getAmps() below, so that the CPU implementation can
+    // make use of the faster array access, rather than memcpy,
+    // and we keep the bespoke GPU function for symmetry/consistency 
 
     return (qureg.isGpuAccelerated)?
-        gpu_statevec_getAmp_sub(qureg, ind):
-        cpu_statevec_getAmp_sub(qureg, ind);
+        gpu_statevec_getAmp_sub(qureg, localInd):
+        cpu_statevec_getAmp_sub(qureg, localInd);
 }
 
 
-void accel_statevec_getAmps(qcomp* outAmps, Qureg qureg, qindex localStartInd, qindex numAmps) {
+void accel_statevec_getAmps(qcomp* outAmps, Qureg qureg, qindex localStartInd, qindex numLocalAmps) {
 
     // copy directly from GPU/CPU to outAmps
     (qureg.isGpuAccelerated)?
-        gpu_copyGpuToCpu(&qureg.gpuAmps[localStartInd], outAmps, numAmps):
-        cpu_copyArray(outAmps, &qureg.cpuAmps[localStartInd], numAmps); // (in,out) order is reversed
+        gpu_copyGpuToCpu(&qureg.gpuAmps[localStartInd], outAmps, numLocalAmps): // (src, dest) = (gpu, cpu)
+        cpu_copyArray(   outAmps, &qureg.cpuAmps[localStartInd], numLocalAmps); // (dest, src)
+}
+
+
+
+/*
+ * SETTERS 
+ */
+
+
+void accel_statevec_setAmps(qcomp* inAmps, Qureg qureg, qindex localStartInd, qindex numLocalAmps) {
+
+    // in CPU settings, we use memory-copying rather than OpenMP
+    // loop updating, because the latter is only faster when carefully
+    // optimising parallelisation granularity with the memory
+    // architecture, which we cannot reliably do in a platform
+    // agnostic way (except via hwloc or something)
+
+    // copy directly from inAmps to GPU/CPU
+    (qureg.isGpuAccelerated)?
+        gpu_copyCpuToGpu(inAmps, &qureg.gpuAmps[localStartInd], numLocalAmps): // (src, dest) = (cpu, gpu)
+        cpu_copyArray(   &qureg.cpuAmps[localStartInd], inAmps, numLocalAmps); // (dest, src)
 }
 
 
@@ -486,7 +512,7 @@ void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
 
 void accel_statevec_setQuregToSuperposition_sub(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2) {
 
-    // consult outQureg's deployment (other quregs are gauranteed to match, which below calls will assert)
+    // consult outQureg's deployment (other quregs should match, though we dangerously do not assert this post-validation)
     (outQureg.isGpuAccelerated)?
         gpu_statevec_setQuregToSuperposition_sub(facOut, outQureg, fac1, inQureg1, fac2, inQureg2):
         cpu_statevec_setQuregToSuperposition_sub(facOut, outQureg, fac1, inQureg1, fac2, inQureg2); 
@@ -941,12 +967,29 @@ void accel_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vec
 
 
 /*
- * RANDOM INITIALISATION
+ * STATE INITIALISATION
  */
 
-void accel_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg) {
+
+void accel_statevec_initUniformState(Qureg qureg, qcomp amp) {
 
     (qureg.isGpuAccelerated)?
-        gpu_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(qureg):
-        cpu_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(qureg);
+        gpu_statevec_initUniformState(qureg, amp):
+        cpu_statevec_initUniformState(qureg, amp);
+}
+
+
+void accel_statevec_initDebugState(Qureg qureg) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_statevec_initDebugState(qureg):
+        cpu_statevec_initDebugState(qureg);
+}
+
+
+void accel_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(qureg):
+        cpu_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(qureg);
 }

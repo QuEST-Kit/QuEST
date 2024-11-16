@@ -26,6 +26,7 @@
 #include <thrust/complex.h>
 #include <thrust/device_ptr.h>
 #include <thrust/device_vector.h>
+#include <thrust/sequence.h>
 #include <thrust/inner_product.h>
 #include <thrust/transform_reduce.h>
 #include <thrust/iterator/counting_iterator.h>
@@ -655,11 +656,31 @@ void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, ve
 
 
 /*
- * RANDOM INITIALISATION
+ * STATE INITIALISATION
  */
 
 
-void thrust_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg) {
+void thrust_statevec_initUniformState(Qureg qureg, qcomp amp) {
+
+    thrust::fill(getStartPtr(qureg), getEndPtr(qureg), amp);
+}
+
+
+void thrust_statevec_initDebugState_sub(Qureg qureg) {
+
+    // globally, |n> gains coefficient 2n/10 + i(2n+1)/10,
+    // which is a step-size of 2/10 + i(2/10)...
+    cu_qcomp step = getCuQcomp(2/10., 2/10.);
+
+    // and each node begins from a unique n (if distributed)
+    qindex n = util_getGlobalIndexOfFirstLocalAmp(qureg);
+    cu_qcomp init = getCuQcomp(2*n/10., (2*n+1)/10.);
+
+    thrust::sequence(getStartPtr(qureg), getEndPtr(qureg), init, step);
+}
+
+
+void thrust_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg) {
 
     // thread amp generators uniquely perturb a common base seed
     unsigned seed = rand_getThreadSharedRandomSeed(qureg.isDistributed);

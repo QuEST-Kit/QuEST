@@ -171,10 +171,14 @@ template <int NumQubits> void gpu_densmatr_multiQubitProjector_sub(Qureg qureg, 
 
 
 /*
- * RANDOM INITIALISATION
+ * STATE INITIALISATION
  */
 
-void gpu_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg);
+void gpu_statevec_initUniformState(Qureg qureg, qcomp amp);
+
+void gpu_statevec_initDebugState(Qureg qureg);
+
+void gpu_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg);
 
 
 #endif // GPU_SUBROUTINES_HPP

@@ -321,6 +321,8 @@ void validate_basisStateRowCol(Qureg qureg, qindex row, qindex col, const char* 
 void validate_basisStateIndices(Qureg qureg, qindex startInd, qindex numInds, const char* caller);
 void validate_basisStateRowCols(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols, const char* caller);
 
+void validate_localAmpIndices(Qureg qureg, qindex localStartInd, qindex numInds, const char* caller);
+
 
 
 /*

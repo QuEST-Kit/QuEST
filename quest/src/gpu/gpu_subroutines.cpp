@@ -69,16 +69,22 @@ qcomp gpu_statevec_getAmp_sub(Qureg qureg, qindex ind) {
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
-    ind %= qureg.numAmpsPerNode;
-    qcomp amp = 0;
+    // this bespoke function exists (in lieu of caller 
+    // just calling copyGpuToCpu() directly) mostly for
+    // consistency with the CPU equivalent (which has a
+    // performance motivation), and so that we can one
+    // day update this function if single-scalar random
+    // access of GPU memory can be accelerated.
 
-    gpu_sync();
-    CUDA_CHECK( cudaMemcpy(&qureg.gpuAmps[ind], &amp, sizeof(amp), cudaMemcpyDeviceToHost) );
+    qcomp amp;
+
+    // compiler guards harmlessly duplicated therein
+    gpu_copyGpuToCpu(&qureg.gpuAmps[ind], &amp, 1);
 
     return amp;
 
 #else
-    error_gpuSimButGpuNotCompiled();
+    error_gpuCopyButGpuNotCompiled();
     return -1;
 #endif
 }
@@ -1520,15 +1526,37 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_densmatr_multiQubitProjector
 
 
 /*
- * RANDOM INITIALISATION
+ * STATE INITIALISATION
  */
 
 
-void gpu_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg) {
+void gpu_statevec_initUniformState(Qureg qureg, qcomp amp) {
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    thrust_statevec_initUniformState(qureg, amp);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+void gpu_statevec_initDebugState(Qureg qureg) {
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    thrust_statevec_initDebugState(qureg);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+void gpu_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg) {
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
-    thrust_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(qureg);
+    thrust_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(qureg);
 
 #else
     error_gpuSimButGpuNotCompiled();

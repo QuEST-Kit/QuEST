@@ -407,7 +407,7 @@ typedef enum pauliOpType _NoWarnPauliOpType;
 
 
 #define initStateFromAmps(...) \
-    _ERROR_FUNC_RENAMED("initStateFromAmps(Qureg, qreal*, qreal*)", "initArbitraryState(Qureg, qcomp*)")
+    _ERROR_FUNC_RENAMED("initStateFromAmps(Qureg, qreal*, qreal*)", "initArbitraryPureState(Qureg, qcomp*)")
 
 #define setAmps(...) \
     _ERROR_FUNC_RENAMED("setAmps(Qureg, qindex, qreal*, qreal*, qindex)", "setQuregAmps(Qureg, qindex, qcomp*, qindex)")
@@ -837,7 +837,8 @@ static inline void _applyGateSubDiagonalOp(Qureg qureg, int* targets, int numTar
 #define setWeightedQureg(f1, q1, f2, q2, fOut, qOut) \
     _WARN_GENERAL_MSG( \
         "The QuEST function 'setWeightedQureg(f1,q1, f2,q2, fOut,qOut)' is deprecated, and replaced with " \
-        "'setQuregToSuperposition(fOut,qOut, f1,q1, f2,q2)' which has been automatically invoked. Beware " \
+        "'setQuregToSuperposition(fOut,qOut, f1,q1, f2,q2)' which has been automatically invoked. The new " \
+        "fucntion however accepts only statevectors, not density matrices, so may error at runtime. Beware " \
         "that the order of the arguments has changed, so that the first supplied Qureg is modified." ) \
     setQuregToSuperposition( \
         getQcomp(fOut.real, fOut.imag), qOut, \
