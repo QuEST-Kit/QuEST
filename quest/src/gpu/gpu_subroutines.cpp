@@ -1544,7 +1544,7 @@ void gpu_statevec_initUniformState(Qureg qureg, qcomp amp) {
 void gpu_statevec_initDebugState(Qureg qureg) {
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
-    thrust_statevec_initDebugState(qureg);
+    thrust_statevec_initDebugState_sub(qureg);
 
 #else
     error_gpuSimButGpuNotCompiled();
