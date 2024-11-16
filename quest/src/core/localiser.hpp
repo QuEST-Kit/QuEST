@@ -25,12 +25,45 @@ using std::vector;
  * GETTERS
  */
 
-qcomp localiser_statevec_getAmp(Qureg qureg, qindex ind);
+qcomp localiser_statevec_getAmp(Qureg qureg, qindex globalInd);
 
 void localiser_statevec_getAmps(qcomp* outAmps, Qureg qureg, qindex globalStartInd, qindex globalNumAmps);
 void localiser_densmatr_getAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);
 
-void localiser_fullstatediagmatr_getAmps(qcomp* outAmps, FullStateDiagMatr matr, qindex globalStartInd, qindex globalNumAmps);
+void localiser_fullstatediagmatr_getElems(qcomp* outElems, FullStateDiagMatr matr, qindex globalStartInd, qindex globalNumElems);
+
+
+/*
+ * SETTERS
+ */
+
+void localiser_statevec_setAmps(qcomp* inAmps, Qureg qureg, qindex globalStartInd, qindex globalNumAmps);
+void localiser_densmatr_setAmps(qcomp** inAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);
+
+void localiser_fullstatediagmatr_setElems(FullStateDiagMatr matr, qindex startInd, qcomp* in, qindex numElems);
+
+
+/*
+ * STATE INITIALISATION
+ */
+
+void localiser_statevec_initUniformState(Qureg qureg, qcomp amp);
+
+void localiser_statevec_initDebugState(Qureg qureg);
+
+void localiser_statevec_initClassicalState(Qureg qureg, qindex globalInd);
+
+void localiser_densmatr_initPureState(Qureg qureg, Qureg pure);
+
+void localiser_statevec_initArbitraryPureState(Qureg qureg,  qcomp* amps);
+void localiser_densmatr_initArbitraryPureState(Qureg qureg,  qcomp* amps);
+void localiser_densmatr_initArbitraryMixedState(Qureg qureg, qcomp** amps);
+
+void localiser_statevec_initUnnormalisedUniformlyRandomPureStateAmps(Qureg qureg);
+
+void localiser_densmatr_initUniformlyRandomPureStateAmps(Qureg qureg);
+
+void localiser_densmatr_initMixtureOfUniformlyRandomPureStates(Qureg qureg, qindex numPureStates);
 
 
 /*
@@ -94,18 +127,6 @@ void localiser_statevec_setQuregToSuperposition(qcomp facOut, Qureg outQureg, qc
 
 void localiser_densmatr_mixQureg(qreal outProb, Qureg out, qreal inProb, Qureg in);
 
-
-/*
- * QUREG INITIALISATION
- */
-
-void localiser_densmatr_initPureState(Qureg qureg, Qureg pure);
-
-void localiser_statevec_setUnnormalisedUniformlyRandomPureStateAmps(Qureg qureg);
-
-void localiser_densmatr_setUniformlyRandomPureStateAmps(Qureg qureg);
-
-void localiser_densmatr_setMixtureOfUniformlyRandomPureStates(Qureg qureg, qindex numPureStates);
 
 
 /*

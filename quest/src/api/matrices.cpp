@@ -13,6 +13,7 @@
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/autodeployer.hpp"
 #include "quest/src/core/utilities.hpp"
+#include "quest/src/core/localiser.hpp"
 #include "quest/src/core/printer.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
@@ -402,20 +403,8 @@ extern "C" void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qco
     validate_matrixFields(out, __func__);
     validate_fullStateDiagMatrNewElems(out, startInd, numElems, __func__);
 
-    int rank = comm_getRank();
-
-    // if the matrix is non-distributed, we update every node's duplicated CPU amps
-    if (!out.isDistributed) {
-        cpu_copyArray(&out.cpuElems[startInd], in, numElems);
-
-    // only distributed nodes containing targeted elements need to do anything
-    } else if (util_areAnyVectorElemsWithinNode(rank, out.numElemsPerNode, startInd, numElems)) {
-        auto range = util_getLocalIndRangeOfVectorElemsWithinNode(rank, out.numElemsPerNode, startInd, numElems);
-        cpu_copyArray(&out.cpuElems[range.localDistribStartInd], &in[range.localDuplicStartInd], range.numElems);
-    }
-
-    // all nodes overwrite GPU; validation gauranteed to succeed
-    syncFullStateDiagMatr(out);
+    // overwrites both the CPU and GPU memory (if it exists), maintaining consistency
+    localiser_fullstatediagmatr_setElems(out, startInd, in, numElems);
 }
 
 
@@ -434,13 +423,10 @@ void setCompMatr(CompMatr out, vector<vector<qcomp>> in) {
 
 
 void setDiagMatr(DiagMatr out, vector<qcomp> in) {
-
-    // we validate dimension of 'in', which first requires validating 'out' fields
     validate_matrixFields(out, __func__);
-    validate_matrixNumNewElems(out.numQubits, in, __func__);
+    validate_matrixNumNewElems(out.numQubits, in, __func__); // validates 'in' dim
 
-    // then we unimportantly repeat some of this validation; alas!
-    setDiagMatr(out, in.data());
+    setDiagMatr(out, in.data()); // harmessly re-validates
 }
 
 

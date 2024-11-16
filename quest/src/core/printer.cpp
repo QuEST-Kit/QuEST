@@ -800,7 +800,7 @@ void populateSingleColumnQcompmatr(qcompmatr &matr, qindex startInd, T obj) {
 
     // populate temp memory, potentially invoking CPU-GPU copying and communication...
     if constexpr (util_isFullStateDiagMatr<T>()) {
-        localiser_fullstatediagmatr_getAmps(column.data(), obj, startInd, numAmps);
+        localiser_fullstatediagmatr_getElems(column.data(), obj, startInd, numAmps);
     } else if constexpr (util_isQuregType<T>()) {
         localiser_statevec_getAmps(column.data(), obj, startInd, numAmps);
 

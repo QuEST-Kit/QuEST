@@ -155,6 +155,27 @@ vector<int> util_getVector(int* qubits, int numQubits) {
  * INDEX ALGEBRA
  */
 
+qindex util_getGlobalIndexOfFirstLocalAmp(Qureg qureg) {
+
+    return qureg.rank * qureg.numAmpsPerNode;
+}
+
+qindex util_getLocalIndexOfGlobalIndex(Qureg qureg, qindex globalInd) {
+
+    // equivalent to below, but clearer
+    if (!qureg.isDistributed)
+        return globalInd;
+
+    // defensive-design integrity check
+    qindex globalStart = util_getGlobalIndexOfFirstLocalAmp(qureg);
+    qindex globalEnd = globalStart + qureg.numAmpsPerNode;
+    if (globalInd < globalStart || globalInd >= globalEnd)
+        error_utilsGivenGlobalIndexOutsideNode();
+
+    return globalInd % qureg.numAmpsPerNode;
+}
+
+
 qindex util_getLocalIndexOfFirstDiagonalAmp(Qureg qureg) {
     assert_utilsGivenDensMatr(qureg);
 
@@ -186,16 +207,28 @@ qindex util_getGlobalFlatIndex(Qureg qureg, qindex globalRow, qindex globalCol) 
 
 int util_getRankContainingIndex(Qureg qureg, qindex globalInd) {
 
+    // when not distributed, all nodes (each believing themselves root) contain the index
+    if (!qureg.isDistributed)
+        return 0;
+
     // accepts flat density matrix index too
     return globalInd / qureg.numAmpsPerNode; // floors
 }
 int util_getRankContainingIndex(FullStateDiagMatr matr, qindex globalInd) {
+
+    // when not distributed, all nodes (each believing themselves root) contain the index
+    if (!matr.isDistributed)
+        return 0;
 
     return globalInd / matr.numElemsPerNode; // floors
 }
 
 int util_getRankContainingColumn(Qureg qureg, qindex globalCol) {
     assert_utilsGivenDensMatr(qureg);
+
+    // when not distributed, all nodes (each believing themselves root) contain the index
+    if (!qureg.isDistributed)
+        return 0;
 
     qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
     return globalCol / numColsPerNode; // floors

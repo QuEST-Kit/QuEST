@@ -60,6 +60,10 @@ qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> ta
  * INDEX ALGEBRA
  */
 
+qindex util_getGlobalIndexOfFirstLocalAmp(Qureg qureg);
+
+qindex util_getLocalIndexOfGlobalIndex(Qureg qureg, qindex globalInd);
+
 qindex util_getLocalIndexOfFirstDiagonalAmp(Qureg qureg);
 
 qindex util_getNumLocalDiagonalAmpsWithBits(Qureg qureg, vector<int> qubits, vector<int> outcomes);

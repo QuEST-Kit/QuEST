@@ -280,6 +280,8 @@ void error_utilsGetPrefixBraIndGivenSuffixQubit();
 
 void error_utilsIsBraQubitInSuffixGivenNonDensMatr();
 
+void error_utilsGivenGlobalIndexOutsideNode();
+
 void assert_utilsGivenStateVec(Qureg qureg);
 
 void assert_utilsGivenDensMatr(Qureg qureg);

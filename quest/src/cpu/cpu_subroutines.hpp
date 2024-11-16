@@ -169,10 +169,14 @@ template <int NumQubits> void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, 
 
 
 /*
- * RANDOM INITIALISATION
+ * STATE INITIALISATION
  */
 
-void cpu_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg);
+void cpu_statevec_initUniformState(Qureg qureg, qcomp amp);
+
+void cpu_statevec_initDebugState(Qureg qureg);
+
+void cpu_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg);
 
 
 #endif // CPU_SUBROUTINES_HPP

@@ -59,17 +59,17 @@ void error_functionNotImplemented(const char* caller) {
 
 void error_validationMessageVarWasIllFormed(string msg, string illFormedVar) {
 
-    raiseInternalError("User input validation failed and an error string was attemptedly prepared, but an ill-formed variable was attempted substitution. This variable was \"" + illFormedVar + "\" and was attempted substitution into message:\n" + msg + "\n");
+    raiseInternalError("User input validation failed and an error message was attemptedly prepared, but an ill-formed variable was attempted substitution. This variable was \"" + illFormedVar + "\" and was attempted substitution into message:\n" + msg + "\n");
 }
 
 void error_validationMessageVarNotSubstituted(string msg, string var) {
 
-    raiseInternalError("User input validation failed and an error string was attemptedly prepared. However, the internal variable \"" + var + "\" was unable to be found and substituted into the message, which was:\n" + msg + "\n");
+    raiseInternalError("User input validation failed and an error message was attemptedly prepared. However, the internal variable \"" + var + "\" was unable to be found and substituted into the message, which was:\n" + msg + "\n");
 }
 
 void error_validationMessageContainedUnsubstitutedVars(string msg) {
 
-    raiseInternalError("User input validation failed and an error string was prepared. However, the message contained unexpected (and potentially ill-formed) unsubstituted variables. The message was:\n" + msg + "\n");
+    raiseInternalError("User input validation failed and an error message was prepared. However, the message contained unexpected (and potentially ill-formed) unsubstituted variables. The message was:\n" + msg + "\n");
 }
 
 void error_validationEncounteredUnsupportedDistributedDenseMatrix() {
@@ -654,6 +654,12 @@ void error_utilsGetPrefixBraIndGivenSuffixQubit() {
 void error_utilsIsBraQubitInSuffixGivenNonDensMatr() {
 
     raiseInternalError("A functiion queried whether a qubit's corresponding bra-qubit was in the suffix substate, but the Qureg was not a density matrix.");
+}
+
+void error_utilsGivenGlobalIndexOutsideNode() {
+
+    // this error might NOT be thrown by all nodes, causing non-consensus crash. Eh!
+    raiseInternalError("A utility function was asked for the corresponding local index of a global index which did not exist in the calling node.");
 }
 
 void assert_utilsGivenStateVec(Qureg qureg) {

@@ -51,9 +51,10 @@ using std::vector;
 
 qcomp cpu_statevec_getAmp_sub(Qureg qureg, qindex ind) {
 
-    // caller will only consult node with true global amp, 
-    // but will still pass the global index, beware!
-    return qureg.cpuAmps[ind % qureg.numAmpsPerNode];
+    // this bespoke function exists (rather than merely
+    // calling the bulk memcpy routine) because it is
+    // much faster for few randomly accessed amps
+    return qureg.cpuAmps[ind];
 }
 
 
@@ -1866,11 +1867,34 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_multiQubitProjector
 
 
 /*
- * RANDOM INITIALISATION
+ * STATE INITIALISATION
  */
 
 
-void cpu_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg) {
+void cpu_statevec_initUniformState(Qureg qureg, qcomp amp) {
+
+    // faster on average (though perhaps not for large quregs)
+    // than a custom multithreaded loop
+    std::fill(qureg.cpuAmps, qureg.cpuAmps + qureg.numAmpsPerNode, amp);
+}
+
+
+void cpu_statevec_initDebugState(Qureg qureg) {
+
+    // overwrite all local amps
+    qindex numIts = qureg.numAmpsPerNode;
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = global index of nth local amp
+        qindex i = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
+        qureg.cpuAmps[n] = qcomp(2*i/10., (2*i+1)/10.);
+    }
+}
+
+
+void cpu_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg) {
 
     // all amplitudes are re-randomised, one per iteration
     qindex numIts = qureg.numAmpsPerNode;

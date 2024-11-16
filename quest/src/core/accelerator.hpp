@@ -137,9 +137,18 @@ using std::vector;
  * GETTERS 
  */
 
-qcomp accel_statevec_getAmp_sub(Qureg qureg, qindex ind);
+qcomp accel_statevec_getAmp_sub(Qureg qureg, qindex localInd);
 
-void accel_statevec_getAmps(qcomp* outAmps, Qureg qureg, qindex localStartInd, qindex numAmps);
+void accel_statevec_getAmps(qcomp* outAmps, Qureg qureg, qindex localStartInd, qindex numLocalAmps);
+
+void accel_statevec_setAmps(qcomp* inAmps, Qureg qureg, qindex localStartInd, qindex numLocalAmps);
+
+
+/*
+ * SETTERS 
+ */
+
+void accel_statevec_setAmps(qcomp* inAmps, Qureg qureg, qindex localStartInd, qindex numLocalAmps);
 
 
 /*
@@ -290,10 +299,14 @@ void accel_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vec
 
 
 /*
- * RANDOM INITIALISATION
+ * STATE INITIALISATION
  */
 
-void accel_statevec_setUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg);
+void accel_statevec_initUniformState(Qureg qureg, qcomp amp);
+
+void accel_statevec_initDebugState(Qureg qureg);
+
+void accel_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg);
 
 
 #endif // ACCELERATOR_HPP

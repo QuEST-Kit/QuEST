@@ -200,26 +200,34 @@ void cpu_deallocPauliStrings(PauliStr* strings) {
  */
 
 
-void cpu_copyArray(qcomp* out, qcomp* in, qindex dim) {
+void cpu_copyArray(qcomp* dest, qcomp* src, qindex dim) {
 
-    memcpy(out, in, dim * sizeof(qcomp));
+    memcpy(dest, src, dim * sizeof(qcomp));
 }
 
 
-void cpu_copyMatrix(qcomp** out, qcomp** in, qindex dim) {
+void cpu_copyMatrix(qcomp** dest, qcomp** src, qindex dim) {
+
+    // TODO:
+    // there may be a faster, asynchronous way to perform
+    // these memcpys then do a final wait
 
     // note that we cannot call a single memcpy to copy all rows at once,
-    // because in/out may not be contiguous stack arrays; instead, each
+    // because dest/src may not be contiguous stack arrays; instead, each
     // row is likely a unique, discontiguous span of heap memory. So we
     // memcpy each row in-turn
     for (qindex r=0; r<dim; r++)
-        cpu_copyArray(out[r], in[r], dim);
+        cpu_copyArray(dest[r], src[r], dim);
 }
 
-void cpu_copyMatrix(qcomp** out, vector<vector<qcomp>> in, qindex dim) {
+void cpu_copyMatrix(qcomp** dest, vector<vector<qcomp>> src, qindex dim) {
+
+    // TODO:
+    // there may be a faster, asynchronous way to perform
+    // these memcpys then do a final wait
 
     for (qindex r=0; r<dim; r++)
-        cpu_copyArray(out[r], in[r].data(), dim);
+        cpu_copyArray(dest[r], src[r].data(), dim);
 }
 
 
