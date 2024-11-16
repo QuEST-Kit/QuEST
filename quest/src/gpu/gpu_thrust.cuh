@@ -660,7 +660,8 @@ void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, ve
  */
 
 
-void thrust_statevec_initUniformState(Qureg qureg, qcomp amp) {
+void thrust_statevec_initUniformState(Qureg qureg, cu_qcomp amp) {
+
 
     thrust::fill(getStartPtr(qureg), getEndPtr(qureg), amp);
 }
