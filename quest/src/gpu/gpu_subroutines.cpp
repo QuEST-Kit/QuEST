@@ -1533,7 +1533,7 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_densmatr_multiQubitProjector
 void gpu_statevec_initUniformState(Qureg qureg, qcomp amp) {
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
-    thrust_statevec_initUniformState(qureg, getCuQcomp(amp));
+    thrust_statevec_initUniformState(qureg, toCuQcomp(amp));
 
 #else
     error_gpuSimButGpuNotCompiled();
