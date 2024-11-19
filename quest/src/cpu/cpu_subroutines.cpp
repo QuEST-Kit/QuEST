@@ -1794,6 +1794,144 @@ template qcomp cpu_densmatr_calcFidelityWithPureState_sub<false>(Qureg, Qureg);
 
 
 /*
+ * EXPECTATION VALUES
+ */
+
+
+qreal cpu_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
+
+    // this is the only expec-val routine gauranteed to be real,
+    // regardless of state normalisation and numerical errors
+    qreal value = 0;
+
+    // each iteration contributes one term to the sum
+    qindex numIts = qureg.numAmpsPerNode;
+    qindex targMask = util_getBitMask(targs);
+
+    #pragma omp parallel for reduction(+:value) if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+        int par = getBitMaskParity(n & targMask);
+        int sign = fast_getPlusOrMinusOne(par);
+
+        value += sign * std::norm(qureg.cpuAmps[n]);
+    }
+
+    return value;
+}
+
+
+qcomp cpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
+
+    qcomp value = 0;
+
+    // each column contributes one amp to sum
+    qindex numIts = powerOf2(qureg.logNumColsPerNode);
+    qindex numAmpsPerCol = powerOf2(qureg.numQubits);
+    qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
+
+    qindex targMask = util_getBitMask(targs);
+
+    #pragma omp parallel for reduction(+:value) if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = local index of nth local diagonal element
+        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
+
+        // r = global row of nth local diagonal
+        qindex r = n + firstDiagInd;
+
+        int par = getBitMaskParity(r & targMask);
+        int sign = fast_getPlusOrMinusOne(par);
+
+        value += sign * qureg.cpuAmps[i];
+    }
+
+    return value;
+}
+
+
+qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, util_pauliStrData data) {
+
+    qcomp value = 0;
+
+    // all local amps appear twice, and each iteration contributes two amps
+    qindex numIts = qureg.numAmpsPerNode;
+
+    #pragma omp parallel for reduction(+:value) if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // m = local index of amp which combines with nth local amp
+        qindex j = flipBits(n, data.suffixMaskXY);
+
+        // i = global index of m
+        qindex i = concatenateBits(qureg.rank, j, qureg.logNumAmpsPerNode);
+        qcomp coeff = fast_getPauliStrCoeff(i, data);
+
+        value += coeff * conj(qureg.cpuAmps[n]) * qureg.cpuAmps[j];
+    }
+
+    return value;
+}
+
+
+qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, util_pauliStrData data) {
+
+    qcomp value = 0;
+
+    // all local amps contribute to the sum
+    qindex numIts = qureg.numAmpsPerNode;
+
+    #pragma omp parallel for reduction(+:value) if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // j = buffer index of amp to be multiplied with nth local amp
+        qindex j = flipBits(n, data.suffixMaskXY);
+
+        // i = global index of amp at buffer index j
+        qindex i = concatenateBits(data.pairRank, j, qureg.logNumAmpsPerNode);
+        qcomp coeff = fast_getPauliStrCoeff(i, data);
+
+        value += coeff * conj(qureg.cpuAmps[n]) * qureg.cpuCommBuffer[j];
+    }
+
+    return value;
+}
+
+
+qcomp cpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, util_pauliStrData data) {
+
+    qcomp value = 0;
+
+    // each column contributes one amp to sum
+    qindex numIts = powerOf2(qureg.logNumColsPerNode);
+    qindex numAmpsPerCol = powerOf2(qureg.numQubits);
+    qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
+
+    // for distributed density matrices, q < N implies all q in suffix
+    qindex allMaskXY = data.suffixMaskXY;
+
+    #pragma omp parallel for reduction(+:value) if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // r = global row of nth local diagonal of (qureg)
+        qindex r = n + firstDiagInd;
+
+        // i = global row of nth local diagonal of (str . qureg)
+        qindex i = flipBits(r, allMaskXY);
+        qcomp coeff = fast_getPauliStrCoeff(i, data);
+
+        // m = local flat index of i
+        qindex m = fast_getLocalFlatIndex(i, n, numAmpsPerCol);
+
+        value += coeff * qureg.cpuAmps[m];
+    }
+
+    return value;
+}
+
+
+
+/*
  * PROJECTORS
  */
 

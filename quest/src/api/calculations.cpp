@@ -88,10 +88,15 @@ extern "C" {
 
 
 qreal calcExpecPauliStr(Qureg qureg, PauliStr str) {
+    validate_quregFields(qureg, __func__);
+    validate_pauliStrTargets(qureg, str, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
+    qcomp value = (qureg.isDensityMatrix)?
+        localiser_densmatr_calcExpecPauliStr(qureg, str):
+        localiser_statevec_calcExpecPauliStr(qureg, str);
+
+    validate_expecValIsReal(value, qureg.isDensityMatrix, __func__);
+    return std::real(value);
 }
 
 

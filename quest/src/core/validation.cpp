@@ -912,6 +912,17 @@ namespace report {
 
 
     /*
+     * EXPECTATION VALUES
+     */
+
+    string CALC_STATEVEC_EXPECTED_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated expectation value was not approximately real (i.e. was not within epsilon). This cannot be caused by state normalisation, and instead results from numerical errors during calculation. Please notify the QuEST developers!";
+
+    string CALC_DENSMATR_EXPECTED_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated expectation value was not approximately real (i.e. was not within epsilon). This suggests the density matrix was unnormalised and/or not Hermitian.";
+
+
+    /*
      * FILE IO
      */
 
@@ -3562,6 +3573,23 @@ void validate_quregRenormProbIsNotZero(qreal prob, const char* caller) {
 void validate_numInitRandomPureStates(qindex numPureStates,  const char* caller) {
 
     assertThat(numPureStates >= 1, report::INVALID_NUM_INIT_PURE_STATES, {{"${NUM_STATES}", numPureStates}}, caller);
+}
+
+
+
+/*
+ * EXPECTATION VALUES
+ */
+
+void validate_expecValIsReal(qcomp value, bool isDensMatr, const char* caller) {
+
+    // TODO: include imag(value) in error message when non-integers are supported
+
+    string msg = (isDensMatr)?
+        report::CALC_DENSMATR_EXPECTED_VALUE_WAS_NOT_APPROX_REAL:
+        report::CALC_STATEVEC_EXPECTED_VALUE_WAS_NOT_APPROX_REAL;
+
+    assertThat(abs(imag(value)) < global_validationEpsilon, msg, caller);
 }
 
 

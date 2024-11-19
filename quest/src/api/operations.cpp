@@ -788,6 +788,18 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
     if (!qureg.isDensityMatrix)
         return;
 
+    // TODO:
+    // when qureg is a density matrix, we exact the same pauli string
+    // on the corresponding bra-qubits. In principle, we could have 
+    // instead expanded the previous Pauli string to call anyCtrlPauliTensor()
+    // exactly once - this has no communication benefit (the str upon
+    // the ket state invokes no communication) but avoids re-enumeration
+    // of the state and might shrink caching costs. However, we might then
+    // expand the control list beyond the max compiler-optimised number, and
+    // slow down each iteration. The memory savings likely beat this slowdown.
+    // Test this! It may also be worth templating anyCtrlPauliTensor() in
+    // ordet to avoid the final *=-1, though this will be a nuisance.
+
     ctrlVec = util_getBraQubits(ctrlVec, qureg);
     str = paulis_getShiftedPauliStr(str, qureg.numQubits);
     localiser_statevec_anyCtrlPauliTensor(qureg, ctrlVec, stateVec, str); // excludes conj

@@ -154,6 +154,18 @@ template <bool Conj> qcomp gpu_densmatr_calcFidelityWithPureState_sub(Qureg rho,
 
 
 /*
+ * EXPECTATION VALUES
+ */
+
+qreal gpu_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs);
+qcomp gpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs);
+
+qcomp gpu_statevec_calcExpecPauliStr_subA(Qureg qureg, util_pauliStrData data);
+qcomp gpu_statevec_calcExpecPauliStr_subB(Qureg qureg, util_pauliStrData data);
+qcomp gpu_densmatr_calcExpecPauliStr_sub (Qureg qureg, util_pauliStrData data);
+
+
+/*
  * PROJECTORS
  */
 

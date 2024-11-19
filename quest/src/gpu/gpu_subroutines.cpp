@@ -1474,6 +1474,47 @@ template qcomp gpu_densmatr_calcFidelityWithPureState_sub<false>(Qureg, Qureg);
 
 
 /*
+ * EXPECTATION VALUES
+ */
+
+
+qreal gpu_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
+
+    // TODO
+    return -1;
+}
+
+
+qcomp gpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
+
+    // TODO
+    return -1;
+}
+
+
+qcomp gpu_statevec_calcExpecPauliStr_subA(Qureg qureg, util_pauliStrData data){
+
+    // TODO
+    return -1;
+}
+
+
+qcomp gpu_statevec_calcExpecPauliStr_subB(Qureg qureg, util_pauliStrData data) {
+
+    // TODO
+    return -1;
+}
+
+
+qcomp gpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, util_pauliStrData data) {
+    
+    // TODO
+    return -1;
+}
+
+
+
+/*
  * PROJECTORS
  */
 
