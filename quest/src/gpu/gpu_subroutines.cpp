@@ -647,7 +647,7 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ct
 
     devints deviceTargs = data.sortedSuffixTargsXY;
     devints deviceQubits = util_getSorted(ctrls, data.sortedSuffixTargsXY);
-    auto suffixStates = vector<int>(data.sortedSuffixTargsXY.size(), 0)
+    auto suffixStates = vector<int>(data.sortedSuffixTargsXY.size(), 0);
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, data.sortedSuffixTargsXY, suffixStates);
 
     kernel_statevector_anyCtrlPauliTensorOrGadget_subA <NumCtrls, NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (

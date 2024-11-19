@@ -14,6 +14,7 @@
 #include "quest/include/types.h"
 
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/fastmath.hpp"
 #include "quest/src/gpu/gpu_types.cuh"
 
 #if ! COMPILE_CUDA
@@ -579,7 +580,7 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
     qindex k = flipBits(i, suffixMaskXY);
 
     // l = global index of amp at buffer index j
-    qindex l = concatenateBits(rank, k, logNumAmpsPerNode);
+    qindex l = concatenateBits(pairRank, k, logNumAmpsPerNode);
 
     // determine whether to multiply buffer amp by +-1 or +-i
     int par = cudaGetBitMaskParity(l & allMaskYZ);
