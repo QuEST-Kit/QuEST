@@ -20,6 +20,7 @@
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/utilities.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
@@ -186,7 +187,7 @@ qcomp accel_statevec_getAmp_sub(Qureg qureg, qindex localInd) {
 }
 
 
-void accel_statevec_getAmps(qcomp* outAmps, Qureg qureg, qindex localStartInd, qindex numLocalAmps) {
+void accel_statevec_getAmps_sub(qcomp* outAmps, Qureg qureg, qindex localStartInd, qindex numLocalAmps) {
 
     // copy directly from GPU/CPU to outAmps
     (qureg.isGpuAccelerated)?
@@ -201,7 +202,7 @@ void accel_statevec_getAmps(qcomp* outAmps, Qureg qureg, qindex localStartInd, q
  */
 
 
-void accel_statevec_setAmps(qcomp* inAmps, Qureg qureg, qindex localStartInd, qindex numLocalAmps) {
+void accel_statevec_setAmps_sub(qcomp* inAmps, Qureg qureg, qindex localStartInd, qindex numLocalAmps) {
 
     // in CPU settings, we use memory-copying rather than OpenMP
     // loop updating, because the latter is only faster when carefully
@@ -478,19 +479,15 @@ void accel_densmatr_allTargDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qc
  */
 
 
-void accel_statevector_anyCtrlPauliTensorOrGadget_subA(
-    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> suffixTargsXY, 
-    qindex suffixMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1
-) {
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( statevector_anyCtrlPauliTensorOrGadget_subA, qureg, ctrls.size(), suffixTargsXY.size() );
-    func(qureg, ctrls, ctrlStates, suffixTargsXY, suffixMaskXY, allMaskYZ, powI, fac0, fac1);
+void accel_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, util_pauliStrData data, qcomp fac0, qcomp fac1) {
+
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( statevector_anyCtrlPauliTensorOrGadget_subA, qureg, ctrls.size(), data.sortedSuffixTargsXY.size() );
+    func(qureg, ctrls, ctrlStates, data, fac0, fac1);
 }
-void accel_statevector_anyCtrlPauliTensorOrGadget_subB(
-    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates,
-    qindex suffixMaskXY, qindex bufferMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1
-) {
+void accel_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, util_pauliStrData data, qindex bufferMaskXY, qcomp fac0, qcomp fac1) {
+
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevector_anyCtrlPauliTensorOrGadget_subB, qureg, ctrls.size() );
-    func(qureg, ctrls, ctrlStates, suffixMaskXY, bufferMaskXY, allMaskYZ, powI, fac0, fac1);
+    func(qureg, ctrls, ctrlStates, data, bufferMaskXY, fac0, fac1);
 }
 
 
@@ -971,19 +968,19 @@ void accel_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vec
  */
 
 
-void accel_statevec_initUniformState(Qureg qureg, qcomp amp) {
+void accel_statevec_initUniformState_sub(Qureg qureg, qcomp amp) {
 
     (qureg.isGpuAccelerated)?
-        gpu_statevec_initUniformState(qureg, amp):
-        cpu_statevec_initUniformState(qureg, amp);
+        gpu_statevec_initUniformState_sub(qureg, amp):
+        cpu_statevec_initUniformState_sub(qureg, amp);
 }
 
 
-void accel_statevec_initDebugState(Qureg qureg) {
+void accel_statevec_initDebugState_sub(Qureg qureg) {
 
     (qureg.isGpuAccelerated)?
-        gpu_statevec_initDebugState(qureg):
-        cpu_statevec_initDebugState(qureg);
+        gpu_statevec_initDebugState_sub(qureg):
+        cpu_statevec_initDebugState_sub(qureg);
 }
 
 

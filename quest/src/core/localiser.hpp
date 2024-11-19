@@ -114,8 +114,6 @@ void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vecto
 
 void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qreal angle);
 
-void localiser_statevec_anyCtrlAnyTargZ(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs);
-
 void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qreal angle);
 
 
@@ -126,7 +124,6 @@ void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vecto
 void localiser_statevec_setQuregToSuperposition(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2);
 
 void localiser_densmatr_mixQureg(qreal outProb, Qureg out, qreal inProb, Qureg in);
-
 
 
 /*

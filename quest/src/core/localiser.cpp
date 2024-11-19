@@ -128,27 +128,6 @@ bool doAnyLocalStatesHaveQubitValues(Qureg qureg, vector<int> qubits, vector<int
 }
 
 
-auto getPrefixOrSuffixQubits(Qureg qureg, vector<int> qubits, bool getSuffix) {
-
-    vector<int> subQubits(0);
-    subQubits.reserve(qubits.size());
-
-    for (int qubit : qubits)
-        if (util_isQubitInSuffix(qubit, qureg) == getSuffix)
-            subQubits.push_back(qubit);
-
-    return subQubits;
-}
-
-auto getSuffixQubits(Qureg qureg, vector<int> qubits) {
-    return getPrefixOrSuffixQubits(qureg, qubits, true);
-}
-
-auto getPrefixQubits(Qureg qureg, vector<int> qubits) {
-    return getPrefixOrSuffixQubits(qureg, qubits, false);
-}
-
-
 void removePrefixQubitsAndStates(Qureg qureg, vector<int> &qubits, vector<int> &states) {
 
     vector<int> suffixQubits(0);  suffixQubits.reserve(qubits.size());
@@ -319,7 +298,7 @@ qcomp localiser_statevec_getAmp(Qureg qureg, qindex globalInd) {
     // it, avoiding superfluous cache costs on other nodes
     if (sender == qureg.rank) {
         qindex localInd = util_getLocalIndexOfGlobalIndex(qureg, globalInd);
-        accel_statevec_getAmps(&amp, qureg, localInd, 1);
+        accel_statevec_getAmps_sub(&amp, qureg, localInd, 1);
     }
 
     // when distributed, sender shares amp to all nodes
@@ -336,7 +315,7 @@ void localiser_statevec_getAmps(qcomp* outAmps, Qureg qureg, qindex globalStartI
 
     // when not distributed, all nodes merely perform direct local overwrite and finish
     if (!qureg.isDistributed) {
-        accel_statevec_getAmps(outAmps, qureg, globalStartInd, globalNumAmps);
+        accel_statevec_getAmps_sub(outAmps, qureg, globalStartInd, globalNumAmps);
         return;
     }
 
@@ -347,7 +326,7 @@ void localiser_statevec_getAmps(qcomp* outAmps, Qureg qureg, qindex globalStartI
     // which they first overwrite into their local copies of out (may involve a GPU-to-CPU copy)
     if (util_areAnyVectorElemsWithinNode(myRank, qureg.numAmpsPerNode, globalStartInd, globalNumAmps)) {
         auto localInds = util_getLocalIndRangeOfVectorElemsWithinNode(myRank, qureg.numAmpsPerNode, globalStartInd, globalNumAmps);
-        accel_statevec_getAmps(&outAmps[localInds.localDuplicStartInd], qureg, localInds.localDistribStartInd, localInds.numElems);
+        accel_statevec_getAmps_sub(&outAmps[localInds.localDuplicStartInd], qureg, localInds.localDistribStartInd, localInds.numElems);
     }
 
     // determine the overlap with each node (i.e. which amps, if any, they contribute)
@@ -443,7 +422,7 @@ void localiser_statevec_setAmps(qcomp* inAmps, Qureg qureg, qindex globalStartIn
     // nodes simply determine which amps overlap their partition, and use them
 
     if (!qureg.isDistributed) {
-        accel_statevec_setAmps(inAmps, qureg, globalStartInd, globalNumAmps);
+        accel_statevec_setAmps_sub(inAmps, qureg, globalStartInd, globalNumAmps);
         return;
     }
 
@@ -451,7 +430,7 @@ void localiser_statevec_setAmps(qcomp* inAmps, Qureg qureg, qindex globalStartIn
         return;
 
     auto range = util_getLocalIndRangeOfVectorElemsWithinNode(qureg.rank, qureg.numAmpsPerNode, globalStartInd, globalNumAmps);
-    accel_statevec_setAmps(&inAmps[range.localDuplicStartInd], qureg, range.localDistribStartInd, range.numElems);
+    accel_statevec_setAmps_sub(&inAmps[range.localDuplicStartInd], qureg, range.localDistribStartInd, range.numElems);
 }
 
 
@@ -567,21 +546,21 @@ void mixDensityMatrixWithStatevector(qreal outProb, Qureg out, qreal inProb, Qur
 void localiser_statevec_initUniformState(Qureg qureg, qcomp amp) {
 
     // always embarrassingly parallel
-    accel_statevec_initUniformState(qureg, amp);
+    accel_statevec_initUniformState_sub(qureg, amp);
 }
 
 
 void localiser_statevec_initDebugState(Qureg qureg) {
 
     // always embarrassingly parallel
-    accel_statevec_initDebugState(qureg);
+    accel_statevec_initDebugState_sub(qureg);
 }
 
 
 void localiser_statevec_initClassicalState(Qureg qureg, qindex globalInd) {
 
     // all nodes clear all amps
-    accel_statevec_initUniformState(qureg, 0);
+    accel_statevec_initUniformState_sub(qureg, 0);
 
     // one node (or all if qureg not distributed) modifies 1 amp
     qcomp amp = 1;
@@ -675,7 +654,7 @@ void localiser_densmatr_initUniformlyRandomPureStateAmps(Qureg qureg) {
     // by first spoofing a new non-distributed pure state, re-using qureg's
     // communication buffers if they exist, else creating temp memory
     bool wasMemAlloc = false;
-    Qureg pure = createSpoofedLocalStateVecFromDensMatr(qureg, wasMemAlloc);
+    Qureg pure = createSpoofedLocalStateVecFromDensMatr(qureg, wasMemAlloc); // overwrites wasMemAlloc
 
     // initialise the spoofed pure Qureg to a normalised, uniformly random 
     // statevector; this is calling the same API function which invoked THIS 
@@ -706,7 +685,7 @@ void localiser_densmatr_initMixtureOfUniformlyRandomPureStates(Qureg qureg, qind
     // qureg's communication buffer memory if possible, else
     // creating temporary memory we must later free
     bool wasMemAlloc = false;
-    Qureg pure = createSpoofedLocalStateVecFromDensMatr(qureg, wasMemAlloc);
+    Qureg pure = createSpoofedLocalStateVecFromDensMatr(qureg, wasMemAlloc); // overwrites wasMemAlloc
 
     // we wish to create qureg = sum_n^N P pure_n, where P = 1/N is
     // the uniform probability, which we achieve through repeated
@@ -1148,11 +1127,9 @@ template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, vector<int>, vecto
  */
 
 
-extern int  paulis_getPauliAt(PauliStr str, int ind);
 extern bool paulis_containsXOrY(PauliStr str);
 extern bool paulis_containsOnlyI(PauliStr str);
 extern vector<int> paulis_getSortedIndsOfNonIdentityPaulis(PauliStr str);
-extern vector<int> paulis_getTargsWithEitherPaulis(vector<int> targs, PauliStr str, int pauliA, int pauliB);
 
 
 void anyCtrlAnyTargZOrPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qcomp fac0, qcomp fac1) {
@@ -1171,25 +1148,23 @@ void anyCtrlAnyTargZOrPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ct
 }
 
 
-void anyCtrlPauliTensorOrGadgetOnPrefix(
-    Qureg qureg, int pairRank, vector<int> ctrls, vector<int> ctrlStates, 
-    qindex suffixMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1
-) {
+void anyCtrlPauliTensorOrGadgetOnPrefix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, util_pauliStrData data, qcomp fac0, qcomp fac1) {
+
     // pack and exchange all amps satisfying ctrl
-    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank, ctrls, ctrlStates);
+    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, data.pairRank, ctrls, ctrlStates);
 
     // we cannot use suffixMaskXY to determine the buffer indices corresponding to the subsequently processed local amps,
     // because it operates on the full local amp index, whereas the buffer (potentially) excluded many amps (which did not
     // satisfy ctrls) and has a reduced index space. So we compute a new mask which operates on the buffer indices by
     // removing all ctrl qubits from the full index mask.
     auto sortedCtrls = util_getSorted(ctrls);
-    auto bufferMaskXY = removeBits(suffixMaskXY, sortedCtrls.data(), sortedCtrls.size());
+    auto bufferMaskXY = removeBits(data.suffixMaskXY, sortedCtrls.data(), sortedCtrls.size());
 
-    accel_statevector_anyCtrlPauliTensorOrGadget_subB(qureg, ctrls, ctrlStates, suffixMaskXY, bufferMaskXY, allMaskYZ, powI, fac0, fac1);
+    accel_statevector_anyCtrlPauliTensorOrGadget_subB(qureg, ctrls, ctrlStates, data, bufferMaskXY, fac0, fac1);
 }
 
 
-void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, PauliStr str, qcomp fac0, qcomp fac1) {
+void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qcomp fac0, qcomp fac1) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
 
@@ -1200,46 +1175,13 @@ void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrl
     // retain only suffix control qubits, as relevant to local amp modification
     removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
 
-    // readable flags
-    const int X=1, Y=2, Z=3;
-
-    // total number of Y determines a phase factor on all updated amps (because Y contains i)
-    int numY = paulis_getTargsWithEitherPaulis(targs, str, Y, Y).size();
-
-    // precision-agnostic calculation of i^numY
-    vector<qcomp> powersOfI = {1, 1_i, -1, -1_i};
-    qcomp powI = powersOfI[numY % 4];
-
-    // parity of Y and Z on all qubits determines phase factor on updated amps (because Y and Z contain -1)
-    auto allTargsYZ = paulis_getTargsWithEitherPaulis(targs, str, Y, Z);
-    auto allMaskYZ = getBitMask(allTargsYZ.data(), allTargsYZ.size());
-    
-    // X and Y on suffix qubits determine local amp movement (because X and Y are anti-diagonal)
-    auto suffixTargsXY = getSuffixQubits(qureg, paulis_getTargsWithEitherPaulis(targs, str, X, Y)); // sorted
-    auto suffixMaskXY = getBitMask(suffixTargsXY.data(), suffixTargsXY.size());
-
-    // X and Y on prefix qubits determines pair rank (because X and Y are anti-diagonal)
-    auto prefixTargsXY = getPrefixQubits(qureg, paulis_getTargsWithEitherPaulis(targs, str, X, Y));
-    auto pairRank = flipBits(qureg.rank, prefixTargsXY.data(), prefixTargsXY.size());
+    // extract the relevant masks and qubits from the PauliStr
+    util_pauliStrData data = util_getPauliStrData(qureg, str);
 
     // call embarrassingly parallel routine or induce pairwise communication
-    (qureg.rank == pairRank)?
-        accel_statevector_anyCtrlPauliTensorOrGadget_subA(
-            qureg, ctrls, ctrlStates, suffixTargsXY, suffixMaskXY, allMaskYZ, powI, fac0, fac1):
-        anyCtrlPauliTensorOrGadgetOnPrefix(
-            qureg, pairRank, ctrls, ctrlStates, suffixMaskXY, allMaskYZ, powI, fac0, fac1);
-}
-
-
-void localiser_statevec_anyCtrlAnyTargZ(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs) {
-
-    // NOTE: I think this is not used by the API, because there is no dedicated
-    // all-Z Pauli function. Instead, users would call the generic Pauli tensor
-    // which redirects to anyCtrlAnyTargZOrPhaseGadget
-
-    qcomp fac0 = qcomp(+1, 0); // even parity
-    qcomp fac1 = qcomp(-1, 0); // odd parity
-    anyCtrlAnyTargZOrPhaseGadget(qureg, ctrls, ctrlStates, targs, fac0, fac1);
+    (qureg.rank == data.pairRank)?
+        accel_statevector_anyCtrlPauliTensorOrGadget_subA(qureg, ctrls, ctrlStates, data, fac0, fac1):
+        anyCtrlPauliTensorOrGadgetOnPrefix(qureg, ctrls, ctrlStates, data, fac0, fac1);
 }
 
 
@@ -1262,7 +1204,7 @@ void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vecto
         return;
 
     (paulis_containsXOrY(str))?
-        anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, targs, str, fac0, fac1):
+        anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, str, fac0, fac1):
         anyCtrlAnyTargZOrPhaseGadget(qureg, ctrls, ctrlStates, targs, fac0, fac1);
 }
 
@@ -1274,7 +1216,7 @@ void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vecto
     auto targs = paulis_getSortedIndsOfNonIdentityPaulis(str);
 
     (paulis_containsXOrY(str))?
-        anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, targs, str, fac0, fac1):
+        anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, str, fac0, fac1):
         anyCtrlAnyTargZOrPhaseGadget(qureg, ctrls, ctrlStates, targs, fac0, fac1);
 }
 
