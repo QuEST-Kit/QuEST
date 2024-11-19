@@ -283,6 +283,18 @@ qreal accel_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB);
 
 
 /*
+ * EXPECTATION VALUES
+ */
+
+qreal accel_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> sufTargs);
+qcomp accel_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> allTargs);;
+
+qcomp accel_statevec_calcExpecPauliStr_subA(Qureg qureg, util_pauliStrData data);
+qcomp accel_statevec_calcExpecPauliStr_subB(Qureg qureg, util_pauliStrData data);
+qcomp accel_densmatr_calcExpecPauliStr_sub (Qureg qureg, util_pauliStrData data);
+
+
+/*
  * PROJECTORS 
  */
 

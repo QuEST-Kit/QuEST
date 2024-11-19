@@ -154,6 +154,18 @@ template <bool Conj> qcomp cpu_densmatr_calcFidelityWithPureState_sub(Qureg rho,
 
 
 /*
+ * EXPECTATION VALUES
+ */
+
+qreal cpu_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs);
+qcomp cpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs);
+
+qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, util_pauliStrData data);
+qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, util_pauliStrData data);
+qcomp cpu_densmatr_calcExpecPauliStr_sub (Qureg qureg, util_pauliStrData data);
+
+
+/*
  * PROJECTORS
  */
 

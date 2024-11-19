@@ -946,6 +946,46 @@ qcomp accel_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi, bool co
 
 
 /*
+ * EXPECTATION VALUES
+ */
+
+
+qreal accel_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
+
+    return (qureg.isGpuAccelerated)?
+        gpu_statevec_calcExpecAnyTargZ_sub(qureg, targs):
+        cpu_statevec_calcExpecAnyTargZ_sub(qureg, targs);
+}
+qcomp accel_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
+
+    return (qureg.isGpuAccelerated)?
+        gpu_densmatr_calcExpecAnyTargZ_sub(qureg, targs):
+        cpu_densmatr_calcExpecAnyTargZ_sub(qureg, targs);
+}
+
+
+qcomp accel_statevec_calcExpecPauliStr_subA(Qureg qureg, util_pauliStrData data) {
+
+    return (qureg.isGpuAccelerated)?
+        gpu_statevec_calcExpecPauliStr_subA(qureg, data):
+        cpu_statevec_calcExpecPauliStr_subA(qureg, data);
+}
+qcomp accel_statevec_calcExpecPauliStr_subB(Qureg qureg, util_pauliStrData data) {
+
+    return (qureg.isGpuAccelerated)?
+        gpu_statevec_calcExpecPauliStr_subB(qureg, data):
+        cpu_statevec_calcExpecPauliStr_subB(qureg, data);
+}
+qcomp accel_densmatr_calcExpecPauliStr_sub(Qureg qureg, util_pauliStrData data) {
+
+    return (qureg.isGpuAccelerated)?
+        gpu_densmatr_calcExpecPauliStr_sub(qureg, data):
+        cpu_densmatr_calcExpecPauliStr_sub(qureg, data);
+}
+
+
+
+/*
  * PROJECTORS 
  */
 

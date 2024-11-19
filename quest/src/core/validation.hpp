@@ -423,6 +423,13 @@ void validate_numInitRandomPureStates(qindex numPureStates,  const char* caller)
 
 
 /*
+ * EXPECTATION VALUES
+ */
+
+void validate_expecValIsReal(qcomp value, bool isDensMatr, const char* caller);
+
+
+/*
  * FILE IO
  */
 

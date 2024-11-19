@@ -1763,6 +1763,90 @@ void localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg 
 
 
 /*
+ * EXPECTATION VALUES
+ */
+
+
+qreal expecAnyTargZOnStateVec(Qureg qureg, PauliStr str) {
+    assert_localiserGivenStateVec(qureg);
+
+    // beware this function does NOT sum contributions 
+    // from each node; caller must handle distribution
+
+    qreal value = 0;
+
+    // suffix targs determine local sum coefficients
+    auto allTargs = paulis_getSortedIndsOfNonIdentityPaulis(str);
+    auto sufTargs = util_getSuffixQubits(allTargs, qureg);
+    value = (sufTargs.empty())?
+        accel_statevec_calcTotalProb_sub(qureg): // str=I optimisation
+        accel_statevec_calcExpecAnyTargZ_sub(qureg, sufTargs);
+
+    // prefix qubits determine a node-wide +- coefficient
+    auto prefTargs = util_getPrefixQubits(allTargs, qureg);
+    auto prefInds = util_getPrefixInds(prefTargs, qureg);
+    auto prefMask = util_getBitMask(prefInds);
+    qreal factor = getBitMaskParity(prefMask & qureg.rank)? -1 : 1;
+
+    return factor * value;
+}
+
+
+qcomp localiser_statevec_calcExpecPauliStr(Qureg qureg, PauliStr str) {
+    assert_localiserGivenStateVec(qureg);
+
+    qcomp value = 0;
+
+    util_pauliStrData data = util_getPauliStrData(qureg, str);
+
+    // embarrassingly parallel edge case (full str = I or Z)
+    if (!paulis_containsXOrY(str)) {
+        value = expecAnyTargZOnStateVec(qureg, str);
+
+    // embarrassingly parallel edge case (prefix str = I or Z)
+    } else if (data.pairRank == qureg.rank) {
+        value = accel_statevec_calcExpecPauliStr_subA(qureg, data);
+
+    // pair-wise communication case
+    } else {
+        comm_exchangeAmpsToBuffers(qureg, data.pairRank);
+        value = accel_statevec_calcExpecPauliStr_subB(qureg, data);
+    }
+
+    // combine contributions from each node
+    if (qureg.isDistributed)
+        comm_reduceAmp(&value);
+
+    return value;
+}
+
+
+qcomp localiser_densmatr_calcExpecPauliStr(Qureg qureg, PauliStr str) {
+    assert_localiserGivenDensMatr(qureg);
+
+    qcomp value = 0;
+
+    util_pauliStrData data = util_getPauliStrData(qureg, str);
+    auto targs = paulis_getSortedIndsOfNonIdentityPaulis(str);
+
+    // all scenarios (I, Z, X+Y) are embarrassingly parallel
+    if (paulis_containsOnlyI(str))
+        value = accel_densmatr_calcTotalProb_sub(qureg);
+    else if (!paulis_containsXOrY(str))
+        value = accel_densmatr_calcExpecAnyTargZ_sub(qureg, targs);
+    else
+        value = accel_densmatr_calcExpecPauliStr_sub(qureg, data);
+
+    // combine contributions from each node
+    if (qureg.isDistributed)
+        comm_reduceAmp(&value);
+
+    return value;
+}
+
+
+
+/*
  * INNER PRODUCTS
  */
 
