@@ -42,8 +42,7 @@ static const int MAX_NUM_PAULIS_PER_STR  = MAX_NUM_PAULIS_PER_MASK * 2;
 
 int getPauliFromMaskAt(PAULI_MASK_TYPE mask, int ind) {
 
-    // get adjacent 2 bits at (ind+1, ind)
-    return (mask >> (2*ind)) & 3;
+    return getTwoAdjacentBits(mask, 2*ind); // bits at (ind+1, ind)
 }
 
 
@@ -85,8 +84,9 @@ void freeAllMemoryIfAnyAllocsFailed(PauliStrSum sum) {
 /*
  * INTERNAL UTILITIES
  *
- * callable by other internal files but which are not exposed in the header.
- * Ergo other files must declare these functions as extern where needed.
+ * callable by other internal files but which are not exposed in the header
+ * because we do not wish to make them visible to users. Ergo other internal
+ * files must declare these functions as extern where needed. Yes, it's ugly :(
  */
 
 
@@ -131,7 +131,7 @@ bool paulis_containsXOrY(PauliStr str) {
 
     int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
 
-    for (int i=0; i<maxInd; i++) {
+    for (int i=0; i<=maxInd; i++) {
         int pauli = paulis_getPauliAt(str, i);
 
         if (pauli == 1 || pauli == 2)

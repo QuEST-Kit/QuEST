@@ -57,7 +57,7 @@ __host__ qindex getNumBlocks(qindex numIts) {
  */
 
 
-__forceinline__ __device__  int cudaGetBitMaskParity(qindex mask) {
+__forceinline__ __device__ int cudaGetBitMaskParity(qindex mask) {
 
     // we cannot use bitwise's getBitMaskParity()'s host-only GCC call
     return __popcll(mask) & 1;
@@ -516,7 +516,7 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // use template params to compile-time unroll loops in insertBits()
+    // use template params to compile-time unroll loops in insertBits() and setBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
     SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, numSuffixTargsXY);
 
@@ -528,13 +528,13 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
     qindex numInnerIts = numTargAmps / 2;
 
     // i0 = nth local index where ctrls are active and targs are all zero
-    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs, numQubitBits, ctrlsAndTargsStateMask);
+    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs, numQubitBits, ctrlsAndTargsStateMask); // may be unrolled
 
     // loop may be unrolled
     for (qindex m=0; m<numInnerIts; m++) {
 
         // iA = nth local index where targs have value m, iB = (last - nth) such index
-        qindex iA = setBits(i0, suffixTargsXY, numSuffixTargsXY, m);
+        qindex iA = setBits(i0, suffixTargsXY, numTargBits, m); // may be unrolled
         qindex iB = flipBits(iA, suffixMaskXY);
 
         // jA = global index corresponding to iA
@@ -542,22 +542,24 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
         qindex jB = concatenateBits(rank, iB, logNumAmpsPerNode);
 
         // determine whether to multiply amps by +-1 or +-i
-        cu_qcomp pmPowA = powI * (1. - 2. * cudaGetBitMaskParity(jA & allMaskYZ));
-        cu_qcomp pmPowB = powI * (1. - 2. * cudaGetBitMaskParity(jB & allMaskYZ));
+        int parA = cudaGetBitMaskParity(jA & allMaskYZ);
+        int parB = cudaGetBitMaskParity(jB & allMaskYZ);
+        cu_qcomp coeffA = powI * fast_getPlusOrMinusOne(parA);
+        cu_qcomp coeffB = powI * fast_getPlusOrMinusOne(parB);
 
         cu_qcomp ampA = amps[iA];
         cu_qcomp ampB = amps[iB];
 
         // mix or swap scaled amp pair
-        amps[iA] = (thisAmpFac * ampA) + (otherAmpFac * pmPowB * ampB);
-        amps[iB] = (thisAmpFac * ampB) + (otherAmpFac * pmPowA * ampA);
+        amps[iA] = (thisAmpFac * ampA) + (otherAmpFac * coeffB * ampB);
+        amps[iB] = (thisAmpFac * ampB) + (otherAmpFac * coeffA * ampA);
     }
 }
 
 
 template <int NumCtrls>
 __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
-    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, int rank, qindex logNumAmpsPerNode,
+    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, int pairRank, qindex logNumAmpsPerNode,
     int* ctrls, int numCtrls, qindex ctrlStateMask,
     qindex suffixMaskXY, qindex bufferMaskXY, qindex allMaskYZ, 
     cu_qcomp powI, cu_qcomp thisAmpFac, cu_qcomp otherAmpFac
@@ -573,15 +575,18 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
     // j = buffer index of amp to be mixed with i
     qindex j = flipBits(n, bufferMaskXY);
 
-    // k = global index of amp at buffer index j
-    qindex k = concatenateBits(rank, flipBits(i, suffixMaskXY), logNumAmpsPerNode);
+    // k = local index of j-th buffer amplitude in its original node
+    qindex k = flipBits(i, suffixMaskXY);
+
+    // l = global index of amp at buffer index j
+    qindex l = concatenateBits(rank, k, logNumAmpsPerNode);
 
     // determine whether to multiply buffer amp by +-1 or +-i
-    int negParity = cudaGetBitMaskParity(k & allMaskYZ);
-    cu_qcomp pmPowI = powI * (1. - 2. * negParity);
+    int par = cudaGetBitMaskParity(l & allMaskYZ);
+    cu_qcomp coeff = powI * fast_getPlusOrMinusOne(par);
 
     amps[i] *= thisAmpFac;
-    amps[i] += otherAmpFac * pmPowI * buffer[j];
+    amps[i] += otherAmpFac * coeff * buffer[j];
 }
 
 

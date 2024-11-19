@@ -54,6 +54,12 @@ INLINE qindex getBitsRightOfIndex(qindex number, int bitIndex) {
 }
 
 
+INLINE int getTwoAdjacentBits(qindex number, qindex lowerBitInd) {
+
+    return (number >> lowerBitInd) & 3;
+}
+
+
 INLINE qindex flipBits(qindex number, qindex mask) {
 
     return number ^ mask;

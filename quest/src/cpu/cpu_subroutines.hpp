@@ -10,6 +10,8 @@
 #include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 
+#include "quest/src/core/utilities.hpp"
+
 #include <vector>
 
 using std::vector;
@@ -71,20 +73,11 @@ template <bool HasPower, bool MultiplyOnly> void cpu_densmatr_allTargDiagMatr_su
  * PAULI TENSOR AND GADGET
  */
 
-template <int NumCtrls, int NumTargs> void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
-    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> suffixTargsXY, 
-    qindex suffixMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1
-);
+template <int NumCtrls, int NumTargs> void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, util_pauliStrData data, qcomp fac0, qcomp fac1);
 
-template <int NumCtrls> void cpu_statevector_anyCtrlPauliTensorOrGadget_subB(
-    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates,
-    qindex suffixMaskXY, qindex bufferMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1
-);
+template <int NumCtrls> void cpu_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, util_pauliStrData data, qindex bufferMaskXY, qcomp fac0, qcomp fac1);
 
-template <int NumCtrls> void cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
-    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, 
-    qcomp fac0, qcomp fac1
-);
+template <int NumCtrls> void cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qcomp fac0, qcomp fac1);
 
 
 /*
@@ -172,9 +165,9 @@ template <int NumQubits> void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, 
  * STATE INITIALISATION
  */
 
-void cpu_statevec_initUniformState(Qureg qureg, qcomp amp);
+void cpu_statevec_initUniformState_sub(Qureg qureg, qcomp amp);
 
-void cpu_statevec_initDebugState(Qureg qureg);
+void cpu_statevec_initDebugState_sub(Qureg qureg);
 
 void cpu_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg);
 

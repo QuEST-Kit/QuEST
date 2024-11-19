@@ -915,7 +915,6 @@ namespace report {
      * FILE IO
      */
 
-    // TODO: embed filename into error message when tokenSubs supports strings
     string CANNOT_READ_FILE = 
         "Could not load and read the given file. Make sure the file exists and is readable as plaintext.";
 }

@@ -17,10 +17,12 @@
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 
+#include "quest/src/gpu/gpu_types.cuh"
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/fastmath.hpp"
+#include "quest/src/core/utilities.hpp"
 #include "quest/src/core/randomiser.hpp"
-#include "quest/src/gpu/gpu_types.cuh"
 
 #include <thrust/random.h>
 #include <thrust/complex.h>
@@ -220,8 +222,7 @@ struct functor_getDiagInd : public thrust::unary_function<qindex,qindex> {
     }
 
     __host__ __device__ qindex operator()(qindex i) {
-
-        return util_getLocalIndexOfDiagonalAmp(i, firstDiagInd, numAmpsPerCol); // inlined, safely CUDA-callable
+        return fast_getLocalIndexOfDiagonalAmp(i, firstDiagInd, numAmpsPerCol);
     }
 };
 

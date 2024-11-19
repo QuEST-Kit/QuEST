@@ -96,7 +96,6 @@ API_FILES=(
     "modes"
     "operations"
     "paulis"
-    "qasm"
     "qureg"
     "types"
 )

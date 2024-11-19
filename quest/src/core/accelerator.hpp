@@ -10,6 +10,8 @@
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 
+#include "quest/src/core/utilities.hpp"
+
 #include <vector>
 
 using std::vector;
@@ -139,16 +141,14 @@ using std::vector;
 
 qcomp accel_statevec_getAmp_sub(Qureg qureg, qindex localInd);
 
-void accel_statevec_getAmps(qcomp* outAmps, Qureg qureg, qindex localStartInd, qindex numLocalAmps);
-
-void accel_statevec_setAmps(qcomp* inAmps, Qureg qureg, qindex localStartInd, qindex numLocalAmps);
+void accel_statevec_getAmps_sub(qcomp* outAmps, Qureg qureg, qindex localStartInd, qindex numLocalAmps);
 
 
 /*
  * SETTERS 
  */
 
-void accel_statevec_setAmps(qcomp* inAmps, Qureg qureg, qindex localStartInd, qindex numLocalAmps);
+void accel_statevec_setAmps_sub(qcomp* inAmps, Qureg qureg, qindex localStartInd, qindex numLocalAmps);
 
 
 /*
@@ -202,18 +202,10 @@ void accel_densmatr_allTargDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qc
  * PAULI TENSOR AND GADGET
  */
 
-void accel_statevector_anyCtrlPauliTensorOrGadget_subA(
-    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> suffixTargsXY, 
-    qindex suffixMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1
-);
-void accel_statevector_anyCtrlPauliTensorOrGadget_subB(
-    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates,
-    qindex suffixMaskXY, qindex bufferMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1
-);
+void accel_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, util_pauliStrData data, qcomp fac0, qcomp fac1);
+void accel_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, util_pauliStrData data, qindex bufferMaskXY, qcomp fac0, qcomp fac1);
 
-void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
-    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs,
-    qcomp fac0, qcomp fac1);
+void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qcomp fac0, qcomp fac1);
 
 
 /*
@@ -302,9 +294,9 @@ void accel_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vec
  * STATE INITIALISATION
  */
 
-void accel_statevec_initUniformState(Qureg qureg, qcomp amp);
+void accel_statevec_initUniformState_sub(Qureg qureg, qcomp amp);
 
-void accel_statevec_initDebugState(Qureg qureg);
+void accel_statevec_initDebugState_sub(Qureg qureg);
 
 void accel_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg);
 

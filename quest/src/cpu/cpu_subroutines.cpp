@@ -15,6 +15,7 @@
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/fastmath.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/randomiser.hpp"
 #include "quest/src/core/accelerator.hpp"
@@ -612,7 +613,7 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
     for (qindex n=0; n<numIts; n++) {
 
         // i = global row of nth local index
-        qindex i = n % matr.numElems;
+        qindex i = fast_getGlobalRowFromFlatIndex(n, matr.numElems);
         qcomp fac = matr.cpuElems[i];
 
         if constexpr (HasPower)
@@ -624,7 +625,7 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
             qindex m = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
 
             // j = global column corresponding to n
-            qindex j = m / matr.numElems;
+            qindex j = fast_getGlobalColFromFlatIndex(m, matr.numElems);
             qcomp term = matr.cpuElems[j];
 
             if constexpr(HasPower)
@@ -656,26 +657,27 @@ template void cpu_densmatr_allTargDiagMatr_sub<false, false>(Qureg, FullStateDia
 
 template <int NumCtrls, int NumTargs>
 void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
-    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> suffixTargsXY, 
-    qindex suffixMaskXY, qindex allMaskYZ, qcomp powI, qcomp thisAmpFac, qcomp otherAmpFac
+    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, 
+    util_pauliStrData data, qcomp thisAmpFac, qcomp otherAmpFac
 ) {
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
-    assert_numTargsMatchesTemplateParam(suffixTargsXY.size(), NumTargs);
+    assert_numTargsMatchesTemplateParam(data.sortedSuffixTargsXY.size(), NumTargs);
     
     // TODO:
     //  should we attempt to OpenMP parallelise the inner loop when there are many paulis?
     //  can we achieve this using something like if(numOuterIts < nthreads) ?
 
     // each outer iteration handles all assignments of the target qubits and each ctrl halves the outer iterations
-    qindex numOuterIts = qureg.numAmpsPerNode / powerOf2(suffixTargsXY.size() + ctrls.size());
+    qindex numOuterIts = qureg.numAmpsPerNode / powerOf2(data.sortedSuffixTargsXY.size() + ctrls.size());
 
     // prepare a mask which yields ctrls in specified state, and targs in all-zero
-    auto sortedQubits   = util_getSorted(ctrls, suffixTargsXY);
-    auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, suffixTargsXY, vector<int>(suffixTargsXY.size(),0));
+    auto sortedQubits   = util_getSorted(ctrls, data.sortedSuffixTargsXY);
+    auto suffixStates   = vector<int>(data.sortedSuffixTargsXY.size(), 0);
+    auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, data.sortedSuffixTargsXY, suffixStates);
 
-    // use template params to compile-time unroll loops in insertBits()
+    // use template params to compile-time unroll loops in insertBits() and setBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
-    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, suffixTargsXY.size());
+    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, data.sortedSuffixTargsXY.size());
 
     // compiler will infer these at compile-time if possible
     int numQubitBits = numCtrlBits + numTargBits;
@@ -688,29 +690,28 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
     for (qindex n=0; n<numOuterIts; n++) {
 
         // i0 = nth local index where ctrls are active and targs are all zero
-        qindex i0 = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitStateMask);
+        qindex i0 = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitStateMask); // may be unrolled
 
         // loop may be unrolled
         for (qindex m=0; m<numInnerIts; m++) {
 
             // iA = nth local index where targs have value m, iB = (last - nth) such index
-            qindex iA = setBits(i0, suffixTargsXY.data(), suffixTargsXY.size(), m);
-            qindex iB = flipBits(iA, suffixMaskXY);
+            qindex iA = setBits(i0, data.sortedSuffixTargsXY.data(), numTargBits, m); // may be unrolled
+            qindex iB = flipBits(iA, data.suffixMaskXY);
 
             // jA = global index corresponding to iA
             qindex jA = concatenateBits(qureg.rank, iA, qureg.logNumAmpsPerNode);
             qindex jB = concatenateBits(qureg.rank, iB, qureg.logNumAmpsPerNode);
 
-            // determine whether to multiply amps by +-1 or +-i
-            qcomp pmPowA = powI * (1 - 2 * getBitMaskParity(jA & allMaskYZ));
-            qcomp pmPowB = powI * (1 - 2 * getBitMaskParity(jB & allMaskYZ));
+            qcomp coeffA = fast_getPauliStrCoeff(jA, data);
+            qcomp coeffB = fast_getPauliStrCoeff(jB, data);
 
             qcomp ampA = qureg.cpuAmps[iA];
             qcomp ampB = qureg.cpuAmps[iB];
 
             // mix or swap scaled amp pair
-            qureg.cpuAmps[iA] = (thisAmpFac * ampA) + (otherAmpFac * pmPowB * ampB);
-            qureg.cpuAmps[iB] = (thisAmpFac * ampB) + (otherAmpFac * pmPowA * ampA);
+            qureg.cpuAmps[iA] = (thisAmpFac * ampA) + (otherAmpFac * coeffB * ampB);
+            qureg.cpuAmps[iB] = (thisAmpFac * ampB) + (otherAmpFac * coeffA * ampA);
         }
     }
 }
@@ -719,7 +720,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
 template <int NumCtrls>
 void cpu_statevector_anyCtrlPauliTensorOrGadget_subB(
     Qureg qureg, vector<int> ctrls, vector<int> ctrlStates,
-    qindex suffixMaskXY, qindex bufferMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1
+    util_pauliStrData data, qindex bufferMaskXY, qcomp fac0, qcomp fac1
 ) {
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
@@ -744,15 +745,15 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subB(
         // j = buffer index of amp to be mixed with i
         qindex j = flipBits(n, bufferMaskXY) + offset;
 
-        // k = global index of amp at buffer index j
-        qindex k = concatenateBits(qureg.rank, flipBits(i, suffixMaskXY), qureg.logNumAmpsPerNode);
+        // k = local index of j-th buffer amplitude in its original node
+        qindex k = flipBits(i, data.suffixMaskXY);
 
-        // determine whether to multiply buffer amp by +-1 or +-i
-        int negParity = getBitMaskParity(k & allMaskYZ);
-        qcomp pmPowI = (1 - 2*negParity) * powI;
+        // l = global index of amp at buffer index j
+        qindex l = concatenateBits(data.pairRank, k, qureg.logNumAmpsPerNode);
+        qcomp coeff = fast_getPauliStrCoeff(l, data);
 
         qureg.cpuAmps[i] *= fac0;
-        qureg.cpuAmps[i] += fac1 * pmPowI * qureg.cpuCommBuffer[j];
+        qureg.cpuAmps[i] += fac1 * coeff * qureg.cpuCommBuffer[j];
     }
 }
 
@@ -791,8 +792,8 @@ void cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevector_anyCtrlPauliTensorOrGadget_subA, (Qureg, vector<int>, vector<int>, vector<int>, qindex, qindex, qcomp, qcomp, qcomp) )
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlPauliTensorOrGadget_subB, (Qureg, vector<int>, vector<int>, qindex, qindex, qindex, qcomp, qcomp, qcomp) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevector_anyCtrlPauliTensorOrGadget_subA, (Qureg, vector<int>, vector<int>, util_pauliStrData, qcomp, qcomp) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlPauliTensorOrGadget_subB, (Qureg, vector<int>, vector<int>, util_pauliStrData, qindex, qcomp, qcomp) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub, (Qureg, vector<int>, vector<int>, vector<int>, qcomp, qcomp) )
 
 
@@ -840,8 +841,8 @@ void cpu_densmatr_mixQureg_subB(qreal outProb, Qureg outQureg, qreal inProb, Qur
     for (qindex n=0; n<numIts; n++) {
 
         // (i,j) = row & column of outQureg corresponding to n
-        qindex i = n % dim;
-        qindex j = n / dim; // floors
+        qindex i = fast_getGlobalRowFromFlatIndex(n, dim);
+        qindex j = fast_getGlobalColFromFlatIndex(n, dim);
 
         out[n] = (outProb * out[n]) + (inProb * in[i] * conj(in[j]));
     }
@@ -863,8 +864,8 @@ void cpu_densmatr_mixQureg_subC(qreal outProb, Qureg outQureg, qreal inProb) {
         qindex m = concatenateBits(outQureg.rank, n, outQureg.logNumAmpsPerNode);
 
         // (i,j) = global row & column of outQureg corresponding to n
-        qindex i = m % dim;
-        qindex j = m / dim; // floors
+        qindex i = fast_getGlobalRowFromFlatIndex(m, dim);
+        qindex j = fast_getGlobalColFromFlatIndex(m, dim);
 
         out[n] = (outProb * out[n]) + (inProb * in[i] * conj(in[j]));
     }
@@ -1486,7 +1487,7 @@ void cpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> ta
     qindex numOuterIts = outQureg.numAmpsPerNode;
 
     // targs and allTargs are sorted, but pairTargs is arbitrarily ordered (though corresponding targs)
-    auto allTargs = util_getSorted(targs, pairTargs);
+    auto allTargsSorted = util_getSorted(targs, pairTargs);
 
     // use template param to compile-time unroll below loops
     SET_VAR_AT_COMPILE_TIME(int, numTargPairs, NumTargs, targs.size());
@@ -1507,7 +1508,7 @@ void cpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> ta
     for (qindex n=0; n<numOuterIts; n++) {
 
         // k = nth local index of inQureg where all targs and pairs are zero
-        qindex k = insertBits(n, allTargs.data(), numAllTargs, 0); // loop may be unrolled
+        qindex k = insertBits(n, allTargsSorted.data(), numAllTargs, 0); // loop may be unrolled
 
         // each outQureg amp results from summing 2^targs inQureg amps
         qcomp outAmp = 0;
@@ -1564,8 +1565,8 @@ qreal cpu_densmatr_calcTotalProb_sub(Qureg qureg) {
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-         // i = local index of nth local diagonal element
-        qindex i = util_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol); // inlined, safely callable
+        // i = local index of nth local diagonal element
+        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
         prob += real(qureg.cpuAmps[i]);
     }
 
@@ -1627,7 +1628,7 @@ qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
         qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitStateMask);
 
         // j = local flat index of the diagonal element corresponding to i
-        qindex j = util_getLocalIndexOfDiagonalAmp(i, firstDiagInd, numAmpsPerCol); // inlined, safely callable
+        qindex j = fast_getLocalIndexOfDiagonalAmp(i, firstDiagInd, numAmpsPerCol);
 
         prob += std::real(qureg.cpuAmps[j]);
     }
@@ -1693,7 +1694,7 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     for (qindex n=0; n<numIts; n++) {
 
          // i = local index of nth local diagonal element
-        qindex i = util_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol); // inlined, safely callable
+        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
         qreal prob = std::real(qureg.cpuAmps[i]);
 
         // j = global index of i
@@ -1871,7 +1872,7 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_multiQubitProjector
  */
 
 
-void cpu_statevec_initUniformState(Qureg qureg, qcomp amp) {
+void cpu_statevec_initUniformState_sub(Qureg qureg, qcomp amp) {
 
     // faster on average (though perhaps not for large quregs)
     // than a custom multithreaded loop
@@ -1879,7 +1880,7 @@ void cpu_statevec_initUniformState(Qureg qureg, qcomp amp) {
 }
 
 
-void cpu_statevec_initDebugState(Qureg qureg) {
+void cpu_statevec_initDebugState_sub(Qureg qureg) {
 
     // overwrite all local amps
     qindex numIts = qureg.numAmpsPerNode;
