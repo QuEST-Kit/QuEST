@@ -1500,21 +1500,21 @@ qcomp gpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 }
 
 
-qcomp gpu_statevec_calcExpecPauliStr_subA(Qureg qureg, util_pauliStrData data){
+qcomp gpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
     // TODO
     return -1;
 }
 
 
-qcomp gpu_statevec_calcExpecPauliStr_subB(Qureg qureg, util_pauliStrData data) {
+qcomp gpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
     // TODO
     return -1;
 }
 
 
-qcomp gpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, util_pauliStrData data) {
+qcomp gpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
     
     // TODO
     return -1;
