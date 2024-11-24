@@ -137,17 +137,55 @@ struct functor_getAmpReal : public thrust::unary_function<cu_qcomp,qreal> {
 };
 
 
-struct functor_getAmpConjProd : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qcomp>
-{
+struct functor_getAmpConjProd : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qcomp> {
+
     __host__ __device__ cu_qcomp operator()(cu_qcomp braAmp, cu_qcomp ketAmp) { 
         return getCompConj(braAmp) * ketAmp;
     }
 };
 
-struct functor_getNormOfAmpDif : public thrust::binary_function<cu_qcomp,cu_qcomp,qreal>
-{
+struct functor_getNormOfAmpDif : public thrust::binary_function<cu_qcomp,cu_qcomp,qreal> {
+
     __host__ __device__ qreal operator()(cu_qcomp amp1, cu_qcomp amp2) { 
         return getCompNorm(amp1 - amp2);
+    }
+};
+
+
+struct functor_getExpecStateVecZTerm : public thrust::binary_function<qindex,cu_qcomp,qreal> {
+
+    qindex targMask;
+    functor_getExpecStateVecZTerm(qindex mask) : targMask(mask) {}
+
+    __host__ __device__ qreal operator()(qindex ind, cu_qcomp amp) {
+        
+        int par = cudaGetBitMaskParity(ind & targMask);
+        int sign = fast_getPlusOrMinusOne(par);
+        return sign * getCompNorm(amp);
+    }
+};
+
+
+struct functor_getExpecDensMatrZTerm : public thrust::unary_function<qindex,cu_qcomp> {
+
+    qindex numAmpsPerCol;
+    qindex firstDiagInd;
+    qindex targMask;
+    cu_qcomp* amps;
+    functor_getExpecDensMatrZTerm(qindex dim, qindex diagInd, qindex mask, cu_qcomp* _amps) : 
+        numAmpsPerCol(dim), firstDiagInd(diagInd) targMask(mask), amps(_amps) {}
+
+    __host__ __device__ cu_qcomp operator()(qindex n) {
+        
+        // i = local index of nth local diagonal element
+        qindex i = fast_getLocalIndexOfDiagonalAmp(ind, firstDiagInd, numAmpsPerCol);
+
+        // r = global row of nth local diagonal
+        qindex r = n + firstDiagInd;
+
+        int par = cudaGetBitMaskParity(r & targMask);
+        int sign = fast_getPlusOrMinusOne(par);
+        return sign * amps[i];
     }
 };
 
@@ -612,6 +650,42 @@ cu_qcomp thrust_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
         functor, init, thrust::plus<cu_qcomp>());
 
     return fid;
+}
+
+
+
+/*
+ * EXPECTATION VALUES
+ */
+
+
+qreal thrust_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
+
+    qindex mask = util_getBitMask(targs);
+    auto functor = functor_getExpecStateVecZTerm(mask);
+
+    qreal init = 0;
+    auto indIter = thrust::make_counting_iterator(0);
+    auto endIter = indIter = qureg.numAmpsPerNode;
+
+    return thrust::inner_product(
+        indIter, endIter, getStartPtr(qureg), 
+        init, thrust::plus<qreal>(), functor);
+}
+
+
+cu_qcomp thrust_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
+
+    qindex dim = powerOf2(qureg.numQubits);
+    qindex ind = util_getLocalIndexOfFirstDiagonalAmp(qureg);
+    qindex mask = util_getBitMask(targs);
+    auto functor = functor_getExpecDensMatrZTerm(dim, ind, mask, toCuQcomps(qureg.gpuAmps));
+
+    qreal init = 0;
+    auto indIter = thrust::make_counting_iterator(0);
+    auto endIter = indIter + powerOf2(qureg.logNumColsPerNode);
+
+    return thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
 }
 
 
