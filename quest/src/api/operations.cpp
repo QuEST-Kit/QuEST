@@ -29,8 +29,8 @@ using std::vector;
  */
 
 extern bool paulis_hasOddNumY(PauliStr str);
-
 extern PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift);
+extern PauliStr paulis_getKetAndBraPauliStr(PauliStr str, Qureg qureg);
 
 // T can be CompMatr, CompMatr1, CompMatr2, DiagMatr, DiagMatr1, DiagMatr2
 template <class T>
@@ -781,36 +781,21 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
     validate_controlsAndPauliStrTargets(qureg, controls, numControls, str, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
+    qcomp factor = 1;
     auto ctrlVec = util_getVector(controls, numControls);
     auto stateVec = util_getVector(states, numControls); // empty if states==nullptr
-    localiser_statevec_anyCtrlPauliTensor(qureg, ctrlVec, stateVec, str);
 
-    if (!qureg.isDensityMatrix)
-        return;
+    // when qureg is a density matrix, we must additionally apply conj(shift(str));
+    // to avoid re-enumeration of the state, we growing the PauliStr to double-qubits,
+    // and conjugate (factor=-1), potentially losing the compile-time #ctrls benefit
+    if (qureg.isDensityMatrix) {
+        factor = paulis_hasOddNumY(str)? -1 : 1;
+        ctrlVec = util_getConcatenated(ctrlVec, util_getBraQubits(ctrlVec, qureg));
+        stateVec = util_getConcatenated(stateVec, stateVec); 
+        str = paulis_getKetAndBraPauliStr(str, qureg);
+    }
 
-    // TODO:
-    // when qureg is a density matrix, we exact the same pauli string
-    // on the corresponding bra-qubits. In principle, we could have 
-    // instead expanded the previous Pauli string to call anyCtrlPauliTensor()
-    // exactly once - this has no communication benefit (the str upon
-    // the ket state invokes no communication) but avoids re-enumeration
-    // of the state and might shrink caching costs. However, we might then
-    // expand the control list beyond the max compiler-optimised number, and
-    // slow down each iteration. The memory savings likely beat this slowdown.
-    // Test this! It may also be worth templating anyCtrlPauliTensor() in
-    // ordet to avoid the final *=-1, though this will be a nuisance.
-
-    ctrlVec = util_getBraQubits(ctrlVec, qureg);
-    str = paulis_getShiftedPauliStr(str, qureg.numQubits);
-    localiser_statevec_anyCtrlPauliTensor(qureg, ctrlVec, stateVec, str); // excludes conj
-
-    // effect conj by qureg *= -1. This involves re-enumerating the amps after
-    // the above backend functions, so is not ideal, but simplififes the backend.
-    // note the use of setQuregToSuperposition() needlessly involves three flops
-    // per amplitude (instead of the needed one), but this slowdown will almost
-    // definitely be occluded by the memory movement costs
-    if (paulis_hasOddNumY(str))
-        localiser_statevec_setQuregToSuperposition(-1, qureg, 0, qureg, 0, qureg);
+    localiser_statevec_anyCtrlPauliTensor(qureg, ctrlVec, stateVec, str, factor);
 }
 
 
@@ -1000,7 +985,8 @@ void multiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
     validate_quregFields(qureg, __func__);
     validate_pauliStrTargets(qureg, str, __func__);
 
-    localiser_statevec_anyCtrlPauliGadget(qureg, {}, {}, str, angle);
+    qreal phase = util_getPhaseFromGateAngle(angle);
+    localiser_statevec_anyCtrlPauliGadget(qureg, {}, {}, str, phase);
 }
 
 void applyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
@@ -1035,17 +1021,19 @@ void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* state
     // effect a global phase change of theta (I think). Should validate against this
     // sitaution just in case, or make the doc extremely explicit
 
+    qreal phase = util_getPhaseFromGateAngle(angle);
     auto ctrlVec = util_getVector(controls, numControls);
     auto stateVec = util_getVector(states, numControls); // empty if states==nullptr
-    localiser_statevec_anyCtrlPauliGadget(qureg, ctrlVec, stateVec, str, angle);
+    localiser_statevec_anyCtrlPauliGadget(qureg, ctrlVec, stateVec, str, phase);
 
     if (!qureg.isDensityMatrix)
         return;
 
-    angle *= paulis_hasOddNumY(str) ? -1 : +1;
+    // conj(e^iXZ) = e^(-iXZ), but conj(Y)=-Y, so odd-Y undoes phase negation
+    phase *= paulis_hasOddNumY(str) ? 1 : -1;
     ctrlVec = util_getBraQubits(ctrlVec, qureg);
     str = paulis_getShiftedPauliStr(str, qureg.numQubits);
-    localiser_statevec_anyCtrlPauliGadget(qureg, ctrlVec, stateVec, str, angle);
+    localiser_statevec_anyCtrlPauliGadget(qureg, ctrlVec, stateVec, str, phase);
 }
 
 
@@ -1058,7 +1046,8 @@ void multiplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle)
     validate_quregFields(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
 
-    localiser_statevec_anyCtrlPhaseGadget(qureg, {}, {}, util_getVector(targets,numTargets), angle);
+    qreal phase = util_getPhaseFromGateAngle(angle);
+    localiser_statevec_anyCtrlPhaseGadget(qureg, {}, {}, util_getVector(targets,numTargets), phase);
 }
 
 void applyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle) {
@@ -1090,15 +1079,16 @@ void applyMultiStateControlledPhaseGadget(Qureg qureg, int* controls, int* state
     validate_controlsAndTargets(qureg, controls, numControls, targets, numTargets, __func__);
     validate_controlStates(states, numControls, __func__);
 
+    qreal phase = util_getPhaseFromGateAngle(angle);
     auto ctrlVec = util_getVector(controls, numControls);
     auto targVec = util_getVector(targets,  numTargets);
     auto stateVec = util_getVector(states,  numControls); // empty if states==nullptr
-    localiser_statevec_anyCtrlPhaseGadget(qureg, ctrlVec, stateVec, targVec, angle);
+    localiser_statevec_anyCtrlPhaseGadget(qureg, ctrlVec, stateVec, targVec, phase);
 
     if (!qureg.isDensityMatrix)
         return;
 
-    angle *= -1;
+    phase *= -1;
     ctrlVec = util_getBraQubits(ctrlVec, qureg);
     targVec = util_getBraQubits(ctrlVec, qureg);
     localiser_statevec_anyCtrlPhaseGadget(qureg, ctrlVec, stateVec, targVec, angle);

@@ -10,8 +10,6 @@
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 
-#include "quest/src/core/utilities.hpp"
-
 #include <vector>
 
 using std::vector;
@@ -202,10 +200,10 @@ void accel_densmatr_allTargDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qc
  * PAULI TENSOR AND GADGET
  */
 
-void accel_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, util_pauliStrData data, qcomp fac0, qcomp fac1);
-void accel_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, util_pauliStrData data, qindex bufferMaskXY, qcomp fac0, qcomp fac1);
+void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> z, qcomp ampFac, qcomp pairAmpFac);
 
-void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qcomp fac0, qcomp fac1);
+void accel_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> x, vector<int> y, vector<int> z, qcomp ampFac, qcomp pairAmpFac);
+void accel_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> x, vector<int> y, vector<int> z, qcomp ampFac, qcomp pairAmpFac, qindex bufferMaskXY);
 
 
 /*
@@ -289,9 +287,9 @@ qreal accel_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB);
 qreal accel_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> sufTargs);
 qcomp accel_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> allTargs);;
 
-qcomp accel_statevec_calcExpecPauliStr_subA(Qureg qureg, util_pauliStrData data);
-qcomp accel_statevec_calcExpecPauliStr_subB(Qureg qureg, util_pauliStrData data);
-qcomp accel_densmatr_calcExpecPauliStr_sub (Qureg qureg, util_pauliStrData data);
+qcomp accel_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
+qcomp accel_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
+qcomp accel_densmatr_calcExpecPauliStr_sub (Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
 
 
 /*
