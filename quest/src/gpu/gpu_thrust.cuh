@@ -160,6 +160,9 @@ struct functor_getNormOfAmpDif : public thrust::binary_function<cu_qcomp,cu_qcom
 
 struct functor_getExpecStateVecZTerm : public thrust::binary_function<qindex,cu_qcomp,qreal> {
 
+    // this functor computes a single term from the sum
+    // in the expectation value of Z of a statevector
+
     qindex targMask;
     functor_getExpecStateVecZTerm(qindex mask) : targMask(mask) {}
 
@@ -174,6 +177,9 @@ struct functor_getExpecStateVecZTerm : public thrust::binary_function<qindex,cu_
 
 struct functor_getExpecDensMatrZTerm : public thrust::unary_function<qindex,cu_qcomp> {
 
+    // this functor computes a single term from the sum
+    // in the expectation value of Z of a density matrix
+
     qindex numAmpsPerCol, firstDiagInd, targMask;
     cu_qcomp* amps;
 
@@ -181,11 +187,8 @@ struct functor_getExpecDensMatrZTerm : public thrust::unary_function<qindex,cu_q
         numAmpsPerCol(dim), firstDiagInd(diagInd), targMask(mask), amps(_amps) {}
 
     __device__ cu_qcomp operator()(qindex n) {
-        
-        // i = local index of nth local diagonal element
-        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
 
-        // r = global row of nth local diagonal
+        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
         qindex r = n + firstDiagInd;
 
         int par = cudaGetBitMaskParity(r & targMask); // device-only
@@ -197,6 +200,10 @@ struct functor_getExpecDensMatrZTerm : public thrust::unary_function<qindex,cu_q
 
 struct functor_getExpecStateVecPauliTerm : public thrust::unary_function<qindex,cu_qcomp> {
 
+    // this functor computes a single term from the sum in the
+    // expectation value of a Pauli str (which necessarily contains 
+    // at least one X or Y) of a statevector
+
     qindex maskXY, maskYZ;
     cu_qcomp *amps, *pairAmps;
 
@@ -204,8 +211,7 @@ struct functor_getExpecStateVecPauliTerm : public thrust::unary_function<qindex,
         maskXY(_maskXY), maskYZ(_maskYZ), amps(_amps), pairAmps(_pairAmps) {}
 
     __device__ cu_qcomp operator()(qindex n) {
-        
-        // j = local index of amp which combines with nth local amp
+
         qindex j = flipBits(n, maskXY);
         int par = cudaGetBitMaskParity(j & maskYZ); // device-only
         int sign = fast_getPlusOrMinusOne(par);
@@ -218,6 +224,10 @@ struct functor_getExpecStateVecPauliTerm : public thrust::unary_function<qindex,
 
 struct functor_getExpecDensMatrPauliTerm : public thrust::unary_function<qindex,cu_qcomp> {
 
+    // this functor computes a single term from the sum in the
+    // expectation value of a Pauli str (which necessarily contains 
+    // at least one X or Y) of a density matrix
+
     qindex maskXY, maskYZ;
     qindex numAmpsPerCol, firstDiagInd;
     cu_qcomp *amps;
@@ -226,10 +236,12 @@ struct functor_getExpecDensMatrPauliTerm : public thrust::unary_function<qindex,
         maskXY(_maskXY), maskYZ(_maskYZ), numAmpsPerCol(_numAmpsPerCol), firstDiagInd(_firstDiagInd), amps(_amps) {}
 
     __device__ cu_qcomp operator()(qindex n) {
+
         qindex r = n + firstDiagInd;
         qindex i = flipBits(r, maskXY);
         qindex m = fast_getLocalFlatIndex(i, n, numAmpsPerCol);
 
+        // sign excludes i^numY contribution
         int par = cudaGetBitMaskParity(i & maskYZ); // device-only
         int sign = fast_getPlusOrMinusOne(par);
         return sign * amps[m];
