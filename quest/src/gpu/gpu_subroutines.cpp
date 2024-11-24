@@ -1488,36 +1488,78 @@ template qcomp gpu_densmatr_calcFidelityWithPureState_sub<false>(Qureg, Qureg);
 
 qreal gpu_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 
-    // TODO
+#if COMPILE_CUQUANTUM
+
+    return cuquantum_statevec_calcExpecAnyTargZ_sub(qureg, targs);
+
+#elif COMPILE_CUDA
+
+    return thrust_statevec_calcExpecAnyTargZ_sub(qureg, targs);
+
+#else
+    error_gpuSimButGpuNotCompiled();
     return -1;
+#endif
 }
 
 
 qcomp gpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 
-    // TODO
+#if COMPILE_CUQUANTUM || COMPILE_CUDA
+
+    cu_qcomp value = thrust_densmatr_calcExpecAnyTargZ_sub(qureg, targs);
+    return toQcomp(value);
+
+#else
+    error_gpuSimButGpuNotCompiled();
     return -1;
+#endif
 }
 
 
 qcomp gpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
-    // TODO
+#if COMPILE_CUQUANTUM
+
+    return cuquantum_statevec_calcExpecPauliStr_subA(qureg, x, y, z);
+
+#elif COMPILE_CUDA
+
+    cu_qcomp value = thrust_statevec_calcExpecPauliStr_subA(qureg, x, y, z);
+    return toQcomp(value);
+
+#else
+    error_gpuSimButGpuNotCompiled();
     return -1;
+#endif
 }
 
 
 qcomp gpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
-    // TODO
+#if COMPILE_CUQUANTUM || COMPILE_CUDA
+
+    cu_qcomp value = thrust_statevec_calcExpecPauliStr_subB(qureg, x, y, z);
+    return toQcomp(value);
+
+#else
+    error_gpuSimButGpuNotCompiled();
     return -1;
+#endif
 }
 
 
 qcomp gpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
     
-    // TODO
+#if COMPILE_CUQUANTUM || COMPILE_CUDA
+
+    cu_qcomp value = thrust_densmatr_calcExpecPauliStr_sub(qureg, x, y, z);
+    return toQcomp(value);
+
+#else
+    error_gpuSimButGpuNotCompiled();
     return -1;
+#endif
 }
 
 
