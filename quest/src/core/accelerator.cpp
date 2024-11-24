@@ -20,7 +20,6 @@
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
-#include "quest/src/core/utilities.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
@@ -479,25 +478,25 @@ void accel_densmatr_allTargDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qc
  */
 
 
-void accel_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, util_pauliStrData data, qcomp fac0, qcomp fac1) {
+void accel_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ctrls, vector<int> states, vector<int> x, vector<int> y, vector<int> z, qcomp f0, qcomp f1) {
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( statevector_anyCtrlPauliTensorOrGadget_subA, qureg, ctrls.size(), data.sortedSuffixTargsXY.size() );
-    func(qureg, ctrls, ctrlStates, data, fac0, fac1);
+    // only X and Y constitute target qubits (Z merely induces a phase)
+    int numTargs = x.size() + y.size();
+
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( statevector_anyCtrlPauliTensorOrGadget_subA, qureg, ctrls.size(), numTargs );
+    func(qureg, ctrls, states, x, y, z, f0, f1);
 }
-void accel_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, util_pauliStrData data, qindex bufferMaskXY, qcomp fac0, qcomp fac1) {
+void accel_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ctrls, vector<int> states, vector<int> x, vector<int> y, vector<int> z, qcomp f0, qcomp f1, qindex mask) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevector_anyCtrlPauliTensorOrGadget_subB, qureg, ctrls.size() );
-    func(qureg, ctrls, ctrlStates, data, bufferMaskXY, fac0, fac1);
+    func(qureg, ctrls, states, x, y, z, f0, f1, mask);
 }
 
 
-void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
-    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, 
-    qcomp fac0, qcomp fac1
-) {
-    // no template nor compile-time optimisation necessary for the number of targs
+void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, vector<int> ctrls, vector<int> states, vector<int> targs, qcomp f0, qcomp f1) {
+
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevector_anyCtrlAnyTargZOrPhaseGadget_sub, qureg, ctrls.size() );
-    func(qureg, ctrls, ctrlStates, targs, fac0, fac1);
+    func(qureg, ctrls, states, targs, f0, f1);
 }
 
 
@@ -964,23 +963,23 @@ qcomp accel_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 }
 
 
-qcomp accel_statevec_calcExpecPauliStr_subA(Qureg qureg, util_pauliStrData data) {
+qcomp accel_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
     return (qureg.isGpuAccelerated)?
-        gpu_statevec_calcExpecPauliStr_subA(qureg, data):
-        cpu_statevec_calcExpecPauliStr_subA(qureg, data);
+        gpu_statevec_calcExpecPauliStr_subA(qureg, x, y, z):
+        cpu_statevec_calcExpecPauliStr_subA(qureg, x, y, z);
 }
-qcomp accel_statevec_calcExpecPauliStr_subB(Qureg qureg, util_pauliStrData data) {
+qcomp accel_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
     return (qureg.isGpuAccelerated)?
-        gpu_statevec_calcExpecPauliStr_subB(qureg, data):
-        cpu_statevec_calcExpecPauliStr_subB(qureg, data);
+        gpu_statevec_calcExpecPauliStr_subB(qureg, x, y, z):
+        cpu_statevec_calcExpecPauliStr_subB(qureg, x, y, z);
 }
-qcomp accel_densmatr_calcExpecPauliStr_sub(Qureg qureg, util_pauliStrData data) {
+qcomp accel_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
     return (qureg.isGpuAccelerated)?
-        gpu_densmatr_calcExpecPauliStr_sub(qureg, data):
-        cpu_densmatr_calcExpecPauliStr_sub(qureg, data);
+        gpu_densmatr_calcExpecPauliStr_sub(qureg, x, y, z):
+        cpu_densmatr_calcExpecPauliStr_sub(qureg, x, y, z);
 }
 
 

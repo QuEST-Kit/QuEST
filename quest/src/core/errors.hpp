@@ -108,6 +108,10 @@ void error_localiserGivenDistribMatrixAndLocalQureg();
 
 void error_localiserFailedToAllocTempMemory();
 
+void error_localiserGivenPauliStrWithoutXorY();
+
+void error_localiserGivenNonUnityGlobalFactorToZTensor();
+
 void assert_localiserSuccessfullyAllocatedTempMemory(qcomp* ptr, bool isGpu);
 
 void assert_localiserGivenStateVec(Qureg qureg);

@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <string>
 #include <vector>
+#include <array>
 
 using std::is_same_v;
 using std::vector;
@@ -33,15 +34,14 @@ int util_getBraQubit(int ketQubit, Qureg qureg);
 int util_getPrefixInd(int qubit, Qureg qureg);
 int util_getPrefixBraInd(int ketQubit, Qureg qureg);
 
-vector<int> util_getSuffixQubits(vector<int> qubits, Qureg qureg);
-vector<int> util_getPrefixQubits(vector<int> qubits, Qureg qureg);
-vector<int> util_getPrefixInds(vector<int> qubits, Qureg qureg);
+std::array<vector<int>,2> util_getPrefixAndSuffixQubits(vector<int> qubits, Qureg qureg);
 
 int util_getRankBitOfQubit(int ketQubit, Qureg qureg);
 int util_getRankBitOfBraQubit(int ketQubit, Qureg qureg);
 
 int util_getRankWithQubitFlipped(int ketQubit, Qureg qureg);
 int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg);
+int util_getRankWithQubitsFlipped(vector<int> prefixQubits, Qureg qureg);
 
 vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg);
 
@@ -79,26 +79,10 @@ int util_getRankContainingIndex(FullStateDiagMatr matr, qindex globalInd);
 
 
 /*
- * PAULI TENSOR DATA
+ * COMPLEX ALGEBRA
  */
 
-struct util_pauliStrData {
-
-    // the rank containing amplitudes needed by this node
-    int pairRank;
-
-    // the location (as a bit mask) of all Y and Z operators
-    qindex allMaskYZ;
-
-    // the location of all X and Y operators in the suffix partition
-    qindex suffixMaskXY;
-    vector<int> sortedSuffixTargsXY;
-
-    // i^(total number of Y)
-    qcomp powI;
-};
-
-util_pauliStrData util_getPauliStrData(Qureg qureg, PauliStr str);
+qcomp util_getPowerOfI(size_t exponent);
 
 
 
@@ -311,6 +295,14 @@ struct util_VectorIndexRange {
 bool util_areAnyVectorElemsWithinNode(int rank, qindex numElemsPerNode, qindex startInd, qindex numInds);
 
 util_VectorIndexRange util_getLocalIndRangeOfVectorElemsWithinNode(int rank, qindex numElemsPerNode, qindex elemStartInd, qindex numInds);
+
+
+
+/*
+ * GATE PARAMETERS
+ */
+
+qreal util_getPhaseFromGateAngle(qreal angle);
 
 
 

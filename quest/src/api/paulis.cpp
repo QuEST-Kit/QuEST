@@ -8,6 +8,7 @@
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/printer.hpp"
+#include "quest/src/core/utilities.hpp"
 #include "quest/src/core/parser.hpp"
 #include "quest/src/core/memory.hpp"
 #include "quest/src/core/errors.hpp"
@@ -19,9 +20,11 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <array>
 
 using std::string;
 using std::vector;
+using std::array;
 
 
 
@@ -112,21 +115,6 @@ int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str) {
 }
 
 
-vector<int> paulis_getSortedIndsOfNonIdentityPaulis(PauliStr str) {
-
-    int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
-
-    vector<int> inds(0);
-    inds.reserve(maxInd+1);
-
-    for (int i=0; i<=maxInd; i++)
-        if (paulis_getPauliAt(str, i) != 0)
-            inds.push_back(i);
-
-    return inds;
-}
-
-
 bool paulis_containsXOrY(PauliStr str) {
 
     int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
@@ -142,34 +130,68 @@ bool paulis_containsXOrY(PauliStr str) {
 }
 
 
-bool paulis_containsOnlyI(PauliStr str) {
-
-    return (str.lowPaulis == 0 && str.highPaulis == 0);
-}
-
-
-vector<int> paulis_getTargsWithEitherPaulis(vector<int> targs, PauliStr str, int pauliA, int pauliB) {
-
-    vector<int> subsetTargs(0);  subsetTargs.reserve(targs.size());
-
-    for (int targ : targs) {
-        int pauli = paulis_getPauliAt(str, targ);
-        if (pauli == pauliA || pauli == pauliB)
-            subsetTargs.push_back(targ);
-    }
-
-    return subsetTargs;
-}
-
-
 bool paulis_hasOddNumY(PauliStr str) {
 
     bool odd = false;
-    for (int targ=0; targ < MAX_NUM_PAULIS_PER_MASK; targ++) 
+    for (int targ=0; targ < MAX_NUM_PAULIS_PER_STR; targ++) 
         if (paulis_getPauliAt(str, targ) == 2)
             odd = !odd;
 
     return odd;
+}
+
+
+int paulis_getPrefixZSign(Qureg qureg, vector<int> prefixZ) {
+
+    int sign = 1;
+
+    // each Z contributes +- 1
+    for (int qubit : prefixZ)
+        sign *= util_getRankBitOfQubit(qubit, qureg)? -1 : 1;
+
+    return sign;
+}
+
+
+qcomp paulis_getPrefixPaulisElem(Qureg qureg, vector<int> prefixY, vector<int> prefixZ) {
+
+    // each Z contributes +- 1
+    qcomp elem = paulis_getPrefixZSign(qureg, prefixZ);
+
+    // each Y contributes -+ i
+    for (int qubit : prefixY)
+        elem *= 1_i * (util_getRankBitOfQubit(qubit, qureg)? 1 : -1);
+
+    return elem;
+}
+
+
+vector<int> paulis_getInds(PauliStr str) {
+
+    int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
+
+    vector<int> inds(0);
+    inds.reserve(maxInd+1);
+
+    for (int i=0; i<=maxInd; i++)
+        if (paulis_getPauliAt(str, i) != 0)
+            inds.push_back(i);
+
+    return inds;
+}
+
+
+array<vector<int>,3> paulis_getSeparateInds(PauliStr str, Qureg qureg) {
+
+    vector<int> iXYZ = paulis_getInds(str);
+    vector<int> iX, iY, iZ;
+
+    vector<int>* ptrs[] = {&iX, &iY, &iZ};
+
+    for (int i : iXYZ)
+        ptrs[paulis_getPauliAt(str, i) - 1]->push_back(i);
+
+    return {iX, iY, iZ};
 }
 
 
@@ -191,9 +213,20 @@ PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift) {
     // and add them to highPaulis; we don't have to force lose upper bits of high paulis
     PAULI_MASK_TYPE upperBits = concatenateBits(str.highPaulis, lostBits, bitShift);
 
-    return (PauliStr) {
+    return {
         .lowPaulis = lowerBits,
         .highPaulis = upperBits
+    };
+}
+
+
+PauliStr paulis_getKetAndBraPauliStr(PauliStr str, Qureg qureg) {
+
+    PauliStr shift = paulis_getShiftedPauliStr(str, qureg.numQubits);
+    
+    return {
+        .lowPaulis  = str.lowPaulis  | shift.lowPaulis,
+        .highPaulis = str.highPaulis | shift.highPaulis
     };
 }
 
@@ -227,11 +260,10 @@ extern "C" PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis)
     }
 
     // return a new stack PauliStr instance, returning by copy
-    return (PauliStr) {
+    return {
         .lowPaulis = lowPaulis,
         .highPaulis = highPaulis
     };
-
 }
 
 
@@ -279,7 +311,7 @@ PauliStr getPauliStr(string paulis) {
     // pedantically validate the string length isn't so long that it would stackoverflow a vector
     validate_newPauliStrNumPaulis(paulis.size(), MAX_NUM_PAULIS_PER_STR, __func__);
 
-    // automatically target the bottom-most qubits, preserving rightmost is least significant
+    // automatically target the lowest-index qubits, interpreting rightmost is least significant
     vector<int> indices(paulis.size());
     for (size_t i=0; i<paulis.size(); i++)
         indices[i] = paulis.size() - 1 - i;

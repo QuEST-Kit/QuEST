@@ -622,15 +622,17 @@ template void gpu_densmatr_allTargDiagMatr_sub<false, false>(Qureg, FullStateDia
 
 
 template <int NumCtrls, int NumTargs> 
-void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, util_pauliStrData data, qcomp fac0, qcomp fac1) {
+void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> x, vector<int> y, vector<int> z, qcomp ampFac, qcomp pairAmpFac) {
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
-    assert_numTargsMatchesTemplateParam(data.sortedSuffixTargsXY.size(), NumTargs);
+    assert_numTargsMatchesTemplateParam(x.size() + y.size(), NumTargs);
 
     // we do not make use of cuQuantum's custatevecApplyGeneralizedPermutationMatrix() to effect
     // a pauli tensor because we wish to avoid creating the (2^#paulis) large permutation matrix.
-    // we also do not make use of cuQuantum's custatevecApplyPauliRotation() because it cannot
+    // We also cannot make use of cuQuantum's custatevecApplyPauliRotation() because it cannot
     // handle Pauli operators upon the prefix substate as our singly-communicating method does.
+    // This is true even if we passed down the gadget phase to this function; cuStateVec would
+    // exact amp -> a amp + b other_amp for the wrong b, which we cannot thereafter remedy.
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
@@ -642,20 +644,23 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ct
     //  which modifies 2 amps per invocation and compare performance; if as fast for
     //  few paulis, delete this implementation
 
-    qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size() + data.sortedSuffixTargsXY.size());
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size() + x.size() + y.size());
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devints deviceTargs = data.sortedSuffixTargsXY;
-    devints deviceQubits = util_getSorted(ctrls, data.sortedSuffixTargsXY);
-    auto suffixStates = vector<int>(data.sortedSuffixTargsXY.size(), 0);
-    qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, data.sortedSuffixTargsXY, suffixStates);
+    qcomp powI = util_getPowerOfI(y.size());
+    auto targsXY = util_getConcatenated(x, y);
+    auto maskXY = util_getBitMask(targsXY);
+    auto maskYZ = util_getBitMask(util_getConcatenated(y, z));
+
+    devints deviceTargs = targsXY;
+    devints deviceQubits = util_getSorted(ctrls, targsXY);
+    qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, targsXY, vector<int>(targsXY.size(),0));
 
     kernel_statevector_anyCtrlPauliTensorOrGadget_subA <NumCtrls, NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
+        toCuQcomps(qureg.gpuAmps), numThreads,
         getPtr(deviceQubits), ctrls.size(), qubitStateMask, 
         getPtr(deviceTargs), deviceTargs.size(),
-        data.suffixMaskXY, data.allMaskYZ, 
-        toCuQcomp(data.powI), toCuQcomp(fac0), toCuQcomp(fac1)
+        maskXY, maskYZ, toCuQcomp(powI), toCuQcomp(ampFac), toCuQcomp(pairAmpFac)
     );
 
 #else
@@ -665,7 +670,7 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ct
 
 
 template <int NumCtrls> 
-void gpu_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, util_pauliStrData data, qindex bufferMaskXY, qcomp fac0, qcomp fac1) {
+void gpu_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> x, vector<int> y, vector<int> z, qcomp ampFac, qcomp pairAmpFac, qindex bufferMaskXY) {
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
@@ -675,15 +680,18 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ct
     qindex numBlocks = getNumBlocks(numThreads);
     qindex recvInd = getBufferRecvInd();
 
+    qcomp powI = util_getPowerOfI(y.size());
+    auto maskXY = util_getBitMask(util_getConcatenated(x, y));
+    auto maskYZ = util_getBitMask(util_getConcatenated(y, z));
+
     devints sortedCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
     kernel_statevector_anyCtrlPauliTensorOrGadget_subB <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], 
-        numThreads, data.pairRank, qureg.logNumAmpsPerNode,
+        toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
         getPtr(sortedCtrls), ctrls.size(), ctrlStateMask,
-        data.suffixMaskXY, bufferMaskXY, data.allMaskYZ, 
-        toCuQcomp(data.powI), toCuQcomp(fac0), toCuQcomp(fac1)
+        maskXY, maskYZ, bufferMaskXY,
+        toCuQcomp(powI), toCuQcomp(ampFac), toCuQcomp(pairAmpFac)
     );
 
 #else
@@ -707,7 +715,7 @@ void gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, vector<int> c
     qindex targMask = util_getBitMask(targs);
 
     kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
+        toCuQcomps(qureg.gpuAmps), numThreads,
         getPtr(sortedCtrls), ctrls.size(), ctrlStateMask, targMask,
         toCuQcomp(fac0), toCuQcomp(fac1)
     );
@@ -718,8 +726,8 @@ void gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, vector<int> c
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevector_anyCtrlPauliTensorOrGadget_subA, (Qureg, vector<int>, vector<int>, util_pauliStrData, qcomp, qcomp) )
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevector_anyCtrlPauliTensorOrGadget_subB, (Qureg, vector<int>, vector<int>, util_pauliStrData, qindex, qcomp, qcomp) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevector_anyCtrlPauliTensorOrGadget_subA, (Qureg, vector<int>, vector<int>, vector<int>, vector<int>, vector<int>, qcomp, qcomp) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevector_anyCtrlPauliTensorOrGadget_subB, (Qureg, vector<int>, vector<int>, vector<int>, vector<int>, vector<int>, qcomp, qcomp, qindex) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub, (Qureg, vector<int>, vector<int>, vector<int>, qcomp, qcomp) )
 
 
@@ -1492,21 +1500,21 @@ qcomp gpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 }
 
 
-qcomp gpu_statevec_calcExpecPauliStr_subA(Qureg qureg, util_pauliStrData data){
+qcomp gpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
     // TODO
     return -1;
 }
 
 
-qcomp gpu_statevec_calcExpecPauliStr_subB(Qureg qureg, util_pauliStrData data) {
+qcomp gpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
     // TODO
     return -1;
 }
 
 
-qcomp gpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, util_pauliStrData data) {
+qcomp gpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
     
     // TODO
     return -1;

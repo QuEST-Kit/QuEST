@@ -13,7 +13,6 @@
 
 #include "quest/src/core/inliner.hpp"
 #include "quest/src/core/bitwise.hpp"
-#include "quest/src/core/utilities.hpp"
 
 
 
@@ -25,6 +24,15 @@
 INLINE int fast_getPlusOrMinusOne(int isMinus) {
 
     return 1 - 2 * isMinus;
+}
+
+
+INLINE int fast_getPlusOrMinusMaskedBitParity(qindex num, qindex mask) {
+
+    qindex bits = num & mask;
+    int pari = getBitMaskParity(bits);
+    int sign = fast_getPlusOrMinusOne(pari);
+    return sign;
 }
 
 
@@ -56,21 +64,6 @@ INLINE qindex fast_getLocalIndexOfDiagonalAmp(qindex localIndOfBasisState, qinde
 INLINE qindex fast_getLocalFlatIndex(qindex row, qindex localCol, qindex numAmpsPerCol) {
 
     return row +  localCol * numAmpsPerCol;
-}
-
-
-
-/*
- * PAULI ALGEBRA
- */
-
-
-INLINE qcomp fast_getPauliStrCoeff(qindex i, util_pauliStrData data) {
-
-    // (str)|i> = (coeff)|j>
-    int par = getBitMaskParity(i & data.allMaskYZ);
-    int fac = fast_getPlusOrMinusOne(par);
-    return fac * data.powI;
 }
 
 

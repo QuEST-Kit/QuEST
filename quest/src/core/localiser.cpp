@@ -24,6 +24,7 @@
 #include "quest/src/gpu/gpu_config.hpp"
 
 #include <tuple>
+#include <array>
 #include <vector>
 #include <complex>
 #include <algorithm>
@@ -1128,11 +1129,13 @@ template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, vector<int>, vecto
 
 
 extern bool paulis_containsXOrY(PauliStr str);
-extern bool paulis_containsOnlyI(PauliStr str);
-extern vector<int> paulis_getSortedIndsOfNonIdentityPaulis(PauliStr str);
+extern vector<int> paulis_getInds(PauliStr str);
+extern std::array<vector<int>,3> paulis_getSeparateInds(PauliStr str, Qureg qureg);
+extern int paulis_getPrefixZSign(Qureg qureg, vector<int> prefixZ) ;
+extern qcomp paulis_getPrefixPaulisElem(Qureg qureg, vector<int> prefixY, vector<int> prefixZ);
 
 
-void anyCtrlAnyTargZOrPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qcomp fac0, qcomp fac1) {
+void anyCtrlZTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, bool isGadget, qreal phase) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
 
@@ -1143,81 +1146,108 @@ void anyCtrlAnyTargZOrPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ct
     // retain only suffix control qubits, as relevant to local amp modification
     removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
 
-    // operation is diagonal and always embarrasingly parallel, regardless of prefix targs
-    accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(qureg, ctrls, ctrlStates, targs, fac0, fac1);
+    // prefixZ merely applies a node-wide factor to fac0 and fac1
+    auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targs, qureg);
+    int sign = paulis_getPrefixZSign(qureg, prefixZ);
+    
+    // tensor multiplies +-1, gadget multiplies exp(+- i phase)
+    qcomp fac0 = (isGadget)? exp(+ phase * sign * 1_i) : +1 * sign;
+    qcomp fac1 = (isGadget)? exp(- phase * sign * 1_i) : -1 * sign;
+
+    // simulation is always embarrassingly parallel
+    accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(qureg, ctrls, ctrlStates, suffixZ, fac0, fac1);
 }
 
 
-void anyCtrlPauliTensorOrGadgetOnPrefix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, util_pauliStrData data, qcomp fac0, qcomp fac1) {
+void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qcomp ampFac, qcomp pairAmpFac) {
+    assertValidCtrlStates(ctrls, ctrlStates);
+    setDefaultCtrlStates(ctrls, ctrlStates);
 
-    // pack and exchange all amps satisfying ctrl
-    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, data.pairRank, ctrls, ctrlStates);
+    // this routine is invalid for str=ZI
+    if (!paulis_containsXOrY(str))
+        error_localiserGivenPauliStrWithoutXorY();
 
-    // we cannot use suffixMaskXY to determine the buffer indices corresponding to the subsequently processed local amps,
-    // because it operates on the full local amp index, whereas the buffer (potentially) excluded many amps (which did not
-    // satisfy ctrls) and has a reduced index space. So we compute a new mask which operates on the buffer indices by
-    // removing all ctrl qubits from the full index mask.
+    // node has nothing to do if all local amps violate control condition
+    if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
+        return;
+
+    // retain only suffix control qubits, as relevant to local amp modification
+    removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
+
+    // partition non-Id Paulis into prefix and suffix, since...
+    // - prefix X,Y determine communication, because they apply bit-not to rank
+    // - prefix Y,Z determine node-wide coefficient, because they contain rank-determined !=1 elements
+    // - suffix X,Y,Z determine local amp coefficients
+    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
+    auto [prefixX, suffixX] = util_getPrefixAndSuffixQubits(targsX, qureg);
+    auto [prefixY, suffixY] = util_getPrefixAndSuffixQubits(targsY, qureg);
+    auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targsZ, qureg);
+
+    // scale pair amp's coefficient by node-wide coeff 
+    pairAmpFac *= paulis_getPrefixPaulisElem(qureg, prefixY, prefixZ); // 1 when embarrassingly parallel
+
+    // embarrassingly parallel when there is only Z's in prefix
+    if (prefixX.empty() && prefixY.empty()) {
+        accel_statevector_anyCtrlPauliTensorOrGadget_subA(qureg, ctrls, ctrlStates, suffixX, suffixY, suffixZ, ampFac, pairAmpFac);
+        return;
+    }
+
+    // otherwise, we pair-wise communicate amps satisfying ctrls
+    auto prefixXY = util_getConcatenated(prefixX, prefixY);
+    int pairRank = util_getRankWithQubitsFlipped(prefixXY, qureg);
+    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank, ctrls, ctrlStates);
+
+    // ctrls reduce communicated amps, so received buffer is compacted;
+    // we must ergo prepare a no-ctrl XY mask for accessing buffer elems
     auto sortedCtrls = util_getSorted(ctrls);
-    auto bufferMaskXY = removeBits(data.suffixMaskXY, sortedCtrls.data(), sortedCtrls.size());
+    auto suffixMaskXY = util_getBitMask(util_getConcatenated(suffixX, suffixY));
+    auto bufferMaskXY = removeBits(suffixMaskXY, sortedCtrls.data(), sortedCtrls.size());
 
-    accel_statevector_anyCtrlPauliTensorOrGadget_subB(qureg, ctrls, ctrlStates, data, bufferMaskXY, fac0, fac1);
+    accel_statevector_anyCtrlPauliTensorOrGadget_subB(qureg, ctrls, ctrlStates, suffixX, suffixY, suffixZ, ampFac, pairAmpFac, bufferMaskXY);
 }
 
 
-void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qcomp fac0, qcomp fac1) {
-    assertValidCtrlStates(ctrls, ctrlStates);
-    setDefaultCtrlStates(ctrls, ctrlStates);
+void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qcomp factor) {
 
-    // node has nothing to do if all local amps violate control condition
-    if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
+    // this function accepts a global factor, so that density matrices can effect conj(pauli)
+
+    if (paulis_containsXOrY(str)) {
+
+        // (X|Y)|0/1> ~ |1/0>
+        qcomp ampFac     = 0 * factor;
+        qcomp pairAmpFac = 1 * factor;
+        anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, str, ampFac, pairAmpFac);
+
+    } else {
+        // global factor is inapplicable to all-Z and is ignored
+        if (factor != qcomp(1,0))
+            error_localiserGivenNonUnityGlobalFactorToZTensor();
+
+        bool isGadget = false;
+        qreal phase = 0; // ignored
+        anyCtrlZTensorOrGadget(qureg, ctrls, ctrlStates, paulis_getInds(str), isGadget, phase);
+    }
+}
+
+
+void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qreal phase) {
+
+    bool isGadget = true;
+    anyCtrlZTensorOrGadget(qureg, ctrls, ctrlStates, targs, isGadget, phase); 
+}
+
+
+void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qreal phase) {
+
+    // when str=IZ, we must use the above bespoke algorithm
+    if (!paulis_containsXOrY(str)) {
+        localiser_statevec_anyCtrlPhaseGadget(qureg, ctrls, ctrlStates, paulis_getInds(str), phase);
         return;
+    }
 
-    // retain only suffix control qubits, as relevant to local amp modification
-    removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
-
-    // extract the relevant masks and qubits from the PauliStr
-    util_pauliStrData data = util_getPauliStrData(qureg, str);
-
-    // call embarrassingly parallel routine or induce pairwise communication
-    (qureg.rank == data.pairRank)?
-        accel_statevector_anyCtrlPauliTensorOrGadget_subA(qureg, ctrls, ctrlStates, data, fac0, fac1):
-        anyCtrlPauliTensorOrGadgetOnPrefix(qureg, ctrls, ctrlStates, data, fac0, fac1);
-}
-
-
-void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qreal angle) {
-
-    qcomp fac0 = qcomp(cos(angle), +sin(angle)); // exp( i angle)
-    qcomp fac1 = qcomp(cos(angle), -sin(angle)); // exp(-i angle)
-    anyCtrlAnyTargZOrPhaseGadget(qureg, ctrls, ctrlStates, targs, fac0, fac1);
-}
-
-
-void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str) {
-
-    qcomp fac0 = 0; // even parity
-    qcomp fac1 = 1; // odd parity
-    auto targs = paulis_getSortedIndsOfNonIdentityPaulis(str);
-
-    // all Id PauliStr does not nothing
-    if (paulis_containsOnlyI(str))
-        return;
-
-    (paulis_containsXOrY(str))?
-        anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, str, fac0, fac1):
-        anyCtrlAnyTargZOrPhaseGadget(qureg, ctrls, ctrlStates, targs, fac0, fac1);
-}
-
-
-void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qreal angle) {
-
-    qcomp fac0 = qcomp(cos(angle), 0); // even parity
-    qcomp fac1 = qcomp(0, sin(angle)); // odd parity
-    auto targs = paulis_getSortedIndsOfNonIdentityPaulis(str);
-
-    (paulis_containsXOrY(str))?
-        anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, str, fac0, fac1):
-        anyCtrlAnyTargZOrPhaseGadget(qureg, ctrls, ctrlStates, targs, fac0, fac1);
+    qcomp ampFac     = cos(phase);
+    qcomp pairAmpFac = sin(phase) * 1_i;
+    anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, str, ampFac, pairAmpFac);
 }
 
 
@@ -1767,51 +1797,43 @@ void localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg 
  */
 
 
-qreal expecAnyTargZOnStateVec(Qureg qureg, PauliStr str) {
-    assert_localiserGivenStateVec(qureg);
-
-    // beware this function does NOT sum contributions 
-    // from each node; caller must handle distribution
-
-    qreal value = 0;
-
-    // suffix targs determine local sum coefficients
-    auto allTargs = paulis_getSortedIndsOfNonIdentityPaulis(str);
-    auto sufTargs = util_getSuffixQubits(allTargs, qureg);
-    value = (sufTargs.empty())?
-        accel_statevec_calcTotalProb_sub(qureg): // str=I optimisation
-        accel_statevec_calcExpecAnyTargZ_sub(qureg, sufTargs);
-
-    // prefix qubits determine a node-wide +- coefficient
-    auto prefTargs = util_getPrefixQubits(allTargs, qureg);
-    auto prefInds = util_getPrefixInds(prefTargs, qureg);
-    auto prefMask = util_getBitMask(prefInds);
-    qreal factor = getBitMaskParity(prefMask & qureg.rank)? -1 : 1;
-
-    return factor * value;
-}
-
-
 qcomp localiser_statevec_calcExpecPauliStr(Qureg qureg, PauliStr str) {
     assert_localiserGivenStateVec(qureg);
 
     qcomp value = 0;
 
-    util_pauliStrData data = util_getPauliStrData(qureg, str);
+    // partition non-Id Paulis into prefix and suffix, since...
+    // - prefix X,Y determine communication, because they apply bit-not to rank
+    // - prefix Y,Z determine node-wide coefficient, because they contain rank-determined !=1 elements
+    // - suffix X,Y,Z determine local amp coefficients
+    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
+    auto [prefixX, suffixX] = util_getPrefixAndSuffixQubits(targsX, qureg);
+    auto [prefixY, suffixY] = util_getPrefixAndSuffixQubits(targsY, qureg);
+    auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targsZ, qureg);
 
-    // embarrassingly parallel edge case (full str = I or Z)
-    if (!paulis_containsXOrY(str)) {
-        value = expecAnyTargZOnStateVec(qureg, str);
+    // embarrassingly parallel when there is only Z's in prefix
+    if (prefixX.empty() && prefixY.empty()) {
 
-    // embarrassingly parallel edge case (prefix str = I or Z)
-    } else if (data.pairRank == qureg.rank) {
-        value = accel_statevec_calcExpecPauliStr_subA(qureg, data);
+        // which has optimised local routines if suffix str is I, IZ, or IZXY
+        if (suffixX.empty() && suffixY.empty() && suffixZ.empty())
+            value = accel_statevec_calcTotalProb_sub(qureg);
+        else if (suffixX.empty() && suffixY.empty())
+            value = accel_statevec_calcExpecAnyTargZ_sub(qureg, suffixZ);
+        else
+            value = accel_statevec_calcExpecPauliStr_subA(qureg, suffixX, suffixY, suffixZ);
 
-    // pair-wise communication case
+    // otherwise, communication is a pairwise exchange
     } else {
-        comm_exchangeAmpsToBuffers(qureg, data.pairRank);
-        value = accel_statevec_calcExpecPauliStr_subB(qureg, data);
+        auto prefixXY = util_getConcatenated(prefixX, prefixY);
+        int pairRank = util_getRankWithQubitsFlipped(prefixXY, qureg);
+        comm_exchangeAmpsToBuffers(qureg, pairRank);
+
+        // and the subsequent process is optimal for all suffix paulis
+        value = accel_statevec_calcExpecPauliStr_subB(qureg, suffixX, suffixY, suffixZ);
     }
+
+    // apply this node's pre-factor
+    value *= paulis_getPrefixPaulisElem(qureg, prefixY, prefixZ);
 
     // combine contributions from each node
     if (qureg.isDistributed)
@@ -1826,16 +1848,16 @@ qcomp localiser_densmatr_calcExpecPauliStr(Qureg qureg, PauliStr str) {
 
     qcomp value = 0;
 
-    util_pauliStrData data = util_getPauliStrData(qureg, str);
-    auto targs = paulis_getSortedIndsOfNonIdentityPaulis(str);
+    // all ket-paulis are in the suffix state
+    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
 
-    // all scenarios (I, Z, X+Y) are embarrassingly parallel
-    if (paulis_containsOnlyI(str))
+    // ergo all scenarios (I, IZ, IXYZ) are embarrassingly parallel
+    if (targsX.empty() && targsY.empty() && targsZ.empty())
         value = accel_densmatr_calcTotalProb_sub(qureg);
-    else if (!paulis_containsXOrY(str))
-        value = accel_densmatr_calcExpecAnyTargZ_sub(qureg, targs);
+    else if (targsX.empty() && targsY.empty())
+        value = accel_densmatr_calcExpecAnyTargZ_sub(qureg, targsZ);
     else
-        value = accel_densmatr_calcExpecPauliStr_sub(qureg, data);
+        value = accel_densmatr_calcExpecPauliStr_sub(qureg, targsX, targsY, targsZ);
 
     // combine contributions from each node
     if (qureg.isDistributed)

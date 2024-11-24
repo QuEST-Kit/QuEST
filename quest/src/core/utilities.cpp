@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <complex>
 #include <vector>
+#include <array>
 #include <new>
 
 using std::vector;
@@ -76,26 +77,11 @@ vector<int> getPrefixOrSuffixQubits(vector<int> qubits, Qureg qureg, bool getSuf
     return subQubits;
 }
 
-vector<int> util_getSuffixQubits(vector<int> qubits, Qureg qureg) {
-    return getPrefixOrSuffixQubits(qubits, qureg, true);
-}
-
-vector<int> util_getPrefixQubits(vector<int> qubits, Qureg qureg) {
-    return getPrefixOrSuffixQubits(qubits, qureg, false);
-}
-
-vector<int> util_getPrefixInds(vector<int> qubits, Qureg qureg) {
-    vector<int> inds;
-    inds.reserve(qubits.size());
-
-    for (int qubit : qubits) {
-        if (qubit < qureg.logNumAmpsPerNode)
-            error_utilsGetPrefixIndGivenSuffixQubit();
-
-        inds.push_back(qubit - qureg.logNumAmpsPerNode);
-    }
-
-    return inds;
+std::array<vector<int>,2> util_getPrefixAndSuffixQubits(vector<int> qubits, Qureg qureg) {
+    return {
+        getPrefixOrSuffixQubits(qubits, qureg, false), 
+        getPrefixOrSuffixQubits(qubits, qureg, true)
+    };
 }
 
 int util_getRankBitOfQubit(int ketQubit, Qureg qureg) {
@@ -112,11 +98,20 @@ int util_getRankBitOfBraQubit(int ketQubit, Qureg qureg) {
     return rankBit;
 }
 
-int util_getRankWithQubitFlipped(int ketQubit, Qureg qureg) {
+int util_getRankWithQubitFlipped(int prefixKetQubit, Qureg qureg) {
 
-    int rankInd = util_getPrefixInd(ketQubit, qureg);
+    int rankInd = util_getPrefixInd(prefixKetQubit, qureg);
     int rankFlip = flipBit(qureg.rank, rankInd);
     return rankFlip;
+}
+
+int util_getRankWithQubitsFlipped(vector<int> prefixQubits,  Qureg qureg) {
+
+    int rank = qureg.rank;
+    for (int qubit : prefixQubits)
+        rank = flipBit(rank, util_getPrefixInd(qubit, qureg));
+
+    return rank;
 }
 
 int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg) {
@@ -270,45 +265,15 @@ int util_getRankContainingColumn(Qureg qureg, qindex globalCol) {
 
 
 
-/* 
- * PAULI TENSOR DATA 
+/*
+ * COMPLEX ALGEBRA
  */
 
-extern vector<int> paulis_getSortedIndsOfNonIdentityPaulis(PauliStr str);
-extern vector<int> paulis_getTargsWithEitherPaulis(vector<int> targs, PauliStr str, int pauliA, int pauliB);
+qcomp util_getPowerOfI(size_t exponent) {
 
-util_pauliStrData util_getPauliStrData(Qureg qureg, PauliStr str) {
-
-    // readable flags (you're welcome, beautiful reader)
-    const int X=1, Y=2, Z=3;
-
-    // X and Y on prefix qubits determines pair rank (because X and Y are anti-diagonal)
-    auto allTargs = paulis_getSortedIndsOfNonIdentityPaulis(str);
-    auto allTargsXY = paulis_getTargsWithEitherPaulis(allTargs, str, X, Y);
-    auto prefixTargsXY = util_getPrefixQubits(allTargsXY, qureg);
-    auto prefixIndsXY = util_getPrefixInds(prefixTargsXY, qureg);
-    int pairRank = flipBits(qureg.rank, prefixIndsXY.data(), prefixIndsXY.size());
-
-    // parity of Y and Z on all qubits determines phase factor on updated amps (because Y and Z contain -1)
-    auto allTargsYZ = paulis_getTargsWithEitherPaulis(allTargs, str, Y, Z);
-    auto allMaskYZ = getBitMask(allTargsYZ.data(), allTargsYZ.size());
-
-    // X and Y on suffix qubits determine local amp movement (because X and Y are anti-diagonal)
-    auto suffixTargsXY = util_getSuffixQubits(allTargsXY, qureg); // sorted
-    auto suffixMaskXY = getBitMask(suffixTargsXY.data(), suffixTargsXY.size());
-
-    // total number of Y determines a phase factor on all updated amps (because Y contains i)
-    int numY = paulis_getTargsWithEitherPaulis(allTargs, str, Y, Y).size();
-    vector<qcomp> powersOfI = {1, 1_i, -1, -1_i};
-    qcomp powI = powersOfI[numY % 4]; // i^numY (precision agnostic)
-
-    return {
-        .pairRank = pairRank,
-        .allMaskYZ = allMaskYZ,
-        .suffixMaskXY = suffixMaskXY,
-        .sortedSuffixTargsXY = suffixTargsXY, // caller copies vector
-        .powI = powI
-    };
+    // seems silly, but at least it's precision agnostic!
+    qcomp values[] = {1, 1_i, -1, -1_i};
+    return values[exponent % 4];
 }
 
 
@@ -700,6 +665,17 @@ util_VectorIndexRange util_getLocalIndRangeOfVectorElemsWithinNode(int rank, qin
         .localDuplicStartInd = localOffsetInd,
         .numElems = numLocalElems
     };
+}
+
+
+
+/*
+ * GATE PARAMETERS
+ */
+
+qreal util_getPhaseFromGateAngle(qreal angle) {
+
+    return - angle / 2;
 }
 
 

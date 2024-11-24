@@ -232,6 +232,16 @@ void error_localiserFailedToAllocTempMemory() {
     raiseInternalError("A localiser function attempted and failed to allocate temporary memory.");
 }
 
+void error_localiserGivenPauliStrWithoutXorY() {
+
+    raiseInternalError("A localiser function was given a PauliStr which unexpectedly contained no X or Y Paulis.");
+}
+
+void error_localiserGivenNonUnityGlobalFactorToZTensor() {
+
+    raiseInternalError("A localiser function to apply a PauliStr (as a tensor, not a gadget) was given a PauliStr containing only Z and I, along with a non-unity global factor. This is an illegal combination.");
+}
+
 void assert_localiserSuccessfullyAllocatedTempMemory(qcomp* ptr, bool isGpu) {
 
     if (mem_isAllocated(ptr))
