@@ -647,7 +647,7 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ct
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size() + x.size() + y.size());
     qindex numBlocks = getNumBlocks(numThreads);
 
-    qcomp powI = fast_getPowerOfI(y.size());
+    qcomp powI = util_getPowerOfI(y.size());
     auto targsXY = util_getConcatenated(x, y);
     auto maskXY = util_getBitMask(targsXY);
     auto maskYZ = util_getBitMask(util_getConcatenated(y, z));
@@ -680,7 +680,7 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ct
     qindex numBlocks = getNumBlocks(numThreads);
     qindex recvInd = getBufferRecvInd();
 
-    qcomp powI = fast_getPowerOfI(y.size());
+    qcomp powI = util_getPowerOfI(y.size());
     auto maskXY = util_getBitMask(util_getConcatenated(x, y));
     auto maskYZ = util_getBitMask(util_getConcatenated(y, z));
 

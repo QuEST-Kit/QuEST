@@ -691,7 +691,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
     qindex numInnerIts = numTargAmps / 2; // divides evenly
 
     // we will scale pairAmp by i^numY, so that each amp need only choose the +-1 sign
-    pairAmpFac *= fast_getPowerOfI(y.size());
+    pairAmpFac *= util_getPowerOfI(y.size());
     
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numOuterIts; n++) {
@@ -743,7 +743,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subB(
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
     // we will scale pairAmp by i^numY, so that each amp need only choose the +-1 sign
-    pairAmpFac *= fast_getPowerOfI(y.size());
+    pairAmpFac *= util_getPowerOfI(y.size());
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -1873,7 +1873,7 @@ qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int
     }
 
     // scale by i^numY (because sign above exlcuded i)
-    value *= fast_getPowerOfI(y.size());
+    value *= util_getPowerOfI(y.size());
     return value;
 }
 
@@ -1901,7 +1901,7 @@ qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int
     }
 
     // scale by i^numY (because sign above exlcuded i)
-    value *= fast_getPowerOfI(y.size());
+    value *= util_getPowerOfI(y.size());
     return value;
 }
 
@@ -1937,7 +1937,7 @@ qcomp cpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int>
     }
 
     // scale by i^numY (because sign above exlcuded i)
-    value *= fast_getPowerOfI(y.size());
+    value *= util_getPowerOfI(y.size());
     return value;
 }
 

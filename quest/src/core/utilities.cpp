@@ -266,6 +266,19 @@ int util_getRankContainingColumn(Qureg qureg, qindex globalCol) {
 
 
 /*
+ * COMPLEX ALGEBRA
+ */
+
+qcomp util_getPowerOfI(size_t exponent) {
+
+    // seems silly, but at least it's precision agnostic!
+    qcomp values[] = {1, 1_i, -1, -1_i};
+    return values[exponent % 4];
+}
+
+
+
+/*
  * MATRIX CONJUGATION
  */
 

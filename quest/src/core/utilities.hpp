@@ -79,6 +79,14 @@ int util_getRankContainingIndex(FullStateDiagMatr matr, qindex globalInd);
 
 
 /*
+ * COMPLEX ALGEBRA
+ */
+
+qcomp util_getPowerOfI(size_t exponent);
+
+
+
+/*
  * STRUCT TYPING
  *
  * defined here in the header since templated, and which use compile-time inspection.

@@ -36,16 +36,6 @@ INLINE int fast_getPlusOrMinusMaskedBitParity(qindex num, qindex mask) {
 }
 
 
-INLINE qcomp fast_getPowerOfI(size_t exponent) {
-
-    // beware non-const static inlined variables!
-    static const qcomp values[] = {1, 1_i, -1, -1_i};
-
-    // seems silly, but is fast and precision agnostic
-    return values[exponent % 4];
-}
-
-
 
 /*
  * INDEX ALGEBRA
