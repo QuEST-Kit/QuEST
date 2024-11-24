@@ -1525,8 +1525,8 @@ qcomp gpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int
 
 #elif COMPILE_CUDA
 
-    // TODO
-    return -1;
+    cu_qcomp value = thrust_statevec_calcExpecPauliStr_subA(qureg, x, y, z);
+    return toQcomp(value);
 
 #else
     error_gpuSimButGpuNotCompiled();

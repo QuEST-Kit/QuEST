@@ -3,6 +3,12 @@
  * when COMPILE_CUDA=1 so it can safely invoke CUDA signatures without 
  * guards. Further, as it is entirely a header, it can declare templated
  * times without explicitly instantiating them across all parameter values.
+ * 
+ * Where possible, we use Thrust vector iterators in lieu of explicitly
+ * iterating indices (and consulting a vector bound to a Thrust functor),
+ * since the latter may lead to sub-optimal memory access (e.g. non-coalesced).
+ * Alas, some functors are too complicated (e.g. they access multiple non-contiguous
+ * amps per natural iteration) and fall-back to binding the GPU memory.
  */
 
 #ifndef GPU_THRUST_HPP
@@ -186,6 +192,25 @@ struct functor_getExpecDensMatrZTerm : public thrust::unary_function<qindex,cu_q
         int par = cudaGetBitMaskParity(r & targMask);
         int sign = fast_getPlusOrMinusOne(par);
         return sign * amps[i];
+    }
+};
+
+
+struct functor_getExpecStateVecPauliTerm : public thrust::unary_function<qindex,cu_qcomp> {
+
+    qindex maskXY;
+    qindex maskYZ;
+    cu_qcomp* amps;
+    functor_getExpecStateVecPauliTerm(qindex mXY, qindex mYZ, cu_qcomp* psi) : maskXY(mXY), maskYZ(mYZ), amps(psi) {}
+
+    __host__ __device__ cu_qcomp operator()(qindex n) {
+        
+        // j = local index of amp which combines with nth local amp
+        qindex j = flipBits(n, maskXY);
+        int par = cudaGetBitMaskParity(j & maskYZ);
+        int sign = fast_getPlusOrMinusOne(par);
+
+        return sign * getCompConj(amps[n]) * amps[j];
     }
 };
 
@@ -666,7 +691,7 @@ qreal thrust_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 
     qreal init = 0;
     auto indIter = thrust::make_counting_iterator(0);
-    auto endIter = indIter = qureg.numAmpsPerNode;
+    auto endIter = indIter + qureg.numAmpsPerNode;
 
     return thrust::inner_product(
         indIter, endIter, getStartPtr(qureg), 
@@ -684,6 +709,20 @@ cu_qcomp thrust_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
     qreal init = 0;
     auto indIter = thrust::make_counting_iterator(0);
     auto endIter = indIter + powerOf2(qureg.logNumColsPerNode);
+
+    return thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
+}
+
+
+cu_qcomp thrust_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
+
+    qindex maskXY = util_getBitMask(util_getConcatenated(x, y));
+    qindex maskYZ = util_getBitMask(util_getConcatenated(y, z));
+    auto functor = functor_getExpecStateVecPauliTerm(maskXY, maskYZ, toCuQcomps(qureg.gpuAmps));
+
+    cu_qcomp init = 0;
+    auto indIter = thrust::make_counting_iterator(0);
+    auto endIter = indIter + qureg.numAmpsPerNode;
 
     return thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
 }
