@@ -707,7 +707,7 @@ cu_qcomp thrust_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
     qindex mask = util_getBitMask(targs);
     auto functor = functor_getExpecDensMatrZTerm(dim, ind, mask, toCuQcomps(qureg.gpuAmps));
 
-    qreal init = 0;
+    qreal init = getCuQcomp(0, 0);
     auto indIter = thrust::make_counting_iterator(0);
     auto endIter = indIter + powerOf2(qureg.logNumColsPerNode);
 
