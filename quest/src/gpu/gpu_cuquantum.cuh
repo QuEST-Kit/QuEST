@@ -365,7 +365,7 @@ void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qu
  */
 
 
-qreal cuquantum_statevec_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
+qreal cuquantum_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
     // prepare term (XX...YY...ZZ...)
     size_t numPaulis = x.size() + y.size() + z.size();
@@ -408,7 +408,7 @@ qreal cuquantum_statevec_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vecto
 
 qreal cuquantum_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 
-    return cuquantum_statevec_calcExpecPauliStr_sub(qureg, {}, {}, targs);
+    return cuquantum_statevec_calcExpecPauliStr_subA(qureg, {}, {}, targs);
 }
 
 

@@ -163,9 +163,9 @@ struct functor_getExpecStateVecZTerm : public thrust::binary_function<qindex,cu_
     qindex targMask;
     functor_getExpecStateVecZTerm(qindex mask) : targMask(mask) {}
 
-    __host__ __device__ qreal operator()(qindex ind, cu_qcomp amp) {
+    __device__ qreal operator()(qindex ind, cu_qcomp amp) {
         
-        int par = cudaGetBitMaskParity(ind & targMask);
+        int par = cudaGetBitMaskParity(ind & targMask); // device-only
         int sign = fast_getPlusOrMinusOne(par);
         return sign * getCompNorm(amp);
     }
@@ -181,7 +181,7 @@ struct functor_getExpecDensMatrZTerm : public thrust::unary_function<qindex,cu_q
     functor_getExpecDensMatrZTerm(qindex dim, qindex diagInd, qindex mask, cu_qcomp* _amps) : 
         numAmpsPerCol(dim), firstDiagInd(diagInd) targMask(mask), amps(_amps) {}
 
-    __host__ __device__ cu_qcomp operator()(qindex n) {
+    __device__ cu_qcomp operator()(qindex n) {
         
         // i = local index of nth local diagonal element
         qindex i = fast_getLocalIndexOfDiagonalAmp(ind, firstDiagInd, numAmpsPerCol);
@@ -189,7 +189,7 @@ struct functor_getExpecDensMatrZTerm : public thrust::unary_function<qindex,cu_q
         // r = global row of nth local diagonal
         qindex r = n + firstDiagInd;
 
-        int par = cudaGetBitMaskParity(r & targMask);
+        int par = cudaGetBitMaskParity(r & targMask); // device-only
         int sign = fast_getPlusOrMinusOne(par);
         return sign * amps[i];
     }
@@ -203,11 +203,11 @@ struct functor_getExpecStateVecPauliTerm : public thrust::unary_function<qindex,
     cu_qcomp* amps;
     functor_getExpecStateVecPauliTerm(qindex mXY, qindex mYZ, cu_qcomp* psi) : maskXY(mXY), maskYZ(mYZ), amps(psi) {}
 
-    __host__ __device__ cu_qcomp operator()(qindex n) {
+    __device__ cu_qcomp operator()(qindex n) {
         
         // j = local index of amp which combines with nth local amp
         qindex j = flipBits(n, maskXY);
-        int par = cudaGetBitMaskParity(j & maskYZ);
+        int par = cudaGetBitMaskParity(j & maskYZ); // device-only
         int sign = fast_getPlusOrMinusOne(par);
 
         return sign * getCompConj(amps[n]) * amps[j];
@@ -725,6 +725,20 @@ cu_qcomp thrust_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vect
     auto endIter = indIter + qureg.numAmpsPerNode;
 
     return thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
+}
+
+
+cu_qcomp thrust_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
+
+    // TODO
+    return -1;
+}
+
+
+cu_qcomp thrust_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
+
+    // TODO
+    return -1;
 }
 
 

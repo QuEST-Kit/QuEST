@@ -1521,7 +1521,7 @@ qcomp gpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int
 
 #if COMPILE_CUQUANTUM
 
-    return cuquantum_statevec_calcExpecPauliStr_sub(qureg, x, y, z); // always real
+    return cuquantum_statevec_calcExpecPauliStr_subA(qureg, x, y, z); // always real
 
 #elif COMPILE_CUDA
 
@@ -1537,15 +1537,29 @@ qcomp gpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int
 
 qcomp gpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
-    // TODO
+#if COMPILE_CUQUANTUM || COMPILE_CUDA
+
+    cu_qcomp value = thrust_statevec_calcExpecPauliStr_subB(qureg, x, y, z);
+    return toQcomp(value);
+
+#else
+    error_gpuSimButGpuNotCompiled();
     return -1;
+#endif
 }
 
 
 qcomp gpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
     
-    // TODO
+#if COMPILE_CUQUANTUM || COMPILE_CUDA
+
+    cu_qcomp value = thrust_densmatr_calcExpecPauliStr_sub(qureg, x, y, z);
+    return toQcomp(value);
+
+#else
+    error_gpuSimButGpuNotCompiled();
     return -1;
+#endif
 }
 
 
