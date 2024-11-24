@@ -1521,7 +1521,7 @@ qcomp gpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int
 
 #if COMPILE_CUQUANTUM
 
-    return cuquantum_statevec_calcExpecPauliStr_subA(qureg, x, y, z); // always real
+    return cuquantum_statevec_calcExpecPauliStr_subA(qureg, x, y, z);
 
 #elif COMPILE_CUDA
 
