@@ -808,7 +808,6 @@ void multiplyPauliStrSum(Qureg qureg, PauliStrSum str)
     _NOT_IMPLEMENTED_ERROR_DEF
 
 void applyTrotterizedTimeEvol(Qureg qureg, PauliStrSum hamiltonian, qreal time, int order, int reps) {
-    _TODO_VALIDATION()
 
     // validate that PauliStrSum is Hermitian
     
