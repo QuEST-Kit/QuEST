@@ -73,9 +73,9 @@ template <bool HasPower, bool MultiplyOnly> void cpu_densmatr_allTargDiagMatr_su
  * PAULI TENSOR AND GADGET
  */
 
-template <int NumCtrls, int NumTargs> void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, util_pauliStrData data, qcomp fac0, qcomp fac1);
+template <int NumCtrls, int NumTargs> void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> x, vector<int> y, vector<int> z, qcomp ampFac, qcomp pairAmpFac);
 
-template <int NumCtrls> void cpu_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, util_pauliStrData data, qindex bufferMaskXY, qcomp fac0, qcomp fac1);
+template <int NumCtrls> void cpu_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> x, vector<int> y, vector<int> z, qcomp ampFac, qcomp pairAmpFac, qindex bufferMaskXY);
 
 template <int NumCtrls> void cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qcomp fac0, qcomp fac1);
 
@@ -160,9 +160,9 @@ template <bool Conj> qcomp cpu_densmatr_calcFidelityWithPureState_sub(Qureg rho,
 qreal cpu_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs);
 qcomp cpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs);
 
-qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, util_pauliStrData data);
-qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, util_pauliStrData data);
-qcomp cpu_densmatr_calcExpecPauliStr_sub (Qureg qureg, util_pauliStrData data);
+qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
+qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
+qcomp cpu_densmatr_calcExpecPauliStr_sub (Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
 
 
 /*
