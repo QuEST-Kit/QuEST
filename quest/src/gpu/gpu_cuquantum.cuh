@@ -370,7 +370,7 @@ qreal cuquantum_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vect
     // prepare term (XX...YY...ZZ...)
     size_t numPaulis = x.size() + y.size() + z.size();
     vector<custatevecPauli_t> paulis; 
-    vector<size_t> targs; 
+    vector<int32_t> targs; 
     
     paulis.reserve(numPaulis);
     targs.reserve(numPaulis);
@@ -381,9 +381,9 @@ qreal cuquantum_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vect
 
     // prepare terms = {term}
     const custatevecPauli_t* termPaulis[] = {paulis.data()};
-    const size_t* termTargets[] = {targs.data()};
-    const size_t numPaulisPerTerm[] = {paulis.size()};
-    size_t numTerms = 1;
+    const int32_t* termTargets[] = {targs.data()};
+    const uint32_t numPaulisPerTerm[] = {paulis.size()};
+    uint32_t numTerms = 1;
 
     // cuStateVec output is always double
     double value = 0;
