@@ -361,6 +361,50 @@ void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qu
 
 
 /*
+ * EXPECTATION VALUES
+ */
+
+
+qreal cuquantum_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
+
+    // prepare term (XX...YY...ZZ...)
+    size_t numPaulis = x.size() + y.size() + z.size();
+    vector<custatevecPauli_t> paulis; 
+    vector<int32_t> targs; 
+    
+    paulis.reserve(numPaulis);
+    targs.reserve(numPaulis);
+
+    for (int t : x) { paulis.push_back(CUSTATEVEC_PAULI_X); targs.push_back(t); }
+    for (int t : y) { paulis.push_back(CUSTATEVEC_PAULI_Y); targs.push_back(t); }
+    for (int t : z) { paulis.push_back(CUSTATEVEC_PAULI_Z); targs.push_back(t); }
+
+    // prepare terms = {term}
+    const custatevecPauli_t* termPaulis[] = {paulis.data()};
+    const int32_t* termTargets[] = {targs.data()};
+    const uint32_t numPaulisPerTerm[] = { (uint32_t) paulis.size()};
+    uint32_t numTerms = 1;
+
+    // cuStateVec output is always double
+    double value = 0;
+
+    CUDA_CHECK( custatevecComputeExpectationsOnPauliBasis(
+        config.cuQuantumHandle,
+        toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
+        &value, termPaulis, numTerms, termTargets, numPaulisPerTerm) );
+
+    return (qreal) value;
+}
+
+
+qreal cuquantum_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
+
+    return cuquantum_statevec_calcExpecPauliStr_subA(qureg, {}, {}, targs);
+}
+
+
+
+/*
  * PROJECTORS
  */
 
