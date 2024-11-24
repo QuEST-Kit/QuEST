@@ -184,7 +184,7 @@ struct functor_getExpecDensMatrZTerm : public thrust::unary_function<qindex,cu_q
     __device__ cu_qcomp operator()(qindex n) {
         
         // i = local index of nth local diagonal element
-        qindex i = fast_getLocalIndexOfDiagonalAmp(ind, firstDiagInd, numAmpsPerCol);
+        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
 
         // r = global row of nth local diagonal
         qindex r = n + firstDiagInd;
@@ -210,6 +210,7 @@ struct functor_getExpecStateVecPauliTerm : public thrust::unary_function<qindex,
         int par = cudaGetBitMaskParity(j & maskYZ); // device-only
         int sign = fast_getPlusOrMinusOne(par);
 
+        // sign excludes i^numY contribution
         return sign * getCompConj(amps[n]) * amps[j];
     }
 };
@@ -724,7 +725,10 @@ cu_qcomp thrust_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vect
     auto indIter = thrust::make_counting_iterator(0);
     auto endIter = indIter + qureg.numAmpsPerNode;
 
-    return thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
+    cu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
+
+    value *= toCuQcomp(util_getPowerOfI(y.size()));
+    return value;
 }
 
 
