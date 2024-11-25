@@ -14,15 +14,9 @@
 #ifndef QUEST_TEST_UTILS_H
 #define QUEST_TEST_UTILS_H
 
-#include "QuEST.h"
-#include "QuEST_complex.h"
+#include "quest/include/quest.h"
 #include "catch.hpp"
 #include <vector>
-
-/** The single QuESTEnv environment created before the Catch tests begin, 
- * and destroyed thereafter.
- */
-extern QuESTEnv QUEST_ENV;
 
 /** The default number of qubits in the registers created for unit testing 
  * (both statevectors and density matrices). Creation of non-NUM_QUBITS sized 
@@ -150,7 +144,7 @@ QVector toQVector(Qureg qureg);
  * @ingroup testutilities
  * @author Tyson Jones
  */
-QVector toQVector(DiagonalOp op);
+QVector toQVector(FullStateDiagMatr op);
 
 /** Returns an equal-size copy of the given density matrix \p qureg.
  * In GPU mode, this function involves a copy of \p qureg from GPU memory to RAM.
@@ -167,28 +161,28 @@ QMatrix toQMatrix(Qureg qureg);
  * @ingroup testutilities
  * @author Tyson Jones
  */
-QMatrix toQMatrix(Complex alpha, Complex beta);
+QMatrix toQMatrix(qcomp alpha, qcomp beta);
 
 /** Returns a copy of the given 2-by-2 matrix.
  *
  * @ingroup testutilities
  * @author Tyson Jones
  */
-QMatrix toQMatrix(ComplexMatrix2 src);
+QMatrix toQMatrix(CompMatr1 src);
 
 /** Returns a copy of the given 4-by-4 matrix.
  *
  * @ingroup testutilities
  * @author Tyson Jones
  */
-QMatrix toQMatrix(ComplexMatrix4 src);
+QMatrix toQMatrix(CompMatr2 src);
 
 /** Returns a copy of the given 2^\p N-by-2^\p N matrix 
  *
  * @ingroup testutilities
  * @author Tyson Jones
  */
-QMatrix toQMatrix(ComplexMatrixN src);
+QMatrix toQMatrix(CompMatr src);
 
 /** Returns a 2^\p N-by-2^\p N Hermitian matrix form of the specified 
  * weighted sum of Pauli products
@@ -196,21 +190,21 @@ QMatrix toQMatrix(ComplexMatrixN src);
  * @ingroup testutilities
  * @author Tyson Jones
  */
-QMatrix toQMatrix(qreal* coeffs, pauliOpType* paulis, int numQubits, int numTerms);
+QMatrix toQMatrix(qreal* coeffs, PauliStr* paulis, int numQubits, int numTerms);
 
 /** Returns a 2^\p N-by-2^\p N Hermitian matrix form of the PauliHamil
  *
  * @ingroup testutilities
  * @author Tyson Jones
  */
-QMatrix toQMatrix(PauliHamil hamil);
+QMatrix toQMatrix(PauliStrSum hamil);
 
 /** Returns a 2^\p N-by-2^\p N complex diagonal matrix form of the DiagonalOp
  *
  * @ingroup testutilities
  * @author Tyson Jones
  */
-QMatrix toQMatrix(DiagonalOp op);
+QMatrix toQMatrix(FullStateDiagMatr op);
 
 /** Returns a 2^\p n-by-2^\p n complex diagonal matrix form of the SubDiagonalOp,
  * where n = op.numQubits
@@ -218,7 +212,7 @@ QMatrix toQMatrix(DiagonalOp op);
  * @ingroup testutilities
  * @author Tyson Jones
  */
-QMatrix toQMatrix(SubDiagonalOp op);
+QMatrix toQMatrix(DiagMatr op);
 
 /** Returns a diagonal complex matrix formed by the given vector 
  *
@@ -227,30 +221,30 @@ QMatrix toQMatrix(SubDiagonalOp op);
  */
 QMatrix toDiagonalQMatrix(QVector vec);
 
-/** Returns a \p ComplexMatrix2 copy of QMatix \p qm.
+/** Returns a \p CompMatr1 copy of QMatix \p qm.
  * Demands that \p qm is a 2-by-2 matrix.
  *
  * @ingroup testutilities
  * @author Tyson Jones
  */
-ComplexMatrix2 toComplexMatrix2(QMatrix qm);
+CompMatr1 toCompMatr1(QMatrix qm);
 
-/** Returns a \p ComplexMatrix4 copy of QMatix \p qm.
+/** Returns a \p CompMatr2 copy of QMatix \p qm.
  * Demands that \p qm is a 4-by-4 matrix.
  *
  * @ingroup testutilities
  * @author Tyson Jones
  */
-ComplexMatrix4 toComplexMatrix4(QMatrix qm);
+CompMatr2 toCompMatr2(QMatrix qm);
 
 /** Initialises \p cm with the values of \p qm.
- * Demands that \p cm is a previously created ComplexMatrixN instance, with 
+ * Demands that \p cm is a previously created CompMatr instance, with 
  * the same dimensions as \p qm.
  *
  * @ingroup testutilities
  * @author Tyson Jones
  */
-void toComplexMatrixN(QMatrix qm, ComplexMatrixN cm);
+void toCompMatr(QMatrix qm, CompMatr cm);
 
 /** Initialises the state-vector \p qureg to have the same amplitudes as \p vec.
  * Demands \p qureg is a state-vector of an equal size to \p vec.
@@ -1014,14 +1008,14 @@ unsigned int calcLog2(long unsigned int res);
  * @ingroup testutilities 
  * @author Tyson Jones
  */
-void setRandomPauliSum(qreal* coeffs, pauliOpType* codes, int numQubits, int numTerms);
+void setRandomPauliSum(qreal* coeffs, PauliStr* codes, int numQubits, int numTerms);
 
 /** Populates \p hamil with random coefficients and pauli codes
  *
  * @ingroup testutilities 
  * @author Tyson Jones
  */
-void setRandomPauliSum(PauliHamil hamil);
+void setRandomPauliSum(PauliStrSum& hamil);
 
 /** Populates \p hamil with random coefficients and a random amount number of 
  * PAULI_I and PAULI_Z operators.
@@ -1029,7 +1023,7 @@ void setRandomPauliSum(PauliHamil hamil);
  * @ingroup testutilities 
  * @author Tyson Jones
  */
-void setRandomDiagPauliHamil(PauliHamil hamil);
+void setRandomDiagPauliHamil(PauliStrSum& hamil);
 
 /** Populates \p targs with a random selection of \p numTargs elements from [0,\p numQb-1].
  * List \p targs does not need to be initialised and its elements are overwritten.
@@ -1068,7 +1062,7 @@ long long int getUnsigned(long long int twosComp, int numBits);
  * @ingroup testutilities
  * @author Tyson Jones
  */
-void setDiagMatrixOverrides(QMatrix &matr, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, long long int* overrideInds, qreal* overridePhases, int numOverrides);
+void setDiagMatrixOverrides(QMatrix &matr, int* numQubitsPerReg, int numRegs, int encoding, long long int* overrideInds, qreal* overridePhases, int numOverrides);
 
 /** Modifies outFn to be a filename of format prefix_NUM.txt where NUM 
  * is a new unique integer so far. This is useful for getting unique filenames for 
@@ -1086,7 +1080,7 @@ void setUniqueFilename(char* outFn, char* prefix);
  * @ingroup testutilities
  * @author Tyson Jones
  */
-void writeToFileSynch(char* fn, const string& contents);
+void writeToFileSynch(char* fn, const std::string& contents);
 
 /** Deletes all files with filename starting with prefix. In distributed mode, the 
  * master node deletes while the other nodes wait until complete.
@@ -1249,6 +1243,6 @@ CatchGen<int*> sequences(int base, int numDigits);
  * @ingroup testutilities 
  * @author Tyson Jones
  */
-CatchGen<pauliOpType*> pauliseqs(int numPaulis);
+CatchGen<PauliStr> pauliseqs(int numPaulis);
 
 #endif // QUEST_TEST_UTILS_H
