@@ -48,7 +48,10 @@ void raiseInternalError(string errorMsg) {
 void error_functionNotImplemented(const char* caller) {
 
     string name = caller;
-    raiseInternalError("The function '" + name + "' has not yet been implemented.");
+    
+    // DEBUG
+    // raiseInternalError("The function '" + name + "' has not yet been implemented.");
+    print("The function '" + name + "' has not yet been implemented.");
 }
 
 

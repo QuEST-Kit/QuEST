@@ -14,16 +14,23 @@
  */
  
 #include "catch.hpp"
-#include "QuEST.h"
-#include "utilities.hpp"
+
+// must define preprocessors to enable quest's
+// deprecated v3 API, and disable the numerous
+// warnings issued by its compilation
+#define INCLUDE_DEPRECATED_FUNCTIONS 1
+#define DISABLE_DEPRECATION_WARNINGS 1
+#include "quest.h"
+
+#include "test_utilities.hpp"
 
 /** Prepares the needed data structures for unit testing unitaries. 
  * This creates a statevector and density matrix of the size NUM_QUBITS,
  * and corresponding QVector and QMatrix instances for analytic comparison.
  */
 #define PREPARE_TEST(quregVec, quregMatr, refVec, refMatr) \
-    Qureg quregVec = createQureg(NUM_QUBITS, QUEST_ENV); \
-    Qureg quregMatr = createDensityQureg(NUM_QUBITS, QUEST_ENV); \
+    Qureg quregVec = createForcedQureg(NUM_QUBITS); \
+    Qureg quregMatr = createForcedDensityQureg(NUM_QUBITS); \
     initDebugState(quregVec); \
     initDebugState(quregMatr); \
     QVector refVec = toQVector(quregVec); \
@@ -33,8 +40,8 @@
 
 /** Destroys the data structures made by PREPARE_TEST */
 #define CLEANUP_TEST(quregVec, quregMatr) \
-    destroyQureg(quregVec, QUEST_ENV); \
-    destroyQureg(quregMatr, QUEST_ENV);
+    destroyQureg(quregVec); \
+    destroyQureg(quregMatr);
 
 /* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::Contains;
@@ -53,7 +60,9 @@ TEST_CASE( "compactUnitary", "[unitaries]" ) {
     qcomp b = sqrt(1-abs(a)*abs(a)) * expI(getRandomReal(0,2*M_PI));
     Complex alpha; alpha.real = real(a); alpha.imag = imag(a);
     Complex beta; beta.real = real(b); beta.imag = imag(b);
-    QMatrix op = toQMatrix(alpha, beta);
+    QMatrix op{
+        {a, -conj(b)},
+        {b,  conj(a)}};
     
     SECTION( "correctness" ) {
         
@@ -111,8 +120,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
         for (long long int i=0; i<op.numElems; i++) {
             qcomp elem = getRandomComplex();
             elem /= abs(elem);
-            op.real[i] = real(elem);
-            op.imag[i] = imag(elem);
+            op.cpuElems[i] = elem;
         }
         QMatrix opMatr = toQMatrix(op);
             
@@ -152,7 +160,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             for (int t=0; t<badOp.numQubits; t++)
                 targs[t] = t;
             for (int i=0; i<badOp.numElems; i++)
-                badOp.real[i] = 1;
+                badOp.cpuElems[i] = 1;
             
             REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, badOp.numQubits, badOp), Contains("Invalid number of target qubits") );
             destroySubDiagonalOp(badOp);
@@ -162,7 +170,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             // make a valid unitary diagonal op
             SubDiagonalOp op = createSubDiagonalOp(3);
             for (int i=0; i<op.numElems; i++)
-                op.real[i] = 1;
+                op.cpuElems[i] = 1;
                 
             // make a repetition in the target list
             int targs[] = {2,1,2};
@@ -175,7 +183,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             // make a valid unitary diagonal op
             SubDiagonalOp op = createSubDiagonalOp(3);
             for (int i=0; i<op.numElems; i++)
-                op.real[i] = 1;
+                op.cpuElems[i] = 1;
                 
             int targs[] = {0,1,2};
             
@@ -193,15 +201,15 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             SubDiagonalOp op = createSubDiagonalOp(3);
             int targs[] = {0,1,2};
             for (int i=0; i<op.numElems; i++)
-                op.real[i] = 1;
+                op.cpuElems[i] = 1;
             
             // break unitarity via reals
-            op.real[2] = -.1;
+            op.cpuElems[2] = -.1;
             REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, op.numQubits, op), Contains("unitary") );
             
             // restore reals and break unitarity via imag
-            op.real[2] = 1;
-            op.imag[3] = -3.5;
+            op.cpuElems[2] = 1;
+            op.cpuElems[3] = -3.5;
             REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, op.numQubits, op), Contains("unitary") );
             
             destroySubDiagonalOp(op);
@@ -224,7 +232,9 @@ TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
     qcomp b = sqrt(1-abs(a)*abs(a)) * expI(getRandomReal(0,2*M_PI));
     Complex alpha; alpha.real = real(a); alpha.imag = imag(a);
     Complex beta; beta.real = real(b); beta.imag = imag(b);
-    QMatrix op = toQMatrix(alpha, beta);
+    QMatrix op{
+        {a, -conj(b)},
+        {b,  conj(a)}};
     
     SECTION( "correctness" ) {
         
@@ -279,7 +289,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
     // figure out max-num targs (inclusive) allowed by hardware backend
-    int maxNumTargs = calcLog2(quregVec.numAmpsPerChunk);
+    int maxNumTargs = calcLog2(quregVec.numAmpsPerNode);
     if (maxNumTargs >= NUM_QUBITS)
         maxNumTargs = NUM_QUBITS - 1; // make space for control qubit
         
@@ -364,7 +374,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // initially zero, hence not-unitary
             
-            VLA(int, targs, numTargs);
+            int targs[NUM_QUBITS];
             for (int i=0; i<numTargs; i++)
                 targs[i] = i+1;
             
@@ -382,8 +392,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
              * currently.
              */
             ComplexMatrixN matr;
-            matr.real = NULL;
-            matr.imag = NULL; 
+            matr.cpuElems = NULL;
             REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, 0, targs, numTargs, matr), Contains("created") );
         }
         SECTION( "unitary dimensions" ) {
@@ -398,7 +407,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
         SECTION( "unitary fits in node" ) {
                 
             // pretend we have a very limited distributed memory (judged by matr size)
-            quregVec.numAmpsPerChunk = 1;
+            quregVec.numAmpsPerNode = 1;
             int qb[] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(2); // prevents seg-fault if validation doesn't trigger
             REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, 0, qb, 2, matr), Contains("targets too many qubits"));
@@ -812,11 +821,11 @@ TEST_CASE( "controlledTwoQubitUnitary", "[unitaries]" ) {
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
     // in distributed mode, each node must be able to fit all amps modified by unitary 
-    REQUIRE( quregVec.numAmpsPerChunk >= 4 );
+    REQUIRE( quregVec.numAmpsPerNode >= 4 );
     
     // every test will use a unique random matrix
     QMatrix op = getRandomUnitary(2);
-    ComplexMatrix4 matr = toComplexMatrix4(op); 
+    ComplexMatrix4 matr = toComplexMatrix4(op);
     
     SECTION( "correctness" ) {
     
@@ -871,7 +880,7 @@ TEST_CASE( "controlledTwoQubitUnitary", "[unitaries]" ) {
         SECTION( "unitary fits in node" ) {
                 
             // pretend we have a very limited distributed memory
-            quregVec.numAmpsPerChunk = 1;
+            quregVec.numAmpsPerNode = 1;
             REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, 0, 1, 2, matr), Contains("targets too many qubits"));
         }
     }
@@ -1077,7 +1086,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
     // figure out max-num targs (inclusive) allowed by hardware backend
-    int maxNumTargs = calcLog2(quregVec.numAmpsPerChunk);
+    int maxNumTargs = calcLog2(quregVec.numAmpsPerNode);
     if (maxNumTargs >= NUM_QUBITS)
         maxNumTargs = NUM_QUBITS - 1; // leave room for min-number of control qubits
         
@@ -1189,7 +1198,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
             
             int ctrls[1] = {0};
             int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
-            VLA(int, targs, numTargs);
+            int targs[NUM_QUBITS];
             for (int i=0; i<numTargs; i++)
                 targs[i] = i+1;
             
@@ -1208,8 +1217,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
              * currently.
              */
             ComplexMatrixN matr;
-            matr.real = NULL;
-            matr.imag = NULL; 
+            matr.cpuElems = NULL;
             REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, 3, matr), Contains("created") );
         }
         SECTION( "unitary dimensions" ) {
@@ -1225,7 +1233,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
         SECTION( "unitary fits in node" ) {
                 
             // pretend we have a very limited distributed memory (judged by matr size)
-            quregVec.numAmpsPerChunk = 1;
+            quregVec.numAmpsPerNode = 1;
             int ctrls[1] = {0};
             int targs[2] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(2);
@@ -1265,12 +1273,12 @@ TEST_CASE( "multiControlledMultiRotatePauli", "[unitaries]" ) {
          * Furthermore, take(10, pauliseqs(numTargs)) will try the same pauli codes.
          * Hence, we instead opt to randomly generate pauliseqs
          */
-        VLA(pauliOpType, paulis, numTargs);
+        pauliOpType paulis[NUM_QUBITS];
         for (int i=0; i<numTargs; i++)
             paulis[i] = (pauliOpType) getRandomInt(0,4);
 
         // exclude identities from reference matrix exp (they apply unwanted global phase)
-        VLA(int, refTargs, numTargs);
+        int refTargs[NUM_QUBITS];
         int numRefTargs = 0;
 
         QMatrix xMatr{{0,1},{1,0}};
@@ -1640,11 +1648,11 @@ TEST_CASE( "multiControlledTwoQubitUnitary", "[unitaries]" ) {
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
 
     // in distributed mode, each node must be able to fit all amps modified by unitary 
-    REQUIRE( quregVec.numAmpsPerChunk >= 4 );
+    REQUIRE( quregVec.numAmpsPerNode >= 4 );
     
     // every test will use a unique random matrix
     QMatrix op = getRandomUnitary(2);
-    ComplexMatrix4 matr = toComplexMatrix4(op); 
+    ComplexMatrix4 matr = toComplexMatrix4(op);
  
     SECTION( "correctness" ) {
     
@@ -1725,7 +1733,7 @@ TEST_CASE( "multiControlledTwoQubitUnitary", "[unitaries]" ) {
         SECTION( "unitary fits in node" ) {
                 
             // pretend we have a very limited distributed memory
-            quregVec.numAmpsPerChunk = 1;
+            quregVec.numAmpsPerNode = 1;
             int ctrls[1] = {0};
             REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, 1, 1, 2, matr), Contains("targets too many qubits"));
         }
@@ -1745,7 +1753,7 @@ TEST_CASE( "multiControlledUnitary", "[unitaries]" ) {
 
     // every test will use a unique random matrix
     QMatrix op = getRandomUnitary(1);
-    ComplexMatrix2 matr = toComplexMatrix2(op); 
+    ComplexMatrix2 matr = toComplexMatrix2(op);
  
     SECTION( "correctness" ) {
         
@@ -1882,7 +1890,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
     // figure out max-num (inclusive) targs allowed by hardware backend
-    int maxNumTargs = calcLog2(quregVec.numAmpsPerChunk);
+    int maxNumTargs = calcLog2(quregVec.numAmpsPerNode);
     
     SECTION( "correctness" ) {
         
@@ -1945,7 +1953,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
         SECTION( "unitarity" ) {
             
             int numTargs = GENERATE_COPY( range(1,maxNumTargs) );
-            VLA(int, targs, numTargs);
+            int targs[NUM_QUBITS];
             for (int i=0; i<numTargs; i++)
                 targs[i] = i+1;
             
@@ -1965,8 +1973,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
              * currently.
              */
             ComplexMatrixN matr;
-            matr.real = NULL;
-            matr.imag = NULL; 
+            matr.cpuElems = NULL;
             REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), Contains("created") );
         }
         SECTION( "unitary dimensions" ) {
@@ -1980,7 +1987,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
         SECTION( "unitary fits in node" ) {
                 
             // pretend we have a very limited distributed memory (judged by matr size)
-            quregVec.numAmpsPerChunk = 1;
+            quregVec.numAmpsPerNode = 1;
             int qb[] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(2); // prevents seg-fault if validation doesn't trigger
             REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, qb, 2, matr), Contains("targets too many qubits"));
@@ -2012,12 +2019,12 @@ TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
          * Hence, we instead opt to repeatedlyrandomly generate pauliseqs
          */
         GENERATE( range(0,10) ); // gen 10 random pauli-codes for every targs
-        VLA(pauliOpType, paulis, numTargs);
+        pauliOpType paulis[NUM_QUBITS];
         for (int i=0; i<numTargs; i++)
             paulis[i] = (pauliOpType) getRandomInt(0,4);
 
         // exclude identities from reference matrix exp (they apply unwanted global phase)
-        VLA(int, refTargs, numTargs);
+        int refTargs[NUM_QUBITS];
         int numRefTargs = 0;
 
         QMatrix xMatr{{0,1},{1,0}};
@@ -2800,11 +2807,11 @@ TEST_CASE( "twoQubitUnitary", "[unitaries]" ) {
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
     // in distributed mode, each node must be able to fit all amps modified by unitary 
-    REQUIRE( quregVec.numAmpsPerChunk >= 4 );
+    REQUIRE( quregVec.numAmpsPerNode >= 4 );
     
     // every test will use a unique random matrix
     QMatrix op = getRandomUnitary(2);
-    ComplexMatrix4 matr = toComplexMatrix4(op); 
+    ComplexMatrix4 matr = toComplexMatrix4(op);
 
     SECTION( "correctness" ) {
         
@@ -2847,7 +2854,7 @@ TEST_CASE( "twoQubitUnitary", "[unitaries]" ) {
         SECTION( "unitary fits in node" ) {
                 
             // pretend we have a very limited distributed memory
-            quregVec.numAmpsPerChunk = 1;
+            quregVec.numAmpsPerNode = 1;
             REQUIRE_THROWS_WITH( twoQubitUnitary(quregVec, 0, 1, matr), Contains("targets too many qubits"));
         }
     }
@@ -2866,7 +2873,7 @@ TEST_CASE( "unitary", "[unitaries]" ) {
     
     // every test will use a unique random matrix
     QMatrix op = getRandomUnitary(1);
-    ComplexMatrix2 matr = toComplexMatrix2(op); 
+    ComplexMatrix2 matr = toComplexMatrix2(op);
 
     SECTION( "correctness" ) {
         

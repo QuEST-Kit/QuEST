@@ -14,15 +14,14 @@
 #ifndef QUEST_TEST_UTILS_H
 #define QUEST_TEST_UTILS_H
 
-#include "QuEST.h"
-#include "QuEST_complex.h"
+#include "quest.h"
 #include "catch.hpp"
+
+#include <string>
 #include <vector>
 
-/** The single QuESTEnv environment created before the Catch tests begin, 
- * and destroyed thereafter.
- */
-extern QuESTEnv QUEST_ENV;
+using std::string;
+using std::vector;
 
 /** The default number of qubits in the registers created for unit testing 
  * (both statevectors and density matrices). Creation of non-NUM_QUBITS sized 
@@ -33,24 +32,21 @@ extern QuESTEnv QUEST_ENV;
  * results from their expected value, due to numerical error; this is especially 
  * apparent for density matrices.
  */
-#define NUM_QUBITS 5
+#define NUM_QUBITS 4
+
+#undef REAL_EPS
+static qreal REAL_EPS = 1E2 * DEAULT_VALIDATION_EPSILON;
+//#define REAL_EPS DEAULT_VALIDATION_EPSILON
 
 #ifndef M_PI
 #define M_PI 3.141592653589793238
 #endif
 
-/** This is absolute war against MSVC C++14 which does not permit variable-length 
- * arrays. We hunted down the previous VLAs with regex:
- *     ([a-zA-Z0-9]+?) ([a-zA-Z0-9]+?)\[([a-zA-Z0-9]+?)\]
- * replacing results with:
- *      VLA($1, $2, $3)
- * We perform this replacement even for non-MSVC compilers, since some dislike 
- * VLAs of non-POD elemets (like of QMatrix, compiling with NVCC + Clang). 
- * Eat it, Bill!
- */
-#define VLA(type, name, len) \
-    std::vector<type> name##_vla_hack_vec(len); \
-    type* name = name##_vla_hack_vec.data();
+
+// Qureg creators which forcefully enable the environment backends
+Qureg createForcedQureg(int numQubits);
+Qureg createForcedDensityQureg(int numQubits);
+
 
 /** A complex square matrix. 
  * Should be initialised with getZeroMatrix().
@@ -63,7 +59,7 @@ extern QuESTEnv QUEST_ENV;
  * @ingroup testutilities
  * @author Tyson Jones
  */
-typedef std::vector<std::vector<qcomp>> QMatrix;
+typedef vector<vector<qcomp>> QMatrix;
 
 /** A complex vector, which can be zero-initialised with QVector(numAmps).
  * These have all the natural linear-algebra operator overloads.
@@ -74,7 +70,20 @@ typedef std::vector<std::vector<qcomp>> QMatrix;
  * @ingroup testutilities
  * @author Tyson Jones
  */
-typedef std::vector<qcomp> QVector;
+typedef vector<qcomp> QVector;
+
+/** Seed the C and C++ RNGs using hardware CSPRNG
+ * 
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+void setRandomTestStateSeeds();
+
+#ifdef absReal
+#undef absReal
+#endif
+qreal absReal(qreal x);
+qreal absComp(qcomp x);
 
 /** Asserts the given statevector qureg and reference agree, and are properly initialised in the debug state.
  * Assertion uses the DEMAND() macro, calling Catch2's FAIL() if unsatisfied, so does not contribute
@@ -143,14 +152,21 @@ QVector operator * (const QMatrix& m, const QVector& v);
  */
 QVector toQVector(Qureg qureg);
 
-/** Returns a vector with the same of the full diagonal operator,
- * populated with \p op's elements.
+/** Returns a vector with the given diagonal's elements.
  * In distributed mode, this involves an all-to-all broadcast of \p op.
  *
  * @ingroup testutilities
  * @author Tyson Jones
  */
-QVector toQVector(DiagonalOp op);
+QVector toQVector(DiagMatr op);
+
+/** Returns a vector with the given diagonal's elements.
+ * In distributed mode, this involves an all-to-all broadcast of \p op.
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones
+ */
+QVector toQVector(FullStateDiagMatr op);
 
 /** Returns an equal-size copy of the given density matrix \p qureg.
  * In GPU mode, this function involves a copy of \p qureg from GPU memory to RAM.
@@ -161,34 +177,26 @@ QVector toQVector(DiagonalOp op);
  */
 QMatrix toQMatrix(Qureg qureg);
 
-/** Returns the matrix (where a=\p alpha, b=\p beta)
- * {{a, -conj(b)}, {b,  conj(a)}} using the \p qcomp complex type.
- *
- * @ingroup testutilities
- * @author Tyson Jones
- */
-QMatrix toQMatrix(Complex alpha, Complex beta);
-
 /** Returns a copy of the given 2-by-2 matrix.
  *
  * @ingroup testutilities
  * @author Tyson Jones
  */
-QMatrix toQMatrix(ComplexMatrix2 src);
+QMatrix toQMatrix(CompMatr1 src);
 
 /** Returns a copy of the given 4-by-4 matrix.
  *
  * @ingroup testutilities
  * @author Tyson Jones
  */
-QMatrix toQMatrix(ComplexMatrix4 src);
+QMatrix toQMatrix(CompMatr2 src);
 
-/** Returns a copy of the given 2^\p N-by-2^\p N matrix 
+/** Returns a copy of the given matrix
  *
  * @ingroup testutilities
  * @author Tyson Jones
  */
-QMatrix toQMatrix(ComplexMatrixN src);
+QMatrix toQMatrix(CompMatr src);
 
 /** Returns a 2^\p N-by-2^\p N Hermitian matrix form of the specified 
  * weighted sum of Pauli products
@@ -205,27 +213,29 @@ QMatrix toQMatrix(qreal* coeffs, pauliOpType* paulis, int numQubits, int numTerm
  */
 QMatrix toQMatrix(PauliHamil hamil);
 
-/** Returns a 2^\p N-by-2^\p N complex diagonal matrix form of the DiagonalOp
+/** Returns a 2^\p N-by-2^\p N Hermitian Z-basis
+ * matrix of the given complex-weighted sum of Pauli 
+ * strings, where N is the number of non-Identity
+ * operators.
  *
  * @ingroup testutilities
  * @author Tyson Jones
  */
-QMatrix toQMatrix(DiagonalOp op);
+QMatrix toQMatrix(PauliStrSum sum);
 
-/** Returns a 2^\p n-by-2^\p n complex diagonal matrix form of the SubDiagonalOp,
- * where n = op.numQubits
+/** Returns a dense matrix equivalent to the given diagonal
  *
  * @ingroup testutilities
  * @author Tyson Jones
  */
-QMatrix toQMatrix(SubDiagonalOp op);
+QMatrix toQMatrix(DiagMatr matr);
 
-/** Returns a diagonal complex matrix formed by the given vector 
+/** Returns a dense matrix equivalent to the given diagonal
  *
  * @ingroup testutilities
- * @author Tyson Jones 
+ * @author Tyson Jones
  */
-QMatrix toDiagonalQMatrix(QVector vec);
+QMatrix toQMatrix(FullStateDiagMatr matr);
 
 /** Returns a \p ComplexMatrix2 copy of QMatix \p qm.
  * Demands that \p qm is a 2-by-2 matrix.
@@ -243,14 +253,21 @@ ComplexMatrix2 toComplexMatrix2(QMatrix qm);
  */
 ComplexMatrix4 toComplexMatrix4(QMatrix qm);
 
-/** Initialises \p cm with the values of \p qm.
- * Demands that \p cm is a previously created ComplexMatrixN instance, with 
- * the same dimensions as \p qm.
- *
+/** Populates the ComplexMatrixN with the contents of a QMatrix. In
+ * GPU-mode, this will then sync the elements ot the matrix's
+ * persistent GPU memory
+ * 
  * @ingroup testutilities
  * @author Tyson Jones
  */
 void toComplexMatrixN(QMatrix qm, ComplexMatrixN cm);
+
+/** Returns a diagonal complex matrix formed by the given vector 
+ *
+ * @ingroup testutilities
+ * @author Tyson Jones 
+ */
+QMatrix toDiagonalQMatrix(QVector vec);
 
 /** Initialises the state-vector \p qureg to have the same amplitudes as \p vec.
  * Demands \p qureg is a state-vector of an equal size to \p vec.
@@ -473,14 +490,14 @@ QVector getMatrixDiagonal(QMatrix matr);
  * @ingroup testutilities 
  * @author Tyson Jones
  */
-std::vector<QMatrix> getRandomKrausMap(int numQb, int numOps);
+vector<QMatrix> getRandomKrausMap(int numQb, int numOps);
 
 /** Returns a list of random real scalars, each in [0, 1], which sum to unity. 
  *
  * @ingroup testutilities
  * @author Tyson Jones
  */
-std::vector<qreal> getRandomProbabilities(int numProbs);
+vector<qreal> getRandomProbabilities(int numProbs);
 
 /** Returns a list of random orthonormal complex vectors, from an undisclosed 
  * distribution. 
@@ -488,7 +505,7 @@ std::vector<qreal> getRandomProbabilities(int numProbs);
  * @ingroup testutilities 
  * @author Tyson Jones
  */
-std::vector<QVector> getRandomOrthonormalVectors(int numQb, int numStates);
+vector<QVector> getRandomOrthonormalVectors(int numQb, int numStates);
 
 /** Returns a mixed density matrix formed from mixing the given pure states, 
  * which are assumed normalised, but not necessarily orthogonal.
@@ -496,7 +513,7 @@ std::vector<QVector> getRandomOrthonormalVectors(int numQb, int numStates);
  * @ingroup testutilities
  * @author Tyson Jones 
  */
-QMatrix getMixedDensityMatrix(std::vector<qreal> probs, std::vector<QVector> states);
+QMatrix getMixedDensityMatrix(vector<qreal> probs, vector<QVector> states);
 
 /** Returns an L2-normalised copy of \p vec, using Kahan summation for improved accuracy.
  *
@@ -1021,7 +1038,7 @@ void setRandomPauliSum(qreal* coeffs, pauliOpType* codes, int numQubits, int num
  * @ingroup testutilities 
  * @author Tyson Jones
  */
-void setRandomPauliSum(PauliHamil hamil);
+void setRandomPauliSum(PauliHamil hamil, int numQubits);
 
 /** Populates \p hamil with random coefficients and a random amount number of 
  * PAULI_I and PAULI_Z operators.
@@ -1029,7 +1046,7 @@ void setRandomPauliSum(PauliHamil hamil);
  * @ingroup testutilities 
  * @author Tyson Jones
  */
-void setRandomDiagPauliHamil(PauliHamil hamil);
+void setRandomDiagPauliHamil(PauliHamil hamil, int numQubits);
 
 /** Populates \p targs with a random selection of \p numTargs elements from [0,\p numQb-1].
  * List \p targs does not need to be initialised and its elements are overwritten.
@@ -1038,6 +1055,14 @@ void setRandomDiagPauliHamil(PauliHamil hamil);
  * @author Tyson Jones
  */
 void setRandomTargets(int* targs, int numTargs, int numQb);
+
+/** Populates \p targs with a random selection of elements from [0,\p numQb-1].
+ * List \p targs does not need to be initialised and its elements are overwritten.
+ * 
+ * @ingroup testutilities 
+ * @author Tyson Jones
+ */
+void setRandomTargets(vector<int> &targs, int numQb);
 
 /** Returns the two's complement signed encoding of the unsigned number decimal, 
  * which must be a number between 0 and 2^numBits (exclusive). The returned number 
@@ -1057,18 +1082,18 @@ long long int getTwosComplement(long long int decimal, int numBits);
  */
 long long int getUnsigned(long long int twosComp, int numBits);
 
-/** Modifies the given diagonal matrix such that the diagonal elements which 
- * correspond to the coordinates in overrideInds are replaced with exp(i phase), as
- * prescribed by overridePhases. This function assumes that the given registers 
- * are contiguous, are in order of increasing significance, and that the matrix 
- * is proportionately sized and structured to act on the space of all registers 
- * combined. Overrides can be repeated, and only the first encountered for a given 
- * index will be effected (much like applyMultiVarPhaseFuncOverrides()).
- *
- * @ingroup testutilities
- * @author Tyson Jones
- */
-void setDiagMatrixOverrides(QMatrix &matr, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, long long int* overrideInds, qreal* overridePhases, int numOverrides);
+// /** Modifies the given diagonal matrix such that the diagonal elements which 
+//  * correspond to the coordinates in overrideInds are replaced with exp(i phase), as
+//  * prescribed by overridePhases. This function assumes that the given registers 
+//  * are contiguous, are in order of increasing significance, and that the matrix 
+//  * is proportionately sized and structured to act on the space of all registers 
+//  * combined. Overrides can be repeated, and only the first encountered for a given 
+//  * index will be effected (much like applyMultiVarPhaseFuncOverrides()).
+//  *
+//  * @ingroup testutilities
+//  * @author Tyson Jones
+//  */
+// void setDiagMatrixOverrides(QMatrix &matr, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, long long int* overrideInds, qreal* overridePhases, int numOverrides);
 
 /** Modifies outFn to be a filename of format prefix_NUM.txt where NUM 
  * is a new unique integer so far. This is useful for getting unique filenames for 
@@ -1078,7 +1103,7 @@ void setDiagMatrixOverrides(QMatrix &matr, int* numQubitsPerReg, int numRegs, en
  * @ingroup testutilities
  * @author Tyson Jones
  */
-void setUniqueFilename(char* outFn, char* prefix);
+void setUniqueFilename(char* outFn, int maxlen, char* prefix);
 
 /** Writes contents to the file with filename fn, which is created and/or overwritten.
  * In distributed mode, the master node writes while the other nodes wait until complete. 

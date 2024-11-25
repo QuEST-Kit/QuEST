@@ -1,13 +1,23 @@
 
 #include "catch.hpp"
-#include "QuEST.h"
-#include "utilities.hpp"
+
+// must define preprocessors to enable quest's
+// deprecated v3 API, and disable the numerous
+// warnings issued by its compilation
+#define INCLUDE_DEPRECATED_FUNCTIONS 1
+#define DISABLE_DEPRECATION_WARNINGS 1
+
+#include "test_utilities.hpp"
+
 #include <random>
+#include <vector>
+
+using std::vector;
 
 /** Prepares a density matrix in the debug state, and the reference QMatrix 
  */
 #define PREPARE_TEST(qureg, ref) \
-    Qureg qureg = createDensityQureg(NUM_QUBITS, QUEST_ENV); \
+    Qureg qureg = createForcedDensityQureg(NUM_QUBITS); \
     initDebugState(qureg); \
     QMatrix ref = toQMatrix(qureg); \
     assertQuregAndRefInDebugState(qureg, ref);
@@ -27,7 +37,7 @@ TEST_CASE( "mixDamping", "[decoherence]" ) {
 
     SECTION( "correctness" ) {
         
-        int target = GENERATE( range(0,NUM_QUBITS) );
+        int target = GENERATE( range(0, NUM_QUBITS) );
         qreal prob = getRandomReal(0, 1);
         mixDamping(qureg, target, prob);
         
@@ -52,17 +62,18 @@ TEST_CASE( "mixDamping", "[decoherence]" ) {
         }
         SECTION( "probability" ) {
             
-            REQUIRE_THROWS_WITH( mixDamping(qureg, 0, -.1), Contains("Probabilities") );
-            REQUIRE_THROWS_WITH( mixDamping(qureg, 0, 1.1), Contains("Probabilities") );
+            REQUIRE_THROWS_WITH( mixDamping(qureg, 0, -.1), Contains("probability is invalid") );
+            REQUIRE_THROWS_WITH( mixDamping(qureg, 0, 1.1), Contains("probability is invalid") );
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( mixDamping(vec, 0, 0), Contains("density matrices") );
-            destroyQureg(vec, QUEST_ENV);
+            Qureg vec = createQureg(NUM_QUBITS);
+            REQUIRE_NOTHROW( mixDamping(vec, 0, 0) ); // zero-prob allowed in v4
+            REQUIRE_THROWS_WITH( mixDamping(vec, 0, .1), Contains("Expected a density matrix Qureg but received a statevector") );
+            destroyQureg(vec, getQuESTEnv());
         }
     }
-    destroyQureg(qureg, QUEST_ENV);
+    destroyQureg(qureg, getQuESTEnv());
 }
 
 
@@ -73,8 +84,8 @@ TEST_CASE( "mixDamping", "[decoherence]" ) {
  */
 TEST_CASE( "mixDensityMatrix", "[decoherence]" ) {
     
-    Qureg qureg1 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg qureg2 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg qureg1 = createForcedDensityQureg(NUM_QUBITS);
+    Qureg qureg2 = createForcedDensityQureg(NUM_QUBITS);
     initDebugState(qureg1);
     initDebugState(qureg2);
     QMatrix ref1 = toQMatrix(qureg1);
@@ -95,35 +106,38 @@ TEST_CASE( "mixDensityMatrix", "[decoherence]" ) {
     }
     SECTION( "input validation" ) {
         
-        SECTION( "probabilities") {
+        SECTION( "probabilities" ) {
             
             qreal prob = GENERATE( -0.1, 1.1 );
-            REQUIRE_THROWS_WITH( mixDensityMatrix(qureg1, prob, qureg2), Contains("Probabilities") );
+            REQUIRE_THROWS_WITH( mixDensityMatrix(qureg1, prob, qureg2), Contains("probability is invalid") );
         }
         SECTION( "density matrices" ) {
             
             // one is statevec 
-            Qureg state1 = createQureg(qureg1.numQubitsRepresented, QUEST_ENV);
-            REQUIRE_THROWS_WITH( mixDensityMatrix(qureg1, 0, state1), Contains("density matrices") );
-            REQUIRE_THROWS_WITH( mixDensityMatrix(state1, 0, qureg1), Contains("density matrices") );
+            Qureg state1 = createQureg(qureg1.numQubits, getQuESTEnv());
+            REQUIRE_THROWS_WITH( mixDensityMatrix(qureg1, 0, state1), Contains("Expected a density matrix Qureg but received a statevector") );
+
+            // in v4, the 2nd arg can be a statevector
+            
+                // REQUIRE_THROWS_WITH( mixDensityMatrix(state1, 0, qureg1), Contains("Expected a density matrix Qureg but received a statevector") );
             
             // both are statevec
-            Qureg state2 = createQureg(qureg1.numQubitsRepresented, QUEST_ENV);
-            REQUIRE_THROWS_WITH( mixDensityMatrix(state1, 0, state2), Contains("density matrices") );
+            Qureg state2 = createQureg(qureg1.numQubits, getQuESTEnv());
+            REQUIRE_THROWS_WITH( mixDensityMatrix(state1, 0, state2), Contains("Expected a density matrix Qureg but received a statevector") );
             
-            destroyQureg(state1, QUEST_ENV);
-            destroyQureg(state2, QUEST_ENV);
+            destroyQureg(state1, getQuESTEnv());
+            destroyQureg(state2, getQuESTEnv());
         }
         SECTION( "matching dimensions" ) {
             
-            Qureg qureg3 = createDensityQureg(1 + qureg1.numQubitsRepresented, QUEST_ENV);
-            REQUIRE_THROWS_WITH( mixDensityMatrix(qureg1, 0, qureg3), Contains("Dimensions") );
-            REQUIRE_THROWS_WITH( mixDensityMatrix(qureg3, 0, qureg1), Contains("Dimensions") );
-            destroyQureg(qureg3, QUEST_ENV);
+            Qureg qureg3 = createDensityQureg(1 + qureg1.numQubits, getQuESTEnv());
+            REQUIRE_THROWS_WITH( mixDensityMatrix(qureg1, 0, qureg3), Contains("inconsistent number of qubits") );
+            REQUIRE_THROWS_WITH( mixDensityMatrix(qureg3, 0, qureg1), Contains("inconsistent number of qubits") );
+            destroyQureg(qureg3, getQuESTEnv());
         }
     }
-    destroyQureg(qureg1, QUEST_ENV);
-    destroyQureg(qureg2, QUEST_ENV);
+    destroyQureg(qureg1, getQuESTEnv());
+    destroyQureg(qureg2, getQuESTEnv());
 }
 
 
@@ -136,7 +150,7 @@ TEST_CASE( "mixDephasing", "[decoherence]" ) {
     
     PREPARE_TEST(qureg, ref);
 
-    SECTION( "correctness " ) {
+    SECTION( "correctness" ) {
         
         int target = GENERATE( range(0,NUM_QUBITS) );
         qreal prob = getRandomReal(0, 1/2.);
@@ -149,7 +163,7 @@ TEST_CASE( "mixDephasing", "[decoherence]" ) {
         
         REQUIRE( areEqual(qureg, ref) );
     }
-    SECTION( "validation ") {
+    SECTION( "validation" ) {
         
         SECTION( "qubit index" ) {
             
@@ -159,17 +173,18 @@ TEST_CASE( "mixDephasing", "[decoherence]" ) {
         }
         SECTION( "probability" ) {
             
-            REQUIRE_THROWS_WITH( mixDephasing(qureg, 0, -.1), Contains("Probabilities") );
-            REQUIRE_THROWS_WITH( mixDephasing(qureg, 0, .6), Contains("probability") && Contains("cannot exceed 1/2") );
+            REQUIRE_THROWS_WITH( mixDephasing(qureg, 0, -.1), Contains("probability is invalid") );
+            REQUIRE_THROWS_WITH( mixDephasing(qureg, 0, .6), Contains("probability") && Contains("1/2") );
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( mixDephasing(vec, 0, 0), Contains("density matrices") );
-            destroyQureg(vec, QUEST_ENV);
+            Qureg vec = createQureg(NUM_QUBITS);
+            REQUIRE_NOTHROW( mixDephasing(vec, 0, 0) ); // zero prob ok in v4
+            REQUIRE_THROWS_WITH( mixDephasing(vec, 0, 0.1), Contains("Expected a density matrix Qureg but received a statevector") );
+            destroyQureg(vec, getQuESTEnv());
         }
     }
-    destroyQureg(qureg, QUEST_ENV);
+    destroyQureg(qureg, getQuESTEnv());
 }
 
 
@@ -208,17 +223,18 @@ TEST_CASE( "mixDepolarising", "[decoherence]" ) {
         }
         SECTION( "probability" ) {
             
-            REQUIRE_THROWS_WITH( mixDepolarising(qureg, 0, -.1), Contains("Probabilities") );
-            REQUIRE_THROWS_WITH( mixDepolarising(qureg, 0, .76), Contains("probability") && Contains("cannot exceed 3/4") );
+            REQUIRE_THROWS_WITH( mixDepolarising(qureg, 0, -.1), Contains("probability is invalid") );
+            REQUIRE_THROWS_WITH( mixDepolarising(qureg, 0, .76), Contains("probability") && Contains("3/4") );
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( mixDepolarising(vec, 0, 0), Contains("density matrices") );
-            destroyQureg(vec, QUEST_ENV);
+            Qureg vec = createQureg(NUM_QUBITS);
+            REQUIRE_NOTHROW( mixDepolarising(vec, 0, 0) ); // zero-prob ok in v4
+            REQUIRE_THROWS_WITH( mixDepolarising(vec, 0, 0.1), Contains("Expected a density matrix Qureg but received a statevector") );
+            destroyQureg(vec, getQuESTEnv());
         }
     }
-    destroyQureg(qureg, QUEST_ENV);
+    destroyQureg(qureg, getQuESTEnv());
 }
 
 
@@ -233,7 +249,7 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
     
     // figure out max-num (inclusive) targs allowed by hardware backend
     // (each node must contain as 2^(2*numTargs) amps)
-    int maxNumTargs = calcLog2(qureg.numAmpsPerChunk) / 2;
+    int maxNumTargs = calcLog2(qureg.numAmpsPerNode) / 2;
     
     SECTION( "correctness" ) {
         
@@ -248,8 +264,8 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
         //      int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
         // alas, this is too slow for CI, so we instead try a fixed number of random sets:
         GENERATE( range(0, 10) );
-        VLA(int, targs, numTargs);
-        setRandomTargets(targs, numTargs, NUM_QUBITS);
+        vector<int> targs(numTargs);
+        setRandomTargets(targs, NUM_QUBITS);
         
         // try the min and max number of operators, and 2 random numbers 
         // (there are way too many to try all!)
@@ -257,22 +273,22 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
         int numOps = GENERATE_COPY( 1, maxNumOps, take(2,random(1,maxNumOps)) );
         
         // use a new random map
-        std::vector<QMatrix> matrs = getRandomKrausMap(numTargs, numOps);
+        vector<QMatrix> matrs = getRandomKrausMap(numTargs, numOps);
                 
         // create map in QuEST datatypes
-        VLA(ComplexMatrixN, ops, numOps);
+        vector<CompMatr> ops(numOps);
         for (int i=0; i<numOps; i++) {
-            ops[i] = createComplexMatrixN(numTargs);
-            toComplexMatrixN(matrs[i], ops[i]);
+            ops[i] = createCompMatr(numTargs);
+            setCompMatr(ops[i], matrs[i]);
         }
                 
-        mixMultiQubitKrausMap(qureg, targs, numTargs, ops, numOps);
-                
+        mixMultiQubitKrausMap(qureg, targs.data(), numTargs, ops.data(), numOps);
+        
         // set ref -> K_i ref K_i^dagger
-        VLA(QMatrix, matrRefs, numOps);
+        vector<QMatrix> matrRefs(numOps);
         for (int i=0; i<numOps; i++) {
             matrRefs[i] = ref;
-            applyReferenceOp(matrRefs[i], targs, numTargs, matrs[i]);
+            applyReferenceOp(matrRefs[i], targs.data(), numTargs, matrs[i]);
         }
         ref = getZeroMatrix(ref.size());
         for (int i=0; i<numOps; i++)
@@ -282,9 +298,11 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
         
         // cleanup QuEST datatypes
         for (int i=0; i<numOps; i++)
-            destroyComplexMatrixN(ops[i]);
+            destroyCompMatr(ops[i]);
     }
     SECTION( "input validation" ) {
+
+        CompMatr spoofOps[NUM_QUBITS];
         
         SECTION( "repetition of target" ) {
             
@@ -298,7 +316,7 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
             int copyInd = GENERATE_COPY( filter([=](int i){ return i!=badInd; }, range(0,NUM_QUBITS)) );
             targs[badInd] = targs[copyInd];
             
-            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs, NUM_QUBITS, NULL, 1), Contains("target qubits") && Contains("unique") );
+            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs, NUM_QUBITS, spoofOps, 1), Contains("target qubits") && Contains("unique") );
         }
         SECTION( "qubit indices" ) { 
             
@@ -310,7 +328,7 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
             // make one invalid 
             targs[GENERATE( range(0,NUM_QUBITS) )] = GENERATE( -1, NUM_QUBITS );
             
-            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs, NUM_QUBITS, NULL, 1), Contains("Invalid target qubit") );
+            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs, NUM_QUBITS, spoofOps, 1), Contains("Invalid target qubit") );
         }
         SECTION( "number of operators" ) {
             
@@ -319,15 +337,15 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
             int numOps = GENERATE_REF( -1, 0, maxNumOps + 1 );
                         
             // make valid targets to avoid triggering target validation
-            VLA(int, targs, numTargs);
+            vector<int> targs(numTargs);
             for (int i=0; i<numTargs; i++)
                 targs[i] = i;
-            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs, numTargs, NULL, numOps), Contains("operators may be specified") );
+            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs.data(), numTargs, spoofOps, numOps), Contains("operators may be specified") );
         }
         SECTION( "initialisation of operators" ) {
             
             /* compilers don't auto-initialise to NULL; the below circumstance 
-             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
+             * only really occurs when 'malloc' returns NULL in createCompMatr, 
              * which actually triggers its own validation. Hence this test is useless 
              * currently.
              */
@@ -336,26 +354,26 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
             int numOps = (2*numTargs)*(2*numTargs);
             
             // no need to initialise ops, but set their attribs correct to avoid triggering other validation
-            VLA(ComplexMatrixN, ops, numOps);
+            vector<CompMatr> ops(numOps);
             for (int i=0; i<numOps; i++)
                 ops[i].numQubits = numTargs;
             
             // make one of the max-ops explicitly NULL
-            ops[GENERATE_COPY( range(0,numTargs) )].real = NULL;
+            ops[GENERATE_COPY( range(0,numTargs) )].cpuElems = NULL;
              
             // make valid targets to avoid triggering target validation
-            VLA(int, targs, numTargs);
+            vector<int> targs(numTargs);
             for (int i=0; i<numTargs; i++)
                 targs[i] = i;
                
-            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs, numTargs, ops, numOps), Contains("ComplexMatrixN") && Contains("created") );
+            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs.data(), numTargs, ops.data(), numOps), Contains("ComplexMatrixN") && Contains("created") );
         }
         SECTION( "dimension of operators" ) {
         
             // make valid (dimension-wise) max-qubits Kraus map
             int numTargs = NUM_QUBITS;
             int numOps = (2*numTargs)*(2*numTargs);
-            VLA(ComplexMatrixN, ops, numOps);
+            vector<ComplexMatrixN> ops(numOps);
             for (int i=0; i<numOps; i++)
                 ops[i] = createComplexMatrixN(numTargs);
             
@@ -365,11 +383,11 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
             ops[badInd] = createComplexMatrixN(numTargs - 1);
             
             // make valid targets to avoid triggering target validation
-            VLA(int, targs, numTargs);
+            vector<int> targs(numTargs);
             for (int i=0; i<numTargs; i++)
                 targs[i] = i;
                 
-            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs, numTargs, ops, numOps), Contains("same number of qubits") );
+            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs.data(), numTargs, ops.data(), numOps), Contains("same number of qubits") );
             
             for (int i=0; i<numOps; i++)
                 destroyComplexMatrixN(ops[i]);
@@ -381,37 +399,37 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
             int numOps = GENERATE_COPY( 1, 2, maxNumOps );
             
             // generate a valid map
-            std::vector<QMatrix> matrs = getRandomKrausMap(numTargs, numOps);
-            VLA(ComplexMatrixN, ops, numOps);
+            vector<QMatrix> matrs = getRandomKrausMap(numTargs, numOps);
+            vector<ComplexMatrixN> ops(numOps);
             for (int i=0; i<numOps; i++) {
                 ops[i] = createComplexMatrixN(numTargs);
                 toComplexMatrixN(matrs[i], ops[i]);
             }
             
             // make only one invalid
-            ops[GENERATE_REF( range(0,numOps) )].real[0][0] = -123456789;
+            ops[GENERATE_REF( range(0,numOps) )].cpuElems[0][0] = -123456789;
             
             // make valid targets to avoid triggering target validation
-            VLA(int, targs, numTargs);
+            vector<int> targs(numTargs);
             for (int i=0; i<numTargs; i++)
                 targs[i] = i;
             
-            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs, numTargs, ops, numOps), Contains("trace preserving") );
+            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs.data(), numTargs, ops.data(), numOps), Contains("trace preserving") );
 
             for (int i=0; i<numOps; i++)
                 destroyComplexMatrixN(ops[i]);
         }
         SECTION( "density-matrix" ) {
             
-            Qureg statevec = createQureg(NUM_QUBITS, QUEST_ENV);
+            Qureg statevec = createQureg(NUM_QUBITS);
             
             // make valid targets to avoid triggering target validation
             int targs[NUM_QUBITS];
             for (int i=0; i<NUM_QUBITS; i++)
                 targs[i] = i;
                 
-            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(statevec, targs, NUM_QUBITS, NULL, 1), Contains("valid only for density matrices") );
-            destroyQureg(statevec, QUEST_ENV);
+            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(statevec, targs, NUM_QUBITS, NULL, 1), Contains("Expected a density matrix Qureg but received a statevector") );
+            destroyQureg(statevec, getQuESTEnv());
             
         }
         SECTION( "operator fits in node" ) {
@@ -427,16 +445,16 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
             // make a simple Identity map    
             ComplexMatrixN ops[] = {createComplexMatrixN(NUM_QUBITS)};
             for (int i=0; i<(1<<NUM_QUBITS); i++)
-                ops[0].real[i][i] = 1;
+                ops[0].cpuElems[i][i] = 1;
             
             // fake a smaller qureg 
-            qureg.numAmpsPerChunk = minAmps - 1;
+            qureg.numAmpsPerNode = minAmps - 1;
             REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs, NUM_QUBITS, ops, 1), Contains("targets too many qubits") && Contains("cannot all fit") );
             
             destroyComplexMatrixN(ops[0]);
         }
     }
-    destroyQureg(qureg, QUEST_ENV);
+    destroyQureg(qureg, getQuESTEnv());
 }
 
 
@@ -495,9 +513,9 @@ TEST_CASE( "mixPauli", "[decoherence]" ) {
             int target = 0;
             
             // probs clearly must be in [0, 1]
-            REQUIRE_THROWS_WITH( mixPauli(qureg, target, -.1,   0,   0), Contains("Probabilities") );
-            REQUIRE_THROWS_WITH( mixPauli(qureg, target,   0, -.1,   0), Contains("Probabilities") );
-            REQUIRE_THROWS_WITH( mixPauli(qureg, target,   0,   0, -.1), Contains("Probabilities") );
+            REQUIRE_THROWS_WITH( mixPauli(qureg, target, -.1,   0,   0), Contains("probability is invalid") );
+            REQUIRE_THROWS_WITH( mixPauli(qureg, target,   0, -.1,   0), Contains("probability is invalid") );
+            REQUIRE_THROWS_WITH( mixPauli(qureg, target,   0,   0, -.1), Contains("probability is invalid") );
             
             // max single-non-zero-prob is 0.5
             REQUIRE_THROWS_WITH( mixPauli(qureg, target, .6,  0,  0), Contains("cannot exceed the probability") );
@@ -509,12 +527,15 @@ TEST_CASE( "mixPauli", "[decoherence]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( mixPauli(vec, 0, 0, 0, 0), Contains("density matrices") );
-            destroyQureg(vec, QUEST_ENV);
+            Qureg vec = createQureg(NUM_QUBITS);
+            REQUIRE_NOTHROW( mixPauli(vec, 0, 0, 0, 0) ); // zero-prob ok in v4
+            REQUIRE_THROWS_WITH( mixPauli(vec, 0, 0.1, 0, 0), Contains("Expected a density matrix Qureg but received a statevector") );
+            REQUIRE_THROWS_WITH( mixPauli(vec, 0, 0, 0.1, 0), Contains("Expected a density matrix Qureg but received a statevector") );
+            REQUIRE_THROWS_WITH( mixPauli(vec, 0, 0, 0, 0.1), Contains("Expected a density matrix Qureg but received a statevector") );
+            destroyQureg(vec, getQuESTEnv());
         }
     }
-    destroyQureg(qureg, QUEST_ENV);
+    destroyQureg(qureg, getQuESTEnv());
 }
 
 
@@ -531,15 +552,16 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
         
         int target = GENERATE( range(0,NUM_QUBITS) );
         int numOps = GENERATE( range(1,5) ); // max 4 inclusive
-        std::vector<QMatrix> matrs = getRandomKrausMap(1, numOps);
+        vector<QMatrix> matrs = getRandomKrausMap(1, numOps);
         
-        VLA(ComplexMatrix2, ops, numOps);
+        vector<ComplexMatrix2> ops(numOps);
         for (int i=0; i<numOps; i++)
             ops[i] = toComplexMatrix2(matrs[i]);
-        mixKrausMap(qureg, target, ops, numOps);
+
+        mixKrausMap(qureg, target, ops.data(), numOps);
         
         // set ref -> K_i ref K_i^dagger
-        VLA(QMatrix, matrRefs, numOps);
+        vector<QMatrix> matrRefs(numOps);
         for (int i=0; i<numOps; i++) {
             matrRefs[i] = ref;
             applyReferenceOp(matrRefs[i], target, matrs[i]);
@@ -561,14 +583,14 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
             
             // valid Kraus map
             int numOps = GENERATE( range(1,5) ); // max 4 inclusive
-            std::vector<QMatrix> matrs = getRandomKrausMap(1, numOps);
-            VLA(ComplexMatrix2, ops, numOps);
+            vector<QMatrix> matrs = getRandomKrausMap(1, numOps);
+            vector<ComplexMatrix2> ops(numOps);
             for (int i=0; i<numOps; i++)
                 ops[i] = toComplexMatrix2(matrs[i]);
                 
             // make invalid
             ops[GENERATE_REF( range(0,numOps) )].real[0][0] = 0;
-            REQUIRE_THROWS_WITH( mixKrausMap(qureg, 0, ops, numOps), Contains("trace preserving") );
+            REQUIRE_THROWS_WITH( mixKrausMap(qureg, 0, ops.data(), numOps), Contains("trace preserving") );
             
         }
         SECTION( "qubit index" ) {
@@ -578,17 +600,17 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( mixKrausMap(vec, 0, NULL, 1), Contains("density matrices") );
-            destroyQureg(vec, QUEST_ENV);
+            Qureg vec = createQureg(NUM_QUBITS);
+            REQUIRE_THROWS_WITH( mixKrausMap(vec, 0, NULL, 1), Contains("Expected a density matrix Qureg but received a statevector") );
+            destroyQureg(vec, getQuESTEnv());
         }
         SECTION( "operators fit in node" ) {
             
-            qureg.numAmpsPerChunk = 3; // min 4
+            qureg.numAmpsPerNode = 3; // min 4
             REQUIRE_THROWS_WITH( mixKrausMap(qureg, 0, NULL, 1), Contains("targets too many qubits") );
         }        
     }
-    destroyQureg(qureg, QUEST_ENV);
+    destroyQureg(qureg, getQuESTEnv());
 }
 
 
@@ -607,17 +629,17 @@ TEST_CASE( "mixNonTPKrausMap", "[decoherence]" ) {
         int numOps = GENERATE( range(1,5) ); // max 4 inclusive
         
         // map consists of unconstrained 2x2 random matrices
-        std::vector<QMatrix> matrs;
+        vector<QMatrix> matrs;
         for (int i=0; i<numOps; i++)
             matrs.push_back(getRandomQMatrix(2));
         
-        VLA(ComplexMatrix2, ops, numOps);
+        vector<ComplexMatrix2> ops(numOps);
         for (int i=0; i<numOps; i++)
             ops[i] = toComplexMatrix2(matrs[i]);
-        mixNonTPKrausMap(qureg, target, ops, numOps);
+        mixNonTPKrausMap(qureg, target, ops.data(), numOps);
         
         // set ref -> K_i ref K_i^dagger
-        VLA(QMatrix, matrRefs, numOps);
+        vector<QMatrix> matrRefs(numOps);
         for (int i=0; i<numOps; i++) {
             matrRefs[i] = ref;
             applyReferenceOp(matrRefs[i], target, matrs[i]);
@@ -642,17 +664,17 @@ TEST_CASE( "mixNonTPKrausMap", "[decoherence]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( mixNonTPKrausMap(vec, 0, NULL, 1), Contains("density matrices") );
-            destroyQureg(vec, QUEST_ENV);
+            Qureg vec = createQureg(NUM_QUBITS);
+            REQUIRE_THROWS_WITH( mixNonTPKrausMap(vec, 0, NULL, 1), Contains("Expected a density matrix Qureg but received a statevector") );
+            destroyQureg(vec, getQuESTEnv());
         }
         SECTION( "operators fit in node" ) {
             
-            qureg.numAmpsPerChunk = 3; // min 4
+            qureg.numAmpsPerNode = 3; // min 4
             REQUIRE_THROWS_WITH( mixNonTPKrausMap(qureg, 0, NULL, 1), Contains("targets too many qubits") );
         }        
     }
-    destroyQureg(qureg, QUEST_ENV);
+    destroyQureg(qureg, getQuESTEnv());
 }
 
 
@@ -667,7 +689,7 @@ TEST_CASE( "mixNonTPMultiQubitKrausMap", "[decoherence]" ) {
     
     // figure out max-num (inclusive) targs allowed by hardware backend
     // (each node must contain as 2^(2*numTargs) amps)
-    int maxNumTargs = calcLog2(qureg.numAmpsPerChunk) / 2;
+    int maxNumTargs = calcLog2(qureg.numAmpsPerNode) / 2;
     
     SECTION( "correctness" ) {
         
@@ -681,8 +703,8 @@ TEST_CASE( "mixNonTPMultiQubitKrausMap", "[decoherence]" ) {
         //      int* targs = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numTargs) );
         // alas, this is too slow for CI, so we instead try a fixed number of random sets:
         GENERATE( range(0, 10) );
-        VLA(int, targs, numTargs);
-        setRandomTargets(targs, numTargs, NUM_QUBITS);
+        vector<int> targs(numTargs);
+        setRandomTargets(targs, NUM_QUBITS);
         
         // try the min and max number of operators, and 2 random numbers 
         // (there are way too many to try all!)
@@ -690,24 +712,24 @@ TEST_CASE( "mixNonTPMultiQubitKrausMap", "[decoherence]" ) {
         int numOps = GENERATE_COPY( 1, maxNumOps, take(2,random(1,maxNumOps)) );
         
         // use a new random map, of unconstrained random (2^numTargs x 2^numTargs) matrices
-        std::vector<QMatrix> matrs;
+        vector<QMatrix> matrs;
         for (int i=0; i<numOps; i++)
             matrs.push_back(getRandomQMatrix(1 << numTargs));
                 
         // create map in QuEST datatypes
-        VLA(ComplexMatrixN, ops, numOps);
+        vector<ComplexMatrixN> ops(numOps);
         for (int i=0; i<numOps; i++) {
             ops[i] = createComplexMatrixN(numTargs);
             toComplexMatrixN(matrs[i], ops[i]);
         }
                 
-        mixNonTPMultiQubitKrausMap(qureg, targs, numTargs, ops, numOps);
+        mixNonTPMultiQubitKrausMap(qureg, targs.data(), numTargs, ops.data(), numOps);
                 
         // set ref -> K_i ref K_i^dagger
-        VLA(QMatrix, matrRefs, numOps);
+        vector<QMatrix> matrRefs(numOps);
         for (int i=0; i<numOps; i++) {
             matrRefs[i] = ref;
-            applyReferenceOp(matrRefs[i], targs, numTargs, matrs[i]);
+            applyReferenceOp(matrRefs[i], targs.data(), numTargs, matrs[i]);
         }
         ref = getZeroMatrix(ref.size());
         for (int i=0; i<numOps; i++)
@@ -754,10 +776,10 @@ TEST_CASE( "mixNonTPMultiQubitKrausMap", "[decoherence]" ) {
             int numOps = GENERATE_REF( -1, 0, maxNumOps + 1 );
                         
             // make valid targets to avoid triggering target validation
-            VLA(int, targs, numTargs);
+            vector<int> targs(numTargs);
             for (int i=0; i<numTargs; i++)
                 targs[i] = i;
-            REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(qureg, targs, numTargs, NULL, numOps), Contains("operators may be specified") );
+            REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(qureg, targs.data(), numTargs, NULL, numOps), Contains("operators may be specified") );
         }
         SECTION( "initialisation of operators" ) {
             
@@ -771,26 +793,26 @@ TEST_CASE( "mixNonTPMultiQubitKrausMap", "[decoherence]" ) {
             int numOps = (2*numTargs)*(2*numTargs);
             
             // no need to initialise ops, but set their attribs correct to avoid triggering other validation
-            VLA(ComplexMatrixN, ops, numOps);
+            vector<ComplexMatrixN> ops(numOps);
             for (int i=0; i<numOps; i++)
                 ops[i].numQubits = numTargs;
             
             // make one of the max-ops explicitly NULL
-            ops[GENERATE_COPY( range(0,numTargs) )].real = NULL;
+            ops[GENERATE_COPY( range(0,numTargs) )].cpuElems = NULL;
              
             // make valid targets to avoid triggering target validation
-            VLA(int, targs, numTargs);
+            vector<int> targs(numTargs);
             for (int i=0; i<numTargs; i++)
                 targs[i] = i;
                
-            REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(qureg, targs, numTargs, ops, numOps), Contains("ComplexMatrixN") && Contains("created") );
+            REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(qureg, targs.data(), numTargs, ops.data(), numOps), Contains("ComplexMatrixN") && Contains("created") );
         }
         SECTION( "dimension of operators" ) {
         
             // make valid (dimension-wise) max-qubits Kraus map
             int numTargs = NUM_QUBITS;
             int numOps = (2*numTargs)*(2*numTargs);
-            VLA(ComplexMatrixN, ops, numOps);
+            vector<ComplexMatrixN> ops(numOps);
             for (int i=0; i<numOps; i++)
                 ops[i] = createComplexMatrixN(numTargs);
             
@@ -800,26 +822,26 @@ TEST_CASE( "mixNonTPMultiQubitKrausMap", "[decoherence]" ) {
             ops[badInd] = createComplexMatrixN(numTargs - 1);
             
             // make valid targets to avoid triggering target validation
-            VLA(int, targs, numTargs);
+            vector<int> targs(numTargs);
             for (int i=0; i<numTargs; i++)
                 targs[i] = i;
                 
-            REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(qureg, targs, numTargs, ops, numOps), Contains("same number of qubits") );
+            REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(qureg, targs.data(), numTargs, ops.data(), numOps), Contains("same number of qubits") );
             
             for (int i=0; i<numOps; i++)
                 destroyComplexMatrixN(ops[i]);
         }
         SECTION( "density-matrix" ) {
             
-            Qureg statevec = createQureg(NUM_QUBITS, QUEST_ENV);
+            Qureg statevec = createQureg(NUM_QUBITS);
             
             // make valid targets to avoid triggering target validation
             int targs[NUM_QUBITS];
             for (int i=0; i<NUM_QUBITS; i++)
                 targs[i] = i;
                 
-            REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(statevec, targs, NUM_QUBITS, NULL, 1), Contains("valid only for density matrices") );
-            destroyQureg(statevec, QUEST_ENV);
+            REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(statevec, targs, NUM_QUBITS, NULL, 1), Contains("Expected a density matrix Qureg but received a statevector") );
+            destroyQureg(statevec, getQuESTEnv());
             
         }
         SECTION( "operator fits in node" ) {
@@ -835,16 +857,16 @@ TEST_CASE( "mixNonTPMultiQubitKrausMap", "[decoherence]" ) {
             // make a simple Identity map    
             ComplexMatrixN ops[] = {createComplexMatrixN(NUM_QUBITS)};
             for (int i=0; i<(1<<NUM_QUBITS); i++)
-                ops[0].real[i][i] = 1;
+                ops[0].cpuElems[i][i] = 1;
             
             // fake a smaller qureg 
-            qureg.numAmpsPerChunk = minAmps - 1;
+            qureg.numAmpsPerNode = minAmps - 1;
             REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(qureg, targs, NUM_QUBITS, ops, 1), Contains("targets too many qubits") && Contains("cannot all fit") );
             
             destroyComplexMatrixN(ops[0]);
         }
     }
-    destroyQureg(qureg, QUEST_ENV);
+    destroyQureg(qureg, getQuESTEnv());
 }
 
 
@@ -864,18 +886,18 @@ TEST_CASE( "mixNonTPTwoQubitKrausMap", "[decoherence]" ) {
         int numOps = GENERATE( range(1,17) ); // max 16 inclusive
         
         // map consists of unconstrained 4x4 random matrices
-        std::vector<QMatrix> matrs;
+        vector<QMatrix> matrs;
         for (int i=0; i<numOps; i++)
             matrs.push_back(getRandomQMatrix(4));
         
-        VLA(ComplexMatrix4, ops, numOps);
+        vector<ComplexMatrix4> ops(numOps);
         for (int i=0; i<numOps; i++)
             ops[i] = toComplexMatrix4(matrs[i]);
-        mixNonTPTwoQubitKrausMap(qureg, targ1, targ2, ops, numOps);
+        mixNonTPTwoQubitKrausMap(qureg, targ1, targ2, ops.data(), numOps);
         
         // set ref -> K_i ref K_i^dagger
         int targs[2] = {targ1, targ2};
-        VLA(QMatrix, matrRefs, numOps);
+        vector<QMatrix> matrRefs(numOps);
         for (int i=0; i<numOps; i++) {
             matrRefs[i] = ref;
             applyReferenceOp(matrRefs[i], targs, 2, matrs[i]);
@@ -906,17 +928,17 @@ TEST_CASE( "mixNonTPTwoQubitKrausMap", "[decoherence]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( mixNonTPTwoQubitKrausMap(vec, 0,1, NULL, 1), Contains("density matrices") );
-            destroyQureg(vec, QUEST_ENV);
+            Qureg vec = createQureg(NUM_QUBITS);
+            REQUIRE_THROWS_WITH( mixNonTPTwoQubitKrausMap(vec, 0,1, NULL, 1), Contains("Expected a density matrix Qureg but received a statevector") );
+            destroyQureg(vec, getQuESTEnv());
         }
         SECTION( "operators fit in node" ) {
             
-            qureg.numAmpsPerChunk = 15; // min 16
+            qureg.numAmpsPerNode = 15; // min 16
             REQUIRE_THROWS_WITH( mixNonTPTwoQubitKrausMap(qureg, 0,1, NULL, 1), Contains("targets too many qubits") );
         }        
     }
-    destroyQureg(qureg, QUEST_ENV);
+    destroyQureg(qureg, getQuESTEnv());
 }
 
 
@@ -965,17 +987,18 @@ TEST_CASE( "mixTwoQubitDephasing", "[decoherence]" ) {
         }
         SECTION( "probability" ) {
             
-            REQUIRE_THROWS_WITH( mixTwoQubitDephasing(qureg, 0, 1, -.1), Contains("Probabilities") );
-            REQUIRE_THROWS_WITH( mixTwoQubitDephasing(qureg, 0, 1, 3/4. + .01), Contains("probability") && Contains("cannot exceed 3/4") );
+            REQUIRE_THROWS_WITH( mixTwoQubitDephasing(qureg, 0, 1, -.1), Contains("probability is invalid") );
+            REQUIRE_THROWS_WITH( mixTwoQubitDephasing(qureg, 0, 1, 3/4. + .01), Contains("probability") && Contains("3/4") );
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( mixTwoQubitDephasing(vec, 0, 1, 0), Contains("density matrices") );
-            destroyQureg(vec, QUEST_ENV);
+            Qureg vec = createQureg(NUM_QUBITS);
+            REQUIRE_NOTHROW( mixTwoQubitDephasing(vec, 0, 1, 0) ); // zero-prob ok in v4
+            REQUIRE_THROWS_WITH( mixTwoQubitDephasing(vec, 0, 1, 0.1), Contains("Expected a density matrix Qureg but received a statevector") );
+            destroyQureg(vec, getQuESTEnv());
         }
     }
-    destroyQureg(qureg, QUEST_ENV);
+    destroyQureg(qureg, getQuESTEnv());
 }
 
 
@@ -985,7 +1008,7 @@ TEST_CASE( "mixTwoQubitDephasing", "[decoherence]" ) {
  * @author Tyson Jones 
  */
 TEST_CASE( "mixTwoQubitDepolarising", "[decoherence]" ) {
-    
+
     PREPARE_TEST(qureg, ref);
     
     SECTION( "correctness" ) {
@@ -1032,17 +1055,18 @@ TEST_CASE( "mixTwoQubitDepolarising", "[decoherence]" ) {
         }
         SECTION( "probability" ) {
             
-            REQUIRE_THROWS_WITH( mixTwoQubitDepolarising(qureg, 0, 1, -.1), Contains("Probabilities") );
-            REQUIRE_THROWS_WITH( mixTwoQubitDepolarising(qureg, 0, 1, 15/16. + .01), Contains("probability") && Contains("cannot exceed 15/16") );
+            REQUIRE_THROWS_WITH( mixTwoQubitDepolarising(qureg, 0, 1, -.1), Contains("probability is invalid") );
+            REQUIRE_THROWS_WITH( mixTwoQubitDepolarising(qureg, 0, 1, 15/16. + .01), Contains("probability") && Contains("15/16") );
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( mixTwoQubitDepolarising(vec, 0, 1, 0), Contains("density matrices") );
-            destroyQureg(vec, QUEST_ENV);
+            Qureg vec = createQureg(NUM_QUBITS);
+            REQUIRE_NOTHROW( mixTwoQubitDepolarising(vec, 0, 1, 0) ); // zero prob ok in v4
+            REQUIRE_THROWS_WITH( mixTwoQubitDepolarising(vec, 0, 1, 0.1), Contains("Expected a density matrix Qureg but received a statevector") );
+            destroyQureg(vec, getQuESTEnv());
         }
     }
-    destroyQureg(qureg, QUEST_ENV);
+    destroyQureg(qureg, getQuESTEnv());
 }
 
 
@@ -1060,16 +1084,16 @@ TEST_CASE( "mixTwoQubitKrausMap", "[decoherence]" ) {
         int targ1 = GENERATE( range(0,NUM_QUBITS) );
         int targ2 = GENERATE_COPY( filter([=](int t){ return t!=targ1; }, range(0,NUM_QUBITS)) );
         int numOps = GENERATE( range(1,17) ); // max 16 inclusive
-        std::vector<QMatrix> matrs = getRandomKrausMap(2, numOps);
+        vector<QMatrix> matrs = getRandomKrausMap(2, numOps);
         
-        VLA(ComplexMatrix4, ops, numOps);
+        vector<ComplexMatrix4> ops(numOps);
         for (int i=0; i<numOps; i++)
             ops[i] = toComplexMatrix4(matrs[i]);
-        mixTwoQubitKrausMap(qureg, targ1, targ2, ops, numOps);
+        mixTwoQubitKrausMap(qureg, targ1, targ2, ops.data(), numOps);
         
         // set ref -> K_i ref K_i^dagger
         int targs[2] = {targ1, targ2};
-        VLA(QMatrix, matrRefs, numOps);
+        vector<QMatrix> matrRefs(numOps);
         for (int i=0; i<numOps; i++) {
             matrRefs[i] = ref;
             applyReferenceOp(matrRefs[i], targs, 2, matrs[i]);
@@ -1091,14 +1115,14 @@ TEST_CASE( "mixTwoQubitKrausMap", "[decoherence]" ) {
             
             // valid Kraus map
             int numOps = GENERATE( range(1,16) );
-            std::vector<QMatrix> matrs = getRandomKrausMap(2, numOps);
-            VLA(ComplexMatrix4, ops, numOps);
+            vector<QMatrix> matrs = getRandomKrausMap(2, numOps);
+            vector<ComplexMatrix4> ops(numOps);
             for (int i=0; i<numOps; i++)
                 ops[i] = toComplexMatrix4(matrs[i]);
                 
             // make only one of the ops at a time invalid
             ops[GENERATE_REF( range(0,numOps) )].real[0][0] = 0;
-            REQUIRE_THROWS_WITH( mixTwoQubitKrausMap(qureg, 0,1, ops, numOps), Contains("trace preserving") );
+            REQUIRE_THROWS_WITH( mixTwoQubitKrausMap(qureg, 0,1, ops.data(), numOps), Contains("trace preserving") );
         }
         SECTION( "target collision" ) {
             
@@ -1113,16 +1137,15 @@ TEST_CASE( "mixTwoQubitKrausMap", "[decoherence]" ) {
         }
         SECTION( "density-matrix" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( mixTwoQubitKrausMap(vec, 0,1, NULL, 1), Contains("density matrices") );
-            destroyQureg(vec, QUEST_ENV);
+            Qureg vec = createQureg(NUM_QUBITS);
+            REQUIRE_THROWS_WITH( mixTwoQubitKrausMap(vec, 0,1, NULL, 1), Contains("Expected a density matrix Qureg but received a statevector") );
+            destroyQureg(vec, getQuESTEnv());
         }
         SECTION( "operators fit in node" ) {
             
-            qureg.numAmpsPerChunk = 15; // min 16
+            qureg.numAmpsPerNode = 15; // min 16
             REQUIRE_THROWS_WITH( mixTwoQubitKrausMap(qureg, 0,1, NULL, 1), Contains("targets too many qubits") );
         }        
     }
-    destroyQureg(qureg, QUEST_ENV);
+    destroyQureg(qureg, getQuESTEnv());
 }
-

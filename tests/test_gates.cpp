@@ -1,7 +1,16 @@
-
+// must include catch.hpp first, because quest's
+// deprecation library will include a definition
+// of Vector{}
 #include "catch.hpp"
-#include "QuEST.h"
-#include "utilities.hpp"
+
+// must define preprocessors to enable quest's
+// deprecated v3 API, and disable the numerous
+// warnings issued by its compilation
+#define INCLUDE_DEPRECATED_FUNCTIONS 1
+#define DISABLE_DEPRECATION_WARNINGS 1
+#include "quest.h"
+
+#include "test_utilities.hpp"
 
 /* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::Contains;
@@ -14,8 +23,8 @@ using Catch::Matchers::Contains;
  */
 TEST_CASE( "collapseToOutcome", "[gates]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
+    Qureg mat = createForcedDensityQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -108,8 +117,8 @@ TEST_CASE( "collapseToOutcome", "[gates]" ) {
             REQUIRE_THROWS_WITH( collapseToOutcome(vec, 0, 0), Contains("Can't collapse to state with zero probability") );
         }
     }
-    destroyQureg(vec, QUEST_ENV);
-    destroyQureg(mat, QUEST_ENV);
+    destroyQureg(vec);
+    destroyQureg(mat);
 }
 
 
@@ -120,8 +129,8 @@ TEST_CASE( "collapseToOutcome", "[gates]" ) {
  */
 TEST_CASE( "measure", "[gates]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
+    Qureg mat = createForcedDensityQureg(NUM_QUBITS);
         
     SECTION( "correctness" ) {
         
@@ -200,8 +209,8 @@ TEST_CASE( "measure", "[gates]" ) {
             REQUIRE_THROWS_WITH( measure(vec, qubit), Contains("Invalid target qubit") );
         }
     }
-    destroyQureg(vec, QUEST_ENV);
-    destroyQureg(mat, QUEST_ENV);
+    destroyQureg(vec);
+    destroyQureg(mat);
 }
 
 
@@ -212,8 +221,8 @@ TEST_CASE( "measure", "[gates]" ) {
  */
 TEST_CASE( "measureWithStats", "[gates]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
+    Qureg mat = createForcedDensityQureg(NUM_QUBITS);
         
     SECTION( "correctness" ) {
         
@@ -295,6 +304,6 @@ TEST_CASE( "measureWithStats", "[gates]" ) {
             REQUIRE_THROWS_WITH( measureWithStats(vec, qubit, &res), Contains("Invalid target qubit") );
         }
     }
-    destroyQureg(vec, QUEST_ENV);
-    destroyQureg(mat, QUEST_ENV);
+    destroyQureg(vec);
+    destroyQureg(mat);
 }
