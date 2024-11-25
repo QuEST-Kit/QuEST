@@ -1,7 +1,7 @@
 #include <cmath>
 #include <cstdio>
 #include <complex>
-#include "quest.h"
+#include "quest/include/quest.h"
 
 void printQureg(const Qureg QR) {
   std::printf("Qureg = \n{\n");
@@ -26,15 +26,7 @@ int main (void)
   
   initZeroState(qr);
 
-  const qcomp HVAL = 1.0 / std::sqrt(2);
-  const CompMatr1 H = getInlineCompMatr1(
-    {
-      {HVAL, HVAL},
-      {HVAL, -HVAL}
-    }
-  );
-
-  unitary(qr, 0, H);
+  applyHadamard(qr, 0);
 
   printQureg(qr);
 
