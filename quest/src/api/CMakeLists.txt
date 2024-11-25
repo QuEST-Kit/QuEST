@@ -1,6 +1,7 @@
 target_sources(QuEST
   PRIVATE
   calculations.cpp
+  channels.cpp
   debug.cpp
   decoherence.cpp
   environment.cpp
@@ -9,7 +10,6 @@ target_sources(QuEST
   modes.cpp
   operations.cpp
   paulis.cpp
-  qasm.cpp
   qureg.cpp
   types.cpp
 )
