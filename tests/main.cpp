@@ -10,8 +10,7 @@
  */
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
-
-#include "QuEST.h"
+#include "quest/include/quest.h"
 
 /** The global QuESTEnv instance, to be created and destroyed once in this 
  * main(), so that the MPI environment is correctly created once when running 
@@ -32,8 +31,8 @@ QuESTEnv QUEST_ENV;
  * invoking the Catch unit tests 
  */
 int main( int argc, char* argv[] ) {
-  QUEST_ENV = createQuESTEnv();
+  initQuESTEnv();
   int result = Catch::Session().run( argc, argv );
-  destroyQuESTEnv(QUEST_ENV);
+  finalizeQuESTEnv();
   return result;
 }

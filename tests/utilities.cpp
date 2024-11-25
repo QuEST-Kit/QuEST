@@ -4,12 +4,13 @@
  * @author Tyson Jones
  */
 
-#include "QuEST.h"
+#include "quest/include/quest.h"
 #include "utilities.hpp"
 #include "catch.hpp"
 #include <random>
 #include <algorithm>
 #include <bitset>
+#include <limits>
 
 #ifdef DISTRIBUTED_MODE 
 #include <mpi.h>
@@ -22,6 +23,8 @@
  * total unit testing statistics (e.g. number of checks passed).
  */
 #define DEMAND( cond ) if (!(cond)) FAIL( ); 
+
+constexpr qreal REAL_EPS = std::numeric_limits<qreal>::epsilon();
 
 QVector operator + (const QVector& v1, const QVector& v2) {
     DEMAND( v1.size() == v2.size() );
@@ -142,7 +145,7 @@ QVector operator * (const QMatrix& m, const QVector& v) {
 
 void assertQuregAndRefInDebugState(Qureg qureg, QVector ref) {
     DEMAND( qureg.isDensityMatrix == 0 );
-    DEMAND( qureg.numAmpsTotal == (long long int) ref.size() );
+    DEMAND( qureg.numAmps == (long long int) ref.size() );
 
     // assert ref is in the debug state (else initDebugState failed)
     for (size_t i=0; i<ref.size(); i++) {
@@ -156,7 +159,7 @@ void assertQuregAndRefInDebugState(Qureg qureg, QVector ref) {
 
 void assertQuregAndRefInDebugState(Qureg qureg, QMatrix ref) {
     DEMAND( qureg.isDensityMatrix == 1 );
-    DEMAND( (1LL << qureg.numQubitsRepresented) == (long long int) ref.size() );
+    DEMAND( (1LL << qureg.numQubits) == (long long int) ref.size() );
 
     // assert ref is in the (column-wise) debug state (else initDebugState failed)
     size_t i = 0;
@@ -440,7 +443,7 @@ bool areEqual(QVector a, QVector b) {
     DEMAND( a.size() == b.size() );
     
     for (size_t i=0; i<a.size(); i++)
-        if (abs(a[i] - b[i]) > REAL_EPS)
+        if (std::abs(a[i] - b[i]) > REAL_EPS)
             return false;
     return true;
 }
@@ -450,7 +453,7 @@ bool areEqual(QMatrix a, QMatrix b) {
     
     for (size_t i=0; i<a.size(); i++)
         for (size_t j=0; j<b.size(); j++)
-            if (abs(a[i][j] - b[i][j]) > REAL_EPS)
+            if (std::abs(a[i][j] - b[i][j]) > REAL_EPS)
                 return false;
     return true;
 }
@@ -937,19 +940,20 @@ void applyReferenceMatrix(
 
 bool areEqual(Qureg qureg1, Qureg qureg2, qreal precision) {
     DEMAND( qureg1.isDensityMatrix == qureg2.isDensityMatrix );
-    DEMAND( qureg1.numAmpsTotal == qureg2.numAmpsTotal );
+    DEMAND( qureg1.numAmps == qureg2.numAmps );
         
-    copyStateFromGPU(qureg1);
-    copyStateFromGPU(qureg2);
-    syncQuESTEnv(QUEST_ENV);
+    syncQuregFromGpu(qureg1);
+    syncQuregFromGpu(qureg2);
+    syncQuESTEnv();
     
     // loop terminates when areEqual = 0
     int ampsAgree = 1;
-    for (long long int i=0; ampsAgree && i<qureg1.numAmpsPerChunk; i++)
+    for (long long int i=0; ampsAgree && i<qureg1.numAmpsPerNode; i++)
         ampsAgree = (
-               absReal(qureg1.stateVec.real[i] - qureg2.stateVec.real[i]) < precision
-            && absReal(qureg1.stateVec.imag[i] - qureg2.stateVec.imag[i]) < precision);
-            
+               std::abs(qureg1.cpuAmps[i].real() - qureg2.cpuAmps[i].real()) < precision
+            && std::abs(qureg2.cpuAmps[i].imag() - qureg2.cpuAmps[i].imag()) < precision
+        );
+    
     // if one node's partition wasn't equal, all-nodes must report not-equal
     int allAmpsAgree = ampsAgree;
 #ifdef DISTRIBUTED_MODE
@@ -958,24 +962,25 @@ bool areEqual(Qureg qureg1, Qureg qureg2, qreal precision) {
 
     return allAmpsAgree;
 }
+
 bool areEqual(Qureg qureg1, Qureg qureg2) {
     return areEqual(qureg1, qureg2, REAL_EPS);
 }
 
 bool areEqual(Qureg qureg, QVector vec, qreal precision) {
     DEMAND( !qureg.isDensityMatrix );
-    DEMAND( (int) vec.size() == qureg.numAmpsTotal );
+    DEMAND( (int) vec.size() == qureg.numAmps);
     
-    copyStateFromGPU(qureg);
-    syncQuESTEnv(QUEST_ENV);
+    syncQuregFromGpu(qureg);
+    syncQuESTEnv();
     
     // the starting index in vec of this node's qureg partition.
-    long long int startInd = qureg.chunkId * qureg.numAmpsPerChunk;
+    long long int startInd = qureg.rank * qureg.numAmpsPerNode;
             
     int ampsAgree = 1;
-    for (long long int i=0; i<qureg.numAmpsPerChunk; i++) {
-        qreal realDif = absReal(qureg.stateVec.real[i] - real(vec[startInd+i]));
-        qreal imagDif = absReal(qureg.stateVec.imag[i] - imag(vec[startInd+i]));
+    for (long long int i=0; i<qureg.numAmpsPerNode; i++) {
+        qreal realDif = std::abs(qureg.cpuAmps[i].real() - vec[startInd+i].real());
+        qreal imagDif = std::abs(qureg.cpuAmps[i].imag() - vec[startInd+i].imag());
 
         if (realDif > precision || imagDif > precision) {
             ampsAgree = 0;
@@ -984,11 +989,11 @@ bool areEqual(Qureg qureg, QVector vec, qreal precision) {
             char buff[200];
             sprintf(buff, "Disagreement at %lld of (%s) + i(%s):\n\t%s + i(%s) VS %s + i(%s)\n",
                 startInd+i,
-                REAL_STRING_FORMAT, REAL_STRING_FORMAT, REAL_STRING_FORMAT, 
-                REAL_STRING_FORMAT, REAL_STRING_FORMAT, REAL_STRING_FORMAT);
+                QREAL_FORMAT_SPECIFIER, QREAL_FORMAT_SPECIFIER, QREAL_FORMAT_SPECIFIER,
+                QREAL_FORMAT_SPECIFIER, QREAL_FORMAT_SPECIFIER, QREAL_FORMAT_SPECIFIER);
             printf(buff,
                 realDif, imagDif,
-                qureg.stateVec.real[i], qureg.stateVec.imag[i],
+                qureg.cpuAmps[i].real(), qureg.cpuAmps[i].imag(),
                 real(vec[startInd+i]), imag(vec[startInd+i]));
             
             break;
@@ -1009,36 +1014,36 @@ bool areEqual(Qureg qureg, QVector vec) {
 
 bool areEqual(Qureg qureg, QMatrix matr, qreal precision) {
     DEMAND( qureg.isDensityMatrix );
-    DEMAND( (long long int) (matr.size()*matr.size()) == qureg.numAmpsTotal );
+    DEMAND( (long long int) (matr.size()*matr.size()) == qureg.numAmps );
     
     // ensure local qureg.stateVec is up to date
-    copyStateFromGPU(qureg);
-    syncQuESTEnv(QUEST_ENV);
+    syncQuregFromGpu(qureg);
+    syncQuESTEnv();
     
     // the starting index in vec of this node's qureg partition.
-    long long int startInd = qureg.chunkId * qureg.numAmpsPerChunk;
+    long long int startInd = qureg.rank * qureg.numAmpsPerNode;
     long long int globalInd, row, col, i;
     int ampsAgree;
     
     // compare each of this node's amplitude to the corresponding matr sub-matrix
-    for (i=0; i<qureg.numAmpsPerChunk; i++) {
+    for (i=0; i<qureg.numAmpsPerNode; i++) {
         globalInd = startInd + i;
         row = globalInd % matr.size();
         col = globalInd / matr.size();
-        qreal realDif = absReal(qureg.stateVec.real[i] - real(matr[row][col]));
-        qreal imagDif = absReal(qureg.stateVec.imag[i] - imag(matr[row][col]));
+        qreal realDif = std::abs(qureg.cpuAmps[i].real() - real(matr[row][col]));
+        qreal imagDif = std::abs(qureg.cpuAmps[i].imag() - imag(matr[row][col]));
         ampsAgree = (realDif < precision && imagDif < precision);
         
         // DEBUG
         if (!ampsAgree) {
             char buff[200];
             sprintf(buff, "[msg from utilities.cpp] node %d has a disagreement at %lld of (%s) + i(%s):\n\t[qureg] %s + i(%s) VS [ref] %s + i(%s)\n",
-                qureg.chunkId, startInd+i,
-                REAL_STRING_FORMAT, REAL_STRING_FORMAT, REAL_STRING_FORMAT, 
-                REAL_STRING_FORMAT, REAL_STRING_FORMAT, REAL_STRING_FORMAT);
+                qureg.rank, startInd+i,
+                QREAL_FORMAT_SPECIFIER, QREAL_FORMAT_SPECIFIER, QREAL_FORMAT_SPECIFIER,
+                QREAL_FORMAT_SPECIFIER, QREAL_FORMAT_SPECIFIER, QREAL_FORMAT_SPECIFIER);
             printf(buff,
                 realDif, imagDif,
-                qureg.stateVec.real[i], qureg.stateVec.imag[i],
+                qureg.cpuAmps[i].real(), qureg.cpuAmps[i].imag(),
                 real(matr[row][col]), imag(matr[row][col]));
         }
 
@@ -1073,10 +1078,10 @@ bool areEqual(QVector vec, qreal* reals, qreal* imags) {
     
     qreal dif;
     for (size_t i=0; i<vec.size(); i++) {
-        dif = absReal(real(vec[i]) - reals[i]);
+        dif = std::abs(real(vec[i]) - reals[i]);
         if (dif > REAL_EPS)
             return false;
-        dif = absReal(imag(vec[i]) - imags[i]);
+        dif = std::abs(imag(vec[i]) - imags[i]);
         if (dif > REAL_EPS)
             return false;
     }
@@ -1087,110 +1092,108 @@ bool areEqual(QVector vec, qreal* reals) {
     for (size_t i=0; i<vec.size(); i++) {
         DEMAND( imag(vec[i]) == 0. );
         
-        qreal dif = abs(real(vec[i]) - reals[i]);
+        qreal dif = std::abs(real(vec[i]) - reals[i]);
         if (dif > REAL_EPS)
             return false;
     }
     return true;
 }
 
-/* Copies QMatrix into a CompelxMAtrix struct */
-#define macro_copyQMatrix(dest, src) { \
-    for (size_t i=0; i<src.size(); i++) { \
-        for (size_t j=0; j<src.size(); j++) { \
-            dest.real[i][j] = real(src[i][j]); \
-            dest.imag[i][j] = imag(src[i][j]); \
-        } \
-    } \
-}
-ComplexMatrix2 toComplexMatrix2(QMatrix qm) {
+CompMatr1 toCompMatr1(QMatrix qm) {
     DEMAND( qm.size() == 2 );
-    ComplexMatrix2 cm;
-    macro_copyQMatrix(cm, qm);
-    return cm;
+    return getCompMatr1(qm);
 }
-ComplexMatrix4 toComplexMatrix4(QMatrix qm) {
+
+CompMatr2 toCompMatr2(QMatrix qm) {
     DEMAND( qm.size() == 4 );
-    ComplexMatrix4 cm;
-    macro_copyQMatrix(cm, qm);
-    return cm;
+    return getCompMatr2(qm);
 }
-void toComplexMatrixN(QMatrix qm, ComplexMatrixN cm) {
+
+void toComplexMatrixN(QMatrix qm, CompMatr cm) {
     DEMAND( qm.size() == (1u<<cm.numQubits) );
-    macro_copyQMatrix(cm, qm);
+    return setCompMatr(cm, qm);
 }
 
-/** Copies ComplexMatrix structures into a QMatrix */
-#define macro_copyComplexMatrix(dest, src) { \
-    for (size_t i=0; i<dest.size(); i++) \
-        for (size_t j=0; j<dest.size(); j++) \
-            dest[i][j] = qcomp(src.real[i][j], src.imag[i][j]); \
-}
-QMatrix toQMatrix(ComplexMatrix2 src) {
-    QMatrix dest = getZeroMatrix(2);
-    macro_copyComplexMatrix(dest, src);
+QMatrix toQMatrix(CompMatr1 src) {
+    const qindex SZ = 2;
+    QMatrix dest = getZeroMatrix(SZ);
+    
+    for (qindex i = 0; i < SZ; ++i) {
+        for (qindex j = 0; j < SZ; ++j) {
+            dest[i][j] = src.elems[i][j];
+        }
+    }
+    
     return dest;
 }
-QMatrix toQMatrix(ComplexMatrix4 src) {
-    QMatrix dest = getZeroMatrix(4);
-    macro_copyComplexMatrix(dest, src);
+
+QMatrix toQMatrix(CompMatr2 src) {
+    const qindex SZ = 4;
+    QMatrix dest = getZeroMatrix(SZ);
+    
+    for (qindex i = 0; i  < SZ; ++i) {
+        for (qindex j = 0; j < SZ; ++j) {
+            dest[i][j] = src.elems[i][j];
+        }
+    }
+    
     return dest;
 }
-QMatrix toQMatrix(ComplexMatrixN src) {
-    DEMAND( src.real != NULL );
-    DEMAND( src.imag != NULL );
+
+QMatrix toQMatrix(CompMatr src) {
+    syncCompMatr(src);
+    DEMAND( src.cpuElems != NULL );
+    const qindex SZ = src.numRows;
+
     QMatrix dest = getZeroMatrix(1 << src.numQubits);
-    macro_copyComplexMatrix(dest, src);
+
+    for (qindex i = 0; i < SZ; ++i) {
+        for (qindex j = 0; j < SZ; ++j) {
+            dest[i][j] = src.cpuElems[i][j];
+        }
+    }
+    
     return dest;
 }
 
-QMatrix toQMatrix(Complex alpha, Complex beta) {
-    qcomp a = qcomp(alpha.real, alpha.imag);
-    qcomp b = qcomp(beta.real, beta.imag);
+QMatrix toQMatrix(qcomp alpha, qcomp beta) {
     QMatrix matr{
-        {a, -conj(b)},
-        {b,  conj(a)}};
+        {alpha, -conj(beta)},
+        {beta,  conj(alpha)}};
     return matr;
 }
 
 QMatrix toQMatrix(Qureg qureg) {
     DEMAND( qureg.isDensityMatrix );
 #ifdef DISTRIBUTED_MODE
-    DEMAND( qureg.numAmpsTotal < MPI_MAX_AMPS_IN_MSG );
+    DEMAND( qureg.numAmps < MAX_MESSAGE_LENGTH );
 #endif
     
     // ensure local qureg.stateVec is up to date
-    copyStateFromGPU(qureg);
-    syncQuESTEnv(QUEST_ENV);
+    syncQuregFromGpu(qureg);
+    syncQuESTEnv();
     
-    qreal* fullRe;
-    qreal* fullIm;
+    qcomp* fullSV;
     
     // in distributed mode, give every node the full state vector
 #ifdef DISTRIBUTED_MODE
-    fullRe = (qreal*) malloc(qureg.numAmpsTotal * sizeof *fullRe);
-    fullIm = (qreal*) malloc(qureg.numAmpsTotal * sizeof *fullIm);
+    fullSV = (qcomp*) malloc(qureg.numAmps * sizeof(qcomp));
     MPI_Allgather(
-        qureg.stateVec.real, qureg.numAmpsPerChunk, MPI_QuEST_REAL,
-        fullRe, qureg.numAmpsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
-    MPI_Allgather(
-        qureg.stateVec.imag, qureg.numAmpsPerChunk, MPI_QuEST_REAL,
-        fullIm, qureg.numAmpsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
+        qureg.cpuAmps, qureg.numAmpsPerNode, MPI_QCOMP,
+        fullSV, qureg.numAmpsPerNode, MPI_QCOMP, MPI_COMM_WORLD);
 #else
-    fullRe = qureg.stateVec.real;
-    fullIm = qureg.stateVec.imag;
+    fullSV = qureg.cpuAmps;
 #endif
         
     // copy full state vector into a QVector
-    long long int dim = (1LL << qureg.numQubitsRepresented);
+    long long int dim = (1LL << qureg.numQubits);
     QMatrix matr = getZeroMatrix(dim);
-    for (long long int n=0; n<qureg.numAmpsTotal; n++)
-        matr[n%dim][n/dim] = qcomp(fullRe[n], fullIm[n]);
+    for (long long int n=0; n<qureg.numAmps; n++)
+        matr[n%dim][n/dim] = fullSV[n];
     
     // clean up if we malloc'd the distributed array
 #ifdef DISTRIBUTED_MODE
-    free(fullRe);
-    free(fullIm);
+    free(fullSV);
 #endif
     return matr;
 }
@@ -1198,79 +1201,63 @@ QMatrix toQMatrix(Qureg qureg) {
 QVector toQVector(Qureg qureg) {
     DEMAND( !qureg.isDensityMatrix );
 #ifdef DISTRIBUTED_MODE
-    DEMAND( qureg.numAmpsTotal < MPI_MAX_AMPS_IN_MSG );
+    DEMAND( qureg.numAmps < MAX_MESSAGE_LENGTH );
 #endif
     
     // ensure local qureg.stateVec is up to date
-    copyStateFromGPU(qureg);
-    syncQuESTEnv(QUEST_ENV);
+    syncQuregFromGpu(qureg);
+    syncQuESTEnv();
     
-    qreal* fullRe;
-    qreal* fullIm;
+    qcomp* fullSV;
     
     // in distributed mode, give every node the full state vector
 #ifdef DISTRIBUTED_MODE
-    fullRe = (qreal*) malloc(qureg.numAmpsTotal * sizeof *fullRe);
-    fullIm = (qreal*) malloc(qureg.numAmpsTotal * sizeof *fullIm);
+    fullSV = (qcomp*) malloc(qureg.numAmps * sizeof(qcomp));
             
     MPI_Allgather(
-        qureg.stateVec.real, qureg.numAmpsPerChunk, MPI_QuEST_REAL,
-        fullRe, qureg.numAmpsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
-    MPI_Allgather(
-        qureg.stateVec.imag, qureg.numAmpsPerChunk, MPI_QuEST_REAL,
-        fullIm, qureg.numAmpsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
+        qureg.cpuAmps, qureg.numAmpsPerNode, MPI_QCOMP,
+        fullSV, qureg.numAmpsPerNode, MPI_QCOMP, MPI_COMM_WORLD);
 #else
-    fullRe = qureg.stateVec.real;
-    fullIm = qureg.stateVec.imag;
+    fullSV = qureg.cpuAmps;
 #endif
     
     // copy full state vector into a QVector
-    QVector vec = QVector(qureg.numAmpsTotal);
-    for (long long int i=0; i<qureg.numAmpsTotal; i++)
-        vec[i] = qcomp(fullRe[i], fullIm[i]);
+    QVector vec = QVector(fullSV, fullSV + qureg.numAmps);
             
     // clean up if we malloc'd distrib array
 #ifdef DISTRIBUTED_MODE
-    free(fullRe);
-    free(fullIm);
+    free(fullSV);
 #endif
     return vec;
 }
 
-QVector toQVector(DiagonalOp op) {
+QVector toQVector(FullStateDiagMatr op) {
     long long int totalElems = (1LL << op.numQubits);
 #ifdef DISTRIBUTED_MODE
-    DEMAND( totalElems < MPI_MAX_AMPS_IN_MSG );
+    DEMAND( totalElems < MAX_MESSAGE_LENGTH);
 #endif
     
-    qreal* fullRe;
-    qreal* fullIm;
+    syncFullStateDiagMatr(op);
+
+    qcomp* fullSV;
     
     // in distributed mode, give every node the full diagonal operator
 #ifdef DISTRIBUTED_MODE
-    fullRe = (qreal*) malloc(totalElems * sizeof *fullRe);
-    fullIm = (qreal*) malloc(totalElems * sizeof *fullIm);
+    fullRe = (qcomp*) malloc(totalElems * sizeof(qcomp));
             
     MPI_Allgather(
-        op.real, op.numElemsPerChunk, MPI_QuEST_REAL,
-        fullRe, op.numElemsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
-    MPI_Allgather(
-        op.imag, op.numElemsPerChunk, MPI_QuEST_REAL,
-        fullIm, op.numElemsPerChunk, MPI_QuEST_REAL, MPI_COMM_WORLD);
+        op.cpuElems, op.numElemsPerNode, MPI_QCOMP,
+        fullSV, op.numElemsPerNode, MPI_QCOMP, MPI_COMM_WORLD);
 #else
-    fullRe = op.real;
-    fullIm = op.imag;
+    fullSV = op.cpuElems;
 #endif
     
     // copy full state vector into a QVector
-    QVector vec = QVector(totalElems);
-    for (long long int i=0; i<totalElems; i++)
-        vec[i] = qcomp(fullRe[i], fullIm[i]);
+    QVector vec = QVector(fullSV, fullSV + totalElems);
             
     // clean up if we malloc'd distrib array
 #ifdef DISTRIBUTED_MODE
-    free(fullRe);
-    free(fullIm);
+    free(fullSV);
 #endif
     return vec;
 }
