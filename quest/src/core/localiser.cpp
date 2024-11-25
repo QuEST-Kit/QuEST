@@ -1427,6 +1427,13 @@ void localiser_densmatr_twoQubitDepolarising(Qureg qureg, int qubit1, int qubit2
     bool comm1 = doesChannelRequireComm(qureg, qubit1);
     bool comm2 = doesChannelRequireComm(qureg, qubit2);
 
+
+
+    // TODO:
+    // this is bugged, even when non-distributed!!!
+
+
+
     if (comm2 && comm1)
         twoQubitDepolarisingOnPrefixAndPrefix(qureg, qubit1, qubit2, prob);
     if (comm2 && !comm1)

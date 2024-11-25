@@ -376,8 +376,8 @@ void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
     bool onlyMultiply = true;
     qcomp exponent = qcomp(1, 0);
     (qureg.isDensityMatrix)?
-        localiser_statevec_allTargDiagMatr(qureg, matrix, exponent) :
-        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply);
+        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply):
+        localiser_statevec_allTargDiagMatr(qureg, matrix, exponent);
 }
 
 void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent) {
@@ -387,8 +387,8 @@ void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp
 
     bool onlyMultiply = true;
     (qureg.isDensityMatrix)?
-        localiser_statevec_allTargDiagMatr(qureg, matrix, exponent) :
-        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply);
+        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply):
+        localiser_statevec_allTargDiagMatr(qureg, matrix, exponent);
 }
 
 void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
@@ -400,8 +400,8 @@ void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
     bool onlyMultiply = false;
     qcomp exponent = qcomp(1, 0);
     (qureg.isDensityMatrix)?
-        localiser_statevec_allTargDiagMatr(qureg, matrix, exponent) :
-        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply);
+        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply):
+        localiser_statevec_allTargDiagMatr(qureg, matrix, exponent);
 }
 
 void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent) {
@@ -412,8 +412,8 @@ void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp ex
 
     bool onlyMultiply = false;
     (qureg.isDensityMatrix)?
-        localiser_statevec_allTargDiagMatr(qureg, matrix, exponent) :
-        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply);
+        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply):
+        localiser_statevec_allTargDiagMatr(qureg, matrix, exponent);
 }
 
 

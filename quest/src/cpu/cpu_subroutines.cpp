@@ -1627,6 +1627,9 @@ qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
+        // TODO:
+        // I BELIEVE THIS IS BUGGED AND/OR HAS INCORRECT LOGIC!
+
         // i = local column index of the nth local pure state which contributes to the probability
         qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitStateMask);
 

@@ -167,10 +167,6 @@ namespace report {
         "Cannot enable multithreaded processing of a Qureg created in a non-multithreaded QuEST environment.";
 
 
-    string NEW_GPU_QUREG_CANNOT_USE_MULTITHREADING = 
-        "Cannot simultaneously GPU-accelerate and multithread a Qureg. Please disable multithreading, or set it to ${AUTO_DEPLOYMENT_FLAG} for QuEST to automatically disable it when deploying to GPU.";
-
-
     string NEW_QUREG_CANNOT_FIT_INTO_NON_DISTRIB_CPU_MEM =
         "The non-distributed Qureg (isDensity=${IS_DENS}) of ${NUM_QUBITS} qubits would be too large (${QCOMP_BYTES} * ${EXP_BASE}^${NUM_QUBITS} bytes) to fit into a single node's RAM (${RAM_SIZE} bytes). See reportQuESTEnv(), and consider using distribution.";
 
@@ -1430,13 +1426,6 @@ void assertQuregFitsInGpuMem(int numQubits, int isDensMatr, int isDistrib, int i
     }
 }
 
-void validate_newQuregNotBothMultithreadedAndGpuAccel(int useGpu, int useMultithread, const char* caller) {
-
-    // note either or both of useGpu and useMultithread are permitted to be modeflag::USE_AUTO (=-1)
-    tokenSubs vars = {{"${AUTO_DEPLOYMENT_FLAG}", modeflag::USE_AUTO}};
-    assertThat(useGpu != 1 || useMultithread != 1, report::NEW_GPU_QUREG_CANNOT_USE_MULTITHREADING, vars, caller);
-}
-
 void validate_newQuregParams(int numQubits, int isDensMatr, int isDistrib, int isGpuAccel, int isMultithread, QuESTEnv env, const char* caller) {
 
     // some of the below validation involves getting distributed node consensus, which
@@ -1452,8 +1441,6 @@ void validate_newQuregParams(int numQubits, int isDensMatr, int isDistrib, int i
     assertQuregNotDistributedOverTooManyNodes(numQubits, isDensMatr, isDistrib, env, caller);
     assertQuregFitsInCpuMem(numQubits, isDensMatr, isDistrib, env, caller);
     assertQuregFitsInGpuMem(numQubits, isDensMatr, isDistrib, isGpuAccel, env, caller);
-
-    validate_newQuregNotBothMultithreadedAndGpuAccel(isGpuAccel, isMultithread, caller);
 }
 
 void validate_newQuregAllocs(Qureg qureg, const char* caller) {
@@ -1549,8 +1536,8 @@ void assertMatrixTotalNumElemsDontExceedMaxIndex(int numQubits, bool isDense, co
     int maxNumQubits = mem_getMaxNumMatrixQubitsBeforeIndexOverflow(isDense);
 
     string msg = (isDense)?
-        report::NEW_DIAG_MATR_NUM_ELEMS_WOULD_EXCEED_QINDEX :
-        report::NEW_COMP_MATR_NUM_ELEMS_WOULD_EXCEED_QINDEX ;
+        report::NEW_COMP_MATR_NUM_ELEMS_WOULD_EXCEED_QINDEX:
+        report::NEW_DIAG_MATR_NUM_ELEMS_WOULD_EXCEED_QINDEX;
 
     tokenSubs vars = {
         {"${NUM_QUBITS}", numQubits}, 

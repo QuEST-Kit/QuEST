@@ -185,7 +185,7 @@ void assert_pairRankIsDistinct(Qureg qureg, int pairRank) {
 
 void assert_bufferSendRecvDoesNotOverlap(qindex sendInd, qindex recvInd, qindex numAmps) {
 
-    if (sendInd + numAmps > recvInd)
+    if (sendInd < recvInd + numAmps)
         raiseInternalError("A distributed function attempted to send and receive portions of the buffer which overlapped.");
 }
 

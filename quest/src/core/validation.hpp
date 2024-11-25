@@ -95,8 +95,6 @@ void validate_newMaxNumReportedSigFigs(int numSigFigs, const char* caller);
 
 void validate_newQuregParams(int numQubits, int isDensMatr, int isDistrib, int isGpuAccel, int numCpuThreads, QuESTEnv env, const char* caller);
 
-void validate_newQuregNotBothMultithreadedAndGpuAccel(int useGpu, int numThreads, const char* caller);
-
 void validate_newQuregAllocs(Qureg qureg, const char* caller);
 
 
