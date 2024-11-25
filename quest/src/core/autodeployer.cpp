@@ -136,6 +136,11 @@ void autodep_chooseQuregDeployment(int numQubits, int isDensMatr, int &useDistri
     if (!env.isMultithreaded)
         useMultithread = 0;
 
+    // disable distribution if env is distributed over 1 node. this can occur
+    // because env auto-deployer does not know the number of nodes in advance
+    if (env.numNodes == 1)
+        useDistrib = 0;
+
     // overwrite any auto options (== modeflag::USE_AUTO)
     chooseWhetherToDistributeQureg(numQubits, isDensMatr, useDistrib, useGpuAccel, env.numNodes);
     int numQuregNodes = (useDistrib)? env.numNodes : 1;
@@ -150,16 +155,19 @@ void autodep_chooseQuregDeployment(int numQubits, int isDensMatr, int &useDistri
  */
 
 
-void autodep_chooseFullStateDiagMatrDeployment(int numQubits, int &useDistrib, QuESTEnv env) {
+void autodep_chooseFullStateDiagMatrDeployment(int numQubits, int &useDistrib, int &useGpuAccel, QuESTEnv env) {
 
-    // we choose to distribute if a compatibly-sized statevector Qureg would 
-    // distribute, so that automatically-deployed matrices and Quregs are always 
+    // we choose to deploy just like a equivalently-sized statevector Qureg would 
+    // deploy, so that automatically-deployed matrices and Quregs are always 
     // compatible. This retains compatibility with density-matrix Quregs too;
     // a non-distributed DiagMatr is compatible with both distributed and not
-    // Quregs (because its elements are available to every node). We do this by
-    // pretending the DiagMatr is an equivalently-sized statevector Qureg.
+    // Quregs (because its elements are available to every node), and the GPU
+    // memory of the DiagMatr is quadratically smaller than of the density-
+    // matrix Qureg, so we can always allocate/copy as needed. Ergo, we pretend
+    // the FullStateDiagMatr is a statevector Qureg.
     int isDensMatr = 0;
-    int useGpuAccel = (env.isGpuAccelerated)? modeflag::USE_AUTO : 0;
 
-    chooseWhetherToDistributeQureg(numQubits, isDensMatr, useDistrib, useGpuAccel, env.numNodes);
+    // multithreading has no effect, and is ignored
+    int useMultithread = 0;
+    autodep_chooseQuregDeployment(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread, env);
 }

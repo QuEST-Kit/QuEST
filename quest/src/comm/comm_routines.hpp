@@ -6,18 +6,13 @@
 #ifndef COMM_ROUTINES_HPP
 #define COMM_ROUTINES_HPP
 
-#include "types.h"
-#include "qureg.h"
+#include "quest/include/types.h"
+#include "quest/include/qureg.h"
+#include "quest/include/matrices.h"
 
+#include <vector>
 
-
-/*
- * MESSAGE INDICES
- */
-
-qindex getSubBufferSendInd(Qureg qureg);
-
-qindex getSubBufferRecvInd();
+using std::vector;
 
 
 
@@ -35,15 +30,23 @@ void comm_asynchSendSubBuffer(Qureg qureg, qindex numElems, int pairRank);
 
 void comm_receiveArrayToBuffer(Qureg qureg, qindex numElems, int pairRank);
 
+void comm_combineAmpsIntoBuffer(Qureg receiver, Qureg sender);
+
+void comm_combineElemsIntoBuffer(Qureg receiver, FullStateDiagMatr sender);
+
 
 
 /*
  * MISC COMMUNICATION METHODS
  */
 
+void comm_broadcastAmp(int sendRank, qcomp* sendAmp);
+
 void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps);
 
 void comm_broadcastUnsignedsFromRoot(unsigned* arr, qindex length);
+
+void comm_combineSubArrays(qcomp* recv, vector<qindex> globalRecvInds, vector<qindex> localSendInds, vector<qindex> numAmpsPerRank);
 
 
 
@@ -52,6 +55,10 @@ void comm_broadcastUnsignedsFromRoot(unsigned* arr, qindex length);
  */
 
 void comm_reduceAmp(qcomp* localAmp);
+
+void comm_reduceReal(qreal* localReal);
+
+void comm_reduceReals(qreal* localReals, qindex numLocalReals);
 
 bool comm_isTrueOnAllNodes(bool val);
 

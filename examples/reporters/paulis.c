@@ -60,7 +60,7 @@ PauliStrSum prepareRandomPauliStrSum(int numQubits, int numTerms) {
     PauliStr strings[numTerms];
     
     for (int i=0; i<numTerms; i++) {
-        coeffs[i] = qcomp(
+        coeffs[i] = getQcomp(
             rand() / (qreal) RAND_MAX, 
             rand() / (qreal) RAND_MAX);
 
@@ -87,7 +87,7 @@ void demo_PauliStrSum() {
         qindex num = numReportElems[i];
         rootPrint(num);
 
-        setNumReportedItems(num);
+        setMaxNumReportedItems(num, num);
         reportPauliStrSum(sum);
     }
 

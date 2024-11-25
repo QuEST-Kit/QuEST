@@ -31,14 +31,16 @@ qreal calcProbOfBasisState(Qureg qureg, qindex index);
 
 qreal calcProbOfQubitOutcome(Qureg qureg, int qubit, int outcome);
 
-void  calcProbOfAllQubitOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
+qreal calcProbOfMultiQubitOutcome(Qureg qureg, int* qubits, int* outcomes, int numQubits);
+
+void  calcProbsOfAllMultiQubitOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
 
 
 qreal calcPurity(Qureg qureg);
 
 qreal calcFidelity(Qureg qureg, Qureg other);
 
-qreal calcHilbertSchmidtDistance(Qureg qureg1, Qureg qureg2);
+qreal calcDistance(Qureg qureg1, Qureg qureg2);
 
 
 // end de-mangler

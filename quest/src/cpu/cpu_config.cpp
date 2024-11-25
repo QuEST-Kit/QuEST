@@ -27,16 +27,6 @@ using std::vector;
 
 
 /*
- * ENABLE OPENMP REDUCTION OF qcomp (except on MSVC compilers)
- */
-
-#if defined(COMPILE_OPENMP) && !defined(_MSC_VER)
-     #pragma omp declare reduction(+ : qcomp : omp_out += omp_in ) initializer( omp_priv = omp_orig )
-#endif
-
-
-
-/*
  * OPENMP CONFIG
  */
 
@@ -67,6 +57,25 @@ int cpu_getNumOpenmpProcessors() {
 #else
     error_cpuThreadsQueriedButEnvNotMultithreaded();
     return -1;
+#endif
+}
+
+
+
+/*
+ * OPENMP SUBROUTINES
+ *
+ * which must be queried within OpenMP parallel
+ * regions to get reliable results, but which are
+ * safely invoked when OpenMP is not compiled
+ */
+
+
+int cpu_getOpenmpThreadInd() {
+#if COMPILE_OPENMP
+    return omp_get_thread_num();
+#else
+    return 0;
 #endif
 }
 
@@ -185,31 +194,40 @@ void cpu_deallocPauliStrings(PauliStr* strings) {
 }
 
 
+
 /*
  * MEMORY COPYING
  */
 
 
-void cpu_copyArray(qcomp* out, qcomp* in, qindex dim) {
+void cpu_copyArray(qcomp* dest, qcomp* src, qindex dim) {
 
-    memcpy(out, in, dim * sizeof(qcomp));
+    memcpy(dest, src, dim * sizeof(qcomp));
 }
 
 
-void cpu_copyMatrix(qcomp** out, qcomp** in, qindex dim) {
+void cpu_copyMatrix(qcomp** dest, qcomp** src, qindex dim) {
+
+    // TODO:
+    // there may be a faster, asynchronous way to perform
+    // these memcpys then do a final wait
 
     // note that we cannot call a single memcpy to copy all rows at once,
-    // because in/out may not be contiguous stack arrays; instead, each
+    // because dest/src may not be contiguous stack arrays; instead, each
     // row is likely a unique, discontiguous span of heap memory. So we
     // memcpy each row in-turn
     for (qindex r=0; r<dim; r++)
-        cpu_copyArray(out[r], in[r], dim);
+        cpu_copyArray(dest[r], src[r], dim);
 }
 
-void cpu_copyMatrix(qcomp** out, vector<vector<qcomp>> in, qindex dim) {
+void cpu_copyMatrix(qcomp** dest, vector<vector<qcomp>> src, qindex dim) {
+
+    // TODO:
+    // there may be a faster, asynchronous way to perform
+    // these memcpys then do a final wait
 
     for (qindex r=0; r<dim; r++)
-        cpu_copyArray(out[r], in[r].data(), dim);
+        cpu_copyArray(dest[r], src[r].data(), dim);
 }
 
 

@@ -28,8 +28,7 @@
  *
  * which are visible to both C and C++, where qcomp resolves
  * to the native complex type. These are not de-mangled because
- * C++ structs are already C compatible. We define their fields
- * as const to prevent users mangling them.
+ * C++ structs are already C compatible.
  * 
  * The compile-time sized structs have field 'elems', while
  * dynamic-sized structs have separate 'cpuElems' and 
@@ -40,11 +39,9 @@
 
 typedef struct {
 
-    // const to prevent user modification
-    const int numQubits;
-    const qindex numRows;
+    int numQubits;
+    qindex numRows;
 
-    // elems are not const so that users can modify them after initialisation
     qcomp elems[2][2];
 
 } CompMatr1;
@@ -52,11 +49,9 @@ typedef struct {
 
 typedef struct {
 
-    // const to prevent user modification
-    const int numQubits;
-    const qindex numRows;
+    int numQubits;
+    qindex numRows;
 
-    // elems are not const so that users can modify them after initialisation
     qcomp elems[4][4];
 
 } CompMatr2;
@@ -64,24 +59,23 @@ typedef struct {
 
 typedef struct {
 
-    // const to prevent user modification
-    const int numQubits;
-    const qindex numRows;
+    int numQubits;
+    qindex numRows;
 
     // properties of the matrix (0, 1, or -1 to indicate unknown) which are lazily evaluated,
     // deferred until a function actually validates them, at which point they are computed
     // and the flags fixed until the user modifies the matrix (through sync() or setAmps() etc).
     // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
-    int* const isUnitary;
-    int* const isHermitian;
+    int* isUnitary;
+    int* isHermitian;
 
     // whether the user has ever synchronised memory to the GPU, which is performed automatically
     // when calling functions like setCompMatr(), but which requires manual invocation with
     // syncCompMatr() after manual modification of the cpuElem. Note this can only indicate whether
     // the matrix has EVER been synced; it cannot be used to detect whether manual modifications
     // made after an initial sync have been re-synched. This is a heap pointer, as above.
-    int* const wasGpuSynced;
+    int* wasGpuSynced;
 
     // 2D CPU memory; not const, so users can overwrite addresses (e.g. with nullptr)
     qcomp** cpuElems;
@@ -103,11 +97,9 @@ typedef struct {
 
 typedef struct {
 
-    // const to prevent user modification
-    const int numQubits;
-    const qindex numElems;
+    int numQubits;
+    qindex numElems;
 
-    // elems are not const so that users can modify them after initialisation
     qcomp elems[2];
 
 } DiagMatr1;
@@ -115,11 +107,9 @@ typedef struct {
 
 typedef struct {
 
-    // const to prevent user modification
-    const int numQubits;
-    const qindex numElems;
+    int numQubits;
+    qindex numElems;
 
-    // elems are not const so that users can modify them after initialisation
     qcomp elems[4];
 
 } DiagMatr2;
@@ -127,24 +117,23 @@ typedef struct {
 
 typedef struct {
 
-    // const to prevent user modification
-    const int numQubits;
-    const qindex numElems;
+    int numQubits;
+    qindex numElems;
 
     // properties of the matrix (0, 1, or -1 to indicate unknown) which are lazily evaluated,
     // deferred until a function actually validates them, at which point they are computed
     // and the flags fixed until the user modifies the matrix (through sync() or setAmps() etc).
     // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
-    int* const isUnitary;
-    int* const isHermitian;
+    int* isUnitary;
+    int* isHermitian;
 
     // whether the user has ever synchronised memory to the GPU, which is performed automatically
     // when calling functions like setCompMatr(), but which requires manual invocation with
     // syncCompMatr() after manual modification of the cpuElem. Note this can only indicate whether
     // the matrix has EVER been synced; it cannot be used to detect whether manual modifications
     // made after an initial sync have been re-synched. This is a heap pointer, as above.
-    int* const wasGpuSynced;
+    int* wasGpuSynced;
 
     // CPU memory; not const, so users can overwrite addresses (e.g. with nullptr)
     qcomp* cpuElems;
@@ -163,30 +152,30 @@ typedef struct {
 
 typedef struct {
 
-    // data deployment configuration
-    const int isDistributed;
+    int numQubits;
+    qindex numElems;
 
-    // const to prevent user modification
-    const int numQubits;
-    const qindex numElems;
+    // unlike other heap-matrices, GPU memory is not always allocated when the QuEST
+    // env is GPU-accelerated; instead, it can be disabled by auto-deployer, or the user
+    int isGpuAccelerated;
 
-    // will equal numElems if distribution is disabled at runtime (e.g. via autodeployment)
-    const qindex numElemsPerNode;
+    int isDistributed;
+    qindex numElemsPerNode;
 
     // properties of the matrix (0, 1, or -1 to indicate unknown) which are lazily evaluated,
     // deferred until a function actually validates them, at which point they are computed
     // and the flags fixed until the user modifies the matrix (through sync() or setAmps() etc).
     // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
-    int* const isUnitary;
-    int* const isHermitian;
+    int* isUnitary;
+    int* isHermitian;
 
     // whether the user has ever synchronised memory to the GPU, which is performed automatically
     // when calling functions like setCompMatr(), but which requires manual invocation with
     // syncCompMatr() after manual modification of the cpuElem. Note this can only indicate whether
     // the matrix has EVER been synced; it cannot be used to detect whether manual modifications
     // made after an initial sync have been re-synched. This is a heap pointer, as above.
-    int* const wasGpuSynced;
+    int* wasGpuSynced;
 
     // CPU memory; not const, so users can overwrite addresses (e.g. with nullptr)
     qcomp* cpuElems;
@@ -335,13 +324,10 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
     //   defining the _getCompMatr1FromArr() inner functions to avoid exposing them.
     // - our Generics explicitly check for pointer types (qcomp**), but we use default 
     //   to catch all array types (qcomp[][n], or qcomp(*)[] due to automatic Generic 
-    //   pointer decay in GCC). This avoids us using qcomp(*)[] in the macro which
-    //   would get expanded into our qcomp(re,im) macro and become invalid Generic
-    //   syntax, unless we use a qcomp alias macro (which is gross). It also makes 
-    //   the code more consistent with our variable-size CompMatr macros later in this 
-    //   file, which cannot use VLA in Generics at all. And finally, it avoids the user
-    //   having to see a Generic compilation error message when they pass an invalid
-    //   type. 
+    //   pointer decay in GCC). This makes the code more consistent with our variable-size 
+    //   CompMatr macros later in this  file, which cannot use VLA in Generics at all. It
+    //   also avoids the user having to see a Generic compilation error message when they 
+    //   pass an invalid type. 
     // - Generic expansion does not recurse, hence our macro safely has the same name
     //   (e.g. getCompMatr1) as the inner function, defining a true overload 
     // - we could not have _Generic's 'default' to catch unrecognised types at compile
@@ -440,7 +426,7 @@ extern "C" {
 
     FullStateDiagMatr createFullStateDiagMatr(int numQubits);
 
-    FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib);
+    FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel);
 
 
     void destroyCompMatr(CompMatr matrix);
@@ -707,6 +693,15 @@ extern "C" {
     void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, PauliStrSum in);
 
     FullStateDiagMatr createFullStateDiagMatrFromPauliStrSumFile(char* fn);
+
+    
+    void setDiagMatrFromMultiVarFunc(DiagMatr out, qcomp (*func)(qindex*), int* numQubitsPerVar, int numVars, int areSigned);
+
+    void setDiagMatrFromMultiDimLists(DiagMatr out, void* lists, int* numQubitsPerDim, int numDims);
+
+    void setFullStateDiagMatrFromMultiVarFunc(FullStateDiagMatr out, qcomp (*func)(qindex*), int* numQubitsPerVar, int numVars, int areSigned);
+
+    void setFullStateDiagMatrFromMultiDimLists(FullStateDiagMatr out, void* lists, int* numQubitsPerDim, int numDims);
 
 #ifdef __cplusplus
 }

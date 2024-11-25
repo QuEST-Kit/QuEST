@@ -2,16 +2,21 @@
  * String formatting functions, primarily used by reportQureg and reportQuESTEnv()
  */
 
+#include "quest/include/qureg.h"
 #include "quest/include/types.h"
 #include "quest/include/matrices.h"
 #include "quest/include/channels.h"
 #include "quest/include/paulis.h"
 
 #include "quest/src/core/printer.hpp"
+#include "quest/src/core/errors.hpp"
 #include "quest/src/core/memory.hpp"
+#include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/localiser.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
+#include "quest/src/gpu/gpu_config.hpp"
 
 #include <type_traits> 
 #include <algorithm>
@@ -22,8 +27,7 @@
 #include <vector>
 #include <tuple>
 #include <string>
-
-using namespace printer_substrings;
+#include <new>
 
 using std::cout;
 using std::endl;
@@ -38,37 +42,41 @@ using std::complex;
 
 
 /*
- * AESTHETIC CONSTANTS
+ * PRIVATE AESTHETIC CONSTANTS
  */
 
 
 const int MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS = 2;
 const int SET_SPACE_BETWEEN_DIAG_MATRIX_COLS = 2;
 const int MIN_SPACE_BETWEEN_TABLE_COLS = 5;
-const int MIN_SPACE_BETWEEN_COEFF_AND_PAULI_STR = 2;
+const int SET_SPACE_BETWEEN_KET_AND_RANK = 2;
 
 // must be kept as single char; use numbers above to change spacing
 const char TABLE_SPACE_CHAR = '.';
 const char MATRIX_SPACE_CHAR = ' ';
-const char PAULI_STR_SPACE_CHAR = ' ';
 
 const string VDOTS_CHAR = "⋮";   // unicode too wide for char literal
 const string DDOTS_CHAR = "⋱";
 const string HDOTS_CHAR = "…";
 
+const string HEADER_OPEN_BRACKET = " (";
+const string HEADER_CLOSE_BRACKET = "):";
+const string HEADER_DELIMITER = ", ";
+
+const string IMAGINARY_UNIT = "i";
+
 
 
 /*
- * SUBSTRINGS USED BY REPORTERS
+ * PUBLIC AESTHETIC CONSTATNS
  */
+
 
 namespace printer_substrings { 
     string eq = " = ";
-    string mu = " x ";
-    string pl = " + ";
-    string by = " bytes";
     string pn = " per node";
     string pg = " per gpu";
+    string ig = " in gpu";
     string pm = " per machine";
     string bt = "2^";
     string na = "N/A";
@@ -81,17 +89,24 @@ namespace printer_substrings {
  * USER-CONFIGURABLE GLOBALS
  */
 
-// controls the truncation of reported matrices and pauli string sums.
-// for diagonal matrices, this is the total number of printed elements,
-// but for dense matrices, it is the number in the first column, as well
-// as the number of printed columns (starting from the left). this is
-// user-configurable and can be set to 0 to disable truncation
-qindex maxNumPrintedItems = (1 << 5);
-bool isTruncationEnabled  = (maxNumPrintedItems != 0);
 
-void printer_setMaxNumPrintedItems(qindex num) {
-    maxNumPrintedItems  = num;
-    isTruncationEnabled = (num != 0);
+// user truncation of printed quregs, matrices, pauli-strings, etc
+qindex global_maxNumPrintedRows = (1 << 5);
+qindex global_maxNumPrintedCols = 4;
+
+void printer_setMaxNumPrintedScalars(qindex numRows, qindex numCols) {
+
+    global_maxNumPrintedRows = numRows;
+    global_maxNumPrintedCols = numCols;
+}
+
+
+// user configuration of printed scalars
+int global_maxNumPrintedSigFigs = 5;
+
+void printer_setMaxNumPrintedSigFig(int numSigFigs) {
+
+    global_maxNumPrintedSigFigs = numSigFigs;
 }
 
 
@@ -180,7 +195,7 @@ string printer_getFloatPrecisionFlag() {
 
 // type T can be any number, e.g. int, qindex, float, double, long double
 template <typename T>
-string floatToStr(T num, bool hideSign=false) {
+string floatToStr(T num, bool hideSign=false, int overrideSigFigs=-1) {
 
     // write to stream (instead of calling to_string()) to auto-use scientific notation
     std::stringstream buffer;
@@ -192,9 +207,22 @@ string floatToStr(T num, bool hideSign=false) {
             num *= -1;
     }
 
-    // return 0, 1, 0.1, 1.2e-5, -1e+5
+    // impose user-set significant figures, unless caller overrode
+    int sigFigs = (overrideSigFigs != -1)? overrideSigFigs : global_maxNumPrintedSigFigs;
+    buffer << std::setprecision(sigFigs);
+
+    // get string of e.g. 0, 1, 0.1, 1.2e-05, -1e+05
     buffer << num;
-    return buffer.str();
+    string out = buffer.str();
+
+    // remove superflous 0 prefix in scientific notation exponent
+    size_t ePos = out.find('e');
+    if (ePos != string::npos && (out[ePos + 2] == '0'))
+        out.erase(ePos + 2, 1);
+
+    // permit superflous + prefix of scientific notatio exponent, e.g. 2e+6
+
+    return out;
 }
 
 
@@ -220,11 +248,11 @@ string printer_toStr(complex<T> num) {
     // -1i is abbreviated to -i
     if constexpr (std::is_signed_v<T>)
         if (imag(num) == -1)
-            return realStr + "-i";
+            return realStr + "-" + IMAGINARY_UNIT;
 
     // +1i is abbreviated to +i, although the sign is dropped if there's no preceeding real component
     if (imag(num) == 1)
-        return realStr + ((real(num) == 0)? "i" : "+i");
+        return realStr + ((real(num) == 0)? IMAGINARY_UNIT : ("+" + IMAGINARY_UNIT));
 
     // get imag component string but without sign
     string imagStr = floatToStr(imag(num), true);
@@ -242,7 +270,7 @@ string printer_toStr(complex<T> num) {
         imagStr = '+' + imagStr;
 
     // all imag components end in 'i'
-    imagStr += 'i';
+    imagStr += IMAGINARY_UNIT;
 
     return realStr + imagStr;
 }
@@ -301,16 +329,83 @@ void print(qcomp num) {
 
 
 /*
- * INTERNAL FUNCTIONS
+ * STRINGIFYING FUNCTIONS
  *
- * used by the below public functions for preparing substrings 
+ * some of which are exposed to other files, while others
+ * are private convenience functions to prepare substrings
  */
+
+
+string printer_getMemoryWithUnitStr(size_t numBytes) {
+
+    // retain "bytes" instead of "B" since more recognisable
+    vector<string> units = {"bytes", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
+
+    // unit sizes (in bytes) may overflow; but then so too will numBytes
+    vector<size_t> sizes(units.size());
+    for (size_t i=0; i<units.size(); i++)
+        sizes[i] = powerOf2(10 * i); // = 1024^i
+
+    // find the biggest unit for which numBytes/sizes[ind] > 1
+    int ind = 0;
+    while (numBytes > sizes[ind])
+        ind++;
+    ind--;
+
+    // express numBytes in terms of new unit, forcefully rounding to 2 sig-figs max,
+    // except when the chosen unit is bytes (then we permit all 4 digits)
+    qreal frac = numBytes / (qreal) sizes[ind];
+    return floatToStr(frac, false, (ind==0)? 4 : 2) + " " + units[ind];
+}
+
+
+string getTableTitleStr(string title) {
+
+    return "[" + title + "]";
+}
+
+
+string getRankStr(int rank) {
+
+    return "[node " + toStr(rank) + "]";
+}
+
+
+string getKrausOperatorIndStr(qindex ind) {
+
+    return "[matrix " + toStr(ind) + "]";
+}
+
+
+vector<string> getBasisKets(qindex startInd, qindex numInds) {
+
+    vector<string> kets(numInds);
+
+    for (qindex i=0; i<numInds; i++)
+        kets[i] = "|" + toStr(i+startInd) + "⟩";
+
+    return kets;
+}
 
 
 string getNumQubitsStr(int numQubits) {
 
     // e.g. "1 qubit" or "2 qubits"
-    return toStr(numQubits) + " qubit" + ((numQubits>1)? "s":"");
+    return toStr(numQubits) + " qubit" + (numQubits>1? "s":"");
+}
+
+
+string getQuregTypeStr(Qureg qureg) {
+
+    // never pluralise qubit here because of following word
+    return toStr(qureg.numQubits) + " qubit " + (qureg.isDensityMatrix? "density matrix" : "statevector");
+}
+
+
+string getProductStr(qindex a, qindex b) {
+
+    // e.g. "4x3"
+    return toStr(a) + "x" + toStr(b);
 }
 
 
@@ -320,7 +415,7 @@ string getNumMatrixElemsStr(qindex dim, bool isDiag, int numNodes) {
     // never occurs! We always receive power-of-2 dimension matrices
 
     // e.g. "2 qcomps" or "2x2 qcomps"
-    string out = toStr(dim) + (isDiag? "" : mu + toStr(dim)) + " qcomps";
+    string out = (isDiag? toStr(dim) : getProductStr(dim, dim)) + " qcomps"; // never non-plural
 
     // FullStateDiagMatr may be distributed over >1 numNodes (for other matrix types, numNodes=1 always)
     if (numNodes > 1)
@@ -330,14 +425,54 @@ string getNumMatrixElemsStr(qindex dim, bool isDiag, int numNodes) {
 }
 
 
-string getMemoryCostsStr(size_t numMainBytes, size_t numOverheadBytes, int numNodes) {
+string getMemoryCostsStr(size_t numBytesPerNode, bool isDistrib, bool isGpu) {
 
-    // e.g. "1024 + 32 bytes"
-    string out = toStr(numMainBytes) + pl + toStr(numOverheadBytes) + by;
+    using namespace printer_substrings;
 
-    // FullStateDiagMatr may be distributed over >1 numNodes (for other matrix types, numNodes=1 always)
-    if (numNodes > 1)
-        out += " per node";
+    // when data is GPU-accelerated, we report all memory as being
+    // in the GPU; this isn't exactly true, since the GPU VRAM will
+    // not contain struct fields nor KrausMap matrices. However,
+    // the difference is tiny and unimportant, and shrinks exponentially
+    // (or quadratically, for KrausMap) with increasing number of qubits
+
+    string mem = printer_getMemoryWithUnitStr(numBytesPerNode);
+
+    if (isDistrib && isGpu)
+        return mem + pg;
+    if (isDistrib)
+        return mem + pn;
+    if (isGpu)
+        return mem + ig;
+    
+    return mem;
+}
+
+
+
+/*
+ * INTERNAL CONVENIENCE TYPES
+ *
+ * used for compactly passing arguments to internal
+ * functions which format and print 1D and 2D matrices
+ */
+
+
+using qcompmatr = vector<vector<qcomp>>;
+using stringmatr = vector<vector<string>>;
+
+
+stringmatr getMatrixOfQcompStrings(qcompmatr in) {
+
+    if (in.empty())
+        return stringmatr(0);
+
+    size_t numRows = in.size();
+    size_t numCols = in[0].size();
+    stringmatr out(numRows, vector<string>(numCols));
+
+    for (size_t r=0; r<numRows; r++)
+        for (size_t c=0; c<numCols; c++)
+            out[r][c] = toStr(in[r][c]);
 
     return out;
 }
@@ -345,460 +480,857 @@ string getMemoryCostsStr(size_t numMainBytes, size_t numOverheadBytes, int numNo
 
 
 /*
- * MATRIX INFO PRINTING
+ * PRINTING MATRICES DIVIDED INTO QUADRANTS
  *
- * which prints information about the matrix type itself, rather than its elements
+ * where the quadrants are those resulting
+ * from horizontally and vertically truncating
+ * the matrices. The functions in this section
+ * are compatible with both 1D and 2D data
+ * (vectors become single-column matrices)
  */
 
 
-void print_matrixInfo(string nameStr, int numQubits, qindex dim, size_t elemMem, size_t otherMem, int numNodes) {
+size_t getMaxWidthOfColumn(stringmatr matr, size_t col) {
 
-    // only root node prints
+    size_t maxWidth = 0;
+
+    for (size_t r=0; r<matr.size(); r++) {
+        size_t width = matr[r][col].size();
+        if (width > maxWidth)
+            maxWidth = width;
+    }
+
+    return maxWidth;
+}
+
+
+vector<size_t> getMaxWidthOfColumns(stringmatr upper, stringmatr lower) {
+
+    if (upper.empty())
+        return {};
+
+    size_t numCols = upper[0].size(); // matches lower, unless lower empty
+    vector<size_t> maxWidths(numCols, 0);
+
+    for (size_t c=0; c<numCols; c++)
+        maxWidths[c] = std::max(
+            getMaxWidthOfColumn(upper, c), 
+            getMaxWidthOfColumn(lower, c)); // 0 if lower empty
+
+    return maxWidths;
+}
+
+
+void expandMaxWidthsAccordingToLabels(vector<size_t> &widths, vector<string> &labels) {
+
+    if (labels.empty())
+        return;
+
+    for (size_t c=0; c<widths.size(); c++) {
+        size_t labelWidth = labels[c].size();
+        if (labelWidth > widths[c])
+            widths[c] = labelWidth;
+    }
+}
+
+
+void printPerRowIndent(string baseIndent, size_t row, string indentPerRow) {
+
+    cout << baseIndent;
+
+    // K. I. S. S.
+    for (size_t r=0; r<row; r++)
+        cout << indentPerRow;
+}
+
+
+void printRowInTwoQuadrants(
+    vector<string> leftRow, vector<size_t> leftColWidths,
+    vector<string> rightRow, vector<size_t> rightColWidths
+) {
+    // print left portion of row
+    for (size_t c=0; c<leftRow.size(); c++)
+        cout << left << setw(leftColWidths[c] + MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS) << setfill(MATRIX_SPACE_CHAR)
+             << leftRow[c];
+
+    // finish without printing trailing newline if there is no right portion
+    if (rightRow.empty())
+        return;
+
+    // draw ellipsis; left-spacer already applied by previous amp
+    string spacer = string(MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS, MATRIX_SPACE_CHAR);
+    cout << HDOTS_CHAR << spacer;
+
+    // print right portion
+    for (size_t c=0; c<rightRow.size(); c++)
+        cout << left << setw(rightColWidths[c] + MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS) << setfill(MATRIX_SPACE_CHAR)
+             << rightRow[c];
+
+    // do not print a trailing new line; caller may wish to append more characters
+}
+
+
+void printContiguousRowsInTwoQuadrants(
+    stringmatr left, vector<size_t> leftColWidths, 
+    stringmatr right, vector<size_t> rightColWidths, 
+    vector<string> rowLabels,
+    string indent, string indentPerRow, size_t rowOffsetForIndent
+) {
+    for (size_t r=0; r<left.size(); r++) {
+        printPerRowIndent(indent, r + rowOffsetForIndent, indentPerRow);
+
+        auto rightRow = (right.empty())? vector<string>{} : right[r];
+        printRowInTwoQuadrants(left[r], leftColWidths, rightRow, rightColWidths);
+
+        // print optional row label, using trailing space left by above row print
+        cout << (rowLabels.empty()? "" : rowLabels[r]);
+        cout << endl;
+    }
+}
+
+
+void printMatrixInFourQuadrants(
+    qcompmatr upperLeft, qcompmatr upperRight, 
+    qcompmatr lowerLeft, qcompmatr lowerRight, 
+    vector<string> leftColLabels,  vector<string> rightColLabels, // shown above the first row
+    vector<string> upperRowLabels, vector<string> lowerRowLabels, // shown right of the last column
+    string baseIndent, string indentPerRow, string verticalEllipsis
+) {
+    // this function prints a matrix which has been prior divided into one, two or four
+    // quadrants, resulting from reporter truncation of the original matrix. It can be
+    // used to print truncated (or non-truncated) non-square matrices, horizontal and
+    // vertical vectors, diagonal matrices, and lists of scalars (e.g. Pauli coefficients)
+
+    // the below preconditions are assumed but not enforced:
+    // - it is valid for lowerLeft to be empty, implying upperLeft contains entire columns;
+    //   in that scenario, lowerRight must also be empty
+    // - it is valid for upperRight to be empty, implying upperLeft contains entire rows;
+    //   in that scenario, lowerRight must also be empty
+    // - it is valid for upperRight=lowerLeft=lowerRight to be empty, implying upperLeft
+    //   contains the entire matrix
+    // - it is valid for qcompmatr={} (empty), but it is INVALID to be {{}} (reported non-empty)
+    // - it is INVALID for any qcompmatr to have an inconsistent number of columns across its rows
+    // - it is INVALID for upperLeft and lowerLeft to differ in #columns, though #rows can vary;
+    //   the same applies to upperRight and lowerRight
+    // - it is INVALID for upperLeft and upperRight to differ in #rows, though #columns can vary;
+    //   the same applies to lowerLeft and lowerRight
+    // - it is INVALID for upperLeft to ever be empty
+    // - it is valid for leftColLabels=rightColLabels to be empty, but otherwise...
+    //   - leftColLabels must match the #cols in upperLeft (can contain empty strings)
+    //   - rightColLabels must similarly match the #cols in upperRight
+    // - it is valid for upperRight=lowerRight to be empty, while lowerLeft is not empty;
+    //   this would be the case when printing a vector. Non-distributed vectors like this
+    //   are fine, although distributed vectors should use a separate, bespoke routine since
+    //   this function cannot display labeled ranks spanning vertically
+
     if (!comm_isRootNode())
         return;
 
-    // please don't tell anyone how I live
-    // edit: Tyson from 2 months in the future has found this and is appalled, but is somewhat
-    // sated by the potential bug (a matrix being incorrectly assessed as diagonal if its name
-    // changes) causing only a minor printed/typeset error (e.g. showing "5x5" instead of "5") 
-    bool isDiag = nameStr.find("Diag") != string::npos;
+    // prepare element strings
+    stringmatr upperLeftStrings  = getMatrixOfQcompStrings(upperLeft);
+    stringmatr upperRightStrings = getMatrixOfQcompStrings(upperRight);
+    stringmatr lowerLeftStrings  = getMatrixOfQcompStrings(lowerLeft);
+    stringmatr lowerRightStrings = getMatrixOfQcompStrings(lowerRight);
 
-    // print e.g. FullStateDiagMatr (8 qubits, 256 qcomps over 4 nodes, 1024 + 32 bytes per node):
-    cout 
-        << nameStr 
-        << " (" 
-        << getNumQubitsStr(numQubits)
-        << ", " 
-        << getNumMatrixElemsStr(dim, isDiag, numNodes)
-        << ", "  
-        << getMemoryCostsStr(elemMem, otherMem, numNodes) 
-        << "):"  // colon, since caller will hereafter print matrix elements
-        << endl;
+    // decide column widths
+    vector<size_t> leftColWidths  = getMaxWidthOfColumns(upperLeftStrings,  lowerLeftStrings);
+    vector<size_t> rightColWidths = getMaxWidthOfColumns(upperRightStrings, lowerRightStrings);
+
+    // including consideration of column labels
+    expandMaxWidthsAccordingToLabels(leftColWidths,  leftColLabels);
+    expandMaxWidthsAccordingToLabels(rightColWidths, rightColLabels);
+
+    // optionally print all column labels
+    if (!leftColLabels.empty()) {
+        cout << baseIndent;
+        printRowInTwoQuadrants(leftColLabels, leftColWidths, rightColLabels, rightColWidths);
+        cout << endl;
+    }
+
+    // print the upper rows
+    printContiguousRowsInTwoQuadrants(
+        upperLeftStrings, leftColWidths, 
+        upperRightStrings, rightColWidths, 
+        upperRowLabels,
+        baseIndent, indentPerRow, 0);
+
+    // finish immediately if there are no lower rows (matrix wasn't vertically truncated)
+    if (lowerLeftStrings.empty())
+        return;
+
+    // otherwise, draw ellipsis, aligned (approx) in the midpoint of leftmost column (which may be indented)
+    printPerRowIndent(baseIndent, upperLeft.size(), indentPerRow);
+    cout << string(leftColWidths[0]/2, MATRIX_SPACE_CHAR) << verticalEllipsis << endl;
+
+    // print the lower rows (continuing indentation from upper)
+    printContiguousRowsInTwoQuadrants(
+        lowerLeftStrings, leftColWidths, 
+        lowerRightStrings, rightColWidths, 
+        lowerRowLabels,
+        baseIndent, indentPerRow, upperLeft.size() + 1); // +1 for ellipsis
 }
 
 
 
 /*
- * DENSE MATRIX PRINTING
+ * FUNCTIONS TO DIVIDE A MATRIX INTO QUADRANTS
  *
- * which print only the matrix elements, indented. We truncate matrices which 
- * contain more rows than maxNumPrintedItems, by printing only their
- * upper-left and lower-left quadrants. This somewhat unusual style of truncation
- * avoids having to align unicode characters and all the resulting headaches.
+ * as per the user's printing truncation thresholds.
+ * These functions decide how to divide a matrix or
+ * vector into one, two or four quadrants (or for
+ * vectors, at most two quadrants) for subsequent
+ * pretty printing
  */
 
 
-// type T can be qcomp(*)[] or qcomp**
-template <typename T> 
-void rootPrintTruncatedDenseMatrixElems(T elems, qindex dim, string indent) {
+struct MatrixQuadrantInds {
 
-    // only root node prints
-    if (!comm_isRootNode())
-        return;
+    qindex numUpperLeftRows=0, numUpperRightRows=0; 
+    qindex numLowerLeftRows=0, numLowerRightRows=0;
 
-    // determine how to truncate the reported matrix
-    qindex numTopElems = maxNumPrintedItems / 2; // floors
-    qindex numBotElems = maxNumPrintedItems - numTopElems; // includes remainder
-    qindex numReported = numTopElems + numBotElems;
+    qindex numUpperLeftCols=0, numUpperRightCols=0;
+    qindex numLowerLeftCols=0, numLowerRightCols=0;
 
-    // prevent truncation if the matrix is too small, or user has disabled
-    bool isTruncated = isTruncationEnabled && dim > (numTopElems + numBotElems);
-    if (!isTruncated) {
-        numReported = dim;
-        numTopElems = dim;
-        numBotElems = 0;
-    }
+    qindex rightStartCol=0;
+    qindex lowerStartRow=0;
 
-    // determine max width of each reported column...
-    vector<int> maxColWidths(numReported, 0);
-    for (qindex c=0; c<numReported; c++) {
+    // these are always fixed at 0, but included for clarity
+    qindex leftStartCol = 0;
+    qindex upperStartRow = 0;
+};
 
-        // by considering the top-most rows
-        for (qindex r=0; r<numTopElems; r++) {
-            int width = toStr(elems[r][c]).length();
-            if (width > maxColWidths[c])
-                maxColWidths[c] = width;
-        }
 
-        // and the bottom-most rows
-        for (qindex i=0; i<numBotElems; i++) {
-            int r = dim - i - 1;
-            int width = toStr(elems[r][c]).length();
-            if (width > maxColWidths[c])
-                maxColWidths[c] = width;
-        }
-    }
+MatrixQuadrantInds getTruncatedMatrixQuadrantInds(qindex numRows, qindex numCols) {
 
-    // print top-most rows, aligning columns
-    for (qindex r=0; r<numTopElems; r++) {
-        cout << indent;
+    MatrixQuadrantInds inds;
 
-        for (qindex c=0; c<numReported; c++)
-            cout << left
-                << setw(maxColWidths[c] + MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS) 
-                << setfill(MATRIX_SPACE_CHAR)
-                << toStr(elems[r][c]);
+    // according to the user-set truncations
+    qindex maxNumLeftCols  = global_maxNumPrintedCols / 2; // floors
+    qindex maxNumRightCols = global_maxNumPrintedCols - maxNumLeftCols;
+    qindex maxNumUpperRows = global_maxNumPrintedRows / 2; // floors
+    qindex maxNumLowerRows = global_maxNumPrintedRows - maxNumUpperRows;
 
-        // print a trailing ellipsis after the top-most row
-        if (isTruncated && r == 0)
-            cout << HDOTS_CHAR;
+    // may be ignored (and will unimportantly underflow when not truncating)
+    inds.rightStartCol = numCols - maxNumRightCols;
+    inds.lowerStartRow = numRows - maxNumLowerRows;
 
-        cout << endl;
-    }
+    // decide among four possible quadrant population configurations;
+    // this code can be significantly shortened but we leave it explicit
+    // for clarity, and so that *NumRows=0 <=> *NumCols=0
 
-    // we are finished if there was no bottom elems (because matrix was not truncated)
-    if (!isTruncated)
-        return;
+    if (numRows <= global_maxNumPrintedRows && numCols <= global_maxNumPrintedCols) {
+
+        // upper left contains entire matrix
+        inds.numUpperLeftRows = numRows;  inds.numUpperLeftCols = numCols;
+
+    } else if (numRows <= global_maxNumPrintedRows) {
+
+        // matrix divided into upper left and upper right (bottoms empty)
+        inds.numUpperLeftRows  = numRows;  inds.numUpperLeftCols  = maxNumLeftCols;
+        inds.numUpperRightRows = numRows;  inds.numUpperRightCols = maxNumRightCols;
     
-    // otherwise, separate the top-left and bottom-left quadrants by an ellipsis and blank row,
-    // which we align with the center of the left-most column (just to be a little pretty)
-    cout << indent;
-    for (int i=0; i<maxColWidths[0]/2; i++)
-        cout << MATRIX_SPACE_CHAR;
-    cout << VDOTS_CHAR << endl;
+    } else if (numCols <= global_maxNumPrintedCols) {
 
-    // print the remaining bottom rows
-    for (qindex r=dim-numBotElems; r<dim; r++) {
-        cout << indent;
+        // matrix divided into upper left and lower left (rights empty)
+        inds.numUpperLeftRows = maxNumUpperRows;  inds.numUpperLeftCols = numCols;
+        inds.numLowerLeftRows = maxNumLowerRows;  inds.numLowerLeftCols = numCols;
 
-        for (qindex c=0; c<numReported; c++)
-            cout << left
-                << setw(maxColWidths[c] + MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS) 
-                << setfill(MATRIX_SPACE_CHAR)
-                << toStr(elems[r][c]);
-
-        // print a trailing ellipsis after the bottom-most row
-        if (r == dim-1)
-            cout << HDOTS_CHAR;
-
-        cout << endl;
+    } else {
+        
+        // matrix divided into into four quadrants
+        inds.numUpperLeftRows  = maxNumUpperRows;  inds.numUpperLeftCols  = maxNumLeftCols;
+        inds.numUpperRightRows = maxNumUpperRows;  inds.numUpperRightCols = maxNumRightCols;
+        inds.numLowerLeftRows  = maxNumLowerRows;  inds.numLowerLeftCols  = maxNumLeftCols;
+        inds.numLowerRightRows = maxNumLowerRows;  inds.numLowerRightCols = maxNumRightCols;
     }
-}
 
-void print_matrix(CompMatr1 matr, string indent) {
-    rootPrintTruncatedDenseMatrixElems(matr.elems, matr.numRows, indent);
-}
-void print_matrix(CompMatr2 matr, string indent) {
-    rootPrintTruncatedDenseMatrixElems(matr.elems, matr.numRows, indent);
-}
-void print_matrix(CompMatr matr, string indent) {
-    rootPrintTruncatedDenseMatrixElems(matr.cpuElems, matr.numRows, indent);
+    return inds;
 }
 
 
 
 /*
- * LOCAL DIAGONAL MATRIX PRINTING
+ * FUNCTIONS TO POPULATE THE QUADRANTS
  *
- * which print only the matrix diagonals, indented. We don't have to muck around with
- * templating because arrays decay to pointers, yay! We truncate matrices which 
- * contain more diagonals than maxNumPrintedItems, by printing only their
- * top-most and lowest partitions, separated by ellipsis.
+ * the sizes of which are decided by the above functions.
+ * The below functions invoke communication and GPU-to-CPU 
+ * copying as necessary to populate the quadrants on the 
+ * root node (that which subsequently prints them)
  */
 
 
-void rootPrintAllDiagonalElems(qcomp* elems, qindex len, qindex indentOffset, string indent) {
+void allocateMatrixQuadrants(MatrixQuadrantInds inds, qcompmatr &ul, qcompmatr &ur, qcompmatr &ll, qcompmatr &lr) {
 
-    if (!comm_isRootNode())
-        return;
-
-    for (qindex i=0; i<len; i++)
-        cout 
-            << indent
-            << string((i + indentOffset) * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR)
-            << toStr(elems[i])
-            << endl;
+    util_tryAllocMatrix(ul, inds.numUpperLeftRows,  inds.numUpperLeftCols,  error_printerFailedToAllocTempMemory);
+    util_tryAllocMatrix(ur, inds.numUpperRightRows, inds.numUpperRightCols, error_printerFailedToAllocTempMemory); // may be zero-size
+    util_tryAllocMatrix(ll, inds.numLowerLeftRows,  inds.numLowerLeftCols,  error_printerFailedToAllocTempMemory); // may be zero-size
+    util_tryAllocMatrix(lr, inds.numLowerRightRows, inds.numLowerRightCols, error_printerFailedToAllocTempMemory); // may be zero-size
 }
 
 
-void rootPrintDiagonalDots(qindex elemInd, string indent) {
+void populateSingleColumnQcompmatr(qcompmatr &matr, qindex startInd, PauliStrSum sum) {
 
-    if (!comm_isRootNode())
+    // matr is single-column, and has been prior resized such that 
+    // even before population, matr.size() is non-zero unless it is
+    // intended to stay empty
+    size_t numCoeffs = matr.size(); // numRows
+    if (numCoeffs == 0)
         return;
 
-    cout
-        << indent 
-        << string(elemInd * SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR)
-        << DDOTS_CHAR 
-        << endl;
+    // serially copy the CPU-only, non-distributed coefficients
+    for (size_t i=0; i<numCoeffs; i++)
+        matr[i][0] = sum.coeffs[startInd + i];
 }
 
 
-void rootPrintTruncatedDiagonalMatrixElems(qcomp* elems, qindex dim, string indent) {
+// T can be any 1D type, i.e. Qureg (.isDensity=0), FullStateDiagMatr, DiagMatr1, DiagMatr2, DiagMatr
+template <class T>
+void populateSingleColumnQcompmatr(qcompmatr &matr, qindex startInd, T obj) {
 
-    if (!comm_isRootNode())
+    // matr is single-column, and has been prior resized such that 
+    // even before population, matr.size() is non-zero unless it is
+    // intended to stay empty
+    size_t numAmps = matr.size(); // numRows
+    if (numAmps == 0)
         return;
 
-    // determine how to truncate the reported matrix
-    qindex numTopElems = maxNumPrintedItems / 2; // floors
-    qindex numBotElems = maxNumPrintedItems - numTopElems; // includes remainder
+    // prepare temp memory where adjacent columns are adjacent elems (unlike matr)
+    vector<qcomp> column;
+    util_tryAllocVector(column, numAmps, error_printerFailedToAllocTempMemory);
 
-    // prevent truncation if the matrix is too small, or user has disabled
-    bool isTruncated = isTruncationEnabled && dim > (numTopElems + numBotElems);
-    if (!isTruncated) {
-        numTopElems = dim;
-        numBotElems = 0;
+    // populate temp memory, potentially invoking CPU-GPU copying and communication...
+    if constexpr (util_isFullStateDiagMatr<T>()) {
+        localiser_fullstatediagmatr_getElems(column.data(), obj, startInd, numAmps);
+    } else if constexpr (util_isQuregType<T>()) {
+        localiser_statevec_getAmps(column.data(), obj, startInd, numAmps);
+
+    // or invoking nothing...
+    } else if constexpr (util_isFixedSizeMatrixType<T>()) {
+        column = vector<qcomp>(obj.elems, obj.elems + numAmps);
+
+    // or invoking merely a GPU-CPU copy 
+    } else {
+        column = vector<qcomp>(obj.cpuElems, obj.cpuElems + numAmps);
+        auto gpuPtr = util_getGpuMemPtr(obj);
+        if (mem_isAllocated(gpuPtr))
+            gpu_copyGpuToCpu(gpuPtr, column.data(), numAmps);
     }
 
-    // print each row at a regular indentation, regardless of element width
-    rootPrintAllDiagonalElems(elems, numTopElems, 0, indent);
+    // overwrite matr; serial iteration is fine since we assume few elems printed
+    for (size_t i=0; i<numAmps; i++)
+        matr[i][0] = column[i];
+}
 
-    // we are finished if there was no bottom elems (because matrix was not truncated)
-    if (!isTruncated)
+
+void populateManyColumnQcompmatr(qcompmatr &matr, qindex startRow, qindex startCol, Qureg qureg) {
+
+    // matr has been prior resized such that even before
+    // population, matr.size() is non-zero unless it is
+    // intended to stay empty
+    if (matr.size() == 0)
         return;
 
-    // otherwise, separate the top-left and bottom-left partitions by a diagonal ellipsis,
-    rootPrintDiagonalDots(numTopElems, indent);
+    // prepare list of pointers to matr rows, compatible with localiser 2D input format
+    vector<qcomp*> ptrs;
+    util_tryAllocVector(ptrs, matr.size(), error_printerFailedToAllocTempMemory);
+    for (size_t r=0; r<matr.size(); r++)
+        ptrs[r] = matr[r].data();
 
-    // print remaining elements, keeping consistent indentation, adjusting for above ellipsis
-    rootPrintAllDiagonalElems(&elems[dim-numBotElems], numBotElems, numTopElems+1, indent);
+    // overwrite matr (throug ptrs), which may trigger communication and GPU-to-CPU copying.
+    // note this achieves node consensus; every node populates their matr, which is much more
+    // demanding than only the root note, however we expect this is not a big deal; live printing
+    // in distributed settings is exceptionally rare and will print small, tractable subsets
+    localiser_densmatr_getAmps(ptrs.data(), qureg, startRow, startCol, matr.size(), matr[0].capacity());
 }
 
 
-void print_matrix(DiagMatr1 matr, string indent) {
-    rootPrintTruncatedDiagonalMatrixElems(matr.elems, matr.numElems, indent);
+// T can be qcomp** or qcomp(*)[]
+template <typename T>
+void populateManyColumnQcompmatrFromPtr(qcompmatr &matr, qindex startRow, qindex startCol, T elems) {
+
+    if (matr.size() == 0)
+        return;
+
+    // serially copy elements; performance is no issue here
+    for (size_t r=0; r<matr.size(); r++)
+        for (size_t c=0; c<matr[r].size(); c++)
+            matr[r][c] = elems[r+startRow][c+startCol];
 }
-void print_matrix(DiagMatr2 matr, string indent) {
-    rootPrintTruncatedDiagonalMatrixElems(matr.elems, matr.numElems, indent);
+
+
+// T can be 2D matrix type, i.e CompMatr, CompMatr1, CompMatr2, SuperOp
+template <typename T>
+void populateManyColumnQcompmatr(qcompmatr &matr, qindex startRow, qindex startCol, T obj) {
+
+    if constexpr (util_isFixedSizeMatrixType<T>())
+        populateManyColumnQcompmatrFromPtr(matr, startRow, startCol, obj.elems);
+
+    else {
+        // even though matrix GPU memory should be unchanged, we copy it
+        // over to CPU to overwrite any changes the user may have done
+        // to the CPU matrix; this is so that the displayed matrix is
+        // definitely consistent with the simulated backend. Because
+        // we expect square matrices to be small, we do not bother copying
+        // the specifically displayed sub-matrix (like we do for Qureg and
+        // FullStateDiagMatr); instead, we just copy over the whole matrix.
+        if constexpr (util_isHeapMatrixType<T>()) {
+            auto gpuPtr = util_getGpuMemPtr(obj);
+            if (mem_isAllocated(gpuPtr))
+                gpu_copyGpuToCpu(obj);
+        }
+
+        populateManyColumnQcompmatrFromPtr(matr, startRow, startCol, obj.cpuElems);
+    }
 }
-void print_matrix(DiagMatr matr, string indent) {
-    rootPrintTruncatedDiagonalMatrixElems(matr.cpuElems, matr.numElems, indent);
+
+
+void populateMatrixQuadrants(MatrixQuadrantInds inds, qcompmatr &ul, qcompmatr &ur, qcompmatr &ll, qcompmatr &lr, Qureg obj) {
+
+    // dense matrices can populate as many as 4 quadrants
+    if (obj.isDensityMatrix) {
+        populateManyColumnQcompmatr(ul, inds.upperStartRow, inds.leftStartCol,  obj);
+        populateManyColumnQcompmatr(ur, inds.upperStartRow, inds.rightStartCol, obj);
+        populateManyColumnQcompmatr(ll, inds.lowerStartRow, inds.leftStartCol,  obj);
+        populateManyColumnQcompmatr(lr, inds.lowerStartRow, inds.rightStartCol, obj);
+
+    // but vectors always become 1 or 2 quadrants (the left, as a potentially split column)
+    } else {
+        populateSingleColumnQcompmatr(ul, inds.upperStartRow, obj);
+        populateSingleColumnQcompmatr(ll, inds.lowerStartRow, obj);
+    }
+}
+
+
+// T can be all 1D and 2D types, i.e. CompMatr/1/2, DiagMatr1/2, FullStateDiagMatr, SuperOp,
+// and can furthermore be PauliStrSum (in order to print the real coefficients).
+// Importantly, this excludes KrausMap which is handled explicitly, and annoyingly, Qureg,
+// which must be handled seperately above (because it must runtime branch, not compile-time)
+template <class T>
+void populateMatrixQuadrants(MatrixQuadrantInds inds, qcompmatr &ul, qcompmatr &ur, qcompmatr &ll, qcompmatr &lr, T obj) {
+
+    // dense matrices can populate as many as 4 quadrants
+    if constexpr (util_isDenseMatrixType<T>()) {
+        populateManyColumnQcompmatr(ul, inds.upperStartRow, inds.leftStartCol,  obj);
+        populateManyColumnQcompmatr(ur, inds.upperStartRow, inds.rightStartCol, obj);
+        populateManyColumnQcompmatr(ll, inds.lowerStartRow, inds.leftStartCol,  obj);
+        populateManyColumnQcompmatr(lr, inds.lowerStartRow, inds.rightStartCol, obj);
+
+    // but vectors always become 1 or 2 quadrants (the left, as a potentially split column)
+    } else {
+        populateSingleColumnQcompmatr(ul, inds.upperStartRow, obj);
+        populateSingleColumnQcompmatr(ll, inds.lowerStartRow, obj);
+    }
 }
 
 
 
 /*
- * DISTRIBUTED DIAGONAL MATRIX PRINTING
+ * PRINTING DENSE MATRICES
  *
- * which complicates the truncation printing logic
+ * These functions print only the elements, 
+ * indented, and optionally rank labels, e.g.
+ *    [rank 0] [rank 1]
+ *     3.1     3.2i
+ *     -3.     5.3
  */
 
 
-void rootPrintRank(int rank) {
+void setColumnLabelsToRanks(vector<string> &labels, int &lastRank, qindex colIndOffset, Qureg qureg) {
 
-    if (comm_isRootNode())
-        cout << defaultTableIndent << "[rank " << rank << "]" << endl;
+    // we can afford to serially enumerate printed columns, since expected few
+    for (size_t i=0; i<labels.size(); i++) {
+        int colRank = util_getRankContainingColumn(qureg, i + colIndOffset);
+        labels[i] = (colRank > lastRank)? getRankStr(colRank) : "";
+
+        // lastRank is modified, even for caller
+        lastRank = colRank;
+    }
 }
 
-void rootPrintRanks(int startRank, int endRankIncl) {
 
-    if (comm_isRootNode())
-        cout << defaultTableIndent << "[ranks " << startRank << "-" << endRankIncl << "]" << endl;
+void populateDensityMatrixColumnLabels(vector<string> &leftColLabels, vector<string> &rightColLabels, Qureg qureg, MatrixQuadrantInds inds) {
+
+    leftColLabels.resize(inds.numUpperLeftCols);
+    rightColLabels.resize(inds.numUpperRightCols);
+
+    int lastRank = -1;
+    setColumnLabelsToRanks(leftColLabels,  lastRank, inds.leftStartCol,  qureg);
+    setColumnLabelsToRanks(rightColLabels, lastRank, inds.rightStartCol, qureg);
 }
 
 
-void print_matrix(FullStateDiagMatr matr, string indent) {
+// T can be 2D types, e.g. Qureg (.isDensityMatrix=1), CompMatr/1/2, SuperOp.
+// importantly, it excludes KrausMap which is handled separately
+template <class T> 
+void printDenseSquareMatrix(T obj, string indent) {
 
-    // non-distributed edge-case is trivial; root node prints all, handling truncation
-    if (!matr.isDistributed) {
-        rootPrintTruncatedDiagonalMatrixElems(matr.cpuElems, matr.numElemsPerNode, indent);
+    // determine the full matrix dimension
+    qindex numRows;
+    if constexpr (util_isDenseMatrixType<T>())
+        numRows = obj.numRows;
+    else
+        numRows = powerOf2(obj.numQubits); // this would be wrong for SuperOp
+
+    // work out which global amps are going to be printed, divided into quadrants
+    MatrixQuadrantInds inds = getTruncatedMatrixQuadrantInds(numRows, numRows);
+
+    // populate quadrants (which may involve a GPU to CPU copy and/or communication)
+    qcompmatr ul,ur,ll,lr;
+    allocateMatrixQuadrants(inds, ul,ur,ll,lr);
+    populateMatrixQuadrants(inds, ul,ur,ll,lr, obj);
+
+    // columns are only labelled if given a distributed Qureg (they become sender node)
+    vector<string> leftColLabels, rightColLabels;
+    if constexpr (util_isQuregType<T>())
+        if (obj.isDistributed)
+            populateDensityMatrixColumnLabels(leftColLabels, rightColLabels, obj, inds);
+
+    // do not label rows nor successively indent them
+    vector<string> rowLabels = {};
+    string indentPerRow = "";
+
+    printMatrixInFourQuadrants(
+        ul, ur, ll, lr,
+        leftColLabels, rightColLabels, rowLabels, rowLabels, 
+        indent, indentPerRow, VDOTS_CHAR);
+}
+
+
+void print_elems(CompMatr1 obj, string indent) { printDenseSquareMatrix(obj, indent); }
+void print_elems(CompMatr2 obj, string indent) { printDenseSquareMatrix(obj, indent); }
+void print_elems(CompMatr  obj, string indent) { printDenseSquareMatrix(obj, indent); }
+void print_elems(SuperOp   obj, string indent) { printDenseSquareMatrix(obj, indent); }
+
+void print_elems(KrausMap map, string indent) {
+
+    if (!comm_isRootNode())
         return;
+
+    // we ignore the superoperator, and instead print every CPU-only Kraus map in-turn
+    for (qindex i=0; i<map.numMatrices; i++) {
+
+        cout << indent << getKrausOperatorIndStr(i) << endl; // single indent
+
+        // by spoofing each as a CompMatr
+        CompMatr spoof = {
+            .numQubits = map.numQubits,
+            .numRows = map.numRows,
+            .isUnitary = nullptr, 
+            .isHermitian = nullptr,
+            .wasGpuSynced = nullptr, 
+            .cpuElems = map.matrices[i],
+            .gpuElemsFlat = nullptr // printer checks GPU-alloc via non-null
+        };
+        print_elems(spoof, indent + indent); // double indent
+    }
+}
+
+// print_elems(Qureg.isDensityMatrix=1) handled separately below
+
+
+
+/*
+ * PRINTING VECTORS AND DIAGONAL MATRICES
+ *
+ * These functions print only the elements, 
+ * indented, and optionally rank and ket labels, e.g.
+ *     3.1  [rank 0]
+ *       3.4i
+ *         5.6  [rank 1]
+ *           0.5i
+ */
+
+
+// T can be Qureg (.isDistributed=1, .isDensityMatrix=0) or FullStateDiagMatr
+template <class T>
+void setRowLabelsToRanks(vector<string> &labels, int &lastRank, qindex rowIndOffset, T obj) {
+
+    // we can afford to serially enumerate printed rows, since expected few
+    for (size_t i=0; i<labels.size(); i++) {
+
+        // show rank only when distinct from the previous amp's rank
+        int rank = util_getRankContainingIndex(obj, i + rowIndOffset);
+        if (rank == lastRank)
+            continue;
+
+        // add extra spacing if the label already contains a ket
+        if (!labels[i].empty())
+            labels[i] += string(SET_SPACE_BETWEEN_KET_AND_RANK, MATRIX_SPACE_CHAR);
+
+        labels[i] += getRankStr(rank);
+
+        // lastRank is modified, even for caller
+        lastRank = rank;
+    }
+}
+
+
+// T can be Qureg (.isDistributed=1, .isDensityMatrix=0) or FullStateDiagMatr
+template <class T>
+void populateDistributedVectorRowLabels(vector<string> &upperRowLabels, vector<string> &lowerRowLabels, T obj, MatrixQuadrantInds inds) {
+
+    // these might already contain kets; resize preserves existing elems
+    upperRowLabels.resize(inds.numUpperLeftRows);
+    lowerRowLabels.resize(inds.numLowerLeftRows);
+
+    // to ensure rank aligns nicely, pad existing labels with the widest elem (which is the last one)
+    int len = (lowerRowLabels.empty()? upperRowLabels : lowerRowLabels).back().length();
+    for (auto &label : upperRowLabels) label += string(len - label.length(), MATRIX_SPACE_CHAR);
+    for (auto &label : lowerRowLabels) label += string(len - label.length(), MATRIX_SPACE_CHAR);
+
+    int lastRank = -1;
+    setRowLabelsToRanks(upperRowLabels, lastRank, inds.upperStartRow, obj);
+    setRowLabelsToRanks(lowerRowLabels, lastRank, inds.lowerStartRow, obj);
+}
+
+
+// T can be any 1D type, e.g. Qureg (.isDensityMatrix=0), FullStateDiagMatr, DiagMatr/1/2
+template <class T>
+void printVector(T obj, string indent) {
+
+    // divide vector into one of two column vectors (ul and ll; ur and lr stay empty)
+    qcompmatr ul,ur,ll,lr;
+    qindex numAmps = powerOf2(obj.numQubits);
+    MatrixQuadrantInds inds = getTruncatedMatrixQuadrantInds(numAmps, 1);
+    allocateMatrixQuadrants(inds, ul,ur,ll,lr);
+    populateMatrixQuadrants(inds, ul,ur,ll,lr, obj);
+
+    // rows are only labelled if we're printing a Qureg...
+    vector<string> upperRowLabels = {};
+    vector<string> lowerRowLabels = {};
+    if constexpr (util_isQuregType<T>()) {
+        upperRowLabels = getBasisKets(inds.upperStartRow, inds.numUpperLeftRows);
+        lowerRowLabels = getBasisKets(inds.lowerStartRow, inds.numLowerLeftRows);
     }
 
-    int thisRank = comm_getRank();
-    int numRanks = comm_getNumNodes();
+    // and/or if the type is distributed
+    if constexpr (util_isDistributableType<T>())
+        if (obj.isDistributed)
+            populateDistributedVectorRowLabels(upperRowLabels, lowerRowLabels, obj, inds);
 
-    // prevent truncation if user has disabled by imitating a sufficiently large truncation threshold
-    qindex maxPrintedElems = (isTruncationEnabled)? maxNumPrintedItems : matr.numElems;
+    // columns are never labelled
+    vector<string> colLabels = {};
 
-    // when distributed, multiple nodes may print their elements depending on the matrix truncation
-    int numNodesWorth = maxPrintedElems / matr.numElemsPerNode; // floors
+    // only successively indent each row when vector represets a diagonal matrix
+    bool indentEachRow = ! util_isQuregType<T>(); // since else diagonal
+    string indentPerRow = (indentEachRow)? string(SET_SPACE_BETWEEN_DIAG_MATRIX_COLS, MATRIX_SPACE_CHAR) : ""; 
+    string ellipsisChar = (indentEachRow)? DDOTS_CHAR : VDOTS_CHAR;
 
-    // these nodes are divided into "full" nodes which will print all their local elements...
-    int numFullReportingNodes = 2 * (numNodesWorth/2); // floors
-    int numTopFullReportingNodes = numFullReportingNodes / 2; // floors
-    int numBotFullReportingNodes = numFullReportingNodes - numTopFullReportingNodes;
+    // will print the vector in one or two quadrants (right two quadrants are unpopulated)
+    printMatrixInFourQuadrants(
+        ul, ur, ll, lr,
+        colLabels, colLabels, upperRowLabels, lowerRowLabels, 
+        indent, indentPerRow, ellipsisChar);
+}
 
-    // and two "partial" nodes which print only some of their elements
-    int topPartialRank = numTopFullReportingNodes;
-    int botPartialRank = numRanks - numBotFullReportingNodes - 1;
 
-    // although it's possible these "partial" nodes end up printing all or none of their elements
-    qindex numPartialElems = maxPrintedElems - (numFullReportingNodes * matr.numElemsPerNode);
-    qindex numTopPartialElems = numPartialElems / 2; // floors
-    qindex numBotPartialElems = numPartialElems - numTopPartialElems;
+void print_elems(DiagMatr1 obj, string indent) { printVector(obj, indent); }
+void print_elems(DiagMatr2 obj, string indent) { printVector(obj, indent); }
+void print_elems(DiagMatr  obj, string indent) { printVector(obj, indent); }
+void print_elems(FullStateDiagMatr obj, string indent) { printVector(obj, indent); }
 
-    // determine which, if any, nodes are "occluded" (do not print at all)
-    int topLastPrintingRank  = (numTopPartialElems > 0)? topPartialRank : topPartialRank - 1;
-    int botFirstPrintingRank = (numBotPartialElems > 0)? botPartialRank : botPartialRank + 1;
-    int firstOccludedRank = topLastPrintingRank + 1;
-    int lastOccludedRank  = botFirstPrintingRank - 1;
-    bool anyRanksOccluded = lastOccludedRank > firstOccludedRank;
+void print_elems(Qureg qureg, string indent) {
 
-    // nodes print by sending their elements to the root node's buffer, which root then prints.
-    // We will allocate the minimum size buffer possible (without incurring more rounds of
-    // communication) to avoid astonishing the user with a big allocation. We also only alloc
-    // the buffer on the root node, to save memory when each machine runs multiple MPI nodes.
-    std::vector<qcomp> rootBuff;
-
-    // if there are any nodes which get all their elements printed...
-    if (numTopFullReportingNodes > 0) {
-
-        // the first is always root, which is special; it can print without communication
-        rootPrintRank(0);
-        rootPrintAllDiagonalElems(matr.cpuElems, matr.numElemsPerNode, 0, indent);
-
-        // if there are more full nodes to print, root allocs its buffer space
-        if (numTopFullReportingNodes > 1)
-            if (comm_isRootNode(thisRank))
-                rootBuff.reserve(matr.numElemsPerNode); 
-
-        // then all top full nodes (except root) send their elems in-turn to root, which prints on their behalf
-        for (int r=1; r<numTopFullReportingNodes; r++) {
-            rootPrintRank(r);
-            comm_sendAmpsToRoot(r, matr.cpuElems, rootBuff.data(), matr.numElemsPerNode);
-            rootPrintAllDiagonalElems(rootBuff.data(), matr.numElemsPerNode, 0, indent);
-        }
-    }
-
-    // if the top "partial node" has any elements to print...
-    if (numTopPartialElems > 0) {
-        rootPrintRank(topPartialRank);
-
-        // and it happens to be the root node, then printing requires no communication
-        if (comm_isRootNode(topPartialRank))
-            rootPrintAllDiagonalElems(matr.cpuElems, numTopPartialElems, 0, indent);
-
-        else {
-            // otherwise, we ensure root buffer has space (there may have been no top full nodes)
-            if (comm_isRootNode(thisRank))
-                rootBuff.reserve(numTopPartialElems);
-
-            // send a subset (or all) of the top partial node's amps to root, which prints
-            comm_sendAmpsToRoot(topPartialRank, matr.cpuElems, rootBuff.data(), numTopPartialElems);
-            rootPrintAllDiagonalElems(rootBuff.data(), numTopPartialElems, 0, indent);
-        }
-
-        // if not all elems were printed, add an ellipsis
-        if (numTopPartialElems < matr.numElemsPerNode)
-            rootPrintDiagonalDots(numTopPartialElems, indent);
-    }
-
-    // if any nodes are occluded (they don't have any elems printed), root prints them as ellipsis
-    if (anyRanksOccluded) {
-        rootPrintRanks(firstOccludedRank, lastOccludedRank);
-        rootPrintDiagonalDots(0, indent);
-    }
-
-    // if the bottom "partial node" has any elements to print...
-    if (numBotPartialElems > 0) {
-        rootPrintRank(botPartialRank);
-
-        // ensure root buffer has space (bottom partial can have more elements than top due to truncation indivisibility)
-        if (comm_isRootNode(thisRank))
-            rootBuff.reserve(numBotPartialElems);
-
-        // if not all elems will be printed, prefix with ellipsis, which will shift subsequently printed elems
-        bool isPartial = numBotPartialElems < matr.numElemsPerNode;
-        if (isPartial)
-            rootPrintDiagonalDots(0, indent);
-
-        // send a subset (or all) of the bottom partial node's amps to root, which prints
-        qcomp* elems = &matr.cpuElems[matr.numElemsPerNode - numBotPartialElems];
-        comm_sendAmpsToRoot(botPartialRank, elems, rootBuff.data(), numBotPartialElems);
-        rootPrintAllDiagonalElems(rootBuff.data(), numBotPartialElems, (int) isPartial, indent);
-    }
-
-    // finally, print any bottom "full" nodes
-    if (numBotFullReportingNodes > 0) {
-
-        // root pedantically ensures necessary buffer space
-        if (comm_isRootNode(thisRank))
-            rootBuff.reserve(matr.numElemsPerNode);
-
-        // all bottom full nodes send their elems in-turn to root, which prints on their behalf
-        for (int i=0; i<numBotFullReportingNodes; i++) {
-            int r = numRanks - numBotFullReportingNodes + i;
-            rootPrintRank(r);
-            comm_sendAmpsToRoot(r, matr.cpuElems, rootBuff.data(), matr.numElemsPerNode);
-            rootPrintAllDiagonalElems(rootBuff.data(), matr.numElemsPerNode, 0, indent);
-        }
-    }
+    (qureg.isDensityMatrix)?
+        printDenseSquareMatrix(qureg, indent):
+        printVector(qureg, indent);
 }
 
 
 
 /*
- * CHANNEL PRINTING
+ * PRINTING PAULI STRING SUMS
+ *
+ * printing only the elements (i.e. coefficients and
+ * strings), with no meta-data. e.g.
+ *    0.123  XXIXX
+ *    1.23i  XYZXZ
+ *    -1-6i  IIIII
  */
 
 
-void print_superOpInfo(SuperOp op) {
+// we'll make use of these internal functions from paulis.cpp
+extern int paulis_getPauliAt(PauliStr str, int ind);
+extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
 
-    // only root node prints
-    if (!comm_isRootNode())
-        return;
 
-    // determine memory costs
-    size_t elemMem = mem_getLocalSuperOpMemoryRequired(op.numQubits);
-    size_t structMem = sizeof(op);
+string getPauliStrAsString(PauliStr str, int maxNumQubits) {
 
-    // print e.g. SuperOp (1 qubit, 4 x 4 qcomps, 256 + 40 bytes)
-    cout 
-        << "SuperOp" 
-        << " (" 
-        << getNumQubitsStr(op.numQubits)
-        << ", " 
-        << getNumMatrixElemsStr(op.numRows, false, 1)  // superoperator is a non-diagonal non-distributed matrix
-        << ", "  
-        << getMemoryCostsStr(elemMem, structMem, 1) 
-        << "):"  // colon, since caller will hereafter print superoperator elements
-        << endl;
+    string labels = "IXYZ";
+
+    // ugly but adequate - like me (call me)
+    string out = "";
+    for (int i=maxNumQubits-1; i>=0; i--)
+        out += labels[paulis_getPauliAt(str, i)];
+    
+    return out;
 }
 
-void print_superOp(SuperOp op, string indent) {
 
-    // only root node prints
-    if (!comm_isRootNode())
-        return;
+int getIndexOfLeftmostPauliAmongStrings(PauliStr* strings, qindex numStrings) {
 
-    rootPrintTruncatedDenseMatrixElems(op.cpuElems, op.numRows, indent);
-}
+    int maxInd = 0;
 
-void print_krausMapInfo(KrausMap map) {
-
-    // only root node prints
-    if (!comm_isRootNode())
-        return;
-
-    // determine memory costs (gauranteed not to overflow)
-    size_t krausMem = mem_getLocalMatrixMemoryRequired(map.numQubits, true, 1) * map.numMatrices;
-    size_t superMem = mem_getLocalSuperOpMemoryRequired(map.superop.numQubits);
-    size_t strucMem = sizeof(map);
-
-
-
-
-    // print e.g. 
-    cout 
-        << "KrausMap" 
-        << " (" 
-        << getNumQubitsStr(map.numQubits)
-        << ", " 
-        << toStr(map.numMatrices) + " " + ((map.numMatrices>1)? "matrices" : "matrix")
-        << ", " 
-        << getNumMatrixElemsStr(map.numRows, false, 1) 
-        << ", "  
-        << toStr(krausMem) << " + " << getMemoryCostsStr(superMem, strucMem, 1) 
-        << "):"  // colon, since caller will thereafter print Kraus matrices (via print_krausMap())
-        << endl;
-}
-
-void print_krausMap(KrausMap map, string indexIndent, string matrixIndent) {
-
-    // only root node prints
-    if (!comm_isRootNode())
-        return;
-
-    // print every Kraus operator in-turn (regardless of reporter truncation settings)
-    for (int n=0; n<map.numMatrices; n++) {
-
-        // print the Kraus map index
-        cout << indexIndent << "[" << toStr(n) << "]" << endl;
-
-        // then its corresponding matrix (which may be truncated)
-        rootPrintTruncatedDenseMatrixElems(map.matrices[n], map.numRows, matrixIndent);
+    for (qindex i=0; i<numStrings; i++) {
+        int ind = paulis_getIndOfLefmostNonIdentityPauli(strings[i]);
+        if (ind > maxInd)
+            maxInd = ind;
     }
+
+    return maxInd;
+}
+
+
+void print_elems(PauliStr str, int numQubits) {
+
+    // only root node ever prints
+    if (!comm_isRootNode())
+        return;
+
+    cout << getPauliStrAsString(str, numQubits) << endl;
+}
+
+
+void print_elems(PauliStrSum sum, string indent) {
+
+    // divide the list of sum coefficients into one or two quadrants (ul and ll; ur and lr stay empty)
+    qcompmatr ul,ur,ll,lr;
+    MatrixQuadrantInds inds = getTruncatedMatrixQuadrantInds(sum.numTerms, 1);
+    allocateMatrixQuadrants(inds, ul,ur,ll,lr);
+    populateMatrixQuadrants(inds, ul,ur,ll,lr, sum);
+
+    // find the widest Pauli string, which informs how wide all printed Pauli strings are
+    int upperWidth = 1 + getIndexOfLeftmostPauliAmongStrings(sum.strings, ul.size());
+    int lowerWidth = (ll.empty())? 0 : 1 + getIndexOfLeftmostPauliAmongStrings(&sum.strings[inds.lowerStartRow], ll.size());
+    int width = std::max(upperWidth, lowerWidth);
+
+    // set row labels to be the Pauli strings
+    vector<string> upperLabels(ul.size());
+    vector<string> lowerLabels(ll.size());
+    for (qindex i=0; i<inds.numUpperLeftRows; i++)
+        upperLabels[i] = getPauliStrAsString(sum.strings[i], width);
+    for (qindex i=0; i<inds.numLowerLeftRows; i++)
+        lowerLabels[i] = getPauliStrAsString(sum.strings[i + inds.lowerStartRow], width);
+
+    // columns are not labelled
+    vector<string> colLabels = {};
+
+    // will print the vector in one or two quadrants (right two quadrants are unpopulated)
+    printMatrixInFourQuadrants(
+        ul, ur, ll, lr,
+        colLabels, colLabels, upperLabels, lowerLabels, 
+        indent, "", VDOTS_CHAR);
+}
+
+
+
+/*
+ * PRINTING STRUCT HEADERS
+ *
+ * which is the first line of text printed by reporters
+ * (like reportCompMatr) which details struct fields/info,
+ * preceeding the printing of the data/elements therein. E.g.
+ *   PauliStrSum (3 terms, 104 bytes):
+ */
+
+
+void printHeader(string name, vector<string> notes) {
+
+    // only root node prints
+    if (!comm_isRootNode())
+        return;
+
+    cout << name << HEADER_OPEN_BRACKET;
+
+    // safely assume notes.size() > 0
+    for (size_t i=0; i<notes.size() - 1; i++)
+        cout << notes[i] << HEADER_DELIMITER;
+
+    cout << notes.back() << HEADER_CLOSE_BRACKET;
+    cout << endl;
+}
+
+
+
+template <class T>
+void printMatrixHeader(T matr, size_t numBytes) {
+
+    bool isDiag = ! util_isDenseMatrixType<T>();
+    bool isGpu = util_isGpuAcceleratedMatrix(matr);
+    bool isDistrib = util_isDistributedMatrix(matr);
+    int numNodes = (isDistrib)? comm_getNumNodes() : 1;
+
+    // print e.g. FullStateDiagMatr (8 qubits, 256 qcomps over 4 nodes, 1056 bytes per GPU):
+    printHeader(util_getMatrixTypeName<T>(), {
+        getNumQubitsStr(matr.numQubits), 
+        getNumMatrixElemsStr(util_getMatrixDim(matr), isDiag, numNodes),
+        getMemoryCostsStr(numBytes, isDistrib, isGpu)});
+}
+
+void print_header(CompMatr1 m, size_t numBytes) { printMatrixHeader(m, numBytes); }
+void print_header(CompMatr2 m, size_t numBytes) { printMatrixHeader(m, numBytes); }
+void print_header(CompMatr  m, size_t numBytes) { printMatrixHeader(m, numBytes); }
+void print_header(DiagMatr1 m, size_t numBytes) { printMatrixHeader(m, numBytes); }
+void print_header(DiagMatr2 m, size_t numBytes) { printMatrixHeader(m, numBytes); }
+void print_header(DiagMatr  m, size_t numBytes) { printMatrixHeader(m, numBytes); }
+void print_header(FullStateDiagMatr m, size_t numBytes) { printMatrixHeader(m, numBytes); }
+
+
+void print_header(SuperOp op, size_t numBytes) {
+
+    // superoperator is a non-diagonal non-distributed matrix, maybe GPU
+    bool isDiag = false;
+    bool isDistrib = false;
+    bool isGpu = getQuESTEnv().isGpuAccelerated;
+    int numNodes = 1;
+
+    // print e.g. SuperOp (1 qubit, 4x4 qcomps, 296 bytes in GPU)
+    printHeader("SuperOp", {
+        getNumQubitsStr(op.numQubits), 
+        getNumMatrixElemsStr(op.numRows, isDiag, numNodes), 
+        getMemoryCostsStr(numBytes, isDistrib, isGpu)});
+}
+
+
+void print_header(KrausMap map, size_t numBytes) {
+
+    // KrausMap is non-distributed, but its superoperator is GPU-accel if the environment is
+    bool isDistrib = false;
+    bool isGpu = getQuESTEnv().isGpuAccelerated;
+
+    // KrausMap uses custom substrings, in lieu of getNumMatrixElemsStr(), to report multiple matrices
+    qindex mDim = map.numRows;
+    qindex sDim = map.superop.numRows;
+    string matrStr = toStr(map.numMatrices) + " " + getProductStr(mDim,mDim) + " " + (map.numMatrices>1? "matrices" : "matrix");
+    string supStr =  "1 " + getProductStr(sDim,sDim) + " superoperator";
+
+    // print e.g. KrausMap (1 qubit, 3 4x4 matrices, 1 16x16 superoperator, 1024 bytes in GPU)
+    printHeader("KrausMap", {
+        getNumQubitsStr(map.numQubits),
+        matrStr, supStr,
+        getMemoryCostsStr(numBytes, isDistrib, isGpu)});
+}
+
+
+void print_header(PauliStrSum sum, size_t numBytes) {
+
+    // PauliStrSum coeffs are always local and CPU-only
+    bool isDistrib = false;
+    bool isGpu = false;
+
+    printHeader("PauliStrSum", {
+        toStr(sum.numTerms) + " term" + ((sum.numTerms>1)? "s":""),
+        getMemoryCostsStr(numBytes, isDistrib, isGpu)});
+}
+
+
+void print_header(Qureg qureg, size_t numBytesPerNode) {
+
+    // print e.g. Qureg (8 qubit statevector, 256 qcomps over 4 nodes, 1056 bytes per GPU):
+    printHeader("Qureg", {
+        getQuregTypeStr(qureg),
+        getNumMatrixElemsStr(powerOf2(qureg.numQubits), ! qureg.isDensityMatrix, qureg.numNodes), // Qureg resembles matrix
+        getMemoryCostsStr(numBytesPerNode, qureg.isDistributed, qureg.isGpuAccelerated)});
 }
 
 
@@ -821,7 +1353,7 @@ void print_table(string title, vector<tuple<string, string>> rows, string indent
             maxWidth = key.length();
 
     // print table title (indented)
-    cout << indent << "[" << title << "]" << endl;
+    cout << indent << getTableTitleStr(title) << endl;
 
     // pad left column (which is doubly indented) to align right column
     for (auto const& [key, value] : rows)
@@ -844,140 +1376,4 @@ void print_table(string title, vector<tuple<string, long long int>> rows, string
         casted.push_back({key, std::to_string(value)});
 
     print_table(title, casted, indent);
-}
-
-
-
-/*
- * PAULI STRING AND SUM REPORTERS
- */
-
-
-// we'll make use of these internal functions from paulis.cpp
-extern int paulis_getPauliAt(PauliStr str, int ind);
-extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
-
-
-string getPauliStrAsString(PauliStr str, int maxNumQubits) {
-
-    string labels = "IXYZ";
-
-    // ugly but adequate
-    string out = "";
-    for (int i=maxNumQubits-1; i>=0; i--)
-        out += labels[paulis_getPauliAt(str, i)];
-    
-    return out;
-}
-
-
-void print_pauliStr(PauliStr str, int numQubits) {
-
-    // only root node ever prints
-    if (!comm_isRootNode())
-        return;
-
-    cout << getPauliStrAsString(str, numQubits) << endl;
-}
-
-
-void print_pauliStrSumInfo(qindex numTerms, qindex numBytes) {
-
-    // only root node ever prints
-    if (!comm_isRootNode())
-        return;
-
-    // print e.g. PauliStrSum (3 terms, 24 bytes)
-    cout 
-        << "PauliStrSum (" 
-        << numTerms << " term" << ((numTerms>1)? "s":"") << ", "
-        << numBytes << by 
-        << "):"  // colon, since caller will hereafter print each pauli string
-        << endl;
-}
-
-
-int getWidthOfWidestElem(qcomp* elems, qindex numElems) {
-
-    int maxWidth = 0;
-
-    for (qindex i=0; i<numElems; i++) {
-        int width = toStr(elems[i]).size();
-        if (width > maxWidth)
-            maxWidth = width;
-    }
-
-    return maxWidth;
-}
-
-
-int getIndexOfLeftmostPauliAmongStrings(PauliStr* strings, qindex numStrings) {
-
-    int maxInd = 0;
-
-    for (qindex i=0; i<numStrings; i++) {
-        int ind = paulis_getIndOfLefmostNonIdentityPauli(strings[i]);
-        if (ind > maxInd)
-            maxInd = ind;
-    }
-
-    return maxInd;
-}
-
-
-void printPauliStrSumSubset(PauliStrSum sum, qindex startInd, qindex endIndExcl, int coeffWidth, int maxNumPaulis, string indent) {
-
-    // each line prints as e.g. -3+2i XIXXI
-    for (int i=startInd; i<endIndExcl; i++)
-        cout 
-            << indent << left 
-            << setw(coeffWidth + MIN_SPACE_BETWEEN_COEFF_AND_PAULI_STR) 
-            << setfill(PAULI_STR_SPACE_CHAR) 
-            << toStr(sum.coeffs[i]) 
-            << getPauliStrAsString(sum.strings[i], maxNumPaulis)
-            << endl;
-}
-
-
-void print_pauliStrSum(PauliStrSum sum, string indent) {
-    
-    // only root node ever prints
-    if (!comm_isRootNode())
-        return;
-
-    // determine how to truncate the reported pauli string
-    qindex numTopElems = maxNumPrintedItems / 2; // floors
-    qindex numBotElems = maxNumPrintedItems - numTopElems; // includes remainder
-    qindex botElemsInd = sum.numTerms - numBotElems;
-
-    // prevent truncation if the matrix is too small, or user has disabled
-    bool isTruncated = isTruncationEnabled && sum.numTerms > maxNumPrintedItems;
-    if (!isTruncated) {
-        numTopElems = sum.numTerms;
-        numBotElems = 0;
-        // botElemsInd is disregarded
-    }
-
-    // choose coeffs padding to make consistent column alignment
-    int maxTopCoeffWidth = getWidthOfWidestElem(sum.coeffs, numTopElems);
-    int maxBotCoeffWidth = getWidthOfWidestElem(&(sum.coeffs[botElemsInd]), numBotElems);
-    int maxCoeffWidth = std::max(maxTopCoeffWidth, maxBotCoeffWidth);
-
-    // choose the fixed number of Paulis to show (the min necessary to fit all non-truncated strings)
-    int maxTopNumPaulis = 1 + getIndexOfLeftmostPauliAmongStrings(sum.strings, numTopElems);
-    int maxBotNumPaulis = 1 + getIndexOfLeftmostPauliAmongStrings(&(sum.strings[botElemsInd]), numBotElems);
-    int maxNumPaulis = std::max(maxTopNumPaulis,maxBotNumPaulis);
-
-    // print all top elems
-    printPauliStrSumSubset(sum, 0, numTopElems, maxCoeffWidth, maxNumPaulis, indent);
-
-    // if we just printed all elems, there's nothing left to do
-    if (!isTruncated)
-        return;
-
-    // otherwise print ellipsis between coeff and string columns
-    cout << indent << string(maxCoeffWidth+1, PAULI_STR_SPACE_CHAR) << VDOTS_CHAR << endl;
-
-    // print all bottom elems
-    printPauliStrSumSubset(sum, botElemsInd, sum.numTerms, maxCoeffWidth, maxNumPaulis, indent);
 }

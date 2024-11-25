@@ -10,10 +10,12 @@
 #include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 #include "quest/include/channels.h"
+#include "quest/include/environment.h"
 
 #include <type_traits>
 #include <string>
 #include <vector>
+#include <array>
 
 using std::is_same_v;
 using std::vector;
@@ -32,11 +34,14 @@ int util_getBraQubit(int ketQubit, Qureg qureg);
 int util_getPrefixInd(int qubit, Qureg qureg);
 int util_getPrefixBraInd(int ketQubit, Qureg qureg);
 
+std::array<vector<int>,2> util_getPrefixAndSuffixQubits(vector<int> qubits, Qureg qureg);
+
 int util_getRankBitOfQubit(int ketQubit, Qureg qureg);
 int util_getRankBitOfBraQubit(int ketQubit, Qureg qureg);
 
 int util_getRankWithQubitFlipped(int ketQubit, Qureg qureg);
 int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg);
+int util_getRankWithQubitsFlipped(vector<int> prefixQubits, Qureg qureg);
 
 vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg);
 
@@ -54,10 +59,47 @@ qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> ta
 
 
 /*
- * MATRIX TYPING
+ * INDEX ALGEBRA
+ */
+
+qindex util_getGlobalIndexOfFirstLocalAmp(Qureg qureg);
+
+qindex util_getLocalIndexOfGlobalIndex(Qureg qureg, qindex globalInd);
+
+qindex util_getLocalIndexOfFirstDiagonalAmp(Qureg qureg);
+
+qindex util_getNumLocalDiagonalAmpsWithBits(Qureg qureg, vector<int> qubits, vector<int> outcomes);
+
+qindex util_getGlobalFlatIndex(Qureg qureg, qindex globalRow, qindex globalCol);
+
+int util_getRankContainingIndex(Qureg qureg, qindex globalInd);
+int util_getRankContainingColumn(Qureg qureg, qindex globalCol);
+int util_getRankContainingIndex(FullStateDiagMatr matr, qindex globalInd);
+
+
+
+/*
+ * COMPLEX ALGEBRA
+ */
+
+qcomp util_getPowerOfI(size_t exponent);
+
+
+
+/*
+ * STRUCT TYPING
  *
  * defined here in the header since templated, and which use compile-time inspection.
  */
+
+template <class T> constexpr bool util_isQuregType() { return is_same_v<T, Qureg>; }
+template <class T> constexpr bool util_isCompMatr1() { return is_same_v<T, CompMatr1>; }
+template <class T> constexpr bool util_isCompMatr2() { return is_same_v<T, CompMatr2>; }
+template <class T> constexpr bool util_isCompMatr () { return is_same_v<T, CompMatr >; }
+template <class T> constexpr bool util_isDiagMatr1() { return is_same_v<T, DiagMatr1>; }
+template <class T> constexpr bool util_isDiagMatr2() { return is_same_v<T, DiagMatr2>; }
+template <class T> constexpr bool util_isDiagMatr () { return is_same_v<T, DiagMatr >; }
+template <class T> constexpr bool util_isFullStateDiagMatr () { return is_same_v<T, FullStateDiagMatr >; }
 
 template<class T>
 constexpr bool util_isDenseMatrixType() {
@@ -81,15 +123,8 @@ constexpr bool util_isDenseMatrixType() {
     )
         return false;
 
-    // this line is unreachable but throwing errors in a template expansion is ludicrous;
-    // above type checks are explicit in case we add more matrix types later
+    // this line is reached if the type is not a matrix
     return false;
-}
-
-template<class T>
-constexpr bool util_isDiagonalMatrixType() {
-
-    return !util_isDenseMatrixType<T>();
 }
 
 template<class T>
@@ -111,16 +146,28 @@ constexpr bool util_isHeapMatrixType() {
 }
 
 template<class T>
-constexpr bool util_isDistributableMatrixType() {
+constexpr bool util_isDistributableType() {
 
-    return (is_same_v<T, FullStateDiagMatr>);
+    return (is_same_v<T, FullStateDiagMatr> || is_same_v<T, Qureg>);
 }
 
 template<class T>
 bool util_isDistributedMatrix(T matr) {
 
-    if constexpr (util_isDistributableMatrixType<T>())
+    if constexpr (util_isDistributableType<T>())
         return matr.isDistributed;
+
+    return false;
+}
+
+template<class T>
+bool util_isGpuAcceleratedMatrix(T matr) {
+
+    if constexpr (util_isFullStateDiagMatr<T>())
+        return matr.isGpuAccelerated;
+
+    if constexpr (util_isHeapMatrixType<T>())
+        return getQuESTEnv().isGpuAccelerated;
 
     return false;
 }
@@ -153,21 +200,6 @@ qindex util_getMatrixDim(T matr) {
         return matr.numRows;
     else
         return matr.numElems;
-}
-
-// T can be CompMatr, DiagMatr, FullStateDiagMatr, KrausMap, SuperOp (i.e. heap-based non-Qureg structures)
-template<class T>
-qcomp util_getFirstLocalElem(T obj) {
-
-    // Kraus map elements never reach the GPU; their superoperator elements do, so query those
-    if constexpr (is_same_v<T, KrausMap>)
-        return util_getFirstLocalElem(obj.superop);
-
-    // otherwise the elems field dimension depends on the matrix type
-    else if constexpr (util_isDenseMatrixType<T>())
-        return obj.cpuElems[0][0];
-    else
-        return obj.cpuElems[0];
 }
 
 // T can be CompMatr, DiagMatr, FullStateDiagMatr, SuperOp (but NOT KrausMap)
@@ -248,30 +280,37 @@ void util_setSuperoperator(qcomp** superop, qcomp*** matrices, int numMatrices, 
  * DISTRIBUTED ELEMENTS INDEXING
  */
 
-typedef struct {
+struct util_VectorIndexRange {
 
-    // the starting local index among the node's distributed elements
+    // the first local index of this node's amps which are in the queried distributed range
     qindex localDistribStartInd;
 
-    // the corresponding local index of in the duplicated (non-distributed) elements 
+    // the corresponding local index of the non-distributed (i.e. duplicated on every node) data structure
     qindex localDuplicStartInd;
 
-    // the number of elements in the range, all of which are in this node's distributed elements
+    // the number of this node's amps which are within the queried distributed range
     qindex numElems;
+};
 
-} util_IndexRange;
+bool util_areAnyVectorElemsWithinNode(int rank, qindex numElemsPerNode, qindex startInd, qindex numInds);
 
-bool util_areAnyElemsWithinThisNode(int numElemsPerNode, qindex startInd, qindex numInds);
-
-util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, qindex elemStartInd, qindex numInds);
+util_VectorIndexRange util_getLocalIndRangeOfVectorElemsWithinNode(int rank, qindex numElemsPerNode, qindex elemStartInd, qindex numInds);
 
 
 
 /*
- * OPERATOR PARAMETERS
+ * GATE PARAMETERS
  */
 
-typedef struct { qreal c1; qreal c2; qreal c3; qreal c4; } util_Scalars;
+qreal util_getPhaseFromGateAngle(qreal angle);
+
+
+
+/*
+ * DECOHERENCE FACTORS
+ */
+
+struct util_Scalars { qreal c1; qreal c2; qreal c3; qreal c4; };
 
 qreal util_getOneQubitDephasingFactor(qreal prob);
 
@@ -284,6 +323,31 @@ util_Scalars util_getTwoQubitDepolarisingFactors(qreal prob);
 util_Scalars util_getOneQubitDampingFactors(qreal prob);
 
 util_Scalars util_getOneQubitPauliChannelFactors(qreal pI, qreal pX, qreal pY, qreal pZ);
+
+qreal util_getMaxProbOfOneQubitDephasing();
+
+qreal util_getMaxProbOfTwoQubitDephasing();
+
+qreal util_getMaxProbOfOneQubitDepolarising();
+
+qreal util_getMaxProbOfTwoQubitDepolarising();
+
+
+
+/*
+ * TEMPORARY MEMORY ALLOCATION
+ */
+
+void util_tryAllocVector(vector<qreal > &vec, qindex size, void (*errFunc)());
+void util_tryAllocVector(vector<qcomp > &vec, qindex size, void (*errFunc)());
+void util_tryAllocVector(vector<qcomp*> &vec, qindex size, void (*errFunc)());
+
+// cuQuantum needs a vector<double> overload, which we additionally define when qreal!=double. Gross!
+#if FLOAT_PRECISION != 2
+void util_tryAllocVector(vector<double> &vec, qindex size, void (*errFunc)());
+#endif
+
+void util_tryAllocMatrix(vector<vector<qcomp>> &vec, qindex numRows, qindex numCols, void (*errFunc)());
 
 
 

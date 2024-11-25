@@ -27,6 +27,14 @@ int cpu_getNumOpenmpProcessors();
 
 
 /*
+ * OPENMP SUBROUTINES
+ */
+
+int cpu_getOpenmpThreadInd();
+
+
+
+/*
  * MEMORY ALLOCATION
  */
 
@@ -51,10 +59,10 @@ void cpu_deallocPauliStrings(PauliStr* strings);
  * MEMORY MOVEMENT
  */
 
-void cpu_copyArray(qcomp* out, qcomp* in, qindex dim);
+void cpu_copyArray(qcomp* dest, qcomp* src, qindex dim);
 
-void cpu_copyMatrix(qcomp** out, qcomp** in, qindex dim);
-void cpu_copyMatrix(qcomp** out, vector<vector<qcomp>> in, qindex dim);
+void cpu_copyMatrix(qcomp** dest, qcomp** src, qindex dim);
+void cpu_copyMatrix(qcomp** dest, vector<vector<qcomp>> src, qindex dim);
 
 void cpu_copyPauliStrSum(PauliStrSum out, PauliStr* strings, qcomp* coeffs); 
 

@@ -43,7 +43,8 @@ qreal getValidationEpsilon();
  * REPORTING
  */
 
-void setNumReportedItems(qindex num);
+void setMaxNumReportedItems(qindex numRows, qindex numCols);
+void setMaxNumReportedSigFigs(int numSigFigs);
 
 
 /*

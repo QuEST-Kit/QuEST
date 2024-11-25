@@ -43,6 +43,7 @@ void demo_serial() {
         numQubits, isDensMatr, 
         useDistrib, useGpuAccel, useMultithread);
 
+    reportQuregParams(qureg);
     reportQureg(qureg);
     destroyQureg(qureg);
 }
@@ -63,6 +64,7 @@ void demo_multithreaded() {
         numQubits, isDensMatr, 
         useDistrib, useGpuAccel, useMultithread);
 
+    reportQuregParams(qureg);
     reportQureg(qureg);
     destroyQureg(qureg);
 }
@@ -83,6 +85,7 @@ void demo_gpuAccelerated() {
         numQubits, isDensMatr, 
         useDistrib, useGpuAccel, useMultithread);
 
+    reportQuregParams(qureg);
     reportQureg(qureg);
     destroyQureg(qureg);
 }
@@ -103,6 +106,7 @@ void demo_distributed() {
         numQubits, isDensMatr, 
         useDistrib, useGpuAccel, useMultithread);
 
+    reportQuregParams(qureg);
     reportQureg(qureg);
     destroyQureg(qureg);
 }
@@ -113,12 +117,14 @@ void demo_auto() {
     rootPrint("auto (statevector)");
     
     Qureg pure = createQureg(10);
+    reportQuregParams(pure);
     reportQureg(pure);
     destroyQureg(pure);
 
     rootPrint("auto (density matrix)");
 
     Qureg mixed = createDensityQureg(10);
+    reportQuregParams(mixed);
     reportQureg(mixed);
     destroyQureg(mixed);
 }
@@ -140,6 +146,7 @@ void demo_all() {
         numQubits, isDensMatr, 
         useDistrib, useGpuAccel, useMultithread);
 
+    reportQuregParams(qureg);
     reportQureg(qureg);
     destroyQureg(qureg);
 }

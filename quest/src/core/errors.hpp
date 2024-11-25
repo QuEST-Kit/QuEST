@@ -8,8 +8,9 @@
 #ifndef ERRORS_HPP
 #define ERRORS_HPP
 
-#include "types.h"
-#include "qureg.h"
+#include "quest/include/types.h"
+#include "quest/include/qureg.h"
+#include "quest/include/matrices.h"
 
 #include <string>
 
@@ -73,13 +74,23 @@ void error_commOutOfBounds();
 
 void error_commWithSameRank();
 
-void assert_validCommBounds(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps);
+void error_commGivenInconsistentNumSubArraysANodes();
 
-void assert_quregIsDistributed(Qureg qureg);
+void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps);
+
+void assert_commPayloadIsPowerOf2(qindex numAmps);
+
+void assert_commQuregIsDistributed(Qureg qureg);
+
+void assert_commFullStateDiagMatrIsDistributed(FullStateDiagMatr matr);
 
 void assert_pairRankIsDistinct(Qureg qureg, int pairRank);
 
 void assert_bufferSendRecvDoesNotOverlap(qindex sendInd, qindex recvInd, qindex numAmps);
+
+void assert_receiverCanFitSendersEntireState(Qureg receiver, Qureg sender);
+
+void assert_receiverCanFitSendersEntireElems(Qureg receiver, FullStateDiagMatr sender);
 
 
 
@@ -93,9 +104,23 @@ void error_localiserGivenPauliTensorOrGadgetWithoutXOrY();
 
 void error_localiserPassedStateVecToChannelComCheck();
 
+void error_localiserGivenDistribMatrixAndLocalQureg();
+
+void error_localiserFailedToAllocTempMemory();
+
+void error_localiserGivenPauliStrWithoutXorY();
+
+void error_localiserGivenNonUnityGlobalFactorToZTensor();
+
+void assert_localiserSuccessfullyAllocatedTempMemory(qcomp* ptr, bool isGpu);
+
+void assert_localiserGivenStateVec(Qureg qureg);
+
 void assert_localiserGivenDensMatr(Qureg qureg);
 
 void assert_localiserPartialTraceGivenCompatibleQuregs(Qureg inQureg, Qureg outQureg, int numTargs);
+
+void error_calcFidStateVecDistribWhileDensMatrLocal();
 
 
 
@@ -109,6 +134,34 @@ void assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(int numCtrls, int numCt
 
 void assert_numTargsMatchesTemplateParam(int numTargs, int templateParam);
 
+void assert_exponentMatchesTemplateParam(qcomp exponent, bool hasPower);
+
+void assert_mixedQuregIsDensityMatrix(Qureg qureg);
+
+void assert_mixedQuregIsStatevector(Qureg qureg);
+
+void assert_mixedQuregIsDistributed(Qureg qureg);
+
+void assert_mixedQuregIsLocal(Qureg qureg);
+
+void assert_mixedQuregsAreBothOrNeitherDistributed(Qureg a, Qureg b);
+
+void error_mixQuregsAreLocalDensMatrAndDistribStatevec();
+
+void assert_fullStateDiagMatrIsLocal(FullStateDiagMatr matr);
+
+void assert_fullStateDiagMatrIsDistributed(FullStateDiagMatr matr);
+
+void assert_acceleratorQuregIsDistributed(Qureg qureg);
+
+void assert_quregAndFullStateDiagMatrAreBothOrNeitherDistrib(Qureg qureg, FullStateDiagMatr matr);
+
+void assert_calcFidStateVecIsLocal(Qureg qureg);
+
+void assert_calcFidTempGpuAllocSucceeded(qcomp* ptr);
+
+void assert_innerProductedSameDimQuregsHaveSameGpuAccel(Qureg quregA, Qureg quregB);
+
 
 
 /*
@@ -118,6 +171,18 @@ void assert_numTargsMatchesTemplateParam(int numTargs, int templateParam);
 void error_noCtrlsGivenToBufferPacker();
 
 void assert_bufferPackerGivenIncreasingQubits(int qubit1, int qubit2, int qubit3);
+
+
+
+/*
+ * BACKEND PRECONDITION ERRORS
+ */
+
+void assert_quregAndFullStateDiagMatrHaveSameDistrib(Qureg qureg, FullStateDiagMatr matr);
+
+void assert_quregDistribAndFullStateDiagMatrLocal(Qureg qureg, FullStateDiagMatr matr);
+
+void assert_superposedQuregDimsAndDeploysMatch(Qureg facOut, Qureg in1, Qureg in2);
 
 
 
@@ -159,6 +224,12 @@ void assert_gpuIsAccessible();
 
 void assert_quregIsGpuAccelerated(Qureg qureg);
 
+void assert_mixQuregTempGpuAllocSucceeded(qcomp* gpuPtr);
+
+void assert_quregGpuBufferIsNotGraftedToMatrix(Qureg qureg, FullStateDiagMatr matr);
+
+void assert_applyFullStateDiagMatrTempGpuAllocSucceeded(qcomp* gpuPtr);
+
 
 
 /*
@@ -167,6 +238,16 @@ void assert_quregIsGpuAccelerated(Qureg qureg);
 
 void error_cudaCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line);
 
+void error_cuQuantumCompiledButNotCuda();
+
+
+
+/*
+ * THRUST ERRORS
+ */
+
+void error_thrustTempGpuAllocFailed();
+
 
 
 /*
@@ -174,6 +255,16 @@ void error_cudaCallFailed(const char* msg, const char* func, const char* caller,
  */
 
 void error_cuQuantumInitOrFinalizedButNotCompiled();
+
+void error_cuQuantumTempCpuAllocFailed();
+
+
+
+/*
+ * PAULI ERRORS 
+ */
+
+void error_pauliStrShiftedByIllegalAmount();
 
 
 
@@ -193,6 +284,12 @@ void error_utilsGetPrefixBraIndGivenSuffixQubit();
 
 void error_utilsIsBraQubitInSuffixGivenNonDensMatr();
 
+void error_utilsGivenGlobalIndexOutsideNode();
+
+void assert_utilsGivenStateVec(Qureg qureg);
+
+void assert_utilsGivenDensMatr(Qureg qureg);
+
 
 
 /*
@@ -210,6 +307,22 @@ void error_attemptedToParsePauliStringFromInvalidString();
 void error_attemptedToParseUnrecognisedPauliChar();
 
 void error_couldNotReadFile();
+
+
+
+/*
+ * RANDOMISER ERRORS
+ */
+
+void error_randomiserGivenNonNormalisedProbList();
+
+
+
+/*
+ * PRINTER ERRORS
+ */
+
+void error_printerFailedToAllocTempMemory();
 
 
 

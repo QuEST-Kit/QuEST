@@ -41,6 +41,25 @@ INLINE int getBit(qindex number, int bitIndex) {
 }
 
 
+INLINE qindex getBitsLeftOfIndex(qindex number, int bitIndex) {
+
+    return number >> (bitIndex + 1);
+}
+
+
+INLINE qindex getBitsRightOfIndex(qindex number, int bitIndex) {
+
+    qindex mask = (QINDEX_ONE << bitIndex) - 1;
+    return number & mask;
+}
+
+
+INLINE int getTwoAdjacentBits(qindex number, qindex lowerBitInd) {
+
+    return (number >> lowerBitInd) & 3;
+}
+
+
 INLINE qindex flipBits(qindex number, qindex mask) {
 
     return number ^ mask;
@@ -54,12 +73,27 @@ INLINE qindex flipBit(qindex number, int bitIndex) {
 }
 
 
+INLINE qindex concatenateBits(qindex prefix, qindex suffix, int numBitsInSuffix) {
+
+    return (prefix << numBitsInSuffix) | suffix;
+}
+
+
+INLINE qindex concatenateBits(qindex pref, qindex mid, int numMidBits, qindex suf, int numSufBits) {
+
+    int numRight = numMidBits + numSufBits;
+    qindex right = concatenateBits(mid, suf, numSufBits);
+    qindex all = concatenateBits(pref, right, numRight);
+    return all;
+}
+
+
 INLINE qindex insertBit(qindex number, int bitIndex, int bitValue) {
     
-    qindex left = (number >> bitIndex) << (bitIndex + 1);
-    qindex middle = bitValue << bitIndex;
-    qindex right = number & ((QINDEX_ONE << bitIndex) - 1);
-    return left | middle | right;
+    qindex left  = getBitsLeftOfIndex (number, bitIndex-1); // include bit at bitIndex
+    qindex right = getBitsRightOfIndex(number, bitIndex);
+    qindex all = concatenateBits(left, bitValue, 1, right, bitIndex);
+    return all;
 }
 
 
@@ -67,18 +101,6 @@ INLINE qindex setBit(qindex number, int bitIndex, int bitValue) {
     
     qindex mask = bitValue << bitIndex;
     return (number & (~mask)) | mask;
-}
-
-
-INLINE qindex activateBits(qindex number, qindex mask) {
-
-    return number | mask;
-}
-
-
-INLINE qindex concatenateBits(qindex prefix, qindex suffix, int numBitsInSuffix) {
-
-    return (prefix << numBitsInSuffix) | suffix;
 }
 
 
@@ -146,9 +168,16 @@ INLINE qindex getValueOfBits(qindex number, int* bitIndices, int numIndices) {
 INLINE qindex insertBitsWithMaskedValues(qindex number, int* bitInds, int numBits, qindex mask) {
 
     // bitInds must be sorted (increasing), and mask must be zero everywhere except bitInds
-    number = insertBits(number, bitInds, numBits, 0);
-    number = activateBits(number, mask);
-    return number;
+    return mask | insertBits(number, bitInds, numBits, 0);
+}
+
+
+INLINE int getTwoBits(qindex number, int highInd, int lowInd) {
+
+    int b1 = getBit(number, lowInd);
+    int b2 = getBit(number, highInd);
+    int v = concatenateBits(b2, b1, 1);
+    return v;
 }
 
 
@@ -177,6 +206,7 @@ INLINE qindex insertFourZeroBits(qindex number, int i4, int i3, int i2, int i1) 
     number = insertTwoBits(number, i4, 0, i3, 0);
     return number;
 }
+
 
 INLINE qindex flipTwoBits(qindex number, int i1, int i0) {
     
@@ -257,26 +287,6 @@ INLINE qindex getBitMask(int* bitIndices, int numIndices) {
 }
 
 
-INLINE qindex getBitMask(int numBits) {
-
-    // assumes numBits is fewer than the number in a qindex instance
-    return (QINDEX_ONE << numBits) - 1;
-}
-
-
-INLINE qindex getBitsRightOfIndex(qindex number, int bitIndex) {
-
-    qindex keepMask = getBitMask(bitIndex) - 1;
-    return number & keepMask;
-}
-
-
-INLINE qindex getBitsLeftOfIndex(qindex number, int bitIndex) {
-
-    return number >> (bitIndex + 1);
-}
-
-
 INLINE qindex removeBits(qindex number, int* bitInds, int numInds) {
 
     // assumes bitIndices are strictly increasing without duplicates
@@ -306,6 +316,25 @@ INLINE int logBase2(qindex powerOf2) {
     }
 
     return expo;
+}
+
+
+INLINE qindex getIntegerFromBits(int* bits, int numBits) {
+
+    // first bit is treated as least significant
+    qindex value = 0;
+
+    for (int i=0; i<numBits; i++)
+        value |= bits[i] << i;
+
+    return value;
+}
+
+
+INLINE void getBitsFromInteger(int* bits, qindex number, int numBits) {
+
+    for (int i=0; i<numBits; i++)
+        bits[i] = getBit(number, i);
 }
 
 

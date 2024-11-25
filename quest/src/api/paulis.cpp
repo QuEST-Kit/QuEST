@@ -8,8 +8,11 @@
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/printer.hpp"
+#include "quest/src/core/utilities.hpp"
 #include "quest/src/core/parser.hpp"
 #include "quest/src/core/memory.hpp"
+#include "quest/src/core/errors.hpp"
+#include "quest/src/core/bitwise.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
@@ -17,9 +20,11 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <array>
 
 using std::string;
 using std::vector;
+using std::array;
 
 
 
@@ -40,8 +45,7 @@ static const int MAX_NUM_PAULIS_PER_STR  = MAX_NUM_PAULIS_PER_MASK * 2;
 
 int getPauliFromMaskAt(PAULI_MASK_TYPE mask, int ind) {
 
-    // get adjacent 2 bits at (ind+1, ind)
-    return (mask >> (2*ind)) & 3;
+    return getTwoAdjacentBits(mask, 2*ind); // bits at (ind+1, ind)
 }
 
 
@@ -83,8 +87,9 @@ void freeAllMemoryIfAnyAllocsFailed(PauliStrSum sum) {
 /*
  * INTERNAL UTILITIES
  *
- * callable by other internal files but which are not exposed in the header.
- * Ergo other files must declare these functions as extern where needed.
+ * callable by other internal files but which are not exposed in the header
+ * because we do not wish to make them visible to users. Ergo other internal
+ * files must declare these functions as extern where needed. Yes, it's ugly :(
  */
 
 
@@ -110,7 +115,58 @@ int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str) {
 }
 
 
-vector<int> paulis_getSortedIndsOfNonIdentityPaulis(PauliStr str) {
+bool paulis_containsXOrY(PauliStr str) {
+
+    int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
+
+    for (int i=0; i<=maxInd; i++) {
+        int pauli = paulis_getPauliAt(str, i);
+
+        if (pauli == 1 || pauli == 2)
+            return true;
+    }
+
+    return false;
+}
+
+
+bool paulis_hasOddNumY(PauliStr str) {
+
+    bool odd = false;
+    for (int targ=0; targ < MAX_NUM_PAULIS_PER_STR; targ++) 
+        if (paulis_getPauliAt(str, targ) == 2)
+            odd = !odd;
+
+    return odd;
+}
+
+
+int paulis_getPrefixZSign(Qureg qureg, vector<int> prefixZ) {
+
+    int sign = 1;
+
+    // each Z contributes +- 1
+    for (int qubit : prefixZ)
+        sign *= util_getRankBitOfQubit(qubit, qureg)? -1 : 1;
+
+    return sign;
+}
+
+
+qcomp paulis_getPrefixPaulisElem(Qureg qureg, vector<int> prefixY, vector<int> prefixZ) {
+
+    // each Z contributes +- 1
+    qcomp elem = paulis_getPrefixZSign(qureg, prefixZ);
+
+    // each Y contributes -+ i
+    for (int qubit : prefixY)
+        elem *= 1_i * (util_getRankBitOfQubit(qubit, qureg)? 1 : -1);
+
+    return elem;
+}
+
+
+vector<int> paulis_getInds(PauliStr str) {
 
     int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
 
@@ -125,32 +181,53 @@ vector<int> paulis_getSortedIndsOfNonIdentityPaulis(PauliStr str) {
 }
 
 
-bool paulis_containsXOrY(PauliStr str) {
+array<vector<int>,3> paulis_getSeparateInds(PauliStr str, Qureg qureg) {
 
-    int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
+    vector<int> iXYZ = paulis_getInds(str);
+    vector<int> iX, iY, iZ;
 
-    for (int i=0; i<maxInd; i++) {
-        int pauli = paulis_getPauliAt(str, i);
+    vector<int>* ptrs[] = {&iX, &iY, &iZ};
 
-        if (pauli == 1 || pauli == 2)
-            return true;
-    }
+    for (int i : iXYZ)
+        ptrs[paulis_getPauliAt(str, i) - 1]->push_back(i);
 
-    return false;
+    return {iX, iY, iZ};
 }
 
 
-vector<int> paulis_getTargsWithEitherPaulis(vector<int> targs, PauliStr str, int pauliA, int pauliB) {
+PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift) {
 
-    vector<int> subsetTargs(0);  subsetTargs.reserve(targs.size());
+    if (pauliShift <= 0 || pauliShift >= MAX_NUM_PAULIS_PER_MASK)
+        error_pauliStrShiftedByIllegalAmount();
 
-    for (int targ : targs) {
-        int pauli = paulis_getPauliAt(str, targ);
-        if (pauli == pauliA || pauli == pauliB)
-            subsetTargs.push_back(targ);
-    }
+    int numBitsPerPauli = 2;
+    int numMaskBits = numBitsPerPauli * MAX_NUM_PAULIS_PER_MASK;
+    int bitShift    = numBitsPerPauli * pauliShift;
 
-    return subsetTargs;
+    // record the bits we will lose from lowPaulis, to move to highPaulis
+    PAULI_MASK_TYPE lostBits = getBitsLeftOfIndex(str.lowPaulis, numMaskBits - bitShift - 1);
+
+    // ensure we actually lose these bits from lowPaulis
+    PAULI_MASK_TYPE lowerBits = getBitsRightOfIndex(str.lowPaulis, numMaskBits - bitShift) << bitShift;
+
+    // and add them to highPaulis; we don't have to force lose upper bits of high paulis
+    PAULI_MASK_TYPE upperBits = concatenateBits(str.highPaulis, lostBits, bitShift);
+
+    return {
+        .lowPaulis = lowerBits,
+        .highPaulis = upperBits
+    };
+}
+
+
+PauliStr paulis_getKetAndBraPauliStr(PauliStr str, Qureg qureg) {
+
+    PauliStr shift = paulis_getShiftedPauliStr(str, qureg.numQubits);
+    
+    return {
+        .lowPaulis  = str.lowPaulis  | shift.lowPaulis,
+        .highPaulis = str.highPaulis | shift.highPaulis
+    };
 }
 
 
@@ -183,11 +260,10 @@ extern "C" PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis)
     }
 
     // return a new stack PauliStr instance, returning by copy
-    return (PauliStr) {
+    return {
         .lowPaulis = lowPaulis,
         .highPaulis = highPaulis
     };
-
 }
 
 
@@ -235,7 +311,7 @@ PauliStr getPauliStr(string paulis) {
     // pedantically validate the string length isn't so long that it would stackoverflow a vector
     validate_newPauliStrNumPaulis(paulis.size(), MAX_NUM_PAULIS_PER_STR, __func__);
 
-    // automatically target the bottom-most qubits, preserving rightmost is least significant
+    // automatically target the lowest-index qubits, interpreting rightmost is least significant
     vector<int> indices(paulis.size());
     for (size_t i=0; i<paulis.size(); i++)
         indices[i] = paulis.size() - 1 - i;
@@ -307,8 +383,10 @@ extern "C" PauliStrSum createPauliStrSumFromFile(const char* fn) {
 PauliStrSum createPauliStrSumFromFile(string fn) {
     validate_canReadFile(fn, __func__);
 
-    bool rightIsLeastSig = true;
+    // all distributed nodes will simultaneously read the file (that's fine)
     string str = parser_loadFile(fn);
+
+    bool rightIsLeastSig = true;
     return parser_validateAndParsePauliStrSum(str, rightIsLeastSig, __func__);
 }
 
@@ -322,8 +400,10 @@ extern "C" PauliStrSum createPauliStrSumFromReversedFile(const char* fn) {
 PauliStrSum createPauliStrSumFromReversedFile(string fn) {
     validate_canReadFile(fn, __func__);
 
-    bool rightIsLeastSig = false;
+    // all distributed nodes will simultaneously read the file (that's fine)
     string str = parser_loadFile(fn);
+
+    bool rightIsLeastSig = false;
     return parser_validateAndParsePauliStrSum(str, rightIsLeastSig, __func__);
 }
 
@@ -351,22 +431,22 @@ extern "C" void reportPauliStr(PauliStr str) {
 
     // avoid printing leftmost superfluous I operators
     int numPaulis = 1 + paulis_getIndOfLefmostNonIdentityPauli(str);
-    print_pauliStr(str, numPaulis);
+    print_elems(str, numPaulis);
 }
 
 
-extern "C" void reportPauliStrSum(PauliStrSum str) {
-    validate_pauliStrSumFields(str, __func__);
+extern "C" void reportPauliStrSum(PauliStrSum sum) {
+    validate_pauliStrSumFields(sum, __func__);
 
     // calculate memory usage
-    qindex numStrBytes   = str.numTerms * sizeof *str.strings;
-    qindex numCoeffBytes = str.numTerms * sizeof *str.coeffs;
-    qindex numStrucBytes = sizeof(str);
+    qindex numStrBytes   = sum.numTerms * sizeof *sum.strings;
+    qindex numCoeffBytes = sum.numTerms * sizeof *sum.coeffs;
+    qindex numStrucBytes = sizeof(sum);
 
     // we don't bother checking for overflow since total memory scales
     // linearly with user input parameters, unlike Qureg and matrices.
     qindex numTotalBytes = numStrBytes + numCoeffBytes + numStrucBytes;
 
-    print_pauliStrSumInfo(str.numTerms, numTotalBytes);
-    print_pauliStrSum(str);
+    print_header(sum, numTotalBytes);
+    print_elems(sum);
 }

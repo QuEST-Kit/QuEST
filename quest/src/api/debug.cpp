@@ -11,6 +11,7 @@
 #include "quest/src/gpu/gpu_config.hpp"
 
 #include <vector>
+#include <limits>
 
 // enable invocation by both C and C++ binaries
 extern "C" {
@@ -23,22 +24,27 @@ extern "C" {
 
 
 void setSeeds(unsigned* seeds, int numSeeds) {
+    validate_envIsInit(__func__);
+    validate_randomSeeds(seeds, numSeeds, __func__);
 
     rand_setSeeds(std::vector<unsigned>(seeds, seeds+numSeeds));
 }
 
 void setSeedsToDefault() {
+    validate_envIsInit(__func__);
 
     rand_setSeedsToDefault();
 }
 
 
 int getNumSeeds() {
+    validate_envIsInit(__func__);
 
     return rand_getNumSeeds();
 }
 
 void getSeeds(unsigned* seeds) {
+    validate_envIsInit(__func__);
 
     auto vec = rand_getSeeds();
     auto num = rand_getNumSeeds();
@@ -55,41 +61,64 @@ void getSeeds(unsigned* seeds) {
 
 
 void setValidationOn() {
+    validate_envIsInit(__func__);
+    
     validateconfig_enable();
 }
 
 void setValidationOff() {
+    validate_envIsInit(__func__);
+
     validateconfig_disable();
 }
 
 
 void setValidationEpsilon(qreal eps) {
+    validate_envIsInit(__func__);
     validate_newEpsilonValue(eps, __func__);
 
     validateconfig_setEpsilon(eps);
 }
 
 void setValidationEpsilonToDefault() {
+    validate_envIsInit(__func__);
 
     validateconfig_setEpsilonToDefault();
 }
 
 qreal getValidationEpsilon() {
+    validate_envIsInit(__func__);
+
     return validateconfig_getEpsilon();
 }
 
 
 
 /*
- * REPORTERS
+ * REPORTER CONFIGURATION
  */
 
 
-void setNumReportedItems(qindex num) {
-    validate_newNumReportedItems(num, __func__);
+void setMaxNumReportedItems(qindex numRows, qindex numCols) {
+    validate_envIsInit(__func__);
+    validate_newMaxNumReportedScalars(numRows, numCols, __func__);
 
-    printer_setMaxNumPrintedItems(num);
+    // replace 0 values (indicating no truncation) with max-val,
+    // since there can never be max(qindex)-many amps
+    qindex max = std::numeric_limits<qindex>::max();
+    numRows = (numRows == 0)? max : numRows;
+    numCols = (numCols == 0)? max : numCols;
+
+    printer_setMaxNumPrintedScalars(numRows, numCols);
 }
+
+
+void setMaxNumReportedSigFigs(int numSigFigs) {
+    validate_envIsInit(__func__);
+    validate_newMaxNumReportedSigFigs(numSigFigs, __func__);
+
+    printer_setMaxNumPrintedSigFig(numSigFigs);
+} 
 
 
 
@@ -99,6 +128,7 @@ void setNumReportedItems(qindex num) {
 
 
 qindex getGpuCacheSize() {
+    validate_envIsInit(__func__);
 
     if (getQuESTEnv().isGpuAccelerated)
         return gpu_getCacheMemoryInBytes();
@@ -109,6 +139,7 @@ qindex getGpuCacheSize() {
 
 
 void clearGpuCache() {
+    validate_envIsInit(__func__);
 
     // safely do nothing if not GPU accelerated
     if (getQuESTEnv().isGpuAccelerated)

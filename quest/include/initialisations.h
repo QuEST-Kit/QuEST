@@ -28,7 +28,11 @@ void initClassicalState(Qureg qureg, qindex stateInd);
 
 void initDebugState(Qureg qureg);
 
-void initArbitraryState(Qureg qureg, qcomp* amps);
+void initArbitraryPureState(Qureg qureg, qcomp* amps);
+
+void initRandomPureState(Qureg qureg);
+
+void initRandomMixedState(Qureg qureg, qindex numPureStates);
 
 
 
@@ -36,11 +40,13 @@ void setQuregAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps);
 
 void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qcomp** amps, qindex numRows, qindex numCols);
 
-void setQuregToPauliStrSum(Qureg qureg, PauliStrSum sum);
-
 void setQuregToClone(Qureg targetQureg, Qureg copyQureg);
 
 void setQuregToSuperposition(qcomp facOut, Qureg out, qcomp fac1, Qureg qureg1, qcomp fac2, Qureg qureg2);
+
+qreal setQuregToRenormalized(Qureg qureg);
+
+void setQuregToPauliStrSum(Qureg qureg, PauliStrSum sum);
 
 
 

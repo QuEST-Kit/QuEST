@@ -97,13 +97,30 @@
         #define DEAULT_VALIDATION_EPSILON 1E-5
 
     #elif FLOAT_PRECISION == 2
-        #define DEAULT_VALIDATION_EPSILON 1E-13
+        #define DEAULT_VALIDATION_EPSILON 1E-12
 
     #elif FLOAT_PRECISION == 4
-        #define DEAULT_VALIDATION_EPSILON 1E-14
+        #define DEAULT_VALIDATION_EPSILON 1E-13
 
     #endif
 
+#endif
+
+
+
+/*
+ * PRECISION-AGNOSTIC CONVENIENCE MACROS
+ */
+
+#if FLOAT_PRECISION == 1
+    #define QREAL_FORMAT_SPECIFIER "%.8g"
+
+#elif FLOAT_PRECISION == 2
+    #define QREAL_FORMAT_SPECIFIER "%.14g"
+
+#elif FLOAT_PRECISION == 4
+    #define QREAL_FORMAT_SPECIFIER "%.17Lg"
+    
 #endif
 
 

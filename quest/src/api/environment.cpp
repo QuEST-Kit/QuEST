@@ -25,9 +25,6 @@
 #include <vector>
 #include <tuple>
 
-// provides substrings (by, na, pm, etc) used by reportQuESTEnv
-using namespace printer_substrings;
-
 using std::string;
 
 
@@ -153,13 +150,13 @@ void printPrecisionInfo() {
 
     print_table(
         "precision", {
-        {"qreal",  printer_getQrealType()  + " (" + printer_toStr(sizeof(qreal))  + by + ")"},
+        {"qreal",  printer_getQrealType()  + " (" + printer_getMemoryWithUnitStr(sizeof(qreal)) + ")"},
 
         // TODO: this is showing the backend C++ qcomp type, rather than that actually wieldable
         // by the user which could the C-type. No idea how to solve this however!
-        {"qcomp",  printer_getQcompType()  + " (" + printer_toStr(sizeof(qcomp))  + by + ")"},
+        {"qcomp",  printer_getQcompType()  + " (" + printer_getMemoryWithUnitStr(sizeof(qcomp)) + ")"},
 
-        {"qindex", printer_getQindexType() + " (" + printer_toStr(sizeof(qindex)) + by + ")"},
+        {"qindex", printer_getQindexType() + " (" + printer_getMemoryWithUnitStr(sizeof(qindex)) + ")"},
 
         // TODO: this currently prints 0 when epsilon is inf (encoded by zero), i.e. disabled
         {"validationEpsilon", printer_toStr(validateconfig_getEpsilon())},
@@ -192,10 +189,12 @@ void printDeploymentInfo() {
 
 void printCpuInfo() {
 
+    using namespace printer_substrings;
+
     // assume RAM is unknown unless it can be queried
     string ram = un;
     try { 
-        ram = printer_toStr(mem_tryGetLocalRamCapacityInBytes()) + by + pm; 
+        ram = printer_getMemoryWithUnitStr(mem_tryGetLocalRamCapacityInBytes()) + pm; 
     } catch(mem::COULD_NOT_QUERY_RAM e){};
 
     // TODO
@@ -214,6 +213,8 @@ void printCpuInfo() {
 
 void printGpuInfo() {
 
+    using namespace printer_substrings;
+
     // TODO below:
     // - GPU compute capability
     // - GPU #SVMs etc
@@ -223,14 +224,16 @@ void printGpuInfo() {
         {"numGpus",       (gpu_isGpuCompiled())? printer_toStr(gpu_getNumberOfLocalGpus()) : un},
         {"gpuDirect",     (gpu_isGpuCompiled())? printer_toStr(gpu_isDirectGpuCommPossible()) : na},
         {"gpuMemPools",   (gpu_isGpuCompiled())? printer_toStr(gpu_doesGpuSupportMemPools()) : na},
-        {"gpuMemory",     (gpu_isGpuCompiled())? printer_toStr(gpu_getTotalMemoryInBytes()) + by + pg : na},
-        {"gpuMemoryFree", (gpu_isGpuCompiled())? printer_toStr(gpu_getCurrentAvailableMemoryInBytes()) + by + pg : na},
-        {"gpuCache",      (gpu_isGpuCompiled())? printer_toStr(gpu_getCacheMemoryInBytes()) + by + pg : na},
+        {"gpuMemory",     (gpu_isGpuCompiled())? printer_getMemoryWithUnitStr(gpu_getTotalMemoryInBytes()) + pg : na},
+        {"gpuMemoryFree", (gpu_isGpuCompiled())? printer_getMemoryWithUnitStr(gpu_getCurrentAvailableMemoryInBytes()) + pg : na},
+        {"gpuCache",      (gpu_isGpuCompiled())? printer_getMemoryWithUnitStr(gpu_getCacheMemoryInBytes()) + pg : na},
     });
 }
 
 
 void printDistributionInfo() {
+
+    using namespace printer_substrings;
 
     print_table(
         "distribution", {
@@ -241,6 +244,8 @@ void printDistributionInfo() {
 
 
 void printQuregSizeLimits(bool isDensMatr) {
+
+    using namespace printer_substrings;
 
     // for brevity
     int numNodes = globalEnvPtr->numNodes;
@@ -408,9 +413,11 @@ void finalizeQuESTEnv() {
 
 
 void syncQuESTEnv() {
+    validate_envIsInit(__func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    // user can safely call sync even when not distributed
+    if (globalEnvPtr->isDistributed)
+        comm_sync();
 }
 
 

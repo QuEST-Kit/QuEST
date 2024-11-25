@@ -7,8 +7,11 @@
 
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
+#include "quest/include/matrices.h"
 
 #include "quest/src/core/printer.hpp"
+#include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/memory.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
@@ -29,7 +32,7 @@ void raiseInternalError(string errorMsg) {
         + "\n\n"
         + "A fatal internal QuEST error occurred. "
         + errorMsg + " "
-        + "Please report this to the developers. QuEST will now exit..."
+        + "Please report this to the QuEST developers. QuEST will now exit..."
         + "\n"
     );
 
@@ -56,17 +59,17 @@ void error_functionNotImplemented(const char* caller) {
 
 void error_validationMessageVarWasIllFormed(string msg, string illFormedVar) {
 
-    raiseInternalError("User input validation failed and an error string was attemptedly prepared, but an ill-formed variable was attempted substitution. This variable was \"" + illFormedVar + "\" and was attempted substitution into message:\n" + msg + "\n");
+    raiseInternalError("User input validation failed and an error message was attemptedly prepared, but an ill-formed variable was attempted substitution. This variable was \"" + illFormedVar + "\" and was attempted substitution into message:\n" + msg + "\n");
 }
 
 void error_validationMessageVarNotSubstituted(string msg, string var) {
 
-    raiseInternalError("User input validation failed and an error string was attemptedly prepared. However, the internal variable \"" + var + "\" was unable to be found and substituted into the message, which was:\n" + msg + "\n");
+    raiseInternalError("User input validation failed and an error message was attemptedly prepared. However, the internal variable \"" + var + "\" was unable to be found and substituted into the message, which was:\n" + msg + "\n");
 }
 
 void error_validationMessageContainedUnsubstitutedVars(string msg) {
 
-    raiseInternalError("User input validation failed and an error string was prepared. However, the message contained unexpected (and potentially ill-formed) unsubstituted variables. The message was:\n" + msg + "\n");
+    raiseInternalError("User input validation failed and an error message was prepared. However, the message contained unexpected (and potentially ill-formed) unsubstituted variables. The message was:\n" + msg + "\n");
 }
 
 void error_validationEncounteredUnsupportedDistributedDenseMatrix() {
@@ -137,7 +140,12 @@ void error_commWithSameRank() {
     raiseInternalError("A distributed function attempted to communicate to a pair rank equal to its own rank.");
 }
 
-void assert_validCommBounds(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps) {
+void error_commGivenInconsistentNumSubArraysANodes() {
+
+    raiseInternalError("A distributed function was given a different number of per-node subarray lengths than exist nodes.");
+}
+
+void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps) {
 
     bool valid = (
         sendInd >= 0 &&
@@ -151,10 +159,22 @@ void assert_validCommBounds(Qureg qureg, qindex sendInd, qindex recvInd, qindex 
         error_commOutOfBounds();
 }
 
-void assert_quregIsDistributed(Qureg qureg) {
+void assert_commPayloadIsPowerOf2(qindex numAmps) {
+
+    if (!isPowerOf2(numAmps))
+        raiseInternalError("A communication function was given a payload which was unexpectedly not a power of 2, as implied by preconditions.");
+}
+
+void assert_commQuregIsDistributed(Qureg qureg) {
 
     if (!qureg.isDistributed)
         error_commButQuregNotDistributed();
+}
+
+void assert_commFullStateDiagMatrIsDistributed(FullStateDiagMatr matr) {
+    
+    if (!matr.isDistributed)
+        raiseInternalError("A function attempted to invoke communication of a FullStateDiagMatr which was not distributed.");
 }
 
 void assert_pairRankIsDistinct(Qureg qureg, int pairRank) {
@@ -167,6 +187,18 @@ void assert_bufferSendRecvDoesNotOverlap(qindex sendInd, qindex recvInd, qindex 
 
     if (sendInd + numAmps > recvInd)
         raiseInternalError("A distributed function attempted to send and receive portions of the buffer which overlapped.");
+}
+
+void assert_receiverCanFitSendersEntireState(Qureg receiver, Qureg sender) {
+
+    if (receiver.numAmpsPerNode < sender.numAmps)
+        raiseInternalError("A distributed function attempted to broadcast a Qureg's entire state into another Qureg's buffer, which could not fit all global amps.");
+}
+
+void assert_receiverCanFitSendersEntireElems(Qureg receiver, FullStateDiagMatr sender) {
+
+    if (receiver.numAmpsPerNode < sender.numElems)
+        raiseInternalError("A distributed function attempted to broadcast the entirety of a FullStateDiagMatr's elements into a Qureg's buffer, which is too small to contain all global elements.");
 }
 
 
@@ -190,6 +222,41 @@ void error_localiserPassedStateVecToChannelComCheck() {
     raiseInternalError("The localiser queried whether a channel would invoke communication upon a statevector.");
 }
 
+void error_localiserGivenDistribMatrixAndLocalQureg() {
+
+    raiseInternalError("A localiser function was given a distributed FullStateDiagMatr but a non-distributed Qureg, which are incompatible.");
+}
+
+void error_localiserFailedToAllocTempMemory() {
+
+    raiseInternalError("A localiser function attempted and failed to allocate temporary memory.");
+}
+
+void error_localiserGivenPauliStrWithoutXorY() {
+
+    raiseInternalError("A localiser function was given a PauliStr which unexpectedly contained no X or Y Paulis.");
+}
+
+void error_localiserGivenNonUnityGlobalFactorToZTensor() {
+
+    raiseInternalError("A localiser function to apply a PauliStr (as a tensor, not a gadget) was given a PauliStr containing only Z and I, along with a non-unity global factor. This is an illegal combination.");
+}
+
+void assert_localiserSuccessfullyAllocatedTempMemory(qcomp* ptr, bool isGpu) {
+
+    if (mem_isAllocated(ptr))
+        return;
+
+    string platform = (isGpu)? "GPU" : "CPU";
+    raiseInternalError("A localiser function attempted and failed to allocate temporary " + platform + " memory.");
+}
+
+void assert_localiserGivenStateVec(Qureg qureg) {
+
+    if (qureg.isDensityMatrix)
+        raiseInternalError("The localiser received a density matrix to a function defined strictly for statevectors.");
+}
+
 void assert_localiserGivenDensMatr(Qureg qureg) {
 
     if (!qureg.isDensityMatrix)
@@ -209,6 +276,11 @@ void assert_localiserPartialTraceGivenCompatibleQuregs(Qureg inQureg, Qureg outQ
 
     if (inQureg.numQubits - numTargs != outQureg.numQubits)
         raiseInternalError("Inconsistent Qureg sizes and number of traced qubits given to localiser's partial trace function.");
+}
+
+void error_calcFidStateVecDistribWhileDensMatrLocal() {
+
+    raiseInternalError("A localiser function attempted to compute the fidelity between a local density matrix and a distributed statevector, which is an illegal combination.");
 }
 
 
@@ -245,6 +317,13 @@ void assert_numTargsMatchesTemplateParam(int numTargs, int templateParam) {
         raiseInternalError("A CPU or GPU subroutine received a number of targets inconsistent with its compile-time template parameter, as dispatched by accelerator.cpp.");
 }
 
+void assert_exponentMatchesTemplateParam(qcomp exponent, bool hasPower) {
+
+    // require hasPower==false => exponent==1
+    if (!hasPower && exponent != qcomp(1,0))
+        raiseInternalError("A CPU or GPU subroutine received a matrix exponent that was inconsistent with its compile-time template parameter, as dispatched by accelerator.cpp.");
+}
+
 
 
 /*
@@ -260,6 +339,140 @@ void assert_bufferPackerGivenIncreasingQubits(int qubit1, int qubit2, int qubit3
 
     if (qubit1 >= qubit2 || qubit2 >= qubit3)
         raiseInternalError("A function attempted to pack a buffer using non-increasing qubit indices.");
+}
+
+
+
+/*
+ * BACKEND PRECONDITION ERRORS
+ */
+
+void assert_mixedQuregIsDensityMatrix(Qureg qureg) {
+
+    if (!qureg.isDensityMatrix)
+        raiseInternalError("An internal function invoked by mixQuregs() received a statevector where a density matrix was expected.");
+}
+
+void assert_mixedQuregIsStatevector(Qureg qureg) {
+
+    if (qureg.isDensityMatrix)
+        raiseInternalError("An internal function invoked by mixQuregs() received a density matrix where a statevector was expected.");
+}
+
+void assert_mixedQuregIsDistributed(Qureg qureg) {
+
+    if (!qureg.isDistributed)
+        raiseInternalError("An internal function invoked by mixQuregs() received a non-distributed Qureg where a distributed one was expected.");
+}
+
+void assert_mixedQuregIsLocal(Qureg qureg) {
+
+    if (qureg.isDistributed)
+        raiseInternalError("An internal function invoked by mixQuregs() received a distributed Qureg where a non-distributed one was expected.");
+}
+
+void assert_mixedQuregsAreBothOrNeitherDistributed(Qureg a, Qureg b) {
+
+    if (a.isDistributed != b.isDistributed)
+        raiseInternalError("An internal function invoked by mixQuregs() received density-matrix Quregs of inconsistent distribution.");
+}
+
+void assert_mixQuregTempGpuAllocSucceeded(qcomp* gpuPtr) {
+
+    if (gpuPtr == nullptr)
+        raiseInternalError("An internal function invoked by mixQuregs() attempted to allocate temporary GPU memory but failed.");
+}
+
+void error_mixQuregsAreLocalDensMatrAndDistribStatevec() {
+
+    raiseInternalError("An internal function invoked by mixQuregs() received a non-distributed density matrix and a distributed statevector, which is an illegal combination.");
+}
+
+void assert_fullStateDiagMatrIsLocal(FullStateDiagMatr matr) {
+
+    if (matr.isDistributed)
+        raiseInternalError("An accelerator function received a distributed FullStateDiagMatr where a non-distributed one was expected.");
+}
+
+void assert_fullStateDiagMatrIsDistributed(FullStateDiagMatr matr) {
+
+    if (!matr.isDistributed)
+        raiseInternalError("An accelerator function received a non-distributed FullStateDiagMatr where a distributed one was expected.");
+}
+
+void assert_acceleratorQuregIsDistributed(Qureg qureg) {
+
+    if (!qureg.isDistributed)
+        raiseInternalError("An accelerator function invoked received non-distributed Qureg where a distributed one was expected.");
+}
+
+void assert_quregAndFullStateDiagMatrAreBothOrNeitherDistrib(Qureg qureg, FullStateDiagMatr matr) {
+
+    if (qureg.isDistributed != matr.isDistributed)
+        raiseInternalError("An accelerator function unexpectedly received a Qureg and FullStateDiagMatr with different distributions.");
+}
+
+void assert_quregGpuBufferIsNotGraftedToMatrix(Qureg qureg, FullStateDiagMatr matr) {
+
+    if (matr.gpuElems == qureg.gpuCommBuffer)
+        raiseInternalError("An accelerator function received a FullStateDiagMatr with a GPU pointer which was a Qureg's GPU communication buffer, in a setting where the buffer was separately needed.");
+}
+
+void assert_applyFullStateDiagMatrTempGpuAllocSucceeded(qcomp* gpuPtr) {
+
+    if (gpuPtr == nullptr)
+        raiseInternalError("An internal function invoked by applying a FullStateDiagMatr upon a density matrix attempted to allocate temporary GPU memory but failed.");
+}
+
+void assert_calcFidStateVecIsLocal(Qureg qureg) {
+
+    if (qureg.isDistributed)
+        raiseInternalError("An accelerator function involved with calculating the fidelity between a density matrix and statevector was given an illegally distributed statevector.");
+}
+
+void assert_calcFidTempGpuAllocSucceeded(qcomp* ptr) {
+
+    if (!mem_isAllocated(ptr))
+        raiseInternalError("An accelerator function involved with calculating the fidelity between a density matrix and statevector failed to allocate temporary GPU memory.");
+}
+
+void assert_innerProductedSameDimQuregsHaveSameGpuAccel(Qureg quregA, Qureg quregB) {
+
+    if (quregA.isGpuAccelerated != quregB.isGpuAccelerated)
+        raiseInternalError("The accelerator was asked to compute the inner product between a GPU-accelerated and non-accelerated Qureg, where were both statevectors or density matrices, which is an illegal combination.");
+}
+
+
+
+
+/*
+ * BACKEND PRECONDITION ERRORS
+ */
+
+void assert_quregAndFullStateDiagMatrHaveSameDistrib(Qureg qureg, FullStateDiagMatr matr) {
+
+    if (qureg.isDistributed != matr.isDistributed)
+        raiseInternalError("A Qureg and FullStateDiagMatr had unexpectedly mismatching distribution statuses.");
+}
+
+void assert_quregDistribAndFullStateDiagMatrLocal(Qureg qureg, FullStateDiagMatr matr) {
+
+    if (!qureg.isDistributed)
+        raiseInternalError("The Qureg was unexpectedly non-distributed.");
+        
+    if (matr.isDistributed)
+        raiseInternalError("The FullStateDiagMatr was unexpectedly distributed.");
+}
+
+void assert_superposedQuregDimsAndDeploysMatch(Qureg facOut, Qureg in1, Qureg in2) {
+
+    if (
+        facOut.isDistributed    != in1.isDistributed    || in1.isDistributed    != in2.isDistributed    ||
+        facOut.isDensityMatrix  != in1.isDensityMatrix  || in1.isDensityMatrix  != in2.isDensityMatrix  ||
+        facOut.isGpuAccelerated != in1.isGpuAccelerated || in1.isGpuAccelerated != in2.isGpuAccelerated ||
+        facOut.numQubits        != in1.numQubits        || in1.numQubits        != in2.numQubits
+    )
+        raiseInternalError("An internal function *_setQuregToSuperposition() received Quregs of mismatching dimensions and/or deployments.");
 }
 
 
@@ -370,6 +583,25 @@ void error_cudaCallFailed(const char* msg, const char* func, const char* caller,
     raiseInternalError(err);
 }
 
+void error_cuQuantumCompiledButNotCuda() {
+
+    raiseInternalError(
+        "Preprocessor COMPILE_CUQUANTUM was set, but COMPILE_CUDA was not. These are not intended to be exclusive fields, so "
+        "a function which depended upon both flags could not continue");
+}
+
+
+
+/*
+ * THRUST ERRORS
+ */
+
+
+void error_thrustTempGpuAllocFailed() {
+
+    raiseInternalError("Thrust failed to allocate temporary GPU memory.");
+}
+
 
 
 /*
@@ -379,6 +611,22 @@ void error_cudaCallFailed(const char* msg, const char* func, const char* caller,
 void error_cuQuantumInitOrFinalizedButNotCompiled() {
 
     raiseInternalError("Attempted to initialize or finalize cuQuantum, but cuQuantum was not compiled.");
+}
+
+void error_cuQuantumTempCpuAllocFailed() {
+
+    raiseInternalError("Attempted allocation of temporary host-memory for a cuQuantum routine failed.");
+}
+
+
+
+/*
+ * PAULI ERRORS 
+ */
+
+void error_pauliStrShiftedByIllegalAmount() {
+
+    raiseInternalError("A PauliStr was attemptedly shifted (likely invoked by its application upon a density matrix) by an illegal amount (e.g. negative, or that exceeding the PauliStr bitmask length).");
 }
 
 
@@ -418,6 +666,25 @@ void error_utilsIsBraQubitInSuffixGivenNonDensMatr() {
     raiseInternalError("A functiion queried whether a qubit's corresponding bra-qubit was in the suffix substate, but the Qureg was not a density matrix.");
 }
 
+void error_utilsGivenGlobalIndexOutsideNode() {
+
+    // this error might NOT be thrown by all nodes, causing non-consensus crash. Eh!
+    raiseInternalError("A utility function was asked for the corresponding local index of a global index which did not exist in the calling node.");
+}
+
+void assert_utilsGivenStateVec(Qureg qureg) {
+
+    if (qureg.isDensityMatrix)
+        raiseInternalError("A utility function was given a density matrix where a statevector was expected.");
+}
+
+void assert_utilsGivenDensMatr(Qureg qureg) {
+
+    if (!qureg.isDensityMatrix)
+        raiseInternalError("A utility function was given a statevector where a density matrix was expected.");
+}
+
+
 
 /*
  * PARSING ERRORS
@@ -453,3 +720,24 @@ void error_couldNotReadFile() {
     raiseInternalError("A function failed to open and read a file that previous validation confirmed was readable.");
 }
 
+
+
+/*
+ * RANDOMISER ERRORS
+ */
+
+void error_randomiserGivenNonNormalisedProbList() {
+
+    raiseInternalError("The randomiser was asked to sample from a list of probabilities which did not sum to one, within epsilon error.");
+}
+
+
+
+/*
+ * PRINTER ERRORS
+ */
+
+void error_printerFailedToAllocTempMemory() {
+
+    raiseInternalError("A printer utility attempted and failed to allocate temporary memory, which likely results from the attemptedly printed object being too large.");
+}

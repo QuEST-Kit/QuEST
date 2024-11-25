@@ -12,6 +12,8 @@
 #include "quest/src/core/printer.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
+#include "quest/src/core/utilities.hpp"
+#include "quest/src/core/localiser.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
@@ -21,10 +23,59 @@
 
 #include <string>
 
-// provides substrings (by, na, pm, etc) used by reportQureg
-using namespace printer_substrings;
-
 using std::string;
+
+
+
+/*
+ * INTERNALLY EXPOSED FUNCTION
+ */
+
+
+Qureg qureg_populateNonHeapFields(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread) {
+
+    QuESTEnv env = getQuESTEnv();
+
+    // pre-prepare some struct fields (to avoid circular initialisation)
+    int logNumNodes = (useDistrib)? 
+        logBase2(env.numNodes) : 0;
+    qindex logNumAmpsPerNode = (isDensMatr)? 
+        (2*numQubits - logNumNodes) :
+        (  numQubits - logNumNodes);
+
+    return {
+        // bind deployment info
+        .isMultithreaded  = useMultithread,
+        .isGpuAccelerated = useGpuAccel,
+        .isDistributed    = useDistrib,
+
+        // optionally bind distributed info, noting that in distributed environments,
+        // the non-distributed quregs are duplicated on each node and each believe
+        // they are the root node, with no other nodes existing; this is essential so
+        // that these quregs can agnostically use distributed routines which consult
+        // the rank, but it will interfere with naive root-only printing logic
+        .rank        = (useDistrib)? env.rank : 0,
+        .numNodes    = (useDistrib)? env.numNodes : 1,
+        .logNumNodes = (useDistrib)? logBase2(env.numNodes) : 0, // duplicated for clarity
+
+        // set dimensions
+        .isDensityMatrix = isDensMatr,
+        .numQubits  = numQubits,
+        .numAmps    = (isDensMatr)? powerOf2(2*numQubits) : powerOf2(numQubits),
+        .logNumAmps = (isDensMatr)?          2*numQubits  :          numQubits,
+
+        // set dimensions per node (even if not distributed)
+        .numAmpsPerNode = powerOf2(logNumAmpsPerNode),
+        .logNumAmpsPerNode = logNumAmpsPerNode,
+        .logNumColsPerNode = (isDensMatr)? numQubits - logNumNodes : 0, // used only by density matrices
+
+        // caller will allocate heap memory as necessary
+        .cpuAmps       = nullptr,
+        .gpuAmps       = nullptr,
+        .cpuCommBuffer = nullptr,
+        .gpuCommBuffer = nullptr
+    };
+}
 
 
 
@@ -98,48 +149,17 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
     // throw error if the user had forced multithreading but GPU accel was auto-chosen
     validate_newQuregNotBothMultithreadedAndGpuAccel(useGpuAccel, useMultithread, caller);
 
-    // pre-prepare some struct fields (to avoid circular initialisation)
-    int logNumNodes = (useDistrib)? 
-        logBase2(env.numNodes) : 0;
-    qindex logNumAmpsPerNode = (isDensMatr)? 
-        (2*numQubits - logNumNodes) :
-        (  numQubits - logNumNodes);
+    Qureg qureg = qureg_populateNonHeapFields(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread);
 
-    // const struct fields must be initialised inline
-    Qureg qureg = {
+    // always allocate CPU memory
+    qureg.cpuAmps = cpu_allocArray(qureg.numAmpsPerNode); // nullptr if failed
 
-        // bind deployment info
-        .isMultithreaded  = useMultithread,
-        .isGpuAccelerated = useGpuAccel,
-        .isDistributed    = useDistrib,
-
-        // optionally bind distributed info, but always etain the env's rank because non-distributed
-        // quregs are still duplicated between every node, and have duplicate processes
-        .rank        = env.rank,
-        .numNodes    = (useDistrib)? env.numNodes : 1,
-        .logNumNodes = (useDistrib)? logBase2(env.numNodes) : 0, // duplicated for clarity
-
-        // set dimensions
-        .isDensityMatrix = isDensMatr,
-        .numQubits  = numQubits,
-        .numAmps    = (isDensMatr)? powerOf2(2*numQubits) : powerOf2(numQubits),
-        .logNumAmps = (isDensMatr)?          2*numQubits  :          numQubits,
-
-        // set dimensions per node (even if not distributed)
-        .numAmpsPerNode = powerOf2(logNumAmpsPerNode),
-        .logNumAmpsPerNode = logNumAmpsPerNode,
-        .logNumColsPerNode = (isDensMatr)? numQubits - logNumNodes : 0, // used only by density matrices
-
-        // always allocate CPU memory
-        .cpuAmps = cpu_allocArray(qureg.numAmpsPerNode), // nullptr if failed
-
-        // conditionally allocate GPU memory and communication buffers (even if numNodes == 1).
-        // note that in distributed settings but where useDistrib=false, each node will have a
-        // full copy of the amplitudes, but will NOT have the communication buffers allocated.
-        .gpuAmps       = (useGpuAccel)?               gpu_allocArray(qureg.numAmpsPerNode) : nullptr,
-        .cpuCommBuffer = (useDistrib)?                cpu_allocArray(qureg.numAmpsPerNode) : nullptr,
-        .gpuCommBuffer = (useGpuAccel && useDistrib)? gpu_allocArray(qureg.numAmpsPerNode) : nullptr,
-    };
+    // conditionally allocate GPU memory and communication buffers (even if numNodes == 1).
+    // note that in distributed settings but where useDistrib=false, each node will have a
+    // full copy of the amplitudes, but will NOT have the communication buffers allocated.
+    qureg.gpuAmps       = (useGpuAccel)?               gpu_allocArray(qureg.numAmpsPerNode) : nullptr;
+    qureg.cpuCommBuffer = (useDistrib)?                cpu_allocArray(qureg.numAmpsPerNode) : nullptr;
+    qureg.gpuCommBuffer = (useGpuAccel && useDistrib)? gpu_allocArray(qureg.numAmpsPerNode) : nullptr;
 
     // if any of the above mallocs failed, below validation will memory leak; so free first (but don't set to nullptr)
     freeAllMemoryIfAnyAllocsFailed(qureg);
@@ -170,37 +190,50 @@ void printDeploymentInfo(Qureg qureg) {
 
 void printDimensionInfo(Qureg qureg) {
 
-    // 2^N = M or 2^N x 2^N = M
-    string str;
-    str  = bt + printer_toStr(qureg.numQubits);
-    str += (qureg.isDensityMatrix)? mu + str : "";
-    str += eq + printer_toStr(qureg.numAmps);
+    using namespace printer_substrings;
+
+    // 2^N = M
+    string ampsStr;
+    ampsStr  = bt + printer_toStr(qureg.numQubits * (qureg.isDensityMatrix? 2 : 1));
+    ampsStr += eq + printer_toStr(qureg.numAmps);
+    
+    string colsStr = na;
+    if (qureg.isDensityMatrix)
+        colsStr = (
+            bt + printer_toStr(qureg.numQubits) + 
+            eq + printer_toStr(powerOf2(qureg.numQubits)));
 
     print_table(
         "dimension", {
         {"isDensMatr", printer_toStr(qureg.isDensityMatrix)},
         {"numQubits",  printer_toStr(qureg.numQubits)},
-        {"numAmps",    str},
+        {"numCols",    colsStr},
+        {"numAmps",    ampsStr},
     });
 }
 
 
 void printDistributionInfo(Qureg qureg) {
 
+    using namespace printer_substrings;
+
     // not applicable when not distributed
     string nodesStr = na;
     string ampsStr  = na;
+    string colsStr  = na;
 
     // 2^N = M per node
     if (qureg.isDistributed) {
         nodesStr = bt + printer_toStr(qureg.logNumNodes)       + eq + printer_toStr(qureg.numNodes);
-        ampsStr  = bt + printer_toStr(qureg.logNumAmpsPerNode) + eq + printer_toStr(qureg.numAmpsPerNode);
-        ampsStr += pn;
+        ampsStr  = bt + printer_toStr(qureg.logNumAmpsPerNode) + eq + printer_toStr(qureg.numAmpsPerNode) + pn;
+        if (qureg.isDensityMatrix)
+            colsStr = bt + printer_toStr(qureg.logNumColsPerNode) + eq + printer_toStr(powerOf2(qureg.logNumColsPerNode)) + pn;
     }
 
     print_table(
         "distribution", {
         {"numNodes", nodesStr},
+        {"numCols",  colsStr},
         {"numAmps",  ampsStr},
     });
 }
@@ -208,13 +241,15 @@ void printDistributionInfo(Qureg qureg) {
 
 void printMemoryInfo(Qureg qureg) {
 
+    using namespace printer_substrings;
+
     size_t localArrayMem = mem_getLocalQuregMemoryRequired(qureg.numAmpsPerNode);
-    string localMemStr = printer_toStr(localArrayMem) + by + ((qureg.isDistributed)? pn : "");
+    string localMemStr = printer_getMemoryWithUnitStr(localArrayMem) + (qureg.isDistributed? pn : "");
 
     // precondition: no reportable fields are at risk of overflow as a qindex
     // type, EXCEPT aggregate total memory between distributed nodes (in bytes)
     qindex globalTotalMem = mem_getTotalGlobalMemoryUsed(qureg);
-    string globalMemStr = (globalTotalMem == 0)? "overflowed" : (printer_toStr(globalTotalMem) + by);
+    string globalMemStr = (globalTotalMem == 0)? "overflowed" : printer_getMemoryWithUnitStr(globalTotalMem);
 
     print_table(
         "memory", {
@@ -259,19 +294,16 @@ Qureg createDensityQureg(int numQubits) {
 
 
 Qureg createCloneQureg(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
 
     // create a new Qureg with identical fields, but zero'd memory
     Qureg clone = validateAndCreateCustomQureg(
         qureg.numQubits, qureg.isDensityMatrix, qureg.isDistributed, 
         qureg.isGpuAccelerated, qureg.isMultithreaded, __func__);
 
-    // copy CPU memory from qureg to clone
-    cpu_copyArray(clone.cpuAmps, qureg.cpuAmps, qureg.numAmpsPerNode);
+    setQuregToClone(clone, qureg); // harmlessly re-validates
 
-    // update clone's GPU memory
-    if (clone.isGpuAccelerated)
-        gpu_copyCpuToGpu(clone);
-
+    // if GPU-accelerated, clone's CPU amps are NOT updated
     return clone;
 }
 
@@ -304,6 +336,7 @@ void reportQuregParams(Qureg qureg) {
 
     // TODO: add function to write this output to file (useful for HPC debugging)
 
+    // printer routines will consult env rank to avoid duplicate printing
     print("Qureg:");
     printDeploymentInfo(qureg);
     printDimensionInfo(qureg);
@@ -313,10 +346,21 @@ void reportQuregParams(Qureg qureg) {
 
 
 void reportQureg(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    // account all local CPU memory (including buffer), neglecting GPU memory
+    // because it occupies distinct memory spaces, confusing accounting
+    size_t localMem = mem_getLocalQuregMemoryRequired(qureg.numAmpsPerNode);
+    if (qureg.isDistributed)
+        localMem *= 2; // include buffer. TODO: will this ever overflow?!?!
+    
+    // include struct size (expected negligibly tiny)
+    localMem += sizeof(qureg);
+
+    print_header(qureg, localMem);
+    print_elems(qureg);
 }
+
 
 void reportQuregToFile(Qureg qureg, char* fn) {
 
@@ -326,41 +370,77 @@ void reportQuregToFile(Qureg qureg, char* fn) {
 
 
 void syncQuregToGpu(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    // permit this to be called even in non-GPU mode
+    if (qureg.isGpuAccelerated)
+        gpu_copyCpuToGpu(qureg); // overwrites all local GPU amps
 }
-
 void syncQuregFromGpu(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    // permit this to be called even in non-GPU mode
+    if (qureg.isGpuAccelerated)
+        gpu_copyGpuToCpu(qureg); // overwrites all local CPU amps
 }
 
 
-void syncSubQuregToGpu  (Qureg qureg, qindex startInd, qindex numAmps) {
+void syncSubQuregToGpu(Qureg qureg, qindex localStartInd, qindex numLocalAmps) {
+    validate_quregFields(qureg, __func__);
+    validate_localAmpIndices(qureg, localStartInd, numLocalAmps, __func__); 
+    
+    // the above validation communicates for node consensus in
+    // distributed settings, because params can differ per-node.
+    // note also this function accepts statevectors AND density
+    // matrices, because the latter does not need a bespoke
+    // (row,col) interface, because the user can only access/modify
+    // local density matrix amps via a flat index anyway!
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    // we permit this function to do nothing when not GPU-accelerated
+    if (!qureg.isGpuAccelerated)
+        return;
+
+    // otherwise, every node merely copies its local subset, which
+    // may differ per-node, in an embarrassingly parallel manner
+    gpu_copyCpuToGpu(&qureg.cpuAmps[localStartInd], &qureg.gpuAmps[localStartInd], numLocalAmps);
 }
-void syncSubQuregFromGpu(Qureg qureg, qindex startInd, qindex numAmps) {
+void syncSubQuregFromGpu(Qureg qureg, qindex localStartInd, qindex numLocalAmps) {
+    validate_quregFields(qureg, __func__);
+    validate_localAmpIndices(qureg, localStartInd, numLocalAmps, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    // the above validation communicates for node consensus in
+    // distributed settings, because params can differ per-node.
+    // note also this function accepts statevectors AND density
+    // matrices, because the latter does not need a bespoke
+    // (row,col) interface, because the user can only access/modify
+    // local density matrix amps via a flat index anyway!
+
+    // we permit this function to do nothing when not GPU-accelerated
+    if (!qureg.isGpuAccelerated)
+        return;
+
+    // otherwise, every node merely copies its local subset, which
+    // may differ per-node, in an embarrassingly parallel manner
+    gpu_copyGpuToCpu(&qureg.gpuAmps[localStartInd], &qureg.cpuAmps[localStartInd], numLocalAmps);
 }
 
-void syncSubDensityQuregToGpu  (Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
 
-    // TODO
-    error_functionNotImplemented(__func__);
-}
-void syncSubDensityQuregFromGpu(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
+void getQuregAmps(qcomp* outAmps, Qureg qureg, qindex startInd, qindex numAmps) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsStateVector(qureg, __func__);
+    validate_basisStateIndices(qureg, startInd, numAmps, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    localiser_statevec_getAmps(outAmps, qureg, startInd, numAmps);
 }
 
 
+void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_basisStateRowCols(qureg, startRow, startCol, numRows, numCols, __func__);
+
+    localiser_densmatr_getAmps(outAmps, qureg, startRow, startCol, numRows, numCols);
+}
 
 
 
@@ -383,10 +463,11 @@ void syncSubDensityQuregFromGpu(Qureg qureg, qindex startRow, qindex startCol, q
 
 
 qcomp getQuregAmp(Qureg qureg, qindex index) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsStateVector(qureg, __func__);
+    validate_basisStateIndex(qureg, index, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
+    return localiser_statevec_getAmp(qureg, index);
 }
 extern "C" void _wrap_getQuregAmp(qcomp* out, Qureg qureg, qindex index) {
 
@@ -395,10 +476,13 @@ extern "C" void _wrap_getQuregAmp(qcomp* out, Qureg qureg, qindex index) {
 
 
 qcomp getDensityQuregAmp(Qureg qureg, qindex row, qindex column) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_basisStateRowCol(qureg, row, column, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
+    qindex ind = util_getGlobalFlatIndex(qureg, row, column);
+    qcomp amp = localiser_statevec_getAmp(qureg, ind);
+    return amp;
 }
 extern "C" void _wrap_getDensityQuregAmp(qcomp* out, Qureg qureg, qindex row, qindex column) {
 

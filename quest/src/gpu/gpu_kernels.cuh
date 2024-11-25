@@ -14,6 +14,7 @@
 #include "quest/include/types.h"
 
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/fastmath.hpp"
 #include "quest/src/gpu/gpu_types.cuh"
 
 #if ! COMPILE_CUDA
@@ -57,7 +58,7 @@ __host__ qindex getNumBlocks(qindex numIts) {
  */
 
 
-__forceinline__ __device__  int cudaGetBitMaskParity(qindex mask) {
+__forceinline__ __device__ int cudaGetBitMaskParity(qindex mask) {
 
     // we cannot use bitwise's getBitMaskParity()'s host-only GCC call
     return __popcll(mask) & 1;
@@ -219,6 +220,46 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
 
 
 /*
+ * TWO-TARGET DENSE MATRIX
+ */
+
+
+template <int NumCtrls>
+__global__ void kernel_statevec_anyCtrlTwoTargDenseMatr_sub(
+    cu_qcomp* amps, qindex numThreads, 
+    int* ctrlsAndTarg, int numCtrls, qindex ctrlStateMask, int targ1, int targ2,
+    cu_qcomp m00, cu_qcomp m01, cu_qcomp m02, cu_qcomp m03,
+    cu_qcomp m10, cu_qcomp m11, cu_qcomp m12, cu_qcomp m13,
+    cu_qcomp m20, cu_qcomp m21, cu_qcomp m22, cu_qcomp m23,
+    cu_qcomp m30, cu_qcomp m31, cu_qcomp m32, cu_qcomp m33
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+
+    // i00 = nth local index where ctrls are active and both targs are 0
+    qindex i00 = insertBitsWithMaskedValues(n, ctrlsAndTarg, numCtrlBits + 2, ctrlStateMask);
+    qindex i01 = flipBit(i00, targ1);
+    qindex i10 = flipBit(i00, targ2);
+    qindex i11 = flipBit(i01, targ2);
+
+    // note amps00 and amps01 are strided by 2^targ1, and amps00 and amps10 are strided by 2^targ2
+    cu_qcomp amp00 = amps[i00];
+    cu_qcomp amp01 = amps[i01];
+    cu_qcomp amp10 = amps[i10];
+    cu_qcomp amp11 = amps[i11];
+
+    // amps[i_n] = sum_j elems[n][j] amp[i_n]
+    amps[i00] = m00*amp00 + m01*amp01 + m02*amp10 + m03*amp11;
+    amps[i01] = m10*amp00 + m11*amp01 + m12*amp10 + m13*amp11;
+    amps[i10] = m20*amp00 + m21*amp01 + m22*amp10 + m23*amp11;
+    amps[i11] = m30*amp00 + m31*amp01 + m32*amp10 + m33*amp11;
+}
+
+
+
+/*
  * ANY-TARGET DENSE MATRIX
  */
 
@@ -291,17 +332,108 @@ __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
 
 
 /*
+ * ONE-TARG DIAGONAL MATRIX
+ */
+
+
+template <int NumCtrls>
+__global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
+    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
+    int* ctrls, int numCtrls, qindex ctrlStateMask, int targ, 
+    cu_qcomp m1, cu_qcomp m2
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // TODO:
+    // we have implemented a custom kernel, rather than a thrust
+    // functor, for efficient treatment of control qubits (even
+    // when not exploiting the compile-time parameter NumCtrls).
+    // Our kernel enumerates only amps which satisfy the control
+    // condition, whereas a natural Thrust functor would involve
+    // enumerating all amplitudes and skipping some via a condition.
+    // This might still be beneficial in memory-bandwidth-bound
+    // regimes, but is expected inferior for many control qubits.
+    // We should verify this!
+
+    // use template params to compile-time unroll loops in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+
+    // j = nth local index where ctrls are active (in the specified states)
+    qindex j = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, ctrlStateMask);
+
+    // i = global index corresponding to j
+    qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
+
+    int b = getBit(i, targ);
+    amps[i] *= m1 + b * (m2 - m1);
+}
+
+
+
+/*
+ * TWO-TARG DIAGONAL MATRIX
+ */
+
+
+template <int NumCtrls>
+__global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
+    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
+    int* ctrls, int numCtrls, qindex ctrlStateMask, int targ1, int targ2,
+    cu_qcomp m1, cu_qcomp m2, cu_qcomp m3, cu_qcomp m4
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // TODO:
+    // we have implemented a custom kernel, rather than a thrust
+    // functor, for efficient treatment of control qubits (even
+    // when not exploiting the compile-time parameter NumCtrls).
+    // Our kernel enumerates only amps which satisfy the control
+    // condition, whereas a natural Thrust functor would involve
+    // enumerating all amplitudes and skipping some via a condition.
+    // This might still be beneficial in memory-bandwidth-bound
+    // regimes, but is expected inferior for many control qubits.
+    // We should verify this!
+
+    // use template params to compile-time unroll loops in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+
+    // j = nth local index where ctrls are active (in the specified states)
+    qindex j = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, ctrlStateMask);
+
+    // i = global index corresponding to j
+    qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
+
+    // k = local elem index
+    int k = getTwoBits(i, targ2, targ1);
+    cu_qcomp elems[] = {m1, m2, m3, m4};
+    amps[i] *= elems[k];
+}
+
+
+
+/*
  * ANY-TARG DIAGONAL MATRIX
  */
 
 
-template <int NumCtrls, int NumTargs, bool ApplyConj>
+template <int NumCtrls, int NumTargs, bool ApplyConj, bool HasPower>
 __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
     int* ctrls, int numCtrls, qindex ctrlStateMask, int* targs, int numTargs,
-    cu_qcomp* elems
+    cu_qcomp* elems, cu_qcomp exponent
 ) {
     GET_THREAD_IND(n, numThreads);
+
+    // TODO:
+    // we have implemented a custom kernel, rather than a thrust
+    // functor, for efficient treatment of control qubits (even
+    // when not exploiting the compile-time parameter NumCtrls).
+    // Our kernel enumerates only amps which satisfy the control
+    // condition, whereas a natural Thrust functor would involve
+    // enumerating all amplitudes and skipping some via a condition.
+    // This might still be beneficial in memory-bandwidth-bound
+    // regimes, but is expected inferior for many control qubits.
+    // We should verify this!
 
     // use template params to compile-time unroll loops in insertBits() and getValueOfBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
@@ -316,12 +448,56 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     // t = value of targeted bits, which may be in the prefix substate
     qindex t = getValueOfBits(i, targs, numTargBits);
 
-    // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
     cu_qcomp elem = elems[t];
+
+    if constexpr (HasPower)
+        elem = getCompPower(elem, exponent);
+
     if constexpr (ApplyConj)
         elem.y *= -1;
 
     amps[i] *= elem;
+}
+
+
+
+/*
+ * ALL-TARG DIAGONAL MATRIX
+ */
+
+
+template <bool HasPower, bool MultiplyOnly>
+__global__ void kernel_densmatr_allTargDiagMatr_sub(
+    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
+    cu_qcomp* elems, qindex numElems, cu_qcomp exponent
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // i = global row of nth local index
+    qindex i = n % numElems;
+    cu_qcomp fac = elems[i];
+
+    if constexpr (HasPower)
+        fac = getCompPower(fac, exponent);
+
+    if constexpr (!MultiplyOnly) {
+
+        // m = global index corresponding to n
+        qindex m = concatenateBits(rank, n, logNumAmpsPerNode);
+
+        // j = global column corresponding to n
+        qindex j = m / numElems;
+        cu_qcomp term = elems[j];
+
+        if constexpr(HasPower)
+            term = getCompPower(term, exponent);
+
+        // conj after pow
+        term.y *= -1;
+        fac *= term;
+    }
+
+    amps[n] *= fac;
 }
 
 
@@ -333,17 +509,16 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
 
 template <int NumCtrls, int NumTargs> 
 __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
-    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
+    cu_qcomp* amps, qindex numThreads,
     int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsStateMask, 
-    int* suffixTargsXY, int numSuffixTargsXY,
-    qindex suffixMaskXY, qindex allMaskYZ, 
-    cu_qcomp powI, cu_qcomp thisAmpFac, cu_qcomp otherAmpFac
+    int* targsXY, int numXY, qindex maskXY, qindex maskYZ, 
+    cu_qcomp powI, cu_qcomp ampFac, cu_qcomp pairAmpFac
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // use template params to compile-time unroll loops in insertBits()
+    // use template params to compile-time unroll loops in insertBits() and setBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
-    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, numSuffixTargsXY);
+    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, numXY);
 
     // compiler will infer these at compile-time if possible
     int numQubitBits = numCtrlBits + numTargBits;
@@ -353,38 +528,36 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
     qindex numInnerIts = numTargAmps / 2;
 
     // i0 = nth local index where ctrls are active and targs are all zero
-    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs, numQubitBits, ctrlsAndTargsStateMask);
+    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs, numQubitBits, ctrlsAndTargsStateMask); // may be unrolled
 
     // loop may be unrolled
     for (qindex m=0; m<numInnerIts; m++) {
 
         // iA = nth local index where targs have value m, iB = (last - nth) such index
-        qindex iA = setBits(i0, suffixTargsXY, numSuffixTargsXY, m);
-        qindex iB = flipBits(iA, suffixMaskXY);
-
-        // jA = global index corresponding to iA
-        qindex jA = concatenateBits(rank, iA, logNumAmpsPerNode);
-        qindex jB = concatenateBits(rank, iB, logNumAmpsPerNode);
+        qindex iA = setBits(i0, targsXY, numTargBits, m); // may be unrolled
+        qindex iB = flipBits(iA, maskXY);
 
         // determine whether to multiply amps by +-1 or +-i
-        cu_qcomp pmPowA = powI * (1. - 2. * cudaGetBitMaskParity(jA & allMaskYZ));
-        cu_qcomp pmPowB = powI * (1. - 2. * cudaGetBitMaskParity(jB & allMaskYZ));
+        int parA = cudaGetBitMaskParity(iA & maskYZ);
+        int parB = cudaGetBitMaskParity(iB & maskYZ);
+        cu_qcomp coeffA = powI * fast_getPlusOrMinusOne(parA);
+        cu_qcomp coeffB = powI * fast_getPlusOrMinusOne(parB);
 
         cu_qcomp ampA = amps[iA];
         cu_qcomp ampB = amps[iB];
 
         // mix or swap scaled amp pair
-        amps[iA] = (thisAmpFac * ampA) + (otherAmpFac * pmPowB * ampB);
-        amps[iB] = (thisAmpFac * ampB) + (otherAmpFac * pmPowA * ampA);
+        amps[iA] = (ampFac * ampA) + (pairAmpFac * coeffB * ampB);
+        amps[iB] = (ampFac * ampB) + (pairAmpFac * coeffA * ampA);
     }
 }
 
 
 template <int NumCtrls>
 __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
-    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, int rank, qindex logNumAmpsPerNode,
+    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads,
     int* ctrls, int numCtrls, qindex ctrlStateMask,
-    qindex suffixMaskXY, qindex bufferMaskXY, qindex allMaskYZ, 
+    qindex maskXY, qindex maskYZ, qindex bufferMaskXY,
     cu_qcomp powI, cu_qcomp thisAmpFac, cu_qcomp otherAmpFac
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -398,21 +571,21 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
     // j = buffer index of amp to be mixed with i
     qindex j = flipBits(n, bufferMaskXY);
 
-    // k = global index of amp at buffer index j
-    qindex k = concatenateBits(rank, flipBits(i, suffixMaskXY), logNumAmpsPerNode);
+    // k = local index of j-th buffer amplitude in its original node
+    qindex k = flipBits(i, maskXY);
 
     // determine whether to multiply buffer amp by +-1 or +-i
-    int negParity = cudaGetBitMaskParity(k & allMaskYZ);
-    cu_qcomp pmPowI = powI * (1. - 2. * negParity);
+    int par = cudaGetBitMaskParity(k & maskYZ);
+    cu_qcomp coeff = powI * fast_getPlusOrMinusOne(par);
 
     amps[i] *= thisAmpFac;
-    amps[i] += otherAmpFac * pmPowI * buffer[j];
+    amps[i] += otherAmpFac * coeff * buffer[j];
 }
 
 
 template <int NumCtrls>
 __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
-    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
+    cu_qcomp* amps, qindex numThreads,
     int* ctrls, int numCtrls, qindex ctrlStateMask, qindex targMask,
     cu_qcomp fac0, cu_qcomp fac1
 ) {
@@ -424,14 +597,59 @@ __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     // i = nth local index where ctrl bits are in specified states
     qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, ctrlStateMask);
 
-    // j = global index corresponding to i
-    qindex j = concatenateBits(rank, i, logNumAmpsPerNode);
-
     // apply phase to amp depending on parity of targets in global index 
-    int p = cudaGetBitMaskParity(j & targMask);
+    int p = cudaGetBitMaskParity(i & targMask);
 
     cu_qcomp facs[] = {fac0, fac1};
-    amps[j] *= facs[p];
+    amps[i] *= facs[p];
+}
+
+
+
+/*
+ * QUREG COMBINATION 
+ */
+
+
+// kernel_densmatr_mixQureg_subA() is avoided; we instead use
+// Thrust for this common circumstances (mixing density matrices),
+// which should be significantly more optimisex
+
+
+__global__ void kernel_densmatr_mixQureg_subB(
+    qreal outProb, cu_qcomp* outAmps, qreal inProb, cu_qcomp* inAmps,
+    qindex numThreads, qindex numInAmps
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // (i,j) = row & column of outAmps corresponding to n
+    qindex i = n % numInAmps;
+    qindex j = n / numInAmps;
+
+    cu_qcomp iAmp = inAmps[i];
+    cu_qcomp jAmp = inAmps[j]; jAmp.y *= -1; // conj
+    
+    outAmps[n] = (outProb * outAmps[n]) + (inProb * iAmp * jAmp);
+}
+
+
+__global__ void kernel_densmatr_mixQureg_subC(
+    qreal outProb, cu_qcomp* outAmps, qreal inProb, cu_qcomp* inAmps,
+    qindex numThreads, int rank, qindex numInAmps, qindex logNumOutAmpsPerNode
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // m = global index of local 'out' index n
+    qindex m = concatenateBits(rank, n, logNumOutAmpsPerNode);
+
+    // (i,j) = row & column of outAmps corresponding to n
+    qindex i = m % numInAmps;
+    qindex j = m / numInAmps;
+
+    cu_qcomp iAmp = inAmps[i];
+    cu_qcomp jAmp = inAmps[j]; jAmp.y *= -1; // conj
+    
+    outAmps[n] = (outProb * outAmps[n]) + (inProb * iAmp * jAmp);
 }
 
 
@@ -468,8 +686,9 @@ __global__ void kernel_densmatr_oneQubitDephasing_subB(
     GET_THREAD_IND(n, numThreads);
 
     // TODO:
-    // we're just modifying every 2*2^(ketQubit)-th element; turn
-    // this into a trivial thrust call (to reduce boilerplate)
+    // this extremely simple kernel can be definitely
+    // be replaced with a Thrust invocation, to reduce
+    // boilerplate
 
     // i = nth local index where bra-qubit differs from ket-qubit
     qindex i = insertBit(n, ketQubit, ! braBit);
@@ -841,7 +1060,7 @@ __global__ void kernel_densmatr_partialTrace_sub(
 
         // i = nth local index of inQureg where targs=j and pairTargs=j
         qindex i = k;
-        i = setBits(i, ketTargs, numTargPairs, j); // loops may be unrolled
+        i = setBits(i, ketTargs,  numTargPairs, j); // loops may be unrolled
         i = setBits(i, pairTargs, numTargPairs, j);
 
         outAmp += ampsIn[i];
@@ -850,6 +1069,65 @@ __global__ void kernel_densmatr_partialTrace_sub(
     ampsOut[n] = outAmp;
 }
 
+
+
+/*
+ * PROBABILITIES
+ */
+
+
+template <int NumQubits>
+__global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
+    qreal* outProbs, cu_qcomp* amps, qindex numThreads, 
+    int rank, qindex logNumAmpsPerNode,
+    int* qubits, int numQubits
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // TODO:
+    // it might be possible to replace this custom kernel 
+    // with an invocation of Thrust's reduce_by_key(),
+    // where the key is j as computed below. Look into
+    // whether this is worthwhile and faster!
+
+    // use template param to compile-time unroll below loops
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, numQubits);
+
+    qreal prob = getCompReal(amps[n]);
+
+    // i = global index corresponding to n
+    qindex i = concatenateBits(rank, n, logNumAmpsPerNode);
+
+    // j = outcome index corresponding to prob
+    qindex j = getValueOfBits(i, qubits, numBits); // loop therein may be unrolled
+
+    atomicAdd(&outProbs[j], prob);
+}
+
+
+template <int NumQubits>
+__global__ void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
+    qreal* outProbs, cu_qcomp* amps, qindex numThreads, 
+    qindex numColsPerNode, int rank, qindex logNumAmpsPerNode,
+    int* qubits, int numQubits
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, numQubits);
+
+    // i = index of nth local diagonal elem
+    qindex i = (rank * numColsPerNode) + n * (numColsPerNode + 1);
+    qreal prob = getCompReal(amps[i]);
+
+    // j = global index of i
+    qindex j = concatenateBits(rank, i, logNumAmpsPerNode);
+
+    // k = outcome index corresponding to 
+    qindex k = getValueOfBits(j, qubits, numBits); // loop therein may be unrolled
+
+    atomicAdd(&outProbs[k], prob);
+}
 
 
 #endif // GPU_KERNELS_HPP

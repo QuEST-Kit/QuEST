@@ -46,13 +46,13 @@ using std::vector;
 
 
 #define INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(returntype, funcname, args) \
-    private_INSTANTIATE(returntype, funcname, 0, args); \
-    private_INSTANTIATE(returntype, funcname, 1, args); \
-    private_INSTANTIATE(returntype, funcname, 2, args); \
-    private_INSTANTIATE(returntype, funcname, 3, args); \
-    private_INSTANTIATE(returntype, funcname, 4, args); \
-    private_INSTANTIATE(returntype, funcname, 5, args); \
-    private_INSTANTIATE(returntype, funcname,-1, args);
+    private_INSTANTIATE(returntype, funcname, 0, args) \
+    private_INSTANTIATE(returntype, funcname, 1, args) \
+    private_INSTANTIATE(returntype, funcname, 2, args) \
+    private_INSTANTIATE(returntype, funcname, 3, args) \
+    private_INSTANTIATE(returntype, funcname, 4, args) \
+    private_INSTANTIATE(returntype, funcname, 5, args) \
+    private_INSTANTIATE(returntype, funcname,-1, args)
 
 #define private_INSTANTIATE(returntype, funcname, numtargs, args) \
     template returntype funcname <0, numtargs> args; \
@@ -69,13 +69,13 @@ using std::vector;
     private_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, false, args)
 
 #define private_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, conj, args) \
-    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 0, conj, args); \
-    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 1, conj, args); \
-    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 2, conj, args); \
-    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 3, conj, args); \
-    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 4, conj, args); \
-    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 5, conj, args); \
-    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname,-1, conj, args);
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 0, conj, args) \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 1, conj, args) \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 2, conj, args) \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 3, conj, args) \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 4, conj, args) \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 5, conj, args) \
+    private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname,-1, conj, args)
 
 #define private_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, numtargs, conj, args) \
     template returntype funcname <0, numtargs, conj>  args; \
@@ -85,6 +85,31 @@ using std::vector;
     template returntype funcname <4, numtargs, conj>  args; \
     template returntype funcname <5, numtargs, conj>  args; \
     template returntype funcname <-1,numtargs, conj>  args;
+
+
+#define INSTANTIATE_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(returntype, funcname, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, true,  true,  args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, true,  false, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, false, true,  args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, false, false, args)
+
+#define private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, conj, haspower, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 0, conj, haspower, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 1, conj, haspower, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 2, conj, haspower, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 3, conj, haspower, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 4, conj, haspower, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 5, conj, haspower, args) \
+    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname,-1, conj, haspower, args)
+
+#define private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, numtargs, conj, haspower, args) \
+    template returntype funcname <0, numtargs, conj, haspower>  args; \
+    template returntype funcname <1, numtargs, conj, haspower>  args; \
+    template returntype funcname <2, numtargs, conj, haspower>  args; \
+    template returntype funcname <3, numtargs, conj, haspower>  args; \
+    template returntype funcname <4, numtargs, conj, haspower>  args; \
+    template returntype funcname <5, numtargs, conj, haspower>  args; \
+    template returntype funcname <-1,numtargs, conj, haspower>  args;
 
 
 
@@ -108,6 +133,21 @@ using std::vector;
         name = compileval;
 
 
+/*
+ * GETTERS 
+ */
+
+qcomp accel_statevec_getAmp_sub(Qureg qureg, qindex localInd);
+
+void accel_statevec_getAmps_sub(qcomp* outAmps, Qureg qureg, qindex localStartInd, qindex numLocalAmps);
+
+
+/*
+ * SETTERS 
+ */
+
+void accel_statevec_setAmps_sub(qcomp* inAmps, Qureg qureg, qindex localStartInd, qindex numLocalAmps);
+
 
 /*
  * COMMUNICATION BUFFER PACKING
@@ -128,33 +168,54 @@ void accel_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int>
 
 
 /*
- * MATRICES
+ * DENSE MATRICES
  */
 
 void accel_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);
 void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1);
 
+void accel_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, CompMatr2 matr);
+
 void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr, bool conj);
 
-void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, bool conj);
+
+/*
+ * DIAGONAL MATRICES
+ */
+
+void accel_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr);
+
+void accel_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, DiagMatr2 matr);
+
+void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, qcomp exponent, bool conj);
+
+void accel_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+
+void accel_densmatr_allTargDiagMatr_subA(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool multiplyOnly);
+void accel_densmatr_allTargDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool multiplyOnly);
+
 
 
 /*
  * PAULI TENSOR AND GADGET
  */
 
-void accel_statevector_anyCtrlPauliTensorOrGadget_subA(
-    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> suffixTargsXY, 
-    qindex suffixMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1
-);
-void accel_statevector_anyCtrlPauliTensorOrGadget_subB(
-    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates,
-    qindex suffixMaskXY, qindex bufferMaskXY, qindex allMaskYZ, qcomp powI, qcomp fac0, qcomp fac1
-);
+void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> z, qcomp ampFac, qcomp pairAmpFac);
 
-void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
-    Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs,
-    qcomp fac0, qcomp fac1);
+void accel_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> x, vector<int> y, vector<int> z, qcomp ampFac, qcomp pairAmpFac);
+void accel_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> x, vector<int> y, vector<int> z, qcomp ampFac, qcomp pairAmpFac, qindex bufferMaskXY);
+
+
+/*
+ * QUREG COMBINATION
+ */
+
+void accel_statevec_setQuregToSuperposition_sub(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2);
+
+void accel_densmatr_mixQureg_subA(qreal outProb, Qureg out, qreal inProb, Qureg in);
+void accel_densmatr_mixQureg_subB(qreal outProb, Qureg out, qreal inProb, Qureg in);
+void accel_densmatr_mixQureg_subC(qreal outProb, Qureg out, qreal inProb);
+void accel_densmatr_mixQureg_subD(qreal outProb, Qureg out, qreal inProb, Qureg in);
 
 
 /*
@@ -187,13 +248,67 @@ void accel_densmatr_oneQubitDamping_subC(Qureg qureg, int qubit, qreal prob);
 void accel_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob);
 
 
-
 /*
  * PARTIAL TRACE
  */
 
 void accel_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> targs, vector<int> pairTargs);
 
+
+/*
+ * PROBABILITIES
+ */
+
+qreal accel_statevec_calcTotalProb_sub(Qureg qureg);
+qreal accel_densmatr_calcTotalProb_sub(Qureg qureg);
+
+qreal accel_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes);
+qreal accel_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes);
+
+void accel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits);
+void accel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits);
+
+
+/*
+ * INNER PRODUCTS
+ */
+
+qcomp accel_statevec_calcInnerProduct_sub(Qureg quregA, Qureg quregB);
+
+qcomp accel_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi, bool conj);
+
+qreal accel_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB);
+
+
+/*
+ * EXPECTATION VALUES
+ */
+
+qreal accel_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> sufTargs);
+qcomp accel_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> allTargs);;
+
+qcomp accel_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
+qcomp accel_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
+qcomp accel_densmatr_calcExpecPauliStr_sub (Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
+
+
+/*
+ * PROJECTORS 
+ */
+
+void accel_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob);
+void accel_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob);
+
+
+/*
+ * STATE INITIALISATION
+ */
+
+void accel_statevec_initUniformState_sub(Qureg qureg, qcomp amp);
+
+void accel_statevec_initDebugState_sub(Qureg qureg);
+
+void accel_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg);
 
 
 #endif // ACCELERATOR_HPP

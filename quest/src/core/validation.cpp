@@ -24,6 +24,7 @@
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <cstdlib>
 #include <string>
@@ -100,8 +101,20 @@ namespace report {
     string INVALID_NEW_EPSILON =
         "Invalid new epsilon value (${NEW_EPS}). Must specifiy a positive number, or zero to disable numerical validation (as if the epsilon is infinity).";
 
-    string INVALID_NUM_REPORTED_ITEMS =
-        "Invalid parameter (${NUM_ITEMS}). Must specify a positive number of items to be reported, or 0 to indicate that all items should be reported.";
+    string INVALID_NUM_REPORTED_SCALARS =
+        "Invalid parameter (${NUM_ITEMS}). Must specify a positive number of scalars to be reported, or 0 to indicate that all scalars should be reported.";
+
+    string INVALID_NUM_REPORTED_SIG_FIGS =
+        "Invalid number of significant figures (${NUM_SIG_FIGS}). Cannot be less than one.";
+
+    string INVALID_NUM_RANDOM_SEEDS =
+        "Invalid number of random seeds (${NUM_SEEDS}). Must specify one or more.";
+
+    string INCONSISTENT_NUM_RANDOM_SEEDS_ACROSS_NODES =
+        "The specified number of random seeds was inconsistent between nodes. All nodes must receive the same number of identical seeds.";
+
+    string INCONSISTENT_RANDOM_SEEDS_ACROSS_NODES =
+        "The random seeds must be consistent between all nodes. Please call this function without rank-specific logic.";
 
 
     /*
@@ -125,10 +138,10 @@ namespace report {
         "Cannot create density Qureg of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the necessary local memory (in bytes) of each node would overflow size_t. In this deployment, the maximum number of qubits in a density-matrix Qureg is ${MAX_QUBITS}. See reportQuESTEnv().";
 
     string NEW_DISTRIB_STATEVEC_QUREG_HAS_TOO_FEW_AMPS = 
-        "Cannot create a distributed Qureg of only ${NUM_QUBITS} qubits between ${NUM_NODES} nodes, because each node would contain fewer than one amplitude of the statevector. The minimum size is ${MIN_QUBITS} qubits; see reportQuESTEnv(). Consider disabling distribution for this Qureg.";
+        "Cannot create a distributed Qureg of only ${NUM_QUBITS} qubits between ${NUM_NODES} nodes, because each node would contain fewer than one amplitude of the statevector. The minimum size in this deployment is ${MIN_QUBITS} qubits; see reportQuESTEnv(). Consider disabling distribution for this Qureg.";
 
     string NEW_DISTRIB_DENSMATR_QUREG_HAS_TOO_FEW_AMPS = 
-        "Cannot create a distributed density Qureg of only ${NUM_QUBITS} qubits between ${NUM_NODES} nodes, because each node would contain fewer than a column's worth of amplitudes of the density matrix. The minimum size is ${MIN_QUBITS} qubits; see reportQuESTEnv(). Consider disabling distribution for this Qureg.";
+        "Cannot create a distributed density Qureg of only ${NUM_QUBITS} qubits between ${NUM_NODES} nodes, because each node would contain fewer than a column's worth of amplitudes of the density matrix. The minimum size in this deployment is ${MIN_QUBITS} qubits; see reportQuESTEnv(). Consider disabling distribution for this Qureg.";
 
 
     string INVALID_OPTION_FOR_QUREG_IS_DENSMATR = 
@@ -185,19 +198,17 @@ namespace report {
 
 
     /*
-     * QUREG INITIALISATIONS
-     */
-
-    string INVALID_STATE_INDEX = 
-        "Classical state index ${STATE_IND} is invalid for the given ${NUM_QUBITS} qubit Qureg. Index must be greater than or equal to zero, and cannot equal nor exceed the number of unique classical states (2^${NUM_QUBITS} = ${NUM_STATES}).";
-
-
-    /*
      * EXISTING QUREG
      */
 
     string INVALID_QUREG_FIELDS = 
         "Invalid Qureg; invalid or incompatible fields isDensityMatrix=${DENS_MATR}, numQubits=${NUM_QUBITS}, numAmps=${NUM_AMPS}. It is likely this Qureg was not initialised with createQureg().";
+
+    string QUREG_NOT_DENSITY_MATRIX =
+        "Expected a density matrix Qureg but received a statevector.";
+
+    string QUREG_NOT_STATE_VECTOR =
+        "Expected a statevector Qureg but received a density matrix.";
 
 
     /*
@@ -240,7 +251,7 @@ namespace report {
 
 
     string NEW_DISTRIB_DIAG_MATR_HAS_TOO_FEW_AMPS =
-        "Cannot create a diagonal matrix of ${NUM_QUBITS} distributed between ${NUM_NODES} nodes because each node would contain fewer than one element. The minimum number of qubits in such a matrix is ${MIN_QUBITS}. Consider disabling distribution for this matrix.";
+        "Cannot create a diagonal matrix of ${NUM_QUBITS} qubits distributed between ${NUM_NODES} nodes because each node would contain fewer than one element. The minimum number of qubits in such a matrix is ${MIN_QUBITS}. Consider disabling distribution for this matrix.";
 
 
     string NEW_LOCAL_COMP_MATR_CANNOT_FIT_INTO_CPU_MEM =
@@ -312,6 +323,19 @@ namespace report {
         "The declared number of passed elements (${NUM_ELEMS}) differs from the length of the given list (${VEC_LENGTH}).";
 
 
+    string MULTI_VAR_FUNC_INVALID_NUM_VARS = 
+        "Invalid number of variables or dimensions (${NUM_VARS}). Must be a positive integer.";
+
+    string MULTI_VAR_FUNC_INVALID_NUM_QUBITS_PER_VAR =
+        "The variable/dimension at index ${VAR_IND} was constituted by an invalid number of qubits (${VAR_QUBITS}). Each must correspond to 1 or more qubits.";
+
+    string MULTI_VAR_FUNC_MISMATCHING_NUM_QUBITS =
+        "The total number of qubits constituting all variables/dimensions (${NUM_VAR_QUBITS}) does not match the number of qubits in the matrix (${NUM_MATR_QUBITS}).";
+
+    string MULTI_VAR_FUNC_INVALID_ARE_SIGNED_FLAG =
+        "Invalid value for the 'areSigned' flag (${ARE_SIGNED}), which must instead be 1 or 0 to indicate whether or not to interpret the variable sub-register basis states as signed integers (encoded with two's complement).";
+
+
     /*
      * EXISTING MATRIX
      */
@@ -339,6 +363,9 @@ namespace report {
     string INVALID_FULL_STATE_DIAG_MATR_FIELDS = 
         "Invalid FullStateDiagMatr. Targeted ${NUM_QUBITS} qubits and had a dimension of ${NUM_ROWS}x${NUM_ROWS}. It is likely this matrix was not created with createFullStateDiagMatr().";
 
+    string FULL_STATE_DIAG_MATR_GPU_ACCEL_IN_NON_GPU_ENV =
+        "Invalid FullStateDiagMatr. Was marked as GPU-accelerated in a non-GPU-accelerated environment, which is impossible. It is likely this matrix was manually modified and/or corrupted.";
+
 
     string COMP_MATR_NOT_SYNCED_TO_GPU = 
         "The CompMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncCompMatr() after manually modifying elements, or overwrite all elements with setCompMatr() which automatically synchronises.";
@@ -350,6 +377,9 @@ namespace report {
         "The FullStateDiagMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncFullStateDiagMatr() after manually modifying elements, or overwrite elements in batch with setFullStateDiagMatr() which automatically synchronises.";
 
 
+    string MATRIX_SIZE_MISMATCHES_NUM_TARGETS =
+        "The given matrix has an inconsistent size (${MATRIX_NUM_QUBITS}) with the specified number of target qubits (${NUM_TARGS}).";
+
     string MATRIX_NOT_UNITARY = 
         "The given matrix was not (approximately) unitary.";
 
@@ -358,10 +388,13 @@ namespace report {
 
 
     string INVALID_MATRIX_CPU_ELEMS_PTR =
-        "The given matrix's outer CPU heap-memory pointer was NULL. This implies the matrix was prior destroyed and its pointers were manually cleared.";
+        "The given matrix's outer CPU heap-memory pointer was NULL. This may imply the matrix was prior destroyed and its pointers were manually cleared.";
 
-    string INVALID_MATRIX_GPU_ELEMS_PTR =
-        "The given matrix's GPU memory pointer was NULL. This implies the matrix was prior destroyed and its pointer was manually cleared.";
+    string MATRIX_GPU_ELEMS_PTR_UNEXPECTEDLY_NULL =
+        "The given matrix's GPU memory pointer was unexpectedly NULL. This may imply the matrix was prior destroyed and its pointer was manually cleared.";
+
+    string MATRIX_GPU_ELEMS_PTR_UNEXPECTEDLY_NOT_NULL =
+        "The given matrix's GPU memory pointer was non-NULL, implying an allocation, despite the QuEST environment being non-GPU-accelerated. This implies the matrix fields were manually modified and corrupted.";
 
 
     string FULL_STATE_DIAG_MATR_MISMATCHES_QUREG_DIM =
@@ -436,6 +469,10 @@ namespace report {
 
     string SUPER_OP_NOT_SYNCED_TO_GPU =
         "The SuperOp has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncSuperOp() after manually modifying the superoperator elements, or overwrite all elements with setSuperOp() which will automatically syncrhonise.";
+
+
+    string SUPER_OP_SIZE_MISMATCHES_NUM_TARGETS =
+        "The SuperOp dimension (${OP_QUBITS} qubits) is inconsistent with the specified number of target qubits (${NUM_TARGS}).";
 
 
     /*
@@ -544,6 +581,9 @@ namespace report {
     string KRAUS_MAP_NOT_CPTP =
         "The KrausMap was not (approximately) completely positive and trace preserving (CPTP).";
     
+    string KRAUS_MAP_SIZE_MISMATCHES_TARGETS =
+        "The KrausMap has a size (${KRAUS_QUBITS} qubits) inconsistent with the specified number of target qubits (${TARG_QUBITS}).";
+    
 
     /*
      * PAULI STRING CREATION
@@ -571,8 +611,19 @@ namespace report {
     string NEW_PAULI_STR_DUPLICATED_INDEX =
         "The Pauli indices contained a duplicate. Indices must be unique.";
 
-    string NEW_PAULI_STR_DIFFERENT_NUM_CHARS_AND_INDS = 
+    string NEW_PAULI_STR_DIFFERENT_NUM_CHARS_AND_INDICES = 
         "Given a different number of Pauli operators (${NUM_PAULIS}) and their qubit indices (${NUM_INDS}).";
+
+
+    /*
+     * EXISTING PAULI STRING
+     */
+
+    string PAULI_STR_TARGETS_EXCEED_QUREG =
+        "The highest-index non-identity Pauli operator (index ${MAX_TARG}) in the given PauliStr exceeds the maximum target of the ${QUREG_QUBITS}-qubit Qureg.";
+
+    string PAULI_STR_OVERLAPS_CONTROLS =
+        "A control qubit overlaps a non-identity Pauli operator in the given PauliStr.";
 
 
     /*
@@ -625,18 +676,256 @@ namespace report {
 
 
     /*
-     * OPERATOR PARAMETERS
+     * BASIS STATE INDICES
      */
+
+    string INVALID_BASIS_STATE_INDEX = 
+        "Basis state index ${STATE_IND} is invalid for the given ${NUM_QB} qubit Qureg. Index must be greater than or equal to zero, and cannot equal nor exceed the number of unique classical states (2^${NUM_QB} = ${NUM_STATES}).";
+
+    string INVALID_BASIS_STATE_ROW_OR_COL =
+        "The row and column indices (${ROW_IND}, ${COL_IND}) are invalid for the given ${NUM_QB} qubit Qureg. Both indices must be greater than or equal to zero, and neither can equal nor exceed the number of unique classical states (2^${NUM_QB} = ${NUM_STATES}).";
+
+
+    string INVALID_STARTING_BASIS_STATE_INDEX =
+        "The starting basis state index ${START_IND} is invalid for the given ${NUM_QB} qubit Qureg. Index must be greater than or equal to zero, and cannot equal nor exceed the number of unique classical states (2^${NUM_QB} = ${MAX_IND_EXCL}).";
+
+    string INVALID_NUM_BASIS_STATE_INDICES =
+        "The specified number of amplitudes or basis states (${NUM_INDS}) is invalid for the given ${NUM_QB} qubit Qureg, which contains ${MAX_NUM_INDS_INCL} amplitudes.";
+
+    string INVALID_ENDING_BASIS_STATE_INDEX =
+        "The combination of the starting basis state index (${START_IND}) and the number of amplitudes (${NUM_INDS}) implies an end index of ${END_IND_EXCL} (exclusive) which is invalid for the ${NUM_QB}-qubit ${MAX_IND_EXCL}-amplitude Qureg.";
+
+
+    string INVALID_STARTING_BASIS_ROW_OR_COL =
+        "Either or both of the starting row and column (${START_ROW} and ${START_COL} respectively) are invalid for the given ${NUM_QB} qubit Qureg. Both indices must be greater than or equal to zero, and cannot exceed equal nor exceed the density matrix dimension of 2^${NUM_QB} = ${MAX_IND_EXCL}.";
+
+    string INVALID_NUM_BASIS_ROWS_OR_COLS =
+        "Either or both of the number of rows and columns (${NUM_ROWS} and ${NUM_COLS} respectively) are invalid for the given ${NUM_QB} qubit Qureg, which has a dimension of ${MAX_NUM_INCL}.";
+
+    string INVALID_ENDING_BASIS_ROW_OR_COL =
+        "The combination of starting (row, column) = (${START_ROW}, ${START_COL}) and number of rows and columns (${NUM_ROWS} and ${NUM_COLS} respectively) implies final (row, column) = (${END_ROW_EXCL}, ${END_COL_EXCL}), which is invalid for the given ${NUM_QB}-qubit ${MAX_END_INCL}-dimension density matrix.";
+
+
+    string INVALID_STARTING_LOCAL_AMP_INDEX =
+        "The starting local amplitude index ${START_IND} is invalid for the given ${NUM_QB}-qubit ${NUM_AMPS_TOTAL}-amplitude Qureg, distributed as ${MAX_IND_EXCL} amplitudes in each of ${NUM_NODES} nodes. Valid local indices are between 0 (inclusive) and ${MAX_IND_EXCL} (exclusive).";
+
+    string INVALID_NUM_LOCAL_AMP_INDICES =
+        "The specified number of local amplitudes (${NUM_INDS}) to synchronise is invalid for the given ${NUM_QB}-qubit ${NUM_AMPS_TOTAL}-amplitude Qureg, distributed as ${MAX_IND_EXCL} amplitudes in each of ${NUM_NODES} nodes. A valid number of amplitudes is between 0 (inclusive) and ${MAX_IND_EXCL} (inclusive).";
+
+    string INVALID_ENDING_LOCAL_AMP_INDEX =
+        "The combination of the starting local amplitude index (${START_IND}) and the number of amplitudes (${NUM_INDS}) implies an end local index of ${END_IND_EXCL} (exclusive) which is invalid for the ${NUM_QB}-qubit ${NUM_AMPS_TOTAL}-amplitude Qureg distributed over ${NUM_NODES} nodes. Valid end indices must be less than the nmber of local amplitudes, i.e. ${MAX_IND_EXCL}.";
+
+
+    /*
+     * QUBIT INDICES
+     */
+
+    string NEGATIVE_OR_ZERO_NUM_TARGETS =
+        "The specified number of target qubits (${NUM_QUBITS}) is invalid. Must specify one or more targets.";
     
+    string NUM_TARGETS_EXCEEDS_QUREG_SIZE =
+        "The specified number of target qubits (${NUM_QUBITS}) exceeds the number of qubits in the Qureg (${QUREG_QUBITS}).";
+
+    string TARGET_LIST_WAS_NULL_PTR =
+        "Received a NULL pointer where a list of target qubits was expected. It is only valid to pass NULL or nullptr for control qubit lists.";
+
     string INVALID_TARGET_QUBIT = 
-        "Invalid target qubit (${TARGET}). Must be greater than or equal to zero, and less than the number of qubits in the Qureg (${NUM_QUBITS}).";
+        "Invalid target qubit (${QUBIT_IND}). Must be greater than or equal to zero, and less than the number of qubits in the Qureg (${NUM_QUBITS}).";
+
+    string DUPLICATE_TARGET_QUBITS =
+        "The list of target qubits contained duplicates. All qubits must be unique.";
+
+
+    string NEGATIVE_NUM_CONTROLS =
+        "The specified number of control qubits (${NUM_QUBITS}) is invalid. Must specify zero or more controls.";
+
+    string NUM_CONTROLS_EXCEEDS_QUREG_SIZE =
+        "The specified number of control qubits (${NUM_QUBITS}) exceeds the number of qubits in the Qureg (${QUREG_QUBITS}).";
+
+    string NON_EMPTY_CONTROL_LIST_WAS_NULL_PTR =
+        "Received a NULL pointer for a list of control qubits which was declared to have a non-zero length.";
+
+    string INVALID_CONTROL_QUBIT = 
+        "Invalid control qubit (${QUBIT_IND}). Must be greater than or equal to zero, and less than the number of qubits in the Qureg (${NUM_QUBITS}).";
+
+    string DUPLICATE_CONTROL_QUBITS =
+        "The list of control qubits contained duplicates. All qubits must be unique.";
+
+    
+    string CONTROLS_OVERLAP_TARGETS =
+        "A qubit appeared in both the control and target qubit lists.";
+
+    string INVALID_CONTROL_STATE =
+        "The control qubit at index ${INDEX} has an invalidly specified control-state of ${STATE}. Valid states are 0 and 1.";
+
+
+    /*
+    * ROTATION PARAMETERS
+    */
+
+    string ROTATION_AXIS_VECTOR_IS_ZERO =
+        "The rotation axis vector was all zero, or within epsilion magnitude to the zero vector.";
+
+
+    /*
+    * MEASUREMENT PARAMETERS
+    */
+
+    string ONE_QUBIT_MEASUREMENT_OUTCOME_INVALID =
+        "The given qubit measurement outcome (${OUTCOME}) is invalid. Valid outcomes are 0 and 1.";
+
+    string ONE_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY =
+        "The specified measurement outcome (${OUTCOME}) is impossibly unlikely (i.e. has probability less than epsilon), so the post-measurement state cannot be reliably renormalised.";
+
+    string MANY_QUBIT_MEASUREMENTS_OUTCOME_INVALID =
+        "The given qubit measurement outcome (${OUTCOME}) at index ${INDEX} is invalid. Valid outcomes are 0 and 1.";
+
+    string MANY_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY =
+        "The specified multi-qubit measurement outcome (with binary value ${OUTCOME_VALUE}) is impossibly unlikely (i.e. has probability less than epsilon), so the post-measurement state cannot be reliably renormalised.";
+
+    string GPU_CANNOT_FIT_TEMP_MEASUREMENT_OUTCOME_PROBS =
+        "The GPU has less available memory (${MEM_AVAIL} bytes) than that needed (${MEM_NEEDED} bytes) to temporarily store the ${NUM_OUTCOMES} outcome probabilities of the specified ${NUM_QUBITS} qubits.";
+
+
+
+    /*
+     * CHANNEL PARAMETERS 
+     */
+
+    string INVALID_PROBABILITY =
+        "The given probability is invalid, and must instead be between 0 and 1 (both inclusive).";
+
+
+    string ONE_QUBIT_DEPHASING_PROB_EXCEEDS_MAXIMAL_MIXING =
+        "The given one-qubit dephasing probability exceeds that which induces maximal mixing, i.e. 1/2.";
+
+    string TWO_QUBIT_DEPHASING_PROB_EXCEEDS_MAXIMAL_MIXING =
+        "The given two-qubit dephasing probability exceeds that which induces maximal mixing, i.e. 3/4.";
+
+    string ONE_QUBIT_DEPOLARISING_PROB_EXCEEDS_MAXIMAL_MIXING =
+        "The given one-qubit depolarising probability exceeds that which induces maximal mixing, i.e. 3/4.";
+
+    string TWO_QUBIT_DEPOLARISING_PROB_EXCEEDS_MAXIMAL_MIXING =
+        "The given two-qubit depolarising probability exceeds that which induces maximal mixing, i.e. 15/16.";
+
+    string ONE_QUBIT_PAULI_CHANNEL_TOTAL_PROBS_EXCEED_ONE =
+        "The given Pauli error probabilities combine to exceed one.";
+
+    string ONE_QUBIT_PAULI_CHANNEL_PROBS_EXCEED_MAXIMAL_MIXING =
+        "The given Pauli error probabilities exceed that which induce maximal mixing. That is, the probability of any particular X, Y or Z error exceeds that of I (no error).";
+
+
+    /*
+     * QUREG COMBINATION
+     */
+
+    string MIXED_QUREG_NOT_DENSITY_MATRIX =
+        "The first Qureg, which will undergo mixing, must be a density matrx.";
+
+    string MIXED_QUREGS_HAVE_DIFFERENT_NUM_QUBITS =
+        "The given Quregs contain an inconsistent number of qubits (${NUM_A} and ${NUM_B}) and cannot be mixed.";
+
+    string MIXED_DENSITY_MATRICES_ARE_DIFFERENTLY_DISTRIBUED =
+        "The given density matrix Quregs are differently distributed and cannot be mixed.";
+
+    string MIXED_DENSITY_MATRIX_LOCAL_BUT_STATEVEC_DISTRIBUTED =
+        "THe given density matrix was local, but the statevector was distributed; this configuration is unsupported (and is ridiculous!).";
+
+
+    string SUPERPOSED_QUREGS_ARE_NOT_ALL_STATEVECTORS =
+        "Cannot superpose a density matrix. All quregs must be statevectors.";
+
+    string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_NUM_QUBITS =
+        "Cannot superpose Quregs with differing numbers of qubits.";
+
+    string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_GPU_DEPLOYMENT =
+        "Cannot superpose Quregs with inconsistent GPU deployments. All or no Quregs must be GPU-accelerated.";
+
+    string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_DISTRIBUTION =
+        "Cannot superpose Quregs which are inconsistently distributed. All or no Quregs must be distributed.";
+
+
+    string INIT_PURE_STATE_IS_DENSMATR =
+        "The pure-state Qureg (the second argument) must be a statevector, not a density matrix.";
+
+    string INIT_QUREG_HAS_DIFFERENT_NUM_QUBITS_TO_PURE_STATE =
+        "The pure-state Qureg (the second argument) contained a differing number of qubits (${NUM_PURE_QUBITS}) as the modified Qureg (the first argument) which contained ${NUM_QUREG_QUBITS} qubits.";
+
+    string INIT_DENSMATR_LOCAL_BUT_PURE_STATE_DISTRIBUTED = 
+        "The pure-state Qureg cannot be distributed if the larger density-matrix Qureg is not.";
+
+    string INIT_STATEVEC_DIFFERING_GPU_DEPLOYMENT_TO_PURE_STATE =
+        "When the modified Qureg (the first argument) is a statevector, it must have the same GPU deployment as the pure-state Qureg (the second argument).";
+
+    string INIT_STATEVEC_DIFFERING_DISTRIBUTION_TO_PURE_STATE =
+        "When the modified Qureg (the first argument) is a statevector, it must be identically distributed to the pure-state Qureg (the second argument).";
+
+
+    string CLONED_QUREGS_DIFFER_IN_NUM_QUBITS =
+        "The cloned Qureg has a different number of qubits (${NUM_COPY_QUBITS}) than the target Qureg (${NUM_TARGET_QUBITS}).";
+
+    string CLONED_QUREGS_INCONSISTENT_TYPES = 
+        "The cloned and target Quregs must both be statevectors, or both be density matrices.";
+
+    string CLONED_QUREGS_HAVE_DIFFERENT_DISTRIBUTIONS =
+        "The cloned and target Quregs cannot be differently distributed.";
+
+    string CLONED_STATEVECS_HAVE_DIFFERENT_GPU_DEPLOYMENTS =
+        "The cloned and target Quregs (when both are statevectors) must have the same GPU deployment.";
+
+
+    string PRODUCTED_QUREGS_HAVE_DIFFERENT_NUM_QUBITS =
+        "The given Quregs contained differing numbers of qubits (${NUM_A} and ${NUM_B} qubits respectively) and are incompatible.";
+
+    string PRODUCTED_SAME_TYPE_QUREGS_HAVE_DIFFERING_GPU_ACCELS =
+        "The given Quregs were both statevectors or both density matrices but had differing GPU-accelerations. This is an illegal (and nonsensical) configuration which would invoke unexpectedly poor performance. Consider enabling GPU-aceleration for both registers.";
+
+    string PRODUCTED_STATEVEC_DISTRIB_BUT_DENSMATR_LOCAL =
+        "The given statevector Qureg was distributed while the larger density matrix Qureg was not. This is an illegal (and nonsensical) configuration. Consider distributing the density matrix.";
+
+
+    string CALC_FIDELITY_OF_DENSITY_MATRICES_NOT_YET_SUPPORTED =
+        "Quregs cannot both be density matrices. Calculation of the fidelity between two mixed states is not currently supported.";
+
+    string CALC_FIDELITY_NOT_APPROX_REAL =
+        "The calculated fidelity between the given statevector and density matrix was not approximately real (the imaginary component was beyond epsilon), suggesting the density matrix was unnormalised and/or not Hermitian. Use calcInnerProduct() to find the unnormalised fidelity.";
+
+    string CALC_BURES_DISTANCE_MAG_EXCEEDED_ONE =
+        "The calculation of the Bures distance between statevectors failed, because the magnitude of their inner-product exceeded one (suggesting a complex distance), indicating one or both Quregs were unnormalised.";
+
+    string CALC_PURIFIED_DISTANCE_NOT_APPROX_REAL =
+        "The fidelity between the given statevector and density matrix was not approximately real (suggesting a complex purified distance), indicating the density matrix was unnormalised and/or not Hermitian.";
+
+    string CALC_PURIFIED_DISTANCE_REAL_EXCEEDED_ONE =
+        "The fidelity between the given statevector and density matrix exceed one (suggesting a complex purified distance), indicating either or both Quregs were unnormalised.";
+
+
+    /*
+     * QUREG MODIFICATION
+     */
+
+    string QUREG_RENORM_PROB_IS_ZERO =
+        "Could not renormalise the Qureg because the current total probability is zero, or within epsilon to zero.";
+
+    string INVALID_NUM_INIT_PURE_STATES =
+        "The specified number of random pure states to mix (${NUM_STATES}) is invalid. Must specify 1 or more states.";
+
+
+    /*
+     * EXPECTATION VALUES
+     */
+
+    string CALC_STATEVEC_EXPECTED_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated expectation value was not approximately real (i.e. was not within epsilon). This cannot be caused by state normalisation, and instead results from numerical errors during calculation. Please notify the QuEST developers!";
+
+    string CALC_DENSMATR_EXPECTED_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated expectation value was not approximately real (i.e. was not within epsilon). This suggests the density matrix was unnormalised and/or not Hermitian.";
 
 
     /*
      * FILE IO
      */
 
-    // TODO: embed filename into error message when tokenSubs supports strings
     string CANNOT_READ_FILE = 
         "Could not load and read the given file. Make sure the file exists and is readable as plaintext.";
 }
@@ -692,16 +981,16 @@ extern "C" {
  * validation functions to avoid superfluous compute
  */
 
-static bool isValidationEnabled = true;
+static bool global_isValidationEnabled = true;
 
 void validateconfig_enable() {
-    isValidationEnabled = true;
+    global_isValidationEnabled = true;
 }
 void validateconfig_disable() {
-    isValidationEnabled = false;
+    global_isValidationEnabled = false;
 }
 bool validateconfig_isEnabled() {
-    return isValidationEnabled;
+    return global_isValidationEnabled;
 }
 
 
@@ -713,16 +1002,16 @@ bool validateconfig_isEnabled() {
  * Hermiticity and CPTP checks are performed
  */
 
-static qreal validationEpsilon = DEAULT_VALIDATION_EPSILON;
+static qreal global_validationEpsilon = DEAULT_VALIDATION_EPSILON;
 
 void validateconfig_setEpsilon(qreal eps) {
-    validationEpsilon = eps;
+    global_validationEpsilon = eps;
 }
 void validateconfig_setEpsilonToDefault() {
-    validationEpsilon = DEAULT_VALIDATION_EPSILON;
+    global_validationEpsilon = DEAULT_VALIDATION_EPSILON;
 }
 qreal validateconfig_getEpsilon() {
-    return validationEpsilon;
+    return global_validationEpsilon;
 }
 
 
@@ -772,7 +1061,7 @@ string getStringWithSubstitutedVars(string oldStr, tokenSubs varsAndVals) {
 void assertThat(bool valid, string msg, const char* func) {
 
     // skip validation if user has disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     // this function does not seek consensus among nodes in distributed 
@@ -784,7 +1073,6 @@ void assertThat(bool valid, string msg, const char* func) {
     if (!valid)
         invalidQuESTInputError(msg.c_str(), func);
 }
-
 void assertThat(bool valid, string msg, tokenSubs vars, const char* func) {
 
     // substitute the vars into the error message ONLY if the error message
@@ -800,10 +1088,10 @@ void assertThat(bool valid, string msg, tokenSubs vars, const char* func) {
     assertThat(valid, msg, func);
 }
 
-void assertAllNodesAgreeThat(bool valid, string msg, const char* func) {
+void assertAllNodesAgreeThat(bool valid, string msg, tokenSubs vars, const char* func) {
 
-    // skip below consensus broadcast if user has disabled validation
-    if (!isValidationEnabled)
+    // avoid communication if validation not enabled anyway
+    if (!global_isValidationEnabled)
         return;
 
     // this function seeks consensus among distributed nodes before validation,
@@ -811,17 +1099,23 @@ void assertAllNodesAgreeThat(bool valid, string msg, const char* func) {
     // when performing validation that may be non-uniform between nodes. For
     // example, mallocs may succeed on one node but fail on another due to
     // inhomogeneous loads.
-
     if (comm_isInit())
         valid = comm_isTrueOnAllNodes(valid);
 
+    // prepare error message only if validation will fail
+    if (!valid)
+        if (!vars.empty())
+            msg = getStringWithSubstitutedVars(msg, vars);
+
+    // commenting out the top if-statement above (preserving the bottom one)
+    // is convenient during development, since it ensures that even validation
+    // which passed has a correctly formatted error message, else errors.
+
     assertThat(valid, msg, func);
 }
+void assertAllNodesAgreeThat(bool valid, string msg, const char* func) {
 
-void assertAllNodesAgreeThat(bool valid, string msg, tokenSubs vars, const char* func) {
-
-    string newMsg = getStringWithSubstitutedVars(msg, vars);
-    assertAllNodesAgreeThat(valid, newMsg, func);
+    assertAllNodesAgreeThat(valid, msg, {}, func);
 }
 
 bool isIndexListUnique(int* list, int len) {
@@ -927,14 +1221,45 @@ void validate_envIsInit(const char* caller) {
  * DEBUG UTILITIES
  */
 
+void validate_randomSeeds(unsigned* seeds, int numSeeds, const char* caller) {
+
+    // we rigorously check that all seeds globally agree, since it is
+    // conceivable users could erroneously attempt to seed unique per-node
+    assertThat(numSeeds > 0, report::INVALID_NUM_RANDOM_SEEDS, {{"${NUM_SEEDS}", numSeeds}}, caller);
+
+    if (!getQuESTEnv().isDistributed)
+        return;
+
+    // assert every node received the same number of seeds
+    unsigned numRootSeeds = (unsigned) numSeeds;
+    comm_broadcastUnsignedsFromRoot(&numRootSeeds, 1);
+    assertThat(numRootSeeds == (unsigned) numSeeds, report::INCONSISTENT_NUM_RANDOM_SEEDS_ACROSS_NODES, caller);
+
+    // assert every node has the same seeds as root (ergo as one another)
+    vector<unsigned> rootSeeds(seeds, seeds + numSeeds);
+    comm_broadcastUnsignedsFromRoot(rootSeeds.data(), numSeeds);
+
+    bool agrees = true;
+    for (int i=0; i<numSeeds && agrees; i++)
+        agrees &= seeds[i] == rootSeeds[i];
+    
+    assertThat(agrees, report::INCONSISTENT_RANDOM_SEEDS_ACROSS_NODES, caller);
+}
+
 void validate_newEpsilonValue(qreal eps, const char* caller) {
 
     assertThat(eps >= 0, report::INVALID_NEW_EPSILON, {{"${NEW_EPS}", eps}}, caller);
 }
 
-void validate_newNumReportedItems(qindex num, const char* caller) {
+void validate_newMaxNumReportedScalars(qindex numRows, qindex numCols, const char* caller) {
 
-    assertThat(num >= 0, report::INVALID_NUM_REPORTED_ITEMS, {{"${NUM_ITEMS}", num}}, caller);
+    assertThat(numRows >= 0, report::INVALID_NUM_REPORTED_SCALARS, {{"${NUM_ITEMS}", numRows}}, caller);
+    assertThat(numCols >= 0, report::INVALID_NUM_REPORTED_SCALARS, {{"${NUM_ITEMS}", numCols}}, caller);
+}
+
+void validate_newMaxNumReportedSigFigs(int numSigFigs, const char* caller) {
+
+    assertThat(numSigFigs >= 1, report::INVALID_NUM_REPORTED_SIG_FIGS, {{"${NUM_SIG_FIGS}", numSigFigs}}, caller);
 }
 
 
@@ -1116,7 +1441,7 @@ void validate_newQuregParams(int numQubits, int isDensMatr, int isDistrib, int i
 
     // some of the below validation involves getting distributed node consensus, which
     // can be an expensive synchronisation, which we avoid if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     assertQuregNonEmpty(numQubits, caller);
@@ -1180,6 +1505,16 @@ void validate_quregFields(Qureg qureg, const char* caller) {
     // C passes a struct copy). So NULL checks could only check for the specific
     // scenario of the user explicitly overwriting valid pointers with NULL - 
     // this is not worth catching (the eventual NULL segfault might be better)
+}
+
+void validate_quregIsStateVector(Qureg qureg, const char* caller) {
+
+    assertThat(!qureg.isDensityMatrix, report::QUREG_NOT_STATE_VECTOR, caller);
+}
+
+void validate_quregIsDensityMatrix(Qureg qureg, const char* caller) {
+
+    assertThat(qureg.isDensityMatrix, report::QUREG_NOT_DENSITY_MATRIX, caller);
 }
 
 
@@ -1339,7 +1674,7 @@ void assertMatrixFitsInCpuMem(int numQubits, bool isDense, int isDistrib, int nu
     assertAllNodesAgreeThat(matrFitsInMem, msg, vars, caller);
 }
 
-void assertMatrixFitsInGpuMem(int numQubits, bool isDense, int isDistrib, int isEnvGpuAccel, int numEnvNodes, const char* caller) {
+void assertMatrixFitsInGpuMem(int numQubits, bool isDense, int isDistrib, int isGpu, int numEnvNodes, const char* caller) {
 
     // 'isDistrib' can be 0 (user-disabled, or matrix is a local type), 1 (user-forced)
     // or modeflag::USE_AUTO=-1 (automatic; the type can be distributed but the user has 
@@ -1348,8 +1683,11 @@ void assertMatrixFitsInGpuMem(int numQubits, bool isDense, int isDistrib, int is
     if (isDense && isDistrib != 0)
         error_validationEncounteredUnsupportedDistributedDenseMatrix();
 
-    // matrix GPU memory will always be allocated when env is GPU-accelerated
-    if (!isEnvGpuAccel)
+    // 'isGpu' can be 0 (user-disabled, or matrix is a local type), 1 (user-forced), or
+    // modeflag::USE_AUTO=-1 (automatic; the type can be GPU-accel but the user has not forced it).
+    // Whenever GPU isn't forced, we do not need to check there's sufficient GPU memory, because
+    // if there's insufficient, the auto-deployer will never choose it. So proceed only if GPU is forced.
+    if (isGpu != 1)
         return;
 
     // we consult the current available local GPU memory (being more strict than is possible for RAM)
@@ -1392,40 +1730,57 @@ void assertMatrixFitsInGpuMem(int numQubits, bool isDense, int isDistrib, int is
     assertAllNodesAgreeThat(matrFitsInMem, msg, vars, caller);
 }
 
-void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, bool isDenseType, const char* caller) {
+void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, int useGpu, bool isDenseType, const char* caller) {
 
     // some of the below validation involves getting distributed node consensus, which
     // can be an expensive synchronisation, which we avoid if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
-    validate_envIsInit(caller);
     QuESTEnv env = getQuESTEnv();
-
     assertMatrixNonEmpty(numQubits, caller);
     assertMatrixTotalNumElemsDontExceedMaxIndex(numQubits, isDenseType, caller);
     assertMatrixLocalMemDoesntExceedMaxSizeof(numQubits,  isDenseType, useDistrib, env.numNodes, caller);
     assertMatrixNotDistributedOverTooManyNodes(numQubits, isDenseType, useDistrib, env.numNodes, caller);
     assertMatrixFitsInCpuMem(numQubits, isDenseType, useDistrib, env.numNodes, caller);
-    assertMatrixFitsInGpuMem(numQubits, isDenseType, useDistrib, env.isGpuAccelerated, env.numNodes, caller);
+    assertMatrixFitsInGpuMem(numQubits, isDenseType, useDistrib, useGpu, env.numNodes, caller);
 }
 
 void validate_newCompMatrParams(int numQubits, const char* caller) {
+    validate_envIsInit(caller);
 
+    // CompMatr can never be distributed
     int useDistrib = 0;
+
+    // CompMatr is always GPU accelerated whenever enabled by the environment
+    bool useGpu = getQuESTEnv().isGpuAccelerated;
+
+    // CompMatr stores 2^(2*numQubits) elems
     bool isDenseType = true;
-    assertNewMatrixParamsAreValid(numQubits, useDistrib, isDenseType, caller);
+
+    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, isDenseType, caller);
 }
 void validate_newDiagMatrParams(int numQubits, const char* caller) {
+    validate_envIsInit(caller);
 
+    // DiagMatr can never be distributed
     int useDistrib = 0;
-    bool isDenseType = false;
-    assertNewMatrixParamsAreValid(numQubits, useDistrib, isDenseType, caller);
-}
-void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, const char* caller) {
 
+    // DiagMatr is always GPU accelerated whenever enabled by the environment
+    bool useGpu = getQuESTEnv().isGpuAccelerated;
+
+    // DiagMatr stores only the diagonals; 2^numQubits elems
     bool isDenseType = false;
-    assertNewMatrixParamsAreValid(numQubits, useDistrib, isDenseType, caller);
+
+    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, isDenseType, caller);
+}
+void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, int useGpu, const char* caller) {
+    validate_envIsInit(caller);
+
+    // FullStateDiagMatr stores only the diagonals
+    bool isDenseType = false;
+
+    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, isDenseType, caller);
 }
 
 // T can be CompMatr, DiagMatr, FullStateDiagMatr (i.e. heap-based matrices)
@@ -1435,7 +1790,7 @@ void assertNewMatrixAllocsSucceeded(T matr, qindex numBytes, const char* caller)
     // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads,
     // but we avoid this potetially expensive synchronisation if validation is anyway disabled
     // (which also avoids us enumerating the matrix rows)
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     tokenSubs vars = {{"${NUM_BYTES}", numBytes}};
@@ -1449,7 +1804,11 @@ void assertNewMatrixAllocsSucceeded(T matr, qindex numBytes, const char* caller)
     assertAllNodesAgreeThat(isAlloc, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
 
     // optionally assert GPU memory was malloc'd successfully
-    if (getQuESTEnv().isGpuAccelerated)
+    bool gpuShouldBeAlloc = getQuESTEnv().isGpuAccelerated;
+    if constexpr (util_isFullStateDiagMatr<T>())
+        gpuShouldBeAlloc &= matr.isGpuAccelerated;
+        
+    if (gpuShouldBeAlloc)
         assertAllNodesAgreeThat(mem_isAllocated(util_getGpuMemPtr(matr)), report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
 
     // assert the teeny-tiny heap flags are alloc'd
@@ -1476,7 +1835,7 @@ void validate_newMatrixAllocs(DiagMatr matr, const char* caller) {
 void validate_newMatrixAllocs(FullStateDiagMatr matr, const char* caller) {
 
     bool isDenseMatrix = false;
-    int numNodes = (matr.isDistributed)? getQuESTEnv().numNodes : 1;
+    int numNodes = (matr.isDistributed)? comm_getNumNodes() : 1;
     qindex numBytes = mem_getLocalMatrixMemoryRequired(matr.numQubits, isDenseMatrix, numNodes);
     assertNewMatrixAllocsSucceeded(matr, numBytes, caller);
 }
@@ -1569,6 +1928,26 @@ void validate_declaredNumElemsMatchesVectorLength(qindex numElems, qindex vecLen
     assertThat(numElems == vecLength, report::MATR_NUM_ELEMS_MISMATCHES_VEC_LENGTH_IN_INLINE_SETTER, vars, caller);
 }
 
+void validate_multiVarFuncQubits(int numMatrQubits, int* numQubitsPerVar, int numVars, const char* caller) {
+
+    assertThat(numVars > 0, report::MULTI_VAR_FUNC_INVALID_NUM_VARS, {{"${NUM_VARS}", numVars}}, caller);
+
+    for (int v=0; v<numVars; v++)
+        assertThat(numQubitsPerVar[v] > 0, report::MULTI_VAR_FUNC_INVALID_NUM_QUBITS_PER_VAR, {{"${VAR_IND}",v},{"${VAR_QUBITS}",numQubitsPerVar[v]}}, caller);
+
+    int numVarQubits = 0;
+    for (int v=0; v<numVars; v++)
+        numVarQubits += numQubitsPerVar[v];
+
+    assertThat(numMatrQubits == numVarQubits, report::MULTI_VAR_FUNC_MISMATCHING_NUM_QUBITS, 
+        {{"${NUM_MATR_QUBITS}", numMatrQubits}, {"${NUM_VAR_QUBITS}", numVarQubits}}, caller);
+}
+
+void validate_funcVarSignedFlag(int areSigned, const char* caller) {
+
+    assertThat(areSigned == 0 || areSigned == 1, report::MULTI_VAR_FUNC_INVALID_ARE_SIGNED_FLAG, {{"${ARE_SIGNED}", areSigned}}, caller);
+}
+
 
 
 /*
@@ -1607,9 +1986,26 @@ void assertAdditionalHeapMatrixFieldsAreValid(T matr, const char* caller) {
     // created because un-initialised structs will have random non-NULL pointers.
     assertThat(mem_isOuterAllocated(matr.cpuElems), report::INVALID_MATRIX_CPU_ELEMS_PTR, caller);
 
+    // check whether GPU status/memory pointers are consistent with env
     validate_envIsInit(caller);
-    if (getQuESTEnv().isGpuAccelerated)
-        assertThat(mem_isOuterAllocated(util_getGpuMemPtr(matr)), report::INVALID_MATRIX_GPU_ELEMS_PTR, caller);
+    bool envIsGpuAccel = getQuESTEnv().isGpuAccelerated;
+    bool matrHasGpuAlloc = mem_isOuterAllocated(util_getGpuMemPtr(matr));
+
+    // FullStateDiagMatr can disable GPU-accel even in GPU-accelerated environments
+    if constexpr (util_isFullStateDiagMatr<T>()) {
+        if (matr.isGpuAccelerated) {
+            assertThat(envIsGpuAccel, report::FULL_STATE_DIAG_MATR_GPU_ACCEL_IN_NON_GPU_ENV, caller);
+            assertThat(matrHasGpuAlloc, report::MATRIX_GPU_ELEMS_PTR_UNEXPECTEDLY_NULL, caller);
+        } else
+            assertThat( ! matrHasGpuAlloc, report::MATRIX_GPU_ELEMS_PTR_UNEXPECTEDLY_NOT_NULL, caller);
+
+    // all other heap-matrices always GPU-accel in GPU-accelerated envs
+    } else {
+        if (envIsGpuAccel)
+            assertThat(matrHasGpuAlloc, report::MATRIX_GPU_ELEMS_PTR_UNEXPECTEDLY_NULL, caller);
+        else
+            assertThat( ! matrHasGpuAlloc, report::MATRIX_GPU_ELEMS_PTR_UNEXPECTEDLY_NOT_NULL, caller);
+    }
 }
 
 // T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
@@ -1678,7 +2074,7 @@ void ensureMatrixUnitarityIsKnown(T matr) {
 
     // determine local unitarity, modifying matr.isUnitary. This will
     // involve MPI communication if matr is a distributed type
-    *(matr.isUnitary) = util_isUnitary(matr, validationEpsilon);
+    *(matr.isUnitary) = util_isUnitary(matr, global_validationEpsilon);
 }
 
 // type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
@@ -1686,7 +2082,7 @@ template <class T>
 void assertMatrixIsUnitary(T matr, const char* caller) {
 
     // avoid expensive unitarity check if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     // unitarity is determined differently depending on matrix type
@@ -1694,7 +2090,7 @@ void assertMatrixIsUnitary(T matr, const char* caller) {
 
     // fixed-size matrices have their unitarity calculated afresh (since cheap)
     if constexpr (util_isFixedSizeMatrixType<T>())
-        isUnitary = util_isUnitary(matr, validationEpsilon);
+        isUnitary = util_isUnitary(matr, global_validationEpsilon);
 
     // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
     else {
@@ -1746,7 +2142,7 @@ void ensureMatrHermiticityIsKnown(T matr) {
         return;
 
     // determine local unitarity, modifying matr.isHermitian
-    *(matr.isHermitian) = util_isHermitian(matr, validationEpsilon);
+    *(matr.isHermitian) = util_isHermitian(matr, global_validationEpsilon);
 }
 
 // type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
@@ -1754,7 +2150,7 @@ template <class T>
 void assertMatrixIsHermitian(T matr, const char* caller) {
 
     // avoid expensive unitarity check if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     // unitarity is determined differently depending on matrix type
@@ -1762,7 +2158,7 @@ void assertMatrixIsHermitian(T matr, const char* caller) {
 
     // fixed-size matrices have their hermiticity calculated afresh (since cheap)
     if constexpr (util_isFixedSizeMatrixType<T>())
-        isHermitian = util_isHermitian(matr, validationEpsilon);
+        isHermitian = util_isHermitian(matr, global_validationEpsilon);
 
     // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
     else {
@@ -1805,17 +2201,43 @@ void validate_matrixIsHermitian(FullStateDiagMatr matr, const char* caller) {
     assertMatrixIsHermitian(matr, caller);
 }
 
-void validate_matrixIsCompatibleWithQureg(FullStateDiagMatr matr, Qureg qureg, const char* caller) {
+template <class T>
+void assertMatrixDimMatchesTargs(T matr, int numTargs, const char* caller) {
+
+    validate_matrixFields(matr, caller);
+
+    if constexpr (util_isHeapMatrixType<T>())
+        validate_matrixIsSynced(matr, caller);
+
+    int numMatrQubits = 1; // CompMatr1 or DiagMatr1
+    if constexpr (util_isCompMatr2<T>() || util_isDiagMatr2<T>())
+        numMatrQubits = 2;
+    if constexpr (util_isHeapMatrixType<T>())
+        numMatrQubits = matr.numQubits;
+
+    // note (numMatrQubits <= qureg.numQubits) was prior validated by numTargs <= qureg.numQubits
+    tokenSubs vars = {{"${MATRIX_NUM_QUBITS}", numMatrQubits}, {"${NUM_TARGS}", numTargs}};
+    assertThat(numMatrQubits == numTargs, report::MATRIX_SIZE_MISMATCHES_NUM_TARGETS, vars, caller);
+}
+
+void validate_matrixDimMatchesTargets(CompMatr1 matr, int numTargs, const char* caller) { assertMatrixDimMatchesTargs(matr, numTargs, caller); }
+void validate_matrixDimMatchesTargets(CompMatr2 matr, int numTargs, const char* caller) { assertMatrixDimMatchesTargs(matr, numTargs, caller); }
+void validate_matrixDimMatchesTargets(CompMatr  matr, int numTargs, const char* caller) { assertMatrixDimMatchesTargs(matr, numTargs, caller); }
+void validate_matrixDimMatchesTargets(DiagMatr1 matr, int numTargs, const char* caller) { assertMatrixDimMatchesTargs(matr, numTargs, caller); }
+void validate_matrixDimMatchesTargets(DiagMatr2 matr, int numTargs, const char* caller) { assertMatrixDimMatchesTargs(matr, numTargs, caller); }
+void validate_matrixDimMatchesTargets(DiagMatr  matr, int numTargs, const char* caller) { assertMatrixDimMatchesTargs(matr, numTargs, caller); }
+
+void validate_matrixAndQuregAreCompatible(FullStateDiagMatr matr, Qureg qureg, const char* caller) {
 
     // we do not need to define this function for the other matrix types,
-    // since their validation will happen through validaiton of the
+    // since their validation will happen through validation of the
     // user-given list of target qubits. But we do need to define it for
     // FullStatedDiagMatr to check both distribution compatibility, and
     // that dimensions match
 
     tokenSubs vars = {
-        {"${MATR_NUM_QUBITS}",  matr.numQubits},
-        {"${QUREG_NUM_QUBITS}", qureg.numQubits}};
+        {"${NUM_MATR_QUBITS}",  matr.numQubits},
+        {"${NUM_QUREG_QUBITS}", qureg.numQubits}};
 
     // dimensions must match
     assertThat(matr.numQubits == qureg.numQubits, report::FULL_STATE_DIAG_MATR_MISMATCHES_QUREG_DIM, vars, caller);
@@ -1824,7 +2246,9 @@ void validate_matrixIsCompatibleWithQureg(FullStateDiagMatr matr, Qureg qureg, c
     if (!matr.isDistributed)
         return;
 
-    // but when it's distributed, so too must be the qureg so that comm isn't necessary
+    // but when it's distributed, so too must be the qureg; the precise reason why is 
+    // specific to whether qureg is a statevector or density matrix, but boils down
+    // to there being no communication buffers available to broadcast matr
     assertThat(qureg.isDistributed, report::FULL_STATE_DIAG_MATR_IS_DISTRIB_BUT_QUREG_ISNT, caller); // did not pass vars
 }
 
@@ -1930,7 +2354,7 @@ void validate_newSuperOpParams(int numQubits, const char* caller) {
 
     // some of the below validation involves getting distributed node consensus, which
     // can be an expensive synchronisation, which we avoid if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     validate_envIsInit(caller);
@@ -1949,7 +2373,7 @@ void assertNewSuperOpAllocs(SuperOp op, bool isInKrausMap, const char* caller) {
 
     // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads,
     // but we avoid this if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     // assert CPU array of rows was alloc'd successfully
@@ -1979,7 +2403,7 @@ void validate_newSuperOpAllocs(SuperOp op, const char* caller) {
 void validate_newInlineSuperOpDimMatchesVectors(int numDeclaredQubits, vector<vector<qcomp>> matrix, const char* caller) {
 
     // avoid potentially expensive matrix enumeration if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     qindex numDeclaredRows = powerOf2(2*numDeclaredQubits);
@@ -2008,7 +2432,7 @@ void validate_newInlineSuperOpDimMatchesVectors(int numDeclaredQubits, vector<ve
 void validate_superOpNewMatrixDims(SuperOp op, vector<vector<qcomp>> matrix, const char* caller) {
 
     // avoid potentially expensive matrix enumeration if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     tokenSubs vars = {
@@ -2082,11 +2506,17 @@ void validate_superOpFields(SuperOp op, const char* caller) {
 void validate_superOpIsSynced(SuperOp op, const char* caller) {
 
     // we don't need to perform any sync check in CPU-only mode
-    if (!mem_isAllocated(op.gpuElemsFlat))
+    if (!mem_isAllocated(util_getGpuMemPtr(op)))
         return;
 
     // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though
     assertThat(*(op.wasGpuSynced), report::SUPER_OP_NOT_SYNCED_TO_GPU, caller);
+}
+
+void validate_superOpDimMatchesTargs(SuperOp op, int numTargets, const char* caller) {
+
+    tokenSubs vars = {{"${OP_QUBITS}", op.numQubits}, {"{NUM_TARGS}", numTargets}};
+    assertThat(op.numQubits == numTargets, report::SUPER_OP_SIZE_MISMATCHES_NUM_TARGETS, vars, caller);
 }
 
 
@@ -2122,7 +2552,7 @@ void validate_newKrausMapParams(int numQubits, int numMatrices, const char* call
 
     // some of the below validation involves getting distributed node consensus, which
     // can be an expensive synchronisation, which we avoid if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     validate_envIsInit(caller);
@@ -2151,7 +2581,7 @@ void validate_newKrausMapAllocs(KrausMap map, const char* caller) {
 
     // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads,
     // but we avoid this if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     // prior validation gaurantees this will not overflow
@@ -2176,7 +2606,7 @@ void validate_newKrausMapAllocs(KrausMap map, const char* caller) {
 void validate_newInlineKrausMapDimMatchesVectors(int numQubits, int numOperators, vector<vector<vector<qcomp>>> matrices, const char* caller) {
 
     // avoid potentially expensive matrix enumeration if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     qindex numRows = powerOf2(numQubits);
@@ -2207,7 +2637,7 @@ void validate_newInlineKrausMapDimMatchesVectors(int numQubits, int numOperators
 void validate_krausMapNewMatrixDims(KrausMap map, vector<vector<vector<qcomp>>> matrices, const char* caller) {
 
     // avoid potentially expensive matrix enumeration if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
     
     assertThat(map.numMatrices == (int) matrices.size(), report::KRAUS_MAP_INCOMPATIBLE_NUM_NEW_MATRICES,
@@ -2290,35 +2720,24 @@ void validate_krausMapIsSynced(KrausMap map, const char* caller) {
 }
 
 void validate_krausMapIsCPTP(KrausMap map, const char* caller) {
+    validate_krausMapFields(map, caller);
     validate_krausMapIsSynced(map, caller);
 
     // avoid expensive CPTP check if validation is anyway disabled
-    if (!isValidationEnabled)
+    if (!global_isValidationEnabled)
         return;
 
     // evaluate CPTPness if it isn't already known 
     if (*(map.isCPTP) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        *(map.isCPTP) = util_isCPTP(map, validationEpsilon);
+        *(map.isCPTP) = util_isCPTP(map, global_validationEpsilon);
 
     assertThat(*(map.isCPTP), report::KRAUS_MAP_NOT_CPTP, caller);
 }
 
+void validate_krausMapMatchesTargets(KrausMap map, int numTargets, const char* caller) {
 
-
-/*
- * QUREG INITIALISATIONS
- */
-
-void validate_initClassicalStateIndex(Qureg qureg, qindex ind, const char* caller) {
-
-    qindex maxIndExcl = powerOf2(qureg.numQubits);
-
-    tokenSubs vars = {
-        {"${STATE_IND}",  ind},
-        {"${NUM_QUBITS}", qureg.numQubits},
-        {"${NUM_STATES}", maxIndExcl}};
-
-    assertThat(ind >= 0 && ind < maxIndExcl, report::INVALID_STATE_INDEX, vars, caller);
+    tokenSubs vars = {{"${KRAUS_QUBITS}", map.numQubits}, {"${TARG_QUBITS}", numTargets}};
+    assertThat(map.numQubits == numTargets, report::KRAUS_MAP_SIZE_MISMATCHES_TARGETS, vars, caller);
 }
 
 
@@ -2413,7 +2832,42 @@ void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* cal
     // this is a C++-only validation, because only std::string gaurantees we can know
     // the passed string length (C char arrays might not contain termination char)
     tokenSubs vars = {{"${NUM_PAULIS}", numPaulis}, {"${NUM_INDS}", numIndices}};
-    assertThat(numPaulis == numIndices, report::NEW_PAULI_STR_DIFFERENT_NUM_CHARS_AND_INDS, vars, caller);
+    assertThat(numPaulis == numIndices, report::NEW_PAULI_STR_DIFFERENT_NUM_CHARS_AND_INDICES, vars, caller);
+}
+
+
+
+/*
+ * EXISTING PAULI STRING
+ */
+
+extern int paulis_getPauliAt(PauliStr str, int ind);
+extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
+
+void validate_pauliStrTargets(Qureg qureg, PauliStr str, const char* caller) {
+
+    // avoid producing a list of targets which requires enumerating all bits
+    int maxTarg = paulis_getIndOfLefmostNonIdentityPauli(str);
+
+    tokenSubs vars = {{"${MAX_TARG}", maxTarg}, {"${QUREG_QUBITS}", qureg.numQubits}};
+    assertThat(maxTarg < qureg.numQubits, report::PAULI_STR_TARGETS_EXCEED_QUREG, vars, caller);
+}
+
+void validate_controlsAndPauliStrTargets(Qureg qureg, int* ctrls, int numCtrls, PauliStr str, const char* caller) {
+
+    // validate targets and controls in isolation
+    validate_pauliStrTargets(qureg, str, caller);
+    validate_controls(qureg, ctrls, numCtrls, caller);
+
+    // validate that they do not overlap (i.e. str has only I at ctrls, never X Y Z)
+    const int I = 0;
+    for (int n=0; n<numCtrls; n++)
+        assertThat(paulis_getPauliAt(str, ctrls[n]) == I, report::PAULI_STR_OVERLAPS_CONTROLS, caller);
+}
+
+void validate_controlAndPauliStrTargets(Qureg qureg, int ctrl, PauliStr str, const char* caller) {
+
+    validate_controlsAndPauliStrTargets(qureg, &ctrl, 1, str, caller);
 }
 
 
@@ -2520,7 +2974,7 @@ void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
 
     // ensure hermiticity is known (if not; compute it)
     if (*(sum.isHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        *(sum.isHermitian) = util_isHermitian(sum, validationEpsilon);
+        *(sum.isHermitian) = util_isHermitian(sum, global_validationEpsilon);
 
     assertThat(*(sum.isHermitian), report::PAULI_STR_SUM_NOT_HERMITIAN, caller);
 }
@@ -2528,16 +2982,614 @@ void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
 
 
 /*
- * OPERATOR PARAMETERS
+ * BASIS STATE INDICES
  */
+
+void validate_basisStateIndex(Qureg qureg, qindex ind, const char* caller) {
+
+    qindex maxIndExcl = powerOf2(qureg.numQubits);
+
+    tokenSubs vars = {
+        {"${STATE_IND}",  ind},
+        {"${NUM_QB}", qureg.numQubits},
+        {"${NUM_STATES}", maxIndExcl}};
+
+    assertThat(ind >= 0 && ind < maxIndExcl, report::INVALID_BASIS_STATE_INDEX, vars, caller);
+}
+
+void validate_basisStateRowCol(Qureg qureg, qindex row, qindex col, const char* caller) {
+
+    qindex maxIndExcl = powerOf2(qureg.numQubits);
+
+    tokenSubs vars = {
+        {"${ROW_IND}",  row},
+        {"${COL_IND}",  col},
+        {"${NUM_QB}", qureg.numQubits},
+        {"${NUM_STATES}", maxIndExcl}};
+
+    bool valid = row >= 0 && row < maxIndExcl && col >= 0 && col < maxIndExcl;
+    assertThat(valid, report::INVALID_BASIS_STATE_ROW_OR_COL, vars, caller);
+}
+
+void validate_basisStateIndices(Qureg qureg, qindex startInd, qindex numInds, const char* caller) {
+
+    assertThat(
+        startInd >= 0 && startInd < qureg.numAmps, 
+        report::INVALID_STARTING_BASIS_STATE_INDEX, 
+        {{"${START_IND}", startInd}, {"${MAX_IND_EXCL}", qureg.numAmps}, {"${NUM_QB}", qureg.numQubits}},
+        caller);
+
+    assertThat(
+        numInds > 0 && numInds <= qureg.numAmps,
+        report::INVALID_NUM_BASIS_STATE_INDICES, 
+        {{"${NUM_INDS}", numInds}, {"${MAX_NUM_INDS_INCL}", qureg.numAmps}, {"${NUM_QB}", qureg.numQubits}}, caller);
+
+    qindex endIndExcl = startInd + numInds;
+    tokenSubs vars = {
+        {"${NUM_QB}",       qureg.numQubits},
+        {"${START_IND}",    startInd},
+        {"${NUM_INDS}",     numInds},
+        {"${MAX_IND_EXCL}", qureg.numAmps},
+        {"${END_IND_EXCL}", endIndExcl}};
+       
+    assertThat(
+        endIndExcl <= qureg.numAmps, 
+        report::INVALID_ENDING_BASIS_STATE_INDEX,  
+        vars, caller);
+}
+
+void validate_basisStateRowCols(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols, const char* caller) {
+
+    qindex maxRowOrColExcl = powerOf2(qureg.numQubits);
+
+    assertThat(
+        (startRow >= 0 && startRow < maxRowOrColExcl) && 
+        (startCol >= 0 && startCol < maxRowOrColExcl), 
+        report::INVALID_STARTING_BASIS_ROW_OR_COL, 
+        {{"${START_ROW}", startRow}, {"${START_COL}", startCol}, {"${MAX_IND_EXCL}", maxRowOrColExcl}, {"${NUM_QB}", qureg.numQubits}}, 
+        caller);
+
+    assertThat(
+        (numRows > 0 && numRows <= maxRowOrColExcl) &&
+        (numCols > 0 && numCols <= maxRowOrColExcl),
+        report::INVALID_NUM_BASIS_ROWS_OR_COLS, 
+        {{"${NUM_ROWS}", numRows}, {"${NUM_COLS}", numCols}, {"${MAX_NUM_INCL}", maxRowOrColExcl}, {"${NUM_QB}", qureg.numQubits}}, 
+        caller);
+
+    qindex endRowExcl = startRow + numRows;
+    qindex endColExcl = startCol + numCols;
+
+    tokenSubs vars = {
+        {"${NUM_QB}", qureg.numQubits},
+        {"${START_ROW}", startRow}, 
+        {"${START_COL}", startCol},
+        {"${NUM_ROWS}", numRows},
+        {"${NUM_COLS}", numCols},
+        {"${END_ROW_EXCL}", endRowExcl},
+        {"${END_COL_EXCL}", endColExcl},
+        {"${MAX_END_INCL}", maxRowOrColExcl}};
+       
+    assertThat(
+        endRowExcl <= maxRowOrColExcl && endColExcl <= maxRowOrColExcl,
+        report::INVALID_ENDING_BASIS_ROW_OR_COL,  
+        vars, caller);
+}
+
+void validate_localAmpIndices(Qureg qureg, qindex localStartInd, qindex numInds, const char* caller) {
+
+    // note that localStartInd and numInds can validly DIFFER between nodes,
+    // so we use assertAllNodesAgreeThat() in lieu of assertThat()
+
+    tokenSubs baseVars = {
+        {"${NUM_QB}", qureg.numQubits},
+        {"${NUM_AMPS_TOTAL}", qureg.numAmps},
+        {"${MAX_IND_EXCL}", qureg.numAmpsPerNode},
+        {"${NUM_NODES}", qureg.numNodes}
+    };
+
+    // when numInds=0, we permit startInd to be anything (even something invalid)
+    if (numInds == 0)
+        return;
+
+    // unlike validate_basisStateIndices(), we limit to #amps per node
+    tokenSubs firstVars = baseVars;
+    firstVars["${START_IND}"] = localStartInd;
+    assertAllNodesAgreeThat(localStartInd >= 0 && localStartInd < qureg.numAmpsPerNode, report::INVALID_STARTING_LOCAL_AMP_INDEX, firstVars, caller);
+
+    // unlike validate_basisStateIndices(), we permit numInds == 0
+    tokenSubs secondVars = baseVars;
+    secondVars["${NUM_INDS}"] = numInds;
+    assertAllNodesAgreeThat(numInds >= 0 && numInds <= qureg.numAmps, report::INVALID_NUM_LOCAL_AMP_INDICES, secondVars, caller);
+
+    qindex endIndExcl = localStartInd + numInds;
+    baseVars["${START_IND}"] = localStartInd;
+    baseVars["${NUM_INDS}"] = numInds;
+    baseVars["${END_IND_EXCL}"] = endIndExcl;
+    assertAllNodesAgreeThat(endIndExcl <= qureg.numAmpsPerNode, report::INVALID_ENDING_LOCAL_AMP_INDEX, baseVars, caller);
+}
+
+
+
+
+
+/*
+ * QUBIT INDICES
+ */
+
+bool areQubitsUnique(int* qubits, int numQubits) {
+
+    // assumes all elemtns of qubits are < 64
+    qindex mask = 0;
+
+    for (int n=0; n<numQubits; n++)
+        if (getBit(mask, qubits[n]))
+            return false;
+        else
+            mask = setBit(mask, qubits[n], 1);
+
+    return true;
+}
+
+bool areQubitsDisjoint(int* qubitsA, int numQubitsA, int* qubitsB, int numQubitsB) {
+
+    // assumes all elemtns of qubits are < 64
+    qindex maskA = getBitMask(qubitsA, numQubitsA);
+
+    for (int n=0; n<numQubitsB; n++)
+        if (getBit(maskA, qubitsB[n]))
+            return false;
+    
+    return true;
+}
+
+void assertValidQubit(Qureg qureg, int qubitInd, string msg, const char* caller) {
+
+    tokenSubs vars = {
+        {"${QUBIT_IND}",  qubitInd},
+        {"${NUM_QUBITS}", qureg.numQubits}};
+
+    assertThat(qubitInd >= 0 && qubitInd < qureg.numQubits, msg, vars, caller);
+}
+
+void assertValidQubits(
+    Qureg qureg, int* qubits, int numQubits, bool canNumIncludeZero, const char* caller,
+    string msgNegNum, string msgNumExceedsQureg, string msgNullPtr, string msgBadInd, string msgDuplicates
+) {
+    assertThat(numQubits > (canNumIncludeZero? -1 : 0), msgNegNum, {{"${NUM_QUBITS}", numQubits}}, caller);
+    assertThat(numQubits <= qureg.numQubits, msgNumExceedsQureg, {{"${NUM_QUBITS}", numQubits}, {"${QUREG_QUBITS}", qureg.numQubits}}, caller);
+
+    if (numQubits > 0)
+        assertThat(qubits != nullptr, msgNullPtr, caller);
+
+    for (int n=0; n<numQubits; n++)
+        assertValidQubit(qureg, qubits[n], msgBadInd, caller);
+    
+    assertThat(areQubitsUnique(qubits, numQubits), msgDuplicates, caller);
+}
 
 void validate_target(Qureg qureg, int target, const char* caller) {
 
-    tokenSubs vars = {
-        {"${TARGET}",  target},
-        {"${NUM_QUBITS}", qureg.numQubits}};
+    assertValidQubit(qureg, target, report::INVALID_TARGET_QUBIT, caller);
+}
 
-    assertThat(target >= 0 && target < qureg.numQubits, report::INVALID_TARGET_QUBIT, vars, caller);
+void validate_targets(Qureg qureg, int* targets, int numTargets, const char* caller) {
+
+    // must always have at least 1 target
+    bool numCanBeZero = false;
+
+    assertValidQubits(
+        qureg, targets, numTargets, numCanBeZero, caller, 
+        report::NEGATIVE_OR_ZERO_NUM_TARGETS, report::NUM_TARGETS_EXCEEDS_QUREG_SIZE, report::TARGET_LIST_WAS_NULL_PTR,
+        report::INVALID_TARGET_QUBIT,         report::DUPLICATE_TARGET_QUBITS);
+}
+void validate_twoTargets(Qureg qureg, int target1, int target2, const char* caller) {
+
+    int targs[] = {target1, target2};
+    validate_targets(qureg, targs, 2, caller);
+}
+
+void validate_controls(Qureg qureg, int* ctrls, int numCtrls, const char* caller) {
+
+    // it is fine to have zero controls
+    bool numCanBeZero = true;
+
+    assertValidQubits(
+        qureg, ctrls, numCtrls, numCanBeZero, caller, 
+        report::NEGATIVE_NUM_CONTROLS, report::NUM_CONTROLS_EXCEEDS_QUREG_SIZE, report::NON_EMPTY_CONTROL_LIST_WAS_NULL_PTR,
+        report::INVALID_CONTROL_QUBIT, report::DUPLICATE_CONTROL_QUBITS);
+}
+
+void validate_controlsAndTargets(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs, const char* caller) {
+
+    // validate controls and targets in isolation
+    validate_targets(qureg, targs, numTargs, caller);
+    validate_controls(qureg, ctrls, numCtrls, caller);
+
+    // validate that they do not intersect
+    assertThat(areQubitsDisjoint(ctrls, numCtrls, targs, numTargs), report::CONTROLS_OVERLAP_TARGETS, caller);
+}
+void validate_controlAndTarget(Qureg qureg, int ctrl, int targ, const char* caller) {
+
+    validate_controlsAndTargets(qureg, &ctrl, 1, &targ, 1, caller);
+}
+void validate_controlAndTargets(Qureg qureg, int ctrl, int* targs, int numTargs, const char* caller) {
+
+    validate_controlsAndTargets(qureg, &ctrl, 1, targs, numTargs, caller);
+}
+void validate_controlsAndTarget(Qureg qureg, int* ctrls, int numCtrls, int targ, const char* caller) {
+
+    validate_controlsAndTargets(qureg, ctrls, numCtrls, &targ, 1, caller);
+}
+void validate_controlAndTwoTargets(Qureg qureg, int ctrl, int targ1, int targ2, const char* caller) {
+
+    int targs[] = {targ1, targ2};
+    validate_controlsAndTargets(qureg, &ctrl, 1, targs, 2, caller);
+}
+void validate_controlsAndTwoTargets(Qureg qureg, int* ctrls, int numCtrls, int targ1, int targ2, const char* caller) {
+
+    int targs[] = {targ1, targ2};
+    validate_controlsAndTargets(qureg, ctrls, numCtrls, targs, 2, caller);
+}
+
+void validate_controlStates(int* states, int numCtrls, const char* caller) {
+
+    // states is permittedly nullptr even when numCtrls != 0
+    if (states == nullptr)
+        return;
+
+    for (int n=0; n<numCtrls; n++)
+        assertThat(states[n] == 0 || states[n] == 1, report::INVALID_CONTROL_STATE, {{"${INDEX}", n}, {"${STATE}", states[n]}}, caller);
+}
+
+
+
+/*
+ * ROTATION PARAMETERS
+ */
+
+void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller) {
+
+    qreal norm = pow(x,2) + pow(y,2) + pow(z,2);
+
+    assertThat(norm > global_validationEpsilon, report::ROTATION_AXIS_VECTOR_IS_ZERO, caller);
+}
+
+
+
+/*
+ * MEASUREMENT PARAMETERS
+ */
+
+void validate_measurementOutcomeIsValid(int outcome, const char* caller) {
+
+    assertThat(outcome == 0 || outcome == 1, report::ONE_QUBIT_MEASUREMENT_OUTCOME_INVALID, {{"${OUTCOME}", outcome}}, caller);
+}
+
+void validate_measurementOutcomesAreValid(int* outcomes, int numOutcomes, const char* caller) {
+
+    // no need to validate numOutcomes; it is already validated by caller (e.g. through numTargets)
+
+    for (int i=0; i<numOutcomes; i++)
+        assertThat(
+            outcomes[i] == 0 || outcomes[i]== 1, report::MANY_QUBIT_MEASUREMENTS_OUTCOME_INVALID, 
+            {{"${INDEX}", i}, {"${OUTCOME}", outcomes[i]}}, caller);
+}
+
+void validate_measurementOutcomeProbNotZero(int outcome, qreal prob, const char* caller) {
+
+    // TODO: report 'prob' once validation reporting can handle floats
+
+    assertThat(prob >= global_validationEpsilon, report::ONE_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY, {{"${OUTCOME}", outcome}}, caller);
+}
+
+void validate_measurementOutcomesProbNotZero(int* outcomes, int numQubits, qreal prob, const char* caller) {
+
+    // TODO: report 'prob' and 'outcomes' (as binary sequence) once validation reporting can handle floats
+    qindex outcomeValue = getIntegerFromBits(outcomes, numQubits);
+
+    assertThat(prob >= global_validationEpsilon, report::MANY_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY, {{"${OUTCOME_VALUE}", outcomeValue}}, caller);
+}
+
+void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const char* caller) {
+
+    // only GPU backend needs temp memory
+    if (!qureg.isGpuAccelerated)
+        return;
+
+    qindex numOutcomes = powerOf2(numQubits);
+    size_t memAvail = gpu_getCurrentAvailableMemoryInBytes();
+    size_t memNeeded = sizeof(qreal) * numOutcomes;
+
+    tokenSubs vars = {
+        {"{NUM_QUBITS}",    numQubits}, 
+        {"${NUM_OUTCOMES}", numOutcomes}, 
+        {"${MEM_NEEDED}",   memNeeded}, 
+        {"${MEM_AVAIL}",    memAvail}
+    };
+
+    assertThat(memAvail > memNeeded, report::GPU_CANNOT_FIT_TEMP_MEASUREMENT_OUTCOME_PROBS, vars, caller);
+}
+
+
+
+/*
+ * CHANNEL PARAMETERS 
+ */
+
+void validate_probability(qreal prob, const char* caller) {
+
+    // TODO: report 'prob' once validation reporting can handle floats
+
+    assertThat(prob >= 0 && prob <= 1, report::INVALID_PROBABILITY, caller);
+}
+
+void validate_oneQubitDepashingProb(qreal prob, const char* caller) {
+
+    // TODO: report 'prob' once validation reporting can handle floats
+
+    validate_probability(prob, caller);
+    assertThat(
+        prob <= util_getMaxProbOfOneQubitDephasing(), 
+        report::ONE_QUBIT_DEPHASING_PROB_EXCEEDS_MAXIMAL_MIXING, caller);
+}
+
+void validate_twoQubitDepashingProb(qreal prob, const char* caller) {
+
+    // TODO: report 'prob' once validation reporting can handle floats
+
+    validate_probability(prob, caller);
+    assertThat(
+        prob <= util_getMaxProbOfTwoQubitDephasing(), 
+        report::TWO_QUBIT_DEPHASING_PROB_EXCEEDS_MAXIMAL_MIXING, caller);
+}
+
+void validate_oneQubitDepolarisingProb(qreal prob, const char* caller) {
+
+    // TODO: report 'prob' once validation reporting can handle floats
+
+    validate_probability(prob, caller);
+    assertThat(
+        prob <= util_getMaxProbOfOneQubitDepolarising(), 
+        report::ONE_QUBIT_DEPOLARISING_PROB_EXCEEDS_MAXIMAL_MIXING, caller);
+}
+
+void validate_twoQubitDepolarisingProb(qreal prob, const char* caller) {
+
+    // TODO: report 'prob' once validation reporting can handle floats
+
+    validate_probability(prob, caller);
+    assertThat(
+        prob <= util_getMaxProbOfTwoQubitDepolarising(), 
+        report::TWO_QUBIT_DEPOLARISING_PROB_EXCEEDS_MAXIMAL_MIXING, caller);
+}
+
+void validate_oneQubitDampingProb(qreal prob, const char* caller) {
+
+    // TODO: report 'prob' once validation reporting can handle floats
+
+    // permit one-qubit amplitude damping of any valid probability, 
+    // so that it can surpass maximal mixing and induce purity
+    validate_probability(prob, caller);
+}
+
+void validate_oneQubitPauliChannelProbs(qreal pX, qreal pY, qreal pZ, const char* caller) {
+
+    validate_probability(pX, caller);
+    validate_probability(pY, caller);
+    validate_probability(pZ, caller);
+
+    // TODO: report 'prob' once validation reporting can handle floats
+
+    qreal pXYZ = pX + pY + pZ;
+    assertThat(pXYZ <= 1, report::ONE_QUBIT_PAULI_CHANNEL_TOTAL_PROBS_EXCEED_ONE, caller);
+
+    qreal probI = 1 - pX - pY - pZ;
+    qreal probM = 0;
+    if (pX > probM) probM = pX;
+    if (pY > probM) probM = pY;
+    if (pZ > probM) probM = pZ;
+    assertThat(probM <= probI, report::ONE_QUBIT_PAULI_CHANNEL_PROBS_EXCEED_MAXIMAL_MIXING, caller);
+}
+
+
+
+/*
+ * QUREG COMBINATION
+ */
+
+void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller) {
+
+    // mixing must be mathematically possible; dims are compatible, but quregIn can be a statevector
+    assertThat(quregOut.isDensityMatrix, report::MIXED_QUREG_NOT_DENSITY_MATRIX, caller);
+    assertThat(
+        quregOut.numQubits == quregIn.numQubits, report::MIXED_QUREGS_HAVE_DIFFERENT_NUM_QUBITS, 
+        {{"${NUM_A}", quregOut.numQubits}, {"${NUM_B}", quregIn.numQubits}}, caller);
+
+    // density matrices must be equally distributed (because there is insufficient buffer to broadcast),
+    // but they may differ in GPU deployment (because accelerator will copy memory as is necessary)
+    if (quregIn.isDensityMatrix)
+        assertThat(quregOut.isDistributed == quregIn.isDistributed, report::MIXED_DENSITY_MATRICES_ARE_DIFFERENTLY_DISTRIBUED, caller);
+
+    // the statevector can only be distributed if the density matrix is (because there is otherwise no buffer to receive broadcast)
+    if (!quregOut.isDistributed)
+        assertThat(!quregOut.isDistributed, report::MIXED_DENSITY_MATRIX_LOCAL_BUT_STATEVEC_DISTRIBUTED, caller);
+}
+
+void validate_quregsCanBeSuperposed(Qureg qureg1, Qureg qureg2, Qureg qureg3, const char* caller) {
+
+    // all quregs must be statevectors
+    assertThat(
+        !qureg1.isDensityMatrix && !qureg2.isDensityMatrix && !qureg3.isDensityMatrix,
+        report::SUPERPOSED_QUREGS_ARE_NOT_ALL_STATEVECTORS, caller);
+
+    // and the same dimension
+    int nQb = qureg1.numQubits;
+    assertThat(
+        qureg2.numQubits == nQb && qureg3.numQubits == nQb, 
+        report::SUPERPOSED_QUREGS_HAVE_INCONSISTENT_NUM_QUBITS, caller);
+
+    // and all the same deployment (GPU & distribution; multithreading doesn't matter)
+    int isGpu = qureg1.isGpuAccelerated;
+    assertThat(
+        qureg2.isGpuAccelerated == isGpu && qureg3.isGpuAccelerated == isGpu, 
+        report::SUPERPOSED_QUREGS_HAVE_INCONSISTENT_GPU_DEPLOYMENT, caller);
+
+    int isDis = qureg1.isDistributed;
+    assertThat(
+        qureg2.isDistributed == isDis && qureg3.isDistributed == isDis, 
+        report::SUPERPOSED_QUREGS_HAVE_INCONSISTENT_DISTRIBUTION, caller);
+}
+
+void validateDensMatrCanBeInitialisedToPureState(Qureg qureg, Qureg pure, const char* caller) {
+
+    // initPureState calls mixQureg which only additionally
+    // constrains that pure.isDistributed only if qureg.isDistributed
+
+    if (qureg.isDistributed)
+        assertThat(!pure.isDistributed, report::INIT_DENSMATR_LOCAL_BUT_PURE_STATE_DISTRIBUTED, caller);
+}
+
+void validateStateVecCanBeInitialisedToPureState(Qureg qureg, Qureg pure, const char* caller) {
+
+    // statevectors must be identically distributed and GPU-accelerated
+
+    assertThat(
+        qureg.isGpuAccelerated == pure.isGpuAccelerated,
+        report::INIT_STATEVEC_DIFFERING_GPU_DEPLOYMENT_TO_PURE_STATE, caller);
+
+    assertThat(
+        qureg.isDistributed == pure.isDistributed,
+        report::INIT_STATEVEC_DIFFERING_DISTRIBUTION_TO_PURE_STATE, caller);
+}
+
+void validate_quregCanBeInitialisedToPureState(Qureg qureg, Qureg pure, const char* caller) {
+
+    assertThat(!pure.isDensityMatrix, report::INIT_PURE_STATE_IS_DENSMATR, caller);
+
+    // quregs must have the same number of qubits, regardless of dimension
+    assertThat(
+        qureg.numQubits == pure.numQubits,
+        report::INIT_QUREG_HAS_DIFFERENT_NUM_QUBITS_TO_PURE_STATE, 
+        {{"${NUM_QUREG_QUBITS}", qureg.numQubits}, {"${NUM_PURE_QUBITS}", pure.numQubits}},
+        caller);
+
+    (qureg.isDensityMatrix)?
+        validateDensMatrCanBeInitialisedToPureState(qureg, pure, caller):
+        validateStateVecCanBeInitialisedToPureState(qureg, pure, caller);
+}
+
+void validate_quregsCanBeCloned(Qureg quregA, Qureg quregB, const char* caller) {
+
+    // quregs must have identical sizes... 
+    assertThat(
+        quregA.numQubits == quregB.numQubits, report::CLONED_QUREGS_DIFFER_IN_NUM_QUBITS, 
+        {{"${NUM_TARGET_QUBITS}", quregA.numQubits}, {"${NUM_COPY_QUBITS}", quregB.numQubits}}, caller);
+    
+    // and types...
+    assertThat(quregA.isDensityMatrix == quregB.isDensityMatrix, report::CLONED_QUREGS_INCONSISTENT_TYPES, caller);
+
+    // and distributions...
+    assertThat(quregA.isDistributed == quregB.isDistributed, report::CLONED_QUREGS_HAVE_DIFFERENT_DISTRIBUTIONS, caller);
+
+    // but density matrices may differ in GPU-deployments, because cloning 
+    // invokes mixQureg which supports heterogeneous deployment
+    if (quregA.isDensityMatrix)
+        return;
+
+    // statevectors however MUST be identically GPU-accelerated
+    assertThat(quregA.isGpuAccelerated == quregB.isGpuAccelerated, report::CLONED_STATEVECS_HAVE_DIFFERENT_GPU_DEPLOYMENTS, caller);
+}
+
+void validate_quregsCanBeProducted(Qureg quregA, Qureg quregB, const char* caller) {
+
+   // number of qubits must always match
+    assertThat(
+        quregA.numQubits == quregB.numQubits, 
+        report::PRODUCTED_QUREGS_HAVE_DIFFERENT_NUM_QUBITS,
+        {{"${NUM_A}", quregA.numQubits}, {"${NUM_B}", quregB.numQubits}}, caller);
+
+    // if both are statevecs or both are densmatr...
+    if (quregA.isDensityMatrix == quregB.isDensityMatrix) {
+
+        // then they must have the same GPU accel (because falling back to CPU is slow)
+        assertThat(
+            quregA.isGpuAccelerated == quregB.isGpuAccelerated,
+            report::PRODUCTED_SAME_TYPE_QUREGS_HAVE_DIFFERING_GPU_ACCELS, caller);
+
+        // but their distributions may differ, so finish
+        return;
+    }
+
+    // when one is a statevector and the other is a density matrix...
+    Qureg dm = (quregA.isDensityMatrix)? quregA : quregB;
+    Qureg sv = (quregA.isDensityMatrix)? quregB : quregA;
+
+    // then statevec can only be distributed if density matrix is
+    if (sv.isDistributed)
+        assertThat(dm.isDistributed, report::PRODUCTED_STATEVEC_DISTRIB_BUT_DENSMATR_LOCAL, caller); 
+
+    // their GPU accelerations may differ however
+}
+
+void validate_throwErrorBecauseCalcFidOfDensMatrNotYetImplemented(const char* caller) {
+
+    assertThat(false, report::CALC_FIDELITY_OF_DENSITY_MATRICES_NOT_YET_SUPPORTED, caller);
+}
+
+void validate_fidelityIsReal(qcomp fid, const char* caller) {
+
+    // TODO: include imag(fid) in error message when non-integers are supported
+
+    assertThat(abs(imag(fid)) < global_validationEpsilon, report::CALC_FIDELITY_NOT_APPROX_REAL, caller);
+}
+
+void validate_buresDistanceInnerProdIsNormalised(qreal mag, const char* caller) {
+
+    // TODO: include mag in error message when non-integers are supported
+
+    assertThat(mag <= 1 + global_validationEpsilon, report::CALC_BURES_DISTANCE_MAG_EXCEEDED_ONE, caller);
+}
+
+void validate_purifiedDistanceIsNormalised(qcomp fid, const char* caller) {
+
+    // TODO: include scalars in error message when non-integers are supported
+    
+    assertThat(abs(imag(fid)) < global_validationEpsilon, report::CALC_PURIFIED_DISTANCE_NOT_APPROX_REAL, caller);
+    assertThat(real(fid) <= 1 + global_validationEpsilon, report::CALC_PURIFIED_DISTANCE_REAL_EXCEEDED_ONE, caller);
+}
+
+
+/*
+ * QUREG MODIFICATION
+ */
+
+void validate_quregRenormProbIsNotZero(qreal prob, const char* caller) {
+
+    // TODO: include 'prob' in error message when non-integers are supported
+
+    assertThat(prob > global_validationEpsilon, report::QUREG_RENORM_PROB_IS_ZERO, caller);
+}
+
+void validate_numInitRandomPureStates(qindex numPureStates,  const char* caller) {
+
+    assertThat(numPureStates >= 1, report::INVALID_NUM_INIT_PURE_STATES, {{"${NUM_STATES}", numPureStates}}, caller);
+}
+
+
+
+/*
+ * EXPECTATION VALUES
+ */
+
+void validate_expecValIsReal(qcomp value, bool isDensMatr, const char* caller) {
+
+    // TODO: include imag(value) in error message when non-integers are supported
+
+    string msg = (isDensMatr)?
+        report::CALC_DENSMATR_EXPECTED_VALUE_WAS_NOT_APPROX_REAL:
+        report::CALC_STATEVEC_EXPECTED_VALUE_WAS_NOT_APPROX_REAL;
+
+    assertThat(abs(imag(value)) < global_validationEpsilon, msg, caller);
 }
 
 

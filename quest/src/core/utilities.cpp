@@ -7,6 +7,7 @@
 #include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 #include "quest/include/channels.h"
+#include "quest/include/precision.h"
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
@@ -17,6 +18,8 @@
 #include <algorithm>
 #include <complex>
 #include <vector>
+#include <array>
+#include <new>
 
 using std::vector;
 
@@ -62,6 +65,25 @@ bool util_isBraQubitInSuffix(int ketQubit, Qureg qureg) {
     return ketQubit < qureg.logNumColsPerNode;
 }
 
+vector<int> getPrefixOrSuffixQubits(vector<int> qubits, Qureg qureg, bool getSuffix) {
+
+    vector<int> subQubits(0);
+    subQubits.reserve(qubits.size());
+
+    for (int qubit : qubits)
+        if (util_isQubitInSuffix(qubit, qureg) == getSuffix)
+            subQubits.push_back(qubit);
+
+    return subQubits;
+}
+
+std::array<vector<int>,2> util_getPrefixAndSuffixQubits(vector<int> qubits, Qureg qureg) {
+    return {
+        getPrefixOrSuffixQubits(qubits, qureg, false), 
+        getPrefixOrSuffixQubits(qubits, qureg, true)
+    };
+}
+
 int util_getRankBitOfQubit(int ketQubit, Qureg qureg) {
 
     int rankInd = util_getPrefixInd(ketQubit, qureg);
@@ -76,11 +98,20 @@ int util_getRankBitOfBraQubit(int ketQubit, Qureg qureg) {
     return rankBit;
 }
 
-int util_getRankWithQubitFlipped(int ketQubit, Qureg qureg) {
+int util_getRankWithQubitFlipped(int prefixKetQubit, Qureg qureg) {
 
-    int rankInd = util_getPrefixInd(ketQubit, qureg);
+    int rankInd = util_getPrefixInd(prefixKetQubit, qureg);
     int rankFlip = flipBit(qureg.rank, rankInd);
     return rankFlip;
+}
+
+int util_getRankWithQubitsFlipped(vector<int> prefixQubits,  Qureg qureg) {
+
+    int rank = qureg.rank;
+    for (int qubit : prefixQubits)
+        rank = flipBit(rank, util_getPrefixInd(qubit, qureg));
+
+    return rank;
 }
 
 int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg) {
@@ -140,7 +171,109 @@ qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> ta
 
 vector<int> util_getVector(int* qubits, int numQubits) {
 
+    // permit qubits=nullptr, overriding numQubits (might be non-zero)
+    if (qubits == nullptr)
+        return {};
+
     return vector<int> (qubits, qubits + numQubits);
+}
+
+
+
+/*
+ * INDEX ALGEBRA
+ */
+
+qindex util_getGlobalIndexOfFirstLocalAmp(Qureg qureg) {
+
+    return qureg.rank * qureg.numAmpsPerNode;
+}
+
+qindex util_getLocalIndexOfGlobalIndex(Qureg qureg, qindex globalInd) {
+
+    // equivalent to below, but clearer
+    if (!qureg.isDistributed)
+        return globalInd;
+
+    // defensive-design integrity check
+    qindex globalStart = util_getGlobalIndexOfFirstLocalAmp(qureg);
+    qindex globalEnd = globalStart + qureg.numAmpsPerNode;
+    if (globalInd < globalStart || globalInd >= globalEnd)
+        error_utilsGivenGlobalIndexOutsideNode();
+
+    return globalInd % qureg.numAmpsPerNode;
+}
+
+
+qindex util_getLocalIndexOfFirstDiagonalAmp(Qureg qureg) {
+    assert_utilsGivenDensMatr(qureg);
+
+    return qureg.rank * powerOf2(qureg.logNumColsPerNode);
+}
+
+qindex util_getNumLocalDiagonalAmpsWithBits(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+    assert_utilsGivenDensMatr(qureg);
+
+    // a corresponding bra-qubit in the prefix with an inconsistent outcome means the node
+    // contains no diagonal basis states consistent with the given outcomes
+    for (size_t i=0; i<qubits.size(); i++)
+        if (!util_isBraQubitInSuffix(qubits[i], qureg))
+            if (util_getRankBitOfBraQubit(qubits[i], qureg) != outcomes[i])
+                return 0;
+
+    // otherwise, every 2^#qubits local diagonal is consistent with outcomes
+    qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
+    qindex numDiags = numColsPerNode / powerOf2(qubits.size());
+    return numDiags;
+}
+
+qindex util_getGlobalFlatIndex(Qureg qureg, qindex globalRow, qindex globalCol) {
+    assert_utilsGivenDensMatr(qureg);
+
+    qindex numAmpsPerCol = powerOf2(qureg.numQubits);
+    return (globalCol * numAmpsPerCol) + globalRow;
+}
+
+int util_getRankContainingIndex(Qureg qureg, qindex globalInd) {
+
+    // when not distributed, all nodes (each believing themselves root) contain the index
+    if (!qureg.isDistributed)
+        return 0;
+
+    // accepts flat density matrix index too
+    return globalInd / qureg.numAmpsPerNode; // floors
+}
+int util_getRankContainingIndex(FullStateDiagMatr matr, qindex globalInd) {
+
+    // when not distributed, all nodes (each believing themselves root) contain the index
+    if (!matr.isDistributed)
+        return 0;
+
+    return globalInd / matr.numElemsPerNode; // floors
+}
+
+int util_getRankContainingColumn(Qureg qureg, qindex globalCol) {
+    assert_utilsGivenDensMatr(qureg);
+
+    // when not distributed, all nodes (each believing themselves root) contain the index
+    if (!qureg.isDistributed)
+        return 0;
+
+    qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
+    return globalCol / numColsPerNode; // floors
+}
+
+
+
+/*
+ * COMPLEX ALGEBRA
+ */
+
+qcomp util_getPowerOfI(size_t exponent) {
+
+    // seems silly, but at least it's precision agnostic!
+    qcomp values[] = {1, 1_i, -1, -1_i};
+    return values[exponent % 4];
 }
 
 
@@ -254,6 +387,13 @@ bool util_isUnitary(CompMatr2 matrix, qreal eps) {
     return isUnitary(matrix.elems, matrix.numRows, eps);
 }
 bool util_isUnitary(CompMatr matrix, qreal eps) {
+
+    // TODO:
+    // if matrix is GPU-accelerated, we should maybe
+    // instead perform this calculation using the GPU.
+    // otherwise, if matrix is large, we should potentially
+    // use a multithreaded routine
+
     return isUnitary(matrix.cpuElems, matrix.numRows, eps);
 }
 
@@ -264,10 +404,21 @@ bool util_isUnitary(DiagMatr2 matrix, qreal eps) {
     return isUnitary(matrix.elems, matrix.numElems, eps);
 }
 bool util_isUnitary(DiagMatr matrix, qreal eps) {
+
+    // TODO:
+    // if matrix is GPU-accelerated, we should maybe
+    // instead perform this calculation using the GPU.
+    // otherwise, if matrix is large, we should potentially
+    // use a multithreaded routine
+
     return isUnitary(matrix.cpuElems, matrix.numElems, eps);
 }
 
 bool util_isUnitary(FullStateDiagMatr matrix, qreal eps) {
+
+    // TODO:
+    // we should definitely be using an accelerated routine
+    // here, e.g. GPU-acceleration or multithreading
 
     // we must check all node's sub-diagonals satisfy unitarity
     bool res = isUnitary(matrix.cpuElems, matrix.numElems, eps);
@@ -329,6 +480,13 @@ bool util_isHermitian(CompMatr2 matrix, qreal eps) {
     return isHermitian(matrix.elems, matrix.numRows, eps);
 }
 bool util_isHermitian(CompMatr matrix, qreal eps) {
+
+    // TODO:
+    // if matrix is GPU-accelerated, we should maybe
+    // instead perform this calculation using the GPU.
+    // otherwise, if matrix is large, we should potentially
+    // use a multithreaded routine
+
     return isHermitian(matrix.cpuElems, matrix.numRows, eps);
 }
 
@@ -339,10 +497,21 @@ bool util_isHermitian(DiagMatr2 matrix, qreal eps) {
     return isHermitian(matrix.elems, matrix.numElems, eps);
 }
 bool util_isHermitian(DiagMatr matrix, qreal eps) {
+
+    // TODO:
+    // if matrix is GPU-accelerated, we should maybe
+    // instead perform this calculation using the GPU.
+    // otherwise, if matrix is large, we should potentially
+    // use a multithreaded routine
+
     return isHermitian(matrix.cpuElems, matrix.numElems, eps);
 }
 
 bool util_isHermitian(FullStateDiagMatr matrix, qreal eps) {
+
+    // TODO:
+    // we should definitely be using an accelerated routine
+    // here, e.g. GPU-acceleration or multithreading
 
     // we must check all node's sub-diagonals satisfy unitarity
     bool res = isHermitian(matrix.cpuElems, matrix.numElems, eps);
@@ -371,6 +540,12 @@ bool util_isHermitian(PauliStrSum sum, qreal eps) {
  */
 
 bool util_isCPTP(KrausMap map, qreal eps) {
+
+    // TODO:
+    // if KrausMap is GPU-accelerated, we should maybe
+    // instead perform this calculation using the GPU.
+    // otherwise, if matrix is large, we should potentially
+    // use a multithreaded routine
 
     // skip expensive CPTP check if eps is infinite (encoded by 0)
     if (eps == 0)
@@ -444,10 +619,10 @@ void util_setSuperoperator(qcomp** superop, qcomp*** matrices, int numMatrices, 
  * DISTRIBUTED ELEMENTS INDEXING
  */
 
-bool util_areAnyElemsWithinThisNode(int numElemsPerNode, qindex elemStartInd, qindex numInds) {
+bool util_areAnyVectorElemsWithinNode(int rank, qindex numElemsPerNode, qindex elemStartInd, qindex numInds) {
 
     qindex elemEndIndExcl = elemStartInd + numInds;
-    qindex nodeStartInd = comm_getRank() * numElemsPerNode;
+    qindex nodeStartInd = numElemsPerNode * rank;
     qindex nodeEndIndExcl = nodeStartInd + numElemsPerNode;
 
     // 'no' if all targeted elems occur after this node
@@ -462,16 +637,16 @@ bool util_areAnyElemsWithinThisNode(int numElemsPerNode, qindex elemStartInd, qi
     return true;
 }
 
-util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, qindex elemStartInd, qindex numInds) {
+util_VectorIndexRange util_getLocalIndRangeOfVectorElemsWithinNode(int rank, qindex numElemsPerNode, qindex elemStartInd, qindex numInds) {
 
-    if (!util_areAnyElemsWithinThisNode(numElemsPerNode, elemStartInd, numInds))
+    if (!util_areAnyVectorElemsWithinNode(rank, numElemsPerNode, elemStartInd, numInds))
         error_nodeUnexpectedlyContainedNoElems();
 
     // global indices of the user's targeted elements
     qindex elemEndInd = elemStartInd + numInds;
 
     // global indices of all elements contained in the node
-    qindex nodeStartInd = numElemsPerNode * comm_getRank();
+    qindex nodeStartInd = numElemsPerNode * rank;
     qindex nodeEndInd   = nodeStartInd + numElemsPerNode;
 
     // global indices of user's targeted elements which are contained within node
@@ -485,7 +660,7 @@ util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, 
     // local indices of user's passed elements that correspond to above
     qindex localOffsetInd = globalRangeStartInd - elemStartInd;
     
-    return (util_IndexRange) {
+    return {
         .localDistribStartInd = localRangeStartInd,
         .localDuplicStartInd = localOffsetInd,
         .numElems = numLocalElems
@@ -495,7 +670,18 @@ util_IndexRange util_getLocalIndRangeOfElemsWithinThisNode(int numElemsPerNode, 
 
 
 /*
- * OPERATOR PARAMETERS
+ * GATE PARAMETERS
+ */
+
+qreal util_getPhaseFromGateAngle(qreal angle) {
+
+    return - angle / 2;
+}
+
+
+
+/*
+ * DECOHERENCE FACTORS
  */
 
 qreal util_getOneQubitDephasingFactor(qreal prob) {
@@ -550,4 +736,83 @@ util_Scalars util_getOneQubitDampingFactors(qreal prob) {
     qreal c2 = 1 - prob;
 
     return {.c1=c1, .c2=c2, .c3=0, .c4=0}; //c3 and c4 ignored
+}
+
+qreal util_getMaxProbOfOneQubitDephasing() {
+    return 1/2.;
+}
+
+qreal util_getMaxProbOfTwoQubitDephasing() {
+    return 3/4.;
+}
+
+qreal util_getMaxProbOfOneQubitDepolarising() {
+    return 3/4.;
+}
+
+qreal util_getMaxProbOfTwoQubitDepolarising() {
+    return 15/16.;
+}
+
+// no equivalent function for oneQubitDamping, which
+// can accept any valid probability, because we permit
+// it to exceed maximal-mixing and induce purity
+
+
+
+/*
+ * TEMPORARY MEMORY ALLOCATION
+ */
+
+template <typename T>
+void tryAllocVector(vector<T> &vec, qindex size, void (*errFunc)()) {
+
+    // this function resizes the vector, not only reserving it,
+    // such that vec.size() will subsequently return 'size'
+
+    if (size == 0)
+        return;
+
+    try {
+        vec.resize(size);
+
+    } catch (std::bad_alloc &e) { 
+        errFunc();
+    } catch (std::length_error &e) {
+        errFunc();
+    }
+}
+
+void util_tryAllocVector(vector<qreal > &vec, qindex size, void (*errFunc)()) { tryAllocVector(vec, size, errFunc); }
+void util_tryAllocVector(vector<qcomp > &vec, qindex size, void (*errFunc)()) { tryAllocVector(vec, size, errFunc); }
+void util_tryAllocVector(vector<qcomp*> &vec, qindex size, void (*errFunc)()) { tryAllocVector(vec, size, errFunc); }
+
+// cuQuantum needs a vector<double> overload, which we additionally define when qreal!=double. Gross!
+#if FLOAT_PRECISION != 2
+    void util_tryAllocVector(vector<double> &vec, qindex size, void (*errFunc)()) { tryAllocVector(vec, size, errFunc); }
+#endif
+
+
+void util_tryAllocMatrix(vector<vector<qcomp>> &matr, qindex numRows, qindex numCols, void (*errFunc)()) {
+
+    // this function resizes the matrix, not only reserving it,
+    // such that matr.size() will subsequently return 'numRows'
+    // (unless numCols=0), and matr[0].size() will return 'numCols'
+
+    if (numRows == 0 || numCols == 0)
+        return;
+
+    try {
+        // alloc span of rows
+        matr.resize(numRows);
+
+        // alloc each row (serially enumerate since we expected matrix is small/tractable)
+        for (qindex r=0; r<numRows; r++)
+            matr[r].resize(numCols);
+
+    } catch (std::bad_alloc &e) { 
+        errFunc();
+    } catch (std::length_error &e) {
+        errFunc();
+    }
 }

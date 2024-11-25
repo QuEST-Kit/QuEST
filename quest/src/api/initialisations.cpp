@@ -1,19 +1,19 @@
 /** @file
  * API definitions for initialisaing Qureg states.
- *
- * Note many of these can be replaced with bespoke,
- * faster OpenMP and CUDA implementations although
- * that this may prove a premature optimisation
- * since initialisations are expectedly called 
- * relatively very few times in simulation. 
- * Think carefully!
+ * Note that when the Qureg is GPU-accelerated,
+ * these methods will update only the GPU memory
+ * and leave the CPU copy unchanged.
  */
 
-#include "qureg.h"
+#include "quest/include/qureg.h"
+#include "quest/include/calculations.h"
+#include "quest/include/initialisations.h"
 
-#include "../core/validation.hpp"
-#include "../core/bitwise.hpp"
-#include "../src/gpu/gpu_config.hpp"
+#include "quest/src/core/validation.hpp"
+#include "quest/src/core/localiser.hpp"
+#include "quest/src/core/utilities.hpp"
+#include "quest/src/core/bitwise.hpp"
+#include "quest/src/gpu/gpu_config.hpp"
 
 #include "quest/src/core/errors.hpp" // only needed for not-implemented functions
 
@@ -28,28 +28,17 @@ extern "C" {
 void initBlankState(Qureg qureg) {
     validate_quregFields(qureg, __func__);
 
-    // fill CPU memory with 0
-    std::fill(qureg.cpuAmps, qureg.cpuAmps + qureg.numAmpsPerNode, qcomp(0,0));
-
-    // overwrite GPU memory
-    if (qureg.isGpuAccelerated)
-        gpu_copyCpuToGpu(qureg);
+    // |null> = {0, 0, 0, ...}
+    qcomp amp = 0;
+    localiser_statevec_initUniformState(qureg, amp);
 }
 
 
 void initZeroState(Qureg qureg) {
     validate_quregFields(qureg, __func__);
 
-    // fill CPU memory with 0
-    std::fill(qureg.cpuAmps, qureg.cpuAmps + qureg.numAmpsPerNode, qcomp(0,0));
-
-    // set the first global element to 1 (valid for both statevecs and density matrices)
-    if (qureg.rank == 0)
-        qureg.cpuAmps[0] = 0;
-
-    // overwrite GPU memory
-    if (qureg.isGpuAccelerated)
-        gpu_copyCpuToGpu(qureg);
+    // |0> = |0><0|
+    localiser_statevec_initClassicalState(qureg, 0);
 }
 
 
@@ -58,92 +47,142 @@ void initPlusState(Qureg qureg) {
 
     // |+>    = sum_i 1/sqrt(2^N) |i>  where 2^N = numAmps
     // |+><+| = sum_ij 1/2^N |i><j|    where 2^N = sqrt(numAmps)
-    qreal elem = 1.0 / sqrt(qureg.numAmps);
-        
-    // fill CPU memory with elem
-    std::fill(qureg.cpuAmps, qureg.cpuAmps + qureg.numAmpsPerNode, qcomp(elem,0));
-
-    // overwrite GPU memory
-    if (qureg.isGpuAccelerated)
-        gpu_copyCpuToGpu(qureg);
+    qcomp amp = 1.0 / sqrt(qureg.numAmps);
+    localiser_statevec_initUniformState(qureg, amp);
 }
 
 
 void initPureState(Qureg qureg, Qureg pure) {
+    validate_quregFields(qureg, __func__);
+    validate_quregFields(pure, __func__);
+    validate_quregCanBeInitialisedToPureState(qureg, pure, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    // when qureg=statevec, we lazily invoke setQuregToSuperposition which
+    // invokes superfluous floating-point operations which will be happily
+    // occluded by the memory movement costs
+    (qureg.isDensityMatrix)?
+        localiser_densmatr_initPureState(qureg, pure):
+        localiser_statevec_setQuregToSuperposition(0, qureg, 1, pure, 0, pure);
 }
 
 
 void initClassicalState(Qureg qureg, qindex ind) {
     validate_quregFields(qureg, __func__);
-    validate_initClassicalStateIndex(qureg, ind, __func__);
+    validate_basisStateIndex(qureg, ind, __func__);
 
-    // fill CPU memory with 0
-    std::fill(qureg.cpuAmps, qureg.cpuAmps + qureg.numAmpsPerNode, qcomp(0,0));
-
-    // on-diagonal |ind><ind| = ||(2^N+1)ind >>
+    // |ind><ind| = ||ind'>>
     if (qureg.isDensityMatrix)
-        ind *= (1 + powerOf2(qureg.numQubits));
+        ind = util_getGlobalFlatIndex(qureg, ind, ind);
 
-    // only one node needs to write a 1 elem
-    if (qureg.rank == ind / qureg.numAmpsPerNode) // floors
-        qureg.cpuAmps[ind % qureg.numAmpsPerNode] = 1;
-
-    // all nodes overwrite GPU memory
-    if (qureg.isGpuAccelerated)
-        gpu_copyCpuToGpu(qureg);
+    localiser_statevec_initClassicalState(qureg, ind);
 }
 
 
 void initDebugState(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    localiser_statevec_initDebugState(qureg);
 }
 
 
-void initArbitraryState(Qureg qureg, qcomp* amps) {
+void initArbitraryPureState(Qureg qureg, qcomp* amps) {
+    validate_quregFields(qureg, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__); 
+    // set qureg = |amps> or |amps><amps|
+    (qureg.isDensityMatrix)?
+        localiser_densmatr_initArbitraryPureState(qureg, amps):
+        localiser_statevec_initArbitraryPureState(qureg, amps);
 }
 
 
+void initArbitraryMixedState(Qureg qureg, qcomp** amps) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
 
+    localiser_densmatr_initArbitraryMixedState(qureg, amps);
+}
+
+
+void initRandomPureState(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
+
+    // these invoked localiser functions may harmlessly 
+    // re-call the API and re-perform input validation
+
+    if (qureg.isDensityMatrix)
+        localiser_densmatr_initUniformlyRandomPureStateAmps(qureg); 
+    else {
+        localiser_statevec_initUnnormalisedUniformlyRandomPureStateAmps(qureg);
+        setQuregToRenormalized(qureg);
+    }
+}
+
+
+void initRandomMixedState(Qureg qureg, qindex numPureStates) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_numInitRandomPureStates(numPureStates, __func__);
+
+    localiser_densmatr_initMixtureOfUniformlyRandomPureStates(qureg, numPureStates);
+}
 
 
 void setQuregAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsStateVector(qureg, __func__);
+    validate_basisStateIndices(qureg, startInd, numAmps, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
-
-    // re-use code/logic for FullStateDiagMatr (obviously)
+    localiser_statevec_setAmps(amps, qureg, startInd, numAmps);
 }
 
 void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qcomp** amps, qindex numRows, qindex numCols) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_basisStateRowCols(qureg, startRow, startCol, numRows, numCols, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
-}
-
-
-void setQuregToPauliStrSum(Qureg qureg, PauliStrSum sum) {
-
-    // TODO
-    error_functionNotImplemented(__func__);
+    localiser_densmatr_setAmps(amps, qureg, startRow, startCol, numRows, numCols);
 }
 
 
 void setQuregToClone(Qureg targetQureg, Qureg copyQureg) {
+    validate_quregFields(targetQureg, __func__);
+    validate_quregFields(copyQureg, __func__);
+    validate_quregsCanBeCloned(targetQureg, copyQureg, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    // we invoke mixing/superposing, which involves superfluous
+    // floating-point operators but is not expected to cause an
+    // appreciable slowdown since simulation is memory-bound
+    (targetQureg.isDensityMatrix)?
+        localiser_densmatr_mixQureg(0, targetQureg, 1, copyQureg):
+        localiser_statevec_setQuregToSuperposition(0, targetQureg, 1, copyQureg, 0, copyQureg);
 }
 
 
 void setQuregToSuperposition(qcomp facOut, Qureg out, qcomp fac1, Qureg qureg1, qcomp fac2, Qureg qureg2) {
+    validate_quregFields(out, __func__);
+    validate_quregFields(qureg1, __func__);
+    validate_quregFields(qureg2, __func__);
+    validate_quregsCanBeSuperposed(out, qureg1, qureg2, __func__); // asserts statevectors
+
+    localiser_statevec_setQuregToSuperposition(facOut, out, fac1, qureg1, fac2, qureg2);
+}
+
+
+qreal setQuregToRenormalized(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
+
+    qreal prob = calcTotalProb(qureg); // harmlessly re-validates
+    validate_quregRenormProbIsNotZero(prob, __func__);
+
+    qreal norm = (qureg.isDensityMatrix)? prob : sqrt(prob);
+    qreal fac = 1 / norm;
+    localiser_statevec_setQuregToSuperposition(fac, qureg, 0, qureg, 0, qureg);
+
+    return fac;
+}
+
+
+void setQuregToPauliStrSum(Qureg qureg, PauliStrSum sum) {
 
     // TODO
     error_functionNotImplemented(__func__);

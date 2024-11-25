@@ -8,24 +8,14 @@
 #define OPERATIONS_H
 
 #include "quest/include/qureg.h"
+#include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
+#include "quest/include/channels.h"
 
 // enable invocation by both C and C++ binaries
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-
-/*
- * Named gates
- */
-
-void applyS(Qureg qureg, int target);
-
-void applyT(Qureg qureg, int target);
-
-void applyHadamard(Qureg qureg, int target);
 
 
 
@@ -126,12 +116,72 @@ void applyMultiStateControlledDiagMatr(Qureg, int* controls, int* states, int nu
 
 
 /*
+ * DiagMatrPower
+ */
+
+void multiplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
+
+void applyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
+
+void applyControlledDiagMatrPower(Qureg qureg, int control, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
+
+void applyMultiControlledDiagMatrPower(Qureg qureg, int* controls, int numControls, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
+
+void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
+
+
+
+/*
  * FullStateDiagMatr
  */
 
 void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
 
 void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
+
+void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
+
+
+
+/*
+ * S gate
+ */
+
+void applyS(Qureg qureg, int target);
+
+void applyControlledS(Qureg qureg, int control, int target);
+
+void applyMultiControlledS(Qureg qureg, int* controls, int numControls, int target);
+
+void applyMultiStateControlledS(Qureg qureg, int* controls, int* states, int numControls, int target);
+
+
+
+/*
+ * T gate
+ */
+
+void applyT(Qureg qureg, int target);
+
+void applyControlledT(Qureg qureg, int control, int target);
+
+void applyMultiControlledT(Qureg qureg, int* controls, int numControls, int target);
+
+void applyMultiStateControlledT(Qureg qureg, int* controls, int* states, int numControls, int target);
+
+
+
+/*
+ * Hadamard 
+ */
+
+void applyHadamard(Qureg qureg, int target);
+
+void applyControlledHadamard(Qureg qureg, int control, int target);
+
+void applyMultiControlledHadamard(Qureg qureg, int* controls, int numControls, int target);
+
+void applyMultiStateControlledHadamard(Qureg qureg, int* controls, int* states, int numControls, int target);
 
 
 
@@ -154,8 +204,6 @@ void applyMultiStateControlledSwap(Qureg qureg, int* controls, int* states, int 
 /*
  * sqrt-swap
  */
-
-// don't expect users to need multiplySqrtSwap
 
 void applySqrtSwap(Qureg qureg, int qubit1, int qubit2);
 
@@ -247,9 +295,13 @@ void applyMultiStateControlledRotateZ(Qureg qureg, int* controls, int* states, i
  * arbitrary axis rotation
  */
 
-void applyRotateAroundAxis(Qureg qureg, int target, qreal angle, qreal axisX, qreal axisY, qreal axisZ);
+void applyRotateAroundAxis(Qureg qureg, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ);
 
-void applyControlledRotateAroundAxis(Qureg qureg, int control, int target, qreal angle, qreal axisX, qreal axisY, qreal axisZ);
+void applyControlledRotateAroundAxis(Qureg qureg, int ctrl, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ);
+
+void applyMultiControlledRotateAroundAxis(Qureg qureg, int* ctrls, int numCtrls, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ);
+
+void applyMultiStateControlledRotateAroundAxis(Qureg qureg, int* ctrls, int* states, int numCtrls, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ);
 
 
 
@@ -257,7 +309,7 @@ void applyControlledRotateAroundAxis(Qureg qureg, int control, int target, qreal
  * Pauli gadgets
  */
 
-// don't think users will ever want to left-multiply only
+void multiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
 
 void applyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
 
@@ -272,6 +324,8 @@ void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* state
 /*
  * phase gadgets
  */
+
+void multiplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle);
 
 void applyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle);
 
@@ -302,14 +356,6 @@ void applyMultiQubitPhaseShift(Qureg qureg, int* targets, int numTargets, qreal 
  * many-qubit CNOTs (aliases for X)
  */
 
-void applyNot(Qureg qureg, int target);
-
-void applyControlledNot(Qureg qureg, int control, int target);
-
-void applyMultiControlledNot(Qureg qureg, int* controls, int numControls, int target);
-
-void applyMultiStateControlledNot(Qureg qureg, int* controls, int* states, int numControls, int target);
-
 void applyMultiQubitNot(Qureg, int* targets, int numTargets);
 
 void applyControlledMultiQubitNot(Qureg, int control, int* targets, int numTargets);
@@ -324,7 +370,7 @@ void applyMultiStateControlledMultiQubitNot(Qureg, int* controls, int* states, i
  * superoperator
  */
 
-void applySuperOp(Qureg qureg, SuperOp superop);
+void applySuperOp(Qureg qureg, SuperOp superop, int* targets, int numTargets);
 
 
 
@@ -336,9 +382,17 @@ int applyQubitMeasurement(Qureg qureg, int target);
 
 int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability);
 
-void applyForcedQubitMeasurement(Qureg qureg, int target, int outcome);
+qreal applyForcedQubitMeasurement(Qureg qureg, int target, int outcome);
 
 void applyQubitProjector(Qureg qureg, int target, int outcome);
+
+qindex applyMultiQubitMeasurement(Qureg qureg, int* qubits, int numQubits);
+
+qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQubits, qreal* probability);
+
+qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, int numQubits);
+
+void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits);
 
 
 

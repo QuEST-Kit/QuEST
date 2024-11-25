@@ -79,9 +79,13 @@ void validate_envIsInit(const char* caller);
  * DEBUG UTILITIES
  */
 
+void validate_randomSeeds(unsigned* seeds, int numSeeds, const char* caller);
+
 void validate_newEpsilonValue(qreal eps, const char* caller);
 
-void validate_newNumReportedItems(qindex num, const char* caller);
+void validate_newMaxNumReportedScalars(qindex numRows, qindex numCols, const char* caller);
+
+void validate_newMaxNumReportedSigFigs(int numSigFigs, const char* caller);
 
 
 
@@ -103,6 +107,10 @@ void validate_newQuregAllocs(Qureg qureg, const char* caller);
 
 void validate_quregFields(Qureg qureg, const char* caller);
 
+void validate_quregIsStateVector(Qureg qureg, const char* caller);
+
+void validate_quregIsDensityMatrix(Qureg qureg, const char* caller);
+
 
 
 /*
@@ -111,7 +119,7 @@ void validate_quregFields(Qureg qureg, const char* caller);
 
 void validate_newCompMatrParams(int numQubits, const char* caller);
 void validate_newDiagMatrParams(int numQubits, const char* caller);
-void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, const char* caller);
+void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, int useGpu, const char* caller);
 
 void validate_newMatrixAllocs(CompMatr matr, const char* caller);
 void validate_newMatrixAllocs(DiagMatr matr, const char* caller);
@@ -130,6 +138,9 @@ void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd,
 
 void validate_matrixNumQubitsMatchesParam(int numMatrQubits, int numSetterQubits, const char* caller);
 void validate_declaredNumElemsMatchesVectorLength(qindex numElems, qindex vecLength, const char* caller);
+
+void validate_multiVarFuncQubits(int numMatrQubits, int* numQubitsPerVar, int numVars, const char* caller);
+void validate_funcVarSignedFlag(int areSigned, const char* caller);
 
 
 
@@ -165,7 +176,14 @@ void validate_matrixIsHermitian(DiagMatr2 matr, const char* caller);
 void validate_matrixIsHermitian(DiagMatr  matr, const char* caller);
 void validate_matrixIsHermitian(FullStateDiagMatr matr, const char* caller);
 
-void validate_matrixIsCompatibleWithQureg(FullStateDiagMatr matr, Qureg qureg, const char* caller);
+void validate_matrixDimMatchesTargets(CompMatr1 matr, int numTargs, const char* caller);
+void validate_matrixDimMatchesTargets(CompMatr2 matr, int numTargs, const char* caller);
+void validate_matrixDimMatchesTargets(CompMatr  matr, int numTargs, const char* caller);
+void validate_matrixDimMatchesTargets(DiagMatr1 matr, int numTargs, const char* caller);
+void validate_matrixDimMatchesTargets(DiagMatr2 matr, int numTargs, const char* caller);
+void validate_matrixDimMatchesTargets(DiagMatr  matr, int numTargs, const char* caller);
+
+void validate_matrixAndQuregAreCompatible(FullStateDiagMatr matr, Qureg qureg, const char* caller);
 
 
 
@@ -198,6 +216,8 @@ void validate_superOpFieldsMatchPassedParams(SuperOp op, int numQb, const char* 
 void validate_superOpFields(SuperOp op, const char* caller);
 
 void validate_superOpIsSynced(SuperOp op, const char* caller);
+
+void validate_superOpDimMatchesTargs(SuperOp op, int numTargets, const char* caller);
 
 
 
@@ -233,13 +253,7 @@ void validate_krausMapIsSynced(KrausMap map, const char* caller);
 
 void validate_krausMapIsCPTP(KrausMap map, const char* caller);
 
-
-
-/*
- * QUREG INITIALISATIONS
- */
-
-void validate_initClassicalStateIndex(Qureg qureg, qindex ind, const char* caller);
+void validate_krausMapMatchesTargets(KrausMap map, int numTargets, const char* caller);
 
 
 
@@ -250,13 +264,12 @@ void validate_initClassicalStateIndex(Qureg qureg, qindex ind, const char* calle
 void validate_newPauliStrParams(const char* paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller);
 void validate_newPauliStrParams(int*        paulis, int* indices, int numPaulis, int maxNumPaulis, const char* caller);
 
-void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* caller); // called by C++ only
-
-void validate_newPauliStrNumPaulis(int numPaulis, int maxNumPaulis, const char* caller); // called by C++ only
+void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* caller); // used by C++ only API
+void validate_newPauliStrNumPaulis(int numPaulis, int maxNumPaulis, const char* caller); // used by C++ only API
 
 void validate_newPauliStrSumParams(qindex numTerms, const char* caller);
 
-void validate_newPauliStrSumMatchingListLens(qindex numStrs, qindex numCoeffs, const char* caller); // called by C++ only
+void validate_newPauliStrSumMatchingListLens(qindex numStrs, qindex numCoeffs, const char* caller); // used by C++ only API
 
 void validate_newPauliStrSumAllocs(PauliStrSum sum, qindex numBytesStrings, qindex numBytesCoeffs, const char* caller);
 
@@ -277,6 +290,18 @@ void validate_parsedStringIsNotEmpty(bool stringIsNotEmpty, const char* caller);
 
 
 /*
+ * EXISTING PAULI STRING
+ */
+
+void validate_pauliStrTargets(Qureg qureg, PauliStr str, const char* caller);
+
+void validate_controlAndPauliStrTargets(Qureg qureg, int ctrl, PauliStr str, const char* caller);
+
+void validate_controlsAndPauliStrTargets(Qureg qureg, int* ctrls, int numCtrls, PauliStr str, const char* caller);
+
+
+
+/*
  * EXISTING PAULI STRING SUMS
  */
 
@@ -287,11 +312,121 @@ void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller);
 
 
 /*
- * OPERATOR PARAMETERS
+ * BASIS STATE INDICES
+ */
+
+void validate_basisStateIndex(Qureg qureg, qindex ind, const char* caller);
+void validate_basisStateRowCol(Qureg qureg, qindex row, qindex col, const char* caller);
+
+void validate_basisStateIndices(Qureg qureg, qindex startInd, qindex numInds, const char* caller);
+void validate_basisStateRowCols(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols, const char* caller);
+
+void validate_localAmpIndices(Qureg qureg, qindex localStartInd, qindex numInds, const char* caller);
+
+
+
+/*
+ * QUBIT INDICES
  */
 
 void validate_target(Qureg qureg, int target, const char* caller);
+void validate_targets(Qureg qureg, int* targets, int numTargets, const char* caller);
 
+void validate_controls(Qureg qureg, int* ctrls, int numCtrls, const char* caller);
+void validate_controlStates(int* states, int numCtrls, const char* caller);
+
+void validate_controlAndTarget(Qureg qureg, int ctrl, int targ, const char* caller);
+void validate_controlsAndTarget(Qureg qureg, int* ctrls, int numCtrls, int targ, const char* caller);
+void validate_controlAndTargets(Qureg qureg, int ctrl, int* targs, int numTargs, const char* caller);
+void validate_controlsAndTargets(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs, const char* caller);
+
+void validate_twoTargets(Qureg qureg, int target1, int target2, const char* caller);
+void validate_controlAndTwoTargets(Qureg qureg, int ctrl, int targ1, int targ2, const char* caller);
+void validate_controlsAndTwoTargets(Qureg qureg, int* ctrls, int numCtrls, int targ1, int targ2, const char* caller);
+
+
+
+/*
+ * ROTATION PARAMETERS
+ */
+
+void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller);
+
+
+
+/*
+ * MEASUREMENT PARAMETERS
+ */
+
+void validate_measurementOutcomeIsValid(int outcome, const char* caller);
+
+void validate_measurementOutcomesAreValid(int* outcomes, int numOutcomes, const char* caller);
+
+void validate_measurementOutcomeProbNotZero(int outcome, qreal prob, const char* caller);
+
+void validate_measurementOutcomesProbNotZero(int* outcomes, int numQubits, qreal prob, const char* caller);
+
+void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const char* caller);
+
+
+
+/*
+ * DECOHERENCE 
+ */
+
+void validate_probability(qreal prob, const char* caller);
+
+void validate_oneQubitDepashingProb(qreal prob, const char* caller);
+void validate_twoQubitDepashingProb(qreal prob, const char* caller);
+
+void validate_oneQubitDepolarisingProb(qreal prob, const char* caller);
+void validate_twoQubitDepolarisingProb(qreal prob, const char* caller);
+
+void validate_oneQubitDampingProb(qreal prob, const char* caller);
+
+void validate_oneQubitPauliChannelProbs(qreal pX, qreal pY, qreal pZ, const char* caller);
+
+
+
+/*
+ * QUREG COMBINATION
+ */
+
+void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller);
+
+void validate_quregsCanBeSuperposed(Qureg qureg1, Qureg qureg2, Qureg qureg3, const char* caller);
+
+void validate_quregCanBeInitialisedToPureState(Qureg qureg, Qureg pure, const char* caller);
+
+void validate_quregsCanBeCloned(Qureg quregA, Qureg quregB, const char* caller);
+
+void validate_quregsCanBeProducted(Qureg quregA, Qureg quregB, const char* caller);
+
+void validate_throwErrorBecauseCalcFidOfDensMatrNotYetImplemented(const char* caller);
+
+void validate_fidelityIsReal(qcomp fid, const char* caller);
+
+void validate_buresDistanceInnerProdIsNormalised(qreal mag, const char* caller); // may modify mag
+
+void validate_purifiedDistanceIsNormalised(qcomp fid, const char* caller); // may modify mag
+
+
+
+/*
+ * QUREG MODIFICATION
+ */
+
+void validate_quregRenormProbIsNotZero(qreal prob, const char* caller);
+
+void validate_numInitRandomPureStates(qindex numPureStates,  const char* caller);
+
+
+
+/*
+ * EXPECTATION VALUES
+ */
+
+void validate_expecValIsReal(qcomp value, bool isDensMatr, const char* caller);
 
 
 /*

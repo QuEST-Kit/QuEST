@@ -11,9 +11,11 @@
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/memory.hpp"
+#include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
+
 
 
 #if COMPILE_CUDA && ! (defined(__NVCC__) || defined(__HIPCC__))
@@ -315,9 +317,12 @@ void copyArrayIfGpuCompiled(qcomp* cpuArr, qcomp* gpuArr, qindex numElems, enum 
         cudaMemcpyDeviceToHost:
         cudaMemcpyHostToDevice;
 
+    auto src = (direction == TO_HOST)? gpuArr : cpuArr;
+    auto dst = (direction == TO_HOST)? cpuArr : gpuArr;
+
     // synchronous memory copy
     size_t numBytes = numElems * sizeof(qcomp);
-    CUDA_CHECK( cudaMemcpy(gpuArr, cpuArr, numBytes, flag) );
+    CUDA_CHECK( cudaMemcpy(dst, src, numBytes, flag) );
 
 #else
     error_gpuCopyButGpuNotCompiled();
@@ -342,7 +347,11 @@ void copyMatrixIfGpuCompiled(qcomp** cpuMatr, qcomp* gpuArr, qindex matrDim, enu
     for (qindex r=0; r<matrDim; r++) {
         qcomp* cpuRow = cpuMatr[r];
         qcomp* gpuSlice = &gpuArr[r*matrDim];
-        CUDA_CHECK( cudaMemcpyAsync(gpuSlice, cpuRow, numBytesPerRow, flag) );
+
+        auto src = (direction == TO_HOST)? gpuSlice : cpuRow;
+        auto dst = (direction == TO_HOST)? cpuRow   : gpuSlice;
+
+        CUDA_CHECK( cudaMemcpyAsync(dst, src, numBytesPerRow, flag) );
     }
 
     // wait for async copies to complete
@@ -362,20 +371,27 @@ void assertHeapObjectGpuMemIsAllocated(T obj) {
 }
 
 
-void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems) {
-
-    // these functions unusually accept a Qureg just to run internal error validation,
-    // to ensure that the given gpuArr can be read/write without segmentation fault
-    assert_quregIsGpuAccelerated(qureg);
-
+void gpu_copyCpuToGpu(qcomp* cpuArr, qcomp* gpuArr, qindex numElems) {
     copyArrayIfGpuCompiled(cpuArr, gpuArr, numElems, TO_DEVICE);
 }
-void gpu_copyCpuToGpu(Qureg qureg) {
-    gpu_copyCpuToGpu(qureg, qureg.cpuAmps, qureg.gpuAmps, qureg.numAmpsPerNode);
+void gpu_copyGpuToCpu(qcomp* gpuArr, qcomp* cpuArr, qindex numElems) {
+    copyArrayIfGpuCompiled(cpuArr, gpuArr, numElems, TO_HOST);
+}
+
+
+void gpu_copyCpuToGpu(Qureg qureg, qcomp* cpuArr, qcomp* gpuArr, qindex numElems) {
+    // used for moving memory within the same Qureg, hence the Qureg arg only for assertion
+    assert_quregIsGpuAccelerated(qureg);
+    copyArrayIfGpuCompiled(cpuArr, gpuArr, numElems, TO_DEVICE);
 }
 void gpu_copyGpuToCpu(Qureg qureg, qcomp* gpuArr, qcomp* cpuArr, qindex numElems) {
     assert_quregIsGpuAccelerated(qureg);
     copyArrayIfGpuCompiled(cpuArr, gpuArr, numElems, TO_HOST);
+}
+
+
+void gpu_copyCpuToGpu(Qureg qureg) {
+    gpu_copyCpuToGpu(qureg, qureg.cpuAmps, qureg.gpuAmps, qureg.numAmpsPerNode);
 }
 void gpu_copyGpuToCpu(Qureg qureg) {
     gpu_copyGpuToCpu(qureg, qureg.gpuAmps, qureg.cpuAmps, qureg.numAmpsPerNode);
@@ -384,29 +400,37 @@ void gpu_copyGpuToCpu(Qureg qureg) {
 
 void gpu_copyCpuToGpu(CompMatr matr) {
     assertHeapObjectGpuMemIsAllocated(matr);
-
     copyMatrixIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numRows, TO_DEVICE);
+}
+void gpu_copyGpuToCpu(CompMatr matr) {
+    assertHeapObjectGpuMemIsAllocated(matr);
+    copyMatrixIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numRows, TO_HOST);
 }
 
 
 void gpu_copyCpuToGpu(DiagMatr matr) {
     assertHeapObjectGpuMemIsAllocated(matr);
-
     copyArrayIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numElems, TO_DEVICE);
 }
-
-
-void gpu_copyCpuToGpu(FullStateDiagMatr matr) {
+void gpu_copyGpuToCpu(DiagMatr matr) {
     assertHeapObjectGpuMemIsAllocated(matr);
-
-    copyArrayIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numElemsPerNode, TO_DEVICE);
+    copyArrayIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numElems, TO_HOST);
 }
 
 
 void gpu_copyCpuToGpu(SuperOp op) {
     assertHeapObjectGpuMemIsAllocated(op);
-
     copyMatrixIfGpuCompiled(op.cpuElems, util_getGpuMemPtr(op), op.numRows, TO_DEVICE);
+}
+void gpu_copyGpuToCpu(SuperOp op) {
+    assertHeapObjectGpuMemIsAllocated(op);
+    copyMatrixIfGpuCompiled(op.cpuElems, util_getGpuMemPtr(op), op.numRows, TO_HOST);
+}
+
+
+void gpu_copyCpuToGpu(FullStateDiagMatr matr) {
+    assertHeapObjectGpuMemIsAllocated(matr);
+    copyArrayIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numElemsPerNode, TO_DEVICE);
 }
 
 
