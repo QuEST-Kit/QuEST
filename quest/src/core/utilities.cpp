@@ -211,25 +211,6 @@ qindex util_getLocalIndexOfFirstDiagonalAmp(Qureg qureg) {
     return qureg.rank * powerOf2(qureg.logNumColsPerNode);
 }
 
-qindex util_getNumLocalDiagonalAmpsWithBits(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
-    assert_utilsGivenDensMatr(qureg);
-
-    // a corresponding bra-qubit in the prefix with an inconsistent outcome means the node
-    // contains no diagonal basis states consistent with the given outcomes
-    for (size_t i=0; i<qubits.size(); i++)
-        if (!util_isBraQubitInSuffix(qubits[i], qureg))
-            if (util_getRankBitOfBraQubit(qubits[i], qureg) != outcomes[i])
-                return 0;
-
-    // TODO:
-    // I THINK THIS MAY BE BUGGED / INCORRECT LOGIC!!
-
-    // otherwise, every 2^#qubits local diagonal is consistent with outcomes
-    qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
-    qindex numDiags = numColsPerNode / powerOf2(qubits.size());
-    return numDiags;
-}
-
 qindex util_getGlobalFlatIndex(Qureg qureg, qindex globalRow, qindex globalCol) {
     assert_utilsGivenDensMatr(qureg);
 

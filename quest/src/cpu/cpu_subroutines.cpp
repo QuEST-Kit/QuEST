@@ -1585,19 +1585,20 @@ qreal cpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
     qreal prob = 0;
 
     // each iteration visits one amp per 2^qubits.size() amps
+    // (>=1 since all qubits are in suffix, so qubits.size() <= suffix size) 
     qindex numIts = qureg.numAmpsPerNode / powerOf2(qubits.size());
 
     auto sortedQubits = util_getSorted(qubits); // all in suffix
     auto qubitStateMask = util_getBitMask(qubits, outcomes);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numQubits, NumQubits, qubits.size());
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
 
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = nth local index where qubits are in the specified outcome state
-        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubits, qubitStateMask);
+        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitStateMask);
 
         prob += std::norm(qureg.cpuAmps[i]);
     }
@@ -1611,14 +1612,17 @@ qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
+    // note that qubits are only ket qubits for which the corresponding bra-qubit is in the suffix;
+    // this function is not invoked upon nodes where prefix bra-qubits do not correspond to given outcomes
+
     qreal prob = 0;
 
-    // each iteration visits one column (contributing one diagonal amp) per 2^qubits.size() possible
-    qindex numIts = util_getNumLocalDiagonalAmpsWithBits(qureg, qubits, outcomes);
-    qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
+    // each iteration visits one relevant diagonal amp (= one column)
+    qindex numIts = powerOf2(qureg.logNumColsPerNode - qubits.size());
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
+    qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
 
-    auto sortedQubits = util_getSorted(qubits); // all in suffix
+    auto sortedQubits = util_getSorted(qubits); // all in suffix, with corresponding bra's all in suffix
     auto qubitStateMask = util_getBitMask(qubits, outcomes);
 
     // use template param to compile-time unroll loop in insertBits()
@@ -1627,13 +1631,10 @@ qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-        // TODO:
-        // I BELIEVE THIS IS BUGGED AND/OR HAS INCORRECT LOGIC!
+        // i = local statevector index of nth local basis state with a contributing diagonal
+        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitStateMask); // may be unrolled at compile-time
 
-        // i = local column index of the nth local pure state which contributes to the probability
-        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitStateMask);
-
-        // j = local flat index of the diagonal element corresponding to i
+        // j = local, flat, density-matrix index of diagonal amp corresponding to state i
         qindex j = fast_getLocalIndexOfDiagonalAmp(i, firstDiagInd, numAmpsPerCol);
 
         prob += std::real(qureg.cpuAmps[j]);

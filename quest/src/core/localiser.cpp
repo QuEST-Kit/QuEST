@@ -1762,8 +1762,17 @@ qreal localiser_densmatr_calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qu
 
     if (doAnyLocalStatesHaveQubitValues(qureg, braQubits, outcomes)) {
 
-        // such nodes need to know all ket qubits (which are all suffix)
-        prob += accel_densmatr_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes);
+        // such nodes need only know the ket qubits/outcomes for which the bra-qubits are in suffix
+        vector<int> ketQubitsWithBraInSuffix;
+        vector<int> ketOutcomesWithBraInSuffix;
+        for (int q=0; q<qubits.size(); q++)
+            if (util_isBraQubitInSuffix(qubits[q], qureg)) {
+                ketQubitsWithBraInSuffix.push_back(qubits[q]);
+                ketOutcomesWithBraInSuffix.push_back(outcomes[q]);
+            }
+
+        prob += accel_densmatr_calcProbOfMultiQubitOutcome_sub(
+            qureg, ketQubitsWithBraInSuffix, ketOutcomesWithBraInSuffix);
     }
 
     // all nodes must sum their probabilities (unless qureg was cloned per-node), for consensus
