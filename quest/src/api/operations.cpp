@@ -39,6 +39,7 @@ void validateAndApplyAnyCtrlAnyTargUnitaryMatrix(Qureg qureg, int* ctrls, int* s
     validate_controlsAndTargets(qureg, ctrls, numCtrls, targs, numTargs, caller);
     validate_controlStates(states, numCtrls, caller);
     validate_matrixDimMatchesTargets(matr, numTargs, caller); // also checks fields and is-synced
+    validate_mixedAmpsFitInNode(qureg, numTargs, caller);
     validate_matrixIsUnitary(matr, caller); // harmlessly rechecks fields and is-synced
 
     auto ctrlVec  = util_getVector(ctrls,  numCtrls);
@@ -117,6 +118,7 @@ void multiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix) 
     validate_quregFields(qureg, __func__);
     validate_twoTargets(qureg, target1, target2, __func__);
     validate_matrixFields(matrix, __func__); // matrix can be non-unitary
+    validate_mixedAmpsFitInNode(qureg, 2, __func__);
 
     bool conj = false;
     localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, {}, {}, target1, target2, matrix, conj);
@@ -156,6 +158,7 @@ void multiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix
     validate_quregFields(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
     validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also validates fields and is-sync, but not unitarity
+    validate_mixedAmpsFitInNode(qureg, numTargets, __func__);
 
     bool conj = false;
     localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, {}, {}, util_getVector(targets, numTargets), matrix, conj);
@@ -617,9 +620,14 @@ void applyMultiStateControlledSqrtSwap(Qureg qureg, int* controls, int* states, 
     validate_controlsAndTwoTargets(qureg, controls, numControls, target1, target2, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    // this is likely suboptimal, and there must exist a more 
-    // efficient bespoke strategy for sqrt-SWAP, although given
-    // it is a little esoteric, optimisation is not worthwhile
+    // TODO:
+    // this function exacts sqrtSwap as a dense 2-qubit matrix,
+    // where as bespoke communication and simulation strategy is
+    // clearly possible which we have not supported because the gate
+    // is somewhat esoteric. As such, we must validate mixed-amps fit
+
+    validate_mixedAmpsFitInNode(qureg, 2, __func__); // to throw SqrtSwap error, not generic CompMatr2 error
+
     CompMatr2 matr = getCompMatr2({
         {1, 0, 0, 0},
         {0, .5+.5_i, .5-.5_i, 0},
@@ -1224,6 +1232,7 @@ void applySuperOp(Qureg qureg, SuperOp superop, int* targets, int numTargets) {
     validate_superOpFields(superop, __func__);
     validate_superOpIsSynced(superop, __func__);
     validate_superOpDimMatchesTargs(superop, numTargets, __func__);
+    validate_mixedAmpsFitInNode(qureg, numTargets, __func__);
 
     localiser_densmatr_superoperator(qureg, superop, util_getVector(targets, numTargets));
 }

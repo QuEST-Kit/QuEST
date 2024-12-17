@@ -783,6 +783,20 @@ namespace report {
         "The GPU has less available memory (${MEM_AVAIL} bytes) than that needed (${MEM_NEEDED} bytes) to temporarily store the ${NUM_OUTCOMES} outcome probabilities of the specified ${NUM_QUBITS} qubits.";
 
 
+    /*
+    * MISC GATE PARAMETERS
+    */
+
+    string ROTATION_AXIS_VECTOR_IS_ZERO =
+        "The rotation axis vector was all zero, or within epsilion magnitude to the zero vector.";
+
+
+    string CANNOT_FIT_MIXED_STATEVEC_AMPS_INTO_SINGLE_NODE =
+        "Cannot perform this ${NUM_TARGS}-target operation upon a ${NUM_QUREG_QUBITS}-qubit statevector distributed between ${NUM_NODES} nodes, since each node's communication buffer (with capacity for ${NUM_QUREG_AMPS_PER_NODE} amps) cannot simultaneously store the ${NUM_TARG_AMPS} mixed remote amplitudes.";
+
+    string CANNOT_FIT_MIXED_DENSMATR_AMPS_INTO_SINGLE_NODE =
+        "Cannot perform this ${NUM_TARGS}-target operation upon a ${NUM_QUREG_QUBITS}-qubit density-matrix distributed between ${NUM_NODES} nodes, since each node's communication buffer (with capacity for ${NUM_QUREG_AMPS_PER_NODE} amps) cannot simultaneously store the ${NUM_TARG_AMPS} mixed remote amplitudes.";
+
 
     /*
      * CHANNEL PARAMETERS 
@@ -816,7 +830,7 @@ namespace report {
      */
 
     string MIXED_QUREG_NOT_DENSITY_MATRIX =
-        "The first Qureg, which will undergo mixing, must be a density matrx.";
+        "The first Qureg, which will undergo mixing, must be a density matrix.";
 
     string MIXED_QUREGS_HAVE_DIFFERENT_NUM_QUBITS =
         "The given Quregs contain an inconsistent number of qubits (${NUM_A} and ${NUM_B}) and cannot be mixed.";
@@ -3231,19 +3245,6 @@ void validate_controlStates(int* states, int numCtrls, const char* caller) {
 
 
 /*
- * ROTATION PARAMETERS
- */
-
-void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller) {
-
-    qreal norm = pow(x,2) + pow(y,2) + pow(z,2);
-
-    assertThat(norm > global_validationEpsilon, report::ROTATION_AXIS_VECTOR_IS_ZERO, caller);
-}
-
-
-
-/*
  * MEASUREMENT PARAMETERS
  */
 
@@ -3295,6 +3296,42 @@ void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const c
     };
 
     assertThat(memAvail > memNeeded, report::GPU_CANNOT_FIT_TEMP_MEASUREMENT_OUTCOME_PROBS, vars, caller);
+}
+
+
+
+/*
+ * MISC GATE PARAMETERS
+ */
+
+void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller) {
+
+    qreal norm = pow(x,2) + pow(y,2) + pow(z,2);
+
+    assertThat(norm > global_validationEpsilon, report::ROTATION_AXIS_VECTOR_IS_ZERO, caller);
+}
+
+void validate_mixedAmpsFitInNode(Qureg qureg, int numTargets, const char* caller) {
+
+    // only relevant to distributed quregs
+    if (!qureg.isDistributed)
+        return;
+
+    qindex numTargAmps = powerOf2(numTargets * (qureg.isDensityMatrix? 2:1));
+
+    tokenSubs vars = {
+        {"${NUM_TARGS}",        numTargets},
+        {"${NUM_TARG_AMPS}",    numTargAmps},
+        {"${NUM_NODES}",               qureg.numNodes},
+        {"${NUM_QUREG_QUBITS}",        qureg.numQubits},
+        {"${NUM_QUREG_AMPS_PER_NODE}", qureg.numAmpsPerNode}
+    };
+
+    string msg = (qureg.isDensityMatrix)?
+        report::CANNOT_FIT_MIXED_DENSMATR_AMPS_INTO_SINGLE_NODE:
+        report::CANNOT_FIT_MIXED_STATEVEC_AMPS_INTO_SINGLE_NODE;
+
+    assertThat(qureg.numAmpsPerNode >= numTargAmps, msg, vars, caller);
 }
 
 

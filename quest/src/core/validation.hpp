@@ -345,14 +345,6 @@ void validate_controlsAndTwoTargets(Qureg qureg, int* ctrls, int numCtrls, int t
 
 
 /*
- * ROTATION PARAMETERS
- */
-
-void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller);
-
-
-
-/*
  * MEASUREMENT PARAMETERS
  */
 
@@ -365,6 +357,16 @@ void validate_measurementOutcomeProbNotZero(int outcome, qreal prob, const char*
 void validate_measurementOutcomesProbNotZero(int* outcomes, int numQubits, qreal prob, const char* caller);
 
 void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const char* caller);
+
+
+
+/*
+ * MISC GATE PARAMETERS
+ */
+
+void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller);
+
+void validate_mixedAmpsFitInNode(Qureg qureg, int numTargets, const char* caller);
 
 
 
@@ -425,6 +427,7 @@ void validate_numInitRandomPureStates(qindex numPureStates,  const char* caller)
  */
 
 void validate_expecValIsReal(qcomp value, bool isDensMatr, const char* caller);
+
 
 
 /*
