@@ -132,7 +132,7 @@ if (GPUACCELERATED)
     endif()
 
     if(EXISTS "${HIP_PATH}")
-      set(CMAKE_MODULE_PATH "${HIP_PATH}/cmake" ${CMAKE_MODULE_PATH})
+      set(CMAKE_MODULE_PATH "${HIP_PATH}/lib/cmake/hip" ${CMAKE_MODULE_PATH})
       find_package(HIP REQUIRED)
       message(STATUS "Found HIP: " ${HIP_VERSION})
       message(STATUS "HIP PATH: " ${HIP_PATH})
