@@ -756,14 +756,6 @@ namespace report {
 
 
     /*
-    * ROTATION PARAMETERS
-    */
-
-    string ROTATION_AXIS_VECTOR_IS_ZERO =
-        "The rotation axis vector was all zero, or within epsilion magnitude to the zero vector.";
-
-
-    /*
     * MEASUREMENT PARAMETERS
     */
 
@@ -987,8 +979,15 @@ extern "C" {
 /*
  * VALIDATION TOGGLE
  *
- * consulted by assertThat below, or earlier by more expensive
- * validation functions to avoid superfluous compute
+ * which disables all forms of validation (e.g. numerical
+ * Hermiticity of operators, and whether qubit indices are
+ * valid, etc), such that global_validationEpsilon (defined
+ * below) is ignored. Note that many validation functions
+ * will still actually perform the validation checks/compute,
+ * and thereafter decide whether to throw an error within
+ * assertThat(). Ergo expensive validators should check that
+ * global_isValidationEnabled=true before even performing
+ * their checks, to avoid superfluous computation.
  */
 
 static bool global_isValidationEnabled = true;
@@ -1008,8 +1007,12 @@ bool validateconfig_isEnabled() {
 /*
  * VALIDATION PRECISION
  *
- * which influences how strict unitarity, 
- * Hermiticity and CPTP checks are performed
+ * which influences how strict numerical checks are performed,
+ * e.g. checking unitarity/hermiticity/CPTP-ness. This is only
+ * consulted when global_isValidationEnabled=true, and can be
+ * separately disabled by setting epsilon=0, in which case 
+ * permanent properties of structs (like .isCPTP) will not be 
+ * overwritten (so will stay validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
  */
 
 static qreal global_validationEpsilon = DEAULT_VALIDATION_EPSILON;
@@ -1022,6 +1025,12 @@ void validateconfig_setEpsilonToDefault() {
 }
 qreal validateconfig_getEpsilon() {
     return global_validationEpsilon;
+}
+
+bool isNumericalValidationDisabled() {
+    return (
+        global_isValidationEnabled == 0 || 
+        global_validationEpsilon   == 0);
 }
 
 
@@ -2082,8 +2091,8 @@ void ensureMatrixUnitarityIsKnown(T matr) {
 template <class T> 
 void assertMatrixIsUnitary(T matr, const char* caller) {
 
-    // avoid expensive unitarity check if validation is anyway disabled
-    if (!global_isValidationEnabled)
+    // avoid expensive unitarity check (and do not overwrite .isUnitary) if validation is anyway disabled
+    if (isNumericalValidationDisabled())
         return;
 
     // unitarity is determined differently depending on matrix type
@@ -2150,8 +2159,8 @@ void ensureMatrHermiticityIsKnown(T matr) {
 template <class T> 
 void assertMatrixIsHermitian(T matr, const char* caller) {
 
-    // avoid expensive unitarity check if validation is anyway disabled
-    if (!global_isValidationEnabled)
+    // avoid expensive unitarity check (and do not overwrite .isHermitian) if validation is anyway disabled
+    if (isNumericalValidationDisabled())
         return;
 
     // unitarity is determined differently depending on matrix type
@@ -2724,8 +2733,8 @@ void validate_krausMapIsCPTP(KrausMap map, const char* caller) {
     validate_krausMapFields(map, caller);
     validate_krausMapIsSynced(map, caller);
 
-    // avoid expensive CPTP check if validation is anyway disabled
-    if (!global_isValidationEnabled)
+    // avoid expensive CPTP check (and do not overwrite .isCPTP) if validation is anyway disabled
+    if (isNumericalValidationDisabled())
         return;
 
     // evaluate CPTPness if it isn't already known 
@@ -2972,6 +2981,10 @@ void validate_pauliStrSumFields(PauliStrSum sum, const char* caller) {
 }
 
 void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
+
+    // avoid expensive hermiticity check (and do not overwrite .isHermitian) if validation is anyway disabled
+    if (isNumericalValidationDisabled())
+        return;
 
     // ensure hermiticity is known (if not; compute it)
     if (*(sum.isHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)

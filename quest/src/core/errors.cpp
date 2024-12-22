@@ -684,6 +684,12 @@ void assert_utilsGivenDensMatr(Qureg qureg) {
         raiseInternalError("A utility function was given a statevector where a density matrix was expected.");
 }
 
+void assert_utilsGivenNonZeroEpsilon(qreal eps) {
+
+    if (eps == 0)
+        raiseInternalError("A utility function (isUnitary, isHermitian, isCPTP) received an epsilon of zero, which should have precluded it being called.");
+}
+
 
 
 /*

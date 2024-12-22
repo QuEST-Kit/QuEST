@@ -22,7 +22,7 @@ using std::string;
 
 
 /*
- *  MATRIX ATTRIBUTE FLAGS
+ *  PLACEHOLDER STRUCT FIELDS
  */
 
 const int validate_STRUCT_PROPERTY_UNKNOWN_FLAG = -1;
