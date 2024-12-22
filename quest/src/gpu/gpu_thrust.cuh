@@ -642,7 +642,7 @@ qreal thrust_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> q
     auto ampIter = thrust::make_permutation_iterator(getStartPtr(qureg), diagIter);
     auto probIter = thrust::make_transform_iterator(ampIter, probFunctor);
 
-    qindex numIts = util_getNumLocalDiagonalAmpsWithBits(qureg, qubits, outcomes);
+    qindex numIts = powerOf2(qureg.logNumColsPerNode - qubits.size());
     qreal prob = thrust::reduce(probIter, probIter + numIts);
     return prob;
 }

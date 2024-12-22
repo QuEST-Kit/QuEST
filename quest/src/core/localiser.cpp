@@ -803,9 +803,15 @@ void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, vector<int> ctrls, vect
     //     a communicator which may be inelegant alongside our own distribution scheme.
 
     // perform necessary swaps to move all targets into suffix, each of which invokes communication
-    for (size_t i=0; i<targsA.size(); i++)
-        if (targsA[i] != targsB[i])
-            anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, targsA[i], targsB[i]);
+    for (size_t i=0; i<targsA.size(); i++) {
+
+        if (targsA[i] == targsB[i])
+            continue;
+
+        int suffixTarg = std::min(targsA[i], targsB[i]);
+        int prefixTarg = std::max(targsA[i], targsB[i]);
+        anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, suffixTarg, prefixTarg);
+    }
 }
 
 
@@ -1427,6 +1433,13 @@ void localiser_densmatr_twoQubitDepolarising(Qureg qureg, int qubit1, int qubit2
     bool comm1 = doesChannelRequireComm(qureg, qubit1);
     bool comm2 = doesChannelRequireComm(qureg, qubit2);
 
+
+
+    // TODO:
+    // this is bugged, even when non-distributed!!!
+
+
+
     if (comm2 && comm1)
         twoQubitDepolarisingOnPrefixAndPrefix(qureg, qubit1, qubit2, prob);
     if (comm2 && !comm1)
@@ -1755,8 +1768,17 @@ qreal localiser_densmatr_calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qu
 
     if (doAnyLocalStatesHaveQubitValues(qureg, braQubits, outcomes)) {
 
-        // such nodes need to know all ket qubits (which are all suffix)
-        prob += accel_densmatr_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes);
+        // such nodes need only know the ket qubits/outcomes for which the bra-qubits are in suffix
+        vector<int> ketQubitsWithBraInSuffix;
+        vector<int> ketOutcomesWithBraInSuffix;
+        for (int q=0; q<qubits.size(); q++)
+            if (util_isBraQubitInSuffix(qubits[q], qureg)) {
+                ketQubitsWithBraInSuffix.push_back(qubits[q]);
+                ketOutcomesWithBraInSuffix.push_back(outcomes[q]);
+            }
+
+        prob += accel_densmatr_calcProbOfMultiQubitOutcome_sub(
+            qureg, ketQubitsWithBraInSuffix, ketOutcomesWithBraInSuffix);
     }
 
     // all nodes must sum their probabilities (unless qureg was cloned per-node), for consensus

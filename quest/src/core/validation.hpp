@@ -22,7 +22,7 @@ using std::string;
 
 
 /*
- *  MATRIX ATTRIBUTE FLAGS
+ *  PLACEHOLDER STRUCT FIELDS
  */
 
 const int validate_STRUCT_PROPERTY_UNKNOWN_FLAG = -1;
@@ -94,8 +94,6 @@ void validate_newMaxNumReportedSigFigs(int numSigFigs, const char* caller);
  */
 
 void validate_newQuregParams(int numQubits, int isDensMatr, int isDistrib, int isGpuAccel, int numCpuThreads, QuESTEnv env, const char* caller);
-
-void validate_newQuregNotBothMultithreadedAndGpuAccel(int useGpu, int numThreads, const char* caller);
 
 void validate_newQuregAllocs(Qureg qureg, const char* caller);
 
@@ -347,14 +345,6 @@ void validate_controlsAndTwoTargets(Qureg qureg, int* ctrls, int numCtrls, int t
 
 
 /*
- * ROTATION PARAMETERS
- */
-
-void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller);
-
-
-
-/*
  * MEASUREMENT PARAMETERS
  */
 
@@ -367,6 +357,16 @@ void validate_measurementOutcomeProbNotZero(int outcome, qreal prob, const char*
 void validate_measurementOutcomesProbNotZero(int* outcomes, int numQubits, qreal prob, const char* caller);
 
 void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const char* caller);
+
+
+
+/*
+ * MISC GATE PARAMETERS
+ */
+
+void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller);
+
+void validate_mixedAmpsFitInNode(Qureg qureg, int numTargets, const char* caller);
 
 
 
@@ -427,6 +427,7 @@ void validate_numInitRandomPureStates(qindex numPureStates,  const char* caller)
  */
 
 void validate_expecValIsReal(qcomp value, bool isDensMatr, const char* caller);
+
 
 
 /*

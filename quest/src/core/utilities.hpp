@@ -68,8 +68,6 @@ qindex util_getLocalIndexOfGlobalIndex(Qureg qureg, qindex globalInd);
 
 qindex util_getLocalIndexOfFirstDiagonalAmp(Qureg qureg);
 
-qindex util_getNumLocalDiagonalAmpsWithBits(Qureg qureg, vector<int> qubits, vector<int> outcomes);
-
 qindex util_getGlobalFlatIndex(Qureg qureg, qindex globalRow, qindex globalCol);
 
 int util_getRankContainingIndex(Qureg qureg, qindex globalInd);

@@ -211,22 +211,6 @@ qindex util_getLocalIndexOfFirstDiagonalAmp(Qureg qureg) {
     return qureg.rank * powerOf2(qureg.logNumColsPerNode);
 }
 
-qindex util_getNumLocalDiagonalAmpsWithBits(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
-    assert_utilsGivenDensMatr(qureg);
-
-    // a corresponding bra-qubit in the prefix with an inconsistent outcome means the node
-    // contains no diagonal basis states consistent with the given outcomes
-    for (size_t i=0; i<qubits.size(); i++)
-        if (!util_isBraQubitInSuffix(qubits[i], qureg))
-            if (util_getRankBitOfBraQubit(qubits[i], qureg) != outcomes[i])
-                return 0;
-
-    // otherwise, every 2^#qubits local diagonal is consistent with outcomes
-    qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
-    qindex numDiags = numColsPerNode / powerOf2(qubits.size());
-    return numDiags;
-}
-
 qindex util_getGlobalFlatIndex(Qureg qureg, qindex globalRow, qindex globalCol) {
     assert_utilsGivenDensMatr(qureg);
 
@@ -334,10 +318,7 @@ void util_setConj(DiagMatr matrix) {
 // type T can be qcomp** or qcomp*[]
 template <typename T>
 bool isUnitary(T elems, qindex dim, qreal eps) {
-
-    // skip expensive unitarity check if eps is infinite (encoded by 0)
-    if (eps == 0)
-        return true;
+    assert_utilsGivenNonZeroEpsilon(eps);
 
     qreal epsSq = eps * eps;
 
@@ -363,10 +344,7 @@ bool isUnitary(T elems, qindex dim, qreal eps) {
 
 // diagonal version doesn't need templating because array decays to pointer, yay!
 bool isUnitary(qcomp* diags, qindex dim, qreal eps) {
-
-    // skip expensive unitarity check if eps is infinite (encoded by 0)
-    if (eps == 0)
-        return true;
+    assert_utilsGivenNonZeroEpsilon(eps);
 
     // check every element has unit magnitude
     for (qindex i=0; i<dim; i++) {
@@ -437,10 +415,7 @@ bool util_isUnitary(FullStateDiagMatr matrix, qreal eps) {
 // type T can be qcomp** or qcomp*[]
 template <typename T>
 bool isHermitian(T elems, qindex dim, qreal eps) {
-
-    // skip expensive Hermiticity check if eps is infinite (encoded by 0)
-    if (eps == 0)
-        return true;
+    assert_utilsGivenNonZeroEpsilon(eps);
 
     qreal epsSq = eps * eps;
 
@@ -460,10 +435,7 @@ bool isHermitian(T elems, qindex dim, qreal eps) {
 
 // diagonal version doesn't need templating because array decays to pointer, yay!
 bool isHermitian(qcomp* diags, qindex dim, qreal eps) {
-
-    // skip expensive Hermiticity check if eps is infinite (encoded by 0)
-    if (eps == 0)
-        return true;
+    assert_utilsGivenNonZeroEpsilon(eps);
 
     // check every element has a zero (or <eps) imaginary component
     for (qindex i=0; i<dim; i++)
@@ -540,16 +512,13 @@ bool util_isHermitian(PauliStrSum sum, qreal eps) {
  */
 
 bool util_isCPTP(KrausMap map, qreal eps) {
+    assert_utilsGivenNonZeroEpsilon(eps);
 
     // TODO:
     // if KrausMap is GPU-accelerated, we should maybe
     // instead perform this calculation using the GPU.
     // otherwise, if matrix is large, we should potentially
     // use a multithreaded routine
-
-    // skip expensive CPTP check if eps is infinite (encoded by 0)
-    if (eps == 0)
-        return true;
 
     qreal epsSquared = eps * eps;
 
