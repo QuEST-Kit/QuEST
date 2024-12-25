@@ -1119,12 +1119,6 @@ TEST_CASE( "calcProbOfOutcome", "[calculations]" ) {
         }
         SECTION( "density-matrix" ) {
 
-
-            // TODO: 
-            // fix this bug!!
-            FAIL( "KNOWN BUG IN DISTRIBUTED DENSITY-MATRIX VERSION" );
-
-            
             SECTION( "pure" ) {
                 
                 // set mat to a random |r><r|

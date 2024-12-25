@@ -36,12 +36,14 @@
     QVector refVec = toQVector(quregVec); \
     QMatrix refMatr = toQMatrix(quregMatr); \
     assertQuregAndRefInDebugState(quregVec, refVec); \
-    assertQuregAndRefInDebugState(quregMatr, refMatr);
+    assertQuregAndRefInDebugState(quregMatr, refMatr); \
+    setValidationEpsilon(REAL_EPS);
 
 /** Destroys the data structures made by PREPARE_TEST */
 #define CLEANUP_TEST(quregVec, quregMatr) \
     destroyQureg(quregVec); \
-    destroyQureg(quregMatr);
+    destroyQureg(quregMatr); \
+    setValidationEpsilon(REAL_EPS);
 
 /* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::Contains;
@@ -2855,7 +2857,8 @@ TEST_CASE( "twoQubitUnitary", "[unitaries]" ) {
                 
             // pretend we have a very limited distributed memory
             quregVec.numAmpsPerNode = 1;
-            REQUIRE_THROWS_WITH( twoQubitUnitary(quregVec, 0, 1, matr), Contains("targets too many qubits"));
+            quregVec.logNumAmpsPerNode = 1;
+            REQUIRE_THROWS_WITH( twoQubitUnitary(quregVec, 0, 1, matr), Contains("communication buffer") && Contains("cannot simultaneously store") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
