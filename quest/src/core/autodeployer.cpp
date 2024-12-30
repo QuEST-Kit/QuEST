@@ -67,7 +67,8 @@ void chooseWhetherToDistributeQureg(int numQubits, int isDensMatr, int &useDistr
     // it's ok if we cannot query RAM; if we'd have exceeded it, it's likely we'll exceed auto-threshold and will still distribute
     } catch (mem::COULD_NOT_QUERY_RAM &e) {}
 
-    // force distribution if GPU deployment is possible but we exceed local VRAM
+    // force distribution if GPU deployment is available but we exceed local VRAM; 
+    // this is preferable over falling back to CPU-only which would be astonishingly slow 
     if (useGpuAccel == 1 || useGpuAccel == modeflag::USE_AUTO) {
         size_t localGpuMem = gpu_getCurrentAvailableMemoryInBytes();
         if (!mem_canQuregFitInMemory(numQubits, isDensMatr, 1, localGpuMem)) {
@@ -76,47 +77,44 @@ void chooseWhetherToDistributeQureg(int numQubits, int isDensMatr, int &useDistr
         }
     }
 
-    // by now, we know that Qureg can definitely fit into a single GPU, or principally fit into RAM,
-    // but we may still wish to distribute it so that multiple Quregs don't choke up memory.
+    // to reach here, we know that Qureg can fit into the remaining memory of a single GPU, or principally 
+    // fit into RAM, but we may still wish to distribute for improved parallelisation and to avoid memory saturation
     int effectiveNumQubitsPerNode = mem_getEffectiveNumStateVecQubitsPerNode(numQubits, isDensMatr, numEnvNodes);
     useDistrib = (effectiveNumQubitsPerNode >= MIN_NUM_LOCAL_QUBITS_FOR_AUTO_QUREG_DISTRIBUTION);
 }
 
 
-void chooseWhetherToGpuAccelQureg(int numQubits, int isDensMatr, int useDistrib, int &useGpuAccel, int numQuregNodes) {
+void chooseWhetherToGpuAccelQureg(int numQubits, int isDensMatr, int &useGpuAccel, int numQuregNodes) {
 
     // if the flag is already set, don't change it
     if (useGpuAccel != modeflag::USE_AUTO)
         return;
 
-    // determine the 'effective number of qubits' each GPU would have to simulate, if distributed
+    // determine the 'effective number of qubits' each GPU would have to simulate, if distributed...
     int effectiveNumQubits = mem_getEffectiveNumStateVecQubitsPerNode(numQubits, isDensMatr, numQuregNodes);
 
-    // choose to GPU accelerate only if that's not too few
+    // and choose to GPU accelerate only if that's not too few
     useGpuAccel = (effectiveNumQubits >= MIN_NUM_LOCAL_QUBITS_FOR_AUTO_QUREG_GPU_ACCELERATION);
 
     // notice there was no automatic disabling of GPU acceleration in the scenario that the local
     // partition exceeded GPU memory. This is because such a scenario would be catastrophically
     // slow and astonish users by leaving GPUs idle in intensive simulation. Instead, we auto-deploy
-    // to GPU and subsequent validation will notice we exceeded GPU memory.
+    // to GPU anyway and subsequent validation will notice we exceeded GPU memory and report an error.
 }
 
 
-void chooseWhetherToMultithreadQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int &useMultithread, int numQuregNodes) {
+void chooseWhetherToMultithreadQureg(int numQubits, int isDensMatr, int &useMultithread, int numQuregNodes) {
 
     // if the flag is already set (user-given, or inferred from env), don't change it
     if (useMultithread != modeflag::USE_AUTO)
         return;
 
-    // if GPU-aceleration was chosen, disable auto multithreading...
-    if (useGpuAccel) {
-        useMultithread = 0;
-        return;
-    }
-
-    // otherwise, we're not GPU-accelerating, and should choose to multithread based on Qureg size
+    // otherwise, choose to multithread based on Qureg size
     int effectiveNumQubits = mem_getEffectiveNumStateVecQubitsPerNode(numQubits, isDensMatr, numQuregNodes);
     useMultithread = (effectiveNumQubits >= MIN_NUM_LOCAL_QUBITS_FOR_AUTO_QUREG_MULTITHREADING);
+
+    // note the qureg may be simultaneously GPU-accelerated and so never use its
+    // multithreaded CPU routines, except in functions which accept multiple Quregs
 }
 
 
@@ -125,8 +123,6 @@ void autodep_chooseQuregDeployment(int numQubits, int isDensMatr, int &useDistri
     // preconditions:
     //  - the given configuration is compatible with env (assured by prior validation)
     //  - this means no deployment is forced (=1) which is incompatible with env
-    //  - it also means GPU-acceleration and multithreading are not simultaneously forced
-    //    (although they may still be left automatic and need explicit revision)
 
     // disable any automatic deployments not permitted by env (it's gauranteed we never overwrite =1 to =0)
     if (!env.isDistributed)
@@ -141,11 +137,15 @@ void autodep_chooseQuregDeployment(int numQubits, int isDensMatr, int &useDistri
     if (env.numNodes == 1)
         useDistrib = 0;
 
-    // overwrite any auto options (== modeflag::USE_AUTO)
+    // overwrite useDistrib
     chooseWhetherToDistributeQureg(numQubits, isDensMatr, useDistrib, useGpuAccel, env.numNodes);
     int numQuregNodes = (useDistrib)? env.numNodes : 1;
-    chooseWhetherToGpuAccelQureg(numQubits, isDensMatr, useDistrib, useGpuAccel, numQuregNodes);
-    chooseWhetherToMultithreadQureg(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread, numQuregNodes);
+    
+    // overwrite useGpuAccel
+    chooseWhetherToGpuAccelQureg(numQubits, isDensMatr, useGpuAccel, numQuregNodes);
+
+    // overwrite useMultithread
+    chooseWhetherToMultithreadQureg(numQubits, isDensMatr, useMultithread, numQuregNodes);
 }
 
 

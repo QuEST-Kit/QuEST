@@ -1,7 +1,11 @@
 
 #include "catch.hpp"
-#include "QuEST.h"
-#include "utilities.hpp"
+
+#define INCLUDE_DEPRECATED_FUNCTIONS 1
+#define DISABLE_DEPRECATION_WARNINGS 1
+#include "quest.h"
+
+#include "test_utilities.hpp"
     
 /* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::Contains;
@@ -14,14 +18,14 @@ using Catch::Matchers::Contains;
  */
 TEST_CASE( "cloneQureg", "[state_initialisations]" ) {
     
-    Qureg vec1 = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat1 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec1 = createForcedQureg(NUM_QUBITS);
+    Qureg mat1 = createForcedDensityQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
         SECTION( "state-vector" ) {
             
-            Qureg vec2 = createQureg(NUM_QUBITS, QUEST_ENV);
+            Qureg vec2 = createForcedQureg(NUM_QUBITS);
             
             // make sure states start differently
             initDebugState(vec1);    
@@ -36,11 +40,11 @@ TEST_CASE( "cloneQureg", "[state_initialisations]" ) {
             // make sure vec1 unaffected
             REQUIRE( areEqual(vec1, copy1) );
             
-            destroyQureg(vec2, QUEST_ENV);
+            destroyQureg(vec2);
         }
         SECTION( "density-matrix" ) {
             
-            Qureg mat2 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+            Qureg mat2 = createForcedDensityQureg(NUM_QUBITS);
 
             // make sure states start differently
             initDebugState(mat1);
@@ -55,7 +59,7 @@ TEST_CASE( "cloneQureg", "[state_initialisations]" ) {
             // make sure vec1 unaffected
             REQUIRE( areEqual(mat1, copy1) );
             
-            destroyQureg(mat2, QUEST_ENV);
+            destroyQureg(mat2);
         }
     }
     SECTION( "input validation" ) {
@@ -67,18 +71,18 @@ TEST_CASE( "cloneQureg", "[state_initialisations]" ) {
         }
         SECTION( "qureg dimensions" ) {
             
-            Qureg vec3 = createQureg(vec1.numQubitsRepresented + 1, QUEST_ENV);
-            Qureg mat3 = createDensityQureg(mat1.numQubitsRepresented + 1, QUEST_ENV);
+            Qureg vec3 = createForcedQureg(vec1.numQubits + 1);
+            Qureg mat3 = createForcedDensityQureg(mat1.numQubits + 1);
             
             REQUIRE_THROWS_WITH( cloneQureg(vec1, vec3), Contains("Dimensions") && Contains("don't match") );
             REQUIRE_THROWS_WITH( cloneQureg(mat1, mat3), Contains("Dimensions") && Contains("don't match") );
             
-            destroyQureg(vec3, QUEST_ENV);
-            destroyQureg(mat3, QUEST_ENV);
+            destroyQureg(vec3);
+            destroyQureg(mat3);
         }
     }
-    destroyQureg(vec1, QUEST_ENV);
-    destroyQureg(mat1, QUEST_ENV);
+    destroyQureg(vec1);
+    destroyQureg(mat1);
 }
 
 
@@ -89,8 +93,8 @@ TEST_CASE( "cloneQureg", "[state_initialisations]" ) {
  */
 TEST_CASE( "initBlankState", "[state_initialisations]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
+    Qureg mat = createForcedDensityQureg(NUM_QUBITS);
         
     SECTION( "correctness" ) {
         
@@ -110,8 +114,8 @@ TEST_CASE( "initBlankState", "[state_initialisations]" ) {
         // no user validation
         SUCCEED( );
     }
-    destroyQureg(vec, QUEST_ENV);
-    destroyQureg(mat, QUEST_ENV);
+    destroyQureg(vec);
+    destroyQureg(mat);
 }
 
 
@@ -122,8 +126,8 @@ TEST_CASE( "initBlankState", "[state_initialisations]" ) {
  */
 TEST_CASE( "initClassicalState", "[state_initialisations]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
+    Qureg mat = createForcedDensityQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -153,8 +157,8 @@ TEST_CASE( "initClassicalState", "[state_initialisations]" ) {
             REQUIRE_THROWS_WITH( initClassicalState(vec, ind), Contains("Invalid state index") );
         }
     }
-    destroyQureg(vec, QUEST_ENV);
-    destroyQureg(mat, QUEST_ENV);
+    destroyQureg(vec);
+    destroyQureg(mat);
 }
 
 
@@ -165,8 +169,8 @@ TEST_CASE( "initClassicalState", "[state_initialisations]" ) {
  */
 TEST_CASE( "initPlusState", "[state_initialisations]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
+    Qureg mat = createForcedDensityQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -198,8 +202,8 @@ TEST_CASE( "initPlusState", "[state_initialisations]" ) {
         // no user validation
         SUCCEED( );
     }
-    destroyQureg(vec, QUEST_ENV);
-    destroyQureg(mat, QUEST_ENV);
+    destroyQureg(vec);
+    destroyQureg(mat);
 }
 
 
@@ -210,8 +214,8 @@ TEST_CASE( "initPlusState", "[state_initialisations]" ) {
  */
 TEST_CASE( "initPureState", "[state_initialisations]" ) {
     
-    Qureg vec1 = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat1 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec1 = createForcedQureg(NUM_QUBITS);
+    Qureg mat1 = createForcedDensityQureg(NUM_QUBITS);
         
     SECTION( "correctness" ) {
         
@@ -219,7 +223,7 @@ TEST_CASE( "initPureState", "[state_initialisations]" ) {
             
             /* state-vector version just performs cloneQureg */
             
-            Qureg vec2 = createQureg(NUM_QUBITS, QUEST_ENV);
+            Qureg vec2 = createForcedQureg(NUM_QUBITS);
             
             // make sure states start differently
             initDebugState(vec1);    
@@ -234,7 +238,7 @@ TEST_CASE( "initPureState", "[state_initialisations]" ) {
             // make sure vec1 was not modified 
             REQUIRE( areEqual(vec1, copy1) );
             
-            destroyQureg(vec2, QUEST_ENV);
+            destroyQureg(vec2);
         }
         SECTION( "density-matrix" ) {
             
@@ -267,26 +271,26 @@ TEST_CASE( "initPureState", "[state_initialisations]" ) {
         }
         SECTION( "qureg dimensions" ) {
             
-            Qureg vec2 = createQureg(NUM_QUBITS + 1, QUEST_ENV);
+            Qureg vec2 = createForcedQureg(NUM_QUBITS + 1);
             REQUIRE_THROWS_WITH( initPureState(vec1, vec2), Contains("Dimensions") && Contains("don't match") );
             REQUIRE_THROWS_WITH( initPureState(mat1, vec2), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(vec2, QUEST_ENV);
+            destroyQureg(vec2);
         }
     }
-    destroyQureg(vec1, QUEST_ENV);
-    destroyQureg(mat1, QUEST_ENV);
+    destroyQureg(vec1);
+    destroyQureg(mat1);
 }
 
 
 
-/** @sa initStateFromAmps
+/** @sa initArbitraryPureState
  * @ingroup unittest 
  * @author Tyson Jones 
  */
-TEST_CASE( "initStateFromAmps", "[state_initialisations]" ) {
+TEST_CASE( "initArbitraryPureState", "[state_initialisations]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
+    Qureg mat = createForcedDensityQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -294,41 +298,28 @@ TEST_CASE( "initStateFromAmps", "[state_initialisations]" ) {
             
             // create random (unnormalised) vector
             QVector vecRef = getRandomQVector(1<<NUM_QUBITS);
-            
-            VLA(qreal, ampsRe, vec.numAmpsTotal);
-            VLA(qreal, ampsIm, vec.numAmpsTotal);
-            for (size_t i=0; i<vecRef.size(); i++) {
-                ampsRe[i] = real(vecRef[i]);
-                ampsIm[i] = imag(vecRef[i]);
-            }
-            
-            initStateFromAmps(vec, ampsRe, ampsIm);
+
+            initArbitraryPureState(vec, vecRef.data());
             REQUIRE( areEqual(vec, vecRef) );
         }
         SECTION( "density-matrix" ) {
             
             // create random (unnormalised) matrix
             QMatrix matRef = getRandomQMatrix(1<<NUM_QUBITS);
-            
-            VLA(qreal, ampsRe, mat.numAmpsTotal);
-            VLA(qreal, ampsIm, mat.numAmpsTotal);
+            QVector amps(mat.numAmps);
             
             // populate column-wise 
             long long int i=0;
-            for (size_t c=0; c<matRef.size(); c++) {
-                for (size_t r=0; r<matRef.size(); r++) {
-                    ampsRe[i] = real(matRef[r][c]);
-                    ampsIm[i] = imag(matRef[r][c]);
-                    i++;
-                }
-            }
-    
-            initStateFromAmps(mat, ampsRe, ampsIm);
+            for (size_t c=0; c<matRef.size(); c++)
+                for (size_t r=0; r<matRef.size(); r++)
+                    amps[i++] = matRef[r][c];
+
+            initArbitraryPureState(vec, amps.data());
             REQUIRE( areEqual(mat, matRef) );
         }
     }
-    destroyQureg(vec, QUEST_ENV);
-    destroyQureg(mat, QUEST_ENV);
+    destroyQureg(vec);
+    destroyQureg(mat);
 }
 
 
@@ -339,8 +330,8 @@ TEST_CASE( "initStateFromAmps", "[state_initialisations]" ) {
  */
 TEST_CASE( "initZeroState", "[state_initialisations]" ) {
 
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
+    Qureg mat = createForcedDensityQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -349,7 +340,7 @@ TEST_CASE( "initZeroState", "[state_initialisations]" ) {
             initBlankState(vec);
             initZeroState(vec);
             
-            QVector refVec = QVector(vec.numAmpsTotal);
+            QVector refVec = QVector(vec.numAmps);
             refVec[0] = 1;
             REQUIRE( areEqual(vec, refVec) );
         }
@@ -358,7 +349,7 @@ TEST_CASE( "initZeroState", "[state_initialisations]" ) {
             initBlankState(mat);
             initZeroState(mat);
             
-            QMatrix refMat = getZeroMatrix(1<<mat.numQubitsRepresented);
+            QMatrix refMat = getZeroMatrix(1<<mat.numQubits);
             refMat[0][0] = 1;
             REQUIRE( areEqual(mat, refMat) );
         }
@@ -368,8 +359,8 @@ TEST_CASE( "initZeroState", "[state_initialisations]" ) {
         // no input validation 
         SUCCEED( );
     }
-    destroyQureg(vec, QUEST_ENV);
-    destroyQureg(mat, QUEST_ENV);
+    destroyQureg(vec);
+    destroyQureg(mat);
 }
 
 
@@ -378,13 +369,12 @@ TEST_CASE( "initZeroState", "[state_initialisations]" ) {
  * @ingroup unittest 
  * @author Tyson Jones 
  */
-TEST_CASE( "setAmps", "[state_initialisations]" ) {
+TEST_CASE( "setQuregAmps", "[state_initialisations]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
     
-    int maxInd = vec.numAmpsTotal;
-    VLA(qreal, reals, maxInd);
-    VLA(qreal, imags, maxInd);
+    int maxInd = vec.numAmps;
+    QVector amps = getRandomQVector(maxInd);
     
     SECTION( "correctness" ) {
         
@@ -394,19 +384,13 @@ TEST_CASE( "setAmps", "[state_initialisations]" ) {
             int startInd = GENERATE_COPY( range(0,maxInd) );
             int numAmps = GENERATE_COPY( range(0,1+maxInd-startInd) ); // upper-bound allows all amps specified
             
-            // generate random amplitudes
-            for (int i=0; i<numAmps; i++) {
-                reals[i] = getRandomReal(-5,5);
-                imags[i] = getRandomReal(-5,5);
-            }
-            
             // check both specified and un-specified amplitudes are correctly handled
             initDebugState(vec);
             QVector vecRef = toQVector(vec);
-            
-            setAmps(vec, startInd, reals, imags, numAmps);
+
+            setQuregAmps(vec, startInd, amps.data(), numAmps);
             for (int i=0; i<numAmps; i++)
-                vecRef[startInd+i] = reals[i] + imags[i] * (qcomp) 1i;
+                vecRef[startInd+i] = amps[i];
                 
             REQUIRE( areEqual(vec, vecRef) );
         }
@@ -417,7 +401,7 @@ TEST_CASE( "setAmps", "[state_initialisations]" ) {
             
             int startInd = GENERATE_COPY( -1, maxInd );
             int numAmps = 0;
-            REQUIRE_THROWS_WITH( setAmps(vec, startInd, reals, imags, numAmps), Contains("Invalid amplitude index") );
+            REQUIRE_THROWS_WITH( setQuregAmps(vec, startInd, amps.data(), numAmps), Contains("Invalid amplitude index") );
         }
         
         SECTION( "number of amplitudes" ) {
@@ -425,171 +409,172 @@ TEST_CASE( "setAmps", "[state_initialisations]" ) {
             // independent
             int startInd = 0;
             int numAmps = GENERATE_COPY( -1, maxInd+1 );
-            REQUIRE_THROWS_WITH( setAmps(vec, startInd, reals, imags, numAmps), Contains("Invalid number of amplitudes") );
+            REQUIRE_THROWS_WITH( setQuregAmps(vec, startInd, amps.data(), numAmps), Contains("Invalid number of amplitudes") );
 
             // invalid considering start-index
             startInd = maxInd - 1;
             numAmps = 2;
-            REQUIRE_THROWS_WITH( setAmps(vec, startInd, reals, imags, numAmps), Contains("More amplitudes given than exist") );
+            REQUIRE_THROWS_WITH( setQuregAmps(vec, startInd, amps.data(), numAmps), Contains("More amplitudes given than exist") );
         }
         SECTION( "density-matrix" ) {
             
-            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( setAmps(mat, 0, reals, imags, 0), Contains("valid only for state-vectors") );
-            destroyQureg(mat, QUEST_ENV);
+            Qureg mat = createForcedDensityQureg(NUM_QUBITS);
+            REQUIRE_THROWS_WITH( setQuregAmps(mat, 0, amps.data(), 0), Contains("valid only for state-vectors") );
+            destroyQureg(mat);
         }
     }
-    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(vec);
 }
 
 
 
-/** @sa setDensityAmps
- * @ingroup unittest 
- * @author Tyson Jones 
- */
-TEST_CASE( "setDensityAmps", "[state_initialisations]" ) {
-    
-    Qureg matr = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-    VLA(qreal, reals, matr.numAmpsTotal);
-    VLA(qreal, imags, matr.numAmpsTotal);
-    int maxInd = (1 << NUM_QUBITS);
-    
-    SECTION( "correctness" ) {
-        
-        SECTION( "density-matrix" ) {
-            
-            // try all valid number of amplitudes and offsets
-            int startRow = GENERATE_COPY( range(0,maxInd) );
-            int startCol = GENERATE_COPY( range(0,maxInd) );
-            
-            // determine the max number of amps that can be passed from the given start indices
-            int numPriorAmps = startRow + startCol*(1 << matr.numQubitsRepresented);
-            int maxNumAmps = matr.numAmpsTotal - numPriorAmps;
+// setDensityAmps removed because replacement setDensityQuregAmps
+// has an incompatible signature (accepting qcomps directly). Note
+// I do not know why we updated setQuregAmps above to the v4 API :)
 
-            // previously, we tried all possible number of amps, like so:
-            //      int numAmps = GENERATE_COPY( range(0,maxNumAmps) ); // upper-bound allows all amps specified
-            // but this is too many and causes a timeout on Ubuntu. 
-            // So we instead randomly choose the number of amps, and repeat 10 times.
-            int numAmps = getRandomInt(0, maxNumAmps);
-            GENERATE_COPY( range(0,10) );
+    // /** @sa setDensityAmps
+    //  * @ingroup unittest 
+    //  * @author Tyson Jones 
+    //  */
+    // TEST_CASE( "setDensityAmps", "[state_initialisations]" ) {
+        
+    //     Qureg matr = createForcedDensityQureg(NUM_QUBITS);
+    //     QVector amps = getRandomQVector(matr.numAmps);
+    //     int maxInd = (1 << NUM_QUBITS);
+        
+    //     SECTION( "correctness" ) {
             
-            // generate random amplitudes
-            for (int i=0; i<numAmps; i++) {
-                reals[i] = getRandomReal(-5,5);
-                imags[i] = getRandomReal(-5,5);
-            }
-            
-            // check both specified and un-specified amplitudes are correctly handled
-            initDebugState(matr);
-            QMatrix matrRef = toQMatrix(matr);
-            
-            setDensityAmps(matr, startRow, startCol, reals, imags, numAmps);
-            
-            int r=startRow;
-            int c=startCol;
-            for (int i=0; i<numAmps; i++) {
-                qcomp amp = reals[i] + imags[i] * (qcomp) 1i;
-                matrRef[r][c] = amp;
+    //         SECTION( "density-matrix" ) {
                 
-                r++;
-                if (r >= maxInd ) {
-                    r=0;
-                    c++;
-                }
-            }
+    //             // try all valid number of amplitudes and offsets
+    //             int startRow = GENERATE_COPY( range(0,maxInd) );
+    //             int startCol = GENERATE_COPY( range(0,maxInd) );
                 
-            REQUIRE( areEqual(matr, matrRef) );
-        }
-    }
-    SECTION( "input validation" ) {
-        
-        SECTION( "start index" ) {
-            
-            int badInd = GENERATE_COPY( -1, maxInd );
-            int numAmps = 0;
-            REQUIRE_THROWS_WITH( setDensityAmps(matr, badInd, 0, reals, imags, numAmps), Contains("Invalid amplitude index") );
-            REQUIRE_THROWS_WITH( setDensityAmps(matr, 0, badInd, reals, imags, numAmps), Contains("Invalid amplitude index") );
-        }
-        SECTION( "number of amplitudes" ) {
-            
-            // independent
-            int numAmps = GENERATE_COPY( -1, matr.numAmpsTotal+1 );
-            REQUIRE_THROWS_WITH( setDensityAmps(matr, 0, 0, reals, imags, numAmps), Contains("Invalid number of amplitudes") );
+    //             // determine the max number of amps that can be passed from the given start indices
+    //             int numPriorAmps = startRow + startCol*(1 << matr.numQubits);
+    //             int maxNumAmps = matr.numAmps - numPriorAmps;
 
-            // invalid considering start-index
-            REQUIRE_THROWS_WITH( setDensityAmps(matr, maxInd-1, maxInd-1, reals, imags, 2), Contains("More amplitudes given than exist") );
-            REQUIRE_THROWS_WITH( setDensityAmps(matr, maxInd-1, maxInd-2, reals, imags, maxInd+2), Contains("More amplitudes given than exist") );
-        }
-        SECTION( "state-vector" ) {
+    //             // previously, we tried all possible number of amps, like so:
+    //             //      int numAmps = GENERATE_COPY( range(0,maxNumAmps) ); // upper-bound allows all amps specified
+    //             // but this is too many and causes a timeout on Ubuntu. 
+    //             // So we instead randomly choose the number of amps, and repeat 10 times.
+    //             int numAmps = getRandomInt(0, maxNumAmps);
+    //             GENERATE_COPY( range(0,10) );
+                
+    //             // check both specified and un-specified amplitudes are correctly handled
+    //             initDebugState(matr);
+    //             QMatrix matrRef = toQMatrix(matr);
+                
+    //             setDensityQuregAmps(matr, startRow, startCol, reals, imags, numAmps);
+                
+    //             int r=startRow;
+    //             int c=startCol;
+    //             for (int i=0; i<numAmps; i++) {
+    //                 qcomp amp = reals[i] + imags[i] * (qcomp) 1i;
+    //                 matrRef[r][c] = amp;
+                    
+    //                 r++;
+    //                 if (r >= maxInd ) {
+    //                     r=0;
+    //                     c++;
+    //                 }
+    //             }
+                    
+    //             REQUIRE( areEqual(matr, matrRef) );
+    //         }
+    //     }
+    //     SECTION( "input validation" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( setDensityAmps(vec, 0, 0, reals, imags, 0), Contains("valid only for density matrices") );
-            destroyQureg(vec, QUEST_ENV);
-        }
-    }
-    destroyQureg(matr, QUEST_ENV);
-}
+    //         SECTION( "start index" ) {
+                
+    //             int badInd = GENERATE_COPY( -1, maxInd );
+    //             int numAmps = 0;
+    //             REQUIRE_THROWS_WITH( setDensityAmps(matr, badInd, 0, reals, imags, numAmps), Contains("Invalid amplitude index") );
+    //             REQUIRE_THROWS_WITH( setDensityAmps(matr, 0, badInd, reals, imags, numAmps), Contains("Invalid amplitude index") );
+    //         }
+    //         SECTION( "number of amplitudes" ) {
+                
+    //             // independent
+    //             int numAmps = GENERATE_COPY( -1, matr.numAmps+1 );
+    //             REQUIRE_THROWS_WITH( setDensityAmps(matr, 0, 0, reals, imags, numAmps), Contains("Invalid number of amplitudes") );
+
+    //             // invalid considering start-index
+    //             REQUIRE_THROWS_WITH( setDensityAmps(matr, maxInd-1, maxInd-1, reals, imags, 2), Contains("More amplitudes given than exist") );
+    //             REQUIRE_THROWS_WITH( setDensityAmps(matr, maxInd-1, maxInd-2, reals, imags, maxInd+2), Contains("More amplitudes given than exist") );
+    //         }
+    //         SECTION( "state-vector" ) {
+                
+    //             Qureg vec = createForcedQureg(NUM_QUBITS);
+    //             REQUIRE_THROWS_WITH( setDensityAmps(vec, 0, 0, reals, imags, 0), Contains("valid only for density matrices") );
+    //             destroyQureg(vec);
+    //         }
+    //     }
+    //     destroyQureg(matr);
+    // }
 
 
 
-/** @sa setQuregToPauliHamil
- * @ingroup unittest 
- * @author Tyson Jones 
- */
-TEST_CASE( "setQuregToPauliHamil", "[state_initialisations]" ) {
-    
-    Qureg rho = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-    
-    SECTION( "correctness" ) {
-        
-        // too expensive to enumerate all paulis, so try 10x with random ones
-        GENERATE( range(0,10) );
-        
-        int numTerms = GENERATE( 1, 2, 10, 15, 100, 1000 );
-        PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
-        setRandomPauliSum(hamil);
+// setQuregToPauliHamil removed because replacement setQuregToPauliStrSum
+// accepts new type PauliStrSum which has an initialiser incompatible
+// with the deprecated PauliHamil type
 
-        setQuregToPauliHamil(rho, hamil);
-        REQUIRE( areEqual(rho, toQMatrix(hamil)) );
+    // /** @sa setQuregToPauliHamil
+    //  * @ingroup unittest 
+    //  * @author Tyson Jones 
+    //  */
+    // TEST_CASE( "setQuregToPauliHamil", "[state_initialisations]" ) {
         
-        destroyPauliHamil(hamil);
-    }
-    SECTION( "input validation" ) {
+    //     Qureg rho = createForcedDensityQureg(NUM_QUBITS);
         
-        SECTION( "density-matrix" ) {
+    //     SECTION( "correctness" ) {
             
-            PauliHamil hamil = createPauliHamil(NUM_QUBITS, 5);
-            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    //         // too expensive to enumerate all paulis, so try 10x with random ones
+    //         GENERATE( range(0,10) );
             
-            REQUIRE_THROWS_WITH( setQuregToPauliHamil(vec, hamil), Contains("density matrices") );
+    //         int numTerms = GENERATE( 1, 2, 10, 15, 100, 1000 );
+    //         PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
+    //         setRandomPauliSum(hamil);
+
+    //         setQuregToPauliHamil(rho, hamil);
+    //         REQUIRE( areEqual(rho, toQMatrix(hamil)) );
             
-            destroyQureg(vec, QUEST_ENV);
-            destroyPauliHamil(hamil);
-        }
-        SECTION( "pauli codes" ) {
+    //         destroyPauliHamil(hamil);
+    //     }
+    //     SECTION( "input validation" ) {
             
-            int numTerms = 3;
-            PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
-            
-            // make one pauli code wrong
-            hamil.pauliCodes[GENERATE_COPY( range(0,numTerms*NUM_QUBITS) )] = (pauliOpType) GENERATE( -1, 4 );
-            REQUIRE_THROWS_WITH( setQuregToPauliHamil(rho, hamil), Contains("Invalid Pauli code") );
-            
-            destroyPauliHamil(hamil);
-        }
-        SECTION( "matching hamiltonian qubits" ) {
-            
-            int numTerms = 1;
-            PauliHamil hamil = createPauliHamil(NUM_QUBITS + 1, numTerms);
-            
-            REQUIRE_THROWS_WITH( setQuregToPauliHamil(rho, hamil), Contains("same number of qubits") );
-            
-            destroyPauliHamil(hamil);
-        }
-    }
-    destroyQureg(rho, QUEST_ENV);
-}
+    //         SECTION( "density-matrix" ) {
+                
+    //             PauliHamil hamil = createPauliHamil(NUM_QUBITS, 5);
+    //             Qureg vec = createForcedQureg(NUM_QUBITS);
+                
+    //             REQUIRE_THROWS_WITH( setQuregToPauliHamil(vec, hamil), Contains("density matrices") );
+                
+    //             destroyQureg(vec);
+    //             destroyPauliHamil(hamil);
+    //         }
+    //         SECTION( "pauli codes" ) {
+                
+    //             int numTerms = 3;
+    //             PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
+                
+    //             // make one pauli code wrong
+    //             hamil.pauliCodes[GENERATE_COPY( range(0,numTerms*NUM_QUBITS) )] = (pauliOpType) GENERATE( -1, 4 );
+    //             REQUIRE_THROWS_WITH( setQuregToPauliHamil(rho, hamil), Contains("Invalid Pauli code") );
+                
+    //             destroyPauliHamil(hamil);
+    //         }
+    //         SECTION( "matching hamiltonian qubits" ) {
+                
+    //             int numTerms = 1;
+    //             PauliHamil hamil = createPauliHamil(NUM_QUBITS + 1, numTerms);
+                
+    //             REQUIRE_THROWS_WITH( setQuregToPauliHamil(rho, hamil), Contains("same number of qubits") );
+                
+    //             destroyPauliHamil(hamil);
+    //         }
+    //     }
+    //     destroyQureg(rho);
+    // }
 
 
 
@@ -611,13 +596,13 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
         SECTION( "state-vector" ) {
             
             // make three random vectors
-            Qureg vecA = createQureg(NUM_QUBITS, QUEST_ENV);
-            Qureg vecB = createQureg(NUM_QUBITS, QUEST_ENV);
-            Qureg vecC = createQureg(NUM_QUBITS, QUEST_ENV);
-            for (int j=0; j<vecA.numAmpsPerChunk; j++) {
-                vecA.stateVec.real[j] = getRandomReal(-5,5); vecA.stateVec.imag[j] = getRandomReal(-5,5);
-                vecB.stateVec.real[j] = getRandomReal(-5,5); vecB.stateVec.imag[j] = getRandomReal(-5,5);
-                vecC.stateVec.real[j] = getRandomReal(-5,5); vecC.stateVec.imag[j] = getRandomReal(-5,5);
+            Qureg vecA = createForcedQureg(NUM_QUBITS);
+            Qureg vecB = createForcedQureg(NUM_QUBITS);
+            Qureg vecC = createForcedQureg(NUM_QUBITS);
+            for (int j=0; j<vecA.numAmpsPerNode; j++) {
+                vecA.cpuAmps[j] = getRandomComplex();
+                vecB.cpuAmps[j] = getRandomComplex();
+                vecC.cpuAmps[j] = getRandomComplex();
             }
             copyStateToGPU(vecA); copyStateToGPU(vecB); copyStateToGPU(vecC);
             QVector refA = toQVector(vecA);
@@ -667,20 +652,20 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
             REQUIRE( areEqual(vecC, refOut, 1E3*REAL_EPS) );
         
             // cleanup
-            destroyQureg(vecA, QUEST_ENV);
-            destroyQureg(vecB, QUEST_ENV);
-            destroyQureg(vecC, QUEST_ENV);
+            destroyQureg(vecA);
+            destroyQureg(vecB);
+            destroyQureg(vecC);
         }
         SECTION( "density-matrix" ) {
             
             // make three random matrices
-            Qureg matA = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-            Qureg matB = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-            Qureg matC = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-            for (int j=0; j<matA.numAmpsPerChunk; j++) {
-                matA.stateVec.real[j] = getRandomReal(-5,5); matA.stateVec.imag[j] = getRandomReal(-5,5);
-                matB.stateVec.real[j] = getRandomReal(-5,5); matB.stateVec.imag[j] = getRandomReal(-5,5);
-                matC.stateVec.real[j] = getRandomReal(-5,5); matC.stateVec.imag[j] = getRandomReal(-5,5);
+            Qureg matA = createForcedDensityQureg(NUM_QUBITS);
+            Qureg matB = createForcedDensityQureg(NUM_QUBITS);
+            Qureg matC = createForcedDensityQureg(NUM_QUBITS);
+            for (int j=0; j<matA.numAmpsPerNode; j++) {
+                matA.cpuAmps[j] = getRandomComplex();
+                matB.cpuAmps[j] = getRandomComplex();
+                matC.cpuAmps[j] = getRandomComplex();
             }
             copyStateToGPU(matA); copyStateToGPU(matB); copyStateToGPU(matC);
             QMatrix refA = toQMatrix(matA);
@@ -730,17 +715,17 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
             REQUIRE( areEqual(matC, refOut, 1E3*REAL_EPS) );
         
             // cleanup
-            destroyQureg(matA, QUEST_ENV);
-            destroyQureg(matB, QUEST_ENV);
-            destroyQureg(matC, QUEST_ENV);
+            destroyQureg(matA);
+            destroyQureg(matB);
+            destroyQureg(matC);
         }
     }
     SECTION( "input validation" ) {
         
         SECTION( "qureg types" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+            Qureg vec = createForcedQureg(NUM_QUBITS);
+            Qureg mat = createForcedDensityQureg(NUM_QUBITS);
             Complex f; f.real = 0; f.imag = 0;
             
             // two state-vecs, one density-matrix
@@ -753,15 +738,15 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
             REQUIRE_THROWS_WITH( setWeightedQureg(f, mat, f, vec, f, mat), Contains("state-vectors or") && Contains("density matrices") );
             REQUIRE_THROWS_WITH( setWeightedQureg(f, mat, f, mat, f, vec), Contains("state-vectors or") && Contains("density matrices") );
         
-            destroyQureg(vec, QUEST_ENV);
-            destroyQureg(mat, QUEST_ENV);
+            destroyQureg(vec);
+            destroyQureg(mat);
         } 
         SECTION( "qureg dimensions" ) {
             
-            Qureg vecA = createQureg(NUM_QUBITS, QUEST_ENV);
-            Qureg vecB = createQureg(NUM_QUBITS + 1, QUEST_ENV);
-            Qureg matA = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-            Qureg matB = createDensityQureg(NUM_QUBITS + 1, QUEST_ENV);
+            Qureg vecA = createForcedQureg(NUM_QUBITS);
+            Qureg vecB = createForcedQureg(NUM_QUBITS + 1);
+            Qureg matA = createForcedDensityQureg(NUM_QUBITS);
+            Qureg matB = createForcedDensityQureg(NUM_QUBITS + 1);
             Complex f; f.real = 0; f.imag = 0;
             
             // state-vecs
@@ -774,11 +759,10 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
             REQUIRE_THROWS_WITH( setWeightedQureg(f, matB, f, matA, f, matB), Contains("Dimensions") );
             REQUIRE_THROWS_WITH( setWeightedQureg(f, matB, f, matB, f, matA), Contains("Dimensions") );
             
-            destroyQureg(vecA, QUEST_ENV);
-            destroyQureg(vecB, QUEST_ENV);
-            destroyQureg(matA, QUEST_ENV);
-            destroyQureg(matB, QUEST_ENV);
+            destroyQureg(vecA);
+            destroyQureg(vecB);
+            destroyQureg(matA);
+            destroyQureg(matB);
         }
     }
 }
-

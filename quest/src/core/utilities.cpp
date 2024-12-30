@@ -221,6 +221,9 @@ qindex util_getNumLocalDiagonalAmpsWithBits(Qureg qureg, vector<int> qubits, vec
             if (util_getRankBitOfBraQubit(qubits[i], qureg) != outcomes[i])
                 return 0;
 
+    // TODO:
+    // I THINK THIS MAY BE BUGGED / INCORRECT LOGIC!!
+
     // otherwise, every 2^#qubits local diagonal is consistent with outcomes
     qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
     qindex numDiags = numColsPerNode / powerOf2(qubits.size());

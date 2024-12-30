@@ -146,9 +146,6 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
     // automatically overwrite distrib, GPU, and multithread fields which were left as modeflag::USE_AUTO
     autodep_chooseQuregDeployment(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread, env);
 
-    // throw error if the user had forced multithreading but GPU accel was auto-chosen
-    validate_newQuregNotBothMultithreadedAndGpuAccel(useGpuAccel, useMultithread, caller);
-
     Qureg qureg = qureg_populateNonHeapFields(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread);
 
     // always allocate CPU memory
