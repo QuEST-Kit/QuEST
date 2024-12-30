@@ -17,8 +17,10 @@ project(QuEST
 # GNUInstallDirs to provide sensible default install directory names
 include(GNUInstallDirs)
 
-# Math
-find_library(MATH_LIBRARY m REQUIRED)
+# Maths
+if (NOT MSVC)
+  find_library(MATH_LIBRARY m REQUIRED)
+endif()
 
 ## Configuration options
 
