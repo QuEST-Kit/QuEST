@@ -1,11 +1,6 @@
-add_executable(hadamard
-  hadamard.cpp
-)
-
-target_link_libraries(hadamard PUBLIC QuEST)
-
-install(TARGETS hadamard
-  RUNTIME
-  DESTINATION ${CMAKE_INSTALL_BINDIR}/examples
-)
-set_target_properties(hadamard PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}")
+add_subdirectory(krausmaps)
+add_subdirectory(matrices)
+add_subdirectory(numbers)
+add_subdirectory(paulis)
+add_subdirectory(reporters)
+add_subdirectory(superoperators)
