@@ -71,10 +71,18 @@ if (VERBOSE_LIB_NAME)
   string(CONCAT LIB_NAME ${LIB_NAME} "-fp${FLOAT_PRECISION}")
 endif()
 
+# Examples
+option(
+  BUILD_EXAMPLES
+  "Whether the example programs will be built alongside the QuEST library. Turned ON by default."
+  ON
+)
+message(STATUS "Examples are turned ${BUILD_EXAMPLES}. Set BUILD_EXAMPLES to modify.")
+
 # Testing
 option(
   ENABLE_TESTING
-  "whether the test suite will be built alongside the QuEST library. Turned ON by default."
+  "Whether the test suite will be built alongside the QuEST library. Turned ON by default."
   ON
 )
 message(STATUS "Testing is turned ${ENABLE_TESTING}. Set ENABLE_TESTING to modify.")
@@ -126,6 +134,14 @@ endif()
 if ((ENABLE_CUDA OR ENABLE_HIP) AND FLOAT_PRECISION STREQUAL 4)
   message(FATAL_ERROR "Quad precision is not supported on GPU. Please disable GPU acceleration or lower precision.")
 endif()
+
+# Deprecated API
+option(
+  ENABLE_DEPRECATED
+  "Whether QuEST will be built with deprecated API support. Turned OFF by default."
+  OFF
+)
+message(STATUS "Deprecated API support is turned ${ENABLE_DEPRECATED}. Set ENABLE_DEPRECATED to modify.")
 
 ## Library
 
@@ -232,6 +248,14 @@ if (ENABLE_HIP)
   endif()
 endif()
 
+if (ENABLE_DEPRECATED)
+  target_compile_definitions(QuEST PUBLIC INCLUDE_DEPRECATED_FUNCTIONS=1)
+
+  if (VERBOSE_LIB_NAME)
+    string(CONCAT LIB_NAME ${LIB_NAME} "+depr")
+  endif()
+endif()
+
 # add math library
 if (NOT MSVC)
   target_link_libraries(QuEST PUBLIC ${MATH_LIBRARY})
@@ -245,7 +269,9 @@ add_subdirectory(quest)
 
 ## Examples
 
-add_subdirectory(examples)
+if (BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
 ## User Source
 
