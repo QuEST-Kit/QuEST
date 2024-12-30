@@ -998,13 +998,13 @@ bool validateconfig_isEnabled() {
  * Hermiticity and CPTP checks are performed
  */
 
-static qreal global_validationEpsilon = DEAULT_VALIDATION_EPSILON;
+static qreal global_validationEpsilon = DEFAULT_VALIDATION_EPSILON;
 
 void validateconfig_setEpsilon(qreal eps) {
     global_validationEpsilon = eps;
 }
 void validateconfig_setEpsilonToDefault() {
-    global_validationEpsilon = DEAULT_VALIDATION_EPSILON;
+    global_validationEpsilon = DEFAULT_VALIDATION_EPSILON;
 }
 qreal validateconfig_getEpsilon() {
     return global_validationEpsilon;
