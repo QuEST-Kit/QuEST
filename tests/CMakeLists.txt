@@ -5,8 +5,8 @@ include_directories(catch)
 
 # compile Catch2 unit tests in C++14
 add_executable(tests
-    main.cpp
-    utilities.cpp
+    test_main.cpp
+    test_utilities.cpp
     test_calculations.cpp
     test_data_structures.cpp
     test_decoherence.cpp
@@ -15,23 +15,13 @@ add_executable(tests
     test_state_initialisations.cpp
     test_unitaries.cpp
 )
-set_property(TARGET tests PROPERTY CXX_STANDARD 14)
 
 # link QuEST
-if (WIN32)
-    target_link_libraries(tests QuEST)
-else ()
-    target_link_libraries(tests QuEST m)
-endif ()
+target_link_libraries(tests QuEST)
 
-if (${DISTRIBUTED})
+if (ENABLE_DISTRIBUTION)
     # distributed unit tests must supply an MPI-clue to (modified) catch
     add_definitions(-DDISTRIBUTED_MODE)
-    
-    # compile and link C++ MPI
-    find_package(MPI REQUIRED)
-    include_directories(${MPI_CXX_INCLUDE_PATH})
-    target_link_libraries(tests ${MPI_CXX_LIBRARIES})
 endif ()
 
 # locate Catch2 scripts for CMake
