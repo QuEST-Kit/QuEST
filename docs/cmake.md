@@ -12,7 +12,7 @@ cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/QuEST -DCMA
 | -------- | ---------------- | ----- |
 | `LIB_NAME` | (`QuEST`), String | The QuEST library will be named `lib${LIB_NAME}.so`. Can be used to differentiate multiple versions of QuEST which have been compiled. |
 | `VERBOSE_LIB_NAME` | (`OFF`), `ON` | When turned on `LIB_NAME` will be modified according to the other configuration options chosen. For example compiling QuEST with multithreading, distribution, and double precision with `VERBOSE_LIB_NAME` turned on creates `libQuEST-fp2+mt+mpi.so`. |
-| `FLOAT_PRECISION` | (`2`), `1`, `4` | Determines which floating-point precision QuEST will use: double, single, or quad. *Note: Quad precision is not supported when also compiling for GPU.*
+| `FLOAT_PRECISION` | (`2`), `1`, `4` | Determines which floating-point precision QuEST will use: double, single, or quad. *Note: Quad precision is not supported when also compiling for GPU.* |
 | `BUILD_EXAMPLES` | (`ON`), `OFF` | Determines whether the example programs will be built alongside QuEST. |
 | `ENABLE_TESTING` | (`ON`), `OFF` | Determines whether Catch2 tests will be built alongisde QuEST. If built, tests can be run from the build directory with `make test`. |
 | `ENABLE_MULTITHREADING` | (`ON`), OFF | Determines whether QuEST will be built with support for parallelisation with OpenMP. |
@@ -21,6 +21,8 @@ cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/QuEST -DCMA
 | `ENABLE_CUQUANTUM` | (`OFF`), `ON` | Determines whether QuEST will make use of the NVIDIA CuQuantum library. Cannot be turned on if `ENABLE_CUDA` is off. |
 | `ENABLE_HIP` | (`OFF`), `ON` | Determines whether QuEST will be built with support for AMD GPU acceleration. If turned on, `CMAKE_HIP_ARCHITECTURES` should probably also be set. |
 | `ENABLE_DEPRECATION` | (`OFF`), `ON` | Determines whether QuEST will be built with support for the deprecated (v3) API. *Note: will generate compiler warnings, and not supported by GCC.` |
+| `USER_SOURCE` | (Undefined), String | The source file for a user program which will be compiled alongside QuEST. `OUTPUT_EXE` *must* also be defined. |
+| `OUTPUT_EXE` | (Undefined), String | The name of the executable which will be created from the provided `USER_SOURCE`. `USER_SOURCE` *must* also be defined. |
 
 ## Standard CMake variables
 
