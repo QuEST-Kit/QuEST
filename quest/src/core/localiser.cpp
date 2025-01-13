@@ -31,6 +31,7 @@
 #include <algorithm>
 
 using std::vector;
+using std::tuple;
 
 
 
@@ -158,7 +159,7 @@ auto getCtrlsAndTargsSwappedToMinSuffix(Qureg qureg, vector<int> ctrls, vector<i
 
     // nothing to do if all targs are already in suffix
     if (!doesGateRequireComm(qureg, targs))
-        return std::tuple{ctrls, targs};
+        return tuple{ctrls, targs};
 
     // prepare masks to avoid quadratic nested looping
     qindex targMask = getBitMask(targs.data(), targs.size());
@@ -201,7 +202,7 @@ auto getCtrlsAndTargsSwappedToMinSuffix(Qureg qureg, vector<int> ctrls, vector<i
     }
 
     // the ordering in ctrls relative to the caller's ctrlStates is unchanged
-    return std::tuple{ctrls, targs};
+    return tuple{ctrls, targs};
 }
 
 
@@ -254,7 +255,7 @@ auto getNonSwappedCtrlsAndStates(vector<int> oldCtrls, vector<int> oldStates, ve
             sameStates.push_back(oldStates[i]);
         }
 
-    return std::tuple{sameCtrls, sameStates};
+    return tuple{sameCtrls, sameStates};
 }
 
 
