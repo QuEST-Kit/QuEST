@@ -23,6 +23,7 @@
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
+#include <map>
 #include <tuple>
 #include <array>
 #include <vector>
@@ -1797,6 +1798,46 @@ void localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg 
  */
 
 
+PAULI_MASK_TYPE paulis_getKeyOfSameMixedAmpsGroup(PauliStr str);
+
+
+qcomp getStateVecExpecAllSuffixPauliStr(Qureg qureg, vector<int> suffixX, vector<int> suffixY, vector<int> suffixZ) {
+    assert_localiserGivenStateVec(qureg);
+
+    // optimised scenario when str = I
+    if (suffixX.empty() && suffixY.empty() && suffixZ.empty())
+        return accel_statevec_calcTotalProb_sub(qureg);
+
+    // optimised scenario when str = IZ
+    if (suffixX.empty() && suffixY.empty())
+        return accel_statevec_calcExpecAnyTargZ_sub(qureg, suffixZ);
+
+    // generic XYZ
+    return accel_statevec_calcExpecPauliStr_subA(qureg, suffixX, suffixY, suffixZ);
+}
+
+
+qcomp getDensMatrExpecPauliStrTermOfOnlyThisNode(Qureg qureg, PauliStr str) {
+    assert_localiserGivenDensMatr(qureg);
+
+    // caller must reduce the returned value between nodes if necessary
+
+    // all ket-paulis are in the suffix state
+    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
+
+    // optimised scenario when str = I
+    if (targsX.empty() && targsY.empty() && targsZ.empty())
+        return accel_densmatr_calcTotalProb_sub(qureg);
+    
+    // optimised scenario when str = Z
+    if (targsX.empty() && targsY.empty())
+        return accel_densmatr_calcExpecAnyTargZ_sub(qureg, targsZ);
+    
+    // generic XYZ
+    return accel_densmatr_calcExpecPauliStr_sub(qureg, targsX, targsY, targsZ);
+}
+
+
 qcomp localiser_statevec_calcExpecPauliStr(Qureg qureg, PauliStr str) {
     assert_localiserGivenStateVec(qureg);
 
@@ -1806,29 +1847,22 @@ qcomp localiser_statevec_calcExpecPauliStr(Qureg qureg, PauliStr str) {
     // - prefix X,Y determine communication, because they apply bit-not to rank
     // - prefix Y,Z determine node-wide coefficient, because they contain rank-determined !=1 elements
     // - suffix X,Y,Z determine local amp coefficients
+    // noting that when !qureg.isDistributed, all paulis will be in suffix
     auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
     auto [prefixX, suffixX] = util_getPrefixAndSuffixQubits(targsX, qureg);
     auto [prefixY, suffixY] = util_getPrefixAndSuffixQubits(targsY, qureg);
     auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targsZ, qureg);
 
-    // embarrassingly parallel when there is only Z's in prefix
+    // embarrassingly parallel when there is only Z's in prefix (which themselves are handled afterward)
     if (prefixX.empty() && prefixY.empty()) {
+        value = getStateVecExpecAllSuffixPauliStr(qureg, suffixX, suffixY, suffixZ);
 
-        // which has optimised local routines if suffix str is I, IZ, or IZXY
-        if (suffixX.empty() && suffixY.empty() && suffixZ.empty())
-            value = accel_statevec_calcTotalProb_sub(qureg);
-        else if (suffixX.empty() && suffixY.empty())
-            value = accel_statevec_calcExpecAnyTargZ_sub(qureg, suffixZ);
-        else
-            value = accel_statevec_calcExpecPauliStr_subA(qureg, suffixX, suffixY, suffixZ);
-
-    // otherwise, communication is a pairwise exchange
+    // otherwise, communication is pairwise exchange
     } else {
         auto prefixXY = util_getConcatenated(prefixX, prefixY);
         int pairRank = util_getRankWithQubitsFlipped(prefixXY, qureg);
         comm_exchangeAmpsToBuffers(qureg, pairRank);
 
-        // and the subsequent process is optimal for all suffix paulis
         value = accel_statevec_calcExpecPauliStr_subB(qureg, suffixX, suffixY, suffixZ);
     }
 
@@ -1846,20 +1880,98 @@ qcomp localiser_statevec_calcExpecPauliStr(Qureg qureg, PauliStr str) {
 qcomp localiser_densmatr_calcExpecPauliStr(Qureg qureg, PauliStr str) {
     assert_localiserGivenDensMatr(qureg);
 
-    qcomp value = 0;
+    // density-matrix expectation values are always embarrassingly parallel
+    qcomp value = getDensMatrExpecPauliStrTermOfOnlyThisNode(qureg, str);
 
-    // all ket-paulis are in the suffix state
-    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
+    if (qureg.isDistributed)
+        comm_reduceAmp(&value);
 
-    // ergo all scenarios (I, IZ, IXYZ) are embarrassingly parallel
-    if (targsX.empty() && targsY.empty() && targsZ.empty())
-        value = accel_densmatr_calcTotalProb_sub(qureg);
-    else if (targsX.empty() && targsY.empty())
-        value = accel_densmatr_calcExpecAnyTargZ_sub(qureg, targsZ);
-    else
-        value = accel_densmatr_calcExpecPauliStr_sub(qureg, targsX, targsY, targsZ);
+    return value;
+}
 
+
+qcomp localiser_statevec_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
+    assert_localiserGivenStateVec(qureg);
+
+    // this function does not process each PauliStr within sum independently; instead, we
+    // leverage that strings differing only by I <-> Z and X <-> Y in the prefix qubits
+    // have identical communication patterns, and so can all be processed after one round 
+    // of amps exchange. 
+    
+    // TODO: 
+    // We can optimise further in a similar spirit to above by grouping identically-
+    // communicating strings into those which differ only by suffix I <-> Z and X <-> Y,
+    // which have identical amplitude-mixing patterns, to avoid repeated enumeration of 
+    // all amplitudes and reduce the associated memory-movement / caching costs.
+    // (This is facilitated "for free" by cuStateVec in GPU settings, although we do not
+    // wish to here differentiate localiser logic based on CPU vs GPU deployment)
+
+    qcomp totalValue = 0;
+
+    using Key = PAULI_MASK_TYPE;
+    using Term = tuple<PauliStr,qcomp>;
+    std::unordered_map<Key, vector<Term>> groups;
+
+    // group sum's terms into those with identical communication patterns
+    for (int i=0; i<sum.numTerms; i++) {
+        Term term = tuple{sum.strings[i], sum.coeffs[i]};
+        Key totalKey = paulis_getKeyOfSameMixedAmpsGroup(sum.strings[i]);
+        Key prefixKey = getBitsLeftOfIndex(totalKey, qureg.logNumAmpsPerNode - 1); // 0 if !qureg.isDistributed
+
+        groups[prefixKey].push_back(term);
+    }
+
+    // process each group in-turn
+    for (auto& [key, terms] : groups) {
+
+        // perform communication once per-group, if necessary
+        int pairRank = flipBits(qureg.rank, key);
+        if (pairRank != qureg.rank)
+            comm_exchangeAmpsToBuffers(qureg, pairRank);
+
+        // determine backend function to invoke upon all terms in group (likely _subB)
+        auto termFunc = (pairRank == qureg.rank)?
+            getStateVecExpecAllSuffixPauliStr :
+            accel_statevec_calcExpecPauliStr_subB;
+
+        // for each term within the current group...
+        for (auto& [str, coeff] : terms) {
+            auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
+            auto [prefixX, suffixX] = util_getPrefixAndSuffixQubits(targsX, qureg);
+            auto [prefixY, suffixY] = util_getPrefixAndSuffixQubits(targsY, qureg);
+            auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targsZ, qureg);
+            
+            // contribute coeff * prefix-coeff * suffix-sum
+            qcomp termFactor = paulis_getPrefixPaulisElem(qureg, prefixY, prefixZ);
+            qcomp termValue = termFactor * termFunc(qureg, suffixX, suffixY, suffixZ);
+            totalValue += coeff * termValue;
+        }
+    }
+    
     // combine contributions from each node
+    if (qureg.isDistributed)
+        comm_reduceAmp(&totalValue);
+
+    return totalValue;
+}
+
+
+qcomp localiser_densmatr_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
+    assert_localiserGivenDensMatr(qureg);
+
+    // TOOD:
+    // we can optimise this method by grouping sum's terms into strings which
+    // involve differ only by I <-> Z and X <-> Y, which have identical 
+    // enumeration patterns and which can significantly reduce superfluous
+    // re-enumeration of the amps, reducing memroy-movement/caching costs.
+    // Explore this!
+
+    // every term of 'sum' is embarrassingly parallel to evaluate; sum all this node's contributions
+    qcomp value = 0;
+    for (qindex t=0; t<sum.numTerms; t++)
+        value += sum.coeffs[t] * getDensMatrExpecPauliStrTermOfOnlyThisNode(qureg, sum.strings[t]);
+
+    // combine contributions from other nodes
     if (qureg.isDistributed)
         comm_reduceAmp(&value);
 

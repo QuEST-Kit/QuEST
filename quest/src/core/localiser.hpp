@@ -184,6 +184,9 @@ qreal localiser_densmatr_calcHilbertSchmidtDistance(Qureg quregA, Qureg quregB);
 qcomp localiser_statevec_calcExpecPauliStr(Qureg qureg, PauliStr str);
 qcomp localiser_densmatr_calcExpecPauliStr(Qureg qureg, PauliStr str);
 
+qcomp localiser_statevec_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum);
+qcomp localiser_densmatr_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum);
+
 
 /*
  * PROJECTORS 

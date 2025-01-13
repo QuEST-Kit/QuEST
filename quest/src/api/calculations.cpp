@@ -95,19 +95,23 @@ qreal calcExpecPauliStr(Qureg qureg, PauliStr str) {
         localiser_densmatr_calcExpecPauliStr(qureg, str):
         localiser_statevec_calcExpecPauliStr(qureg, str);
 
-    validate_expecValIsReal(value, qureg.isDensityMatrix, __func__);
+    validate_expecPauliStrValueIsReal(value, qureg.isDensityMatrix, __func__);
     return std::real(value);
 }
 
 
 qreal calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
+    validate_quregFields(qureg, __func__);
+    validate_pauliStrSumFields(sum, __func__);
+    validate_pauliStrSumTargets(sum, qureg, __func__);
+    validate_pauliStrSumIsHermitian(sum, __func__);
 
-    // TODO
-    valdidate_pauliStrSumIsHermitian(sum, __func__);
+    qcomp value = (qureg.isDensityMatrix)?
+        localiser_densmatr_calcExpecPauliStrSum(qureg, sum):
+        localiser_statevec_calcExpecPauliStrSum(qureg, sum);
 
-    // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
+    validate_expecPauliStrSumValueIsReal(value, qureg.isDensityMatrix, __func__);
+    return std::real(value);
 }
 
 
@@ -120,6 +124,7 @@ qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr) {
     error_functionNotImplemented(__func__);
     return -1;
 }
+
 
 
 /*

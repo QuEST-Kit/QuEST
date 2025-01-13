@@ -307,7 +307,9 @@ void validate_controlsAndPauliStrTargets(Qureg qureg, int* ctrls, int numCtrls, 
 
 void validate_pauliStrSumFields(PauliStrSum sum, const char* caller);
 
-void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller);
+void validate_pauliStrSumTargets(PauliStrSum sum, Qureg qureg, const char* caller);
+
+void validate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller);
 
 
 
@@ -426,7 +428,10 @@ void validate_numInitRandomPureStates(qindex numPureStates,  const char* caller)
  * EXPECTATION VALUES
  */
 
-void validate_expecValIsReal(qcomp value, bool isDensMatr, const char* caller);
+void validate_expecPauliStrValueIsReal(qcomp value, bool isDensMatr, const char* caller);
+
+void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const char* caller);
+
 
 
 /*
