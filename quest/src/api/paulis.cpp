@@ -222,12 +222,33 @@ PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift) {
 
 PauliStr paulis_getKetAndBraPauliStr(PauliStr str, Qureg qureg) {
 
-    PauliStr shift = paulis_getShiftedPauliStr(str, qureg.numQubits);
+    PauliStr shifted = paulis_getShiftedPauliStr(str, qureg.numQubits);
     
     return {
-        .lowPaulis  = str.lowPaulis  | shift.lowPaulis,
-        .highPaulis = str.highPaulis | shift.highPaulis
+        .lowPaulis  = str.lowPaulis  | shifted.lowPaulis,
+        .highPaulis = str.highPaulis | shifted.highPaulis
     };
+}
+
+
+PAULI_MASK_TYPE paulis_getKeyOfSameMixedAmpsGroup(PauliStr str) {
+
+    PAULI_MASK_TYPE key = 0;
+
+    // in theory, we can reduce the number of involved operations by bit-shifting
+    // str left by 1, XOR'ing this with str, and retaining every 2nd bit, producing
+    // e.g. key=0110 from str=IXYZ. However, this is an insignificant speedup which
+    // risks sneaky bugs related to handling str's two masks.
+
+    int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
+
+    for (int i=0; i<=maxInd; i++) {
+        int pauli = paulis_getPauliAt(str, i);
+        int isXY = (pauli == 1 || pauli == 2);
+        key |= (isXY << i);
+    }
+
+    return key;
 }
 
 

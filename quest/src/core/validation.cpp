@@ -674,6 +674,9 @@ namespace report {
     string PAULI_STR_SUM_NOT_HERMITIAN =
         "THe given PauliStrSum is not Hermitian.";
 
+    string PAULI_STR_SUM_EXCEEDS_QUREG_NUM_QUBITS =
+        "The given PauliStrSum includes non-identity upon a qubit of index ${MAX_IND} and so is only compatible with Quregs of at least ${NUM_PSS_QUBITS} qubits. It cannot act upon the given ${NUM_QUREG_QUBITS}-qubit Qureg.";
+
 
     /*
      * BASIS STATE INDICES
@@ -915,11 +918,18 @@ namespace report {
      * EXPECTATION VALUES
      */
 
-    string CALC_STATEVEC_EXPECTED_VALUE_WAS_NOT_APPROX_REAL =
-        "The calculated expectation value was not approximately real (i.e. was not within epsilon). This cannot be caused by state normalisation, and instead results from numerical errors during calculation. Please notify the QuEST developers!";
+    string CALC_STATEVEC_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated statevector expectation value was not approximately real (i.e. within epsilon). This cannot result from an unnormalised state, and must instead be the result of unexpected arithmetic errors; please notify the QuEST developers!";
 
-    string CALC_DENSMATR_EXPECTED_VALUE_WAS_NOT_APPROX_REAL =
-        "The calculated expectation value was not approximately real (i.e. was not within epsilon). This suggests the density matrix was unnormalised and/or not Hermitian.";
+    string CALC_DENSMATR_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests the density matrix was unnormalised and/or not Hermitian.";
+
+
+    string CALC_STATEVEC_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated statevector expectation value was not approximately real (i.e. was not within epsilon). This suggests that the PauliStrSum, despite being validated as (approximately) Hermitian, contained coefficients with sub-epsilon but non-negligible imaginary components which accumulated in the output value.";
+
+    string CALC_DENSMATR_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculatd density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests the density matrix was unnormalised and/or not (sufficiently close to) Hermitian.";
 
 
     /*
@@ -2953,6 +2963,8 @@ void validate_parsedStringIsNotEmpty(bool stringIsNotEmpty, const char* caller) 
  * EXISTING PAULI STRING SUMS
  */
 
+extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
+
 void validate_pauliStrSumFields(PauliStrSum sum, const char* caller) {
 
     assertThat(sum.numTerms > 0, report::INVALID_PAULI_STR_SUM_FIELDS, {{"${NUM_TERMS}", sum.numTerms}}, caller);
@@ -2970,13 +2982,30 @@ void validate_pauliStrSumFields(PauliStrSum sum, const char* caller) {
     assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
 }
 
-void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
+void validate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
 
     // ensure hermiticity is known (if not; compute it)
     if (*(sum.isHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
         *(sum.isHermitian) = util_isHermitian(sum, global_validationEpsilon);
 
     assertThat(*(sum.isHermitian), report::PAULI_STR_SUM_NOT_HERMITIAN, caller);
+}
+
+void validate_pauliStrSumTargets(PauliStrSum sum, Qureg qureg, const char* caller) {
+
+    int maxInd = 0;
+    for (qindex t=0; t<sum.numTerms; t++) {
+        int ind = paulis_getIndOfLefmostNonIdentityPauli(sum.strings[t]);
+        if (ind > maxInd)
+            maxInd = ind;
+    }
+
+    int minNumQb = maxInd + 1;
+    tokenSubs vars = {
+        {"${NUM_QUREG_QUBITS}", qureg.numQubits},
+        {"${MAX_IND}", maxInd}, 
+        {"${NUM_PSS_QUBITS}", minNumQb}};
+    assertThat(qureg.numQubits >= minNumQb, report::PAULI_STR_SUM_EXCEEDS_QUREG_NUM_QUBITS, vars, caller);
 }
 
 
@@ -3581,13 +3610,22 @@ void validate_numInitRandomPureStates(qindex numPureStates,  const char* caller)
  * EXPECTATION VALUES
  */
 
-void validate_expecValIsReal(qcomp value, bool isDensMatr, const char* caller) {
+void validate_expecPauliStrValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
 
     // TODO: include imag(value) in error message when non-integers are supported
 
     string msg = (isDensMatr)?
-        report::CALC_DENSMATR_EXPECTED_VALUE_WAS_NOT_APPROX_REAL:
-        report::CALC_STATEVEC_EXPECTED_VALUE_WAS_NOT_APPROX_REAL;
+        report::CALC_DENSMATR_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL:
+        report::CALC_STATEVEC_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL;
+
+    assertThat(abs(imag(value)) < global_validationEpsilon, msg, caller);
+}
+
+void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
+
+    string msg = (isDensMatr)?
+        report::CALC_DENSMATR_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL:
+        report::CALC_STATEVEC_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL;
 
     assertThat(abs(imag(value)) < global_validationEpsilon, msg, caller);
 }
