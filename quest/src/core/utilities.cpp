@@ -121,6 +121,15 @@ int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg) {
     return rankFlip;
 }
 
+int util_getRankWithBraQubitsFlipped(vector<int> ketQubits, Qureg qureg) {
+
+    int rank = qureg.rank;
+    for (int qubit : ketQubits)
+        rank = flipBit(rank, util_getPrefixBraInd(qubit, qureg));
+
+    return rank;
+}
+
 vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg) {
 
     vector<int> braInds(0);
