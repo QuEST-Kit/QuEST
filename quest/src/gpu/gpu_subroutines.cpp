@@ -985,7 +985,7 @@ void gpu_densmatr_twoQubitDepolarising_subB(Qureg qureg, int ketQb1, int ketQb2,
     auto factors = util_getTwoQubitDepolarisingFactors(prob);
 
     // each kernel invocation sums all 4 amps together, so adjusts c1
-    qcomp altc1 = factors.c1 - factors.c2;
+    qreal altc1 = factors.c1 - factors.c2;
 
     kernel_densmatr_twoQubitDepolarising_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads,
