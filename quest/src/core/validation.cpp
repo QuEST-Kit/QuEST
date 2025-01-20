@@ -167,10 +167,6 @@ namespace report {
         "Cannot enable multithreaded processing of a Qureg created in a non-multithreaded QuEST environment.";
 
 
-    string NEW_GPU_QUREG_CANNOT_USE_MULTITHREADING = 
-        "Cannot simultaneously GPU-accelerate and multithread a Qureg. Please disable multithreading, or set it to ${AUTO_DEPLOYMENT_FLAG} for QuEST to automatically disable it when deploying to GPU.";
-
-
     string NEW_QUREG_CANNOT_FIT_INTO_NON_DISTRIB_CPU_MEM =
         "The non-distributed Qureg (isDensity=${IS_DENS}) of ${NUM_QUBITS} qubits would be too large (${QCOMP_BYTES} * ${EXP_BASE}^${NUM_QUBITS} bytes) to fit into a single node's RAM (${RAM_SIZE} bytes). See reportQuESTEnv(), and consider using distribution.";
 
@@ -763,14 +759,6 @@ namespace report {
 
 
     /*
-    * ROTATION PARAMETERS
-    */
-
-    string ROTATION_AXIS_VECTOR_IS_ZERO =
-        "The rotation axis vector was all zero, or within epsilion magnitude to the zero vector.";
-
-
-    /*
     * MEASUREMENT PARAMETERS
     */
 
@@ -789,6 +777,20 @@ namespace report {
     string GPU_CANNOT_FIT_TEMP_MEASUREMENT_OUTCOME_PROBS =
         "The GPU has less available memory (${MEM_AVAIL} bytes) than that needed (${MEM_NEEDED} bytes) to temporarily store the ${NUM_OUTCOMES} outcome probabilities of the specified ${NUM_QUBITS} qubits.";
 
+
+    /*
+    * MISC GATE PARAMETERS
+    */
+
+    string ROTATION_AXIS_VECTOR_IS_ZERO =
+        "The rotation axis vector was all zero, or within epsilion magnitude to the zero vector.";
+
+
+    string CANNOT_FIT_MIXED_STATEVEC_AMPS_INTO_SINGLE_NODE =
+        "Cannot perform this ${NUM_TARGS}-target operation upon a ${NUM_QUREG_QUBITS}-qubit statevector distributed between ${NUM_NODES} nodes, since each node's communication buffer (with capacity for ${NUM_QUREG_AMPS_PER_NODE} amps) cannot simultaneously store the ${NUM_TARG_AMPS} mixed remote amplitudes.";
+
+    string CANNOT_FIT_MIXED_DENSMATR_AMPS_INTO_SINGLE_NODE =
+        "Cannot perform this ${NUM_TARGS}-target operation upon a ${NUM_QUREG_QUBITS}-qubit density-matrix distributed between ${NUM_NODES} nodes, since each node's communication buffer (with capacity for ${NUM_QUREG_AMPS_PER_NODE} amps) cannot simultaneously store the ${NUM_TARG_AMPS} mixed remote amplitudes.";
 
 
     /*
@@ -823,7 +825,7 @@ namespace report {
      */
 
     string MIXED_QUREG_NOT_DENSITY_MATRIX =
-        "The first Qureg, which will undergo mixing, must be a density matrx.";
+        "The first Qureg, which will undergo mixing, must be a density matrix.";
 
     string MIXED_QUREGS_HAVE_DIFFERENT_NUM_QUBITS =
         "The given Quregs contain an inconsistent number of qubits (${NUM_A} and ${NUM_B}) and cannot be mixed.";
@@ -987,8 +989,15 @@ extern "C" {
 /*
  * VALIDATION TOGGLE
  *
- * consulted by assertThat below, or earlier by more expensive
- * validation functions to avoid superfluous compute
+ * which disables all forms of validation (e.g. numerical
+ * Hermiticity of operators, and whether qubit indices are
+ * valid, etc), such that global_validationEpsilon (defined
+ * below) is ignored. Note that many validation functions
+ * will still actually perform the validation checks/compute,
+ * and thereafter decide whether to throw an error within
+ * assertThat(). Ergo expensive validators should check that
+ * global_isValidationEnabled=true before even performing
+ * their checks, to avoid superfluous computation.
  */
 
 static bool global_isValidationEnabled = true;
@@ -1008,8 +1017,12 @@ bool validateconfig_isEnabled() {
 /*
  * VALIDATION PRECISION
  *
- * which influences how strict unitarity, 
- * Hermiticity and CPTP checks are performed
+ * which influences how strict numerical checks are performed,
+ * e.g. checking unitarity/hermiticity/CPTP-ness. This is only
+ * consulted when global_isValidationEnabled=true, and can be
+ * separately disabled by setting epsilon=0, in which case 
+ * permanent properties of structs (like .isCPTP) will not be 
+ * overwritten (so will stay validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
  */
 
 static qreal global_validationEpsilon = DEAULT_VALIDATION_EPSILON;
@@ -1022,6 +1035,12 @@ void validateconfig_setEpsilonToDefault() {
 }
 qreal validateconfig_getEpsilon() {
     return global_validationEpsilon;
+}
+
+bool isNumericalValidationDisabled() {
+    return (
+        global_isValidationEnabled == 0 || 
+        global_validationEpsilon   == 0);
 }
 
 
@@ -1440,13 +1459,6 @@ void assertQuregFitsInGpuMem(int numQubits, int isDensMatr, int isDistrib, int i
     }
 }
 
-void validate_newQuregNotBothMultithreadedAndGpuAccel(int useGpu, int useMultithread, const char* caller) {
-
-    // note either or both of useGpu and useMultithread are permitted to be modeflag::USE_AUTO (=-1)
-    tokenSubs vars = {{"${AUTO_DEPLOYMENT_FLAG}", modeflag::USE_AUTO}};
-    assertThat(useGpu != 1 || useMultithread != 1, report::NEW_GPU_QUREG_CANNOT_USE_MULTITHREADING, vars, caller);
-}
-
 void validate_newQuregParams(int numQubits, int isDensMatr, int isDistrib, int isGpuAccel, int isMultithread, QuESTEnv env, const char* caller) {
 
     // some of the below validation involves getting distributed node consensus, which
@@ -1462,8 +1474,6 @@ void validate_newQuregParams(int numQubits, int isDensMatr, int isDistrib, int i
     assertQuregNotDistributedOverTooManyNodes(numQubits, isDensMatr, isDistrib, env, caller);
     assertQuregFitsInCpuMem(numQubits, isDensMatr, isDistrib, env, caller);
     assertQuregFitsInGpuMem(numQubits, isDensMatr, isDistrib, isGpuAccel, env, caller);
-
-    validate_newQuregNotBothMultithreadedAndGpuAccel(isGpuAccel, isMultithread, caller);
 }
 
 void validate_newQuregAllocs(Qureg qureg, const char* caller) {
@@ -1559,8 +1569,8 @@ void assertMatrixTotalNumElemsDontExceedMaxIndex(int numQubits, bool isDense, co
     int maxNumQubits = mem_getMaxNumMatrixQubitsBeforeIndexOverflow(isDense);
 
     string msg = (isDense)?
-        report::NEW_DIAG_MATR_NUM_ELEMS_WOULD_EXCEED_QINDEX :
-        report::NEW_COMP_MATR_NUM_ELEMS_WOULD_EXCEED_QINDEX ;
+        report::NEW_COMP_MATR_NUM_ELEMS_WOULD_EXCEED_QINDEX:
+        report::NEW_DIAG_MATR_NUM_ELEMS_WOULD_EXCEED_QINDEX;
 
     tokenSubs vars = {
         {"${NUM_QUBITS}", numQubits}, 
@@ -2091,8 +2101,8 @@ void ensureMatrixUnitarityIsKnown(T matr) {
 template <class T> 
 void assertMatrixIsUnitary(T matr, const char* caller) {
 
-    // avoid expensive unitarity check if validation is anyway disabled
-    if (!global_isValidationEnabled)
+    // avoid expensive unitarity check (and do not overwrite .isUnitary) if validation is anyway disabled
+    if (isNumericalValidationDisabled())
         return;
 
     // unitarity is determined differently depending on matrix type
@@ -2159,8 +2169,8 @@ void ensureMatrHermiticityIsKnown(T matr) {
 template <class T> 
 void assertMatrixIsHermitian(T matr, const char* caller) {
 
-    // avoid expensive unitarity check if validation is anyway disabled
-    if (!global_isValidationEnabled)
+    // avoid expensive unitarity check (and do not overwrite .isHermitian) if validation is anyway disabled
+    if (isNumericalValidationDisabled())
         return;
 
     // unitarity is determined differently depending on matrix type
@@ -2733,8 +2743,8 @@ void validate_krausMapIsCPTP(KrausMap map, const char* caller) {
     validate_krausMapFields(map, caller);
     validate_krausMapIsSynced(map, caller);
 
-    // avoid expensive CPTP check if validation is anyway disabled
-    if (!global_isValidationEnabled)
+    // avoid expensive CPTP check (and do not overwrite .isCPTP) if validation is anyway disabled
+    if (isNumericalValidationDisabled())
         return;
 
     // evaluate CPTPness if it isn't already known 
@@ -2983,6 +2993,10 @@ void validate_pauliStrSumFields(PauliStrSum sum, const char* caller) {
 }
 
 void validate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
+
+    // avoid expensive hermiticity check (and do not overwrite .isHermitian) if validation is anyway disabled
+    if (isNumericalValidationDisabled())
+        return;
 
     // ensure hermiticity is known (if not; compute it)
     if (*(sum.isHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
@@ -3273,19 +3287,6 @@ void validate_controlStates(int* states, int numCtrls, const char* caller) {
 
 
 /*
- * ROTATION PARAMETERS
- */
-
-void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller) {
-
-    qreal norm = pow(x,2) + pow(y,2) + pow(z,2);
-
-    assertThat(norm > global_validationEpsilon, report::ROTATION_AXIS_VECTOR_IS_ZERO, caller);
-}
-
-
-
-/*
  * MEASUREMENT PARAMETERS
  */
 
@@ -3337,6 +3338,42 @@ void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const c
     };
 
     assertThat(memAvail > memNeeded, report::GPU_CANNOT_FIT_TEMP_MEASUREMENT_OUTCOME_PROBS, vars, caller);
+}
+
+
+
+/*
+ * MISC GATE PARAMETERS
+ */
+
+void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller) {
+
+    qreal norm = pow(x,2) + pow(y,2) + pow(z,2);
+
+    assertThat(norm > global_validationEpsilon, report::ROTATION_AXIS_VECTOR_IS_ZERO, caller);
+}
+
+void validate_mixedAmpsFitInNode(Qureg qureg, int numTargets, const char* caller) {
+
+    // only relevant to distributed quregs
+    if (!qureg.isDistributed)
+        return;
+
+    qindex numTargAmps = powerOf2(numTargets * (qureg.isDensityMatrix? 2:1));
+
+    tokenSubs vars = {
+        {"${NUM_TARGS}",        numTargets},
+        {"${NUM_TARG_AMPS}",    numTargAmps},
+        {"${NUM_NODES}",               qureg.numNodes},
+        {"${NUM_QUREG_QUBITS}",        qureg.numQubits},
+        {"${NUM_QUREG_AMPS_PER_NODE}", qureg.numAmpsPerNode}
+    };
+
+    string msg = (qureg.isDensityMatrix)?
+        report::CANNOT_FIT_MIXED_DENSMATR_AMPS_INTO_SINGLE_NODE:
+        report::CANNOT_FIT_MIXED_STATEVEC_AMPS_INTO_SINGLE_NODE;
+
+    assertThat(qureg.numAmpsPerNode >= numTargAmps, msg, vars, caller);
 }
 
 

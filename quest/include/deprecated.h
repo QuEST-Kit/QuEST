@@ -964,9 +964,11 @@ static inline PauliStrSum _createPauliStrSumFromCodes(int numQubits, _NoWarnPaul
 
     PauliStr* strings = (PauliStr*) malloc(numTerms * sizeof *strings);
     for (int i=0; i<numTerms; i++) {
-        int codes[100];
+
+        int codes[100]; // assumes numQubits<=100
         for (int j=0; j<numQubits && j<100; j++)
-            codes[i] = (int) allPauliCodes[i*numQubits+j];
+            codes[j] = (int) allPauliCodes[i*numQubits+j];
+
         strings[i] = getPauliStr(codes, targs, numQubits);
     }
 

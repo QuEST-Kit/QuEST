@@ -112,6 +112,7 @@ void mixKrausMap(Qureg qureg, int* qubits, int numQubits, KrausMap map) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_targets(qureg, qubits, numQubits, __func__);
+    validate_mixedAmpsFitInNode(qureg, numQubits, __func__);
     validate_krausMapIsCPTP(map, __func__); // also checks fields and is-sync
     validate_krausMapMatchesTargets(map, numQubits, __func__);
 
@@ -123,8 +124,7 @@ void mixQureg(Qureg outQureg, Qureg inQureg, qreal inProb) {
     validate_quregFields(outQureg, __func__);
     validate_quregFields(inQureg, __func__);
     validate_probability(inProb, __func__);
-    validate_quregIsDensityMatrix(outQureg, __func__);
-    validate_quregsCanBeMixed(outQureg, inQureg, __func__);
+    validate_quregsCanBeMixed(outQureg, inQureg, __func__); // checks outQureg is densmatr
 
     qreal outProb = 1 - inProb;
     localiser_densmatr_mixQureg(outProb, outQureg, inProb, inQureg);

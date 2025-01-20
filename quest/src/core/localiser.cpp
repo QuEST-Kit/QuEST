@@ -805,9 +805,15 @@ void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, vector<int> ctrls, vect
     //     a communicator which may be inelegant alongside our own distribution scheme.
 
     // perform necessary swaps to move all targets into suffix, each of which invokes communication
-    for (size_t i=0; i<targsA.size(); i++)
-        if (targsA[i] != targsB[i])
-            anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, targsA[i], targsB[i]);
+    for (size_t i=0; i<targsA.size(); i++) {
+
+        if (targsA[i] == targsB[i])
+            continue;
+
+        int suffixTarg = std::min(targsA[i], targsB[i]);
+        int prefixTarg = std::max(targsA[i], targsB[i]);
+        anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, suffixTarg, prefixTarg);
+    }
 }
 
 
@@ -1403,18 +1409,25 @@ void twoQubitDepolarisingOnPrefixAndPrefix(Qureg qureg, int ketQb1, int ketQb2, 
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    // scale 25% of (non-communicated) amps
+    // pack unscaled amps before subsequent scaling
+    qindex numPacked = accel_statevec_packAmpsIntoBuffer(qureg, {ketQb1,ketQb2}, {braBit1,braBit2});
+
+    // scale all amps
     accel_densmatr_twoQubitDepolarising_subE(qureg, ketQb1, ketQb2, prob);
 
-    // pack and swap 25% of buffer, and use it to modify 25% of local amps
+    // swap the buffer with 3 other nodes to update local amps
     int pairRank1 = util_getRankWithBraQubitFlipped(ketQb1, qureg);
-    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank1, {ketQb1,ketQb2}, {braBit1,braBit2});
+    int pairRank2 = util_getRankWithBraQubitFlipped(ketQb2, qureg);
+    int pairRank3 = util_getRankWithBraQubitsFlipped({ketQb1,ketQb2}, qureg);
+
+    comm_exchangeSubBuffers(qureg, numPacked, pairRank1);
     accel_densmatr_twoQubitDepolarising_subF(qureg, ketQb1, ketQb2, prob);
 
-    // pack and swap another 25% of buffer (we could pack during subE, but we choose not to)
-    int pairRank2 = util_getRankWithBraQubitFlipped(ketQb2, qureg);
-    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank2, {ketQb1,ketQb2}, {braBit1,braBit2});
-    accel_densmatr_twoQubitDepolarising_subG(qureg, ketQb1, ketQb2, prob);
+    comm_exchangeSubBuffers(qureg, numPacked, pairRank2);
+    accel_densmatr_twoQubitDepolarising_subF(qureg, ketQb1, ketQb2, prob);
+
+    comm_exchangeSubBuffers(qureg, numPacked, pairRank3);
+    accel_densmatr_twoQubitDepolarising_subF(qureg, ketQb1, ketQb2, prob);
 }
 
 
@@ -1757,8 +1770,17 @@ qreal localiser_densmatr_calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qu
 
     if (doAnyLocalStatesHaveQubitValues(qureg, braQubits, outcomes)) {
 
-        // such nodes need to know all ket qubits (which are all suffix)
-        prob += accel_densmatr_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes);
+        // such nodes need only know the ket qubits/outcomes for which the bra-qubits are in suffix
+        vector<int> ketQubitsWithBraInSuffix;
+        vector<int> ketOutcomesWithBraInSuffix;
+        for (int q=0; q<qubits.size(); q++)
+            if (util_isBraQubitInSuffix(qubits[q], qureg)) {
+                ketQubitsWithBraInSuffix.push_back(qubits[q]);
+                ketOutcomesWithBraInSuffix.push_back(outcomes[q]);
+            }
+
+        prob += accel_densmatr_calcProbOfMultiQubitOutcome_sub(
+            qureg, ketQubitsWithBraInSuffix, ketOutcomesWithBraInSuffix);
     }
 
     // all nodes must sum their probabilities (unless qureg was cloned per-node), for consensus

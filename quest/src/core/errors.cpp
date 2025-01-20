@@ -185,7 +185,7 @@ void assert_pairRankIsDistinct(Qureg qureg, int pairRank) {
 
 void assert_bufferSendRecvDoesNotOverlap(qindex sendInd, qindex recvInd, qindex numAmps) {
 
-    if (sendInd + numAmps > recvInd)
+    if (sendInd < recvInd + numAmps)
         raiseInternalError("A distributed function attempted to send and receive portions of the buffer which overlapped.");
 }
 
@@ -682,6 +682,12 @@ void assert_utilsGivenDensMatr(Qureg qureg) {
 
     if (!qureg.isDensityMatrix)
         raiseInternalError("A utility function was given a statevector where a density matrix was expected.");
+}
+
+void assert_utilsGivenNonZeroEpsilon(qreal eps) {
+
+    if (eps == 0)
+        raiseInternalError("A utility function (isUnitary, isHermitian, isCPTP) received an epsilon of zero, which should have precluded it being called.");
 }
 
 

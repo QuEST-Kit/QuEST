@@ -747,12 +747,6 @@ void accel_densmatr_twoQubitDepolarising_subF(Qureg qureg, int qubit1, int qubit
         gpu_densmatr_twoQubitDepolarising_subF(qureg, qubit1, qubit2, prob):
         cpu_densmatr_twoQubitDepolarising_subF(qureg, qubit1, qubit2, prob);
 }
-void accel_densmatr_twoQubitDepolarising_subG(Qureg qureg, int qubit1, int qubit2, qreal prob) {
-
-    (qureg.isGpuAccelerated)?
-        gpu_densmatr_twoQubitDepolarising_subG(qureg, qubit1, qubit2, prob):
-        cpu_densmatr_twoQubitDepolarising_subG(qureg, qubit1, qubit2, prob);
-}
 
 
 

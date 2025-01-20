@@ -290,6 +290,8 @@ void assert_utilsGivenStateVec(Qureg qureg);
 
 void assert_utilsGivenDensMatr(Qureg qureg);
 
+void assert_utilsGivenNonZeroEpsilon(qreal eps);
+
 
 
 /*

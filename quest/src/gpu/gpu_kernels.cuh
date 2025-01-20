@@ -787,7 +787,7 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subA(
 
 __global__ void kernel_densmatr_twoQubitDepolarising_subB(
     cu_qcomp* amps, qindex numThreads, 
-    int ketQb1, int ketQb2, int braQb1, int braQb2, qreal c1, qreal c2
+    int ketQb1, int ketQb2, int braQb1, int braQb2, qreal c1alt, qreal c2
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -800,10 +800,10 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subB(
     // mix 1/16 of all amps in groups of 4
     cu_qcomp term = amps[i0000] + amps[i0101] + amps[i1010] + amps[i1111];
 
-    amps[i0000] = c1*amps[i0000] + c2*term;
-    amps[i0101] = c1*amps[i0101] + c2*term;
-    amps[i1010] = c1*amps[i1010] + c2*term;
-    amps[i1111] = c1*amps[i1111] + c2*term;
+    amps[i0000] = c1alt*amps[i0000] + c2*term;
+    amps[i0101] = c1alt*amps[i0101] + c2*term;
+    amps[i1010] = c1alt*amps[i1010] + c2*term;
+    amps[i1111] = c1alt*amps[i1111] + c2*term;
 }
 
 
@@ -850,28 +850,23 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subD(
 
 __global__ void kernel_densmatr_twoQubitDepolarising_subE(
     cu_qcomp* amps, qindex numThreads, 
-    int ketQb1, int ketQb2, int braBit1, int braBit2, qreal c3
+    int ketQb1, int ketQb2, int braBit1, int braBit2, qreal fac0, qreal fac1
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // TODO:
-    // this kernel modifies every amplitude, but I think only
-    // 25% are actually being changed; fix this by dispatching
-    // 25% fewer kernels which go straight to the modified amps
+    // choose factor by which to scale amp
+    bool same1 = getBit(n, ketQb1) == braBit1; 
+    bool same2 = getBit(n, ketQb2) == braBit2;
+    bool flag = (same1 & same2);
 
-    // choose whether to modify amp
-    bool flag1 = getBit(n, ketQb1) == braBit1; 
-    bool flag2 = getBit(n, ketQb2) == braBit2;
-    bool mod   = !(flag1 & flag2);
-    
-    // multiply amp by 1 or (1 + c3)
-    amps[n] *=  1 + c3 * mod;
+    // scale amp by c1 or (1+c3)
+    amps[n] *=  fac1 * flag + fac0;
 }
 
 
 __global__ void kernel_densmatr_twoQubitDepolarising_subF(
     cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
-    int ketQb1, int ketQb2, int braBit1, int braBit2, qreal c1, qreal c2
+    int ketQb1, int ketQb2, int braBit1, int braBit2, qreal c2
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -879,21 +874,7 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subF(
     qindex i = insertTwoBits(n, ketQb2, braBit2, ketQb1, braBit1);
 
     // mix local amp with received buffer amp
-    amps[i] = c1*amps[i] + c2*buffer[n];
-}
-
-
-__global__ void kernel_densmatr_twoQubitDepolarising_subG(
-    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
-    int ketQb1, int ketQb2, int braBit1, int braBit2, qreal c1, qreal c2
-) {
-    GET_THREAD_IND(n, numThreads);
-
-    // i = nth local index where suffix ket qubits equal prefix bra qubits
-    qindex i = insertTwoBits(n, ketQb2, braBit2, ketQb1, braBit1);
-
-    // overwrite local amp with buffer amp
-    amps[i] = (c2 / c1) * buffer[n];
+    amps[i] += c2*buffer[n];
 }
 
 

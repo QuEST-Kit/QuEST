@@ -1083,11 +1083,11 @@ void cpu_densmatr_twoQubitDepolarising_subA(Qureg qureg, int ketQb1, int ketQb2,
     for (qindex n=0; n<numIts; n++) {
 
         // determine whether to modify amp
-        int flag1 = !(getBit(n, ketQb1) ^ getBit(n, braQb1));
-        int flag2 = !(getBit(n, ketQb2) ^ getBit(n, braQb2));
-        int mod   = !(flag1 & flag2);
+        bool flag1 = getBit(n, ketQb1) == getBit(n, braQb1);
+        bool flag2 = getBit(n, ketQb2) == getBit(n, braQb2);
+        bool mod = !(flag1 & flag2);
 
-        // multiply 15/16 of all amps by (1 + c3)
+        // multiply 15/16-th of all amps by (1 + c3)
         qureg.cpuAmps[n] *= 1 + c3 * mod;
     }
 }
@@ -1102,9 +1102,13 @@ void cpu_densmatr_twoQubitDepolarising_subB(Qureg qureg, int ketQb1, int ketQb2,
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braQb2 = util_getBraQubit(ketQb2, qureg);
 
+    // factors used in amp -> c1*amp + c2(sum of other three amps)
     auto factors = util_getTwoQubitDepolarisingFactors(prob);
     auto c1 = factors.c1;
     auto c2 = factors.c2;
+
+    // below, we compute term = (sum of all four amps) for brevity, so adjust c1
+    c1 -= c2;
 
     // for brevity
     qcomp* amps = qureg.cpuAmps;
@@ -1151,7 +1155,7 @@ void cpu_densmatr_twoQubitDepolarising_subC(Qureg qureg, int ketQb1, int ketQb2,
         // decide whether or not to modify nth local
         bool flag1 = getBit(n, ketQb1) == getBit(n, braQb1); 
         bool flag2 = getBit(n, ketQb2) == braBit2;
-        bool mod   = !(flag1 & flag2);
+        bool mod = !(flag1 & flag2);
 
         // scale amp by 1 or (1 + c3)
         qureg.cpuAmps[n] *= 1 + c3 * mod;
@@ -1197,30 +1201,26 @@ void cpu_densmatr_twoQubitDepolarising_subD(Qureg qureg, int ketQb1, int ketQb2,
 
 void cpu_densmatr_twoQubitDepolarising_subE(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
 
-    // scale 25% of amps but iterate all
+    // all amplitudes are scaled; 25% by c1 and 75% by 1 + c3
     qindex numIts = qureg.numAmpsPerNode;
+
+    auto factors = util_getTwoQubitDepolarisingFactors(prob);
+    qreal fac0 = 1 + factors.c3;
+    qreal fac1 = factors.c1 - fac0;
 
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    qreal c3 = util_getTwoQubitDepolarisingFactors(prob).c3;
-
-    // TODO:
-    // are we really inefficiently enumerating all amps and applying a non-unity
-    // factor to only 25%?! Is this because we do not know braBit2 and ergo 
-    // cannot be sure a direct enumeration is accessing indicies in a monotonically
-    // increasing order? Can that really outweigh a 3x slowdown?! Test and fix!
-
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
-
-        // choose whether to modify amp
-        bool flag1 = getBit(n, ketQb1) == braBit1; 
-        bool flag2 = getBit(n, ketQb2) == braBit2;
-        bool mod   = !(flag1 & flag2);
         
-        // multiply amp by 1 or (1 + c3)
-        qureg.cpuAmps[n] *=  1 + c3 * mod;
+        // choose factor by which to sacle amp
+        bool same1 = getBit(n, ketQb1) == braBit1; 
+        bool same2 = getBit(n, ketQb2) == braBit2;
+        bool flag = same1 & same2;
+
+        // scale amp by c1 or (1+c3)
+        qureg.cpuAmps[n] *= fac1 * flag + fac0;;
     }
 }
 
@@ -1236,9 +1236,7 @@ void cpu_densmatr_twoQubitDepolarising_subF(Qureg qureg, int ketQb1, int ketQb2,
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    auto factors = util_getTwoQubitDepolarisingFactors(prob);
-    auto c1 = factors.c1;
-    auto c2 = factors.c2;
+    auto c2 = util_getTwoQubitDepolarisingFactors(prob).c2;
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -1250,38 +1248,7 @@ void cpu_densmatr_twoQubitDepolarising_subF(Qureg qureg, int ketQb1, int ketQb2,
         qindex j = n + offset;
 
         // mix local amp with received buffer amp
-        qureg.cpuAmps[i] *= c1;
         qureg.cpuAmps[i] += c2 * qureg.cpuCommBuffer[j];
-    }
-}
-
-
-void cpu_densmatr_twoQubitDepolarising_subG(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
-
-    // modify 25% of local amps, one per iteration
-    qindex numIts = qureg.numAmpsPerNode / 4;
-
-    // received amplitudes may begin at an arbitrary offset in the buffer
-    qindex offset = getBufferRecvInd();
-
-    int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
-    int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
-
-    auto factors = util_getTwoQubitDepolarisingFactors(prob);
-    auto c1 = factors.c1;
-    auto c2 = factors.c2;
-
-    #pragma omp parallel for if(qureg.isMultithreaded)
-    for (qindex n=0; n<numIts; n++) {
-
-        // i = nth local index where suffix ket qubits equal prefix bra qubits
-        qindex i = insertTwoBits(n, ketQb2, braBit2, ketQb1, braBit1);
-
-        // j = nth received amp in buffer
-        qindex j = n + offset;
-
-        // overwrite local amp with buffer amp
-        qureg.cpuAmps[i] = (c2 / c1) * qureg.cpuCommBuffer[j];
     }
 }
 
@@ -1585,19 +1552,20 @@ qreal cpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
     qreal prob = 0;
 
     // each iteration visits one amp per 2^qubits.size() amps
+    // (>=1 since all qubits are in suffix, so qubits.size() <= suffix size) 
     qindex numIts = qureg.numAmpsPerNode / powerOf2(qubits.size());
 
     auto sortedQubits = util_getSorted(qubits); // all in suffix
     auto qubitStateMask = util_getBitMask(qubits, outcomes);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numQubits, NumQubits, qubits.size());
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
 
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = nth local index where qubits are in the specified outcome state
-        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubits, qubitStateMask);
+        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitStateMask);
 
         prob += std::norm(qureg.cpuAmps[i]);
     }
@@ -1611,14 +1579,17 @@ qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
+    // note that qubits are only ket qubits for which the corresponding bra-qubit is in the suffix;
+    // this function is not invoked upon nodes where prefix bra-qubits do not correspond to given outcomes
+
     qreal prob = 0;
 
-    // each iteration visits one column (contributing one diagonal amp) per 2^qubits.size() possible
-    qindex numIts = util_getNumLocalDiagonalAmpsWithBits(qureg, qubits, outcomes);
-    qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
+    // each iteration visits one relevant diagonal amp (= one column)
+    qindex numIts = powerOf2(qureg.logNumColsPerNode - qubits.size());
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
+    qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
 
-    auto sortedQubits = util_getSorted(qubits); // all in suffix
+    auto sortedQubits = util_getSorted(qubits); // all in suffix, with corresponding bra's all in suffix
     auto qubitStateMask = util_getBitMask(qubits, outcomes);
 
     // use template param to compile-time unroll loop in insertBits()
@@ -1627,10 +1598,10 @@ qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-        // i = local column index of the nth local pure state which contributes to the probability
-        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitStateMask);
+        // i = local statevector index of nth local basis state with a contributing diagonal
+        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitStateMask); // may be unrolled at compile-time
 
-        // j = local flat index of the diagonal element corresponding to i
+        // j = local, flat, density-matrix index of diagonal amp corresponding to state i
         qindex j = fast_getLocalIndexOfDiagonalAmp(i, firstDiagInd, numAmpsPerCol);
 
         prob += std::real(qureg.cpuAmps[j]);
