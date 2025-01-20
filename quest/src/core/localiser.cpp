@@ -1407,18 +1407,25 @@ void twoQubitDepolarisingOnPrefixAndPrefix(Qureg qureg, int ketQb1, int ketQb2, 
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    // scale 25% of (non-communicated) amps
+    // pack unscaled amps before subsequent scaling
+    qindex numPacked = accel_statevec_packAmpsIntoBuffer(qureg, {ketQb1,ketQb2}, {braBit1,braBit2});
+
+    // scale all amps
     accel_densmatr_twoQubitDepolarising_subE(qureg, ketQb1, ketQb2, prob);
 
-    // pack and swap 25% of buffer, and use it to modify 25% of local amps
+    // swap the buffer with 3 other nodes to update local amps
     int pairRank1 = util_getRankWithBraQubitFlipped(ketQb1, qureg);
-    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank1, {ketQb1,ketQb2}, {braBit1,braBit2});
+    int pairRank2 = util_getRankWithBraQubitFlipped(ketQb2, qureg);
+    int pairRank3 = util_getRankWithBraQubitsFlipped({ketQb1,ketQb2}, qureg);
+
+    comm_exchangeSubBuffers(qureg, numPacked, pairRank1);
     accel_densmatr_twoQubitDepolarising_subF(qureg, ketQb1, ketQb2, prob);
 
-    // pack and swap another 25% of buffer (we could pack during subE, but we choose not to)
-    int pairRank2 = util_getRankWithBraQubitFlipped(ketQb2, qureg);
-    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank2, {ketQb1,ketQb2}, {braBit1,braBit2});
-    accel_densmatr_twoQubitDepolarising_subG(qureg, ketQb1, ketQb2, prob);
+    comm_exchangeSubBuffers(qureg, numPacked, pairRank2);
+    accel_densmatr_twoQubitDepolarising_subF(qureg, ketQb1, ketQb2, prob);
+
+    comm_exchangeSubBuffers(qureg, numPacked, pairRank3);
+    accel_densmatr_twoQubitDepolarising_subF(qureg, ketQb1, ketQb2, prob);
 }
 
 
@@ -1432,13 +1439,6 @@ void localiser_densmatr_twoQubitDepolarising(Qureg qureg, int qubit1, int qubit2
     // determine necessary communication
     bool comm1 = doesChannelRequireComm(qureg, qubit1);
     bool comm2 = doesChannelRequireComm(qureg, qubit2);
-
-
-
-    // TODO:
-    // this is bugged, even when non-distributed!!!
-
-
 
     if (comm2 && comm1)
         twoQubitDepolarisingOnPrefixAndPrefix(qureg, qubit1, qubit2, prob);
