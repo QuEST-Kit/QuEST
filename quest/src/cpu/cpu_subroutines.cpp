@@ -1197,30 +1197,26 @@ void cpu_densmatr_twoQubitDepolarising_subD(Qureg qureg, int ketQb1, int ketQb2,
 
 void cpu_densmatr_twoQubitDepolarising_subE(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
 
-    // scale 25% of amps but iterate all
+    // all amplitudes are scaled; 25% by c1 and 75% by 1 + c3
     qindex numIts = qureg.numAmpsPerNode;
+
+    auto factors = util_getTwoQubitDepolarisingFactors(prob);
+    qreal fac0 = 1 + factors.c3;
+    qreal fac1 = factors.c1 - fac0;
 
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    qreal c3 = util_getTwoQubitDepolarisingFactors(prob).c3;
-
-    // TODO:
-    // are we really inefficiently enumerating all amps and applying a non-unity
-    // factor to only 25%?! Is this because we do not know braBit2 and ergo 
-    // cannot be sure a direct enumeration is accessing indicies in a monotonically
-    // increasing order? Can that really outweigh a 3x slowdown?! Test and fix!
-
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
-
-        // choose whether to modify amp
-        bool flag1 = getBit(n, ketQb1) == braBit1; 
-        bool flag2 = getBit(n, ketQb2) == braBit2;
-        bool mod   = !(flag1 & flag2);
         
-        // multiply amp by 1 or (1 + c3)
-        qureg.cpuAmps[n] *=  1 + c3 * mod;
+        // choose factor by which to sacle amp
+        bool same1 = getBit(n, ketQb1) == braBit1; 
+        bool same2 = getBit(n, ketQb2) == braBit2;
+        bool flag = same1 & same2;
+
+        // scale amp by c1 or (1+c3)
+        qureg.cpuAmps[n] *= fac1 * flag + fac0;;
     }
 }
 
@@ -1236,9 +1232,7 @@ void cpu_densmatr_twoQubitDepolarising_subF(Qureg qureg, int ketQb1, int ketQb2,
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    auto factors = util_getTwoQubitDepolarisingFactors(prob);
-    auto c1 = factors.c1;
-    auto c2 = factors.c2;
+    auto c2 = util_getTwoQubitDepolarisingFactors(prob).c2;
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -1250,7 +1244,6 @@ void cpu_densmatr_twoQubitDepolarising_subF(Qureg qureg, int ketQb1, int ketQb2,
         qindex j = n + offset;
 
         // mix local amp with received buffer amp
-        qureg.cpuAmps[i] *= c1;
         qureg.cpuAmps[i] += c2 * qureg.cpuCommBuffer[j];
     }
 }
