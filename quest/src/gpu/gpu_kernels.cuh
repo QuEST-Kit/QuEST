@@ -857,7 +857,7 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subE(
     // choose factor by which to scale amp
     bool same1 = getBit(n, ketQb1) == braBit1; 
     bool same2 = getBit(n, ketQb2) == braBit2;
-    bool flag = (flag1 & flag2);
+    bool flag = (same1 & same2);
 
     // scale amp by c1 or (1+c3)
     amps[n] *=  fac1 * flag + fac0;
