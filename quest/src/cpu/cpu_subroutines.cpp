@@ -1102,9 +1102,13 @@ void cpu_densmatr_twoQubitDepolarising_subB(Qureg qureg, int ketQb1, int ketQb2,
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braQb2 = util_getBraQubit(ketQb2, qureg);
 
+    // factors used in amp -> c1*amp + c2(sum of other three amps)
     auto factors = util_getTwoQubitDepolarisingFactors(prob);
     auto c1 = factors.c1;
     auto c2 = factors.c2;
+
+    // below, we compute term = (sum of all four amps) for brevity, so adjust c1
+    c1 -= c2;
 
     // for brevity
     qcomp* amps = qureg.cpuAmps;
@@ -1151,7 +1155,7 @@ void cpu_densmatr_twoQubitDepolarising_subC(Qureg qureg, int ketQb1, int ketQb2,
         // decide whether or not to modify nth local
         bool flag1 = getBit(n, ketQb1) == getBit(n, braQb1); 
         bool flag2 = getBit(n, ketQb2) == braBit2;
-        bool mod   = !(flag1 & flag2);
+        bool mod = !(flag1 & flag2);
 
         // scale amp by 1 or (1 + c3)
         qureg.cpuAmps[n] *= 1 + c3 * mod;
