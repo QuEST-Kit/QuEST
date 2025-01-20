@@ -1083,11 +1083,11 @@ void cpu_densmatr_twoQubitDepolarising_subA(Qureg qureg, int ketQb1, int ketQb2,
     for (qindex n=0; n<numIts; n++) {
 
         // determine whether to modify amp
-        int flag1 = !(getBit(n, ketQb1) ^ getBit(n, braQb1));
-        int flag2 = !(getBit(n, ketQb2) ^ getBit(n, braQb2));
-        int mod   = !(flag1 & flag2);
+        bool flag1 = getBit(n, ketQb1) == getBit(n, braQb1);
+        bool flag2 = getBit(n, ketQb2) == getBit(n, braQb2);
+        bool mod = !(flag1 & flag2);
 
-        // multiply 15/16 of all amps by (1 + c3)
+        // multiply 15/16-th of all amps by (1 + c3)
         qureg.cpuAmps[n] *= 1 + c3 * mod;
     }
 }
