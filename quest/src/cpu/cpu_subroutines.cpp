@@ -1256,36 +1256,6 @@ void cpu_densmatr_twoQubitDepolarising_subF(Qureg qureg, int ketQb1, int ketQb2,
 }
 
 
-void cpu_densmatr_twoQubitDepolarising_subG(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
-
-    // modify 25% of local amps, one per iteration
-    qindex numIts = qureg.numAmpsPerNode / 4;
-
-    // received amplitudes may begin at an arbitrary offset in the buffer
-    qindex offset = getBufferRecvInd();
-
-    int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
-    int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
-
-    auto factors = util_getTwoQubitDepolarisingFactors(prob);
-    auto c1 = factors.c1;
-    auto c2 = factors.c2;
-
-    #pragma omp parallel for if(qureg.isMultithreaded)
-    for (qindex n=0; n<numIts; n++) {
-
-        // i = nth local index where suffix ket qubits equal prefix bra qubits
-        qindex i = insertTwoBits(n, ketQb2, braBit2, ketQb1, braBit1);
-
-        // j = nth received amp in buffer
-        qindex j = n + offset;
-
-        // overwrite local amp with buffer amp
-        qureg.cpuAmps[i] = (c2 / c1) * qureg.cpuCommBuffer[j];
-    }
-}
-
-
 
 /*
  * PAULI CHANNEL
