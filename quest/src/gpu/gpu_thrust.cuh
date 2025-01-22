@@ -255,7 +255,7 @@ struct functor_getExpecDensMatrDiagMatrTerm : public thrust::unary_function<qind
     // this functor computes a single term from the sum in the expectation 
     // value of a FullStateDiagMatr upon a density matrix
 
-    qindex numAmpsPerCol, firstDiagInd
+    qindex numAmpsPerCol, firstDiagInd;
     cu_qcomp *amps, *elems, expo;
 
     functor_getExpecDensMatrDiagMatrTerm(qindex dim, qindex diagInd, cu_qcomp* _amps, cu_qcomp* _elems, cu_qcomp _expo) : 
@@ -825,7 +825,7 @@ cu_qcomp thrust_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vecto
 
 
 template <bool HasPower> 
-qcomp thrust_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+cu_qcomp thrust_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
 
     cu_qcomp init = getCuQcomp(0, 0);
     auto functor = functor_multiplyElemPowerWithAmpOrNorm<HasPower,true>(exponent);
@@ -839,7 +839,7 @@ qcomp thrust_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagM
 
 
 template <bool HasPower> 
-qcomp thrust_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp expo) {
+cu_qcomp thrust_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp expo) {
 
     qindex dim = powerOf2(qureg.numQubits);
     qindex ind = util_getLocalIndexOfFirstDiagonalAmp(qureg);
