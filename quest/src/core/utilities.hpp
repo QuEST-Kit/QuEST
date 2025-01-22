@@ -65,6 +65,7 @@ qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> ta
  */
 
 qindex util_getGlobalIndexOfFirstLocalAmp(Qureg qureg);
+qindex util_getGlobalColumnOfFirstLocalAmp(Qureg qureg);
 
 qindex util_getLocalIndexOfGlobalIndex(Qureg qureg, qindex globalInd);
 

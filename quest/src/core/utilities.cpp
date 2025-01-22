@@ -201,6 +201,12 @@ qindex util_getGlobalIndexOfFirstLocalAmp(Qureg qureg) {
     return qureg.rank * qureg.numAmpsPerNode;
 }
 
+qindex util_getGlobalColumnOfFirstLocalAmp(Qureg qureg) {
+    assert_utilsGivenDensMatr(qureg);
+
+    return qureg.rank * powerOf2(qureg.logNumColsPerNode);
+}
+
 qindex util_getLocalIndexOfGlobalIndex(Qureg qureg, qindex globalInd) {
 
     // equivalent to below, but clearer
