@@ -56,7 +56,7 @@ INLINE qindex fast_getGlobalColFromFlatIndex(qindex globalInd, qindex numAmpsPer
 
 INLINE qindex fast_getLocalIndexOfDiagonalAmp(qindex localIndOfBasisState, qindex localIndOfFirstDiagAmp, qindex numAmpsPerCol) {
 
-    qindex interDiagSpace = 1 + numAmpsPerCol;
+    qindex interDiagSpace = 1 + numAmpsPerCol; // constant and optimised away
     return localIndOfFirstDiagAmp + (localIndOfBasisState * interDiagSpace);
 }
 

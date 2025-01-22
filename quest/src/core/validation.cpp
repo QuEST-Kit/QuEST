@@ -1025,13 +1025,13 @@ bool validateconfig_isEnabled() {
  * overwritten (so will stay validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
  */
 
-static qreal global_validationEpsilon = DEAULT_VALIDATION_EPSILON;
+static qreal global_validationEpsilon = DEFAULT_VALIDATION_EPSILON;
 
 void validateconfig_setEpsilon(qreal eps) {
     global_validationEpsilon = eps;
 }
 void validateconfig_setEpsilonToDefault() {
-    global_validationEpsilon = DEAULT_VALIDATION_EPSILON;
+    global_validationEpsilon = DEFAULT_VALIDATION_EPSILON;
 }
 qreal validateconfig_getEpsilon() {
     return global_validationEpsilon;
@@ -3062,8 +3062,9 @@ void validate_basisStateIndices(Qureg qureg, qindex startInd, qindex numInds, co
         {{"${START_IND}", startInd}, {"${MAX_IND_EXCL}", qureg.numAmps}, {"${NUM_QB}", qureg.numQubits}},
         caller);
 
+    // permit numInds=0
     assertThat(
-        numInds > 0 && numInds <= qureg.numAmps,
+        numInds >= 0 && numInds <= qureg.numAmps,
         report::INVALID_NUM_BASIS_STATE_INDICES, 
         {{"${NUM_INDS}", numInds}, {"${MAX_NUM_INDS_INCL}", qureg.numAmps}, {"${NUM_QB}", qureg.numQubits}}, caller);
 
@@ -3511,8 +3512,8 @@ void validateDensMatrCanBeInitialisedToPureState(Qureg qureg, Qureg pure, const 
     // initPureState calls mixQureg which only additionally
     // constrains that pure.isDistributed only if qureg.isDistributed
 
-    if (qureg.isDistributed)
-        assertThat(!pure.isDistributed, report::INIT_DENSMATR_LOCAL_BUT_PURE_STATE_DISTRIBUTED, caller);
+    if (pure.isDistributed)
+        assertThat(qureg.isDistributed, report::INIT_DENSMATR_LOCAL_BUT_PURE_STATE_DISTRIBUTED, caller);
 }
 
 void validateStateVecCanBeInitialisedToPureState(Qureg qureg, Qureg pure, const char* caller) {

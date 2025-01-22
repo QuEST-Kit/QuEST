@@ -579,9 +579,6 @@ void cpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
     assert_quregAndFullStateDiagMatrHaveSameDistrib(qureg, matr);
     assert_exponentMatchesTemplateParam(exponent, HasPower);
 
-    // suppress warnings that 'exponent' is unused when HasPower=false (we cannot use C++17 [[maybe_unused]])
-    (void) exponent;
-
     // every iteration modifies one amp, using one element
     qindex numIts = qureg.numAmpsPerNode;
 
@@ -603,9 +600,6 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 
     assert_exponentMatchesTemplateParam(exponent, HasPower);
 
-    // suppress warnings that 'exponent' is unused when HasPower=false (we cannot use C++17 [[maybe_unused]])
-    (void) exponent;
-
     // every iteration modifies one qureg amp, using one matr element
     qindex numIts = qureg.numAmpsPerNode;
 
@@ -616,9 +610,11 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
         qindex i = fast_getGlobalRowFromFlatIndex(n, matr.numElems);
         qcomp fac = matr.cpuElems[i];
 
+        // compile-time decide if applying power to avoid in-loop branching...
         if constexpr (HasPower)
             fac = pow(fac, exponent);
 
+        // and whether we should also right-apply matr to qureg
         if constexpr (!MultiplyOnly) {
 
             // m = global index corresponding to n
@@ -628,6 +624,7 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
             qindex j = fast_getGlobalColFromFlatIndex(m, matr.numElems);
             qcomp term = matr.cpuElems[j];
 
+            // right-apply matrix elem may also need to be exponentiated
             if constexpr(HasPower)
                 term = pow(term, exponent);
 
@@ -1768,7 +1765,7 @@ template qcomp cpu_densmatr_calcFidelityWithPureState_sub<false>(Qureg, Qureg);
 
 
 /*
- * EXPECTATION VALUES
+ * PAULI EXPECTATION VALUES
  */
 
 
@@ -1850,6 +1847,14 @@ qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int
 
 
 qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
+
+    // TODO:
+    // this is identical to the subA() version above, except that
+    // qureg.cpuAmps[j] becomes qureg.cpuCommBuffer[j]. We could
+    // ergo replace subA() with an invocation of subB(), binding
+    // the buffer to the amps ptr. Would this affect/interfere
+    // with memory movement optimisations? I doubt so, but check
+    // and if not, perform the replacement to reduce code-dupe!
 
     qcomp value = 0;
 

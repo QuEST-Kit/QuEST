@@ -23,12 +23,12 @@
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
-#include <map>
 #include <tuple>
 #include <array>
 #include <vector>
 #include <complex>
 #include <algorithm>
+#include <unordered_map>
 
 using std::vector;
 using std::tuple;
@@ -256,6 +256,46 @@ auto getNonSwappedCtrlsAndStates(vector<int> oldCtrls, vector<int> oldStates, ve
         }
 
     return tuple{sameCtrls, sameStates};
+}
+
+
+Qureg getSpoofedDistributedBufferlessQuregFromLocalQureg(Qureg local, Qureg distrib) {
+
+    // this function makes a new Qureg, leveraging 'local's existing
+    // memory, which has the same distribution as the given distributed Qureg.
+    // critically, the new Qureg will lack communication buffers!
+
+    // overwrite spoof's fields with distrib's, setting correct dimensions
+    Qureg spoof = distrib;
+
+    // set spoof's pointers to a rank-specific offset of local's
+    qindex offset = util_getGlobalIndexOfFirstLocalAmp(distrib);
+    spoof.cpuAmps = &local.cpuAmps[offset];
+    spoof.gpuAmps = (local.isGpuAccelerated)? &local.gpuAmps[offset] : local.gpuAmps;
+
+    return spoof;
+}
+
+
+FullStateDiagMatr getSpoofedDistributedMatrFromDistributedQureg(FullStateDiagMatr local, Qureg distrib) {
+
+    // this function makes a new FullStateDiagMatr, leveraging 'local's existing
+    // memory, which has the same distribution as the given distributed Qureg.
+
+    // inherit all fields of local, subsequently overwriting those related to distribution
+    FullStateDiagMatr spoof = local;
+    spoof.isDistributed = 1;
+    spoof.numElemsPerNode = local.numElems / distrib.numNodes; // divides evenly
+
+    // offset pointers to local's existing memory, avoiding de-referencing nullptr (illegal)
+    qindex offset = (distrib.isDensityMatrix)? 
+        util_getGlobalColumnOfFirstLocalAmp(distrib):
+        util_getGlobalIndexOfFirstLocalAmp(distrib);
+    
+    spoof.cpuElems = &local.cpuElems[offset];
+    spoof.gpuElems = (local.isGpuAccelerated)? &local.gpuElems[offset] : local.gpuElems;
+
+    return spoof;
 }
 
 
@@ -1014,33 +1054,6 @@ void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, v
  */
 
 
-void localAllTargDiagMatrOnDistribStatevector(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
-
-    // this is a strange scenario (why distribute qureg but not
-    // an equally-sized matrix?) we support merely for defensive-
-    // design. In this scenario, every node has the full matrix
-    // amps and needs only to consult a contiguous subset. To
-    // avoid bespoke but trivially different backend functions,
-    // we spoof a distributed copy of 'matr' with pointers
-    // offset to the elements needed by this node, and call the
-    // equally-distributed backend function.
-
-    qindex offset = util_getGlobalIndexOfFirstLocalAmp(qureg);
-
-    // cheaply copy matr, spoofed as distributed (to pass internal checks)
-    FullStateDiagMatr copy = matr;
-    copy.isDistributed = true;
-    copy.numElemsPerNode = qureg.numAmpsPerNode; // not consulted, but for safety
-
-    // offset pointers to qureg's existing memory, avoiding de-referencing nullptr (illegal)
-    copy.cpuElems = &copy.cpuElems[offset];
-    copy.gpuElems = (copy.gpuElems == nullptr)? copy.gpuElems : &copy.gpuElems[offset];
-
-    // invoke backend; copy is in stack and will be auto-freed
-    accel_statevec_allTargDiagMatr_sub(qureg, copy, exponent);
-}
-
-
 void localiser_statevec_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
     assert_localiserGivenStateVec(qureg);
 
@@ -1059,8 +1072,10 @@ void localiser_statevec_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qco
         accel_statevec_allTargDiagMatr_sub(qureg, matr, exponent);
     
     // embarrasingly parallel when only qureg is distributed (all nodes have all needed matr elems)
-    if (quregDist && !matrDist)
-        localAllTargDiagMatrOnDistribStatevector(qureg, matr, exponent);
+    if (quregDist && !matrDist) {
+        auto copy = getSpoofedDistributedMatrFromDistributedQureg(matr, qureg);
+        accel_statevec_allTargDiagMatr_sub(qureg, copy, exponent);
+    }
 }
 
 
@@ -1484,7 +1499,7 @@ void localiser_densmatr_oneQubitPauliChannel(Qureg qureg, int qubit, qreal probX
 
 
 // twoQubitPauliChannel() is regrettably too difficult; the communication model cannot be 
-// simplified the way it was in twoQubitDepolarising() which levereaged the uniform
+// simplified the way it was in twoQubitDepolarising() which leveraged the uniform
 // coefficients. It is not clear whether arbitrary coefficients, which cause many more
 // amplitudes to mix, can ever be performed in a sequence of pairwise communication
 
@@ -1773,7 +1788,7 @@ qreal localiser_densmatr_calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qu
         // such nodes need only know the ket qubits/outcomes for which the bra-qubits are in suffix
         vector<int> ketQubitsWithBraInSuffix;
         vector<int> ketOutcomesWithBraInSuffix;
-        for (int q=0; q<qubits.size(); q++)
+        for (size_t q=0; q<qubits.size(); q++)
             if (util_isBraQubitInSuffix(qubits[q], qureg)) {
                 ketQubitsWithBraInSuffix.push_back(qubits[q]);
                 ketOutcomesWithBraInSuffix.push_back(outcomes[q]);
@@ -2021,20 +2036,6 @@ qcomp calcInnerProdOfSameDistribQuregs(Qureg quregA, Qureg quregB) {
 }
 
 
-Qureg spoofDistributedQuregFromLocalQureg(Qureg local, Qureg distrib) {
-
-    // overwrite spoof's fields with distrib's, setting correct dimensions
-    Qureg spoof = distrib;
-
-    // set spoof's pointers to a rank-specific offset of local's
-    qindex offset = util_getGlobalIndexOfFirstLocalAmp(distrib);
-    spoof.cpuAmps = &local.cpuAmps[offset];
-    spoof.gpuAmps = (local.isGpuAccelerated)? &local.gpuAmps[offset] : nullptr;
-
-    return spoof;
-}
-
-
 qcomp localiser_statevec_calcInnerProduct(Qureg quregA, Qureg quregB) {
 
     // trivial when identically distributed
@@ -2046,8 +2047,8 @@ qcomp localiser_statevec_calcInnerProduct(Qureg quregA, Qureg quregB) {
     // defensive design, we modify a copy of quregA or quregB (even
     // though they themselves are mere copies of the user structs),
     // in case this function is modified in the future to mutate args
-    Qureg copyA = (quregA.isDistributed)? quregA : spoofDistributedQuregFromLocalQureg(quregA, quregB);
-    Qureg copyB = (quregB.isDistributed)? quregB : spoofDistributedQuregFromLocalQureg(quregB, quregA);
+    Qureg copyA = (quregA.isDistributed)? quregA : getSpoofedDistributedBufferlessQuregFromLocalQureg(quregA, quregB);
+    Qureg copyB = (quregB.isDistributed)? quregB : getSpoofedDistributedBufferlessQuregFromLocalQureg(quregB, quregA);
 
     return calcInnerProdOfSameDistribQuregs(copyA, copyB); // broadcasts
 }
@@ -2112,8 +2113,8 @@ qreal localiser_densmatr_calcHilbertSchmidtDistance(Qureg quregA, Qureg quregB) 
     // otherwise, we simply spoof a distributed qureg from the local 
     // one, offsetting its amp pointers, modifying copies in defensive design
     else {
-        Qureg copyA = (quregA.isDistributed)? quregA : spoofDistributedQuregFromLocalQureg(quregA, quregB);
-        Qureg copyB = (quregB.isDistributed)? quregB : spoofDistributedQuregFromLocalQureg(quregB, quregA);
+        Qureg copyA = (quregA.isDistributed)? quregA : getSpoofedDistributedBufferlessQuregFromLocalQureg(quregA, quregB);
+        Qureg copyB = (quregB.isDistributed)? quregB : getSpoofedDistributedBufferlessQuregFromLocalQureg(quregB, quregA);
         dist = accel_densmatr_calcHilbertSchmidtDistance_sub(copyA, copyB);
     }
 

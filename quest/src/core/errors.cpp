@@ -379,7 +379,7 @@ void assert_mixedQuregsAreBothOrNeitherDistributed(Qureg a, Qureg b) {
 
 void assert_mixQuregTempGpuAllocSucceeded(qcomp* gpuPtr) {
 
-    if (gpuPtr == nullptr)
+    if (!mem_isAllocated(gpuPtr))
         raiseInternalError("An internal function invoked by mixQuregs() attempted to allocate temporary GPU memory but failed.");
 }
 
@@ -420,7 +420,7 @@ void assert_quregGpuBufferIsNotGraftedToMatrix(Qureg qureg, FullStateDiagMatr ma
 
 void assert_applyFullStateDiagMatrTempGpuAllocSucceeded(qcomp* gpuPtr) {
 
-    if (gpuPtr == nullptr)
+    if (!mem_isAllocated(gpuPtr))
         raiseInternalError("An internal function invoked by applying a FullStateDiagMatr upon a density matrix attempted to allocate temporary GPU memory but failed.");
 }
 

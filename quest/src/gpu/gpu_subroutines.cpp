@@ -1465,7 +1465,7 @@ template qcomp gpu_densmatr_calcFidelityWithPureState_sub<false>(Qureg, Qureg);
 
 
 /*
- * EXPECTATION VALUES
+ * PAULI EXPECTATION VALUES
  */
 
 

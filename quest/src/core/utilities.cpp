@@ -67,6 +67,9 @@ bool util_isBraQubitInSuffix(int ketQubit, Qureg qureg) {
 
 vector<int> getPrefixOrSuffixQubits(vector<int> qubits, Qureg qureg, bool getSuffix) {
 
+    // note that when the qureg is local/duplicated, 
+    // all qubits will be suffix, none will be prefix
+
     vector<int> subQubits(0);
     subQubits.reserve(qubits.size());
 
@@ -196,6 +199,12 @@ vector<int> util_getVector(int* qubits, int numQubits) {
 qindex util_getGlobalIndexOfFirstLocalAmp(Qureg qureg) {
 
     return qureg.rank * qureg.numAmpsPerNode;
+}
+
+qindex util_getGlobalColumnOfFirstLocalAmp(Qureg qureg) {
+    assert_utilsGivenDensMatr(qureg);
+
+    return qureg.rank * powerOf2(qureg.logNumColsPerNode);
 }
 
 qindex util_getLocalIndexOfGlobalIndex(Qureg qureg, qindex globalInd) {
@@ -449,7 +458,7 @@ bool isHermitian(qcomp* diags, qindex dim, qreal eps) {
     // check every element has a zero (or <eps) imaginary component
     for (qindex i=0; i<dim; i++)
         if (std::abs(imag(diags[i])) > eps)
-        return false;
+            return false;
 
     return true;
 }

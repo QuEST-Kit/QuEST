@@ -49,10 +49,15 @@ extern "C" void _wrap_calcInnerProduct(Qureg bra, Qureg ket, qcomp* out) {
 
 
 qcomp calcExpecNonHermitianPauliStrSum(Qureg qureg, PauliStrSum sum) {
+    validate_quregFields(qureg, __func__);
+    validate_pauliStrSumFields(sum, __func__);
+    validate_pauliStrSumTargets(sum, qureg, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
+    qcomp value = (qureg.isDensityMatrix)?
+        localiser_densmatr_calcExpecPauliStrSum(qureg, sum):
+        localiser_statevec_calcExpecPauliStrSum(qureg, sum);
+
+    return value;
 }
 extern "C" void _wrap_calcExpecNonHermitianPauliStrSum(qcomp* out, Qureg qureg, PauliStrSum sum) {
 
