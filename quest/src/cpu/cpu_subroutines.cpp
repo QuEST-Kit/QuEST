@@ -1848,6 +1848,14 @@ qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int
 
 qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
+    // TODO:
+    // this is identical to the subA() version above, except that
+    // qureg.cpuAmps[j] becomes qureg.cpuCommBuffer[j]. We could
+    // ergo replace subA() with an invocation of subB(), binding
+    // the buffer to the amps ptr. Would this affect/interfere
+    // with memory movement optimisations? I doubt so, but check
+    // and if not, perform the replacement to reduce code-dupe!
+
     qcomp value = 0;
 
     // all local amps contribute to the sum
