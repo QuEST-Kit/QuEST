@@ -1548,6 +1548,48 @@ qcomp gpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int>
 
 
 /*
+ * DIAGONAL MATRIX EXPECTATION VALUES
+ */
+
+
+template <bool HasPower> 
+qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+#if COMPILE_CUQUANTUM || COMPILE_CUDA
+
+    cu_qcomp value = thrust_statevec_calcExpecFullStateDiagMatr_sub<HasPower>(qureg, matr, exponent);
+    return toQcomp(value);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+    return -1;
+#endif
+}
+
+
+template <bool HasPower>
+qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+#if COMPILE_CUQUANTUM || COMPILE_CUDA
+
+    cu_qcomp value = thrust_densmatr_calcExpecFullStateDiagMatr_sub<HasPower>(qureg, matr, exponent);
+    return toQcomp(value);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+    return -1;
+#endif
+}
+
+
+template qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub<true> (Qureg, FullStateDiagMatr, qcomp);
+template qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub<true> (Qureg, FullStateDiagMatr, qcomp);
+template qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
+
+
+
+/*
  * PROJECTORS
  */
 

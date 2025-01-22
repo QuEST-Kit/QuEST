@@ -181,7 +181,7 @@ void validate_matrixDimMatchesTargets(DiagMatr1 matr, int numTargs, const char* 
 void validate_matrixDimMatchesTargets(DiagMatr2 matr, int numTargs, const char* caller);
 void validate_matrixDimMatchesTargets(DiagMatr  matr, int numTargs, const char* caller);
 
-void validate_matrixAndQuregAreCompatible(FullStateDiagMatr matr, Qureg qureg, const char* caller);
+void validate_matrixAndQuregAreCompatible(FullStateDiagMatr matr, Qureg qureg, bool expecOnly, const char* caller);
 
 
 
@@ -432,6 +432,7 @@ void validate_expecPauliStrValueIsReal(qcomp value, bool isDensMatr, const char*
 
 void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const char* caller);
 
+void validate_expecFullStateDiagMatrValueIsReal(qcomp value, bool isDensMatr, const char* caller);
 
 
 

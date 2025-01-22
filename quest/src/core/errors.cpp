@@ -436,6 +436,12 @@ void assert_calcFidTempGpuAllocSucceeded(qcomp* ptr) {
         raiseInternalError("An accelerator function involved with calculating the fidelity between a density matrix and statevector failed to allocate temporary GPU memory.");
 }
 
+void assert_calcExpecDiagTempGpuAllocSucceeded(qcomp* ptr) {
+
+    if (!mem_isAllocated(ptr))
+        raiseInternalError("An accelerator function involved with calculating the expectation value of a FullStateDiagMatr upon a density matrix failed to allocate temporary GPU memory.");
+}
+
 void assert_innerProductedSameDimQuregsHaveSameGpuAccel(Qureg quregA, Qureg quregB) {
 
     if (quregA.isGpuAccelerated != quregB.isGpuAccelerated)

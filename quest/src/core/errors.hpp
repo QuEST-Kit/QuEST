@@ -160,6 +160,8 @@ void assert_calcFidStateVecIsLocal(Qureg qureg);
 
 void assert_calcFidTempGpuAllocSucceeded(qcomp* ptr);
 
+void assert_calcExpecDiagTempGpuAllocSucceeded(qcomp* ptr);
+
 void assert_innerProductedSameDimQuregsHaveSameGpuAccel(Qureg quregA, Qureg quregB);
 
 

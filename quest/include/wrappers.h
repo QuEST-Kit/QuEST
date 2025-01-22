@@ -67,6 +67,16 @@ qcomp calcExpecNonHermitianFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr
 }
 
 
+extern void _wrap_calcExpecNonHermitianFullStateDiagMatrPower(qcomp*, Qureg, FullStateDiagMatr, qcomp);
+
+qcomp calcExpecNonHermitianFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matr, qcomp expo) {
+
+    qcomp out;
+    _wrap_calcExpecNonHermitianFullStateDiagMatrPower(&out, qureg, matr, expo);
+    return out;
+}
+
+
 extern void _wrap_getQuregAmp(qcomp* out, Qureg qureg, qindex index);
 
 qcomp getQuregAmp(Qureg qureg, qindex index) {

@@ -931,7 +931,14 @@ namespace report {
         "The calculated statevector expectation value was not approximately real (i.e. was not within epsilon). This suggests that the PauliStrSum, despite being validated as (approximately) Hermitian, contained coefficients with sub-epsilon but non-negligible imaginary components which accumulated in the output value.";
 
     string CALC_DENSMATR_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL =
-        "The calculatd density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests the density matrix was unnormalised and/or not (sufficiently close to) Hermitian.";
+        "The calculated density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests the density matrix was unnormalised and/or not (sufficiently close to) Hermitian.";
+
+
+    string CALC_STATEVEC_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated statevector expectation value was not approximately real (i.e. was not within epsilon). This suggests that the FullStateDiagMatr, despite being validated as (approximately) Hermitian, contained coefficients with sub-epsilon but non-negligible imaginary components which accumulated in the output value.";
+
+    string CALC_DENSMATR_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests either the Qureg was incorrectly normalised (i.e. contained diagonal elements with non-negligible imaginary components), or that the imaginary components of the FullStateDiagMatr (despite being validated as approximately Hermitian) accumulated non-negligibly in the output value.";
 
 
     /*
@@ -2247,13 +2254,14 @@ void validate_matrixDimMatchesTargets(DiagMatr1 matr, int numTargs, const char* 
 void validate_matrixDimMatchesTargets(DiagMatr2 matr, int numTargs, const char* caller) { assertMatrixDimMatchesTargs(matr, numTargs, caller); }
 void validate_matrixDimMatchesTargets(DiagMatr  matr, int numTargs, const char* caller) { assertMatrixDimMatchesTargs(matr, numTargs, caller); }
 
-void validate_matrixAndQuregAreCompatible(FullStateDiagMatr matr, Qureg qureg, const char* caller) {
+void validate_matrixAndQuregAreCompatible(FullStateDiagMatr matr, Qureg qureg, bool expecOnly, const char* caller) {
 
     // we do not need to define this function for the other matrix types,
     // since their validation will happen through validation of the
     // user-given list of target qubits. But we do need to define it for
     // FullStatedDiagMatr to check both distribution compatibility, and
-    // that dimensions match
+    // that dimensions match. When expecOnly=true, we relax the necessity
+    // that the distributions match; one or both can be distributed
 
     tokenSubs vars = {
         {"${NUM_MATR_QUBITS}",  matr.numQubits},
@@ -2269,7 +2277,8 @@ void validate_matrixAndQuregAreCompatible(FullStateDiagMatr matr, Qureg qureg, c
     // but when it's distributed, so too must be the qureg; the precise reason why is 
     // specific to whether qureg is a statevector or density matrix, but boils down
     // to there being no communication buffers available to broadcast matr
-    assertThat(qureg.isDistributed, report::FULL_STATE_DIAG_MATR_IS_DISTRIB_BUT_QUREG_ISNT, caller); // did not pass vars
+    if (!expecOnly)
+        assertThat(qureg.isDistributed, report::FULL_STATE_DIAG_MATR_IS_DISTRIB_BUT_QUREG_ISNT, caller); // did not pass vars
 }
 
 
@@ -3664,6 +3673,15 @@ void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const ch
     string msg = (isDensMatr)?
         report::CALC_DENSMATR_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL:
         report::CALC_STATEVEC_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL;
+
+    assertThat(abs(imag(value)) < global_validationEpsilon, msg, caller);
+}
+
+void validate_expecFullStateDiagMatrValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
+
+    string msg = (isDensMatr)?
+        report::CALC_DENSMATR_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL:
+        report::CALC_STATEVEC_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL;
 
     assertThat(abs(imag(value)) < global_validationEpsilon, msg, caller);
 }

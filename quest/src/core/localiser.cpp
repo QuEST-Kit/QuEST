@@ -2017,6 +2017,71 @@ qcomp localiser_densmatr_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
 }
 
 
+auto getSpoofsWithMatchingDistributions(Qureg qureg, FullStateDiagMatr matr) {
+
+    // in defensive design, this function modifies only new structs rather than
+    // the passed structs, in case the latter are later changed to references
+
+    // when only matr is local, spoof it to be distributed
+    if (qureg.isDistributed && !matr.isDistributed) {
+
+        FullStateDiagMatr matrSpoof = getSpoofedDistributedMatrFromDistributedQureg(matr, qureg);
+        return tuple{qureg,matrSpoof};
+    }
+
+    // when only qureg is local, spoof it to be distributed
+    if (!qureg.isDistributed && matr.isDistributed) {
+
+        Qureg quregSpoof = qureg_populateNonHeapFields(
+            qureg.numQubits, qureg.isDensityMatrix, 
+            matr.isDistributed,  // !
+            qureg.isGpuAccelerated, qureg.isMultithreaded);
+
+        quregSpoof = getSpoofedDistributedBufferlessQuregFromLocalQureg(qureg, quregSpoof);
+        return tuple{quregSpoof,matr};
+    }
+
+    // when distributions agree, return originals
+    return tuple{qureg,matr};
+}
+
+
+qcomp localiser_statevec_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+    // since this method does not modify qureg, we force qureg & matr distributions to 
+    // agree by merely spoofing the non-distributed object to be distributed;
+    // we use new vars in defensive design, in case args ever become references
+    auto [quregSpoof, matrSpoof] = getSpoofsWithMatchingDistributions(qureg, matr);
+
+    // always embarrassingly parallel
+    qcomp value = accel_statevec_calcExpecFullStateDiagMatr_sub(quregSpoof, matrSpoof, exponent);
+
+    // combine contributions from other nodes
+    if (quregSpoof.isDistributed)
+        comm_reduceAmp(&value);
+
+    return value;
+}
+
+
+qcomp localiser_densmatr_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+    // since this method does not modify qureg, we force qureg & matr distributions to 
+    // agree by merely spoofing the non-distributed object to be distributed;
+    // we use new vars in defensive design, in case args ever become references
+    auto [quregSpoof, matrSpoof] = getSpoofsWithMatchingDistributions(qureg, matr);
+
+    // always embarrassingly parallel
+    qcomp value = accel_densmatr_calcExpecFullStateDiagMatr_sub(quregSpoof, matrSpoof, exponent);
+
+    // combine contributions from other nodes
+    if (quregSpoof.isDistributed)
+        comm_reduceAmp(&value);
+
+    return value;
+}
+
+
 
 /*
  * INNER PRODUCTS

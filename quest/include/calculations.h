@@ -72,6 +72,8 @@ qcomp calcExpecNonHermitianPauliStrSum(Qureg qureg, PauliStrSum sum);
 
 qcomp calcExpecNonHermitianFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
 
+qcomp calcExpecNonHermitianFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
+
 #endif
 
 

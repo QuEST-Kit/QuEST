@@ -1920,6 +1920,75 @@ qcomp cpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int>
 
 
 /*
+ * DIAGONAL MATRIX EXPECTATION VALUES
+ */
+
+
+template <bool HasPower> 
+qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+    assert_quregAndFullStateDiagMatrHaveSameDistrib(qureg, matr);
+    assert_exponentMatchesTemplateParam(exponent, HasPower);
+
+    qcomp value = 0;
+
+    // every amp, iterated independently, contributes to the expectation value
+    qindex numIts = qureg.numAmpsPerNode;
+
+    #pragma omp parallel for reduction(+:value) if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // compile-time decide if applying power to avoid in-loop branching
+        qcomp elem = matr.cpuElems[n];
+        if constexpr (HasPower)
+            elem = pow(elem, exponent);
+        
+        value += elem * std::norm(qureg.cpuAmps[n]);
+    }
+
+    return value;
+}
+
+
+template <bool HasPower>
+qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+    assert_quregAndFullStateDiagMatrHaveSameDistrib(qureg, matr);
+    assert_exponentMatchesTemplateParam(exponent, HasPower);
+
+    qcomp value = 0;
+
+    // iterate each column, of which one amp (the diagonal) contributes
+    qindex numIts = powerOf2(qureg.logNumColsPerNode);
+    qindex numAmpsPerCol = powerOf2(qureg.numQubits);
+    qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
+
+    #pragma omp parallel for reduction(+:value) if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = local index of nth local diagonal element
+        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
+
+        // compile-time decide if applying power to avoid in-loop branching
+        qcomp elem = matr.cpuElems[n];
+        if constexpr (HasPower)
+            elem = pow(elem, exponent);
+
+        value += elem * qureg.cpuAmps[i];
+    }
+
+    return value;
+}
+
+
+template qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub<true> (Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<true> (Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
+
+
+
+/*
  * PROJECTORS
  */
 
