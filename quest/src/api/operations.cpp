@@ -1378,11 +1378,36 @@ void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQu
  * QFT
  */
 
-void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, targets, numTargets, __func__);
 
-void applyFullQuantumFourierTransform(Qureg qureg)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    // TODO:
+    // change this placeholder implementation to the bespoke, optimised routine,
+    // wherein each contiguous controlled-phase gate is merged
+
+    for (int n=numTargets-1; n>=0; n--) {
+        applyHadamard(qureg, targets[n]);
+        for (int m=0; m<n; m++) {
+            qreal arg = M_PI / powerOf2(m+1);
+            applyTwoQubitPhaseShift(qureg, targets[n], targets[n-m-1], arg);
+        }
+    }
+
+    int mid = numTargets/2; // floors
+    for (int n=0; n<mid; n++)
+        applySwap(qureg, targets[n], targets[numTargets-1-n]);
+}
+
+void applyFullQuantumFourierTransform(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
+
+    vector<int> targets(qureg.numQubits);
+    for (size_t i=0; i<targets.size(); i++)
+        targets[i] = i;
+
+    applyQuantumFourierTransform(qureg, targets.data(), targets.size());
+}
 
 
 
