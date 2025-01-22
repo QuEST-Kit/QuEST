@@ -65,15 +65,31 @@ extern "C" void _wrap_calcExpecNonHermitianPauliStrSum(qcomp* out, Qureg qureg, 
 }
 
 
-qcomp calcExpecNonHermitianFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr) {
+qcomp calcExpecNonHermitianFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
+    validate_quregFields(qureg, __func__);
+    validate_matrixFields(matrix, __func__);
+    validate_matrixAndQuregAreCompatible(matrix, qureg, true, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
+    return calcExpecNonHermitianFullStateDiagMatrPower(qureg, matrix, 1); // harmlessly re-validates
 }
 extern "C" void _wrap_calcExpecNonHermitianFullStateDiagMatr(qcomp* out, Qureg qureg, FullStateDiagMatr matr) {
 
     *out = calcExpecNonHermitianFullStateDiagMatr(qureg, matr);
+}
+
+
+qcomp calcExpecNonHermitianFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent) {
+    validate_quregFields(qureg, __func__);
+    validate_matrixFields(matrix, __func__);
+    validate_matrixAndQuregAreCompatible(matrix, qureg, true, __func__);
+
+    return (qureg.isDensityMatrix)?
+        localiser_densmatr_calcExpecFullStateDiagMatr(qureg, matrix, exponent):
+        localiser_statevec_calcExpecFullStateDiagMatr(qureg, matrix, exponent);
+}
+extern "C" void _wrap_calcExpecNonHermitianFullStateDiagMatrPower(qcomp* out, Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+    *out = calcExpecNonHermitianFullStateDiagMatrPower(qureg, matr, exponent);
 }
 
 
@@ -120,14 +136,29 @@ qreal calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
 }
 
 
-qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr) {
+qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
+    validate_quregFields(qureg, __func__);
+    validate_matrixFields(matrix, __func__);
+    validate_matrixAndQuregAreCompatible(matrix, qureg, true, __func__);
+    validate_matrixIsHermitian(matrix, __func__);
 
-    // TODO
-    validate_matrixIsHermitian(matr, __func__);
+    return calcExpecFullStateDiagMatrPower(qureg, matrix, 1); // harmlessly re-validates
+}
 
-    // TODO
-    error_functionNotImplemented(__func__);
-    return -1;
+
+qreal calcExpecFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent) {
+    validate_quregFields(qureg, __func__);
+    validate_matrixFields(matrix, __func__);
+    validate_matrixAndQuregAreCompatible(matrix, qureg, true, __func__);
+    validate_matrixIsHermitian(matrix, __func__);
+
+    qcomp value = (qureg.isDensityMatrix)?
+        localiser_densmatr_calcExpecFullStateDiagMatr(qureg, matrix, exponent):
+        localiser_statevec_calcExpecFullStateDiagMatr(qureg, matrix, exponent);
+
+    // demand value is real, despite exponent being complex
+    validate_expecFullStateDiagMatrValueIsReal(value, qureg.isDensityMatrix, __func__);
+    return std::real(value);
 }
 
 

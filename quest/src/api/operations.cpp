@@ -368,25 +368,21 @@ void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* sta
 
 
 /*
- * FullStateDiagMatr
+ * FullStateDiagMatr (and power)
  */
 
 void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
     validate_quregFields(qureg, __func__);
     validate_matrixFields(matrix, __func__);
-    validate_matrixAndQuregAreCompatible(matrix, qureg, __func__); // matrix can be non-unitary
+    validate_matrixAndQuregAreCompatible(matrix, qureg, false, __func__); // matrix can be non-unitary
 
-    bool onlyMultiply = true;
-    qcomp exponent = qcomp(1, 0);
-    (qureg.isDensityMatrix)?
-        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply):
-        localiser_statevec_allTargDiagMatr(qureg, matrix, exponent);
+    multiplyFullStateDiagMatrPower(qureg, matrix, 1); // harmlessly re-validates
 }
 
 void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent) {
     validate_quregFields(qureg, __func__);
     validate_matrixFields(matrix, __func__);
-    validate_matrixAndQuregAreCompatible(matrix, qureg, __func__); // matrix can be non-unitary
+    validate_matrixAndQuregAreCompatible(matrix, qureg, false, __func__); // matrix can be non-unitary
 
     bool onlyMultiply = true;
     (qureg.isDensityMatrix)?
@@ -397,20 +393,16 @@ void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp
 void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
     validate_quregFields(qureg, __func__);
     validate_matrixFields(matrix, __func__);
-    validate_matrixAndQuregAreCompatible(matrix, qureg, __func__);
+    validate_matrixAndQuregAreCompatible(matrix, qureg, false, __func__);
     validate_matrixIsUnitary(matrix, __func__);
 
-    bool onlyMultiply = false;
-    qcomp exponent = qcomp(1, 0);
-    (qureg.isDensityMatrix)?
-        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply):
-        localiser_statevec_allTargDiagMatr(qureg, matrix, exponent);
+    applyFullStateDiagMatrPower(qureg, matrix, 1); // harmlessly re-validates
 }
 
 void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent) {
     validate_quregFields(qureg, __func__);
     validate_matrixFields(matrix, __func__);
-    validate_matrixAndQuregAreCompatible(matrix, qureg, __func__);
+    validate_matrixAndQuregAreCompatible(matrix, qureg, false, __func__);
     validate_matrixIsUnitary(matrix, __func__);
 
     bool onlyMultiply = false;

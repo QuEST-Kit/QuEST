@@ -290,6 +290,9 @@ qcomp accel_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<i
 qcomp accel_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
 qcomp accel_densmatr_calcExpecPauliStr_sub (Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
 
+qcomp accel_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+
 
 /*
  * PROJECTORS 
