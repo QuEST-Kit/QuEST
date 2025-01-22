@@ -638,9 +638,9 @@ qreal thrust_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> q
 
     auto rawIter = thrust::make_counting_iterator(0);
     auto indIter = thrust::make_transform_iterator(rawIter, basisIndFunctor);
-    auto diagIter = thrust::make_transform_iterator(indIter, diagIndFunctor);
+    auto diagIter= thrust::make_transform_iterator(indIter, diagIndFunctor);
     auto ampIter = thrust::make_permutation_iterator(getStartPtr(qureg), diagIter);
-    auto probIter = thrust::make_transform_iterator(ampIter, probFunctor);
+    auto probIter= thrust::make_transform_iterator(ampIter, probFunctor);
 
     qindex numIts = powerOf2(qureg.logNumColsPerNode - qubits.size());
     qreal prob = thrust::reduce(probIter, probIter + numIts);
@@ -700,7 +700,7 @@ cu_qcomp thrust_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
 
 
 /*
- * EXPECTATION VALUES
+ * PAULI EXPECTATION VALUES
  */
 
 

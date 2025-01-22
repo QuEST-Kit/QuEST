@@ -137,6 +137,8 @@ void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* sta
 
 void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
 
+void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
+
 void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
 
 void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);

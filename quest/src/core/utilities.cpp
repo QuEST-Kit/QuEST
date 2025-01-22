@@ -67,6 +67,9 @@ bool util_isBraQubitInSuffix(int ketQubit, Qureg qureg) {
 
 vector<int> getPrefixOrSuffixQubits(vector<int> qubits, Qureg qureg, bool getSuffix) {
 
+    // note that when the qureg is local/duplicated, 
+    // all qubits will be suffix, none will be prefix
+
     vector<int> subQubits(0);
     subQubits.reserve(qubits.size());
 
@@ -449,7 +452,7 @@ bool isHermitian(qcomp* diags, qindex dim, qreal eps) {
     // check every element has a zero (or <eps) imaginary component
     for (qindex i=0; i<dim; i++)
         if (std::abs(imag(diags[i])) > eps)
-        return false;
+            return false;
 
     return true;
 }

@@ -345,7 +345,6 @@ void accel_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qco
     bool quregGPU = qureg.isGpuAccelerated;
     bool matrGPU = matr.isGpuAccelerated;
 
-    // our chosen function must be correctly templated
     bool hasPower = exponent != qcomp(1, 0);
     auto cpuFunc = GET_FUNC_OPTIMISED_FOR_BOOL( cpu_statevec_allTargDiagMatr_sub, hasPower );
     auto gpuFunc = GET_FUNC_OPTIMISED_FOR_BOOL( gpu_statevec_allTargDiagMatr_sub, hasPower );
@@ -356,15 +355,14 @@ void accel_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qco
 
     // deployments differing is a strange and expectedly rare scenario;
     // why use GPU-acceleration for a Qureg but not the equally-sized
-    // matrix? We provide the below fallbacks for defensive design.
-
-    // When GPU-accel differs, we fall-back to copying memory to RAM and
-    // using the CPU backend. In theory, we could leverage exsting GPU 
-    // memory of the Qureg's communication buffer (if it existed), but
-    // this is an even rarer situation and is hacky. We could also 
-    // create new, temporary GPU memory and graft it to the non-
-    // accelerated object, but the new allocation would be the same
-    // size as the objects and ergo be dangerously large.
+    // matrix? We provide the below fallbacks for defensive design, and
+    // fall-back to copying memory to RAM and using the CPU backend. 
+    // In theory, we could leverage exsting GPU memory of the Qureg's 
+    // communication buffer (if it existed), but this is an even rarer 
+    // situation and is hacky. We could also create new, temporary GPU 
+    // memory and graft it to the non-accelerated object, but the new 
+    // allocation would be the same size as the objects and ergo be 
+    // dangerously large.
 
     if (!quregGPU && matrGPU) {
 
@@ -390,7 +388,6 @@ void accel_densmatr_allTargDiagMatr_subA(Qureg qureg, FullStateDiagMatr matr, qc
     bool quregGPU = qureg.isGpuAccelerated;
     bool matrGPU = matr.isGpuAccelerated;
 
-    // our chosen CPU or GPU dispatched function must be correctly templated
     bool hasPower = exponent != qcomp(1, 0);
     auto cpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( cpu_densmatr_allTargDiagMatr_sub, hasPower, multiplyOnly );
     auto gpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( cpu_densmatr_allTargDiagMatr_sub, hasPower, multiplyOnly );
@@ -533,18 +530,15 @@ void accel_densmatr_mixQureg_subA(qreal outProb, Qureg out, qreal inProb, Qureg 
         cpu_densmatr_mixQureg_subA(outProb, out, inProb, in);
 
     // deployments differing is a strange and expectedly rare scenario;
-    // why use GPU-acceleration for one Qureg but not the equally-sized
-    // other qureg? We provide the below fallbacks for defensive design.
-
-    // When GPU-accel differs, we fall-back to copying memory to RAM and
-    // using the CPU backend. In theory, we could instead copy
-    // the non-GPU qureg into the VRAM buffer of the GPU qureg and
-    // always use the GPU backend, but this is only possible when
-    // the buffer exists (GPU qureg is distributed), and complicates
-    // the backend; unworthwhile for such a rare scenario. We could
-    // also create new, temporary GPU memory and attach it to the
-    // non-GPU Qureg, but the new allocation is the same size of
-    // the Quregs so is dangerously large, and may fail.
+    // why use GPU-acceleration for a Qureg but not the equally-sized
+    // matrix? We provide the below fallbacks for defensive design, and
+    // fall-back to copying memory to RAM and using the CPU backend. 
+    // In theory, we could leverage exsting GPU memory of the Qureg's 
+    // communication buffer (if it existed), but this is an even rarer 
+    // situation and is hacky. We could also create new, temporary GPU 
+    // memory and graft it to the non-accelerated object, but the new 
+    // allocation would be the same size as the objects and ergo be 
+    // dangerously large.
 
     if (!outGPU && inGPU) {
         gpu_copyGpuToCpu(in);

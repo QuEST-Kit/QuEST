@@ -1258,17 +1258,17 @@ int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability)
     // find only the outcome=0 probability, to avoid reducing all amps;
     // this halves the total iterations though assumes normalisation
     int outcome = 0;
-    qreal prob = calcProbOfQubitOutcome(qureg, target, outcome);
+    *probability = calcProbOfQubitOutcome(qureg, target, outcome);
 
     // randomly choose the outcome
-    outcome = rand_getRandomSingleQubitOutcome(prob);
+    outcome = rand_getRandomSingleQubitOutcome(*probability);
     if (outcome == 1)
-        prob = 1 - prob;
+        *probability = 1 - *probability;
 
     // collapse to the outcome
     (qureg.isDensityMatrix)?
-        localiser_densmatr_multiQubitProjector(qureg, {target}, {outcome}, prob):
-        localiser_statevec_multiQubitProjector(qureg, {target}, {outcome}, prob);
+        localiser_densmatr_multiQubitProjector(qureg, {target}, {outcome}, *probability):
+        localiser_statevec_multiQubitProjector(qureg, {target}, {outcome}, *probability);
 
     return outcome;
 }
