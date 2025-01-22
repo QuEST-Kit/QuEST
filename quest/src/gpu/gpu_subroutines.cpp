@@ -1557,7 +1557,8 @@ qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
 
 #if COMPILE_CUQUANTUM || COMPILE_CUDA
 
-    cu_qcomp value = thrust_statevec_calcExpecFullStateDiagMatr_sub<HasPower>(qureg, matr, exponent);
+    cu_qcomp expo = toCuQcomp(exponent);
+    cu_qcomp value = thrust_statevec_calcExpecFullStateDiagMatr_sub<HasPower>(qureg, matr, expo);
     return toQcomp(value);
 
 #else
@@ -1572,7 +1573,8 @@ qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
 
 #if COMPILE_CUQUANTUM || COMPILE_CUDA
 
-    cu_qcomp value = thrust_densmatr_calcExpecFullStateDiagMatr_sub<HasPower>(qureg, matr, exponent);
+    cu_qcomp expo = toCuQcomp(exponent);
+    cu_qcomp value = thrust_densmatr_calcExpecFullStateDiagMatr_sub<HasPower>(qureg, matr, expo);
     return toQcomp(value);
 
 #else

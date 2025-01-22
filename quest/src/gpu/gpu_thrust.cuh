@@ -825,10 +825,10 @@ cu_qcomp thrust_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vecto
 
 
 template <bool HasPower> 
-cu_qcomp thrust_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+cu_qcomp thrust_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu_qcomp expo) {
 
     cu_qcomp init = getCuQcomp(0, 0);
-    auto functor = functor_multiplyElemPowerWithAmpOrNorm<HasPower,true>(exponent);
+    auto functor = functor_multiplyElemPowerWithAmpOrNorm<HasPower,true>(expo);
 
     cu_qcomp value = thrust::inner_product(
         getStartPtr(qureg), getEndPtr(qureg), getStartPtr(matr), 
@@ -839,7 +839,7 @@ cu_qcomp thrust_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDi
 
 
 template <bool HasPower> 
-cu_qcomp thrust_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp expo) {
+cu_qcomp thrust_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu_qcomp expo) {
 
     qindex dim = powerOf2(qureg.numQubits);
     qindex ind = util_getLocalIndexOfFirstDiagonalAmp(qureg);
