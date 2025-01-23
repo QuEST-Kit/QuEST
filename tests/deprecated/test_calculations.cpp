@@ -1,7 +1,14 @@
 
 #include "catch.hpp"
-#include "QuEST.h"
-#include "utilities.hpp"
+
+// must define preprocessors to enable quest's
+// deprecated v3 API, and disable the numerous
+// warnings issued by its compilation
+#define INCLUDE_DEPRECATED_FUNCTIONS 1
+#define DISABLE_DEPRECATION_WARNINGS 1
+#include "quest.h"
+
+#include "test_utilities.hpp"
 
 /* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::Contains;
@@ -14,8 +21,8 @@ using Catch::Matchers::Contains;
  */
 TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
 
-    Qureg mat1 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat2 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat1 = createForcedDensityQureg(NUM_QUBITS);
+    Qureg mat2 = createForcedDensityQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -40,7 +47,7 @@ TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
                     prod += conj(r1[i]) * r2[i];
                 qreal densProd = pow(abs(prod),2);
                 
-                REQUIRE( calcDensityInnerProduct(mat1,mat2) == Approx(densProd) );
+                REQUIRE( real(calcDensityInnerProduct(mat1,mat2)) == Approx(densProd) );
             }
             SECTION( "mixed" ) {
                 
@@ -56,10 +63,10 @@ TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
                         refProd += conj(ref1[i][j]) * ref2[i][j];
                 REQUIRE( imag(refProd) == Approx(0).margin(REAL_EPS) );
                 
-                REQUIRE( calcDensityInnerProduct(mat1,mat2) == Approx(real(refProd)) );
+                REQUIRE( real(calcDensityInnerProduct(mat1,mat2)) == Approx(real(refProd)) );
                 
                 // should be invariant under ordering
-                REQUIRE( calcDensityInnerProduct(mat1,mat2) == Approx(calcDensityInnerProduct(mat2,mat1)) );
+                REQUIRE( real(calcDensityInnerProduct(mat1,mat2)) == Approx(real(calcDensityInnerProduct(mat2,mat1))) );
             }
             SECTION( "unnormalised" ) {
                 
@@ -75,7 +82,7 @@ TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
                     for (size_t j=0; j<ref1.size(); j++)
                         refProd += conj(ref1[i][j]) * ref2[i][j];
                         
-                REQUIRE( calcDensityInnerProduct(mat1,mat2) == Approx(real(refProd)) );
+                REQUIRE( real(calcDensityInnerProduct(mat1,mat2)) == Approx(real(refProd)) );
             }
         }
     }
@@ -83,23 +90,27 @@ TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
         
         SECTION( "dimensions" ) {
             
-            Qureg mat3 = createDensityQureg(NUM_QUBITS + 1, QUEST_ENV);
-            REQUIRE_THROWS_WITH( calcDensityInnerProduct(mat1,mat3), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(mat3, QUEST_ENV);
+            Qureg mat3 = createDensityQureg(NUM_QUBITS + 1);
+            REQUIRE_THROWS_WITH( calcDensityInnerProduct(mat1,mat3), Contains("differing numbers of qubits") );
+            destroyQureg(mat3);
         }
-        SECTION( "state-vectors" ) {
-            
-            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-            
-            REQUIRE_THROWS_WITH( calcDensityInnerProduct(mat1,vec), Contains("valid only for density matrices") );
-            REQUIRE_THROWS_WITH( calcDensityInnerProduct(vec,mat1), Contains("valid only for density matrices") );
-            REQUIRE_THROWS_WITH( calcDensityInnerProduct(vec,vec),  Contains("valid only for density matrices") );        
-            
-            destroyQureg(vec, QUEST_ENV);
-        }
+
+        // in v4, calcDensityInnerProduct() redirects to calcInnerProduct() which is
+        // valid for both statevectors and density matrices (and combinations thereof!)
+
+            // SECTION( "state-vectors" ) {
+                
+            //     Qureg vec = createForcedQureg(NUM_QUBITS);
+                
+            //     REQUIRE_THROWS_WITH( calcDensityInnerProduct(mat1,vec), Contains("valid only for density matrices") );
+            //     REQUIRE_THROWS_WITH( calcDensityInnerProduct(vec,mat1), Contains("valid only for density matrices") );
+            //     REQUIRE_THROWS_WITH( calcDensityInnerProduct(vec,vec),  Contains("valid only for density matrices") );        
+                
+            //     destroyQureg(vec);
+            // }
     }
-    destroyQureg(mat1, QUEST_ENV);
-    destroyQureg(mat2, QUEST_ENV);
+    destroyQureg(mat1);
+    destroyQureg(mat2);
 }
 
 
@@ -110,8 +121,8 @@ TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
  */
 TEST_CASE( "calcExpecDiagonalOp", "[calculations]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
+    Qureg mat = createForcedDensityQureg(NUM_QUBITS);
     initDebugState(vec);
     initDebugState(mat);
     QVector vecRef = toQVector(vec);
@@ -123,11 +134,9 @@ TEST_CASE( "calcExpecDiagonalOp", "[calculations]" ) {
         GENERATE( range(0,10) );
         
         // make a totally random (non-Hermitian) diagonal oeprator
-        DiagonalOp op = createDiagonalOp(NUM_QUBITS, QUEST_ENV);
-        for (long long int i=0; i<op.numElemsPerChunk; i++) {
-            op.real[i] = getRandomReal(-5, 5);
-            op.imag[i] = getRandomReal(-5, 5);
-        }
+        DiagonalOp op = createDiagonalOp(NUM_QUBITS, getQuESTEnv());
+        for (long long int i=0; i<op.numElemsPerNode; i++)
+            op.cpuElems[i] = getRandomComplex();
         syncDiagonalOp(op);
         
         SECTION( "state-vector" ) {
@@ -139,9 +148,9 @@ TEST_CASE( "calcExpecDiagonalOp", "[calculations]" ) {
             for (size_t i=0; i<vecRef.size(); i++)
                 prod += conj(vecRef[i]) * sumRef[i];
             
-            Complex res = calcExpecDiagonalOp(vec, op);
-            REQUIRE( res.real == Approx(real(prod)).margin(REAL_EPS) );
-            REQUIRE( res.imag == Approx(imag(prod)).margin(REAL_EPS) );
+            qcomp res = calcExpecDiagonalOp(vec, op);
+            REQUIRE( real(res) == Approx(real(prod)).margin(REAL_EPS) );
+            REQUIRE( imag(res) == Approx(imag(prod)).margin(REAL_EPS) );
         } 
         SECTION( "density-matrix" ) {
             
@@ -151,141 +160,144 @@ TEST_CASE( "calcExpecDiagonalOp", "[calculations]" ) {
             for (size_t i=0; i<matRef.size(); i++)
                 tr += matRef[i][i];
 
-            Complex res = calcExpecDiagonalOp(mat, op);
-            REQUIRE( res.real == Approx(real(tr)).margin(100*REAL_EPS) );
-            REQUIRE( res.imag == Approx(imag(tr)).margin(100*REAL_EPS) );
+            qcomp res = calcExpecDiagonalOp(mat, op);
+            REQUIRE( real(res) == Approx(real(tr)).margin(100*REAL_EPS) );
+            REQUIRE( imag(res) == Approx(imag(tr)).margin(100*REAL_EPS) );
         }
         
-        destroyDiagonalOp(op, QUEST_ENV);
+        destroyDiagonalOp(op, getQuESTEnv());
     }
     SECTION( "input validation" ) {
         
         SECTION( "mismatching size" ) {
             
-            DiagonalOp op = createDiagonalOp(NUM_QUBITS + 1, QUEST_ENV);
+            DiagonalOp op = createDiagonalOp(NUM_QUBITS + 1, getQuESTEnv());
             
-            REQUIRE_THROWS_WITH( calcExpecDiagonalOp(vec, op), Contains("equal number of qubits"));
-            REQUIRE_THROWS_WITH( calcExpecDiagonalOp(mat, op), Contains("equal number of qubits"));
+            REQUIRE_THROWS_WITH( calcExpecDiagonalOp(vec, op), Contains("different number of qubits"));
+            REQUIRE_THROWS_WITH( calcExpecDiagonalOp(mat, op), Contains("different number of qubits"));
             
-            destroyDiagonalOp(op, QUEST_ENV);
+            destroyDiagonalOp(op, getQuESTEnv());
         }
     }
-    destroyQureg(vec, QUEST_ENV);
-    destroyQureg(mat, QUEST_ENV);
+    destroyQureg(vec);
+    destroyQureg(mat);
 }
 
 
 
-/** @sa calcExpecPauliHamil
- * @ingroup unittest 
- * @author Tyson Jones 
- */
-TEST_CASE( "calcExpecPauliHamil", "[calculations]" ) {
-    
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-    initDebugState(vec);
-    initDebugState(mat);
-    QVector vecRef = toQVector(vec);
-    QMatrix matRef = toQMatrix(mat);
-    
-    Qureg vecWork = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg matWork = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-    
-    SECTION( "correctness" ) {
-        
-        /* it's too expensive to try every possible Pauli configuration, so
-         * we'll try 10 random codes, and for each, random coefficients
-         */
-        GENERATE( range(0,10) );
-                 
-        int numTerms = GENERATE( 1, 2, 10, 15 );
-        PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
-        setRandomPauliSum(hamil);
-        QMatrix refHamil = toQMatrix(hamil);
-        
-        SECTION( "state-vector" ) {
+// calcExpecPauliHamil removed because PauliHamil is deprecated,
+// and replacement PauliStrSum presently has no compatible constructor
 
-            /* calcExpecPauliHamil calculates <qureg|pauliHum|qureg> */
-            
-            QVector sumRef = refHamil * vecRef;
-            qcomp prod = 0;
-            for (size_t i=0; i<vecRef.size(); i++)
-                prod += conj(vecRef[i]) * sumRef[i];
-            REQUIRE( imag(prod) == Approx(0).margin(10*REAL_EPS) );
-            
-            qreal res = calcExpecPauliHamil(vec, hamil, vecWork);
-            REQUIRE( res == Approx(real(prod)).margin(10*REAL_EPS) );
-        } 
-        SECTION( "density-matrix" ) {
-            
-            /* calcExpecPauliHamil calculates Trace( pauliHamil * qureg ) */
-            matRef = refHamil * matRef;            
-            qreal tr = 0;
-            for (size_t i=0; i<matRef.size(); i++)
-                tr += real(matRef[i][i]);
-            // (get real, since we start in a non-Hermitian state, hence diagonal isn't real)
-            
-            qreal res = calcExpecPauliHamil(mat, hamil, matWork);
-            REQUIRE( res == Approx(tr).margin(1E2*REAL_EPS) );
-        }
+    // /** @sa calcExpecPauliHamil
+    //  * @ingroup unittest 
+    //  * @author Tyson Jones 
+    //  */
+    // TEST_CASE( "calcExpecPauliHamil", "[calculations]" ) {
         
-        destroyPauliHamil(hamil);
-    }
-    SECTION( "input validation" ) {
+    //     Qureg vec = createForcedQureg(NUM_QUBITS);
+    //     Qureg mat = createForcedDensityQureg(NUM_QUBITS);
+    //     initDebugState(vec);
+    //     initDebugState(mat);
+    //     QVector vecRef = toQVector(vec);
+    //     QMatrix matRef = toQMatrix(mat);
         
-        SECTION( "pauli codes" ) {
+    //     Qureg vecWork = createForcedQureg(NUM_QUBITS);
+    //     Qureg matWork = createForcedDensityQureg(NUM_QUBITS);
+        
+    //     SECTION( "correctness" ) {
             
-            int numTerms = 3;
-            PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
+    //         /* it's too expensive to try every possible Pauli configuration, so
+    //          * we'll try 10 random codes, and for each, random coefficients
+    //          */
+    //         GENERATE( range(0,10) );
+                    
+    //         int numTerms = GENERATE( 1, 2, 10, 15 );
+    //         PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
+    //         setRandomPauliSum(hamil);
+    //         QMatrix refHamil = toQMatrix(hamil);
+            
+    //         SECTION( "state-vector" ) {
 
-            // make one pauli code wrong
-            hamil.pauliCodes[GENERATE_COPY( range(0,numTerms*NUM_QUBITS) )] = (pauliOpType) GENERATE( -1, 4 );
-            REQUIRE_THROWS_WITH( calcExpecPauliHamil(vec, hamil, vecWork), Contains("Invalid Pauli code") );
-            
-            destroyPauliHamil(hamil);
-        }
-        SECTION( "workspace type" ) {
-            
-            int numTerms = 1;
-            PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
-            
-            REQUIRE_THROWS_WITH( calcExpecPauliHamil(vec, hamil, mat), Contains("Registers must both be state-vectors or both be density matrices") );
-            REQUIRE_THROWS_WITH( calcExpecPauliHamil(mat, hamil, vec), Contains("Registers must both be state-vectors or both be density matrices") );
-            
-            destroyPauliHamil(hamil);
-        }
-        SECTION( "workspace dimensions" ) {
+    //             /* calcExpecPauliHamil calculates <qureg|pauliHum|qureg> */
                 
-            int numTerms = 1;
-            PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
-    
-            Qureg vec2 = createQureg(NUM_QUBITS + 1, QUEST_ENV);
-            REQUIRE_THROWS_WITH( calcExpecPauliHamil(vec, hamil, vec2), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(vec2, QUEST_ENV);
+    //             QVector sumRef = refHamil * vecRef;
+    //             qcomp prod = 0;
+    //             for (size_t i=0; i<vecRef.size(); i++)
+    //                 prod += conj(vecRef[i]) * sumRef[i];
+    //             REQUIRE( imag(prod) == Approx(0).margin(10*REAL_EPS) );
+                
+    //             qreal res = calcExpecPauliHamil(vec, hamil, vecWork);
+    //             REQUIRE( res == Approx(real(prod)).margin(10*REAL_EPS) );
+    //         } 
+    //         SECTION( "density-matrix" ) {
+                
+    //             /* calcExpecPauliHamil calculates Trace( pauliHamil * qureg ) */
+    //             matRef = refHamil * matRef;            
+    //             qreal tr = 0;
+    //             for (size_t i=0; i<matRef.size(); i++)
+    //                 tr += real(matRef[i][i]);
+    //             // (get real, since we start in a non-Hermitian state, hence diagonal isn't real)
+                
+    //             qreal res = calcExpecPauliHamil(mat, hamil, matWork);
+    //             REQUIRE( res == Approx(tr).margin(1E2*REAL_EPS) );
+    //         }
             
-            Qureg mat2 = createDensityQureg(NUM_QUBITS + 1, QUEST_ENV);
-            REQUIRE_THROWS_WITH( calcExpecPauliHamil(mat, hamil, mat2), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(mat2, QUEST_ENV);
+    //         destroyPauliHamil(hamil);
+    //     }
+    //     SECTION( "input validation" ) {
             
-            destroyPauliHamil(hamil);
-        }
-        SECTION( "matching hamiltonian qubits" ) {
-            
-            int numTerms = 1;
-            PauliHamil hamil = createPauliHamil(NUM_QUBITS + 1, numTerms);
-            
-            REQUIRE_THROWS_WITH( calcExpecPauliHamil(vec, hamil, vecWork), Contains("same number of qubits") );
-            REQUIRE_THROWS_WITH( calcExpecPauliHamil(mat, hamil, matWork), Contains("same number of qubits") );
-            
-            destroyPauliHamil(hamil);
-        }
-    }
-    destroyQureg(vec, QUEST_ENV);
-    destroyQureg(mat, QUEST_ENV);
-    destroyQureg(vecWork, QUEST_ENV);
-    destroyQureg(matWork, QUEST_ENV);
-}
+    //         SECTION( "pauli codes" ) {
+                
+    //             int numTerms = 3;
+    //             PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
+
+    //             // make one pauli code wrong
+    //             hamil.pauliCodes[GENERATE_COPY( range(0,numTerms*NUM_QUBITS) )] = (pauliOpType) GENERATE( -1, 4 );
+    //             REQUIRE_THROWS_WITH( calcExpecPauliHamil(vec, hamil, vecWork), Contains("Invalid Pauli code") );
+                
+    //             destroyPauliHamil(hamil);
+    //         }
+    //         SECTION( "workspace type" ) {
+                
+    //             int numTerms = 1;
+    //             PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
+                
+    //             REQUIRE_THROWS_WITH( calcExpecPauliHamil(vec, hamil, mat), Contains("Registers must both be state-vectors or both be density matrices") );
+    //             REQUIRE_THROWS_WITH( calcExpecPauliHamil(mat, hamil, vec), Contains("Registers must both be state-vectors or both be density matrices") );
+                
+    //             destroyPauliHamil(hamil);
+    //         }
+    //         SECTION( "workspace dimensions" ) {
+                    
+    //             int numTerms = 1;
+    //             PauliHamil hamil = createPauliHamil(NUM_QUBITS, numTerms);
+        
+    //             Qureg vec2 = createQureg(NUM_QUBITS + 1);
+    //             REQUIRE_THROWS_WITH( calcExpecPauliHamil(vec, hamil, vec2), Contains("Dimensions") && Contains("don't match") );
+    //             destroyQureg(vec2);
+                
+    //             Qureg mat2 = createDensityQureg(NUM_QUBITS + 1);
+    //             REQUIRE_THROWS_WITH( calcExpecPauliHamil(mat, hamil, mat2), Contains("Dimensions") && Contains("don't match") );
+    //             destroyQureg(mat2);
+                
+    //             destroyPauliHamil(hamil);
+    //         }
+    //         SECTION( "matching hamiltonian qubits" ) {
+                
+    //             int numTerms = 1;
+    //             PauliHamil hamil = createPauliHamil(NUM_QUBITS + 1, numTerms);
+                
+    //             REQUIRE_THROWS_WITH( calcExpecPauliHamil(vec, hamil, vecWork), Contains("same number of qubits") );
+    //             REQUIRE_THROWS_WITH( calcExpecPauliHamil(mat, hamil, matWork), Contains("same number of qubits") );
+                
+    //             destroyPauliHamil(hamil);
+    //         }
+    //     }
+    //     destroyQureg(vec);
+    //     destroyQureg(mat);
+    //     destroyQureg(vecWork);
+    //     destroyQureg(matWork);
+    // }
 
 
 
@@ -295,15 +307,17 @@ TEST_CASE( "calcExpecPauliHamil", "[calculations]" ) {
  */
 TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    QuESTEnv env = getQuESTEnv();
+    Qureg vec = createCustomQureg(NUM_QUBITS, 0, env.isDistributed, env.isGpuAccelerated, env.isMultithreaded);
+    Qureg mat = createCustomQureg(NUM_QUBITS, 1, env.isDistributed, env.isGpuAccelerated, env.isMultithreaded);
+
     initDebugState(vec);
     initDebugState(mat);
     QVector vecRef = toQVector(vec);
     QMatrix matRef = toQMatrix(mat);
     
-    Qureg vecWork = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg matWork = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vecWork = createForcedQureg(NUM_QUBITS);
+    Qureg matWork = createForcedDensityQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -316,10 +330,10 @@ TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
          * Hence, we instead opt to repeatedlyrandomly generate pauliseqs
          */
         GENERATE( range(0,10) ); // gen 10 random pauli-codes for every targs
-        VLA(pauliOpType, paulis, numTargs);
+        vector<pauliOpType> paulis(numTargs);
         for (int i=0; i<numTargs; i++)
             paulis[i] = (pauliOpType) getRandomInt(0,4);
-            
+
         // produce a numTargs-big matrix 'pauliProd' by pauli-matrix tensoring
         QMatrix iMatr{{1,0},{0,1}};
         QMatrix xMatr{{0,1},{1,0}};
@@ -346,7 +360,7 @@ TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
                 prod += conj(vecRef[i]) * prodRef[i];
             REQUIRE( imag(prod) == Approx(0).margin(REAL_EPS) );
             
-            qreal res = calcExpecPauliProd(vec, targs, paulis, numTargs, vecWork);
+            qreal res = calcExpecPauliProd(vec, targs, paulis.data(), numTargs, vecWork);
             REQUIRE( res == Approx(real(prod)).margin(REAL_EPS) );
         }
         SECTION( "density-matrix" ) {
@@ -362,32 +376,59 @@ TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
             for (size_t i=0; i<matRef.size(); i++)
                 tr += real(matRef[i][i]);
             // (get real, since we start in a non-Hermitian state, hence diagonal isn't real)
-            
-            qreal res = calcExpecPauliProd(mat, targs, paulis, numTargs, matWork);
+
+            // disable validation during call, because result is non-real and will upset post-check
+            setValidationOff();
+            qreal res = calcExpecPauliProd(mat, targs, paulis.data(), numTargs, matWork);
+            setValidationOn();
+
             REQUIRE( res == Approx(tr).margin(10*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {
+
+        pauliOpType pauliOpsToAvoidDeprecSegFault[100];
+        for (int i=0; i<100; i++)
+            pauliOpsToAvoidDeprecSegFault[i] = PAULI_X;
         
         SECTION( "number of targets" ) {
             
-            int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
-            REQUIRE_THROWS_WITH( calcExpecPauliProd(vec, NULL, NULL, numTargs, vecWork), Contains("Invalid number of target") );
+            int targs[NUM_QUBITS+1];
+            for (int i=0; i<NUM_QUBITS+1; i++)
+                targs[i] = i;
+
+            // too few
+            int numTargs = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH( calcExpecPauliProd(vec, targs, pauliOpsToAvoidDeprecSegFault, numTargs, vecWork), Contains("Invalid number of Paulis") );
+
+            // too many
+            numTargs = NUM_QUBITS + 1;
+            REQUIRE_THROWS_WITH( calcExpecPauliProd(vec, targs, pauliOpsToAvoidDeprecSegFault, numTargs, vecWork), Contains("highest-index non-identity Pauli operator") && Contains("exceeds the maximum target") );
         }
         SECTION( "target indices" ) {
             
             int numTargs = 3;
             int targs[3] = {0, 1, 2};
+
+            int badInd = GENERATE( range(0,3) );
             
-            // make one index wrong
-            targs[GENERATE( range(0,3) )] = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( calcExpecPauliProd(vec, targs, NULL, numTargs, vecWork), Contains("Invalid target qubit") );
+            // make one index too small
+            targs[badInd] = -1;
+            REQUIRE_THROWS_WITH( calcExpecPauliProd(vec, targs, pauliOpsToAvoidDeprecSegFault, numTargs, vecWork), Contains("Pauli indices must be non-negative") );
+
+            // make one index too big
+            targs[badInd] = NUM_QUBITS;
+            REQUIRE_THROWS_WITH( calcExpecPauliProd(vec, targs, pauliOpsToAvoidDeprecSegFault, numTargs, vecWork), Contains("highest-index non-identity Pauli operator") );
+
+            // make one index WAY too big
+            targs[badInd] = 65;
+            REQUIRE_THROWS_WITH( calcExpecPauliProd(vec, targs, pauliOpsToAvoidDeprecSegFault, numTargs, vecWork), Contains("exceed the maximum number of representable Pauli operators") );
         }
         SECTION( "repetition in targets" ) {
             
             int numTargs = 3;
             int targs[3] = {0, 1, 1};
-            REQUIRE_THROWS_WITH( calcExpecPauliProd(vec, targs, NULL, numTargs, vecWork), Contains("target qubits must be unique") );
+            REQUIRE_THROWS_WITH( calcExpecPauliProd(vec, targs, pauliOpsToAvoidDeprecSegFault, numTargs, vecWork), Contains("Indices must be unique") );
         }
         SECTION( "pauli codes" ) {
             
@@ -397,36 +438,39 @@ TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
             
             // make one pauli wrong
             codes[GENERATE( range(0,3) )] = (pauliOpType) GENERATE( -1, 4 );
-            REQUIRE_THROWS_WITH( calcExpecPauliProd(vec, targs, codes, numTargs, vecWork), Contains("Invalid Pauli code") );
+            REQUIRE_THROWS_WITH( calcExpecPauliProd(vec, targs, codes, numTargs, vecWork), Contains("invalid Pauli code") );
         }
-        SECTION( "workspace type" ) {
-            
-            int numTargs = 1;
-            int targs[1] = {0};
-            pauliOpType codes[1] = {PAULI_I};
-            
-            REQUIRE_THROWS_WITH( calcExpecPauliProd(vec, targs, codes, numTargs, matWork), Contains("Registers must both be state-vectors or both be density matrices") );
-            REQUIRE_THROWS_WITH( calcExpecPauliProd(mat, targs, codes, numTargs, vecWork), Contains("Registers must both be state-vectors or both be density matrices") );
-        }
-        SECTION( "workspace dimensions" ) {
+
+        // workspace is no longer needed; argument is ignored
+
+            // SECTION( "workspace type" ) {
                 
-            int numTargs = 1;
-            int targs[1] = {0};
-            pauliOpType codes[1] = {PAULI_I};
-    
-            Qureg vec2 = createQureg(NUM_QUBITS + 1, QUEST_ENV);
-            REQUIRE_THROWS_WITH( calcExpecPauliProd(vec, targs, codes, numTargs, vec2), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(vec2, QUEST_ENV);
-            
-            Qureg mat2 = createDensityQureg(NUM_QUBITS + 1, QUEST_ENV);
-            REQUIRE_THROWS_WITH( calcExpecPauliProd(mat, targs, codes, numTargs, mat2), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(mat2, QUEST_ENV);
-        }
+            //     int numTargs = 1;
+            //     int targs[1] = {0};
+            //     pauliOpType codes[1] = {PAULI_I};
+                
+            //     REQUIRE_THROWS_WITH( calcExpecPauliProd(vec, targs, codes, numTargs, matWork), Contains("Registers must both be state-vectors or both be density matrices") );
+            //     REQUIRE_THROWS_WITH( calcExpecPauliProd(mat, targs, codes, numTargs, vecWork), Contains("Registers must both be state-vectors or both be density matrices") );
+            // }
+            // SECTION( "workspace dimensions" ) {
+                    
+            //     int numTargs = 1;
+            //     int targs[1] = {0};
+            //     pauliOpType codes[1] = {PAULI_I};
+        
+            //     Qureg vec2 = createQureg(NUM_QUBITS + 1);
+            //     REQUIRE_THROWS_WITH( calcExpecPauliProd(vec, targs, codes, numTargs, vec2), Contains("Dimensions") && Contains("don't match") );
+            //     destroyQureg(vec2);
+                
+            //     Qureg mat2 = createDensityQureg(NUM_QUBITS + 1);
+            //     REQUIRE_THROWS_WITH( calcExpecPauliProd(mat, targs, codes, numTargs, mat2), Contains("Dimensions") && Contains("don't match") );
+            //     destroyQureg(mat2);
+            // }
     }
-    destroyQureg(vec, QUEST_ENV);
-    destroyQureg(mat, QUEST_ENV);
-    destroyQureg(vecWork, QUEST_ENV);
-    destroyQureg(matWork, QUEST_ENV);
+    destroyQureg(vec);
+    destroyQureg(mat);
+    destroyQureg(vecWork);
+    destroyQureg(matWork);
 }
 
 
@@ -437,15 +481,17 @@ TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
  */
 TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-    initDebugState(vec);
-    initDebugState(mat);
-    QVector vecRef = toQVector(vec);
-    QMatrix matRef = toQMatrix(mat);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
+    Qureg mat = createForcedDensityQureg(NUM_QUBITS);
+
+    QVector vecRef = getRandomStateVector(NUM_QUBITS);
+    QMatrix matRef = getRandomDensityMatrix(NUM_QUBITS);
+    toQureg(vec, vecRef);
+    toQureg(mat, matRef);
     
-    Qureg vecWork = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg matWork = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    // accepted by v3 deprecated API but discarded by v4
+    Qureg vecWork = createForcedQureg(NUM_QUBITS);
+    Qureg matWork = createForcedDensityQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -455,13 +501,13 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
          * we'll try 10 random codes, and for each, random coefficients
          */
         GENERATE( range(0,10) );
-        int totNumCodes = numSumTerms*NUM_QUBITS;
-        VLA(pauliOpType, paulis, totNumCodes);
-        VLA(qreal, coeffs, numSumTerms);
-        setRandomPauliSum(coeffs, paulis, NUM_QUBITS, numSumTerms);
+        int totNumCodes = numSumTerms * NUM_QUBITS;
+        vector<pauliOpType> paulis(totNumCodes);
+        vector<qreal> coeffs(numSumTerms);
+        setRandomPauliSum(coeffs.data(), paulis.data(), NUM_QUBITS, numSumTerms);
         
         // produce a numTargs-big matrix 'pauliSum' by pauli-matrix tensoring and summing
-        QMatrix pauliSum = toQMatrix(coeffs, paulis, NUM_QUBITS, numSumTerms);
+        QMatrix pauliSum = toQMatrix(coeffs.data(), paulis.data(), NUM_QUBITS, numSumTerms);
         
         SECTION( "state-vector" ) {
 
@@ -473,7 +519,7 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
                 prod += conj(vecRef[i]) * sumRef[i];
             REQUIRE( imag(prod) == Approx(0).margin(10*REAL_EPS) );
             
-            qreal res = calcExpecPauliSum(vec, paulis, coeffs, numSumTerms, vecWork);
+            qreal res = calcExpecPauliSum(vec, paulis.data(), coeffs.data(), numSumTerms, vecWork);
             REQUIRE( res == Approx(real(prod)).margin(10*REAL_EPS) );
         } 
         SECTION( "density-matrix" ) {
@@ -485,7 +531,7 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
                 tr += real(matRef[i][i]);
             // (get real, since we start in a non-Hermitian state, hence diagonal isn't real)
             
-            qreal res = calcExpecPauliSum(mat, paulis, coeffs, numSumTerms, matWork);
+            qreal res = calcExpecPauliSum(mat, paulis.data(), coeffs.data(), numSumTerms, matWork);
             REQUIRE( res == Approx(tr).margin(1E2*REAL_EPS) );
         }
     }
@@ -494,55 +540,59 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
         SECTION( "number of sum terms" ) {
             
             int numSumTerms = GENERATE( -1, 0 );
-            REQUIRE_THROWS_WITH( calcExpecPauliSum(vec, NULL, NULL, numSumTerms, vecWork), Contains("Invalid number of terms in the Pauli sum") );
+            REQUIRE_THROWS_WITH( calcExpecPauliSum(vec, NULL, NULL, numSumTerms, vecWork), Contains("The number of terms must be a positive integer") );
         }
         SECTION( "pauli codes" ) {
             
             // make valid params
             int numSumTerms = 3;
-            VLA(qreal, coeffs, numSumTerms);
-            VLA(pauliOpType, codes, numSumTerms*NUM_QUBITS);
+            vector<qreal> coeffs(numSumTerms);
+            vector<pauliOpType> codes(numSumTerms*NUM_QUBITS);
             for (int i=0; i<numSumTerms*NUM_QUBITS; i++)
                 codes[i] = PAULI_I;
 
             // make one pauli wrong
             codes[GENERATE_COPY( range(0,numSumTerms*NUM_QUBITS) )] = (pauliOpType) GENERATE( -1, 4 );
-            REQUIRE_THROWS_WITH( calcExpecPauliSum(vec, codes, coeffs, numSumTerms, vecWork), Contains("Invalid Pauli code") );
+            REQUIRE_THROWS_WITH( calcExpecPauliSum(vec, codes.data(), coeffs.data(), numSumTerms, vecWork), Contains("invalid Pauli code") );
         }
-        SECTION( "workspace type" ) {
-            
-            // make valid params
-            int numSumTerms = 1;
-            qreal coeffs[1] = {0};
-            pauliOpType codes[NUM_QUBITS];
-            for (int i=0; i<NUM_QUBITS; i++)
-                codes[i] = PAULI_I;
-            
-            REQUIRE_THROWS_WITH( calcExpecPauliSum(vec, codes, coeffs, numSumTerms, mat), Contains("Registers must both be state-vectors or both be density matrices") );
-            REQUIRE_THROWS_WITH( calcExpecPauliSum(mat, codes, coeffs, numSumTerms, vec), Contains("Registers must both be state-vectors or both be density matrices") );
-        }
-        SECTION( "workspace dimensions" ) {
+
+        // the v4 API does not use a workspace, so it is discarded by the v3 deprecation layer
+
+            // SECTION( "workspace type" ) {
                 
-            // make valid params
-            int numSumTerms = 1;
-            qreal coeffs[1] = {0};
-            pauliOpType codes[NUM_QUBITS];
-            for (int i=0; i<NUM_QUBITS; i++)
-                codes[i] = PAULI_I;
-    
-            Qureg vec2 = createQureg(NUM_QUBITS + 1, QUEST_ENV);
-            REQUIRE_THROWS_WITH( calcExpecPauliSum(vec, codes, coeffs, numSumTerms, vec2), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(vec2, QUEST_ENV);
+            //     // make valid params
+            //     int numSumTerms = 1;
+            //     qreal coeffs[1] = {0};
+            //     pauliOpType codes[NUM_QUBITS];
+            //     for (int i=0; i<NUM_QUBITS; i++)
+            //         codes[i] = PAULI_I;
+                
+            //     REQUIRE_THROWS_WITH( calcExpecPauliSum(vec, codes, coeffs, numSumTerms, mat), Contains("Registers must both be state-vectors or both be density matrices") );
+            //     REQUIRE_THROWS_WITH( calcExpecPauliSum(mat, codes, coeffs, numSumTerms, vec), Contains("Registers must both be state-vectors or both be density matrices") );
+            // }
             
-            Qureg mat2 = createDensityQureg(NUM_QUBITS + 1, QUEST_ENV);
-            REQUIRE_THROWS_WITH( calcExpecPauliSum(mat, codes, coeffs, numSumTerms, mat2), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(mat2, QUEST_ENV);
-        }
+            // SECTION( "workspace dimensions" ) {
+                    
+            //     // make valid params
+            //     int numSumTerms = 1;
+            //     qreal coeffs[1] = {0};
+            //     pauliOpType codes[NUM_QUBITS];
+            //     for (int i=0; i<NUM_QUBITS; i++)
+            //         codes[i] = PAULI_I;
+        
+            //     Qureg vec2 = createQureg(NUM_QUBITS + 1);
+            //     REQUIRE_THROWS_WITH( calcExpecPauliSum(vec, codes, coeffs, numSumTerms, vec2), Contains("Dimensions") && Contains("don't match") );
+            //     destroyQureg(vec2);
+                
+            //     Qureg mat2 = createDensityQureg(NUM_QUBITS + 1);
+            //     REQUIRE_THROWS_WITH( calcExpecPauliSum(mat, codes, coeffs, numSumTerms, mat2), Contains("Dimensions") && Contains("don't match") );
+            //     destroyQureg(mat2);
+            // }
     }
-    destroyQureg(vec, QUEST_ENV);
-    destroyQureg(mat, QUEST_ENV);
-    destroyQureg(vecWork, QUEST_ENV);
-    destroyQureg(matWork, QUEST_ENV);
+    destroyQureg(vec);
+    destroyQureg(mat);
+    destroyQureg(vecWork);
+    destroyQureg(matWork);
 }
 
 
@@ -553,9 +603,9 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
  */
 TEST_CASE( "calcFidelity", "[calculations]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg pure = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
+    Qureg mat = createForcedDensityQureg(NUM_QUBITS);
+    Qureg pure = createForcedQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -585,29 +635,33 @@ TEST_CASE( "calcFidelity", "[calculations]" ) {
                 
                 REQUIRE( calcFidelity(vec,pure) == Approx(refFid) );
             }
-            SECTION( "unnormalised" ) {
-            
-                // random unnormalised vectors
-                QVector vecRef = getRandomQVector(1<<NUM_QUBITS);
-                QVector pureRef = getRandomQVector(1<<NUM_QUBITS);
-                toQureg(vec, vecRef);
-                toQureg(pure, pureRef);
+
+            // unnormalised test is no longer supported, since v4 calcFidelity
+            // validates thet the fidelity is correctly approximately real
+
+                // SECTION( "unnormalised" ) {
                 
-                // Let nv be magnitude of vec, hence |unit-vec> = 1/sqrt(nv)|vec>
-                qreal nv = 0;
-                for (size_t i=0; i<vecRef.size(); i++)
-                    nv += pow(abs(vecRef[i]), 2);
-                // then <vec|vec> = sqrt(nv)*sqrt(nv) <unit-vec|unit-vec> = nv,
-                // hence |<vec|vec>|^2 = nv*nv
-                REQUIRE( calcFidelity(vec,vec) == Approx( nv*nv ) );
-                
-                qcomp dotProd = 0;
-                for (size_t i=0; i<vecRef.size(); i++)
-                    dotProd += conj(vecRef[i]) * pureRef[i];
-                qreal refFid = pow(abs(dotProd), 2);
-                
-                REQUIRE( calcFidelity(vec,pure) == Approx(refFid) ); 
-            }
+                //     // random unnormalised vectors
+                //     QVector vecRef = getRandomQVector(1<<NUM_QUBITS);
+                //     QVector pureRef = getRandomQVector(1<<NUM_QUBITS);
+                //     toQureg(vec, vecRef);
+                //     toQureg(pure, pureRef);
+                    
+                //     // Let nv be magnitude of vec, hence |unit-vec> = 1/sqrt(nv)|vec>
+                //     qreal nv = 0;
+                //     for (size_t i=0; i<vecRef.size(); i++)
+                //         nv += pow(abs(vecRef[i]), 2);
+                //     // then <vec|vec> = sqrt(nv)*sqrt(nv) <unit-vec|unit-vec> = nv,
+                //     // hence |<vec|vec>|^2 = nv*nv
+                //     REQUIRE( calcFidelity(vec,vec) == Approx( nv*nv ) );
+                    
+                //     qcomp dotProd = 0;
+                //     for (size_t i=0; i<vecRef.size(); i++)
+                //         dotProd += conj(vecRef[i]) * pureRef[i];
+                //     qreal refFid = pow(abs(dotProd), 2);
+                    
+                //     REQUIRE( calcFidelity(vec,pure) == Approx(refFid) ); 
+                // }
         }
         SECTION( "density-matrix" ) {
             
@@ -654,22 +708,26 @@ TEST_CASE( "calcFidelity", "[calculations]" ) {
                 REQUIRE( imag(dotProd) == Approx(0).margin(REAL_EPS) );
                 REQUIRE( calcFidelity(mat,pure) == Approx(real(dotProd)) );
             }
-            SECTION( "unnormalised" ) {
-                
-                // test when both density matrix and pure state are unnormalised
-                QVector pureRef = getRandomQVector(1<<NUM_QUBITS);
-                QMatrix matRef = getRandomQMatrix(1<<NUM_QUBITS);
-                toQureg(pure, pureRef);
-                toQureg(mat, matRef);
-                
-                // real[ <pure|mat|pure> ] = real[ <pure| (Mat|pure>) ]
-                QVector rhs = matRef * pureRef;
-                qcomp dotProd = 0;
-                for (size_t i=0; i<rhs.size(); i++)
-                    dotProd += conj(pureRef[i]) * rhs[i];
-                
-                REQUIRE( calcFidelity(mat,pure) == Approx(real(dotProd)) );
-            }
+
+            // unnormalised test is no longer supported, since v4 calcFidelity
+            // validates thet the fidelity is correctly approximately real
+
+                // SECTION( "unnormalised" ) {
+                    
+                //     // test when both density matrix and pure state are unnormalised
+                //     QVector pureRef = getRandomQVector(1<<NUM_QUBITS);
+                //     QMatrix matRef = getRandomQMatrix(1<<NUM_QUBITS);
+                //     toQureg(pure, pureRef);
+                //     toQureg(mat, matRef);
+                    
+                //     // real[ <pure|mat|pure> ] = real[ <pure| (Mat|pure>) ]
+                //     QVector rhs = matRef * pureRef;
+                //     qcomp dotProd = 0;
+                //     for (size_t i=0; i<rhs.size(); i++)
+                //         dotProd += conj(pureRef[i]) * rhs[i];
+                    
+                //     REQUIRE( calcFidelity(mat,pure) == Approx(real(dotProd)) );
+                // }
         }
     }
     SECTION( "input validation" ) {
@@ -677,24 +735,24 @@ TEST_CASE( "calcFidelity", "[calculations]" ) {
         SECTION( "dimensions" ) {
             
             // two state-vectors
-            Qureg vec2 = createQureg(vec.numQubitsRepresented + 1, QUEST_ENV);
-            REQUIRE_THROWS_WITH( calcFidelity(vec2,vec), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(vec2, QUEST_ENV);
+            Qureg vec2 = createQureg(vec.numQubits + 1);
+            REQUIRE_THROWS_WITH( calcFidelity(vec2,vec), Contains("differing numbers of qubits") );
+            destroyQureg(vec2);
         
             // density-matrix and state-vector
-            Qureg mat2 = createDensityQureg(vec.numQubitsRepresented + 1, QUEST_ENV);
-            REQUIRE_THROWS_WITH( calcFidelity(mat2,vec), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(mat2, QUEST_ENV);
+            Qureg mat2 = createDensityQureg(vec.numQubits + 1);
+            REQUIRE_THROWS_WITH( calcFidelity(mat2,vec), Contains("differing numbers of qubits") );
+            destroyQureg(mat2);
         }
         SECTION( "density-matrices" ) {
             
             // two mixed statess
-            REQUIRE_THROWS_WITH( calcFidelity(mat,mat), Contains("Second argument must be a state-vector") );
+            REQUIRE_THROWS_WITH( calcFidelity(mat,mat), Contains("Quregs cannot both be density matrices") );
         }
     }
-    destroyQureg(vec, QUEST_ENV);
-    destroyQureg(mat, QUEST_ENV);
-    destroyQureg(pure, QUEST_ENV);
+    destroyQureg(vec);
+    destroyQureg(mat);
+    destroyQureg(pure);
 }
 
 
@@ -705,8 +763,8 @@ TEST_CASE( "calcFidelity", "[calculations]" ) {
  */
 TEST_CASE( "calcHilbertSchmidtDistance", "[calculations]" ) {
     
-    Qureg mat1 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat2 = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat1 = createForcedDensityQureg(NUM_QUBITS);
+    Qureg mat2 = createForcedDensityQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -774,23 +832,26 @@ TEST_CASE( "calcHilbertSchmidtDistance", "[calculations]" ) {
         
         SECTION( "dimensions" ) {
             
-            Qureg mat3 = createDensityQureg(NUM_QUBITS + 1, QUEST_ENV);
-            REQUIRE_THROWS_WITH( calcHilbertSchmidtDistance(mat1,mat3), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(mat3, QUEST_ENV);
+            Qureg mat3 = createDensityQureg(NUM_QUBITS + 1);
+            REQUIRE_THROWS_WITH( calcHilbertSchmidtDistance(mat1,mat3), Contains("differing numbers of qubits") );
+            destroyQureg(mat3);
         }
-        SECTION( "state-vector" ) {
-            
-            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-            
-            REQUIRE_THROWS_WITH( calcHilbertSchmidtDistance(vec,mat1), Contains("valid only for density matrices") );
-            REQUIRE_THROWS_WITH( calcHilbertSchmidtDistance(mat1,vec), Contains("valid only for density matrices") );
-            REQUIRE_THROWS_WITH( calcHilbertSchmidtDistance(vec,vec), Contains("valid only for density matrices") );
-            
-            destroyQureg(vec, QUEST_ENV);
-        }
+
+        // in v4, this function calls calcDistance() which has state-vector overloads
+
+            // SECTION( "state-vector" ) {
+                
+            //     Qureg vec = createForcedQureg(NUM_QUBITS);
+                
+            //     REQUIRE_THROWS_WITH( calcHilbertSchmidtDistance(vec,mat1), Contains("valid only for density matrices") );
+            //     REQUIRE_THROWS_WITH( calcHilbertSchmidtDistance(mat1,vec), Contains("valid only for density matrices") );
+            //     REQUIRE_THROWS_WITH( calcHilbertSchmidtDistance(vec,vec), Contains("valid only for density matrices") );
+                
+            //     destroyQureg(vec);
+            // }
     }
-    destroyQureg(mat1, QUEST_ENV);
-    destroyQureg(mat2, QUEST_ENV);
+    destroyQureg(mat1);
+    destroyQureg(mat2);
 }
 
 
@@ -801,8 +862,8 @@ TEST_CASE( "calcHilbertSchmidtDistance", "[calculations]" ) {
  */
 TEST_CASE( "calcInnerProduct", "[calculations]" ) {
     
-    Qureg vec1 = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg vec2 = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec1 = createForcedQureg(NUM_QUBITS);
+    Qureg vec2 = createForcedQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -822,10 +883,10 @@ TEST_CASE( "calcInnerProduct", "[calculations]" ) {
                     
                 toQureg(vec1, r1);
                 toQureg(vec2, r2);
-                Complex res = calcInnerProduct(vec1,vec2);
+                qcomp res = calcInnerProduct(vec1,vec2);
                 
-                REQUIRE( res.real == Approx(real(prod)) );
-                REQUIRE( res.imag == Approx(imag(prod)) );
+                REQUIRE( real(res) == Approx(real(prod)) );
+                REQUIRE( imag(res) == Approx(imag(prod)) );
             }
             SECTION( "unnormalised" ) {
                 
@@ -838,10 +899,10 @@ TEST_CASE( "calcInnerProduct", "[calculations]" ) {
                     
                 toQureg(vec1, r1);
                 toQureg(vec2, r2);
-                Complex res = calcInnerProduct(vec1,vec2);
+                qcomp res = calcInnerProduct(vec1,vec2);
                 
-                REQUIRE( res.real == Approx(real(prod)) );
-                REQUIRE( res.imag == Approx(imag(prod)) );
+                REQUIRE( real(res) == Approx(real(prod)) );
+                REQUIRE( imag(res) == Approx(imag(prod)) );
             }
         }
     }
@@ -849,23 +910,26 @@ TEST_CASE( "calcInnerProduct", "[calculations]" ) {
         
         SECTION( "dimensions" ) {
             
-            Qureg vec3 = createQureg(NUM_QUBITS + 1, QUEST_ENV);
-            REQUIRE_THROWS_WITH( calcInnerProduct(vec1,vec3), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(vec3, QUEST_ENV);
+            Qureg vec3 = createQureg(NUM_QUBITS + 1);
+            REQUIRE_THROWS_WITH( calcInnerProduct(vec1,vec3), Contains("differing numbers of qubits") );
+            destroyQureg(vec3);
         }
-        SECTION( "density-matrix" ) {
-            
-            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-            
-            REQUIRE_THROWS_WITH( calcInnerProduct(vec1,mat), Contains("valid only for state-vectors") );
-            REQUIRE_THROWS_WITH( calcInnerProduct(mat,vec1), Contains("valid only for state-vectors") );
-            REQUIRE_THROWS_WITH( calcInnerProduct(mat,mat), Contains("valid only for state-vectors") );
-            
-            destroyQureg(mat, QUEST_ENV);
-        }
+
+        // density-matrix arguments are permitted in v4
+
+            // SECTION( "density-matrix" ) {
+                
+            //     Qureg mat = createForcedDensityQureg(NUM_QUBITS);
+                
+            //     REQUIRE_THROWS_WITH( calcInnerProduct(vec1,mat), Contains("valid only for state-vectors") );
+            //     REQUIRE_THROWS_WITH( calcInnerProduct(mat,vec1), Contains("valid only for state-vectors") );
+            //     REQUIRE_THROWS_WITH( calcInnerProduct(mat,mat), Contains("valid only for state-vectors") );
+                
+            //     destroyQureg(mat);
+            // }
     }
-    destroyQureg(vec1, QUEST_ENV);
-    destroyQureg(vec2, QUEST_ENV);
+    destroyQureg(vec1);
+    destroyQureg(vec2);
 }
 
 
@@ -876,8 +940,8 @@ TEST_CASE( "calcInnerProduct", "[calculations]" ) {
  */
 TEST_CASE( "calcProbOfAllOutcomes", "[calculations]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
+    Qureg mat = createForcedDensityQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
     
@@ -886,7 +950,7 @@ TEST_CASE( "calcProbOfAllOutcomes", "[calculations]" ) {
         int* qubits = GENERATE_COPY( sublists(range(0,NUM_QUBITS), numQubits) );
         
         int numOutcomes = 1<<numQubits;
-        VLA(qreal, probs, numOutcomes);
+        vector<qreal> probs(numOutcomes);
         QVector refProbs = QVector(numOutcomes);
             
         SECTION( "state-vector" ) {
@@ -906,8 +970,8 @@ TEST_CASE( "calcProbOfAllOutcomes", "[calculations]" ) {
                     refProbs[outcome] += pow(abs(ref[i]), 2);
                 }
 
-                calcProbOfAllOutcomes(probs, vec, qubits, numQubits);
-                REQUIRE( areEqual(refProbs, probs) );
+                calcProbOfAllOutcomes(probs.data(), vec, qubits, numQubits);
+                REQUIRE( areEqual(refProbs, probs.data()) );
             }
             SECTION( "unnormalised" ) {
                 
@@ -924,8 +988,8 @@ TEST_CASE( "calcProbOfAllOutcomes", "[calculations]" ) {
                     refProbs[outcome] += pow(abs(ref[i]), 2);
                 }
 
-                calcProbOfAllOutcomes(probs, vec, qubits, numQubits);
-                REQUIRE( areEqual(refProbs, probs) );
+                calcProbOfAllOutcomes(probs.data(), vec, qubits, numQubits);
+                REQUIRE( areEqual(refProbs, probs.data()) );
             }
         }
         SECTION( "density-matrix" ) {
@@ -945,8 +1009,8 @@ TEST_CASE( "calcProbOfAllOutcomes", "[calculations]" ) {
                     refProbs[outcome] += real(ref[i][i]);
                 }
                 
-                calcProbOfAllOutcomes(probs, mat, qubits, numQubits);
-                REQUIRE( areEqual(refProbs, probs) );
+                calcProbOfAllOutcomes(probs.data(), mat, qubits, numQubits);
+                REQUIRE( areEqual(refProbs, probs.data()) );
             }
             SECTION( "unnormalised" ) {
             
@@ -963,8 +1027,8 @@ TEST_CASE( "calcProbOfAllOutcomes", "[calculations]" ) {
                     refProbs[outcome] += real(ref[i][i]);
                 }
                 
-                calcProbOfAllOutcomes(probs, mat, qubits, numQubits);
-                REQUIRE( areEqual(refProbs, probs) );
+                calcProbOfAllOutcomes(probs.data(), mat, qubits, numQubits);
+                REQUIRE( areEqual(refProbs, probs.data()) );
             }
         }
     }
@@ -976,8 +1040,13 @@ TEST_CASE( "calcProbOfAllOutcomes", "[calculations]" ) {
         
         SECTION( "number of qubits" ) {
             
-            numQubits = GENERATE( -1, 0, NUM_QUBITS+1 );
-            REQUIRE_THROWS_WITH( calcProbOfAllOutcomes(probs, mat, qubits, numQubits), Contains("Invalid number of target qubits") );
+            // too small
+            numQubits = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH( calcProbOfAllOutcomes(probs, mat, qubits, numQubits), Contains("specified number of target qubits") && Contains("invalid.") );
+
+            // too big
+            numQubits = NUM_QUBITS + 1;
+            REQUIRE_THROWS_WITH( calcProbOfAllOutcomes(probs, mat, qubits, numQubits), Contains("target qubits") && Contains("exceeds the number of qubits in the Qureg") );
         }
         SECTION( "qubit indices" ) {
             
@@ -990,8 +1059,8 @@ TEST_CASE( "calcProbOfAllOutcomes", "[calculations]" ) {
             REQUIRE_THROWS_WITH( calcProbOfAllOutcomes(probs, mat, qubits, numQubits), Contains("qubits must be unique") );
         }
     }
-    destroyQureg(vec, QUEST_ENV);
-    destroyQureg(mat, QUEST_ENV); 
+    destroyQureg(vec);
+    destroyQureg(mat); 
 }
         
 
@@ -1003,8 +1072,8 @@ TEST_CASE( "calcProbOfAllOutcomes", "[calculations]" ) {
  */
 TEST_CASE( "calcProbOfOutcome", "[calculations]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
+    Qureg mat = createForcedDensityQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -1033,22 +1102,19 @@ TEST_CASE( "calcProbOfOutcome", "[calculations]" ) {
                 QVector ref = getRandomQVector(1<<NUM_QUBITS);
                 toQureg(vec, ref);
                 
-                // prob is (sum of |amp|^2 of amplitudes where target bit is zero)
-                // or 1 - (this) if outcome == 1
+                // prob is sum of |amp|^2 of amplitudes where target bit is outcome
                 qreal prob = 0;
                 for (size_t ind=0; ind<ref.size(); ind++) {
                     int bit = (ind >> target) & 1; // target-th bit
-                    if (bit == 0)
+                    if (bit == outcome)
                         prob += pow(abs(ref[ind]), 2);
                 }
-                if (outcome == 1)
-                    prob = 1 - prob;
                 
                 REQUIRE( calcProbOfOutcome(vec, target, outcome) == Approx(prob) );
             }
         }
         SECTION( "density-matrix" ) {
-            
+
             SECTION( "pure" ) {
                 
                 // set mat to a random |r><r|
@@ -1077,6 +1143,7 @@ TEST_CASE( "calcProbOfOutcome", "[calculations]" ) {
                     if (bit == outcome)
                         tr += ref[ind][ind];
                 }
+                
                 REQUIRE( imag(tr) == Approx(0).margin(REAL_EPS) );
                 
                 REQUIRE( calcProbOfOutcome(mat, target, outcome) == Approx(real(tr)) );
@@ -1087,15 +1154,12 @@ TEST_CASE( "calcProbOfOutcome", "[calculations]" ) {
                 toQureg(mat, ref);
                 
                 // prob is (sum of real of diagonal amps where target bit is outcome)
-                // or 1 - (this) if outcome == 1
                 qreal tr = 0;
                 for (size_t ind=0; ind<ref.size(); ind++) {
                     int bit = (ind >> target) & 1; // target-th bit
-                    if (bit == 0)
+                    if (bit == outcome)
                         tr += real(ref[ind][ind]);
                 }
-                if (outcome == 1)
-                    tr = 1 - tr;
                 
                 REQUIRE( calcProbOfOutcome(mat, target, outcome) == Approx(tr) );
             }
@@ -1111,11 +1175,11 @@ TEST_CASE( "calcProbOfOutcome", "[calculations]" ) {
         SECTION( "outcome value" ) {
             
             int outcome = GENERATE( -1, 2 );
-            REQUIRE_THROWS_WITH( calcProbOfOutcome(vec, 0, outcome), Contains("Invalid measurement outcome") );
+            REQUIRE_THROWS_WITH( calcProbOfOutcome(vec, 0, outcome), Contains("measurement outcome") && Contains("invalid") );
         }
     }
-    destroyQureg(vec, QUEST_ENV);
-    destroyQureg(mat, QUEST_ENV);
+    destroyQureg(vec);
+    destroyQureg(mat);
 }
 
 
@@ -1126,7 +1190,7 @@ TEST_CASE( "calcProbOfOutcome", "[calculations]" ) {
  */
 TEST_CASE( "calcPurity", "[calculations]" ) {
     
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createForcedDensityQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -1179,15 +1243,17 @@ TEST_CASE( "calcPurity", "[calculations]" ) {
         }
     }
     SECTION( "input validation" ) {
+
+        // in v4, this accepts state-vectors
         
-        SECTION( "state-vector" ) {
-            
-            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( calcPurity(vec), Contains("valid only for density matrices") );
-            destroyQureg(vec, QUEST_ENV);
-        }
+            // SECTION( "state-vector" ) {
+                
+            //     Qureg vec = createForcedQureg(NUM_QUBITS);
+            //     REQUIRE_THROWS_WITH( calcPurity(vec), Contains("valid only for density matrices") );
+            //     destroyQureg(vec);
+            // }
     }
-    destroyQureg(mat, QUEST_ENV);
+    destroyQureg(mat);
 }
 
 
@@ -1198,8 +1264,8 @@ TEST_CASE( "calcPurity", "[calculations]" ) {
  */
 TEST_CASE( "calcTotalProb", "[calculations]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
+    Qureg mat = createForcedDensityQureg(NUM_QUBITS);
         
     SECTION( "correctness" ) {
         
@@ -1253,8 +1319,8 @@ TEST_CASE( "calcTotalProb", "[calculations]" ) {
         // no validation 
         SUCCEED();
     }
-    destroyQureg(vec, QUEST_ENV);
-    destroyQureg(mat, QUEST_ENV);
+    destroyQureg(vec);
+    destroyQureg(mat);
 }
 
 
@@ -1265,7 +1331,7 @@ TEST_CASE( "calcTotalProb", "[calculations]" ) {
  */
 TEST_CASE( "getAmp", "[calculations]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -1275,8 +1341,8 @@ TEST_CASE( "getAmp", "[calculations]" ) {
             QVector ref = toQVector(vec);
 
             int ind = GENERATE( range(0,1<<NUM_QUBITS) );
-            Complex amp = getAmp(vec,ind);
-            REQUIRE( fromComplex(amp) == ref[ind] );
+            qcomp amp = getAmp(vec,ind);
+            REQUIRE( amp == ref[ind] );
         }
     }
     SECTION( "input validation" ) {
@@ -1284,16 +1350,16 @@ TEST_CASE( "getAmp", "[calculations]" ) {
         SECTION( "state index" ) {
             
             int ind = GENERATE( -1, 1<<NUM_QUBITS );
-            REQUIRE_THROWS_WITH( getAmp(vec,ind), Contains("Invalid amplitude index") );
+            REQUIRE_THROWS_WITH( getAmp(vec,ind), Contains("Basis state index") && Contains("invalid") );
         }
         SECTION( "density-matrix" ) {
             
-            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( getAmp(mat,0), Contains("valid only for state-vectors") );
-            destroyQureg(mat, QUEST_ENV);
+            Qureg mat = createForcedDensityQureg(NUM_QUBITS);
+            REQUIRE_THROWS_WITH( getAmp(mat,0), Contains("Expected a statevector Qureg but received a density matrix") );
+            destroyQureg(mat);
         }
     }
-    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(vec);
 }
 
 
@@ -1304,7 +1370,7 @@ TEST_CASE( "getAmp", "[calculations]" ) {
  */
 TEST_CASE( "getDensityAmp", "[calculations]" ) {
     
-    Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg mat = createForcedDensityQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -1316,8 +1382,8 @@ TEST_CASE( "getDensityAmp", "[calculations]" ) {
             int row = GENERATE( range(0,1<<NUM_QUBITS) );
             int col = GENERATE( range(0,1<<NUM_QUBITS) );
             
-            Complex amp = getDensityAmp(mat,row,col);
-            REQUIRE( fromComplex(amp) == ref[row][col] );
+            qcomp amp = getDensityAmp(mat,row,col);
+            REQUIRE( amp == ref[row][col] );
         }
     }
     SECTION( "input validation" ) {
@@ -1325,18 +1391,18 @@ TEST_CASE( "getDensityAmp", "[calculations]" ) {
         SECTION( "state index" ) {
             
             int ind = GENERATE( -1, 1<<NUM_QUBITS );
-            REQUIRE_THROWS_WITH( getDensityAmp(mat,ind,0), Contains("Invalid amplitude index") );
-            REQUIRE_THROWS_WITH( getDensityAmp(mat,0,ind), Contains("Invalid amplitude index") );
+            REQUIRE_THROWS_WITH( getDensityAmp(mat,ind,0), Contains("The row and column indices") && Contains("invalid") );
+            REQUIRE_THROWS_WITH( getDensityAmp(mat,0,ind), Contains("The row and column indices") && Contains("invalid") );
 
         }
         SECTION( "state-vector" ) {
             
-            Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( getDensityAmp(vec,0,0), Contains("valid only for density matrices") );
-            destroyQureg(vec, QUEST_ENV);
+            Qureg vec = createForcedQureg(NUM_QUBITS);
+            REQUIRE_THROWS_WITH( getDensityAmp(vec,0,0), Contains("Expected a density matrix Qureg but received a statevector") );
+            destroyQureg(vec);
         }
     }
-    destroyQureg(mat, QUEST_ENV);
+    destroyQureg(mat);
 }
 
 
@@ -1347,7 +1413,7 @@ TEST_CASE( "getDensityAmp", "[calculations]" ) {
  */
 TEST_CASE( "getImagAmp", "[calculations]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -1365,16 +1431,16 @@ TEST_CASE( "getImagAmp", "[calculations]" ) {
         SECTION( "state index" ) {
             
             int ind = GENERATE( -1, 1<<NUM_QUBITS );
-            REQUIRE_THROWS_WITH( getImagAmp(vec,ind), Contains("Invalid amplitude index") );
+            REQUIRE_THROWS_WITH( getImagAmp(vec,ind), Contains("Basis state index") && Contains("invalid") );
         }
         SECTION( "density-matrix" ) {
             
-            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( getImagAmp(mat,0), Contains("valid only for state-vectors") );
-            destroyQureg(mat, QUEST_ENV);
+            Qureg mat = createForcedDensityQureg(NUM_QUBITS);
+            REQUIRE_THROWS_WITH( getImagAmp(mat,0), Contains("Expected a statevector Qureg but received a density matrix") );
+            destroyQureg(mat);
         }
     }
-    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(vec);
 }
 
 
@@ -1392,19 +1458,22 @@ TEST_CASE( "getNumAmps", "[calculations]" ) {
         
         SECTION( "state-vector" ) {
             
-            Qureg vec = createQureg(numQb, QUEST_ENV);
+            Qureg vec = createForcedQureg(numQb);
             REQUIRE( getNumAmps(vec) == (1<<numQb) );
-            destroyQureg(vec, QUEST_ENV);
+            destroyQureg(vec);
         }
     }
-    SECTION( "input validation" ) {
-        
-        SECTION( "density-matrix" ) {
-            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( getNumAmps(mat), Contains("valid only for state-vectors") );
-            destroyQureg(mat, QUEST_ENV);
-        }
-    }
+
+    // in v4, argument can be a density matrix (return total num amps)
+
+        // SECTION( "input validation" ) {
+            
+        //     SECTION( "density-matrix" ) {
+        //         Qureg mat = createForcedDensityQureg(NUM_QUBITS);
+        //         REQUIRE_THROWS_WITH( getNumAmps(mat), Contains("Expected a statevector Qureg but received a density matrix") );
+        //         destroyQureg(mat);
+        //     }
+        // }
 }
 
 
@@ -1422,9 +1491,9 @@ TEST_CASE( "getNumQubits", "[calculations]" ) {
         
         SECTION( "state-vector" ) {
             
-            Qureg vec = createQureg(numQb, QUEST_ENV);
+            Qureg vec = createForcedQureg(numQb);
             REQUIRE( getNumQubits(vec) == numQb );
-            destroyQureg(vec, QUEST_ENV);
+            destroyQureg(vec);
         }
         SECTION( "density-matrix" ) {
             
@@ -1432,9 +1501,9 @@ TEST_CASE( "getNumQubits", "[calculations]" ) {
             if (2*numQb > 25)
                 numQb = 13; // max size
 
-            Qureg mat = createDensityQureg(numQb, QUEST_ENV);
+            Qureg mat = createForcedDensityQureg(numQb);
             REQUIRE( getNumQubits(mat) == numQb );
-            destroyQureg(mat, QUEST_ENV);
+            destroyQureg(mat);
         }
     }
     SECTION( "input validation" ) {
@@ -1452,7 +1521,7 @@ TEST_CASE( "getNumQubits", "[calculations]" ) {
  */
 TEST_CASE( "getProbAmp", "[calculations]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -1471,16 +1540,20 @@ TEST_CASE( "getProbAmp", "[calculations]" ) {
         SECTION( "state index" ) {
             
             int ind = GENERATE( -1, 1<<NUM_QUBITS );
-            REQUIRE_THROWS_WITH( getProbAmp(vec,ind), Contains("Invalid amplitude index") );
+            REQUIRE_THROWS_WITH( getProbAmp(vec,ind), Contains("Basis state index") && Contains("invalid") );
         }
-        SECTION( "density-matrix" ) {
-            
-            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( getProbAmp(mat,0), Contains("valid only for state-vectors") );
-            destroyQureg(mat, QUEST_ENV);
-        }
+
+        // in v4, this redirects to calcProbOfBasisState() which accepts
+        // both statevectors and density matrices
+
+            // SECTION( "density-matrix" ) {
+                
+            //     Qureg mat = createForcedDensityQureg(NUM_QUBITS);
+            //     REQUIRE_THROWS_WITH( getProbAmp(mat,0), Contains("Expected a statevector Qureg but received a density matrix") );
+            //     destroyQureg(mat);
+            // }
     }
-    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(vec);
 }
 
 
@@ -1491,7 +1564,7 @@ TEST_CASE( "getProbAmp", "[calculations]" ) {
  */
 TEST_CASE( "getRealAmp", "[calculations]" ) {
     
-    Qureg vec = createQureg(NUM_QUBITS, QUEST_ENV);
+    Qureg vec = createForcedQureg(NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
@@ -1509,16 +1582,16 @@ TEST_CASE( "getRealAmp", "[calculations]" ) {
         SECTION( "state index" ) {
             
             int ind = GENERATE( -1, 1<<NUM_QUBITS );
-            REQUIRE_THROWS_WITH( getRealAmp(vec,ind), Contains("Invalid amplitude index") );
+            REQUIRE_THROWS_WITH( getRealAmp(vec,ind), Contains("Basis state index") && Contains("invalid") );
         }
         SECTION( "density-matrix" ) {
             
-            Qureg mat = createDensityQureg(NUM_QUBITS, QUEST_ENV);
-            REQUIRE_THROWS_WITH( getRealAmp(mat,0), Contains("valid only for state-vectors") );
-            destroyQureg(mat, QUEST_ENV);
+            Qureg mat = createForcedDensityQureg(NUM_QUBITS);
+            REQUIRE_THROWS_WITH( getRealAmp(mat,0), Contains("Expected a statevector Qureg but received a density matrix") );
+            destroyQureg(mat);
         }
     }
-    destroyQureg(vec, QUEST_ENV);
+    destroyQureg(vec);
 }
 
 
