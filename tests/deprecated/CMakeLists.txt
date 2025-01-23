@@ -5,8 +5,8 @@ include_directories(catch)
 
 # compile Catch2 unit tests in C++14
 add_executable(tests
-    main.cpp
-    utilities.cpp
+    test_main.cpp
+    test_utilities.cpp
     test_calculations.cpp
     test_data_structures.cpp
     test_decoherence.cpp
