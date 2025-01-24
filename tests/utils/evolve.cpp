@@ -1,0 +1,170 @@
+#include "qvector.hpp"
+#include "qmatrix.hpp"
+#include "macros.hpp"
+#include "linalg.hpp"
+
+#include <tuple>
+#include <vector>
+#include <algorithm>
+
+using std::vector;
+
+
+
+/*
+ * OPERATOR MATRICES
+ */
+
+
+qmatrix getSwapMatrix(int qb1, int qb2, int numQb) {
+    DEMAND( numQb > 1 );
+    DEMAND( (qb1 >= 0 && qb1 < numQb) );
+    DEMAND( (qb2 >= 0 && qb2 < numQb) );
+
+    if (qb1 == qb2)
+        return getIdentityMatrix(pow2(numQb));
+        
+    if (qb1 > qb2)
+        std::swap(qb1, qb2);
+
+    qmatrix out;
+    
+    // qubits are either adjacent
+    if (qb2 == qb1 + 1) {
+        out = qmatrix{{1,0,0,0},{0,0,1,0},{0,1,0,0},{0,0,0,1}};
+    
+    // or distant
+    } else {
+        int block = pow2(qb2 - qb1);
+        out = getZeroMatrix(block*2);
+        qmatrix iden = getIdentityMatrix(block/2);
+        
+        // Lemma 3.1 of arxiv.org/pdf/1711.09765.pdf
+        qmatrix p0{{1,0},{0,0}};
+        qmatrix l0{{0,1},{0,0}};
+        qmatrix l1{{0,0},{1,0}};
+        qmatrix p1{{0,0},{0,1}};
+        
+        // notating a^(n+1) = identity(pow2(n)) (otimes) a, we construct the matrix
+        // [ p0^(N) l1^N ]
+        // [ l0^(N) p1^N ]
+        // where N = qb2 - qb1 */
+        setSubMatrix(out, getKroneckerProduct(iden, p0), 0, 0);
+        setSubMatrix(out, getKroneckerProduct(iden, l0), block, 0);
+        setSubMatrix(out, getKroneckerProduct(iden, l1), 0, block);
+        setSubMatrix(out, getKroneckerProduct(iden, p1), block, block);
+    }
+    
+    // pad swap with outer identities
+    if (qb1 > 0)
+        out = getKroneckerProduct(out, getIdentityMatrix(pow2(qb1)));
+
+    if (qb2 < numQb-1)
+        out = getKroneckerProduct(getIdentityMatrix(pow2(numQb-qb2-1)), out);
+        
+    return out;
+}
+
+
+auto getSwapAndUnswapMatrices(vector<int> ctrls, vector<int> targs, size_t numQubits) {
+    DEMAND( numQubits >= ctrls.size() + targs.size() );
+
+    // matrices which swap targs+ctrls to be contiguous from 0
+    qmatrix swaps   = getIdentityMatrix(pow2(numQubits));
+    qmatrix unswaps = getIdentityMatrix(pow2(numQubits));
+
+    // swap targs to {0, ..., ntargs - 1}
+    for (size_t i=0; i<targs.size(); i++) {
+
+        if (i == targs[i])
+            continue;
+
+        qmatrix m = getSwapMatrix(i, targs[i], numQubits);
+        swaps = m * swaps;
+        unswaps = unswaps * m;
+        
+        std::replace(ctrls.begin(), ctrls.end(), (int) i, targs[i]);
+        std::replace(targs.begin(), targs.end(), (int) i, targs[i]);
+    }
+
+    // swap ctrls to {ntargs, ..., ntargs + nctrls - 1}
+    for (size_t i=0; i<ctrls.size(); i++) {
+
+        size_t j = i + targs.size();
+        if (j == ctrls[i])
+            continue;
+
+        qmatrix m = getSwapMatrix(j, ctrls[i], numQubits);
+        swaps = m * swaps;
+        unswaps = unswaps * m;
+
+        std::replace(ctrls.begin(), ctrls.end(), (int) j, ctrls[i]);
+    }
+
+    return std::tuple{swaps, unswaps};
+}
+
+
+qmatrix getFullStateOperator(vector<int> ctrls, vector<int> targs, qmatrix matrix, size_t numQubits) {
+    DEMAND( numQubits >= ctrls.size() + targs.size() );
+    DEMAND( matrix.size() == pow2(targs.size()) );
+    
+    auto [swaps, unswaps] = getSwapAndUnswapMatrices(ctrls, targs, numQubits);
+
+    // construct controlled-(matrix)
+    size_t dim = pow2(ctrls.size() + targs.size());
+    size_t off = dim - matrix.size();
+    qmatrix full = getIdentityMatrix(dim);
+    setSubMatrix(full, matrix, off, off);
+
+    // left-pad 'out' to full size
+    if (numQubits > ctrls.size() + targs.size()) {
+        size_t pad = pow2(numQubits - ctrls.size() - targs.size());
+        full = getKroneckerProduct(getIdentityMatrix(pad), full);
+    }
+    
+    // apply swap to either side (to swap qubits back and forth)
+    return unswaps * full * swaps;
+}
+
+
+
+/*
+ * EVOLUTION
+ */
+
+
+void applyReferenceOperator(qvector& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
+    
+    qmatrix ref = getFullStateOperator(ctrls, targs, matrix, log2(state.size()));
+    state = ref * state;
+}
+
+
+void applyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
+    
+    qmatrix left = getFullStateOperator(ctrls, targs, matrix, log2(state.size()));
+    qmatrix right = getConjugateTranspose(left);
+    state = left * state * right;
+}
+
+
+void multiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
+    
+    qmatrix left = getFullStateOperator(ctrls, targs, matrix, log2(state.size()));
+    state = left * state;
+}
+
+
+void applyReferenceOperator(qvector& state, vector<int> targs, qmatrix matrix) {
+    
+    applyReferenceOperator(state, {}, targs, matrix);
+}
+void applyReferenceOperator(qmatrix& state, vector<int> targs, qmatrix matrix) {
+
+    applyReferenceOperator(state, {}, targs, matrix);
+}
+void multiplyReferenceOperator(qmatrix& state, vector<int> targs, qmatrix matrix) {
+
+    multiplyReferenceOperator(state, {}, targs, matrix);
+}
