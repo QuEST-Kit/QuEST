@@ -108,13 +108,7 @@ namespace report {
         "Invalid number of significant figures (${NUM_SIG_FIGS}). Cannot be less than one.";
 
     string INVALID_NUM_RANDOM_SEEDS =
-        "Invalid number of random seeds (${NUM_SEEDS}). Must specify one or more.";
-
-    string INCONSISTENT_NUM_RANDOM_SEEDS_ACROSS_NODES =
-        "The specified number of random seeds was inconsistent between nodes. All nodes must receive the same number of identical seeds.";
-
-    string INCONSISTENT_RANDOM_SEEDS_ACROSS_NODES =
-        "The random seeds must be consistent between all nodes. Please call this function without rank-specific logic.";
+        "Invalid number of random seeds (${NUM_SEEDS}). Must specify one or more. In distributed settings, only the root node needs to pass a valid number of seeds (other node arguments are ignored).";
 
 
     /*
@@ -732,7 +726,7 @@ namespace report {
         "Invalid target qubit (${QUBIT_IND}). Must be greater than or equal to zero, and less than the number of qubits in the Qureg (${NUM_QUBITS}).";
 
     string DUPLICATE_TARGET_QUBITS =
-        "The list of target qubits contained duplicates. All qubits must be unique.";
+        "The given target qubits contained duplicates. All qubits must be unique.";
 
 
     string NEGATIVE_NUM_CONTROLS =
@@ -748,11 +742,11 @@ namespace report {
         "Invalid control qubit (${QUBIT_IND}). Must be greater than or equal to zero, and less than the number of qubits in the Qureg (${NUM_QUBITS}).";
 
     string DUPLICATE_CONTROL_QUBITS =
-        "The list of control qubits contained duplicates. All qubits must be unique.";
+        "The control qubits contained duplicates. All qubits must be unique.";
 
     
     string CONTROLS_OVERLAP_TARGETS =
-        "A qubit appeared in both the control and target qubit lists.";
+        "A qubit appeared among both the control and target qubits, which cannot overlap.";
 
     string INVALID_CONTROL_STATE =
         "The control qubit at index ${INDEX} has an invalidly specified control-state of ${STATE}. Valid states are 0 and 1.";
@@ -1259,27 +1253,15 @@ void validate_envIsInit(const char* caller) {
 
 void validate_randomSeeds(unsigned* seeds, int numSeeds, const char* caller) {
 
-    // we rigorously check that all seeds globally agree, since it is
-    // conceivable users could erroneously attempt to seed unique per-node
-    assertThat(numSeeds > 0, report::INVALID_NUM_RANDOM_SEEDS, {{"${NUM_SEEDS}", numSeeds}}, caller);
+    // only the root node's seeds are consulted, so we permit all non-root
+    // nodes to have invalid parameters. All nodes however must know/agree
+    // when the root node's seeds are invalid, to synchronise validation
 
-    if (!getQuESTEnv().isDistributed)
-        return;
-
-    // assert every node received the same number of seeds
     unsigned numRootSeeds = (unsigned) numSeeds;
-    comm_broadcastUnsignedsFromRoot(&numRootSeeds, 1);
-    assertThat(numRootSeeds == (unsigned) numSeeds, report::INCONSISTENT_NUM_RANDOM_SEEDS_ACROSS_NODES, caller);
+    if (getQuESTEnv().isDistributed)
+        comm_broadcastUnsignedsFromRoot(&numRootSeeds, 1);
 
-    // assert every node has the same seeds as root (ergo as one another)
-    vector<unsigned> rootSeeds(seeds, seeds + numSeeds);
-    comm_broadcastUnsignedsFromRoot(rootSeeds.data(), numSeeds);
-
-    bool agrees = true;
-    for (int i=0; i<numSeeds && agrees; i++)
-        agrees &= seeds[i] == rootSeeds[i];
-    
-    assertThat(agrees, report::INCONSISTENT_RANDOM_SEEDS_ACROSS_NODES, caller);
+    assertThat(numRootSeeds > 0, report::INVALID_NUM_RANDOM_SEEDS, {{"${NUM_SEEDS}", numSeeds}}, caller);
 }
 
 void validate_newEpsilonValue(qreal eps, const char* caller) {
@@ -3208,7 +3190,7 @@ void assertValidQubits(
     Qureg qureg, int* qubits, int numQubits, bool canNumIncludeZero, const char* caller,
     string msgNegNum, string msgNumExceedsQureg, string msgNullPtr, string msgBadInd, string msgDuplicates
 ) {
-    assertThat(numQubits > (canNumIncludeZero? -1 : 0), msgNegNum, {{"${NUM_QUBITS}", numQubits}}, caller);
+    assertThat(numQubits >= (canNumIncludeZero? 0 : 1), msgNegNum, {{"${NUM_QUBITS}", numQubits}}, caller);
     assertThat(numQubits <= qureg.numQubits, msgNumExceedsQureg, {{"${NUM_QUBITS}", numQubits}, {"${QUREG_QUBITS}", qureg.numQubits}}, caller);
 
     if (numQubits > 0)

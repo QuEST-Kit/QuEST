@@ -54,10 +54,25 @@ static std::mt19937_64 mainGenerator;
 
 void rand_setSeeds(vector<unsigned> seeds) {
 
-    // remember seeds (in case user wishes to later recall them)
+    // this function consults only root-node seeds, broadcasting 
+    // to other nodes which might not have the existing space to
+    // receive them, so we explicitly reserve the needed space
+
+    // all nodes learn root node's #seeds
+    unsigned numRootSeeds = seeds.size();
+    comm_broadcastUnsignedsFromRoot(&numRootSeeds, 1);
+
+    // all nodes ensure they have space to receive root node's seeds
+    seeds.resize(numRootSeeds);
+    
+    // all nodes receive root seeds
+    if (comm_isInit())
+        comm_broadcastUnsignedsFromRoot(seeds.data(), seeds.size());
+
+    // all nodes remember seeds (in case user wishes to later recall them)
     currentSeeds = seeds;
 
-    // pass all seeds to RNG; we just seeds is consistent between nodes
+    // all nodes pass all seeds to RNG
     std::seed_seq seq(seeds.begin(), seeds.end());
     mainGenerator.seed(seq);
 }
@@ -71,16 +86,11 @@ void rand_setSeedsToDefault() {
     // use CSPRNG to generate well-spread seeds
     vector<unsigned> seeds(DEFAULT_NUM_RNG_SEEDS);
 
-    // root node produces seeds
+    // root node produces seeds (non-root seeds would be ignored)
     if (comm_getRank() == 0)
         for (auto &seed : seeds)
             seed = device();
-    
-    // and broadcasts them to all other nodes...
-    if (comm_isInit())
-        comm_broadcastUnsignedsFromRoot(seeds.data(), seeds.size());
 
-    // so that all nodes set the same seeds
     rand_setSeeds(seeds);
 }
 
