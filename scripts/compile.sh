@@ -36,7 +36,7 @@ LINKER=g++
 # whether to compile unit tests (1) or the below user files (0),
 # or the v3 deprecated unit tests (2). when either tests are
 # compiled, all user-source related settings are ignored. 
-COMPILE_TESTS=1
+COMPILE_TESTS=0
 
 # name of the compiled test executable
 TEST_EXEC_FILE="test"
@@ -46,7 +46,7 @@ USER_EXEC_FILE="main"
 
 # user files (.c or .cpp, intermixed)
 USER_FILES=(
-    "diagmatrtest.cpp"
+    "main.cpp"
 )
 
 # location of user files
