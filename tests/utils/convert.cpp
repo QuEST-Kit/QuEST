@@ -16,7 +16,7 @@ using std::is_same_v;
 
 void setQureg(Qureg qureg, qvector vector) {
     DEMAND( !qureg.isDensityMatrix );
-    DEMAND( qureg.numAmps == vector.size() );
+    DEMAND( qureg.numAmps == (qindex) vector.size() );
 
     setQuregAmps(qureg, 0, vector.data(), vector.size());
 }
@@ -24,10 +24,10 @@ void setQureg(Qureg qureg, qvector vector) {
 
 void setQureg(Qureg qureg, qmatrix matrix) {
     DEMAND( qureg.isDensityMatrix );
-    DEMAND( pow2(qureg.numQubits) == matrix.size() );
+    DEMAND( getPow2(qureg.numQubits) == (qindex) matrix.size() );
 
     qindex numRows = 1;
-    qindex numCols = pow2(qureg.numQubits);
+    qindex numCols = getPow2(qureg.numQubits);
 
     for (size_t r=0; r<matrix.size(); r++) {
         qcomp* arr[] = {matrix[r].data()};
@@ -55,7 +55,7 @@ qmatrix getMatrix(Qureg qureg) {
     DEMAND( qureg.isDensityMatrix );
 
     qindex numRows = 1;
-    qindex numCols = pow2(qureg.numQubits);
+    qindex numCols = getPow2(qureg.numQubits);
     qmatrix out = getZeroMatrix(numCols);
 
     for (size_t r=0; r<out.size(); r++) {
@@ -94,7 +94,7 @@ qcomp getElem(T m, size_t r, size_t c) {
 template <typename T> 
 qmatrix getMatrix(T m) {
 
-    qmatrix out = getZeroMatrix(pow2(m.numQubits));
+    qmatrix out = getZeroMatrix(getPow2(m.numQubits));
 
     for (size_t r=0; r<out.size(); r++)
         for (size_t c=0; c<out.size(); c++)

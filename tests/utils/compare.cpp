@@ -45,7 +45,7 @@ bool operator == (const qmatrix& m1, const qmatrix& m2) {
 
 bool operator == (const qvector& v, const Qureg& q) {
     DEMAND( !q.isDensityMatrix );
-    DEMAND( q.numAmps == v.size() );
+    DEMAND( q.numAmps == (qindex) v.size() );
 
     return v == getVector(q);
 }
@@ -61,7 +61,7 @@ bool operator == (const Qureg& q, const qvector& v) {
 
 bool operator == (const qmatrix& m, const Qureg& q) {
     DEMAND( q.isDensityMatrix );
-    DEMAND( pow2(q.numQubits) == m.size() );
+    DEMAND( getPow2(q.numQubits) == (qindex) m.size() );
 
     return m == getMatrix(q);
 }

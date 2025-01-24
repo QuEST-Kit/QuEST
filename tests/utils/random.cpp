@@ -175,13 +175,13 @@ vector<qreal> getRandomProbabilities(int numProbs) {
 
 qvector getRandomStateVector(int numQb) {
 
-    return getNormalised(getRandomVector(pow2(numQb)));
+    return getNormalised(getRandomVector(getPow2(numQb)));
 }
 
 
 vector<qvector> getRandomOrthonormalStateVectors(int numQb, int numStates) {
 
-    return getRandomOrthonormalVectors(pow2(numQb), numStates);
+    return getRandomOrthonormalVectors(getPow2(numQb), numStates);
 }
 
 
@@ -189,7 +189,7 @@ qmatrix getRandomDensityMatrix(int numQb) {
     DEMAND( numQb > 0 );
     
     // generate random probabilities to weight random pure states
-    int dim = pow2(numQb);
+    int dim = getPow2(numQb);
     vector<qreal> probs = getRandomProbabilities(dim);
     
     // add random pure states
@@ -221,7 +221,7 @@ qmatrix getRandomUnitary(int numQb) {
     DEMAND( numQb >= 1 );
 
     // create Z ~ random complex matrix (distribution not too important)
-    size_t dim = pow2(numQb);
+    size_t dim = getPow2(numQb);
     qmatrix matrZ = getRandomMatrix(dim);
     qmatrix matrZT = getTranspose(matrZ);
 
@@ -251,10 +251,10 @@ qmatrix getRandomUnitary(int numQb) {
 qmatrix getRandomDiagonalUnitary(int numQb) {
     DEMAND( numQb >= 1 );
 
-    qmatrix matr = getZeroMatrix(pow2(numQb));
+    qmatrix matr = getZeroMatrix(getPow2(numQb));
 
     for (size_t i=0; i<matr.size(); i++)
-        matr[i][i] = expI(getRandomReal(0,4*M_PI));
+        matr[i][i] = getExpI(getRandomReal(0,4*M_PI));
 
     return matr;
 }

@@ -14,7 +14,7 @@ using std::vector;
  */
 
 
-int log2(qindex a) {
+int getLog2(qindex a) {
     DEMAND( a >= 0 );
     DEMAND( (a & (a - 1)) == 0 )  // is pow2
 
@@ -26,14 +26,14 @@ int log2(qindex a) {
 }
 
 
-qindex pow2(int a) {
+qindex getPow2(int a) {
     DEMAND( a >= 0 );
 
     return ((qindex) 1) << a;
 }
 
 
-qcomp expI(qreal x) {
+qcomp getExpI(qreal x) {
     return qcomp(cos(x), sin(x));
 }
 
@@ -81,7 +81,7 @@ qvector getDisceteFourierTransform(qvector in) {
     
     for (size_t x=0; x<dim; x++)
         for (size_t y=0; y<dim; y++)
-            out[x] += a * expI(b * x * y) * in[y];
+            out[x] += a * getExpI(b * x * y) * in[y];
 
     return out;
 }

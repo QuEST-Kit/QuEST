@@ -8,9 +8,9 @@
 using std::vector;
 
 
-int log2(qindex);
-qindex pow2(int);
-qcomp expI(qreal);
+int getLog2(qindex);
+qindex getPow2(int);
+qcomp getExpI(qreal);
 
 qvector getNormalised(qvector);
 qvector getDisceteFourierTransform(qvector);
