@@ -60,7 +60,8 @@ void rand_setSeeds(vector<unsigned> seeds) {
 
     // all nodes learn root node's #seeds
     unsigned numRootSeeds = seeds.size();
-    comm_broadcastUnsignedsFromRoot(&numRootSeeds, 1);
+    if (comm_isInit())
+        comm_broadcastUnsignedsFromRoot(&numRootSeeds, 1);
 
     // all nodes ensure they have space to receive root node's seeds
     seeds.resize(numRootSeeds);

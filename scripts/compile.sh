@@ -15,13 +15,13 @@
 FLOAT_PRECISION=2
 
 # deployments to compile (0, 1)
-COMPILE_MPI=1        # distribution
-COMPILE_OPENMP=1     # multithreading
+COMPILE_MPI=0        # distribution
+COMPILE_OPENMP=0     # multithreading
 COMPILE_CUDA=0       # GPU acceleration
 COMPILE_CUQUANTUM=0  # GPU + cuQuantum
 
-GPU_CC=90
 # GPU compute capability
+GPU_CC=90
 
 # backend compilers
 TESTS_COMPILER=g++
@@ -34,8 +34,9 @@ GPU_COMPILER=nvcc
 LINKER=g++
 
 # whether to compile unit tests (1) or the below user files (0),
-# which are otherwise ignored along with all USER settings
-COMPILE_TESTS=1
+# or the v3 deprecated unit tests (2). when either tests are
+# compiled, all user-source related settings are ignored. 
+COMPILE_TESTS=0
 
 # name of the compiled test executable
 TEST_EXEC_FILE="test"
@@ -45,7 +46,7 @@ USER_EXEC_FILE="main"
 
 # user files (.c or .cpp, intermixed)
 USER_FILES=(
-    "diagmatrtest.cpp"
+    "main.cpp"
 )
 
 # location of user files
@@ -72,6 +73,12 @@ CUQUANTUM_LIB_DIR="${CUQUANTUM_ROOT}"
 CUDA_LIB_DIR="/usr/local/cuda"
 OMP_LIB_DIR="/opt/homebrew/opt/libomp"
 MPI_LIB_DIR="/opt/homebrew/opt/openmpi"
+CATCH_LIB_DIR="tests/deprecated/catch"
+
+# TODO:
+# use of 'CATCH_LIB_DIR' above will change when v4 tests 
+# switch to using Catch2 as supplied by CMake, rather
+# than the hacky use of deprecated v3's single-header  
 
 
 
@@ -79,6 +86,7 @@ MPI_LIB_DIR="/opt/homebrew/opt/openmpi"
 
 USER_OBJ_PREF="user_"
 QUEST_OBJ_PREF="quest_"
+TEST_OBJ_PREF='test_'
 
 INDENT='  '
 
@@ -89,13 +97,19 @@ INDENT='  '
 # directories
 ROOT_DIR='quest'
 INCLUDE_DIR="${ROOT_DIR}/include"
+
 SRC_DIR="${ROOT_DIR}/src"
 API_DIR="${SRC_DIR}/api"
 OMP_DIR="${SRC_DIR}/cpu"
 GPU_DIR="${SRC_DIR}/gpu"
 MPI_DIR="${SRC_DIR}/comm"
 CORE_DIR="${SRC_DIR}/core"
-TEST_DIR='tests/deprecated'
+
+TEST_MAIN_DIR="tests"
+TEST_UTIL_DIR="${TEST_MAIN_DIR}/utils"
+TEST_UNIT_DIR="${TEST_MAIN_DIR}/unit"
+TEST_DEPR_DIR="${TEST_MAIN_DIR}/deprecated"
+TEST_DEPR_CATCH_DIR="${TEST_DEPR_DIR}/catch"
 
 # files in API_DIR
 API_FILES=(
@@ -145,8 +159,38 @@ MPI_FILES=(
     "comm_routines"
 )
 
-# files in TEST_DIR
-TEST_FILES=(
+# files in TEST_MAIN_DIR
+TEST_MAIN_FILES=(
+    "main"
+)
+
+# files in TEST_UTIL_DIR
+TEST_UTIL_FILES=(
+    "compare"
+    "convert"
+    "evolve"
+    "linalg"
+    "lists"
+    "qmatrix"
+    "qvector"
+    "random"
+)
+
+# files in TEST_UNIT_DIR
+TEST_UNIT_FILES=(
+    "calculations"
+    "decoherence"
+    "environment"
+    "initialisations"
+    "matrices"
+    "operations"
+    "paulis"
+    "qureg"
+    "types"
+)
+
+# files in TEST_DEPR_DIR
+TEST_DEPR_FILES=(
     "test_main"
     "test_gates"
     "test_unitaries"
@@ -156,7 +200,9 @@ TEST_FILES=(
     "test_data_structures"
     "test_state_initialisations"
 )
-TEST_MPI_FILES=(
+
+# files in TEST_DEPR_DIR which use MPI
+TEST_DEPR_MPI_FILES=(
     "test_utilities"
 )
 
@@ -164,8 +210,11 @@ TEST_MPI_FILES=(
 
 # COMPILER AND LINKER FLAG OPTIONS
 
-# compiler flags given to test files
-TEST_COMP_FLAGS="-std=c++17 -I${TEST_DIR}/catch"
+# compiler flags given to all (non-deprecated) files
+TEST_COMP_FLAGS="-std=c++17 -I${CATCH_LIB_DIR}"
+
+# compiler flags given to deprecated test files
+TEST_DEPR_COMP_FLAGS="-std=c++17 -I${TEST_DEPR_CATCH_DIR}"
 
 # compiler flags given to all backend files
 BACKEND_COMP_FLAGS='-std=c++17 -O3'
@@ -233,6 +282,7 @@ HEADER_FLAGS="-I. -I${INCLUDE_DIR}"
 
 # ASSEMBLE FLAGS
 
+echo ""
 echo "deployment modes:"
 
 # flags given to every compilation unit
@@ -295,7 +345,8 @@ else
 fi
 
 # choose linker warning flag (to avoid pass them to nvcc)
-if [ "${LINKER}" = "nvcc" ]; then
+if [ "${LINKER}" = "nvcc" ]
+then
     ALL_LINK_FLAGS+="-Xcompiler ${WARNING_FLAGS}"
 else
     ALL_LINK_FLAGS+=" ${WARNING_FLAGS}"
@@ -325,16 +376,25 @@ echo ""
 echo "chosen compilers and flags..."
 
 # user compilers
-if (( $COMPILE_TESTS == 0 )); then
+if (( $COMPILE_TESTS == 0 ))
+then
     echo "${INDENT}user compilers and flags (for .c and .cpp files respectively):"
     echo "${INDENT}${INDENT}${USER_C_COMPILER} ${USER_C_COMP_FLAGS} ${WARNING_FLAGS}"
     echo "${INDENT}${INDENT}${USER_CXX_COMPILER} ${USER_CXX_COMP_FLAGS} ${WARNING_FLAGS}"
 fi
 
 # test compiler
-if (( $COMPILE_TESTS == 1 )); then
+if (( $COMPILE_TESTS == 1 ))
+then
     echo "${INDENT}tests compiler and flags:"
     echo "${INDENT}${INDENT}${TESTS_COMPILER} ${TEST_COMP_FLAGS} ${WARNING_FLAGS}"
+fi
+
+# deprecated compiler
+if (( $COMPILE_TESTS == 2 ))
+then
+    echo "${INDENT}deprecated tests compiler and flags:"
+    echo "${INDENT}${INDENT}${TESTS_COMPILER} ${TEST_DEPR_COMP_FLAGS} ${WARNING_FLAGS}"
 fi
 
 # base compiler
@@ -370,8 +430,8 @@ echo ""
 # abort script if any compilation fails
 set -e
 
-if (( $COMPILE_TESTS == 0 )); then
-
+if (( $COMPILE_TESTS == 0 ))
+then
     echo "compiling user files:"
 
     for fn in ${USER_FILES[@]}
@@ -399,24 +459,59 @@ fi
 
 # COMPILING TESTS
 
-if (( $COMPILE_TESTS == 1 )); then
+if (( $COMPILE_TESTS == 1 ))
+then
 
-    echo "compiling test files:"
+    echo "compiling unit test files:"
 
-    for fn in ${TEST_FILES[@]}
+    echo "${INDENT}main:"
+
+    for fn in ${TEST_MAIN_FILES[@]}
     do
-        echo "${INDENT}${fn}.cpp ..."
-        $TESTS_COMPILER -c $TEST_DIR/$fn.cpp -o ${QUEST_OBJ_PREF}${fn}.o $TEST_COMP_FLAGS $GLOBAL_COMP_FLAGS $WARNING_FLAGS
+        echo "${INDENT}${INDENT}${fn}.cpp ..."
+        $TESTS_COMPILER -c $TEST_MAIN_DIR/$fn.cpp -o ${TEST_OBJ_PREF}${fn}.o $TEST_COMP_FLAGS $GLOBAL_COMP_FLAGS $WARNING_FLAGS
     done
 
-    for fn in ${TEST_MPI_FILES[@]}
+    echo "${INDENT}utils:"
+
+    for fn in ${TEST_UTIL_FILES[@]}
     do
-        echo "${INDENT}${fn}.cpp ..."
-        $MPI_COMPILER -c $TEST_DIR/$fn.cpp -o ${QUEST_OBJ_PREF}${fn}.o $TEST_COMP_FLAGS $GLOBAL_COMP_FLAGS $WARNING_FLAGS
+        echo "${INDENT}${INDENT}${fn}.cpp ..."
+        $TESTS_COMPILER -c $TEST_UTIL_DIR/$fn.cpp -o ${TEST_OBJ_PREF}${fn}.o $TEST_COMP_FLAGS $GLOBAL_COMP_FLAGS $WARNING_FLAGS
+    done
+
+    echo "${INDENT}unit:"
+
+    for fn in ${TEST_UNIT_FILES[@]}
+    do
+        echo "${INDENT}${INDENT}${fn}.cpp ..."
+        $TESTS_COMPILER -c $TEST_UNIT_DIR/$fn.cpp -o ${TEST_OBJ_PREF}${fn}.o $TEST_COMP_FLAGS $GLOBAL_COMP_FLAGS $WARNING_FLAGS
     done
 
     echo ""
+fi
 
+
+
+# COMPILING DEPRECATED TESTS
+
+if (( $COMPILE_TESTS == 2 ))
+then
+    echo "compiling deprecated test files:"
+
+    for fn in ${TEST_DEPR_FILES[@]}
+    do
+        echo "${INDENT}${fn}.cpp ..."
+        $TESTS_COMPILER -c $TEST_DEPR_DIR/$fn.cpp -o ${TEST_OBJ_PREF}${fn}.o $TEST_DEPR_COMP_FLAGS $GLOBAL_COMP_FLAGS $WARNING_FLAGS
+    done
+
+    for fn in ${TEST_DEPR_MPI_FILES[@]}
+    do
+        echo "${INDENT}${fn}.cpp ..."
+        $MPI_COMPILER -c $TEST_DEPR_DIR/$fn.cpp -o ${TEST_OBJ_PREF}${fn}.o $TEST_DEPR_COMP_FLAGS $GLOBAL_COMP_FLAGS $WARNING_FLAGS
+    done
+
+    echo ""
 fi
 
 
@@ -453,7 +548,8 @@ echo ""
 
 echo "compiling CPU/OMP files..."
 
-for fn in ${OMP_FILES[@]}; do
+for fn in ${OMP_FILES[@]}
+do
     echo "${INDENT}${fn}.cpp ..."
     $CPU_FILES_COMPILER -c $OMP_DIR/$fn.cpp -o ${QUEST_OBJ_PREF}${fn}.o $CPU_FILES_FLAGS $BACKEND_COMP_FLAGS $GLOBAL_COMP_FLAGS $WARNING_FLAGS
 done
@@ -466,7 +562,8 @@ echo ""
 
 echo "compiling GPU files..."
 
-for fn in ${GPU_FILES[@]}; do
+for fn in ${GPU_FILES[@]}
+do
     echo "${INDENT}${fn}.cpp ..."
     $GPU_FILES_COMPILER -c $GPU_DIR/$fn.cpp -o ${QUEST_OBJ_PREF}${fn}.o $GPU_FILES_FLAGS $BACKEND_COMP_FLAGS $GLOBAL_COMP_FLAGS $GPU_WARNING_FLAGS
 done
@@ -479,7 +576,8 @@ echo ""
 
 echo "compiling communication/MPI files..."
 
-for fn in ${MPI_FILES[@]}; do
+for fn in ${MPI_FILES[@]}
+do
     echo "${INDENT}${fn}.cpp ..."
     $MPI_FILES_COMPILER -c $MPI_DIR/$fn.cpp -o ${QUEST_OBJ_PREF}${fn}.o $MPI_FILES_FLAGS $BACKEND_COMP_FLAGS $GLOBAL_COMP_FLAGS $WARNING_FLAGS
 done
@@ -500,13 +598,26 @@ OBJECTS+=" $(printf " ${QUEST_OBJ_PREF}%s.o" "${GPU_FILES[@]}")"
 OBJECTS+=" $(printf " ${QUEST_OBJ_PREF}%s.o" "${OMP_FILES[@]}")"
 OBJECTS+=" $(printf " ${QUEST_OBJ_PREF}%s.o" "${MPI_FILES[@]}")"
 
-if (( $COMPILE_TESTS == 1 )); then
-    OBJECTS+=" $(printf " ${QUEST_OBJ_PREF}%s.o" "${TEST_FILES[@]}")"
-    OBJECTS+=" $(printf " ${QUEST_OBJ_PREF}%s.o" "${TEST_MPI_FILES[@]}")"
-    EXEC_FN=$TEST_EXEC_FILE
-else
+if (( $COMPILE_TESTS == 0 ))
+then
     OBJECTS+=" $(printf " ${USER_OBJ_PREF}%s.o" "${USER_FILES[@]}")"
+elif (( $COMPILE_TESTS == 1 ))
+then
+    OBJECTS+=" $(printf " ${TEST_OBJ_PREF}%s.o" "${TEST_MAIN_FILES[@]}")"
+    OBJECTS+=" $(printf " ${TEST_OBJ_PREF}%s.o" "${TEST_UTIL_FILES[@]}")"
+    OBJECTS+=" $(printf " ${TEST_OBJ_PREF}%s.o" "${TEST_UNIT_FILES[@]}")"
+elif (( $COMPILE_TESTS == 2 ))
+then
+    OBJECTS+=" $(printf " ${TEST_OBJ_PREF}%s.o" "${TEST_DEPR_FILES[@]}")"
+    OBJECTS+=" $(printf " ${TEST_OBJ_PREF}%s.o" "${TEST_DEPR_MPI_FILES[@]}")"
+fi
+
+# decide executable name
+if (( $COMPILE_TESTS == 0 ))
+then
     EXEC_FN=$USER_EXEC_FILE
+else
+    EXEC_FN=$TEST_EXEC_FILE
 fi
 
 # link all objects
