@@ -15,13 +15,13 @@
 FLOAT_PRECISION=2
 
 # deployments to compile (0, 1)
-COMPILE_MPI=1        # distribution
-COMPILE_OPENMP=1     # multithreading
+COMPILE_MPI=0        # distribution
+COMPILE_OPENMP=0     # multithreading
 COMPILE_CUDA=0       # GPU acceleration
 COMPILE_CUQUANTUM=0  # GPU + cuQuantum
 
-GPU_CC=90
 # GPU compute capability
+GPU_CC=90
 
 # backend compilers
 TESTS_COMPILER=g++
