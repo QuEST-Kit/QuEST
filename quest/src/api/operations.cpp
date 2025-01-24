@@ -39,8 +39,9 @@ void validateAndApplyAnyCtrlAnyTargUnitaryMatrix(Qureg qureg, int* ctrls, int* s
     validate_controlsAndTargets(qureg, ctrls, numCtrls, targs, numTargs, caller);
     validate_controlStates(states, numCtrls, caller);
     validate_matrixDimMatchesTargets(matr, numTargs, caller); // also checks fields and is-synced
-    validate_mixedAmpsFitInNode(qureg, numTargs, caller);
     validate_matrixIsUnitary(matr, caller); // harmlessly rechecks fields and is-synced
+    if (util_isDenseMatrixType<T>())
+        validate_mixedAmpsFitInNode(qureg, numTargs, caller);
 
     auto ctrlVec  = util_getVector(ctrls,  numCtrls);
     auto stateVec = util_getVector(states, numCtrls);
