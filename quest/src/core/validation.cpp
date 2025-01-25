@@ -192,7 +192,7 @@ namespace report {
      */
 
     string INVALID_QUREG_FIELDS = 
-        "Invalid Qureg; invalid or incompatible fields isDensityMatrix=${DENS_MATR}, numQubits=${NUM_QUBITS}, numAmps=${NUM_AMPS}. It is likely this Qureg was not initialised with createQureg().";
+        "Received an invalid Qureg, which had invalid or incompatible fields isDensityMatrix=${DENS_MATR}, numQubits=${NUM_QUBITS}, numAmps=${NUM_AMPS}. It is likely this Qureg was not initialised with createQureg().";
 
     string QUREG_NOT_DENSITY_MATRIX =
         "Expected a density matrix Qureg but received a statevector.";
@@ -665,7 +665,7 @@ namespace report {
         "THe given PauliStrSum is not Hermitian.";
 
     string PAULI_STR_SUM_EXCEEDS_QUREG_NUM_QUBITS =
-        "The given PauliStrSum includes non-identity upon a qubit of index ${MAX_IND} and so is only compatible with Quregs of at least ${NUM_PSS_QUBITS} qubits. It cannot act upon the given ${NUM_QUREG_QUBITS}-qubit Qureg.";
+        "The given PauliStrSum includes non-identity upon a qubit of index ${MAX_IND} and so is only compatible with Quregs of at least ${NUM_PSS_QUBITS} qubits. It cannot act upon, nor initialise, the given ${NUM_QUREG_QUBITS}-qubit Qureg.";
 
 
     /*
@@ -787,6 +787,13 @@ namespace report {
         "Cannot perform this ${NUM_TARGS}-target operation upon a ${NUM_QUREG_QUBITS}-qubit density-matrix distributed between ${NUM_NODES} nodes, since each node's communication buffer (with capacity for ${NUM_QUREG_AMPS_PER_NODE} amps) cannot simultaneously store the ${NUM_TARG_AMPS} mixed remote amplitudes.";
 
 
+    string INVALID_TROTTER_ORDER =
+        "Invalid Trotter order (${ORDER}). The order parameter must be positive and even, or unity.";
+
+    string INVALID_TROTTER_REPS =
+        "Invalid number of Trotter repetitions (${REPS}). The number of repetitions must be positive.";
+
+
     /*
      * CHANNEL PARAMETERS 
      */
@@ -881,6 +888,10 @@ namespace report {
 
     string PRODUCTED_STATEVEC_DISTRIB_BUT_DENSMATR_LOCAL =
         "The given statevector Qureg was distributed while the larger density matrix Qureg was not. This is an illegal (and nonsensical) configuration. Consider distributing the density matrix.";
+
+    
+    string QUREG_IS_INCOMPATIBLE_WITH_WORKSPACE =
+        "The primary Qureg is incompatible with the given workspace Qureg. The Quregs must have the same dimensions and be identically distributed and GPU-accelerated.";
 
 
     string CALC_FIDELITY_OF_DENSITY_MATRICES_NOT_YET_SUPPORTED =
@@ -3368,6 +3379,13 @@ void validate_mixedAmpsFitInNode(Qureg qureg, int numTargets, const char* caller
     assertThat(qureg.numAmpsPerNode >= numTargAmps, msg, vars, caller);
 }
 
+void validate_trotterParams(Qureg qureg, int order, int reps, const char* caller) {
+
+    bool isEven = (order % 2) == 0;
+    assertThat(order > 0 && (isEven || order==1), report::INVALID_TROTTER_ORDER, {{"${ORDER}", order}}, caller);
+    assertThat(reps > 0, report::INVALID_TROTTER_REPS, {{"${REPS}", reps}}, caller);
+}
+
 
 
 /*
@@ -3454,6 +3472,16 @@ void validate_oneQubitPauliChannelProbs(qreal pX, qreal pY, qreal pZ, const char
 /*
  * QUREG COMBINATION
  */
+
+void validate_quregCanBeWorkspace(Qureg qureg, Qureg workspace, const char* caller) {
+
+    assertThat(
+        (qureg.numQubits        == workspace.numQubits       ) &&
+        (qureg.isDensityMatrix  == workspace.isDensityMatrix ) &&
+        (qureg.isDistributed    == workspace.isDistributed   ) &&
+        (qureg.isGpuAccelerated == workspace.isGpuAccelerated),
+        report::QUREG_IS_INCOMPATIBLE_WITH_WORKSPACE, caller);
+}
 
 void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller) {
 

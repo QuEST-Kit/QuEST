@@ -25,6 +25,13 @@ qcomp cpu_statevec_getAmp_sub(Qureg qureg, qindex ind);
 
 
 /*
+ * SETTERS
+ */
+
+void cpu_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum);
+
+
+/*
  * COMMUNICATION BUFFER PACKING
  */
 

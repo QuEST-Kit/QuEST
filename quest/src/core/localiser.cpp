@@ -451,6 +451,7 @@ void localiser_fullstatediagmatr_getElems(qcomp* outElems, FullStateDiagMatr mat
 }
 
 
+
 /*
  * SETTERS
  */
@@ -508,43 +509,11 @@ void localiser_densmatr_setAmps(qcomp** inAmps, Qureg qureg, qindex startRow, qi
 }
 
 
-void localiser_statevec_initArbitraryPureState(Qureg qureg, qcomp* amps) {
-    assert_localiserGivenStateVec(qureg);
-
-    // always embarrassingly parallel, and merely invokes local copying
-    qindex startInd = 0;
-    localiser_statevec_setAmps(amps, qureg, startInd, qureg.numAmps);
-}
-
-
-void localiser_densmatr_initArbitraryPureState(Qureg qureg, qcomp* amps) {
+void localiser_densmatr_setAmpsToPauliStrSum(Qureg qureg, PauliStrSum sum) {
     assert_localiserGivenDensMatr(qureg);
 
-    // we cannot simply call a copy routine like the statevector case,
-    // because amps will not be contiguously located in the density matrix.
-    // Instead, we spoof a local CPU-only statevector, and bind amps to it
-    int isDensMatr = 0;
-    int useDistrib = 0;
-    int useGpuAccel = 0;
-    int useMultithread = 0;
-    Qureg spoof = qureg_populateNonHeapFields(qureg.numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread);
-
-    spoof.cpuAmps = amps;
-    localiser_densmatr_initPureState(qureg, spoof);
-}
-
-
-void localiser_densmatr_initArbitraryMixedState(Qureg qureg, qcomp** amps) {
-
-    // TODO:
-    // the current invoked implementation of setAmps() is extraordinarily
-    // inefficient in the full-Qureg regime. Fix setAmps(), then update this!
-
-    qindex startRow = 0;
-    qindex startCol = 0;
-    qindex numRows = powerOf2(qureg.numQubits);
-    qindex numCols = numRows;
-    localiser_densmatr_setAmps(amps, qureg, startRow, startCol, numRows, numCols);
+    // always embarrassingly parallel
+    accel_densmatr_setAmpsToPauliStrSum_sub(qureg, sum);
 }
 
 
@@ -584,6 +553,46 @@ void localiser_fullstatediagmatr_setElems(FullStateDiagMatr matr, qindex startIn
 
 // defined later in this file, but repurposed here for density matrix initialisation
 void mixDensityMatrixWithStatevector(qreal outProb, Qureg out, qreal inProb, Qureg in);
+
+
+void localiser_statevec_initArbitraryPureState(Qureg qureg, qcomp* amps) {
+    assert_localiserGivenStateVec(qureg);
+
+    // always embarrassingly parallel, and merely invokes local copying
+    qindex startInd = 0;
+    localiser_statevec_setAmps(amps, qureg, startInd, qureg.numAmps);
+}
+
+
+void localiser_densmatr_initArbitraryPureState(Qureg qureg, qcomp* amps) {
+    assert_localiserGivenDensMatr(qureg);
+
+    // we cannot simply call a copy routine like the statevector case,
+    // because amps will not be contiguously located in the density matrix.
+    // Instead, we spoof a local CPU-only statevector, and bind amps to it
+    int isDensMatr = 0;
+    int useDistrib = 0;
+    int useGpuAccel = 0;
+    int useMultithread = 0;
+    Qureg spoof = qureg_populateNonHeapFields(qureg.numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread);
+
+    spoof.cpuAmps = amps;
+    localiser_densmatr_initPureState(qureg, spoof);
+}
+
+
+void localiser_densmatr_initArbitraryMixedState(Qureg qureg, qcomp** amps) {
+
+    // TODO:
+    // the current invoked implementation of setAmps() is extraordinarily
+    // inefficient in the full-Qureg regime. Fix setAmps(), then update this!
+
+    qindex startRow = 0;
+    qindex startCol = 0;
+    qindex numRows = powerOf2(qureg.numQubits);
+    qindex numCols = numRows;
+    localiser_densmatr_setAmps(amps, qureg, startRow, startCol, numRows, numCols);
+}
 
 
 void localiser_statevec_initUniformState(Qureg qureg, qcomp amp) {

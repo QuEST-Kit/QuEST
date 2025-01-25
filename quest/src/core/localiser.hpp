@@ -42,6 +42,8 @@ void localiser_densmatr_setAmps(qcomp** inAmps, Qureg qureg, qindex startRow, qi
 
 void localiser_fullstatediagmatr_setElems(FullStateDiagMatr matr, qindex startInd, qcomp* in, qindex numElems);
 
+void localiser_densmatr_setAmpsToPauliStrSum(Qureg qureg, PauliStrSum sum);
+
 
 /*
  * STATE INITIALISATION

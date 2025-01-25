@@ -128,6 +128,8 @@ void error_calcFidStateVecDistribWhileDensMatrLocal();
  * ACCELERATOR ERRORS
  */
 
+void assert_highPauliStrSumMaskIsZero(PauliStrSum sum);
+
 void assert_numQubitsMatchesQubitStatesAndTemplateParam(int numQubits, int numQubitStates, int templateParam, string label="qubit");
 
 void assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(int numCtrls, int numCtrlStates, int templateParam);

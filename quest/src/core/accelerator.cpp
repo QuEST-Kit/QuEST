@@ -217,6 +217,14 @@ void accel_statevec_setAmps_sub(qcomp* inAmps, Qureg qureg, qindex localStartInd
 }
 
 
+void accel_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_setAmpsToPauliStrSum_sub(qureg, sum):
+        cpu_densmatr_setAmpsToPauliStrSum_sub(qureg, sum);
+}
+
+
 
 /*
  * COMMUNICATION BUFFER PACKING

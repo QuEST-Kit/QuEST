@@ -370,6 +370,8 @@ void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* c
 
 void validate_mixedAmpsFitInNode(Qureg qureg, int numTargets, const char* caller);
 
+void validate_trotterParams(Qureg qureg, int order, int reps, const char* caller);
+
 
 
 /*
@@ -393,6 +395,8 @@ void validate_oneQubitPauliChannelProbs(qreal pX, qreal pY, qreal pZ, const char
 /*
  * QUREG COMBINATION
  */
+
+void validate_quregCanBeWorkspace(Qureg quregA, Qureg quregB, const char* caller);
 
 void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller);
 

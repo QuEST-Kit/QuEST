@@ -92,6 +92,26 @@ qcomp gpu_statevec_getAmp_sub(Qureg qureg, qindex ind) {
 
 
 /*
+ * SETTERS
+ */
+
+
+void gpu_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
+
+    assert_highPauliStrSumMaskIsZero(sum);
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    thrust_densmatr_setAmpsToPauliStrSum_sub(qureg, sum);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+
+/*
  * COMMUNICATION BUFFER PACKING
  */
 

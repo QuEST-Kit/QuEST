@@ -61,6 +61,36 @@ qcomp cpu_statevec_getAmp_sub(Qureg qureg, qindex ind) {
 
 
 /*
+ * SETTERS
+ */
+
+
+void cpu_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
+
+    // our call to fast_getLowerPauliStrSumElem() assumes sum.highPaulis = 0
+    assert_highPauliStrSumMaskIsZero(sum);
+
+    qindex numIts = qureg.numAmpsPerNode;
+    qindex dim = powerOf2(qureg.numQubits);
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = global flat index corresponding to n
+        qindex i = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
+
+        // r, c = global row and column
+        qindex r = fast_getGlobalRowFromFlatIndex(i, dim);
+        qindex c = fast_getGlobalColFromFlatIndex(i, dim);
+
+        // contains non-unrolled loop, alas
+        qureg.cpuAmps[n] = fast_getLowerPauliStrSumElem(sum, r, c);
+    }
+}
+
+
+
+/*
  * COMMUNICATION BUFFER PACKING
  */
 
