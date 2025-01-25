@@ -75,9 +75,12 @@ INLINE qindex fast_getLocalFlatIndex(qindex row, qindex localCol, qindex numAmps
 
 // 'qcomp' cannot be used inside CUDA kernels/thrust, so below functions are 
 // parsed as cu_qcomp in the GPU backend, which will prior define USE_CU_QCOMP
+#warning "ABOUT TO PARSE fast_getLowerPauliStrElem()..."
 #ifdef USE_CU_QCOMP
+    #warning "using cu_qcomp"
     #define QCOMP_ALIAS cu_qcomp
 #else
+    #warning "using qcomp"
     #define QCOMP_ALIAS qcomp
 #endif
 

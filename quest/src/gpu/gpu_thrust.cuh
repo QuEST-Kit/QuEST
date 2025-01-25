@@ -305,7 +305,7 @@ struct functor_setDensMatrPauliStrSumElem : public thrust::unary_function<qindex
         qindex c = fast_getGlobalColFromFlatIndex(i, dim);
         amps[n] = fast_getLowerPauliStrSumElem(coeffs, strings, numTerms, r, c);
     }
-}
+};
 
 
 struct functor_mixAmps : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qcomp> {
