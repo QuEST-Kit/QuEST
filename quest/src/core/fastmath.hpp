@@ -17,6 +17,25 @@
 
 
 /*
+ * TYPE ALIASING
+ */
+
+
+// 'qcomp' cannot be used inside CUDA kernels/thrust, so must not appear in
+// these inlined definitions. Instead, we create an alias which will resolve
+// to 'qcomp' (provided by types.h) when parsed by the CPU backend, and 'cu_qcomp'
+// (not explicitly resolved in this header) when parsed by the GPU backend, which
+// will prior define USE_CU_QCOMP. Hacky, but avoids significant code duplication!
+
+#ifdef USE_CU_QCOMP
+    #define QCOMP_ALIAS cu_qcomp
+#else
+    #define QCOMP_ALIAS qcomp
+#endif
+
+
+
+/*
  * ARITHMETIC
  */
 
@@ -73,18 +92,6 @@ INLINE qindex fast_getLocalFlatIndex(qindex row, qindex localCol, qindex numAmps
  */
 
 
-// 'qcomp' cannot be used inside CUDA kernels/thrust, so below functions are 
-// parsed as cu_qcomp in the GPU backend, which will prior define USE_CU_QCOMP
-#warning "ABOUT TO PARSE fast_getLowerPauliStrElem()..."
-#ifdef USE_CU_QCOMP
-    #warning "using cu_qcomp"
-    #define QCOMP_ALIAS cu_qcomp
-#else
-    #warning "using qcomp"
-    #define QCOMP_ALIAS qcomp
-#endif
-
-
 INLINE QCOMP_ALIAS fast_getLowerPauliStrElem(PauliStr str, qindex row, qindex col) {
 
     // this function is deliberately NOT named getPauliStrElem():
@@ -94,7 +101,7 @@ INLINE QCOMP_ALIAS fast_getLowerPauliStrElem(PauliStr str, qindex row, qindex co
     // we actually do not ever need to consult the HIGHER mas. Ergo, the
     // precondition is that the str.highPaulis == 0
 
-    // regrettably duplicated from paulis.cpp, inaccessible here
+    // regrettably duplicated from paulis.cpp which is inaccessible here
     constexpr int MAX_NUM_PAULIS_PER_MASK = sizeof(PAULI_MASK_TYPE) * 8 / 2;
 
     // +- imaginary unit literal (agnostic to QCOMP_ALIAS type)
@@ -143,9 +150,8 @@ INLINE QCOMP_ALIAS fast_getLowerPauliStrSumElem(QCOMP_ALIAS* coeffs, PauliStr* s
 }
 
 
-// avoid exposing temporary macro
+
+// avoid exposing alias macro outside header
 #undef QCOMP_ALIAS
-
-
 
 #endif // FASTMATH_HPP
