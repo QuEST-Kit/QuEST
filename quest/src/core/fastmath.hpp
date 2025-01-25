@@ -94,10 +94,14 @@ INLINE QCOMP_ALIAS fast_getLowerPauliStrElem(PauliStr str, qindex row, qindex co
     // regrettably duplicated from paulis.cpp, inaccessible here
     constexpr int MAX_NUM_PAULIS_PER_MASK = sizeof(PAULI_MASK_TYPE) * 8 / 2;
 
+    // +- imaginary unit literal (agnostic to QCOMP_ALIAS type)
+    QCOMP_ALIAS pI = {0, 1};
+    QCOMP_ALIAS nI = {0, -1};
+
     static const QCOMP_ALIAS matrices[][2][2] = {
         {{1,0},{0,1}},
         {{0,1},{1,0}},
-        {{0,-1_i},{1_i,0}},
+        {{0,nI},{pI,0}},
         {{1,0},{0,-1}}};
 
     QCOMP_ALIAS elem = 1;
