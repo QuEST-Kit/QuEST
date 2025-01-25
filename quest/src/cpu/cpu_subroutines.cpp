@@ -83,8 +83,8 @@ void cpu_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
         qindex r = fast_getGlobalRowFromFlatIndex(i, dim);
         qindex c = fast_getGlobalColFromFlatIndex(i, dim);
 
-        // contains non-unrolled loop, alas
-        qureg.cpuAmps[n] = fast_getLowerPauliStrSumElem(sum, r, c);
+        // contains non-unrolled loop (and args unpacked due to CUDA qcomp incompatibility, grr)
+        qureg.cpuAmps[n] = fast_getLowerPauliStrSumElem(sum.coeffs, sum.strings, sum.numTerms, r, c);
     }
 }
 

@@ -73,7 +73,16 @@ INLINE qindex fast_getLocalFlatIndex(qindex row, qindex localCol, qindex numAmps
  */
 
 
-INLINE qcomp fast_getLowerPauliStrElem(PauliStr str, qindex row, qindex col) {
+// 'qcomp' cannot be used inside CUDA kernels/thrust, so below functions are 
+// parsed as cu_qcomp in the GPU backend, which will prior define USE_CU_QCOMP
+#ifdef USE_CU_QCOMP
+    #define QCOMP_ALIAS cu_qcomp
+#else
+    #define QCOMP_ALIAS qcomp
+#endif
+
+
+INLINE QCOMP_ALIAS fast_getLowerPauliStrElem(PauliStr str, qindex row, qindex col) {
 
     // this function is deliberately NOT named getPauliStrElem():
     // the size of PauliStr's LOWER mask (of the two) is 64 bits = 32 Paulis.
@@ -85,13 +94,13 @@ INLINE qcomp fast_getLowerPauliStrElem(PauliStr str, qindex row, qindex col) {
     // regrettably duplicated from paulis.cpp, inaccessible here
     constexpr int MAX_NUM_PAULIS_PER_MASK = sizeof(PAULI_MASK_TYPE) * 8 / 2;
 
-    static const qcomp matrices[][2][2] = {
+    static const QCOMP_ALIAS matrices[][2][2] = {
         {{1,0},{0,1}},
         {{0,1},{1,0}},
         {{0,-1_i},{1_i,0}},
         {{1,0},{0,-1}}};
 
-    qcomp elem = 1;
+    QCOMP_ALIAS elem = 1;
 
     // could be compile-time unrolled into 32 iterations
     for (int t=0; t<MAX_NUM_PAULIS_PER_MASK; t++) {
@@ -111,16 +120,24 @@ INLINE qcomp fast_getLowerPauliStrElem(PauliStr str, qindex row, qindex col) {
 }
 
 
-INLINE qcomp fast_getLowerPauliStrSumElem(PauliStrSum sum, qindex row, qindex col) {
+INLINE QCOMP_ALIAS fast_getLowerPauliStrSumElem(QCOMP_ALIAS* coeffs, PauliStr* strings, qindex numTerms, qindex row, qindex col) {
 
-    qcomp elem = 0;
+    // this function accepts unpacked PauliStrSum fields since a PauliStrSum cannot 
+    // be directly processed in CUDA kernels/thrust due to its 'qcomp' field.
+    // it also assumes str.highPaulis==0 for all str in strings, as per above func.
+
+    QCOMP_ALIAS elem = 0;
 
     // this loop is expected exponentially smaller than caller's loop
-    for (qindex n=0; n<sum.numTerms; n++)
-        elem += sum.coeffs[n] * fast_getLowerPauliStrElem(sum.strings[n], row, col);
+    for (qindex n=0; n<numTerms; n++)
+        elem += coeffs[n] * fast_getLowerPauliStrElem(strings[n], row, col);
 
     return elem;
 }
+
+
+// avoid exposing temporary macro
+#undef QCOMP_ALIAS
 
 
 

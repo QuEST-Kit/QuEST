@@ -27,9 +27,13 @@
 #include "quest/src/gpu/gpu_types.cuh"
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
-#include "quest/src/core/fastmath.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/randomiser.hpp"
+
+// kernels/thrust must use cu_qcomp, never qcomp
+#define USE_CU_QCOMP
+#include "quest/src/core/fastmath.hpp"
+#undef USE_CU_QCOMP
 
 #include <thrust/random.h>
 #include <thrust/complex.h>
@@ -278,20 +282,28 @@ struct functor_getExpecDensMatrDiagMatrTerm : public thrust::unary_function<qind
 
 struct functor_setDensMatrPauliStrSumElem : public thrust::unary_function<qindex,cu_qcomp> {
 
-    cu_qcomp* amps;
     int rank;
-    qindex numAmpsPerCol;
-    qindex logNumAmpsPerNode;
-    PauliStrSum sum; // fields are device pointers
+    qindex dim;
+    qindex suffixLen;
+    qindex numTerms;
+
+    cu_qcomp* amps;
+    cu_qcomp* coeffs;
+    PauliStr* strings;
     
-    functor_setDensMatrPauliStrSumElem(cu_qcomp* _amps, int _rank, qindex _numAmpsPerCol, qindex _logNumAmpsPerNode, PauliStrSum _sum) :
-        amps(_amps), rank(_rank), numAmpsPerCol(_numAmpsPerCol), logNumAmpsPerNode(_logNumAmpsPerNode), sum(_sum) {}
+    functor_setDensMatrPauliStrSumElem(
+        int rank, qindex dim, qindex suffixLen, qindex numTerms, 
+        cu_qcomp* amps, cu_qcomp* coeffs, PauliStr* strings
+    ) :
+        rank(rank), dim(dim), suffixLen(suffixLen), numTerms(numTerms), 
+        amps(amps), coeffs(coeffs), strings(strings)
+    {}
 
     __device__ cu_qcomp operator()(qindex n) {
-        qindex i = concatenateBits(rank, n, logNumAmpsPerNode);
-        qindex r = fast_getGlobalRowFromFlatIndex(i, numAmpsPerCol);
-        qindex c = fast_getGlobalColFromFlatIndex(i, numAmpsPerCol);
-        amps[n] = fast_getLowerPauliStrSumElem(sum, r, c);
+        qindex i = concatenateBits(rank, n, suffixLen);
+        qindex r = fast_getGlobalRowFromFlatIndex(i, dim);
+        qindex c = fast_getGlobalColFromFlatIndex(i, dim);
+        amps[n] = fast_getLowerPauliStrSumElem(coeffs, strings, numTerms, r, c);
     }
 }
 
@@ -599,14 +611,13 @@ void gpu_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
     thrust::device_vector<qcomp> devCoeffs(sum.coeffs, sum.coeffs + sum.numTerms);
     thrust::device_vector<PauliStr> devStrings(sum.strings, sum.strings + sum.numTerms);
     
-    // bind GPU memory pointers to (a copy of) sum (in case sum is changed to a reference)
-    PauliStrSum devSum = sum;
-    devSum.coeffs = thrust::raw_pointer_cast(devCoeffs.size());
-    devSum.strings = thrust::raw_pointer_cast(devStrings.size());
+    // obtain raw pointers which can be passed to fastmath.hpp routines
+    cu_qcomp* devCoeffsPtr = thrust::raw_pointer_cast(devCoeffs.size());
+    PauliStr* devStringsPtr = thrust::raw_pointer_cast(devStrings.size());
 
     auto functor = functor_setDensMatrPauliStrSumElem(
-        qureg.gpuAmps, qureg.rank, powerOf2(qureg.numQubits), 
-        qureg.logNumAmpsPerNode, devSum);
+        qureg.rank, powerOf2(qureg.numQubits), qureg.logNumAmpsPerNode,
+        sum.numTerms, toCuQcomps(qureg.gpuAmps), devCoeffsPtr, devStringsPtr);
 
     auto indIter = thrust::make_counting_iterator(0);
     auto endIter = indIter + qureg.numAmpsPerNode;
