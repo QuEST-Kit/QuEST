@@ -691,9 +691,6 @@ extern "C" {
 #endif
 
     void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, PauliStrSum in);
-
-    FullStateDiagMatr createFullStateDiagMatrFromPauliStrSumFile(char* fn);
-
     
     void setDiagMatrFromMultiVarFunc(DiagMatr out, qcomp (*func)(qindex*), int* numQubitsPerVar, int numVars, int areSigned);
 

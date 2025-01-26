@@ -263,9 +263,9 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
  * Pauli string sums
  */
 
-void multiplyPauliStrSum(Qureg qureg, PauliStrSum str);
+void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
 
-void applyTrotterizedTimeEvol(Qureg qureg, PauliStrSum hamiltonian, qreal time, int order, int reps);
+void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
 
 
 

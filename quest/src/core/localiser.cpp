@@ -451,6 +451,7 @@ void localiser_fullstatediagmatr_getElems(qcomp* outElems, FullStateDiagMatr mat
 }
 
 
+
 /*
  * SETTERS
  */
@@ -508,6 +509,60 @@ void localiser_densmatr_setAmps(qcomp** inAmps, Qureg qureg, qindex startRow, qi
 }
 
 
+void localiser_densmatr_setAmpsToPauliStrSum(Qureg qureg, PauliStrSum sum) {
+    assert_localiserGivenDensMatr(qureg);
+
+    // always embarrassingly parallel
+    accel_densmatr_setAmpsToPauliStrSum_sub(qureg, sum);
+}
+
+
+void localiser_fullstatediagmatr_setElems(FullStateDiagMatr matr, qindex startInd, qcomp* in, qindex numElems) {
+
+    // modification of a FullStateDiagMatr is identical to that of a 
+    // statevector Qureg, so we spoof an identically-deployed Qureg
+    int isDensMatr = 0;
+    int useMultithread = 0; // not used by setAmps()
+    Qureg spoof = qureg_populateNonHeapFields(matr.numQubits, isDensMatr, matr.isDistributed, matr.isGpuAccelerated, useMultithread);
+
+    // we bind matr's memory to the spoofed Qureg. Note that spoof's
+    // communication buffers remain nullptr which may be inconsistent
+    // with its distribution status, which validation would detect
+    spoof.cpuAmps = matr.cpuElems;
+    spoof.gpuAmps = matr.gpuElems; // may be null
+
+    // invoke the Qureg setter, which will modify matr's memory
+    localiser_statevec_setAmps(in, spoof, startInd, numElems);
+
+    // note that FullStateDiagMatr needs its CPU and GPU memories
+    // to always be consistent with one another (like all matrix
+    // types), since this is a precondition assumed by accelerator.cpp.
+    // So if the above function modified GPU mem, we also trigger CPU.
+    if (spoof.isGpuAccelerated) {
+        spoof.isGpuAccelerated = 0;
+        localiser_statevec_setAmps(in, spoof, startInd, numElems);
+    }
+}
+
+
+void localiser_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStrSum in) {
+
+    // always embarrassingly parallel. Note that accelerator will 
+    // safely keep CPU and GPU memory of FullStateDiagMatr consistent
+    accel_fullstatediagmatr_setElemsToPauliStrSum(out, in);
+}
+
+
+
+/*
+ * STATE INITIALISATION
+ */
+
+
+// defined later in this file, but repurposed here for density matrix initialisation
+void mixDensityMatrixWithStatevector(qreal outProb, Qureg out, qreal inProb, Qureg in);
+
+
 void localiser_statevec_initArbitraryPureState(Qureg qureg, qcomp* amps) {
     assert_localiserGivenStateVec(qureg);
 
@@ -546,44 +601,6 @@ void localiser_densmatr_initArbitraryMixedState(Qureg qureg, qcomp** amps) {
     qindex numCols = numRows;
     localiser_densmatr_setAmps(amps, qureg, startRow, startCol, numRows, numCols);
 }
-
-
-void localiser_fullstatediagmatr_setElems(FullStateDiagMatr matr, qindex startInd, qcomp* in, qindex numElems) {
-
-    // modification of a FullStateDiagMatr is identical to that of a 
-    // statevector Qureg, so we spoof an identically-deployed Qureg
-    int isDensMatr = 0;
-    int useMultithread = 0; // not used by setAmps()
-    Qureg spoof = qureg_populateNonHeapFields(matr.numQubits, isDensMatr, matr.isDistributed, matr.isGpuAccelerated, useMultithread);
-
-    // we bind matr's memory to the spoofed Qureg. Note that spoof's
-    // communication buffers remain nullptr which may be inconsistent
-    // with its distribution status, which validation would detect
-    spoof.cpuAmps = matr.cpuElems;
-    spoof.gpuAmps = matr.gpuElems; // may be null
-
-    // invoke the Qureg setter, which will modify matr's memory
-    localiser_statevec_setAmps(in, spoof, startInd, numElems);
-
-    // note that FullStateDiagMatr needs its CPU and GPU memories
-    // to always be consistent with one another (like all matrix
-    // types), since this is a precondition assumed by accelerator.cpp.
-    // So if the above function modified GPU mem, we also trigger CPU.
-    if (spoof.isGpuAccelerated) {
-        spoof.isGpuAccelerated = 0;
-        localiser_statevec_setAmps(in, spoof, startInd, numElems);
-    }
-}
-
-
-
-/*
- * STATE INITIALISATION
- */
-
-
-// defined later in this file, but repurposed here for density matrix initialisation
-void mixDensityMatrixWithStatevector(qreal outProb, Qureg out, qreal inProb, Qureg in);
 
 
 void localiser_statevec_initUniformState(Qureg qureg, qcomp amp) {

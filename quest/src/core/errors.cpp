@@ -289,6 +289,18 @@ void error_calcFidStateVecDistribWhileDensMatrLocal() {
  * ACCELERATOR ERRORS
  */
 
+void assert_highPauliStrSumMaskIsZero(PauliStrSum sum) {
+
+    // this is safe to enumerate sum here, since the calling function 
+    // enumerates sum repeatedly (once for each amplitude, albeit in
+    // parallel). ergo at absolute worst, this check doubles runtime,
+    // with the slowdown exponentially vanishing with increasing #qubits
+
+    for (qindex n=0; n<sum.numTerms; n++)
+        if (sum.strings[n].highPaulis != 0)
+            raiseInternalError("A CPU or GPU subroutine received a PauliStrSum within which a PauliStr contained a non-identity Pauli in the 'highPaulis' mask, which is illegal for this function.");
+}
+
 void assert_numQubitsMatchesQubitStatesAndTemplateParam(int numQubits, int numQubitStates, int templateParam, string label) {
 
     if (numQubits != numQubitStates)

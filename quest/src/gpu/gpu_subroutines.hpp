@@ -23,6 +23,15 @@ qcomp gpu_statevec_getAmp_sub(Qureg qureg, qindex ind);
 
 
 /*
+ * SETTERS
+ */
+
+void gpu_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum);
+
+void gpu_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStrSum in);
+
+
+/*
  * COMMUNICATION BUFFER PACKING
  */
 

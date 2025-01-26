@@ -310,6 +310,21 @@ extern "C" FullStateDiagMatr createFullStateDiagMatr(int numQubits) {
 
 // type T can be CompMatr, DiagMatr or FullStateDiagMatr
 template <class T>
+void markMatrixAsSynced(T matr) {
+
+    // indicate that the matrix is now permanently GPU synchronised, even
+    // if we are not in GPU-accelerated mode (in which case it's never consulted)
+    *(matr.wasGpuSynced) = 1;
+
+    // indicate that we do not know the revised matrix properties;
+    // we defer establishing that until validation needs to check them
+    *(matr.isUnitary)   = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    *(matr.isHermitian) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+}
+
+
+// type T can be CompMatr, DiagMatr or FullStateDiagMatr
+template <class T>
 void validateAndSyncMatrix(T matr, const char* caller) {
     validate_matrixFields(matr, caller);
 
@@ -317,14 +332,7 @@ void validateAndSyncMatrix(T matr, const char* caller) {
     if (mem_isAllocated(util_getGpuMemPtr(matr)))
         gpu_copyCpuToGpu(matr);
 
-    // indicate that we do not know the revised matrix properties;
-    // we defer establishing that until validation needs to check them
-    *(matr.isUnitary)   = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
-    *(matr.isHermitian) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
-
-    // indicate that the matrix is now permanently GPU synchronised, even
-    // if we are not in GPU-accelerated mode (in which case it's never consulted)
-    *(matr.wasGpuSynced) = 1;
+    markMatrixAsSynced(matr);
 }
 
 
@@ -403,8 +411,14 @@ extern "C" void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qco
     validate_matrixFields(out, __func__);
     validate_fullStateDiagMatrNewElems(out, startInd, numElems, __func__);
 
-    // overwrites both the CPU and GPU memory (if it exists), maintaining consistency
+    // overwrites both the CPU and GPU memory (if it exists), maintaining consistency.
+    // note that cpu_copyArray() isn't called directly here like setDiagMatr() above
+    // because we must handle when 'out' is and isn't distributed
     localiser_fullstatediagmatr_setElems(out, startInd, in, numElems);
+
+    // even though we have not necessarily overwritten every element, we must mark
+    // the matrix as synced so that it can be subsequently used without error
+    markMatrixAsSynced(out);
 }
 
 
@@ -574,18 +588,27 @@ extern "C" {
  */
 
 
+extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum);
+
+
 extern "C" void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, PauliStrSum in) {
+    validate_matrixFields(out, __func__);
+    validate_pauliStrSumFields(in, __func__);
+    validate_pauliStrSumCanInitMatrix(out, in, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
-}
+    // ensure the produced FullStateDiagMatr would be valid
+    int numQubits = 1 + paulis_getIndOfLefmostNonIdentityPauli(in);
+    validate_newFullStateDiagMatrParams(numQubits, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
 
+    // permit 'in' to be non-Hermitian since it does not determine 'out' unitarity
 
-extern "C" FullStateDiagMatr createFullStateDiagMatrFromPauliStrSumFile(char* fn) {
+    // unlike other FullStateDiagMatr initialisers, we employ an accelerated
+    // backend since the input data 'in' is expectedly significantly smaller
+    // than the created data in 'out', making parallelisation worthwhile as
+    // the memory-movement costs of copying 'in' to a GPU are small
+    localiser_fullstatediagmatr_setElemsToPauliStrSum(out, in);
 
-    // TODO
-    error_functionNotImplemented(__func__);
-    return createFullStateDiagMatr(-1);
+    markMatrixAsSynced(out);
 }
 
 

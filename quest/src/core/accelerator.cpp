@@ -217,6 +217,27 @@ void accel_statevec_setAmps_sub(qcomp* inAmps, Qureg qureg, qindex localStartInd
 }
 
 
+void accel_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
+
+    (qureg.isGpuAccelerated)?
+        gpu_densmatr_setAmpsToPauliStrSum_sub(qureg, sum):
+        cpu_densmatr_setAmpsToPauliStrSum_sub(qureg, sum);
+}
+
+
+void accel_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStrSum in) {
+
+    // use GPU to populate FullStateDiagMatr if available
+    (out.isGpuAccelerated)?
+        gpu_fullstatediagmatr_setElemsToPauliStrSum(out, in):
+        cpu_fullstatediagmatr_setElemsToPauliStrSum(out, in);
+
+    // but thereafter copy to CPU, to keep GPU and CPU consistent
+    if (out.isGpuAccelerated)
+        gpu_copyGpuToCpu(out.gpuElems, out.cpuElems, out.numElemsPerNode);
+}
+
+
 
 /*
  * COMMUNICATION BUFFER PACKING

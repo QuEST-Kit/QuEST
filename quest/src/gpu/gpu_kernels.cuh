@@ -14,8 +14,12 @@
 #include "quest/include/types.h"
 
 #include "quest/src/core/bitwise.hpp"
-#include "quest/src/core/fastmath.hpp"
 #include "quest/src/gpu/gpu_types.cuh"
+
+// kernels/thrust must use cu_qcomp, never qcomp
+#define USE_CU_QCOMP
+#include "quest/src/core/fastmath.hpp"
+#undef USE_CU_QCOMP
 
 #if ! COMPILE_CUDA
     #error "A file being compiled somehow included gpu_kernels.hpp despite QuEST not being compiled in GPU-accelerated mode."

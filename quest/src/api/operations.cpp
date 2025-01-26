@@ -16,8 +16,6 @@
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/bitwise.hpp"
 
-#include "quest/src/core/errors.hpp" // only needed for not-implemented functions
-
 #include <vector>
 
 using std::vector;
@@ -67,13 +65,6 @@ void validateAndApplyAnyCtrlAnyTargUnitaryMatrix(Qureg qureg, int* ctrls, int* s
 
 // enable invocation by both C and C++ binaries
 extern "C" {
-
-
-
-// DEBUG
-#define _NOT_IMPLEMENTED_ERROR_DEF { error_functionNotImplemented(__func__); }
-
-
 
 
 /*
@@ -805,15 +796,80 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
  * Pauli string sums
  */
 
-void multiplyPauliStrSum(Qureg qureg, PauliStrSum str)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace) {
+    validate_quregFields(qureg, __func__);
+    validate_quregFields(workspace, __func__);
+    validate_quregCanBeWorkspace(qureg, workspace, __func__);
+    validate_pauliStrSumFields(sum, __func__);
+    validate_pauliStrSumTargets(sum, qureg, __func__);
 
-void applyTrotterizedTimeEvol(Qureg qureg, PauliStrSum hamiltonian, qreal time, int order, int reps) {
+    // clone qureg to workspace, set qureg to blank
+    localiser_statevec_setQuregToSuperposition(0, workspace, 1, qureg, 0, qureg);
+    localiser_statevec_initUniformState(qureg, 0);
 
-    // validate that PauliStrSum is Hermitian
+    // apply each term in-turn, mixing into output qureg, then undo using idempotency
+    for (qindex i=0; i<sum.numTerms; i++) {
+        localiser_statevec_anyCtrlPauliTensor(workspace, {}, {}, sum.strings[i]);
+        localiser_statevec_setQuregToSuperposition(1, qureg, sum.coeffs[i], workspace, 0, workspace);
+        localiser_statevec_anyCtrlPauliTensor(workspace, {}, {}, sum.strings[i]);
+    }
+
+    // workspace -> qureg, and qureg -> sum * qureg
+}
+
+void applyFirstOrderTrotter(Qureg qureg, PauliStrSum sum, qreal angle, bool reverse) {
+
+    // (internal, invoked by applyTrotterizedPauliStrSumGadget)
+
+    for (qindex i=0; i<sum.numTerms; i++) {
+        int j = reverse? sum.numTerms - i - 1 : i;
+        qreal arg = 2 * angle * real(sum.coeffs[j]);  // 2 undoes Gadget convention
+        applyPauliGadget(qureg, sum.strings[j], arg); // re-validates, grr
+    }
+}
+
+void applyHigherOrderTrotter(Qureg qureg, PauliStrSum sum, qreal angle, int order) {
+
+    // (internal, invoked by applyTrotterizedPauliStrSumGadget)
+
+    if (order == 1) {
+        applyFirstOrderTrotter(qureg, sum, angle, false);
     
-    // TODO
-    error_functionNotImplemented(__func__);
+    } else if (order == 2) {
+        applyFirstOrderTrotter(qureg, sum, angle/2, false);
+        applyFirstOrderTrotter(qureg, sum, angle/2, true);
+    
+    } else {
+        qreal p = 1. / (4 - pow(4, 1./(order-1)));
+        qreal a = p * angle;
+        qreal b = (1-4*p) * angle;
+
+        int lower = order - 2;
+        applyFirstOrderTrotter(qureg, sum, a, lower);
+        applyFirstOrderTrotter(qureg, sum, a, lower);
+        applyFirstOrderTrotter(qureg, sum, b, lower);
+        applyFirstOrderTrotter(qureg, sum, a, lower);
+        applyFirstOrderTrotter(qureg, sum, a, lower);
+    }
+}
+
+void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps) {
+    validate_quregFields(qureg, __func__);
+    validate_pauliStrSumFields(sum, __func__);
+    validate_pauliStrSumTargets(sum, qureg, __func__);
+    validate_pauliStrSumIsHermitian(sum, __func__);
+    validate_trotterParams(qureg, order, reps, __func__);
+
+    // TODO:
+    // the accuracy of Trotterisation is greatly improved by randomisation
+    // or (even sub-optimal) grouping into commuting terms. Should we 
+    // implement these here or into another function?
+
+    if (angle == 0)
+        return;
+
+    for (int r=0; r<reps; r++)
+        applyHigherOrderTrotter(qureg, sum, angle/reps, order);
 }
 
 
