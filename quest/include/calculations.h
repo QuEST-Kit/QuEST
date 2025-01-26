@@ -45,6 +45,15 @@ qreal calcFidelity(Qureg qureg, Qureg other);
 qreal calcDistance(Qureg qureg1, Qureg qureg2);
 
 
+Qureg calcPartialTrace(Qureg qureg, int* traceOutQubits, int numTraceQubits);
+
+Qureg calcReducedDensityMatrix(Qureg qureg, int* retainQubits, int numRetainQubits);
+
+void setQuregToPartialTrace(Qureg out, Qureg in, int* traceOutQubits, int numTraceQubits);
+
+void setQuregToReducedDensityMatrix(Qureg out, Qureg in, int* retainQubits, int numRetainQubits);
+
+
 // end de-mangler
 #ifdef __cplusplus
 }

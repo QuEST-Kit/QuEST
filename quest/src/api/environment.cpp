@@ -20,6 +20,7 @@
 #include <iostream>
 #include <typeinfo>
 #include <cstring>
+#include <cstdio>
 #include <string>
 #include <thread>
 #include <vector>
@@ -426,7 +427,7 @@ void reportQuESTEnv() {
 
     // TODO: add function to write this output to file (useful for HPC debugging)
 
-    print( "QuEST execution environment:");
+    print("QuEST execution environment:");
 
     bool statevec = false;
     bool densmatr = true;
@@ -448,9 +449,17 @@ void reportQuESTEnv() {
 
 
 void getEnvironmentString(char str[200]) {
+    validate_envIsInit(__func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    QuESTEnv env = getQuESTEnv();
+    int numThreads = cpu_isOpenmpCompiled()? cpu_getCurrentNumThreads() : 1;
+
+    snprintf(str, 200, "CUDA=%d OpenMP=%d MPI=%d threads=%d ranks=%d",
+        env.isGpuAccelerated,
+        env.isMultithreaded,
+        env.isDistributed,
+        numThreads,
+        env.numNodes);
 }
 
 

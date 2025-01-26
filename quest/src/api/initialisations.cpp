@@ -146,6 +146,15 @@ void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qcomp** 
 }
 
 
+void setDensityQuregFlatAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_basisStateIndices(qureg, startInd, numAmps, __func__); // validation msg correct for density-matrix
+
+    localiser_statevec_setAmps(amps, qureg, startInd, numAmps);
+}
+
+
 void setQuregToClone(Qureg targetQureg, Qureg copyQureg) {
     validate_quregFields(targetQureg, __func__);
     validate_quregFields(copyQureg, __func__);
@@ -189,6 +198,9 @@ void setQuregToPauliStrSum(Qureg qureg, PauliStrSum sum) {
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_pauliStrSumFields(sum, __func__);
     validate_pauliStrSumTargets(sum, qureg, __func__);
+
+    // sum is permitted to be non-Hermitian, since Hermiticity
+    // is insufficient to ensure qureg would be physical/valid
 
     localiser_densmatr_setAmpsToPauliStrSum(qureg, sum);
 }

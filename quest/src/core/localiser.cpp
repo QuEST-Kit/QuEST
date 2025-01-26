@@ -1719,15 +1719,12 @@ void partialTraceOnPrefix(Qureg inQureg, Qureg outQureg, vector<int> ketTargs) {
 void localiser_densmatr_partialTrace(Qureg inQureg, Qureg outQureg, vector<int> targs) {
     assert_localiserPartialTraceGivenCompatibleQuregs(inQureg, outQureg, targs.size());
 
-    // TODO: 
     // this function requires inQureg and outQureg are both or neither distributed;
-    // it does not support the (potentially reasonable) situation when only outQureg
-    // is not-distributed, perhaps because it is too small. It is not simple to
-    // extend our method to this case. We could force distribution of inQureg until
-    // the end of the routine (where we might broadcast it back to non-distributed),
-    // and even temporarily relax the condition that each node contains >=1 column,
-    // but we would still be restricted by the requirement each node contains >=1 amp.
-    // Think about whether we can relax this!
+    // it does not support the (potentially reasonable) situation when only inQureg
+    // is distributed because outQureg it is too small, like results from tracing
+    // out many qubits. Alas we cannot easily support this scenario, and such a 
+    // scenario anyway our parallelisation scheme which approaches serial as the 
+    // outQureg shrinks in size. Alas!
 
     // sorted targets needed by subsequent bitwise insertions
     targs = util_getSorted(targs);

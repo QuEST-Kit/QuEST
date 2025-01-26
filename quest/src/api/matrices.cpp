@@ -596,10 +596,6 @@ extern "C" void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, Pauli
     validate_pauliStrSumFields(in, __func__);
     validate_pauliStrSumCanInitMatrix(out, in, __func__);
 
-    // ensure the produced FullStateDiagMatr would be valid
-    int numQubits = 1 + paulis_getIndOfLefmostNonIdentityPauli(in);
-    validate_newFullStateDiagMatrParams(numQubits, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
-
     // permit 'in' to be non-Hermitian since it does not determine 'out' unitarity
 
     // unlike other FullStateDiagMatr initialisers, we employ an accelerated
@@ -609,6 +605,22 @@ extern "C" void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, Pauli
     localiser_fullstatediagmatr_setElemsToPauliStrSum(out, in);
 
     markMatrixAsSynced(out);
+}
+
+
+extern "C" FullStateDiagMatr createFullStateDiagMatrFromPauliStrSum(PauliStrSum in) {
+    validate_pauliStrSumFields(in, __func__);
+    
+    // ensure createFullStateDiagMatr() below succeeds (so if not, that thrower name is correct)
+    int numQubits = 1 + paulis_getIndOfLefmostNonIdentityPauli(in);
+    validate_newFullStateDiagMatrParams(numQubits, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
+
+    // permit 'in' to be non-Hermitian since it does not determine 'out' unitarity
+
+    FullStateDiagMatr out = createFullStateDiagMatr(numQubits);
+    localiser_fullstatediagmatr_setElemsToPauliStrSum(out, in);
+    markMatrixAsSynced(out);
+    return out;
 }
 
 

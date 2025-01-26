@@ -954,6 +954,26 @@ namespace report {
 
 
     /*
+     * PARTIAL TRACE
+     */
+
+    string NUM_TRACE_QUBITS_EQUALS_QUREG_SIZE =
+        "Cannot trace out every qubit in the register. The reduced Qureg must contain at least one qubit.";
+
+    string NUM_TRACE_QUBITS_EXCEEDS_DISTRIBUTED_MAX =
+        "Cannot trace out ${NUM_TRACE_QUBITS} qubits of a ${NUM_QUREG_QUBITS}-qubit Qureg distributed between ${NUM_NODES}, because the reduced Qureg (which is necessarily also distributed) would have fewer than one column's worth of amplitudes per node (an illegal configuration). The maximum number of qubits that can be traced out of this Qureg is ${MAX_TRACE_QUBITS}.";
+
+    string NUM_TRACE_QUBITS_INCONSISTENT_WITH_REDUCED_QUREG =
+        "The given reduced Qureg contains an incorrect number of qubits (${OUT_QUBITS}) to be the result of tracing out ${TRACE_QUBITS} from the ${IN_QUBITS}-qubit input Qureg. Please pass a Qureg with ${RETAIN_QUBITS} qubits.";
+
+    string REDUCED_QUREG_DIFFERING_DISTRIBUTION_TO_IN_QUREG =
+        "The input and output Quregs must have the same GPU deployment (i.e. both or neither GPU-accelerated), despite that the output Qureg is smaller.";
+
+    string REDUCED_QUREG_DIFFERING_GPU_DEPLOYMENT_TO_IN_QUREG =
+        "The input and output Quregs must have the same distribution (i.e. both or neither distributed), despite that the output Qureg is smaller.";
+
+
+    /*
      * FILE IO
      */
 
@@ -3662,6 +3682,7 @@ void validate_purifiedDistanceIsNormalised(qcomp fid, const char* caller) {
 }
 
 
+
 /*
  * QUREG MODIFICATION
  */
@@ -3711,6 +3732,54 @@ void validate_expecFullStateDiagMatrValueIsReal(qcomp value, bool isDensMatr, co
         report::CALC_STATEVEC_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL;
 
     assertThat(abs(imag(value)) < global_validationEpsilon, msg, caller);
+}
+
+
+
+/*
+ * PARTIAL TRACE
+ */
+
+void validate_quregCanBeReduced(Qureg qureg, int numTraceQubits, const char* caller) {
+
+    // 0 < numTraceQubits <= numQubits is assured by validate_targets(), but
+    // numTraceQubits == numQubtis is permitted there though forbidden here
+    assertThat(numTraceQubits < qureg.numQubits, report::NUM_TRACE_QUBITS_EQUALS_QUREG_SIZE, caller);
+
+    // when not distributed, there are no further restrictions
+    if (!qureg.isDistributed)
+        return;
+
+    // if the reduced qureg were hypothetically permitted to be non-distributed 
+    // despite qureg being distributed, then maxTr <= numQb - ceil(logNumNodes/2).
+    // we presently do not support this however, and insist the reduced qureg
+    // matches the input qureg's distribution, such that the maximum traced qubits
+    // is simply that which still retains at least one column per node
+    int maxNumTraceQubits = qureg.numQubits - qureg.logNumNodes;
+
+    tokenSubs vars = {
+        {"${NUM_TRACE_QUBITS}", numTraceQubits},
+        {"${MAX_TRACE_QUBITS}", maxNumTraceQubits},
+        {"${NUM_QUREG_QUBITS}", qureg.numQubits},
+        {"${NUM_NODES}",        qureg.numNodes}};
+
+    assertThat(numTraceQubits <= maxNumTraceQubits, report::NUM_TRACE_QUBITS_EXCEEDS_DISTRIBUTED_MAX, vars, caller);
+}
+
+void validate_quregCanBeSetToReducedDensMatr(Qureg out, Qureg in, int numTraceQubits, const char* caller) {
+
+    int numRemainingQubits = in.numQubits - numTraceQubits;
+
+    tokenSubs vars = {
+        {"${IN_QUBITS}",  in.numQubits},
+        {"${OUT_QUBITS}", out.numQubits},
+        {"${TRACE_QUBITS}",  numTraceQubits},
+        {"${RETAIN_QUBITS}", numRemainingQubits}};
+
+    assertThat(out.numQubits == numRemainingQubits, report::NUM_TRACE_QUBITS_INCONSISTENT_WITH_REDUCED_QUREG, vars, caller);
+
+    assertThat(out.isDistributed    == in.isDistributed,    report::REDUCED_QUREG_DIFFERING_DISTRIBUTION_TO_IN_QUREG,   caller);
+    assertThat(out.isGpuAccelerated == in.isGpuAccelerated, report::REDUCED_QUREG_DIFFERING_GPU_DEPLOYMENT_TO_IN_QUREG, caller);
 }
 
 

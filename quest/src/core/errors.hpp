@@ -166,6 +166,8 @@ void assert_calcExpecDiagTempGpuAllocSucceeded(qcomp* ptr);
 
 void assert_innerProductedSameDimQuregsHaveSameGpuAccel(Qureg quregA, Qureg quregB);
 
+void assert_partialTraceQuregsAreIdenticallyDeployed(Qureg inQureg, Qureg outQureg);
+
 
 
 /*

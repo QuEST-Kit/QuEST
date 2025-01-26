@@ -443,6 +443,17 @@ void validate_expecFullStateDiagMatrValueIsReal(qcomp value, bool isDensMatr, co
 
 
 /*
+ * PARTIAL TRACE
+ */
+
+
+void validate_quregCanBeReduced(Qureg qureg, int numTraceQubits, const char* caller);
+
+void validate_quregCanBeSetToReducedDensMatr(Qureg out, Qureg in, int numTraceQubits, const char* caller);
+
+
+
+/*
  * FILE IO
  */
 
