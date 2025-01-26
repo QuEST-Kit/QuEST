@@ -317,7 +317,7 @@ struct functor_setAmpToPauliStrSumElem {
             c = fast_getGlobalColFromFlatIndex(i, dim);
         }
 
-        amps[n] = fast_getLowerPauliStrSumElem(coeffs, strings, numTerms, r, c);
+        amps[n] = fast_getPauliStrSumElem(coeffs, strings, numTerms, r, c);
     }
 };
 
@@ -614,7 +614,7 @@ struct functor_setRandomStateVecAmp : public thrust::unary_function<qindex,cu_qc
 
 void thrust_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStrSum in) {
 
-    // copy sum lists into GPU memory, which is not a big deal even when 'in'
+    // copy 'in' lists into GPU memory, which is not a big deal even when 'in'
     // is very large, because we only do this during FullStateDiagMatr initialisation
     thrust::device_vector<qcomp> devCoeffs(in.coeffs, in.coeffs + in.numTerms);
     thrust::device_vector<PauliStr> devStrings(in.strings, in.strings + in.numTerms);
@@ -629,7 +629,7 @@ void thrust_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, Pauli
     // <true> indicates the PauliStrSum is diagonal (contains only I or Z)
     auto functor = functor_setAmpToPauliStrSumElem<true>(
         rank, out.numElems, logNumElemsPerNode,
-        sum.numTerms, toCuQcomps(out.gpuElems), devCoeffsPtr, devStringsPtr);
+        in.numTerms, toCuQcomps(out.gpuElems), devCoeffsPtr, devStringsPtr);
 
     auto indIter = thrust::make_counting_iterator(0);
     auto endIter = indIter + out.numElemsPerNode;
