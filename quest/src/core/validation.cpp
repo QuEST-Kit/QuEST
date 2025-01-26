@@ -964,7 +964,7 @@ namespace report {
         "Cannot trace out ${NUM_TRACE_QUBITS} qubits of a ${NUM_QUREG_QUBITS}-qubit Qureg distributed between ${NUM_NODES}, because the reduced Qureg (which is necessarily also distributed) would have fewer than one column's worth of amplitudes per node (an illegal configuration). The maximum number of qubits that can be traced out of this Qureg is ${MAX_TRACE_QUBITS}.";
 
     string NUM_TRACE_QUBITS_INCONSISTENT_WITH_REDUCED_QUREG =
-        "The given reduced Qureg contains an incorrect number of qubits (${OUT_QUBITS}) to be the result of tracing out ${TRACE_QUBITS} from the ${IN_QUBITS}-qubit input Qureg. Please pass a Qureg with ${RETAIN_QUBITS} qubits.";
+        "The given reduced Qureg contains an incorrect number of qubits (${OUT_QUBITS}) to be the result of tracing out ${TRACE_QUBITS} from the ${IN_QUBITS}-qubit input Qureg. Please instead pass a Qureg with ${RETAIN_QUBITS} qubits.";
 
     string REDUCED_QUREG_DIFFERING_DISTRIBUTION_TO_IN_QUREG =
         "The input and output Quregs must have the same GPU deployment (i.e. both or neither GPU-accelerated), despite that the output Qureg is smaller.";
