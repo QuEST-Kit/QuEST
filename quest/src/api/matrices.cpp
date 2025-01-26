@@ -588,25 +588,27 @@ extern "C" {
  */
 
 
+extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum);
+
+
 extern "C" void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, PauliStrSum in) {
     validate_matrixFields(out, __func__);
     validate_pauliStrSumFields(in, __func__);
     validate_pauliStrSumCanInitMatrix(out, in, __func__);
 
-    // 'in' is permitted to be non-Hermitian, since it 
-    // does not inform whether 'out' is unitary
+    // ensure the produced FullStateDiagMatr would be valid
+    int numQubits = 1 + paulis_getIndOfLefmostNonIdentityPauli(in);
+    validate_newFullStateDiagMatrParams(numQubits, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
 
+    // permit 'in' to be non-Hermitian since it does not determine 'out' unitarity
+
+    // unlike other FullStateDiagMatr initialisers, we employ an accelerated
+    // backend since the input data 'in' is expectedly significantly smaller
+    // than the created data in 'out', making parallelisation worthwhile as
+    // the memory-movement costs of copying 'in' to a GPU are small
     localiser_fullstatediagmatr_setElemsToPauliStrSum(out, in);
-    
+
     markMatrixAsSynced(out);
-}
-
-
-extern "C" FullStateDiagMatr createFullStateDiagMatrFromPauliStrSumFile(char* fn) {
-
-    // TODO
-    error_functionNotImplemented(__func__);
-    return createFullStateDiagMatr(-1);
 }
 
 
