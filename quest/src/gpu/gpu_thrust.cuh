@@ -302,16 +302,19 @@ struct functor_setAmpToPauliStrSumElem {
     {}
 
     __device__ void operator()(qindex n) {
+
         qindex i = concatenateBits(rank, n, suffixLen);
 
         // repurpose this functor for populating both density matrices
         // and full-state diagonal operators (for which strings=I,Z)
+        qindex r, c;
+
         if constexpr (IsDiag) {
-            qindex r = i;
-            qindex c = i;
+            r = i;
+            c = i;
         } else {
-            qindex r = fast_getGlobalRowFromFlatIndex(i, dim);
-            qindex c = fast_getGlobalColFromFlatIndex(i, dim);
+            r = fast_getGlobalRowFromFlatIndex(i, dim);
+            c = fast_getGlobalColFromFlatIndex(i, dim);
         }
 
         amps[n] = fast_getLowerPauliStrSumElem(coeffs, strings, numTerms, r, c);
