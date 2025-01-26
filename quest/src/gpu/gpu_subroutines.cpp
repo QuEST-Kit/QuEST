@@ -112,7 +112,7 @@ void gpu_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStr
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
-    thrust_fullstatediagmatr_setElemsToPauliStrSum(qureg, sum);
+    thrust_fullstatediagmatr_setElemsToPauliStrSum(out, in);
 
 #else
     error_gpuSimButGpuNotCompiled();
