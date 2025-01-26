@@ -212,7 +212,7 @@ auto getQubitsSwappedToMaxSuffix(Qureg qureg, vector<int> qubits) {
     // targets in the prefix substate and where they can be swapped into the suffix
     // to enable subsequent embarrassingly parallel simulation. Note we seek the MAX
     // available indices in the suffix, since this heuristically reduces the
-    // disordering of the surviving qubits after the trace, reduces the number of
+    // disordering of the surviving qubits after the trace, reducing the number of
     // subsequent order-restoring SWAPs
 
     // nothing to do if all qubits are already in suffix
@@ -224,7 +224,7 @@ auto getQubitsSwappedToMaxSuffix(Qureg qureg, vector<int> qubits) {
     int maxFreeSuffixQubit = getIndOfNextLeftmostZeroBit(qubitMask, qureg.logNumAmpsPerNode);
 
     // enumerate qubits backward, modifying our copy of qubits as we go
-    for (size_t i=qubits.size()-1; i-- != 0; ) {
+    for (size_t i=qubits.size(); i-- != 0; ) {
         int qubit = qubits[i];
 
         // consider only qubits in the prefix substate
@@ -1636,7 +1636,8 @@ auto getNonTracedQubitOrder(Qureg qureg, vector<int> originalTargs, vector<int> 
     qindex revisedMask = util_getBitMask(revisedTargs);
 
     // retain only non-targeted qubits
-    vector<int> remainingQubits(allQubits.size() - originalTargs.size());
+    vector<int> remainingQubits;
+    remainingQubits.reserve(allQubits.size() - originalTargs.size());
     for (size_t q=0; q<allQubits.size(); q++)
         if (!getBit(revisedMask, q))
             remainingQubits.push_back(allQubits[q]);
@@ -1726,12 +1727,13 @@ void localiser_densmatr_partialTrace(Qureg inQureg, Qureg outQureg, vector<int> 
     // scenario anyway our parallelisation scheme which approaches serial as the 
     // outQureg shrinks in size. Alas!
 
-    // sorted targets needed by subsequent bitwise insertions
-    targs = util_getSorted(targs);
+    // sorted targets needed by subsequent bitwise insertions; we pedantically use
+    // a new variable in case parameter 'targs' ever changes to a pass-by-reference
+    auto sortedTargs = util_getSorted(targs);
 
-    (doesChannelRequireComm(inQureg, targs.back()))?
-        partialTraceOnPrefix(inQureg, outQureg, targs):
-        partialTraceOnSuffix(inQureg, outQureg, targs);
+    (doesChannelRequireComm(inQureg, sortedTargs.back()))?
+        partialTraceOnPrefix(inQureg, outQureg, sortedTargs):
+        partialTraceOnSuffix(inQureg, outQureg, sortedTargs);
 }
 
 
