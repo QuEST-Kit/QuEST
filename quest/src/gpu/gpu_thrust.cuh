@@ -614,10 +614,10 @@ struct functor_setRandomStateVecAmp : public thrust::unary_function<qindex,cu_qc
 
 void thrust_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStrSum in) {
 
-    // copy sum lists into GPU memory, which is not a big deal even when sum
+    // copy sum lists into GPU memory, which is not a big deal even when 'in'
     // is very large, because we only do this during FullStateDiagMatr initialisation
-    thrust::device_vector<qcomp> devCoeffs(sum.coeffs, sum.coeffs + sum.numTerms);
-    thrust::device_vector<PauliStr> devStrings(sum.strings, sum.strings + sum.numTerms);
+    thrust::device_vector<qcomp> devCoeffs(in.coeffs, in.coeffs + in.numTerms);
+    thrust::device_vector<PauliStr> devStrings(in.strings, in.strings + in.numTerms);
     
     // obtain raw pointers which can be passed to fastmath.hpp routines
     cu_qcomp* devCoeffsPtr = toCuQcomps(thrust::raw_pointer_cast(devCoeffs.data()));
