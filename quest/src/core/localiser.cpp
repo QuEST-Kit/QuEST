@@ -545,6 +545,14 @@ void localiser_fullstatediagmatr_setElems(FullStateDiagMatr matr, qindex startIn
 }
 
 
+void localiser_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStrSum in) {
+
+    // always embarrassingly parallel. Note that accelerator will 
+    // safely keep CPU and GPU memory of FullStateDiagMatr consistent
+    accel_fullstatediagmatr_setElemsToPauliStrSum(out, in);
+}
+
+
 
 /*
  * STATE INITIALISATION

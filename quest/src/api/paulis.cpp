@@ -115,6 +115,26 @@ int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str) {
 }
 
 
+int paulis_getIndOfLefmostNonIdentityPauli(PauliStr* strings, qindex numStrings) {
+
+    int maxInd = 0;
+
+    for (qindex i=0; i<numStrings; i++) {
+        int ind = paulis_getIndOfLefmostNonIdentityPauli(strings[i]);
+        if (ind > maxInd)
+            maxInd = ind;
+    }
+
+    return maxInd;
+}
+
+
+int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum) {
+
+    return paulis_getIndOfLefmostNonIdentityPauli(sum.strings, sum.numTerms);
+}
+
+
 bool paulis_containsXOrY(PauliStr str) {
 
     int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
@@ -130,9 +150,20 @@ bool paulis_containsXOrY(PauliStr str) {
 }
 
 
+bool paulis_containsXOrY(PauliStrSum sum) {
+
+    for (qindex i=0; i<sum.numTerms; i++)
+        if (paulis_containsXOrY(sum.strings[i]))
+            return true;
+
+    return false;
+}
+
+
 bool paulis_hasOddNumY(PauliStr str) {
 
     bool odd = false;
+
     for (int targ=0; targ < MAX_NUM_PAULIS_PER_STR; targ++) 
         if (paulis_getPauliAt(str, targ) == 2)
             odd = !odd;

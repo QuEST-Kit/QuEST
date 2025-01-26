@@ -94,17 +94,22 @@ INLINE qindex fast_getLocalFlatIndex(qindex row, qindex localCol, qindex numAmps
  */
 
 
-INLINE QCOMP_ALIAS fast_getLowerPauliStrElem(PauliStr str, qindex row, qindex col) {
+INLINE QCOMP_ALIAS fast_getPauliStrElem(PauliStr str, qindex row, qindex col) {
 
-    // this function is deliberately NOT named getPauliStrElem():
-    // the size of PauliStr's LOWER mask (of the two) is 64 bits = 32 Paulis.
-    // this function is only ever called to populate a density matrix, which
-    // will assuredly contain fewer than 32 qubits (=64 qubit statevector), so
-    // we actually do not ever need to consult the HIGHER mas. Ergo, the
-    // precondition is that the str.highPaulis == 0
+    // this function is called by both fullstatediagmatr_setElemsToPauliStrSum()
+    // and densmatr_setAmpsToPauliStrSum_sub(). The former's PauliStr can have
+    // Paulis on any of the 64 sites, but the latter's PauliStr is always
+    // constrainted to the lower 32 sites (because a 32-qubit density matrix
+    // is already too large for the world's computers). As such, the latter
+    // scenario can be optimised since str.highPaulis == 0, making the second
+    // loop below redundant. Avoiding this loop can at most half the runtime,
+    // though opens the risk that the former caller erroneously has its upper
+    // Paulis ignore. We forego this optimisation in defensive design, and
+    // because this function is only invoked during data structure initilisation
+    // and ergo infrequently.s
 
     // regrettably duplicated from paulis.cpp which is inaccessible here
-    constexpr int MAX_NUM_PAULIS_PER_MASK = sizeof(PAULI_MASK_TYPE) * 8 / 2;
+    constexpr int numPaulisPerMask = sizeof(PAULI_MASK_TYPE) * 8 / 2;
 
     // QCOMP_ALIAS-agnostic literals
     QCOMP_ALIAS p0, p1,n1, pI,nI;
@@ -129,24 +134,26 @@ INLINE QCOMP_ALIAS fast_getLowerPauliStrElem(PauliStr str, qindex row, qindex co
     QCOMP_ALIAS elem = p1; // 1
 
     // could be compile-time unrolled into 32 iterations
-    for (int t=0; t<MAX_NUM_PAULIS_PER_MASK; t++) {
+    for (int t=0; t<numPaulisPerMask; t++) {
         int p = getTwoAdjacentBits(str.lowPaulis, 2*t);
         int i = getBit(row, t);
         int j = getBit(col, t);
         elem *= matrices[p][i][j];
     }
 
-    // to crudely safe-guard against the erroneous scenario where str.highPaulis!=0,
-    // without compromising the inline performance, we will efficiently sabotage the
-    // result so that the resulting bug is not insidious. We'd prefer to multiply
-    // NaN (assuming 0 * NaN = 0) but it there is no platform agnostic efficient literal.
-    elem *= 1 + str.highPaulis * 1E200;
+    // could be compile-time unrolled into 32 iterations
+    for (int t=0; t<numPaulisPerMask; t++) {
+        int p = getTwoAdjacentBits(str.highPaulis, 2*t);
+        int i = getBit(row, t + numPaulisPerMask);
+        int j = getBit(col, t + numPaulisPerMask);
+        elem *= matrices[p][i][j];
+    }
 
     return elem;
 }
 
 
-INLINE QCOMP_ALIAS fast_getLowerPauliStrSumElem(QCOMP_ALIAS* coeffs, PauliStr* strings, qindex numTerms, qindex row, qindex col) {
+INLINE QCOMP_ALIAS fast_getPauliStrSumElem(QCOMP_ALIAS* coeffs, PauliStr* strings, qindex numTerms, qindex row, qindex col) {
 
     // this function accepts unpacked PauliStrSum fields since a PauliStrSum cannot 
     // be directly processed in CUDA kernels/thrust due to its 'qcomp' field.
@@ -156,7 +163,7 @@ INLINE QCOMP_ALIAS fast_getLowerPauliStrSumElem(QCOMP_ALIAS* coeffs, PauliStr* s
 
     // this loop is expected exponentially smaller than caller's loop
     for (qindex n=0; n<numTerms; n++)
-        elem += coeffs[n] * fast_getLowerPauliStrElem(strings[n], row, col);
+        elem += coeffs[n] * fast_getPauliStrElem(strings[n], row, col);
 
     return elem;
 }

@@ -21,6 +21,7 @@
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
+#include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_indices.hpp"
 
 #include <vector>
@@ -67,9 +68,18 @@ qcomp cpu_statevec_getAmp_sub(Qureg qureg, qindex ind) {
 
 void cpu_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
 
-    // our call to fast_getLowerPauliStrSumElem() assumes sum.highPaulis = 0
+    // this assertion exists because fast_getPauliStrElem() (invoked below)
+    // previously assumed str.highPaulis=0 for all str in sum (for a speedup)
+    // which is gauranteed satisfied for all sum compatible with a density-matrix.
+    // This is no longer essential, since fast_getPauliStrElem() has relaxed this
+    // requirement and foregone the optimisation, but we retain this check in
+    // case a similar optimisation is restored in the future
     assert_highPauliStrSumMaskIsZero(sum);
 
+    // process each amplitude in-turn, not bothering to leverage that adjacent
+    // basis states have PauliStrSum elems which differ by a single +-i/1 (as
+    // can be enumerated via Gray Code), because this breaks thread independence,
+    // plus this function is only called infrequently (as initialisation)
     qindex numIts = qureg.numAmpsPerNode;
     qindex dim = powerOf2(qureg.numQubits);
 
@@ -84,7 +94,37 @@ void cpu_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
         qindex c = fast_getGlobalColFromFlatIndex(i, dim);
 
         // contains non-unrolled loop (and args unpacked due to CUDA qcomp incompatibility, grr)
-        qureg.cpuAmps[n] = fast_getLowerPauliStrSumElem(sum.coeffs, sum.strings, sum.numTerms, r, c);
+        qureg.cpuAmps[n] = fast_getPauliStrSumElem(sum.coeffs, sum.strings, sum.numTerms, r, c);
+    }
+}
+
+
+void cpu_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStrSum in) {
+
+    // unlike in densmatr_setAmpsToPauliStrSum_sub() above, this PauliStrSum
+    // can feature non-identity Paulis on every qubit, i.e. up to t=63
+
+    qindex numIts = out.numElemsPerNode;
+    qindex numSuf = logBase2(numIts);
+
+    int rank = out.isDistributed? comm_getRank() : 0;
+
+    // note below there is no if() in #pragma; we choose always to
+    // multithread when OpenMP is enabled, because FullStateDiagMatr
+    // does not carry a .isMultithreaded flag (and this is only an
+    // initialisation function, so sub-optimal threading is fine)
+
+    #pragma omp parallel for
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = global index corresponding to local index n
+        qindex i = concatenateBits(rank, n, numSuf);
+
+        // treat PauliStrSum as a generic sum, even though we know it only
+        // contains I and Z which can in principle be computed faster; this
+        // is a superfluous optimisation since this function is expected to
+        // be called infrequently (i.e. only for data structure initialisation)
+        out.cpuElems[n] = fast_getPauliStrSumElem(in.coeffs, in.strings, in.numTerms, i, i);
     }
 }
 

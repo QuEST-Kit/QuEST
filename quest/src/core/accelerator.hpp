@@ -150,6 +150,8 @@ void accel_statevec_setAmps_sub(qcomp* inAmps, Qureg qureg, qindex localStartInd
 
 void accel_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum);
 
+void accel_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStrSum in);
+
 
 /*
  * COMMUNICATION BUFFER PACKING

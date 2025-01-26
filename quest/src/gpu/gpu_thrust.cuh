@@ -29,6 +29,7 @@
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/randomiser.hpp"
+#include "quest/src/comm/comm_config.hpp"
 
 // kernels/thrust must use cu_qcomp, never qcomp
 #define USE_CU_QCOMP
@@ -280,7 +281,8 @@ struct functor_getExpecDensMatrDiagMatrTerm : public thrust::unary_function<qind
 };
 
 
-struct functor_setDensMatrPauliStrSumElem {
+template <bool IsDiag>
+struct functor_setAmpToPauliStrSumElem {
 
     int rank;
     qindex dim;
@@ -291,7 +293,7 @@ struct functor_setDensMatrPauliStrSumElem {
     cu_qcomp* coeffs;
     PauliStr* strings;
     
-    functor_setDensMatrPauliStrSumElem(
+    functor_setAmpToPauliStrSumElem(
         int rank, qindex dim, qindex suffixLen, qindex numTerms, 
         cu_qcomp* amps, cu_qcomp* coeffs, PauliStr* strings
     ) :
@@ -301,8 +303,17 @@ struct functor_setDensMatrPauliStrSumElem {
 
     __device__ void operator()(qindex n) {
         qindex i = concatenateBits(rank, n, suffixLen);
-        qindex r = fast_getGlobalRowFromFlatIndex(i, dim);
-        qindex c = fast_getGlobalColFromFlatIndex(i, dim);
+
+        // repurpose this functor for populating both density matrices
+        // and full-state diagonal operators (for which strings=I,Z)
+        if constexpr (IsDiag) {
+            qindex r = i;
+            qindex c = i;
+        } else {
+            qindex r = fast_getGlobalRowFromFlatIndex(i, dim);
+            qindex c = fast_getGlobalColFromFlatIndex(i, dim);
+        }
+
         amps[n] = fast_getLowerPauliStrSumElem(coeffs, strings, numTerms, r, c);
     }
 };
@@ -594,6 +605,37 @@ struct functor_setRandomStateVecAmp : public thrust::unary_function<qindex,cu_qc
 
 
 /*
+ * MATRIX INITIALISATION
+ */
+
+
+void thrust_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStrSum in) {
+
+    // copy sum lists into GPU memory, which is not a big deal even when sum
+    // is very large, because we only do this during FullStateDiagMatr initialisation
+    thrust::device_vector<qcomp> devCoeffs(sum.coeffs, sum.coeffs + sum.numTerms);
+    thrust::device_vector<PauliStr> devStrings(sum.strings, sum.strings + sum.numTerms);
+    
+    // obtain raw pointers which can be passed to fastmath.hpp routines
+    cu_qcomp* devCoeffsPtr = toCuQcomps(thrust::raw_pointer_cast(devCoeffs.data()));
+    PauliStr* devStringsPtr = thrust::raw_pointer_cast(devStrings.data());
+
+    int rank = out.isDistributed? comm_getRank() : 0;
+    qindex logNumElemsPerNode = logBase2(out.numElemsPerNode);
+
+    // <true> indicates the PauliStrSum is diagonal (contains only I or Z)
+    auto functor = functor_setAmpToPauliStrSumElem<true>(
+        rank, out.numElems, logNumElemsPerNode,
+        sum.numTerms, toCuQcomps(out.gpuElems), devCoeffsPtr, devStringsPtr);
+
+    auto indIter = thrust::make_counting_iterator(0);
+    auto endIter = indIter + out.numElemsPerNode;
+    thrust::for_each(indIter, endIter, functor);
+}
+
+
+
+/*
  * STATE MODIFICATION 
  */
 
@@ -607,6 +649,14 @@ void thrust_setElemsToConjugate(cu_qcomp* matrElemsPtr, qindex matrElemsLen) {
 
 void thrust_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
 
+    // this assertion exists because fast_getPauliStrElem() (invoked in functor)
+    // previously assumed str.highPaulis=0 for all str in sum (for a speedup)
+    // which is gauranteed satisfied for all sum compatible with a density-matrix.
+    // This is no longer essential, since fast_getPauliStrElem() has relaxed this
+    // requirement and foregone the optimisation, but we retain this check in
+    // case a similar optimisation is restored in the future
+    assert_highPauliStrSumMaskIsZero(sum);
+
     // copy sum lists into GPU memory, which is not a big deal even when sum
     // is very large, because we only do this during Qureg initialisation (infrequent)
     thrust::device_vector<qcomp> devCoeffs(sum.coeffs, sum.coeffs + sum.numTerms);
@@ -616,7 +666,8 @@ void thrust_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
     cu_qcomp* devCoeffsPtr = toCuQcomps(thrust::raw_pointer_cast(devCoeffs.data()));
     PauliStr* devStringsPtr = thrust::raw_pointer_cast(devStrings.data());
 
-    auto functor = functor_setDensMatrPauliStrSumElem(
+    // <false> indicates the PauliStrSum is not diagonal (contains X or Y)
+    auto functor = functor_setAmpToPauliStrSumElem<false>(
         qureg.rank, powerOf2(qureg.numQubits), qureg.logNumAmpsPerNode,
         sum.numTerms, toCuQcomps(qureg.gpuAmps), devCoeffsPtr, devStringsPtr);
 

@@ -1151,7 +1151,7 @@ void print_elems(Qureg qureg, string indent) {
 
 // we'll make use of these internal functions from paulis.cpp
 extern int paulis_getPauliAt(PauliStr str, int ind);
-extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
+extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr* strings, qindex numStrings);
 
 
 string getPauliStrAsString(PauliStr str, int maxNumQubits) {
@@ -1164,20 +1164,6 @@ string getPauliStrAsString(PauliStr str, int maxNumQubits) {
         out += labels[paulis_getPauliAt(str, i)];
     
     return out;
-}
-
-
-int getIndexOfLeftmostPauliAmongStrings(PauliStr* strings, qindex numStrings) {
-
-    int maxInd = 0;
-
-    for (qindex i=0; i<numStrings; i++) {
-        int ind = paulis_getIndOfLefmostNonIdentityPauli(strings[i]);
-        if (ind > maxInd)
-            maxInd = ind;
-    }
-
-    return maxInd;
 }
 
 
@@ -1200,8 +1186,8 @@ void print_elems(PauliStrSum sum, string indent) {
     populateMatrixQuadrants(inds, ul,ur,ll,lr, sum);
 
     // find the widest Pauli string, which informs how wide all printed Pauli strings are
-    int upperWidth = 1 + getIndexOfLeftmostPauliAmongStrings(sum.strings, ul.size());
-    int lowerWidth = (ll.empty())? 0 : 1 + getIndexOfLeftmostPauliAmongStrings(&sum.strings[inds.lowerStartRow], ll.size());
+    int upperWidth = 1 + paulis_getIndOfLefmostNonIdentityPauli(sum.strings, ul.size());
+    int lowerWidth = (ll.empty())? 0 : 1 + paulis_getIndOfLefmostNonIdentityPauli(&sum.strings[inds.lowerStartRow], ll.size());
     int width = std::max(upperWidth, lowerWidth);
 
     // set row labels to be the Pauli strings

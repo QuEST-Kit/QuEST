@@ -575,9 +575,14 @@ extern "C" {
 
 
 extern "C" void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, PauliStrSum in) {
+    validate_matrixFields(out, __func__);
+    validate_pauliStrSumFields(in, __func__);
+    validate_pauliStrSumCanInitMatrix(out, in, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    // 'in' is permitted to be non-Hermitian, since it 
+    // does not inform whether 'out' is unitary
+
+    localiser_fullstatediagmatr_setElemsToPauliStrSum(out, in);
 }
 
 

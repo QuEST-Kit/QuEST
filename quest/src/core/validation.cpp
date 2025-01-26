@@ -662,10 +662,17 @@ namespace report {
 
     
     string PAULI_STR_SUM_NOT_HERMITIAN =
-        "THe given PauliStrSum is not Hermitian.";
+        "The given PauliStrSum is not Hermitian.";
+
+    string PAULI_STR_SUM_NOT_ALL_I_Z =
+        "The given PauliStrSum contained X and/or Y operators and is ergo not diagonal, so cannot be used to initialise the given FullStateDiagMatr.";
+
 
     string PAULI_STR_SUM_EXCEEDS_QUREG_NUM_QUBITS =
         "The given PauliStrSum includes non-identity upon a qubit of index ${MAX_IND} and so is only compatible with Quregs of at least ${NUM_PSS_QUBITS} qubits. It cannot act upon, nor initialise, the given ${NUM_QUREG_QUBITS}-qubit Qureg.";
+
+    string PAULI_STR_SUM_EXCEEDS_MATR_NUM_QUBITS =
+        "The given PauliStrSum includes non-identity upon a qubit of index ${MAX_IND} and so is only compatible with FullStateDiagMatr containing at least ${NUM_PSS_QUBITS}. It cannot initialise the given ${NUM_MATR_QUBITS}-qubit FullStateDiagMatr.";
 
 
     /*
@@ -2975,7 +2982,8 @@ void validate_parsedStringIsNotEmpty(bool stringIsNotEmpty, const char* caller) 
  * EXISTING PAULI STRING SUMS
  */
 
-extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
+extern bool paulis_containsXOrY(PauliStrSum sum);
+extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum);
 
 void validate_pauliStrSumFields(PauliStrSum sum, const char* caller) {
 
@@ -3009,19 +3017,30 @@ void validate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
 
 void validate_pauliStrSumTargets(PauliStrSum sum, Qureg qureg, const char* caller) {
 
-    int maxInd = 0;
-    for (qindex t=0; t<sum.numTerms; t++) {
-        int ind = paulis_getIndOfLefmostNonIdentityPauli(sum.strings[t]);
-        if (ind > maxInd)
-            maxInd = ind;
-    }
-
+    int maxInd = paulis_getIndOfLefmostNonIdentityPauli(sum);
     int minNumQb = maxInd + 1;
+
     tokenSubs vars = {
         {"${NUM_QUREG_QUBITS}", qureg.numQubits},
         {"${MAX_IND}", maxInd}, 
         {"${NUM_PSS_QUBITS}", minNumQb}};
+
     assertThat(qureg.numQubits >= minNumQb, report::PAULI_STR_SUM_EXCEEDS_QUREG_NUM_QUBITS, vars, caller);
+}
+
+void validate_pauliStrSumCanInitMatrix(FullStateDiagMatr matr, PauliStrSum sum, const char* caller) {
+
+    assertThat(!paulis_containsXOrY(sum), report::PAULI_STR_SUM_NOT_ALL_I_Z, caller);
+
+    int maxInd = paulis_getIndOfLefmostNonIdentityPauli(sum);
+    int minNumQb = maxInd + 1;
+
+    tokenSubs vars = {
+        {"${NUM_MATR_QUBITS}", matr.numQubits},
+        {"${MAX_IND}", maxInd}, 
+        {"${NUM_PSS_QUBITS}", minNumQb}};
+
+    assertThat(matr.numQubits >= minNumQb, report::PAULI_STR_SUM_EXCEEDS_MATR_NUM_QUBITS, vars, caller);
 }
 
 
@@ -3153,8 +3172,6 @@ void validate_localAmpIndices(Qureg qureg, qindex localStartInd, qindex numInds,
     baseVars["${END_IND_EXCL}"] = endIndExcl;
     assertAllNodesAgreeThat(endIndExcl <= qureg.numAmpsPerNode, report::INVALID_ENDING_LOCAL_AMP_INDEX, baseVars, caller);
 }
-
-
 
 
 
