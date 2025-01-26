@@ -605,9 +605,10 @@ void thrust_setElemsToConjugate(cu_qcomp* matrElemsPtr, qindex matrElemsLen) {
 }
 
 
-void gpu_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
+void thrust_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
 
-    // copy sum lists into GPU memory
+    // copy sum lists into GPU memory, which is not a big deal even when sum
+    // is very large, because we only do this during Qureg initialisation (infrequent)
     thrust::device_vector<qcomp> devCoeffs(sum.coeffs, sum.coeffs + sum.numTerms);
     thrust::device_vector<PauliStr> devStrings(sum.strings, sum.strings + sum.numTerms);
     

@@ -23,9 +23,11 @@
 
 // 'qcomp' cannot be used inside CUDA kernels/thrust, so must not appear in
 // these inlined definitions. Instead, we create an alias which will resolve
-// to 'qcomp' (provided by types.h) when parsed by the CPU backend, and 'cu_qcomp'
-// (not explicitly resolved in this header) when parsed by the GPU backend, which
-// will prior define USE_CU_QCOMP. Hacky, but avoids significant code duplication!
+// to 'qcomp' (defined in types.h) when parsed by the CPU backend, and 'cu_qcomp'
+// (defined in gpu_types.cuh which is not explicitly resolved in this header)
+// when parsed by the GPU backend, which will prior define USE_CU_QCOMP. It is
+// essential this header is included after gpu_types.cuh is included by the
+// GPU backend. Hacky, but avoids code duplication!
 
 #ifdef USE_CU_QCOMP
     #define QCOMP_ALIAS cu_qcomp
@@ -104,17 +106,21 @@ INLINE QCOMP_ALIAS fast_getLowerPauliStrElem(PauliStr str, qindex row, qindex co
     // regrettably duplicated from paulis.cpp which is inaccessible here
     constexpr int MAX_NUM_PAULIS_PER_MASK = sizeof(PAULI_MASK_TYPE) * 8 / 2;
 
-    // +- imaginary unit literal (agnostic to QCOMP_ALIAS type)
-    QCOMP_ALIAS pI = {0, 1};
-    QCOMP_ALIAS nI = {0, -1};
+    // QCOMP_ALIAS-agnostic literals
+    QCOMP_ALIAS p0, p1,n1, pI,nI;
+    p0 = {0,  0}; //  0
+    p1 = {+1, 0}; //  1
+    n1 = {-1, 0}; // -1
+    pI = {0, +1}; //  i
+    nI = {0, -1}; // -i
 
     static const QCOMP_ALIAS matrices[][2][2] = {
-        {{1,0},{0,1}},
-        {{0,1},{1,0}},
-        {{0,nI},{pI,0}},
-        {{1,0},{0,-1}}};
+        {{p1,p0},{p0,p1}},   // I
+        {{p0,p1},{p1,p0}},   // X
+        {{p0,nI},{pI,p0}},   // Y
+        {{p1,p0},{p0,-n1}}}; // Z
 
-    QCOMP_ALIAS elem = 1;
+    QCOMP_ALIAS elem = p1; // 1
 
     // could be compile-time unrolled into 32 iterations
     for (int t=0; t<MAX_NUM_PAULIS_PER_MASK; t++) {
@@ -127,8 +133,11 @@ INLINE QCOMP_ALIAS fast_getLowerPauliStrElem(PauliStr str, qindex row, qindex co
     // to crudely safe-guard against the erroneous scenario where str.highPaulis!=0,
     // without compromising the inline performance, we will efficiently sabotage the
     // result so that the resulting bug is not insidious. We'd prefer to multiply
-    // NaN (assuming 0 * NaN = 0) but it there is no platform agnostic efficient literal
-    elem *= 1 + str.highPaulis * 1E200;
+    // NaN (assuming 0 * NaN = 0) but it there is no platform agnostic efficient literal.
+    // We perform this only for qcomp, because cu_qcomp lacks arithmetic overloads
+    #ifdef USE_CU_QCOMP
+        elem *= 1 + str.highPaulis * 1E200;
+    #endif
 
     return elem;
 }
