@@ -613,8 +613,8 @@ void thrust_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
     thrust::device_vector<PauliStr> devStrings(sum.strings, sum.strings + sum.numTerms);
     
     // obtain raw pointers which can be passed to fastmath.hpp routines
-    cu_qcomp* devCoeffsPtr = thrust::raw_pointer_cast(devCoeffs.size());
-    PauliStr* devStringsPtr = thrust::raw_pointer_cast(devStrings.size());
+    cu_qcomp* devCoeffsPtr = thrust::raw_pointer_cast(devCoeffs.data());
+    PauliStr* devStringsPtr = thrust::raw_pointer_cast(devStrings.data());
 
     auto functor = functor_setDensMatrPauliStrSumElem(
         qureg.rank, powerOf2(qureg.numQubits), qureg.logNumAmpsPerNode,
