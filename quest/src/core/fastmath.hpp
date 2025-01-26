@@ -118,7 +118,7 @@ INLINE QCOMP_ALIAS fast_getLowerPauliStrElem(PauliStr str, qindex row, qindex co
         {{p1,p0},{p0,p1}},   // I
         {{p0,p1},{p1,p0}},   // X
         {{p0,nI},{pI,p0}},   // Y
-        {{p1,p0},{p0,-n1}}}; // Z
+        {{p1,p0},{p0,n1}}}; // Z
 
     QCOMP_ALIAS elem = p1; // 1
 
@@ -134,10 +134,7 @@ INLINE QCOMP_ALIAS fast_getLowerPauliStrElem(PauliStr str, qindex row, qindex co
     // without compromising the inline performance, we will efficiently sabotage the
     // result so that the resulting bug is not insidious. We'd prefer to multiply
     // NaN (assuming 0 * NaN = 0) but it there is no platform agnostic efficient literal.
-    // We perform this only for qcomp, because cu_qcomp lacks arithmetic overloads
-    #ifdef USE_CU_QCOMP
-        elem *= 1 + str.highPaulis * 1E200;
-    #endif
+    elem *= 1 + str.highPaulis * 1E200;
 
     return elem;
 }
@@ -149,7 +146,7 @@ INLINE QCOMP_ALIAS fast_getLowerPauliStrSumElem(QCOMP_ALIAS* coeffs, PauliStr* s
     // be directly processed in CUDA kernels/thrust due to its 'qcomp' field.
     // it also assumes str.highPaulis==0 for all str in strings, as per above func.
 
-    QCOMP_ALIAS elem = 0;
+    QCOMP_ALIAS elem = {0, 0}; // type-agnostic literal
 
     // this loop is expected exponentially smaller than caller's loop
     for (qindex n=0; n<numTerms; n++)
