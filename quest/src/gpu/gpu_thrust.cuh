@@ -280,7 +280,7 @@ struct functor_getExpecDensMatrDiagMatrTerm : public thrust::unary_function<qind
 };
 
 
-struct functor_setDensMatrPauliStrSumElem : public thrust::unary_function<qindex,cu_qcomp> {
+struct functor_setDensMatrPauliStrSumElem {
 
     int rank;
     qindex dim;
@@ -299,7 +299,7 @@ struct functor_setDensMatrPauliStrSumElem : public thrust::unary_function<qindex
         amps(amps), coeffs(coeffs), strings(strings)
     {}
 
-    __device__ cu_qcomp operator()(qindex n) {
+    __device__ void operator()(qindex n) {
         qindex i = concatenateBits(rank, n, suffixLen);
         qindex r = fast_getGlobalRowFromFlatIndex(i, dim);
         qindex c = fast_getGlobalColFromFlatIndex(i, dim);

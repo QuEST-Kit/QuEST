@@ -114,10 +114,16 @@ INLINE QCOMP_ALIAS fast_getLowerPauliStrElem(PauliStr str, qindex row, qindex co
     pI = {0, +1}; //  i
     nI = {0, -1}; // -i
 
-    static const QCOMP_ALIAS matrices[][2][2] = {
-        {{p1,p0},{p0,p1}},   // I
-        {{p0,p1},{p1,p0}},   // X
-        {{p0,nI},{pI,p0}},   // Y
+    // 'matrices' below is not declared constexpr or static const, even though
+    // it is fixed/known at compile-time, because this makes it incompatible
+    // with CUDA kernels/thrust. It is instead left as runtime innitialisation
+    // but this poses no real slowdown; this function, and its caller, are inlined
+    // so these 16 amps are re-processed one for each full enumeration of the
+    // PauliStrSum which is expected to have significantly more terms/coeffs
+    QCOMP_ALIAS matrices[][2][2] = {
+        {{p1,p0},{p0,p1}},  // I
+        {{p0,p1},{p1,p0}},  // X
+        {{p0,nI},{pI,p0}},  // Y
         {{p1,p0},{p0,n1}}}; // Z
 
     QCOMP_ALIAS elem = p1; // 1
