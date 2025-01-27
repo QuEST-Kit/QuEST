@@ -124,6 +124,8 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             elem /= abs(elem);
             op.cpuElems[i] = elem;
         }
+        syncDiagMatr(op);
+
         QMatrix opMatr = toQMatrix(op);
             
         SECTION( "state-vector" ) {
@@ -147,6 +149,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             
             int numTargs = 3;
             SubDiagonalOp op = createSubDiagonalOp(numTargs);
+            syncDiagMatr(op);
             
             int badNumTargs = GENERATE_COPY( numTargs-1, numTargs+1 );
             int badTargs[NUM_QUBITS+1];
@@ -165,6 +168,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
                 targs[t] = t;
             for (int i=0; i<badOp.numElems; i++)
                 badOp.cpuElems[i] = 1;
+            syncDiagMatr(badOp);
             
             REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, badOp.numQubits, badOp), Contains("number of target qubits") );
             destroySubDiagonalOp(badOp);
@@ -175,6 +179,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             SubDiagonalOp op = createSubDiagonalOp(3);
             for (int i=0; i<op.numElems; i++)
                 op.cpuElems[i] = 1;
+            syncDiagMatr(op);
                 
             // make a repetition in the target list
             int targs[] = {2,1,2};
@@ -188,6 +193,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             SubDiagonalOp op = createSubDiagonalOp(3);
             for (int i=0; i<op.numElems; i++)
                 op.cpuElems[i] = 1;
+            syncDiagMatr(op);
                 
             int targs[] = {0,1,2};
             
@@ -206,6 +212,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             int targs[] = {0,1,2};
             for (int i=0; i<op.numElems; i++)
                 op.cpuElems[i] = 1;
+            syncDiagMatr(op);
             
             // break unitarity via reals
             op.cpuElems[2] = -.1;

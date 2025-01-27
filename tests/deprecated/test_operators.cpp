@@ -330,6 +330,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[operators]" ) {
         SubDiagonalOp op = createSubDiagonalOp(numTargs);
         for (long long int i=0; i<op.numElems; i++)
             op.cpuElems[i] = getRandomComplex();
+        syncDiagMatr(op);
         QMatrix opMatr = toQMatrix(op);
             
         SECTION( "state-vector" ) {
@@ -353,6 +354,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[operators]" ) {
             
             int numTargs = 3;
             SubDiagonalOp op = createSubDiagonalOp(numTargs);
+            syncDiagMatr(op);
             
             int badNumTargs = GENERATE_COPY( numTargs-1, numTargs+1 );
             int badTargs[NUM_QUBITS+1];
@@ -371,6 +373,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[operators]" ) {
                 targs[t] = t;
             for (int i=0; i<badOp.numElems; i++)
                 badOp.cpuElems[i] = qcomp(1, 0);
+            syncDiagMatr(badOp);
             
             REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, badOp.numQubits, badOp), Contains("number of target qubits") && Contains("exceeds") );
             destroySubDiagonalOp(badOp);
@@ -381,6 +384,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[operators]" ) {
             SubDiagonalOp op = createSubDiagonalOp(3);
             for (int i=0; i<op.numElems; i++)
                 op.cpuElems[i] = qcomp(1, 0);
+            syncDiagMatr(op);
                 
             // make a repetition in the target list
             int targs[] = {2,1,2};
@@ -394,6 +398,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[operators]" ) {
             SubDiagonalOp op = createSubDiagonalOp(3);
             for (int i=0; i<op.numElems; i++)
                 op.cpuElems[i] = qcomp(1,0);
+            syncDiagMatr(op);
                 
             int targs[] = {0,1,2};
             
@@ -4047,6 +4052,8 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
         SubDiagonalOp op = createSubDiagonalOp(numTargs);
         for (long long int i=0; i<op.numElems; i++)
             op.cpuElems[i] = getRandomComplex();
+        syncDiagMatr(op);
+
         QMatrix opMatr = toQMatrix(op);
             
         SECTION( "state-vector" ) {
@@ -4070,6 +4077,7 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
             
             int numTargs = 3;
             SubDiagonalOp op = createSubDiagonalOp(numTargs);
+            syncDiagMatr(op);
             
             int badNumTargs = GENERATE_COPY( numTargs-1, numTargs+1 );
             int badTargs[NUM_QUBITS+1];
@@ -4088,6 +4096,7 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
                 targs[t] = t;
             for (int i=0; i<badOp.numElems; i++)
                 badOp.cpuElems[i] = qcomp(1,0);
+            syncDiagMatr(badOp);
             
             REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, badOp.numQubits, badOp), Contains("number of target qubits") && Contains("exceeds") );
             destroySubDiagonalOp(badOp);
@@ -4098,6 +4107,7 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
             SubDiagonalOp op = createSubDiagonalOp(3);
             for (int i=0; i<op.numElems; i++)
                 op.cpuElems[i] = qcomp(1,0);
+            syncDiagMatr(op);
                 
             // make a repetition in the target list
             int targs[] = {2,1,2};
@@ -4111,6 +4121,7 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
             SubDiagonalOp op = createSubDiagonalOp(3);
             for (int i=0; i<op.numElems; i++)
                 op.cpuElems[i] = qcomp(1,0);
+            syncDiagMatr(op);
             
             int targs[] = {0,1,2};
             
