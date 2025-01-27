@@ -277,11 +277,6 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             int numTargs = 3;
             int targs[] = {1,2,3};
             
-            /* compilers don't auto-initialise to NULL; the below circumstance 
-             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
-             * which actually triggers its own validation. Hence this test is useless 
-             * currently.
-             */
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
             REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("created") );
@@ -606,11 +601,6 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             int numTargs = 3;
             int targs[] = {1,2,3};
             
-            /* compilers don't auto-initialise to NULL; the below circumstance 
-             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
-             * which actually triggers its own validation. Hence this test is useless 
-             * currently.
-             */
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
             REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("created") );
@@ -762,11 +752,6 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
             int ctrls[1] = {0};
             int targs[3] = {1,2,3};
             
-            /* compilers don't auto-initialise to NULL; the below circumstance 
-             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
-             * which actually triggers its own validation. Hence this test is useless 
-             * currently.
-             */
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
             REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 3, matr), Contains("created") );

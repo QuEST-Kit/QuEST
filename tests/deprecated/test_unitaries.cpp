@@ -389,12 +389,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             
             int numTargs = 3;
             int targs[] = {1,2,3};
-            
-            /* compilers don't auto-initialise to NULL; the below circumstance 
-             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
-             * which actually triggers its own validation. Hence this test is useless 
-             * currently.
-             */
+
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
             REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, 0, targs, numTargs, matr), Contains("created") );
@@ -1234,12 +1229,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
             
             int ctrls[1] = {0};
             int targs[3] = {1,2,3};
-            
-            /* compilers don't auto-initialise to NULL; the below circumstance 
-             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
-             * which actually triggers its own validation. Hence this test is useless 
-             * currently.
-             */
+
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
             REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, 3, matr), Contains("created") );
@@ -2029,11 +2019,6 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
             int numTargs = 3;
             int targs[] = {1,2,3};
             
-            /* compilers don't auto-initialise to NULL; the below circumstance 
-             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
-             * which actually triggers its own validation. Hence this test is useless 
-             * currently.
-             */
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
             REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), Contains("created") );
