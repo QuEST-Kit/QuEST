@@ -1,0 +1,11 @@
+target_sources(tests
+  PUBLIC
+  compare.cpp
+  convert.cpp
+  evolve.cpp
+  linalg.cpp
+  lists.cpp
+  qmatrix.cpp
+  qvector.cpp
+  random.cpp
+)
