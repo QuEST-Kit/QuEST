@@ -1154,8 +1154,8 @@ void applyMultiStateControlledPhaseGadget(Qureg qureg, int* controls, int* state
 
     phase *= -1;
     ctrlVec = util_getBraQubits(ctrlVec, qureg);
-    targVec = util_getBraQubits(ctrlVec, qureg);
-    localiser_statevec_anyCtrlPhaseGadget(qureg, ctrlVec, stateVec, targVec, angle);
+    targVec = util_getBraQubits(targVec, qureg);
+    localiser_statevec_anyCtrlPhaseGadget(qureg, ctrlVec, stateVec, targVec, phase);
 }
 
 
