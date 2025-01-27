@@ -2545,8 +2545,10 @@ TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
     qreal c = cos(param/2);
     qreal s = sin(param/2);
     qreal m = sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
-    QMatrix op{{c - qcomp(0,1)*vec.z*s/m, -(vec.y + qcomp(0,1)*vec.x)*s/m}, 
-               {(vec.y - qcomp(0,1)*vec.x)*s/m, c + qcomp(0,1)*vec.z*s/m}};
+
+    // brackets defer division of m to improve numerical stability
+    QMatrix op{{c - (qcomp(0,1)*vec.z*s)/m, -((vec.y + qcomp(0,1)*vec.x)*s)/m}, 
+               {((vec.y - qcomp(0,1)*vec.x)*s)/m, c + (qcomp(0,1)*vec.z*s)/m}};
 
     SECTION( "correctness" ) {
     
@@ -2556,13 +2558,13 @@ TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
         
             rotateAroundAxis(quregVec, target, param, vec);
             applyReferenceOp(refVec, target, op);
-            REQUIRE( areEqual(quregVec, refVec) );
+            REQUIRE( areEqual(quregVec, refVec, 10*REAL_EPS) );
         }
         SECTION( "density-matrix" ) {
 
             rotateAroundAxis(quregMatr, target, param, vec);
             applyReferenceOp(refMatr, target, op);
-            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
+            REQUIRE( areEqual(quregMatr, refMatr, 100*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {

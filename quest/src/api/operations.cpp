@@ -1022,18 +1022,17 @@ void applyMultiStateControlledRotateAroundAxis(Qureg qureg, int* ctrls, int* sta
     validate_controlStates(states, numCtrls, __func__); // permits states==nullptr
     validate_rotationAxisNotZeroVector(axisX, axisY, axisZ, __func__);
 
-    // normalise vector
+    // defer division of vector norm to improve numerical accuracy
     qreal norm = sqrt(pow(axisX,2) + pow(axisY,2) + pow(axisZ,2)); // != 0
-    axisX /= norm;
-    axisY /= norm;
-    axisZ /= norm;
 
     // treat as generic 1-qubit matrix
     qreal c = cos(angle/2);
     qreal s = sin(angle/2);
-    auto matr = getCompMatr1({
-        {c - s * axisZ * 1_i, - axisY * s - axisX * s * 1_i},
-        {axisY * s - axisX * s * 1_i, c + axisZ * s * 1_i}});
+    qcomp u11 = c - (s * axisZ * 1_i) / norm;
+    qcomp u12 =   - (s * (axisY + axisX * 1_i)) / norm;
+    qcomp u21 =     (s * (axisY - axisX * 1_i)) / norm;
+    qcomp u22 = c + (s * axisZ * 1_i) / norm;
+    auto matr = getCompMatr1({{u11,u12},{u21,u22}});
 
     // harmlessly re-validates, and checks unitarity of matr
     applyMultiStateControlledCompMatr1(qureg, ctrls, states, numCtrls, targ, matr);
