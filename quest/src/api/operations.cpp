@@ -471,7 +471,7 @@ void applyMultiControlledT(Qureg qureg, int* controls, int numControls, int targ
 
 void applyMultiStateControlledT(Qureg qureg, int* controls, int* states, int numControls, int target) {
 
-    DiagMatr1 matr = getDiagMatr1({1, 1/sqrt(2) - 1_i/sqrt(2)});
+    DiagMatr1 matr = getDiagMatr1({1, 1/sqrt(2) + 1_i/sqrt(2)});
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
 }
 
