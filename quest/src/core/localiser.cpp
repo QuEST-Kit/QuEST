@@ -166,9 +166,8 @@ auto getCtrlsAndTargsSwappedToMinSuffix(Qureg qureg, vector<int> ctrls, vector<i
     qindex ctrlMask = getBitMask(ctrls.data(), ctrls.size());
     int minNonTarg = getIndOfNextRightmostZeroBit(targMask, -1);
 
-    // prepare indices of ctrls in the given list (i.e. the inverse of ctrls), if any exist
-    int maxCtrlInd = (ctrls.empty())? -1 : *std::max_element(ctrls.begin(), ctrls.end());
-    vector<int> ctrlInds(maxCtrlInd+1); // bounded by ~64
+    // prepare map from control qubit to its index in ctrls list (i.e. inverse of ctrls)
+    std::unordered_map<int,int> ctrlInds;
     for (size_t i=0; i<ctrls.size(); i++)
         ctrlInds[ctrls[i]] = i;
 
@@ -179,8 +178,8 @@ auto getCtrlsAndTargsSwappedToMinSuffix(Qureg qureg, vector<int> ctrls, vector<i
         // consider only targs in the prefix substate
         if (util_isQubitInSuffix(targ, qureg))
             continue;
-            
-        // if our replacement targ happens to be a ctrl... 
+
+        // we will swap targ with minNonTarg, but must first move that it of ctrls
         if (getBit(ctrlMask, minNonTarg) == 1) {
 
             // find and swap that ctrl with the old targ
@@ -189,7 +188,7 @@ auto getCtrlsAndTargsSwappedToMinSuffix(Qureg qureg, vector<int> ctrls, vector<i
 
             // update our ctrl trackers
             ctrlInds[targ] = ctrlInd;
-            ctrlInds[minNonTarg] = -1; // for clarity
+            ctrlInds[minNonTarg] = -1; // erases minNonTarg (for clarity)
             ctrlMask = flipTwoBits(ctrlMask, minNonTarg, targ);
         }
 
@@ -996,7 +995,9 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
         localiser_statevec_anyCtrlOneTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], getCompMatr1(matr.cpuElems), conj);
     
     // similarly, bespoke two-targ routines are preferable although they offer no communication
-    // benefit because they call the same any-targ localiser, but still accelerate GPU memory access
+    // benefit because they call the same any-targ localiser, but still accelerate GPU memory access.
+    // this function call is the same as below, but we explicitly pass a CompMatr2 type in lieu of 
+    // CompMatr, which avoids having to copy the CompMatr dynamic memory into accelerator backends
     else if (targs.size() == 2)
         localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], targs[1], getCompMatr2(matr.cpuElems), conj);
     
