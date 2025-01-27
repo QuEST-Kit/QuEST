@@ -34,8 +34,10 @@ using std::vector;
  */
 #define NUM_QUBITS 5
 
+
 #undef REAL_EPS
-static qreal REAL_EPS = 1E-8; // hardcoded for v3 deprecated API
+constexpr qreal REAL_EPS = 1E-8; // hardcoded for v3 deprecated API
+
 
 #ifndef M_PI
 #define M_PI 3.141592653589793238

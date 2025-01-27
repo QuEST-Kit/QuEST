@@ -309,8 +309,8 @@ TEST_CASE( "initArbitraryPureState", "[state_initialisations]" ) {
 
             // matRef = |vecRef><vecRef|
             QMatrix matRef = getZeroMatrix(vecRef.size());
-            for (auto r=0; r<vecRef.size(); r++)
-                for (auto c=0; c<vecRef.size(); c++)
+            for (size_t r=0; r<vecRef.size(); r++)
+                for (size_t c=0; c<vecRef.size(); c++)
                     matRef[r][c] = vecRef[r] * conj(vecRef[c]);
 
             REQUIRE( areEqual(mat, matRef) );

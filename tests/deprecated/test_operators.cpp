@@ -41,8 +41,6 @@ using Catch::Matchers::Contains;
 TEST_CASE( "applyDiagonalOp", "[operators]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
-
-    QuESTEnv env = getQuESTEnv();
     
     SECTION( "correctness" ) {
         
@@ -50,7 +48,7 @@ TEST_CASE( "applyDiagonalOp", "[operators]" ) {
         GENERATE( range(0,10) );
         
         // make a totally random (non-Hermitian) diagonal oeprator
-        DiagonalOp op = createDiagonalOp(NUM_QUBITS, env);
+        DiagonalOp op = createDiagonalOp(NUM_QUBITS, getQuESTEnv());
         for (long long int i=0; i<op.numElemsPerNode; i++)
             op.cpuElems[i] = getRandomComplex();
         syncDiagonalOp(op);
@@ -68,18 +66,18 @@ TEST_CASE( "applyDiagonalOp", "[operators]" ) {
             REQUIRE( areEqual(quregMatr, ref, 100*REAL_EPS) );
         }
         
-        destroyDiagonalOp(op, env);
+        destroyDiagonalOp(op, getQuESTEnv());
     }
     SECTION( "input validation" ) {
         
         SECTION( "mismatching size" ) {
             
-            DiagonalOp op = createDiagonalOp(NUM_QUBITS + 1, env);
+            DiagonalOp op = createDiagonalOp(NUM_QUBITS + 1, getQuESTEnv());
             
             REQUIRE_THROWS_WITH( applyDiagonalOp(quregVec,  op), Contains("different number of qubits"));
             REQUIRE_THROWS_WITH( applyDiagonalOp(quregMatr, op), Contains("different number of qubits"));
             
-            destroyDiagonalOp(op, env);
+            destroyDiagonalOp(op, getQuESTEnv());
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );

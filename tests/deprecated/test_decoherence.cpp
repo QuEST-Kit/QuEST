@@ -580,7 +580,7 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
         for (int i=0; i<numOps; i++)
             ops[i] = toComplexMatrix2(matrs[i]);
 
-        mixKrausMap(qureg, target, ops.data(), numOps);
+        v3_mixKrausMap(qureg, target, ops.data(), numOps);
         
         // set ref -> K_i ref K_i^dagger
         vector<QMatrix> matrRefs(numOps);
@@ -602,7 +602,7 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
         SECTION( "number of operators" ) {
             
             int numOps = 0;
-            REQUIRE_THROWS_WITH( mixKrausMap(qureg, 0, spoofOps, numOps), Contains("must be given a strictly positive number of matrices") );
+            REQUIRE_THROWS_WITH( v3_mixKrausMap(qureg, 0, spoofOps, numOps), Contains("must be given a strictly positive number of matrices") );
         }
         SECTION( "trace preserving" ) {
             
@@ -615,17 +615,17 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
                 
             // make invalid
             ops[GENERATE_REF( range(0,numOps) )].real[0][0] = 0;
-            REQUIRE_THROWS_WITH( mixKrausMap(qureg, 0, ops.data(), numOps), Contains("trace preserving") );   
+            REQUIRE_THROWS_WITH( v3_mixKrausMap(qureg, 0, ops.data(), numOps), Contains("trace preserving") );   
         }
         SECTION( "qubit index" ) {
             
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( mixKrausMap(qureg, target, spoofOps, 1), Contains("Invalid target qubit") );
+            REQUIRE_THROWS_WITH( v3_mixKrausMap(qureg, target, spoofOps, 1), Contains("Invalid target qubit") );
         }
         SECTION( "density-matrix" ) {
             
             Qureg vec = createQureg(NUM_QUBITS);
-            REQUIRE_THROWS_WITH( mixKrausMap(vec, 0, spoofOps, 1), Contains("Expected a density matrix Qureg but received a statevector") );
+            REQUIRE_THROWS_WITH( v3_mixKrausMap(vec, 0, spoofOps, 1), Contains("Expected a density matrix Qureg but received a statevector") );
             destroyQureg(vec, getQuESTEnv());
         }
         SECTION( "operators fit in node" ) {
@@ -633,7 +633,7 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
             qureg.isDistributed = 1;
             qureg.numAmpsPerNode = 3; // min 4
             qureg.logNumAmpsPerNode = 1; // min 2
-            REQUIRE_THROWS_WITH( mixKrausMap(qureg, 0, spoofOps, 1), Contains("each node's communication buffer") && Contains("cannot simultaneously store") );
+            REQUIRE_THROWS_WITH( v3_mixKrausMap(qureg, 0, spoofOps, 1), Contains("each node's communication buffer") && Contains("cannot simultaneously store") );
         }        
     }
     destroyQureg(qureg, getQuESTEnv());
