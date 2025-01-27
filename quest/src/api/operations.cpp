@@ -1032,7 +1032,7 @@ void applyMultiStateControlledRotateAroundAxis(Qureg qureg, int* ctrls, int* sta
     qreal c = cos(angle/2);
     qreal s = sin(angle/2);
     auto matr = getCompMatr1({
-        {c - axisZ * 1_i, - axisY * s - axisX * s * 1_i},
+        {c - s * axisZ * 1_i, - axisY * s - axisX * s * 1_i},
         {axisY * s - axisX * s * 1_i, c + axisZ * s * 1_i}});
 
     // harmlessly re-validates, and checks unitarity of matr
