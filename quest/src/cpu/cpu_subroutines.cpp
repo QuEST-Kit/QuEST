@@ -541,7 +541,7 @@ void cpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         qindex i = concatenateBits(qureg.rank, j, qureg.logNumAmpsPerNode);
 
         int b = getBit(i, targ);
-        qureg.cpuAmps[i] *= matr.elems[b];
+        qureg.cpuAmps[j] *= matr.elems[b];
     }
 }
 
@@ -579,7 +579,7 @@ void cpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         qindex i = concatenateBits(qureg.rank, j, qureg.logNumAmpsPerNode);
 
         int k = getTwoBits(i, targ2, targ1);
-        qureg.cpuAmps[i] *= matr.elems[k];
+        qureg.cpuAmps[j] *= matr.elems[k];
     }
 }
 
@@ -629,7 +629,7 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         if constexpr (ApplyConj)
             elem = conj(elem);
 
-        qureg.cpuAmps[i] *= elem;
+        qureg.cpuAmps[j] *= elem;
     }
 }
 
@@ -1741,7 +1741,7 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
         // j = global index of i
         qindex j = concatenateBits(qureg.rank, i, qureg.logNumAmpsPerNode);
 
-        // k = outcome index corresponding to 
+        // k = outcome index corresponding to basis state j
         qindex k = getValueOfBits(j, qubits.data(), numBits); // loop therein may be unrolled
 
         #pragma omp atomic

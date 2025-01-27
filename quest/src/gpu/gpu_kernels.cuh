@@ -369,7 +369,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
     qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
 
     int b = getBit(i, targ);
-    amps[i] *= m1 + b * (m2 - m1);
+    amps[j] *= m1 + b * (m2 - m1);
 }
 
 
@@ -410,7 +410,7 @@ __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
     // k = local elem index
     int k = getTwoBits(i, targ2, targ1);
     cu_qcomp elems[] = {m1, m2, m3, m4};
-    amps[i] *= elems[k];
+    amps[j] *= elems[k];
 }
 
 
@@ -460,7 +460,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     if constexpr (ApplyConj)
         elem.y *= -1;
 
-    amps[i] *= elem;
+    amps[j] *= elem;
 }
 
 
