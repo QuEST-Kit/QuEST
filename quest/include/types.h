@@ -108,11 +108,11 @@ static inline qcomp getQcomp(qreal re, qreal im) {
     // args always have max-precision (hence here are "long double" and "long long int")
 
     static inline qcomp operator ""_i(long double y) {
-        return qcomp(0, (qreal) y); // discarding y precision
+        return qcomp(0, static_cast<qreal>(y)); // discarding y precision
     }
 
     static inline qcomp operator ""_i(unsigned long long int y) {
-        return qcomp(0, (qreal) y); // discarding y precision
+        return qcomp(0, static_cast<qreal>(y)); // discarding y precision
     }
 
 #endif
@@ -149,16 +149,28 @@ static inline qcomp getQcomp(qreal re, qreal im) {
 
     #if DEFINE_ARITHMETIC_OVERLOADS
 
+    // shortcuts for below overload definitions
+    #define COMP_TO_QCOMP(a) \
+        qcomp( \
+            static_cast<qreal>(real(a)), \
+            static_cast<qreal>(imag(a)))
+
+    #define REAL_TO_QCOMP(b) \
+        qcomp(static_cast<qreal>(b), 0)
+
     // define operator between complex<compprec> and realtype, in either order, casting to qcomp
     #define DEFINE_OPERATOR_BETWEEN_COMPLEX_AND_REAL(op, compprec, realtype) \
         static inline qcomp operator op (const std::complex<compprec>& a, const realtype& b) { \
             return \
-                qcomp((qreal) real(a), (qreal) imag(a)) \
+                COMP_TO_QCOMP(a) \
                 op \
-                qcomp((qreal) b, 0); \
+                REAL_TO_QCOMP(b); \
         } \
         static inline qcomp operator op (const realtype& b, const std::complex<compprec>& a) { \
-            return a op b; \
+            return \
+                REAL_TO_QCOMP(b) \
+                op \
+                COMP_TO_QCOMP(a); \
         } \
         static inline std::complex<compprec>& operator op##= (std::complex<compprec>& a, const realtype& b) { \
             a = a op b; \
@@ -198,20 +210,21 @@ static inline qcomp getQcomp(qreal re, qreal im) {
     #define DEFINE_OPERATOR_BETWEEN_COMPLEX_AND_COMPLEX(op, precA, precB) \
         static inline qcomp operator op (const std::complex<precA>& a, const std::complex<precB>& b) { \
             return \
-                qcomp((qreal) real(a), (qreal) imag(a)) \
+                COMP_TO_QCOMP(a) \
                 op \
-                qcomp((qreal) real(b), (qreal) imag(b)); \
-        } \
-        static inline qcomp operator op (const std::complex<precB>& b, const std::complex<precA>& a) { \
-            return a op b; \
+                COMP_TO_QCOMP(b); \
         }
 
     // defines + - * / between the given differing-precision complex, casting to qcomp, except assignment
-    #define DEFINE_ARITHMETIC_BETWEEN_COMPLEX_AND_COMPLEX(precA, precB) \
+    #define DEFINE_SINGLE_DIRECTION_ARITHMETIC_BETWEEN_COMPLEX_AND_COMPLEX(precA, precB) \
         DEFINE_OPERATOR_BETWEEN_COMPLEX_AND_COMPLEX(+, precA, precB) \
         DEFINE_OPERATOR_BETWEEN_COMPLEX_AND_COMPLEX(-, precA, precB) \
         DEFINE_OPERATOR_BETWEEN_COMPLEX_AND_COMPLEX(*, precA, precB) \
         DEFINE_OPERATOR_BETWEEN_COMPLEX_AND_COMPLEX(/, precA, precB)
+
+    #define DEFINE_ARITHMETIC_BETWEEN_COMPLEX_AND_COMPLEX(precA, precB) \
+        DEFINE_SINGLE_DIRECTION_ARITHMETIC_BETWEEN_COMPLEX_AND_COMPLEX(precA, precB) \
+        DEFINE_SINGLE_DIRECTION_ARITHMETIC_BETWEEN_COMPLEX_AND_COMPLEX(precB, precA)
 
     // define arithmetic between all differing-precision decimal complex, casting to qcomp, except assignment
     DEFINE_ARITHMETIC_BETWEEN_COMPLEX_AND_COMPLEX(float,  double)

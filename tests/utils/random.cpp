@@ -46,16 +46,16 @@ void setRandomTestStateSeeds() {
  */
 
 
-qreal getRandomReal(qreal min, qreal max) {
-    DEMAND( min <= max );
+qreal getRandomReal(qreal min, qreal maxIncl) {
+    DEMAND( min <= maxIncl );
 
-    qreal r = rand() / (qreal) RAND_MAX;
-    return min + r * (max - min);
+    qreal r = rand() / static_cast<qreal>(RAND_MAX);
+    return min + r * (maxIncl - min);
 }
 
 
-int getRandomInt(int min, int max) {
-    return (int) round(getRandomReal(min, max-1));
+int getRandomInt(int min, int maxExcl) {
+    return (int) round(getRandomReal(min, maxExcl-1));
 }
 
 
@@ -317,7 +317,7 @@ PauliStr getRandomDiagPauliStr(int numQubits) {
 
 
 /*
- * QUBITS
+ * LISTS
  */
 
 
