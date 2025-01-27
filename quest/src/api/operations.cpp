@@ -776,10 +776,10 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
     auto ctrlVec = util_getVector(controls, numControls);
     auto stateVec = util_getVector(states, numControls); // empty if states==nullptr
 
-    // when qureg is a density matrix, we must additionally apply conj(shift(str));
-    // to avoid re-enumeration of the state, we growing the PauliStr to double-qubits,
-    // and conjugate (factor=-1), potentially losing the compile-time #ctrls benefit
-    if (qureg.isDensityMatrix) {
+    // when there are no control qubits, we can merge the density matrix's 
+    // operation sinto a single tensor, i.e. +- (shift(str) (x) str), to 
+    // avoid superfluous re-enumeration of the state
+    if (qureg.isDensityMatrix && numControls == 0) {
         factor = paulis_hasOddNumY(str)? -1 : 1;
         ctrlVec = util_getConcatenated(ctrlVec, util_getBraQubits(ctrlVec, qureg));
         stateVec = util_getConcatenated(stateVec, stateVec); 
@@ -787,6 +787,14 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
     }
 
     localiser_statevec_anyCtrlPauliTensor(qureg, ctrlVec, stateVec, str, factor);
+
+    // but density-matrix control qubits require two distinct operations
+    if (qureg.isDensityMatrix && numControls > 0) {
+        factor = paulis_hasOddNumY(str)? -1 : 1;
+        ctrlVec = util_getBraQubits(ctrlVec, qureg);
+        str = paulis_getShiftedPauliStr(str, qureg.numQubits);
+        localiser_statevec_anyCtrlPauliTensor(qureg, ctrlVec, stateVec, str, factor);
+    }
 }
 
 
