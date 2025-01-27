@@ -307,8 +307,10 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
         // note some functions will need smaller matrices which is fine; a subset of each
         // spoof'd matrix will be copied over by the deprecation layer
         ComplexMatrixN spoofOps[NUM_QUBITS];
-        for (int i=0; i<NUM_QUBITS; i++)
+        for (int i=0; i<NUM_QUBITS; i++) {
             spoofOps[i] = createComplexMatrixN(NUM_QUBITS);
+            syncCompMatr(spoofOps[i]);
+        }
         
         SECTION( "repetition of target" ) {
             
@@ -463,6 +465,7 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
             ComplexMatrixN ops[] = {createComplexMatrixN(NUM_QUBITS)};
             for (int i=0; i<(1<<NUM_QUBITS); i++)
                 ops[0].cpuElems[i][i] = 1;
+            syncCompMatr(ops[0]);
             
             // fake a smaller qureg 
             qureg.isDistributed = 1;
@@ -778,8 +781,10 @@ TEST_CASE( "mixNonTPMultiQubitKrausMap", "[decoherence]" ) {
         // note some functions will need smaller matrices which is fine; a subset of each
         // spoof'd matrix will be copied over by the deprecation layer
         ComplexMatrixN spoofOps[NUM_QUBITS];
-        for (int i=0; i<NUM_QUBITS; i++)
+        for (int i=0; i<NUM_QUBITS; i++) {
             spoofOps[i] = createComplexMatrixN(NUM_QUBITS);
+            syncCompMatr(spoofOps[i]);
+        }
         
         SECTION( "repetition of target" ) {
             
@@ -904,6 +909,7 @@ TEST_CASE( "mixNonTPMultiQubitKrausMap", "[decoherence]" ) {
             ComplexMatrixN ops[] = {createComplexMatrixN(NUM_QUBITS)};
             for (int i=0; i<(1<<NUM_QUBITS); i++)
                 ops[0].cpuElems[i][i] = 1;
+            syncCompMatr(ops[0]);
             
             // fake a smaller qureg 
             qureg.isDistributed = 1;

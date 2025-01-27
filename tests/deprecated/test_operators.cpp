@@ -247,6 +247,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
             int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
             ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("number of target qubits") );
             destroyComplexMatrixN(matr);
@@ -256,6 +257,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             int numTargs = 3;
             int targs[] = {1,2,2};
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("target") && Contains("unique") );
             destroyComplexMatrixN(matr);
@@ -265,6 +267,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             int numTargs = 3;
             int targs[] = {1,2,3};
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            syncCompMatr(matr);
             
             int inv = GENERATE( -1, NUM_QUBITS );
             targs[GENERATE_COPY( range(0,numTargs) )] = inv; // make invalid target
@@ -285,6 +288,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             
             int targs[2] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, 2, matr), Contains("matrix has an inconsistent size"));
             destroyComplexMatrixN(matr);
@@ -298,6 +302,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
 
             int qb[] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(2); // prevents seg-fault if validation doesn't trigger
+            syncCompMatr(matr);
             REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, qb, 2, matr), Contains("communication buffer") && Contains("cannot simultaneously store") );
             destroyComplexMatrixN(matr);
         }
@@ -571,6 +576,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
             int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
             ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("number of target qubits") );
             destroyComplexMatrixN(matr);
@@ -580,6 +586,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             int numTargs = 3;
             int targs[] = {1,2,2};
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("target") && Contains("unique") );
             destroyComplexMatrixN(matr);
@@ -589,6 +596,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             int numTargs = 3;
             int targs[] = {1,2,3};
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            syncCompMatr(matr);
             
             int inv = GENERATE( -1, NUM_QUBITS );
             targs[GENERATE_COPY( range(0,numTargs) )] = inv; // make invalid target
@@ -609,6 +617,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             
             int targs[2] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, 2, matr), Contains("matrix has an inconsistent size") );
             destroyComplexMatrixN(matr);
@@ -621,6 +630,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             quregVec.logNumAmpsPerNode = 0;
             int qb[] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(2); // prevents seg-fault if validation doesn't trigger
+            syncCompMatr(matr);
             REQUIRE_THROWS_WITH( applyMatrixN(quregVec, qb, 2, matr), Contains("communication buffer") && Contains("cannot simultaneously store") );
             destroyComplexMatrixN(matr);
         }
