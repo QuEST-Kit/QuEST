@@ -41,12 +41,6 @@ static qreal REAL_EPS = 1E-8; // hardcoded for v3 deprecated API
 #define M_PI 3.141592653589793238
 #endif
 
-
-// Qureg creators which forcefully enable the environment backends
-Qureg createForcedQureg(int numQubits);
-Qureg createForcedDensityQureg(int numQubits);
-
-
 /** A complex square matrix. 
  * Should be initialised with getZeroMatrix().
  * These have all the natural linear-algebra operator overloads, including 
