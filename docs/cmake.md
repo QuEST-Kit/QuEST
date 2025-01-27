@@ -1,9 +1,16 @@
 # CMake Configuration Options in QuEST
 
-Version 4 of QuEST includes reworked CMake to support library builds, CMake export, and installation. Here we detail useful variables to configure the compilation of QuEST. Any of these variables can be set using the `-D` flag when invoking CMake, for example:
+Version 4 of QuEST includes reworked CMake to support library builds, CMake export, and installation. Here we detail useful variables to configure the compilation of QuEST. If using a Unix-like operating system any of these variables can be set using the `-D` flag when invoking CMake, for example:
 
 ```
 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/QuEST -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DENABLE_MULTITHREADING=ON -DENABLE_DISTRIBUTION=OFF ./
+```
+
+Then one need only move to the build directory, and invoke make:
+
+```
+cd build
+make
 ```
 
 ## QuEST CMake variables
