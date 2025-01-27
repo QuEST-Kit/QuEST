@@ -1303,7 +1303,7 @@ TEST_CASE( "multiControlledMultiRotatePauli", "[unitaries]" ) {
          */
         pauliOpType paulis[NUM_QUBITS];
         for (int i=0; i<numTargs; i++)
-            paulis[i] = (pauliOpType) getRandomInt(0,4);
+            paulis[i] = (pauliOpType) getRandomInt(1,4); // exclude 0=Id
 
         // exclude identities from reference matrix exp (they apply unwanted global phase)
         int refTargs[NUM_QUBITS];
@@ -2089,7 +2089,7 @@ TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
         GENERATE( range(0,10) ); // gen 10 random pauli-codes for every targs
         pauliOpType paulis[NUM_QUBITS];
         for (int i=0; i<numTargs; i++)
-            paulis[i] = (pauliOpType) getRandomInt(0,4);
+            paulis[i] = (pauliOpType) getRandomInt(1,4); // exclude Id=0
 
         // exclude identities from reference matrix exp (they apply unwanted global phase)
         int refTargs[NUM_QUBITS];
