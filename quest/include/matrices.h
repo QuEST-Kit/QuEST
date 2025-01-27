@@ -690,11 +690,14 @@ extern "C" {
 extern "C" {
 #endif
 
-    void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, PauliStrSum in);
-    
     void setDiagMatrFromMultiVarFunc(DiagMatr out, qcomp (*func)(qindex*), int* numQubitsPerVar, int numVars, int areSigned);
 
     void setDiagMatrFromMultiDimLists(DiagMatr out, void* lists, int* numQubitsPerDim, int numDims);
+
+
+    FullStateDiagMatr createFullStateDiagMatrFromPauliStrSum(PauliStrSum in);
+
+    void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, PauliStrSum in);
 
     void setFullStateDiagMatrFromMultiVarFunc(FullStateDiagMatr out, qcomp (*func)(qindex*), int* numQubitsPerVar, int numVars, int areSigned);
 

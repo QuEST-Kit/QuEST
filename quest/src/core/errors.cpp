@@ -286,7 +286,7 @@ void error_calcFidStateVecDistribWhileDensMatrLocal() {
 
 
 /*
- * ACCELERATOR ERRORS
+ * BACKEND PRECONDITION ERRORS
  */
 
 void assert_highPauliStrSumMaskIsZero(PauliStrSum sum) {
@@ -356,7 +356,7 @@ void assert_bufferPackerGivenIncreasingQubits(int qubit1, int qubit2, int qubit3
 
 
 /*
- * BACKEND PRECONDITION ERRORS
+ * ACCELERATOR ERRORS
  */
 
 void assert_mixedQuregIsDensityMatrix(Qureg qureg) {
@@ -458,6 +458,16 @@ void assert_innerProductedSameDimQuregsHaveSameGpuAccel(Qureg quregA, Qureg qure
 
     if (quregA.isGpuAccelerated != quregB.isGpuAccelerated)
         raiseInternalError("The accelerator was asked to compute the inner product between a GPU-accelerated and non-accelerated Qureg, where were both statevectors or density matrices, which is an illegal combination.");
+}
+
+void assert_partialTraceQuregsAreIdenticallyDeployed(Qureg inQureg, Qureg outQureg) {
+
+    bool valid = (
+        inQureg.isDistributed == outQureg.isDistributed &&
+        inQureg.isGpuAccelerated == outQureg.isGpuAccelerated);
+
+    if (!valid)
+        raiseInternalError("An accelerator function involved in computing the partial trace received Quregs with differing distributions or GPU-accelerations.");
 }
 
 
