@@ -128,6 +128,8 @@ void error_calcFidStateVecDistribWhileDensMatrLocal();
  * ACCELERATOR ERRORS
  */
 
+void assert_highPauliStrSumMaskIsZero(PauliStrSum sum);
+
 void assert_numQubitsMatchesQubitStatesAndTemplateParam(int numQubits, int numQubitStates, int templateParam, string label="qubit");
 
 void assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(int numCtrls, int numCtrlStates, int templateParam);
@@ -159,6 +161,8 @@ void assert_quregAndFullStateDiagMatrAreBothOrNeitherDistrib(Qureg qureg, FullSt
 void assert_calcFidStateVecIsLocal(Qureg qureg);
 
 void assert_calcFidTempGpuAllocSucceeded(qcomp* ptr);
+
+void assert_calcExpecDiagTempGpuAllocSucceeded(qcomp* ptr);
 
 void assert_innerProductedSameDimQuregsHaveSameGpuAccel(Qureg quregA, Qureg quregB);
 
@@ -289,6 +293,8 @@ void error_utilsGivenGlobalIndexOutsideNode();
 void assert_utilsGivenStateVec(Qureg qureg);
 
 void assert_utilsGivenDensMatr(Qureg qureg);
+
+void assert_utilsGivenNonZeroEpsilon(qreal eps);
 
 
 

@@ -40,7 +40,11 @@ void localiser_fullstatediagmatr_getElems(qcomp* outElems, FullStateDiagMatr mat
 void localiser_statevec_setAmps(qcomp* inAmps, Qureg qureg, qindex globalStartInd, qindex globalNumAmps);
 void localiser_densmatr_setAmps(qcomp** inAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);
 
+void localiser_densmatr_setAmpsToPauliStrSum(Qureg qureg, PauliStrSum sum);
+
 void localiser_fullstatediagmatr_setElems(FullStateDiagMatr matr, qindex startInd, qcomp* in, qindex numElems);
+
+void localiser_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStrSum in);
 
 
 /*
@@ -183,6 +187,12 @@ qreal localiser_densmatr_calcHilbertSchmidtDistance(Qureg quregA, Qureg quregB);
 
 qcomp localiser_statevec_calcExpecPauliStr(Qureg qureg, PauliStr str);
 qcomp localiser_densmatr_calcExpecPauliStr(Qureg qureg, PauliStr str);
+
+qcomp localiser_statevec_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum);
+qcomp localiser_densmatr_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum);
+
+qcomp localiser_statevec_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+qcomp localiser_densmatr_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
 
 
 /*

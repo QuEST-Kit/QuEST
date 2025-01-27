@@ -16,8 +16,6 @@
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/bitwise.hpp"
 
-#include "quest/src/core/errors.hpp" // only needed for not-implemented functions
-
 #include <vector>
 
 using std::vector;
@@ -40,6 +38,8 @@ void validateAndApplyAnyCtrlAnyTargUnitaryMatrix(Qureg qureg, int* ctrls, int* s
     validate_controlStates(states, numCtrls, caller);
     validate_matrixDimMatchesTargets(matr, numTargs, caller); // also checks fields and is-synced
     validate_matrixIsUnitary(matr, caller); // harmlessly rechecks fields and is-synced
+    if (util_isDenseMatrixType<T>())
+        validate_mixedAmpsFitInNode(qureg, numTargs, caller);
 
     auto ctrlVec  = util_getVector(ctrls,  numCtrls);
     auto stateVec = util_getVector(states, numCtrls);
@@ -65,13 +65,6 @@ void validateAndApplyAnyCtrlAnyTargUnitaryMatrix(Qureg qureg, int* ctrls, int* s
 
 // enable invocation by both C and C++ binaries
 extern "C" {
-
-
-
-// DEBUG
-#define _NOT_IMPLEMENTED_ERROR_DEF { error_functionNotImplemented(__func__); }
-
-
 
 
 /*
@@ -117,6 +110,7 @@ void multiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix) 
     validate_quregFields(qureg, __func__);
     validate_twoTargets(qureg, target1, target2, __func__);
     validate_matrixFields(matrix, __func__); // matrix can be non-unitary
+    validate_mixedAmpsFitInNode(qureg, 2, __func__);
 
     bool conj = false;
     localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, {}, {}, target1, target2, matrix, conj);
@@ -156,6 +150,7 @@ void multiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix
     validate_quregFields(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
     validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also validates fields and is-sync, but not unitarity
+    validate_mixedAmpsFitInNode(qureg, numTargets, __func__);
 
     bool conj = false;
     localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, {}, {}, util_getVector(targets, numTargets), matrix, conj);
@@ -365,25 +360,21 @@ void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* sta
 
 
 /*
- * FullStateDiagMatr
+ * FullStateDiagMatr (and power)
  */
 
 void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
     validate_quregFields(qureg, __func__);
     validate_matrixFields(matrix, __func__);
-    validate_matrixAndQuregAreCompatible(matrix, qureg, __func__); // matrix can be non-unitary
+    validate_matrixAndQuregAreCompatible(matrix, qureg, false, __func__); // matrix can be non-unitary
 
-    bool onlyMultiply = true;
-    qcomp exponent = qcomp(1, 0);
-    (qureg.isDensityMatrix)?
-        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply):
-        localiser_statevec_allTargDiagMatr(qureg, matrix, exponent);
+    multiplyFullStateDiagMatrPower(qureg, matrix, 1); // harmlessly re-validates
 }
 
 void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent) {
     validate_quregFields(qureg, __func__);
     validate_matrixFields(matrix, __func__);
-    validate_matrixAndQuregAreCompatible(matrix, qureg, __func__); // matrix can be non-unitary
+    validate_matrixAndQuregAreCompatible(matrix, qureg, false, __func__); // matrix can be non-unitary
 
     bool onlyMultiply = true;
     (qureg.isDensityMatrix)?
@@ -394,20 +385,16 @@ void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp
 void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
     validate_quregFields(qureg, __func__);
     validate_matrixFields(matrix, __func__);
-    validate_matrixAndQuregAreCompatible(matrix, qureg, __func__);
+    validate_matrixAndQuregAreCompatible(matrix, qureg, false, __func__);
     validate_matrixIsUnitary(matrix, __func__);
 
-    bool onlyMultiply = false;
-    qcomp exponent = qcomp(1, 0);
-    (qureg.isDensityMatrix)?
-        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply):
-        localiser_statevec_allTargDiagMatr(qureg, matrix, exponent);
+    applyFullStateDiagMatrPower(qureg, matrix, 1); // harmlessly re-validates
 }
 
 void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent) {
     validate_quregFields(qureg, __func__);
     validate_matrixFields(matrix, __func__);
-    validate_matrixAndQuregAreCompatible(matrix, qureg, __func__);
+    validate_matrixAndQuregAreCompatible(matrix, qureg, false, __func__);
     validate_matrixIsUnitary(matrix, __func__);
 
     bool onlyMultiply = false;
@@ -617,9 +604,14 @@ void applyMultiStateControlledSqrtSwap(Qureg qureg, int* controls, int* states, 
     validate_controlsAndTwoTargets(qureg, controls, numControls, target1, target2, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    // this is likely suboptimal, and there must exist a more 
-    // efficient bespoke strategy for sqrt-SWAP, although given
-    // it is a little esoteric, optimisation is not worthwhile
+    // TODO:
+    // this function exacts sqrtSwap as a dense 2-qubit matrix,
+    // where as bespoke communication and simulation strategy is
+    // clearly possible which we have not supported because the gate
+    // is somewhat esoteric. As such, we must validate mixed-amps fit
+
+    validate_mixedAmpsFitInNode(qureg, 2, __func__); // to throw SqrtSwap error, not generic CompMatr2 error
+
     CompMatr2 matr = getCompMatr2({
         {1, 0, 0, 0},
         {0, .5+.5_i, .5-.5_i, 0},
@@ -804,15 +796,80 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
  * Pauli string sums
  */
 
-void multiplyPauliStrSum(Qureg qureg, PauliStrSum str)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace) {
+    validate_quregFields(qureg, __func__);
+    validate_quregFields(workspace, __func__);
+    validate_quregCanBeWorkspace(qureg, workspace, __func__);
+    validate_pauliStrSumFields(sum, __func__);
+    validate_pauliStrSumTargets(sum, qureg, __func__);
 
-void applyTrotterizedTimeEvol(Qureg qureg, PauliStrSum hamiltonian, qreal time, int order, int reps) {
+    // clone qureg to workspace, set qureg to blank
+    localiser_statevec_setQuregToSuperposition(0, workspace, 1, qureg, 0, qureg);
+    localiser_statevec_initUniformState(qureg, 0);
 
-    // validate that PauliStrSum is Hermitian
+    // apply each term in-turn, mixing into output qureg, then undo using idempotency
+    for (qindex i=0; i<sum.numTerms; i++) {
+        localiser_statevec_anyCtrlPauliTensor(workspace, {}, {}, sum.strings[i]);
+        localiser_statevec_setQuregToSuperposition(1, qureg, sum.coeffs[i], workspace, 0, workspace);
+        localiser_statevec_anyCtrlPauliTensor(workspace, {}, {}, sum.strings[i]);
+    }
+
+    // workspace -> qureg, and qureg -> sum * qureg
+}
+
+void applyFirstOrderTrotter(Qureg qureg, PauliStrSum sum, qreal angle, bool reverse) {
+
+    // (internal, invoked by applyTrotterizedPauliStrSumGadget)
+
+    for (qindex i=0; i<sum.numTerms; i++) {
+        int j = reverse? sum.numTerms - i - 1 : i;
+        qreal arg = 2 * angle * real(sum.coeffs[j]);  // 2 undoes Gadget convention
+        applyPauliGadget(qureg, sum.strings[j], arg); // re-validates, grr
+    }
+}
+
+void applyHigherOrderTrotter(Qureg qureg, PauliStrSum sum, qreal angle, int order) {
+
+    // (internal, invoked by applyTrotterizedPauliStrSumGadget)
+
+    if (order == 1) {
+        applyFirstOrderTrotter(qureg, sum, angle, false);
     
-    // TODO
-    error_functionNotImplemented(__func__);
+    } else if (order == 2) {
+        applyFirstOrderTrotter(qureg, sum, angle/2, false);
+        applyFirstOrderTrotter(qureg, sum, angle/2, true);
+    
+    } else {
+        qreal p = 1. / (4 - pow(4, 1./(order-1)));
+        qreal a = p * angle;
+        qreal b = (1-4*p) * angle;
+
+        int lower = order - 2;
+        applyFirstOrderTrotter(qureg, sum, a, lower);
+        applyFirstOrderTrotter(qureg, sum, a, lower);
+        applyFirstOrderTrotter(qureg, sum, b, lower);
+        applyFirstOrderTrotter(qureg, sum, a, lower);
+        applyFirstOrderTrotter(qureg, sum, a, lower);
+    }
+}
+
+void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps) {
+    validate_quregFields(qureg, __func__);
+    validate_pauliStrSumFields(sum, __func__);
+    validate_pauliStrSumTargets(sum, qureg, __func__);
+    validate_pauliStrSumIsHermitian(sum, __func__);
+    validate_trotterParams(qureg, order, reps, __func__);
+
+    // TODO:
+    // the accuracy of Trotterisation is greatly improved by randomisation
+    // or (even sub-optimal) grouping into commuting terms. Should we 
+    // implement these here or into another function?
+
+    if (angle == 0)
+        return;
+
+    for (int r=0; r<reps; r++)
+        applyHigherOrderTrotter(qureg, sum, angle/reps, order);
 }
 
 
@@ -1224,6 +1281,7 @@ void applySuperOp(Qureg qureg, SuperOp superop, int* targets, int numTargets) {
     validate_superOpFields(superop, __func__);
     validate_superOpIsSynced(superop, __func__);
     validate_superOpDimMatchesTargs(superop, numTargets, __func__);
+    validate_mixedAmpsFitInNode(qureg, numTargets, __func__);
 
     localiser_densmatr_superoperator(qureg, superop, util_getVector(targets, numTargets));
 }
@@ -1249,17 +1307,17 @@ int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability)
     // find only the outcome=0 probability, to avoid reducing all amps;
     // this halves the total iterations though assumes normalisation
     int outcome = 0;
-    qreal prob = calcProbOfQubitOutcome(qureg, target, outcome);
+    *probability = calcProbOfQubitOutcome(qureg, target, outcome);
 
     // randomly choose the outcome
-    outcome = rand_getRandomSingleQubitOutcome(prob);
+    outcome = rand_getRandomSingleQubitOutcome(*probability);
     if (outcome == 1)
-        prob = 1 - prob;
+        *probability = 1 - *probability;
 
     // collapse to the outcome
     (qureg.isDensityMatrix)?
-        localiser_densmatr_multiQubitProjector(qureg, {target}, {outcome}, prob):
-        localiser_statevec_multiQubitProjector(qureg, {target}, {outcome}, prob);
+        localiser_densmatr_multiQubitProjector(qureg, {target}, {outcome}, *probability):
+        localiser_statevec_multiQubitProjector(qureg, {target}, {outcome}, *probability);
 
     return outcome;
 }
@@ -1369,11 +1427,36 @@ void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQu
  * QFT
  */
 
-void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets)
-    _NOT_IMPLEMENTED_ERROR_DEF
+void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, targets, numTargets, __func__);
 
-void applyFullQuantumFourierTransform(Qureg qureg)
-    _NOT_IMPLEMENTED_ERROR_DEF
+    // TODO:
+    // change this placeholder implementation to the bespoke, optimised routine,
+    // wherein each contiguous controlled-phase gate is merged
+
+    for (int n=numTargets-1; n>=0; n--) {
+        applyHadamard(qureg, targets[n]);
+        for (int m=0; m<n; m++) {
+            qreal arg = M_PI / powerOf2(m+1);
+            applyTwoQubitPhaseShift(qureg, targets[n], targets[n-m-1], arg);
+        }
+    }
+
+    int mid = numTargets/2; // floors
+    for (int n=0; n<mid; n++)
+        applySwap(qureg, targets[n], targets[numTargets-1-n]);
+}
+
+void applyFullQuantumFourierTransform(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
+
+    vector<int> targets(qureg.numQubits);
+    for (size_t i=0; i<targets.size(); i++)
+        targets[i] = i;
+
+    applyQuantumFourierTransform(qureg, targets.data(), targets.size());
+}
 
 
 

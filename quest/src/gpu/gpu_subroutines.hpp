@@ -23,6 +23,15 @@ qcomp gpu_statevec_getAmp_sub(Qureg qureg, qindex ind);
 
 
 /*
+ * SETTERS
+ */
+
+void gpu_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum);
+
+void gpu_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStrSum in);
+
+
+/*
  * COMMUNICATION BUFFER PACKING
  */
 
@@ -108,7 +117,6 @@ void gpu_densmatr_twoQubitDepolarising_subC(Qureg qureg, int qubit1, int qubit2,
 void gpu_densmatr_twoQubitDepolarising_subD(Qureg qureg, int qubit1, int qubit2, qreal prob);
 void gpu_densmatr_twoQubitDepolarising_subE(Qureg qureg, int qubit1, int qubit2, qreal prob);
 void gpu_densmatr_twoQubitDepolarising_subF(Qureg qureg, int qubit1, int qubit2, qreal prob);
-void gpu_densmatr_twoQubitDepolarising_subG(Qureg qureg, int qubit1, int qubit2, qreal prob);
 
 void gpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ);
 void gpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ);
@@ -162,6 +170,9 @@ qcomp gpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs);
 qcomp gpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
 qcomp gpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
 qcomp gpu_densmatr_calcExpecPauliStr_sub (Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
+
+template <bool HasPower> qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+template <bool HasPower> qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
 
 
 /*

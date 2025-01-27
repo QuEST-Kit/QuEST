@@ -148,6 +148,10 @@ void accel_statevec_getAmps_sub(qcomp* outAmps, Qureg qureg, qindex localStartIn
 
 void accel_statevec_setAmps_sub(qcomp* inAmps, Qureg qureg, qindex localStartInd, qindex numLocalAmps);
 
+void accel_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum);
+
+void accel_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStrSum in);
+
 
 /*
  * COMMUNICATION BUFFER PACKING
@@ -237,7 +241,6 @@ void accel_densmatr_twoQubitDepolarising_subC(Qureg qureg, int qubit1, int qubit
 void accel_densmatr_twoQubitDepolarising_subD(Qureg qureg, int qubit1, int qubit2, qreal prob);
 void accel_densmatr_twoQubitDepolarising_subE(Qureg qureg, int qubit1, int qubit2, qreal prob);
 void accel_densmatr_twoQubitDepolarising_subF(Qureg qureg, int qubit1, int qubit2, qreal prob);
-void accel_densmatr_twoQubitDepolarising_subG(Qureg qureg, int qubit1, int qubit2, qreal prob);
 
 void accel_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ);
 void accel_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int qubit, qreal pI, qreal pX, qreal pY, qreal pZ);
@@ -290,6 +293,9 @@ qcomp accel_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> allTargs);;
 qcomp accel_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
 qcomp accel_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
 qcomp accel_densmatr_calcExpecPauliStr_sub (Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
+
+qcomp accel_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
 
 
 /*

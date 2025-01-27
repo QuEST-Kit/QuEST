@@ -292,6 +292,18 @@ void error_calcFidStateVecDistribWhileDensMatrLocal() {
  * ACCELERATOR ERRORS
  */
 
+void assert_highPauliStrSumMaskIsZero(PauliStrSum sum) {
+
+    // this is safe to enumerate sum here, since the calling function 
+    // enumerates sum repeatedly (once for each amplitude, albeit in
+    // parallel). ergo at absolute worst, this check doubles runtime,
+    // with the slowdown exponentially vanishing with increasing #qubits
+
+    for (qindex n=0; n<sum.numTerms; n++)
+        if (sum.strings[n].highPaulis != 0)
+            raiseInternalError("A CPU or GPU subroutine received a PauliStrSum within which a PauliStr contained a non-identity Pauli in the 'highPaulis' mask, which is illegal for this function.");
+}
+
 void assert_numQubitsMatchesQubitStatesAndTemplateParam(int numQubits, int numQubitStates, int templateParam, string label) {
 
     if (numQubits != numQubitStates)
@@ -382,7 +394,7 @@ void assert_mixedQuregsAreBothOrNeitherDistributed(Qureg a, Qureg b) {
 
 void assert_mixQuregTempGpuAllocSucceeded(qcomp* gpuPtr) {
 
-    if (gpuPtr == nullptr)
+    if (!mem_isAllocated(gpuPtr))
         raiseInternalError("An internal function invoked by mixQuregs() attempted to allocate temporary GPU memory but failed.");
 }
 
@@ -423,7 +435,7 @@ void assert_quregGpuBufferIsNotGraftedToMatrix(Qureg qureg, FullStateDiagMatr ma
 
 void assert_applyFullStateDiagMatrTempGpuAllocSucceeded(qcomp* gpuPtr) {
 
-    if (gpuPtr == nullptr)
+    if (!mem_isAllocated(gpuPtr))
         raiseInternalError("An internal function invoked by applying a FullStateDiagMatr upon a density matrix attempted to allocate temporary GPU memory but failed.");
 }
 
@@ -437,6 +449,12 @@ void assert_calcFidTempGpuAllocSucceeded(qcomp* ptr) {
 
     if (!mem_isAllocated(ptr))
         raiseInternalError("An accelerator function involved with calculating the fidelity between a density matrix and statevector failed to allocate temporary GPU memory.");
+}
+
+void assert_calcExpecDiagTempGpuAllocSucceeded(qcomp* ptr) {
+
+    if (!mem_isAllocated(ptr))
+        raiseInternalError("An accelerator function involved with calculating the expectation value of a FullStateDiagMatr upon a density matrix failed to allocate temporary GPU memory.");
 }
 
 void assert_innerProductedSameDimQuregsHaveSameGpuAccel(Qureg quregA, Qureg quregB) {
@@ -685,6 +703,12 @@ void assert_utilsGivenDensMatr(Qureg qureg) {
 
     if (!qureg.isDensityMatrix)
         raiseInternalError("A utility function was given a statevector where a density matrix was expected.");
+}
+
+void assert_utilsGivenNonZeroEpsilon(qreal eps) {
+
+    if (eps == 0)
+        raiseInternalError("A utility function (isUnitary, isHermitian, isCPTP) received an epsilon of zero, which should have precluded it being called.");
 }
 
 

@@ -964,9 +964,11 @@ static inline PauliStrSum _createPauliStrSumFromCodes(int numQubits, _NoWarnPaul
 
     PauliStr* strings = (PauliStr*) malloc(numTerms * sizeof *strings);
     for (int i=0; i<numTerms; i++) {
-        int codes[100];
+
+        int codes[100]; // assumes numQubits<=100
         for (int j=0; j<numQubits && j<100; j++)
-            codes[i] = (int) allPauliCodes[i*numQubits+j];
+            codes[j] = (int) allPauliCodes[i*numQubits+j];
+
         strings[i] = getPauliStr(codes, targs, numQubits);
     }
 
@@ -996,7 +998,7 @@ static inline qreal _calcExpecPauliSum(Qureg qureg, _NoWarnPauliOpType* allPauli
 static inline void _applyPauliSum(Qureg inQureg, _NoWarnPauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg) {
     PauliStrSum sum = _createPauliStrSumFromCodes(inQureg.numQubits, allPauliCodes, termCoeffs, numSumTerms);
     setQuregToClone(outQureg, inQureg); 
-    multiplyPauliStrSum(outQureg, sum);
+    multiplyPauliStrSum(outQureg, sum, inQureg);
     destroyPauliStrSum(sum);
 }
 
@@ -1006,11 +1008,11 @@ static inline void _applyPauliSum(Qureg inQureg, _NoWarnPauliOpType* allPauliCod
 
 static inline void _applyPauliHamil(Qureg inQureg, PauliStrSum hamil, Qureg outQureg) {
     setQuregToClone(outQureg, inQureg); 
-    multiplyPauliStrSum(outQureg, hamil);
+    multiplyPauliStrSum(outQureg, hamil, inQureg);
 }
 
 #define applyPauliHamil(...) \
-    _WARN_FUNC_RENAMED("applyPauliHamil(inQureg, PauliHamil, outQureg)", "multiplyPauliStrSum(outQureg, PauliStrSum)") \
+    _WARN_FUNC_RENAMED("applyPauliHamil(inQureg, PauliHamil, outQureg)", "multiplyPauliStrSum(qureg, PauliStrSum, workspace)") \
     _applyPauliHamil(__VA_ARGS__)
 
 
@@ -1276,8 +1278,8 @@ static inline void _multiControlledMultiRotatePauli(Qureg qureg, int* ctrls, int
 
 
 #define applyTrotterCircuit(...) \
-    _WARN_FUNC_RENAMED("applyTrotterCircuit(..., PauliHamil, ...)", "applyTrotterizedTimeEvol(..., PauliStrSum, ...)") \
-    applyTrotterizedTimeEvol(__VA_ARGS__)
+    _WARN_FUNC_RENAMED("applyTrotterCircuit(..., PauliHamil, ...)", "applyTrotterizedPauliStrSumGadget(..., PauliStrSum, ...)") \
+    applyTrotterizedPauliStrSumGadget(__VA_ARGS__)
 
 #define applyFullQFT(...) \
     _WARN_FUNC_RENAMED("applyFullQFT()", "applyFullQuantumFourierTransform()") \

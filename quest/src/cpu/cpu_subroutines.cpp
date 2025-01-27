@@ -21,6 +21,7 @@
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
+#include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_indices.hpp"
 
 #include <vector>
@@ -56,6 +57,75 @@ qcomp cpu_statevec_getAmp_sub(Qureg qureg, qindex ind) {
     // calling the bulk memcpy routine) because it is
     // much faster for few randomly accessed amps
     return qureg.cpuAmps[ind];
+}
+
+
+
+/*
+ * SETTERS
+ */
+
+
+void cpu_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
+
+    // this assertion exists because fast_getPauliStrElem() (invoked below)
+    // previously assumed str.highPaulis=0 for all str in sum (for a speedup)
+    // which is gauranteed satisfied for all sum compatible with a density-matrix.
+    // This is no longer essential, since fast_getPauliStrElem() has relaxed this
+    // requirement and foregone the optimisation, but we retain this check in
+    // case a similar optimisation is restored in the future
+    assert_highPauliStrSumMaskIsZero(sum);
+
+    // process each amplitude in-turn, not bothering to leverage that adjacent
+    // basis states have PauliStrSum elems which differ by a single +-i/1 (as
+    // can be enumerated via Gray Code), because this breaks thread independence,
+    // plus this function is only called infrequently (as initialisation)
+    qindex numIts = qureg.numAmpsPerNode;
+    qindex dim = powerOf2(qureg.numQubits);
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = global flat index corresponding to n
+        qindex i = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
+
+        // r, c = global row and column
+        qindex r = fast_getGlobalRowFromFlatIndex(i, dim);
+        qindex c = fast_getGlobalColFromFlatIndex(i, dim);
+
+        // contains non-unrolled loop (and args unpacked due to CUDA qcomp incompatibility, grr)
+        qureg.cpuAmps[n] = fast_getPauliStrSumElem(sum.coeffs, sum.strings, sum.numTerms, r, c);
+    }
+}
+
+
+void cpu_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStrSum in) {
+
+    // unlike in densmatr_setAmpsToPauliStrSum_sub() above, this PauliStrSum
+    // can feature non-identity Paulis on every qubit, i.e. up to t=63
+
+    qindex numIts = out.numElemsPerNode;
+    qindex numSuf = logBase2(numIts);
+
+    int rank = out.isDistributed? comm_getRank() : 0;
+
+    // note below there is no if() in #pragma; we choose always to
+    // multithread when OpenMP is enabled, because FullStateDiagMatr
+    // does not carry a .isMultithreaded flag (and this is only an
+    // initialisation function, so sub-optimal threading is fine)
+
+    #pragma omp parallel for
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = global index corresponding to local index n
+        qindex i = concatenateBits(rank, n, numSuf);
+
+        // treat PauliStrSum as a generic sum, even though we know it only
+        // contains I and Z which can in principle be computed faster; this
+        // is a superfluous optimisation since this function is expected to
+        // be called infrequently (i.e. only for data structure initialisation)
+        out.cpuElems[n] = fast_getPauliStrSumElem(in.coeffs, in.strings, in.numTerms, i, i);
+    }
 }
 
 
@@ -579,9 +649,6 @@ void cpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
     assert_quregAndFullStateDiagMatrHaveSameDistrib(qureg, matr);
     assert_exponentMatchesTemplateParam(exponent, HasPower);
 
-    // suppress warnings that 'exponent' is unused when HasPower=false (we cannot use C++17 [[maybe_unused]])
-    (void) exponent;
-
     // every iteration modifies one amp, using one element
     qindex numIts = qureg.numAmpsPerNode;
 
@@ -603,9 +670,6 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 
     assert_exponentMatchesTemplateParam(exponent, HasPower);
 
-    // suppress warnings that 'exponent' is unused when HasPower=false (we cannot use C++17 [[maybe_unused]])
-    (void) exponent;
-
     // every iteration modifies one qureg amp, using one matr element
     qindex numIts = qureg.numAmpsPerNode;
 
@@ -616,9 +680,11 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
         qindex i = fast_getGlobalRowFromFlatIndex(n, matr.numElems);
         qcomp fac = matr.cpuElems[i];
 
+        // compile-time decide if applying power to avoid in-loop branching...
         if constexpr (HasPower)
             fac = pow(fac, exponent);
 
+        // and whether we should also right-apply matr to qureg
         if constexpr (!MultiplyOnly) {
 
             // m = global index corresponding to n
@@ -628,6 +694,7 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
             qindex j = fast_getGlobalColFromFlatIndex(m, matr.numElems);
             qcomp term = matr.cpuElems[j];
 
+            // right-apply matrix elem may also need to be exponentiated
             if constexpr(HasPower)
                 term = pow(term, exponent);
 
@@ -1083,11 +1150,11 @@ void cpu_densmatr_twoQubitDepolarising_subA(Qureg qureg, int ketQb1, int ketQb2,
     for (qindex n=0; n<numIts; n++) {
 
         // determine whether to modify amp
-        int flag1 = !(getBit(n, ketQb1) ^ getBit(n, braQb1));
-        int flag2 = !(getBit(n, ketQb2) ^ getBit(n, braQb2));
-        int mod   = !(flag1 & flag2);
+        bool flag1 = getBit(n, ketQb1) == getBit(n, braQb1);
+        bool flag2 = getBit(n, ketQb2) == getBit(n, braQb2);
+        bool mod = !(flag1 & flag2);
 
-        // multiply 15/16 of all amps by (1 + c3)
+        // multiply 15/16-th of all amps by (1 + c3)
         qureg.cpuAmps[n] *= 1 + c3 * mod;
     }
 }
@@ -1102,9 +1169,13 @@ void cpu_densmatr_twoQubitDepolarising_subB(Qureg qureg, int ketQb1, int ketQb2,
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braQb2 = util_getBraQubit(ketQb2, qureg);
 
+    // factors used in amp -> c1*amp + c2(sum of other three amps)
     auto factors = util_getTwoQubitDepolarisingFactors(prob);
     auto c1 = factors.c1;
     auto c2 = factors.c2;
+
+    // below, we compute term = (sum of all four amps) for brevity, so adjust c1
+    c1 -= c2;
 
     // for brevity
     qcomp* amps = qureg.cpuAmps;
@@ -1151,7 +1222,7 @@ void cpu_densmatr_twoQubitDepolarising_subC(Qureg qureg, int ketQb1, int ketQb2,
         // decide whether or not to modify nth local
         bool flag1 = getBit(n, ketQb1) == getBit(n, braQb1); 
         bool flag2 = getBit(n, ketQb2) == braBit2;
-        bool mod   = !(flag1 & flag2);
+        bool mod = !(flag1 & flag2);
 
         // scale amp by 1 or (1 + c3)
         qureg.cpuAmps[n] *= 1 + c3 * mod;
@@ -1197,30 +1268,26 @@ void cpu_densmatr_twoQubitDepolarising_subD(Qureg qureg, int ketQb1, int ketQb2,
 
 void cpu_densmatr_twoQubitDepolarising_subE(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
 
-    // scale 25% of amps but iterate all
+    // all amplitudes are scaled; 25% by c1 and 75% by 1 + c3
     qindex numIts = qureg.numAmpsPerNode;
+
+    auto factors = util_getTwoQubitDepolarisingFactors(prob);
+    qreal fac0 = 1 + factors.c3;
+    qreal fac1 = factors.c1 - fac0;
 
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    qreal c3 = util_getTwoQubitDepolarisingFactors(prob).c3;
-
-    // TODO:
-    // are we really inefficiently enumerating all amps and applying a non-unity
-    // factor to only 25%?! Is this because we do not know braBit2 and ergo 
-    // cannot be sure a direct enumeration is accessing indicies in a monotonically
-    // increasing order? Can that really outweigh a 3x slowdown?! Test and fix!
-
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
-
-        // choose whether to modify amp
-        bool flag1 = getBit(n, ketQb1) == braBit1; 
-        bool flag2 = getBit(n, ketQb2) == braBit2;
-        bool mod   = !(flag1 & flag2);
         
-        // multiply amp by 1 or (1 + c3)
-        qureg.cpuAmps[n] *=  1 + c3 * mod;
+        // choose factor by which to sacle amp
+        bool same1 = getBit(n, ketQb1) == braBit1; 
+        bool same2 = getBit(n, ketQb2) == braBit2;
+        bool flag = same1 & same2;
+
+        // scale amp by c1 or (1+c3)
+        qureg.cpuAmps[n] *= fac1 * flag + fac0;;
     }
 }
 
@@ -1236,9 +1303,7 @@ void cpu_densmatr_twoQubitDepolarising_subF(Qureg qureg, int ketQb1, int ketQb2,
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    auto factors = util_getTwoQubitDepolarisingFactors(prob);
-    auto c1 = factors.c1;
-    auto c2 = factors.c2;
+    auto c2 = util_getTwoQubitDepolarisingFactors(prob).c2;
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -1250,38 +1315,7 @@ void cpu_densmatr_twoQubitDepolarising_subF(Qureg qureg, int ketQb1, int ketQb2,
         qindex j = n + offset;
 
         // mix local amp with received buffer amp
-        qureg.cpuAmps[i] *= c1;
         qureg.cpuAmps[i] += c2 * qureg.cpuCommBuffer[j];
-    }
-}
-
-
-void cpu_densmatr_twoQubitDepolarising_subG(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
-
-    // modify 25% of local amps, one per iteration
-    qindex numIts = qureg.numAmpsPerNode / 4;
-
-    // received amplitudes may begin at an arbitrary offset in the buffer
-    qindex offset = getBufferRecvInd();
-
-    int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
-    int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
-
-    auto factors = util_getTwoQubitDepolarisingFactors(prob);
-    auto c1 = factors.c1;
-    auto c2 = factors.c2;
-
-    #pragma omp parallel for if(qureg.isMultithreaded)
-    for (qindex n=0; n<numIts; n++) {
-
-        // i = nth local index where suffix ket qubits equal prefix bra qubits
-        qindex i = insertTwoBits(n, ketQb2, braBit2, ketQb1, braBit1);
-
-        // j = nth received amp in buffer
-        qindex j = n + offset;
-
-        // overwrite local amp with buffer amp
-        qureg.cpuAmps[i] = (c2 / c1) * qureg.cpuCommBuffer[j];
     }
 }
 
@@ -1585,19 +1619,20 @@ qreal cpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
     qreal prob = 0;
 
     // each iteration visits one amp per 2^qubits.size() amps
+    // (>=1 since all qubits are in suffix, so qubits.size() <= suffix size) 
     qindex numIts = qureg.numAmpsPerNode / powerOf2(qubits.size());
 
     auto sortedQubits = util_getSorted(qubits); // all in suffix
     auto qubitStateMask = util_getBitMask(qubits, outcomes);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numQubits, NumQubits, qubits.size());
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
 
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = nth local index where qubits are in the specified outcome state
-        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubits, qubitStateMask);
+        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitStateMask);
 
         prob += std::norm(qureg.cpuAmps[i]);
     }
@@ -1611,14 +1646,17 @@ qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
+    // note that qubits are only ket qubits for which the corresponding bra-qubit is in the suffix;
+    // this function is not invoked upon nodes where prefix bra-qubits do not correspond to given outcomes
+
     qreal prob = 0;
 
-    // each iteration visits one column (contributing one diagonal amp) per 2^qubits.size() possible
-    qindex numIts = util_getNumLocalDiagonalAmpsWithBits(qureg, qubits, outcomes);
-    qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
+    // each iteration visits one relevant diagonal amp (= one column)
+    qindex numIts = powerOf2(qureg.logNumColsPerNode - qubits.size());
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
+    qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
 
-    auto sortedQubits = util_getSorted(qubits); // all in suffix
+    auto sortedQubits = util_getSorted(qubits); // all in suffix, with corresponding bra's all in suffix
     auto qubitStateMask = util_getBitMask(qubits, outcomes);
 
     // use template param to compile-time unroll loop in insertBits()
@@ -1627,13 +1665,10 @@ qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-        // TODO:
-        // I BELIEVE THIS IS BUGGED AND/OR HAS INCORRECT LOGIC!
+        // i = local statevector index of nth local basis state with a contributing diagonal
+        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitStateMask); // may be unrolled at compile-time
 
-        // i = local column index of the nth local pure state which contributes to the probability
-        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitStateMask);
-
-        // j = local flat index of the diagonal element corresponding to i
+        // j = local, flat, density-matrix index of diagonal amp corresponding to state i
         qindex j = fast_getLocalIndexOfDiagonalAmp(i, firstDiagInd, numAmpsPerCol);
 
         prob += std::real(qureg.cpuAmps[j]);
@@ -1800,7 +1835,7 @@ template qcomp cpu_densmatr_calcFidelityWithPureState_sub<false>(Qureg, Qureg);
 
 
 /*
- * EXPECTATION VALUES
+ * PAULI EXPECTATION VALUES
  */
 
 
@@ -1883,6 +1918,14 @@ qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int
 
 qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
+    // TODO:
+    // this is identical to the subA() version above, except that
+    // qureg.cpuAmps[j] becomes qureg.cpuCommBuffer[j]. We could
+    // ergo replace subA() with an invocation of subB(), binding
+    // the buffer to the amps ptr. Would this affect/interfere
+    // with memory movement optimisations? I doubt so, but check
+    // and if not, perform the replacement to reduce code-dupe!
+
     qcomp value = 0;
 
     // all local amps contribute to the sum
@@ -1943,6 +1986,75 @@ qcomp cpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int>
     value *= util_getPowerOfI(y.size());
     return value;
 }
+
+
+
+/*
+ * DIAGONAL MATRIX EXPECTATION VALUES
+ */
+
+
+template <bool HasPower> 
+qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+    assert_quregAndFullStateDiagMatrHaveSameDistrib(qureg, matr);
+    assert_exponentMatchesTemplateParam(exponent, HasPower);
+
+    qcomp value = 0;
+
+    // every amp, iterated independently, contributes to the expectation value
+    qindex numIts = qureg.numAmpsPerNode;
+
+    #pragma omp parallel for reduction(+:value) if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // compile-time decide if applying power to avoid in-loop branching
+        qcomp elem = matr.cpuElems[n];
+        if constexpr (HasPower)
+            elem = pow(elem, exponent);
+        
+        value += elem * std::norm(qureg.cpuAmps[n]);
+    }
+
+    return value;
+}
+
+
+template <bool HasPower>
+qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+    assert_quregAndFullStateDiagMatrHaveSameDistrib(qureg, matr);
+    assert_exponentMatchesTemplateParam(exponent, HasPower);
+
+    qcomp value = 0;
+
+    // iterate each column, of which one amp (the diagonal) contributes
+    qindex numIts = powerOf2(qureg.logNumColsPerNode);
+    qindex numAmpsPerCol = powerOf2(qureg.numQubits);
+    qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
+
+    #pragma omp parallel for reduction(+:value) if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = local index of nth local diagonal element
+        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
+
+        // compile-time decide if applying power to avoid in-loop branching
+        qcomp elem = matr.cpuElems[n];
+        if constexpr (HasPower)
+            elem = pow(elem, exponent);
+
+        value += elem * qureg.cpuAmps[i];
+    }
+
+    return value;
+}
+
+
+template qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub<true> (Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<true> (Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
 
 
 

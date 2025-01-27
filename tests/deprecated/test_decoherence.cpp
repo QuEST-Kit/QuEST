@@ -250,7 +250,7 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
     
     // figure out max-num (inclusive) targs allowed by hardware backend
     // (each node must contain as 2^(2*numTargs) amps)
-    int maxNumTargs = calcLog2(qureg.numAmpsPerNode) / 2;
+    int maxNumTargs = qureg.logNumAmpsPerNode / 2;
     
     SECTION( "correctness" ) {
         
@@ -339,7 +339,6 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
         SECTION( "number of operators" ) {
             
             int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
-            int maxNumOps = (2*numTargs)*(2*numTargs);
             int numOps = GENERATE_REF( -1, 0 );
                         
             // make valid targets to avoid triggering target validation
@@ -811,7 +810,6 @@ TEST_CASE( "mixNonTPMultiQubitKrausMap", "[decoherence]" ) {
         SECTION( "number of operators" ) {
             
             int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
-            int maxNumOps = (2*numTargs)*(2*numTargs);
             int numOps = GENERATE_REF( -1, 0 ); 
                         
             // make valid targets to avoid triggering target validation
@@ -1090,8 +1088,8 @@ TEST_CASE( "mixTwoQubitDepolarising", "[decoherence]" ) {
         for (int i=0; i<4; i++) {
             for (int j=0; j<4; j++) {
                 QMatrix term = refInit;
-                applyReferenceOp(term, targs, 2,
-                    getKroneckerProduct(paulis[i], paulis[j]));
+                QMatrix op = getKroneckerProduct(paulis[i], paulis[j]);
+                applyReferenceOp(term, targs, 2, op);
                 ref += (prob/15.) * term;
             }
         }

@@ -108,13 +108,7 @@ namespace report {
         "Invalid number of significant figures (${NUM_SIG_FIGS}). Cannot be less than one.";
 
     string INVALID_NUM_RANDOM_SEEDS =
-        "Invalid number of random seeds (${NUM_SEEDS}). Must specify one or more.";
-
-    string INCONSISTENT_NUM_RANDOM_SEEDS_ACROSS_NODES =
-        "The specified number of random seeds was inconsistent between nodes. All nodes must receive the same number of identical seeds.";
-
-    string INCONSISTENT_RANDOM_SEEDS_ACROSS_NODES =
-        "The random seeds must be consistent between all nodes. Please call this function without rank-specific logic.";
+        "Invalid number of random seeds (${NUM_SEEDS}). Must specify one or more. In distributed settings, only the root node needs to pass a valid number of seeds (other node arguments are ignored).";
 
 
     /*
@@ -198,7 +192,7 @@ namespace report {
      */
 
     string INVALID_QUREG_FIELDS = 
-        "Invalid Qureg; invalid or incompatible fields isDensityMatrix=${DENS_MATR}, numQubits=${NUM_QUBITS}, numAmps=${NUM_AMPS}. It is likely this Qureg was not initialised with createQureg().";
+        "Received an invalid Qureg, which had invalid or incompatible fields isDensityMatrix=${DENS_MATR}, numQubits=${NUM_QUBITS}, numAmps=${NUM_AMPS}. It is likely this Qureg was not initialised with createQureg().";
 
     string QUREG_NOT_DENSITY_MATRIX =
         "Expected a density matrix Qureg but received a statevector.";
@@ -668,7 +662,17 @@ namespace report {
 
     
     string PAULI_STR_SUM_NOT_HERMITIAN =
-        "THe given PauliStrSum is not Hermitian.";
+        "The given PauliStrSum is not Hermitian.";
+
+    string PAULI_STR_SUM_NOT_ALL_I_Z =
+        "The given PauliStrSum contained X and/or Y operators and is ergo not diagonal, so cannot be used to initialise the given FullStateDiagMatr.";
+
+
+    string PAULI_STR_SUM_EXCEEDS_QUREG_NUM_QUBITS =
+        "The given PauliStrSum includes non-identity upon a qubit of index ${MAX_IND} and so is only compatible with Quregs of at least ${NUM_PSS_QUBITS} qubits. It cannot act upon, nor initialise, the given ${NUM_QUREG_QUBITS}-qubit Qureg.";
+
+    string PAULI_STR_SUM_EXCEEDS_MATR_NUM_QUBITS =
+        "The given PauliStrSum includes non-identity upon a qubit of index ${MAX_IND} and so is only compatible with FullStateDiagMatr containing at least ${NUM_PSS_QUBITS}. It cannot initialise the given ${NUM_MATR_QUBITS}-qubit FullStateDiagMatr.";
 
 
     /*
@@ -729,7 +733,7 @@ namespace report {
         "Invalid target qubit (${QUBIT_IND}). Must be greater than or equal to zero, and less than the number of qubits in the Qureg (${NUM_QUBITS}).";
 
     string DUPLICATE_TARGET_QUBITS =
-        "The list of target qubits contained duplicates. All qubits must be unique.";
+        "The given target qubits contained duplicates. All qubits must be unique.";
 
 
     string NEGATIVE_NUM_CONTROLS =
@@ -745,22 +749,14 @@ namespace report {
         "Invalid control qubit (${QUBIT_IND}). Must be greater than or equal to zero, and less than the number of qubits in the Qureg (${NUM_QUBITS}).";
 
     string DUPLICATE_CONTROL_QUBITS =
-        "The list of control qubits contained duplicates. All qubits must be unique.";
+        "The control qubits contained duplicates. All qubits must be unique.";
 
     
     string CONTROLS_OVERLAP_TARGETS =
-        "A qubit appeared in both the control and target qubit lists.";
+        "A qubit appeared among both the control and target qubits, which cannot overlap.";
 
     string INVALID_CONTROL_STATE =
         "The control qubit at index ${INDEX} has an invalidly specified control-state of ${STATE}. Valid states are 0 and 1.";
-
-
-    /*
-    * ROTATION PARAMETERS
-    */
-
-    string ROTATION_AXIS_VECTOR_IS_ZERO =
-        "The rotation axis vector was all zero, or within epsilion magnitude to the zero vector.";
 
 
     /*
@@ -782,6 +778,27 @@ namespace report {
     string GPU_CANNOT_FIT_TEMP_MEASUREMENT_OUTCOME_PROBS =
         "The GPU has less available memory (${MEM_AVAIL} bytes) than that needed (${MEM_NEEDED} bytes) to temporarily store the ${NUM_OUTCOMES} outcome probabilities of the specified ${NUM_QUBITS} qubits.";
 
+
+    /*
+    * MISC GATE PARAMETERS
+    */
+
+    string ROTATION_AXIS_VECTOR_IS_ZERO =
+        "The rotation axis vector was all zero, or within epsilion magnitude to the zero vector.";
+
+
+    string CANNOT_FIT_MIXED_STATEVEC_AMPS_INTO_SINGLE_NODE =
+        "Cannot perform this ${NUM_TARGS}-target operation upon a ${NUM_QUREG_QUBITS}-qubit statevector distributed between ${NUM_NODES} nodes, since each node's communication buffer (with capacity for ${NUM_QUREG_AMPS_PER_NODE} amps) cannot simultaneously store the ${NUM_TARG_AMPS} mixed remote amplitudes.";
+
+    string CANNOT_FIT_MIXED_DENSMATR_AMPS_INTO_SINGLE_NODE =
+        "Cannot perform this ${NUM_TARGS}-target operation upon a ${NUM_QUREG_QUBITS}-qubit density-matrix distributed between ${NUM_NODES} nodes, since each node's communication buffer (with capacity for ${NUM_QUREG_AMPS_PER_NODE} amps) cannot simultaneously store the ${NUM_TARG_AMPS} mixed remote amplitudes.";
+
+
+    string INVALID_TROTTER_ORDER =
+        "Invalid Trotter order (${ORDER}). The order parameter must be positive and even, or unity.";
+
+    string INVALID_TROTTER_REPS =
+        "Invalid number of Trotter repetitions (${REPS}). The number of repetitions must be positive.";
 
 
     /*
@@ -816,7 +833,7 @@ namespace report {
      */
 
     string MIXED_QUREG_NOT_DENSITY_MATRIX =
-        "The first Qureg, which will undergo mixing, must be a density matrx.";
+        "The first Qureg, which will undergo mixing, must be a density matrix.";
 
     string MIXED_QUREGS_HAVE_DIFFERENT_NUM_QUBITS =
         "The given Quregs contain an inconsistent number of qubits (${NUM_A} and ${NUM_B}) and cannot be mixed.";
@@ -879,6 +896,10 @@ namespace report {
     string PRODUCTED_STATEVEC_DISTRIB_BUT_DENSMATR_LOCAL =
         "The given statevector Qureg was distributed while the larger density matrix Qureg was not. This is an illegal (and nonsensical) configuration. Consider distributing the density matrix.";
 
+    
+    string QUREG_IS_INCOMPATIBLE_WITH_WORKSPACE =
+        "The primary Qureg is incompatible with the given workspace Qureg. The Quregs must have the same dimensions and be identically distributed and GPU-accelerated.";
+
 
     string CALC_FIDELITY_OF_DENSITY_MATRICES_NOT_YET_SUPPORTED =
         "Quregs cannot both be density matrices. Calculation of the fidelity between two mixed states is not currently supported.";
@@ -911,11 +932,25 @@ namespace report {
      * EXPECTATION VALUES
      */
 
-    string CALC_STATEVEC_EXPECTED_VALUE_WAS_NOT_APPROX_REAL =
-        "The calculated expectation value was not approximately real (i.e. was not within epsilon). This cannot be caused by state normalisation, and instead results from numerical errors during calculation. Please notify the QuEST developers!";
+    string CALC_STATEVEC_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated statevector expectation value was not approximately real (i.e. within epsilon). This cannot result from an unnormalised state, and must instead be the result of unexpected arithmetic errors; please notify the QuEST developers!";
 
-    string CALC_DENSMATR_EXPECTED_VALUE_WAS_NOT_APPROX_REAL =
-        "The calculated expectation value was not approximately real (i.e. was not within epsilon). This suggests the density matrix was unnormalised and/or not Hermitian.";
+    string CALC_DENSMATR_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests the density matrix was unnormalised and/or not Hermitian.";
+
+
+    string CALC_STATEVEC_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated statevector expectation value was not approximately real (i.e. was not within epsilon). This suggests that the PauliStrSum, despite being validated as (approximately) Hermitian, contained coefficients with sub-epsilon but non-negligible imaginary components which accumulated in the output value.";
+
+    string CALC_DENSMATR_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests the density matrix was unnormalised and/or not (sufficiently close to) Hermitian.";
+
+
+    string CALC_STATEVEC_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated statevector expectation value was not approximately real (i.e. was not within epsilon). This suggests that the FullStateDiagMatr, despite being validated as (approximately) Hermitian, contained coefficients with sub-epsilon but non-negligible imaginary components which accumulated in the output value.";
+
+    string CALC_DENSMATR_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests either the Qureg was incorrectly normalised (i.e. contained diagonal elements with non-negligible imaginary components), or that the imaginary components of the FullStateDiagMatr (despite being validated as approximately Hermitian) accumulated non-negligibly in the output value.";
 
 
     /*
@@ -973,8 +1008,15 @@ extern "C" {
 /*
  * VALIDATION TOGGLE
  *
- * consulted by assertThat below, or earlier by more expensive
- * validation functions to avoid superfluous compute
+ * which disables all forms of validation (e.g. numerical
+ * Hermiticity of operators, and whether qubit indices are
+ * valid, etc), such that global_validationEpsilon (defined
+ * below) is ignored. Note that many validation functions
+ * will still actually perform the validation checks/compute,
+ * and thereafter decide whether to throw an error within
+ * assertThat(). Ergo expensive validators should check that
+ * global_isValidationEnabled=true before even performing
+ * their checks, to avoid superfluous computation.
  */
 
 static bool global_isValidationEnabled = true;
@@ -994,8 +1036,12 @@ bool validateconfig_isEnabled() {
 /*
  * VALIDATION PRECISION
  *
- * which influences how strict unitarity, 
- * Hermiticity and CPTP checks are performed
+ * which influences how strict numerical checks are performed,
+ * e.g. checking unitarity/hermiticity/CPTP-ness. This is only
+ * consulted when global_isValidationEnabled=true, and can be
+ * separately disabled by setting epsilon=0, in which case 
+ * permanent properties of structs (like .isCPTP) will not be 
+ * overwritten (so will stay validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
  */
 
 static qreal global_validationEpsilon = DEFAULT_VALIDATION_EPSILON;
@@ -1008,6 +1054,12 @@ void validateconfig_setEpsilonToDefault() {
 }
 qreal validateconfig_getEpsilon() {
     return global_validationEpsilon;
+}
+
+bool isNumericalValidationDisabled() {
+    return (
+        global_isValidationEnabled == 0 || 
+        global_validationEpsilon   == 0);
 }
 
 
@@ -1219,27 +1271,15 @@ void validate_envIsInit(const char* caller) {
 
 void validate_randomSeeds(unsigned* seeds, int numSeeds, const char* caller) {
 
-    // we rigorously check that all seeds globally agree, since it is
-    // conceivable users could erroneously attempt to seed unique per-node
-    assertThat(numSeeds > 0, report::INVALID_NUM_RANDOM_SEEDS, {{"${NUM_SEEDS}", numSeeds}}, caller);
+    // only the root node's seeds are consulted, so we permit all non-root
+    // nodes to have invalid parameters. All nodes however must know/agree
+    // when the root node's seeds are invalid, to synchronise validation
 
-    if (!getQuESTEnv().isDistributed)
-        return;
-
-    // assert every node received the same number of seeds
     unsigned numRootSeeds = (unsigned) numSeeds;
-    comm_broadcastUnsignedsFromRoot(&numRootSeeds, 1);
-    assertThat(numRootSeeds == (unsigned) numSeeds, report::INCONSISTENT_NUM_RANDOM_SEEDS_ACROSS_NODES, caller);
+    if (getQuESTEnv().isDistributed)
+        comm_broadcastUnsignedsFromRoot(&numRootSeeds, 1);
 
-    // assert every node has the same seeds as root (ergo as one another)
-    vector<unsigned> rootSeeds(seeds, seeds + numSeeds);
-    comm_broadcastUnsignedsFromRoot(rootSeeds.data(), numSeeds);
-
-    bool agrees = true;
-    for (int i=0; i<numSeeds && agrees; i++)
-        agrees &= seeds[i] == rootSeeds[i];
-    
-    assertThat(agrees, report::INCONSISTENT_RANDOM_SEEDS_ACROSS_NODES, caller);
+    assertThat(numRootSeeds > 0, report::INVALID_NUM_RANDOM_SEEDS, {{"${NUM_SEEDS}", numSeeds}}, caller);
 }
 
 void validate_newEpsilonValue(qreal eps, const char* caller) {
@@ -2068,8 +2108,8 @@ void ensureMatrixUnitarityIsKnown(T matr) {
 template <class T> 
 void assertMatrixIsUnitary(T matr, const char* caller) {
 
-    // avoid expensive unitarity check if validation is anyway disabled
-    if (!global_isValidationEnabled)
+    // avoid expensive unitarity check (and do not overwrite .isUnitary) if validation is anyway disabled
+    if (isNumericalValidationDisabled())
         return;
 
     // unitarity is determined differently depending on matrix type
@@ -2136,8 +2176,8 @@ void ensureMatrHermiticityIsKnown(T matr) {
 template <class T> 
 void assertMatrixIsHermitian(T matr, const char* caller) {
 
-    // avoid expensive unitarity check if validation is anyway disabled
-    if (!global_isValidationEnabled)
+    // avoid expensive unitarity check (and do not overwrite .isHermitian) if validation is anyway disabled
+    if (isNumericalValidationDisabled())
         return;
 
     // unitarity is determined differently depending on matrix type
@@ -2214,13 +2254,14 @@ void validate_matrixDimMatchesTargets(DiagMatr1 matr, int numTargs, const char* 
 void validate_matrixDimMatchesTargets(DiagMatr2 matr, int numTargs, const char* caller) { assertMatrixDimMatchesTargs(matr, numTargs, caller); }
 void validate_matrixDimMatchesTargets(DiagMatr  matr, int numTargs, const char* caller) { assertMatrixDimMatchesTargs(matr, numTargs, caller); }
 
-void validate_matrixAndQuregAreCompatible(FullStateDiagMatr matr, Qureg qureg, const char* caller) {
+void validate_matrixAndQuregAreCompatible(FullStateDiagMatr matr, Qureg qureg, bool expecOnly, const char* caller) {
 
     // we do not need to define this function for the other matrix types,
     // since their validation will happen through validation of the
     // user-given list of target qubits. But we do need to define it for
     // FullStatedDiagMatr to check both distribution compatibility, and
-    // that dimensions match
+    // that dimensions match. When expecOnly=true, we relax the necessity
+    // that the distributions match; one or both can be distributed
 
     tokenSubs vars = {
         {"${NUM_MATR_QUBITS}",  matr.numQubits},
@@ -2236,7 +2277,8 @@ void validate_matrixAndQuregAreCompatible(FullStateDiagMatr matr, Qureg qureg, c
     // but when it's distributed, so too must be the qureg; the precise reason why is 
     // specific to whether qureg is a statevector or density matrix, but boils down
     // to there being no communication buffers available to broadcast matr
-    assertThat(qureg.isDistributed, report::FULL_STATE_DIAG_MATR_IS_DISTRIB_BUT_QUREG_ISNT, caller); // did not pass vars
+    if (!expecOnly)
+        assertThat(qureg.isDistributed, report::FULL_STATE_DIAG_MATR_IS_DISTRIB_BUT_QUREG_ISNT, caller); // did not pass vars
 }
 
 
@@ -2710,8 +2752,8 @@ void validate_krausMapIsCPTP(KrausMap map, const char* caller) {
     validate_krausMapFields(map, caller);
     validate_krausMapIsSynced(map, caller);
 
-    // avoid expensive CPTP check if validation is anyway disabled
-    if (!global_isValidationEnabled)
+    // avoid expensive CPTP check (and do not overwrite .isCPTP) if validation is anyway disabled
+    if (isNumericalValidationDisabled())
         return;
 
     // evaluate CPTPness if it isn't already known 
@@ -2940,6 +2982,9 @@ void validate_parsedStringIsNotEmpty(bool stringIsNotEmpty, const char* caller) 
  * EXISTING PAULI STRING SUMS
  */
 
+extern bool paulis_containsXOrY(PauliStrSum sum);
+extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum);
+
 void validate_pauliStrSumFields(PauliStrSum sum, const char* caller) {
 
     assertThat(sum.numTerms > 0, report::INVALID_PAULI_STR_SUM_FIELDS, {{"${NUM_TERMS}", sum.numTerms}}, caller);
@@ -2957,13 +3002,45 @@ void validate_pauliStrSumFields(PauliStrSum sum, const char* caller) {
     assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
 }
 
-void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
+void validate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
+
+    // avoid expensive hermiticity check (and do not overwrite .isHermitian) if validation is anyway disabled
+    if (isNumericalValidationDisabled())
+        return;
 
     // ensure hermiticity is known (if not; compute it)
     if (*(sum.isHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
         *(sum.isHermitian) = util_isHermitian(sum, global_validationEpsilon);
 
     assertThat(*(sum.isHermitian), report::PAULI_STR_SUM_NOT_HERMITIAN, caller);
+}
+
+void validate_pauliStrSumTargets(PauliStrSum sum, Qureg qureg, const char* caller) {
+
+    int maxInd = paulis_getIndOfLefmostNonIdentityPauli(sum);
+    int minNumQb = maxInd + 1;
+
+    tokenSubs vars = {
+        {"${NUM_QUREG_QUBITS}", qureg.numQubits},
+        {"${MAX_IND}", maxInd}, 
+        {"${NUM_PSS_QUBITS}", minNumQb}};
+
+    assertThat(qureg.numQubits >= minNumQb, report::PAULI_STR_SUM_EXCEEDS_QUREG_NUM_QUBITS, vars, caller);
+}
+
+void validate_pauliStrSumCanInitMatrix(FullStateDiagMatr matr, PauliStrSum sum, const char* caller) {
+
+    assertThat(!paulis_containsXOrY(sum), report::PAULI_STR_SUM_NOT_ALL_I_Z, caller);
+
+    int maxInd = paulis_getIndOfLefmostNonIdentityPauli(sum);
+    int minNumQb = maxInd + 1;
+
+    tokenSubs vars = {
+        {"${NUM_MATR_QUBITS}", matr.numQubits},
+        {"${MAX_IND}", maxInd}, 
+        {"${NUM_PSS_QUBITS}", minNumQb}};
+
+    assertThat(matr.numQubits >= minNumQb, report::PAULI_STR_SUM_EXCEEDS_MATR_NUM_QUBITS, vars, caller);
 }
 
 
@@ -3006,8 +3083,9 @@ void validate_basisStateIndices(Qureg qureg, qindex startInd, qindex numInds, co
         {{"${START_IND}", startInd}, {"${MAX_IND_EXCL}", qureg.numAmps}, {"${NUM_QB}", qureg.numQubits}},
         caller);
 
+    // permit numInds=0
     assertThat(
-        numInds > 0 && numInds <= qureg.numAmps,
+        numInds >= 0 && numInds <= qureg.numAmps,
         report::INVALID_NUM_BASIS_STATE_INDICES, 
         {{"${NUM_INDS}", numInds}, {"${MAX_NUM_INDS_INCL}", qureg.numAmps}, {"${NUM_QB}", qureg.numQubits}}, caller);
 
@@ -3097,8 +3175,6 @@ void validate_localAmpIndices(Qureg qureg, qindex localStartInd, qindex numInds,
 
 
 
-
-
 /*
  * QUBIT INDICES
  */
@@ -3142,7 +3218,7 @@ void assertValidQubits(
     Qureg qureg, int* qubits, int numQubits, bool canNumIncludeZero, const char* caller,
     string msgNegNum, string msgNumExceedsQureg, string msgNullPtr, string msgBadInd, string msgDuplicates
 ) {
-    assertThat(numQubits > (canNumIncludeZero? -1 : 0), msgNegNum, {{"${NUM_QUBITS}", numQubits}}, caller);
+    assertThat(numQubits >= (canNumIncludeZero? 0 : 1), msgNegNum, {{"${NUM_QUBITS}", numQubits}}, caller);
     assertThat(numQubits <= qureg.numQubits, msgNumExceedsQureg, {{"${NUM_QUBITS}", numQubits}, {"${QUREG_QUBITS}", qureg.numQubits}}, caller);
 
     if (numQubits > 0)
@@ -3231,19 +3307,6 @@ void validate_controlStates(int* states, int numCtrls, const char* caller) {
 
 
 /*
- * ROTATION PARAMETERS
- */
-
-void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller) {
-
-    qreal norm = pow(x,2) + pow(y,2) + pow(z,2);
-
-    assertThat(norm > global_validationEpsilon, report::ROTATION_AXIS_VECTOR_IS_ZERO, caller);
-}
-
-
-
-/*
  * MEASUREMENT PARAMETERS
  */
 
@@ -3295,6 +3358,49 @@ void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const c
     };
 
     assertThat(memAvail > memNeeded, report::GPU_CANNOT_FIT_TEMP_MEASUREMENT_OUTCOME_PROBS, vars, caller);
+}
+
+
+
+/*
+ * MISC GATE PARAMETERS
+ */
+
+void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller) {
+
+    qreal norm = pow(x,2) + pow(y,2) + pow(z,2);
+
+    assertThat(norm > global_validationEpsilon, report::ROTATION_AXIS_VECTOR_IS_ZERO, caller);
+}
+
+void validate_mixedAmpsFitInNode(Qureg qureg, int numTargets, const char* caller) {
+
+    // only relevant to distributed quregs
+    if (!qureg.isDistributed)
+        return;
+
+    qindex numTargAmps = powerOf2(numTargets * (qureg.isDensityMatrix? 2:1));
+
+    tokenSubs vars = {
+        {"${NUM_TARGS}",        numTargets},
+        {"${NUM_TARG_AMPS}",    numTargAmps},
+        {"${NUM_NODES}",               qureg.numNodes},
+        {"${NUM_QUREG_QUBITS}",        qureg.numQubits},
+        {"${NUM_QUREG_AMPS_PER_NODE}", qureg.numAmpsPerNode}
+    };
+
+    string msg = (qureg.isDensityMatrix)?
+        report::CANNOT_FIT_MIXED_DENSMATR_AMPS_INTO_SINGLE_NODE:
+        report::CANNOT_FIT_MIXED_STATEVEC_AMPS_INTO_SINGLE_NODE;
+
+    assertThat(qureg.numAmpsPerNode >= numTargAmps, msg, vars, caller);
+}
+
+void validate_trotterParams(Qureg qureg, int order, int reps, const char* caller) {
+
+    bool isEven = (order % 2) == 0;
+    assertThat(order > 0 && (isEven || order==1), report::INVALID_TROTTER_ORDER, {{"${ORDER}", order}}, caller);
+    assertThat(reps > 0, report::INVALID_TROTTER_REPS, {{"${REPS}", reps}}, caller);
 }
 
 
@@ -3384,6 +3490,16 @@ void validate_oneQubitPauliChannelProbs(qreal pX, qreal pY, qreal pZ, const char
  * QUREG COMBINATION
  */
 
+void validate_quregCanBeWorkspace(Qureg qureg, Qureg workspace, const char* caller) {
+
+    assertThat(
+        (qureg.numQubits        == workspace.numQubits       ) &&
+        (qureg.isDensityMatrix  == workspace.isDensityMatrix ) &&
+        (qureg.isDistributed    == workspace.isDistributed   ) &&
+        (qureg.isGpuAccelerated == workspace.isGpuAccelerated),
+        report::QUREG_IS_INCOMPATIBLE_WITH_WORKSPACE, caller);
+}
+
 void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller) {
 
     // mixing must be mathematically possible; dims are compatible, but quregIn can be a statevector
@@ -3432,8 +3548,8 @@ void validateDensMatrCanBeInitialisedToPureState(Qureg qureg, Qureg pure, const 
     // initPureState calls mixQureg which only additionally
     // constrains that pure.isDistributed only if qureg.isDistributed
 
-    if (qureg.isDistributed)
-        assertThat(!pure.isDistributed, report::INIT_DENSMATR_LOCAL_BUT_PURE_STATE_DISTRIBUTED, caller);
+    if (pure.isDistributed)
+        assertThat(qureg.isDistributed, report::INIT_DENSMATR_LOCAL_BUT_PURE_STATE_DISTRIBUTED, caller);
 }
 
 void validateStateVecCanBeInitialisedToPureState(Qureg qureg, Qureg pure, const char* caller) {
@@ -3568,13 +3684,31 @@ void validate_numInitRandomPureStates(qindex numPureStates,  const char* caller)
  * EXPECTATION VALUES
  */
 
-void validate_expecValIsReal(qcomp value, bool isDensMatr, const char* caller) {
+void validate_expecPauliStrValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
 
     // TODO: include imag(value) in error message when non-integers are supported
 
     string msg = (isDensMatr)?
-        report::CALC_DENSMATR_EXPECTED_VALUE_WAS_NOT_APPROX_REAL:
-        report::CALC_STATEVEC_EXPECTED_VALUE_WAS_NOT_APPROX_REAL;
+        report::CALC_DENSMATR_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL:
+        report::CALC_STATEVEC_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL;
+
+    assertThat(abs(imag(value)) < global_validationEpsilon, msg, caller);
+}
+
+void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
+
+    string msg = (isDensMatr)?
+        report::CALC_DENSMATR_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL:
+        report::CALC_STATEVEC_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL;
+
+    assertThat(abs(imag(value)) < global_validationEpsilon, msg, caller);
+}
+
+void validate_expecFullStateDiagMatrValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
+
+    string msg = (isDensMatr)?
+        report::CALC_DENSMATR_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL:
+        report::CALC_STATEVEC_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL;
 
     assertThat(abs(imag(value)) < global_validationEpsilon, msg, caller);
 }

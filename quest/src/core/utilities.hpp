@@ -40,8 +40,10 @@ int util_getRankBitOfQubit(int ketQubit, Qureg qureg);
 int util_getRankBitOfBraQubit(int ketQubit, Qureg qureg);
 
 int util_getRankWithQubitFlipped(int ketQubit, Qureg qureg);
-int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg);
 int util_getRankWithQubitsFlipped(vector<int> prefixQubits, Qureg qureg);
+
+int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg);
+int util_getRankWithBraQubitsFlipped(vector<int> ketQubits, Qureg qureg);
 
 vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg);
 
@@ -63,12 +65,11 @@ qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> ta
  */
 
 qindex util_getGlobalIndexOfFirstLocalAmp(Qureg qureg);
+qindex util_getGlobalColumnOfFirstLocalAmp(Qureg qureg);
 
 qindex util_getLocalIndexOfGlobalIndex(Qureg qureg, qindex globalInd);
 
 qindex util_getLocalIndexOfFirstDiagonalAmp(Qureg qureg);
-
-qindex util_getNumLocalDiagonalAmpsWithBits(Qureg qureg, vector<int> qubits, vector<int> outcomes);
 
 qindex util_getGlobalFlatIndex(Qureg qureg, qindex globalRow, qindex globalCol);
 

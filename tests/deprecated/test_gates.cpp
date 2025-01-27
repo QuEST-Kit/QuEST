@@ -107,14 +107,14 @@ TEST_CASE( "collapseToOutcome", "[gates]" ) {
             
             int qubit = 0;
             int outcome = GENERATE( -1, 2 );
-            REQUIRE_THROWS_WITH( collapseToOutcome(mat, qubit, outcome), Contains("Invalid measurement outcome") );
+            REQUIRE_THROWS_WITH( collapseToOutcome(mat, qubit, outcome), Contains("qubit measurement outcome") && Contains("invalid") );
         }
         SECTION( "outcome probability" ) {
             
             initZeroState(vec);
-            REQUIRE_THROWS_WITH( collapseToOutcome(vec, 0, 1), Contains("Can't collapse to state with zero probability") );
+            REQUIRE_THROWS_WITH( collapseToOutcome(vec, 0, 1), Contains("impossibly unlikely") );
             initClassicalState(vec, 1);
-            REQUIRE_THROWS_WITH( collapseToOutcome(vec, 0, 0), Contains("Can't collapse to state with zero probability") );
+            REQUIRE_THROWS_WITH( collapseToOutcome(vec, 0, 0), Contains("impossibly unlikely") );
         }
     }
     destroyQureg(vec);

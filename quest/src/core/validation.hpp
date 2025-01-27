@@ -22,7 +22,7 @@ using std::string;
 
 
 /*
- *  MATRIX ATTRIBUTE FLAGS
+ *  PLACEHOLDER STRUCT FIELDS
  */
 
 const int validate_STRUCT_PROPERTY_UNKNOWN_FLAG = -1;
@@ -181,7 +181,7 @@ void validate_matrixDimMatchesTargets(DiagMatr1 matr, int numTargs, const char* 
 void validate_matrixDimMatchesTargets(DiagMatr2 matr, int numTargs, const char* caller);
 void validate_matrixDimMatchesTargets(DiagMatr  matr, int numTargs, const char* caller);
 
-void validate_matrixAndQuregAreCompatible(FullStateDiagMatr matr, Qureg qureg, const char* caller);
+void validate_matrixAndQuregAreCompatible(FullStateDiagMatr matr, Qureg qureg, bool expecOnly, const char* caller);
 
 
 
@@ -305,7 +305,11 @@ void validate_controlsAndPauliStrTargets(Qureg qureg, int* ctrls, int numCtrls, 
 
 void validate_pauliStrSumFields(PauliStrSum sum, const char* caller);
 
-void valdidate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller);
+void validate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller);
+
+void validate_pauliStrSumTargets(PauliStrSum sum, Qureg qureg, const char* caller);
+
+void validate_pauliStrSumCanInitMatrix(FullStateDiagMatr matr, PauliStrSum sum, const char* caller);
 
 
 
@@ -345,14 +349,6 @@ void validate_controlsAndTwoTargets(Qureg qureg, int* ctrls, int numCtrls, int t
 
 
 /*
- * ROTATION PARAMETERS
- */
-
-void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller);
-
-
-
-/*
  * MEASUREMENT PARAMETERS
  */
 
@@ -365,6 +361,18 @@ void validate_measurementOutcomeProbNotZero(int outcome, qreal prob, const char*
 void validate_measurementOutcomesProbNotZero(int* outcomes, int numQubits, qreal prob, const char* caller);
 
 void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const char* caller);
+
+
+
+/*
+ * MISC GATE PARAMETERS
+ */
+
+void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller);
+
+void validate_mixedAmpsFitInNode(Qureg qureg, int numTargets, const char* caller);
+
+void validate_trotterParams(Qureg qureg, int order, int reps, const char* caller);
 
 
 
@@ -389,6 +397,8 @@ void validate_oneQubitPauliChannelProbs(qreal pX, qreal pY, qreal pZ, const char
 /*
  * QUREG COMBINATION
  */
+
+void validate_quregCanBeWorkspace(Qureg quregA, Qureg quregB, const char* caller);
 
 void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller);
 
@@ -424,7 +434,12 @@ void validate_numInitRandomPureStates(qindex numPureStates,  const char* caller)
  * EXPECTATION VALUES
  */
 
-void validate_expecValIsReal(qcomp value, bool isDensMatr, const char* caller);
+void validate_expecPauliStrValueIsReal(qcomp value, bool isDensMatr, const char* caller);
+
+void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const char* caller);
+
+void validate_expecFullStateDiagMatrValueIsReal(qcomp value, bool isDensMatr, const char* caller);
+
 
 
 /*

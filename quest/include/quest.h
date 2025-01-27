@@ -6,7 +6,6 @@
 #define QUEST_H
 
 
-
 #include "quest/include/calculations.h"
 #include "quest/include/debug.h"
 #include "quest/include/decoherence.h"
@@ -17,7 +16,6 @@
 #include "quest/include/operations.h"
 #include "quest/include/paulis.h"
 #include "quest/include/precision.h"
-#include "quest/include/qasm.h"
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 #include "quest/include/types.h"

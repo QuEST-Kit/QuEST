@@ -28,8 +28,10 @@
 #include <vector>
 #include <complex>
 #include <algorithm>
+#include <unordered_map>
 
 using std::vector;
+using std::tuple;
 
 
 
@@ -157,7 +159,7 @@ auto getCtrlsAndTargsSwappedToMinSuffix(Qureg qureg, vector<int> ctrls, vector<i
 
     // nothing to do if all targs are already in suffix
     if (!doesGateRequireComm(qureg, targs))
-        return std::tuple{ctrls, targs};
+        return tuple{ctrls, targs};
 
     // prepare masks to avoid quadratic nested looping
     qindex targMask = getBitMask(targs.data(), targs.size());
@@ -200,7 +202,7 @@ auto getCtrlsAndTargsSwappedToMinSuffix(Qureg qureg, vector<int> ctrls, vector<i
     }
 
     // the ordering in ctrls relative to the caller's ctrlStates is unchanged
-    return std::tuple{ctrls, targs};
+    return tuple{ctrls, targs};
 }
 
 
@@ -253,7 +255,47 @@ auto getNonSwappedCtrlsAndStates(vector<int> oldCtrls, vector<int> oldStates, ve
             sameStates.push_back(oldStates[i]);
         }
 
-    return std::tuple{sameCtrls, sameStates};
+    return tuple{sameCtrls, sameStates};
+}
+
+
+Qureg getSpoofedDistributedBufferlessQuregFromLocalQureg(Qureg local, Qureg distrib) {
+
+    // this function makes a new Qureg, leveraging 'local's existing
+    // memory, which has the same distribution as the given distributed Qureg.
+    // critically, the new Qureg will lack communication buffers!
+
+    // overwrite spoof's fields with distrib's, setting correct dimensions
+    Qureg spoof = distrib;
+
+    // set spoof's pointers to a rank-specific offset of local's
+    qindex offset = util_getGlobalIndexOfFirstLocalAmp(distrib);
+    spoof.cpuAmps = &local.cpuAmps[offset];
+    spoof.gpuAmps = (local.isGpuAccelerated)? &local.gpuAmps[offset] : local.gpuAmps;
+
+    return spoof;
+}
+
+
+FullStateDiagMatr getSpoofedDistributedMatrFromDistributedQureg(FullStateDiagMatr local, Qureg distrib) {
+
+    // this function makes a new FullStateDiagMatr, leveraging 'local's existing
+    // memory, which has the same distribution as the given distributed Qureg.
+
+    // inherit all fields of local, subsequently overwriting those related to distribution
+    FullStateDiagMatr spoof = local;
+    spoof.isDistributed = 1;
+    spoof.numElemsPerNode = local.numElems / distrib.numNodes; // divides evenly
+
+    // offset pointers to local's existing memory, avoiding de-referencing nullptr (illegal)
+    qindex offset = (distrib.isDensityMatrix)? 
+        util_getGlobalColumnOfFirstLocalAmp(distrib):
+        util_getGlobalIndexOfFirstLocalAmp(distrib);
+    
+    spoof.cpuElems = &local.cpuElems[offset];
+    spoof.gpuElems = (local.isGpuAccelerated)? &local.gpuElems[offset] : local.gpuElems;
+
+    return spoof;
 }
 
 
@@ -409,6 +451,7 @@ void localiser_fullstatediagmatr_getElems(qcomp* outElems, FullStateDiagMatr mat
 }
 
 
+
 /*
  * SETTERS
  */
@@ -466,6 +509,60 @@ void localiser_densmatr_setAmps(qcomp** inAmps, Qureg qureg, qindex startRow, qi
 }
 
 
+void localiser_densmatr_setAmpsToPauliStrSum(Qureg qureg, PauliStrSum sum) {
+    assert_localiserGivenDensMatr(qureg);
+
+    // always embarrassingly parallel
+    accel_densmatr_setAmpsToPauliStrSum_sub(qureg, sum);
+}
+
+
+void localiser_fullstatediagmatr_setElems(FullStateDiagMatr matr, qindex startInd, qcomp* in, qindex numElems) {
+
+    // modification of a FullStateDiagMatr is identical to that of a 
+    // statevector Qureg, so we spoof an identically-deployed Qureg
+    int isDensMatr = 0;
+    int useMultithread = 0; // not used by setAmps()
+    Qureg spoof = qureg_populateNonHeapFields(matr.numQubits, isDensMatr, matr.isDistributed, matr.isGpuAccelerated, useMultithread);
+
+    // we bind matr's memory to the spoofed Qureg. Note that spoof's
+    // communication buffers remain nullptr which may be inconsistent
+    // with its distribution status, which validation would detect
+    spoof.cpuAmps = matr.cpuElems;
+    spoof.gpuAmps = matr.gpuElems; // may be null
+
+    // invoke the Qureg setter, which will modify matr's memory
+    localiser_statevec_setAmps(in, spoof, startInd, numElems);
+
+    // note that FullStateDiagMatr needs its CPU and GPU memories
+    // to always be consistent with one another (like all matrix
+    // types), since this is a precondition assumed by accelerator.cpp.
+    // So if the above function modified GPU mem, we also trigger CPU.
+    if (spoof.isGpuAccelerated) {
+        spoof.isGpuAccelerated = 0;
+        localiser_statevec_setAmps(in, spoof, startInd, numElems);
+    }
+}
+
+
+void localiser_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStrSum in) {
+
+    // always embarrassingly parallel. Note that accelerator will 
+    // safely keep CPU and GPU memory of FullStateDiagMatr consistent
+    accel_fullstatediagmatr_setElemsToPauliStrSum(out, in);
+}
+
+
+
+/*
+ * STATE INITIALISATION
+ */
+
+
+// defined later in this file, but repurposed here for density matrix initialisation
+void mixDensityMatrixWithStatevector(qreal outProb, Qureg out, qreal inProb, Qureg in);
+
+
 void localiser_statevec_initArbitraryPureState(Qureg qureg, qcomp* amps) {
     assert_localiserGivenStateVec(qureg);
 
@@ -504,44 +601,6 @@ void localiser_densmatr_initArbitraryMixedState(Qureg qureg, qcomp** amps) {
     qindex numCols = numRows;
     localiser_densmatr_setAmps(amps, qureg, startRow, startCol, numRows, numCols);
 }
-
-
-void localiser_fullstatediagmatr_setElems(FullStateDiagMatr matr, qindex startInd, qcomp* in, qindex numElems) {
-
-    // modification of a FullStateDiagMatr is identical to that of a 
-    // statevector Qureg, so we spoof an identically-deployed Qureg
-    int isDensMatr = 0;
-    int useMultithread = 0; // not used by setAmps()
-    Qureg spoof = qureg_populateNonHeapFields(matr.numQubits, isDensMatr, matr.isDistributed, matr.isGpuAccelerated, useMultithread);
-
-    // we bind matr's memory to the spoofed Qureg. Note that spoof's
-    // communication buffers remain nullptr which may be inconsistent
-    // with its distribution status, which validation would detect
-    spoof.cpuAmps = matr.cpuElems;
-    spoof.gpuAmps = matr.gpuElems; // may be null
-
-    // invoke the Qureg setter, which will modify matr's memory
-    localiser_statevec_setAmps(in, spoof, startInd, numElems);
-
-    // note that FullStateDiagMatr needs its CPU and GPU memories
-    // to always be consistent with one another (like all matrix
-    // types), since this is a precondition assumed by accelerator.cpp.
-    // So if the above function modified GPU mem, we also trigger CPU.
-    if (spoof.isGpuAccelerated) {
-        spoof.isGpuAccelerated = 0;
-        localiser_statevec_setAmps(in, spoof, startInd, numElems);
-    }
-}
-
-
-
-/*
- * STATE INITIALISATION
- */
-
-
-// defined later in this file, but repurposed here for density matrix initialisation
-void mixDensityMatrixWithStatevector(qreal outProb, Qureg out, qreal inProb, Qureg in);
 
 
 void localiser_statevec_initUniformState(Qureg qureg, qcomp amp) {
@@ -803,9 +862,15 @@ void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, vector<int> ctrls, vect
     //     a communicator which may be inelegant alongside our own distribution scheme.
 
     // perform necessary swaps to move all targets into suffix, each of which invokes communication
-    for (size_t i=0; i<targsA.size(); i++)
-        if (targsA[i] != targsB[i])
-            anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, targsA[i], targsB[i]);
+    for (size_t i=0; i<targsA.size(); i++) {
+
+        if (targsA[i] == targsB[i])
+            continue;
+
+        int suffixTarg = std::min(targsA[i], targsB[i]);
+        int prefixTarg = std::max(targsA[i], targsB[i]);
+        anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, suffixTarg, prefixTarg);
+    }
 }
 
 
@@ -1006,33 +1071,6 @@ void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, v
  */
 
 
-void localAllTargDiagMatrOnDistribStatevector(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
-
-    // this is a strange scenario (why distribute qureg but not
-    // an equally-sized matrix?) we support merely for defensive-
-    // design. In this scenario, every node has the full matrix
-    // amps and needs only to consult a contiguous subset. To
-    // avoid bespoke but trivially different backend functions,
-    // we spoof a distributed copy of 'matr' with pointers
-    // offset to the elements needed by this node, and call the
-    // equally-distributed backend function.
-
-    qindex offset = util_getGlobalIndexOfFirstLocalAmp(qureg);
-
-    // cheaply copy matr, spoofed as distributed (to pass internal checks)
-    FullStateDiagMatr copy = matr;
-    copy.isDistributed = true;
-    copy.numElemsPerNode = qureg.numAmpsPerNode; // not consulted, but for safety
-
-    // offset pointers to qureg's existing memory, avoiding de-referencing nullptr (illegal)
-    copy.cpuElems = &copy.cpuElems[offset];
-    copy.gpuElems = (copy.gpuElems == nullptr)? copy.gpuElems : &copy.gpuElems[offset];
-
-    // invoke backend; copy is in stack and will be auto-freed
-    accel_statevec_allTargDiagMatr_sub(qureg, copy, exponent);
-}
-
-
 void localiser_statevec_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
     assert_localiserGivenStateVec(qureg);
 
@@ -1051,8 +1089,10 @@ void localiser_statevec_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qco
         accel_statevec_allTargDiagMatr_sub(qureg, matr, exponent);
     
     // embarrasingly parallel when only qureg is distributed (all nodes have all needed matr elems)
-    if (quregDist && !matrDist)
-        localAllTargDiagMatrOnDistribStatevector(qureg, matr, exponent);
+    if (quregDist && !matrDist) {
+        auto copy = getSpoofedDistributedMatrFromDistributedQureg(matr, qureg);
+        accel_statevec_allTargDiagMatr_sub(qureg, copy, exponent);
+    }
 }
 
 
@@ -1401,18 +1441,25 @@ void twoQubitDepolarisingOnPrefixAndPrefix(Qureg qureg, int ketQb1, int ketQb2, 
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
-    // scale 25% of (non-communicated) amps
+    // pack unscaled amps before subsequent scaling
+    qindex numPacked = accel_statevec_packAmpsIntoBuffer(qureg, {ketQb1,ketQb2}, {braBit1,braBit2});
+
+    // scale all amps
     accel_densmatr_twoQubitDepolarising_subE(qureg, ketQb1, ketQb2, prob);
 
-    // pack and swap 25% of buffer, and use it to modify 25% of local amps
+    // swap the buffer with 3 other nodes to update local amps
     int pairRank1 = util_getRankWithBraQubitFlipped(ketQb1, qureg);
-    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank1, {ketQb1,ketQb2}, {braBit1,braBit2});
+    int pairRank2 = util_getRankWithBraQubitFlipped(ketQb2, qureg);
+    int pairRank3 = util_getRankWithBraQubitsFlipped({ketQb1,ketQb2}, qureg);
+
+    comm_exchangeSubBuffers(qureg, numPacked, pairRank1);
     accel_densmatr_twoQubitDepolarising_subF(qureg, ketQb1, ketQb2, prob);
 
-    // pack and swap another 25% of buffer (we could pack during subE, but we choose not to)
-    int pairRank2 = util_getRankWithBraQubitFlipped(ketQb2, qureg);
-    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank2, {ketQb1,ketQb2}, {braBit1,braBit2});
-    accel_densmatr_twoQubitDepolarising_subG(qureg, ketQb1, ketQb2, prob);
+    comm_exchangeSubBuffers(qureg, numPacked, pairRank2);
+    accel_densmatr_twoQubitDepolarising_subF(qureg, ketQb1, ketQb2, prob);
+
+    comm_exchangeSubBuffers(qureg, numPacked, pairRank3);
+    accel_densmatr_twoQubitDepolarising_subF(qureg, ketQb1, ketQb2, prob);
 }
 
 
@@ -1476,7 +1523,7 @@ void localiser_densmatr_oneQubitPauliChannel(Qureg qureg, int qubit, qreal probX
 
 
 // twoQubitPauliChannel() is regrettably too difficult; the communication model cannot be 
-// simplified the way it was in twoQubitDepolarising() which levereaged the uniform
+// simplified the way it was in twoQubitDepolarising() which leveraged the uniform
 // coefficients. It is not clear whether arbitrary coefficients, which cause many more
 // amplitudes to mix, can ever be performed in a sequence of pairwise communication
 
@@ -1762,8 +1809,17 @@ qreal localiser_densmatr_calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qu
 
     if (doAnyLocalStatesHaveQubitValues(qureg, braQubits, outcomes)) {
 
-        // such nodes need to know all ket qubits (which are all suffix)
-        prob += accel_densmatr_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes);
+        // such nodes need only know the ket qubits/outcomes for which the bra-qubits are in suffix
+        vector<int> ketQubitsWithBraInSuffix;
+        vector<int> ketOutcomesWithBraInSuffix;
+        for (size_t q=0; q<qubits.size(); q++)
+            if (util_isBraQubitInSuffix(qubits[q], qureg)) {
+                ketQubitsWithBraInSuffix.push_back(qubits[q]);
+                ketOutcomesWithBraInSuffix.push_back(outcomes[q]);
+            }
+
+        prob += accel_densmatr_calcProbOfMultiQubitOutcome_sub(
+            qureg, ketQubitsWithBraInSuffix, ketOutcomesWithBraInSuffix);
     }
 
     // all nodes must sum their probabilities (unless qureg was cloned per-node), for consensus
@@ -1804,6 +1860,46 @@ void localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg 
  */
 
 
+PAULI_MASK_TYPE paulis_getKeyOfSameMixedAmpsGroup(PauliStr str);
+
+
+qcomp getStateVecExpecAllSuffixPauliStr(Qureg qureg, vector<int> suffixX, vector<int> suffixY, vector<int> suffixZ) {
+    assert_localiserGivenStateVec(qureg);
+
+    // optimised scenario when str = I
+    if (suffixX.empty() && suffixY.empty() && suffixZ.empty())
+        return accel_statevec_calcTotalProb_sub(qureg);
+
+    // optimised scenario when str = IZ
+    if (suffixX.empty() && suffixY.empty())
+        return accel_statevec_calcExpecAnyTargZ_sub(qureg, suffixZ);
+
+    // generic XYZ
+    return accel_statevec_calcExpecPauliStr_subA(qureg, suffixX, suffixY, suffixZ);
+}
+
+
+qcomp getDensMatrExpecPauliStrTermOfOnlyThisNode(Qureg qureg, PauliStr str) {
+    assert_localiserGivenDensMatr(qureg);
+
+    // caller must reduce the returned value between nodes if necessary
+
+    // all ket-paulis are in the suffix state
+    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
+
+    // optimised scenario when str = I
+    if (targsX.empty() && targsY.empty() && targsZ.empty())
+        return accel_densmatr_calcTotalProb_sub(qureg);
+    
+    // optimised scenario when str = Z
+    if (targsX.empty() && targsY.empty())
+        return accel_densmatr_calcExpecAnyTargZ_sub(qureg, targsZ);
+    
+    // generic XYZ
+    return accel_densmatr_calcExpecPauliStr_sub(qureg, targsX, targsY, targsZ);
+}
+
+
 qcomp localiser_statevec_calcExpecPauliStr(Qureg qureg, PauliStr str) {
     assert_localiserGivenStateVec(qureg);
 
@@ -1813,29 +1909,22 @@ qcomp localiser_statevec_calcExpecPauliStr(Qureg qureg, PauliStr str) {
     // - prefix X,Y determine communication, because they apply bit-not to rank
     // - prefix Y,Z determine node-wide coefficient, because they contain rank-determined !=1 elements
     // - suffix X,Y,Z determine local amp coefficients
+    // noting that when !qureg.isDistributed, all paulis will be in suffix
     auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
     auto [prefixX, suffixX] = util_getPrefixAndSuffixQubits(targsX, qureg);
     auto [prefixY, suffixY] = util_getPrefixAndSuffixQubits(targsY, qureg);
     auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targsZ, qureg);
 
-    // embarrassingly parallel when there is only Z's in prefix
+    // embarrassingly parallel when there is only Z's in prefix (which themselves are handled afterward)
     if (prefixX.empty() && prefixY.empty()) {
+        value = getStateVecExpecAllSuffixPauliStr(qureg, suffixX, suffixY, suffixZ);
 
-        // which has optimised local routines if suffix str is I, IZ, or IZXY
-        if (suffixX.empty() && suffixY.empty() && suffixZ.empty())
-            value = accel_statevec_calcTotalProb_sub(qureg);
-        else if (suffixX.empty() && suffixY.empty())
-            value = accel_statevec_calcExpecAnyTargZ_sub(qureg, suffixZ);
-        else
-            value = accel_statevec_calcExpecPauliStr_subA(qureg, suffixX, suffixY, suffixZ);
-
-    // otherwise, communication is a pairwise exchange
+    // otherwise, communication is pairwise exchange
     } else {
         auto prefixXY = util_getConcatenated(prefixX, prefixY);
         int pairRank = util_getRankWithQubitsFlipped(prefixXY, qureg);
         comm_exchangeAmpsToBuffers(qureg, pairRank);
 
-        // and the subsequent process is optimal for all suffix paulis
         value = accel_statevec_calcExpecPauliStr_subB(qureg, suffixX, suffixY, suffixZ);
     }
 
@@ -1853,21 +1942,164 @@ qcomp localiser_statevec_calcExpecPauliStr(Qureg qureg, PauliStr str) {
 qcomp localiser_densmatr_calcExpecPauliStr(Qureg qureg, PauliStr str) {
     assert_localiserGivenDensMatr(qureg);
 
-    qcomp value = 0;
+    // density-matrix expectation values are always embarrassingly parallel
+    qcomp value = getDensMatrExpecPauliStrTermOfOnlyThisNode(qureg, str);
 
-    // all ket-paulis are in the suffix state
-    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
+    if (qureg.isDistributed)
+        comm_reduceAmp(&value);
 
-    // ergo all scenarios (I, IZ, IXYZ) are embarrassingly parallel
-    if (targsX.empty() && targsY.empty() && targsZ.empty())
-        value = accel_densmatr_calcTotalProb_sub(qureg);
-    else if (targsX.empty() && targsY.empty())
-        value = accel_densmatr_calcExpecAnyTargZ_sub(qureg, targsZ);
-    else
-        value = accel_densmatr_calcExpecPauliStr_sub(qureg, targsX, targsY, targsZ);
+    return value;
+}
 
+
+qcomp localiser_statevec_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
+    assert_localiserGivenStateVec(qureg);
+
+    // this function does not process each PauliStr within sum independently; instead, we
+    // leverage that strings differing only by I <-> Z and X <-> Y in the prefix qubits
+    // have identical communication patterns, and so can all be processed after one round 
+    // of amps exchange. 
+    
+    // TODO: 
+    // We can optimise further in a similar spirit to above by grouping identically-
+    // communicating strings into those which differ only by suffix I <-> Z and X <-> Y,
+    // which have identical amplitude-mixing patterns, to avoid repeated enumeration of 
+    // all amplitudes and reduce the associated memory-movement / caching costs.
+    // (This is facilitated "for free" by cuStateVec in GPU settings, although we do not
+    // wish to here differentiate localiser logic based on CPU vs GPU deployment)
+
+    qcomp totalValue = 0;
+
+    using Key = PAULI_MASK_TYPE;
+    using Term = tuple<PauliStr,qcomp>;
+    std::unordered_map<Key, vector<Term>> groups;
+
+    // group sum's terms into those with identical communication patterns
+    for (int i=0; i<sum.numTerms; i++) {
+        Term term = tuple{sum.strings[i], sum.coeffs[i]};
+        Key totalKey = paulis_getKeyOfSameMixedAmpsGroup(sum.strings[i]);
+        Key prefixKey = getBitsLeftOfIndex(totalKey, qureg.logNumAmpsPerNode - 1); // 0 if !qureg.isDistributed
+
+        groups[prefixKey].push_back(term);
+    }
+
+    // process each group in-turn
+    for (auto& [key, terms] : groups) {
+
+        // perform communication once per-group, if necessary
+        int pairRank = flipBits(qureg.rank, key);
+        if (pairRank != qureg.rank)
+            comm_exchangeAmpsToBuffers(qureg, pairRank);
+
+        // determine backend function to invoke upon all terms in group (likely _subB)
+        auto termFunc = (pairRank == qureg.rank)?
+            getStateVecExpecAllSuffixPauliStr :
+            accel_statevec_calcExpecPauliStr_subB;
+
+        // for each term within the current group...
+        for (auto& [str, coeff] : terms) {
+            auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
+            auto [prefixX, suffixX] = util_getPrefixAndSuffixQubits(targsX, qureg);
+            auto [prefixY, suffixY] = util_getPrefixAndSuffixQubits(targsY, qureg);
+            auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targsZ, qureg);
+            
+            // contribute coeff * prefix-coeff * suffix-sum
+            qcomp termFactor = paulis_getPrefixPaulisElem(qureg, prefixY, prefixZ);
+            qcomp termValue = termFactor * termFunc(qureg, suffixX, suffixY, suffixZ);
+            totalValue += coeff * termValue;
+        }
+    }
+    
     // combine contributions from each node
     if (qureg.isDistributed)
+        comm_reduceAmp(&totalValue);
+
+    return totalValue;
+}
+
+
+qcomp localiser_densmatr_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
+    assert_localiserGivenDensMatr(qureg);
+
+    // TOOD:
+    // we can optimise this method by grouping sum's terms into strings which
+    // involve differ only by I <-> Z and X <-> Y, which have identical 
+    // enumeration patterns and which can significantly reduce superfluous
+    // re-enumeration of the amps, reducing memroy-movement/caching costs.
+    // Explore this!
+
+    // every term of 'sum' is embarrassingly parallel to evaluate; sum all this node's contributions
+    qcomp value = 0;
+    for (qindex t=0; t<sum.numTerms; t++)
+        value += sum.coeffs[t] * getDensMatrExpecPauliStrTermOfOnlyThisNode(qureg, sum.strings[t]);
+
+    // combine contributions from other nodes
+    if (qureg.isDistributed)
+        comm_reduceAmp(&value);
+
+    return value;
+}
+
+
+auto getSpoofsWithMatchingDistributions(Qureg qureg, FullStateDiagMatr matr) {
+
+    // in defensive design, this function modifies only new structs rather than
+    // the passed structs, in case the latter are later changed to references
+
+    // when only matr is local, spoof it to be distributed
+    if (qureg.isDistributed && !matr.isDistributed) {
+
+        FullStateDiagMatr matrSpoof = getSpoofedDistributedMatrFromDistributedQureg(matr, qureg);
+        return tuple{qureg,matrSpoof};
+    }
+
+    // when only qureg is local, spoof it to be distributed
+    if (!qureg.isDistributed && matr.isDistributed) {
+
+        Qureg quregSpoof = qureg_populateNonHeapFields(
+            qureg.numQubits, qureg.isDensityMatrix, 
+            matr.isDistributed,  // !
+            qureg.isGpuAccelerated, qureg.isMultithreaded);
+
+        quregSpoof = getSpoofedDistributedBufferlessQuregFromLocalQureg(qureg, quregSpoof);
+        return tuple{quregSpoof,matr};
+    }
+
+    // when distributions agree, return originals
+    return tuple{qureg,matr};
+}
+
+
+qcomp localiser_statevec_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+    // since this method does not modify qureg, we force qureg & matr distributions to 
+    // agree by merely spoofing the non-distributed object to be distributed;
+    // we use new vars in defensive design, in case args ever become references
+    auto [quregSpoof, matrSpoof] = getSpoofsWithMatchingDistributions(qureg, matr);
+
+    // always embarrassingly parallel
+    qcomp value = accel_statevec_calcExpecFullStateDiagMatr_sub(quregSpoof, matrSpoof, exponent);
+
+    // combine contributions from other nodes
+    if (quregSpoof.isDistributed)
+        comm_reduceAmp(&value);
+
+    return value;
+}
+
+
+qcomp localiser_densmatr_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+    // since this method does not modify qureg, we force qureg & matr distributions to 
+    // agree by merely spoofing the non-distributed object to be distributed;
+    // we use new vars in defensive design, in case args ever become references
+    auto [quregSpoof, matrSpoof] = getSpoofsWithMatchingDistributions(qureg, matr);
+
+    // always embarrassingly parallel
+    qcomp value = accel_densmatr_calcExpecFullStateDiagMatr_sub(quregSpoof, matrSpoof, exponent);
+
+    // combine contributions from other nodes
+    if (quregSpoof.isDistributed)
         comm_reduceAmp(&value);
 
     return value;
@@ -1893,20 +2125,6 @@ qcomp calcInnerProdOfSameDistribQuregs(Qureg quregA, Qureg quregB) {
 }
 
 
-Qureg spoofDistributedQuregFromLocalQureg(Qureg local, Qureg distrib) {
-
-    // overwrite spoof's fields with distrib's, setting correct dimensions
-    Qureg spoof = distrib;
-
-    // set spoof's pointers to a rank-specific offset of local's
-    qindex offset = util_getGlobalIndexOfFirstLocalAmp(distrib);
-    spoof.cpuAmps = &local.cpuAmps[offset];
-    spoof.gpuAmps = (local.isGpuAccelerated)? &local.gpuAmps[offset] : nullptr;
-
-    return spoof;
-}
-
-
 qcomp localiser_statevec_calcInnerProduct(Qureg quregA, Qureg quregB) {
 
     // trivial when identically distributed
@@ -1918,8 +2136,8 @@ qcomp localiser_statevec_calcInnerProduct(Qureg quregA, Qureg quregB) {
     // defensive design, we modify a copy of quregA or quregB (even
     // though they themselves are mere copies of the user structs),
     // in case this function is modified in the future to mutate args
-    Qureg copyA = (quregA.isDistributed)? quregA : spoofDistributedQuregFromLocalQureg(quregA, quregB);
-    Qureg copyB = (quregB.isDistributed)? quregB : spoofDistributedQuregFromLocalQureg(quregB, quregA);
+    Qureg copyA = (quregA.isDistributed)? quregA : getSpoofedDistributedBufferlessQuregFromLocalQureg(quregA, quregB);
+    Qureg copyB = (quregB.isDistributed)? quregB : getSpoofedDistributedBufferlessQuregFromLocalQureg(quregB, quregA);
 
     return calcInnerProdOfSameDistribQuregs(copyA, copyB); // broadcasts
 }
@@ -1984,8 +2202,8 @@ qreal localiser_densmatr_calcHilbertSchmidtDistance(Qureg quregA, Qureg quregB) 
     // otherwise, we simply spoof a distributed qureg from the local 
     // one, offsetting its amp pointers, modifying copies in defensive design
     else {
-        Qureg copyA = (quregA.isDistributed)? quregA : spoofDistributedQuregFromLocalQureg(quregA, quregB);
-        Qureg copyB = (quregB.isDistributed)? quregB : spoofDistributedQuregFromLocalQureg(quregB, quregA);
+        Qureg copyA = (quregA.isDistributed)? quregA : getSpoofedDistributedBufferlessQuregFromLocalQureg(quregA, quregB);
+        Qureg copyB = (quregB.isDistributed)? quregB : getSpoofedDistributedBufferlessQuregFromLocalQureg(quregB, quregA);
         dist = accel_densmatr_calcHilbertSchmidtDistance_sub(copyA, copyB);
     }
 

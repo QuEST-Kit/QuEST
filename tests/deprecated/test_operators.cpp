@@ -34,16 +34,6 @@ using Catch::Matchers::Contains;
 
 
 
-// TODO:
-// OVERRIDE AUTO-DEPLOYER FOR TESTS?!
-
-
-
-// largest valid phaseFunc enum, used by input validation tests
-// enum phaseFunc MAX_INDEX_PHASE_FUNC = SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE;
-
-
-
 /** @sa applyDiagonalOp
  * @ingroup unittest 
  * @author Tyson Jones 
@@ -86,8 +76,8 @@ TEST_CASE( "applyDiagonalOp", "[operators]" ) {
             
             DiagonalOp op = createDiagonalOp(NUM_QUBITS + 1, env);
             
-            REQUIRE_THROWS_WITH( applyDiagonalOp(quregVec, op), Contains("equal number of qubits"));
-            REQUIRE_THROWS_WITH( applyDiagonalOp(quregMatr, op), Contains("equal number of qubits"));
+            REQUIRE_THROWS_WITH( applyDiagonalOp(quregVec,  op), Contains("different number of qubits"));
+            REQUIRE_THROWS_WITH( applyDiagonalOp(quregMatr, op), Contains("different number of qubits"));
             
             destroyDiagonalOp(op, env);
         }
@@ -100,7 +90,7 @@ TEST_CASE( "applyDiagonalOp", "[operators]" ) {
  * @author Tyson Jones 
  */
 TEST_CASE( "applyFullQFT", "[operators]" ) {
-    
+
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
     SECTION( "correctness" ) {
@@ -260,7 +250,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
             ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
             
-            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("Invalid number of target"));
+            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("number of target qubits") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "repetition in targets" ) {
@@ -269,7 +259,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             int targs[] = {1,2,2};
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
             
-            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("target") && Contains("unique"));
+            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("target") && Contains("unique") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "qubit indices" ) {
@@ -303,16 +293,19 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             int targs[2] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
             
-            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, 2, matr), Contains("matrix size"));
+            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, 2, matr), Contains("matrix has an inconsistent size"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "matrix fits in node" ) {
                 
             // pretend we have a very limited distributed memory (judged by matr size)
+            quregVec.isDistributed = 1;
             quregVec.numAmpsPerNode = 1;
+            quregVec.logNumAmpsPerNode = 0;
+
             int qb[] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(2); // prevents seg-fault if validation doesn't trigger
-            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, qb, 2, matr), Contains("targets too many qubits"));
+            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, qb, 2, matr), Contains("communication buffer") && Contains("cannot simultaneously store") );
             destroyComplexMatrixN(matr);
         }
     }
@@ -325,7 +318,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
  * @ingroup unittest 
  * @author Tyson Jones 
  */
-TEST_CASE( "applyGateSubDiagonalOp", "[unitaries]" ) {
+TEST_CASE( "applyGateSubDiagonalOp", "[operators]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
@@ -365,8 +358,10 @@ TEST_CASE( "applyGateSubDiagonalOp", "[unitaries]" ) {
             
             int badNumTargs = GENERATE_COPY( numTargs-1, numTargs+1 );
             int badTargs[NUM_QUBITS+1];
+            for (int i=0; i<NUM_QUBITS+1; i++)
+                badTargs[i] = i;
             
-            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, badTargs, badNumTargs, op), Contains("incompatible dimension") );
+            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, badTargs, badNumTargs, op), Contains("inconsistent size") );
             destroySubDiagonalOp(op);
         }
         SECTION( "number of targets" ) {
@@ -379,7 +374,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[unitaries]" ) {
             for (int i=0; i<badOp.numElems; i++)
                 badOp.cpuElems[i] = qcomp(1, 0);
             
-            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, badOp.numQubits, badOp), Contains("Invalid number of target qubits") );
+            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, badOp.numQubits, badOp), Contains("number of target qubits") && Contains("exceeds") );
             destroySubDiagonalOp(badOp);
         }
         SECTION( "repetition in targets" ) {
@@ -392,7 +387,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[unitaries]" ) {
             // make a repetition in the target list
             int targs[] = {2,1,2};
 
-            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, op.numQubits, op), Contains("target qubits must be unique") );
+            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, op.numQubits, op), Contains("target qubits contained duplicates") );
             destroySubDiagonalOp(op);
         }
         SECTION( "qubit indices" ) {
@@ -524,8 +519,10 @@ TEST_CASE( "applyMatrix4", "[operators]" ) {
         SECTION( "matrix fits in node" ) {
                 
             // pretend we have a very limited distributed memory
+            quregVec.isDistributed = 1;
             quregVec.numAmpsPerNode = 1;
-            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, 0, 1, matr), Contains("targets too many qubits"));
+            quregVec.logNumAmpsPerNode = 0;
+            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, 0, 1, matr), Contains("communication buffer") && Contains("cannot simultaneously store") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -582,7 +579,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
             ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
             
-            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("Invalid number of target"));
+            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("number of target qubits") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "repetition in targets" ) {
@@ -591,7 +588,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             int targs[] = {1,2,2};
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
             
-            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("target") && Contains("unique"));
+            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("target") && Contains("unique") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "qubit indices" ) {
@@ -625,16 +622,18 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             int targs[2] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
             
-            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, 2, matr), Contains("matrix size"));
+            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, 2, matr), Contains("matrix has an inconsistent size") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "matrix fits in node" ) {
                 
             // pretend we have a very limited distributed memory (judged by matr size)
+            quregVec.isDistributed = 1;
             quregVec.numAmpsPerNode = 1;
+            quregVec.logNumAmpsPerNode = 0;
             int qb[] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(2); // prevents seg-fault if validation doesn't trigger
-            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, qb, 2, matr), Contains("targets too many qubits"));
+            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, qb, 2, matr), Contains("communication buffer") && Contains("cannot simultaneously store") );
             destroyComplexMatrixN(matr);
         }
     }
@@ -698,7 +697,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
             ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
             toComplexMatrixN(getRandomUnitary(NUM_QUBITS+1), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, numTargs, matr), Contains("Invalid number of target"));
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, numTargs, matr), Contains("number of target qubits") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "repetition in targets" ) {
@@ -714,13 +713,13 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
         }
         SECTION( "number of controls" ) {
             
-            int numCtrls = GENERATE( -1, 0, NUM_QUBITS, NUM_QUBITS+1 );
+            int numCtrls = GENERATE( -1, NUM_QUBITS+1 );
             int ctrls[NUM_QUBITS+1]; // avoids seg-fault if validation not triggered
             int targs[1] = {0};
             ComplexMatrixN matr = createComplexMatrixN(1);
             toComplexMatrixN(getRandomUnitary(1), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, numCtrls, targs, 1, matr), Contains("Invalid number of control"));
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, numCtrls, targs, 1, matr), Contains("number of control qubits") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "repetition in controls" ) {
@@ -730,17 +729,17 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
             ComplexMatrixN matr = createComplexMatrixN(1);
             toComplexMatrixN(getRandomUnitary(1), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 3, targs, 1, matr), Contains("control") && Contains("unique"));
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 3, targs, 1, matr), Contains("control") && Contains("unique") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "control and target collision" ) {
             
-            int ctrls[] = {0,1,2};
-            int targs[] = {3,1,4};
+            int ctrls[] = {1};
+            int targs[] = {3,1,0};
             ComplexMatrixN matr = createComplexMatrixN(3);
             toComplexMatrixN(getRandomUnitary(3), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 3, targs, 3, matr), Contains("Control") && Contains("target") && Contains("disjoint"));
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 3, matr), Contains("control and target qubits") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "qubit indices" ) {
@@ -781,19 +780,21 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
             ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
             toComplexMatrixN(getRandomUnitary(3), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 2, matr), Contains("matrix size"));
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 2, matr), Contains("matrix has an inconsistent size"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "matrix fits in node" ) {
                 
             // pretend we have a very limited distributed memory (judged by matr size)
+            quregVec.isDistributed = 1;
             quregVec.numAmpsPerNode = 1;
+            quregVec.logNumAmpsPerNode = 0;
             int ctrls[1] = {0};
             int targs[2] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(2);
             toComplexMatrixN(getRandomUnitary(2), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 2, matr), Contains("targets too many qubits"));
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 2, matr), Contains("communication buffer") && Contains("cannot simultaneously store") );
             destroyComplexMatrixN(matr);
         }
     }
@@ -3873,7 +3874,7 @@ TEST_CASE( "applyProjector", "[operators]" ) {
             
             int qubit = 0;
             int outcome = GENERATE( -1, 2 );
-            REQUIRE_THROWS_WITH( applyProjector(mat, qubit, outcome), Contains("Invalid measurement outcome") );
+            REQUIRE_THROWS_WITH( applyProjector(mat, qubit, outcome), Contains("measurement outcome") && Contains("is invalid") );
         }
     }
     destroyQureg(vec);
@@ -4006,17 +4007,19 @@ TEST_CASE( "applyQFT", "[operators]" ) {
         SECTION( "number of targets" ) {
             
             // there cannot be more targets than qubits in register
-            int numQubits = GENERATE( -1, 0, NUM_QUBITS+1 );
+            int numQubits = GENERATE( -1, 0);
             int qubits[NUM_QUBITS+1];
             
-            REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, numQubits), Contains("Invalid number of target"));
+            REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, numQubits), Contains("number of target qubits") && Contains("invalid") );
+            REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, NUM_QUBITS+1), Contains("number of target qubits") && Contains("exceeds") && Contains("Qureg") );
+
         }
         SECTION( "repetition in targets" ) {
             
             int numQubits = 3;
             int qubits[] = {1,2,2};
             
-            REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, numQubits), Contains("target") && Contains("unique"));
+            REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, numQubits), Contains("target") && Contains("unique") );
         }
         SECTION( "qubit indices" ) {
             
@@ -4037,7 +4040,7 @@ TEST_CASE( "applyQFT", "[operators]" ) {
  * @ingroup unittest 
  * @author Tyson Jones 
  */
-TEST_CASE( "applySubDiagonalOp", "[unitaries]" ) {
+TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
@@ -4077,8 +4080,10 @@ TEST_CASE( "applySubDiagonalOp", "[unitaries]" ) {
             
             int badNumTargs = GENERATE_COPY( numTargs-1, numTargs+1 );
             int badTargs[NUM_QUBITS+1];
+            for (int i=0; i<NUM_QUBITS+1; i++)
+                badTargs[i] = i;
             
-            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, badTargs, badNumTargs, op), Contains("incompatible dimension") );
+            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, badTargs, badNumTargs, op), Contains("inconsistent size") );
             destroySubDiagonalOp(op);
         }
         SECTION( "number of targets" ) {
@@ -4091,7 +4096,7 @@ TEST_CASE( "applySubDiagonalOp", "[unitaries]" ) {
             for (int i=0; i<badOp.numElems; i++)
                 badOp.cpuElems[i] = qcomp(1,0);
             
-            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, badOp.numQubits, badOp), Contains("Invalid number of target qubits") );
+            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, badOp.numQubits, badOp), Contains("number of target qubits") && Contains("exceeds") );
             destroySubDiagonalOp(badOp);
         }
         SECTION( "repetition in targets" ) {
@@ -4104,7 +4109,7 @@ TEST_CASE( "applySubDiagonalOp", "[unitaries]" ) {
             // make a repetition in the target list
             int targs[] = {2,1,2};
 
-            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, op.numQubits, op), Contains("target qubits must be unique") );
+            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, op.numQubits, op), Contains("target qubits contained duplicates") );
             destroySubDiagonalOp(op);
         }
         SECTION( "qubit indices" ) {

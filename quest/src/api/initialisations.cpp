@@ -38,7 +38,8 @@ void initZeroState(Qureg qureg) {
     validate_quregFields(qureg, __func__);
 
     // |0> = |0><0|
-    localiser_statevec_initClassicalState(qureg, 0);
+    qindex ind = 0;
+    localiser_statevec_initClassicalState(qureg, ind);
 }
 
 
@@ -135,6 +136,7 @@ void setQuregAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps) {
     localiser_statevec_setAmps(amps, qureg, startInd, numAmps);
 }
 
+
 void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qcomp** amps, qindex numRows, qindex numCols) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
@@ -183,9 +185,12 @@ qreal setQuregToRenormalized(Qureg qureg) {
 
 
 void setQuregToPauliStrSum(Qureg qureg, PauliStrSum sum) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_pauliStrSumFields(sum, __func__);
+    validate_pauliStrSumTargets(sum, qureg, __func__);
 
-    // TODO
-    error_functionNotImplemented(__func__);
+    localiser_densmatr_setAmpsToPauliStrSum(qureg, sum);
 }
 
 

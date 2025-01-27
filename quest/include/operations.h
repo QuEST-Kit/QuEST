@@ -137,6 +137,8 @@ void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* sta
 
 void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
 
+void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
+
 void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
 
 void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
@@ -261,9 +263,9 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
  * Pauli string sums
  */
 
-void multiplyPauliStrSum(Qureg qureg, PauliStrSum str);
+void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
 
-void applyTrotterizedTimeEvol(Qureg qureg, PauliStrSum hamiltonian, qreal time, int order, int reps);
+void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
 
 
 

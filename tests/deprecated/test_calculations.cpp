@@ -178,8 +178,8 @@ TEST_CASE( "calcExpecDiagonalOp", "[calculations]" ) {
             
             DiagonalOp op = createDiagonalOp(NUM_QUBITS + 1, getQuESTEnv());
             
-            REQUIRE_THROWS_WITH( calcExpecDiagonalOp(vec, op), Contains("equal number of qubits"));
-            REQUIRE_THROWS_WITH( calcExpecDiagonalOp(mat, op), Contains("equal number of qubits"));
+            REQUIRE_THROWS_WITH( calcExpecDiagonalOp(vec, op), Contains("different number of qubits"));
+            REQUIRE_THROWS_WITH( calcExpecDiagonalOp(mat, op), Contains("different number of qubits"));
             
             destroyDiagonalOp(op, getQuESTEnv());
         }
@@ -493,11 +493,13 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
     
     Qureg vec = createForcedQureg(NUM_QUBITS);
     Qureg mat = createForcedDensityQureg(NUM_QUBITS);
-    initDebugState(vec);
-    initDebugState(mat);
-    QVector vecRef = toQVector(vec);
-    QMatrix matRef = toQMatrix(mat);
+
+    QVector vecRef = getRandomStateVector(NUM_QUBITS);
+    QMatrix matRef = getRandomDensityMatrix(NUM_QUBITS);
+    toQureg(vec, vecRef);
+    toQureg(mat, matRef);
     
+    // accepted by v3 deprecated API but discarded by v4
     Qureg vecWork = createForcedQureg(NUM_QUBITS);
     Qureg matWork = createForcedDensityQureg(NUM_QUBITS);
     
@@ -509,7 +511,7 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
          * we'll try 10 random codes, and for each, random coefficients
          */
         GENERATE( range(0,10) );
-        int totNumCodes = numSumTerms*NUM_QUBITS;
+        int totNumCodes = numSumTerms * NUM_QUBITS;
         vector<pauliOpType> paulis(totNumCodes);
         vector<qreal> coeffs(numSumTerms);
         setRandomPauliSum(coeffs.data(), paulis.data(), NUM_QUBITS, numSumTerms);
@@ -548,7 +550,7 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
         SECTION( "number of sum terms" ) {
             
             int numSumTerms = GENERATE( -1, 0 );
-            REQUIRE_THROWS_WITH( calcExpecPauliSum(vec, NULL, NULL, numSumTerms, vecWork), Contains("Invalid number of terms in the Pauli sum") );
+            REQUIRE_THROWS_WITH( calcExpecPauliSum(vec, NULL, NULL, numSumTerms, vecWork), Contains("The number of terms must be a positive integer") );
         }
         SECTION( "pauli codes" ) {
             
@@ -561,37 +563,41 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
 
             // make one pauli wrong
             codes[GENERATE_COPY( range(0,numSumTerms*NUM_QUBITS) )] = (pauliOpType) GENERATE( -1, 4 );
-            REQUIRE_THROWS_WITH( calcExpecPauliSum(vec, codes.data(), coeffs.data(), numSumTerms, vecWork), Contains("Invalid Pauli code") );
+            REQUIRE_THROWS_WITH( calcExpecPauliSum(vec, codes.data(), coeffs.data(), numSumTerms, vecWork), Contains("invalid Pauli code") );
         }
-        SECTION( "workspace type" ) {
-            
-            // make valid params
-            int numSumTerms = 1;
-            qreal coeffs[1] = {0};
-            pauliOpType codes[NUM_QUBITS];
-            for (int i=0; i<NUM_QUBITS; i++)
-                codes[i] = PAULI_I;
-            
-            REQUIRE_THROWS_WITH( calcExpecPauliSum(vec, codes, coeffs, numSumTerms, mat), Contains("Registers must both be state-vectors or both be density matrices") );
-            REQUIRE_THROWS_WITH( calcExpecPauliSum(mat, codes, coeffs, numSumTerms, vec), Contains("Registers must both be state-vectors or both be density matrices") );
-        }
-        SECTION( "workspace dimensions" ) {
+
+        // the v4 API does not use a workspace, so it is discarded by the v3 deprecation layer
+
+            // SECTION( "workspace type" ) {
                 
-            // make valid params
-            int numSumTerms = 1;
-            qreal coeffs[1] = {0};
-            pauliOpType codes[NUM_QUBITS];
-            for (int i=0; i<NUM_QUBITS; i++)
-                codes[i] = PAULI_I;
-    
-            Qureg vec2 = createQureg(NUM_QUBITS + 1);
-            REQUIRE_THROWS_WITH( calcExpecPauliSum(vec, codes, coeffs, numSumTerms, vec2), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(vec2);
+            //     // make valid params
+            //     int numSumTerms = 1;
+            //     qreal coeffs[1] = {0};
+            //     pauliOpType codes[NUM_QUBITS];
+            //     for (int i=0; i<NUM_QUBITS; i++)
+            //         codes[i] = PAULI_I;
+                
+            //     REQUIRE_THROWS_WITH( calcExpecPauliSum(vec, codes, coeffs, numSumTerms, mat), Contains("Registers must both be state-vectors or both be density matrices") );
+            //     REQUIRE_THROWS_WITH( calcExpecPauliSum(mat, codes, coeffs, numSumTerms, vec), Contains("Registers must both be state-vectors or both be density matrices") );
+            // }
             
-            Qureg mat2 = createDensityQureg(NUM_QUBITS + 1);
-            REQUIRE_THROWS_WITH( calcExpecPauliSum(mat, codes, coeffs, numSumTerms, mat2), Contains("Dimensions") && Contains("don't match") );
-            destroyQureg(mat2);
-        }
+            // SECTION( "workspace dimensions" ) {
+                    
+            //     // make valid params
+            //     int numSumTerms = 1;
+            //     qreal coeffs[1] = {0};
+            //     pauliOpType codes[NUM_QUBITS];
+            //     for (int i=0; i<NUM_QUBITS; i++)
+            //         codes[i] = PAULI_I;
+        
+            //     Qureg vec2 = createQureg(NUM_QUBITS + 1);
+            //     REQUIRE_THROWS_WITH( calcExpecPauliSum(vec, codes, coeffs, numSumTerms, vec2), Contains("Dimensions") && Contains("don't match") );
+            //     destroyQureg(vec2);
+                
+            //     Qureg mat2 = createDensityQureg(NUM_QUBITS + 1);
+            //     REQUIRE_THROWS_WITH( calcExpecPauliSum(mat, codes, coeffs, numSumTerms, mat2), Contains("Dimensions") && Contains("don't match") );
+            //     destroyQureg(mat2);
+            // }
     }
     destroyQureg(vec);
     destroyQureg(mat);

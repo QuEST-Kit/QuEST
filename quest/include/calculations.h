@@ -24,6 +24,8 @@ qreal calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum);
 
 qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
 
+qreal calcExpecFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+
 
 qreal calcTotalProb(Qureg qureg);
 
@@ -71,6 +73,8 @@ qcomp calcInnerProduct(Qureg qureg1, Qureg qureg2);
 qcomp calcExpecNonHermitianPauliStrSum(Qureg qureg, PauliStrSum sum); 
 
 qcomp calcExpecNonHermitianFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
+
+qcomp calcExpecNonHermitianFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
 
 #endif
 

@@ -66,16 +66,16 @@ TEST_CASE( "cloneQureg", "[state_initialisations]" ) {
         
         SECTION( "qureg type" ) {
             
-            REQUIRE_THROWS_WITH( cloneQureg(mat1, vec1),  Contains("both be state-vectors") && Contains("density matrices") );
-            REQUIRE_THROWS_WITH( cloneQureg(vec1, mat1),  Contains("both be state-vectors") && Contains("density matrices") );
+            REQUIRE_THROWS_WITH( cloneQureg(mat1, vec1), Contains("must both be statevectors, or both be density matrices") );
+            REQUIRE_THROWS_WITH( cloneQureg(vec1, mat1), Contains("must both be statevectors, or both be density matrices") );
         }
         SECTION( "qureg dimensions" ) {
             
             Qureg vec3 = createForcedQureg(vec1.numQubits + 1);
             Qureg mat3 = createForcedDensityQureg(mat1.numQubits + 1);
             
-            REQUIRE_THROWS_WITH( cloneQureg(vec1, vec3), Contains("Dimensions") && Contains("don't match") );
-            REQUIRE_THROWS_WITH( cloneQureg(mat1, mat3), Contains("Dimensions") && Contains("don't match") );
+            REQUIRE_THROWS_WITH( cloneQureg(vec1, vec3), Contains("different number of qubits") );
+            REQUIRE_THROWS_WITH( cloneQureg(mat1, mat3), Contains("different number of qubits") );
             
             destroyQureg(vec3);
             destroyQureg(mat3);
@@ -154,7 +154,7 @@ TEST_CASE( "initClassicalState", "[state_initialisations]" ) {
         SECTION( "state index" ) {
             
             int ind = GENERATE( -1, (1<<NUM_QUBITS) );
-            REQUIRE_THROWS_WITH( initClassicalState(vec, ind), Contains("Invalid state index") );
+            REQUIRE_THROWS_WITH( initClassicalState(vec, ind), Contains("Basis state index") );
         }
     }
     destroyQureg(vec);
@@ -266,14 +266,14 @@ TEST_CASE( "initPureState", "[state_initialisations]" ) {
         SECTION( "qureg types" ) {
             
             // density matrix as second arg is illegal (regardless of first arg)
-            REQUIRE_THROWS_WITH( initPureState(vec1, mat1), Contains("Second argument must be a state-vector") );
-            REQUIRE_THROWS_WITH( initPureState(mat1, mat1), Contains("Second argument must be a state-vector") );
+            REQUIRE_THROWS_WITH( initPureState(vec1, mat1), Contains("(the second argument) must be a statevector") );
+            REQUIRE_THROWS_WITH( initPureState(mat1, mat1), Contains("(the second argument) must be a statevector") );
         }
         SECTION( "qureg dimensions" ) {
             
             Qureg vec2 = createForcedQureg(NUM_QUBITS + 1);
-            REQUIRE_THROWS_WITH( initPureState(vec1, vec2), Contains("Dimensions") && Contains("don't match") );
-            REQUIRE_THROWS_WITH( initPureState(mat1, vec2), Contains("Dimensions") && Contains("don't match") );
+            REQUIRE_THROWS_WITH( initPureState(vec1, vec2), Contains("differing number of qubits") );
+            REQUIRE_THROWS_WITH( initPureState(mat1, vec2), Contains("differing number of qubits") );
             destroyQureg(vec2);
         }
     }
@@ -291,30 +291,28 @@ TEST_CASE( "initArbitraryPureState", "[state_initialisations]" ) {
     
     Qureg vec = createForcedQureg(NUM_QUBITS);
     Qureg mat = createForcedDensityQureg(NUM_QUBITS);
+
+    // create random (unnormalised) vector
+    QVector vecRef = getRandomQVector(1<<NUM_QUBITS);
     
     SECTION( "correctness" ) {
         
         SECTION( "state-vector" ) {
-            
-            // create random (unnormalised) vector
-            QVector vecRef = getRandomQVector(1<<NUM_QUBITS);
 
             initArbitraryPureState(vec, vecRef.data());
+
             REQUIRE( areEqual(vec, vecRef) );
         }
         SECTION( "density-matrix" ) {
-            
-            // create random (unnormalised) matrix
-            QMatrix matRef = getRandomQMatrix(1<<NUM_QUBITS);
-            QVector amps(mat.numAmps);
-            
-            // populate column-wise 
-            long long int i=0;
-            for (size_t c=0; c<matRef.size(); c++)
-                for (size_t r=0; r<matRef.size(); r++)
-                    amps[i++] = matRef[r][c];
 
-            initArbitraryPureState(vec, amps.data());
+            initArbitraryPureState(mat, vecRef.data());
+
+            // matRef = |vecRef><vecRef|
+            QMatrix matRef = getZeroMatrix(vecRef.size());
+            for (auto r=0; r<vecRef.size(); r++)
+                for (auto c=0; c<vecRef.size(); c++)
+                    matRef[r][c] = vecRef[r] * conj(vecRef[c]);
+
             REQUIRE( areEqual(mat, matRef) );
         }
     }
@@ -401,7 +399,7 @@ TEST_CASE( "setQuregAmps", "[state_initialisations]" ) {
             
             int startInd = GENERATE_COPY( -1, maxInd );
             int numAmps = 0;
-            REQUIRE_THROWS_WITH( setQuregAmps(vec, startInd, amps.data(), numAmps), Contains("Invalid amplitude index") );
+            REQUIRE_THROWS_WITH( setQuregAmps(vec, startInd, amps.data(), numAmps), Contains("starting basis state index") );
         }
         
         SECTION( "number of amplitudes" ) {
@@ -409,17 +407,17 @@ TEST_CASE( "setQuregAmps", "[state_initialisations]" ) {
             // independent
             int startInd = 0;
             int numAmps = GENERATE_COPY( -1, maxInd+1 );
-            REQUIRE_THROWS_WITH( setQuregAmps(vec, startInd, amps.data(), numAmps), Contains("Invalid number of amplitudes") );
+            REQUIRE_THROWS_WITH( setQuregAmps(vec, startInd, amps.data(), numAmps), Contains("number of amplitudes") );
 
             // invalid considering start-index
             startInd = maxInd - 1;
             numAmps = 2;
-            REQUIRE_THROWS_WITH( setQuregAmps(vec, startInd, amps.data(), numAmps), Contains("More amplitudes given than exist") );
+            REQUIRE_THROWS_WITH( setQuregAmps(vec, startInd, amps.data(), numAmps), Contains("implies an end index") );
         }
         SECTION( "density-matrix" ) {
             
             Qureg mat = createForcedDensityQureg(NUM_QUBITS);
-            REQUIRE_THROWS_WITH( setQuregAmps(mat, 0, amps.data(), 0), Contains("valid only for state-vectors") );
+            REQUIRE_THROWS_WITH( setQuregAmps(mat, 0, amps.data(), 0), Contains("Expected a statevector Qureg but received a density matrix") );
             destroyQureg(mat);
         }
     }
@@ -656,69 +654,72 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
             destroyQureg(vecB);
             destroyQureg(vecC);
         }
-        SECTION( "density-matrix" ) {
+
+        // v4 does not permit superposing of density matrices
+
+            // SECTION( "density-matrix" ) {
+                
+            //     // make three random matrices
+            //     Qureg matA = createForcedDensityQureg(NUM_QUBITS);
+            //     Qureg matB = createForcedDensityQureg(NUM_QUBITS);
+            //     Qureg matC = createForcedDensityQureg(NUM_QUBITS);
+            //     for (int j=0; j<matA.numAmpsPerNode; j++) {
+            //         matA.cpuAmps[j] = getRandomComplex();
+            //         matB.cpuAmps[j] = getRandomComplex();
+            //         matC.cpuAmps[j] = getRandomComplex();
+            //     }
+            //     copyStateToGPU(matA); copyStateToGPU(matB); copyStateToGPU(matC);
+            //     QMatrix refA = toQMatrix(matA);
+            //     QMatrix refB = toQMatrix(matB);
+            //     QMatrix refC = toQMatrix(matC);
+            //     QMatrix refOut;
+                
+            //     // get three random factors
+            //     qcomp numA = getRandomReal(-5,5) + getRandomReal(-5,5) * (qcomp) 1i;
+            //     qcomp numB = getRandomReal(-5,5) + getRandomReal(-5,5) * (qcomp) 1i;
+            //     qcomp numC = getRandomReal(-5,5) + getRandomReal(-5,5) * (qcomp) 1i;
+            //     Complex facA; facA.real = real(numA); facA.imag = imag(numA);
+            //     Complex facB; facB.real = real(numB); facB.imag = imag(numB);
+            //     Complex facC; facC.real = real(numC); facC.imag = imag(numC);
+                
+            //     // check out-qureg is correct, when all quregs are unique... 
+            //     setWeightedQureg(facA, matA, facB, matB, facC, matC);
+            //     refOut = numA*refA + numB*refB + numC*refC;
+            //     REQUIRE( areEqual(matC, refOut) );
+                
+            //     // ... and that other qureg's aren't modified
+            //     REQUIRE( areEqual(matA, refA) );
+            //     REQUIRE( areEqual(matB, refB) );
+                
+            //     // check quregOut correct, when it's also qureg2
+            //     refC = toQMatrix(matC);
+            //     setWeightedQureg(facB, matB, facC, matC, facA, matC);
+            //     refOut = numB*refB + numC*refC + numA*refC;
+            //     REQUIRE( areEqual(matC, refOut, 10*REAL_EPS) );
+                
+            //     // ... and that the remaining qureg is not modified
+            //     REQUIRE( areEqual(matB, refB) );
+                
+            //     // check quregOut correct, when it's also qureg1
+            //     refC = toQMatrix(matC);
+            //     setWeightedQureg(facC, matC, facB, matB, facA, matC);
+            //     refOut = numC*refC + numB*refB + numA*refC;
+            //     REQUIRE( areEqual(matC, refOut, 1E2*REAL_EPS) );
+                
+            //     // ... and that the remaining qureg is not modified
+            //     REQUIRE( areEqual(matB, refB) );
+                
+            //     // check quregOut is correct when it's both input quregs
+            //     refC = toQMatrix(matC);
+            //     setWeightedQureg(facA, matC, facB, matC, facC, matC);
+            //     refOut = numA*refC + numB*refC + numC*refC;
+            //     REQUIRE( areEqual(matC, refOut, 1E3*REAL_EPS) );
             
-            // make three random matrices
-            Qureg matA = createForcedDensityQureg(NUM_QUBITS);
-            Qureg matB = createForcedDensityQureg(NUM_QUBITS);
-            Qureg matC = createForcedDensityQureg(NUM_QUBITS);
-            for (int j=0; j<matA.numAmpsPerNode; j++) {
-                matA.cpuAmps[j] = getRandomComplex();
-                matB.cpuAmps[j] = getRandomComplex();
-                matC.cpuAmps[j] = getRandomComplex();
-            }
-            copyStateToGPU(matA); copyStateToGPU(matB); copyStateToGPU(matC);
-            QMatrix refA = toQMatrix(matA);
-            QMatrix refB = toQMatrix(matB);
-            QMatrix refC = toQMatrix(matC);
-            QMatrix refOut;
-            
-            // get three random factors
-            qcomp numA = getRandomReal(-5,5) + getRandomReal(-5,5) * (qcomp) 1i;
-            qcomp numB = getRandomReal(-5,5) + getRandomReal(-5,5) * (qcomp) 1i;
-            qcomp numC = getRandomReal(-5,5) + getRandomReal(-5,5) * (qcomp) 1i;
-            Complex facA; facA.real = real(numA); facA.imag = imag(numA);
-            Complex facB; facB.real = real(numB); facB.imag = imag(numB);
-            Complex facC; facC.real = real(numC); facC.imag = imag(numC);
-            
-            // check out-qureg is correct, when all quregs are unique... 
-            setWeightedQureg(facA, matA, facB, matB, facC, matC);
-            refOut = numA*refA + numB*refB + numC*refC;
-            REQUIRE( areEqual(matC, refOut) );
-            
-            // ... and that other qureg's aren't modified
-            REQUIRE( areEqual(matA, refA) );
-            REQUIRE( areEqual(matB, refB) );
-            
-            // check quregOut correct, when it's also qureg2
-            refC = toQMatrix(matC);
-            setWeightedQureg(facB, matB, facC, matC, facA, matC);
-            refOut = numB*refB + numC*refC + numA*refC;
-            REQUIRE( areEqual(matC, refOut, 10*REAL_EPS) );
-            
-            // ... and that the remaining qureg is not modified
-            REQUIRE( areEqual(matB, refB) );
-            
-            // check quregOut correct, when it's also qureg1
-            refC = toQMatrix(matC);
-            setWeightedQureg(facC, matC, facB, matB, facA, matC);
-            refOut = numC*refC + numB*refB + numA*refC;
-            REQUIRE( areEqual(matC, refOut, 1E2*REAL_EPS) );
-            
-            // ... and that the remaining qureg is not modified
-            REQUIRE( areEqual(matB, refB) );
-            
-            // check quregOut is correct when it's both input quregs
-            refC = toQMatrix(matC);
-            setWeightedQureg(facA, matC, facB, matC, facC, matC);
-            refOut = numA*refC + numB*refC + numC*refC;
-            REQUIRE( areEqual(matC, refOut, 1E3*REAL_EPS) );
-        
-            // cleanup
-            destroyQureg(matA);
-            destroyQureg(matB);
-            destroyQureg(matC);
-        }
+            //     // cleanup
+            //     destroyQureg(matA);
+            //     destroyQureg(matB);
+            //     destroyQureg(matC);
+            // }
     }
     SECTION( "input validation" ) {
         
@@ -729,14 +730,14 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
             Complex f; f.real = 0; f.imag = 0;
             
             // two state-vecs, one density-matrix
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, mat, f, vec, f, vec), Contains("state-vectors or") && Contains("density matrices") );
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, vec, f, mat, f, vec), Contains("state-vectors or") && Contains("density matrices") );
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, vec, f, vec, f, mat), Contains("state-vectors or") && Contains("density matrices") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, mat, f, vec, f, vec), Contains("Cannot superpose a density matrix. All quregs must be statevectors") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, vec, f, mat, f, vec), Contains("Cannot superpose a density matrix. All quregs must be statevectors") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, vec, f, vec, f, mat), Contains("Cannot superpose a density matrix. All quregs must be statevectors") );
 
             // one state-vec, two density-matrices
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, vec, f, mat, f, mat), Contains("state-vectors or") && Contains("density matrices") );
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, mat, f, vec, f, mat), Contains("state-vectors or") && Contains("density matrices") );
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, mat, f, mat, f, vec), Contains("state-vectors or") && Contains("density matrices") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, vec, f, mat, f, mat), Contains("Cannot superpose a density matrix. All quregs must be statevectors") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, mat, f, vec, f, mat), Contains("Cannot superpose a density matrix. All quregs must be statevectors") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, mat, f, mat, f, vec), Contains("Cannot superpose a density matrix. All quregs must be statevectors") );
         
             destroyQureg(vec);
             destroyQureg(mat);
@@ -750,15 +751,17 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
             Complex f; f.real = 0; f.imag = 0;
             
             // state-vecs
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, vecA, f, vecB, f, vecB), Contains("Dimensions") );
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, vecB, f, vecA, f, vecB), Contains("Dimensions") );
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, vecB, f, vecB, f, vecA), Contains("Dimensions") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, vecA, f, vecB, f, vecB), Contains("differing numbers of qubits") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, vecB, f, vecA, f, vecB), Contains("differing numbers of qubits") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, vecB, f, vecB, f, vecA), Contains("differing numbers of qubits") );
             
-            // density-matrices
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, matA, f, matB, f, matB), Contains("Dimensions") );
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, matB, f, matA, f, matB), Contains("Dimensions") );
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, matB, f, matB, f, matA), Contains("Dimensions") );
-            
+            // v4 does not permit superposing density matrices
+
+                // // density-matrices
+                // REQUIRE_THROWS_WITH( setWeightedQureg(f, matA, f, matB, f, matB), Contains("differing numbers of qubits") );
+                // REQUIRE_THROWS_WITH( setWeightedQureg(f, matB, f, matA, f, matB), Contains("differing numbers of qubits") );
+                // REQUIRE_THROWS_WITH( setWeightedQureg(f, matB, f, matB, f, matA), Contains("differing numbers of qubits") );
+                
             destroyQureg(vecA);
             destroyQureg(vecB);
             destroyQureg(matA);

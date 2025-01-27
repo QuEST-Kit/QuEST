@@ -1,47 +1,36 @@
-/** @file
- * This file is left mostly empty so that catch doesn't need 
- * slow (~16s) recompilation each time unit tests are edited
- *
- * @author Tyson Jones
- */
 
-
-/** Use our modified Catch in custom-main mode (main defined below).
- * catch.hpp was modified to, in distributed mode, output only once.
- */
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
 
-#define INCLUDE_DEPRECATED_FUNCTIONS 1
-#define DISABLE_DEPRECATION_WARNINGS 1
+// TODO:
+// when we switch to CMake-supplied Catch2,
+// we must replace the above include with:
+// #include <catch2/catch_session.hpp>
+
 
 #include "quest.h"
-#include "test_utilities.hpp"
-
 #include <stdexcept>
 
 
-/** Redefinition of QuEST_validation's invalidQuESTInputError function, called when a 
- * user passes an incorrect parameter (e.g. a negative qubit index). This is 
- * redefined here to, in lieu of printing and exiting, throw a C++ exception
- * which can be caught (and hence unit tested for) by Catch2
- */
- extern "C" void invalidQuESTInputError(const char* errMsg, const char* errFunc) {
-  
+// TODO:
+// implement a custom reporter in order to avoid output
+// duplication when running tests distributed
+
+
+// recast QuEST errors into exceptions which Catch can catch  
+extern "C" void invalidQuESTInputError(const char* errMsg, const char* errFunc) {
+
     throw std::runtime_error(errMsg);
- }
+}
 
 
-/** Explicit declaration of main to create (destroy) the QuESTEnv before (after)
- * invoking the Catch unit tests 
- */
+// custom catch2 main so that we can prepare QuEST (needed due to MPI)
 int main(int argc, char* argv[]) {
 
-  initQuESTEnv();
-  setRandomTestStateSeeds();
+    initQuESTEnv();
 
-  int result = Catch::Session().run( argc, argv );
+    int result = Catch::Session().run( argc, argv );
 
-  finalizeQuESTEnv();
-  return result;
+    finalizeQuESTEnv();
+    return result;
 }

@@ -1,20 +1,19 @@
 /** @file
  * C-compatible functions which are alternatives to C++-only API
  * functions, ultimately providing an identical interface. This is 
- * necessary because these functions otherwise pass qcomps by-value
+ * necessary because these functions otherwise return qcomps by-value
  * which is prohibited between C and C++ compiled binaries (because
  * complex numbers are not agreed upon in their ABI, despite having 
  * identical memory layouts in the C and C++ standard libraries).
  * Ergo this file defines no new API functions as far as the user/
  * documentation is aware, but secretly ensures the backend C++ 
- * binaries pass qcomps to the user's C code only by pointer.
+ * binaries return qcomps to the user's C code only by pointer.
+ * 
+ * (( _passing_ qcomps by value to a function seems to be okay,
+ *    although I am not entirely sure why ))
  * 
  * Note that matrix getters and setters (like getCompMatr1()) are
- * missing from this file, even though they contain qcomp[2][2] (which
- * are NOT pointers) and cannot be directly passed between binaries.
- * Those functions are instead defined in matrices.h/.cpp because
- * those structs are declared 'const'; they must be intiailised inline, 
- * and can never be modified by pointer. We shouldn't even address them!
+ * excluded, and instead defined directly in matrices.h/.cpp .
  * 
  * An unimportant by-product of this method of achieving interoperability
  * is that the internal wrapped functions are exposed to the C user; so
@@ -64,6 +63,16 @@ qcomp calcExpecNonHermitianFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr
 
     qcomp out;
     _wrap_calcExpecNonHermitianFullStateDiagMatr(&out, qureg, matr);
+    return out;
+}
+
+
+extern void _wrap_calcExpecNonHermitianFullStateDiagMatrPower(qcomp*, Qureg, FullStateDiagMatr, qcomp);
+
+qcomp calcExpecNonHermitianFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matr, qcomp expo) {
+
+    qcomp out;
+    _wrap_calcExpecNonHermitianFullStateDiagMatrPower(&out, qureg, matr, expo);
     return out;
 }
 

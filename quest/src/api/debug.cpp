@@ -27,6 +27,7 @@ void setSeeds(unsigned* seeds, int numSeeds) {
     validate_envIsInit(__func__);
     validate_randomSeeds(seeds, numSeeds, __func__);
 
+    // consults only root-node seeds
     rand_setSeeds(std::vector<unsigned>(seeds, seeds+numSeeds));
 }
 
