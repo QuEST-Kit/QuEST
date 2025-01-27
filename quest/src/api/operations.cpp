@@ -717,8 +717,7 @@ void applyMultiStateControlledPauliY(Qureg qureg, int* controls, int* states, in
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
     // harmlessly re-validates
-    DiagMatr1 matr = getDiagMatr1({-1_i, 1_i});
-    applyMultiStateControlledDiagMatr1(qureg, controls, states, numControls, target, matr);
+    applyMultiStateControlledPauliStr(qureg, controls, states, numControls, getPauliStr("Y", {target}));
 }
 
 void applyMultiStateControlledPauliZ(Qureg qureg, int* controls, int* states, int numControls, int target)  {
