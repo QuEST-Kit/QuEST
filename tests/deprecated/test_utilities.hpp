@@ -35,8 +35,15 @@ using std::vector;
 #define NUM_QUBITS 5
 
 
+// replace REAL_EPS macro with constant
 #undef REAL_EPS
-constexpr qreal REAL_EPS = 1E-8; // hardcoded for v3 deprecated API
+#if FLOAT_PRECISION == 1
+    constexpr qreal REAL_EPS = 1E-5;
+#elif FLOAT_PRECISION == 2
+    constexpr qreal REAL_EPS = 1E-8;
+#elif FLOAT_PRECISION == 4
+    constexpr qreal REAL_EPS = 1E-10;
+#endif
 
 
 #ifndef M_PI
