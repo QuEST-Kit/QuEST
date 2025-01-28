@@ -717,9 +717,6 @@ TEST_CASE( "createQureg", "[data_structures]" ) {
         }
         SECTION( "number of amplitudes" ) {
             
-            // use local QuESTEnv to safely modify
-            QuESTEnv env = getQuESTEnv();
-            
             // too many amplitudes to store in type
             int maxQb = (int) calcLog2(SIZE_MAX);
             REQUIRE_THROWS_WITH( createForcedQureg(maxQb+1), 

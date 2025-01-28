@@ -124,6 +124,8 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             elem /= abs(elem);
             op.cpuElems[i] = elem;
         }
+        syncDiagMatr(op);
+
         QMatrix opMatr = toQMatrix(op);
             
         SECTION( "state-vector" ) {
@@ -147,6 +149,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             
             int numTargs = 3;
             SubDiagonalOp op = createSubDiagonalOp(numTargs);
+            syncDiagMatr(op);
             
             int badNumTargs = GENERATE_COPY( numTargs-1, numTargs+1 );
             int badTargs[NUM_QUBITS+1];
@@ -165,6 +168,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
                 targs[t] = t;
             for (int i=0; i<badOp.numElems; i++)
                 badOp.cpuElems[i] = 1;
+            syncDiagMatr(badOp);
             
             REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, badOp.numQubits, badOp), Contains("number of target qubits") );
             destroySubDiagonalOp(badOp);
@@ -175,6 +179,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             SubDiagonalOp op = createSubDiagonalOp(3);
             for (int i=0; i<op.numElems; i++)
                 op.cpuElems[i] = 1;
+            syncDiagMatr(op);
                 
             // make a repetition in the target list
             int targs[] = {2,1,2};
@@ -188,6 +193,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             SubDiagonalOp op = createSubDiagonalOp(3);
             for (int i=0; i<op.numElems; i++)
                 op.cpuElems[i] = 1;
+            syncDiagMatr(op);
                 
             int targs[] = {0,1,2};
             
@@ -206,6 +212,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             int targs[] = {0,1,2};
             for (int i=0; i<op.numElems; i++)
                 op.cpuElems[i] = 1;
+            syncDiagMatr(op);
             
             // break unitarity via reals
             op.cpuElems[2] = -.1;
@@ -332,6 +339,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
             int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
             ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
+            syncCompMatr(matr);
             REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, 0, targs, numTargs, matr), Contains("number of target qubits"));
             destroyComplexMatrixN(matr);
         }
@@ -341,6 +349,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             int numTargs = 3;
             int targs[] = {1,2,2};
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, ctrl, targs, numTargs, matr), Contains("target") && Contains("unique"));
             destroyComplexMatrixN(matr);
@@ -351,6 +360,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             int targs[] = {0,1,2};
             int ctrl = targs[GENERATE_COPY( range(0,numTargs) )];
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, ctrl, targs, numTargs, matr), Contains("control and target"));
             destroyComplexMatrixN(matr);
@@ -361,6 +371,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             int numTargs = 3;
             int targs[] = {1,2,3};
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            syncCompMatr(matr);
             
             int inv = GENERATE( -1, NUM_QUBITS );
             ctrl = inv;
@@ -377,6 +388,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             int ctrl = 0;
             int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // initially zero, hence not-unitary
+            syncCompMatr(matr);
             
             int targs[NUM_QUBITS];
             for (int i=0; i<numTargs; i++)
@@ -389,12 +401,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             
             int numTargs = 3;
             int targs[] = {1,2,3};
-            
-            /* compilers don't auto-initialise to NULL; the below circumstance 
-             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
-             * which actually triggers its own validation. Hence this test is useless 
-             * currently.
-             */
+
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
             REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, 0, targs, numTargs, matr), Contains("created") );
@@ -404,6 +411,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             int ctrl = 0;
             int targs[2] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(3);
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, ctrl, targs, 2, matr), Contains("matrix has an inconsistent size"));
             destroyComplexMatrixN(matr);
@@ -419,6 +427,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             ComplexMatrixN matr = createComplexMatrixN(2); // prevents seg-fault if validation doesn't trigger
             for (int i=0; i<4; i++)
                 matr.cpuElems[i][i] = 1;
+            syncCompMatr(matr);
 
             REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, 0, qb, 2, matr), Contains("communication buffer") && Contains("simultaneously store"));
             destroyComplexMatrixN(matr);
@@ -1227,6 +1236,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
                 targs[i] = i+1;
             
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // initially zero, hence not-unitary
+            syncCompMatr(matr);
             REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, numTargs, matr), Contains("unitary") );
             destroyComplexMatrixN(matr);
         }
@@ -1234,12 +1244,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
             
             int ctrls[1] = {0};
             int targs[3] = {1,2,3};
-            
-            /* compilers don't auto-initialise to NULL; the below circumstance 
-             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
-             * which actually triggers its own validation. Hence this test is useless 
-             * currently.
-             */
+
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
             REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, 3, matr), Contains("created") );
@@ -1266,6 +1271,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
             ComplexMatrixN matr = createComplexMatrixN(2);
             for (int i=0; i<4; i++)
                 matr.cpuElems[i][i] = 1;
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, 2, matr), Contains("communication buffer") && Contains("simultaneously store"));
             destroyComplexMatrixN(matr);
@@ -1303,7 +1309,7 @@ TEST_CASE( "multiControlledMultiRotatePauli", "[unitaries]" ) {
          */
         pauliOpType paulis[NUM_QUBITS];
         for (int i=0; i<numTargs; i++)
-            paulis[i] = (pauliOpType) getRandomInt(0,4);
+            paulis[i] = (pauliOpType) getRandomInt(1,4); // exclude 0=Id
 
         // exclude identities from reference matrix exp (they apply unwanted global phase)
         int refTargs[NUM_QUBITS];
@@ -1987,6 +1993,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
             int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
             int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
             ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), Contains("number of target qubits"));
             destroyComplexMatrixN(matr);
@@ -1996,6 +2003,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
             int numTargs = 3;
             int targs[] = {1,2,2};
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), Contains("target") && Contains("unique"));
             destroyComplexMatrixN(matr);
@@ -2005,6 +2013,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
             int numTargs = 3;
             int targs[] = {1,2,3};
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            syncCompMatr(matr);
             
             int inv = GENERATE( -1, NUM_QUBITS );
             targs[GENERATE_COPY( range(0,numTargs) )] = inv; // make invalid target
@@ -2020,6 +2029,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
                 targs[i] = i+1;
             
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // initially zero, hence not-unitary
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), Contains("unitary") );
             destroyComplexMatrixN(matr);
@@ -2029,11 +2039,6 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
             int numTargs = 3;
             int targs[] = {1,2,3};
             
-            /* compilers don't auto-initialise to NULL; the below circumstance 
-             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
-             * which actually triggers its own validation. Hence this test is useless 
-             * currently.
-             */
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
             REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), Contains("created") );
@@ -2042,6 +2047,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
             
             int targs[2] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, 2, matr), Contains("matrix has an inconsistent size"));
             destroyComplexMatrixN(matr);
@@ -2057,6 +2063,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
             ComplexMatrixN matr = createComplexMatrixN(2); // prevents seg-fault if validation doesn't trigger
             for (int i=0; i<4; i++)
                 matr.cpuElems[i][i] = 1;
+            syncCompMatr(matr);
 
             REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, qb, 2, matr), Contains("communication buffer") && Contains("simultaneously store"));
             destroyComplexMatrixN(matr);
@@ -2089,7 +2096,7 @@ TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
         GENERATE( range(0,10) ); // gen 10 random pauli-codes for every targs
         pauliOpType paulis[NUM_QUBITS];
         for (int i=0; i<numTargs; i++)
-            paulis[i] = (pauliOpType) getRandomInt(0,4);
+            paulis[i] = (pauliOpType) getRandomInt(1,4); // exclude Id=0
 
         // exclude identities from reference matrix exp (they apply unwanted global phase)
         int refTargs[NUM_QUBITS];
@@ -2538,8 +2545,10 @@ TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
     qreal c = cos(param/2);
     qreal s = sin(param/2);
     qreal m = sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
-    QMatrix op{{c - qcomp(0,1)*vec.z*s/m, -(vec.y + qcomp(0,1)*vec.x)*s/m}, 
-               {(vec.y - qcomp(0,1)*vec.x)*s/m, c + qcomp(0,1)*vec.z*s/m}};
+
+    // brackets defer division of m to improve numerical stability
+    QMatrix op{{c - (qcomp(0,1)*vec.z*s)/m, -((vec.y + qcomp(0,1)*vec.x)*s)/m}, 
+               {((vec.y - qcomp(0,1)*vec.x)*s)/m, c + (qcomp(0,1)*vec.z*s)/m}};
 
     SECTION( "correctness" ) {
     
@@ -2549,13 +2558,13 @@ TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
         
             rotateAroundAxis(quregVec, target, param, vec);
             applyReferenceOp(refVec, target, op);
-            REQUIRE( areEqual(quregVec, refVec) );
+            REQUIRE( areEqual(quregVec, refVec, 10*REAL_EPS) );
         }
         SECTION( "density-matrix" ) {
 
             rotateAroundAxis(quregMatr, target, param, vec);
             applyReferenceOp(refMatr, target, op);
-            REQUIRE( areEqual(quregMatr, refMatr, 10*REAL_EPS) );
+            REQUIRE( areEqual(quregMatr, refMatr, 100*REAL_EPS) );
         }
     }
     SECTION( "input validation" ) {

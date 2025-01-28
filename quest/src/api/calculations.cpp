@@ -350,7 +350,7 @@ Qureg calcPartialTrace(Qureg qureg, int* traceOutQubits, int numTraceQubits) {
         qureg.isGpuAccelerated, qureg.isMultithreaded, __func__);
 
     // set it to reduced density matrix
-    vector<int> targets(traceOutQubits, traceOutQubits + numTraceQubits);
+    auto targets = util_getVector(traceOutQubits, numTraceQubits);
     localiser_densmatr_partialTrace(qureg, out, targets);
 
     return out;
@@ -363,7 +363,7 @@ Qureg calcReducedDensityMatrix(Qureg qureg, int* retainQubits, int numRetainQubi
     validate_targets(qureg, retainQubits, numRetainQubits, __func__);
     validate_quregCanBeReduced(qureg, qureg.numQubits - numRetainQubits, __func__);
 
-    vector<int> traceQubits = getNonTargetedQubits(retainQubits, numRetainQubits, qureg.numQubits);
+    auto traceQubits = getNonTargetedQubits(retainQubits, numRetainQubits, qureg.numQubits);
 
     // harmlessly re-validates
     return calcPartialTrace(qureg, traceQubits.data(), traceQubits.size());
@@ -378,7 +378,7 @@ void setQuregToPartialTrace(Qureg out, Qureg in, int* traceOutQubits, int numTra
     validate_targets(in, traceOutQubits, numTraceQubits, __func__);
     validate_quregCanBeSetToReducedDensMatr(out, in, numTraceQubits, __func__);
 
-    vector<int> targets(traceOutQubits, traceOutQubits + numTraceQubits);
+    auto targets = util_getVector(traceOutQubits, numTraceQubits);
     localiser_densmatr_partialTrace(in, out, targets);
 }
 
@@ -391,7 +391,7 @@ void setQuregToReducedDensityMatrix(Qureg out, Qureg in, int* retainQubits, int 
     validate_targets(in, retainQubits, numRetainQubits, __func__);
     validate_quregCanBeSetToReducedDensMatr(out, in, in.numQubits - numRetainQubits, __func__);
 
-    vector<int> traceQubits = getNonTargetedQubits(retainQubits, numRetainQubits, in.numQubits);
+    auto traceQubits = getNonTargetedQubits(retainQubits, numRetainQubits, in.numQubits);
     localiser_densmatr_partialTrace(in, out, traceQubits);
 }
 

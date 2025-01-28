@@ -330,7 +330,7 @@ qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         &prob, nullptr, 0, outcomes.data(), qubits.data(), qubits.size()) );
 
-    return (qreal) prob;
+    return static_cast<qreal>(prob);
 }
 
 
@@ -354,7 +354,7 @@ void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qu
     // serially cast and copy output probabilities, if necessary
     #if (FLOAT_PRECISION != 2)
         for (size_t i=0; i<tmpProbs.size(); i++)
-            outProbs[i] = (qreal) tmpProbs[i];
+            outProbs[i] = static_cast<qreal>(tmpProbs[i]);
     #endif
 }
 
@@ -393,7 +393,7 @@ qreal cuquantum_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vect
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         &value, termPaulis, numTerms, termTargets, numPaulisPerTerm) );
 
-    return (qreal) value;
+    return static_cast<qreal>(value);
 }
 
 

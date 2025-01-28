@@ -300,7 +300,7 @@ qreal parseReal(string real) {
     
     // attempt to parse at max precision (long double) then cast down if necessary
     try {
-        return (qreal) stold(real);
+        return static_cast<qreal>(stold(real));
 
     // should be impossible if regex and validation works correctly
     } catch (const invalid_argument&) {

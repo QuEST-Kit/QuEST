@@ -508,7 +508,7 @@ then
     for fn in ${TEST_DEPR_MPI_FILES[@]}
     do
         echo "${INDENT}${fn}.cpp ..."
-        $MPI_COMPILER -c $TEST_DEPR_DIR/$fn.cpp -o ${TEST_OBJ_PREF}${fn}.o $TEST_DEPR_COMP_FLAGS $GLOBAL_COMP_FLAGS $WARNING_FLAGS
+        $MPI_FILES_COMPILER -c $TEST_DEPR_DIR/$fn.cpp -o ${TEST_OBJ_PREF}${fn}.o $TEST_DEPR_COMP_FLAGS $GLOBAL_COMP_FLAGS $WARNING_FLAGS
     done
 
     echo ""

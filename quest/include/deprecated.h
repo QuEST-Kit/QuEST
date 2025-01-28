@@ -19,20 +19,18 @@
  * INITIAL WARNING
  */
 
-#warning \
-"Deprecated functions have been included in compilation. The QuEST v3 API will be attemptedly \
-automatically substituted for the v4 API, although some uses of the old API will still fail to \
-compile. For example, access to v3 struct fields (e.g. 'ComplexMatrixN.real[0][0]') must be \
-manually replaced with v4 struct fields (e.g. 'CompMatr.cpuElems[0][0]'), though new v4 functions \
-make struct field access mostly redundant (e.g. via 'setCompMatr()'). Even when successfully \
-compiling, use of the deprecated v3 functions is dangerous; these are not unit-tested, and the \
-auto-porting to v4 may introduce new bugs. As such, you should only use this facility to help \
-refactor your code to v4, and should absolutely not continue to use the old v3 API for simulation."
+#if !defined(DISABLE_DEPRECATION_WARNINGS) || DISABLE_DEPRECATION_WARNINGS == 0
 
-#if DISABLE_DEPRECATION_WARNINGS
-    #warning "Deprecation warnings are silenced."
-#else
-    #warning "Deprecation warnings are enabled."
+    #warning \
+        "Deprecated functions have been included in compilation. The QuEST v3 API will be attemptedly \
+        automatically substituted for the v4 API, although some uses of the old API will still fail to \
+        compile. For example, access to v3 struct fields (e.g. 'ComplexMatrixN.real[0][0]') must be \
+        manually replaced with v4 struct fields (e.g. 'CompMatr.cpuElems[0][0]'), though new v4 functions \
+        make struct field access mostly redundant (e.g. via 'setCompMatr()'). Even when successfully \
+        compiling, use of the deprecated v3 functions is dangerous; these are not unit-tested, and the \
+        auto-porting to v4 may introduce new bugs. As such, you should only use this facility to help \
+        refactor your code to v4, and should absolutely not continue to use the old v3 API for simulation."
+
 #endif
 
 
@@ -50,6 +48,8 @@ refactor your code to v4, and should absolutely not continue to use the old v3 A
  * 'oldFunc()' outside of the conditional. That won't compile if the
  * function depends on control-flow params like a for-loop index. Yuck!
  */
+
+#define _EFFECT_PRAGMA(cmd) _Pragma(#cmd)
 
 #if DISABLE_DEPRECATION_WARNINGS
 
@@ -83,7 +83,17 @@ refactor your code to v4, and should absolutely not continue to use the old v3 A
 
 #endif
 
-#define _EFFECT_PRAGMA(cmd) _Pragma(#cmd)
+
+
+/*
+ * NON-TOGGLEABLE WARNING
+ *
+ * which cannot be suppressed because it sometimes precedes an error
+ * which is obfuscated without prior warning
+ */
+
+#define _WARN_UNSUPPRESSABLE_MSG(msg) \
+    _EFFECT_PRAGMA(message(msg))
 
 
 
@@ -230,16 +240,22 @@ typedef ComplexMatrix4 _NoWarnComplexMatrix4;
 // passed to a v3 function which has a v4 port
 
 #define _GET_COMP_MATR_1_FROM_COMPLEX_MATRIX_2(m) \
-    getCompMatr1( (qcomp[2][2]) { \
-        {getQcomp(m.real[0][0], m.imag[0][0]), getQcomp(m.real[0][1], m.imag[0][1])}, \
-        {getQcomp(m.real[1][0], m.imag[1][0]), getQcomp(m.real[1][1], m.imag[1][1])}}) 
+    (CompMatr1) { \
+        .numQubits = 1, \
+        .numRows = 2, \
+        .elems = { \
+            {getQcomp(m.real[0][0], m.imag[0][0]), getQcomp(m.real[0][1], m.imag[0][1])}, \
+            {getQcomp(m.real[1][0], m.imag[1][0]), getQcomp(m.real[1][1], m.imag[1][1])}}}
 
 #define _GET_COMP_MATR_2_FROM_COMPLEX_MATRIX_4(m) \
-    getCompMatr2( (qcomp[4][4]) { \
-        {getQcomp(m.real[0][0], m.imag[0][0]), getQcomp(m.real[0][1], m.imag[0][1]), getQcomp(m.real[0][2], m.imag[0][2]), getQcomp(m.real[0][3], m.imag[0][3])}, \
-        {getQcomp(m.real[1][0], m.imag[1][0]), getQcomp(m.real[1][1], m.imag[1][1]), getQcomp(m.real[1][2], m.imag[1][2]), getQcomp(m.real[1][3], m.imag[1][3])}, \
-        {getQcomp(m.real[2][0], m.imag[2][0]), getQcomp(m.real[2][1], m.imag[2][1]), getQcomp(m.real[2][2], m.imag[2][2]), getQcomp(m.real[2][3], m.imag[2][3])}, \
-        {getQcomp(m.real[3][0], m.imag[3][0]), getQcomp(m.real[3][1], m.imag[3][1]), getQcomp(m.real[3][2], m.imag[3][2]), getQcomp(m.real[3][3], m.imag[3][3])}})
+    (CompMatr2) { \
+        .numQubits = 2, \
+        .numRows = 4, \
+        .elems = { \
+            {getQcomp(m.real[0][0], m.imag[0][0]), getQcomp(m.real[0][1], m.imag[0][1]), getQcomp(m.real[0][2], m.imag[0][2]), getQcomp(m.real[0][3], m.imag[0][3])}, \
+            {getQcomp(m.real[1][0], m.imag[1][0]), getQcomp(m.real[1][1], m.imag[1][1]), getQcomp(m.real[1][2], m.imag[1][2]), getQcomp(m.real[1][3], m.imag[1][3])}, \
+            {getQcomp(m.real[2][0], m.imag[2][0]), getQcomp(m.real[2][1], m.imag[2][1]), getQcomp(m.real[2][2], m.imag[2][2]), getQcomp(m.real[2][3], m.imag[2][3])}, \
+            {getQcomp(m.real[3][0], m.imag[3][0]), getQcomp(m.real[3][1], m.imag[3][1]), getQcomp(m.real[3][2], m.imag[3][2]), getQcomp(m.real[3][3], m.imag[3][3])}}}
 
 
 
@@ -608,20 +624,25 @@ typedef enum pauliOpType _NoWarnPauliOpType;
     } \
     free(ptrs);
 
-static inline void _mixKrausMap(Qureg qureg, int targ, _NoWarnComplexMatrix2 *ops, int numOps) {
+static inline void v3_mixKrausMap(Qureg qureg, int targ, _NoWarnComplexMatrix2 *ops, int numOps) {
     _MIX_KRAUS_MAP_INNER(qureg, ops, numOps, &targ, 1);
 }
 
-#define _OPT_WARN_ABOUT_MIX_KRAUS_MAP_DEP() \
-    _WARN_FUNC_RENAMED( \
-        "mixKrausMap(Qureg, int targ, ComplexMatrix2* ops, int numOps)", \
-        "mixKrausMap(Qureg, int* targs, int numTargs, KrausMap)") \
+#define mixKrausMap(...) \
+    _WARN_UNSUPPRESSABLE_MSG( \
+        "The QuEST function 'mixKrausMap()' has changed from v3 to v4. The old signature was " \
+        "'mixKrausMap(Qureg, int targ, ComplexMatrix2* ops, int numOps)' while the new signature is " \
+        "'mixKrausMap(Qureg, int* targs, int numTargs, KrausMap)'. Because the function name and its " \
+        "number of arguments have not changed, we are unable to automatically map a v3 invocation to " \
+        "the v4 API, nor can we detect when the v4 API has been used in order to avoid this message. " \
+        "Hence, this warning will either be obsolete (because you have already migrated to the v4 API), " \
+        "or precedes a compilation failure below due to continued use of the v3 API. To continue using " \
+        "the v3 API, replace 'mixKrausMap' with 'v3_mixKrausMap' which will issue no warning nor error. " \
+        "This warning cannot be suppressed.") \
+    mixKrausMap(__VA_ARGS__)
+    
 
-#define mixKrausMap(qureg, targOrQubits, ...) \
-    _Generic((targOrQubits), \
-        int* : mixKrausMap, \
-        int  : _OPT_WARN_ABOUT_MIX_KRAUS_MAP_DEP() _mixKrausMap \
-    )(qureg, targOrQubits, __VA_ARGS__)
+
 
 
 static inline void _mixNonTPKrausMap(Qureg qureg, int targ, _NoWarnComplexMatrix2 *ops, int numOps) {

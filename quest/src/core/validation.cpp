@@ -209,10 +209,10 @@ namespace report {
         "Attempted allocation of a heap flag (such as 'isUnitary', 'isHermitian', 'isCPTP', 'wasGpuSynced') miraculously failed, despite being a mere ${NUM_BYTES} bytes. This is unfathomably unlikely - go and have your fortune read at once!";
 
     string INVALID_HEAP_FLAG_PTR =
-        "A flag (e.g. 'isUnitary', 'isHermitian', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) was a NULL pointer, instead of an expected pointer to persistent heap memory. This may imply the structure has already been destroyed and its fields manually overwritten by the user.";
+        "A flag (e.g. 'isUnitary', 'isHermitian', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) was a NULL pointer, instead of an expected pointer to persistent heap memory. This may imply the structure was not created by its proper function (e.g. createCompMatr()).";
 
     string INVALID_HEAP_FLAG_VALUE = 
-        "A flag (e.g. 'isUnitary', 'isHermitian', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) had an invalid value of ${BAD_FLAG}. Allowed values are '0', '1', and (except for 'wasGpuSynced') '${UNKNOWN_FLAG}' which indicates the flag is currently unknown because its evaluation has been deferred. However, these flags should never be modified directly by the user.";
+        "A flag (e.g. 'isUnitary', 'isHermitian', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) had an invalid value of ${BAD_FLAG}. Allowed values are '0', '1', and (except for 'wasGpuSynced') '${UNKNOWN_FLAG}', though these flags should not be modified directly by the user. It is likely the structure was not created by its proper function (e.g. createCompMatr()).";
 
 
     /*
@@ -3388,7 +3388,7 @@ void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const c
 
 void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller) {
 
-    qreal norm = pow(x,2) + pow(y,2) + pow(z,2);
+    qreal norm = sqrt(pow(x,2) + pow(y,2) + pow(z,2));
 
     assertThat(norm > global_validationEpsilon, report::ROTATION_AXIS_VECTOR_IS_ZERO, caller);
 }
