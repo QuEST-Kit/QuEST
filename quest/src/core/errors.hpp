@@ -122,6 +122,8 @@ void assert_localiserPartialTraceGivenCompatibleQuregs(Qureg inQureg, Qureg outQ
 
 void error_calcFidStateVecDistribWhileDensMatrLocal();
 
+void assert_localiserDistribQuregSpooferGivenValidQuregs(Qureg local, Qureg distrib);
+
 
 
 /*
