@@ -36,12 +36,15 @@ using std::vector;
  * 
  * which is incompatible with MSVC; we have not yet decided
  * how to remedy this - force Windows users who seek multithreading
- * to compile using another compiler?
+ * to compile using another compiler? Note we set omp_priv=0 in
+ * lieu of omp_priv=omp_orig to workaround a clang + libomp bug
  */
 
 
 #if defined(COMPILE_OPENMP) && !defined(_MSC_VER)
-    #pragma omp declare reduction(+ : qcomp : omp_out += omp_in ) initializer( omp_priv = omp_orig )
+    #pragma omp declare \
+        reduction(+ : qcomp : omp_out += omp_in ) \
+        initializer( omp_priv = 0 )
 #endif
 
 
@@ -1769,7 +1772,7 @@ qcomp cpu_statevec_calcInnerProduct_sub(Qureg quregA, Qureg quregB) {
     // every local amp contributes to the reduction
     qindex numIts = quregA.numAmpsPerNode;
 
-    #pragma omp parallel for reduction(+:prod) if(quregA.isMultithreaded||quregA.isMultithreaded)
+    #pragma omp parallel for reduction(+:prod) if(quregA.isMultithreaded||quregB.isMultithreaded)
     for (qindex n=0; n<numIts; n++)
         prod += conj(quregA.cpuAmps[n]) * quregB.cpuAmps[n];
 
