@@ -9,8 +9,8 @@
  * functions should invoke the MPI API.
  */
 
-#include "modes.h"
-#include "types.h"
+#include "quest/include/modes.h"
+#include "quest/include/types.h"
 
 #include "../core/errors.hpp"
 

@@ -6,7 +6,7 @@
 #ifndef BITWISE_HPP
 #define BITWISE_HPP
 
-#include "types.h"
+#include "quest/include/types.h"
 
 #include "quest/src/core/inliner.hpp"
 

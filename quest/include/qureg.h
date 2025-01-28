@@ -5,7 +5,7 @@
 #ifndef QUREG_H
 #define QUREG_H
 
-#include "types.h"
+#include "quest/include/types.h"
 
 // enable invocation by both C and C++ binaries
 #ifdef __cplusplus

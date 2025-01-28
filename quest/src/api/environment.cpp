@@ -3,9 +3,9 @@
  * themselves control and query the deployment environment. 
  */
 
-#include "environment.h"
-#include "precision.h"
-#include "modes.h"
+#include "quest/include/environment.h"
+#include "quest/include/precision.h"
+#include "quest/include/modes.h"
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/memory.hpp"

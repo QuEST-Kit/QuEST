@@ -3,9 +3,9 @@
  * choosing their deployment modes.
  */
 
-#include "qureg.h"
-#include "environment.h"
-#include "initialisations.h"
+#include "quest/include/qureg.h"
+#include "quest/include/environment.h"
+#include "quest/include/initialisations.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/autodeployer.hpp"

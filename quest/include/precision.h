@@ -5,7 +5,7 @@
 #ifndef PRECISION_H
 #define PRECISION_H
 
-#include "modes.h"
+#include "quest/include/modes.h"
 
 
 

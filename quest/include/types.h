@@ -5,8 +5,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include "modes.h"
-#include "precision.h"
+#include "quest/include/modes.h"
+#include "quest/include/precision.h"
 
 
 

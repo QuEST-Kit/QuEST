@@ -5,8 +5,8 @@
  * Qureg dimensions.
  */
 
-#include "modes.h"
-#include "environment.h"
+#include "quest/include/modes.h"
+#include "quest/include/environment.h"
 
 #include "../core/memory.hpp"
 #include "../core/autodeployer.hpp"
