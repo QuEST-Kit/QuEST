@@ -27,7 +27,7 @@ make
 | `ENABLE_CUDA` | (`OFF`), `ON` | Determines whether QuEST will be built with support for NVIDIA GPU acceleration. If turned on, `CMAKE_CUDA_ARCHITECTURES` should probably also be set. |
 | `ENABLE_CUQUANTUM` | (`OFF`), `ON` | Determines whether QuEST will make use of the NVIDIA CuQuantum library. Cannot be turned on if `ENABLE_CUDA` is off. |
 | `ENABLE_HIP` | (`OFF`), `ON` | Determines whether QuEST will be built with support for AMD GPU acceleration. If turned on, `CMAKE_HIP_ARCHITECTURES` should probably also be set. |
-| `ENABLE_DEPRECATION` | (`OFF`), `ON` | Determines whether QuEST will be built with support for the deprecated (v3) API. *Note: will generate compiler warnings, and not supported by GCC.` |
+| `ENABLE_DEPRECATED_API` | (`OFF`), `ON` | Determines whether QuEST will be built with support for the deprecated (v3) API. *Note: will generate compiler warnings, and not supported by GCC.` |
 | `USER_SOURCE` | (Undefined), String | The source file for a user program which will be compiled alongside QuEST. `OUTPUT_EXE` *must* also be defined. |
 | `OUTPUT_EXE` | (Undefined), String | The name of the executable which will be created from the provided `USER_SOURCE`. `USER_SOURCE` *must* also be defined. |
 

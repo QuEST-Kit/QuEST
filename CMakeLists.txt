@@ -140,11 +140,11 @@ endif()
 
 # Deprecated API
 option(
-  ENABLE_DEPRECATED
+  ENABLE_DEPRECATED_API
   "Whether QuEST will be built with deprecated API support. Turned OFF by default."
   OFF
 )
-message(STATUS "Deprecated API support is turned ${ENABLE_DEPRECATED}. Set ENABLE_DEPRECATED to modify.")
+message(STATUS "Deprecated API support is turned ${ENABLE_DEPRECATED_API}. Set ENABLE_DEPRECATED_API to modify.")
 
 ## Library
 
@@ -251,7 +251,7 @@ if (ENABLE_HIP)
   endif()
 endif()
 
-if (ENABLE_DEPRECATED)
+if (ENABLE_DEPRECATED_API)
   target_compile_definitions(QuEST PRIVATE INCLUDE_DEPRECATED_FUNCTIONS=1)
 
   if (VERBOSE_LIB_NAME)
