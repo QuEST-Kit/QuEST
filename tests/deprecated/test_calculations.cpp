@@ -121,11 +121,6 @@ TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
  */
 TEST_CASE( "calcExpecDiagonalOp", "[calculations]" ) {
 
-    // TODO:
-    // this redirects to calcExpecNonHermitianFullStateDiagMatr()
-    // which has not yet been implemented
-    FAIL( "NOT YET IMPLEMENTED" );
-    
     Qureg vec = createForcedQureg(NUM_QUBITS);
     Qureg mat = createForcedDensityQureg(NUM_QUBITS);
     initDebugState(vec);
@@ -485,12 +480,7 @@ TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
  * @author Tyson Jones 
  */
 TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
-
-    // TODO: 
-    // this redirects to calcExpecPauliStrSum() which
-    // has not yet been implemented!
-    FAIL( "NOT YET IMPLEMENTED" );
-    
+   
     Qureg vec = createForcedQureg(NUM_QUBITS);
     Qureg mat = createForcedDensityQureg(NUM_QUBITS);
 
