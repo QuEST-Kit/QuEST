@@ -1,4 +1,6 @@
-#include "catch.hpp"
+#include <catch2/generators/catch_generators.hpp>
+#include <catch2/generators/catch_generators_adapters.hpp>
+
 #include "macros.hpp"
 
 #include <vector>

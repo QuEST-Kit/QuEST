@@ -1,6 +1,4 @@
-
-#define CATCH_CONFIG_RUNNER
-#include "catch.hpp"
+#include <catch2/catch_session.hpp>
 
 // TODO:
 // when we switch to CMake-supplied Catch2,

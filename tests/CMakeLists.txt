@@ -1,9 +1,7 @@
-add_subdirectory(catch)
-
 add_executable(tests
   main.cpp
 )
-target_link_libraries(tests PUBLIC QuEST::QuEST Catch2)
+target_link_libraries(tests PUBLIC QuEST::QuEST Catch2::Catch2)
 
 add_subdirectory(unit)
 add_subdirectory(utils)

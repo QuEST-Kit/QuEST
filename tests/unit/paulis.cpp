@@ -1,5 +1,6 @@
 #include "quest.h"
-#include "catch.hpp"
+
+#include <catch2/catch_test_macros.hpp>
 
 #include "tests/utils/qvector.hpp"
 #include "tests/utils/qmatrix.hpp"

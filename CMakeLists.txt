@@ -296,6 +296,8 @@ endif()
 ## Tests
 
 if (ENABLE_TESTING)
+  find_package(Catch2 3.1.1 REQUIRED)
+  include(Catch)
   enable_testing()
   add_subdirectory(tests)
 endif()
