@@ -8,11 +8,11 @@
 #include "quest/include/modes.h"
 #include "quest/include/environment.h"
 
-#include "../core/memory.hpp"
-#include "../core/autodeployer.hpp"
-#include "../comm/comm_config.hpp"
-#include "../cpu/cpu_config.hpp"
-#include "../gpu/gpu_config.hpp"
+#include "quest/src/core/memory.hpp"
+#include "quest/src/core/autodeployer.hpp"
+#include "quest/src/comm/comm_config.hpp"
+#include "quest/src/cpu/cpu_config.hpp"
+#include "quest/src/gpu/gpu_config.hpp"
 
 
 

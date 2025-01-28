@@ -6,7 +6,7 @@
 #include "quest/include/types.h"
 #include "quest/include/paulis.h"
 
-#include "../core/errors.hpp"
+#include "quest/src/core/errors.hpp"
 
 #include <vector>
 #include <cstring>

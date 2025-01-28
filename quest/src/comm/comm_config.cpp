@@ -12,7 +12,7 @@
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
 
-#include "../core/errors.hpp"
+#include "quest/src/core/errors.hpp"
 
 #if COMPILE_MPI
     #include <mpi.h>
