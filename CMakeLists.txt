@@ -1,8 +1,11 @@
-# author : Ania Brown
-# author : Jacob Wilkins
-# author : Balint Koczor (Windows compatibility)
-# author : Tyson Jones (testing)
-# author : Oliver Thomson Brown (v4)
+# Authors : 
+#  - Oliver Thomson Brown
+#
+# Contributions to previous builds from :
+#  - Ania Brown
+#  - Jacob Wilkins
+#  - Balint Koczor
+#  - Tyson Jones
 
 cmake_minimum_required(VERSION 3.21)
 
