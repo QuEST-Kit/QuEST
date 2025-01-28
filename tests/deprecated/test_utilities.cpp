@@ -4,7 +4,7 @@
  * @author Tyson Jones
  */
 
-#include "catch.hpp"
+#include <catch2/catch_all.hpp>
 
 #define INCLUDE_DEPRECATED_FUNCTIONS 1
 #define DISABLE_DEPRECATION_WARNINGS 1
@@ -1657,15 +1657,17 @@ Catch::Generators::GeneratorWrapper<int*> sublists(
     int* list, int len, int sublen
 ) {    
     return Catch::Generators::GeneratorWrapper<int*>(
-        std::unique_ptr<Catch::Generators::IGenerator<int*>>(
-            new SubListGenerator(list, len, sublen)));
+//        std::unique_ptr<Catch::Generators::IGenerator<int*>>(
+//            new SubListGenerator(list, len, sublen)));
+            Catch::Detail::make_unique<SubListGenerator>(list, len, sublen));
 }
 Catch::Generators::GeneratorWrapper<int*> sublists(
     Catch::Generators::GeneratorWrapper<int>&& gen, int numSamps, const int* exclude, int numExclude
 ) {    
     return Catch::Generators::GeneratorWrapper<int*>(
-        std::unique_ptr<Catch::Generators::IGenerator<int*>>(
-            new SubListGenerator(std::move(gen), numSamps, exclude, numExclude)));
+//        std::unique_ptr<Catch::Generators::IGenerator<int*>>(
+//            new SubListGenerator(std::move(gen), numSamps, exclude, numExclude)));
+            Catch::Detail::make_unique<SubListGenerator>(std::move(gen), numSamps, exclude, numExclude));
 }
 Catch::Generators::GeneratorWrapper<int*> sublists(
     Catch::Generators::GeneratorWrapper<int>&& gen, int numSamps, int excluded
