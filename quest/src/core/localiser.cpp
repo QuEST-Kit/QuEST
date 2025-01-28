@@ -259,10 +259,12 @@ auto getNonSwappedCtrlsAndStates(vector<int> oldCtrls, vector<int> oldStates, ve
 
 
 Qureg getSpoofedDistributedBufferlessQuregFromLocalQureg(Qureg local, Qureg distrib) {
+    assert_localiserDistribQuregSpooferGivenValidQuregs(local, distrib);
 
     // this function makes a new Qureg, leveraging 'local's existing
     // memory, which has the same distribution as the given distributed Qureg.
-    // critically, the new Qureg will lack communication buffers!
+    // critically however, the new Qureg will lack communication buffers, so
+    // must only be called by embarrassingly parallel routines!
 
     // overwrite spoof's fields with distrib's, setting correct dimensions
     Qureg spoof = distrib;
@@ -271,6 +273,10 @@ Qureg getSpoofedDistributedBufferlessQuregFromLocalQureg(Qureg local, Qureg dist
     qindex offset = util_getGlobalIndexOfFirstLocalAmp(distrib);
     spoof.cpuAmps = &local.cpuAmps[offset];
     spoof.gpuAmps = (local.isGpuAccelerated)? &local.gpuAmps[offset] : local.gpuAmps;
+
+    // pedantically unbind distrib's communication buffers
+    spoof.cpuCommBuffer = nullptr;
+    spoof.gpuCommBuffer = nullptr;
 
     return spoof;
 }
