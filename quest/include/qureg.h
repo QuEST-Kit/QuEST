@@ -13,7 +13,6 @@ extern "C" {
 #endif
 
 
-
 typedef struct {
 
     // deployment configuration
@@ -48,10 +47,11 @@ typedef struct {
 } Qureg;
 
 
-
 Qureg createQureg(int numQubits);
-
 Qureg createDensityQureg(int numQubits);
+
+Qureg createForcedQureg(int numQubits);
+Qureg createForcedDensityQureg(int numQubits);
 
 Qureg createCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread);
 

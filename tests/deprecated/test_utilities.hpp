@@ -34,18 +34,21 @@ using std::vector;
  */
 #define NUM_QUBITS 5
 
+
+// replace REAL_EPS macro with constant
 #undef REAL_EPS
-static qreal REAL_EPS = 1E-8; // hardcoded for v3 deprecated API
+#if FLOAT_PRECISION == 1
+    constexpr qreal REAL_EPS = 1E-5;
+#elif FLOAT_PRECISION == 2
+    constexpr qreal REAL_EPS = 1E-8;
+#elif FLOAT_PRECISION == 4
+    constexpr qreal REAL_EPS = 1E-10;
+#endif
+
 
 #ifndef M_PI
 #define M_PI 3.141592653589793238
 #endif
-
-
-// Qureg creators which forcefully enable the environment backends
-Qureg createForcedQureg(int numQubits);
-Qureg createForcedDensityQureg(int numQubits);
-
 
 /** A complex square matrix. 
  * Should be initialised with getZeroMatrix().

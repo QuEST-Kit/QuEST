@@ -215,7 +215,7 @@ int mem_getMaxNumQuregQubitsBeforeIndexOverflow(bool isDensityMatrix) {
 
     // cannot store more amplitudes than can be counted by the qindex type (even when distributed)
     qindex maxNumAmps = std::numeric_limits<qindex>::max();
-    int maxNumQubits = std::floor(std::log2(maxNumAmps) / (qreal) ((isDensityMatrix)? 2 : 1));
+    int maxNumQubits = std::floor(std::log2(maxNumAmps) / static_cast<qreal>((isDensityMatrix)? 2 : 1));
     return maxNumQubits;
 }
 

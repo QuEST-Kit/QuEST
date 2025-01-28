@@ -824,12 +824,13 @@ void accel_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob) {
 
 
 void accel_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> targs, vector<int> pairTargs) {
+    assert_partialTraceQuregsAreIdenticallyDeployed(inQureg, outQureg);
 
     auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_TARGS( cpu_densmatr_partialTrace_sub, targs.size() );
     auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_TARGS( gpu_densmatr_partialTrace_sub, targs.size() );
-    
-    // GPU-acceleration only possible if both Quregs are GPU-enabled
-    auto useFunc = (inQureg.isGpuAccelerated && outQureg.isGpuAccelerated)? gpuFunc : cpuFunc;
+
+    // inQureg == outQureg except for dimension, so use common backend
+    auto useFunc = (inQureg.isGpuAccelerated)? gpuFunc : cpuFunc;
     useFunc(inQureg, outQureg, targs, pairTargs);
 }
 

@@ -471,7 +471,7 @@ void applyMultiControlledT(Qureg qureg, int* controls, int numControls, int targ
 
 void applyMultiStateControlledT(Qureg qureg, int* controls, int* states, int numControls, int target) {
 
-    DiagMatr1 matr = getDiagMatr1({1, 1/sqrt(2) - 1_i/sqrt(2)});
+    DiagMatr1 matr = getDiagMatr1({1, 1/sqrt(2) + 1_i/sqrt(2)});
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
 }
 
@@ -717,8 +717,7 @@ void applyMultiStateControlledPauliY(Qureg qureg, int* controls, int* states, in
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
     // harmlessly re-validates
-    DiagMatr1 matr = getDiagMatr1({-1_i, 1_i});
-    applyMultiStateControlledDiagMatr1(qureg, controls, states, numControls, target, matr);
+    applyMultiStateControlledPauliStr(qureg, controls, states, numControls, getPauliStr("Y", {target}));
 }
 
 void applyMultiStateControlledPauliZ(Qureg qureg, int* controls, int* states, int numControls, int target)  {
@@ -777,10 +776,10 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
     auto ctrlVec = util_getVector(controls, numControls);
     auto stateVec = util_getVector(states, numControls); // empty if states==nullptr
 
-    // when qureg is a density matrix, we must additionally apply conj(shift(str));
-    // to avoid re-enumeration of the state, we growing the PauliStr to double-qubits,
-    // and conjugate (factor=-1), potentially losing the compile-time #ctrls benefit
-    if (qureg.isDensityMatrix) {
+    // when there are no control qubits, we can merge the density matrix's 
+    // operation sinto a single tensor, i.e. +- (shift(str) (x) str), to 
+    // avoid superfluous re-enumeration of the state
+    if (qureg.isDensityMatrix && numControls == 0) {
         factor = paulis_hasOddNumY(str)? -1 : 1;
         ctrlVec = util_getConcatenated(ctrlVec, util_getBraQubits(ctrlVec, qureg));
         stateVec = util_getConcatenated(stateVec, stateVec); 
@@ -788,6 +787,14 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
     }
 
     localiser_statevec_anyCtrlPauliTensor(qureg, ctrlVec, stateVec, str, factor);
+
+    // but density-matrix control qubits require two distinct operations
+    if (qureg.isDensityMatrix && numControls > 0) {
+        factor = paulis_hasOddNumY(str)? -1 : 1;
+        ctrlVec = util_getBraQubits(ctrlVec, qureg);
+        str = paulis_getShiftedPauliStr(str, qureg.numQubits);
+        localiser_statevec_anyCtrlPauliTensor(qureg, ctrlVec, stateVec, str, factor);
+    }
 }
 
 
@@ -1015,18 +1022,17 @@ void applyMultiStateControlledRotateAroundAxis(Qureg qureg, int* ctrls, int* sta
     validate_controlStates(states, numCtrls, __func__); // permits states==nullptr
     validate_rotationAxisNotZeroVector(axisX, axisY, axisZ, __func__);
 
-    // normalise vector
+    // defer division of vector norm to improve numerical accuracy
     qreal norm = sqrt(pow(axisX,2) + pow(axisY,2) + pow(axisZ,2)); // != 0
-    axisX /= norm;
-    axisY /= norm;
-    axisZ /= norm;
 
     // treat as generic 1-qubit matrix
     qreal c = cos(angle/2);
     qreal s = sin(angle/2);
-    auto matr = getCompMatr1({
-        {c - axisZ * 1_i, - axisY * s - axisX * s * 1_i},
-        {axisY * s - axisX * s * 1_i, c + axisZ * s * 1_i}});
+    qcomp u11 = c - (s * axisZ * 1_i) / norm;
+    qcomp u12 =   - (s * (axisY + axisX * 1_i)) / norm;
+    qcomp u21 =     (s * (axisY - axisX * 1_i)) / norm;
+    qcomp u22 = c + (s * axisZ * 1_i) / norm;
+    auto matr = getCompMatr1({{u11,u12},{u21,u22}});
 
     // harmlessly re-validates, and checks unitarity of matr
     applyMultiStateControlledCompMatr1(qureg, ctrls, states, numCtrls, targ, matr);
@@ -1147,8 +1153,8 @@ void applyMultiStateControlledPhaseGadget(Qureg qureg, int* controls, int* state
 
     phase *= -1;
     ctrlVec = util_getBraQubits(ctrlVec, qureg);
-    targVec = util_getBraQubits(ctrlVec, qureg);
-    localiser_statevec_anyCtrlPhaseGadget(qureg, ctrlVec, stateVec, targVec, angle);
+    targVec = util_getBraQubits(targVec, qureg);
+    localiser_statevec_anyCtrlPhaseGadget(qureg, ctrlVec, stateVec, targVec, phase);
 }
 
 

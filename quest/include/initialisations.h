@@ -40,6 +40,8 @@ void setQuregAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps);
 
 void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qcomp** amps, qindex numRows, qindex numCols);
 
+void setDensityQuregFlatAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps);
+
 void setQuregToClone(Qureg targetQureg, Qureg copyQureg);
 
 void setQuregToSuperposition(qcomp facOut, Qureg out, qcomp fac1, Qureg qureg1, qcomp fac2, Qureg qureg2);

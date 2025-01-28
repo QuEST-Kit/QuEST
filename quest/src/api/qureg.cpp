@@ -290,6 +290,26 @@ Qureg createDensityQureg(int numQubits) {
 }
 
 
+Qureg createForcedQureg(int numQubits) {
+    validate_envIsInit(__func__);
+
+    QuESTEnv env = getQuESTEnv();
+
+    int isDensMatr = 0;
+    return validateAndCreateCustomQureg(numQubits, isDensMatr, env.isDistributed, env.isGpuAccelerated, env.isMultithreaded, __func__);
+}
+
+
+Qureg createForcedDensityQureg(int numQubits) {
+    validate_envIsInit(__func__);
+
+    QuESTEnv env = getQuESTEnv();
+
+    int isDensMatr = 1;
+    return validateAndCreateCustomQureg(numQubits, isDensMatr, env.isDistributed, env.isGpuAccelerated, env.isMultithreaded, __func__);
+}
+
+
 Qureg createCloneQureg(Qureg qureg) {
     validate_quregFields(qureg, __func__);
 

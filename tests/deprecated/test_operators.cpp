@@ -41,8 +41,6 @@ using Catch::Matchers::Contains;
 TEST_CASE( "applyDiagonalOp", "[operators]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
-
-    QuESTEnv env = getQuESTEnv();
     
     SECTION( "correctness" ) {
         
@@ -50,7 +48,7 @@ TEST_CASE( "applyDiagonalOp", "[operators]" ) {
         GENERATE( range(0,10) );
         
         // make a totally random (non-Hermitian) diagonal oeprator
-        DiagonalOp op = createDiagonalOp(NUM_QUBITS, env);
+        DiagonalOp op = createDiagonalOp(NUM_QUBITS, getQuESTEnv());
         for (long long int i=0; i<op.numElemsPerNode; i++)
             op.cpuElems[i] = getRandomComplex();
         syncDiagonalOp(op);
@@ -68,18 +66,18 @@ TEST_CASE( "applyDiagonalOp", "[operators]" ) {
             REQUIRE( areEqual(quregMatr, ref, 100*REAL_EPS) );
         }
         
-        destroyDiagonalOp(op, env);
+        destroyDiagonalOp(op, getQuESTEnv());
     }
     SECTION( "input validation" ) {
         
         SECTION( "mismatching size" ) {
             
-            DiagonalOp op = createDiagonalOp(NUM_QUBITS + 1, env);
+            DiagonalOp op = createDiagonalOp(NUM_QUBITS + 1, getQuESTEnv());
             
             REQUIRE_THROWS_WITH( applyDiagonalOp(quregVec,  op), Contains("different number of qubits"));
             REQUIRE_THROWS_WITH( applyDiagonalOp(quregMatr, op), Contains("different number of qubits"));
             
-            destroyDiagonalOp(op, env);
+            destroyDiagonalOp(op, getQuESTEnv());
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -249,6 +247,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
             int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
             ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("number of target qubits") );
             destroyComplexMatrixN(matr);
@@ -258,6 +257,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             int numTargs = 3;
             int targs[] = {1,2,2};
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("target") && Contains("unique") );
             destroyComplexMatrixN(matr);
@@ -267,6 +267,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             int numTargs = 3;
             int targs[] = {1,2,3};
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            syncCompMatr(matr);
             
             int inv = GENERATE( -1, NUM_QUBITS );
             targs[GENERATE_COPY( range(0,numTargs) )] = inv; // make invalid target
@@ -279,11 +280,6 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             int numTargs = 3;
             int targs[] = {1,2,3};
             
-            /* compilers don't auto-initialise to NULL; the below circumstance 
-             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
-             * which actually triggers its own validation. Hence this test is useless 
-             * currently.
-             */
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
             REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("created") );
@@ -292,6 +288,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             
             int targs[2] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, 2, matr), Contains("matrix has an inconsistent size"));
             destroyComplexMatrixN(matr);
@@ -305,6 +302,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
 
             int qb[] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(2); // prevents seg-fault if validation doesn't trigger
+            syncCompMatr(matr);
             REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, qb, 2, matr), Contains("communication buffer") && Contains("cannot simultaneously store") );
             destroyComplexMatrixN(matr);
         }
@@ -332,6 +330,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[operators]" ) {
         SubDiagonalOp op = createSubDiagonalOp(numTargs);
         for (long long int i=0; i<op.numElems; i++)
             op.cpuElems[i] = getRandomComplex();
+        syncDiagMatr(op);
         QMatrix opMatr = toQMatrix(op);
             
         SECTION( "state-vector" ) {
@@ -355,6 +354,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[operators]" ) {
             
             int numTargs = 3;
             SubDiagonalOp op = createSubDiagonalOp(numTargs);
+            syncDiagMatr(op);
             
             int badNumTargs = GENERATE_COPY( numTargs-1, numTargs+1 );
             int badTargs[NUM_QUBITS+1];
@@ -373,6 +373,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[operators]" ) {
                 targs[t] = t;
             for (int i=0; i<badOp.numElems; i++)
                 badOp.cpuElems[i] = qcomp(1, 0);
+            syncDiagMatr(badOp);
             
             REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, badOp.numQubits, badOp), Contains("number of target qubits") && Contains("exceeds") );
             destroySubDiagonalOp(badOp);
@@ -383,6 +384,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[operators]" ) {
             SubDiagonalOp op = createSubDiagonalOp(3);
             for (int i=0; i<op.numElems; i++)
                 op.cpuElems[i] = qcomp(1, 0);
+            syncDiagMatr(op);
                 
             // make a repetition in the target list
             int targs[] = {2,1,2};
@@ -396,6 +398,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[operators]" ) {
             SubDiagonalOp op = createSubDiagonalOp(3);
             for (int i=0; i<op.numElems; i++)
                 op.cpuElems[i] = qcomp(1,0);
+            syncDiagMatr(op);
                 
             int targs[] = {0,1,2};
             
@@ -578,6 +581,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
             int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
             ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("number of target qubits") );
             destroyComplexMatrixN(matr);
@@ -587,6 +591,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             int numTargs = 3;
             int targs[] = {1,2,2};
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("target") && Contains("unique") );
             destroyComplexMatrixN(matr);
@@ -596,6 +601,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             int numTargs = 3;
             int targs[] = {1,2,3};
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
+            syncCompMatr(matr);
             
             int inv = GENERATE( -1, NUM_QUBITS );
             targs[GENERATE_COPY( range(0,numTargs) )] = inv; // make invalid target
@@ -608,11 +614,6 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             int numTargs = 3;
             int targs[] = {1,2,3};
             
-            /* compilers don't auto-initialise to NULL; the below circumstance 
-             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
-             * which actually triggers its own validation. Hence this test is useless 
-             * currently.
-             */
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
             REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("created") );
@@ -621,6 +622,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             
             int targs[2] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
+            syncCompMatr(matr);
             
             REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, 2, matr), Contains("matrix has an inconsistent size") );
             destroyComplexMatrixN(matr);
@@ -633,6 +635,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             quregVec.logNumAmpsPerNode = 0;
             int qb[] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(2); // prevents seg-fault if validation doesn't trigger
+            syncCompMatr(matr);
             REQUIRE_THROWS_WITH( applyMatrixN(quregVec, qb, 2, matr), Contains("communication buffer") && Contains("cannot simultaneously store") );
             destroyComplexMatrixN(matr);
         }
@@ -764,11 +767,6 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
             int ctrls[1] = {0};
             int targs[3] = {1,2,3};
             
-            /* compilers don't auto-initialise to NULL; the below circumstance 
-             * only really occurs when 'malloc' returns NULL in createComplexMatrixN, 
-             * which actually triggers its own validation. Hence this test is useless 
-             * currently.
-             */
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
             REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 3, matr), Contains("created") );
@@ -4054,6 +4052,8 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
         SubDiagonalOp op = createSubDiagonalOp(numTargs);
         for (long long int i=0; i<op.numElems; i++)
             op.cpuElems[i] = getRandomComplex();
+        syncDiagMatr(op);
+
         QMatrix opMatr = toQMatrix(op);
             
         SECTION( "state-vector" ) {
@@ -4077,6 +4077,7 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
             
             int numTargs = 3;
             SubDiagonalOp op = createSubDiagonalOp(numTargs);
+            syncDiagMatr(op);
             
             int badNumTargs = GENERATE_COPY( numTargs-1, numTargs+1 );
             int badTargs[NUM_QUBITS+1];
@@ -4095,6 +4096,7 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
                 targs[t] = t;
             for (int i=0; i<badOp.numElems; i++)
                 badOp.cpuElems[i] = qcomp(1,0);
+            syncDiagMatr(badOp);
             
             REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, badOp.numQubits, badOp), Contains("number of target qubits") && Contains("exceeds") );
             destroySubDiagonalOp(badOp);
@@ -4105,6 +4107,7 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
             SubDiagonalOp op = createSubDiagonalOp(3);
             for (int i=0; i<op.numElems; i++)
                 op.cpuElems[i] = qcomp(1,0);
+            syncDiagMatr(op);
                 
             // make a repetition in the target list
             int targs[] = {2,1,2};
@@ -4118,6 +4121,7 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
             SubDiagonalOp op = createSubDiagonalOp(3);
             for (int i=0; i<op.numElems; i++)
                 op.cpuElems[i] = qcomp(1,0);
+            syncDiagMatr(op);
             
             int targs[] = {0,1,2};
             

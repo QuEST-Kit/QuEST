@@ -166,9 +166,8 @@ auto getCtrlsAndTargsSwappedToMinSuffix(Qureg qureg, vector<int> ctrls, vector<i
     qindex ctrlMask = getBitMask(ctrls.data(), ctrls.size());
     int minNonTarg = getIndOfNextRightmostZeroBit(targMask, -1);
 
-    // prepare indices of ctrls in the given list (i.e. the inverse of ctrls), if any exist
-    int maxCtrlInd = (ctrls.empty())? -1 : *std::max_element(ctrls.begin(), ctrls.end());
-    vector<int> ctrlInds(maxCtrlInd+1); // bounded by ~64
+    // prepare map from control qubit to its index in ctrls list (i.e. inverse of ctrls)
+    std::unordered_map<int,int> ctrlInds;
     for (size_t i=0; i<ctrls.size(); i++)
         ctrlInds[ctrls[i]] = i;
 
@@ -179,8 +178,8 @@ auto getCtrlsAndTargsSwappedToMinSuffix(Qureg qureg, vector<int> ctrls, vector<i
         // consider only targs in the prefix substate
         if (util_isQubitInSuffix(targ, qureg))
             continue;
-            
-        // if our replacement targ happens to be a ctrl... 
+
+        // we will swap targ with minNonTarg, but must first move that it of ctrls
         if (getBit(ctrlMask, minNonTarg) == 1) {
 
             // find and swap that ctrl with the old targ
@@ -189,7 +188,7 @@ auto getCtrlsAndTargsSwappedToMinSuffix(Qureg qureg, vector<int> ctrls, vector<i
 
             // update our ctrl trackers
             ctrlInds[targ] = ctrlInd;
-            ctrlInds[minNonTarg] = -1; // for clarity
+            ctrlInds[minNonTarg] = -1; // erases minNonTarg (for clarity)
             ctrlMask = flipTwoBits(ctrlMask, minNonTarg, targ);
         }
 
@@ -212,7 +211,7 @@ auto getQubitsSwappedToMaxSuffix(Qureg qureg, vector<int> qubits) {
     // targets in the prefix substate and where they can be swapped into the suffix
     // to enable subsequent embarrassingly parallel simulation. Note we seek the MAX
     // available indices in the suffix, since this heuristically reduces the
-    // disordering of the surviving qubits after the trace, reduces the number of
+    // disordering of the surviving qubits after the trace, reducing the number of
     // subsequent order-restoring SWAPs
 
     // nothing to do if all qubits are already in suffix
@@ -224,7 +223,7 @@ auto getQubitsSwappedToMaxSuffix(Qureg qureg, vector<int> qubits) {
     int maxFreeSuffixQubit = getIndOfNextLeftmostZeroBit(qubitMask, qureg.logNumAmpsPerNode);
 
     // enumerate qubits backward, modifying our copy of qubits as we go
-    for (size_t i=qubits.size()-1; i-- != 0; ) {
+    for (size_t i=qubits.size(); i-- != 0; ) {
         int qubit = qubits[i];
 
         // consider only qubits in the prefix substate
@@ -996,7 +995,9 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
         localiser_statevec_anyCtrlOneTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], getCompMatr1(matr.cpuElems), conj);
     
     // similarly, bespoke two-targ routines are preferable although they offer no communication
-    // benefit because they call the same any-targ localiser, but still accelerate GPU memory access
+    // benefit because they call the same any-targ localiser, but still accelerate GPU memory access.
+    // this function call is the same as below, but we explicitly pass a CompMatr2 type in lieu of 
+    // CompMatr, which avoids having to copy the CompMatr dynamic memory into accelerator backends
     else if (targs.size() == 2)
         localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], targs[1], getCompMatr2(matr.cpuElems), conj);
     
@@ -1643,7 +1644,8 @@ auto getNonTracedQubitOrder(Qureg qureg, vector<int> originalTargs, vector<int> 
     qindex revisedMask = util_getBitMask(revisedTargs);
 
     // retain only non-targeted qubits
-    vector<int> remainingQubits(allQubits.size() - originalTargs.size());
+    vector<int> remainingQubits;
+    remainingQubits.reserve(allQubits.size() - originalTargs.size());
     for (size_t q=0; q<allQubits.size(); q++)
         if (!getBit(revisedMask, q))
             remainingQubits.push_back(allQubits[q]);
@@ -1726,22 +1728,20 @@ void partialTraceOnPrefix(Qureg inQureg, Qureg outQureg, vector<int> ketTargs) {
 void localiser_densmatr_partialTrace(Qureg inQureg, Qureg outQureg, vector<int> targs) {
     assert_localiserPartialTraceGivenCompatibleQuregs(inQureg, outQureg, targs.size());
 
-    // TODO: 
     // this function requires inQureg and outQureg are both or neither distributed;
-    // it does not support the (potentially reasonable) situation when only outQureg
-    // is not-distributed, perhaps because it is too small. It is not simple to
-    // extend our method to this case. We could force distribution of inQureg until
-    // the end of the routine (where we might broadcast it back to non-distributed),
-    // and even temporarily relax the condition that each node contains >=1 column,
-    // but we would still be restricted by the requirement each node contains >=1 amp.
-    // Think about whether we can relax this!
+    // it does not support the (potentially reasonable) situation when only inQureg
+    // is distributed because outQureg it is too small, like results from tracing
+    // out many qubits. Alas we cannot easily support this scenario, and such a 
+    // scenario anyway our parallelisation scheme which approaches serial as the 
+    // outQureg shrinks in size. Alas!
 
-    // sorted targets needed by subsequent bitwise insertions
-    targs = util_getSorted(targs);
+    // sorted targets needed by subsequent bitwise insertions; we pedantically use
+    // a new variable in case parameter 'targs' ever changes to a pass-by-reference
+    auto sortedTargs = util_getSorted(targs);
 
-    (doesChannelRequireComm(inQureg, targs.back()))?
-        partialTraceOnPrefix(inQureg, outQureg, targs):
-        partialTraceOnSuffix(inQureg, outQureg, targs);
+    (doesChannelRequireComm(inQureg, sortedTargs.back()))?
+        partialTraceOnPrefix(inQureg, outQureg, sortedTargs):
+        partialTraceOnSuffix(inQureg, outQureg, sortedTargs);
 }
 
 

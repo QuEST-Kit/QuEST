@@ -43,26 +43,6 @@ using std::vector;
 
 
 /*
- * forcing use of compiled backends
- */
-
-Qureg createForcedQureg(int numQubits) {
-    QuESTEnv env = getQuESTEnv();
-
-    int isDenseMatr = 0;
-    return createCustomQureg(numQubits, isDenseMatr, env.isDistributed, env.isGpuAccelerated, env.isMultithreaded);
-}
-
-Qureg createForcedDensityQureg(int numQubits) {
-    QuESTEnv env = getQuESTEnv();
-
-    int isDenseMatr = 1;
-    return createCustomQureg(numQubits, isDenseMatr, env.isDistributed, env.isGpuAccelerated, env.isMultithreaded);
-}
-
-
-
-/*
  * resolve reprecated absReal()
  */
 

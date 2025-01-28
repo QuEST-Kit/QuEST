@@ -64,11 +64,12 @@ PauliStrSum prepareRandomPauliStrSum(int numQubits, int numTerms) {
 
     vector<qcomp> coeffs(numTerms);
     vector<PauliStr> strings(numTerms);
+    qreal randMax = static_cast<qreal>(RAND_MAX);
     
     for (int i=0; i<numTerms; i++) {
         coeffs[i] = getQcomp(
-            rand() / (qreal) RAND_MAX, 
-            rand() / (qreal) RAND_MAX);
+            rand() / randMax,
+            rand() / randMax);
 
         for (int j=0; j<numQubits; j++)
             paulis[j] = "IXYZ"[rand() % 4];
