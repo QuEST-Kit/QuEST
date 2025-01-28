@@ -15,7 +15,7 @@ set_target_properties(paulis_cpp_initialisation
 )
 
 add_executable(paulis_c_initialisation
-  initialisation.cpp
+  initialisation.c
 )
 
 target_link_libraries(paulis_c_initialisation PUBLIC QuEST)
