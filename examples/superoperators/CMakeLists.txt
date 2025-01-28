@@ -15,7 +15,7 @@ set_target_properties(superoperators_cpp_initialisation
 )
 
 add_executable(superoperators_c_initialisation
-  initialisation.cpp
+  initialisation.c
 )
 
 target_link_libraries(superoperators_c_initialisation PUBLIC QuEST)
