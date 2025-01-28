@@ -249,7 +249,7 @@ if (ENABLE_HIP)
 endif()
 
 if (ENABLE_DEPRECATED)
-  target_compile_definitions(QuEST PUBLIC INCLUDE_DEPRECATED_FUNCTIONS=1)
+  target_compile_definitions(QuEST PRIVATE INCLUDE_DEPRECATED_FUNCTIONS=1)
 
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+depr")
