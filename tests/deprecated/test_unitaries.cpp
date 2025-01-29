@@ -343,7 +343,9 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
             ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
             syncCompMatr(matr);
+
             REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, 0, targs, numTargs, matr), ContainsSubstring("number of target qubits"));
+
             destroyComplexMatrixN(matr);
         }
         SECTION( "repetition in targets" ) {
@@ -1240,7 +1242,9 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
             
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // initially zero, hence not-unitary
             syncCompMatr(matr);
+
             REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, numTargs, matr), ContainsSubstring("unitary") );
+
             destroyComplexMatrixN(matr);
         }
         SECTION( "unitary creation" ) {

@@ -286,6 +286,12 @@ void error_calcFidStateVecDistribWhileDensMatrLocal() {
     raiseInternalError("A localiser function attempted to compute the fidelity between a local density matrix and a distributed statevector, which is an illegal combination.");
 }
 
+void assert_localiserDistribQuregSpooferGivenValidQuregs(Qureg local, Qureg distrib) {
+
+    if (local.isDistributed || !distrib.isDistributed)
+        raiseInternalError("The localiser attempted to spoof a distributed Qureg using a local one, but received invalid Qureg distributions.");
+}
+
 
 
 /*

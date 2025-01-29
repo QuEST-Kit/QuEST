@@ -3388,7 +3388,7 @@ void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const c
 
 void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller) {
 
-    qreal norm = pow(x,2) + pow(y,2) + pow(z,2);
+    qreal norm = sqrt(pow(x,2) + pow(y,2) + pow(z,2));
 
     assertThat(norm > global_validationEpsilon, report::ROTATION_AXIS_VECTOR_IS_ZERO, caller);
 }

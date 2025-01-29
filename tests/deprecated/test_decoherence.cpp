@@ -609,6 +609,7 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
         SECTION( "number of operators" ) {
             
             int numOps = 0;
+
             REQUIRE_THROWS_WITH( v3_mixKrausMap(qureg, 0, spoofOps, numOps), ContainsSubstring("must be given a strictly positive number of matrices") );
         }
         SECTION( "trace preserving" ) {
@@ -622,7 +623,7 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
                 
             // make invalid
             ops[GENERATE_REF( range(0,numOps) )].real[0][0] = 0;
-            REQUIRE_THROWS_WITH( v3_mixKrausMap(qureg, 0, ops.data(), numOps), ContainsSubstring("trace preserving") );   
+            REQUIRE_THROWS_WITH( v3_mixKrausMap(qureg, 0, ops.data(), numOps), ContainsSubstring("trace preserving") );
         }
         SECTION( "qubit index" ) {
             
@@ -640,6 +641,7 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
             qureg.isDistributed = 1;
             qureg.numAmpsPerNode = 3; // min 4
             qureg.logNumAmpsPerNode = 1; // min 2
+
             REQUIRE_THROWS_WITH( v3_mixKrausMap(qureg, 0, spoofOps, 1), ContainsSubstring("each node's communication buffer") && ContainsSubstring("cannot simultaneously store") );
         }        
     }

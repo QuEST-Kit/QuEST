@@ -305,7 +305,9 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             int qb[] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(2); // prevents seg-fault if validation doesn't trigger
             syncCompMatr(matr);
+
             REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, qb, 2, matr), ContainsSubstring("communication buffer") && ContainsSubstring("cannot simultaneously store") );
+
             destroyComplexMatrixN(matr);
         }
     }
@@ -638,7 +640,9 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             int qb[] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(2); // prevents seg-fault if validation doesn't trigger
             syncCompMatr(matr);
+
             REQUIRE_THROWS_WITH( applyMatrixN(quregVec, qb, 2, matr), ContainsSubstring("communication buffer") && ContainsSubstring("cannot simultaneously store") );
+
             destroyComplexMatrixN(matr);
         }
     }
