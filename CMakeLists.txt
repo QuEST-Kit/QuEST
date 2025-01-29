@@ -278,6 +278,20 @@ add_subdirectory(quest)
 
 ## Examples
 
+add_executable(min_example
+  examples/tutorials/min_example.cpp
+)
+target_link_libraries(min_example PUBLIC QuEST::QuEST)
+
+install(TARGETS min_example
+  RUNTIME
+  DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+set_target_properties(min_example
+  PROPERTIES 
+    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}"
+)
+
 if (BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
