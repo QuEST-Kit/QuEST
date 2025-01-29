@@ -1,5 +1,6 @@
-
-#include "catch.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 
 // must define preprocessors to enable quest's
 // deprecated v3 API, and disable the numerous
@@ -10,8 +11,8 @@
 
 #include "test_utilities.hpp"
 
-/* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
-using Catch::Matchers::Contains;
+/* allows concise use of ContainsSubstring in catch's REQUIRE_THROWS_WITH */
+using Catch::Matchers::ContainsSubstring;
 
 
 
@@ -159,7 +160,7 @@ TEST_CASE( "createComplexMatrixN", "[data_structures]" ) {
         SECTION( "number of qubits" ) {
             
             int numQb = GENERATE( -1, 0 );
-            REQUIRE_THROWS_WITH( createComplexMatrixN(numQb), Contains("must target one or more qubits") );
+            REQUIRE_THROWS_WITH( createComplexMatrixN(numQb), ContainsSubstring("must target one or more qubits") );
         }
     }
 }
@@ -195,7 +196,7 @@ TEST_CASE( "createDensityQureg", "[data_structures]" ) {
         SECTION( "number of qubits" ) {
             
             int numQb = GENERATE( -1, 0 );
-            REQUIRE_THROWS_WITH( createForcedDensityQureg(numQb), Contains("must contain one or more qubits") );
+            REQUIRE_THROWS_WITH( createForcedDensityQureg(numQb), ContainsSubstring("must contain one or more qubits") );
         }
         SECTION( "number of amplitudes" ) {
 
@@ -207,7 +208,7 @@ TEST_CASE( "createDensityQureg", "[data_structures]" ) {
             // too many amplitudes to store in type
             int maxQb = (int) calcLog2(SIZE_MAX) / 2;
             REQUIRE_THROWS_WITH( createForcedDensityQureg(maxQb+1), 
-                Contains("the density matrix would contain more amplitudes") && Contains("than can be addressed by the qindex type") );
+                ContainsSubstring("the density matrix would contain more amplitudes") && ContainsSubstring("than can be addressed by the qindex type") );
             
             // it is non-trivial to force an invalid distribution
             // in v4, since QuESTEnv arg is no longer consulted; we
@@ -223,7 +224,7 @@ TEST_CASE( "createDensityQureg", "[data_structures]" ) {
                 // int minQb = GENERATE_COPY( range(3,maxQb) );
                 // env.numNodes = (int) pow(2, 2*minQb);
                 // int numQb = GENERATE_COPY( range(1,minQb) );
-                // REQUIRE_THROWS_WITH( createForcedDensityQureg(numQb, env), Contains("Too few qubits") );
+                // REQUIRE_THROWS_WITH( createForcedDensityQureg(numQb, env), ContainsSubstring("Too few qubits") );
         }
         SECTION( "available memory" ) {
             
@@ -272,14 +273,14 @@ TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
         SECTION( "number of qubits" ) {
             
             int numQb = GENERATE( -1, 0 );
-            REQUIRE_THROWS_WITH( createDiagonalOp(numQb, env), Contains("must target one or more qubits") );
+            REQUIRE_THROWS_WITH( createDiagonalOp(numQb, env), ContainsSubstring("must target one or more qubits") );
         }
         SECTION( "number of elements" ) {
             
             // too many amplitudes to store in type
             int maxQb = (int) calcLog2(SIZE_MAX);
             REQUIRE_THROWS_WITH( createDiagonalOp(maxQb+1, env), 
-                Contains("the matrix would contain more elements") && Contains("than the maximum which can be addressed by the qindex type") );
+                ContainsSubstring("the matrix would contain more elements") && ContainsSubstring("than the maximum which can be addressed by the qindex type") );
             
             // cannot test when there are too few elements, since the deprecated
             // interface is redirecting to createFullStateDiagMatr which auto-deploys,
@@ -293,7 +294,7 @@ TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
                 // int minQb = GENERATE_COPY( range(2,maxQb) );
                 // env.numNodes = (int) pow(2, minQb);
                 // int numQb = GENERATE_COPY( range(1,minQb) );
-                // REQUIRE_THROWS_WITH( createDiagonalOp(numQb, env), Contains("Too few qubits") && Contains("distributed"));
+                // REQUIRE_THROWS_WITH( createDiagonalOp(numQb, env), ContainsSubstring("Too few qubits") && ContainsSubstring("distributed"));
         }
         SECTION( "available memory" ) {
             
@@ -417,7 +418,7 @@ TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
     //         SECTION( "number of qubits" ) {
                 
     //             writeToFileSynch(fn, ".1 "); // 0 qubits
-    //             REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, env), Contains("The number of qubits") && Contains("strictly positive"));
+    //             REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, env), ContainsSubstring("The number of qubits") && ContainsSubstring("strictly positive"));
     //         }
     //         SECTION( "number of elements" ) {
                 
@@ -430,7 +431,7 @@ TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
     //                 line += "3 "; // trailing space ok
     //             writeToFileSynch(fn, line);
                 
-    //             REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, env), Contains("Too many qubits") && Contains("size_t type") );
+    //             REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, env), ContainsSubstring("Too many qubits") && ContainsSubstring("size_t type") );
                 
     //             // use local QuESTEnv to safely modify
     //             QuESTEnv env = getQuESTEnv();
@@ -450,29 +451,29 @@ TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
     //             setUniqueFilename(fn, fnMaxLen, fnPrefix);
     //             writeToFileSynch(fn, line);
                 
-    //             REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, env), Contains("Too few qubits") && Contains("distributed") );
+    //             REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, env), ContainsSubstring("Too few qubits") && ContainsSubstring("distributed") );
     //         }
     //         SECTION( "coefficient type" ) {
 
     //             writeToFileSynch(fn, "notanumber 1 2 3");
-    //             REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, env), Contains("Failed to parse") && Contains("coefficient"));
+    //             REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, env), ContainsSubstring("Failed to parse") && ContainsSubstring("coefficient"));
     //         }
     //         SECTION( "pauli code" ) {
 
     //             writeToFileSynch(fn, ".1 0 3 2");  // final is invalid Y
-    //             REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, env), Contains("contained operators other than PAULI_Z and PAULI_I"));
+    //             REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, env), ContainsSubstring("contained operators other than PAULI_Z and PAULI_I"));
                 
     //             setUniqueFilename(fn, fnMaxLen, fnPrefix);
     //             writeToFileSynch(fn, ".1 0 1 3");  // second is invalid X
-    //             REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, env), Contains("contained operators other than PAULI_Z and PAULI_I"));
+    //             REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, env), ContainsSubstring("contained operators other than PAULI_Z and PAULI_I"));
                 
     //             setUniqueFilename(fn, fnMaxLen, fnPrefix);
     //             writeToFileSynch(fn, ".1 0 1 4");  // final is invalid Pauli code
-    //             REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, env), Contains("invalid pauli code"));
+    //             REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, env), ContainsSubstring("invalid pauli code"));
                 
     //             setUniqueFilename(fn, fnMaxLen, fnPrefix);
     //             writeToFileSynch(fn, ".1 3 0 notanumber");  // final is invalid type
-    //             REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, env), Contains("Failed to parse the next expected Pauli code"));
+    //             REQUIRE_THROWS_WITH( createDiagonalOpFromPauliHamilFile(fn, env), ContainsSubstring("Failed to parse the next expected Pauli code"));
     //         }
     //     }
         
@@ -520,12 +521,12 @@ TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
     //         SECTION( "number of qubits" ) {
 
     //             int numQb = GENERATE( -1, 0 );
-    //             REQUIRE_THROWS_WITH( createPauliHamil(numQb, 1), Contains("The number of qubits and terms in the PauliHamil must be strictly positive.") );
+    //             REQUIRE_THROWS_WITH( createPauliHamil(numQb, 1), ContainsSubstring("The number of qubits and terms in the PauliHamil must be strictly positive.") );
     //         }
     //         SECTION( "number of terms" ) {
 
     //             int numTerms = GENERATE( -1, 0 );
-    //             REQUIRE_THROWS_WITH( createPauliHamil(1, numTerms), Contains("The number of qubits and terms in the PauliHamil must be strictly positive.") );
+    //             REQUIRE_THROWS_WITH( createPauliHamil(1, numTerms), ContainsSubstring("The number of qubits and terms in the PauliHamil must be strictly positive.") );
     //         }
     //     }
     // }
@@ -641,24 +642,24 @@ TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
 
     //             writeToFileSynch(fn, ".1 ");
 
-    //             REQUIRE_THROWS_WITH( createPauliHamilFromFile(fn), Contains("The number of qubits") && Contains("strictly positive"));
+    //             REQUIRE_THROWS_WITH( createPauliHamilFromFile(fn), ContainsSubstring("The number of qubits") && ContainsSubstring("strictly positive"));
     //         }
     //         SECTION( "coefficient type" ) {
 
     //             writeToFileSynch(fn, "notanumber 1 2 3");
 
-    //             REQUIRE_THROWS_WITH( createPauliHamilFromFile(fn), Contains("Failed to parse") && Contains("coefficient"));
+    //             REQUIRE_THROWS_WITH( createPauliHamilFromFile(fn), ContainsSubstring("Failed to parse") && ContainsSubstring("coefficient"));
     //         }
     //         SECTION( "pauli code" ) {
                 
     //             writeToFileSynch(fn, ".1 1 2 4"); // invalid int
 
-    //             REQUIRE_THROWS_WITH( createPauliHamilFromFile(fn), Contains("invalid pauli code"));
+    //             REQUIRE_THROWS_WITH( createPauliHamilFromFile(fn), ContainsSubstring("invalid pauli code"));
                 
     //             setUniqueFilename(fn, fnMaxLen, fnPrefix);
     //             writeToFileSynch(fn, ".1 1 2 notanumber"); // invalid type
                 
-    //             REQUIRE_THROWS_WITH( createPauliHamilFromFile(fn), Contains("Failed to parse the next expected Pauli code"));
+    //             REQUIRE_THROWS_WITH( createPauliHamilFromFile(fn), ContainsSubstring("Failed to parse the next expected Pauli code"));
     //         }
     //     }
         
@@ -713,15 +714,15 @@ TEST_CASE( "createQureg", "[data_structures]" ) {
         SECTION( "number of qubits" ) {
             
             int numQb = GENERATE( -1, 0 );
-            REQUIRE_THROWS_WITH( createForcedQureg(numQb), Contains("must contain one or more qubits") );
+            REQUIRE_THROWS_WITH( createForcedQureg(numQb), ContainsSubstring("must contain one or more qubits") );
         }
         SECTION( "number of amplitudes" ) {
             
             // too many amplitudes to store in type
             int maxQb = (int) calcLog2(SIZE_MAX);
             REQUIRE_THROWS_WITH( createForcedQureg(maxQb+1), 
-                Contains("the statevector would contain more amplitudes") && 
-                Contains("than the maximum which can be addressed by the qindex type") );
+                ContainsSubstring("the statevector would contain more amplitudes") && 
+                ContainsSubstring("than the maximum which can be addressed by the qindex type") );
 
             // it is non-trivial to force an invalid distribution
             // in v4, since QuESTEnv arg is no longer consulted; we
@@ -735,7 +736,7 @@ TEST_CASE( "createQureg", "[data_structures]" ) {
                 // int minQb = GENERATE_COPY( range(2,maxQb) );
                 // env.numNodes = (int) pow(2, minQb);
                 // int numQb = GENERATE_COPY( range(1,minQb) );
-                // REQUIRE_THROWS_WITH( createForcedQureg(numQb, env), Contains("Too few qubits") );
+                // REQUIRE_THROWS_WITH( createForcedQureg(numQb, env), ContainsSubstring("Too few qubits") );
         }
         SECTION( "available memory" ) {
             
@@ -769,12 +770,12 @@ TEST_CASE( "createSubDiagonalOp", "[data_structures]" ) {
         SECTION( "number of qubits" ) {
             
             int numQb = GENERATE( -1, 0 );
-            REQUIRE_THROWS_WITH( createSubDiagonalOp(numQb), Contains("must target one or more qubits") );
+            REQUIRE_THROWS_WITH( createSubDiagonalOp(numQb), ContainsSubstring("must target one or more qubits") );
             
             numQb = 100;
             REQUIRE_THROWS_WITH( createSubDiagonalOp(numQb), 
-                Contains("the matrix would contain more elements") && 
-                Contains("than the maximum which can be addressed by the qindex type") );
+                ContainsSubstring("the matrix would contain more elements") && 
+                ContainsSubstring("than the maximum which can be addressed by the qindex type") );
         }
     }
 }
@@ -805,7 +806,7 @@ TEST_CASE( "destroyComplexMatrixN", "[data_structures]" ) {
              
             /* the error message is also somewhat unrelated, but oh well 
              */
-            REQUIRE_THROWS_WITH( destroyComplexMatrixN(m), Contains("Invalid CompMatr") );
+            REQUIRE_THROWS_WITH( destroyComplexMatrixN(m), ContainsSubstring("Invalid CompMatr") );
         }
     }
 }
@@ -1001,11 +1002,11 @@ TEST_CASE( "destroySubDiagonalOp", "[data_structures]" ) {
                 
     //             hamil.numQubits = GENERATE( -1, 0 );
     //             hamil.numSumTerms = 1;
-    //             REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil), Contains("number of qubits") && Contains("strictly positive") );
+    //             REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil), ContainsSubstring("number of qubits") && ContainsSubstring("strictly positive") );
                 
     //             hamil.numQubits = minNumQb;
     //             hamil.numSumTerms = GENERATE( -1, 0 );
-    //             REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil), Contains("terms") && Contains("strictly positive") );
+    //             REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil), ContainsSubstring("terms") && ContainsSubstring("strictly positive") );
                 
     //             destroyDiagonalOp(op, getQuESTEnv());
     //         }
@@ -1017,7 +1018,7 @@ TEST_CASE( "destroySubDiagonalOp", "[data_structures]" ) {
     //             DiagonalOp op = createDiagonalOp(numQbA, getQuESTEnv());
     //             PauliHamil hamil = createPauliHamil(numQbB, 1);
                 
-    //             REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil), Contains("Pauli Hamiltonian and diagonal operator have different, incompatible dimensions") );
+    //             REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil), ContainsSubstring("Pauli Hamiltonian and diagonal operator have different, incompatible dimensions") );
                 
     //             destroyDiagonalOp(op, getQuESTEnv());
     //             destroyPauliHamil(hamil);
@@ -1032,7 +1033,7 @@ TEST_CASE( "destroySubDiagonalOp", "[data_structures]" ) {
     //             int ind = GENERATE_COPY( range(0,numCodes) );
     //             hamil.pauliCodes[ind] = GENERATE( PAULI_X, PAULI_Y );
                 
-    //             REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil), Contains("contained operators other than PAULI_Z and PAULI_I") );
+    //             REQUIRE_THROWS_WITH( initDiagonalOpFromPauliHamil(op, hamil), ContainsSubstring("contained operators other than PAULI_Z and PAULI_I") );
                 
     //             destroyDiagonalOp(op, getQuESTEnv());
     //             destroyPauliHamil(hamil);
@@ -1083,11 +1084,11 @@ TEST_CASE( "destroySubDiagonalOp", "[data_structures]" ) {
                 
     //             hamil.numQubits = GENERATE( -1, 0 );
     //             hamil.numSumTerms = 1;
-    //             REQUIRE_THROWS_WITH( initPauliHamil(hamil, coeffs, codes), Contains("number of qubits") && Contains("strictly positive") );
+    //             REQUIRE_THROWS_WITH( initPauliHamil(hamil, coeffs, codes), ContainsSubstring("number of qubits") && ContainsSubstring("strictly positive") );
                 
     //             hamil.numQubits = 1;
     //             hamil.numSumTerms = GENERATE( -1, 0 );
-    //             REQUIRE_THROWS_WITH( initPauliHamil(hamil, coeffs, codes), Contains("terms") && Contains("strictly positive") );
+    //             REQUIRE_THROWS_WITH( initPauliHamil(hamil, coeffs, codes), ContainsSubstring("terms") && ContainsSubstring("strictly positive") );
     //         }
     //         SECTION( "Pauli codes" ) {
             
@@ -1103,7 +1104,7 @@ TEST_CASE( "destroySubDiagonalOp", "[data_structures]" ) {
     //             codes[GENERATE_COPY( range(0,numCodes) )] = (pauliOpType) GENERATE( -1, 4 );
                 
     //             PauliHamil hamil = createPauliHamil(numQb, numTerms);
-    //             REQUIRE_THROWS_WITH( initPauliHamil(hamil, coeffs, codes), Contains("Invalid Pauli code") );
+    //             REQUIRE_THROWS_WITH( initPauliHamil(hamil, coeffs, codes), ContainsSubstring("Invalid Pauli code") );
     //             destroyPauliHamil(hamil);
     //         }
     //     }
@@ -1161,7 +1162,7 @@ TEST_CASE( "destroySubDiagonalOp", "[data_structures]" ) {
                 
     //             int startInd = GENERATE_COPY( -1, maxInd );
     //             int numAmps = 1;
-    //             REQUIRE_THROWS_WITH( setDiagonalOpElems(op, startInd, reals, imags, numAmps), Contains("Invalid element index") );
+    //             REQUIRE_THROWS_WITH( setDiagonalOpElems(op, startInd, reals, imags, numAmps), ContainsSubstring("Invalid element index") );
     //         }
             
     //         SECTION( "number of elements" ) {
@@ -1169,12 +1170,12 @@ TEST_CASE( "destroySubDiagonalOp", "[data_structures]" ) {
     //             // independent
     //             int startInd = 0;
     //             int numAmps = GENERATE_COPY( -1, maxInd+1 );
-    //             REQUIRE_THROWS_WITH( setDiagonalOpElems(op, startInd, reals, imags, numAmps), Contains("Invalid number of elements") );
+    //             REQUIRE_THROWS_WITH( setDiagonalOpElems(op, startInd, reals, imags, numAmps), ContainsSubstring("Invalid number of elements") );
 
     //             // invalid considering start-index
     //             startInd = maxInd - 1;
     //             numAmps = 2;
-    //             REQUIRE_THROWS_WITH( setDiagonalOpElems(op, startInd, reals, imags, numAmps), Contains("More elements given than exist") );
+    //             REQUIRE_THROWS_WITH( setDiagonalOpElems(op, startInd, reals, imags, numAmps), ContainsSubstring("More elements given than exist") );
     //         }
     //     }
         

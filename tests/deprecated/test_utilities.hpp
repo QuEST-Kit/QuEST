@@ -15,7 +15,8 @@
 #define QUEST_TEST_UTILS_H
 
 #include "quest.h"
-#include "catch.hpp"
+
+#include <catch2/generators/catch_generators.hpp>
 
 #include <string>
 #include <vector>

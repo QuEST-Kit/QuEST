@@ -1,5 +1,6 @@
-
-#include "catch.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
 #define INCLUDE_DEPRECATED_FUNCTIONS 1
 #define DISABLE_DEPRECATION_WARNINGS 1
@@ -7,8 +8,8 @@
 
 #include "test_utilities.hpp"
     
-/* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
-using Catch::Matchers::Contains;
+/* allows concise use of ContainsSubstring in catch's REQUIRE_THROWS_WITH */
+using Catch::Matchers::ContainsSubstring;
     
     
 
@@ -66,16 +67,16 @@ TEST_CASE( "cloneQureg", "[state_initialisations]" ) {
         
         SECTION( "qureg type" ) {
             
-            REQUIRE_THROWS_WITH( cloneQureg(mat1, vec1), Contains("must both be statevectors, or both be density matrices") );
-            REQUIRE_THROWS_WITH( cloneQureg(vec1, mat1), Contains("must both be statevectors, or both be density matrices") );
+            REQUIRE_THROWS_WITH( cloneQureg(mat1, vec1), ContainsSubstring("must both be statevectors, or both be density matrices") );
+            REQUIRE_THROWS_WITH( cloneQureg(vec1, mat1), ContainsSubstring("must both be statevectors, or both be density matrices") );
         }
         SECTION( "qureg dimensions" ) {
             
             Qureg vec3 = createForcedQureg(vec1.numQubits + 1);
             Qureg mat3 = createForcedDensityQureg(mat1.numQubits + 1);
             
-            REQUIRE_THROWS_WITH( cloneQureg(vec1, vec3), Contains("different number of qubits") );
-            REQUIRE_THROWS_WITH( cloneQureg(mat1, mat3), Contains("different number of qubits") );
+            REQUIRE_THROWS_WITH( cloneQureg(vec1, vec3), ContainsSubstring("different number of qubits") );
+            REQUIRE_THROWS_WITH( cloneQureg(mat1, mat3), ContainsSubstring("different number of qubits") );
             
             destroyQureg(vec3);
             destroyQureg(mat3);
@@ -154,7 +155,7 @@ TEST_CASE( "initClassicalState", "[state_initialisations]" ) {
         SECTION( "state index" ) {
             
             int ind = GENERATE( -1, (1<<NUM_QUBITS) );
-            REQUIRE_THROWS_WITH( initClassicalState(vec, ind), Contains("Basis state index") );
+            REQUIRE_THROWS_WITH( initClassicalState(vec, ind), ContainsSubstring("Basis state index") );
         }
     }
     destroyQureg(vec);
@@ -266,14 +267,14 @@ TEST_CASE( "initPureState", "[state_initialisations]" ) {
         SECTION( "qureg types" ) {
             
             // density matrix as second arg is illegal (regardless of first arg)
-            REQUIRE_THROWS_WITH( initPureState(vec1, mat1), Contains("(the second argument) must be a statevector") );
-            REQUIRE_THROWS_WITH( initPureState(mat1, mat1), Contains("(the second argument) must be a statevector") );
+            REQUIRE_THROWS_WITH( initPureState(vec1, mat1), ContainsSubstring("(the second argument) must be a statevector") );
+            REQUIRE_THROWS_WITH( initPureState(mat1, mat1), ContainsSubstring("(the second argument) must be a statevector") );
         }
         SECTION( "qureg dimensions" ) {
             
             Qureg vec2 = createForcedQureg(NUM_QUBITS + 1);
-            REQUIRE_THROWS_WITH( initPureState(vec1, vec2), Contains("differing number of qubits") );
-            REQUIRE_THROWS_WITH( initPureState(mat1, vec2), Contains("differing number of qubits") );
+            REQUIRE_THROWS_WITH( initPureState(vec1, vec2), ContainsSubstring("differing number of qubits") );
+            REQUIRE_THROWS_WITH( initPureState(mat1, vec2), ContainsSubstring("differing number of qubits") );
             destroyQureg(vec2);
         }
     }
@@ -399,7 +400,7 @@ TEST_CASE( "setQuregAmps", "[state_initialisations]" ) {
             
             int startInd = GENERATE_COPY( -1, maxInd );
             int numAmps = 0;
-            REQUIRE_THROWS_WITH( setQuregAmps(vec, startInd, amps.data(), numAmps), Contains("starting basis state index") );
+            REQUIRE_THROWS_WITH( setQuregAmps(vec, startInd, amps.data(), numAmps), ContainsSubstring("starting basis state index") );
         }
         
         SECTION( "number of amplitudes" ) {
@@ -407,17 +408,17 @@ TEST_CASE( "setQuregAmps", "[state_initialisations]" ) {
             // independent
             int startInd = 0;
             int numAmps = GENERATE_COPY( -1, maxInd+1 );
-            REQUIRE_THROWS_WITH( setQuregAmps(vec, startInd, amps.data(), numAmps), Contains("number of amplitudes") );
+            REQUIRE_THROWS_WITH( setQuregAmps(vec, startInd, amps.data(), numAmps), ContainsSubstring("number of amplitudes") );
 
             // invalid considering start-index
             startInd = maxInd - 1;
             numAmps = 2;
-            REQUIRE_THROWS_WITH( setQuregAmps(vec, startInd, amps.data(), numAmps), Contains("implies an end index") );
+            REQUIRE_THROWS_WITH( setQuregAmps(vec, startInd, amps.data(), numAmps), ContainsSubstring("implies an end index") );
         }
         SECTION( "density-matrix" ) {
             
             Qureg mat = createForcedDensityQureg(NUM_QUBITS);
-            REQUIRE_THROWS_WITH( setQuregAmps(mat, 0, amps.data(), 0), Contains("Expected a statevector Qureg but received a density matrix") );
+            REQUIRE_THROWS_WITH( setQuregAmps(mat, 0, amps.data(), 0), ContainsSubstring("Expected a statevector Qureg but received a density matrix") );
             destroyQureg(mat);
         }
     }
@@ -487,23 +488,23 @@ TEST_CASE( "setQuregAmps", "[state_initialisations]" ) {
                 
     //             int badInd = GENERATE_COPY( -1, maxInd );
     //             int numAmps = 0;
-    //             REQUIRE_THROWS_WITH( setDensityAmps(matr, badInd, 0, reals, imags, numAmps), Contains("Invalid amplitude index") );
-    //             REQUIRE_THROWS_WITH( setDensityAmps(matr, 0, badInd, reals, imags, numAmps), Contains("Invalid amplitude index") );
+    //             REQUIRE_THROWS_WITH( setDensityAmps(matr, badInd, 0, reals, imags, numAmps), ContainsSubstring("Invalid amplitude index") );
+    //             REQUIRE_THROWS_WITH( setDensityAmps(matr, 0, badInd, reals, imags, numAmps), ContainsSubstring("Invalid amplitude index") );
     //         }
     //         SECTION( "number of amplitudes" ) {
                 
     //             // independent
     //             int numAmps = GENERATE_COPY( -1, matr.numAmps+1 );
-    //             REQUIRE_THROWS_WITH( setDensityAmps(matr, 0, 0, reals, imags, numAmps), Contains("Invalid number of amplitudes") );
+    //             REQUIRE_THROWS_WITH( setDensityAmps(matr, 0, 0, reals, imags, numAmps), ContainsSubstring("Invalid number of amplitudes") );
 
     //             // invalid considering start-index
-    //             REQUIRE_THROWS_WITH( setDensityAmps(matr, maxInd-1, maxInd-1, reals, imags, 2), Contains("More amplitudes given than exist") );
-    //             REQUIRE_THROWS_WITH( setDensityAmps(matr, maxInd-1, maxInd-2, reals, imags, maxInd+2), Contains("More amplitudes given than exist") );
+    //             REQUIRE_THROWS_WITH( setDensityAmps(matr, maxInd-1, maxInd-1, reals, imags, 2), ContainsSubstring("More amplitudes given than exist") );
+    //             REQUIRE_THROWS_WITH( setDensityAmps(matr, maxInd-1, maxInd-2, reals, imags, maxInd+2), ContainsSubstring("More amplitudes given than exist") );
     //         }
     //         SECTION( "state-vector" ) {
                 
     //             Qureg vec = createForcedQureg(NUM_QUBITS);
-    //             REQUIRE_THROWS_WITH( setDensityAmps(vec, 0, 0, reals, imags, 0), Contains("valid only for density matrices") );
+    //             REQUIRE_THROWS_WITH( setDensityAmps(vec, 0, 0, reals, imags, 0), ContainsSubstring("valid only for density matrices") );
     //             destroyQureg(vec);
     //         }
     //     }
@@ -545,7 +546,7 @@ TEST_CASE( "setQuregAmps", "[state_initialisations]" ) {
     //             PauliHamil hamil = createPauliHamil(NUM_QUBITS, 5);
     //             Qureg vec = createForcedQureg(NUM_QUBITS);
                 
-    //             REQUIRE_THROWS_WITH( setQuregToPauliHamil(vec, hamil), Contains("density matrices") );
+    //             REQUIRE_THROWS_WITH( setQuregToPauliHamil(vec, hamil), ContainsSubstring("density matrices") );
                 
     //             destroyQureg(vec);
     //             destroyPauliHamil(hamil);
@@ -557,7 +558,7 @@ TEST_CASE( "setQuregAmps", "[state_initialisations]" ) {
                 
     //             // make one pauli code wrong
     //             hamil.pauliCodes[GENERATE_COPY( range(0,numTerms*NUM_QUBITS) )] = (pauliOpType) GENERATE( -1, 4 );
-    //             REQUIRE_THROWS_WITH( setQuregToPauliHamil(rho, hamil), Contains("Invalid Pauli code") );
+    //             REQUIRE_THROWS_WITH( setQuregToPauliHamil(rho, hamil), ContainsSubstring("Invalid Pauli code") );
                 
     //             destroyPauliHamil(hamil);
     //         }
@@ -566,7 +567,7 @@ TEST_CASE( "setQuregAmps", "[state_initialisations]" ) {
     //             int numTerms = 1;
     //             PauliHamil hamil = createPauliHamil(NUM_QUBITS + 1, numTerms);
                 
-    //             REQUIRE_THROWS_WITH( setQuregToPauliHamil(rho, hamil), Contains("same number of qubits") );
+    //             REQUIRE_THROWS_WITH( setQuregToPauliHamil(rho, hamil), ContainsSubstring("same number of qubits") );
                 
     //             destroyPauliHamil(hamil);
     //         }
@@ -730,14 +731,14 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
             Complex f; f.real = 0; f.imag = 0;
             
             // two state-vecs, one density-matrix
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, mat, f, vec, f, vec), Contains("Cannot superpose a density matrix. All quregs must be statevectors") );
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, vec, f, mat, f, vec), Contains("Cannot superpose a density matrix. All quregs must be statevectors") );
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, vec, f, vec, f, mat), Contains("Cannot superpose a density matrix. All quregs must be statevectors") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, mat, f, vec, f, vec), ContainsSubstring("Cannot superpose a density matrix. All quregs must be statevectors") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, vec, f, mat, f, vec), ContainsSubstring("Cannot superpose a density matrix. All quregs must be statevectors") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, vec, f, vec, f, mat), ContainsSubstring("Cannot superpose a density matrix. All quregs must be statevectors") );
 
             // one state-vec, two density-matrices
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, vec, f, mat, f, mat), Contains("Cannot superpose a density matrix. All quregs must be statevectors") );
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, mat, f, vec, f, mat), Contains("Cannot superpose a density matrix. All quregs must be statevectors") );
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, mat, f, mat, f, vec), Contains("Cannot superpose a density matrix. All quregs must be statevectors") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, vec, f, mat, f, mat), ContainsSubstring("Cannot superpose a density matrix. All quregs must be statevectors") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, mat, f, vec, f, mat), ContainsSubstring("Cannot superpose a density matrix. All quregs must be statevectors") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, mat, f, mat, f, vec), ContainsSubstring("Cannot superpose a density matrix. All quregs must be statevectors") );
         
             destroyQureg(vec);
             destroyQureg(mat);
@@ -751,16 +752,16 @@ TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {
             Complex f; f.real = 0; f.imag = 0;
             
             // state-vecs
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, vecA, f, vecB, f, vecB), Contains("differing numbers of qubits") );
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, vecB, f, vecA, f, vecB), Contains("differing numbers of qubits") );
-            REQUIRE_THROWS_WITH( setWeightedQureg(f, vecB, f, vecB, f, vecA), Contains("differing numbers of qubits") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, vecA, f, vecB, f, vecB), ContainsSubstring("differing numbers of qubits") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, vecB, f, vecA, f, vecB), ContainsSubstring("differing numbers of qubits") );
+            REQUIRE_THROWS_WITH( setWeightedQureg(f, vecB, f, vecB, f, vecA), ContainsSubstring("differing numbers of qubits") );
             
             // v4 does not permit superposing density matrices
 
                 // // density-matrices
-                // REQUIRE_THROWS_WITH( setWeightedQureg(f, matA, f, matB, f, matB), Contains("differing numbers of qubits") );
-                // REQUIRE_THROWS_WITH( setWeightedQureg(f, matB, f, matA, f, matB), Contains("differing numbers of qubits") );
-                // REQUIRE_THROWS_WITH( setWeightedQureg(f, matB, f, matB, f, matA), Contains("differing numbers of qubits") );
+                // REQUIRE_THROWS_WITH( setWeightedQureg(f, matA, f, matB, f, matB), ContainsSubstring("differing numbers of qubits") );
+                // REQUIRE_THROWS_WITH( setWeightedQureg(f, matB, f, matA, f, matB), ContainsSubstring("differing numbers of qubits") );
+                // REQUIRE_THROWS_WITH( setWeightedQureg(f, matB, f, matB, f, matA), ContainsSubstring("differing numbers of qubits") );
                 
             destroyQureg(vecA);
             destroyQureg(vecB);

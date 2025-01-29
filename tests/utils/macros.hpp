@@ -1,7 +1,7 @@
 #ifndef MACROS_HPP
 #define MACROS_HPP
 
-#include "catch.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 // TODO: 
 // use CMake to obtain catch2 and replace #include "catch.hpp"

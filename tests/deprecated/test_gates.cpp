@@ -1,7 +1,10 @@
 // must include catch.hpp first, because quest's
 // deprecation library will include a definition
 // of Vector{}
-#include "catch.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 
 // must define preprocessors to enable quest's
 // deprecated v3 API, and disable the numerous
@@ -12,9 +15,9 @@
 
 #include "test_utilities.hpp"
 
-/* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
-using Catch::Matchers::Contains;
-
+/* allows concise use of ContainsSubstring in catch's REQUIRE_THROWS_WITH */
+using Catch::Matchers::ContainsSubstring;
+using Catch::Approx;
 
 
 /** @sa collapseToOutcome
@@ -101,20 +104,20 @@ TEST_CASE( "collapseToOutcome", "[gates]" ) {
             
             int qubit = GENERATE( -1, NUM_QUBITS );
             int outcome = 0;
-            REQUIRE_THROWS_WITH( collapseToOutcome(mat, qubit, outcome), Contains("Invalid target qubit") );
+            REQUIRE_THROWS_WITH( collapseToOutcome(mat, qubit, outcome), ContainsSubstring("Invalid target qubit") );
         }
         SECTION( "outcome value" ) {
             
             int qubit = 0;
             int outcome = GENERATE( -1, 2 );
-            REQUIRE_THROWS_WITH( collapseToOutcome(mat, qubit, outcome), Contains("qubit measurement outcome") && Contains("invalid") );
+            REQUIRE_THROWS_WITH( collapseToOutcome(mat, qubit, outcome), ContainsSubstring("qubit measurement outcome") && ContainsSubstring("invalid") );
         }
         SECTION( "outcome probability" ) {
             
             initZeroState(vec);
-            REQUIRE_THROWS_WITH( collapseToOutcome(vec, 0, 1), Contains("impossibly unlikely") );
+            REQUIRE_THROWS_WITH( collapseToOutcome(vec, 0, 1), ContainsSubstring("impossibly unlikely") );
             initClassicalState(vec, 1);
-            REQUIRE_THROWS_WITH( collapseToOutcome(vec, 0, 0), Contains("impossibly unlikely") );
+            REQUIRE_THROWS_WITH( collapseToOutcome(vec, 0, 0), ContainsSubstring("impossibly unlikely") );
         }
     }
     destroyQureg(vec);
@@ -206,7 +209,7 @@ TEST_CASE( "measure", "[gates]" ) {
         SECTION( "qubit index" ) {
             
             int qubit = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( measure(vec, qubit), Contains("Invalid target qubit") );
+            REQUIRE_THROWS_WITH( measure(vec, qubit), ContainsSubstring("Invalid target qubit") );
         }
     }
     destroyQureg(vec);
@@ -301,7 +304,7 @@ TEST_CASE( "measureWithStats", "[gates]" ) {
             
             int qubit = GENERATE( -1, NUM_QUBITS );
             qreal res;
-            REQUIRE_THROWS_WITH( measureWithStats(vec, qubit, &res), Contains("Invalid target qubit") );
+            REQUIRE_THROWS_WITH( measureWithStats(vec, qubit, &res), ContainsSubstring("Invalid target qubit") );
         }
     }
     destroyQureg(vec);
