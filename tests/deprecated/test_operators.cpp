@@ -1,5 +1,5 @@
 
-#include "catch.hpp"
+#include <catch2/catch_all.hpp>
 
 // must define preprocessors to enable quest's
 // deprecated v3 API, and disable the numerous
@@ -29,8 +29,8 @@
     destroyQureg(quregVec); \
     destroyQureg(quregMatr);
 
-/* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
-using Catch::Matchers::Contains;
+/* allows concise use of ContainsSubstring in catch's REQUIRE_THROWS_WITH */
+using Catch::Matchers::ContainsSubstring;
 
 
 
@@ -74,8 +74,8 @@ TEST_CASE( "applyDiagonalOp", "[operators]" ) {
             
             DiagonalOp op = createDiagonalOp(NUM_QUBITS + 1, getQuESTEnv());
             
-            REQUIRE_THROWS_WITH( applyDiagonalOp(quregVec,  op), Contains("different number of qubits"));
-            REQUIRE_THROWS_WITH( applyDiagonalOp(quregMatr, op), Contains("different number of qubits"));
+            REQUIRE_THROWS_WITH( applyDiagonalOp(quregVec,  op), ContainsSubstring("different number of qubits"));
+            REQUIRE_THROWS_WITH( applyDiagonalOp(quregMatr, op), ContainsSubstring("different number of qubits"));
             
             destroyDiagonalOp(op, getQuESTEnv());
         }
@@ -249,7 +249,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
             syncCompMatr(matr);
             
-            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("number of target qubits") );
+            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), ContainsSubstring("number of target qubits") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "repetition in targets" ) {
@@ -259,7 +259,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
             syncCompMatr(matr);
             
-            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("target") && Contains("unique") );
+            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), ContainsSubstring("target") && ContainsSubstring("unique") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "qubit indices" ) {
@@ -271,7 +271,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             
             int inv = GENERATE( -1, NUM_QUBITS );
             targs[GENERATE_COPY( range(0,numTargs) )] = inv; // make invalid target
-            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), ContainsSubstring("Invalid target") );
             
             destroyComplexMatrixN(matr);
         }
@@ -282,7 +282,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
-            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), Contains("created") );
+            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, numTargs, matr), ContainsSubstring("created") );
         }
         SECTION( "matrix dimensions" ) {
             
@@ -290,7 +290,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
             syncCompMatr(matr);
             
-            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, 2, matr), Contains("matrix has an inconsistent size"));
+            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, targs, 2, matr), ContainsSubstring("matrix has an inconsistent size"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "matrix fits in node" ) {
@@ -303,7 +303,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
             int qb[] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(2); // prevents seg-fault if validation doesn't trigger
             syncCompMatr(matr);
-            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, qb, 2, matr), Contains("communication buffer") && Contains("cannot simultaneously store") );
+            REQUIRE_THROWS_WITH( applyGateMatrixN(quregVec, qb, 2, matr), ContainsSubstring("communication buffer") && ContainsSubstring("cannot simultaneously store") );
             destroyComplexMatrixN(matr);
         }
     }
@@ -361,7 +361,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[operators]" ) {
             for (int i=0; i<NUM_QUBITS+1; i++)
                 badTargs[i] = i;
             
-            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, badTargs, badNumTargs, op), Contains("inconsistent size") );
+            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, badTargs, badNumTargs, op), ContainsSubstring("inconsistent size") );
             destroySubDiagonalOp(op);
         }
         SECTION( "number of targets" ) {
@@ -375,7 +375,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[operators]" ) {
                 badOp.cpuElems[i] = qcomp(1, 0);
             syncDiagMatr(badOp);
             
-            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, badOp.numQubits, badOp), Contains("number of target qubits") && Contains("exceeds") );
+            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, badOp.numQubits, badOp), ContainsSubstring("number of target qubits") && ContainsSubstring("exceeds") );
             destroySubDiagonalOp(badOp);
         }
         SECTION( "repetition in targets" ) {
@@ -389,7 +389,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[operators]" ) {
             // make a repetition in the target list
             int targs[] = {2,1,2};
 
-            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, op.numQubits, op), Contains("target qubits contained duplicates") );
+            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, op.numQubits, op), ContainsSubstring("target qubits contained duplicates") );
             destroySubDiagonalOp(op);
         }
         SECTION( "qubit indices" ) {
@@ -407,7 +407,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[operators]" ) {
             int badValue = GENERATE( -1, NUM_QUBITS );
             targs[badIndex] = badValue;
 
-            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, op.numQubits, op), Contains("Invalid target qubit") );
+            REQUIRE_THROWS_WITH( applyGateSubDiagonalOp(quregVec, targs, op.numQubits, op), ContainsSubstring("Invalid target qubit") );
             destroySubDiagonalOp(op);
         }
     }
@@ -458,7 +458,7 @@ TEST_CASE( "applyMatrix2", "[operators]" ) {
         SECTION( "qubit indices" ) {
             
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( applyMatrix2(quregVec, target, matr), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( applyMatrix2(quregVec, target, matr), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -511,13 +511,13 @@ TEST_CASE( "applyMatrix4", "[operators]" ) {
             
             int targ1 = GENERATE( -1, NUM_QUBITS );
             int targ2 = 0;
-            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, targ1, targ2, matr), Contains("Invalid target") );
-            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, targ2, targ1, matr), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, targ1, targ2, matr), ContainsSubstring("Invalid target") );
+            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, targ2, targ1, matr), ContainsSubstring("Invalid target") );
         }
         SECTION( "repetition of targets" ) {
             
             int qb = 0;
-            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, qb, qb, matr), Contains("target") && Contains("unique") );
+            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, qb, qb, matr), ContainsSubstring("target") && ContainsSubstring("unique") );
         }
         SECTION( "matrix fits in node" ) {
                 
@@ -525,7 +525,7 @@ TEST_CASE( "applyMatrix4", "[operators]" ) {
             quregVec.isDistributed = 1;
             quregVec.numAmpsPerNode = 1;
             quregVec.logNumAmpsPerNode = 0;
-            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, 0, 1, matr), Contains("communication buffer") && Contains("cannot simultaneously store") );
+            REQUIRE_THROWS_WITH( applyMatrix4(quregVec, 0, 1, matr), ContainsSubstring("communication buffer") && ContainsSubstring("cannot simultaneously store") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -583,7 +583,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
             syncCompMatr(matr);
             
-            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("number of target qubits") );
+            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), ContainsSubstring("number of target qubits") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "repetition in targets" ) {
@@ -593,7 +593,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
             syncCompMatr(matr);
             
-            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("target") && Contains("unique") );
+            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), ContainsSubstring("target") && ContainsSubstring("unique") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "qubit indices" ) {
@@ -605,7 +605,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             
             int inv = GENERATE( -1, NUM_QUBITS );
             targs[GENERATE_COPY( range(0,numTargs) )] = inv; // make invalid target
-            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), ContainsSubstring("Invalid target") );
             
             destroyComplexMatrixN(matr);
         }
@@ -616,7 +616,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
-            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), Contains("created") );
+            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, numTargs, matr), ContainsSubstring("created") );
         }
         SECTION( "matrix dimensions" ) {
             
@@ -624,7 +624,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
             syncCompMatr(matr);
             
-            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, 2, matr), Contains("matrix has an inconsistent size") );
+            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, targs, 2, matr), ContainsSubstring("matrix has an inconsistent size") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "matrix fits in node" ) {
@@ -636,7 +636,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
             int qb[] = {1,2};
             ComplexMatrixN matr = createComplexMatrixN(2); // prevents seg-fault if validation doesn't trigger
             syncCompMatr(matr);
-            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, qb, 2, matr), Contains("communication buffer") && Contains("cannot simultaneously store") );
+            REQUIRE_THROWS_WITH( applyMatrixN(quregVec, qb, 2, matr), ContainsSubstring("communication buffer") && ContainsSubstring("cannot simultaneously store") );
             destroyComplexMatrixN(matr);
         }
     }
@@ -700,7 +700,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
             ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
             toComplexMatrixN(getRandomUnitary(NUM_QUBITS+1), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, numTargs, matr), Contains("number of target qubits") );
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, numTargs, matr), ContainsSubstring("number of target qubits") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "repetition in targets" ) {
@@ -711,7 +711,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
             toComplexMatrixN(getRandomUnitary(numTargs), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, numTargs, matr), Contains("target") && Contains("unique"));
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, numTargs, matr), ContainsSubstring("target") && ContainsSubstring("unique"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "number of controls" ) {
@@ -722,7 +722,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
             ComplexMatrixN matr = createComplexMatrixN(1);
             toComplexMatrixN(getRandomUnitary(1), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, numCtrls, targs, 1, matr), Contains("number of control qubits") );
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, numCtrls, targs, 1, matr), ContainsSubstring("number of control qubits") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "repetition in controls" ) {
@@ -732,7 +732,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
             ComplexMatrixN matr = createComplexMatrixN(1);
             toComplexMatrixN(getRandomUnitary(1), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 3, targs, 1, matr), Contains("control") && Contains("unique") );
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 3, targs, 1, matr), ContainsSubstring("control") && ContainsSubstring("unique") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "control and target collision" ) {
@@ -742,7 +742,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
             ComplexMatrixN matr = createComplexMatrixN(3);
             toComplexMatrixN(getRandomUnitary(3), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 3, matr), Contains("control and target qubits") );
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 3, matr), ContainsSubstring("control and target qubits") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "qubit indices" ) {
@@ -758,8 +758,8 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
             int inv = GENERATE( -1, NUM_QUBITS );
             qb1[GENERATE_COPY(range(0,numQb))] = inv;
             
-            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, qb1, numQb, qb2, numQb, matr), Contains("Invalid control") );
-            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, qb2, numQb, qb1, numQb, matr), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, qb1, numQb, qb2, numQb, matr), ContainsSubstring("Invalid control") );
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, qb2, numQb, qb1, numQb, matr), ContainsSubstring("Invalid target") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "matrix creation" ) {
@@ -769,7 +769,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
             
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
-            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 3, matr), Contains("created") );
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 3, matr), ContainsSubstring("created") );
         }
         SECTION( "matrix dimensions" ) {
             
@@ -778,7 +778,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
             ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
             toComplexMatrixN(getRandomUnitary(3), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 2, matr), Contains("matrix has an inconsistent size"));
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 2, matr), ContainsSubstring("matrix has an inconsistent size"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "matrix fits in node" ) {
@@ -792,7 +792,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
             ComplexMatrixN matr = createComplexMatrixN(2);
             toComplexMatrixN(getRandomUnitary(2), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 2, matr), Contains("communication buffer") && Contains("cannot simultaneously store") );
+            REQUIRE_THROWS_WITH( applyMultiControlledGateMatrixN(quregVec, ctrls, 1, targs, 2, matr), ContainsSubstring("communication buffer") && ContainsSubstring("cannot simultaneously store") );
             destroyComplexMatrixN(matr);
         }
     }
@@ -861,7 +861,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
     //             toComplexMatrixN(getRandomQMatrix( 1 << (NUM_QUBITS+1)), matr);
                 
-    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 1, targs, numTargs, matr), Contains("Invalid number of target"));
+    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 1, targs, numTargs, matr), ContainsSubstring("Invalid number of target"));
     //             destroyComplexMatrixN(matr);
     //         }
     //         SECTION( "repetition in targets" ) {
@@ -872,7 +872,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
     //             toComplexMatrixN(getRandomQMatrix(1 << numTargs), matr);
                 
-    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 1, targs, numTargs, matr), Contains("target") && Contains("unique"));
+    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 1, targs, numTargs, matr), ContainsSubstring("target") && ContainsSubstring("unique"));
     //             destroyComplexMatrixN(matr);
     //         }
     //         SECTION( "number of controls" ) {
@@ -883,7 +883,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             ComplexMatrixN matr = createComplexMatrixN(1);
     //             toComplexMatrixN(getRandomQMatrix(1 << 1), matr);
                 
-    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, numCtrls, targs, 1, matr), Contains("Invalid number of control"));
+    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, numCtrls, targs, 1, matr), ContainsSubstring("Invalid number of control"));
     //             destroyComplexMatrixN(matr);
     //         }
     //         SECTION( "repetition in controls" ) {
@@ -893,7 +893,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             ComplexMatrixN matr = createComplexMatrixN(1);
     //             toComplexMatrixN(getRandomQMatrix(1 << 1), matr);
                 
-    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 3, targs, 1, matr), Contains("control") && Contains("unique"));
+    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 3, targs, 1, matr), ContainsSubstring("control") && ContainsSubstring("unique"));
     //             destroyComplexMatrixN(matr);
     //         }
     //         SECTION( "control and target collision" ) {
@@ -903,7 +903,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             ComplexMatrixN matr = createComplexMatrixN(3);
     //             toComplexMatrixN(getRandomQMatrix(1 << 3), matr);
                 
-    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 3, targs, 3, matr), Contains("Control") && Contains("target") && Contains("disjoint"));
+    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 3, targs, 3, matr), ContainsSubstring("Control") && ContainsSubstring("target") && ContainsSubstring("disjoint"));
     //             destroyComplexMatrixN(matr);
     //         }
     //         SECTION( "qubit indices" ) {
@@ -919,8 +919,8 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             int inv = GENERATE( -1, NUM_QUBITS );
     //             qb1[GENERATE_COPY(range(0,numQb))] = inv;
                 
-    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, qb1, numQb, qb2, numQb, matr), Contains("Invalid control") );
-    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, qb2, numQb, qb1, numQb, matr), Contains("Invalid target") );
+    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, qb1, numQb, qb2, numQb, matr), ContainsSubstring("Invalid control") );
+    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, qb2, numQb, qb1, numQb, matr), ContainsSubstring("Invalid target") );
     //             destroyComplexMatrixN(matr);
     //         }
     //         SECTION( "matrix creation" ) {
@@ -935,7 +935,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //              */
     //             ComplexMatrixN matr;
     //             matr.cpuElems = NULL;
-    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 1, targs, 3, matr), Contains("created") );
+    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 1, targs, 3, matr), ContainsSubstring("created") );
     //         }
     //         SECTION( "matrix dimensions" ) {
                 
@@ -944,7 +944,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
     //             toComplexMatrixN(getRandomQMatrix(1 << 3), matr);
                 
-    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 1, targs, 2, matr), Contains("matrix size"));
+    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 1, targs, 2, matr), ContainsSubstring("matrix size"));
     //             destroyComplexMatrixN(matr);
     //         }
     //         SECTION( "matrix fits in node" ) {
@@ -956,7 +956,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             ComplexMatrixN matr = createComplexMatrixN(2);
     //             toComplexMatrixN(getRandomQMatrix(1 << 2), matr);
                 
-    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 1, targs, 2, matr), Contains("targets too many qubits"));
+    //             REQUIRE_THROWS_WITH( applyMultiControlledMatrixN(quregVec, ctrls, 1, targs, 2, matr), ContainsSubstring("targets too many qubits"));
     //             destroyComplexMatrixN(matr);
     //         }
     //     }
@@ -1106,39 +1106,39 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //         SECTION( "number of registers" ) {
                 
     //             numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL), Contains("Invalid number of qubit subregisters") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL), ContainsSubstring("Invalid number of qubit subregisters") );
     //         }
     //         SECTION( "number of qubits" ) {
                 
     //             numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = GENERATE( -1, 0, 1+NUM_QUBITS );
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL), Contains("Invalid number of qubits") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL), ContainsSubstring("Invalid number of qubits") );
     //         }
     //         SECTION( "repetition of qubits" ) {
                 
     //             qubits[GENERATE(2,3,4)] = qubits[1];
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL), Contains("The qubits must be unique") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL), ContainsSubstring("The qubits must be unique") );
     //         }
     //         SECTION( "qubit indices" ) {
                 
     //             qubits[GENERATE(range(0,NUM_QUBITS))] = GENERATE( -1, NUM_QUBITS );
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL), Contains("Invalid qubit index") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL), ContainsSubstring("Invalid qubit index") );
     //         }
     //         SECTION( "number of terms" ) {
 
     //             int numTermsPerReg[] = {3, 3};
                 
     //             numTermsPerReg[GENERATE_COPY(range(0,numRegs))] = GENERATE( -1, 0 );
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, numTermsPerReg), Contains("Invalid number of terms in the phase function") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, numTermsPerReg), ContainsSubstring("Invalid number of terms in the phase function") );
     //         }
     //         SECTION( "bit encoding name" ) {
                 
     //             enum bitEncoding enc = (enum bitEncoding) GENERATE( -1, 2 );
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, enc, NULL, NULL, NULL), Contains("Invalid bit encoding") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, enc, NULL, NULL, NULL), ContainsSubstring("Invalid bit encoding") );
     //         }
     //         SECTION( "two's complement register" ) {
                 
     //             numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = 1;
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NULL, NULL, NULL), Contains("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NULL, NULL, NULL), ContainsSubstring("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
     //         }
     //         SECTION( "fractional exponent" ) {
                 
@@ -1147,7 +1147,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             qreal expos[] =  {1,2,3,  1,2,3};
                 
     //             expos[GENERATE(range(0,6))] = GENERATE( 0.5, 1.999, 5.0001 );
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, coeffs, expos, numTermsPerReg), Contains("The phase function contained a fractional exponent, which is illegal in TWOS_COMPLEMENT") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, coeffs, expos, numTermsPerReg), ContainsSubstring("The phase function contained a fractional exponent, which is illegal in TWOS_COMPLEMENT") );
                 
     //             // ensure fractional exponents are valid in unsigned mode however
     //             REQUIRE_NOTHROW( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, coeffs, expos, numTermsPerReg) );
@@ -1162,7 +1162,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             expos[GENERATE(range(0,6))] = GENERATE( -1, -2, -2.5 );
     //             enum bitEncoding enc = GENERATE( UNSIGNED, TWOS_COMPLEMENT );
         
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg), Contains("The phase function contained an illegal negative exponent") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFunc(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg), ContainsSubstring("The phase function contained an illegal negative exponent") );
     //         }
     //     }
     //     CLEANUP_TEST( quregVec, quregMatr );
@@ -1335,39 +1335,39 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //         SECTION( "number of registers" ) {
                 
     //             numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL, NULL, NULL, 0), Contains("Invalid number of qubit subregisters") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL, NULL, NULL, 0), ContainsSubstring("Invalid number of qubit subregisters") );
     //         }
     //         SECTION( "number of qubits" ) {
                 
     //             numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = GENERATE( -1, 0, 1+NUM_QUBITS );
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL, NULL, NULL, 0), Contains("Invalid number of qubits") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL, NULL, NULL, 0), ContainsSubstring("Invalid number of qubits") );
     //         }
     //         SECTION( "repetition of qubits" ) {
                 
     //             qubits[GENERATE(2,3,4)] = qubits[1];
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL, NULL, NULL, 0), Contains("The qubits must be unique") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL, NULL, NULL, 0), ContainsSubstring("The qubits must be unique") );
     //         }
     //         SECTION( "qubit indices" ) {
                 
     //             qubits[GENERATE(range(0,NUM_QUBITS))] = GENERATE( -1, NUM_QUBITS );
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL, NULL, NULL, 0), Contains("Invalid qubit index") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, NULL, NULL, NULL, 0), ContainsSubstring("Invalid qubit index") );
     //         }
     //         SECTION( "number of terms" ) {
 
     //             int numTermsPerReg[] = {3, 3};
                 
     //             numTermsPerReg[GENERATE_COPY(range(0,numRegs))] = GENERATE( -1, 0 );
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, numTermsPerReg, NULL, NULL, 0), Contains("Invalid number of terms in the phase function") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, NULL, NULL, numTermsPerReg, NULL, NULL, 0), ContainsSubstring("Invalid number of terms in the phase function") );
     //         }
     //         SECTION( "bit encoding name" ) {
                 
     //             enum bitEncoding enc = (enum bitEncoding) GENERATE( -1, 2 );
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, NULL, NULL, NULL, NULL, NULL, 0), Contains("Invalid bit encoding") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, NULL, NULL, NULL, NULL, NULL, 0), ContainsSubstring("Invalid bit encoding") );
     //         }
     //         SECTION( "two's complement register" ) {
                 
     //             numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = 1;
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NULL, NULL, NULL, NULL, NULL, 0), Contains("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NULL, NULL, NULL, NULL, NULL, 0), ContainsSubstring("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
     //         }
     //         SECTION( "fractional exponent" ) {
                 
@@ -1376,7 +1376,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             qreal expos[] =  {1,2,3,  1,2,3};
                 
     //             expos[GENERATE(range(0,6))] = GENERATE( 0.5, 1.999, 5.0001 );
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, coeffs, expos, numTermsPerReg, NULL, NULL, 0), Contains("The phase function contained a fractional exponent, which is illegal in TWOS_COMPLEMENT") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, coeffs, expos, numTermsPerReg, NULL, NULL, 0), ContainsSubstring("The phase function contained a fractional exponent, which is illegal in TWOS_COMPLEMENT") );
                 
     //             // ensure fractional exponents are valid in unsigned mode however
     //             REQUIRE_NOTHROW( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, coeffs, expos, numTermsPerReg, NULL, NULL, 0) );
@@ -1390,7 +1390,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             expos[GENERATE(range(0,6))] = GENERATE( -1, -2, -2.5 );
     //             enum bitEncoding enc = GENERATE( UNSIGNED, TWOS_COMPLEMENT );
         
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg, NULL, NULL, 0), Contains("The phase function contained an illegal negative exponent") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg, NULL, NULL, 0), ContainsSubstring("The phase function contained an illegal negative exponent") );
     //         }
     //         SECTION( "number of overrides" ) {
                 
@@ -1399,7 +1399,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             qreal expos[] =  {1,2,3,  1,2,3};
     
     //             int numOverrides = -1;
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, coeffs, expos, numTermsPerReg, NULL, NULL, numOverrides), Contains("Invalid number of phase function overrides specified") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, UNSIGNED, coeffs, expos, numTermsPerReg, NULL, NULL, numOverrides), ContainsSubstring("Invalid number of phase function overrides specified") );
     //         }
     //         SECTION( "override indices" ) {
                 
@@ -1416,13 +1416,13 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             enum bitEncoding enc = UNSIGNED;
     //             int badInd = GENERATE(0, 2, 4);
     //             overrideInds[badInd] = GENERATE( -1, (1<<2) );
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the UNSIGNED encoding") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg, overrideInds, overridePhases, numOverrides), ContainsSubstring("Invalid phase function override index, in the UNSIGNED encoding") );
     //             overrideInds[badInd] = 0;
                 
     //             // second element of overrideInds coordinate is a 3 qubit register
     //             badInd += 1;
     //             overrideInds[badInd] = GENERATE( -1, (1<<3) );
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the UNSIGNED encoding") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg, overrideInds, overridePhases, numOverrides), ContainsSubstring("Invalid phase function override index, in the UNSIGNED encoding") );
     //             overrideInds[badInd] = 0;
     //             badInd -= 1;
                 
@@ -1430,14 +1430,14 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             int minInd = -(1<<(numQubitsPerReg[0]-1));
     //             int maxInd = (1<<(numQubitsPerReg[0]-1)) - 1;
     //             overrideInds[badInd] = GENERATE_COPY( minInd-1, maxInd+1 );
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg, overrideInds, overridePhases, numOverrides), ContainsSubstring("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
     //             overrideInds[badInd] = 0;
                 
     //             badInd++;
     //             minInd = -(1<<(numQubitsPerReg[1]-1));
     //             maxInd = (1<<(numQubitsPerReg[1]-1)) -1;
     //             overrideInds[badInd] = GENERATE_COPY( minInd-1, maxInd+1 );
-    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
+    //             REQUIRE_THROWS_WITH( applyMultiVarPhaseFuncOverrides(quregVec, qubits, numQubitsPerReg, numRegs, enc, coeffs, expos, numTermsPerReg, overrideInds, overridePhases, numOverrides), ContainsSubstring("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
     //         }
     //     }
     //     CLEANUP_TEST( quregVec, quregMatr );
@@ -1610,42 +1610,42 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //         SECTION( "number of registers" ) {
                 
     //             numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM), Contains("Invalid number of qubit subregisters") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM), ContainsSubstring("Invalid number of qubit subregisters") );
     //         }
     //         SECTION( "number of qubits" ) {
                 
     //             numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = GENERATE( -1, 0, 1+NUM_QUBITS );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM), Contains("Invalid number of qubits") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM), ContainsSubstring("Invalid number of qubits") );
     //         }
     //         SECTION( "repetition of qubits" ) {
                 
     //             regs[GENERATE(2,3,4)] = regs[1];
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM), Contains("The qubits must be unique") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM), ContainsSubstring("The qubits must be unique") );
     //         }
     //         SECTION( "qubit indices" ) {
 
     //             regs[GENERATE(range(0,NUM_QUBITS))] = GENERATE( -1, NUM_QUBITS );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM), Contains("Invalid qubit index") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM), ContainsSubstring("Invalid qubit index") );
     //         }
     //         SECTION( "bit encoding name" ) {
                 
     //             enum bitEncoding enc = (enum bitEncoding) GENERATE( -1, 2 );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM), Contains("Invalid bit encoding") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM), ContainsSubstring("Invalid bit encoding") );
     //         }
     //         SECTION( "two's complement register" ) {
                 
     //             numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = 1;
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NORM), Contains("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NORM), ContainsSubstring("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
     //         }
     //         SECTION( "phase function name" ) {
                 
     //             enum phaseFunc func = (enum phaseFunc) GENERATE( -1, MAX_INDEX_PHASE_FUNC + 1 );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func), Contains("Invalid named phase function") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func), ContainsSubstring("Invalid named phase function") );
     //         }
     //         SECTION( "phase function parameters" ) {
 
     //             enum phaseFunc func = GENERATE( SCALED_NORM, INVERSE_NORM, SCALED_INVERSE_NORM, SCALED_INVERSE_SHIFTED_NORM, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_INVERSE_PRODUCT, SCALED_DISTANCE, INVERSE_DISTANCE, SCALED_INVERSE_DISTANCE, SCALED_INVERSE_SHIFTED_DISTANCE );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func), Contains("Invalid number of parameters") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func), ContainsSubstring("Invalid number of parameters") );
     //         }
     //         SECTION( "distance pair registers" ) {
                 
@@ -1653,7 +1653,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             int qb[] = {0,1,2,3,4};
                 
     //             numRegs = GENERATE( 1, 3, 5 );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, qb, numQb, numRegs, UNSIGNED, DISTANCE), Contains("Phase functions DISTANCE") && Contains("even number of sub-registers") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFunc(quregVec, qb, numQb, numRegs, UNSIGNED, DISTANCE), ContainsSubstring("Phase functions DISTANCE") && ContainsSubstring("even number of sub-registers") );
     //         }
     //     }
     //     CLEANUP_TEST( quregVec, quregMatr );
@@ -1854,42 +1854,42 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //         SECTION( "number of registers" ) {
                 
     //             numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, NULL, 0), Contains("Invalid number of qubit subregisters") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, NULL, 0), ContainsSubstring("Invalid number of qubit subregisters") );
     //         }
     //         SECTION( "number of qubits" ) {
                 
     //             numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = GENERATE( -1, 0, 1+NUM_QUBITS );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, NULL, 0), Contains("Invalid number of qubits") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, NULL, 0), ContainsSubstring("Invalid number of qubits") );
     //         }
     //         SECTION( "repetition of qubits" ) {
                 
     //             regs[GENERATE(2,3,4)] = regs[1];
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, NULL, 0), Contains("The qubits must be unique") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, NULL, 0), ContainsSubstring("The qubits must be unique") );
     //         }
     //         SECTION( "qubit indices" ) {
 
     //             regs[GENERATE(range(0,NUM_QUBITS))] = GENERATE( -1, NUM_QUBITS );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, NULL, 0), Contains("Invalid qubit index") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, NULL, 0), ContainsSubstring("Invalid qubit index") );
     //         }
     //         SECTION( "bit encoding name" ) {
                 
     //             enum bitEncoding enc = (enum bitEncoding) GENERATE( -1, 2 );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, NULL, 0), Contains("Invalid bit encoding") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, NULL, 0), ContainsSubstring("Invalid bit encoding") );
     //         }
     //         SECTION( "two's complement register" ) {
                 
     //             numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = 1;
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NORM, NULL, NULL, 0), Contains("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NORM, NULL, NULL, 0), ContainsSubstring("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
     //         }
     //         SECTION( "phase function name" ) {
                 
     //             enum phaseFunc func = (enum phaseFunc) GENERATE( -1, MAX_INDEX_PHASE_FUNC + 1 );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, NULL, 0), Contains("Invalid named phase function") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, NULL, 0), ContainsSubstring("Invalid named phase function") );
     //         }
     //         SECTION( "phase function parameters" ) {
 
     //             enum phaseFunc func = GENERATE( SCALED_NORM, INVERSE_NORM, SCALED_INVERSE_NORM, SCALED_INVERSE_SHIFTED_NORM, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_INVERSE_PRODUCT, SCALED_DISTANCE, INVERSE_DISTANCE, SCALED_INVERSE_DISTANCE, SCALED_INVERSE_SHIFTED_DISTANCE );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, NULL, 0), Contains("Invalid number of parameters") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, NULL, 0), ContainsSubstring("Invalid number of parameters") );
     //         }
     //         SECTION( "distance pair registers" ) {
                 
@@ -1897,12 +1897,12 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             int qb[] = {0,1,2,3,4};
                 
     //             numRegs = GENERATE( 1, 3, 5 );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, qb, numQb, numRegs, UNSIGNED, DISTANCE, NULL, NULL, 0), Contains("Phase functions DISTANCE") && Contains("even number of sub-registers") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, qb, numQb, numRegs, UNSIGNED, DISTANCE, NULL, NULL, 0), ContainsSubstring("Phase functions DISTANCE") && ContainsSubstring("even number of sub-registers") );
     //         }
     //         SECTION( "number of overrides" ) {
     
     //             int numOverrides = -1;
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, NULL, numOverrides), Contains("Invalid number of phase function overrides specified") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, NULL, numOverrides), ContainsSubstring("Invalid number of phase function overrides specified") );
     //         }
     //         SECTION( "override indices" ) {
                 
@@ -1915,13 +1915,13 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             enum bitEncoding enc = UNSIGNED;
     //             int badInd = GENERATE(0, 2, 4);
     //             overrideInds[badInd] = GENERATE( -1, (1<<2) );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the UNSIGNED encoding") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, overrideInds, overridePhases, numOverrides), ContainsSubstring("Invalid phase function override index, in the UNSIGNED encoding") );
     //             overrideInds[badInd] = 0;
                 
     //             // second element of overrideInds coordinate is a 3 qubit register
     //             badInd += 1;
     //             overrideInds[badInd] = GENERATE( -1, (1<<3) );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the UNSIGNED encoding") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, overrideInds, overridePhases, numOverrides), ContainsSubstring("Invalid phase function override index, in the UNSIGNED encoding") );
     //             overrideInds[badInd] = 0;
     //             badInd -= 1;
                 
@@ -1929,14 +1929,14 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             int minInd = -(1<<(numQubitsPerReg[0]-1));
     //             int maxInd = (1<<(numQubitsPerReg[0]-1)) - 1;
     //             overrideInds[badInd] = GENERATE_COPY( minInd-1, maxInd+1 );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, overrideInds, overridePhases, numOverrides), ContainsSubstring("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
     //             overrideInds[badInd] = 0;
                 
     //             badInd++;
     //             minInd = -(1<<(numQubitsPerReg[1]-1));
     //             maxInd = (1<<(numQubitsPerReg[1]-1)) -1;
     //             overrideInds[badInd] = GENERATE_COPY( minInd-1, maxInd+1 );
-    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
+    //             REQUIRE_THROWS_WITH( applyNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, overrideInds, overridePhases, numOverrides), ContainsSubstring("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
     //         }
     //     }
     //     CLEANUP_TEST( quregVec, quregMatr );
@@ -2440,37 +2440,37 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //         SECTION( "number of registers" ) {
                 
     //             numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0), Contains("Invalid number of qubit subregisters") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0), ContainsSubstring("Invalid number of qubit subregisters") );
     //         }
     //         SECTION( "number of qubits" ) {
                 
     //             numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = GENERATE( -1, 0, 1+NUM_QUBITS );
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0), Contains("Invalid number of qubits") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0), ContainsSubstring("Invalid number of qubits") );
     //         }
     //         SECTION( "repetition of qubits" ) {
                 
     //             regs[GENERATE(2,3,4)] = regs[1];
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0), Contains("The qubits must be unique") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0), ContainsSubstring("The qubits must be unique") );
     //         }
     //         SECTION( "qubit indices" ) {
 
     //             regs[GENERATE(range(0,NUM_QUBITS))] = GENERATE( -1, NUM_QUBITS );
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0), Contains("Invalid qubit index") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0), ContainsSubstring("Invalid qubit index") );
     //         }
     //         SECTION( "bit encoding name" ) {
                 
     //             enum bitEncoding enc = (enum bitEncoding) GENERATE( -1, 2 );
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0), Contains("Invalid bit encoding") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0), ContainsSubstring("Invalid bit encoding") );
     //         }
     //         SECTION( "two's complement register" ) {
                 
     //             numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = 1;
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NORM, NULL, 0), Contains("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NORM, NULL, 0), ContainsSubstring("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
     //         }
     //         SECTION( "phase function name" ) {
                 
     //             enum phaseFunc func = (enum phaseFunc) GENERATE( -1, MAX_INDEX_PHASE_FUNC + 1 );
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, 0), Contains("Invalid named phase function") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, 0), ContainsSubstring("Invalid named phase function") );
     //         }
     //         SECTION( "phase function parameters" ) {
                 
@@ -2482,40 +2482,40 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
                     
     //                 enum phaseFunc func = GENERATE( NORM, PRODUCT, DISTANCE  );
     //                 int numParams = GENERATE( -1, 1, 2 );
-    //                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
+    //                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), ContainsSubstring("Invalid number of parameters") );
     //             }
     //             SECTION( "single parameter functions" ) {
                     
     //                 enum phaseFunc func = GENERATE( SCALED_NORM, INVERSE_NORM, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_DISTANCE, INVERSE_DISTANCE );
     //                 int numParams = GENERATE( -1, 0, 2 );
-    //                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
+    //                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), ContainsSubstring("Invalid number of parameters") );
     //             }
     //             SECTION( "two parameter functions" ) {    
                     
     //                 enum phaseFunc func = GENERATE( SCALED_INVERSE_NORM, SCALED_INVERSE_PRODUCT, SCALED_INVERSE_DISTANCE );
     //                 int numParams = GENERATE( 0, 1, 3 );
-    //                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
+    //                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), ContainsSubstring("Invalid number of parameters") );
     //             }
     //             SECTION( "shifted distance" ) {
                     
     //                 if (numRegs%2 == 0) {
     //                     enum phaseFunc func = SCALED_INVERSE_SHIFTED_DISTANCE;
     //                     int numParams = GENERATE_COPY( 0, 1, numRegs/2 - 1, numRegs/2, numRegs/2 + 1, numRegs/2 + 3 );
-    //                     REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
+    //                     REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), ContainsSubstring("Invalid number of parameters") );
     //                 }
     //             }
     //             SECTION( "shifted norm" ) {
                     
     //                 enum phaseFunc func = SCALED_INVERSE_SHIFTED_NORM;
     //                 int numParams = GENERATE_COPY( 0, 1, numRegs-1, numRegs, numRegs+1, numRegs+3 );
-    //                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
+    //                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), ContainsSubstring("Invalid number of parameters") );
     //             }
     //             SECTION( "shifted weighted distance" ) {
                     
     //                 if (numRegs%2 == 0) {
     //                     enum phaseFunc func = SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE;
     //                     int numParams = GENERATE_COPY( 0, 1, 2 + numRegs - 1, 2 + numRegs + 1 );
-    //                     REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), Contains("Invalid number of parameters") );
+    //                     REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams), ContainsSubstring("Invalid number of parameters") );
     //                 }
     //             }
     //         }
@@ -2525,7 +2525,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             int qb[] = {0,1,2,3,4};
                 
     //             numRegs = GENERATE( 1, 3, 5 );
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, qb, numQb, numRegs, UNSIGNED, DISTANCE, NULL, 0), Contains("Phase functions DISTANCE") && Contains("even number of sub-registers") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFunc(quregVec, qb, numQb, numRegs, UNSIGNED, DISTANCE, NULL, 0), ContainsSubstring("Phase functions DISTANCE") && ContainsSubstring("even number of sub-registers") );
     //         }
     //     }
     //     CLEANUP_TEST( quregVec, quregMatr );
@@ -3059,37 +3059,37 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //         SECTION( "number of registers" ) {
                 
     //             numRegs = GENERATE_COPY( -1, 0, 1+MAX_NUM_REGS_APPLY_ARBITRARY_PHASE );
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0, NULL, NULL, 0), Contains("Invalid number of qubit subregisters") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0, NULL, NULL, 0), ContainsSubstring("Invalid number of qubit subregisters") );
     //         }
     //         SECTION( "number of qubits" ) {
                 
     //             numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = GENERATE( -1, 0, 1+NUM_QUBITS );
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0, NULL, NULL, 0), Contains("Invalid number of qubits") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0, NULL, NULL, 0), ContainsSubstring("Invalid number of qubits") );
     //         }
     //         SECTION( "repetition of qubits" ) {
                 
     //             regs[GENERATE(2,3,4)] = regs[1];
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0, NULL, NULL, 0), Contains("The qubits must be unique") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0, NULL, NULL, 0), ContainsSubstring("The qubits must be unique") );
     //         }
     //         SECTION( "qubit indices" ) {
 
     //             regs[GENERATE(range(0,NUM_QUBITS))] = GENERATE( -1, NUM_QUBITS );
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0, NULL, NULL, 0), Contains("Invalid qubit index") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0, NULL, NULL, 0), ContainsSubstring("Invalid qubit index") );
     //         }
     //         SECTION( "bit encoding name" ) {
                 
     //             enum bitEncoding enc = (enum bitEncoding) GENERATE( -1, 2 );
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0, NULL, NULL, 0), Contains("Invalid bit encoding") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0, NULL, NULL, 0), ContainsSubstring("Invalid bit encoding") );
     //         }
     //         SECTION( "two's complement register" ) {
                 
     //             numQubitsPerReg[GENERATE_COPY(range(0,numRegs))] = 1;
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NORM, NULL, 0, NULL, NULL, 0), Contains("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, TWOS_COMPLEMENT, NORM, NULL, 0, NULL, NULL, 0), ContainsSubstring("A sub-register contained too few qubits to employ TWOS_COMPLEMENT encoding") );
     //         }
     //         SECTION( "phase function name" ) {
                 
     //             enum phaseFunc func = (enum phaseFunc) GENERATE( -1, MAX_INDEX_PHASE_FUNC + 1 );
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, 0, NULL, NULL, 0), Contains("Invalid named phase function") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, NULL, 0, NULL, NULL, 0), ContainsSubstring("Invalid named phase function") );
     //         }
     //         SECTION( "phase function parameters" ) {
                 
@@ -3101,26 +3101,26 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
                     
     //                 enum phaseFunc func = GENERATE( NORM, PRODUCT, DISTANCE  );
     //                 int numParams = GENERATE( -1, 1, 2 );
-    //                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
+    //                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), ContainsSubstring("Invalid number of parameters") );
     //             }
     //             SECTION( "single parameter functions" ) {
                     
     //                 enum phaseFunc func = GENERATE( SCALED_NORM, INVERSE_NORM, SCALED_PRODUCT, INVERSE_PRODUCT, SCALED_DISTANCE, INVERSE_DISTANCE );
     //                 int numParams = GENERATE( -1, 0, 2 );
-    //                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
+    //                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), ContainsSubstring("Invalid number of parameters") );
     //             }
     //             SECTION( "two parameter functions" ) {    
                     
     //                 enum phaseFunc func = GENERATE( SCALED_INVERSE_NORM, SCALED_INVERSE_PRODUCT, SCALED_INVERSE_DISTANCE );
     //                 int numParams = GENERATE( 0, 1, 3 );
-    //                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
+    //                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), ContainsSubstring("Invalid number of parameters") );
     //             }
     //             SECTION( "shifted distance" ) {
                     
     //                 if (numRegs%2 == 0) {
     //                     enum phaseFunc func = SCALED_INVERSE_SHIFTED_DISTANCE;
     //                     int numParams = GENERATE_COPY( 0, 1, numRegs/2 - 1, numRegs/2, numRegs/2 + 1, numRegs/2 + 3 );
-    //                     REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
+    //                     REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), ContainsSubstring("Invalid number of parameters") );
     //                 }
     //             }
     //             SECTION( "shifted weighted distance" ) {
@@ -3128,14 +3128,14 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //                 if (numRegs%2 == 0) {
     //                     enum phaseFunc func = SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE;
     //                     int numParams = GENERATE_COPY( 0, 1, 2 + numRegs - 1, 2 + numRegs + 1 );
-    //                     REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
+    //                     REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), ContainsSubstring("Invalid number of parameters") );
     //                 }
     //             }
     //             SECTION( "shifted norm" ) {
                     
     //                 enum phaseFunc func = SCALED_INVERSE_SHIFTED_NORM;
     //                 int numParams = GENERATE_COPY( 0, 1, numRegs-1, numRegs, numRegs+1, numRegs+3 );
-    //                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), Contains("Invalid number of parameters") );
+    //                 REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, func, params, numParams, NULL, NULL, 0), ContainsSubstring("Invalid number of parameters") );
     //             }
     //         }
     //         SECTION( "distance pair registers" ) {
@@ -3144,12 +3144,12 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             int qb[] = {0,1,2,3,4};
                 
     //             numRegs = GENERATE( 1, 3, 5 );
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, qb, numQb, numRegs, UNSIGNED, DISTANCE, NULL, 0, NULL, NULL, 0), Contains("Phase functions DISTANCE") && Contains("even number of sub-registers") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, qb, numQb, numRegs, UNSIGNED, DISTANCE, NULL, 0, NULL, NULL, 0), ContainsSubstring("Phase functions DISTANCE") && ContainsSubstring("even number of sub-registers") );
     //         }
     //         SECTION( "number of overrides" ) {
     
     //             int numOverrides = -1;
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0, NULL, NULL, numOverrides), Contains("Invalid number of phase function overrides specified") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, UNSIGNED, NORM, NULL, 0, NULL, NULL, numOverrides), ContainsSubstring("Invalid number of phase function overrides specified") );
     //         }
     //         SECTION( "override indices" ) {
                 
@@ -3162,13 +3162,13 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             enum bitEncoding enc = UNSIGNED;
     //             int badInd = GENERATE(0, 2, 4);
     //             overrideInds[badInd] = GENERATE( -1, (1<<2) );
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the UNSIGNED encoding") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0, overrideInds, overridePhases, numOverrides), ContainsSubstring("Invalid phase function override index, in the UNSIGNED encoding") );
     //             overrideInds[badInd] = 0;
                 
     //             // second element of overrideInds coordinate is a 3 qubit register
     //             badInd += 1;
     //             overrideInds[badInd] = GENERATE( -1, (1<<3) );
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the UNSIGNED encoding") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0, overrideInds, overridePhases, numOverrides), ContainsSubstring("Invalid phase function override index, in the UNSIGNED encoding") );
     //             overrideInds[badInd] = 0;
     //             badInd -= 1;
                 
@@ -3176,14 +3176,14 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             int minInd = -(1<<(numQubitsPerReg[0]-1));
     //             int maxInd = (1<<(numQubitsPerReg[0]-1)) - 1;
     //             overrideInds[badInd] = GENERATE_COPY( minInd-1, maxInd+1 );
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0, overrideInds, overridePhases, numOverrides), ContainsSubstring("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
     //             overrideInds[badInd] = 0;
                 
     //             badInd++;
     //             minInd = -(1<<(numQubitsPerReg[1]-1));
     //             maxInd = (1<<(numQubitsPerReg[1]-1)) -1;
     //             overrideInds[badInd] = GENERATE_COPY( minInd-1, maxInd+1 );
-    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
+    //             REQUIRE_THROWS_WITH( applyParamNamedPhaseFuncOverrides(quregVec, regs, numQubitsPerReg, numRegs, enc, NORM, NULL, 0, overrideInds, overridePhases, numOverrides), ContainsSubstring("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
     //         }
     //     }
     //     CLEANUP_TEST( quregVec, quregMatr );
@@ -3255,7 +3255,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
 
     //             // make one pauli code wrong
     //             hamil.pauliCodes[GENERATE_COPY( range(0,numTerms*NUM_QUBITS) )] = (pauliOpType) GENERATE( -1, 4 );
-    //             REQUIRE_THROWS_WITH( applyPauliHamil(vecIn, hamil, vecOut), Contains("Invalid Pauli code") );
+    //             REQUIRE_THROWS_WITH( applyPauliHamil(vecIn, hamil, vecOut), ContainsSubstring("Invalid Pauli code") );
                 
     //             destroyPauliHamil(hamil);
     //         }
@@ -3264,7 +3264,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             Qureg badVec = createForcedQureg(NUM_QUBITS+1);
     //             PauliHamil hamil = createPauliHamil(NUM_QUBITS, 1);
 
-    //             REQUIRE_THROWS_WITH( applyPauliHamil(vecIn, hamil, badVec), Contains("Dimensions of the qubit registers don't match") );
+    //             REQUIRE_THROWS_WITH( applyPauliHamil(vecIn, hamil, badVec), ContainsSubstring("Dimensions of the qubit registers don't match") );
                 
     //             destroyQureg(badVec);
     //             destroyPauliHamil(hamil);
@@ -3273,7 +3273,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
                 
     //             PauliHamil hamil = createPauliHamil(NUM_QUBITS, 1);
                 
-    //             REQUIRE_THROWS_WITH( applyPauliHamil(vecIn, hamil, matOut), Contains("Registers must both be state-vectors or both be density matrices") );
+    //             REQUIRE_THROWS_WITH( applyPauliHamil(vecIn, hamil, matOut), ContainsSubstring("Registers must both be state-vectors or both be density matrices") );
                 
     //             destroyPauliHamil(hamil);
     //         }
@@ -3281,8 +3281,8 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
                 
     //             PauliHamil hamil = createPauliHamil(NUM_QUBITS + 1, 1);
                 
-    //             REQUIRE_THROWS_WITH( applyPauliHamil(vecIn, hamil, vecOut), Contains("same number of qubits") );
-    //             REQUIRE_THROWS_WITH( applyPauliHamil(matIn, hamil, matOut), Contains("same number of qubits") );
+    //             REQUIRE_THROWS_WITH( applyPauliHamil(vecIn, hamil, vecOut), ContainsSubstring("same number of qubits") );
+    //             REQUIRE_THROWS_WITH( applyPauliHamil(matIn, hamil, matOut), ContainsSubstring("same number of qubits") );
                 
     //             destroyPauliHamil(hamil);
     //         }
@@ -3359,7 +3359,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //         SECTION( "number of terms" ) {
                 
     //             int numTerms = GENERATE( -1, 0 );
-    //             REQUIRE_THROWS_WITH( applyPauliSum(vecIn, NULL, NULL, numTerms, vecOut), Contains("Invalid number of terms") );
+    //             REQUIRE_THROWS_WITH( applyPauliSum(vecIn, NULL, NULL, numTerms, vecOut), ContainsSubstring("Invalid number of terms") );
     //         }
     //         SECTION( "pauli codes" ) {
                 
@@ -3372,19 +3372,19 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
                 
     //             // make one invalid 
     //             paulis[GENERATE_COPY( range(0,numPaulis) )] = (pauliOpType) GENERATE( -1, 4 );
-    //             REQUIRE_THROWS_WITH( applyPauliSum(vecIn, paulis, NULL, numTerms, vecOut), Contains("Invalid Pauli code") );
+    //             REQUIRE_THROWS_WITH( applyPauliSum(vecIn, paulis, NULL, numTerms, vecOut), ContainsSubstring("Invalid Pauli code") );
     //         }
     //         SECTION( "qureg dimensions" ) {
                 
     //             Qureg badVec = createForcedQureg(NUM_QUBITS+1);
     //             pauliOpType paulis[NUM_QUBITS];
-    //             REQUIRE_THROWS_WITH( applyPauliSum(vecIn, paulis, NULL, 1, badVec), Contains("Dimensions of the qubit registers don't match") );
+    //             REQUIRE_THROWS_WITH( applyPauliSum(vecIn, paulis, NULL, 1, badVec), ContainsSubstring("Dimensions of the qubit registers don't match") );
     //             destroyQureg(badVec);
     //         }
     //         SECTION( "qureg types" ) {
                 
     //             pauliOpType paulis[NUM_QUBITS];
-    //             REQUIRE_THROWS_WITH( applyPauliSum(vecIn, paulis, NULL, 1, matOut), Contains("Registers must both be state-vectors or both be density matrices") );
+    //             REQUIRE_THROWS_WITH( applyPauliSum(vecIn, paulis, NULL, 1, matOut), ContainsSubstring("Registers must both be state-vectors or both be density matrices") );
     //         }
     //     }
     //     destroyQureg(vecIn);
@@ -3475,33 +3475,33 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //         SECTION( "number of qubits" ) {
                 
     //             numQubits = GENERATE_COPY( -1, 0, NUM_QUBITS+1 );
-    //             REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, NULL, numQubits, UNSIGNED, NULL, NULL, 1), Contains("Invalid number of qubits") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, NULL, numQubits, UNSIGNED, NULL, NULL, 1), ContainsSubstring("Invalid number of qubits") );
     //         }
     //         SECTION( "repetition of qubits" ) {
                 
     //             qubits[GENERATE(1,2)] = qubits[0];
-    //             REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, 1), Contains("The qubits must be unique") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, 1), ContainsSubstring("The qubits must be unique") );
     //         }
     //         SECTION( "qubit indices" ) {
                 
     //             int inv = GENERATE( -1, NUM_QUBITS );
     //             qubits[ GENERATE_COPY( range(0,numQubits) )] = inv;
-    //             REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, 1), Contains("Invalid qubit index") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, 1), ContainsSubstring("Invalid qubit index") );
     //         }
     //         SECTION( "number of terms" ) {
                 
     //             int numTerms = GENERATE( -1, 0 );
-    //             REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, numTerms), Contains("Invalid number of terms in the phase function") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, numTerms), ContainsSubstring("Invalid number of terms in the phase function") );
     //         }
     //         SECTION( "bit encoding name" ) {
                 
     //             enum bitEncoding enc = (enum bitEncoding) GENERATE( -1,2 );
-    //             REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, enc, NULL, NULL, 1), Contains("Invalid bit encoding") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, enc, NULL, NULL, 1), ContainsSubstring("Invalid bit encoding") );
     //         }
     //         SECTION( "two's complement register" ) {
                 
     //             numQubits = 1;
-    //             REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, TWOS_COMPLEMENT, NULL, NULL, 1), Contains("too few qubits to employ TWOS_COMPLEMENT") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, TWOS_COMPLEMENT, NULL, NULL, 1), ContainsSubstring("too few qubits to employ TWOS_COMPLEMENT") );
     //         }
     //         SECTION( "fractional exponent" ) {
                 
@@ -3510,7 +3510,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             qreal expos[] = {1,2,3};
     //             expos[GENERATE_COPY( range(0,numTerms) )] = GENERATE( 0.5, 1.999, 5.0001 );
                 
-    //             REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, TWOS_COMPLEMENT, coeffs, expos, numTerms), Contains("fractional exponent") && Contains("TWOS_COMPLEMENT") && Contains("negative indices were not overriden") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, TWOS_COMPLEMENT, coeffs, expos, numTerms), ContainsSubstring("fractional exponent") && ContainsSubstring("TWOS_COMPLEMENT") && ContainsSubstring("negative indices were not overriden") );
     //         }
     //         SECTION( "negative exponent" ) {
 
@@ -3521,7 +3521,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
                 
     //             enum bitEncoding encoding = GENERATE( UNSIGNED, TWOS_COMPLEMENT );
         
-    //             REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, encoding, coeffs, expos, numTerms), Contains("The phase function contained a negative exponent which would diverge at zero, but the zero index was not overriden") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFunc(quregVec, qubits, numQubits, encoding, coeffs, expos, numTerms), ContainsSubstring("The phase function contained a negative exponent which would diverge at zero, but the zero index was not overriden") );
     //         }
     //     }
     //     CLEANUP_TEST( quregVec, quregMatr );
@@ -3640,40 +3640,40 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //         SECTION( "number of qubits" ) {
                 
     //             int numQubits = GENERATE_COPY( -1, 0, NUM_QUBITS+1 );
-    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, NULL, numQubits, UNSIGNED, NULL, NULL, 1, NULL, NULL, 0), Contains("Invalid number of qubits") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, NULL, numQubits, UNSIGNED, NULL, NULL, 1, NULL, NULL, 0), ContainsSubstring("Invalid number of qubits") );
     //         }
     //         SECTION( "repetition qubits" ) {
                 
     //             qubits[GENERATE(1,2)] = qubits[0];
-    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, 1, NULL, NULL, 0), Contains("The qubits must be unique") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, 1, NULL, NULL, 0), ContainsSubstring("The qubits must be unique") );
     //         }
     //         SECTION( "qubit indices" ) {
                 
     //             int inv = GENERATE( -1, NUM_QUBITS );
     //             qubits[ GENERATE_COPY( range(0,numQubits) )] = inv;
-    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, 1, NULL, NULL, 0), Contains("Invalid qubit index") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, 1, NULL, NULL, 0), ContainsSubstring("Invalid qubit index") );
     //         }
     //         SECTION( "number of terms" ) {
                 
     //             int numTerms = GENERATE( -1, 0 );
-    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, numTerms, NULL, NULL, 0), Contains("Invalid number of terms in the phase function") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, UNSIGNED, NULL, NULL, numTerms, NULL, NULL, 0), ContainsSubstring("Invalid number of terms in the phase function") );
     //         }
     //         SECTION( "bit encoding name" ) {
 
     //             enum bitEncoding enc = (enum bitEncoding) GENERATE( -1,2 );
-    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, enc, NULL, NULL, 1, NULL, NULL, 0), Contains("Invalid bit encoding") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, enc, NULL, NULL, 1, NULL, NULL, 0), ContainsSubstring("Invalid bit encoding") );
     //         }
     //         SECTION( "two's complement register" ) {
                 
     //             numQubits = 1;
-    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, TWOS_COMPLEMENT, NULL, NULL, 1, NULL, NULL, 0), Contains("too few qubits to employ TWOS_COMPLEMENT") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, TWOS_COMPLEMENT, NULL, NULL, 1, NULL, NULL, 0), ContainsSubstring("too few qubits to employ TWOS_COMPLEMENT") );
     //         }
     //         SECTION( "number of overrides" ) {
 
     //             qreal dummyTerms[] = {0};
                 
     //             int numOverrides = GENERATE_COPY( -1, 1 + (1<<numQubits) );
-    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, UNSIGNED, dummyTerms, dummyTerms, 1, NULL, NULL, numOverrides), Contains("Invalid number of phase function overrides") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, UNSIGNED, dummyTerms, dummyTerms, 1, NULL, NULL, numOverrides), ContainsSubstring("Invalid number of phase function overrides") );
     //         }
     //         SECTION( "override indices" ) {
                 
@@ -3684,14 +3684,14 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
                 
     //             enum bitEncoding encoding = UNSIGNED;
     //             overrideInds[GENERATE(0,1,2)] = GENERATE_COPY( -1, (1<<numQubits) );
-    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, encoding, dummyTerms, dummyTerms, 1, overrideInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the UNSIGNED encoding") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, encoding, dummyTerms, dummyTerms, 1, overrideInds, overridePhases, numOverrides), ContainsSubstring("Invalid phase function override index, in the UNSIGNED encoding") );
                 
     //             encoding = TWOS_COMPLEMENT;
     //             long long int newInds[] = {0,1,2};
     //             int minInd = -(1<<(numQubits-1));
     //             int maxInd = (1<<(numQubits-1)) -1;
     //             newInds[GENERATE(0,1,2)] = GENERATE_COPY( minInd-1, maxInd+1 );
-    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, encoding, dummyTerms, dummyTerms, 1, newInds, overridePhases, numOverrides), Contains("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, encoding, dummyTerms, dummyTerms, 1, newInds, overridePhases, numOverrides), ContainsSubstring("Invalid phase function override index, in the TWOS_COMPLEMENT encoding") );
     //         }
     //         SECTION( "fractional exponent" ) {
                 
@@ -3703,7 +3703,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             expos[GENERATE_COPY( range(0,numTerms) )] = GENERATE( 0.5, 1.999, 5.0001 );
                 
     //             // catch when no negative indices are overridden
-    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, TWOS_COMPLEMENT, coeffs, expos, numTerms, NULL, NULL, 0), Contains("fractional exponent") && Contains("TWOS_COMPLEMENT") && Contains("negative indices were not overriden") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, TWOS_COMPLEMENT, coeffs, expos, numTerms, NULL, NULL, 0), ContainsSubstring("fractional exponent") && ContainsSubstring("TWOS_COMPLEMENT") && ContainsSubstring("negative indices were not overriden") );
                 
     //             int numNegs = 1 << (numQubits-1);
     //             VLA(long long int, overrideInds, numNegs);
@@ -3718,7 +3718,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
 
     //             // catch when at least one isn't overriden
     //             overrideInds[GENERATE_COPY( range(0,numNegs) )] = 0; // override a non-negative
-    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, TWOS_COMPLEMENT, coeffs, expos, numTerms, overrideInds, overridePhases, numNegs), Contains("fractional exponent") && Contains("TWOS_COMPLEMENT") && Contains("negative indices were not overriden") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, TWOS_COMPLEMENT, coeffs, expos, numTerms, overrideInds, overridePhases, numNegs), ContainsSubstring("fractional exponent") && ContainsSubstring("TWOS_COMPLEMENT") && ContainsSubstring("negative indices were not overriden") );
     //         }
     //         SECTION( "negative exponent" ) {
                 
@@ -3733,7 +3733,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     //             int numOverrides = GENERATE( 0, 3 ); 
     //             long long int overrideInds[] = {1,2,3};
     //             qreal overridePhases[] = {0,0,0};
-    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, encoding, coeffs, expos, numTerms, overrideInds, overridePhases, numOverrides), Contains("The phase function contained a negative exponent which would diverge at zero, but the zero index was not overriden") );
+    //             REQUIRE_THROWS_WITH( applyPhaseFuncOverrides(quregVec, qubits, numQubits, encoding, coeffs, expos, numTerms, overrideInds, overridePhases, numOverrides), ContainsSubstring("The phase function contained a negative exponent which would diverge at zero, but the zero index was not overriden") );
                 
     //             // but ensure that when the zero IS overriden (anywhere), there's no error 
     //             numOverrides = 3;
@@ -3866,13 +3866,13 @@ TEST_CASE( "applyProjector", "[operators]" ) {
             
             int qubit = GENERATE( -1, NUM_QUBITS );
             int outcome = 0;
-            REQUIRE_THROWS_WITH( applyProjector(mat, qubit, outcome), Contains("Invalid target qubit") );
+            REQUIRE_THROWS_WITH( applyProjector(mat, qubit, outcome), ContainsSubstring("Invalid target qubit") );
         }
         SECTION( "outcome value" ) {
             
             int qubit = 0;
             int outcome = GENERATE( -1, 2 );
-            REQUIRE_THROWS_WITH( applyProjector(mat, qubit, outcome), Contains("measurement outcome") && Contains("is invalid") );
+            REQUIRE_THROWS_WITH( applyProjector(mat, qubit, outcome), ContainsSubstring("measurement outcome") && ContainsSubstring("is invalid") );
         }
     }
     destroyQureg(vec);
@@ -4008,8 +4008,8 @@ TEST_CASE( "applyQFT", "[operators]" ) {
             int numQubits = GENERATE( -1, 0);
             int qubits[NUM_QUBITS+1];
             
-            REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, numQubits), Contains("number of target qubits") && Contains("invalid") );
-            REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, NUM_QUBITS+1), Contains("number of target qubits") && Contains("exceeds") && Contains("Qureg") );
+            REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, numQubits), ContainsSubstring("number of target qubits") && ContainsSubstring("invalid") );
+            REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, NUM_QUBITS+1), ContainsSubstring("number of target qubits") && ContainsSubstring("exceeds") && ContainsSubstring("Qureg") );
 
         }
         SECTION( "repetition in targets" ) {
@@ -4017,7 +4017,7 @@ TEST_CASE( "applyQFT", "[operators]" ) {
             int numQubits = 3;
             int qubits[] = {1,2,2};
             
-            REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, numQubits), Contains("target") && Contains("unique") );
+            REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, numQubits), ContainsSubstring("target") && ContainsSubstring("unique") );
         }
         SECTION( "qubit indices" ) {
             
@@ -4026,7 +4026,7 @@ TEST_CASE( "applyQFT", "[operators]" ) {
             
             int inv = GENERATE( -1, NUM_QUBITS );
             qubits[GENERATE_COPY( range(0,numQubits) )] = inv; // make invalid target
-            REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, numQubits), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( applyQFT(quregVec, qubits, numQubits), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -4084,7 +4084,7 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
             for (int i=0; i<NUM_QUBITS+1; i++)
                 badTargs[i] = i;
             
-            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, badTargs, badNumTargs, op), Contains("inconsistent size") );
+            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, badTargs, badNumTargs, op), ContainsSubstring("inconsistent size") );
             destroySubDiagonalOp(op);
         }
         SECTION( "number of targets" ) {
@@ -4098,7 +4098,7 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
                 badOp.cpuElems[i] = qcomp(1,0);
             syncDiagMatr(badOp);
             
-            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, badOp.numQubits, badOp), Contains("number of target qubits") && Contains("exceeds") );
+            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, badOp.numQubits, badOp), ContainsSubstring("number of target qubits") && ContainsSubstring("exceeds") );
             destroySubDiagonalOp(badOp);
         }
         SECTION( "repetition in targets" ) {
@@ -4112,7 +4112,7 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
             // make a repetition in the target list
             int targs[] = {2,1,2};
 
-            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, op.numQubits, op), Contains("target qubits contained duplicates") );
+            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, op.numQubits, op), ContainsSubstring("target qubits contained duplicates") );
             destroySubDiagonalOp(op);
         }
         SECTION( "qubit indices" ) {
@@ -4130,7 +4130,7 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
             int badValue = GENERATE( -1, NUM_QUBITS );
             targs[badIndex] = badValue;
 
-            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, op.numQubits, op), Contains("Invalid target qubit") );
+            REQUIRE_THROWS_WITH( applySubDiagonalOp(quregVec, targs, op.numQubits, op), ContainsSubstring("Invalid target qubit") );
             destroySubDiagonalOp(op);
         }
     }
@@ -4334,7 +4334,7 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
     //             PauliHamil hamil = createPauliHamil(NUM_QUBITS, 1);
     //             int reps = GENERATE( -1, 0 );
                 
-    //             REQUIRE_THROWS_WITH( applyTrotterCircuit(vec, hamil, 1, 1, reps), Contains("repetitions must be >=1") );
+    //             REQUIRE_THROWS_WITH( applyTrotterCircuit(vec, hamil, 1, 1, reps), ContainsSubstring("repetitions must be >=1") );
                 
     //             destroyPauliHamil(hamil);
     //         }
@@ -4343,7 +4343,7 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
     //             PauliHamil hamil = createPauliHamil(NUM_QUBITS, 1);
     //             int order = GENERATE( -1, 0, 3, 5, 7 );
                 
-    //             REQUIRE_THROWS_WITH( applyTrotterCircuit(vec, hamil, 1, order, 1), Contains("order must be 1, or an even number") );
+    //             REQUIRE_THROWS_WITH( applyTrotterCircuit(vec, hamil, 1, order, 1), ContainsSubstring("order must be 1, or an even number") );
                 
     //             destroyPauliHamil(hamil);
     //         }
@@ -4354,7 +4354,7 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
 
     //             // make one pauli code wrong
     //             hamil.pauliCodes[GENERATE_COPY( range(0,numTerms*NUM_QUBITS) )] = (pauliOpType) GENERATE( -1, 4 );
-    //             REQUIRE_THROWS_WITH( applyTrotterCircuit(vec, hamil, 1, 1, 1), Contains("Invalid Pauli code") );
+    //             REQUIRE_THROWS_WITH( applyTrotterCircuit(vec, hamil, 1, 1, 1), ContainsSubstring("Invalid Pauli code") );
                 
     //             destroyPauliHamil(hamil);
     //         }
@@ -4362,8 +4362,8 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
                 
     //             PauliHamil hamil = createPauliHamil(NUM_QUBITS + 1, 1);
                 
-    //             REQUIRE_THROWS_WITH( applyTrotterCircuit(vec, hamil, 1, 1, 1), Contains("same number of qubits") );
-    //             REQUIRE_THROWS_WITH( applyTrotterCircuit(mat, hamil, 1, 1, 1), Contains("same number of qubits") );
+    //             REQUIRE_THROWS_WITH( applyTrotterCircuit(vec, hamil, 1, 1, 1), ContainsSubstring("same number of qubits") );
+    //             REQUIRE_THROWS_WITH( applyTrotterCircuit(mat, hamil, 1, 1, 1), ContainsSubstring("same number of qubits") );
                 
     //             destroyPauliHamil(hamil);
     //         }

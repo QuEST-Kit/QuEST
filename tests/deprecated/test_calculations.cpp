@@ -10,7 +10,7 @@
 
 #include "test_utilities.hpp"
 
-/* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
+/* allows concise use of ContainsSubstring in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::ContainsSubstring;
 using Catch::Approx;
 

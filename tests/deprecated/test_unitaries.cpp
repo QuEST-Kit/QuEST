@@ -13,7 +13,7 @@
  * @author Tyson Jones
  */
  
-#include "catch.hpp"
+#include <catch2/catch_all.hpp>
 
 // must define preprocessors to enable quest's
 // deprecated v3 API, and disable the numerous
@@ -45,8 +45,8 @@
     destroyQureg(quregMatr); \
     setValidationEpsilon(REAL_EPS);
 
-/* allows concise use of Contains in catch's REQUIRE_THROWS_WITH */
-using Catch::Matchers::Contains;
+/* allows concise use of ContainsSubstring in catch's REQUIRE_THROWS_WITH */
+using Catch::Matchers::ContainsSubstring;
 
 
 
@@ -88,14 +88,14 @@ TEST_CASE( "compactUnitary", "[unitaries]" ) {
         SECTION( "qubit indices" ) {
             
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( compactUnitary(quregVec, target, alpha, beta), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( compactUnitary(quregVec, target, alpha, beta), ContainsSubstring("Invalid target") );
         }
         SECTION( "unitarity" ) {
         
             // unitary when |alpha|^2 + |beta|^2 = 1
             alpha.real=1; alpha.imag=2; 
             beta.real=3; beta.imag=4;
-            REQUIRE_THROWS_WITH( compactUnitary(quregVec, 0, alpha, beta), Contains("unitary") );
+            REQUIRE_THROWS_WITH( compactUnitary(quregVec, 0, alpha, beta), ContainsSubstring("unitary") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -156,7 +156,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             for (int i=0; i<NUM_QUBITS+1; i++)
                 badTargs[i]=i;
             
-            REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, badTargs, badNumTargs, op), Contains("matrix has an inconsistent size") );
+            REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, badTargs, badNumTargs, op), ContainsSubstring("matrix has an inconsistent size") );
             destroySubDiagonalOp(op);
         }
         SECTION( "number of targets" ) {
@@ -170,7 +170,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
                 badOp.cpuElems[i] = 1;
             syncDiagMatr(badOp);
             
-            REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, badOp.numQubits, badOp), Contains("number of target qubits") );
+            REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, badOp.numQubits, badOp), ContainsSubstring("number of target qubits") );
             destroySubDiagonalOp(badOp);
         }
         SECTION( "repetition in targets" ) {
@@ -184,7 +184,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             // make a repetition in the target list
             int targs[] = {2,1,2};
 
-            REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, op.numQubits, op), Contains("target qubits contained duplicates") );
+            REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, op.numQubits, op), ContainsSubstring("target qubits contained duplicates") );
             destroySubDiagonalOp(op);
         }
         SECTION( "qubit indices" ) {
@@ -202,7 +202,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             int badValue = GENERATE( -1, NUM_QUBITS );
             targs[badIndex] = badValue;
 
-            REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, op.numQubits, op), Contains("Invalid target qubit") );
+            REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, op.numQubits, op), ContainsSubstring("Invalid target qubit") );
             destroySubDiagonalOp(op);
         }
         SECTION( "unitarity" ) {
@@ -216,12 +216,12 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             
             // break unitarity via reals
             op.cpuElems[2] = -.1;
-            REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, op.numQubits, op), Contains("unitary") );
+            REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, op.numQubits, op), ContainsSubstring("unitary") );
             
             // restore reals and break unitarity via imag
             op.cpuElems[2] = 1;
             op.cpuElems[3] = -3.5;
-            REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, op.numQubits, op), Contains("unitary") );
+            REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, op.numQubits, op), ContainsSubstring("unitary") );
             
             destroySubDiagonalOp(op);
         }
@@ -270,20 +270,20 @@ TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
         SECTION( "control and target collision" ) {
             
             int qb = 0;
-            REQUIRE_THROWS_WITH( controlledCompactUnitary(quregVec, qb, qb, alpha, beta), Contains("control and target") );
+            REQUIRE_THROWS_WITH( controlledCompactUnitary(quregVec, qb, qb, alpha, beta), ContainsSubstring("control and target") );
         }    
         SECTION( "qubit indices" ) {
             
             int qb = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( controlledCompactUnitary(quregVec, qb, 0, alpha, beta), Contains("Invalid control") );
-            REQUIRE_THROWS_WITH( controlledCompactUnitary(quregVec, 0, qb, alpha, beta), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( controlledCompactUnitary(quregVec, qb, 0, alpha, beta), ContainsSubstring("Invalid control") );
+            REQUIRE_THROWS_WITH( controlledCompactUnitary(quregVec, 0, qb, alpha, beta), ContainsSubstring("Invalid target") );
         }
         SECTION( "unitarity" ) {
 
             // unitary when |a|^2 + |b^2 = 1
             alpha.real=1; alpha.imag=2;
             beta.real=3; beta.imag=4;
-            REQUIRE_THROWS_WITH( controlledCompactUnitary(quregVec, 0, 1, alpha, beta), Contains("unitary") );
+            REQUIRE_THROWS_WITH( controlledCompactUnitary(quregVec, 0, 1, alpha, beta), ContainsSubstring("unitary") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -340,7 +340,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
             ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
             syncCompMatr(matr);
-            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, 0, targs, numTargs, matr), Contains("number of target qubits"));
+            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, 0, targs, numTargs, matr), ContainsSubstring("number of target qubits"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "repetition in targets" ) {
@@ -351,7 +351,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
             syncCompMatr(matr);
             
-            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, ctrl, targs, numTargs, matr), Contains("target") && Contains("unique"));
+            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, ctrl, targs, numTargs, matr), ContainsSubstring("target") && ContainsSubstring("unique"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "control and target collision" ) {
@@ -362,7 +362,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
             syncCompMatr(matr);
             
-            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, ctrl, targs, numTargs, matr), Contains("control and target"));
+            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, ctrl, targs, numTargs, matr), ContainsSubstring("control and target"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "qubit indices" ) {
@@ -375,11 +375,11 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             
             int inv = GENERATE( -1, NUM_QUBITS );
             ctrl = inv;
-            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, ctrl, targs, numTargs, matr), Contains("Invalid control") );
+            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, ctrl, targs, numTargs, matr), ContainsSubstring("Invalid control") );
             
             ctrl = 0; // restore valid ctrl
             targs[GENERATE_COPY( range(0,numTargs) )] = inv; // make invalid target
-            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, ctrl, targs, numTargs, matr), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, ctrl, targs, numTargs, matr), ContainsSubstring("Invalid target") );
             
             destroyComplexMatrixN(matr);
         }
@@ -394,7 +394,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             for (int i=0; i<numTargs; i++)
                 targs[i] = i+1;
             
-            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, ctrl, targs, numTargs, matr), Contains("unitary") );
+            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, ctrl, targs, numTargs, matr), ContainsSubstring("unitary") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "unitary creation" ) {
@@ -404,7 +404,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
 
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
-            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, 0, targs, numTargs, matr), Contains("created") );
+            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, 0, targs, numTargs, matr), ContainsSubstring("created") );
         }
         SECTION( "unitary dimensions" ) {
             
@@ -413,7 +413,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
             ComplexMatrixN matr = createComplexMatrixN(3);
             syncCompMatr(matr);
             
-            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, ctrl, targs, 2, matr), Contains("matrix has an inconsistent size"));
+            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, ctrl, targs, 2, matr), ContainsSubstring("matrix has an inconsistent size"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "unitary fits in node" ) {
@@ -429,7 +429,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
                 matr.cpuElems[i][i] = 1;
             syncCompMatr(matr);
 
-            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, 0, qb, 2, matr), Contains("communication buffer") && Contains("simultaneously store"));
+            REQUIRE_THROWS_WITH( controlledMultiQubitUnitary(quregVec, 0, qb, 2, matr), ContainsSubstring("communication buffer") && ContainsSubstring("simultaneously store"));
             destroyComplexMatrixN(matr);
         }
     }
@@ -470,13 +470,13 @@ TEST_CASE(  "controlledNot", "[unitaries]" ) {
         SECTION( "control and target collision" ) {
             
             int qb = GENERATE( range(0,NUM_QUBITS) );
-            REQUIRE_THROWS_WITH( controlledNot(quregVec, qb, qb), Contains("control and target") );
+            REQUIRE_THROWS_WITH( controlledNot(quregVec, qb, qb), ContainsSubstring("control and target") );
         }    
         SECTION( "qubit indices" ) {
             
             int qb = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( controlledNot(quregVec, qb, 0), Contains("Invalid control") );
-            REQUIRE_THROWS_WITH( controlledNot(quregVec, 0, qb), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( controlledNot(quregVec, qb, 0), ContainsSubstring("Invalid control") );
+            REQUIRE_THROWS_WITH( controlledNot(quregVec, 0, qb), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -516,13 +516,13 @@ TEST_CASE(  "controlledPauliY", "[unitaries]" ) {
         SECTION( "control and target collision" ) {
             
             int qb = GENERATE( range(0,NUM_QUBITS) );
-            REQUIRE_THROWS_WITH( controlledPauliY(quregVec, qb, qb), Contains("control and target") );
+            REQUIRE_THROWS_WITH( controlledPauliY(quregVec, qb, qb), ContainsSubstring("control and target") );
         }    
         SECTION( "qubit indices" ) {
             
             int qb = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( controlledPauliY(quregVec, qb, 0), Contains("Invalid control") );
-            REQUIRE_THROWS_WITH( controlledPauliY(quregVec, 0, qb), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( controlledPauliY(quregVec, qb, 0), ContainsSubstring("Invalid control") );
+            REQUIRE_THROWS_WITH( controlledPauliY(quregVec, 0, qb), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -564,14 +564,14 @@ TEST_CASE( "controlledPhaseFlip", "[unitaries]" ) {
         SECTION( "target collision" ) {
             
             int qb = GENERATE( range(0,NUM_QUBITS) );
-            REQUIRE_THROWS_WITH( controlledPhaseFlip(quregVec, qb, qb), Contains("target qubits contained duplicates") );
+            REQUIRE_THROWS_WITH( controlledPhaseFlip(quregVec, qb, qb), ContainsSubstring("target qubits contained duplicates") );
         }    
 
         SECTION( "target indices" ) {
             
             int qb = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( controlledPhaseFlip(quregVec, qb, 0), Contains("Invalid target") );
-            REQUIRE_THROWS_WITH( controlledPhaseFlip(quregVec, 0, qb), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( controlledPhaseFlip(quregVec, qb, 0), ContainsSubstring("Invalid target") );
+            REQUIRE_THROWS_WITH( controlledPhaseFlip(quregVec, 0, qb), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -614,13 +614,13 @@ TEST_CASE( "controlledPhaseShift", "[unitaries]" ) {
         SECTION( "target collision" ) {
             
             int qb = GENERATE( range(0,NUM_QUBITS) );
-            REQUIRE_THROWS_WITH( controlledPhaseShift(quregVec, qb, qb, param), Contains("target qubits contained duplicates") );
+            REQUIRE_THROWS_WITH( controlledPhaseShift(quregVec, qb, qb, param), ContainsSubstring("target qubits contained duplicates") );
         }    
         SECTION( "qubit indices" ) {
             
             int qb = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( controlledPhaseShift(quregVec, qb, 0, param), Contains("Invalid target") );
-            REQUIRE_THROWS_WITH( controlledPhaseShift(quregVec, 0, qb, param), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( controlledPhaseShift(quregVec, qb, 0, param), ContainsSubstring("Invalid target") );
+            REQUIRE_THROWS_WITH( controlledPhaseShift(quregVec, 0, qb, param), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -674,18 +674,18 @@ TEST_CASE( "controlledRotateAroundAxis", "[unitaries]" ) {
         SECTION( "control and target collision" ) {
             
             int qb = GENERATE( range(0,NUM_QUBITS) );
-            REQUIRE_THROWS_WITH( controlledRotateAroundAxis(quregVec, qb, qb, param, vec), Contains("control and target") );
+            REQUIRE_THROWS_WITH( controlledRotateAroundAxis(quregVec, qb, qb, param, vec), ContainsSubstring("control and target") );
         }    
         SECTION( "qubit indices" ) {
             
             int qb = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( controlledRotateAroundAxis(quregVec, qb, 0, param, vec), Contains("Invalid control") );
-            REQUIRE_THROWS_WITH( controlledRotateAroundAxis(quregVec, 0, qb, param, vec), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( controlledRotateAroundAxis(quregVec, qb, 0, param, vec), ContainsSubstring("Invalid control") );
+            REQUIRE_THROWS_WITH( controlledRotateAroundAxis(quregVec, 0, qb, param, vec), ContainsSubstring("Invalid target") );
         }
         SECTION( "zero rotation axis" ) {
             
             vec.x=0; vec.y=0; vec.z=0;
-            REQUIRE_THROWS_WITH( controlledRotateAroundAxis(quregVec, 0, 1, param, vec), Contains("axis") && Contains("zero") );
+            REQUIRE_THROWS_WITH( controlledRotateAroundAxis(quregVec, 0, 1, param, vec), ContainsSubstring("axis") && ContainsSubstring("zero") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -728,13 +728,13 @@ TEST_CASE( "controlledRotateX", "[unitaries]" ) {
         SECTION( "control and target collision" ) {
             
             int qb = GENERATE( range(0,NUM_QUBITS) );
-            REQUIRE_THROWS_WITH( controlledRotateX(quregVec, qb, qb, param), Contains("control and target") );
+            REQUIRE_THROWS_WITH( controlledRotateX(quregVec, qb, qb, param), ContainsSubstring("control and target") );
         }    
         SECTION( "qubit indices" ) {
             
             int qb = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( controlledRotateX(quregVec, qb, 0, param), Contains("Invalid control") );
-            REQUIRE_THROWS_WITH( controlledRotateX(quregVec, 0, qb, param), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( controlledRotateX(quregVec, qb, 0, param), ContainsSubstring("Invalid control") );
+            REQUIRE_THROWS_WITH( controlledRotateX(quregVec, 0, qb, param), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -775,13 +775,13 @@ TEST_CASE( "controlledRotateY", "[unitaries]" ) {
         SECTION( "control and target collision" ) {
             
             int qb = GENERATE( range(0,NUM_QUBITS) );
-            REQUIRE_THROWS_WITH( controlledRotateY(quregVec, qb, qb, param), Contains("control and target") );
+            REQUIRE_THROWS_WITH( controlledRotateY(quregVec, qb, qb, param), ContainsSubstring("control and target") );
         }    
         SECTION( "qubit indices" ) {
             
             int qb = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( controlledRotateY(quregVec, qb, 0, param), Contains("Invalid control") );
-            REQUIRE_THROWS_WITH( controlledRotateY(quregVec, 0, qb, param), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( controlledRotateY(quregVec, qb, 0, param), ContainsSubstring("Invalid control") );
+            REQUIRE_THROWS_WITH( controlledRotateY(quregVec, 0, qb, param), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -822,13 +822,13 @@ TEST_CASE( "controlledRotateZ", "[unitaries]" ) {
         SECTION( "control and target collision" ) {
             
             int qb = GENERATE( range(0,NUM_QUBITS) );
-            REQUIRE_THROWS_WITH( controlledRotateZ(quregVec, qb, qb, param), Contains("control and target") );
+            REQUIRE_THROWS_WITH( controlledRotateZ(quregVec, qb, qb, param), ContainsSubstring("control and target") );
         }    
         SECTION( "qubit indices" ) {
             
             int qb = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( controlledRotateZ(quregVec, qb, 0, param), Contains("Invalid control") );
-            REQUIRE_THROWS_WITH( controlledRotateZ(quregVec, 0, qb, param), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( controlledRotateZ(quregVec, qb, 0, param), ContainsSubstring("Invalid control") );
+            REQUIRE_THROWS_WITH( controlledRotateZ(quregVec, 0, qb, param), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -875,14 +875,14 @@ TEST_CASE( "controlledTwoQubitUnitary", "[unitaries]" ) {
         SECTION( "repetition of targets" ) {
             int targ = 0;
             int ctrl = 1;
-            REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, ctrl, targ, targ, matr), Contains("target") && Contains("unique") );
+            REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, ctrl, targ, targ, matr), ContainsSubstring("target") && ContainsSubstring("unique") );
         }
         SECTION( "control and target collision" ) {
             
             int targ1 = 1;
             int targ2 = 2;
             int ctrl = GENERATE( 1,2 ); // catch2 bug; can't do GENERATE_COPY( targ1, targ2 )
-            REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, ctrl, targ1, targ2, matr), Contains("control and target") );
+            REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, ctrl, targ1, targ2, matr), ContainsSubstring("control and target") );
         }
         SECTION( "qubit indices" ) {
             
@@ -892,14 +892,14 @@ TEST_CASE( "controlledTwoQubitUnitary", "[unitaries]" ) {
             int targ2 = 2;
             
             int qb = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, qb, targ1, targ2, matr), Contains("Invalid control") );
-            REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, ctrl, qb, targ2, matr), Contains("Invalid target") );
-            REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, ctrl, targ1, qb, matr), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, qb, targ1, targ2, matr), ContainsSubstring("Invalid control") );
+            REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, ctrl, qb, targ2, matr), ContainsSubstring("Invalid target") );
+            REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, ctrl, targ1, qb, matr), ContainsSubstring("Invalid target") );
         }
         SECTION( "unitarity" ) {
 
             matr.real[0][0] = 0; // break matr unitarity
-            REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, 0, 1, 2, matr), Contains("unitary") );
+            REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, 0, 1, 2, matr), ContainsSubstring("unitary") );
         }
         SECTION( "unitary fits in node" ) {
                 
@@ -908,7 +908,7 @@ TEST_CASE( "controlledTwoQubitUnitary", "[unitaries]" ) {
             quregVec.numAmpsPerNode = 1;
             quregVec.logNumAmpsPerNode = 0;
 
-            REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, 0, 1, 2, matr), Contains("communication buffer") && Contains("simultaneously store"));
+            REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, 0, 1, 2, matr), ContainsSubstring("communication buffer") && ContainsSubstring("simultaneously store"));
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -949,18 +949,18 @@ TEST_CASE( "controlledUnitary", "[unitaries]" ) {
         SECTION( "control and target collision" ) {
             
             int qb = GENERATE( range(0,NUM_QUBITS) );
-            REQUIRE_THROWS_WITH( controlledUnitary(quregVec, qb, qb, matr), Contains("control and target") );
+            REQUIRE_THROWS_WITH( controlledUnitary(quregVec, qb, qb, matr), ContainsSubstring("control and target") );
         }    
         SECTION( "qubit indices" ) {
             
             int qb = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( controlledUnitary(quregVec, qb, 0, matr), Contains("Invalid control") );
-            REQUIRE_THROWS_WITH( controlledUnitary(quregVec, 0, qb, matr), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( controlledUnitary(quregVec, qb, 0, matr), ContainsSubstring("Invalid control") );
+            REQUIRE_THROWS_WITH( controlledUnitary(quregVec, 0, qb, matr), ContainsSubstring("Invalid target") );
         }
         SECTION( "unitarity" ) {
             
             matr.real[0][0] = 0; // break unitarity
-            REQUIRE_THROWS_WITH( controlledUnitary(quregVec, 0, 1, matr), Contains("unitary") );
+            REQUIRE_THROWS_WITH( controlledUnitary(quregVec, 0, 1, matr), ContainsSubstring("unitary") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -1000,7 +1000,7 @@ TEST_CASE( "hadamard", "[unitaries]" ) {
         SECTION( "qubit indices" ) {
 
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( hadamard(quregVec, target), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( hadamard(quregVec, target), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -1056,14 +1056,14 @@ TEST_CASE( "multiControlledMultiQubitNot", "[unitaries]" ) {
             int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
             int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
             int ctrls[] = {0}; 
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, 1, targs, numTargs), Contains("number of target qubits"));
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, 1, targs, numTargs), ContainsSubstring("number of target qubits"));
         }
         SECTION( "repetition in targets" ) {
 
             int ctrls[] = {0};
             int numTargs = 3;
             int targs[] = {1,2,2};
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, 1, targs, numTargs), Contains("target") && Contains("unique"));
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, 1, targs, numTargs), ContainsSubstring("target") && ContainsSubstring("unique"));
         }
         SECTION( "number of controls" ) {
 
@@ -1073,19 +1073,19 @@ TEST_CASE( "multiControlledMultiQubitNot", "[unitaries]" ) {
             for (int i=0; i<NUM_QUBITS+1; i++)
                 ctrls[i] = i+1;
             int targs[1] = {0};
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, numCtrls, targs, 1), Contains("number of control qubits"));
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, numCtrls, targs, 1), ContainsSubstring("number of control qubits"));
         }
         SECTION( "repetition in controls" ) {
 
             int ctrls[] = {0,1,1};
             int targs[] = {3};
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, 3, targs, 1), Contains("control") && Contains("unique"));
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, 3, targs, 1), ContainsSubstring("control") && ContainsSubstring("unique"));
         }
         SECTION( "control and target collision" ) {
 
             int ctrls[] = {0,1,2};
             int targs[] = {3,1,4};
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, 3, targs, 3), Contains("control and target"));
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, ctrls, 3, targs, 3), ContainsSubstring("control and target"));
         }
         SECTION( "qubit indices" ) {
 
@@ -1098,8 +1098,8 @@ TEST_CASE( "multiControlledMultiQubitNot", "[unitaries]" ) {
             int inv = GENERATE( -1, NUM_QUBITS );
             qb1[GENERATE_COPY(range(0,numQb))] = inv;
 
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, qb1, numQb, qb2, numQb), Contains("Invalid control") );
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, qb2, numQb, qb1, numQb), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, qb1, numQb, qb2, numQb), ContainsSubstring("Invalid control") );
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitNot(quregVec, qb2, numQb, qb1, numQb), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -1162,7 +1162,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
             ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
             toComplexMatrixN(getRandomUnitary(NUM_QUBITS+1), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, numTargs, matr), Contains("number of target qubits"));
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, numTargs, matr), ContainsSubstring("number of target qubits"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "repetition in targets" ) {
@@ -1173,7 +1173,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
             toComplexMatrixN(getRandomUnitary(numTargs), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, numTargs, matr), Contains("target") && Contains("unique"));
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, numTargs, matr), ContainsSubstring("target") && ContainsSubstring("unique"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "number of controls" ) {
@@ -1187,7 +1187,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
             ComplexMatrixN matr = createComplexMatrixN(1);
             toComplexMatrixN(getRandomUnitary(1), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, numCtrls, targs, 1, matr), Contains("number of control qubits"));
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, numCtrls, targs, 1, matr), ContainsSubstring("number of control qubits"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "repetition in controls" ) {
@@ -1197,7 +1197,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
             ComplexMatrixN matr = createComplexMatrixN(1);
             toComplexMatrixN(getRandomUnitary(1), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 3, targs, 1, matr), Contains("control") && Contains("unique"));
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 3, targs, 1, matr), ContainsSubstring("control") && ContainsSubstring("unique"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "control and target collision" ) {
@@ -1207,7 +1207,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
             ComplexMatrixN matr = createComplexMatrixN(3);
             toComplexMatrixN(getRandomUnitary(3), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 3, targs, 3, matr), Contains("control and target"));
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 3, targs, 3, matr), ContainsSubstring("control and target"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "qubit indices" ) {
@@ -1223,8 +1223,8 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
             int inv = GENERATE( -1, NUM_QUBITS );
             qb1[GENERATE_COPY(range(0,numQb))] = inv;
             
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, qb1, numQb, qb2, numQb, matr), Contains("Invalid control") );
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, qb2, numQb, qb1, numQb, matr), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, qb1, numQb, qb2, numQb, matr), ContainsSubstring("Invalid control") );
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, qb2, numQb, qb1, numQb, matr), ContainsSubstring("Invalid target") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "unitarity" ) {
@@ -1237,7 +1237,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
             
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // initially zero, hence not-unitary
             syncCompMatr(matr);
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, numTargs, matr), Contains("unitary") );
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, numTargs, matr), ContainsSubstring("unitary") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "unitary creation" ) {
@@ -1247,7 +1247,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
 
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, 3, matr), Contains("created") );
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, 3, matr), ContainsSubstring("created") );
         }
         SECTION( "unitary dimensions" ) {
             
@@ -1256,7 +1256,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
             ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
             toComplexMatrixN(getRandomUnitary(3), matr); // ensure unitary
             
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, 2, matr), Contains("matrix has an inconsistent size"));
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, 2, matr), ContainsSubstring("matrix has an inconsistent size"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "unitary fits in node" ) {
@@ -1273,7 +1273,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
                 matr.cpuElems[i][i] = 1;
             syncCompMatr(matr);
             
-            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, 2, matr), Contains("communication buffer") && Contains("simultaneously store"));
+            REQUIRE_THROWS_WITH( multiControlledMultiQubitUnitary(quregVec, ctrls, 1, targs, 2, matr), ContainsSubstring("communication buffer") && ContainsSubstring("simultaneously store"));
             destroyComplexMatrixN(matr);
         }
     }
@@ -1376,7 +1376,7 @@ TEST_CASE( "multiControlledMultiRotatePauli", "[unitaries]" ) {
             // make a single Pauli invalid
             paulis[GENERATE_COPY(range(0,numTargs))] = (pauliOpType) GENERATE( -1, 4 );
             
-            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, param), Contains("invalid Pauli code"));
+            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, param), ContainsSubstring("invalid Pauli code"));
         }
         SECTION( "number of targets" ) {
 
@@ -1394,8 +1394,8 @@ TEST_CASE( "multiControlledMultiRotatePauli", "[unitaries]" ) {
             for (int i=0; i<NUM_QUBITS; i++)
                 paulis[i] = PAULI_X;
             
-            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, -1, param), Contains("must contain at least one Pauli operator") );
-            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, NUM_QUBITS+1, param), Contains("non-identity Pauli operator") && Contains("exceeds the maximum target") );
+            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, -1, param), ContainsSubstring("must contain at least one Pauli operator") );
+            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, NUM_QUBITS+1, param), ContainsSubstring("non-identity Pauli operator") && ContainsSubstring("exceeds the maximum target") );
         }
         SECTION( "repetition in targets" ) {
             
@@ -1407,7 +1407,7 @@ TEST_CASE( "multiControlledMultiRotatePauli", "[unitaries]" ) {
             for (int i=0; i<NUM_QUBITS; i++)
                 paulis[i] = PAULI_X;
             
-            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, param), Contains("Pauli indices") && Contains("duplicate"));
+            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, param), ContainsSubstring("Pauli indices") && ContainsSubstring("duplicate"));
         }
         SECTION( "number of controls" ) {
             
@@ -1419,7 +1419,7 @@ TEST_CASE( "multiControlledMultiRotatePauli", "[unitaries]" ) {
                 ctrls[i] = i+1;
             int targs[1] = {0};
             
-            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, param), Contains("number of control qubits"));
+            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, param), ContainsSubstring("number of control qubits"));
         }
         SECTION( "repetition in controls" ) {
             
@@ -1428,7 +1428,7 @@ TEST_CASE( "multiControlledMultiRotatePauli", "[unitaries]" ) {
             int ctrls[] = {0,1,1};
             int targs[] = {3};
             
-            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, param), Contains("control") && Contains("unique"));
+            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, param), ContainsSubstring("control") && ContainsSubstring("unique"));
         }
         SECTION( "control and target collision" ) {
             
@@ -1439,7 +1439,7 @@ TEST_CASE( "multiControlledMultiRotatePauli", "[unitaries]" ) {
             for (int i=0; i<numTargs; i++)
                 paulis[i] = PAULI_X;
             
-            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, param), Contains("control qubit overlaps a non-identity Pauli"));
+            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, ctrls, numCtrls, targs, paulis, numTargs, param), ContainsSubstring("control qubit overlaps a non-identity Pauli"));
         }
         SECTION( "qubit indices" ) {
             
@@ -1455,8 +1455,8 @@ TEST_CASE( "multiControlledMultiRotatePauli", "[unitaries]" ) {
             int inv = GENERATE( -1, NUM_QUBITS );
             qb1[GENERATE_COPY(range(0,numQb))] = inv;
             
-            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, qb1, numQb, qb2, paulis, numQb, param), Contains("Invalid control") );
-            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, qb2, numQb, qb1, paulis, numQb, param),  Contains("Invalid index") || Contains("exceeds the maximum") );
+            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, qb1, numQb, qb2, paulis, numQb, param), ContainsSubstring("Invalid control") );
+            REQUIRE_THROWS_WITH( multiControlledMultiRotatePauli(qureg, qb2, numQb, qb1, paulis, numQb, param),  ContainsSubstring("Invalid index") || ContainsSubstring("exceeds the maximum") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -1523,7 +1523,7 @@ TEST_CASE( "multiControlledMultiRotateZ", "[unitaries]" ) {
             int targs[NUM_QUBITS+1]; // prevents seg-fault if validation doesn't trigger
             int ctrls[] = {0};
             
-            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, ctrls, numCtrls, targs, numTargs, param), Contains("number of target qubits") );
+            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, ctrls, numCtrls, targs, numTargs, param), ContainsSubstring("number of target qubits") );
         }
         SECTION( "repetition in targets" ) {
             
@@ -1532,7 +1532,7 @@ TEST_CASE( "multiControlledMultiRotateZ", "[unitaries]" ) {
             int ctrls[] = {0};
             int targs[] = {1,2,2};
             
-            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, ctrls, numCtrls, targs, numTargs, param), Contains("target") && Contains("unique"));
+            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, ctrls, numCtrls, targs, numTargs, param), ContainsSubstring("target") && ContainsSubstring("unique"));
         }
         SECTION( "number of controls" ) {
             
@@ -1544,7 +1544,7 @@ TEST_CASE( "multiControlledMultiRotateZ", "[unitaries]" ) {
                 ctrls[i] = i+1;
             int targs[1] = {0};
             
-            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, ctrls, numCtrls, targs, numTargs, param), Contains("number of control qubits"));
+            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, ctrls, numCtrls, targs, numTargs, param), ContainsSubstring("number of control qubits"));
         }
         SECTION( "repetition in controls" ) {
             
@@ -1553,7 +1553,7 @@ TEST_CASE( "multiControlledMultiRotateZ", "[unitaries]" ) {
             int ctrls[] = {0,1,1};
             int targs[] = {3};
             
-            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, ctrls, numCtrls, targs, numTargs, param), Contains("control") && Contains("unique"));
+            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, ctrls, numCtrls, targs, numTargs, param), ContainsSubstring("control") && ContainsSubstring("unique"));
         }
         SECTION( "control and target collision" ) {
             
@@ -1562,7 +1562,7 @@ TEST_CASE( "multiControlledMultiRotateZ", "[unitaries]" ) {
             int ctrls[] = {0,1,2};
             int targs[] = {3,1,4};
             
-            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, ctrls, numCtrls, targs, numTargs, param), Contains("control and target"));
+            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, ctrls, numCtrls, targs, numTargs, param), ContainsSubstring("control and target"));
         }
         SECTION( "qubit indices" ) {
             
@@ -1575,8 +1575,8 @@ TEST_CASE( "multiControlledMultiRotateZ", "[unitaries]" ) {
             int inv = GENERATE( -1, NUM_QUBITS );
             qb1[GENERATE_COPY(range(0,numQb))] = inv;
             
-            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, qb1, numQb, qb2, numQb, param), Contains("Invalid control") );
-            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, qb2, numQb, qb1, numQb, param), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, qb1, numQb, qb2, numQb, param), ContainsSubstring("Invalid control") );
+            REQUIRE_THROWS_WITH( multiControlledMultiRotateZ(qureg, qb2, numQb, qb1, numQb, param), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -1623,19 +1623,19 @@ TEST_CASE( "multiControlledPhaseFlip", "[unitaries]" ) {
             // v4 API permits passing zero controls
             int numCtrls = GENERATE( -1, NUM_QUBITS+1 );
             int ctrls[NUM_QUBITS+1]; // avoids seg-fault if validation not triggered
-            REQUIRE_THROWS_WITH( multiControlledPhaseFlip(quregVec, ctrls, numCtrls), Contains("number of target qubits"));
+            REQUIRE_THROWS_WITH( multiControlledPhaseFlip(quregVec, ctrls, numCtrls), ContainsSubstring("number of target qubits"));
         }
         SECTION( "repetition of targets" ) {
             
             int numCtrls = 3;
             int ctrls[] = {0,1,1};
-            REQUIRE_THROWS_WITH( multiControlledPhaseFlip(quregVec, ctrls, numCtrls), Contains("qubits must be unique"));
+            REQUIRE_THROWS_WITH( multiControlledPhaseFlip(quregVec, ctrls, numCtrls), ContainsSubstring("qubits must be unique"));
         }
         SECTION( "qubit indices" ) {
             
             int numCtrls = 3;
             int ctrls[] = { 1, 2, GENERATE( -1, NUM_QUBITS ) };
-            REQUIRE_THROWS_WITH( multiControlledPhaseFlip(quregVec, ctrls, numCtrls), Contains("Invalid target qubit") );
+            REQUIRE_THROWS_WITH( multiControlledPhaseFlip(quregVec, ctrls, numCtrls), ContainsSubstring("Invalid target qubit") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -1681,19 +1681,19 @@ TEST_CASE( "multiControlledPhaseShift", "[unitaries]" ) {
             // v4 API permits passing zero controls
             int numCtrls = GENERATE( -1, NUM_QUBITS+1 );
             int ctrls[NUM_QUBITS+1]; // avoids seg-fault if validation not triggered
-            REQUIRE_THROWS_WITH( multiControlledPhaseShift(quregVec, ctrls, numCtrls, param), Contains("number of target qubits"));
+            REQUIRE_THROWS_WITH( multiControlledPhaseShift(quregVec, ctrls, numCtrls, param), ContainsSubstring("number of target qubits"));
         }
         SECTION( "repetition of targets" ) {
             
             int numCtrls = 3;
             int ctrls[] = {0,1,1};
-            REQUIRE_THROWS_WITH( multiControlledPhaseShift(quregVec, ctrls, numCtrls, param), Contains("qubits must be unique"));
+            REQUIRE_THROWS_WITH( multiControlledPhaseShift(quregVec, ctrls, numCtrls, param), ContainsSubstring("qubits must be unique"));
         }
         SECTION( "qubit indices" ) {
             
             int numCtrls = 3;
             int ctrls[] = { 1, 2, GENERATE( -1, NUM_QUBITS ) };
-            REQUIRE_THROWS_WITH( multiControlledPhaseShift(quregVec, ctrls, numCtrls, param), Contains("Invalid target qubit") );
+            REQUIRE_THROWS_WITH( multiControlledPhaseShift(quregVec, ctrls, numCtrls, param), ContainsSubstring("Invalid target qubit") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -1747,7 +1747,7 @@ TEST_CASE( "multiControlledTwoQubitUnitary", "[unitaries]" ) {
             // numCtrls=(NUM_QUBITS-1) is ok since requires ctrl qubit inds are invalid
             int numCtrls = GENERATE( -1, NUM_QUBITS+1 ); 
             int ctrls[NUM_QUBITS+1]; // avoids seg-fault if validation not triggered
-            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, numCtrls, 0, 1, matr), Contains("number of control qubits"));
+            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, numCtrls, 0, 1, matr), ContainsSubstring("number of control qubits"));
         }
         SECTION( "repetition of controls" ) {
             
@@ -1755,7 +1755,7 @@ TEST_CASE( "multiControlledTwoQubitUnitary", "[unitaries]" ) {
             int ctrls[] = {0,1,1};
             int targ1 = 2;
             int targ2 = 3;
-            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, numCtrls, targ1, targ2, matr), Contains("control") && Contains("unique"));;
+            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, numCtrls, targ1, targ2, matr), ContainsSubstring("control") && ContainsSubstring("unique"));;
         }
         SECTION( "repetition of targets" ) {
             
@@ -1763,7 +1763,7 @@ TEST_CASE( "multiControlledTwoQubitUnitary", "[unitaries]" ) {
             int ctrls[] = {0,1,2};
             int targ1 = 3;
             int targ2 = targ1;
-            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, numCtrls, targ1, targ2, matr), Contains("target") && Contains("unique"));
+            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, numCtrls, targ1, targ2, matr), ContainsSubstring("target") && ContainsSubstring("unique"));
         }
         SECTION( "control and target collision" ) {
             
@@ -1771,7 +1771,7 @@ TEST_CASE( "multiControlledTwoQubitUnitary", "[unitaries]" ) {
             int ctrls[] = {0,1,2};
             int targ1 = 3;
             int targ2 = ctrls[GENERATE_COPY( range(0,numCtrls) )];
-            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, numCtrls, targ1, targ2, matr), Contains("control and target") );
+            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, numCtrls, targ1, targ2, matr), ContainsSubstring("control and target") );
         }
         SECTION( "qubit indices" ) {
             
@@ -1782,17 +1782,17 @@ TEST_CASE( "multiControlledTwoQubitUnitary", "[unitaries]" ) {
             int ctrls[] = { 2, 3, 4 };
             
             int inv = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, numCtrls, inv, targ2, matr), Contains("Invalid target") );
-            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, numCtrls, targ1, inv, matr), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, numCtrls, inv, targ2, matr), ContainsSubstring("Invalid target") );
+            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, numCtrls, targ1, inv, matr), ContainsSubstring("Invalid target") );
 
             ctrls[numCtrls-1] = inv; // make ctrls invalid 
-            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, numCtrls, targ1, targ2, matr), Contains("Invalid control") );
+            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, numCtrls, targ1, targ2, matr), ContainsSubstring("Invalid control") );
         }
         SECTION( "unitarity " ) {
             
             int ctrls[1] = {0};
             matr.real[0][0] = 0; // break unitarity
-            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, 1, 1, 2, matr), Contains("unitary") );
+            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, 1, 1, 2, matr), ContainsSubstring("unitary") );
         }
         SECTION( "unitary fits in node" ) {
                 
@@ -1802,7 +1802,7 @@ TEST_CASE( "multiControlledTwoQubitUnitary", "[unitaries]" ) {
             quregVec.logNumAmpsPerNode = 0;
 
             int ctrls[1] = {0};
-            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, 1, 1, 2, matr), Contains("communication buffer") && Contains("simultaneously store"));
+            REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, 1, 1, 2, matr), ContainsSubstring("communication buffer") && ContainsSubstring("simultaneously store"));
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -1848,33 +1848,33 @@ TEST_CASE( "multiControlledUnitary", "[unitaries]" ) {
             // v4 API permits passing zero and NUM_QUBITS controls
             int numCtrls = GENERATE( -1, NUM_QUBITS+1 );
             int ctrls[NUM_QUBITS+1]; // avoids seg-fault if validation not triggered
-            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, numCtrls, 0, matr), Contains("number of control qubits"));
+            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, numCtrls, 0, matr), ContainsSubstring("number of control qubits"));
         }
         SECTION( "repetition of controls" ) {
             
             int ctrls[] = {0,1,1};
-            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 3, 2, matr), Contains("control") && Contains("unique"));
+            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 3, 2, matr), ContainsSubstring("control") && ContainsSubstring("unique"));
         }
         SECTION( "control and target collision" ) {
             
             int ctrls[] = {0,1,2};
             int targ = ctrls[GENERATE( range(0,3) )];
-            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 3, targ, matr), Contains("control and target") );
+            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 3, targ, matr), ContainsSubstring("control and target") );
         }
         SECTION( "qubit indices" ) {
             
             int ctrls[] = { 1, 2, GENERATE( -1, NUM_QUBITS ) };
-            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 3, 0, matr), Contains("Invalid control") );
+            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 3, 0, matr), ContainsSubstring("Invalid control") );
             
             ctrls[2] = 3; // make ctrls valid 
             int targ = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 3, targ, matr), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 3, targ, matr), ContainsSubstring("Invalid target") );
         }
         SECTION( "unitarity" ) {
 
             matr.real[0][0] = 0; // break matr unitarity
             int ctrls[] = {0};
-            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 1, 1, matr), Contains("unitary") );
+            REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 1, 1, matr), ContainsSubstring("unitary") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -1925,13 +1925,13 @@ TEST_CASE( "multiQubitNot", "[unitaries]" ) {
             // there cannot be more targets than qubits in register
             int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
             int targs[NUM_QUBITS+1];
-            REQUIRE_THROWS_WITH( multiQubitNot(quregVec, targs, numTargs), Contains("number of target qubits"));
+            REQUIRE_THROWS_WITH( multiQubitNot(quregVec, targs, numTargs), ContainsSubstring("number of target qubits"));
         }
         SECTION( "repetition in targets" ) {
 
             int numTargs = 3;
             int targs[] = {1,2,2};
-            REQUIRE_THROWS_WITH( multiQubitNot(quregVec, targs, numTargs), Contains("target") && Contains("unique"));
+            REQUIRE_THROWS_WITH( multiQubitNot(quregVec, targs, numTargs), ContainsSubstring("target") && ContainsSubstring("unique"));
         }
         SECTION( "target indices" ) {
 
@@ -1941,7 +1941,7 @@ TEST_CASE( "multiQubitNot", "[unitaries]" ) {
             
             // make one index invalid
             qubits[GENERATE_COPY(range(0,numQb))] = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( multiQubitNot(quregVec, qubits, numQb), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( multiQubitNot(quregVec, qubits, numQb), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -1995,7 +1995,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
             ComplexMatrixN matr = createComplexMatrixN(NUM_QUBITS+1); // prevent seg-fault
             syncCompMatr(matr);
             
-            REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), Contains("number of target qubits"));
+            REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), ContainsSubstring("number of target qubits"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "repetition in targets" ) {
@@ -2005,7 +2005,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // prevents seg-fault if validation doesn't trigger
             syncCompMatr(matr);
             
-            REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), Contains("target") && Contains("unique"));
+            REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), ContainsSubstring("target") && ContainsSubstring("unique"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "qubit indices" ) {
@@ -2017,7 +2017,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
             
             int inv = GENERATE( -1, NUM_QUBITS );
             targs[GENERATE_COPY( range(0,numTargs) )] = inv; // make invalid target
-            REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), ContainsSubstring("Invalid target") );
             
             destroyComplexMatrixN(matr);
         }
@@ -2031,7 +2031,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
             ComplexMatrixN matr = createComplexMatrixN(numTargs); // initially zero, hence not-unitary
             syncCompMatr(matr);
             
-            REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), Contains("unitary") );
+            REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), ContainsSubstring("unitary") );
             destroyComplexMatrixN(matr);
         }
         SECTION( "unitary creation" ) {
@@ -2041,7 +2041,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
             
             ComplexMatrixN matr;
             matr.cpuElems = NULL;
-            REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), Contains("created") );
+            REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, numTargs, matr), ContainsSubstring("created") );
         }
         SECTION( "unitary dimensions" ) {
             
@@ -2049,7 +2049,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
             ComplexMatrixN matr = createComplexMatrixN(3); // intentionally wrong size
             syncCompMatr(matr);
             
-            REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, 2, matr), Contains("matrix has an inconsistent size"));
+            REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, targs, 2, matr), ContainsSubstring("matrix has an inconsistent size"));
             destroyComplexMatrixN(matr);
         }
         SECTION( "unitary fits in node" ) {
@@ -2065,7 +2065,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
                 matr.cpuElems[i][i] = 1;
             syncCompMatr(matr);
 
-            REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, qb, 2, matr), Contains("communication buffer") && Contains("simultaneously store"));
+            REQUIRE_THROWS_WITH( multiQubitUnitary(quregVec, qb, 2, matr), ContainsSubstring("communication buffer") && ContainsSubstring("simultaneously store"));
             destroyComplexMatrixN(matr);
         }
     }
@@ -2152,14 +2152,14 @@ TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
             for (int i=0; i<NUM_QUBITS+1; i++)
                 paulis[i] = PAULI_X;
 
-            REQUIRE_THROWS_WITH( multiRotatePauli(quregVec, targs, paulis, numTargs, param), (Contains("Pauli operator") && Contains("exceeds the maximum target")) || Contains("Invalid number of Paulis") );
+            REQUIRE_THROWS_WITH( multiRotatePauli(quregVec, targs, paulis, numTargs, param), (ContainsSubstring("Pauli operator") && ContainsSubstring("exceeds the maximum target")) || ContainsSubstring("Invalid number of Paulis") );
         }
         SECTION( "repetition of targets" ) {
             
             int numTargs = 3;
             int targs[3] = {0, 1, 1};
             pauliOpType paulis[3] = {PAULI_X, PAULI_X, PAULI_X};
-            REQUIRE_THROWS_WITH( multiRotatePauli(quregVec, targs, paulis, numTargs, param), Contains("Pauli indices contained a duplicate"));
+            REQUIRE_THROWS_WITH( multiRotatePauli(quregVec, targs, paulis, numTargs, param), ContainsSubstring("Pauli indices contained a duplicate"));
         }
         SECTION( "qubit indices" ) {
             
@@ -2170,14 +2170,14 @@ TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
             for (int i=0; i<NUM_QUBITS; i++)
                 paulis[i] = PAULI_X;
 
-            REQUIRE_THROWS_WITH( multiRotatePauli(quregVec, targs, paulis, numTargs, param), (Contains("non-identity Pauli operator") && Contains("exceeds the maximum")) || Contains("Invalid index"));
+            REQUIRE_THROWS_WITH( multiRotatePauli(quregVec, targs, paulis, numTargs, param), (ContainsSubstring("non-identity Pauli operator") && ContainsSubstring("exceeds the maximum")) || ContainsSubstring("Invalid index"));
         }
         SECTION( "pauli codes" ) {
             int numTargs = 3;
             int targs[3] = {0, 1, 2};
             pauliOpType paulis[3] = {PAULI_X, PAULI_X, PAULI_X};
             paulis[GENERATE_COPY(range(0,numTargs))] = (pauliOpType) GENERATE( -1, 4 );
-            REQUIRE_THROWS_WITH( multiRotatePauli(quregVec, targs, paulis, numTargs, param), Contains("invalid Pauli code"));
+            REQUIRE_THROWS_WITH( multiRotatePauli(quregVec, targs, paulis, numTargs, param), ContainsSubstring("invalid Pauli code"));
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -2236,21 +2236,21 @@ TEST_CASE( "multiRotateZ", "[unitaries]" ) {
             
             int numTargs = GENERATE( -1, 0, NUM_QUBITS+1 );
             int targs[NUM_QUBITS+1]; // prevent seg-fault if validation isn't triggered
-            REQUIRE_THROWS_WITH( multiRotateZ(quregVec, targs, numTargs, param), Contains("number of target qubits"));
+            REQUIRE_THROWS_WITH( multiRotateZ(quregVec, targs, numTargs, param), ContainsSubstring("number of target qubits"));
             
         }
         SECTION( "repetition of targets" ) {
             
             int numTargs = 3;
             int targs[3] = {0, 1, 1};
-            REQUIRE_THROWS_WITH( multiRotateZ(quregVec, targs, numTargs, param), Contains("target") && Contains("unique"));
+            REQUIRE_THROWS_WITH( multiRotateZ(quregVec, targs, numTargs, param), ContainsSubstring("target") && ContainsSubstring("unique"));
         }
         SECTION( "qubit indices" ) {
             
             int numTargs = 3;
             int targs[3] = {0, 1, 2};
             targs[GENERATE_COPY(range(0,numTargs))] = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( multiRotateZ(quregVec, targs, numTargs, param), Contains("Invalid target"));
+            REQUIRE_THROWS_WITH( multiRotateZ(quregVec, targs, numTargs, param), ContainsSubstring("Invalid target"));
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -2319,37 +2319,37 @@ TEST_CASE( "multiStateControlledUnitary", "[unitaries]" ) {
             int numCtrls = GENERATE( -1, NUM_QUBITS+1 );
             int ctrls[NUM_QUBITS+1]; 
             int ctrlState[NUM_QUBITS+1] = {0}; 
-            REQUIRE_THROWS_WITH( multiStateControlledUnitary(quregVec, ctrls, ctrlState, numCtrls, 0, matr), Contains("number of control qubits"));
+            REQUIRE_THROWS_WITH( multiStateControlledUnitary(quregVec, ctrls, ctrlState, numCtrls, 0, matr), ContainsSubstring("number of control qubits"));
         }
         SECTION( "repetition of controls" ) {
             
             int ctrls[] = {0,1,1};
             int ctrlState[] = {0, 1, 0};
-            REQUIRE_THROWS_WITH( multiStateControlledUnitary(quregVec, ctrls, ctrlState, 3, 2, matr), Contains("control") && Contains("unique"));
+            REQUIRE_THROWS_WITH( multiStateControlledUnitary(quregVec, ctrls, ctrlState, 3, 2, matr), ContainsSubstring("control") && ContainsSubstring("unique"));
         }
         SECTION( "control and target collision" ) {
             
             int ctrls[] = {0,1,2};
             int ctrlState[] = {0, 1, 0};
             int targ = ctrls[GENERATE( range(0,3) )];
-            REQUIRE_THROWS_WITH( multiStateControlledUnitary(quregVec, ctrls, ctrlState, 3, targ, matr), Contains("control and target") );
+            REQUIRE_THROWS_WITH( multiStateControlledUnitary(quregVec, ctrls, ctrlState, 3, targ, matr), ContainsSubstring("control and target") );
         }
         SECTION( "qubit indices" ) {
             
             int ctrls[] = { 1, 2, GENERATE( -1, NUM_QUBITS ) };
             int ctrlState[] = {0, 1, 0};
-            REQUIRE_THROWS_WITH( multiStateControlledUnitary(quregVec, ctrls, ctrlState, 3, 0, matr), Contains("Invalid control") );
+            REQUIRE_THROWS_WITH( multiStateControlledUnitary(quregVec, ctrls, ctrlState, 3, 0, matr), ContainsSubstring("Invalid control") );
             
             ctrls[2] = 3; // make ctrls valid 
             int targ = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( multiStateControlledUnitary(quregVec, ctrls, ctrlState, 3, targ, matr), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( multiStateControlledUnitary(quregVec, ctrls, ctrlState, 3, targ, matr), ContainsSubstring("Invalid target") );
         }
         SECTION( "unitarity" ) {
 
             matr.real[0][0] = 0; // break matr unitarity
             int ctrls[] = {0};
             int ctrlState[1] = {0};
-            REQUIRE_THROWS_WITH( multiStateControlledUnitary(quregVec, ctrls, ctrlState, 1, 1, matr), Contains("unitary") );
+            REQUIRE_THROWS_WITH( multiStateControlledUnitary(quregVec, ctrls, ctrlState, 1, 1, matr), ContainsSubstring("unitary") );
         }
         SECTION( "control state bits" ) {
             
@@ -2360,7 +2360,7 @@ TEST_CASE( "multiStateControlledUnitary", "[unitaries]" ) {
             
             // make invalid 
             ctrlState[2] = GENERATE(-1, 2);
-            REQUIRE_THROWS_WITH( multiStateControlledUnitary(quregVec, ctrls, ctrlState, 3, targ, matr), Contains("state") );
+            REQUIRE_THROWS_WITH( multiStateControlledUnitary(quregVec, ctrls, ctrlState, 3, targ, matr), ContainsSubstring("state") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -2399,7 +2399,7 @@ TEST_CASE( "pauliX", "[unitaries]" ) {
         SECTION( "qubit indices" ) {
             
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( pauliX(quregVec, target), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( pauliX(quregVec, target), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -2438,7 +2438,7 @@ TEST_CASE( "pauliY", "[unitaries]" ) {
         SECTION( "qubit indices" ) {
             
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( pauliY(quregVec, target), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( pauliY(quregVec, target), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -2477,7 +2477,7 @@ TEST_CASE( "pauliZ", "[unitaries]" ) {
         SECTION( "qubit indices" ) {
             
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( pauliZ(quregVec, target), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( pauliZ(quregVec, target), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -2517,7 +2517,7 @@ TEST_CASE( "phaseShift", "[unitaries]" ) {
         SECTION( "qubit indices" ) {
 
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( phaseShift(quregVec, target, param), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( phaseShift(quregVec, target, param), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -2572,13 +2572,13 @@ TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
         SECTION( "qubit indices" ) {
 
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( rotateAroundAxis(quregVec, target, param, vec), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( rotateAroundAxis(quregVec, target, param, vec), ContainsSubstring("Invalid target") );
         }
         SECTION( "zero rotation axis" ) {
             
             int target = 0;
             vec.x=0; vec.y=0; vec.z=0;
-            REQUIRE_THROWS_WITH( rotateAroundAxis(quregVec, target, param, vec), Contains("axis") && Contains("zero") );
+            REQUIRE_THROWS_WITH( rotateAroundAxis(quregVec, target, param, vec), ContainsSubstring("axis") && ContainsSubstring("zero") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -2620,7 +2620,7 @@ TEST_CASE( "rotateX", "[unitaries]" ) {
         SECTION( "qubit indices" ) {
 
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( rotateX(quregVec, target, param), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( rotateX(quregVec, target, param), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -2660,7 +2660,7 @@ TEST_CASE( "rotateY", "[unitaries]" ) {
         SECTION( "qubit indices" ) {
 
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( rotateY(quregVec, target, param), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( rotateY(quregVec, target, param), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -2700,7 +2700,7 @@ TEST_CASE( "rotateZ", "[unitaries]" ) {
         SECTION( "qubit indices" ) {
 
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( rotateZ(quregVec, target, param), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( rotateZ(quregVec, target, param), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -2739,7 +2739,7 @@ TEST_CASE( "sGate", "[unitaries]" ) {
         SECTION( "qubit indices" ) {
 
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( sGate(quregVec, target), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( sGate(quregVec, target), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -2783,13 +2783,13 @@ TEST_CASE( "sqrtSwapGate", "[unitaries]" ) {
             
             int targ1 = GENERATE( -1, NUM_QUBITS );
             int targ2 = 0;
-            REQUIRE_THROWS_WITH( sqrtSwapGate(quregVec, targ1, targ2), Contains("Invalid target") );
-            REQUIRE_THROWS_WITH( sqrtSwapGate(quregVec, targ2, targ1), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( sqrtSwapGate(quregVec, targ1, targ2), ContainsSubstring("Invalid target") );
+            REQUIRE_THROWS_WITH( sqrtSwapGate(quregVec, targ2, targ1), ContainsSubstring("Invalid target") );
         }
         SECTION( "repetition of targets" ) {
             
             int qb = 0;
-            REQUIRE_THROWS_WITH( sqrtSwapGate(quregVec, qb, qb), Contains("target") && Contains("unique") );
+            REQUIRE_THROWS_WITH( sqrtSwapGate(quregVec, qb, qb), ContainsSubstring("target") && ContainsSubstring("unique") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -2831,13 +2831,13 @@ TEST_CASE( "swapGate", "[unitaries]" ) {
             
             int targ1 = GENERATE( -1, NUM_QUBITS );
             int targ2 = 0;
-            REQUIRE_THROWS_WITH( swapGate(quregVec, targ1, targ2), Contains("Invalid target") );
-            REQUIRE_THROWS_WITH( swapGate(quregVec, targ2, targ1), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( swapGate(quregVec, targ1, targ2), ContainsSubstring("Invalid target") );
+            REQUIRE_THROWS_WITH( swapGate(quregVec, targ2, targ1), ContainsSubstring("Invalid target") );
         }
         SECTION( "repetition of targets" ) {
             
             int qb = 0;
-            REQUIRE_THROWS_WITH( swapGate(quregVec, qb, qb), Contains("target") && Contains("unique") );
+            REQUIRE_THROWS_WITH( swapGate(quregVec, qb, qb), ContainsSubstring("target") && ContainsSubstring("unique") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -2876,7 +2876,7 @@ TEST_CASE( "tGate", "[unitaries]" ) {
         SECTION( "qubit indices" ) {
 
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( tGate(quregVec, target), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( tGate(quregVec, target), ContainsSubstring("Invalid target") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -2924,18 +2924,18 @@ TEST_CASE( "twoQubitUnitary", "[unitaries]" ) {
             
             int targ1 = GENERATE( -1, NUM_QUBITS );
             int targ2 = 0;
-            REQUIRE_THROWS_WITH( twoQubitUnitary(quregVec, targ1, targ2, matr), Contains("Invalid target") );
-            REQUIRE_THROWS_WITH( twoQubitUnitary(quregVec, targ2, targ1, matr), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( twoQubitUnitary(quregVec, targ1, targ2, matr), ContainsSubstring("Invalid target") );
+            REQUIRE_THROWS_WITH( twoQubitUnitary(quregVec, targ2, targ1, matr), ContainsSubstring("Invalid target") );
         }
         SECTION( "repetition of targets" ) {
             
             int qb = 0;
-            REQUIRE_THROWS_WITH( twoQubitUnitary(quregVec, qb, qb, matr), Contains("target") && Contains("unique") );
+            REQUIRE_THROWS_WITH( twoQubitUnitary(quregVec, qb, qb, matr), ContainsSubstring("target") && ContainsSubstring("unique") );
         }
         SECTION( "unitarity" ) {
 
             matr.real[0][0] = 0; // break matr unitarity
-            REQUIRE_THROWS_WITH( twoQubitUnitary(quregVec, 0, 1, matr), Contains("unitary") );
+            REQUIRE_THROWS_WITH( twoQubitUnitary(quregVec, 0, 1, matr), ContainsSubstring("unitary") );
         }
         SECTION( "unitary fits in node" ) {
                 
@@ -2943,7 +2943,7 @@ TEST_CASE( "twoQubitUnitary", "[unitaries]" ) {
             quregVec.isDistributed = 1;
             quregVec.numAmpsPerNode = 1;
             quregVec.logNumAmpsPerNode = 0;
-            REQUIRE_THROWS_WITH( twoQubitUnitary(quregVec, 0, 1, matr), Contains("communication buffer") && Contains("cannot simultaneously store") );
+            REQUIRE_THROWS_WITH( twoQubitUnitary(quregVec, 0, 1, matr), ContainsSubstring("communication buffer") && ContainsSubstring("cannot simultaneously store") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
@@ -2985,12 +2985,12 @@ TEST_CASE( "unitary", "[unitaries]" ) {
         SECTION( "qubit indices" ) {
             
             int target = GENERATE( -1, NUM_QUBITS );
-            REQUIRE_THROWS_WITH( unitary(quregVec, target, matr), Contains("Invalid target") );
+            REQUIRE_THROWS_WITH( unitary(quregVec, target, matr), ContainsSubstring("Invalid target") );
         }
         SECTION( "unitarity" ) {
             
             matr.real[0][0] = 0; // break matr unitarity
-            REQUIRE_THROWS_WITH( unitary(quregVec, 0, matr), Contains("unitary") );
+            REQUIRE_THROWS_WITH( unitary(quregVec, 0, matr), ContainsSubstring("unitary") );
         }
     }
     CLEANUP_TEST( quregVec, quregMatr );
