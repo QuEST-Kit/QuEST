@@ -22,6 +22,7 @@ make
 | `FLOAT_PRECISION` | (`2`), `1`, `4` | Determines which floating-point precision QuEST will use: double, single, or quad. *Note: Quad precision is not supported when also compiling for GPU.* |
 | `BUILD_EXAMPLES` | (`ON`), `OFF` | Determines whether the example programs will be built alongside QuEST. |
 | `ENABLE_TESTING` | (`ON`), `OFF` | Determines whether Catch2 tests will be built alongisde QuEST. If built, tests can be run from the build directory with `make test`. |
+| `DOWNLOAD_CATCH2` | (`ON`), `OFF` | By default, if you don't have Catch2 installed (or CMake doesn't find it) it will be downloaded from Git and built for you. If you don't want that to happen, for example because you _do_ have Catch2 installed, set this to `OFF`. |
 | `ENABLE_MULTITHREADING` | (`ON`), OFF | Determines whether QuEST will be built with support for parallelisation with OpenMP. |
 | `ENABLE_DISTRIBUTION` | (`OFF`), ON | Determines whether QuEST will be built with support for parallelisation with MPI. |
 | `ENABLE_CUDA` | (`OFF`), `ON` | Determines whether QuEST will be built with support for NVIDIA GPU acceleration. If turned on, `CMAKE_CUDA_ARCHITECTURES` should probably also be set. |
