@@ -90,6 +90,12 @@ option(
 )
 message(STATUS "Testing is turned ${ENABLE_TESTING}. Set ENABLE_TESTING to modify.")
 
+option(
+  DOWNLOAD_CATCH2
+  "Whether Catch2 v3 will be downloaded if it is not found. Turned ON by default."
+  ON
+)
+
 # Multithreading
 option(
   ENABLE_MULTITHREADING 
@@ -296,7 +302,27 @@ endif()
 ## Tests
 
 if (ENABLE_TESTING)
-  find_package(Catch2 3.1.1 REQUIRED)
+  find_package(Catch2 3.1.1 QUIET)
+
+  if (NOT TARGET Catch2::Catch2 AND DOWNLOAD_CATCH2)
+    message(STATUS "Catch2 not found, it will be downloaded and built in the build directory.")
+    Include(FetchContent)
+
+    FetchContent_Declare(
+      Catch2
+      GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+      GIT_TAG        v3.1.1
+    )
+    
+    FetchContent_MakeAvailable(Catch2)
+  
+  else()
+    # We won't magically find it here, but this is the easiest way to
+    # a) Force the build to fail, and
+    # b) Print out all the useful information for helping CMake find Catch2
+    find_package(Catch2 3.1.1 REQUIRED)
+  endif()
+
   include(Catch)
   enable_testing()
   add_subdirectory(tests)
