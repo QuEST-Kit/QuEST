@@ -16,6 +16,8 @@
 
 #include "quest.h"
 
+#include <catch2/generators/catch_generators.hpp>
+
 #include <string>
 #include <vector>
 

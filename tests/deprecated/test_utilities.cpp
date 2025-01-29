@@ -4,7 +4,8 @@
  * @author Tyson Jones
  */
 
-#include <catch2/catch_all.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #define INCLUDE_DEPRECATED_FUNCTIONS 1
 #define DISABLE_DEPRECATION_WARNINGS 1

@@ -13,7 +13,10 @@
  * @author Tyson Jones
  */
  
-#include <catch2/catch_all.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
+#include <catch2/generators/catch_generators_adapters.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
 // must define preprocessors to enable quest's
 // deprecated v3 API, and disable the numerous

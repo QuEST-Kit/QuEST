@@ -1,7 +1,10 @@
 // must include catch.hpp first, because quest's
 // deprecation library will include a definition
 // of Vector{}
-#include <catch2/catch_all.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 
 // must define preprocessors to enable quest's
 // deprecated v3 API, and disable the numerous
