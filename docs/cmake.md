@@ -20,7 +20,7 @@ make
 | `LIB_NAME` | (`QuEST`), String | The QuEST library will be named `lib${LIB_NAME}.so`. Can be used to differentiate multiple versions of QuEST which have been compiled. |
 | `VERBOSE_LIB_NAME` | (`OFF`), `ON` | When turned on `LIB_NAME` will be modified according to the other configuration options chosen. For example compiling QuEST with multithreading, distribution, and double precision with `VERBOSE_LIB_NAME` turned on creates `libQuEST-fp2+mt+mpi.so`. |
 | `FLOAT_PRECISION` | (`2`), `1`, `4` | Determines which floating-point precision QuEST will use: double, single, or quad. *Note: Quad precision is not supported when also compiling for GPU.* |
-| `BUILD_EXAMPLES` | (`ON`), `OFF` | Determines whether the example programs will be built alongside QuEST. |
+| `BUILD_EXAMPLES` | (`OFF`), `ON` | Determines whether the example programs will be built alongside QuEST. Note that `min_example` is always built. |
 | `ENABLE_TESTING` | (`ON`), `OFF` | Determines whether Catch2 tests will be built alongisde QuEST. If built, tests can be run from the build directory with `make test`. |
 | `DOWNLOAD_CATCH2` | (`ON`), `OFF` | By default, if you don't have Catch2 installed (or CMake doesn't find it) it will be downloaded from Git and built for you. If you don't want that to happen, for example because you _do_ have Catch2 installed, set this to `OFF`. |
 | `ENABLE_MULTITHREADING` | (`ON`), OFF | Determines whether QuEST will be built with support for parallelisation with OpenMP. |

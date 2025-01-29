@@ -77,8 +77,8 @@ endif()
 # Examples
 option(
   BUILD_EXAMPLES
-  "Whether the example programs will be built alongside the QuEST library. Turned ON by default."
-  ON
+  "Whether the example programs will be built alongside the QuEST library. Turned OFF by default."
+  OFF
 )
 message(STATUS "Examples are turned ${BUILD_EXAMPLES}. Set BUILD_EXAMPLES to modify.")
 
