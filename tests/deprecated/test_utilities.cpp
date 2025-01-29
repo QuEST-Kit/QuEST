@@ -1657,33 +1657,27 @@ Catch::Generators::GeneratorWrapper<int*> sublists(
     int* list, int len, int sublen
 ) {    
     return Catch::Generators::GeneratorWrapper<int*>(
-//        std::unique_ptr<Catch::Generators::IGenerator<int*>>(
-//            new SubListGenerator(list, len, sublen)));
             Catch::Detail::make_unique<SubListGenerator>(list, len, sublen));
 }
 Catch::Generators::GeneratorWrapper<int*> sublists(
     Catch::Generators::GeneratorWrapper<int>&& gen, int numSamps, const int* exclude, int numExclude
 ) {    
     return Catch::Generators::GeneratorWrapper<int*>(
-//        std::unique_ptr<Catch::Generators::IGenerator<int*>>(
-//            new SubListGenerator(std::move(gen), numSamps, exclude, numExclude)));
-            Catch::Detail::make_unique<SubListGenerator>(std::move(gen), numSamps, exclude, numExclude));
+        Catch::Detail::make_unique<SubListGenerator>(std::move(gen), numSamps, exclude, numExclude));
 }
 Catch::Generators::GeneratorWrapper<int*> sublists(
     Catch::Generators::GeneratorWrapper<int>&& gen, int numSamps, int excluded
 ) {
     int exclude[] = {excluded};  
     return Catch::Generators::GeneratorWrapper<int*>(
-        std::unique_ptr<Catch::Generators::IGenerator<int*>>(
-            new SubListGenerator(std::move(gen), numSamps, exclude, 1)));
+        Catch::Detail::make_unique<SubListGenerator>(std::move(gen), numSamps, exclude, 1));
 }
 Catch::Generators::GeneratorWrapper<int*> sublists(
     Catch::Generators::GeneratorWrapper<int>&& gen, int numSamps
 ) {
     int exclude[] = {-1}; // non-empty to satisfy MSVC
     return Catch::Generators::GeneratorWrapper<int*>(
-        std::unique_ptr<Catch::Generators::IGenerator<int*>>(
-            new SubListGenerator(std::move(gen), numSamps, exclude, 0)));
+            Catch::Detail::make_unique<SubListGenerator>(std::move(gen), numSamps, exclude, 0));
 }
 
 template <typename T>
@@ -1726,16 +1720,13 @@ public:
 };
 Catch::Generators::GeneratorWrapper<int*> bitsets(int numBits) {    
     return Catch::Generators::GeneratorWrapper<int*>(
-        std::unique_ptr<Catch::Generators::IGenerator<int*>>(
-            new SequenceGenerator<int>(1, numBits)));
+        Catch::Detail::make_unique<SequenceGenerator<int>>(1, numBits));
 }
 Catch::Generators::GeneratorWrapper<int*> sequences(int base, int numDigits) {    
     return Catch::Generators::GeneratorWrapper<int*>(
-        std::unique_ptr<Catch::Generators::IGenerator<int*>>(
-            new SequenceGenerator<int>(base-1, numDigits)));
+        Catch::Detail::make_unique<SequenceGenerator<int>>(base-1, numDigits));
 }
 Catch::Generators::GeneratorWrapper<pauliOpType*> pauliseqs(int numPaulis) {    
     return Catch::Generators::GeneratorWrapper<pauliOpType*>(
-        std::unique_ptr<Catch::Generators::IGenerator<pauliOpType*>>(
-            new SequenceGenerator<pauliOpType>(PAULI_Z, numPaulis)));
+        Catch::Detail::make_unique<SequenceGenerator<pauliOpType>>(PAULI_Z, numPaulis));
 }
