@@ -15,6 +15,8 @@ project(QuEST
   LANGUAGES CXX C
 )
 
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+
 ## Dependencies
 
 # GNUInstallDirs to provide sensible default install directory names
@@ -232,7 +234,9 @@ else()
 endif()
 
 if (ENABLE_CUQUANTUM)
+  find_package(CUQUANTUM REQUIRED)
   target_compile_definitions(QuEST PUBLIC COMPILE_CUQUANTUM=1)
+  target_link_libraries(QuEST PUBLIC CUQUANTUM::cuQuantum)
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+cuquantum")
   endif()
