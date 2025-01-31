@@ -26,8 +26,12 @@
 
 
 #if COMPILE_CUDA
+  #if defined(__NVCC__)
     #include <cuda.h>
     #include <cuda_runtime.h>
+  #else
+    #include "quest/src/gpu/cuda_to_hip.h"
+  #endif
 #endif
 
 

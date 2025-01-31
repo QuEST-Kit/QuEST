@@ -23,8 +23,12 @@
 
 #include <array>
 #include <vector>
-#include <cuComplex.h>
 
+#if defined(__NVCC__)
+  #include <cuComplex.h>
+#else
+  #include "quest/src/gpu/cuda_to_hip.h"
+#endif
 
 
 /*

@@ -244,13 +244,17 @@ if (ENABLE_HIP)
   enable_language(HIP)
   set(CMAKE_HIP_STANDARD_REQUIRED ON)
   set_property(TARGET QuEST PROPERTY HIP_STANDARD 17)
-  
+ 
+  find_package(HIP REQUIRED)
+
   target_compile_definitions(QuEST
     PUBLIC COMPILE_CUDA=1
     PUBLIC COMPILE_CUQUANTUM=0
     PUBLIC COMPILE_HIP=1
     PUBLIC __HIP_PLATFORM_AMD__
   )
+
+  target_link_libraries(QuEST PUBLIC hip::amdhip64)
 
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+hip")
