@@ -1622,19 +1622,19 @@ void gpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
-    qreal norm = 1 / sqrt(prob);
+    qreal renorm = 1 / sqrt(prob);
 
 #if COMPILE_CUQUANTUM
 
     // cuQuantum disregards NumQubits template param
-    cuquantum_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, norm);
+    cuquantum_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, renorm);
 
 #elif COMPILE_CUDA
 
-    thrust_statevec_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, norm);
+    thrust_statevec_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, renorm);
 
 #else
-    (void) norm; // silence not-used
+    (void) renorm; // silence not-used
     error_gpuSimButGpuNotCompiled();
 #endif
 }
@@ -1645,8 +1645,8 @@ void gpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
-    qreal norm = 1 / prob;
-    thrust_densmatr_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, norm);
+    qreal renorm = 1 / prob;
+    thrust_densmatr_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, renorm);
 
 #else
     error_gpuSimButGpuNotCompiled();

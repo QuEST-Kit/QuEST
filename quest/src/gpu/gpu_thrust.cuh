@@ -525,14 +525,15 @@ template <int NumTargets>
 struct functor_projectDensMatr : public thrust::binary_function<qindex,cu_qcomp,cu_qcomp> {
 
     // this functor multiplies an amp with zero or a 
-    // renormalisation codfficient, depending on whether
+    // renormalisation coefficient, depending on whether
     // the basis state of the amp has qubits in a particular
     // configuration. This is used to project density matrix
     // qubits into a particular measurement outcome
 
     int* targetsPtr;
     int numTargets, rank, numQuregQubits;
-    qindex logNumAmpsPerNode, retainValue, renorm;
+    qindex logNumAmpsPerNode, retainValue;
+    qreal renorm;
 
     functor_projectDensMatr(
         int* targetsPtr, int numTargets, int rank, int numQuregQubits,
@@ -988,13 +989,13 @@ cu_qcomp thrust_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDi
 
 
 template <int NumQubits>
-void thrust_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal norm) {
+void thrust_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal renorm) {
 
     devints devQubits = qubits;
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
     auto projFunctor = functor_projectStateVec<NumQubits>(
         getPtr(devQubits), qubits.size(), qureg.rank, 
-        qureg.logNumAmpsPerNode, retainValue, norm);
+        qureg.logNumAmpsPerNode, retainValue, renorm);
 
     auto indIter = thrust::make_counting_iterator(0);
     auto ampIter = getStartPtr(qureg);
@@ -1005,13 +1006,13 @@ void thrust_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, ve
 
 
 template <int NumQubits>
-void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal norm) {
+void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal renorm) {
 
     devints devQubits = qubits;
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
     auto projFunctor = functor_projectDensMatr<NumQubits>(
         getPtr(devQubits), qubits.size(), qureg.rank, qureg.numQubits,
-        qureg.logNumAmpsPerNode, retainValue, norm);
+        qureg.logNumAmpsPerNode, retainValue, renorm);
 
     auto indIter = thrust::make_counting_iterator(0);
     auto ampIter = getStartPtr(qureg);
