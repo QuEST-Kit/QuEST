@@ -423,7 +423,7 @@ void accel_densmatr_allTargDiagMatr_subA(Qureg qureg, FullStateDiagMatr matr, qc
 
     bool hasPower = exponent != qcomp(1, 0);
     auto cpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( cpu_densmatr_allTargDiagMatr_sub, hasPower, multiplyOnly );
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( cpu_densmatr_allTargDiagMatr_sub, hasPower, multiplyOnly );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( gpu_densmatr_allTargDiagMatr_sub, hasPower, multiplyOnly );
 
     // when deployments match, we trivially call the common backend
     if ( quregGPU &&  matrGPU) gpuFunc(qureg, matr, exponent);
