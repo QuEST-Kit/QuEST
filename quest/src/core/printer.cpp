@@ -347,7 +347,7 @@ string printer_getMemoryWithUnitStr(size_t numBytes) {
         sizes[i] = powerOf2(10 * i); // = 1024^i
 
     // find the biggest unit for which numBytes/sizes[ind] > 1
-    int ind = 0;
+    int ind = 1;
     while (numBytes > sizes[ind])
         ind++;
     ind--;
