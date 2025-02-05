@@ -752,7 +752,7 @@ __global__ void kernel_densmatr_oneQubitDepolarising_subA(
 
 __global__ void kernel_densmatr_oneQubitDepolarising_subB(
     cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
-    int braBit, int ketQubit, qreal facAA, qreal facBB, qreal facAB
+    int ketQubit, int braBit, qreal facAA, qreal facBB, qreal facAB
 ) {
     GET_THREAD_IND(n, numThreads);
 
