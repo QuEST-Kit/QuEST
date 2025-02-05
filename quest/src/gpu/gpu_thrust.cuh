@@ -270,11 +270,12 @@ struct functor_getExpecDensMatrDiagMatrTerm : public thrust::unary_function<qind
 
     __device__ cu_qcomp operator()(qindex n) {
 
-        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
-
         cu_qcomp elem = elems[n];
+
         if constexpr (HasPower)
             elem = getCompPower(elem, expo);
+
+        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
 
         return amps[i] * elem;
     }

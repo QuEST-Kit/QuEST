@@ -2039,14 +2039,14 @@ qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
     #pragma omp parallel for reduction(+:value) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-        // i = local index of nth local diagonal element
-        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
+        qcomp elem = matr.cpuElems[n];
 
         // compile-time decide if applying power to avoid in-loop branching
-        qcomp elem = matr.cpuElems[n];
         if constexpr (HasPower)
             elem = pow(elem, exponent);
 
+        // i = local index of nth local diagonal element
+        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
         value += elem * qureg.cpuAmps[i];
     }
 

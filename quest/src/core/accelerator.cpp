@@ -944,7 +944,7 @@ qcomp accel_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi, bool co
 
     // harmlessly overwrite new memory or rho's buffer, and call GPU routine
     gpu_copyCpuToGpu(temp);
-    qcomp prod = gpuFunc(rho, psi);
+    qcomp prod = gpuFunc(rho, temp);
     
     // free new GPU memory, but do NOT free rho's communication buffer
     if (!rho.isDistributed)
@@ -1069,7 +1069,7 @@ qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMa
 
     // harmlessly overwrite new memory or qureg's buffer, and call GPU routine
     gpu_copyCpuToGpu(temp);
-    qcomp value = gpuFunc(qureg, matr, exponent);
+    qcomp value = gpuFunc(qureg, temp, exponent);
     
     // free new GPU memory, but do NOT free qureg's communication buffer
     if (!mem_isAllocated(qureg.gpuCommBuffer))
