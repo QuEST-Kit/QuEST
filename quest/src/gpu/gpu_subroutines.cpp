@@ -418,7 +418,8 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     devints deviceQubits = util_getSorted(ctrls, targs);
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, targs, vector<int>(targs.size(),0));
     
-    qcomp* cache = gpu_getCacheOfSize(powerOf2(targs.size()), numThreads);
+    qindex numKernelInvocations = numBlocks * NUM_THREADS_PER_BLOCK;
+    qcomp* cache = gpu_getCacheOfSize(powerOf2(targs.size()), numKernelInvocations);
 
     kernel_statevec_anyCtrlAnyTargDenseMatr_sub <NumCtrls, NumTargs, ApplyConj> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), toCuQcomps(cache), numThreads,

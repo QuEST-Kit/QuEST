@@ -279,7 +279,7 @@ __forceinline__ __device__ qindex getThreadsNthGlobalArrInd(qindex n, qindex thr
 
 
 __forceinline__ __device__ qindex getFlattenedMatrInd(qindex row, qindex col, qindex dim) {
-    return (row * col) + dim;
+    return (row * dim) + col;
 }
 
 
