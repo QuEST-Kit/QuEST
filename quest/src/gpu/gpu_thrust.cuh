@@ -40,6 +40,7 @@
 #include <thrust/complex.h>
 #include <thrust/device_ptr.h>
 #include <thrust/device_vector.h>
++#include <thrust/fill.h>
 #include <thrust/sequence.h>
 #include <thrust/for_each.h>
 #include <thrust/inner_product.h>
@@ -61,7 +62,7 @@
 
 using devints = thrust::device_vector<int>;
 
-int* getPtr(devints qubits) {
+int* getPtr(devints& qubits) {
 
     return thrust::raw_pointer_cast(qubits.data());
 }
@@ -69,14 +70,29 @@ int* getPtr(devints qubits) {
 
 using devreals = thrust::device_vector<qreal>;
 
-qreal* getPtr(devreals reals) {
+qreal* getPtr(devreals& reals) {
 
     return thrust::raw_pointer_cast(reals.data());
 }
 
-void copyFromDeviceVec(devreals reals, qreal* out) {
+void copyFromDeviceVec(devreals& reals, qreal* out) {
 
     thrust::copy(reals.begin(), reals.end(), out);
+}
+
+devreals getDeviceRealsVec(qindex dim) {
+
+    devreals out;
+
+    try  {
+        out.resize(dim);
+        thrust::fill(out.begin(), out.end(), 0.);
+
+    } catch (thrust::system_error &e) {
+        error_thrustTempGpuAllocFailed();
+    }
+
+    return out;
 }
 
 

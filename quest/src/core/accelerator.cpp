@@ -870,12 +870,12 @@ qreal accel_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qu
 void accel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( statevec_calcProbsOfAllMultiQubitOutcomes_sub, qureg, qubits.size() );
-    return func(outProbs, qureg, qubits);
+    func(outProbs, qureg, qubits);
 }
 void accel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( densmatr_calcProbsOfAllMultiQubitOutcomes_sub, qureg, qubits.size() );
-    return func(outProbs, qureg, qubits);
+    func(outProbs, qureg, qubits);
 }
 
 
@@ -1088,12 +1088,12 @@ qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMa
 void accel_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( statevec_multiQubitProjector_sub, qureg, qubits.size() );
-    return func(qureg, qubits, outcomes, prob);
+    func(qureg, qubits, outcomes, prob);
 }
 void accel_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( densmatr_multiQubitProjector_sub, qureg, qubits.size() );
-    return func(qureg, qubits, outcomes, prob);
+    func(qureg, qubits, outcomes, prob);
 }
 
 

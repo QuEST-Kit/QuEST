@@ -1376,12 +1376,7 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
     // allocate exponentially-big temporary memory (error if failed)
     devints devQubits = qubits;
-    devreals devProbs;
-    try  {
-        devProbs.resize(powerOf2(qubits.size()));
-    } catch (thrust::system_error &e) { 
-        error_thrustTempGpuAllocFailed();
-    }
+    devreals devProbs = getDeviceRealsVec(powerOf2(qubits.size())); // throws
 
     kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         getPtr(devProbs), toCuQcomps(qureg.gpuAmps), numThreads, 
@@ -1412,12 +1407,7 @@ void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
     // allocate exponentially-big temporary memory (error if failed)
     devints devQubits = qubits;
-    devreals devProbs;
-    try  {
-        devProbs = devreals(powerOf2(qubits.size()), 0);
-    } catch (thrust::system_error &e) { 
-        error_thrustTempGpuAllocFailed();
-    }
+    devreals devProbs = getDeviceRealsVec(powerOf2(qubits.size())); // throws
 
     kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         getPtr(devProbs), toCuQcomps(qureg.gpuAmps), numThreads, 

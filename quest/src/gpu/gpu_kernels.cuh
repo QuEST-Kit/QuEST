@@ -1078,7 +1078,7 @@ __global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
     // use template param to compile-time unroll below loops
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, numQubits);
 
-    qreal prob = getCompReal(amps[n]);
+    qreal prob = getCompNorm(amps[n]);
 
     // i = global index corresponding to n
     qindex i = concatenateBits(rank, n, logNumAmpsPerNode);
