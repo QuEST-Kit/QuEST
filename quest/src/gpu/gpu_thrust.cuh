@@ -40,7 +40,7 @@
 #include <thrust/complex.h>
 #include <thrust/device_ptr.h>
 #include <thrust/device_vector.h>
-+#include <thrust/fill.h>
+#include <thrust/fill.h>
 #include <thrust/sequence.h>
 #include <thrust/for_each.h>
 #include <thrust/inner_product.h>
