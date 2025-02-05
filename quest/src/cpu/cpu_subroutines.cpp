@@ -1737,7 +1737,7 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-         // i = local index of nth local diagonal element
+        // i = local index of nth local diagonal element
         qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
         qreal prob = std::real(qureg.cpuAmps[i]);
 
