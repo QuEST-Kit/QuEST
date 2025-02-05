@@ -86,7 +86,7 @@ if(CUQUANTUM_FOUND AND NOT TARGET CUQUANTUM::cuQuantum)
   target_link_libraries(CUQUANTUM::cuQuantum INTERFACE ${CUQUANTUM_LIBRARIES})
   target_link_directories(CUQUANTUM::cuQuantum INTERFACE ${CUQUANTUM_LIBRARY_DIRS})
 
-  if(NOT TARGET CUQUANTUM::cuStaterVec)
+  if(NOT TARGET CUQUANTUM::cuStateVec)
     add_library(CUQUANTUM::cuStateVec INTERFACE IMPORTED)
     target_include_directories(CUQUANTUM::cuStateVec INTERFACE ${CUQUANTUM_INCLUDE_DIRS})
     target_link_directories(CUQUANTUM::cuStateVec INTERFACE ${CUQUANTUM_LIBRARY_DIRS})
