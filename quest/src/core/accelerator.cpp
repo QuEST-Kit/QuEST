@@ -457,7 +457,7 @@ void accel_densmatr_allTargDiagMatr_subA(Qureg qureg, FullStateDiagMatr matr, qc
         temp.isGpuAccelerated = 1;
         temp.gpuElems = (qureg.isDistributed)?
             qureg.gpuCommBuffer : 
-            gpu_allocArray(temp.numElems);
+            gpu_allocArray(temp.numElemsPerNode);
 
         // error if that (relatively) small allocation failed (always succeeds if buffer)
         assert_applyFullStateDiagMatrTempGpuAllocSucceeded(temp.gpuElems);
@@ -948,7 +948,7 @@ qcomp accel_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi, bool co
     temp.isGpuAccelerated = 1;
     temp.gpuAmps = (rho.isDistributed)?
         rho.gpuCommBuffer :
-        gpu_allocArray(temp.numAmps);
+        gpu_allocArray(temp.numAmpsPerNode);
 
     // error if that (relatively) small allocation failed (always succeeds if buffer)
     assert_calcFidTempGpuAllocSucceeded(temp.gpuAmps);
