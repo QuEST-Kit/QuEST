@@ -40,6 +40,7 @@
 #include <thrust/complex.h>
 #include <thrust/device_ptr.h>
 #include <thrust/device_vector.h>
+#include <thrust/fill.h>
 #include <thrust/sequence.h>
 #include <thrust/for_each.h>
 #include <thrust/inner_product.h>
@@ -61,7 +62,7 @@
 
 using devints = thrust::device_vector<int>;
 
-int* getPtr(devints qubits) {
+int* getPtr(devints& qubits) {
 
     return thrust::raw_pointer_cast(qubits.data());
 }
@@ -69,14 +70,29 @@ int* getPtr(devints qubits) {
 
 using devreals = thrust::device_vector<qreal>;
 
-qreal* getPtr(devreals reals) {
+qreal* getPtr(devreals& reals) {
 
     return thrust::raw_pointer_cast(reals.data());
 }
 
-void copyFromDeviceVec(devreals reals, qreal* out) {
+void copyFromDeviceVec(devreals& reals, qreal* out) {
 
     thrust::copy(reals.begin(), reals.end(), out);
+}
+
+devreals getDeviceRealsVec(qindex dim) {
+
+    devreals out;
+
+    try  {
+        out.resize(dim);
+        thrust::fill(out.begin(), out.end(), 0.);
+
+    } catch (thrust::system_error &e) {
+        error_thrustTempGpuAllocFailed();
+    }
+
+    return out;
 }
 
 
@@ -270,11 +286,12 @@ struct functor_getExpecDensMatrDiagMatrTerm : public thrust::unary_function<qind
 
     __device__ cu_qcomp operator()(qindex n) {
 
-        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
-
         cu_qcomp elem = elems[n];
+
         if constexpr (HasPower)
             elem = getCompPower(elem, expo);
+
+        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
 
         return amps[i] * elem;
     }
@@ -508,14 +525,15 @@ template <int NumTargets>
 struct functor_projectDensMatr : public thrust::binary_function<qindex,cu_qcomp,cu_qcomp> {
 
     // this functor multiplies an amp with zero or a 
-    // renormalisation codfficient, depending on whether
+    // renormalisation coefficient, depending on whether
     // the basis state of the amp has qubits in a particular
     // configuration. This is used to project density matrix
     // qubits into a particular measurement outcome
 
     int* targetsPtr;
     int numTargets, rank, numQuregQubits;
-    qindex logNumAmpsPerNode, retainValue, renorm;
+    qindex logNumAmpsPerNode, retainValue;
+    qreal renorm;
 
     functor_projectDensMatr(
         int* targetsPtr, int numTargets, int rank, int numQuregQubits,
@@ -971,13 +989,13 @@ cu_qcomp thrust_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDi
 
 
 template <int NumQubits>
-void thrust_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal norm) {
+void thrust_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal renorm) {
 
     devints devQubits = qubits;
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
     auto projFunctor = functor_projectStateVec<NumQubits>(
         getPtr(devQubits), qubits.size(), qureg.rank, 
-        qureg.logNumAmpsPerNode, retainValue, norm);
+        qureg.logNumAmpsPerNode, retainValue, renorm);
 
     auto indIter = thrust::make_counting_iterator(0);
     auto ampIter = getStartPtr(qureg);
@@ -988,13 +1006,13 @@ void thrust_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, ve
 
 
 template <int NumQubits>
-void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal norm) {
+void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal renorm) {
 
     devints devQubits = qubits;
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
     auto projFunctor = functor_projectDensMatr<NumQubits>(
         getPtr(devQubits), qubits.size(), qureg.rank, qureg.numQubits,
-        qureg.logNumAmpsPerNode, retainValue, norm);
+        qureg.logNumAmpsPerNode, retainValue, renorm);
 
     auto indIter = thrust::make_counting_iterator(0);
     auto ampIter = getStartPtr(qureg);

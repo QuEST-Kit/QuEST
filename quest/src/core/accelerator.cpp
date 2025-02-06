@@ -105,6 +105,17 @@ using std::min;
         GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs ))
 
 
+// TODO:
+// GET_CPU_OR_GPU_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS,
+// as defined below, is only ever called by used by anyCtrlAnyTargDenseMatr,
+// which only ever receives numTargs>=3 (due to accelerator redirecting 
+// fewer targets to faster bespoke functions which e.g. avoid global GPU
+// cache emory access). This means its instantiation with numTargs=0,1,2
+// is useless, though contributes to 42% of the function's compilation
+// time which is large because of the 7*7*2=98 unique instantiations. We
+// can ergo non-negligibly speed up compilation by avoiding these redundant 
+// instances at the cost of increased code complexity/asymmetry. Consider!
+
 #define GET_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(f, numctrls, numtargs, c) \
     (vector <CONJ_ARR(f)> { \
         CONJ_ARR(f) {&f<0,0,c>,  &f<0,1,c>,  &f<0,2,c>,  &f<0,3,c>,  &f<0,4,c>,  &f<0,5,c>,  &f<0,-1,c>}, \
@@ -412,7 +423,7 @@ void accel_densmatr_allTargDiagMatr_subA(Qureg qureg, FullStateDiagMatr matr, qc
 
     bool hasPower = exponent != qcomp(1, 0);
     auto cpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( cpu_densmatr_allTargDiagMatr_sub, hasPower, multiplyOnly );
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( cpu_densmatr_allTargDiagMatr_sub, hasPower, multiplyOnly );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( gpu_densmatr_allTargDiagMatr_sub, hasPower, multiplyOnly );
 
     // when deployments match, we trivially call the common backend
     if ( quregGPU &&  matrGPU) gpuFunc(qureg, matr, exponent);
@@ -446,7 +457,7 @@ void accel_densmatr_allTargDiagMatr_subA(Qureg qureg, FullStateDiagMatr matr, qc
         temp.isGpuAccelerated = 1;
         temp.gpuElems = (qureg.isDistributed)?
             qureg.gpuCommBuffer : 
-            gpu_allocArray(temp.numElems);
+            gpu_allocArray(temp.numElemsPerNode);
 
         // error if that (relatively) small allocation failed (always succeeds if buffer)
         assert_applyFullStateDiagMatrTempGpuAllocSucceeded(temp.gpuElems);
@@ -870,12 +881,12 @@ qreal accel_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qu
 void accel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( statevec_calcProbsOfAllMultiQubitOutcomes_sub, qureg, qubits.size() );
-    return func(outProbs, qureg, qubits);
+    func(outProbs, qureg, qubits);
 }
 void accel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( densmatr_calcProbsOfAllMultiQubitOutcomes_sub, qureg, qubits.size() );
-    return func(outProbs, qureg, qubits);
+    func(outProbs, qureg, qubits);
 }
 
 
@@ -937,14 +948,14 @@ qcomp accel_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi, bool co
     temp.isGpuAccelerated = 1;
     temp.gpuAmps = (rho.isDistributed)?
         rho.gpuCommBuffer :
-        gpu_allocArray(temp.numAmps);
+        gpu_allocArray(temp.numAmpsPerNode);
 
     // error if that (relatively) small allocation failed (always succeeds if buffer)
     assert_calcFidTempGpuAllocSucceeded(temp.gpuAmps);
 
     // harmlessly overwrite new memory or rho's buffer, and call GPU routine
     gpu_copyCpuToGpu(temp);
-    qcomp prod = gpuFunc(rho, psi);
+    qcomp prod = gpuFunc(rho, temp);
     
     // free new GPU memory, but do NOT free rho's communication buffer
     if (!rho.isDistributed)
@@ -1069,7 +1080,7 @@ qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMa
 
     // harmlessly overwrite new memory or qureg's buffer, and call GPU routine
     gpu_copyCpuToGpu(temp);
-    qcomp value = gpuFunc(qureg, matr, exponent);
+    qcomp value = gpuFunc(qureg, temp, exponent);
     
     // free new GPU memory, but do NOT free qureg's communication buffer
     if (!mem_isAllocated(qureg.gpuCommBuffer))
@@ -1088,12 +1099,12 @@ qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMa
 void accel_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( statevec_multiQubitProjector_sub, qureg, qubits.size() );
-    return func(qureg, qubits, outcomes, prob);
+    func(qureg, qubits, outcomes, prob);
 }
 void accel_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( densmatr_multiQubitProjector_sub, qureg, qubits.size() );
-    return func(qureg, qubits, outcomes, prob);
+    func(qureg, qubits, outcomes, prob);
 }
 
 

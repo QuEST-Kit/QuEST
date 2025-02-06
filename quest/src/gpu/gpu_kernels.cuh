@@ -279,7 +279,7 @@ __forceinline__ __device__ qindex getThreadsNthGlobalArrInd(qindex n, qindex thr
 
 
 __forceinline__ __device__ qindex getFlattenedMatrInd(qindex row, qindex col, qindex dim) {
-    return (row * col) + dim;
+    return (row * dim) + col;
 }
 
 
@@ -752,7 +752,7 @@ __global__ void kernel_densmatr_oneQubitDepolarising_subA(
 
 __global__ void kernel_densmatr_oneQubitDepolarising_subB(
     cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
-    int braBit, int ketQubit, qreal facAA, qreal facBB, qreal facAB
+    int ketQubit, int braBit, qreal facAA, qreal facBB, qreal facAB
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -1078,7 +1078,7 @@ __global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
     // use template param to compile-time unroll below loops
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, numQubits);
 
-    qreal prob = getCompReal(amps[n]);
+    qreal prob = getCompNorm(amps[n]);
 
     // i = global index corresponding to n
     qindex i = concatenateBits(rank, n, logNumAmpsPerNode);
@@ -1093,7 +1093,8 @@ __global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
 template <int NumQubits>
 __global__ void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
     qreal* outProbs, cu_qcomp* amps, qindex numThreads, 
-    qindex numColsPerNode, int rank, qindex logNumAmpsPerNode,
+    qindex firstDiagInd, qindex numAmpsPerCol,
+    int rank, qindex logNumAmpsPerNode,
     int* qubits, int numQubits
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -1102,7 +1103,7 @@ __global__ void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, numQubits);
 
     // i = index of nth local diagonal elem
-    qindex i = (rank * numColsPerNode) + n * (numColsPerNode + 1);
+    qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
     qreal prob = getCompReal(amps[i]);
 
     // j = global index of i

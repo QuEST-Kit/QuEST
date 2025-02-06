@@ -435,6 +435,10 @@ void assert_quregAndFullStateDiagMatrAreBothOrNeitherDistrib(Qureg qureg, FullSt
 
 void assert_quregGpuBufferIsNotGraftedToMatrix(Qureg qureg, FullStateDiagMatr matr) {
 
+    // permit both pointers to be null-ptr, of course
+    if (!mem_isAllocated(matr.gpuElems))
+        return;
+
     if (matr.gpuElems == qureg.gpuCommBuffer)
         raiseInternalError("An accelerator function received a FullStateDiagMatr with a GPU pointer which was a Qureg's GPU communication buffer, in a setting where the buffer was separately needed.");
 }

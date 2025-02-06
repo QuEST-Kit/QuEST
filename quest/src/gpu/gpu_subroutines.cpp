@@ -418,7 +418,8 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     devints deviceQubits = util_getSorted(ctrls, targs);
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, targs, vector<int>(targs.size(),0));
     
-    qcomp* cache = gpu_getCacheOfSize(powerOf2(targs.size()), numThreads);
+    qindex numKernelInvocations = numBlocks * NUM_THREADS_PER_BLOCK;
+    qcomp* cache = gpu_getCacheOfSize(powerOf2(targs.size()), numKernelInvocations);
 
     kernel_statevec_anyCtrlAnyTargDenseMatr_sub <NumCtrls, NumTargs, ApplyConj> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), toCuQcomps(cache), numThreads,
@@ -1376,12 +1377,7 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
     // allocate exponentially-big temporary memory (error if failed)
     devints devQubits = qubits;
-    devreals devProbs;
-    try  {
-        devProbs.resize(powerOf2(qubits.size()));
-    } catch (thrust::system_error &e) { 
-        error_thrustTempGpuAllocFailed();
-    }
+    devreals devProbs = getDeviceRealsVec(powerOf2(qubits.size())); // throws
 
     kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         getPtr(devProbs), toCuQcomps(qureg.gpuAmps), numThreads, 
@@ -1405,23 +1401,21 @@ void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     // we decouple numColsPerNode and numThreads for clarity
-    // (and in case parallelisation granularity ever changes)
-    qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
-    qindex numThreads = numColsPerNode;
+    // (and in case parallelisation granularity ever changes);
+    qindex numThreads = powerOf2(qureg.logNumColsPerNode);
     qindex numBlocks = getNumBlocks(numThreads);
+    
+    qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
+    qindex numAmpsPerCol = powerOf2(qureg.numQubits);
 
     // allocate exponentially-big temporary memory (error if failed)
     devints devQubits = qubits;
-    devreals devProbs;
-    try  {
-        devProbs = devreals(powerOf2(qubits.size()), 0);
-    } catch (thrust::system_error &e) { 
-        error_thrustTempGpuAllocFailed();
-    }
+    devreals devProbs = getDeviceRealsVec(powerOf2(qubits.size())); // throws
 
     kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        getPtr(devProbs), toCuQcomps(qureg.gpuAmps), numThreads, 
-        numColsPerNode, qureg.rank, qureg.logNumAmpsPerNode, 
+        getPtr(devProbs), toCuQcomps(qureg.gpuAmps), 
+        numThreads, firstDiagInd, numAmpsPerCol,
+        qureg.rank, qureg.logNumAmpsPerNode, 
         getPtr(devQubits), devQubits.size()
     );
 
@@ -1631,19 +1625,19 @@ void gpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
-    qreal norm = 1 / sqrt(prob);
+    qreal renorm = 1 / sqrt(prob);
 
 #if COMPILE_CUQUANTUM
 
     // cuQuantum disregards NumQubits template param
-    cuquantum_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, norm);
+    cuquantum_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, renorm);
 
 #elif COMPILE_CUDA
 
-    thrust_statevec_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, norm);
+    thrust_statevec_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, renorm);
 
 #else
-    (void) norm; // silence not-used
+    (void) renorm; // silence not-used
     error_gpuSimButGpuNotCompiled();
 #endif
 }
@@ -1654,8 +1648,8 @@ void gpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
-    qreal norm = 1 / prob;
-    thrust_densmatr_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, norm);
+    qreal renorm = 1 / prob;
+    thrust_densmatr_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, renorm);
 
 #else
     error_gpuSimButGpuNotCompiled();
