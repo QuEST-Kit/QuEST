@@ -6,13 +6,11 @@
 #include "qmatrix.hpp"
 
 
-bool operator == (const qvector&, const qvector&);
-bool operator == (const qmatrix&, const qmatrix&);
-bool operator == (const qvector&, const Qureg&);
-bool operator == (const Qureg&,   const qvector&);
-bool operator == (const qmatrix&, const Qureg&);
-bool operator == (const Qureg&,   const qmatrix&);
-bool operator == (const Qureg&,   const Qureg&);
+void REQUIRE_AGREE( Qureg qureg, qvector reference );
+void REQUIRE_AGREE( Qureg qureg, qmatrix reference );
+
+void REQUIRE_AGREE( qvector reference, Qureg qureg );
+void REQUIRE_AGREE( qmatrix reference, Qureg qureg );
 
 
 #endif // COMPARE_HPP

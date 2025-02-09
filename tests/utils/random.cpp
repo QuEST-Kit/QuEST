@@ -69,6 +69,57 @@ qcomp getRandomComplex() {
 
 
 /*
+ * LIST
+ */
+
+
+vector<int> getRandomInts(int min, int maxExcl, int len) {
+
+    vector<int> outcomes(len);
+    
+    for (auto& x : outcomes)
+        x = getRandomInt(min, maxExcl);
+
+    return outcomes;
+}
+
+
+vector<int> getRandomSubRange(int start, int endExcl, int numElems) {
+    DEMAND( endExcl >= start );
+    DEMAND( numElems >= 1 );
+    DEMAND( numElems <= endExcl - start );
+
+    // shuffle entire range
+    vector<int> range = getRange(start, endExcl);
+    std::shuffle(range.begin(), range.end(), RNG);
+    
+    // return first subrange
+    return vector<int>(range.begin(), range.begin() + numElems);
+}
+
+
+vector<qreal> getRandomProbabilities(int numProbs) {
+    
+    vector<qreal> probs(numProbs, 0);
+
+    // generate random unnormalised scalars
+    for (auto& p : probs)
+        p = getRandomReal(0, 1);
+
+    // normalise
+    qreal total = 0;
+    for (auto& p : probs)
+        total += p;
+
+    for (auto& p : probs)
+        p /= total;
+ 
+    return probs;
+}
+
+
+
+/*
  * VECTOR
  */
 
@@ -139,32 +190,6 @@ qmatrix getRandomMatrix(size_t dim) {
     }
     
     return out;
-}
-
-
-
-/*
- * PROBABILITIES
- */
-
-
-vector<qreal> getRandomProbabilities(int numProbs) {
-    
-    vector<qreal> probs(numProbs, 0);
-
-    // generate random unnormalised scalars
-    for (auto& p : probs)
-        p = getRandomReal(0, 1);
-
-    // normalise
-    qreal total = 0;
-    for (auto& p : probs)
-        total += p;
-
-    for (auto& p : probs)
-        p /= total;
- 
-    return probs;
 }
 
 
@@ -313,24 +338,4 @@ PauliStr getRandomDiagPauliStr(int numQubits) {
         paulis += "IZ"[getRandomInt(0,2)];
 
     return getPauliStr(paulis);
-}
-
-
-
-/*
- * LISTS
- */
-
-
-vector<int> getRandomSubRange(int start, int endExcl, int numElems) {
-    DEMAND( endExcl >= start );
-    DEMAND( numElems >= 1 );
-    DEMAND( numElems <= endExcl - start );
-
-    // shuffle entire range
-    vector<int> range = getRange(start, endExcl);
-    std::shuffle(range.begin(), range.end(), RNG);
-    
-    // return first subrange
-    return vector<int>(range.begin(), range.begin() + numElems);
 }

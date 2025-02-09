@@ -7,6 +7,9 @@
 #include <vector>
 using std::vector;
 
+void applyReferenceOperator(   qvector& state, vector<int> ctrls, vector<int> states, vector<int> targs, qmatrix matrix);
+void applyReferenceOperator(   qmatrix& state, vector<int> ctrls, vector<int> states, vector<int> targs, qmatrix matrix);
+void multiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> states, vector<int> targs, qmatrix matrix);
 
 void applyReferenceOperator(   qvector& state, vector<int> ctrls, vector<int> targs, qmatrix matrix);
 void applyReferenceOperator(   qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix);

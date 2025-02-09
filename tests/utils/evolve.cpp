@@ -105,26 +105,39 @@ auto getSwapAndUnswapMatrices(vector<int> ctrls, vector<int> targs, size_t numQu
 }
 
 
-qmatrix getFullStateOperator(vector<int> ctrls, vector<int> targs, qmatrix matrix, size_t numQubits) {
+qmatrix getFullStateOperator(vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qmatrix matrix, size_t numQubits) {
     DEMAND( numQubits >= ctrls.size() + targs.size() );
     DEMAND( getPow2(targs.size()) == (qindex) matrix.size() );
-    
-    auto [swaps, unswaps] = getSwapAndUnswapMatrices(ctrls, targs, numQubits);
+    DEMAND( (ctrlStates.empty() || ctrlStates.size() == ctrls.size()) );
 
-    // construct controlled-(matrix)
+    // construct controlled-(matrix) upon lowest order qubits
     size_t dim = getPow2(ctrls.size() + targs.size());
     size_t off = dim - matrix.size();
     qmatrix full = getIdentityMatrix(dim);
     setSubMatrix(full, matrix, off, off);
 
-    // left-pad 'out' to full size
+    // left-pad 'full' to be numQubits large
     if (numQubits > ctrls.size() + targs.size()) {
         size_t pad = getPow2(numQubits - ctrls.size() - targs.size());
         full = getKroneckerProduct(getIdentityMatrix(pad), full);
     }
     
-    // apply swap to either side (to swap qubits back and forth)
-    return unswaps * full * swaps;
+    // apply swaps to retarget 'full' to given ctrls and targs
+    auto [swaps, unswaps] = getSwapAndUnswapMatrices(ctrls, targs, numQubits);
+    qmatrix out = unswaps * full * swaps;
+
+    // apply NOT to all zero-controlled qubits (recurses just once)
+    qmatrix matrX = {{0,1},{1,0}};
+    for (size_t i=0; i<ctrlStates.size(); i++) {
+        
+        if (ctrlStates[i] == 1)
+            continue;
+
+        qmatrix fullX = getFullStateOperator({}, {}, {ctrls[i]}, matrX, numQubits);
+        out = fullX * out * fullX;
+    }
+
+    return out;
 }
 
 
@@ -134,37 +147,53 @@ qmatrix getFullStateOperator(vector<int> ctrls, vector<int> targs, qmatrix matri
  */
 
 
-void applyReferenceOperator(qvector& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
-    
-    qmatrix ref = getFullStateOperator(ctrls, targs, matrix, getLog2(state.size()));
+void applyReferenceOperator(qvector& state, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qmatrix matrix) {
+
+    qmatrix ref = getFullStateOperator(ctrls, ctrlStates, targs, matrix, getLog2(state.size()));
     state = ref * state;
 }
 
-
-void applyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
+void applyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qmatrix matrix) {
     
-    qmatrix left = getFullStateOperator(ctrls, targs, matrix, getLog2(state.size()));
+    qmatrix left = getFullStateOperator(ctrls, ctrlStates, targs, matrix, getLog2(state.size()));
     qmatrix right = getConjugateTranspose(left);
     state = left * state * right;
 }
 
-
-void multiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
+void multiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qmatrix matrix) {
     
-    qmatrix left = getFullStateOperator(ctrls, targs, matrix, getLog2(state.size()));
+    qmatrix left = getFullStateOperator(ctrls, ctrlStates, targs, matrix, getLog2(state.size()));
     state = left * state;
 }
 
 
+// overloads with no ctrl states
+
+void applyReferenceOperator(qvector& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
+
+    applyReferenceOperator(state, ctrls, {}, targs, matrix);
+}
+void applyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
+    
+    applyReferenceOperator(state, ctrls, {}, targs, matrix);
+}
+void multiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
+    
+    multiplyReferenceOperator(state, ctrls, {}, targs, matrix);
+}
+
+
+// overloads with no ctrls
+
 void applyReferenceOperator(qvector& state, vector<int> targs, qmatrix matrix) {
     
-    applyReferenceOperator(state, {}, targs, matrix);
+    applyReferenceOperator(state, {}, {}, targs, matrix);
 }
 void applyReferenceOperator(qmatrix& state, vector<int> targs, qmatrix matrix) {
 
-    applyReferenceOperator(state, {}, targs, matrix);
+    applyReferenceOperator(state, {}, {}, targs, matrix);
 }
 void multiplyReferenceOperator(qmatrix& state, vector<int> targs, qmatrix matrix) {
 
-    multiplyReferenceOperator(state, {}, targs, matrix);
+    multiplyReferenceOperator(state, {}, {}, targs, matrix);
 }

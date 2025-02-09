@@ -13,16 +13,10 @@
 #include "tests/utils/random.hpp"
 
 
-// TODO: 
-// use CMake to obtain catch2 and replace #include "catch.hpp"
-// with "#include <catch2/catch_test_macros.hpp>""
 
 
 
-TEST_CASE( "func6", "[operations]" ) {
 
-    SECTION( "a" ) {
 
-        REQUIRE( true );
     }
 }

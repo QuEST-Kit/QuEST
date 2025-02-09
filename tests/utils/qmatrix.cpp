@@ -174,3 +174,17 @@ void setSubMatrix(qmatrix &dest, qmatrix sub, size_t r, size_t c) {
         for (size_t j=0; j<sub.size(); j++)
             dest[r+i][c+j] = sub[i][j];
 }
+
+void setToDebugState(qmatrix &m) {
+    DEMAND( !m.empty() );
+
+    size_t i = 0;
+
+    // iterate column-wise
+    for (size_t c=0; c<m.size(); c++) {
+        for (size_t r=0; r<m.size(); r++) {
+            m[r][c] = qcomp(2*i/10., (2*i+1)/10.);
+            i++;
+        }
+    }
+}

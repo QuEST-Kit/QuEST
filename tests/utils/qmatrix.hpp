@@ -37,6 +37,7 @@ qmatrix operator * (const qmatrix&, const qmatrix&);
 qmatrix operator *= (qmatrix&, const qmatrix&);
 
 void setSubMatrix(qmatrix &dest, qmatrix sub, size_t r, size_t c);
+void setToDebugState(qmatrix &m);
 
 
 #endif // QMATRIX_HPP

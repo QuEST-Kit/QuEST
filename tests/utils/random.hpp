@@ -13,7 +13,7 @@ using std::vector;
 
 void setRandomTestStateSeeds();
 
-int getRandomInt(int min, int max);
+int getRandomInt(int min, int maxExcl);
 qreal getRandomReal(qreal min, qreal max);
 qcomp getRandomComplex();
 
@@ -31,8 +31,10 @@ vector<qmatrix> getRandomKrausMap(int numQb, int numOps);
 PauliStr getRandomPauliStr(int numQubits);
 PauliStr getRandomDiagPauliStr(int numQubits);
 
+vector<int> getRandomInts(int min, int maxExcl, int len);
 vector<int> getRandomSubRange(int start, int endExcl, int numElems);
 vector<qreal> getRandomProbabilities(int numProbs);
+
 vector<qvector> getRandomOrthonormalVectors(size_t dim, int numVecs);
 vector<qvector> getRandomOrthonormalStateVectors(int numQb, int numStates);
 

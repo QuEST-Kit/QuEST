@@ -211,7 +211,7 @@ TEST_DEPR_MPI_FILES=(
 # COMPILER AND LINKER FLAG OPTIONS
 
 # compiler flags given to all (non-deprecated) files
-TEST_COMP_FLAGS="-std=c++17 -I${CATCH_LIB_DIR}"
+TEST_COMP_FLAGS="-std=c++20 -I${CATCH_LIB_DIR}"
 
 # compiler flags given to deprecated test files
 TEST_DEPR_COMP_FLAGS="-std=c++17 -I${TEST_DEPR_CATCH_DIR}"

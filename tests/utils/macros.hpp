@@ -3,9 +3,10 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-// TODO: 
-// use CMake to obtain catch2 and replace #include "catch.hpp"
-// with "#include <catch2/catch_test_macros.hpp>""
+
+// TODO:
+// should this even be a macro? eh
+#define NUM_QUREG_QUBITS 5
 
 
 

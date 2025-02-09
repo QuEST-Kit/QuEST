@@ -105,3 +105,15 @@ qvector operator -= (qvector& v1, const qvector& v2) {
     v1 = v1 - v2;
     return v1;
 }
+
+
+/*
+ * SETTERS
+ */
+
+void setToDebugState(qvector &v) {
+    DEMAND( !v.empty() );
+
+    for (size_t i=0; i<v.size(); i++)
+        v[i] = qcomp(2*i/10., (2*i+1)/10.);
+}

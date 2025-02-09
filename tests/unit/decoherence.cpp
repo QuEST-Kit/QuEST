@@ -11,18 +11,3 @@
 #include "tests/utils/lists.hpp"
 #include "tests/utils/macros.hpp"
 #include "tests/utils/random.hpp"
-
-
-// TODO: 
-// use CMake to obtain catch2 and replace #include "catch.hpp"
-// with "#include <catch2/catch_test_macros.hpp>""
-
-
-
-TEST_CASE( "func2", "[decoherence]" ) {
-
-    SECTION( "a" ) {
-
-        REQUIRE( true );
-    }
-}

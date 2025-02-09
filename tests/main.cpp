@@ -1,11 +1,5 @@
 #include <catch2/catch_session.hpp>
 
-// TODO:
-// when we switch to CMake-supplied Catch2,
-// we must replace the above include with:
-// #include <catch2/catch_session.hpp>
-
-
 #include "quest.h"
 #include <stdexcept>
 

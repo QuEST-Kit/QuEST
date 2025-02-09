@@ -9,7 +9,6 @@
 /** Use our modified Catch in custom-main mode (main defined below).
  * catch.hpp was modified to, in distributed mode, output only once.
  */
-#define CATCH_CONFIG_RUNNER
 #include <catch2/catch_session.hpp>
 
 

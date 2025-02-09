@@ -756,7 +756,7 @@ namespace report {
         "A qubit appeared among both the control and target qubits, which cannot overlap.";
 
     string INVALID_CONTROL_STATE =
-        "The control qubit at index ${INDEX} has an invalidly specified control-state of ${STATE}. Valid states are 0 and 1.";
+        "The control qubit at index ${INDEX} has an invalid control-state of ${STATE}. Valid states are 0 and 1.";
 
 
     /*

@@ -9,77 +9,51 @@ using std::abs;
 
 
 /*
- * VECTOR & VECTOR
+ * We compare a Qureg and its reference qvector/qmatrix
+ * in a manner which avoids polluting the Catch2 console 
+ * output, and which reports a single disgreeing amplitude
+ * when the comparison fails.
  */
 
-bool operator == (const qvector& v1, const qvector& v2) {
-    DEMAND( v1.size() == v2.size() );
 
-    for (size_t i=0; i<v1.size(); i++)
-        if (abs(v1[i] - v2[i]) > TEST_EPSILON)
-            return false;
-
-    return true;
+void REPORT_AND_FAIL(size_t index, qcomp amplitude, qcomp reference) {
+    CAPTURE( index, amplitude, reference );
+    FAIL( );
 }
 
 
-/*
- * MATRIX & MATRIX
- */
+void REQUIRE_AGREE( Qureg q, qvector v1 ) {
+    DEMAND( !q.isDensityMatrix );
+    DEMAND( q.numAmps == (qindex) v1.size() );
 
-bool operator == (const qmatrix& m1, const qmatrix& m2) {
-    DEMAND( m1.size() == m2.size() );
+    qvector v2 = getVector(q);   
+
+    for (size_t i=0; i<v1.size(); i++)
+        if (abs(v1[i] - v2[i]) > TEST_EPSILON)
+            REPORT_AND_FAIL(i, v2[i], v1[i]);
+
+    SUCCEED( );
+}
+
+void REQUIRE_AGREE( qvector v1, Qureg q ) {
+    REQUIRE_AGREE( q, v1 );
+}
+
+
+void REQUIRE_AGREE( Qureg q, qmatrix m1 ) {
+    DEMAND( q.isDensityMatrix );
+    DEMAND( getPow2(q.numQubits) == (qindex) m1.size() );
+
+    qmatrix m2 = getMatrix(q);
 
     for (size_t i=0; i<m1.size(); i++)
         for (size_t j=0; j<m1.size(); j++)
             if (abs(m1[i][j] - m2[i][j]) > TEST_EPSILON)
-                return false;
+                REPORT_AND_FAIL(j*m1.size()+i, m2[i][j], m1[i][j]);
 
-    return true;
+    SUCCEED( );
 }
 
-
-/*
- * VECTOR & QUREG
- */
-
-bool operator == (const qvector& v, const Qureg& q) {
-    DEMAND( !q.isDensityMatrix );
-    DEMAND( q.numAmps == (qindex) v.size() );
-
-    return v == getVector(q);
-}
-
-bool operator == (const Qureg& q, const qvector& v) {
-    return v == q;
-}
-
-
-/*
- * MATRIX & QUREG
- */
-
-bool operator == (const qmatrix& m, const Qureg& q) {
-    DEMAND( q.isDensityMatrix );
-    DEMAND( getPow2(q.numQubits) == (qindex) m.size() );
-
-    return m == getMatrix(q);
-}
-
-bool operator == (const Qureg& q, const qmatrix& m) {
-    return m == q;
-}
-
-
-/*
- * QUREG & QUREG
- */
-
-bool operator == (const Qureg& q1, const Qureg& q2) {
-    DEMAND( q1.isDensityMatrix == q2.isDensityMatrix );
-    DEMAND( q1.numQubits == q2.numQubits );
-
-    return q1.isDensityMatrix?
-        getMatrix(q1) == getMatrix(q2) :
-        getVector(q1) == getVector(q2);
+void REQUIRE_AGREE( qmatrix m1, Qureg q ) {
+    REQUIRE_AGREE( q, m1 );
 }
