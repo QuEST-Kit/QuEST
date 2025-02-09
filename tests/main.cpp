@@ -1,7 +1,8 @@
 #include <catch2/catch_session.hpp>
+#include <stdexcept>
 
 #include "quest.h"
-#include <stdexcept>
+#include "tests/utils/cache.hpp"
 
 
 // TODO:
@@ -20,9 +21,14 @@ extern "C" void invalidQuESTInputError(const char* errMsg, const char* errFunc) 
 int main(int argc, char* argv[]) {
 
     initQuESTEnv();
+    createCachedQuregs();
+
+    // TODO:
+    // is there some way for us to announce what deployment modes will be run?!?!
 
     int result = Catch::Session().run( argc, argv );
 
+    destroyCachedQuregs();
     finalizeQuESTEnv();
     return result;
 }

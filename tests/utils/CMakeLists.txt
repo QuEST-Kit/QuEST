@@ -1,5 +1,6 @@
 target_sources(tests
   PUBLIC
+  cache.cpp
   compare.cpp
   convert.cpp
   evolve.cpp

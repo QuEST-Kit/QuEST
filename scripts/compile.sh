@@ -166,6 +166,7 @@ TEST_MAIN_FILES=(
 
 # files in TEST_UTIL_DIR
 TEST_UTIL_FILES=(
+    "cache"
     "compare"
     "convert"
     "evolve"
