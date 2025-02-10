@@ -35,12 +35,17 @@ public:
         // so we summarise the important info
         QuESTEnv env = getQuESTEnv();
         std::cout << std::endl;
-        std::cout << "QuEST testing execution environment:" << std::endl;
+        std::cout << "QuEST execution environment:" << std::endl;
         std::cout << "  precision:       " << FLOAT_PRECISION << std::endl;
-        std::cout << "  multithreaded:   " << getQuESTEnv().isMultithreaded << std::endl;
-        std::cout << "  distributed:     " << getQuESTEnv().isMultithreaded << std::endl;
-        std::cout << "  GPU-accelerated: " << getQuESTEnv().isMultithreaded << std::endl;
-        std::cout << "  cuQuantum:       " << COMPILE_CUQUANTUM << std::endl;
+        std::cout << "  multithreaded:   " << getQuESTEnv().isMultithreaded  << std::endl;
+        std::cout << "  distributed:     " << getQuESTEnv().isDistributed    << std::endl;
+        std::cout << "  GPU-accelerated: " << getQuESTEnv().isGpuAccelerated << std::endl;
+        std::cout << "  cuQuantum:       " << (getQuESTEnv().isGpuAccelerated && COMPILE_CUQUANTUM) << std::endl;
+        std::cout << std::endl;
+
+        std::cout << "Tested Qureg deployments:" << std::endl;
+        for (auto& [label, qureg]: getCachedStatevecs())
+            std::cout << "  " << label << std::endl;
         std::cout << std::endl;
     }
 };
