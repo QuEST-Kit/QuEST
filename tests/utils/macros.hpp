@@ -19,9 +19,9 @@
 /*
  * preconditions to the internal unit testing functions are checked using 
  * DEMAND rather than Catch2's REQUIRE, so that they are not counted in the 
- * total unit testing statistics (e.g. number of checks passed).
+ * total unit testing statistics (e.g. number of checks passed). 
  */
-#define DEMAND( cond ) if (!(cond)) FAIL( );
+#define DEMAND( cond ) do { if (!(cond)) { FAIL( ); } } while (0)
 
 
 #endif // MACROS_HPP

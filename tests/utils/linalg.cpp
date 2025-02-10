@@ -16,7 +16,7 @@ using std::vector;
 
 int getLog2(qindex a) {
     DEMAND( a >= 0 );
-    DEMAND( (a & (a - 1)) == 0 )  // is pow2
+    DEMAND( (a & (a - 1)) == 0 );  // is pow2
 
     int n = 0;
     while (a >>= 1)
@@ -181,6 +181,7 @@ qmatrix getExponentialOfDiagonalMatrix(qmatrix m) {
 
 qmatrix getExponentialOfPauliMatrix(qreal arg, qmatrix m) {
     
+    // exp(-i arg/2 m)
     qmatrix id = getIdentityMatrix(m.size());
     qmatrix out = cos(arg/2)*id - 1_i*sin(arg/2)*m;
     return out;
@@ -258,7 +259,7 @@ qmatrix getKroneckerProduct(qmatrix a, qmatrix b) {
 
 
 bool isCompletelyPositiveTracePreserving(vector<qmatrix> matrices) {
-    DEMAND( matrices.size() >= 1 )
+    DEMAND( matrices.size() >= 1 );
 
     size_t dim = matrices[0].size();
     qmatrix id = getIdentityMatrix(dim);
