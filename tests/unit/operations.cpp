@@ -58,10 +58,57 @@ void performTestUponAllQuregDeployments(quregCache& quregs, T1& reference, T2& f
  * we will define templated functions for processing
  * many API signatures which accept zero, one, two
  * or any number (including 0-2) of control and/or
- * target qubits. This enum lists all template values
+ * target qubits. This enum lists all template values.
+ * Value 'anystates' is reserved for control qubits,
+ * indicating when they must accompany ctrl-states in
+ * the API signature.
+ * 
+ * For example:
+ * - applyHadamard:                Ctrls=zero, Targs=one
+ * - applyControlledSwap:          Ctrls=one,  Targs=two
+ * - applyMultiControlledCompMatr: Ctrls=any,  Targs=any
+ * - applyMultiStateControlledT:   Ctrls=anystates, Targs=one
  */
 
-enum NumQubitsFlag { zero, one, two, any };
+enum NumQubitsFlag { zero, one, two, any, anystates };
+
+void assertNumQubitsFlagsAreValid(NumQubitsFlag ctrlsFlag, NumQubitsFlag targsFlag) {
+
+    DEMAND( 
+        ctrlsFlag == zero ||
+        ctrlsFlag == one  ||
+        ctrlsFlag == any  ||
+        ctrlsFlag == anystates );
+
+    DEMAND(
+        targsFlag == one ||
+        targsFlag == two ||
+        targsFlag == any);
+}
+
+void assertNumQubitsFlagsValid(NumQubitsFlag ctrlsFlag, NumQubitsFlag targsFlag, vector<int> ctrls, vector<int> states, vector<int> targs) {
+
+    assertNumQubitsFlagsAreValid(ctrlsFlag, targsFlag);
+
+    DEMAND( targs.size() > 0 );
+
+    if (targsFlag == one) 
+        DEMAND( targs.size() == 1 );
+
+    if (targsFlag == two)
+        DEMAND( targs.size() == 2 );
+
+    if (ctrlsFlag == zero)
+        DEMAND( ctrls.size() == 0 );
+
+    if (ctrlsFlag == one)
+        DEMAND( ctrls.size() == 1 );
+
+    if (ctrlsFlag == anystates)
+        DEMAND( states.size() == ctrls.size() );
+    else
+        DEMAND( states.size() == 0 );
+}
 
 
 /*
@@ -75,9 +122,10 @@ enum NumQubitsFlag { zero, one, two, any };
 
 template <NumQubitsFlag Ctrls>
 int GENERATE_NUM_CTRLS(int numFreeQubits) {
-    
-    DEMAND( Ctrls != two );
-    DEMAND( Ctrls != one || numFreeQubits > 0 );
+
+    assertNumQubitsFlagsAreValid(Ctrls, one);
+    DEMAND( Ctrls != one || numFreeQubits >= 1 );
+    DEMAND( numFreeQubits >= 0 );
 
     if constexpr (Ctrls == zero)
         return 0;
@@ -85,14 +133,15 @@ int GENERATE_NUM_CTRLS(int numFreeQubits) {
     if constexpr (Ctrls == one)
         return 1;
 
-    if constexpr (Ctrls == any)
+    if constexpr (Ctrls == any || Ctrls == anystates)
         return GENERATE_COPY( range(0, numFreeQubits) );
 }
 
 template <NumQubitsFlag Targs>
 int GENERATE_NUM_TARGS(int numFreeQubits) {
 
-    DEMAND( Targs != zero );
+    assertNumQubitsFlagsAreValid(zero, Targs);
+    DEMAND( Targs != one || numFreeQubits >= 1 );
     DEMAND( Targs != two || numFreeQubits >= 2 );
     DEMAND( numFreeQubits > 0 );
 
@@ -102,57 +151,62 @@ int GENERATE_NUM_TARGS(int numFreeQubits) {
     if constexpr (Targs == two)
         return 2;
 
-    if constexpr(Targs == any)
+    if constexpr (Targs == any)
         return GENERATE_COPY( range(1, numFreeQubits) );
 }
 
 
 /*
  * invoke an API operation (e.g. applyHadamard), passing
- * any args of (ctrls,states,targs) that it accepts, as
- * informed by the template values. We permit explicitly
- * passing numCtrls distinctly from ctrls.size(), so that
- * we input validation tests can pass invalid numCtrls.
- *
- * 'FixedOperation' refers to API operations which effect
- * fixed-size (i.e. 1 or 2 target) non-parameterised
- * matrices upon the state, such as Hadamard or SWAPs.
+ * any elements of (ctrls,states,targs) that it accepts 
+ * (as informed by the template values) along with any
+ * additional arguments. We explicitly accept numCtrls
+ * and numTargs, rather than inferring them from ctrls
+ * and targs, such that invalid numbers (like -1) can be
+ * passed by input validation testing.
+ * 
+ * This big, ugly bespoke function is necessary, rather
+ * than a simple variadic template, because the QuEST 
+ * API accepts fixed numbers of qubits as individual 
+ * arguments, rather than as lists/vectors/pointers.
  */
 
-template <NumQubitsFlag Ctrls, bool HasCtrlStates, NumQubitsFlag Targs, typename F>
-void invokeFixedOperation(F operation, Qureg qureg, vector<int> ctrls, vector<int> states, int numCtrls, vector<int> targs) {
-
-    DEMAND( Ctrls != two );
-    DEMAND( Targs == one || Targs == two );
-    if (HasCtrlStates)
-        DEMAND( Ctrls == any );
-    if (Ctrls == zero)
-        DEMAND( ctrls.size() == 0 );
-    if (Ctrls == one)
-        DEMAND( ctrls.size() == 1 );
+template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, typename F, typename... Args>
+void invokeApiOperation(
+    F operation, Qureg qureg, 
+    vector<int> ctrls, vector<int> states, int numCtrls, 
+    vector<int> targs, int numTargs, 
+    Args... args
+) {
+    assertNumQubitsFlagsValid(Ctrls, Targs, ctrls, states, targs);
 
     if constexpr (Ctrls == zero) {
-        if constexpr (Targs == one) operation(qureg, targs[0]);
-        if constexpr (Targs == two) operation(qureg, targs[0], targs[1]);
+        if constexpr (Targs == one) operation(qureg, targs[0], args...);
+        if constexpr (Targs == two) operation(qureg, targs[0], targs[1], args...);
+        if constexpr (Targs == any) operation(qureg, targs.data(), numTargs, args...);
     }
     if constexpr (Ctrls == one) {
-        if constexpr (Targs == one) operation(qureg, ctrls[0], targs[0]);
-        if constexpr (Targs == two) operation(qureg, ctrls[0], targs[0], targs[1]);
+        if constexpr (Targs == one) operation(qureg, ctrls[0], targs[0], args...);
+        if constexpr (Targs == two) operation(qureg, ctrls[0], targs[0], targs[1], args...);
+        if constexpr (Targs == any) operation(qureg, ctrls[0], targs.data(), numTargs, args...);
     }
-    if constexpr (Ctrls == any && ! HasCtrlStates) {
-        if constexpr (Targs == one) operation(qureg, ctrls.data(), numCtrls, targs[0]);
-        if constexpr (Targs == two) operation(qureg, ctrls.data(), numCtrls, targs[0], targs[1]);
+    if constexpr (Ctrls == any) {
+        if constexpr (Targs == one) operation(qureg, ctrls.data(), numCtrls, targs[0], args...);
+        if constexpr (Targs == two) operation(qureg, ctrls.data(), numCtrls, targs[0], targs[1], args...);
+        if constexpr (Targs == any) operation(qureg, ctrls.data(), numCtrls, targs.data(), numTargs, args...);
     }
-    if constexpr (Ctrls == any && HasCtrlStates) {
-        if constexpr (Targs == one) operation(qureg, ctrls.data(), states.data(), numCtrls, targs[0]);
-        if constexpr (Targs == two) operation(qureg, ctrls.data(), states.data(), numCtrls, targs[0], targs[1]);
+    if constexpr (Ctrls == anystates) {
+        if constexpr (Targs == one) operation(qureg, ctrls.data(), states.data(), numCtrls, targs[0], args...);
+        if constexpr (Targs == two) operation(qureg, ctrls.data(), states.data(), numCtrls, targs[0], targs[1], args...);
+        if constexpr (Targs == any) operation(qureg, ctrls.data(), states.data(), numCtrls, targs.data(), numTargs, args...);
     }
 }
 
-template <NumQubitsFlag Ctrls, bool HasCtrlStates, NumQubitsFlag Targs, typename F>
-void invokeFixedOperation(F operation, Qureg qureg, vector<int> ctrls, vector<int> states, vector<int> targs) {
+// overload to avoid passing numCtrls and numTargs
 
-    invokeFixedOperation<Ctrls,HasCtrlStates,Targs>(operation, qureg, ctrls, states, ctrls.size(), targs);
+template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, typename F, typename... Args>
+void invokeApiOperation(F operation, Qureg qureg, vector<int> ctrls, vector<int> states, vector<int> targs, Args... args) {
+    invokeApiOperation<Ctrls,Targs>(operation, qureg, ctrls, states, ctrls.size(), targs, targs.size(), args...);
 }
 
 
@@ -164,12 +218,10 @@ void invokeFixedOperation(F operation, Qureg qureg, vector<int> ctrls, vector<in
  * invoked upon all many-controlled variants of the API.
  */
 
-template <NumQubitsFlag Ctrls, bool HasCtrlStates, NumQubitsFlag Targs, typename F>
+template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, typename F>
 void performTestUponFixedOperation(F operation, qmatrix matrix) {
     
-    DEMAND( Ctrls != two );
-    DEMAND( Targs == one  || Targs == two );
-    DEMAND( Ctrls == any  || ! HasCtrlStates );
+    assertNumQubitsFlagsAreValid(Ctrls, Targs);
 
     auto statevecQuregs = getCachedStatevecs();
     auto densmatrQuregs = getCachedDensmatrs();
@@ -180,37 +232,37 @@ void performTestUponFixedOperation(F operation, qmatrix matrix) {
         qmatrix densmatrRef = getZeroMatrix(getPow2(NUM_QUREG_QUBITS));
 
         int numCtrls = GENERATE_NUM_CTRLS<Ctrls>(NUM_QUREG_QUBITS);
-        int numTargs = GENERATE_NUM_TARGS<Targs>(NUM_QUREG_QUBITS - numCtrls);
+        int numTargs = GENERATE_NUM_TARGS<Targs>(NUM_QUREG_QUBITS - numCtrls); // always 1 or 2
 
         auto listpair = GENERATE_COPY( disjointsublists(range(0,NUM_QUREG_QUBITS), numCtrls, numTargs) );
         auto ctrls = std::get<0>(listpair);
         auto targs = std::get<1>(listpair);
-        auto states = (HasCtrlStates)? getRandomInts(0, 2, numCtrls) : vector<int>();
+        auto states = getRandomInts(0, 2, numCtrls); // may be ignored
 
         CAPTURE( ctrls, targs, states );
 
         auto testFunc = [&]<class T>(Qureg qureg, T& reference) -> void { 
-            invokeFixedOperation<Ctrls,HasCtrlStates,Targs>(operation, qureg, ctrls, states, targs);
+            invokeApiOperation<Ctrls,Targs>(operation, qureg, ctrls, states, targs);
             applyReferenceOperator(reference, ctrls, states, targs, matrix);
         };
 
-        SECTION( "statevector"    ) performTestUponAllQuregDeployments(statevecQuregs, statevecRef, testFunc);
-        SECTION( "density matrix" ) performTestUponAllQuregDeployments(densmatrQuregs, densmatrRef, testFunc);
+        SECTION( "statevector"    ) { performTestUponAllQuregDeployments(statevecQuregs, statevecRef, testFunc); }
+        SECTION( "density matrix" ) { performTestUponAllQuregDeployments(densmatrQuregs, densmatrRef, testFunc); }
     }
 
     SECTION( "input validation" ) {
 
         Qureg qureg = statevecQuregs["CPU"];
         vector<int> ctrls = (Ctrls == one)? vector<int>{0} : vector<int>{};
-        vector<int> targs = {1, 2};
-        vector<int> states = {};
+        vector<int> targs = (Targs == one)? vector<int>{1} : vector<int>{1, 2};
+        vector<int> states(0, ctrls.size());
 
         SECTION( "qureg initialisation" ) {
 
             Qureg uninit;
 
             REQUIRE_THROWS_WITH( 
-                (invokeFixedOperation<Ctrls,HasCtrlStates,Targs>(operation, uninit, ctrls, states, targs)),
+                (invokeApiOperation<Ctrls,Targs>(operation, uninit, ctrls, states, targs)),
                 contains("invalid Qureg")
             );
         }
@@ -220,7 +272,7 @@ void performTestUponFixedOperation(F operation, qmatrix matrix) {
             targs[0] = GENERATE( -1, NUM_QUREG_QUBITS );
 
             REQUIRE_THROWS_WITH( 
-                (invokeFixedOperation<Ctrls,HasCtrlStates,Targs>(operation, qureg, ctrls, states, targs)),
+                (invokeApiOperation<Ctrls,Targs>(operation, qureg, ctrls, states, targs)),
                 contains("invalid target qubit")
             );
         }
@@ -232,7 +284,7 @@ void performTestUponFixedOperation(F operation, qmatrix matrix) {
                 int numCtrls = GENERATE( -1, NUM_QUREG_QUBITS+1 );
 
                 REQUIRE_THROWS_WITH( 
-                    (invokeFixedOperation<Ctrls,HasCtrlStates,Targs>(operation, qureg, ctrls, states, numCtrls, targs)),
+                    (invokeApiOperation<Ctrls,Targs>(operation, qureg, ctrls, states, numCtrls, targs, targs.size())),
                     contains("number of control qubits")
                 );
             }
@@ -246,7 +298,7 @@ void performTestUponFixedOperation(F operation, qmatrix matrix) {
                 ctrls = { GENERATE( -1, NUM_QUREG_QUBITS ) };
 
                 REQUIRE_THROWS_WITH( 
-                    (invokeFixedOperation<Ctrls,HasCtrlStates,Targs>(operation, qureg, ctrls, states, targs)),
+                    (invokeApiOperation<Ctrls,Targs>(operation, qureg, ctrls, states, targs)),
                     contains("invalid control qubit")
                 );
             }
@@ -260,7 +312,7 @@ void performTestUponFixedOperation(F operation, qmatrix matrix) {
                 ctrls = {0, 0};
 
                 REQUIRE_THROWS_WITH( 
-                    (invokeFixedOperation<Ctrls,HasCtrlStates,Targs>(operation, qureg, ctrls, states, targs)),
+                    (invokeApiOperation<Ctrls,Targs>(operation, qureg, ctrls, states, targs)),
                     contains("control qubits contained duplicates")
                 );
             }
@@ -274,13 +326,13 @@ void performTestUponFixedOperation(F operation, qmatrix matrix) {
                 ctrls = {targs[0]};
 
                 REQUIRE_THROWS_WITH( 
-                    (invokeFixedOperation<Ctrls,HasCtrlStates,Targs>(operation, qureg, ctrls, states, targs)),
+                    (invokeApiOperation<Ctrls,Targs>(operation, qureg, ctrls, states, targs)),
                     contains("qubit appeared among both the control and target qubits")
                 );
             }
         }
 
-        if constexpr (HasCtrlStates) {
+        if constexpr (Ctrls == anystates) {
 
             SECTION( "control state bits" ) {
 
@@ -288,7 +340,7 @@ void performTestUponFixedOperation(F operation, qmatrix matrix) {
                 ctrls = {0};
 
                 REQUIRE_THROWS_WITH( 
-                    (invokeFixedOperation<Ctrls,HasCtrlStates,Targs>(operation, qureg, ctrls, states, targs)),
+                    (invokeApiOperation<Ctrls,Targs>(operation, qureg, ctrls, states, targs)),
                     contains("invalid control-state")
                 );
             }
@@ -351,13 +403,13 @@ namespace FixedMatrices {
 
 #define TEST_FIXED_ANY_CTRL_OPERATION( name, numtargs, matrix ) \
     TEST_CASE( "apply" #name, "[operations]" ) { \
-        performTestUponFixedOperation<zero,false,numtargs>( apply ## name, matrix); } \
+        performTestUponFixedOperation<zero,numtargs>( apply ## name, matrix); } \
     TEST_CASE( "applyControlled" #name, "[operations]" ) { \
-        performTestUponFixedOperation<one,false,numtargs>( applyControlled ## name, matrix); } \
+        performTestUponFixedOperation<one,numtargs>( applyControlled ## name, matrix); } \
     TEST_CASE( "applyMultiControlled" #name, "[operations]" ) { \
-        performTestUponFixedOperation<any,false,numtargs>( applyMultiControlled ## name, matrix); } \
+        performTestUponFixedOperation<any,numtargs>( applyMultiControlled ## name, matrix); } \
     TEST_CASE( "applyMultiStateControlled" #name, "[operations]" ) { \
-        performTestUponFixedOperation<any,true,numtargs>( applyMultiStateControlled ## name, matrix); } 
+        performTestUponFixedOperation<anystates,numtargs>( applyMultiStateControlled ## name, matrix); } 
 
 TEST_FIXED_ANY_CTRL_OPERATION( Hadamard, one, FixedMatrices::H );
 TEST_FIXED_ANY_CTRL_OPERATION( PauliX,   one, FixedMatrices::X );
