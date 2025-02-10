@@ -3399,7 +3399,9 @@ void validate_mixedAmpsFitInNode(Qureg qureg, int numTargets, const char* caller
     if (!qureg.isDistributed)
         return;
 
-    qindex numTargAmps = powerOf2(numTargets * (qureg.isDensityMatrix? 2:1));
+    // note the number of mixed amplitudes is independent of whether
+    // qureg is a density matrix or not (consider unitaries)
+    qindex numTargAmps = powerOf2(numTargets);
 
     tokenSubs vars = {
         {"${NUM_TARGS}",        numTargets},

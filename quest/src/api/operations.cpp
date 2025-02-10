@@ -1286,7 +1286,7 @@ void applySuperOp(Qureg qureg, SuperOp superop, int* targets, int numTargets) {
     validate_superOpFields(superop, __func__);
     validate_superOpIsSynced(superop, __func__);
     validate_superOpDimMatchesTargs(superop, numTargets, __func__);
-    validate_mixedAmpsFitInNode(qureg, numTargets, __func__);
+    validate_mixedAmpsFitInNode(qureg, 2 * numTargets, __func__);
 
     localiser_densmatr_superoperator(qureg, superop, util_getVector(targets, numTargets));
 }

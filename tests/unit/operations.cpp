@@ -93,7 +93,7 @@ namespace SinglyParameterisedMatrices {
  * section, so are accounted distinctly.
  */
 
-void performTestUponAllQuregDeployments(quregCache& quregs, auto& reference, auto& function) {
+void testAllQuregDeployments(quregCache& quregs, auto& reference, auto& function) {
 
     for (auto& [label, qureg]: quregs) {
 
@@ -194,22 +194,38 @@ void assertNumQubitsFlagsValid(
  * macro so the caller recognises it is a generator.
  */
 
-template <NumQubitsFlag Targs>
-int GENERATE_NUM_TARGS(int numFreeQubits) {
+template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, ArgsFlag Args>
+int GENERATE_NUM_TARGS(int numQuregQubits) {
 
     assertNumQubitsFlagsAreValid(zero, Targs);
-    DEMAND( Targs != one || numFreeQubits >= 1 );
-    DEMAND( Targs != two || numFreeQubits >= 2 );
-    DEMAND( numFreeQubits > 0 );
+    DEMAND( Targs != one || numQuregQubits >= 1 );
+    DEMAND( Targs != two || numQuregQubits >= 2 );
+    DEMAND( numQuregQubits > 0 );
 
+    // single choice if #targs is compile-time set
     if constexpr (Targs == one)
         return 1;
-
     if constexpr (Targs == two)
         return 2;
 
-    if constexpr (Targs == any)
-        return GENERATE_COPY( range(1, numFreeQubits+1) );
+    if constexpr (Targs == any) {
+
+        // we can target all qubits...
+        int maxNumTargs = numQuregQubits;
+
+        // unless we're applying CompMatr in distributed
+        // mode. Technically we can support all targets
+        // if the Qureg is a density matrix or not
+        // distributed, but we safely choose the min here
+        if (Args == compmatr)
+            maxNumTargs = numQuregQubits - getLog2(getQuESTEnv().numNodes);
+
+        // we must also ensure there is space left for a forced ctrl
+        if (Ctrls == one && maxNumTargs == numQuregQubits)
+            maxNumTargs -= 1;
+
+        return GENERATE_COPY( range(1, maxNumTargs+1) );
+    }
 }
 
 template <NumQubitsFlag Ctrls>
@@ -402,6 +418,7 @@ void testOperation(auto operation, auto matrixRefGen) {
 
     assertNumQubitsFlagsAreValid(Ctrls, Targs);
 
+    // use existing cached Quregs
     auto statevecQuregs = getCachedStatevecs();
     auto densmatrQuregs = getCachedDensmatrs();
 
@@ -410,21 +427,27 @@ void testOperation(auto operation, auto matrixRefGen) {
         qvector statevecRef = getZeroVector(getPow2(NUM_QUREG_QUBITS));
         qmatrix densmatrRef = getZeroMatrix(getPow2(NUM_QUREG_QUBITS));
 
-        int numTargs = GENERATE_NUM_TARGS<Targs>(NUM_QUREG_QUBITS - (Ctrls == one)); // leave space for forced ctrl
+        // try all possible number of ctrls and targs
+        int numTargs = GENERATE_NUM_TARGS<Ctrls,Targs,Args>(NUM_QUREG_QUBITS);
         int numCtrls = GENERATE_NUM_CTRLS<Ctrls>(NUM_QUREG_QUBITS - numTargs);
         
+        // try all possible ctrls and targs
         auto listpair = GENERATE_COPY( disjointsublists(range(0,NUM_QUREG_QUBITS), numCtrls, numTargs) );
         auto ctrls = std::get<0>(listpair);
         auto targs = std::get<1>(listpair);
+
+        // randomise control states (if operation accepts them)
         auto states = getRandomInts(0, 2, numCtrls * (Ctrls == anystates));
 
+        // randomise remaining operation parameters
         auto primaryArgs = tuple{ ctrls, states, targs };
         auto furtherArgs = getRandomRemainingArgs<Targs,Args>(numTargs);
         auto matrixRef = getReferenceMatrix<Args>(matrixRefGen, numTargs, furtherArgs);
 
+        // prepare test function which will receive both statevectors and density matrices
         auto testFunc = [&](Qureg qureg, auto& stateRef) -> void { 
             
-            // invoke API operation, unpacking all templated variadics
+            // invoke API operation, passing all args (unpacking variadic)
             auto apiFunc = [](auto&&... args) { return invokeApiOperation<Ctrls,Targs>(args...); };
             auto allArgs = std::tuple_cat(tuple{operation, qureg}, primaryArgs, furtherArgs);
             std::apply(apiFunc, allArgs);
@@ -433,10 +456,12 @@ void testOperation(auto operation, auto matrixRefGen) {
             applyReferenceOperator(stateRef, ctrls, states, targs, matrixRef);
         };
 
+        // report relevant inputs if subsequent tests fail
         CAPTURE( ctrls, targs, states );
 
-        SECTION( "statevector"    ) { performTestUponAllQuregDeployments(statevecQuregs, statevecRef, testFunc); }
-        SECTION( "density matrix" ) { performTestUponAllQuregDeployments(densmatrQuregs, densmatrRef, testFunc); }
+        // test API operation on all available deployment combinations (e.g. MPI, MPI+CUDA, etc)
+        SECTION( "statevector"    ) { testAllQuregDeployments(statevecQuregs, statevecRef, testFunc); }
+        SECTION( "density matrix" ) { testAllQuregDeployments(densmatrQuregs, densmatrRef, testFunc); }
     }
 }
 
