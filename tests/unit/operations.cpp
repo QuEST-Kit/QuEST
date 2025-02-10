@@ -37,8 +37,7 @@ auto contains(std::string str) {
  * section, so are accounted distinctly.
  */
 
-template <class T1, class T2>
-void performTestUponAllQuregDeployments(quregCache& quregs, T1& reference, T2& function) {
+void performTestUponAllQuregDeployments(quregCache& quregs, auto& reference, auto& function) {
 
     for (auto& [label, qureg]: quregs) {
 
@@ -171,12 +170,12 @@ int GENERATE_NUM_TARGS(int numFreeQubits) {
  * arguments, rather than as lists/vectors/pointers.
  */
 
-template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, typename F, typename... Args>
+template <NumQubitsFlag Ctrls, NumQubitsFlag Targs>
 void invokeApiOperation(
-    F operation, Qureg qureg, 
+    auto operation, Qureg qureg, 
     vector<int> ctrls, vector<int> states, int numCtrls, 
     vector<int> targs, int numTargs, 
-    Args... args
+    auto&... args
 ) {
     assertNumQubitsFlagsValid(Ctrls, Targs, ctrls, states, targs);
 
@@ -204,8 +203,8 @@ void invokeApiOperation(
 
 // overload to avoid passing numCtrls and numTargs
 
-template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, typename F, typename... Args>
-void invokeApiOperation(F operation, Qureg qureg, vector<int> ctrls, vector<int> states, vector<int> targs, Args... args) {
+template <NumQubitsFlag Ctrls, NumQubitsFlag Targs>
+void invokeApiOperation(auto operation, Qureg qureg, vector<int> ctrls, vector<int> states, vector<int> targs, auto&... args) {
     invokeApiOperation<Ctrls,Targs>(operation, qureg, ctrls, states, ctrls.size(), targs, targs.size(), args...);
 }
 
@@ -218,8 +217,8 @@ void invokeApiOperation(F operation, Qureg qureg, vector<int> ctrls, vector<int>
  * invoked upon all many-controlled variants of the API.
  */
 
-template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, typename F>
-void performTestUponFixedOperation(F operation, qmatrix matrix) {
+template <NumQubitsFlag Ctrls, NumQubitsFlag Targs>
+void performTestUponFixedOperation(auto operation, qmatrix matrix) {
     
     assertNumQubitsFlagsAreValid(Ctrls, Targs);
 
