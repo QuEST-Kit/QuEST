@@ -25,6 +25,7 @@ bool isUnitary(qmatrix);
 
 qmatrix getTranspose(qmatrix);
 qmatrix getConjugateTranspose(qmatrix);
+qmatrix getPowerOfDiagonalMatrix(qmatrix, qcomp);
 qmatrix getExponentialOfDiagonalMatrix(qmatrix);
 qmatrix getExponentialOfPauliMatrix(qreal, qmatrix);
 qmatrix getOrthonormalisedRows(qmatrix);

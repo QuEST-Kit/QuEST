@@ -167,6 +167,18 @@ qmatrix getConjugateTranspose(qmatrix m) {
 }
 
 
+qmatrix getPowerOfDiagonalMatrix(qmatrix m, qcomp p) {
+    DEMAND( isDiagonal(m) );
+
+    qmatrix out = getZeroMatrix(m.size());
+
+    for (size_t i=0; i<m.size(); i++)
+        out[i][i] = pow(m[i][i], p);
+
+    return out;
+}
+
+
 qmatrix getExponentialOfDiagonalMatrix(qmatrix m) {
     DEMAND( isDiagonal(m) );
 

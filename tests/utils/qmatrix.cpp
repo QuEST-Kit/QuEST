@@ -188,3 +188,19 @@ void setToDebugState(qmatrix &m) {
         }
     }
 }
+
+
+/*
+ * GETTERS
+ */
+
+qvector getDiagonals(qmatrix m) {
+    DEMAND( m.size() > 1 );
+
+    qvector out = getZeroVector(m.size());
+
+    for (size_t i=0; i<out.size(); i++)
+        out[i] = m[i][i];
+    
+    return out;
+}

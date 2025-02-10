@@ -353,7 +353,6 @@ void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* sta
     conj = true;
     ctrlVec = util_getBraQubits(ctrlVec, qureg);
     targVec = util_getBraQubits(targVec, qureg);
-    localiser_statevec_anyCtrlAnyTargAnyMatr(qureg, {}, {}, targVec, matrix, conj);
     localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, ctrlVec, stateVec, targVec, matrix, exponent, conj);
 }
 

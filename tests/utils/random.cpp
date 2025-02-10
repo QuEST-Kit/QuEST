@@ -74,6 +74,7 @@ qcomp getRandomComplex() {
 
 
 vector<int> getRandomInts(int min, int maxExcl, int len) {
+    DEMAND( len >= 0 ); // permit empty
 
     vector<int> outcomes(len);
     

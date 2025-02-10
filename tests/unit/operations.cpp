@@ -16,6 +16,10 @@
 #include "tests/utils/macros.hpp"
 #include "tests/utils/random.hpp"
 
+#include <tuple>
+
+using std::tuple;
+
 
 
 // TODO:
@@ -24,6 +28,58 @@
 auto contains(std::string str) {
     
     return Catch::Matchers::ContainsSubstring(str, Catch::CaseSensitive::No);
+}
+
+
+
+/*
+ * reference operator matrices used by testing
+ */
+
+namespace FixedMatrices {
+
+    qmatrix H = {
+        {1/sqrt(2),  1/sqrt(2)},
+        {1/sqrt(2), -1/sqrt(2)}};
+
+    qmatrix X = {
+        {0, 1},
+        {1, 0}};
+    
+    qmatrix Y = {
+        {0, -1_i},
+        {1_i, 0}};
+
+    qmatrix Z = {
+        {1,  0},
+        {0, -1}};
+
+    qmatrix T = {
+        {1, 0},
+        {0, exp(1_i*M_PI/4)}};
+
+    qmatrix S = {
+        {1, 0},
+        {0, 1_i}};
+
+    qmatrix SWAP = {
+        {1, 0, 0, 0},
+        {0, 0, 1, 0},
+        {0, 1, 0, 0},
+        {0, 0, 0, 1}};
+
+    qmatrix sqrtSWAP = {
+        {1, 0, 0, 0},
+        {0, (1+1_i)/2, (1-1_i)/2, 0},
+        {0, (1-1_i)/2, (1+1_i)/2, 0},
+        {0, 0, 0, 1}};
+}
+
+namespace SinglyParameterisedMatrices {
+
+    auto Rx = [](qreal p) { return getExponentialOfPauliMatrix(p, FixedMatrices::X); };
+    auto Ry = [](qreal p) { return getExponentialOfPauliMatrix(p, FixedMatrices::Y); };
+    auto Rz = [](qreal p) { return getExponentialOfPauliMatrix(p, FixedMatrices::Z); };
 }
 
 
@@ -54,12 +110,30 @@ void performTestUponAllQuregDeployments(quregCache& quregs, auto& reference, aut
 
 
 /*
- * we will define templated functions for processing
- * many API signatures which accept zero, one, two
- * or any number (including 0-2) of control and/or
- * target qubits. This enum lists all template values.
+ * Template flags for specifying what kind of additional 
+ * arguments (in addition to ctrls/states/targs below) are
+ * accepted by an API operation, when passing said operation
+ * to automated testing facilities. This is NOT consulted
+ * when generically invoking the API operation (we instead
+ * used variadic templates above for that), but IS used
+ * by the testing code to decide how to prepare inputs.
+ * 
+ * For example:
+ * - applyHadamard:           none
+ * - applyRotateX:            scalar
+ * - applyDiagMatr1:          diagmatr  (Targs=one)
+ * - applyDiagMatrPower:      diagpower (Targs=any)
+ * - applyControlledCompMatr: compmatr  (Targs=any)
+*/
+
+enum ArgsFlag { none, scalar, diagmatr, diagpower, compmatr };
+
+
+/*
+ * Template flags for specifying how many control and
+ * target qubits are accepted by an API operation.
  * Value 'anystates' is reserved for control qubits,
- * indicating when they must accompany ctrl-states in
+ * indicating that ctrls must accompany ctrl-states in
  * the API signature.
  * 
  * For example:
@@ -85,10 +159,11 @@ void assertNumQubitsFlagsAreValid(NumQubitsFlag ctrlsFlag, NumQubitsFlag targsFl
         targsFlag == any);
 }
 
-void assertNumQubitsFlagsValid(NumQubitsFlag ctrlsFlag, NumQubitsFlag targsFlag, vector<int> ctrls, vector<int> states, vector<int> targs) {
-
+void assertNumQubitsFlagsValid(
+    NumQubitsFlag ctrlsFlag, NumQubitsFlag targsFlag, 
+    vector<int> ctrls, vector<int> states, vector<int> targs
+) {
     assertNumQubitsFlagsAreValid(ctrlsFlag, targsFlag);
-
     DEMAND( targs.size() > 0 );
 
     if (targsFlag == one) 
@@ -119,23 +194,6 @@ void assertNumQubitsFlagsValid(NumQubitsFlag ctrlsFlag, NumQubitsFlag targsFlag,
  * macro so the caller recognises it is a generator.
  */
 
-template <NumQubitsFlag Ctrls>
-int GENERATE_NUM_CTRLS(int numFreeQubits) {
-
-    assertNumQubitsFlagsAreValid(Ctrls, one);
-    DEMAND( Ctrls != one || numFreeQubits >= 1 );
-    DEMAND( numFreeQubits >= 0 );
-
-    if constexpr (Ctrls == zero)
-        return 0;
-    
-    if constexpr (Ctrls == one)
-        return 1;
-
-    if constexpr (Ctrls == any || Ctrls == anystates)
-        return GENERATE_COPY( range(0, numFreeQubits) );
-}
-
 template <NumQubitsFlag Targs>
 int GENERATE_NUM_TARGS(int numFreeQubits) {
 
@@ -151,7 +209,24 @@ int GENERATE_NUM_TARGS(int numFreeQubits) {
         return 2;
 
     if constexpr (Targs == any)
-        return GENERATE_COPY( range(1, numFreeQubits) );
+        return GENERATE_COPY( range(1, numFreeQubits+1) );
+}
+
+template <NumQubitsFlag Ctrls>
+int GENERATE_NUM_CTRLS(int numFreeQubits) {
+
+    assertNumQubitsFlagsAreValid(Ctrls, one);
+    DEMAND( Ctrls != one || numFreeQubits >= 1 );
+    DEMAND( numFreeQubits >= 0 );
+
+    if constexpr (Ctrls == zero)
+        return 0;
+    
+    if constexpr (Ctrls == one)
+        return 1;
+
+    if constexpr (Ctrls == any || Ctrls == anystates)
+        return GENERATE_COPY( range(0, numFreeQubits+1) );
 }
 
 
@@ -167,7 +242,9 @@ int GENERATE_NUM_TARGS(int numFreeQubits) {
  * This big, ugly bespoke function is necessary, rather
  * than a simple variadic template, because the QuEST 
  * API accepts fixed numbers of qubits as individual 
- * arguments, rather than as lists/vectors/pointers.
+ * arguments, rather than as lists/vectors/pointers. Note
+ * that our use of variadic templates (args) means we do
+ * not need to include ArgsFlag as a template parameter.
  */
 
 template <NumQubitsFlag Ctrls, NumQubitsFlag Targs>
@@ -210,16 +287,119 @@ void invokeApiOperation(auto operation, Qureg qureg, vector<int> ctrls, vector<i
 
 
 /*
- * perform the unit test for an API operation which
- * is "fixed", i.e. effects a fixed-size (1 or 2 target) 
- * non-parameterised matrix upon the state. The control
- * qubits are completely free, so this function can be
- * invoked upon all many-controlled variants of the API.
+ * prepare an API matrix (e.g. CompMatr1), as per
+ * the given template parameters, with random
+ * elements. This is used for testing API functions
+ * which accept matrices.
  */
 
-template <NumQubitsFlag Ctrls, NumQubitsFlag Targs>
-void performTestUponFixedOperation(auto operation, qmatrix matrix) {
+template <NumQubitsFlag Targs, ArgsFlag Args>
+auto getRandomApiMatrix(int numTargs) {
+
+    DEMAND(
+        Args == diagmatr ||
+        Args == diagpower ||
+        Args == compmatr );
     
+    qmatrix qm = (Args == compmatr)?
+        getRandomUnitary(numTargs) : 
+        getRandomDiagonalUnitary(numTargs);
+
+    if constexpr (Args == compmatr && Targs == one) 
+        return getCompMatr1(qm);
+
+    if constexpr (Args == compmatr && Targs == two)
+        return getCompMatr2(qm);
+
+    if constexpr (Args == compmatr && Targs == any) {
+        CompMatr cm = createCompMatr(numTargs); // leaks
+        setCompMatr(cm, qm);
+        return cm;
+    }
+
+    qvector dv = getDiagonals(qm);
+    constexpr bool diag = (Args == diagmatr || Args == diagpower);
+
+    if constexpr (diag && Targs == one)
+        return getDiagMatr1(dv);
+
+    if constexpr (diag && Targs == two)
+        return getDiagMatr2(dv);
+
+    if constexpr (diag && Targs == any) {
+        DiagMatr dm = createDiagMatr(numTargs); // leaks
+        setDiagMatr(dm, dv);
+        return dm;
+    }
+}
+
+
+/*
+ * chooses random values for the remaining arguments
+ * (after controls/states/targets) to API operations,
+ * with types informed by the template parameters.
+ * For example:
+ * - applyRotateX() accepts a scalar
+ * - applyCompMatr() accepts a CompMatr
+ * - applyDiagMatrPower() accepts a DiagMatr and qcomp
+ */
+
+template <NumQubitsFlag Targs, ArgsFlag Args>
+auto getRandomRemainingArgs(int numTargs) {
+
+    if constexpr (Args == none)
+        return tuple{};
+
+    if constexpr (Args == scalar)
+        return tuple{ getRandomReal(-2*M_PI, 2*M_PI) };
+
+    if constexpr (Args == compmatr || Args == diagmatr)
+        return tuple{ getRandomApiMatrix<Targs,Args>(numTargs) };
+
+    if constexpr (Args == diagpower)
+        return tuple{ getRandomApiMatrix<Targs,Args>(numTargs), getRandomComplex() };
+}
+
+
+/*
+ * unpack the given reference operator matrix (a qmatrix) 
+ * for an API operation, which is passed to testOperation(),
+ * and which will be effected upon the reference state (a 
+ * qvector or qmatrix). The type/form of matrixRefGen depends 
+ * on the type of API operation, indicated by template parameter.
+ */
+
+template <ArgsFlag Args>
+auto getReferenceMatrix(auto matrixRefGen, int numTargs, auto additionalArgs) {
+
+    if constexpr (Args == none)
+        return matrixRefGen;
+
+    if constexpr (Args == scalar)
+        return matrixRefGen(std::get<0>(additionalArgs));
+
+    if constexpr (Args == compmatr || Args == diagmatr)
+        return getMatrix(std::get<0>(additionalArgs));
+
+    if constexpr (Args == diagpower) {
+        qmatrix diag = getMatrix(std::get<0>(additionalArgs));
+        qcomp power = std::get<1>(additionalArgs);
+        return getPowerOfDiagonalMatrix(diag, power);
+    }
+}
+
+
+/*
+ * perform a unit test on an API operation. The
+ * template parameters are compile-time clues
+ * about what inputs to prepare and pass to the
+ * operation, and how its reference matrix (arg
+ * matrixRefGen) is formatted.
+ */
+
+template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, ArgsFlag Args>
+void testOperation(auto operation, auto matrixRefGen) {
+
     assertNumQubitsFlagsAreValid(Ctrls, Targs);
 
     auto statevecQuregs = getCachedStatevecs();
@@ -230,198 +410,72 @@ void performTestUponFixedOperation(auto operation, qmatrix matrix) {
         qvector statevecRef = getZeroVector(getPow2(NUM_QUREG_QUBITS));
         qmatrix densmatrRef = getZeroMatrix(getPow2(NUM_QUREG_QUBITS));
 
-        int numCtrls = GENERATE_NUM_CTRLS<Ctrls>(NUM_QUREG_QUBITS);
-        int numTargs = GENERATE_NUM_TARGS<Targs>(NUM_QUREG_QUBITS - numCtrls); // always 1 or 2
-
+        int numTargs = GENERATE_NUM_TARGS<Targs>(NUM_QUREG_QUBITS - (Ctrls == one)); // leave space for forced ctrl
+        int numCtrls = GENERATE_NUM_CTRLS<Ctrls>(NUM_QUREG_QUBITS - numTargs);
+        
         auto listpair = GENERATE_COPY( disjointsublists(range(0,NUM_QUREG_QUBITS), numCtrls, numTargs) );
         auto ctrls = std::get<0>(listpair);
         auto targs = std::get<1>(listpair);
-        auto states = getRandomInts(0, 2, numCtrls); // may be ignored
+        auto states = getRandomInts(0, 2, numCtrls * (Ctrls == anystates));
+
+        auto primaryArgs = tuple{ ctrls, states, targs };
+        auto furtherArgs = getRandomRemainingArgs<Targs,Args>(numTargs);
+        auto matrixRef = getReferenceMatrix<Args>(matrixRefGen, numTargs, furtherArgs);
+
+        auto testFunc = [&](Qureg qureg, auto& stateRef) -> void { 
+            
+            // invoke API operation, unpacking all templated variadics
+            auto apiFunc = [](auto&&... args) { return invokeApiOperation<Ctrls,Targs>(args...); };
+            auto allArgs = std::tuple_cat(tuple{operation, qureg}, primaryArgs, furtherArgs);
+            std::apply(apiFunc, allArgs);
+
+            // update reference state
+            applyReferenceOperator(stateRef, ctrls, states, targs, matrixRef);
+        };
 
         CAPTURE( ctrls, targs, states );
-
-        auto testFunc = [&]<class T>(Qureg qureg, T& reference) -> void { 
-            invokeApiOperation<Ctrls,Targs>(operation, qureg, ctrls, states, targs);
-            applyReferenceOperator(reference, ctrls, states, targs, matrix);
-        };
 
         SECTION( "statevector"    ) { performTestUponAllQuregDeployments(statevecQuregs, statevecRef, testFunc); }
         SECTION( "density matrix" ) { performTestUponAllQuregDeployments(densmatrQuregs, densmatrRef, testFunc); }
     }
-
-    SECTION( "input validation" ) {
-
-        Qureg qureg = statevecQuregs["CPU"];
-        vector<int> ctrls = (Ctrls == one)? vector<int>{0} : vector<int>{};
-        vector<int> targs = (Targs == one)? vector<int>{1} : vector<int>{1, 2};
-        vector<int> states(0, ctrls.size());
-
-        SECTION( "qureg initialisation" ) {
-
-            Qureg uninit;
-
-            REQUIRE_THROWS_WITH( 
-                (invokeApiOperation<Ctrls,Targs>(operation, uninit, ctrls, states, targs)),
-                contains("invalid Qureg")
-            );
-        }
-
-        SECTION( "target index" ) {
-
-            targs[0] = GENERATE( -1, NUM_QUREG_QUBITS );
-
-            REQUIRE_THROWS_WITH( 
-                (invokeApiOperation<Ctrls,Targs>(operation, qureg, ctrls, states, targs)),
-                contains("invalid target qubit")
-            );
-        }
-
-        if constexpr (Ctrls == any) {
-
-            SECTION( "number of controls" ) {
-
-                int numCtrls = GENERATE( -1, NUM_QUREG_QUBITS+1 );
-
-                REQUIRE_THROWS_WITH( 
-                    (invokeApiOperation<Ctrls,Targs>(operation, qureg, ctrls, states, numCtrls, targs, targs.size())),
-                    contains("number of control qubits")
-                );
-            }
-
-        }
-
-        if constexpr (Ctrls != zero) {
-
-            SECTION( "control indices" ) {
-
-                ctrls = { GENERATE( -1, NUM_QUREG_QUBITS ) };
-
-                REQUIRE_THROWS_WITH( 
-                    (invokeApiOperation<Ctrls,Targs>(operation, qureg, ctrls, states, targs)),
-                    contains("invalid control qubit")
-                );
-            }
-
-        }
-
-        if constexpr (Ctrls == any) {
-
-            SECTION( "control repetition" ) {
-
-                ctrls = {0, 0};
-
-                REQUIRE_THROWS_WITH( 
-                    (invokeApiOperation<Ctrls,Targs>(operation, qureg, ctrls, states, targs)),
-                    contains("control qubits contained duplicates")
-                );
-            }
-
-        }
-
-        if constexpr (Ctrls != zero) {
-
-            SECTION( "target in controls" ) {
-
-                ctrls = {targs[0]};
-
-                REQUIRE_THROWS_WITH( 
-                    (invokeApiOperation<Ctrls,Targs>(operation, qureg, ctrls, states, targs)),
-                    contains("qubit appeared among both the control and target qubits")
-                );
-            }
-        }
-
-        if constexpr (Ctrls == anystates) {
-
-            SECTION( "control state bits" ) {
-
-                states = { GENERATE( -1, 2 ) };
-                ctrls = {0};
-
-                REQUIRE_THROWS_WITH( 
-                    (invokeApiOperation<Ctrls,Targs>(operation, qureg, ctrls, states, targs)),
-                    contains("invalid control-state")
-                );
-            }
-        }
-    }
 }
 
 
 /*
- * the Z-basis matrices of all API operations for
- * which the effected matrix is fixed-size (1 or 2
- * targets) and non-parameterised, as accepted by
- * function performTestUponFixedOperation()
+ * perform unit tests for the four distinctly-controlled
+ * variants of the given API operation (with the specified
+ * function name suffix). 'numtargs' indicates the number 
+ * of target qubits accepted by the operation, and 'argtype'
+ * indicates the types of remaining arguments (if any exist).
+ * 'matrixgen' is the matrix representation (of varying 
+ * formats) of the operation, against which it will be compared.
  */
 
-namespace FixedMatrices {
-
-    qmatrix H = {
-        {1/sqrt(2),  1/sqrt(2)},
-        {1/sqrt(2), -1/sqrt(2)}};
-
-    qmatrix X = {
-        {0, 1},
-        {1, 0}};
-    
-    qmatrix Y = {
-        {0, -1_i},
-        {1_i, 0}};
-
-    qmatrix Z = {
-        {1,  0},
-        {0, -1}};
-
-    qmatrix T = {
-        {1, 0},
-        {0, exp(1_i*M_PI/4)}};
-
-    qmatrix S = {
-        {1, 0},
-        {0, 1_i}};
-
-    qmatrix SWAP = {
-        {1, 0, 0, 0},
-        {0, 0, 1, 0},
-        {0, 1, 0, 0},
-        {0, 0, 0, 1}};
-
-    qmatrix sqrtSWAP = {
-        {1, 0, 0, 0},
-        {0, (1+1_i)/2, (1-1_i)/2, 0},
-        {0, (1-1_i)/2, (1+1_i)/2, 0},
-        {0, 0, 0, 1}};
-}
+#define TEST_ANY_CTRL_OPERATION( namesuffix, numtargs, argtype, matrixgen ) \
+    TEST_CASE( "apply" #namesuffix,                     "[operations]" ) { testOperation<zero,     numtargs,argtype>( apply ## namesuffix,                     matrixgen); } \
+    TEST_CASE( "applyControlled" #namesuffix,           "[operations]" ) { testOperation<one,      numtargs,argtype>( applyControlled ## namesuffix,           matrixgen); } \
+    TEST_CASE( "applyMultiControlled" #namesuffix,      "[operations]" ) { testOperation<any,      numtargs,argtype>( applyMultiControlled ## namesuffix,      matrixgen); } \
+    TEST_CASE( "applyMultiStateControlled" #namesuffix, "[operations]" ) { testOperation<anystates,numtargs,argtype>( applyMultiStateControlled ## namesuffix, matrixgen); } 
 
 
-/*
- * instantiate unit tests for all ctrl-variants
- * of a "fixed" API operation
- */
+TEST_ANY_CTRL_OPERATION( CompMatr1, one, compmatr, nullptr );
+TEST_ANY_CTRL_OPERATION( CompMatr2, two, compmatr, nullptr );
+TEST_ANY_CTRL_OPERATION( CompMatr,  any, compmatr, nullptr );
+TEST_ANY_CTRL_OPERATION( DiagMatr1, one, diagmatr, nullptr );
+TEST_ANY_CTRL_OPERATION( DiagMatr2, two, diagmatr, nullptr );
+TEST_ANY_CTRL_OPERATION( DiagMatr,  any, diagmatr, nullptr );
 
-#define TEST_FIXED_ANY_CTRL_OPERATION( name, numtargs, matrix ) \
-    TEST_CASE( "apply" #name, "[operations]" ) { \
-        performTestUponFixedOperation<zero,numtargs>( apply ## name, matrix); } \
-    TEST_CASE( "applyControlled" #name, "[operations]" ) { \
-        performTestUponFixedOperation<one,numtargs>( applyControlled ## name, matrix); } \
-    TEST_CASE( "applyMultiControlled" #name, "[operations]" ) { \
-        performTestUponFixedOperation<any,numtargs>( applyMultiControlled ## name, matrix); } \
-    TEST_CASE( "applyMultiStateControlled" #name, "[operations]" ) { \
-        performTestUponFixedOperation<anystates,numtargs>( applyMultiStateControlled ## name, matrix); } 
+TEST_ANY_CTRL_OPERATION( DiagMatrPower,  any, diagpower, nullptr );
 
-TEST_FIXED_ANY_CTRL_OPERATION( Hadamard, one, FixedMatrices::H );
-TEST_FIXED_ANY_CTRL_OPERATION( PauliX,   one, FixedMatrices::X );
-TEST_FIXED_ANY_CTRL_OPERATION( PauliY,   one, FixedMatrices::Y );
-TEST_FIXED_ANY_CTRL_OPERATION( PauliZ,   one, FixedMatrices::Z );
-TEST_FIXED_ANY_CTRL_OPERATION( T,        one, FixedMatrices::T );
-TEST_FIXED_ANY_CTRL_OPERATION( S,        one, FixedMatrices::S );
-TEST_FIXED_ANY_CTRL_OPERATION( Swap,     two, FixedMatrices::SWAP );
-TEST_FIXED_ANY_CTRL_OPERATION( SqrtSwap, two, FixedMatrices::sqrtSWAP );
+TEST_ANY_CTRL_OPERATION( Hadamard, one, none, FixedMatrices::H );
+TEST_ANY_CTRL_OPERATION( PauliX,   one, none, FixedMatrices::X );
+TEST_ANY_CTRL_OPERATION( PauliY,   one, none, FixedMatrices::Y );
+TEST_ANY_CTRL_OPERATION( PauliZ,   one, none, FixedMatrices::Z );
+TEST_ANY_CTRL_OPERATION( T,        one, none, FixedMatrices::T );
+TEST_ANY_CTRL_OPERATION( S,        one, none, FixedMatrices::S );
+TEST_ANY_CTRL_OPERATION( Swap,     two, none, FixedMatrices::SWAP );
+TEST_ANY_CTRL_OPERATION( SqrtSwap, two, none, FixedMatrices::sqrtSWAP );
 
-
-// TODO:
-// we will likely change the above design, for
-// example modularising the input validation 
-// checks, when extending to non-fixed operations
-
+TEST_ANY_CTRL_OPERATION( RotateX, one, scalar, SinglyParameterisedMatrices::Rx );
+TEST_ANY_CTRL_OPERATION( RotateY, one, scalar, SinglyParameterisedMatrices::Ry );
+TEST_ANY_CTRL_OPERATION( RotateZ, one, scalar, SinglyParameterisedMatrices::Rz );
