@@ -175,7 +175,7 @@ target_include_directories(QuEST
 target_compile_features(QuEST
   PUBLIC
   c_std_11
-  cxx_std_17
+  cxx_std_20
 )
 
 # Turn on all compiler warnings
@@ -222,7 +222,7 @@ endif()
 if (ENABLE_CUDA)
   enable_language(CUDA)
   set(CMAKE_CUDA_STANDARD_REQUIRED ON)
-  set_property(TARGET QuEST PROPERTY CUDA_STANDARD 17)
+  set_property(TARGET QuEST PROPERTY CUDA_STANDARD 20)
 
   target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=1)
   
@@ -248,7 +248,7 @@ endif()
 if (ENABLE_HIP)
   enable_language(HIP)
   set(CMAKE_HIP_STANDARD_REQUIRED ON)
-  set_property(TARGET QuEST PROPERTY HIP_STANDARD 17)
+  set_property(TARGET QuEST PROPERTY HIP_STANDARD 20)
   
   target_compile_definitions(QuEST
     PUBLIC COMPILE_CUDA=1
