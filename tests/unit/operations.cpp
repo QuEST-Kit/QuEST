@@ -492,6 +492,98 @@ qmatrix getReferenceMatrix(auto matrixRefGen, vector<int> targs, auto additional
 
 
 /*
+ * display all/only relevant inputs given to an 
+ * API operation when its subsequent test fails.
+ * This is like a customisation of CAPTURE, although
+ * we must use UNSCOPED_INFO (and ergo re-implement
+ * some printers) because our branching makes scopes
+ * which end CAPTURE's lifetime.
+ */
+
+
+// TODO: surely this should live somewhere else,
+// and/or re-use printer_ functions as much as possible
+
+std::string toString(vector<int> list) {
+
+    std::string out = "{ ";
+    for (int& e : list)
+        out += std::to_string(e) + " ";
+    out += "}";
+    return out;
+}
+
+extern int paulis_getPauliAt(PauliStr str, int ind);
+
+std::string toString(PauliStr str, vector<int> targs) {
+
+    std::string labels = "IXYZ";
+
+    // ugly but adequate - like me (call me)
+    std::string out = "";
+    for (int i=targs.size()-1; i>=0; i--)
+        out += labels[paulis_getPauliAt(str, targs[i])];
+    
+    return out;
+}
+
+template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, ArgsFlag Args>
+void CAPTURE_RELEVANT( vector<int> ctrls, vector<int> states, vector<int> targs, auto& args ) {
+
+    // display ctrls
+    if (Ctrls == one)
+        UNSCOPED_INFO( "control := " << ctrls[0] );
+    if (Ctrls == any || Ctrls == anystates )
+        UNSCOPED_INFO( "controls := " << toString(ctrls) );
+
+    // display states
+    if (Ctrls == anystates)
+        UNSCOPED_INFO( "states := " << toString(states) );
+
+    // display targs
+    if (Targs == one)
+        UNSCOPED_INFO( "target := " << targs[0] );
+
+    if (Targs == two) {
+        UNSCOPED_INFO( "target A := " << targs[0] );
+        UNSCOPED_INFO( "target B := " << targs[1] );
+    }
+    if (Targs == any)
+        UNSCOPED_INFO( "targets := " << toString(targs) );
+
+    // display rotation angle
+    if constexpr (Args == scalar)
+        UNSCOPED_INFO( "angle := " << std::get<0>(args) );
+
+    // display rotation angle and axis
+    if constexpr (Args == axisrots) {
+        UNSCOPED_INFO( "angle := " << std::get<0>(args) );
+        UNSCOPED_INFO( "x := " << std::get<1>(args) );
+        UNSCOPED_INFO( "y := " << std::get<2>(args) );
+        UNSCOPED_INFO( "z := " << std::get<3>(args) );
+    }
+
+    // note but don't display API matrices
+    if constexpr (Args == compmatr || Args == diagmatr || Args == diagpower)
+        UNSCOPED_INFO( "matrix := (omitted)" );
+
+    // display exponent of diagonal matrix
+    if constexpr (Args == diagpower) {
+        qcomp p = std::get<1>(args);
+        UNSCOPED_INFO( "exponent := " << real(p) << " + (" << imag(p) << ")i" );
+    }
+
+    // display PauliStr
+    if constexpr (Args == paulistr || Args == pauligad)
+        UNSCOPED_INFO( "paulis := " << toString(std::get<0>(args), targs) );
+
+    // display PauliStr angle
+    if constexpr (Args == pauligad)
+        UNSCOPED_INFO( "angle := " << std::get<1>(args) );
+}
+
+
+/*
  * perform a unit test on an API operation. The
  * template parameters are compile-time clues
  * about what inputs to prepare and pass to the
@@ -549,8 +641,8 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
                 applyReferenceOperator(stateRef, ctrls, states, targs, matrixRef);
         };
 
-        // report relevant inputs if subsequent tests fail
-        CAPTURE( ctrls, targs, states );
+        // report operation's input parameters if subsequent test fails
+        CAPTURE_RELEVANT<Ctrls,Targs,Args>( ctrls, states, targs, furtherArgs );
 
         // test API operation on all available deployment combinations (e.g. MPI, MPI+CUDA, etc)
         SECTION( "statevector"    ) { testAllQuregDeployments(statevecQuregs, statevecRef, testFunc); }
