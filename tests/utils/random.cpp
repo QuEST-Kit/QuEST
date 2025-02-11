@@ -332,6 +332,16 @@ PauliStr getRandomPauliStr(int numQubits) {
 }
 
 
+PauliStr getRandomPauliStr(vector<int> targs) {
+
+    std::string paulis = "";
+    for (size_t i=0; i<targs.size(); i++)
+        paulis += "IXYZ"[getRandomInt(0,4)];
+
+    return getPauliStr(paulis, targs);
+}
+
+
 PauliStr getRandomDiagPauliStr(int numQubits) {
 
     std::string paulis = "";

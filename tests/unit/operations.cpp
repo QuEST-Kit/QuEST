@@ -134,15 +134,17 @@ void testAllQuregDeployments(quregCache& quregs, auto& reference, auto& function
  * by the testing code to decide how to prepare inputs.
  * 
  * For example:
- * - applyHadamard:           none
- * - applyRotateX:            scalar
- * - applyRotateAroundAxis:   axisrots
- * - applyDiagMatr1:          diagmatr
- * - applyDiagMatrPower:      diagpower
- * - applyControlledCompMatr: compmatr
+ * - applyHadamard:         none
+ * - applyRotateX:          scalar
+ * - applyRotateAroundAxis: axisrots
+ * - applyDiagMatr1:        diagmatr
+ * - applyDiagMatrPower:    diagpower
+ * - applyCompMatr:         compmatr
+ * - applyPauliStr:         paulistr
+ * - applyPauliGadgt:       pauligad
 */
 
-enum ArgsFlag { none, scalar, axisrots, diagmatr, diagpower, compmatr };
+enum ArgsFlag { none, scalar, axisrots, diagmatr, diagpower, compmatr, paulistr, pauligad };
 
 
 /*
@@ -170,8 +172,9 @@ void assertNumQubitsFlagsAreValid(NumQubitsFlag ctrlsFlag, NumQubitsFlag targsFl
         ctrlsFlag == anystates );
 
     DEMAND(
-        targsFlag == one ||
-        targsFlag == two ||
+        targsFlag == zero ||
+        targsFlag == one  ||
+        targsFlag == two  ||
         targsFlag == any);
 }
 
@@ -180,7 +183,11 @@ void assertNumQubitsFlagsValid(
     vector<int> ctrls, vector<int> states, vector<int> targs
 ) {
     assertNumQubitsFlagsAreValid(ctrlsFlag, targsFlag);
-    DEMAND( targs.size() > 0 );
+
+    // we explicitly permit targsFlag=zero while
+    // targs.size() != 0, which occurs when targs
+    // are supplied to the API through an alternate
+    // argument (e.g. a PauliStr)
 
     if (targsFlag == one) 
         DEMAND( targs.size() == 1 );
@@ -289,24 +296,28 @@ void invokeApiOperation(
     assertNumQubitsFlagsValid(Ctrls, Targs, ctrls, states, targs);
 
     if constexpr (Ctrls == zero) {
-        if constexpr (Targs == one) operation(qureg, targs[0], args...);
-        if constexpr (Targs == two) operation(qureg, targs[0], targs[1], args...);
-        if constexpr (Targs == any) operation(qureg, targs.data(), numTargs, args...);
+        if constexpr (Targs == zero) operation(qureg, args...);
+        if constexpr (Targs == one)  operation(qureg, targs[0], args...);
+        if constexpr (Targs == two)  operation(qureg, targs[0], targs[1], args...);
+        if constexpr (Targs == any)  operation(qureg, targs.data(), numTargs, args...);
     }
     if constexpr (Ctrls == one) {
-        if constexpr (Targs == one) operation(qureg, ctrls[0], targs[0], args...);
-        if constexpr (Targs == two) operation(qureg, ctrls[0], targs[0], targs[1], args...);
-        if constexpr (Targs == any) operation(qureg, ctrls[0], targs.data(), numTargs, args...);
+        if constexpr (Targs == zero) operation(qureg, ctrls[0], args...);
+        if constexpr (Targs == one)  operation(qureg, ctrls[0], targs[0], args...);
+        if constexpr (Targs == two)  operation(qureg, ctrls[0], targs[0], targs[1], args...);
+        if constexpr (Targs == any)  operation(qureg, ctrls[0], targs.data(), numTargs, args...);
     }
     if constexpr (Ctrls == any) {
-        if constexpr (Targs == one) operation(qureg, ctrls.data(), numCtrls, targs[0], args...);
-        if constexpr (Targs == two) operation(qureg, ctrls.data(), numCtrls, targs[0], targs[1], args...);
-        if constexpr (Targs == any) operation(qureg, ctrls.data(), numCtrls, targs.data(), numTargs, args...);
+        if constexpr (Targs == zero) operation(qureg, ctrls.data(), numCtrls, args...);
+        if constexpr (Targs == one)  operation(qureg, ctrls.data(), numCtrls, targs[0], args...);
+        if constexpr (Targs == two)  operation(qureg, ctrls.data(), numCtrls, targs[0], targs[1], args...);
+        if constexpr (Targs == any)  operation(qureg, ctrls.data(), numCtrls, targs.data(), numTargs, args...);
     }
     if constexpr (Ctrls == anystates) {
-        if constexpr (Targs == one) operation(qureg, ctrls.data(), states.data(), numCtrls, targs[0], args...);
-        if constexpr (Targs == two) operation(qureg, ctrls.data(), states.data(), numCtrls, targs[0], targs[1], args...);
-        if constexpr (Targs == any) operation(qureg, ctrls.data(), states.data(), numCtrls, targs.data(), numTargs, args...);
+        if constexpr (Targs == zero) operation(qureg, ctrls.data(), states.data(), numCtrls, args...);
+        if constexpr (Targs == one)  operation(qureg, ctrls.data(), states.data(), numCtrls, targs[0], args...);
+        if constexpr (Targs == two)  operation(qureg, ctrls.data(), states.data(), numCtrls, targs[0], targs[1], args...);
+        if constexpr (Targs == any)  operation(qureg, ctrls.data(), states.data(), numCtrls, targs.data(), numTargs, args...);
     }
 }
 
@@ -377,7 +388,7 @@ auto getRandomApiMatrix(int numTargs) {
  */
 
 template <NumQubitsFlag Targs, ArgsFlag Args>
-auto getRandomRemainingArgs(int numTargs) {
+auto getRandomRemainingArgs(vector<int> targs) {
 
     if constexpr (Args == none)
         return tuple{ };
@@ -396,14 +407,25 @@ auto getRandomRemainingArgs(int numTargs) {
     }
 
     if constexpr (Args == compmatr || Args == diagmatr) {
-        auto matrix = getRandomApiMatrix<Targs,Args>(numTargs);
+        auto matrix = getRandomApiMatrix<Targs,Args>(targs.size());
         return tuple{ matrix };
     }
 
     if constexpr (Args == diagpower) {
-        auto matrix = getRandomApiMatrix<Targs,Args>(numTargs);
+        auto matrix = getRandomApiMatrix<Targs,Args>(targs.size());
         qcomp exponent = getRandomComplex();
         return tuple{ matrix, exponent };
+    }
+
+    if constexpr (Args == paulistr) {
+        PauliStr str = getRandomPauliStr(targs);
+        return tuple{ str };
+    }
+
+    if constexpr (Args == pauligad) {
+        PauliStr str = getRandomPauliStr(targs);
+        qreal angle = getRandomReal(-2*M_PI, 2*M_PI);
+        return tuple{ str, angle };
     }
 }
 
@@ -417,13 +439,13 @@ auto getRandomRemainingArgs(int numTargs) {
  */
 
 template <NumQubitsFlag Targs, ArgsFlag Args>
-qmatrix getReferenceMatrix(auto matrixRefGen, int numTargs, auto additionalArgs) {
+qmatrix getReferenceMatrix(auto matrixRefGen, vector<int> targs, auto additionalArgs) {
 
     if constexpr (Args == none && Targs != any)
         return matrixRefGen;
 
     if constexpr (Args == none && Targs == any)
-        return matrixRefGen(numTargs);
+        return matrixRefGen(targs.size());
 
     if constexpr (Args == scalar && Targs != any) {
         qreal angle = std::get<0>(additionalArgs);
@@ -432,7 +454,7 @@ qmatrix getReferenceMatrix(auto matrixRefGen, int numTargs, auto additionalArgs)
 
     if constexpr (Args == scalar && Targs == any) {
         qreal angle = std::get<0>(additionalArgs);
-        return matrixRefGen(angle, numTargs);
+        return matrixRefGen(angle, targs.size());
     }
 
     if constexpr (Args == axisrots) {
@@ -449,9 +471,22 @@ qmatrix getReferenceMatrix(auto matrixRefGen, int numTargs, auto additionalArgs)
     }
 
     if constexpr (Args == diagpower) {
-        qmatrix diag = getMatrix(std::get<0>(additionalArgs));
+        auto apiMatrix = std::get<0>(additionalArgs);
+        qmatrix diag = getMatrix(apiMatrix);
         qcomp power = std::get<1>(additionalArgs);
         return getPowerOfDiagonalMatrix(diag, power);
+    }
+
+    if constexpr (Args == paulistr) {
+        PauliStr str = std::get<0>(additionalArgs);
+        return getMatrix(str, targs);
+    }
+
+    if constexpr (Args == pauligad) {
+        PauliStr str = std::get<0>(additionalArgs);
+        qreal angle = std::get<1>(additionalArgs);
+        qmatrix matr = getMatrix(str, targs);
+        return getExponentialOfPauliMatrix(angle, matr);
     }
 }
 
@@ -484,22 +519,27 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
         
         // try all possible ctrls and targs
         auto listpair = GENERATE_COPY( disjointsublists(range(0,NUM_QUREG_QUBITS), numCtrls, numTargs) );
-        auto ctrls = std::get<0>(listpair);
-        auto targs = std::get<1>(listpair);
+        vector<int> ctrls = std::get<0>(listpair);
+        vector<int> targs = std::get<1>(listpair);
 
         // randomise control states (if operation accepts them)
-        auto states = getRandomInts(0, 2, numCtrls * (Ctrls == anystates));
+        vector<int> states = getRandomInts(0, 2, numCtrls * (Ctrls == anystates));
 
         // randomise remaining operation parameters
         auto primaryArgs = tuple{ ctrls, states, targs };
-        auto furtherArgs = getRandomRemainingArgs<Targs,Args>(numTargs);
-        auto matrixRef = getReferenceMatrix<Targs,Args>(matrixRefGen, numTargs, furtherArgs);
+        auto furtherArgs = getRandomRemainingArgs<Targs,Args>(targs);
+
+        // obtain the reference matrix for this operation 
+        qmatrix matrixRef = getReferenceMatrix<Targs,Args>(matrixRefGen, targs, furtherArgs);
+
+        // PauliStr arg replaces target qubit list in API operations
+        constexpr NumQubitsFlag RevTargs = (Args==paulistr||Args==pauligad)? zero : Targs;
 
         // prepare test function which will receive both statevectors and density matrices
         auto testFunc = [&](Qureg qureg, auto& stateRef) -> void { 
             
             // invoke API operation, passing all args (unpacking variadic)
-            auto apiFunc = [](auto&&... args) { return invokeApiOperation<Ctrls,Targs>(args...); };
+            auto apiFunc = [](auto&&... args) { return invokeApiOperation<Ctrls,RevTargs>(args...); };
             auto allArgs = std::tuple_cat(tuple{operation, qureg}, primaryArgs, furtherArgs);
             std::apply(apiFunc, allArgs);
 
@@ -543,6 +583,9 @@ void testOperation(auto operation, auto matrixRefGen) {
 
 
 
+TEST_ANY_CTRL_OPERATION( PauliStr,    any, paulistr, nullptr );
+TEST_ANY_CTRL_OPERATION( PauliGadget, any, pauligad, nullptr );
+
 TEST_ANY_CTRL_OPERATION( CompMatr1, one, compmatr, nullptr );
 TEST_ANY_CTRL_OPERATION( CompMatr2, two, compmatr, nullptr );
 TEST_ANY_CTRL_OPERATION( CompMatr,  any, compmatr, nullptr );
@@ -570,6 +613,9 @@ TEST_ANY_CTRL_OPERATION( RotateAroundAxis, one, axisrots, nullptr );
 TEST_ANY_CTRL_OPERATION( MultiQubitNot, any, none, VariableSizeMatrices::X );
 
 TEST_ANY_CTRL_OPERATION( PhaseGadget, any, scalar, VariableSizeParameterisedMatrices::Z );
+
+TEST_CASE( "multiplyPauliStr",     TEST_TAG ) { testOperation<zero,any,paulistr>(multiplyPauliStr,    nullptr, true); }
+TEST_CASE( "multiplyPauliGadget",  TEST_TAG ) { testOperation<zero,any,pauligad>(multiplyPauliGadget, nullptr, true); }
 
 TEST_CASE( "multiplyCompMatr1", TEST_TAG ) { testOperation<zero,one,compmatr>(multiplyCompMatr1, nullptr, true); }
 TEST_CASE( "multiplyCompMatr2", TEST_TAG ) { testOperation<zero,two,compmatr>(multiplyCompMatr2, nullptr, true); }

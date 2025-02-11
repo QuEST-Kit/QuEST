@@ -29,6 +29,7 @@ qmatrix getRandomDiagonalUnitary(int numQb);
 vector<qmatrix> getRandomKrausMap(int numQb, int numOps);
 
 PauliStr getRandomPauliStr(int numQubits);
+PauliStr getRandomPauliStr(vector<int> targs);
 PauliStr getRandomDiagPauliStr(int numQubits);
 
 vector<int> getRandomInts(int min, int maxExcl, int len);

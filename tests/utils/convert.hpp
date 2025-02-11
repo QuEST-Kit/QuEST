@@ -14,5 +14,7 @@ qmatrix getMatrix(Qureg);
 
 template <typename T> qmatrix getMatrix(T);
 
+qmatrix getMatrix(PauliStr str, vector<int> targs);
+
 
 #endif // CONVERT_HPP

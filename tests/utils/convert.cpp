@@ -7,6 +7,9 @@
 #include <type_traits>
 using std::is_same_v;
 
+#include <vector>
+using std::vector;
+
 
 
 /*
@@ -70,7 +73,7 @@ qmatrix getMatrix(Qureg qureg) {
 
 
 /*
- * TO MATRIX
+ * FROM API MATRIX
  */
 
 
@@ -111,3 +114,27 @@ template qmatrix getMatrix(DiagMatr2);
 template qmatrix getMatrix(DiagMatr );
 
 // FullStateDiagMatr excluded
+
+
+
+/*
+ * FROM PAULI STRING
+ */
+
+
+extern int paulis_getPauliAt(PauliStr str, int ind);
+
+
+qmatrix getMatrix(PauliStr str, vector<int> targs) {
+    DEMAND( targs.size() >= 1 );
+
+    qmatrix out = getIdentityMatrix(1);
+
+    for (auto t : targs) {
+        int ind = paulis_getPauliAt(str, t);
+        qmatrix matr = getPauliMatrix(ind);
+        out = getKroneckerProduct(matr, out);
+    }
+
+    return out;
+}
