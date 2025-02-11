@@ -8,7 +8,7 @@
  */
 
 qmatrix getZeroMatrix(size_t dim) {
-    DEMAND( dim > 1 );
+    DEMAND( dim >= 1 );
 
     qmatrix out = qmatrix(dim);
 
@@ -19,7 +19,7 @@ qmatrix getZeroMatrix(size_t dim) {
 }
 
 qmatrix getIdentityMatrix(size_t dim) {
-    DEMAND( dim > 1 );
+    DEMAND( dim >= 1 );
 
     qmatrix out = getZeroMatrix(dim);
 
@@ -30,7 +30,7 @@ qmatrix getIdentityMatrix(size_t dim) {
 }
 
 qmatrix getDiagonalMatrix(qvector v) {
-    DEMAND( v.size() > 1 );
+    DEMAND( v.size() >= 1 );
 
     qmatrix out = getZeroMatrix(v.size());
 
@@ -38,6 +38,26 @@ qmatrix getDiagonalMatrix(qvector v) {
         out[i][i] = v[i];
     
     return out;
+}
+
+qmatrix getPauliMatrix(int id) {
+    DEMAND( id >= 0 );
+    DEMAND( id <= 3 );
+
+    if (id == 0)
+        return {{1 ,0}, {0, 1}};
+
+    if (id == 1)
+        return {{0, 1}, {1, 0}};
+
+    if (id == 2)
+        return {{0, -1_i}, {1_i, 0}};
+
+    if (id == 3)
+        return {{1, 0}, {0, -1}};
+
+    // unreachable
+    return {{-1}};
 }
 
 

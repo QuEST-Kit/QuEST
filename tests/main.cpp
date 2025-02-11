@@ -8,6 +8,7 @@
 
 #include "quest.h"
 #include "tests/utils/cache.hpp"
+#include "tests/utils/macros.hpp"
 
 
 /*
@@ -36,11 +37,13 @@ public:
         QuESTEnv env = getQuESTEnv();
         std::cout << std::endl;
         std::cout << "QuEST execution environment:" << std::endl;
-        std::cout << "  precision:       " << FLOAT_PRECISION << std::endl;
-        std::cout << "  multithreaded:   " << getQuESTEnv().isMultithreaded  << std::endl;
-        std::cout << "  distributed:     " << getQuESTEnv().isDistributed    << std::endl;
-        std::cout << "  GPU-accelerated: " << getQuESTEnv().isGpuAccelerated << std::endl;
-        std::cout << "  cuQuantum:       " << (getQuESTEnv().isGpuAccelerated && COMPILE_CUQUANTUM) << std::endl;
+        std::cout << "  precision:       " << FLOAT_PRECISION      << std::endl;
+        std::cout << "  multithreaded:   " << env.isMultithreaded  << std::endl;
+        std::cout << "  distributed:     " << env.isDistributed    << std::endl;
+        std::cout << "  GPU-accelerated: " << env.isGpuAccelerated << std::endl;
+        std::cout << "  cuQuantum:       " << (env.isGpuAccelerated && COMPILE_CUQUANTUM) << std::endl;
+        std::cout << "  node count:      " << env.numNodes         << std::endl;
+        std::cout << "  Qureg size:      " << NUM_QUREG_QUBITS     << std::endl;
         std::cout << std::endl;
 
         std::cout << "Tested Qureg deployments:" << std::endl;

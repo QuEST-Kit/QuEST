@@ -14,6 +14,7 @@ typedef vector<vector<qcomp>> qmatrix;
 qmatrix getZeroMatrix(size_t dim);
 qmatrix getIdentityMatrix(size_t dim);
 qmatrix getDiagonalMatrix(qvector v);
+qmatrix getPauliMatrix(int id);
 
 qmatrix operator * (const qcomp&,   const qmatrix& );
 qmatrix operator * (const qmatrix&, const qcomp&);

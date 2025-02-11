@@ -1280,7 +1280,7 @@ void applyMultiStateControlledMultiQubitNot(Qureg qureg, int* controls, int* sta
  * superoperator
  */
 
-void applySuperOp(Qureg qureg, SuperOp superop, int* targets, int numTargets) {
+void applySuperOp(Qureg qureg, int* targets, int numTargets, SuperOp superop) {
     validate_quregFields(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
     validate_superOpFields(superop, __func__);

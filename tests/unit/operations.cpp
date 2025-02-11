@@ -21,6 +21,8 @@
 using std::tuple;
 
 
+#define TEST_TAG "[operations]"
+
 
 // TODO:
 // some of the below functions may move into utils/
@@ -29,7 +31,6 @@ auto contains(std::string str) {
     
     return Catch::Matchers::ContainsSubstring(str, Catch::CaseSensitive::No);
 }
-
 
 
 /*
@@ -42,17 +43,9 @@ namespace FixedMatrices {
         {1/sqrt(2),  1/sqrt(2)},
         {1/sqrt(2), -1/sqrt(2)}};
 
-    qmatrix X = {
-        {0, 1},
-        {1, 0}};
-    
-    qmatrix Y = {
-        {0, -1_i},
-        {1_i, 0}};
-
-    qmatrix Z = {
-        {1,  0},
-        {0, -1}};
+    qmatrix X = getPauliMatrix(1);
+    qmatrix Y = getPauliMatrix(2);
+    qmatrix Z = getPauliMatrix(3);
 
     qmatrix T = {
         {1, 0},
@@ -75,11 +68,33 @@ namespace FixedMatrices {
         {0, 0, 0, 1}};
 }
 
-namespace SinglyParameterisedMatrices {
+namespace ParameterisedMatrices {
 
     auto Rx = [](qreal p) { return getExponentialOfPauliMatrix(p, FixedMatrices::X); };
     auto Ry = [](qreal p) { return getExponentialOfPauliMatrix(p, FixedMatrices::Y); };
     auto Rz = [](qreal p) { return getExponentialOfPauliMatrix(p, FixedMatrices::Z); };
+
+    auto PS  = [](qreal p) { return qmatrix{{1, 0}, {0, getExpI(p)}}; };
+    auto PS2 = [](qreal p) { return getControlledMatrix(PS(p), 1); };
+}
+
+namespace VariableSizeMatrices {
+
+    auto X  = [](int n) { return getKroneckerProduct(FixedMatrices::X, n); };
+    auto PF = [](int n) { return getControlledMatrix(FixedMatrices::Z, n - 1); };
+}
+
+namespace VariableSizeParameterisedMatrices {
+
+    auto Z = [](qreal p, int n) { 
+        qmatrix m = getKroneckerProduct(FixedMatrices::Z, n);
+        return getExponentialOfPauliMatrix(p, m);
+    };
+
+    auto PS = [](qreal p, int n) {
+        qmatrix m = ParameterisedMatrices::PS(p);
+        return getControlledMatrix(m, n - 1);
+    };
 }
 
 
@@ -121,12 +136,13 @@ void testAllQuregDeployments(quregCache& quregs, auto& reference, auto& function
  * For example:
  * - applyHadamard:           none
  * - applyRotateX:            scalar
- * - applyDiagMatr1:          diagmatr  (Targs=one)
- * - applyDiagMatrPower:      diagpower (Targs=any)
- * - applyControlledCompMatr: compmatr  (Targs=any)
+ * - applyRotateAroundAxis:   axisrots
+ * - applyDiagMatr1:          diagmatr
+ * - applyDiagMatrPower:      diagpower
+ * - applyControlledCompMatr: compmatr
 */
 
-enum ArgsFlag { none, scalar, diagmatr, diagpower, compmatr };
+enum ArgsFlag { none, scalar, axisrots, diagmatr, diagpower, compmatr };
 
 
 /*
@@ -364,16 +380,31 @@ template <NumQubitsFlag Targs, ArgsFlag Args>
 auto getRandomRemainingArgs(int numTargs) {
 
     if constexpr (Args == none)
-        return tuple{};
+        return tuple{ };
 
-    if constexpr (Args == scalar)
-        return tuple{ getRandomReal(-2*M_PI, 2*M_PI) };
+    if constexpr (Args == scalar) {
+        qreal angle = getRandomReal(-2*M_PI, 2*M_PI);
+        return tuple{ angle };
+    }
 
-    if constexpr (Args == compmatr || Args == diagmatr)
-        return tuple{ getRandomApiMatrix<Targs,Args>(numTargs) };
+    if constexpr (Args == axisrots) {
+        qreal angle = getRandomReal(-2*M_PI, 2*M_PI);
+        qreal x = getRandomReal(-1, 1);
+        qreal y = getRandomReal(-1, 1);
+        qreal z = getRandomReal(-1, 1);
+        return tuple{ angle, x, y, z };
+    }
 
-    if constexpr (Args == diagpower)
-        return tuple{ getRandomApiMatrix<Targs,Args>(numTargs), getRandomComplex() };
+    if constexpr (Args == compmatr || Args == diagmatr) {
+        auto matrix = getRandomApiMatrix<Targs,Args>(numTargs);
+        return tuple{ matrix };
+    }
+
+    if constexpr (Args == diagpower) {
+        auto matrix = getRandomApiMatrix<Targs,Args>(numTargs);
+        qcomp exponent = getRandomComplex();
+        return tuple{ matrix, exponent };
+    }
 }
 
 
@@ -385,17 +416,37 @@ auto getRandomRemainingArgs(int numTargs) {
  * on the type of API operation, indicated by template parameter.
  */
 
-template <ArgsFlag Args>
-auto getReferenceMatrix(auto matrixRefGen, int numTargs, auto additionalArgs) {
+template <NumQubitsFlag Targs, ArgsFlag Args>
+qmatrix getReferenceMatrix(auto matrixRefGen, int numTargs, auto additionalArgs) {
 
-    if constexpr (Args == none)
+    if constexpr (Args == none && Targs != any)
         return matrixRefGen;
 
-    if constexpr (Args == scalar)
-        return matrixRefGen(std::get<0>(additionalArgs));
+    if constexpr (Args == none && Targs == any)
+        return matrixRefGen(numTargs);
 
-    if constexpr (Args == compmatr || Args == diagmatr)
-        return getMatrix(std::get<0>(additionalArgs));
+    if constexpr (Args == scalar && Targs != any) {
+        qreal angle = std::get<0>(additionalArgs);
+        return matrixRefGen(angle);
+    }
+
+    if constexpr (Args == scalar && Targs == any) {
+        qreal angle = std::get<0>(additionalArgs);
+        return matrixRefGen(angle, numTargs);
+    }
+
+    if constexpr (Args == axisrots) {
+        qreal angle = std::get<0>(additionalArgs);
+        qreal x = std::get<1>(additionalArgs);
+        qreal y = std::get<2>(additionalArgs);
+        qreal z = std::get<3>(additionalArgs);
+        return getExponentialOfNormalisedPauliVector(angle, x, y, z);
+    }
+
+    if constexpr (Args == compmatr || Args == diagmatr) {
+        auto apiMatrix = std::get<0>(additionalArgs);
+        return getMatrix(apiMatrix);
+    }
 
     if constexpr (Args == diagpower) {
         qmatrix diag = getMatrix(std::get<0>(additionalArgs));
@@ -414,7 +465,7 @@ auto getReferenceMatrix(auto matrixRefGen, int numTargs, auto additionalArgs) {
  */
 
 template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, ArgsFlag Args>
-void testOperation(auto operation, auto matrixRefGen) {
+void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
 
     assertNumQubitsFlagsAreValid(Ctrls, Targs);
 
@@ -442,7 +493,7 @@ void testOperation(auto operation, auto matrixRefGen) {
         // randomise remaining operation parameters
         auto primaryArgs = tuple{ ctrls, states, targs };
         auto furtherArgs = getRandomRemainingArgs<Targs,Args>(numTargs);
-        auto matrixRef = getReferenceMatrix<Args>(matrixRefGen, numTargs, furtherArgs);
+        auto matrixRef = getReferenceMatrix<Targs,Args>(matrixRefGen, numTargs, furtherArgs);
 
         // prepare test function which will receive both statevectors and density matrices
         auto testFunc = [&](Qureg qureg, auto& stateRef) -> void { 
@@ -453,7 +504,9 @@ void testOperation(auto operation, auto matrixRefGen) {
             std::apply(apiFunc, allArgs);
 
             // update reference state
-            applyReferenceOperator(stateRef, ctrls, states, targs, matrixRef);
+            (multiplyOnly)?
+                multiplyReferenceOperator(stateRef, ctrls, states, targs, matrixRef):
+                applyReferenceOperator(stateRef, ctrls, states, targs, matrixRef);
         };
 
         // report relevant inputs if subsequent tests fail
@@ -463,6 +516,12 @@ void testOperation(auto operation, auto matrixRefGen) {
         SECTION( "statevector"    ) { testAllQuregDeployments(statevecQuregs, statevecRef, testFunc); }
         SECTION( "density matrix" ) { testAllQuregDeployments(densmatrQuregs, densmatrRef, testFunc); }
     }
+}
+
+template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, ArgsFlag Args>
+void testOperation(auto operation, auto matrixRefGen) {
+
+    testOperation<Ctrls,Targs,Args>(operation, matrixRefGen, false);
 }
 
 
@@ -477,10 +536,11 @@ void testOperation(auto operation, auto matrixRefGen) {
  */
 
 #define TEST_ANY_CTRL_OPERATION( namesuffix, numtargs, argtype, matrixgen ) \
-    TEST_CASE( "apply" #namesuffix,                     "[operations]" ) { testOperation<zero,     numtargs,argtype>( apply ## namesuffix,                     matrixgen); } \
-    TEST_CASE( "applyControlled" #namesuffix,           "[operations]" ) { testOperation<one,      numtargs,argtype>( applyControlled ## namesuffix,           matrixgen); } \
-    TEST_CASE( "applyMultiControlled" #namesuffix,      "[operations]" ) { testOperation<any,      numtargs,argtype>( applyMultiControlled ## namesuffix,      matrixgen); } \
-    TEST_CASE( "applyMultiStateControlled" #namesuffix, "[operations]" ) { testOperation<anystates,numtargs,argtype>( applyMultiStateControlled ## namesuffix, matrixgen); } 
+    TEST_CASE( "apply" #namesuffix,                     TEST_TAG ) { testOperation<zero,     numtargs,argtype>( apply ## namesuffix,                     matrixgen); } \
+    TEST_CASE( "applyControlled" #namesuffix,           TEST_TAG ) { testOperation<one,      numtargs,argtype>( applyControlled ## namesuffix,           matrixgen); } \
+    TEST_CASE( "applyMultiControlled" #namesuffix,      TEST_TAG ) { testOperation<any,      numtargs,argtype>( applyMultiControlled ## namesuffix,      matrixgen); } \
+    TEST_CASE( "applyMultiStateControlled" #namesuffix, TEST_TAG ) { testOperation<anystates,numtargs,argtype>( applyMultiStateControlled ## namesuffix, matrixgen); } 
+
 
 
 TEST_ANY_CTRL_OPERATION( CompMatr1, one, compmatr, nullptr );
@@ -501,6 +561,33 @@ TEST_ANY_CTRL_OPERATION( S,        one, none, FixedMatrices::S );
 TEST_ANY_CTRL_OPERATION( Swap,     two, none, FixedMatrices::SWAP );
 TEST_ANY_CTRL_OPERATION( SqrtSwap, two, none, FixedMatrices::sqrtSWAP );
 
-TEST_ANY_CTRL_OPERATION( RotateX, one, scalar, SinglyParameterisedMatrices::Rx );
-TEST_ANY_CTRL_OPERATION( RotateY, one, scalar, SinglyParameterisedMatrices::Ry );
-TEST_ANY_CTRL_OPERATION( RotateZ, one, scalar, SinglyParameterisedMatrices::Rz );
+TEST_ANY_CTRL_OPERATION( RotateX, one, scalar, ParameterisedMatrices::Rx );
+TEST_ANY_CTRL_OPERATION( RotateY, one, scalar, ParameterisedMatrices::Ry );
+TEST_ANY_CTRL_OPERATION( RotateZ, one, scalar, ParameterisedMatrices::Rz );
+
+TEST_ANY_CTRL_OPERATION( RotateAroundAxis, one, axisrots, nullptr );
+
+TEST_ANY_CTRL_OPERATION( MultiQubitNot, any, none, VariableSizeMatrices::X );
+
+TEST_ANY_CTRL_OPERATION( PhaseGadget, any, scalar, VariableSizeParameterisedMatrices::Z );
+
+TEST_CASE( "multiplyCompMatr1", TEST_TAG ) { testOperation<zero,one,compmatr>(multiplyCompMatr1, nullptr, true); }
+TEST_CASE( "multiplyCompMatr2", TEST_TAG ) { testOperation<zero,two,compmatr>(multiplyCompMatr2, nullptr, true); }
+TEST_CASE( "multiplyCompMatr",  TEST_TAG ) { testOperation<zero,any,compmatr>(multiplyCompMatr,  nullptr, true); }
+
+TEST_CASE( "multiplyDiagMatr1", TEST_TAG ) { testOperation<zero,one,diagmatr>(multiplyDiagMatr1, nullptr, true); }
+TEST_CASE( "multiplyDiagMatr2", TEST_TAG ) { testOperation<zero,two,diagmatr>(multiplyDiagMatr2, nullptr, true); }
+TEST_CASE( "multiplyDiagMatr",  TEST_TAG ) { testOperation<zero,any,diagmatr>(multiplyDiagMatr,  nullptr, true); }
+
+TEST_CASE( "multiplyDiagMatrPower",  TEST_TAG ) { testOperation<zero,any,diagpower>(multiplyDiagMatrPower, nullptr, true); }
+
+TEST_CASE( "multiplyMultiQubitNot", TEST_TAG ) { testOperation<zero,any,none>(multiplyMultiQubitNot, VariableSizeMatrices::X, true); }
+TEST_CASE( "multiplyPhaseGadget",   TEST_TAG ) { testOperation<zero,any,scalar>(multiplyPhaseGadget, VariableSizeParameterisedMatrices::Z, true); }
+
+TEST_CASE( "applyPhaseFlip",           TEST_TAG ) { testOperation<zero,one,none>(applyPhaseFlip,           VariableSizeMatrices::PF(1)); }
+TEST_CASE( "applyTwoQubitPhaseFlip",   TEST_TAG ) { testOperation<zero,two,none>(applyTwoQubitPhaseFlip,   VariableSizeMatrices::PF(2)); }
+TEST_CASE( "applyMultiQubitPhaseFlip", TEST_TAG ) { testOperation<zero,any,none>(applyMultiQubitPhaseFlip, VariableSizeMatrices::PF); }
+
+TEST_CASE( "applyPhaseShift",           TEST_TAG ) { testOperation<zero,one,scalar>(applyPhaseShift,           ParameterisedMatrices::PS); }
+TEST_CASE( "applyTwoQubitPhaseShift",   TEST_TAG ) { testOperation<zero,two,scalar>(applyTwoQubitPhaseShift,   ParameterisedMatrices::PS2); }
+TEST_CASE( "applyMultiQubitPhaseShift", TEST_TAG ) { testOperation<zero,any,scalar>(applyMultiQubitPhaseShift, VariableSizeParameterisedMatrices::PS); }

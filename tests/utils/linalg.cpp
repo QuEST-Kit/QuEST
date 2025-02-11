@@ -193,9 +193,27 @@ qmatrix getExponentialOfDiagonalMatrix(qmatrix m) {
 
 qmatrix getExponentialOfPauliMatrix(qreal arg, qmatrix m) {
     
-    // exp(-i arg/2 m)
+    // exp(-i arg/2 m) where m = prod(paulis)
     qmatrix id = getIdentityMatrix(m.size());
     qmatrix out = cos(arg/2)*id - 1_i*sin(arg/2)*m;
+    return out;
+}
+
+
+qmatrix getExponentialOfNormalisedPauliVector(qreal arg, qreal x, qreal y, qreal z) {
+
+    // exp(-arg/2 i [x^ X + y^ Y + z^ Z])
+    qreal n = sqrt(x*x + y*y + z*z);
+    x /= n;
+    y /= n;
+    z /= n;
+
+    qmatrix id = getIdentityMatrix(2);
+    qmatrix out = cos(arg/2)*id - 1_i*sin(arg/2)*(
+        x * getPauliMatrix(1) +
+        y * getPauliMatrix(2) +
+        z * getPauliMatrix(3));
+
     return out;
 }
 
@@ -259,6 +277,24 @@ qmatrix getKroneckerProduct(qmatrix a, qmatrix b) {
             for (size_t i=0; i<a.size(); i++)
                 for (size_t j=0; j<a.size(); j++)
                     out[r+b.size()*i][c+b.size()*j] = a[i][j] * b[r][c];
+
+    return out;
+}
+
+
+
+/*
+ * MATRIX & SCALAR OPERATIONS
+ */
+
+
+qmatrix getKroneckerProduct(qmatrix m, int count) {
+    DEMAND( count >= 1 );
+
+    qmatrix out = getIdentityMatrix(1);
+
+    for (int n=0; n<count; n++)
+        out = getKroneckerProduct(out, m);
 
     return out;
 }
