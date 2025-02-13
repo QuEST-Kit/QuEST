@@ -1,0 +1,19 @@
+@PACKAGE_INIT@
+
+set(QuEST_ENABLE_MULTITHREADING "@QuEST_ENABLE_MULTITHREADING@" CACHE INTERNAL "")
+set(QuEST_ENABLE_DISTRIBUTION   "@QuEST_ENABLE_DISTRIBUTION@"   CACHE INTERNAL "")
+
+include(CMakeFindDependencyMacro)
+
+if(QuEST_ENABLE_MULTITHREADING)
+    # QuEST needed OpenMP
+    find_dependency(OpenMP REQUIRED)
+endif()
+
+if(QuEST_ENABLE_DISTRIBUTION)
+    # QuEST needed MPI
+    find_dependency(MPI REQUIRED COMPONENTS CXX)
+endif()
+
+
+include("${CMAKE_CURRENT_LIST_DIR}/QuESTTargets.cmake")

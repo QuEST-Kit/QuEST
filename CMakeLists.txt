@@ -21,6 +21,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 # GNUInstallDirs to provide sensible default install directory names
 include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 
 # Maths
 if (NOT MSVC)
@@ -167,8 +168,7 @@ target_include_directories(QuEST
   $<BUILD_INTERFACE:
     ${CMAKE_CURRENT_SOURCE_DIR};
     ${CMAKE_CURRENT_SOURCE_DIR}/quest/include
-  >
-  $<INSTALL_INTERFACE:quest/include>
+  > $<INSTALL_INTERFACE:include>
 )
 
 # Add required C and C++ standards
@@ -350,31 +350,47 @@ endif()
 ## Install
 
 install(TARGETS QuEST
-  EXPORT QuESTTargets
-  LIBRARY DESTINATION quest/${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION quest/${CMAKE_INSTALL_LIBDIR}
-  RUNTIME DESTINATION quest/${CMAKE_INSTALL_BINDIR}
-)
-
-install(EXPORT QuESTTargets
-  FILE QuESTTargets.cmake
-  NAMESPACE QuEST::
-  DESTINATION "cmake/QuEST"
+        EXPORT QuESTTargets
+        LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 ## Export
+# Define a few booleans to track how QuEST was built.
+# We'll "bake" these into our QuESTConfig.cmake
+set(QuEST_ENABLE_MULTITHREADING ${ENABLE_MULTITHREADING})
+set(QuEST_ENABLE_DISTRIBUTION   ${ENABLE_DISTRIBUTION})
 
 # Write CMake version file for QuEST
-include(CMakePackageConfigHelpers)
+set(QuEST_INSTALL_CONFIGDIR "${CMAKE_INSTALL_LIBDIR}/cmake/QuEST")
+
+# Write QuESTConfigVersion.cmake
 write_basic_package_version_file(
-  QuESTConfigVersion.cmake
-  VERSION ${PACKAGE_VERSION}
-  COMPATIBILITY AnyNewerVersion
+        "${CMAKE_CURRENT_BINARY_DIR}/QuESTConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY AnyNewerVersion
 )
 
-export(TARGETS QuEST
-  NAMESPACE QuEST::
-  FILE QuESTTargets.cmake
+# Configure QuESTConfig.cmake (from template)
+configure_package_config_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QuESTConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/QuESTConfig.cmake"
+        INSTALL_DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
+)
+
+# Install them
+install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/QuESTConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/QuESTConfigVersion.cmake"
+        DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
+)
+
+install(EXPORT QuESTTargets
+        FILE QuESTTargets.cmake
+        NAMESPACE QuEST::
+        DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
 )
 
 set(CMAKE_EXPORT_PACKAGE_REGISTRY ON)
