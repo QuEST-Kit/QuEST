@@ -6,7 +6,7 @@
 // #include <catch2/catch_session.hpp>
 
 
-#include "quest.h"
+#include "quest/include/quest.h"
 #include <stdexcept>
 
 
