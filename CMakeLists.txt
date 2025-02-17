@@ -163,13 +163,11 @@ add_library(QuEST)
 add_library(QuEST::QuEST ALIAS QuEST)
 
 # Set include directories
-target_include_directories(QuEST 
-  PUBLIC 
-  $<BUILD_INTERFACE:
-    ${CMAKE_CURRENT_SOURCE_DIR};
-    ${CMAKE_CURRENT_SOURCE_DIR}/quest/include
-  >
+target_include_directories(QuEST
+  PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:quest/include>
+  $<INSTALL_INTERFACE:.>
 )
 
 # Add required C and C++ standards
