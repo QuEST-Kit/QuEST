@@ -358,11 +358,6 @@ install(TARGETS QuEST
 )
 
 ## Export
-# Define a few booleans to track how QuEST was built.
-# We'll "bake" these into our QuESTConfig.cmake
-set(QuEST_ENABLE_MULTITHREADING ${ENABLE_MULTITHREADING})
-set(QuEST_ENABLE_DISTRIBUTION   ${ENABLE_DISTRIBUTION})
-
 # Write CMake version file for QuEST
 set(QuEST_INSTALL_CONFIGDIR "quest/${CMAKE_INSTALL_LIBDIR}/cmake")
 
