@@ -154,6 +154,12 @@ option(
 )
 message(STATUS "Deprecated API support is turned ${ENABLE_DEPRECATED_API}. Set ENABLE_DEPRECATED_API to modify.")
 
+# Windows Specific Options
+if(MSVC)
+    set(ENABLE_MULTITHREADING OFF)
+    set(BUILD_SHARED_LIBS OFF)
+endif()
+
 ## Library
 
 add_library(QuEST)
@@ -175,7 +181,7 @@ target_include_directories(QuEST
 target_compile_features(QuEST
   PUBLIC
   c_std_11
-  cxx_std_17
+  cxx_std_20
 )
 
 # Turn on all compiler warnings
@@ -286,7 +292,7 @@ add_subdirectory(quest)
 add_executable(min_example
   examples/tutorials/min_example.cpp
 )
-target_link_libraries(min_example PUBLIC QuEST::QuEST)
+target_link_libraries(min_example PRIVATE QuEST::QuEST)
 
 install(TARGETS min_example
   RUNTIME

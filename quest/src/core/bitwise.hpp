@@ -6,6 +6,10 @@
 #ifndef BITWISE_HPP
 #define BITWISE_HPP
 
+#ifdef _MSC_VER
+  #include <intrin.h>
+#endif
+
 #include "quest/include/types.h"
 
 #include "quest/src/core/inliner.hpp"
@@ -105,9 +109,37 @@ INLINE qindex setBit(qindex number, int bitIndex, int bitValue) {
 
 
 INLINE int getBitMaskParity(qindex mask) {
-    
-    // this compiler extension may not be defined on all platforms
-    return __builtin_parityll(mask); // ll-suffix for 64 bit
+
+    // Try a builtin if on GCC/Clang and it is available
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_parityll)
+    return __builtin_parityll(mask);
+#endif
+#elif defined(__GNUC__) || defined(__clang__)
+    // Older GCC/Clang typically have __builtin_parityll by default
+    return __builtin_parityll(mask);
+#endif
+    // Use MSVC-specific popcount intrinsic if available
+#ifdef _MSC_VER
+    return __popcnt64(mask) & 1;
+#endif
+
+    // Fallback: a portable nibble-based trick for parity
+    //
+    // Explanation:
+    //   - XOR the upper half into the lower half until you’re down to 4 bits.
+    //   - Then use a 16-bit constant (0x6996) to map 4-bit values to their parity.
+    static_assert(sizeof(qindex) >= 4, "qindex must be at least 32 bits");
+    if constexpr (sizeof(qindex) >= 8) {
+        // If 64-bit, fold mask[63..32] into mask[31..0]
+        mask ^= (mask >> 32);
+    }
+    // Then fold mask[31..16] into mask[15..0], etc.
+    mask ^= (mask >> 16);
+    mask ^= (mask >> 8);
+    mask ^= (mask >> 4);
+    mask &= 0xF;
+    return (0x6996 >> mask) & 1;
 }
 
 
