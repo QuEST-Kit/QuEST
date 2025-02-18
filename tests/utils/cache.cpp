@@ -3,12 +3,22 @@
 #include "cache.hpp"
 
 #include <unordered_map>
+#include <tuple>
+#include <vector>
+#include <string>
 
 quregCache statevecs;
 quregCache densmatrs;
 
+using std::tuple;
+using std::vector;
+using std::string;
 
-quregCache createCachedStatevecsOrDensmatrs(bool isDensMatr) {
+
+
+deployInfo getSupportedDeployments() {
+
+    deployInfo out;
 
     // determine which Qureg deployments are supported
     QuESTEnv env = getQuESTEnv();
@@ -16,20 +26,30 @@ quregCache createCachedStatevecsOrDensmatrs(bool isDensMatr) {
     bool mpi = env.isDistributed;
     bool gpu = env.isGpuAccelerated;
 
+    // add only those supported to the output list
+    // order is (MPI, GPU, OMP), matching createCustomQureg
+    if (true)              out.push_back({"CPU",             0, 0, 0});
+    if (mpi)               out.push_back({"CPU + MPI",       1, 0, 0});
+    if (omp)               out.push_back({"CPU + MPI",       0, 0, 1});
+    if (mpi && omp)        out.push_back({"CPU + OMP + MPI", 1, 0, 1});
+    if (gpu)               out.push_back({"GPU",             0, 1, 0});
+    if (gpu && omp)        out.push_back({"GPU + OMP",       0, 1, 1});
+    if (gpu && mpi)        out.push_back({"GPU + OMP + MPI", 1, 1, 0});
+    if (gpu && omp && mpi) out.push_back({"GPU + OMP + MPI", 1, 1, 1});
+
+    return out;
+}
+
+
+quregCache createCachedStatevecsOrDensmatrs(bool isDensMatr) {
+
+    quregCache out;
+
     // only add supported-deployment quregs to the cache
-    quregCache cache;
+    for (auto [label, mpi, gpu, omp] : getSupportedDeployments())
+        out[label] = createCustomQureg(NUM_QUREG_QUBITS, isDensMatr, mpi, gpu, omp);
 
-    // signature is createCustomQureg(..., MPI, GPU, OMP)
-    if (true)              cache["CPU"]             = createCustomQureg(NUM_QUREG_QUBITS, isDensMatr, 0, 0, 0);
-    if (mpi)               cache["CPU + MPI"]       = createCustomQureg(NUM_QUREG_QUBITS, isDensMatr, 1, 0, 0);
-    if (omp)               cache["CPU + MPI"]       = createCustomQureg(NUM_QUREG_QUBITS, isDensMatr, 0, 0, 1);
-    if (mpi && omp)        cache["CPU + OMP + MPI"] = createCustomQureg(NUM_QUREG_QUBITS, isDensMatr, 1, 0, 1);
-    if (gpu)               cache["GPU"]             = createCustomQureg(NUM_QUREG_QUBITS, isDensMatr, 0, 1, 0);
-    if (gpu && omp)        cache["GPU + OMP"]       = createCustomQureg(NUM_QUREG_QUBITS, isDensMatr, 0, 1, 1);
-    if (gpu && mpi)        cache["GPU + OMP + MPI"] = createCustomQureg(NUM_QUREG_QUBITS, isDensMatr, 1, 1, 0);
-    if (gpu && omp && mpi) cache["GPU + OMP + MPI"] = createCustomQureg(NUM_QUREG_QUBITS, isDensMatr, 1, 1, 1);
-
-    return cache;
+    return out;
 }
 
 

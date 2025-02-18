@@ -7,24 +7,27 @@
 #include "tests/utils/cache.hpp"
 #include "tests/utils/random.hpp"
 
+#include <algorithm>
 #include <vector>
-using std::vector;
-
 #include <tuple>
+
+using std::vector;
 using std::tuple;
+using namespace Catch::Matchers;
+
 
 #define TEST_TAG "[integration]"
-
-using namespace Catch::Matchers;
 
 
 
 void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
     DEMAND( psi.numQubits == rho.numQubits );
 
+    // set ||rho>> = |psi><psi|
     initRandomPureState(psi);
     initPureState(rho, psi);
 
+    // we will check all alculations produced within 'eps' of expected
     qreal eps = 1E-5;
     REQUIRE_THAT( calcPurity(rho),        WithinAbs(1, eps) );
     REQUIRE_THAT( calcPurity(psi),        WithinAbs(1, eps) );
@@ -32,17 +35,25 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
     REQUIRE_THAT( calcTotalProb(psi),     WithinAbs(1, eps) );
     REQUIRE_THAT( calcFidelity(rho, psi), WithinAbs(1, eps) );
 
-    int numReps = 10 * psi.numQubits;
-    vector<int> ctrls;
-    vector<int> targs;
-    vector<int> states;
+    // maximum size of tested any-target operators
+    int maxNumCompMatrTargs = std::min({6, (int) psi.logNumAmpsPerNode, (int) rho.logNumAmpsPerNode});
+    int maxNumDiagMatrTargs = std::min({8, psi.numQubits});
+    int maxNumPauliStrTargs = std::min({6, psi.numQubits}); // TODO: upgrade to numQubits once optimised
+    int maxNumPauliGadTargs = std::min({6, psi.numQubits}); // TODO: upgrade to numQubits once optimised
+    int maxNumPhaseGadTargs = psi.numQubits;
 
     // below, we will apply every operation which invokes a unique backend
     // function, with random parameters which (if they were deterministic
     // and exhaustive) should access every edge-case including all templated
-    // optimisations.
+    // optimisations. Each operation (except a few anomalously demanding ones)
+    // will be repeated with re-randomised parameters a total of 'numReps' times
+    int numReps = 10 * psi.numQubits;
 
-    // // apply CompMatr1
+    vector<int> ctrls;
+    vector<int> targs;
+    vector<int> states;
+
+    // apply CompMatr1
     for (int r=0; r<numReps; r++) {
         auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,1);
         CompMatr1 matr = getCompMatr1(getRandomUnitary(1));
@@ -58,11 +69,9 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
         applyMultiStateControlledCompMatr2(rho, ctrls.data(), states.data(), ctrls.size(), targs[0], targs[1], matr);
     }
 
-    // above causing segfault mpi
-
-    // apply CompMatr upon 1-6 qubits
+    // apply CompMatr
     for (int r=0; r<numReps; r++) {
-        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,6);
+        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,maxNumCompMatrTargs);
         CompMatr matr = createCompMatr(targs.size());
         setCompMatr(matr, getRandomUnitary(targs.size()));
         applyMultiStateControlledCompMatr(psi, ctrls.data(), states.data(), ctrls.size(), targs.data(), targs.size(), matr);
@@ -86,9 +95,9 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
         applyMultiStateControlledDiagMatr2(rho, ctrls.data(), states.data(), ctrls.size(), targs[0], targs[1], matr);
     }
 
-    // apply DiagMatr upon 1-8 qubits
+    // apply DiagMatr
     for (int r=0; r<numReps; r++) {
-        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,8);
+        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,maxNumDiagMatrTargs);
         DiagMatr matr = createDiagMatr(targs.size());
         setDiagMatr(matr, getDiagonals(getRandomDiagonalUnitary(targs.size())));
         applyMultiStateControlledDiagMatr(psi, ctrls.data(), states.data(), ctrls.size(), targs.data(), targs.size(), matr);
@@ -96,9 +105,9 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
         destroyDiagMatr(matr);
     }
 
-    // apply DiagMatr raised to power (real to retain unitarity) upon 1-8 qubits
+    // apply DiagMatr raised to power (real to retain unitarity)
     for (int r=0; r<numReps; r++) {
-        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,8);
+        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,maxNumDiagMatrTargs);
         DiagMatr matr = createDiagMatr(targs.size());
         qreal expo = getRandomReal(0, 10);
         setDiagMatr(matr, getDiagonals(getRandomDiagonalUnitary(targs.size())));
@@ -116,26 +125,26 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
         applyMultiStateControlledSwap(rho, ctrls.data(), states.data(), ctrls.size(), targs[0], targs[1]);
     }
 
-    // apply PauliStr upon 1-to-all qubits
+    // apply PauliStr
     for (int r=0; r<numReps; r++) {
-        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,psi.numQubits);
+        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,maxNumPauliStrTargs);
         PauliStr str = getRandomPauliStr(targs);
         applyMultiStateControlledPauliStr(psi, ctrls.data(), states.data(), ctrls.size(), str);
         applyMultiStateControlledPauliStr(rho, ctrls.data(), states.data(), ctrls.size(), str);
     }
 
-    // apply Pauli gadget upon 1-to-all qubits
+    // apply Pauli gadget
     for (int r=0; r<numReps; r++) {
-        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,psi.numQubits);
+        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,maxNumPauliGadTargs);
         PauliStr str = getRandomPauliStr(targs);
         qreal phi = getRandomReal(-2*M_PI, 2*M_PI);
         applyMultiStateControlledPauliGadget(psi, ctrls.data(), states.data(), ctrls.size(), str, phi);
         applyMultiStateControlledPauliGadget(rho, ctrls.data(), states.data(), ctrls.size(), str, phi);
     }
 
-    // phase gadet upon 1-to-all qubits
+    // apply phase gadet
     for (int r=0; r<numReps; r++) {
-        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,psi.numQubits);
+        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,maxNumPhaseGadTargs);
         qreal phi = getRandomReal(-2*M_PI, 2*M_PI);
         applyMultiStateControlledPhaseGadget(psi, ctrls.data(), states.data(), ctrls.size(), targs.data(), targs.size(), phi);
         applyMultiStateControlledPhaseGadget(rho, ctrls.data(), states.data(), ctrls.size(), targs.data(), targs.size(), phi);
@@ -210,18 +219,34 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
 
 
 TEST_CASE( "density evolution", "[integration]" ) {
+
+    auto deployments = getSupportedDeployments();
     
-    // TODO:
-    // am unsure about how to make these quregs - should it be all combinations for example?!
+    // try all combination of statevec and density-matrix deploments
+    for (auto [rhoDeploy, rhoMPI, rhoGPU, rhoOMP] : deployments) {
+        for (auto [psiDeploy, psiMPI, psiGPU, psiOMP] : deployments) {
+            auto label = "rho = " + rhoDeploy + ", psi = " + psiDeploy;
 
+            // some combinations are illegal
+            if (psiMPI && !rhoMPI)
+                continue; 
 
-    int numQubits = 12;
-    Qureg psi = createForcedQureg(numQubits);
-    Qureg rho = createForcedDensityQureg(numQubits);
+            DYNAMIC_SECTION( label ) {
 
-    testDensityMatrixEvolution(psi, rho);
+                // Qureg size determined by slowest deployment
+                int numQubits = 6;
+                if (rhoMPI && rhoMPI) numQubits = 12;
+                if (rhoOMP && rhoOMP) numQubits = 12;
+                if (rhoGPU && psiGPU) numQubits = 14;
 
+                Qureg psi = createCustomQureg(numQubits, 0, psiMPI,psiGPU,psiOMP);
+                Qureg rho = createCustomQureg(numQubits, 1, rhoMPI,rhoGPU,rhoOMP);
 
-    destroyQureg(psi);
-    destroyQureg(rho);
+                testDensityMatrixEvolution(psi, rho);
+
+                destroyQureg(psi);
+                destroyQureg(rho);
+            }
+        }
+    }
 }
