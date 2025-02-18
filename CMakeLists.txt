@@ -163,12 +163,11 @@ add_library(QuEST)
 add_library(QuEST::QuEST ALIAS QuEST)
 
 # Set include directories
-target_include_directories(QuEST 
-  PUBLIC 
-  $<BUILD_INTERFACE:
-    ${CMAKE_CURRENT_SOURCE_DIR};
-    ${CMAKE_CURRENT_SOURCE_DIR}/quest/include
-  > $<INSTALL_INTERFACE:include>
+target_include_directories(QuEST
+  PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:quest/include>
+  $<INSTALL_INTERFACE:.>
 )
 
 # Add required C and C++ standards
@@ -192,7 +191,7 @@ if (ENABLE_MULTITHREADING)
   find_package(OpenMP REQUIRED)
   target_compile_definitions(QuEST PUBLIC COMPILE_OPENMP=1)
   target_link_libraries(QuEST
-    PUBLIC
+    PRIVATE
     OpenMP::OpenMP_CXX
     OpenMP::OpenMP_C
   )
@@ -209,7 +208,7 @@ if (ENABLE_DISTRIBUTION)
   )
   target_compile_definitions(QuEST PUBLIC COMPILE_MPI=1)
   target_link_libraries(QuEST
-    PUBLIC
+    PRIVATE
     MPI::MPI_CXX
   )
   if (VERBOSE_LIB_NAME)
@@ -236,7 +235,7 @@ endif()
 if (ENABLE_CUQUANTUM)
   find_package(CUQUANTUM REQUIRED)
   target_compile_definitions(QuEST PUBLIC COMPILE_CUQUANTUM=1)
-  target_link_libraries(QuEST PUBLIC CUQUANTUM::cuStateVec)
+  target_link_libraries(QuEST PRIVATE CUQUANTUM::cuStateVec)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+cuquantum")
@@ -272,7 +271,7 @@ endif()
 
 # add math library
 if (NOT MSVC)
-  target_link_libraries(QuEST PUBLIC ${MATH_LIBRARY})
+  target_link_libraries(QuEST PRIVATE ${MATH_LIBRARY})
 endif()
 
 # Set output name
@@ -351,20 +350,14 @@ endif()
 
 install(TARGETS QuEST
         EXPORT QuESTTargets
-        LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY  DESTINATION quest/${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE  DESTINATION quest/${CMAKE_INSTALL_LIBDIR}
         RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
-        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 ## Export
-# Define a few booleans to track how QuEST was built.
-# We'll "bake" these into our QuESTConfig.cmake
-set(QuEST_ENABLE_MULTITHREADING ${ENABLE_MULTITHREADING})
-set(QuEST_ENABLE_DISTRIBUTION   ${ENABLE_DISTRIBUTION})
-
 # Write CMake version file for QuEST
-set(QuEST_INSTALL_CONFIGDIR "${CMAKE_INSTALL_LIBDIR}/cmake/QuEST")
+set(QuEST_INSTALL_CONFIGDIR "quest/${CMAKE_INSTALL_LIBDIR}/cmake")
 
 # Write QuESTConfigVersion.cmake
 write_basic_package_version_file(
@@ -392,6 +385,3 @@ install(EXPORT QuESTTargets
         NAMESPACE QuEST::
         DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
 )
-
-set(CMAKE_EXPORT_PACKAGE_REGISTRY ON)
-export(PACKAGE QuEST)

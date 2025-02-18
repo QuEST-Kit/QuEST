@@ -1,4 +1,4 @@
-#include "quest.h"
+#include "quest/include/quest.h"
 
 int main() {
 
