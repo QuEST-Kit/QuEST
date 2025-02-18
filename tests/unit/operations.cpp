@@ -108,7 +108,7 @@ namespace VariableSizeParameterisedMatrices {
  * section, so are accounted distinctly.
  */
 
-void testAllQuregDeployments(quregCache& quregs, auto& reference, auto& function) {
+void testQuregCorrectOnAllDeployments(quregCache& quregs, auto& reference, auto& function) {
 
     for (auto& [label, qureg]: quregs) {
 
@@ -355,7 +355,7 @@ auto getRandomApiMatrix(int numTargs) {
         return getCompMatr2(qm);
 
     if constexpr (Args == compmatr && Targs == any) {
-        CompMatr cm = createCompMatr(numTargs); // leaks
+        CompMatr cm = createCompMatr(numTargs); // must be freed
         setCompMatr(cm, qm);
         return cm;
     }
@@ -370,7 +370,7 @@ auto getRandomApiMatrix(int numTargs) {
         return getDiagMatr2(dv);
 
     if constexpr (diag && Targs == any) {
-        DiagMatr dm = createDiagMatr(numTargs); // leaks
+        DiagMatr dm = createDiagMatr(numTargs); // must be freed
         setDiagMatr(dm, dv);
         return dm;
     }
@@ -407,12 +407,12 @@ auto getRandomRemainingArgs(vector<int> targs) {
     }
 
     if constexpr (Args == compmatr || Args == diagmatr) {
-        auto matrix = getRandomApiMatrix<Targs,Args>(targs.size());
+        auto matrix = getRandomApiMatrix<Targs,Args>(targs.size()); // allocates heap mem
         return tuple{ matrix };
     }
 
     if constexpr (Args == diagpower) {
-        auto matrix = getRandomApiMatrix<Targs,Args>(targs.size());
+        auto matrix = getRandomApiMatrix<Targs,Args>(targs.size()); // allocates heap mem
         qcomp exponent = getRandomComplex();
         return tuple{ matrix, exponent };
     }
@@ -427,6 +427,20 @@ auto getRandomRemainingArgs(vector<int> targs) {
         qreal angle = getRandomReal(-2*M_PI, 2*M_PI);
         return tuple{ str, angle };
     }
+}
+
+
+template <NumQubitsFlag Targs, ArgsFlag Args>
+void freeRemainingArgs(auto args) {
+
+    if constexpr (Targs == any && Args == compmatr)
+        destroyCompMatr(std::get<0>(args));
+
+    if constexpr (Targs == any && Args == diagmatr)
+        destroyDiagMatr(std::get<0>(args));
+
+    if constexpr (Targs == any && Args == diagpower)
+        destroyDiagMatr(std::get<0>(args));
 }
 
 
@@ -602,24 +616,24 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
 
     SECTION( "correctness" ) {
 
-        qvector statevecRef = getZeroVector(getPow2(NUM_QUREG_QUBITS));
-        qmatrix densmatrRef = getZeroMatrix(getPow2(NUM_QUREG_QUBITS));
+        qvector statevecRef = getZeroVector(getPow2(NUM_UNIT_QUREG_QUBITS));
+        qmatrix densmatrRef = getZeroMatrix(getPow2(NUM_UNIT_QUREG_QUBITS));
 
         // try all possible number of ctrls and targs
-        int numTargs = GENERATE_NUM_TARGS<Ctrls,Targs,Args>(NUM_QUREG_QUBITS);
-        int numCtrls = GENERATE_NUM_CTRLS<Ctrls>(NUM_QUREG_QUBITS - numTargs);
+        int numTargs = GENERATE_NUM_TARGS<Ctrls,Targs,Args>(NUM_UNIT_QUREG_QUBITS);
+        int numCtrls = GENERATE_NUM_CTRLS<Ctrls>(NUM_UNIT_QUREG_QUBITS - numTargs);
         
         // try all possible ctrls and targs
-        auto listpair = GENERATE_COPY( disjointsublists(range(0,NUM_QUREG_QUBITS), numCtrls, numTargs) );
+        auto listpair = GENERATE_COPY( disjointsublists(range(0,NUM_UNIT_QUREG_QUBITS), numCtrls, numTargs) );
         vector<int> ctrls = std::get<0>(listpair);
         vector<int> targs = std::get<1>(listpair);
 
         // randomise control states (if operation accepts them)
-        vector<int> states = getRandomInts(0, 2, numCtrls * (Ctrls == anystates));
+        vector<int> states = getRandomInts(0, 1+1, numCtrls * (Ctrls == anystates));
 
         // randomise remaining operation parameters
         auto primaryArgs = tuple{ ctrls, states, targs };
-        auto furtherArgs = getRandomRemainingArgs<Targs,Args>(targs);
+        auto furtherArgs = getRandomRemainingArgs<Targs,Args>(targs); // may allocate heap memory
 
         // obtain the reference matrix for this operation 
         qmatrix matrixRef = getReferenceMatrix<Targs,Args>(matrixRefGen, targs, furtherArgs);
@@ -645,14 +659,18 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
         CAPTURE_RELEVANT<Ctrls,Targs,Args>( ctrls, states, targs, furtherArgs );
 
         // test API operation on all available deployment combinations (e.g. MPI, MPI+CUDA, etc)
-        SECTION( "statevector"    ) { testAllQuregDeployments(statevecQuregs, statevecRef, testFunc); }
-        SECTION( "density matrix" ) { testAllQuregDeployments(densmatrQuregs, densmatrRef, testFunc); }
+        SECTION( "statevector"    ) { testQuregCorrectOnAllDeployments(statevecQuregs, statevecRef, testFunc); }
+        SECTION( "density matrix" ) { testQuregCorrectOnAllDeployments(densmatrQuregs, densmatrRef, testFunc); }
+
+        // free any heap-alloated API matrices
+        freeRemainingArgs<Targs,Args>(furtherArgs);
     }
 }
 
 template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, ArgsFlag Args>
 void testOperation(auto operation, auto matrixRefGen) {
 
+    // default multiplyOnly=false
     testOperation<Ctrls,Targs,Args>(operation, matrixRefGen, false);
 }
 

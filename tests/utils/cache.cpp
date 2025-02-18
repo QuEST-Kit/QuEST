@@ -47,7 +47,7 @@ quregCache createCachedStatevecsOrDensmatrs(bool isDensMatr) {
 
     // only add supported-deployment quregs to the cache
     for (auto [label, mpi, gpu, omp] : getSupportedDeployments())
-        out[label] = createCustomQureg(NUM_QUREG_QUBITS, isDensMatr, mpi, gpu, omp);
+        out[label] = createCustomQureg(NUM_UNIT_QUREG_QUBITS, isDensMatr, mpi, gpu, omp);
 
     return out;
 }

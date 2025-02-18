@@ -6,7 +6,7 @@
 
 // TODO:
 // should this even be a macro? eh
-#define NUM_QUREG_QUBITS 5
+#define NUM_UNIT_QUREG_QUBITS 6
 
 
 

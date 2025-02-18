@@ -8,6 +8,7 @@
 #include "tests/utils/random.hpp"
 
 #include <algorithm>
+#include <string>
 #include <vector>
 #include <tuple>
 
@@ -225,19 +226,23 @@ TEST_CASE( "density evolution", "[integration]" ) {
     // try all combination of statevec and density-matrix deploments
     for (auto [rhoDeploy, rhoMPI, rhoGPU, rhoOMP] : deployments) {
         for (auto [psiDeploy, psiMPI, psiGPU, psiOMP] : deployments) {
-            auto label = "rho = " + rhoDeploy + ", psi = " + psiDeploy;
 
             // some combinations are illegal
             if (psiMPI && !rhoMPI)
                 continue; 
 
-            DYNAMIC_SECTION( label ) {
+            // Qureg size determined by slowest deployment
+            int numQubits = 6;
+            if (rhoMPI && rhoMPI) numQubits = 12;
+            if (rhoOMP && rhoOMP) numQubits = 12;
+            if (rhoGPU && psiGPU) numQubits = 14;
 
-                // Qureg size determined by slowest deployment
-                int numQubits = 6;
-                if (rhoMPI && rhoMPI) numQubits = 12;
-                if (rhoOMP && rhoOMP) numQubits = 12;
-                if (rhoGPU && psiGPU) numQubits = 14;
+            auto label = (
+                "rho = " + rhoDeploy + 
+                ", psi = " + psiDeploy +
+                ", numQubits = " + std::to_string(numQubits));
+
+            DYNAMIC_SECTION( label ) {
 
                 Qureg psi = createCustomQureg(numQubits, 0, psiMPI,psiGPU,psiOMP);
                 Qureg rho = createCustomQureg(numQubits, 1, rhoMPI,rhoGPU,rhoOMP);
