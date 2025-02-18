@@ -5,11 +5,13 @@
 #include "lists.hpp"
 #include "quest.h"
 
-#include <random>
 #include <vector>
+#include <tuple>
+#include <random>
 #include <algorithm>
 
 using std::vector;
+using std::tuple;
 
 
 
@@ -116,6 +118,26 @@ vector<qreal> getRandomProbabilities(int numProbs) {
         p /= total;
  
     return probs;
+}
+
+
+auto getRandomCtrlsStatesTargs(int numQubits, int minNumTargs, int maxNumTargsIncl) {
+    DEMAND( minNumTargs <= maxNumTargsIncl );
+    DEMAND( maxNumTargsIncl <= numQubits );
+
+    int numTargs = getRandomInt(minNumTargs, maxNumTargsIncl+1);
+
+    // numCtrls in [0, remainingNumQb]
+    int minNumCtrls = 0;
+    int maxNumCtrls = numQubits - numTargs;
+    int numCtrls = getRandomInt(minNumCtrls, maxNumCtrls+1);
+
+    vector<int> targsCtrls = getRandomSubRange(0, numQubits, numTargs + numCtrls);
+    vector<int> targs = getSublist(targsCtrls, 0, numTargs);
+    vector<int> ctrls = getSublist(targsCtrls, numTargs, numCtrls);
+    vector<int> states = getRandomInts(0, 2, numCtrls);
+
+    return tuple{ctrls,states,targs};
 }
 
 

@@ -12,6 +12,8 @@ using std::vector;
 vector<int> getRange(int start, int endExcl);
 vector<int> getRange(int endExcl);
 
+vector<int> getSublist(vector<int> list, int start, int len);
+
 
 template<class T> 
 using CatchGen = Catch::Generators::GeneratorWrapper<T>;

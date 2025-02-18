@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <string>
 
 #include "quest.h"
 #include "tests/utils/cache.hpp"
@@ -17,7 +18,7 @@
 
 extern "C" void invalidQuESTInputError(const char* errMsg, const char* errFunc) {
 
-    throw std::runtime_error(errMsg);
+    throw std::runtime_error(std::string(errFunc) + ": " + std::string(errMsg));
 }
 
 

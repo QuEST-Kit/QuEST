@@ -22,12 +22,6 @@ using Catch::Generators::GeneratorWrapper;
  */
 
 
-vector<int> getSublist(vector<int> list, int start, int len) {
-
-    return vector<int>(list.begin() + start, list.begin() + start + len);
-}
-
-
 vector<int> getGeneratorElems(GeneratorWrapper<int>& gen) {
 
     vector<int> list;
@@ -36,6 +30,17 @@ vector<int> getGeneratorElems(GeneratorWrapper<int>& gen) {
     return list;
 }
 
+
+
+/*
+ * SUBLISTS
+ */
+
+
+vector<int> getSublist(vector<int> list, int start, int len) {
+
+    return vector<int>(list.begin() + start, list.begin() + start + len);
+}
 
 
 
