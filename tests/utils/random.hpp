@@ -5,7 +5,7 @@
 #include "qmatrix.hpp"
 #include "macros.hpp"
 #include "linalg.hpp"
-#include "quest.h"
+#include "quest/include/quest.h"
 
 #include <vector>
 using std::vector;

@@ -14,7 +14,7 @@
 #ifndef QUEST_TEST_UTILS_H
 #define QUEST_TEST_UTILS_H
 
-#include "quest.h"
+#include "quest/include/quest.h"
 
 #include <catch2/generators/catch_generators.hpp>
 

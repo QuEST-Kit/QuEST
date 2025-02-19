@@ -21,6 +21,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 # GNUInstallDirs to provide sensible default install directory names
 include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 
 # Maths
 if (NOT MSVC)
@@ -162,13 +163,11 @@ add_library(QuEST)
 add_library(QuEST::QuEST ALIAS QuEST)
 
 # Set include directories
-target_include_directories(QuEST 
-  PUBLIC 
-  $<BUILD_INTERFACE:
-    ${CMAKE_CURRENT_SOURCE_DIR};
-    ${CMAKE_CURRENT_SOURCE_DIR}/quest/include
-  >
+target_include_directories(QuEST
+  PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:quest/include>
+  $<INSTALL_INTERFACE:.>
 )
 
 # Add required C and C++ standards
@@ -192,7 +191,7 @@ if (ENABLE_MULTITHREADING)
   find_package(OpenMP REQUIRED)
   target_compile_definitions(QuEST PUBLIC COMPILE_OPENMP=1)
   target_link_libraries(QuEST
-    PUBLIC
+    PRIVATE
     OpenMP::OpenMP_CXX
     OpenMP::OpenMP_C
   )
@@ -209,7 +208,7 @@ if (ENABLE_DISTRIBUTION)
   )
   target_compile_definitions(QuEST PUBLIC COMPILE_MPI=1)
   target_link_libraries(QuEST
-    PUBLIC
+    PRIVATE
     MPI::MPI_CXX
   )
   if (VERBOSE_LIB_NAME)
@@ -236,7 +235,7 @@ endif()
 if (ENABLE_CUQUANTUM)
   find_package(CUQUANTUM REQUIRED)
   target_compile_definitions(QuEST PUBLIC COMPILE_CUQUANTUM=1)
-  target_link_libraries(QuEST PUBLIC CUQUANTUM::cuStateVec)
+  target_link_libraries(QuEST PRIVATE CUQUANTUM::cuStateVec)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+cuquantum")
@@ -272,7 +271,7 @@ endif()
 
 # add math library
 if (NOT MSVC)
-  target_link_libraries(QuEST PUBLIC ${MATH_LIBRARY})
+  target_link_libraries(QuEST PRIVATE ${MATH_LIBRARY})
 endif()
 
 # Set output name
@@ -350,32 +349,39 @@ endif()
 ## Install
 
 install(TARGETS QuEST
-  EXPORT QuESTTargets
-  LIBRARY DESTINATION quest/${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION quest/${CMAKE_INSTALL_LIBDIR}
-  RUNTIME DESTINATION quest/${CMAKE_INSTALL_BINDIR}
-)
-
-install(EXPORT QuESTTargets
-  FILE QuESTTargets.cmake
-  NAMESPACE QuEST::
-  DESTINATION "cmake/QuEST"
+        EXPORT QuESTTargets
+        LIBRARY  DESTINATION quest/${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE  DESTINATION quest/${CMAKE_INSTALL_LIBDIR}
+        RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 ## Export
-
 # Write CMake version file for QuEST
-include(CMakePackageConfigHelpers)
+set(QuEST_INSTALL_CONFIGDIR "quest/${CMAKE_INSTALL_LIBDIR}/cmake")
+
+# Write QuESTConfigVersion.cmake
 write_basic_package_version_file(
-  QuESTConfigVersion.cmake
-  VERSION ${PACKAGE_VERSION}
-  COMPATIBILITY AnyNewerVersion
+        "${CMAKE_CURRENT_BINARY_DIR}/QuESTConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY AnyNewerVersion
 )
 
-export(TARGETS QuEST
-  NAMESPACE QuEST::
-  FILE QuESTTargets.cmake
+# Configure QuESTConfig.cmake (from template)
+configure_package_config_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QuESTConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/QuESTConfig.cmake"
+        INSTALL_DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
 )
 
-set(CMAKE_EXPORT_PACKAGE_REGISTRY ON)
-export(PACKAGE QuEST)
+# Install them
+install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/QuESTConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/QuESTConfigVersion.cmake"
+        DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
+)
+
+install(EXPORT QuESTTargets
+        FILE QuESTTargets.cmake
+        NAMESPACE QuEST::
+        DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
+)

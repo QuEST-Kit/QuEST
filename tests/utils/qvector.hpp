@@ -1,7 +1,7 @@
 #ifndef QVECTOR_HPP
 #define QVECTOR_HPP
 
-#include "quest.h"
+#include "quest/include/quest.h"
 #include "macros.hpp"
 #include <vector>
 

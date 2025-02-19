@@ -3,7 +3,7 @@
 #include "macros.hpp"
 #include "linalg.hpp"
 #include "lists.hpp"
-#include "quest.h"
+#include "quest/include/quest.h"
 
 #include <random>
 #include <vector>

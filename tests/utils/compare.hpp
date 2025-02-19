@@ -1,7 +1,7 @@
 #ifndef COMPARE_HPP
 #define COMPARE_HPP
 
-#include "quest.h"
+#include "quest/include/quest.h"
 #include "qvector.hpp"
 #include "qmatrix.hpp"
 
