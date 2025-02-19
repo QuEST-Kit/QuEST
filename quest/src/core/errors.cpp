@@ -588,6 +588,11 @@ void error_gpuMemSyncQueriedButEnvNotGpuAccelerated() {
     raiseInternalError("A function checked whether persistent GPU memory (such as in a CompMatr) had been synchronised, but the QuEST environment is not GPU accelerated.");  
 }
 
+void error_gpuDeadCopyMatrixFunctionCalled() {
+
+    raiseInternalError("The internal GPU function copyMatrixIfGpuCompiled() was called, though is intended as dead-code - matrices needing copying to GPU should be stored as flat row-wise lists.");
+}
+
 void assert_quregIsGpuAccelerated(Qureg qureg) {
 
     if (!qureg.isGpuAccelerated)

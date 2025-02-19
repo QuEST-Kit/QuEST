@@ -228,6 +228,8 @@ void error_gpuMemSyncQueriedButEnvNotGpuAccelerated();
 
 void error_gpuUnexpectedlyInaccessible();
 
+void error_gpuDeadCopyMatrixFunctionCalled();
+
 void assert_gpuIsAccessible();
 
 void assert_quregIsGpuAccelerated(Qureg qureg);

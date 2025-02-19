@@ -33,7 +33,15 @@ typedef struct {
     int numQubits;
     qindex numRows;
     
+    // 2D CPU memory, which users can manually overwrite like cpuElems[i][j],
+    // but which actually merely aliases the 1D cpuElemsFlat below
     qcomp** cpuElems;
+
+    // row-major flattened elements of cpuElems, always allocated
+    qcomp* cpuElemsFlat;
+
+    // row-major flattened elems in GPU memory, allocated 
+    // only and always in GPU-enabled QuEST environments
     qcomp* gpuElemsFlat;
 
     // whether the user has ever synchronised memory to the GPU, which is performed automatically

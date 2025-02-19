@@ -101,17 +101,41 @@ void cpu_deallocArray(qcomp* arr) {
 }
 
 
+qcomp** cpu_allocAndInitMatrixWrapper(qcomp* arr, qindex dim) {
+
+    // allocate only the outer memory (i.e. one row's worth)
+    qcomp** out = (qcomp**) malloc(dim * sizeof *out);
+
+    // caller will handle malloc failure
+    if (out == nullptr)
+        return out;
+
+    // populate out with offsets of arr
+    for (qindex i=0; i<dim; i++)
+        out[i] = &arr[i*dim];
+
+    return out;
+}
+
+
+void cpu_deallocMatrixWrapper(qcomp** wrapper) {
+
+    // only the outer pointer is freed; the
+    // inner pointers are offsets to another
+    // malloc which is separately freed
+    free(wrapper);
+}
+
+
 qcomp** cpu_allocMatrix(qindex dim) {
 
-    // TODO:
-    // the design of storing the CPU matrix elements as a 2D structure will impede
-    // performance for many qubits; the allocated heap memories for each row
-    // have no gaurantee to reside near other, so that their access/iteration in
-    // hot loops may incur unnecessary caching penalties. Consider storing the
-    // elements as a flat array, like we do for the GPU memory. This makes manual
-    // modification by the user trivially harder (changing [r][c] to [r*n+c]),
-    // but should improve caching, and significantly simplify allocation and its
-    // validation; no more enumerating nested pointers! Benchmark this scenario.
+    // NOTE:
+    // this function creates a matrix where rows are not necessarily
+    // contiguous in memory, which can incur gratuitous caching penalties
+    // when accessed in hot loops. As such, we do not use this function
+    // to allocate memory for CompMatr (instead, cpu_allocAndInitMatrixWrapper()),
+    // but instead use it for the individual Kraus matrices of a KrausMap,
+    // which are each quadratically smaller than the important superoperator.
 
     // allocate outer array
     qcomp** rows = (qcomp**) malloc(dim * sizeof *rows); // nullptr if failed
