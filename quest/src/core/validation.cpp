@@ -986,7 +986,7 @@ namespace report {
 /*
  * INVALID INPUT RESPONSE BEHAVIOUR
  */
-
+extern "C" {
 // default C/C++ compatible error response is to simply exit in fail state
 void default_invalidQuESTInputError(const char* msg, const char* func) {
 
@@ -1008,7 +1008,9 @@ void default_invalidQuESTInputError(const char* msg, const char* func) {
 }
 
 // enable default error response to be user-overriden as a weak symbol (even in C, and on Windows)
-extern "C" {
+
+    // Always declare invalidQuESTInputError so the compiler sees it:
+    void invalidQuESTInputError(const char* msg, const char* func);
 
     #ifndef _WIN32
         #pragma weak invalidQuESTInputError

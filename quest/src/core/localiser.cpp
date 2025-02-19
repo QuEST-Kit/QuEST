@@ -1584,7 +1584,7 @@ void localiser_densmatr_oneQubitDamping(Qureg qureg, int qubit, qreal prob) {
 
 CompMatr getCompMatrFromSuperOp(SuperOp op) {
 
-    return (CompMatr) {
+     CompMatr out = {
         // superoperator acts on twice as many qubits
         .numQubits = 2 * op.numQubits,
         .numRows = op.numRows,
@@ -1596,6 +1596,7 @@ CompMatr getCompMatrFromSuperOp(SuperOp op) {
         .cpuElems = op.cpuElems,
         .gpuElemsFlat = op.gpuElemsFlat
     };
+    return out;
 }
 
 

@@ -4,7 +4,7 @@
  * arbitrary matrices) upon Quregs, which can be
  * statevectors or density matrices
  */
-
+#define _USE_MATH_DEFINES
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 #include "quest/include/operations.h"
