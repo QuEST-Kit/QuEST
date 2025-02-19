@@ -82,9 +82,10 @@ template <class T>
 void freeHeapMatrix(T matr) {
 
     // free the 1D or 2D matrix - safe even if nullptr
-    if constexpr (util_isDenseMatrixType<T>())
-        cpu_deallocMatrix(matr.cpuElems, matr.numRows);
-    else
+    if constexpr (util_isDenseMatrixType<T>()) {
+        cpu_deallocMatrixWrapper(matr.cpuElems);
+        cpu_deallocArray(matr.cpuElemsFlat);
+    } else
         cpu_deallocArray(matr.cpuElems);
 
     // we avoid invoking a GPU function in non-GPU mode
@@ -110,20 +111,16 @@ bool didAnyLocalAllocsFail(T matr) {
 
     // outer CPU memory should always be allocated
     if constexpr (util_isDenseMatrixType<T>()) {
-        if (!mem_isAllocated(matr.cpuElems, matr.numRows))
-            return true;
-    } else {
-        if (!mem_isAllocated(matr.cpuElems))
-            return true;
-    }
+        if (!mem_isAllocated(matr.cpuElemsFlat))  return true;
+        if (!mem_isOuterAllocated(matr.cpuElems)) return true;
+    } else
+        if (!mem_isAllocated(matr.cpuElems)) return true;
 
     // if memory is 2D, we must also check each inner array was allocated
     if constexpr (util_isDenseMatrixType<T>()) {
-        if (!mem_isAllocated(matr.cpuElems, matr.numRows))
-            return true;
+        if (!mem_isAllocated(matr.cpuElems, matr.numRows)) return true;
     } else {
-        if (!mem_isAllocated(matr.cpuElems))
-            return true;
+        if (!mem_isAllocated(matr.cpuElems)) return true;
     }
 
     // if GPU memory is not allocated in a GPU environment...
@@ -197,6 +194,11 @@ extern "C" CompMatr createCompMatr(int numQubits) {
     qindex numRows = powerOf2(numQubits);
     qindex numElems = numRows * numRows;
 
+    qcomp* cpuMem = cpu_allocArray(numElems); // nullptr if failed
+    qcomp* gpuMem = nullptr;
+    if (getQuESTEnv().isGpuAccelerated)
+        gpuMem = gpu_allocArray(numElems); // nullptr if failed
+
     // initialise all CompMatr fields inline because most are const
     CompMatr out = {
         .numQubits = numQubits,
@@ -207,11 +209,9 @@ extern "C" CompMatr createCompMatr(int numQubits) {
         .isHermitian  = cpu_allocHeapFlag(), // nullptr if failed
         .wasGpuSynced = cpu_allocHeapFlag(), // nullptr if failed
 
-        // 2D CPU memory
-        .cpuElems = cpu_allocMatrix(numRows), // nullptr if failed, or may contain nullptr
-
-        // 1D GPU memory
-        .gpuElemsFlat = (getQuESTEnv().isGpuAccelerated)? gpu_allocArray(numElems) : nullptr // nullptr if failed or not needed
+        .cpuElems = cpu_allocAndInitMatrixWrapper(cpuMem, numRows), // nullptr if failed
+        .cpuElemsFlat = cpuMem,
+        .gpuElemsFlat = gpuMem
     };
 
     validateMatrixAllocs(out, __func__);

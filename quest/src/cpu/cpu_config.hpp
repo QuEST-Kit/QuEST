@@ -41,6 +41,9 @@ int cpu_getOpenmpThreadInd();
 qcomp* cpu_allocArray(qindex length);
 void cpu_deallocArray(qcomp* arr);
 
+qcomp** cpu_allocAndInitMatrixWrapper(qcomp* arr, qindex dim);
+void cpu_deallocMatrixWrapper(qcomp** wrapper);
+
 qcomp** cpu_allocMatrix(qindex dim);
 void cpu_deallocMatrix(qcomp** matrix, qindex dim);
 

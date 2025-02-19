@@ -77,11 +77,15 @@ typedef struct {
     // made after an initial sync have been re-synched. This is a heap pointer, as above.
     int* wasGpuSynced;
 
-    // 2D CPU memory; not const, so users can overwrite addresses (e.g. with nullptr)
+    // 2D CPU memory, which users can manually overwrite like cpuElems[i][j],
+    // but which actually merely aliases the 1D cpuElemsFlat below
     qcomp** cpuElems;
 
-    // row-flattened elems in GPU memory, allocated only
-    // and always in GPU-enabled QuEST environments
+    // row-major flattened elements of cpuElems, always allocated 
+    qcomp* cpuElemsFlat;
+
+    // row-major flattened elems in GPU memory, allocated 
+    // only and always in GPU-enabled QuEST environments
     qcomp* gpuElemsFlat;
 
 } CompMatr;

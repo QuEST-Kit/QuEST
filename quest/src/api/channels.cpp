@@ -32,8 +32,9 @@ using std::vector;
 
 void freeSuperOp(SuperOp op) {
 
-    // free CPU memory, even if it is NULL
-    cpu_deallocMatrix(op.cpuElems, op.numRows);
+    // free CPU memory, even if it is nullptr
+    cpu_deallocArray(op.cpuElemsFlat);
+    cpu_deallocMatrixWrapper(op.cpuElems);
 
     // free teeniy-tiny heap flag
     cpu_deallocHeapFlag(op.wasGpuSynced);
@@ -68,12 +69,9 @@ void freeObj(KrausMap map) {
 
 bool didAnyLocalAllocsFail(SuperOp op) {
 
-    // god help us if this single-integer malloc failed
-    if (!mem_isAllocated(op.wasGpuSynced))
-        return true;
-
-    if (!mem_isAllocated(op.cpuElems, op.numRows))
-        return true;
+    if (!mem_isAllocated(op.wasGpuSynced))  return true;
+    if (!mem_isAllocated(op.cpuElemsFlat))  return true;
+    if (!mem_isOuterAllocated(op.cpuElems)) return true;
 
     if (getQuESTEnv().isGpuAccelerated && !mem_isAllocated(op.gpuElemsFlat))
         return true;
@@ -84,19 +82,15 @@ bool didAnyLocalAllocsFail(SuperOp op) {
 
 bool didAnyLocalAllocsFail(KrausMap map) {
 
-    // god help us if this single-integer malloc failed
     if (!mem_isAllocated(map.isCPTP))
         return true;
 
-    // list of CPU matrices and all matrices/rows therein shoul dbe non-NULL
     if (!mem_isAllocated(map.matrices, map.numMatrices, map.numRows))
         return true;
 
-    // check if anything in the superoperator failed to allocate
     if (didAnyLocalAllocsFail(map.superop))
         return true;
 
-    // otherwise, all pointers were non-NULL and ergo all allocs were successful
     return false;
 }
 
@@ -131,12 +125,18 @@ SuperOp allocSuperOp(int numQubits) {
     qindex numRows = powerOf2(2 * numQubits);
     qindex numElems = numRows * numRows;
 
+    qcomp* cpuMem = cpu_allocArray(numElems); // nullptr if failed
+    qcomp* gpuMem = nullptr;
+    if (getQuESTEnv().isGpuAccelerated)
+        gpuMem = gpu_allocArray(numElems); // nullptr if failed
+
     SuperOp out = {
         .numQubits = numQubits,
         .numRows = numRows,
 
-        .cpuElems = cpu_allocMatrix(numRows), // nullptr if failed
-        .gpuElemsFlat = (getQuESTEnv().isGpuAccelerated)? gpu_allocArray(numElems) : nullptr, // nullptr if failed or not needed
+        .cpuElems = cpu_allocAndInitMatrixWrapper(cpuMem, numRows), // nullptr if failed
+        .cpuElemsFlat = cpuMem,
+        .gpuElemsFlat = gpuMem,
 
         .wasGpuSynced = cpu_allocHeapFlag() // nullptr if failed
     };
