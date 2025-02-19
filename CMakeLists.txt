@@ -23,7 +23,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 include(GNUInstallDirs)
 
 # Maths
-if (NOT MSVC)
+if (NOT WIN32)
   find_library(MATH_LIBRARY m REQUIRED)
 endif()
 
@@ -155,9 +155,13 @@ option(
 message(STATUS "Deprecated API support is turned ${ENABLE_DEPRECATED_API}. Set ENABLE_DEPRECATED_API to modify.")
 
 # Windows Specific Options
-if(MSVC)
+if(WIN32)
     set(ENABLE_MULTITHREADING OFF)
-    set(BUILD_SHARED_LIBS OFF)
+    # Force MSVC to export all symbols in a shared library, like GCC and clang
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    if (ENABLE_TESTING)
+      set(BUILD_SHARED_LIBS OFF)
+    endif ()
 endif()
 
 ## Library
