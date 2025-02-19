@@ -11,3 +11,22 @@
 #include "tests/utils/lists.hpp"
 #include "tests/utils/macros.hpp"
 #include "tests/utils/random.hpp"
+
+
+
+void mixDephasing(Qureg qureg, int qubit, qreal prob);
+
+void mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob);
+
+void mixDepolarising(Qureg qureg, int qubit, qreal prob);
+
+void mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal prob);
+
+void mixDamping(Qureg qureg, int qubit, qreal prob);
+
+void mixPaulis(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ);
+
+void mixQureg(Qureg qureg, Qureg other, qreal prob);
+
+void mixKrausMap(Qureg qureg, int* qubits, int numQubits, KrausMap map);
+

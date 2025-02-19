@@ -217,8 +217,6 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
 }
 
 
-
-
 TEST_CASE( "density evolution", "[integration]" ) {
 
     auto deployments = getSupportedDeployments();
@@ -238,9 +236,9 @@ TEST_CASE( "density evolution", "[integration]" ) {
             if (rhoGPU && psiGPU) numQubits = 14;
 
             auto label = (
-                "rho = " + rhoDeploy + 
-                ", psi = " + psiDeploy +
-                ", numQubits = " + std::to_string(numQubits));
+                "rho = " + rhoDeploy + ", " +
+                "psi = " + psiDeploy + ", " +
+                "qubits = " + std::to_string(numQubits));
 
             DYNAMIC_SECTION( label ) {
 

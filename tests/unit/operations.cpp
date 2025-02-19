@@ -747,3 +747,69 @@ TEST_CASE( "applyMultiQubitPhaseFlip", TEST_TAG ) { testOperation<zero,any,none>
 TEST_CASE( "applyPhaseShift",           TEST_TAG ) { testOperation<zero,one,scalar>(applyPhaseShift,           ParameterisedMatrices::PS); }
 TEST_CASE( "applyTwoQubitPhaseShift",   TEST_TAG ) { testOperation<zero,two,scalar>(applyTwoQubitPhaseShift,   ParameterisedMatrices::PS2); }
 TEST_CASE( "applyMultiQubitPhaseShift", TEST_TAG ) { testOperation<zero,any,scalar>(applyMultiQubitPhaseShift, VariableSizeParameterisedMatrices::PS); }
+/*
+ * FullStateDiagMatr, with power
+ */
+
+void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
+void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
+void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
+void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
+
+
+
+
+
+
+/*
+ * Pauli string sums
+ */
+
+void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
+
+void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
+
+
+
+/*
+ * superoperator
+ */
+
+void applySuperOp(Qureg qureg, int* targets, int numTargets, SuperOp superop);
+
+
+
+
+
+
+
+
+/*
+ * measurement
+ */
+
+int applyQubitMeasurement(Qureg qureg, int target);
+
+int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability);
+
+qreal applyForcedQubitMeasurement(Qureg qureg, int target, int outcome);
+
+void applyQubitProjector(Qureg qureg, int target, int outcome);
+
+qindex applyMultiQubitMeasurement(Qureg qureg, int* qubits, int numQubits);
+
+qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQubits, qreal* probability);
+
+qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, int numQubits);
+
+void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits);
+
+
+
+/*
+ * QFT
+ */
+
+void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets);
+
+void applyFullQuantumFourierTransform(Qureg qureg);

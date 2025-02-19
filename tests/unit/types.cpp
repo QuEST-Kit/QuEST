@@ -11,3 +11,14 @@
 #include "tests/utils/lists.hpp"
 #include "tests/utils/macros.hpp"
 #include "tests/utils/random.hpp"
+
+
+
+static inline qcomp getQcomp(qreal re, qreal im);
+
+
+// literals
+
+
+
+void reportQcomp(qcomp num);

@@ -11,3 +11,19 @@
 #include "tests/utils/lists.hpp"
 #include "tests/utils/macros.hpp"
 #include "tests/utils/random.hpp"
+
+
+
+void initQuESTEnv();
+
+void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread);
+
+void finalizeQuESTEnv();
+
+void syncQuESTEnv();
+
+void reportQuESTEnv();
+
+int isQuESTEnvInit();
+
+QuESTEnv getQuESTEnv();

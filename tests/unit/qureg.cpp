@@ -11,3 +11,37 @@
 #include "tests/utils/lists.hpp"
 #include "tests/utils/macros.hpp"
 #include "tests/utils/random.hpp"
+
+
+Qureg createQureg(int numQubits);
+Qureg createDensityQureg(int numQubits);
+
+Qureg createForcedQureg(int numQubits);
+Qureg createForcedDensityQureg(int numQubits);
+
+Qureg createCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread);
+
+Qureg createCloneQureg(Qureg qureg);
+
+void destroyQureg(Qureg qureg);
+
+void reportQuregParams(Qureg qureg);
+void reportQureg(Qureg qureg);
+void reportQuregToFile(Qureg qureg, char* fn);
+
+void syncQuregToGpu  (Qureg qureg);
+void syncQuregFromGpu(Qureg qureg);
+
+void syncSubQuregToGpu  (Qureg qureg, qindex localStartInd, qindex numLocalAmps);
+void syncSubQuregFromGpu(Qureg qureg, qindex localStartInd, qindex numLocalAmps);
+
+void getQuregAmps(qcomp* outAmps, Qureg qureg, qindex startInd, qindex numAmps);
+void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);
+
+
+
+
+qcomp getQuregAmp(Qureg qureg, qindex index);
+
+qcomp getDensityQuregAmp(Qureg qureg, qindex row, qindex column);
+
