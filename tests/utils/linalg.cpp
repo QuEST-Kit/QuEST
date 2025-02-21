@@ -4,7 +4,6 @@
 #include "macros.hpp"
 
 #include <vector>
-
 using std::vector;
 
 
@@ -135,11 +134,17 @@ bool isDiagonal(qmatrix m) {
 }
 
 
-bool isUnitary(qmatrix m) {
+bool isApproxUnitary(qmatrix m) {
 
+    // should be identity
     qmatrix md = m * getConjugateTranspose(m);
-    qmatrix id = getIdentityMatrix(m.size());
-    return md == id;
+
+    for (size_t r=0; r<md.size(); r++)
+        for (size_t c=0; c<md.size(); c++)
+            if (abs(md[r][c] - (r==c)) > TEST_EPSILON)
+                return false;
+
+    return true;
 }
 
 

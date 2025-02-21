@@ -21,7 +21,7 @@ qmatrix getOuterProduct(const qvector& ket, const qvector& bra);
 qvector operator * (const qmatrix&, const qvector&);
 
 bool isDiagonal(qmatrix);
-bool isUnitary(qmatrix);
+bool isApproxUnitary(qmatrix);
 
 qmatrix getTranspose(qmatrix);
 qmatrix getConjugateTranspose(qmatrix);

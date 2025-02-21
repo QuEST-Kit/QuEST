@@ -292,7 +292,7 @@ qmatrix getRandomUnitary(int numQb) {
     // create U = Q D
     qmatrix matrU = matrQ * matrD;
 
-    DEMAND( isUnitary(matrU) );
+    DEMAND( isApproxUnitary(matrU) );
     return matrU;
 }
 

@@ -30,7 +30,7 @@ deployInfo getSupportedDeployments() {
     // order is (MPI, GPU, OMP), matching createCustomQureg
     if (true)              out.push_back({"CPU",             0, 0, 0});
     if (mpi)               out.push_back({"CPU + MPI",       1, 0, 0});
-    if (omp)               out.push_back({"CPU + MPI",       0, 0, 1});
+    if (omp)               out.push_back({"CPU + OMP",       0, 0, 1});
     if (mpi && omp)        out.push_back({"CPU + OMP + MPI", 1, 0, 1});
     if (gpu)               out.push_back({"GPU",             0, 1, 0});
     if (gpu && omp)        out.push_back({"GPU + OMP",       0, 1, 1});
