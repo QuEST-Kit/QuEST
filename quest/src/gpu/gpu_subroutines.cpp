@@ -396,8 +396,8 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
 
 #if COMPILE_CUQUANTUM
 
-    auto matrElemsPtr = toCuQcomps(util_getGpuMemPtr(matr));
-    auto matrElemsLen = powerOf2(2 * targs.size());
+    auto matrElemsPtr = toCuQcomps(matr.gpuElemsFlat);
+    auto matrElemsLen = matr.numRows * matr.numRows;
 
     // conjugate every matrix element if necessary (cuStateVec cannot conj for us; only adjoint)
     if (ApplyConj)
