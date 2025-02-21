@@ -345,7 +345,6 @@ void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* sta
     auto ctrlVec = util_getVector(controls, numControls);
     auto stateVec = util_getVector(states,  numControls); // empty if states==nullptr
     auto targVec = util_getVector(targets,  numTargets);
-    localiser_statevec_anyCtrlAnyTargAnyMatr(qureg, {}, {}, targVec, matrix, conj);
     localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, ctrlVec, stateVec, targVec, matrix, exponent, conj);
 
     if (!qureg.isDensityMatrix)
@@ -354,6 +353,7 @@ void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* sta
     conj = true;
     ctrlVec = util_getBraQubits(ctrlVec, qureg);
     targVec = util_getBraQubits(targVec, qureg);
+    localiser_statevec_anyCtrlAnyTargAnyMatr(qureg, {}, {}, targVec, matrix, conj);
     localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, ctrlVec, stateVec, targVec, matrix, exponent, conj);
 }
 

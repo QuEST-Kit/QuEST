@@ -629,7 +629,6 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         // decide whether to power and conj at compile-time, to avoid branching in hot-loop
         if constexpr (HasPower)
             elem = pow(elem, exponent);
-
         if constexpr (ApplyConj)
             elem = conj(elem);
 
