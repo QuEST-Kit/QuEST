@@ -408,8 +408,10 @@ void finalizeQuESTEnv() {
     if (globalEnvPtr->isGpuAccelerated && gpu_isCuQuantumCompiled())
         gpu_finalizeCuQuantum();
 
-    if (globalEnvPtr->isDistributed)
+    if (globalEnvPtr->isDistributed) {
+        comm_sync();
         comm_end();
+    }
 
     // free global env's heap memory and flag it as unallocated
     free(globalEnvPtr);
