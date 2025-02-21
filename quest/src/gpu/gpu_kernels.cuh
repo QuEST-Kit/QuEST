@@ -40,13 +40,13 @@ __forceinline__ __device__ qindex getThreadInd() {
 }
 
 
-__host__ qindex getNumBlocks(qindex numIts) {
+__host__ qindex getNumBlocks(qindex numThreads) {
 
     // TODO:
     // improve this with cudaOccupancyMaxPotentialBlockSize(),
     // making it function specific
 
-    return ceil(numIts / static_cast<qreal>(NUM_THREADS_PER_BLOCK));
+    return ceil(numThreads / static_cast<qreal>(NUM_THREADS_PER_BLOCK));
 }
 
 
@@ -272,11 +272,9 @@ __forceinline__ __device__ qindex getStrideOfGlobalThreadArr() {
     return gridDim.x * blockDim.x;
 }
 
-
 __forceinline__ __device__ qindex getThreadsNthGlobalArrInd(qindex n, qindex threadInd, qindex stride) {
     return (n * stride) + threadInd;
 }
-
 
 __forceinline__ __device__ qindex getFlattenedMatrInd(qindex row, qindex col, qindex dim) {
     return (row * dim) + col;
@@ -284,51 +282,121 @@ __forceinline__ __device__ qindex getFlattenedMatrInd(qindex row, qindex col, qi
 
 
 template <int NumCtrls, int NumTargs, bool ApplyConj>
-__global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_sub(
-    cu_qcomp* amps, cu_qcomp* cache, qindex numThreads,
-    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int* targs, int numTargs,
+__global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_subA(
+    cu_qcomp* amps, qindex numThreads,
+    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int* targs,
     cu_qcomp* flatMatrElems
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // use template params to compile-time unroll loops in insertBits() and setBits()
+    // it is gauranteed that NumTargs <= 5, such that the thread-private array is
+    // <= 2^5 = 32 amps <= 512 bytes, which aggregated between all threads in the
+    // block (assumed ~128) is 64 KiB, and which should be small enough to fit into
+    // SM registers without spillage into slow local memory. This is despite it
+    // exceeding the maximum per-block shared memory of 48 KiB. Access to this cache
+    // must be strictly through compile-time-known indices, otherwise it will auto-
+    // spill to local memory). Hence, this _subA() function is not a subroutine 
+    // despite some logic being common to non-compile-time _subB(), and hence
+    // why the loops below are explicitly compile-time unrolled
+    register cu_qcomp privateCache[1 << NumTargs];
+
+    // we know NumTargs <= 5, though NumCtrls is permitted anything (including -1)
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
-    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, numTargs);
-    int numQubitBits = numCtrlBits + numTargBits;
-    qindex numTargAmps = powerOf2(numTargBits);
+    constexpr qindex numTargAmps = (1 << NumTargs); // explicit, in lieu of powerOf2
 
     // i0 = nth local index where ctrls are active and targs are all zero
-    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs, numQubitBits, ctrlsAndTargsMask);
-    qindex stride = getStrideOfGlobalThreadArr();
+    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs, numCtrlBits + NumTargs, ctrlsAndTargsMask); // loop may be unrolled
 
-    // collect and cache all to-be-modified amps (loop might be unrolled)
+    // populate cache (force unroll to ensure compile-time cache indices)
+    #pragma unroll  
     for (qindex k=0; k<numTargAmps; k++) {
 
         // i = nth local index where ctrls are active and targs form value k
-        qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
-        qindex j = getThreadsNthGlobalArrInd(k, n, stride);
-        cache[j] = amps[i];
+        qindex i = setBits(i0, targs, NumTargs, k); // loop will be unrolled
+
+        // write to thread-private cache at compile-time known index
+        privateCache[k] = amps[i];
     }
 
-    // modify each amplitude (loop might be unrolled)
+    // modify each amplitude (let compiler decide whether to unroll, to avoid 2^10 = 1024 expansion)
     for (qindex k=0; k<numTargAmps; k++) {
 
         // i = nth local index where ctrls are active and targs form value k
-        qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
+        qindex i = setBits(i0, targs, NumTargs, k); // loop will be unrolled
         amps[i] = {0, 0}; // zero cu_comp literal
     
-        // loop may be unrolled
+        // force unroll to ensure compile-time cache indices
+        #pragma unroll
         for (qindex l=0; l<numTargAmps; l++) {
 
-            qindex j = getThreadsNthGlobalArrInd(l, n, stride);
+            // h = flat index of matrix's (k,l)-th element
             qindex h = getFlattenedMatrInd(k, l, numTargAmps);
 
-            // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
+            // optionally conjugate matrix elem
             cu_qcomp elem = flatMatrElems[h];
             if constexpr (ApplyConj)
                 elem.y *= -1;
 
-            amps[i] += elem * cache[j];
+            // thread-private cache is accessed with compile-time known index
+            amps[i] += elem * privateCache[l];
+        }
+    }
+}
+
+
+template <int NumCtrls, bool ApplyConj>
+__global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_subB(
+    cu_qcomp* globalCache,
+    cu_qcomp* amps, qindex numThreads, qindex numBatchesPerThread,
+    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int* targs, int numTargBits,
+    cu_qcomp* flatMatrElems
+) {
+    GET_THREAD_IND(t, numThreads);
+
+    qindex cacheStride = getStrideOfGlobalThreadArr();
+
+    // NumCtrls might be compile-time known, but numTargBits>5 is always unknown/runtime
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+    qindex numTargAmps = powerOf2(numTargBits);
+
+    // unlike all other kernels, each thread modifies multiple batches of amplitudes
+    for (qindex b=0; b<numBatchesPerThread; b++) {
+
+        // n = this thread's b-th batch index
+        qindex n = t + b * numThreads;
+
+        // i0 = nth local index where ctrls are active and targs are all zero
+        qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs, numCtrlBits + numTargBits, ctrlsAndTargsMask);
+
+        // collect and cache all to-be-modified amps (loop might be unrolled)        
+        for (qindex k=0; k<numTargAmps; k++) {
+
+            // i = nth local index where ctrls are active and targs form value k
+            qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
+
+            // j = index of k-th element of thread's private cache partition
+            qindex j = getThreadsNthGlobalArrInd(k, n, cacheStride);
+            globalCache[j] = amps[i];
+        }
+
+        // modify each amplitude (loop might be unrolled)
+        for (qindex k=0; k<numTargAmps; k++) {
+
+            // i = nth local index where ctrls are active and targs form value k
+            qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
+            amps[i] = {0, 0}; // zero cu_comp literal
+        
+            for (qindex l=0; l<numTargAmps; l++) {
+                qindex j = getThreadsNthGlobalArrInd(l, n, cacheStride);
+                qindex h = getFlattenedMatrInd(k, l, numTargAmps);
+
+                // optionally conjugate matrix elem
+                cu_qcomp elem = flatMatrElems[h];
+                if constexpr (ApplyConj)
+                    elem.y *= -1;
+
+                amps[i] += elem * globalCache[j];
+            }
         }
     }
 }

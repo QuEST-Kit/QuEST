@@ -265,6 +265,12 @@ int util_getRankContainingColumn(Qureg qureg, qindex globalCol) {
     return globalCol / numColsPerNode; // floors
 }
 
+qindex util_getNextPowerOf2(qindex number) {
+
+    int nextExponent = static_cast<int>(std::ceil(std::log2(number)));
+    return powerOf2(nextExponent);
+}
+
 
 
 /*

@@ -51,6 +51,8 @@ size_t gpu_getTotalMemoryInBytes();
 
 bool gpu_doesGpuSupportMemPools();
 
+qindex gpu_getMaxNumConcurrentThreads();
+
 
 
 /*

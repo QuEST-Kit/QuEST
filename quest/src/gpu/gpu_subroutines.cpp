@@ -411,21 +411,87 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
 
 #elif COMPILE_CUDA
 
-    qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size() + targs.size());
-    qindex numBlocks = getNumBlocks(numThreads);
+    // a 'batch' refers to 2^N amps which become mixed by the matrix,
+    // distinguished in this kernel from 'numThreads' since we may
+    // task each thread with processing more than a single batch
+    qindex numBatches = qureg.numAmpsPerNode / powerOf2(ctrls.size() + targs.size());
 
     devints deviceTargs = targs;
     devints deviceQubits = util_getSorted(ctrls, targs);
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, targs, vector<int>(targs.size(),0));
-    
-    qindex numKernelInvocations = numBlocks * NUM_THREADS_PER_BLOCK;
-    qcomp* cache = gpu_getCacheOfSize(powerOf2(targs.size()), numKernelInvocations);
 
-    kernel_statevec_anyCtrlAnyTargDenseMatr_sub <NumCtrls, NumTargs, ApplyConj> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), toCuQcomps(cache), numThreads,
-        getPtr(deviceQubits), ctrls.size(), qubitStateMask, getPtr(deviceTargs), targs.size(),
-        toCuQcomps(util_getGpuMemPtr(matr))
-    );
+    // unpacking args (to better distinguish below signatures)
+    auto ampsPtr   = toCuQcomps(qureg.gpuAmps);
+    auto matrPtr   = toCuQcomps(matr.gpuElemsFlat);
+    auto qubitsPtr = getPtr(deviceQubits);
+    auto targsPtr  = getPtr(deviceTargs);
+    auto nCtrls    = ctrls.size();
+
+    // this function updates amplitudes in batches of 2^NumTargs, where each is
+    // determined by distinct mixtures of the existing 2^NumTargs values, which
+    // must ergo be cached. As such, each thread needs private memory, which is
+    // provided either by fast registers (when NumTargs is compile-time known)
+    // or by slow global memory (necessary when blockDim * 2^NumTargs exceeds the
+    // total shared memory) which is strided for coalesced access by warp threads
+    
+    if constexpr (NumTargs != -1) {
+
+        // when NumTargs <= 5, each thread has a private array stored in the registers,
+        // enabling rapid IO. Given NUM_THREADS_PER_BLOCK = 128, the maximum size of 
+        // this array per-block is 16 * 128 * 2^5 B = 64 KiB which exceeds shared
+        // memory capacity, but does NOT exceed maximum register capacity.
+
+        // TODO:
+        // We should really check the above claims, otherwise the thread-private arrays could
+        // silently "spill" from registers into "local memory" (which is really slow,
+        // global memory) and greatly sabotage performance on some GPUs.
+
+        qindex numThreads = numBatches;
+        qindex numBlocks = getNumBlocks(numThreads);
+
+        kernel_statevec_anyCtrlAnyTargDenseMatr_subA<NumCtrls, NumTargs, ApplyConj> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+            ampsPtr, numThreads, 
+            qubitsPtr, nCtrls, qubitStateMask, 
+            targsPtr, matrPtr
+        );
+
+    } else {
+
+        // when NumTargs > 5, we must use global memory to give each thread a private
+        // workspace of 2^NumTargs elements. Alas, we should not simply allocate this 
+        // space per-thread, since all threads being potentially concurrent means we 
+        // would allocate a total cache equal to the Qureg size (when nctrls=0)! 
+        // Instead, we change the parallelisation granularity, giving each thread more
+        // batches of 2^NumTargs amps to modify, re-using its private cache, so that the
+        // number of potentially-concurrent threads is reduced, as is the total cache.
+        // We choose the granularity by upper-bounding the number of concurrent threads,
+        // where we assign one-block per multiprocessor because we are anyway memory-
+        // bandwidth bound (so we don't expect many interweaved blocks per MP).
+        qindex numThreads = gpu_getMaxNumConcurrentThreads();
+        
+        // use strictly 2^# threads to maintain precondition of all kernels
+        if (!isPowerOf2(numThreads))
+            numThreads = util_getNextPowerOf2(numThreads);
+
+        // no point in dispatching more threads than batches
+        if (numThreads > numBatches)
+            numThreads = numBatches;
+
+        // evenly distribute the batches between threads, and the threads unevenly between blocks
+        qindex numBatchesPerThread = numBatches / numThreads; // divides evenly
+        qindex numBlocks = getNumBlocks(numThreads);
+
+        // expand the cache if necessary
+        qindex numKernelInvocations = numBlocks * NUM_THREADS_PER_BLOCK;
+        qcomp* cache = gpu_getCacheOfSize(powerOf2(targs.size()), numKernelInvocations);
+
+        kernel_statevec_anyCtrlAnyTargDenseMatr_subB <NumCtrls, ApplyConj> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+            toCuQcomps(cache),
+            ampsPtr, numThreads, numBatchesPerThread, 
+            qubitsPtr, nCtrls, qubitStateMask, 
+            targsPtr, targs.size(), matrPtr
+        );
+    }
 
 #else
     error_gpuSimButGpuNotCompiled();
