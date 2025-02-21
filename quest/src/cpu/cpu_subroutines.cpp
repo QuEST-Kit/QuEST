@@ -630,7 +630,6 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         if constexpr (HasPower)
             elem = pow(elem, exponent);
 
-        // cautiously conjugate AFTER exponentiation, else we must also conj exponent
         if constexpr (ApplyConj)
             elem = conj(elem);
 
