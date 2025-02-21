@@ -39,8 +39,8 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
     // maximum size of tested any-target operators
     int maxNumCompMatrTargs = std::min({6, (int) psi.logNumAmpsPerNode, (int) rho.logNumAmpsPerNode});
     int maxNumDiagMatrTargs = std::min({8, psi.numQubits});
-    int maxNumPauliStrTargs = std::min({6, psi.numQubits}); // TODO: upgrade to numQubits once optimised
-    int maxNumPauliGadTargs = std::min({6, psi.numQubits}); // TODO: upgrade to numQubits once optimised
+    int maxNumPauliStrTargs = psi.numQubits;
+    int maxNumPauliGadTargs = psi.numQubits;
     int maxNumPhaseGadTargs = psi.numQubits;
 
     // below, we will apply every operation which invokes a unique backend
