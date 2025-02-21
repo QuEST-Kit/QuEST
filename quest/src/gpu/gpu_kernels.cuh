@@ -282,7 +282,7 @@ __forceinline__ __device__ qindex getFlattenedMatrInd(qindex row, qindex col, qi
 
 
 template <int NumCtrls, int NumTargs, bool ApplyConj>
-__global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_subA(
+__global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
     cu_qcomp* amps, qindex numThreads,
     int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int* targs,
     cu_qcomp* flatMatrElems
@@ -345,7 +345,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_subA(
 
 
 template <int NumCtrls, bool ApplyConj>
-__global__ void kernel_statevec_anyCtrlAnyTargDenseMatr_subB(
+__global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
     cu_qcomp* globalCache,
     cu_qcomp* amps, qindex numThreads, qindex numBatchesPerThread,
     int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int* targs, int numTargBits,
@@ -575,7 +575,7 @@ __global__ void kernel_densmatr_allTargDiagMatr_sub(
 
 
 /*
- * PAULI/PHASE TENSORS/GADGETS
+ * PAULI TENSORS/GADGET
  */
 
 
@@ -586,42 +586,36 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
     int* targsXY, int numXY, qindex maskXY, qindex maskYZ, 
     cu_qcomp powI, cu_qcomp ampFac, cu_qcomp pairAmpFac
 ) {
-    GET_THREAD_IND(n, numThreads);
+    GET_THREAD_IND(t, numThreads);
 
     // use template params to compile-time unroll loops in insertBits() and setBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
     SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, numXY);
 
-    // compiler will infer these at compile-time if possible
-    int numQubitBits = numCtrlBits + numTargBits;
-    qindex numTargAmps = powerOf2(numTargBits);
+    // n = local index of amp sub-batch with common i0, v = value of target bits
+    qindex numInnerIts = powerOf2(numTargBits) / 2;
+    qindex n = t / numInnerIts;
+    qindex v = t % numInnerIts;
 
-    // each inner iteration modifies 2 amplitudes (may be compile-time sized) 
-    qindex numInnerIts = numTargAmps / 2;
+    // i0 = nth local index where ctrls are active and targs are all zero (loop therein may be unrolled)
+    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs, numCtrlBits + numTargBits, ctrlsAndTargsStateMask);
 
-    // i0 = nth local index where ctrls are active and targs are all zero
-    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs, numQubitBits, ctrlsAndTargsStateMask); // may be unrolled
+    // iA = nth local index where targs have value v, iB = (last - nth) such index
+    qindex iA = setBits(i0, targsXY, numTargBits, v); // may be unrolled
+    qindex iB = flipBits(iA, maskXY);
 
-    // loop may be unrolled
-    for (qindex m=0; m<numInnerIts; m++) {
+    // determine whether to multiply amps by +-1 or +-i
+    int parA = cudaGetBitMaskParity(iA & maskYZ);
+    int parB = cudaGetBitMaskParity(iB & maskYZ);
+    cu_qcomp coeffA = powI * fast_getPlusOrMinusOne(parA);
+    cu_qcomp coeffB = powI * fast_getPlusOrMinusOne(parB);
 
-        // iA = nth local index where targs have value m, iB = (last - nth) such index
-        qindex iA = setBits(i0, targsXY, numTargBits, m); // may be unrolled
-        qindex iB = flipBits(iA, maskXY);
+    cu_qcomp ampA = amps[iA];
+    cu_qcomp ampB = amps[iB];
 
-        // determine whether to multiply amps by +-1 or +-i
-        int parA = cudaGetBitMaskParity(iA & maskYZ);
-        int parB = cudaGetBitMaskParity(iB & maskYZ);
-        cu_qcomp coeffA = powI * fast_getPlusOrMinusOne(parA);
-        cu_qcomp coeffB = powI * fast_getPlusOrMinusOne(parB);
-
-        cu_qcomp ampA = amps[iA];
-        cu_qcomp ampB = amps[iB];
-
-        // mix or swap scaled amp pair
-        amps[iA] = (ampFac * ampA) + (pairAmpFac * coeffB * ampB);
-        amps[iB] = (ampFac * ampB) + (pairAmpFac * coeffA * ampA);
-    }
+    // mix or swap scaled amp pair
+    amps[iA] = (ampFac * ampA) + (pairAmpFac * coeffB * ampB);
+    amps[iB] = (ampFac * ampB) + (pairAmpFac * coeffA * ampA);
 }
 
 
@@ -653,6 +647,12 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
     amps[i] *= thisAmpFac;
     amps[i] += otherAmpFac * coeff * buffer[j];
 }
+
+
+
+/*
+ * PHASE TENSORS/GADGET
+ */
 
 
 template <int NumCtrls>

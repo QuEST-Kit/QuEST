@@ -55,7 +55,6 @@
 #endif
 
 #include <vector>
-
 using std::vector;
 
 
@@ -449,7 +448,7 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
         qindex numThreads = numBatches;
         qindex numBlocks = getNumBlocks(numThreads);
 
-        kernel_statevec_anyCtrlAnyTargDenseMatr_subA<NumCtrls, NumTargs, ApplyConj> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        kernel_statevec_anyCtrlFewTargDenseMatr<NumCtrls, NumTargs, ApplyConj> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
             ampsPtr, numThreads, 
             qubitsPtr, nCtrls, qubitStateMask, 
             targsPtr, matrPtr
@@ -485,7 +484,7 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
         qindex numKernelInvocations = numBlocks * NUM_THREADS_PER_BLOCK;
         qcomp* cache = gpu_getCacheOfSize(powerOf2(targs.size()), numKernelInvocations);
 
-        kernel_statevec_anyCtrlAnyTargDenseMatr_subB <NumCtrls, ApplyConj> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        kernel_statevec_anyCtrlManyTargDenseMatr <NumCtrls, ApplyConj> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
             toCuQcomps(cache),
             ampsPtr, numThreads, numBatchesPerThread, 
             qubitsPtr, nCtrls, qubitStateMask, 
@@ -733,26 +732,22 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ct
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
-    // TODO:
-    //  this parallelises worse for many targs; having as many targs as qureg qubits
-    //  will dispatch a single kernel to update all amps. this is inessential; each
-    //  kernel really need only modify/mix two amps, and is currently only incidentally
-    //  performing grid-stride loops (if it even is). Define an alternate implementation
-    //  which modifies 2 amps per invocation and compare performance; if as fast for
-    //  few paulis, delete this implementation
-
-    qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size() + x.size() + y.size());
-    qindex numBlocks = getNumBlocks(numThreads);
-
-    qcomp powI = util_getPowerOfI(y.size());
+    qcomp powI   = util_getPowerOfI(y.size());
     auto targsXY = util_getConcatenated(x, y);
-    auto maskXY = util_getBitMask(targsXY);
-    auto maskYZ = util_getBitMask(util_getConcatenated(y, z));
+    auto maskXY  = util_getBitMask(targsXY);
+    auto maskYZ  = util_getBitMask(util_getConcatenated(y, z));
 
-    devints deviceTargs = targsXY;
-    devints deviceQubits = util_getSorted(ctrls, targsXY);
+    devints deviceTargs   = targsXY;
+    devints deviceQubits  = util_getSorted(ctrls, targsXY);
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, targsXY, vector<int>(targsXY.size(),0));
 
+    // unlike the analogous cpu routine, this function has only a single parallelisation
+    // granularity; where every pair-of-amps is modified by an independent thread, despite
+    // that many threads share a common i0 value (appearing in the kernel). This turns out
+    // faster than when giving threads many pair-amps to modify, due to memory movements
+
+    qindex numThreads = (qureg.numAmpsPerNode / powerOf2(ctrls.size())) / 2; // divides evenly
+    qindex numBlocks = getNumBlocks(numThreads);
     kernel_statevector_anyCtrlPauliTensorOrGadget_subA <NumCtrls, NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads,
         getPtr(deviceQubits), ctrls.size(), qubitStateMask, 
@@ -797,6 +792,16 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ct
 }
 
 
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevector_anyCtrlPauliTensorOrGadget_subA, (Qureg, vector<int>, vector<int>, vector<int>, vector<int>, vector<int>, qcomp, qcomp) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevector_anyCtrlPauliTensorOrGadget_subB, (Qureg, vector<int>, vector<int>, vector<int>, vector<int>, vector<int>, qcomp, qcomp, qindex) )
+
+
+
+/*
+ * PHASE TENSOR AND GADGET
+ */
+
+
 template <int NumCtrls> 
 void gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qcomp fac0, qcomp fac1) {
 
@@ -823,8 +828,6 @@ void gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, vector<int> c
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, gpu_statevector_anyCtrlPauliTensorOrGadget_subA, (Qureg, vector<int>, vector<int>, vector<int>, vector<int>, vector<int>, qcomp, qcomp) )
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevector_anyCtrlPauliTensorOrGadget_subB, (Qureg, vector<int>, vector<int>, vector<int>, vector<int>, vector<int>, qcomp, qcomp, qindex) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub, (Qureg, vector<int>, vector<int>, vector<int>, qcomp, qcomp) )
 
 
