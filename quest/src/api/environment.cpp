@@ -398,6 +398,13 @@ QuESTEnv getQuESTEnv() {
 void finalizeQuESTEnv() {
     validate_envIsInit(__func__);
 
+    // NOTE:
+    // calling this will not automatically
+    // free the memory of existing Quregs
+
+    if (globalEnvPtr->isGpuAccelerated)
+        gpu_clearCache();
+
     if (globalEnvPtr->isGpuAccelerated && gpu_isCuQuantumCompiled())
         gpu_finalizeCuQuantum();
 
