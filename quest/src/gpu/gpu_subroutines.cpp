@@ -1694,15 +1694,14 @@ void gpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
-    qreal renorm = 1 / sqrt(prob);
-
 #if COMPILE_CUQUANTUM
 
     // cuQuantum disregards NumQubits template param
-    cuquantum_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, renorm);
+    cuquantum_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, prob);
 
 #elif COMPILE_CUDA
 
+    qreal renorm = 1 / sqrt(prob);
     thrust_statevec_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, renorm);
 
 #else

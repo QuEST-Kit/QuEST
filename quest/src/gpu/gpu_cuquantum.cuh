@@ -410,12 +410,12 @@ qreal cuquantum_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
  */
 
 
-void cuquantum_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal norm) {
+void cuquantum_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
 
     CUDA_CHECK( custatevecCollapseByBitString(
         config.handle,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
-        outcomes.data(), qubits.data(), qubits.size(), norm) );
+        outcomes.data(), qubits.data(), qubits.size(), prob) );
 }
 
 
