@@ -3,7 +3,9 @@
 #include "linalg.hpp"
 #include "macros.hpp"
 
+#include <algorithm>
 #include <vector>
+
 using std::vector;
 
 
@@ -34,6 +36,11 @@ qindex getPow2(int a) {
 
 qcomp getExpI(qreal x) {
     return qcomp(cos(x), sin(x));
+}
+
+
+int getBit(qindex num, int ind) {
+    return (num >> ind) & 1;
 }
 
 
@@ -92,7 +99,7 @@ qvector getDisceteFourierTransform(qvector in) {
  */
 
 
-qcomp getInnerProduct(const qvector &bra, const qvector& ket) {
+qcomp getInnerProduct(qvector bra, qvector ket) {
     DEMAND( bra.size() == ket.size() );
 
     qcomp out = 0;
@@ -104,7 +111,7 @@ qcomp getInnerProduct(const qvector &bra, const qvector& ket) {
 }
 
 
-qmatrix getOuterProduct(const qvector &ket, const qvector &bra) {
+qmatrix getOuterProduct(qvector ket, qvector bra) {
     DEMAND( bra.size() == ket.size() );
 
     qmatrix out = getZeroMatrix(bra.size());
@@ -148,6 +155,16 @@ bool isApproxUnitary(qmatrix m) {
 }
 
 
+qcomp getTrace(qmatrix m) {
+
+    qcomp out = 0;
+    for (size_t r=0; r<m.size(); r++)
+        out += m[r][r];
+
+    return out;
+}
+
+
 qmatrix getTranspose(qmatrix m) {
 
     qmatrix out = getZeroMatrix(m.size());
@@ -161,11 +178,17 @@ qmatrix getTranspose(qmatrix m) {
 
 
 qmatrix getConjugateTranspose(qmatrix m) {
+    DEMAND( m.size() > 0 );
 
-    qmatrix out = getZeroMatrix(m.size());
+    // unlike most functions which assume qmatrix
+    // is square, this one cheekily handles when
+    // 'm' is non-square, since necessary for
+    // computing partial traces
 
-    for (size_t r=0; r<m.size(); r++)
-        for (size_t c=0; c<m.size(); c++)
+    qmatrix out(m[0].size(), qvector(m.size()));
+
+    for (size_t r=0; r<out.size(); r++)
+        for (size_t c=0; c<out[0].size(); c++)
             out[r][c] = conj(m[c][r]);
 
     return out;
@@ -248,6 +271,55 @@ qmatrix getOrthonormalisedRows(qmatrix matr) {
 }
 
 
+qmatrix getProjector(int outcome) {
+    DEMAND( outcome == 0 || outcome == 1 );
+
+    return {
+        {outcome==0, 0}, 
+        {0, outcome==1}};
+}
+
+
+qmatrix getProjector(vector<int> targets, vector<int> outcomes, int numQubits) {
+    DEMAND( targets.size() == outcomes.size() );
+    DEMAND( numQubits > *std::max_element(targets.begin(), targets.end()) );
+
+    // prepare { |0><0|, I, I, |1><1|, ... }
+    vector<qmatrix> matrices(numQubits, getIdentityMatrix(2));
+    for (size_t i=0; i<targets.size(); i++)
+        matrices[targets[i]] = getProjector(outcomes[i]);
+
+    return getKroneckerProduct(matrices);
+}
+
+
+qmatrix getPartialTrace(qmatrix in, vector<int> targets) {
+    DEMAND( in.size() > getPow2(targets.size()) );
+
+    auto numTargs = targets.size();
+    auto numQubits = getLog2(in.size());
+    auto numTargVals = getPow2(numTargs);
+
+    qmatrix out = getZeroMatrix(getPow2(numQubits - numTargs));
+
+    for (qindex v=0; v<numTargVals; v++) {
+
+        // prepare { |0>, I, I, |1>, ... }
+        vector<qmatrix> matrices(numQubits, getIdentityMatrix(2));
+        for (size_t t=0; t<numTargs; t++) {
+            int bit = getBit(v, t);
+            matrices[targets[t]] = {{bit==0}, {bit==1}};
+        }
+
+        qmatrix ket = getKroneckerProduct(matrices);
+        qmatrix bra = getConjugateTranspose(ket);
+        out += bra * in * ket;
+    }
+
+    return out;
+}
+
+
 
 /*
  * MATRIX & VECTOR OPERATIONS
@@ -275,22 +347,38 @@ qvector operator * (const qmatrix& m, const qvector& v) {
 
 qmatrix getKroneckerProduct(qmatrix a, qmatrix b) {
 
-    qmatrix out = getZeroMatrix(a.size() * b.size());
+    // we permit the matrices to be non-square which is
+    // pretty cheeky (since qmatrix is assumed square with
+    // a 2^N dimension by most other functions), but is
+    // necessary for us to compute partial traces
 
-    for (size_t r=0; r<b.size(); r++)
-        for (size_t c=0; c<b.size(); c++)
-            for (size_t i=0; i<a.size(); i++)
-                for (size_t j=0; j<a.size(); j++)
-                    out[r+b.size()*i][c+b.size()*j] = a[i][j] * b[r][c];
+    size_t aRows = a.size();
+    size_t bRows = b.size();
+    size_t aCols = a[0].size();
+    size_t bCols = b[0].size();
+
+    qmatrix out(aRows * bRows, qvector(aCols * bCols));
+    
+    for (size_t r=0; r<bRows; r++)
+        for (size_t c=0; c<bCols; c++)
+            for (size_t i=0; i<aRows; i++)
+                for (size_t j=0; j<aCols; j++)
+                    out[r+bRows*i][c+bCols*j] = a[i][j] * b[r][c];
 
     return out;
 }
 
 
+qmatrix getKroneckerProduct(vector<qmatrix> matrices) {
 
-/*
- * MATRIX & SCALAR OPERATIONS
- */
+    qmatrix out = getIdentityMatrix(1);
+
+    // matrices[n-1] (x) ... (x) matrices[0]
+    for (auto& m : matrices)
+        out = getKroneckerProduct(m, out);
+
+    return out;
+}
 
 
 qmatrix getKroneckerProduct(qmatrix m, int count) {

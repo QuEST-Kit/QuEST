@@ -68,6 +68,27 @@ vector<int> getRange(int endExcl) {
 
 
 /*
+ * COMPLEMENTS
+ */
+
+
+vector<int> getComplement(vector<int> listA, vector<int> listB) {
+
+    std::sort(listA.begin(), listA.end());
+    std::sort(listB.begin(), listB.end());
+
+    vector<int> out;
+    std::set_difference(
+        listA.begin(), listA.end(), 
+        listB.begin(), listB.end(), 
+        std::back_inserter(out));
+
+    return out;
+}
+
+
+
+/*
  * SUBLIST GENERATORs
  */
 

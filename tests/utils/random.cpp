@@ -260,6 +260,14 @@ qmatrix getRandomPureDensityMatrix(int numQb) {
 }
 
 
+void setToRandomState(qvector& state) {
+    state = getRandomStateVector(getLog2(state.size()));
+}
+void setToRandomState(qmatrix& state) {
+    state = getRandomDensityMatrix(getLog2(state.size()));
+}
+
+
 
 /*
  * OPERATORS
@@ -371,4 +379,29 @@ PauliStr getRandomDiagPauliStr(int numQubits) {
         paulis += "IZ"[getRandomInt(0,2)];
 
     return getPauliStr(paulis);
+}
+
+
+PauliStrSum createRandomNonHermitianPauliStrSum(int numQubits, int numTerms) {
+
+    vector<PauliStr> strings(numTerms);
+    for (auto& str : strings)
+        str = getRandomPauliStr(numQubits);
+
+    vector<qcomp> coeffs(numTerms);
+    for (auto& c : coeffs)
+        c = getRandomComplex();
+
+    return createPauliStrSum(strings, coeffs);
+}
+
+
+PauliStrSum createRandomPauliStrSum(int numQubits, int numTerms) {
+
+    PauliStrSum out = createRandomNonHermitianPauliStrSum(numQubits, numTerms);
+
+    for (qindex i=0; i<numTerms; i++)
+        out.coeffs[i] = real(out.coeffs[i]);
+
+    return out;
 }

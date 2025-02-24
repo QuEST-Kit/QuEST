@@ -2,6 +2,7 @@
 #include "qmatrix.hpp"
 #include "linalg.hpp"
 #include "macros.hpp"
+#include "lists.hpp"
 #include "quest.h"
 
 #include <type_traits>
@@ -123,6 +124,8 @@ template qmatrix getMatrix(DiagMatr );
 
 
 extern int paulis_getPauliAt(PauliStr str, int ind);
+extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
+extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum);
 
 
 qmatrix getMatrix(PauliStr str, vector<int> targs) {
@@ -135,6 +138,26 @@ qmatrix getMatrix(PauliStr str, vector<int> targs) {
         qmatrix matr = getPauliMatrix(ind);
         out = getKroneckerProduct(matr, out);
     }
+
+    return out;
+}
+
+
+qmatrix getMatrix(PauliStr str, int numQubits) {
+    DEMAND( numQubits >= paulis_getIndOfLefmostNonIdentityPauli(str) );
+
+    return getMatrix(str, getRange(numQubits));
+}
+
+
+qmatrix getMatrix(PauliStrSum sum, int numQubits) {
+    DEMAND( sum.numTerms > 0 );
+    DEMAND( numQubits >= paulis_getIndOfLefmostNonIdentityPauli(sum) );
+
+    qmatrix out = getZeroMatrix(getPow2(numQubits));
+
+    for (qindex i=0; i<sum.numTerms; i++)
+        out += sum.coeffs[i] * getMatrix(sum.strings[i], numQubits);
 
     return out;
 }

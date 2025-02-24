@@ -29,6 +29,9 @@ qvector getRandomStateVector(int numQb);
 qmatrix getRandomDensityMatrix(int numQb);
 qmatrix getRandomPureDensityMatrix(int numQb);
 
+void setToRandomState(qvector& state);
+void setToRandomState(qmatrix& state);
+
 qmatrix getRandomUnitary(int numQb);
 qmatrix getRandomDiagonalUnitary(int numQb);
 vector<qmatrix> getRandomKrausMap(int numQb, int numOps);
@@ -43,6 +46,9 @@ vector<qreal> getRandomProbabilities(int numProbs);
 
 vector<qvector> getRandomOrthonormalVectors(size_t dim, int numVecs);
 vector<qvector> getRandomOrthonormalStateVectors(int numQb, int numStates);
+
+PauliStrSum createRandomPauliStrSum(int numQubits, int numTerms);
+PauliStrSum createRandomNonHermitianPauliStrSum(int numQubits, int numTerms);
 
 
 #endif // RANDOM_HPP

@@ -10,12 +10,7 @@
 qmatrix getZeroMatrix(size_t dim) {
     DEMAND( dim >= 1 );
 
-    qmatrix out = qmatrix(dim);
-
-    for (auto& row : out)
-        row.resize(dim);
-
-    return out;
+    return qmatrix(dim, qvector(dim));
 }
 
 qmatrix getIdentityMatrix(size_t dim) {
@@ -164,13 +159,18 @@ qmatrix operator -= (qmatrix& m1, const qmatrix& m2) {
  */
 
 qmatrix operator * (const qmatrix& m1, const qmatrix& m2) {
-    DEMAND( m1.size() == m2.size() );
+    DEMAND( m1.size() > 0 );
+    DEMAND( m2.size() > 0 );
+    DEMAND( m1[0].size() == m2.size() );
 
-    qmatrix out = getZeroMatrix(m1.size());
+    // unlike most functions which assume qmatrix is square,
+    // we cheekily permit m1 and m2 to be non-square (and
+    // ergo differing), necessary to calculate partial traces
+    qmatrix out = qmatrix(m1.size(), qvector(m2[0].size(),0));
 
-    for (size_t r=0; r<m1.size(); r++)
-        for (size_t c=0; c<m1.size(); c++)
-            for (size_t k=0; k<m1.size(); k++)
+    for (size_t r=0; r<out.size(); r++)
+        for (size_t c=0; c<out[0].size(); c++)
+            for (size_t k=0; k<m2.size(); k++)
                 out[r][c] += m1[r][k] * m2[k][c];
     
     return out;

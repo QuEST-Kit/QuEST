@@ -2,6 +2,9 @@
 #define CACHE_HPP
 
 #include "quest.h"
+#include "qvector.hpp"
+#include "qmatrix.hpp"
+
 #include <unordered_map>
 #include <vector>
 #include <string>
@@ -17,6 +20,9 @@ void destroyCachedQuregs();
 
 quregCache getCachedStatevecs();
 quregCache getCachedDensmatrs();
+
+qvector getRefStatevec();
+qmatrix getRefDensmatr();
 
 
 #endif // CACHE_HPP

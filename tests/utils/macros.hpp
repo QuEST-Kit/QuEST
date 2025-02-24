@@ -24,4 +24,12 @@
 #define DEMAND( cond ) do { if (!(cond)) { FAIL( ); } } while (0)
 
 
+// section labels
+
+#define LABEL_CORRECTNESS "correctness"
+#define LABEL_VALIDATION "validation"
+#define LABEL_STATEVEC "statevector"
+#define LABEL_DENSMATR "densitymatrix"
+
+
 #endif // MACROS_HPP

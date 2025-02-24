@@ -4,8 +4,16 @@
 #include "linalg.hpp"
 #include "macros.hpp"
 
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
+
 #include <complex>
+#include <vector>
+
 using std::abs;
+using std::vector;
+using namespace Catch::Matchers;
+
 
 
 /*
@@ -16,7 +24,7 @@ using std::abs;
  */
 
 
-void REPORT_AND_FAIL(size_t index, qcomp amplitude, qcomp reference) {
+void REPORT_AND_FAIL( size_t index, qcomp amplitude, qcomp reference ) {
     CAPTURE( index, amplitude, reference );
     FAIL( );
 }
@@ -56,4 +64,37 @@ void REQUIRE_AGREE( Qureg q, qmatrix m1 ) {
 
 void REQUIRE_AGREE( qmatrix m1, Qureg q ) {
     REQUIRE_AGREE( q, m1 );
+}
+
+
+
+/*
+ * REAL AND COMPLEX SCALARS
+ */
+
+
+void REQUIRE_AGREE( qreal apiScalar, qreal refScalar ) {
+
+    REQUIRE_THAT( apiScalar, WithinAbs(refScalar, TEST_EPSILON) );
+}
+
+
+void REQUIRE_AGREE( qcomp apiScalar, qcomp refScalar ) {
+
+    REQUIRE_THAT( real(apiScalar), WithinAbs(real(refScalar), TEST_EPSILON) );
+    REQUIRE_THAT( imag(apiScalar), WithinAbs(imag(refScalar), TEST_EPSILON) );
+}
+
+
+
+/*
+ * LISTS
+ */
+
+
+void REQUIRE_AGREE( vector<qreal> apiList, vector<qreal> refList ) {
+    DEMAND( apiList.size() == refList.size() );
+
+    for (size_t i=0; i<apiList.size(); i++)
+        REQUIRE_THAT( apiList[i], WithinAbs(refList[i], TEST_EPSILON) );
 }

@@ -172,6 +172,7 @@ TEST_UTIL_FILES=(
     "evolve"
     "linalg"
     "lists"
+    "measure"
     "qmatrix"
     "qvector"
     "random"

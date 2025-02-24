@@ -8,21 +8,23 @@
 using std::vector;
 
 
-int getLog2(qindex);
+int    getLog2(qindex);
 qindex getPow2(int);
-qcomp getExpI(qreal);
+qcomp  getExpI(qreal);
+int    getBit(qindex num, int ind);
 
 qvector getNormalised(qvector);
 qvector getDisceteFourierTransform(qvector);
 
-qcomp   getInnerProduct(const qvector& bra, const qvector& ket);
-qmatrix getOuterProduct(const qvector& ket, const qvector& bra);
+qcomp   getInnerProduct(qvector bra, qvector ket);
+qmatrix getOuterProduct(qvector ket, qvector bra);
 
 qvector operator * (const qmatrix&, const qvector&);
 
 bool isDiagonal(qmatrix);
 bool isApproxUnitary(qmatrix);
 
+qcomp getTrace(qmatrix m);
 qmatrix getTranspose(qmatrix);
 qmatrix getConjugateTranspose(qmatrix);
 qmatrix getPowerOfDiagonalMatrix(qmatrix diag, qcomp power);
@@ -33,6 +35,10 @@ qmatrix getOrthonormalisedRows(qmatrix);
 qmatrix getOrthonormalisedRows(qmatrix);
 qmatrix getKroneckerProduct(qmatrix, qmatrix);
 qmatrix getKroneckerProduct(qmatrix, int);
+qmatrix getKroneckerProduct(vector<qmatrix> matrices);
+qmatrix getProjector(int outcome);
+qmatrix getProjector(vector<int> targets, vector<int> outcomes, int numQubits);
+qmatrix getPartialTrace(qmatrix matrix, vector<int> targets);
 
 bool isCompletelyPositiveTracePreserving(vector<qmatrix>);
 

@@ -1,5 +1,8 @@
 #include "quest.h"
 #include "macros.hpp"
+#include "qvector.hpp"
+#include "qmatrix.hpp"
+#include "linalg.hpp"
 #include "cache.hpp"
 
 #include <unordered_map>
@@ -72,7 +75,14 @@ void destroyCachedQuregs() {
 quregCache getCachedStatevecs() {
     return statevecs;
 }
-
 quregCache getCachedDensmatrs() {
     return densmatrs;
+}
+
+
+qvector getRefStatevec() {
+    return getZeroVector(getPow2(NUM_UNIT_QUREG_QUBITS));
+}
+qmatrix getRefDensmatr() {
+    return getZeroMatrix(getPow2(NUM_UNIT_QUREG_QUBITS));
 }

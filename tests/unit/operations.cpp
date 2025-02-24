@@ -21,7 +21,7 @@
 using std::tuple;
 
 
-#define TEST_TAG "[operations]"
+#define TEST_CATEGORY "[operations]"
 
 
 // TODO:
@@ -108,7 +108,7 @@ namespace VariableSizeParameterisedMatrices {
  * section, so are accounted distinctly.
  */
 
-void testQuregCorrectOnAllDeployments(quregCache& quregs, auto& reference, auto& function) {
+void testQuregIsCorrectOnAllDeployments(quregCache& quregs, auto& reference, auto& function) {
 
     for (auto& [label, qureg]: quregs) {
 
@@ -614,7 +614,7 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
     auto statevecQuregs = getCachedStatevecs();
     auto densmatrQuregs = getCachedDensmatrs();
 
-    SECTION( "correctness" ) {
+    SECTION( LABEL_CORRECTNESS ) {
 
         qvector statevecRef = getZeroVector(getPow2(NUM_UNIT_QUREG_QUBITS));
         qmatrix densmatrRef = getZeroMatrix(getPow2(NUM_UNIT_QUREG_QUBITS));
@@ -655,12 +655,12 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
                 applyReferenceOperator(stateRef, ctrls, states, targs, matrixRef);
         };
 
-        // report operation's input parameters if subsequent test fails
+        // report operation's input parameters if any subsequent test fails
         CAPTURE_RELEVANT<Ctrls,Targs,Args>( ctrls, states, targs, furtherArgs );
 
-        // test API operation on all available deployment combinations (e.g. MPI, MPI+CUDA, etc)
-        SECTION( "statevector"    ) { testQuregCorrectOnAllDeployments(statevecQuregs, statevecRef, testFunc); }
-        SECTION( "density matrix" ) { testQuregCorrectOnAllDeployments(densmatrQuregs, densmatrRef, testFunc); }
+        // test API operation on all available deployment combinations (e.g. OMP, MPI, MPI+GPU, etc)
+        SECTION( LABEL_STATEVEC ) { testQuregIsCorrectOnAllDeployments(statevecQuregs, statevecRef, testFunc); }
+        SECTION( LABEL_DENSMATR ) { testQuregIsCorrectOnAllDeployments(densmatrQuregs, densmatrRef, testFunc); }
 
         // free any heap-alloated API matrices
         freeRemainingArgs<Targs,Args>(furtherArgs);
@@ -686,10 +686,10 @@ void testOperation(auto operation, auto matrixRefGen) {
  */
 
 #define TEST_ANY_CTRL_OPERATION( namesuffix, numtargs, argtype, matrixgen ) \
-    TEST_CASE( "apply" #namesuffix,                     TEST_TAG ) { testOperation<zero,     numtargs,argtype>( apply ## namesuffix,                     matrixgen); } \
-    TEST_CASE( "applyControlled" #namesuffix,           TEST_TAG ) { testOperation<one,      numtargs,argtype>( applyControlled ## namesuffix,           matrixgen); } \
-    TEST_CASE( "applyMultiControlled" #namesuffix,      TEST_TAG ) { testOperation<any,      numtargs,argtype>( applyMultiControlled ## namesuffix,      matrixgen); } \
-    TEST_CASE( "applyMultiStateControlled" #namesuffix, TEST_TAG ) { testOperation<anystates,numtargs,argtype>( applyMultiStateControlled ## namesuffix, matrixgen); } 
+    TEST_CASE( "apply" #namesuffix,                     TEST_CATEGORY ) { testOperation<zero,     numtargs,argtype>( apply ## namesuffix,                     matrixgen); } \
+    TEST_CASE( "applyControlled" #namesuffix,           TEST_CATEGORY ) { testOperation<one,      numtargs,argtype>( applyControlled ## namesuffix,           matrixgen); } \
+    TEST_CASE( "applyMultiControlled" #namesuffix,      TEST_CATEGORY ) { testOperation<any,      numtargs,argtype>( applyMultiControlled ## namesuffix,      matrixgen); } \
+    TEST_CASE( "applyMultiStateControlled" #namesuffix, TEST_CATEGORY ) { testOperation<anystates,numtargs,argtype>( applyMultiStateControlled ## namesuffix, matrixgen); } 
 
 
 
@@ -724,29 +724,29 @@ TEST_ANY_CTRL_OPERATION( MultiQubitNot, any, none, VariableSizeMatrices::X );
 
 TEST_ANY_CTRL_OPERATION( PhaseGadget, any, scalar, VariableSizeParameterisedMatrices::Z );
 
-TEST_CASE( "multiplyPauliStr",     TEST_TAG ) { testOperation<zero,any,paulistr>(multiplyPauliStr,    nullptr, true); }
-TEST_CASE( "multiplyPauliGadget",  TEST_TAG ) { testOperation<zero,any,pauligad>(multiplyPauliGadget, nullptr, true); }
+TEST_CASE( "multiplyPauliStr",     TEST_CATEGORY ) { testOperation<zero,any,paulistr>(multiplyPauliStr,    nullptr, true); }
+TEST_CASE( "multiplyPauliGadget",  TEST_CATEGORY ) { testOperation<zero,any,pauligad>(multiplyPauliGadget, nullptr, true); }
 
-TEST_CASE( "multiplyCompMatr1", TEST_TAG ) { testOperation<zero,one,compmatr>(multiplyCompMatr1, nullptr, true); }
-TEST_CASE( "multiplyCompMatr2", TEST_TAG ) { testOperation<zero,two,compmatr>(multiplyCompMatr2, nullptr, true); }
-TEST_CASE( "multiplyCompMatr",  TEST_TAG ) { testOperation<zero,any,compmatr>(multiplyCompMatr,  nullptr, true); }
+TEST_CASE( "multiplyCompMatr1", TEST_CATEGORY ) { testOperation<zero,one,compmatr>(multiplyCompMatr1, nullptr, true); }
+TEST_CASE( "multiplyCompMatr2", TEST_CATEGORY ) { testOperation<zero,two,compmatr>(multiplyCompMatr2, nullptr, true); }
+TEST_CASE( "multiplyCompMatr",  TEST_CATEGORY ) { testOperation<zero,any,compmatr>(multiplyCompMatr,  nullptr, true); }
 
-TEST_CASE( "multiplyDiagMatr1", TEST_TAG ) { testOperation<zero,one,diagmatr>(multiplyDiagMatr1, nullptr, true); }
-TEST_CASE( "multiplyDiagMatr2", TEST_TAG ) { testOperation<zero,two,diagmatr>(multiplyDiagMatr2, nullptr, true); }
-TEST_CASE( "multiplyDiagMatr",  TEST_TAG ) { testOperation<zero,any,diagmatr>(multiplyDiagMatr,  nullptr, true); }
+TEST_CASE( "multiplyDiagMatr1", TEST_CATEGORY ) { testOperation<zero,one,diagmatr>(multiplyDiagMatr1, nullptr, true); }
+TEST_CASE( "multiplyDiagMatr2", TEST_CATEGORY ) { testOperation<zero,two,diagmatr>(multiplyDiagMatr2, nullptr, true); }
+TEST_CASE( "multiplyDiagMatr",  TEST_CATEGORY ) { testOperation<zero,any,diagmatr>(multiplyDiagMatr,  nullptr, true); }
 
-TEST_CASE( "multiplyDiagMatrPower",  TEST_TAG ) { testOperation<zero,any,diagpower>(multiplyDiagMatrPower, nullptr, true); }
+TEST_CASE( "multiplyDiagMatrPower",  TEST_CATEGORY ) { testOperation<zero,any,diagpower>(multiplyDiagMatrPower, nullptr, true); }
 
-TEST_CASE( "multiplyMultiQubitNot", TEST_TAG ) { testOperation<zero,any,none>(multiplyMultiQubitNot, VariableSizeMatrices::X, true); }
-TEST_CASE( "multiplyPhaseGadget",   TEST_TAG ) { testOperation<zero,any,scalar>(multiplyPhaseGadget, VariableSizeParameterisedMatrices::Z, true); }
+TEST_CASE( "multiplyMultiQubitNot", TEST_CATEGORY ) { testOperation<zero,any,none>(multiplyMultiQubitNot, VariableSizeMatrices::X, true); }
+TEST_CASE( "multiplyPhaseGadget",   TEST_CATEGORY ) { testOperation<zero,any,scalar>(multiplyPhaseGadget, VariableSizeParameterisedMatrices::Z, true); }
 
-TEST_CASE( "applyPhaseFlip",           TEST_TAG ) { testOperation<zero,one,none>(applyPhaseFlip,           VariableSizeMatrices::PF(1)); }
-TEST_CASE( "applyTwoQubitPhaseFlip",   TEST_TAG ) { testOperation<zero,two,none>(applyTwoQubitPhaseFlip,   VariableSizeMatrices::PF(2)); }
-TEST_CASE( "applyMultiQubitPhaseFlip", TEST_TAG ) { testOperation<zero,any,none>(applyMultiQubitPhaseFlip, VariableSizeMatrices::PF); }
+TEST_CASE( "applyPhaseFlip",           TEST_CATEGORY ) { testOperation<zero,one,none>(applyPhaseFlip,           VariableSizeMatrices::PF(1)); }
+TEST_CASE( "applyTwoQubitPhaseFlip",   TEST_CATEGORY ) { testOperation<zero,two,none>(applyTwoQubitPhaseFlip,   VariableSizeMatrices::PF(2)); }
+TEST_CASE( "applyMultiQubitPhaseFlip", TEST_CATEGORY ) { testOperation<zero,any,none>(applyMultiQubitPhaseFlip, VariableSizeMatrices::PF); }
 
-TEST_CASE( "applyPhaseShift",           TEST_TAG ) { testOperation<zero,one,scalar>(applyPhaseShift,           ParameterisedMatrices::PS); }
-TEST_CASE( "applyTwoQubitPhaseShift",   TEST_TAG ) { testOperation<zero,two,scalar>(applyTwoQubitPhaseShift,   ParameterisedMatrices::PS2); }
-TEST_CASE( "applyMultiQubitPhaseShift", TEST_TAG ) { testOperation<zero,any,scalar>(applyMultiQubitPhaseShift, VariableSizeParameterisedMatrices::PS); }
+TEST_CASE( "applyPhaseShift",           TEST_CATEGORY ) { testOperation<zero,one,scalar>(applyPhaseShift,           ParameterisedMatrices::PS); }
+TEST_CASE( "applyTwoQubitPhaseShift",   TEST_CATEGORY ) { testOperation<zero,two,scalar>(applyTwoQubitPhaseShift,   ParameterisedMatrices::PS2); }
+TEST_CASE( "applyMultiQubitPhaseShift", TEST_CATEGORY ) { testOperation<zero,any,scalar>(applyMultiQubitPhaseShift, VariableSizeParameterisedMatrices::PS); }
 /*
  * FullStateDiagMatr, with power
  */

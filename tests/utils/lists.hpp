@@ -13,6 +13,7 @@ vector<int> getRange(int start, int endExcl);
 vector<int> getRange(int endExcl);
 
 vector<int> getSublist(vector<int> list, int start, int len);
+vector<int> getComplement(vector<int> listA, vector<int> listB);
 
 
 template<class T> 

@@ -6,6 +6,7 @@ target_sources(tests
   evolve.cpp
   linalg.cpp
   lists.cpp
+  measure.cpp
   qmatrix.cpp
   qvector.cpp
   random.cpp
