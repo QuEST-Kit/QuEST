@@ -37,7 +37,7 @@ deployInfo getSupportedDeployments() {
     if (mpi && omp)        out.push_back({"CPU + OMP + MPI", 1, 0, 1});
     if (gpu)               out.push_back({"GPU",             0, 1, 0});
     if (gpu && omp)        out.push_back({"GPU + OMP",       0, 1, 1});
-    if (gpu && mpi)        out.push_back({"GPU + OMP + MPI", 1, 1, 0});
+    if (gpu && mpi)        out.push_back({"GPU + MPI",       1, 1, 0});
     if (gpu && omp && mpi) out.push_back({"GPU + OMP + MPI", 1, 1, 1});
 
     return out;

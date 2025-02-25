@@ -274,9 +274,9 @@ qmatrix getOrthonormalisedRows(qmatrix matr) {
 qmatrix getProjector(int outcome) {
     DEMAND( outcome == 0 || outcome == 1 );
 
-    return {
-        {outcome==0, 0}, 
-        {0, outcome==1}};
+    qmatrix out = getZeroMatrix(2);
+    out[outcome][outcome] = 1.;
+    return out;
 }
 
 
@@ -308,7 +308,9 @@ qmatrix getPartialTrace(qmatrix in, vector<int> targets) {
         vector<qmatrix> matrices(numQubits, getIdentityMatrix(2));
         for (size_t t=0; t<numTargs; t++) {
             int bit = getBit(v, t);
-            matrices[targets[t]] = {{bit==0}, {bit==1}};
+            matrices[targets[t]] = {
+                {bit? 0.:1.}, 
+                {bit? 1.:0.}};
         }
 
         qmatrix ket = getKroneckerProduct(matrices);
