@@ -13,16 +13,12 @@
 #include "tests/utils/random.hpp"
 
 
-// TODO: 
-// use CMake to obtain catch2 and replace #include "catch.hpp"
-// with "#include <catch2/catch_test_macros.hpp>""
+
+static inline qcomp getQcomp(qreal re, qreal im);
+
+
+// literals
 
 
 
-TEST_CASE( "func9", "[types]" ) {
-
-    SECTION( "a" ) {
-
-        REQUIRE( true );
-    }
-}
+void reportQcomp(qcomp num);

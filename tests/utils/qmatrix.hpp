@@ -14,6 +14,7 @@ typedef vector<vector<qcomp>> qmatrix;
 qmatrix getZeroMatrix(size_t dim);
 qmatrix getIdentityMatrix(size_t dim);
 qmatrix getDiagonalMatrix(qvector v);
+qmatrix getPauliMatrix(int id);
 
 qmatrix operator * (const qcomp&,   const qmatrix& );
 qmatrix operator * (const qmatrix&, const qcomp&);
@@ -37,6 +38,9 @@ qmatrix operator * (const qmatrix&, const qmatrix&);
 qmatrix operator *= (qmatrix&, const qmatrix&);
 
 void setSubMatrix(qmatrix &dest, qmatrix sub, size_t r, size_t c);
+void setToDebugState(qmatrix &m);
+
+qvector getDiagonals(qmatrix m);
 
 
 #endif // QMATRIX_HPP

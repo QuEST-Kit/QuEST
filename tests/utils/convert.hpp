@@ -14,5 +14,9 @@ qmatrix getMatrix(Qureg);
 
 template <typename T> qmatrix getMatrix(T);
 
+qmatrix getMatrix(PauliStr str,     vector<int> targs);
+qmatrix getMatrix(PauliStr str,    int numQubits);
+qmatrix getMatrix(PauliStrSum sum, int numQubits);
+
 
 #endif // CONVERT_HPP
