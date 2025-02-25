@@ -734,6 +734,14 @@ void thrust_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu
 
 qreal thrust_statevec_calcTotalProb_sub(Qureg qureg) {
 
+    // TODO:
+    // this function should be more accurate than other
+    // functions (like calcProbOfQubitOutcome) because it
+    // is primarily used for checking normalisation and ergo
+    // numerical accuracy. We such, naively trusting thrust's
+    // reduction may be suboptimal; it may be necessary to
+    // implement a custom numerically-stable CUDA reduction.
+
     // this being a 0 integral literal instead of a 0. float 
     // literal causes a silent Thrust error. Grr...
     qreal init = 0.0;
@@ -747,6 +755,14 @@ qreal thrust_statevec_calcTotalProb_sub(Qureg qureg) {
 
 
 qreal thrust_densmatr_calcTotalProb_sub(Qureg qureg) {
+
+    // TODO:
+    // this function should be more accurate than other
+    // functions (like calcProbOfQubitOutcome) because it
+    // is primarily used for checking normalisation and ergo
+    // numerical accuracy. We such, naively trusting thrust's
+    // reduction may be suboptimal; it may be necessary to
+    // implement a custom numerically-stable CUDA reduction.
 
     auto rawIter = thrust::make_counting_iterator(0);
     auto indIter = thrust::make_transform_iterator(rawIter, functor_getDiagInd(qureg));

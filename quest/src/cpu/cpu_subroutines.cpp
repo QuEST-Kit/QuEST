@@ -1632,6 +1632,16 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_partialTrace_sub, (
 
 qreal cpu_statevec_calcTotalProb_sub(Qureg qureg) {
 
+    // TODO:
+    // check whether OpenMP is performing a numerically stable
+    // reduction, e.g. via 'parallel summation', to avoid the
+    // otherwise catastrophic cancellatin errors. If not, we
+    // should implement Kahan summation (parallelise by 
+    // having each thread Kahan-sum independently before a
+    // final serial combination). This invokes several times
+    // as many arithmetic operations (4x?) but we are anyway
+    // memory-bandwidth bound
+
     qreal prob = 0;
 
     // every amp, iterated independently, contributes to the probability
@@ -1646,6 +1656,16 @@ qreal cpu_statevec_calcTotalProb_sub(Qureg qureg) {
 
 
 qreal cpu_densmatr_calcTotalProb_sub(Qureg qureg) {
+
+    // TODO:
+    // check whether OpenMP is performing a numerically stable
+    // reduction, e.g. via 'parallel summation', to avoid the
+    // otherwise catastrophic cancellatin errors. If not, we
+    // should implement Kahan summation (parallelise by 
+    // having each thread Kahan-sum independently before a
+    // final serial combination). This invokes several times
+    // as many arithmetic operations (4x?) but we are anyway
+    // memory-bandwidth bound
 
     qreal prob = 0;
 
