@@ -77,6 +77,8 @@ int util_getRankContainingIndex(Qureg qureg, qindex globalInd);
 int util_getRankContainingColumn(Qureg qureg, qindex globalCol);
 int util_getRankContainingIndex(FullStateDiagMatr matr, qindex globalInd);
 
+qindex util_getNextPowerOf2(qindex number);
+
 
 
 /*

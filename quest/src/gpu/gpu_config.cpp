@@ -224,6 +224,26 @@ bool gpu_doesGpuSupportMemPools() {
 }
 
 
+qindex gpu_getMaxNumConcurrentThreads() {
+#if COMPILE_CUDA
+
+    int deviceId = 0;
+    CUDA_CHECK( cudaGetDevice(&deviceId) );
+
+    int maxThreadsPerBlock;
+    int maxNumBlocks;
+    CUDA_CHECK( cudaDeviceGetAttribute(&maxThreadsPerBlock, cudaDevAttrMaxThreadsPerBlock,  deviceId) );
+    CUDA_CHECK( cudaDeviceGetAttribute(&maxNumBlocks,       cudaDevAttrMultiProcessorCount, deviceId) );
+
+    return maxThreadsPerBlock * static_cast<qindex>(maxNumBlocks); // avoid overflow
+
+#else
+    error_gpuQueriedButGpuNotCompiled();
+    return -1;
+#endif
+}
+
+
 
 /*
  * ENVIRONMENT MANAGEMENT
@@ -494,7 +514,7 @@ qcomp* gpu_getCacheOfSize(qindex numElemsPerThread, qindex numThreads) {
 
     // otherwise, resize the cache
     gpuCacheLen = numNewElems;
-    CUDA_CHECK( cudaFree(gpuCache) );
+    CUDA_CHECK( cudaFree(gpuCache) ); // nullptr fine to free
     CUDA_CHECK( cudaMalloc(&gpuCache, gpuCacheLen * sizeof *gpuCache) );
 
     return gpuCache;

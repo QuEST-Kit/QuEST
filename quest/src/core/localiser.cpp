@@ -960,7 +960,17 @@ void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ct
     auto [newCtrls, newTargs] = getCtrlsAndTargsSwappedToMinSuffix(qureg, ctrls, targs);
 
     // only unmoved ctrls can be applied to the swaps, to accelerate them
-    auto [unmovedCtrls, unmovedCtrlStates] = getNonSwappedCtrlsAndStates(newCtrls, ctrlStates, newTargs); 
+    auto [unmovedCtrls, unmovedCtrlStates] = getNonSwappedCtrlsAndStates(ctrls, ctrlStates, newCtrls); 
+
+    // TODO:
+    // DEBUG:
+    // above, we track which control qubits are un-targeted by the SWAPs; such controls can be
+    // seen as 'meta' to the entire operation, and so SHOULD be passable to the SWAPs below in
+    // order to accelerate them (since more ctrls = fewer comm). However, this is strangely not
+    // working; controlling the SWAPs upon these 'meta' control qubits is breaking the unit tests!
+    // Until we better understand this, we disable this optimisation by removing all SWAP controls.
+    unmovedCtrls = {};
+    unmovedCtrlStates = {};
 
     // perform necessary swaps to move all targets into suffix, invoking communication (swaps are real, so no need to conj)
     anyCtrlMultiSwapBetweenPrefixAndSuffix(qureg, unmovedCtrls, unmovedCtrlStates, targs, newTargs);

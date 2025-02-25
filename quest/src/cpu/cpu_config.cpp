@@ -88,8 +88,19 @@ int cpu_getOpenmpThreadInd() {
 
 qcomp* cpu_allocArray(qindex length) {
 
+    // TODO:
+    // here, we calloc the entire array in a serial setting, rather than one malloc 
+    // followed by threads subsequently memset'ing their own partitions. The latter
+    // approach would distribute the array pages across NUMA nodes, accelerating 
+    // their subsequent access by the same threads (via NUMA's first-touch policy).
+    // We have so far foregone this optimisation since a thread's memory-access pattern
+    // in many of the QuEST functions is non-trivial, and likely to be inconsistent 
+    // with the memset pattern. As such, I expect the benefit is totally occluded
+    // and only introduces potential new bugs - but this should be tested and confirmed!
+
     // we call calloc over malloc in order to fail immediately if mem isn't available;
     // caller must handle nullptr result
+
     return (qcomp*) calloc(length, sizeof(qcomp));
 }
 
