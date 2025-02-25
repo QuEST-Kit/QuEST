@@ -1705,7 +1705,6 @@ void gpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
     thrust_statevec_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, renorm);
 
 #else
-    (void) renorm; // silence not-used
     error_gpuSimButGpuNotCompiled();
 #endif
 }
