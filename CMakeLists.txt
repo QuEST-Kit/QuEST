@@ -334,7 +334,7 @@ endif()
 ## Tests
 
 if (ENABLE_TESTING)
-  find_package(Catch2 3.1.1 QUIET)
+  find_package(Catch2 3.8.0 QUIET)
 
   if (NOT TARGET Catch2::Catch2 AND DOWNLOAD_CATCH2)
     message(STATUS "Catch2 not found, it will be downloaded and built in the build directory.")
@@ -343,7 +343,7 @@ if (ENABLE_TESTING)
     FetchContent_Declare(
       Catch2
       GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-      GIT_TAG        v3.1.1
+      GIT_TAG        v3.8.0
     )
     
     FetchContent_MakeAvailable(Catch2)
@@ -352,7 +352,7 @@ if (ENABLE_TESTING)
     # We won't magically find it here, but this is the easiest way to
     # a) Force the build to fail, and
     # b) Print out all the useful information for helping CMake find Catch2
-    find_package(Catch2 3.1.1 REQUIRED)
+    find_package(Catch2 3.8.0 REQUIRED)
   endif()
 
   include(Catch)

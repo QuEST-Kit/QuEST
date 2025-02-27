@@ -10,6 +10,7 @@ on:
 
 jobs:
 
+  # test only compilation succeeds (no execution)
   build-test:
     name: Testing compilation
     runs-on: ${{ matrix.os }}
@@ -41,9 +42,14 @@ jobs:
         run: mkdir build_dir
 
       - name: Run CMake
-        run: cmake .. -DENABLE_MULTITHREADING=OFF -DFLOAT_PRECISION=${{ matrix.precision }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
         working-directory: build_dir
-
+        run: >
+          cmake .. 
+          -DENABLE_MULTITHREADING=OFF
+          -DFLOAT_PRECISION=${{ matrix.precision }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+        
       - name: Run Make
-        run: make
         working-directory: build_dir
+        run: make
+        
