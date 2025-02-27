@@ -74,7 +74,7 @@ jobs:
         uses: Jimver/cuda-toolkit@v0.2.21
         with:
           method: network
-          sub-packages: '["nvcc", "cudart", "thrust"]'
+          sub-packages: '["nvcc", "cudart", "thrust", "nvrtc"]'
 
       - name: Configure CMake
         run: >
