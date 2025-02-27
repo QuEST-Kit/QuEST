@@ -25,14 +25,20 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         precision: [1, 2, 4]
 
-        # assign each OS a bespoke compilter
+        # assign each OS bespoke compilers, cmake and make flags
         include:
           - os: ubuntu-latest
             compiler: g++
+            cmakeflag:
+            makecmd: make
           - os: macos-latest
-            compiler: clang
+            compiler: clang++
+            cmakeflag:
+            makecmd: make
           - os: windows-latest
             compiler: cl
+            cmakeflag: -G "NMake Makefiles"
+            makecmd: nmake
 
     steps:
       - name: Get QuEST
@@ -45,11 +51,12 @@ jobs:
         working-directory: build_dir
         run: >
           cmake .. 
+          ${{ matrix.cmakeflag }}
           -DENABLE_MULTITHREADING=OFF
           -DFLOAT_PRECISION=${{ matrix.precision }}
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
-        
+
       - name: Run Make
         working-directory: build_dir
-        run: make
+        run: ${{ matrix.makecmd }}
         
