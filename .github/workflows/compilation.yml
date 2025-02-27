@@ -40,6 +40,16 @@ jobs:
       - name: Get QuEST
         uses: actions/checkout@v4
 
+      - name: Install libomp 
+        if: ${{ matrix.compiler == 'clang++' && matrix.omp == 'ON' }}
+        run: |
+          brew install libomp
+
+      - name: Link libomp 
+        if: ${{ matrix.compiler == 'clang++' && matrix.omp == 'ON' }}
+        run: |
+          run: echo "OpenMP_ROOT=$(brew --prefix)/opt/libomp" >> $GITHUB_ENV
+
       - name: Make build directory
         run: mkdir build_dir
 
