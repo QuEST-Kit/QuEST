@@ -20,6 +20,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 ## Dependencies
 
 # GNUInstallDirs to provide sensible default install directory names
+cmake_path(APPEND CMAKE_INSTALL_PREFIX "quest")
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
@@ -165,6 +166,7 @@ add_library(QuEST::QuEST ALIAS QuEST)
 # Set include directories
 target_include_directories(QuEST
   PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/quest/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:quest/include>
   $<INSTALL_INTERFACE:.>
@@ -293,7 +295,7 @@ install(TARGETS min_example
 )
 set_target_properties(min_example
   PROPERTIES 
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}"
+    INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}"
 )
 
 if (BUILD_EXAMPLES)
@@ -314,7 +316,7 @@ if (USER_SOURCE AND OUTPUT_EXE)
   add_executable(${OUTPUT_EXE} ${USER_SOURCE})
   target_link_libraries(${OUTPUT_EXE} PUBLIC QuEST)
   install(TARGETS ${OUTPUT_EXE} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-  set_target_properties(${OUTPUT_EXE} PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}")  
+  set_target_properties(${OUTPUT_EXE} PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}")  
 endif()
 
 ## Tests
@@ -350,14 +352,14 @@ endif()
 
 install(TARGETS QuEST
         EXPORT QuESTTargets
-        LIBRARY  DESTINATION quest/${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE  DESTINATION quest/${CMAKE_INSTALL_LIBDIR}
+        LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 ## Export
 # Write CMake version file for QuEST
-set(QuEST_INSTALL_CONFIGDIR "quest/${CMAKE_INSTALL_LIBDIR}/cmake")
+set(QuEST_INSTALL_CONFIGDIR "${CMAKE_INSTALL_LIBDIR}/cmake/QuEST")
 
 # Write QuESTConfigVersion.cmake
 write_basic_package_version_file(

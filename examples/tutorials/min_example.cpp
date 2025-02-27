@@ -1,4 +1,4 @@
-#include "quest/include/quest.h"
+#include "quest.h"
 
 int main(void) {
   initQuESTEnv();
