@@ -157,6 +157,7 @@ message(STATUS "Deprecated API support is turned ${ENABLE_DEPRECATED_API}. Set E
 # Windows Specific Options
 if(WIN32)
     set(ENABLE_MULTITHREADING OFF)
+    message(WARNING "multithreading disabled on Windows")
     # Force MSVC to export all symbols in a shared library, like GCC and clang
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     if (ENABLE_TESTING)
