@@ -398,11 +398,20 @@ QuESTEnv getQuESTEnv() {
 void finalizeQuESTEnv() {
     validate_envIsInit(__func__);
 
+    // NOTE:
+    // calling this will not automatically
+    // free the memory of existing Quregs
+
+    if (globalEnvPtr->isGpuAccelerated)
+        gpu_clearCache();
+
     if (globalEnvPtr->isGpuAccelerated && gpu_isCuQuantumCompiled())
         gpu_finalizeCuQuantum();
 
-    if (globalEnvPtr->isDistributed)
+    if (globalEnvPtr->isDistributed) {
+        comm_sync();
         comm_end();
+    }
 
     // free global env's heap memory and flag it as unallocated
     free(globalEnvPtr);

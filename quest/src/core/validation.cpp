@@ -756,7 +756,7 @@ namespace report {
         "A qubit appeared among both the control and target qubits, which cannot overlap.";
 
     string INVALID_CONTROL_STATE =
-        "The control qubit at index ${INDEX} has an invalidly specified control-state of ${STATE}. Valid states are 0 and 1.";
+        "The control qubit at index ${INDEX} has an invalid control-state of ${STATE}. Valid states are 0 and 1.";
 
 
     /*
@@ -3401,7 +3401,9 @@ void validate_mixedAmpsFitInNode(Qureg qureg, int numTargets, const char* caller
     if (!qureg.isDistributed)
         return;
 
-    qindex numTargAmps = powerOf2(numTargets * (qureg.isDensityMatrix? 2:1));
+    // note the number of mixed amplitudes is independent of whether
+    // qureg is a density matrix or not (consider unitaries)
+    qindex numTargAmps = powerOf2(numTargets);
 
     tokenSubs vars = {
         {"${NUM_TARGS}",        numTargets},

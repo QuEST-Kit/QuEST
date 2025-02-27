@@ -79,12 +79,14 @@ using std::vector;
 // will persist in GPU memory to save time. This is
 // only relevant to GPU-mode with cuQuantum enabled,
 // and is effected at createQuESTEnv().
-size_t CUQUANTUM_MEM_POOL_BYTES = 16*(1<<15); // 1 MiB ~ 8 qubit complex<double> matrix
+size_t CUQUANTUM_MEM_POOL_BYTES = 16*(1<<16); // 1 MiB ~ 8 qubit complex<double> matrix
 
 
 struct CuQuantumConfig {
-    cudaStream_t cuStream;
-    custatevecHandle_t cuQuantumHandle;
+    cudaMemPool_t mempool;
+    cudaStream_t stream;
+    custatevecHandle_t handle;
+    custatevecDeviceMemHandler_t memhandler;
 };
 
 // singleton handle to cuQuantum env needed for applying gates and finalizing env
@@ -126,30 +128,29 @@ int deallocMemInPool(void* ctx, void* ptr, size_t size, cudaStream_t stream) {
 void gpu_initCuQuantum() {
 
     // create new stream and cuQuantum handle, binding to global config
-    CUDA_CHECK( custatevecCreate(&config.cuQuantumHandle) );
-    CUDA_CHECK( cudaStreamCreate(&config.cuStream) );
+    CUDA_CHECK( custatevecCreate(&config.handle) );
+    CUDA_CHECK( cudaStreamCreate(&config.stream) );
 
-    // get and configure existing mem-pool (for later automatic alloc/dealloc of gate matrices)
-    cudaMemPool_t memPool = getExistingMemPool();
-    adjustMemPoolSize(memPool);
+    // get and configure existing memory pool (for later automatic alloc/dealloc of gate matrices)
+    config.mempool = getExistingMemPool();
+    adjustMemPoolSize(config.mempool);
 
     // create a temporary cuQuantum memory handler
-    custatevecDeviceMemHandler_t memHandler;
-    memHandler.ctx = &memPool;
-    memHandler.device_alloc = allocMemInPool;
-    memHandler.device_free = deallocMemInPool;
-    strcpy(memHandler.name, "mempool");
+    config.memhandler.ctx = &config.mempool;
+    config.memhandler.device_alloc = allocMemInPool;
+    config.memhandler.device_free = deallocMemInPool;
+    strcpy(config.memhandler.name, "mempool");
 
     // bind memory handler and stream to cuQuantum handle
-    CUDA_CHECK( custatevecSetDeviceMemHandler(config.cuQuantumHandle, &memHandler) );
-    CUDA_CHECK( custatevecSetStream(config.cuQuantumHandle, config.cuStream) );
+    CUDA_CHECK( custatevecSetDeviceMemHandler(config.handle, &config.memhandler) );
+    CUDA_CHECK( custatevecSetStream(config.handle, config.stream) );
 }
 
 
 void gpu_finalizeCuQuantum() {
 
-    CUDA_CHECK( cudaStreamDestroy(config.cuStream) );
-    CUDA_CHECK( custatevecDestroy(config.cuQuantumHandle) );
+    CUDA_CHECK( cudaStreamDestroy(config.stream) );
+    CUDA_CHECK( custatevecDestroy(config.handle) );
 }
 
 
@@ -166,7 +167,7 @@ void cuquantum_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<
     int numTargPairs = 1;
 
     CUDA_CHECK( custatevecSwapIndexBits(
-        config.cuQuantumHandle,
+        config.handle,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         targPairs, numTargPairs,
 
@@ -197,7 +198,7 @@ void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> 
     size_t workSize = 0;
 
     CUDA_CHECK( custatevecApplyMatrix(
-        config.cuQuantumHandle, 
+        config.handle, 
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode, 
         flatMatrElems, CUQUANTUM_QCOMP, CUSTATEVEC_MATRIX_LAYOUT_ROW, adj, 
         targs.data(), targs.size(),
@@ -223,7 +224,7 @@ void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrl
     size_t workSize = 0;
 
     CUDA_CHECK( custatevecApplyGeneralizedPermutationMatrix(
-        config.cuQuantumHandle,
+        config.handle,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         perm, flatMatrElems, CUQUANTUM_QCOMP, adj, 
         targs.data(), targs.size(), 
@@ -311,7 +312,7 @@ qreal cuquantum_statevec_calcTotalProb_sub(Qureg qureg) {
     int numQubits = 1;
 
     CUDA_CHECK( custatevecAbs2SumOnZBasis(
-        config.cuQuantumHandle,
+        config.handle,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         &prob0, &prob1, &qubit, numQubits ) );
 
@@ -326,7 +327,7 @@ qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
     double prob;
 
     CUDA_CHECK( custatevecAbs2SumArray(
-        config.cuQuantumHandle,
+        config.handle,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         &prob, nullptr, 0, outcomes.data(), qubits.data(), qubits.size()) );
 
@@ -347,7 +348,7 @@ void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qu
     #endif
 
     CUDA_CHECK( custatevecAbs2SumArray(
-        config.cuQuantumHandle,
+        config.handle,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         outPtr, qubits.data(), qubits.size(), nullptr, nullptr, 0) );
 
@@ -389,7 +390,7 @@ qreal cuquantum_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vect
     double value = 0;
 
     CUDA_CHECK( custatevecComputeExpectationsOnPauliBasis(
-        config.cuQuantumHandle,
+        config.handle,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         &value, termPaulis, numTerms, termTargets, numPaulisPerTerm) );
 
@@ -409,12 +410,12 @@ qreal cuquantum_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
  */
 
 
-void cuquantum_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal norm) {
+void cuquantum_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
 
     CUDA_CHECK( custatevecCollapseByBitString(
-        config.cuQuantumHandle,
+        config.handle,
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
-        outcomes.data(), qubits.data(), qubits.size(), norm) );
+        outcomes.data(), qubits.data(), qubits.size(), prob) );
 }
 
 
