@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES
 #include "qvector.hpp"
 #include "qmatrix.hpp"
 #include "macros.hpp"

@@ -23,7 +23,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 include(GNUInstallDirs)
 
 # Maths
-if (NOT MSVC)
+if (NOT WIN32)
   find_library(MATH_LIBRARY m REQUIRED)
 endif()
 
@@ -154,6 +154,17 @@ option(
 )
 message(STATUS "Deprecated API support is turned ${ENABLE_DEPRECATED_API}. Set ENABLE_DEPRECATED_API to modify.")
 
+# Windows Specific Options
+if(WIN32)
+    set(ENABLE_MULTITHREADING OFF)
+    message(WARNING "multithreading disabled on Windows")
+    # Force MSVC to export all symbols in a shared library, like GCC and clang
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    if (ENABLE_TESTING)
+      set(BUILD_SHARED_LIBS OFF)
+    endif ()
+endif()
+
 ## Library
 
 add_library(QuEST)
@@ -175,7 +186,7 @@ target_include_directories(QuEST
 target_compile_features(QuEST
   PUBLIC
   c_std_11
-  cxx_std_17
+  cxx_std_20
 )
 
 # Turn on all compiler warnings
@@ -286,7 +297,7 @@ add_subdirectory(quest)
 add_executable(min_example
   examples/tutorials/min_example.cpp
 )
-target_link_libraries(min_example PUBLIC QuEST::QuEST)
+target_link_libraries(min_example PRIVATE QuEST::QuEST)
 
 install(TARGETS min_example
   RUNTIME
