@@ -10,14 +10,21 @@ on:
 
 jobs:
 
-  build:
+  build-test:
     name: Testing compilation
     runs-on: ${{ matrix.os }}
 
     strategy:
+
+      # continue other jobs if any fail
+      fail-fast: false
+
+      # perform job for all combinations of...
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         precision: [1, 2, 4]
+
+        # assign each OS a bespoke compilter
         include:
           - os: ubuntu-latest
             compiler: g++
