@@ -1,0 +1,38 @@
+name: Compilation
+
+on:
+  push:
+    branches:
+      - ci-compiling
+
+jobs:
+
+  # test only compilation succeeds (no execution)
+  build-test:
+    name: Testing CUDA compilation
+    runs-on: ubuntu-latest
+
+    # constants
+    env:
+      build_dir: "build"
+      cuda_arch: 70
+
+    # perform the job
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      # obtain CUDA for GPU acceleration
+      - name: Setup CUDA
+        uses: Jimver/cuda-toolkit@v0.2.21
+
+      - name: Configure CMake
+        run: >
+          cmake -B ${{ env.build_dir }}
+          -DENABLE_CUDA=ON
+          -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
+
+      - name: Compile
+        run: >
+          cmake --build ${{ env.build_dir }}
+
