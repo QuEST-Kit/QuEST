@@ -222,13 +222,9 @@ if (ENABLE_CUDA)
   set(CMAKE_CUDA_STANDARD_REQUIRED ON)
   set_property(TARGET QuEST PROPERTY CUDA_STANDARD 17)
 
-  target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=1)
-  
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+cuda")
   endif()
-else()
-  target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=0)
 endif()
 
 if (ENABLE_CUQUANTUM)
@@ -248,7 +244,6 @@ if (ENABLE_HIP)
   find_package(HIP REQUIRED)
 
   target_compile_definitions(QuEST
-    PUBLIC COMPILE_CUDA=1
     PUBLIC COMPILE_CUQUANTUM=0
     PUBLIC COMPILE_HIP=1
     PUBLIC __HIP_PLATFORM_AMD__
@@ -259,6 +254,12 @@ if (ENABLE_HIP)
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+hip")
   endif()
+endif()
+
+if (ENABLE_CUDA OR ENABLE_HIP)
+  target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=1)
+else()
+  target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=0)
 endif()
 
 if (ENABLE_DEPRECATED_API)
