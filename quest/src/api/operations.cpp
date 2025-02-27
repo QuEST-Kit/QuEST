@@ -4,7 +4,7 @@
  * arbitrary matrices) upon Quregs, which can be
  * statevectors or density matrices
  */
-
+#define _USE_MATH_DEFINES
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 #include "quest/include/operations.h"
@@ -353,7 +353,6 @@ void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* sta
     conj = true;
     ctrlVec = util_getBraQubits(ctrlVec, qureg);
     targVec = util_getBraQubits(targVec, qureg);
-    localiser_statevec_anyCtrlAnyTargAnyMatr(qureg, {}, {}, targVec, matrix, conj);
     localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, ctrlVec, stateVec, targVec, matrix, exponent, conj);
 }
 
@@ -1281,13 +1280,13 @@ void applyMultiStateControlledMultiQubitNot(Qureg qureg, int* controls, int* sta
  * superoperator
  */
 
-void applySuperOp(Qureg qureg, SuperOp superop, int* targets, int numTargets) {
+void applySuperOp(Qureg qureg, int* targets, int numTargets, SuperOp superop) {
     validate_quregFields(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
     validate_superOpFields(superop, __func__);
     validate_superOpIsSynced(superop, __func__);
     validate_superOpDimMatchesTargs(superop, numTargets, __func__);
-    validate_mixedAmpsFitInNode(qureg, numTargets, __func__);
+    validate_mixedAmpsFitInNode(qureg, 2 * numTargets, __func__);
 
     localiser_densmatr_superoperator(qureg, superop, util_getVector(targets, numTargets));
 }

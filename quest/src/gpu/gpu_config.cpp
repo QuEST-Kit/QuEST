@@ -224,6 +224,26 @@ bool gpu_doesGpuSupportMemPools() {
 }
 
 
+qindex gpu_getMaxNumConcurrentThreads() {
+#if COMPILE_CUDA
+
+    int deviceId = 0;
+    CUDA_CHECK( cudaGetDevice(&deviceId) );
+
+    int maxThreadsPerBlock;
+    int maxNumBlocks;
+    CUDA_CHECK( cudaDeviceGetAttribute(&maxThreadsPerBlock, cudaDevAttrMaxThreadsPerBlock,  deviceId) );
+    CUDA_CHECK( cudaDeviceGetAttribute(&maxNumBlocks,       cudaDevAttrMultiProcessorCount, deviceId) );
+
+    return maxThreadsPerBlock * static_cast<qindex>(maxNumBlocks); // avoid overflow
+
+#else
+    error_gpuQueriedButGpuNotCompiled();
+    return -1;
+#endif
+}
+
+
 
 /*
  * ENVIRONMENT MANAGEMENT
@@ -333,6 +353,14 @@ void copyArrayIfGpuCompiled(qcomp* cpuArr, qcomp* gpuArr, qindex numElems, enum 
 void copyMatrixIfGpuCompiled(qcomp** cpuMatr, qcomp* gpuArr, qindex matrDim, enum CopyDirection direction) {
 #if COMPILE_CUDA
 
+    // NOTE:
+    // this function copies a 2D CPU matrix into a 1D row-major GPU array,
+    // although this is not actually needed by the QuEST backend which
+    // maintains 1D row-major CPU memories merely aliased by 2D structures
+    // for the user's benefit. As such, this is dead code, but preserved in
+    // case it is ever needed (like if custom user 2D data was needed in GPU).
+    error_gpuDeadCopyMatrixFunctionCalled();
+
     // for completeness, we permit copying from the 1D GPU memory to the 2D CPU memory,
     // although we never actually have the need to do this!
     auto flag = (direction == TO_HOST)? 
@@ -400,11 +428,25 @@ void gpu_copyGpuToCpu(Qureg qureg) {
 
 void gpu_copyCpuToGpu(CompMatr matr) {
     assertHeapObjectGpuMemIsAllocated(matr);
-    copyMatrixIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numRows, TO_DEVICE);
+
+    // note matr.cpuElems is merely a 2D alias for matr.cpuElemsFlat, which
+    // matches the format of matr.gpuElemsFlat. Ergo, we do not invoke 
+    // copyMatrixIfGpuCompiled(), and instead more efficiently overwrite
+    // the contiguous memory, which retains any user changes to .cpuElems
+
+    qindex numElems = matr.numRows * matr.numRows;
+    copyArrayIfGpuCompiled(matr.cpuElemsFlat, util_getGpuMemPtr(matr), numElems, TO_DEVICE);
 }
 void gpu_copyGpuToCpu(CompMatr matr) {
     assertHeapObjectGpuMemIsAllocated(matr);
-    copyMatrixIfGpuCompiled(matr.cpuElems, util_getGpuMemPtr(matr), matr.numRows, TO_HOST);
+
+    // note matr.cpuElems is merely a 2D alias for matr.cpuElemsFlat, which
+    // matches the format of matr.gpuElemsFlat. Ergo, we do not invoke 
+    // copyMatrixIfGpuCompiled(), and instead more efficiently overwrite
+    // the contiguous matr.cpuElemsFlat, which users can access via .cpuElems
+
+    qindex numElems = matr.numRows * matr.numRows;
+    copyArrayIfGpuCompiled(matr.cpuElemsFlat, util_getGpuMemPtr(matr), numElems, TO_HOST);
 }
 
 
@@ -420,11 +462,25 @@ void gpu_copyGpuToCpu(DiagMatr matr) {
 
 void gpu_copyCpuToGpu(SuperOp op) {
     assertHeapObjectGpuMemIsAllocated(op);
-    copyMatrixIfGpuCompiled(op.cpuElems, util_getGpuMemPtr(op), op.numRows, TO_DEVICE);
+
+    // note op.cpuElems is merely a 2D alias for op.cpuElemsFlat, which
+    // matches the format of op.gpuElemsFlat. Ergo, we do not invoke 
+    // copyMatrixIfGpuCompiled(), and instead more efficiently overwrite
+    // the contiguous memory, which retains any user changes to .cpuElems
+
+    qindex numElems = op.numRows * op.numRows;
+    copyArrayIfGpuCompiled(op.cpuElemsFlat, util_getGpuMemPtr(op), numElems, TO_DEVICE);
 }
 void gpu_copyGpuToCpu(SuperOp op) {
     assertHeapObjectGpuMemIsAllocated(op);
-    copyMatrixIfGpuCompiled(op.cpuElems, util_getGpuMemPtr(op), op.numRows, TO_HOST);
+
+    // note op.cpuElems is merely a 2D alias for op.cpuElemsFlat, which
+    // matches the format of op.gpuElemsFlat. Ergo, we do not invoke 
+    // copyMatrixIfGpuCompiled(), and instead more efficiently overwrite
+    // the contiguous op.cpuElemsFlat, which users can access via .cpuElems
+
+    qindex numElems = op.numRows * op.numRows;
+    copyArrayIfGpuCompiled(op.cpuElemsFlat, util_getGpuMemPtr(op), numElems, TO_HOST);
 }
 
 
@@ -458,7 +514,7 @@ qcomp* gpu_getCacheOfSize(qindex numElemsPerThread, qindex numThreads) {
 
     // otherwise, resize the cache
     gpuCacheLen = numNewElems;
-    CUDA_CHECK( cudaFree(gpuCache) );
+    CUDA_CHECK( cudaFree(gpuCache) ); // nullptr fine to free
     CUDA_CHECK( cudaMalloc(&gpuCache, gpuCacheLen * sizeof *gpuCache) );
 
     return gpuCache;

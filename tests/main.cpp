@@ -7,7 +7,7 @@
 #include <iostream>
 #include <string>
 
-#include "quest.h"
+#include "quest/include/quest.h"
 #include "tests/utils/cache.hpp"
 #include "tests/utils/macros.hpp"
 

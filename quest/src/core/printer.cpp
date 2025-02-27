@@ -24,10 +24,12 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <memory>
 #include <vector>
 #include <tuple>
 #include <string>
 #include <new>
+
 
 using std::cout;
 using std::endl;
@@ -144,19 +146,40 @@ void printer_setMaxNumPrintedSigFig(int numSigFigs) {
 #define GET_STR(x) GET_STR_INTERNAL(x)
 
 
+inline std::string demangleTypeName(const char* mangledName) {
+#if defined(__GNUC__) || defined(__clang__)
+    int status = 0;
+
+    // __cxa_demangle returns a malloc'd string, so we wrap it in a unique_ptr
+    // for automatic cleanup. (The custom deleter calls free().)
+    std::unique_ptr<char, void(*)(void*)> demangled(
+        abi::__cxa_demangle(mangledName, nullptr, nullptr, &status),
+        std::free
+    );
+
+    if (status == 0 && demangled) {
+        return demangled.get();
+    } else {
+        // fall back to the mangled name
+        return mangledName;
+    }
+#else
+    // e.g. MSVC or unknown compiler: no standard demangler
+    return mangledName;
+#endif
+}
+
+
 // type T can be anything in principle, although it's currently only used for qcomp
-template<typename T> 
-string getTypeName(T) { 
+template <typename T>
+std::string getTypeName(T _unused) {
+    // For MSVC, typeid(T).name() typically returns something like "class Foo"
+    // or "struct Foo", but it's still not exactly "Foo".
+    // For GCC/Clang, you get a raw "mangled" name, e.g. "N3FooE".
+    const char* rawName = typeid(T).name();
 
-    // get possibly-mangled type name
-    string name = typeid(T).name();
-
-    // non-MSVC compilers can de-mangle
-    #ifdef DEMANGLE_TYPE
-        name = abi::__cxa_demangle(name.c_str(), nullptr, nullptr, nullptr);
-    #endif
-
-    return name;
+    // We'll try to demangle if we can:
+    return demangleTypeName(rawName);
 }
 
 
@@ -352,10 +375,10 @@ string printer_getMemoryWithUnitStr(size_t numBytes) {
         ind++;
     ind--;
 
-    // express numBytes in terms of new unit, forcefully rounding to 2 sig-figs max,
+    // express numBytes in terms of new unit, forcefully rounding to 3 sig-figs max,
     // except when the chosen unit is bytes (then we permit all 4 digits)
     qreal frac = numBytes / static_cast<qreal>(sizes[ind]);
-    return floatToStr(frac, false, (ind==0)? 4 : 2) + " " + units[ind];
+    return floatToStr(frac, false, (ind==0)? 4 : 3) + " " + units[ind];
 }
 
 

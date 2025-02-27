@@ -1,9 +1,10 @@
+#define _USE_MATH_DEFINES
 #include "qvector.hpp"
 #include "qmatrix.hpp"
 #include "macros.hpp"
 #include "linalg.hpp"
 #include "lists.hpp"
-#include "quest.h"
+#include "quest/include/quest.h"
 
 #include <vector>
 #include <tuple>

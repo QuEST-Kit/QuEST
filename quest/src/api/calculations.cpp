@@ -58,7 +58,7 @@ qcomp calcInnerProduct(Qureg quregA, Qureg quregB) {
     validate_quregFields(quregB, __func__);
     validate_quregsCanBeProducted(quregA, quregB, __func__);
 
-    // <A|B> or Tr(A^dagger B)
+    // <A|B> or Tr(A^dagger B) = <<A|B>>
     if (quregA.isDensityMatrix == quregB.isDensityMatrix)
         return localiser_statevec_calcInnerProduct(quregA, quregB);
 
@@ -196,11 +196,15 @@ qreal calcProbOfBasisState(Qureg qureg, qindex index) {
     validate_quregFields(qureg, __func__);
     validate_basisStateIndex(qureg, index, __func__);
 
+    // |i><i| = ||(1+2^N)i>>
     if (qureg.isDensityMatrix)
         index *= 1 + powerOf2(qureg.numQubits);
 
     qcomp amp = localiser_statevec_getAmp(qureg, index);
-    qreal prob = std::norm(amp);
+    qreal prob = (qureg.isDensityMatrix)? 
+        std::real(amp) : 
+        std::norm(amp);
+
     return prob;
 }
 

@@ -77,11 +77,15 @@ typedef struct {
     // made after an initial sync have been re-synched. This is a heap pointer, as above.
     int* wasGpuSynced;
 
-    // 2D CPU memory; not const, so users can overwrite addresses (e.g. with nullptr)
+    // 2D CPU memory, which users can manually overwrite like cpuElems[i][j],
+    // but which actually merely aliases the 1D cpuElemsFlat below
     qcomp** cpuElems;
 
-    // row-flattened elems in GPU memory, allocated only
-    // and always in GPU-enabled QuEST environments
+    // row-major flattened elements of cpuElems, always allocated 
+    qcomp* cpuElemsFlat;
+
+    // row-major flattened elems in GPU memory, allocated 
+    // only and always in GPU-enabled QuEST environments
     qcomp* gpuElemsFlat;
 
 } CompMatr;
@@ -216,18 +220,19 @@ typedef struct {
 
 static inline CompMatr1 getCompMatr1(qcomp** in) {
 
-    return (CompMatr1) {
+     CompMatr1 out = {
         .numQubits = 1,
         .numRows = 2,
         .elems = {
             {in[0][0], in[0][1]}, 
             {in[1][0], in[1][1]}}
     };
+    return out;
 }
 
 static inline CompMatr2 getCompMatr2(qcomp** in) {
 
-    return (CompMatr2) {
+    CompMatr2 out = {
         .numQubits = 2,
         .numRows = 4,
         .elems = {
@@ -236,25 +241,28 @@ static inline CompMatr2 getCompMatr2(qcomp** in) {
             {in[2][0], in[2][1], in[2][2], in[2][3]},
             {in[3][0], in[3][1], in[3][2], in[3][3]}}
     };
+    return out;
 }
 
 
 static inline DiagMatr1 getDiagMatr1(qcomp* in) {
 
-    return (DiagMatr1) {
+    DiagMatr1 out = {
         .numQubits = 1,
         .numElems = 2,
         .elems = {in[0], in[1]}
     };
+    return out;
 }
 
 static inline DiagMatr2 getDiagMatr2(qcomp* in) {
 
-    return (DiagMatr2) {
+    DiagMatr2 out = {
         .numQubits = 2,
         .numElems = 4,
         .elems = {in[0], in[1], in[2], in[3]}
     };
+    return out;
 }
 
 

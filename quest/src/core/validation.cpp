@@ -756,7 +756,7 @@ namespace report {
         "A qubit appeared among both the control and target qubits, which cannot overlap.";
 
     string INVALID_CONTROL_STATE =
-        "The control qubit at index ${INDEX} has an invalidly specified control-state of ${STATE}. Valid states are 0 and 1.";
+        "The control qubit at index ${INDEX} has an invalid control-state of ${STATE}. Valid states are 0 and 1.";
 
 
     /*
@@ -986,7 +986,7 @@ namespace report {
 /*
  * INVALID INPUT RESPONSE BEHAVIOUR
  */
-
+extern "C" {
 // default C/C++ compatible error response is to simply exit in fail state
 void default_invalidQuESTInputError(const char* msg, const char* func) {
 
@@ -1008,7 +1008,9 @@ void default_invalidQuESTInputError(const char* msg, const char* func) {
 }
 
 // enable default error response to be user-overriden as a weak symbol (even in C, and on Windows)
-extern "C" {
+
+    // Always declare invalidQuESTInputError so the compiler sees it:
+    void invalidQuESTInputError(const char* msg, const char* func);
 
     #ifndef _WIN32
         #pragma weak invalidQuESTInputError
@@ -3399,7 +3401,9 @@ void validate_mixedAmpsFitInNode(Qureg qureg, int numTargets, const char* caller
     if (!qureg.isDistributed)
         return;
 
-    qindex numTargAmps = powerOf2(numTargets * (qureg.isDensityMatrix? 2:1));
+    // note the number of mixed amplitudes is independent of whether
+    // qureg is a density matrix or not (consider unitaries)
+    qindex numTargAmps = powerOf2(numTargets);
 
     tokenSubs vars = {
         {"${NUM_TARGS}",        numTargets},
