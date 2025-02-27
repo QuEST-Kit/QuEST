@@ -2,7 +2,7 @@
 #include "qmatrix.hpp"
 #include "linalg.hpp"
 #include "macros.hpp"
-#include "quest.h"
+#include "quest/include/quest.h"
 
 #include <type_traits>
 using std::is_same_v;
