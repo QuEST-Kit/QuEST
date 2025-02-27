@@ -208,7 +208,19 @@ endif()
 target_compile_definitions(QuEST PUBLIC FLOAT_PRECISION=${FLOAT_PRECISION})
 
 if (ENABLE_MULTITHREADING)
-  find_package(OpenMP REQUIRED)
+
+  # find OpenMP, but fail gracefully...
+  find_package(OpenMP QUIET)
+
+  # so that we can customise the error message on MacOS
+  if (NOT OpenMP_FOUND)
+    set(ErrorMsg "Could not find OpenMP, necessary for enabling multithreading.")
+    if (APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+      string(APPEND ErrorMsg " Try first calling `brew install libomp` then `export OpenMP_ROOT=$(brew --prefix)/opt/libomp`")
+    endif()
+    message(FATAL_ERROR ErrorMsg)
+  endif()
+
   target_compile_definitions(QuEST PUBLIC COMPILE_OPENMP=1)
   target_link_libraries(QuEST
     PRIVATE
