@@ -51,6 +51,10 @@ jobs:
         run: |
           echo "OpenMP_ROOT=$(brew --prefix)/opt/libomp" >> $GITHUB_ENV
 
+      - name: Setup MPI
+        if: ${{ matrix.mpi == 'ON' }}
+        uses: mpi4py/setup-mpi@v1
+
       - name: Make build directory
         run: mkdir build_dir
 
