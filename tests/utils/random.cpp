@@ -138,7 +138,9 @@ auto getRandomCtrlsStatesTargs(int numQubits, int minNumTargs, int maxNumTargsIn
     vector<int> ctrls = getSublist(targsCtrls, numTargs, numCtrls);
     vector<int> states = getRandomInts(0, 2, numCtrls);
 
-    return tuple{ctrls,states,targs};
+    // give a nice, big, ugly explicit type for MSVC
+    using T = vector<int>;
+    return tuple<T,T,T>{ctrls,states,targs};
 }
 
 
