@@ -25,6 +25,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         precision: [1, 2, 4]
         omp: [ON, OFF]
+        mpi: [ON, OFF]
 
         # assign each OS a bespoke compiler
         include:
@@ -58,6 +59,7 @@ jobs:
         run: >
           cmake .. 
           -DENABLE_MULTITHREADING=${{ matrix.omp }}
+          -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
           -DFLOAT_PRECISION=${{ matrix.precision }}
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
 
