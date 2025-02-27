@@ -1,0 +1,42 @@
+name: Compilation
+
+on:
+  push:
+    branches:
+      - ci-compiling
+  pull_request:
+    branches:
+      - ci-compiling
+
+jobs:
+
+  build:
+    name: Testing compilation
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        precision: [1, 2, 4]
+        include:
+          - os: ubuntu-latest
+            compiler: g++
+          - os: macos-latest
+            compiler: clang
+          - os: windows-latest
+            compiler: cl
+
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      - name: Make build directory
+        run: mkdir build_dir
+
+      - name: Run CMake
+        run: cmake .. -DENABLE_MULTITHREADING=OFF -DFLOAT_PRECISION=${{ matrix.precision }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+        working-directory: build_dir
+
+      - name: Run Make
+        run: make
+        working-directory: build_dir
