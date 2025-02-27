@@ -16,7 +16,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
-
       # continue other jobs if any fail
       fail-fast: false
 
@@ -24,8 +23,8 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         precision: [1, 2, 4]
-        omp: [ON, OFF]
-        mpi: [ON, OFF]
+        multithreading: [ON, OFF]
+        distribution: [ON, OFF]
 
         # assign each OS a bespoke compiler
         include:
@@ -36,38 +35,36 @@ jobs:
           - os: windows-latest
             compiler: cl
 
+    # constants
+    env:
+      build_dir: "build"
+
     # perform the job
     steps:
       - name: Get QuEST
         uses: actions/checkout@v4
 
+      # obtain OMP for Clang multithreading
       - name: Install libomp 
-        if: ${{ matrix.compiler == 'clang++' && matrix.omp == 'ON' }}
-        run: |
-          brew install libomp
-
-      - name: Link libomp 
-        if: ${{ matrix.compiler == 'clang++' && matrix.omp == 'ON' }}
-        run: |
+        if: ${{ matrix.compiler == 'clang++' && matrix.multithreading == 'ON' }}
+        run: >
+          brew install libomp;
           echo "OpenMP_ROOT=$(brew --prefix)/opt/libomp" >> $GITHUB_ENV
 
+      # obtain MPI for distribution
       - name: Setup MPI
-        if: ${{ matrix.mpi == 'ON' }}
+        if: ${{ matrix.distribution == 'ON' }}
         uses: mpi4py/setup-mpi@v1
 
-      - name: Make build directory
-        run: mkdir build_dir
-
       - name: Configure CMake
-        working-directory: build_dir
         run: >
-          cmake .. 
-          -DENABLE_MULTITHREADING=${{ matrix.omp }}
-          -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
+          cmake -B ${{ env.build_dir }}
+          -DENABLE_MULTITHREADING=${{ matrix.multithreading }}
+          -DENABLE_DISTRIBUTION=${{ matrix.distribution }}
           -DFLOAT_PRECISION=${{ matrix.precision }}
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
 
       - name: Compile
         run: >
-          cmake --build build_dir
+          cmake --build ${{ env.build_dir }}
 
