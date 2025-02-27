@@ -4,6 +4,7 @@
 #include "macros.hpp"
 #include "linalg.hpp"
 #include "lists.hpp"
+#include "random.hpp"
 #include "quest/include/quest.h"
 
 #include <vector>
@@ -122,7 +123,7 @@ vector<qreal> getRandomProbabilities(int numProbs) {
 }
 
 
-auto getRandomCtrlsStatesTargs(int numQubits, int minNumTargs, int maxNumTargsIncl) {
+vectortriple getRandomCtrlsStatesTargs(int numQubits, int minNumTargs, int maxNumTargsIncl) {
     DEMAND( minNumTargs <= maxNumTargsIncl );
     DEMAND( maxNumTargsIncl <= numQubits );
 
@@ -138,9 +139,7 @@ auto getRandomCtrlsStatesTargs(int numQubits, int minNumTargs, int maxNumTargsIn
     vector<int> ctrls = getSublist(targsCtrls, numTargs, numCtrls);
     vector<int> states = getRandomInts(0, 2, numCtrls);
 
-    // give a nice, big, ugly explicit type for MSVC
-    using T = vector<int>;
-    return tuple<T,T,T>{ctrls,states,targs};
+    return tuple{ctrls,states,targs};
 }
 
 
