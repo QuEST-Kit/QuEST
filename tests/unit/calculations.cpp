@@ -294,7 +294,13 @@ TEST_CASE( "calcReducedDensityMatrix", TEST_CATEGORY ) {
 
 
 
-// TODO: these below require we deploy input objects differently (as respectively permitted)
+/*
+ * TODO:
+ * UNTESTED FUNCTIONS BELOW
+ */
+
+// these require we deploy input objects (Qureg,FullStateDiagMatr) differently
+// (as is respectively permitted) to thoroughly test all QuEST control flows
 
 void setQuregToPartialTrace(Qureg out, Qureg in, int* traceOutQubits, int numTraceQubits);
 

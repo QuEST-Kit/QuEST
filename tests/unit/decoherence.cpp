@@ -14,6 +14,11 @@
 
 
 
+/*
+ * TODO:
+ * UNTESTED FUNCTIONS
+ */
+
 void mixDephasing(Qureg qureg, int qubit, qreal prob);
 
 void mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob);

@@ -14,11 +14,16 @@
 
 
 
+/*
+ * TODO:
+ * UNTESTED FUNCTIONS BELOW
+ */
+
+
 static inline qcomp getQcomp(qreal re, qreal im);
 
-
-// literals
-
-
-
 void reportQcomp(qcomp num);
+
+// qcomp literals
+
+// qcomp arithmatic overloads

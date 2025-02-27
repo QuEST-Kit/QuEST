@@ -14,6 +14,10 @@
 
 
 
+/*
+ * TODO:
+ * UNTESTED FUNCTIONS BELOW
+ */
 
 PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis);
 PauliStr getPauliStr(int* paulis, int* indices, int numPaulis);
@@ -22,8 +26,7 @@ PauliStr getPauliStr(std::string paulis, std::vector<int> indices);
 PauliStr getPauliStr(std::string paulis);
 
 
-// getInlinePauliStr
-
+// (macro) getInlinePauliStr
 
 
 PauliStrSum createPauliStrSum(PauliStr* strings, qcomp* coeffs, qindex numTerms);
@@ -38,7 +41,6 @@ PauliStrSum createPauliStrSumFromFile(std::string fn);
 
 PauliStrSum createPauliStrSumFromReversedFile(const char* fn);
 PauliStrSum createPauliStrSumFromReversedFile(std::string fn);
-
 
 
 void destroyPauliStrSum(PauliStrSum sum);

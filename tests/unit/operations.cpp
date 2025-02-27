@@ -24,6 +24,7 @@ using std::tuple;
 #define TEST_CATEGORY "[operations]"
 
 
+
 // TODO:
 // some of the below functions may move into utils/
 
@@ -665,6 +666,9 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
         // free any heap-alloated API matrices
         freeRemainingArgs<Targs,Args>(furtherArgs);
     }
+
+    // TODO:
+    // input validation!
 }
 
 template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, ArgsFlag Args>
@@ -747,8 +751,12 @@ TEST_CASE( "applyMultiQubitPhaseFlip", TEST_CATEGORY ) { testOperation<zero,any,
 TEST_CASE( "applyPhaseShift",           TEST_CATEGORY ) { testOperation<zero,one,scalar>(applyPhaseShift,           ParameterisedMatrices::PS); }
 TEST_CASE( "applyTwoQubitPhaseShift",   TEST_CATEGORY ) { testOperation<zero,two,scalar>(applyTwoQubitPhaseShift,   ParameterisedMatrices::PS2); }
 TEST_CASE( "applyMultiQubitPhaseShift", TEST_CATEGORY ) { testOperation<zero,any,scalar>(applyMultiQubitPhaseShift, VariableSizeParameterisedMatrices::PS); }
+
+
+
 /*
- * FullStateDiagMatr, with power
+ * TODO:
+ * UNTESTED FUNCTIONS BELOW
  */
 
 void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
@@ -756,37 +764,12 @@ void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp
 void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
 void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
 
-
-
-
-
-
-/*
- * Pauli string sums
- */
-
 void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
 
 void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
 
-
-
-/*
- * superoperator
- */
-
 void applySuperOp(Qureg qureg, int* targets, int numTargets, SuperOp superop);
 
-
-
-
-
-
-
-
-/*
- * measurement
- */
 
 int applyQubitMeasurement(Qureg qureg, int target);
 
@@ -804,11 +787,6 @@ qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, 
 
 void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits);
 
-
-
-/*
- * QFT
- */
 
 void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets);
 

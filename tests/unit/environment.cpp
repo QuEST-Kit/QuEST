@@ -14,6 +14,11 @@
 
 
 
+/*
+ * TODO:
+ * UNTESTED FUNCTIONS BELOW
+ */
+
 void initQuESTEnv();
 
 void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread);

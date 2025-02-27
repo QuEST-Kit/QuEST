@@ -13,6 +13,12 @@
 #include "tests/utils/random.hpp"
 
 
+
+/*
+ * TODO:
+ * UNTESTED FUNCTIONS BELOW
+ */
+
 static inline CompMatr1 getCompMatr1(qcomp** in);
 CompMatr1 getCompMatr1(std::vector<std::vector<qcomp>> in);
 
@@ -25,15 +31,11 @@ DiagMatr1 getDiagMatr1(std::vector<qcomp> in);
 static inline DiagMatr2 getDiagMatr2(qcomp* in);
 DiagMatr2 getDiagMatr2(std::vector<qcomp> in);
 
-
-
+// (macros)
 // getInlineCompMatr1
 // getInlineCompMatr2
 // getInlineDiagMatr1
 // getInlineDiagMatr2
-
-
-
 
 CompMatr createCompMatr(int numQubits);
 
@@ -58,7 +60,6 @@ void syncDiagMatr(DiagMatr matr);
 void syncFullStateDiagMatr(FullStateDiagMatr matr);
 
 
-
 void setCompMatr(CompMatr matr, qcomp** vals);
 void setCompMatr(CompMatr out, std::vector<std::vector<qcomp>> in);
 
@@ -69,8 +70,6 @@ void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qcomp* in, qin
 void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, std::vector<qcomp> in);
 
 
-
-
 void setInlineCompMatr(CompMatr matr, int numQb, std::vector<std::vector<qcomp>> in);
 
 void setInlineDiagMatr(DiagMatr matr, int numQb, std::vector<qcomp> in);
@@ -78,15 +77,9 @@ void setInlineDiagMatr(DiagMatr matr, int numQb, std::vector<qcomp> in);
 void setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, std::vector<qcomp> in);
 
 
-
-
 CompMatr createInlineCompMatr(int numQb, std::vector<std::vector<qcomp>> elems);
 
 DiagMatr createInlineDiagMatr(int numQb, std::vector<qcomp> elems);
-
-
-
-
 
 
 void setDiagMatrFromMultiVarFunc(DiagMatr out, qcomp (*func)(qindex*), int* numQubitsPerVar, int numVars, int areSigned);
@@ -101,9 +94,6 @@ void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, PauliStrSum in);
 void setFullStateDiagMatrFromMultiVarFunc(FullStateDiagMatr out, qcomp (*func)(qindex*), int* numQubitsPerVar, int numVars, int areSigned);
 
 void setFullStateDiagMatrFromMultiDimLists(FullStateDiagMatr out, void* lists, int* numQubitsPerDim, int numDims);
-
-
-
 
 
 void reportCompMatr1(CompMatr1 matrix);

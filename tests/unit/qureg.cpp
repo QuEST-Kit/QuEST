@@ -13,6 +13,13 @@
 #include "tests/utils/random.hpp"
 
 
+
+/*
+ * TODO:
+ * UNTESTED FUNCTIONS BELOW
+ */
+
+
 Qureg createQureg(int numQubits);
 Qureg createDensityQureg(int numQubits);
 
@@ -39,9 +46,6 @@ void getQuregAmps(qcomp* outAmps, Qureg qureg, qindex startInd, qindex numAmps);
 void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);
 
 
-
-
 qcomp getQuregAmp(Qureg qureg, qindex index);
 
 qcomp getDensityQuregAmp(Qureg qureg, qindex row, qindex column);
-
