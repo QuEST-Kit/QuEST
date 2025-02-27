@@ -9,7 +9,7 @@ install(TARGETS cpp_arithmetic
   DESTINATION ${CMAKE_INSTALL_BINDIR}/examples/numbers
 )
 set_target_properties(cpp_arithmetic 
-  PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}"
+  PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
 )
 
 add_executable(c_arithmetic
@@ -23,5 +23,5 @@ install(TARGETS c_arithmetic
   DESTINATION ${CMAKE_INSTALL_BINDIR}/examples/numbers
 )
 set_target_properties(c_arithmetic 
-  PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}"
+  PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
 )

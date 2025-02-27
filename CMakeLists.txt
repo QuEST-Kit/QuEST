@@ -20,6 +20,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 ## Dependencies
 
 # GNUInstallDirs to provide sensible default install directory names
+cmake_path(SET ORG_INSTALL_PATH NORMALIZE "${CMAKE_INSTALL_PREFIX}")
 cmake_path(APPEND CMAKE_INSTALL_PREFIX "quest")
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -168,8 +169,8 @@ target_include_directories(QuEST
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/quest/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:quest/include>
-  $<INSTALL_INTERFACE:.>
+  $<INSTALL_INTERFACE:../quest/include>
+  $<INSTALL_INTERFACE:..>
 )
 
 # Add required C and C++ standards
@@ -295,7 +296,7 @@ install(TARGETS min_example
 )
 set_target_properties(min_example
   PROPERTIES 
-    INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}"
+    INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
 )
 
 if (BUILD_EXAMPLES)
@@ -316,7 +317,7 @@ if (USER_SOURCE AND OUTPUT_EXE)
   add_executable(${OUTPUT_EXE} ${USER_SOURCE})
   target_link_libraries(${OUTPUT_EXE} PUBLIC QuEST)
   install(TARGETS ${OUTPUT_EXE} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-  set_target_properties(${OUTPUT_EXE} PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}")  
+  set_target_properties(${OUTPUT_EXE} PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
 endif()
 
 ## Tests

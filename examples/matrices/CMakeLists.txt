@@ -10,7 +10,7 @@ install(TARGETS matrices_cpp_initialisation
 )
 set_target_properties(matrices_cpp_initialisation 
   PROPERTIES 
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}"
+    INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
     OUTPUT_NAME "cpp_initialisation"
 )
 
@@ -26,6 +26,6 @@ install(TARGETS matrices_c_initialisation
 )
 set_target_properties(matrices_c_initialisation 
   PROPERTIES 
-  INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}"
+  INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
   OUTPUT_NAME "c_initialisation"
 )

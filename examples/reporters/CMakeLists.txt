@@ -10,7 +10,7 @@ install(TARGETS reporters_cpp_env
 )
 set_target_properties(reporters_cpp_env 
   PROPERTIES 
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}"
+    INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
     OUTPUT_NAME "cpp_env"
 )
 
@@ -26,7 +26,7 @@ install(TARGETS reporters_c_env
 )
 set_target_properties(reporters_c_env 
   PROPERTIES 
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}"
+    INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}}"
     OUTPUT_NAME "c_env"
 )
 
@@ -42,7 +42,7 @@ install(TARGETS reporters_cpp_matrices
 )
 set_target_properties(reporters_cpp_matrices 
   PROPERTIES 
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}"
+    INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
     OUTPUT_NAME "cpp_matrices"
 )
 
@@ -58,7 +58,7 @@ install(TARGETS reporters_c_matrices
 )
 set_target_properties(reporters_c_matrices
   PROPERTIES 
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}"
+    INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
     OUTPUT_NAME "c_matrices"
 )
 
@@ -74,7 +74,7 @@ install(TARGETS reporters_cpp_paulis
 )
 set_target_properties(reporters_cpp_paulis
   PROPERTIES 
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}"
+    INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
     OUTPUT_NAME "cpp_paulis"
 )
 
@@ -90,7 +90,7 @@ install(TARGETS reporters_c_paulis
 )
 set_target_properties(reporters_c_paulis 
   PROPERTIES 
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}"
+    INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
     OUTPUT_NAME "c_paulis"
 )
 
@@ -106,7 +106,7 @@ install(TARGETS reporters_cpp_qureg
 )
 set_target_properties(reporters_cpp_qureg
   PROPERTIES 
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}"
+    INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
     OUTPUT_NAME "cpp_qureg"
 )
 
@@ -122,6 +122,6 @@ install(TARGETS reporters_c_qureg
 )
 set_target_properties(reporters_c_qureg
   PROPERTIES 
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}"
+    INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
     OUTPUT_NAME "c_qureg"
 )

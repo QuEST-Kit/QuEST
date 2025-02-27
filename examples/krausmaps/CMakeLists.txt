@@ -10,7 +10,7 @@ install(TARGETS krausmap_cpp_initialisation
 )
 set_target_properties(krausmap_cpp_initialisation 
   PROPERTIES 
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}"
+    INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
     OUTPUT_NAME "cpp_initialisation"
 )
 
@@ -26,6 +26,6 @@ install(TARGETS krausmap_c_initialisation
 )
 set_target_properties(krausmap_c_initialisation 
   PROPERTIES 
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/quest/${CMAKE_INSTALL_LIBDIR}"
+    INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
     OUTPUT_NAME "c_initialisation"
 )
