@@ -13,16 +13,17 @@
 #include "tests/utils/random.hpp"
 
 
-// TODO: 
-// use CMake to obtain catch2 and replace #include "catch.hpp"
-// with "#include <catch2/catch_test_macros.hpp>""
+
+/*
+ * TODO:
+ * UNTESTED FUNCTIONS BELOW
+ */
 
 
+static inline qcomp getQcomp(qreal re, qreal im);
 
-TEST_CASE( "func9", "[types]" ) {
+void reportQcomp(qcomp num);
 
-    SECTION( "a" ) {
+// qcomp literals
 
-        REQUIRE( true );
-    }
-}
+// qcomp arithmatic overloads

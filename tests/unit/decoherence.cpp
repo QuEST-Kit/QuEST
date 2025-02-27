@@ -13,16 +13,25 @@
 #include "tests/utils/random.hpp"
 
 
-// TODO: 
-// use CMake to obtain catch2 and replace #include "catch.hpp"
-// with "#include <catch2/catch_test_macros.hpp>""
 
+/*
+ * TODO:
+ * UNTESTED FUNCTIONS
+ */
 
+void mixDephasing(Qureg qureg, int qubit, qreal prob);
 
-TEST_CASE( "func2", "[decoherence]" ) {
+void mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob);
 
-    SECTION( "a" ) {
+void mixDepolarising(Qureg qureg, int qubit, qreal prob);
 
-        REQUIRE( true );
-    }
-}
+void mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal prob);
+
+void mixDamping(Qureg qureg, int qubit, qreal prob);
+
+void mixPaulis(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ);
+
+void mixQureg(Qureg qureg, Qureg other, qreal prob);
+
+void mixKrausMap(Qureg qureg, int* qubits, int numQubits, KrausMap map);
+

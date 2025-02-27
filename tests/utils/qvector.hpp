@@ -29,5 +29,7 @@ qvector operator += (qvector&, const qvector&);
 qvector operator - (const qvector&, const qvector&);
 qvector operator -= (qvector&, const qvector&);
 
+void setToDebugState(qvector &v);
+
 
 #endif // QVECTOR_HPP

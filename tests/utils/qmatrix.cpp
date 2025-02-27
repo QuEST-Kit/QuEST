@@ -8,18 +8,13 @@
  */
 
 qmatrix getZeroMatrix(size_t dim) {
-    DEMAND( dim > 1 );
+    DEMAND( dim >= 1 );
 
-    qmatrix out = qmatrix(dim);
-
-    for (auto& row : out)
-        row.resize(dim);
-
-    return out;
+    return qmatrix(dim, qvector(dim));
 }
 
 qmatrix getIdentityMatrix(size_t dim) {
-    DEMAND( dim > 1 );
+    DEMAND( dim >= 1 );
 
     qmatrix out = getZeroMatrix(dim);
 
@@ -30,7 +25,7 @@ qmatrix getIdentityMatrix(size_t dim) {
 }
 
 qmatrix getDiagonalMatrix(qvector v) {
-    DEMAND( v.size() > 1 );
+    DEMAND( v.size() >= 1 );
 
     qmatrix out = getZeroMatrix(v.size());
 
@@ -38,6 +33,26 @@ qmatrix getDiagonalMatrix(qvector v) {
         out[i][i] = v[i];
     
     return out;
+}
+
+qmatrix getPauliMatrix(int id) {
+    DEMAND( id >= 0 );
+    DEMAND( id <= 3 );
+
+    if (id == 0)
+        return {{1 ,0}, {0, 1}};
+
+    if (id == 1)
+        return {{0, 1}, {1, 0}};
+
+    if (id == 2)
+        return {{0, -1_i}, {1_i, 0}};
+
+    if (id == 3)
+        return {{1, 0}, {0, -1}};
+
+    // unreachable
+    return {{-1}};
 }
 
 
@@ -144,13 +159,18 @@ qmatrix operator -= (qmatrix& m1, const qmatrix& m2) {
  */
 
 qmatrix operator * (const qmatrix& m1, const qmatrix& m2) {
-    DEMAND( m1.size() == m2.size() );
+    DEMAND( m1.size() > 0 );
+    DEMAND( m2.size() > 0 );
+    DEMAND( m1[0].size() == m2.size() );
 
-    qmatrix out = getZeroMatrix(m1.size());
+    // unlike most functions which assume qmatrix is square,
+    // we cheekily permit m1 and m2 to be non-square (and
+    // ergo differing), necessary to calculate partial traces
+    qmatrix out = qmatrix(m1.size(), qvector(m2[0].size(),0));
 
-    for (size_t r=0; r<m1.size(); r++)
-        for (size_t c=0; c<m1.size(); c++)
-            for (size_t k=0; k<m1.size(); k++)
+    for (size_t r=0; r<out.size(); r++)
+        for (size_t c=0; c<out[0].size(); c++)
+            for (size_t k=0; k<m2.size(); k++)
                 out[r][c] += m1[r][k] * m2[k][c];
     
     return out;
@@ -173,4 +193,34 @@ void setSubMatrix(qmatrix &dest, qmatrix sub, size_t r, size_t c) {
     for (size_t i=0; i<sub.size(); i++)
         for (size_t j=0; j<sub.size(); j++)
             dest[r+i][c+j] = sub[i][j];
+}
+
+void setToDebugState(qmatrix &m) {
+    DEMAND( !m.empty() );
+
+    size_t i = 0;
+
+    // iterate column-wise
+    for (size_t c=0; c<m.size(); c++) {
+        for (size_t r=0; r<m.size(); r++) {
+            m[r][c] = qcomp(2*i/10., (2*i+1)/10.);
+            i++;
+        }
+    }
+}
+
+
+/*
+ * GETTERS
+ */
+
+qvector getDiagonals(qmatrix m) {
+    DEMAND( m.size() > 1 );
+
+    qvector out = getZeroVector(m.size());
+
+    for (size_t i=0; i<out.size(); i++)
+        out[i] = m[i][i];
+    
+    return out;
 }

@@ -13,16 +13,22 @@
 #include "tests/utils/random.hpp"
 
 
-// TODO: 
-// use CMake to obtain catch2 and replace #include "catch.hpp"
-// with "#include <catch2/catch_test_macros.hpp>""
 
+/*
+ * TODO:
+ * UNTESTED FUNCTIONS BELOW
+ */
 
+void initQuESTEnv();
 
-TEST_CASE( "func3", "[environment]" ) {
+void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread);
 
-    SECTION( "a" ) {
+void finalizeQuESTEnv();
 
-        REQUIRE( true );
-    }
-}
+void syncQuESTEnv();
+
+void reportQuESTEnv();
+
+int isQuESTEnvInit();
+
+QuESTEnv getQuESTEnv();

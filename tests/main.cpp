@@ -1,34 +1,79 @@
 #include <catch2/catch_session.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/reporters/catch_reporter_event_listener.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
 
-// TODO:
-// when we switch to CMake-supplied Catch2,
-// we must replace the above include with:
-// #include <catch2/catch_session.hpp>
-
+#include <stdexcept>
+#include <iostream>
+#include <string>
 
 #include "quest/include/quest.h"
-#include <stdexcept>
+#include "tests/utils/cache.hpp"
+#include "tests/utils/macros.hpp"
 
 
-// TODO:
-// implement a custom reporter in order to avoid output
-// duplication when running tests distributed
+/*
+ * recast QuEST errors into exceptions which Catch can intercept
+ */
 
-
-// recast QuEST errors into exceptions which Catch can catch  
 extern "C" void invalidQuESTInputError(const char* errMsg, const char* errFunc) {
 
-    throw std::runtime_error(errMsg);
+    throw std::runtime_error(std::string(errFunc) + ": " + std::string(errMsg));
 }
 
 
-// custom catch2 main so that we can prepare QuEST (needed due to MPI)
+/*
+ * report QuEST env when tests start
+ */
+
+class startListener : public Catch::EventListenerBase {
+public:
+    using Catch::EventListenerBase::EventListenerBase;
+    void testRunStarting(Catch::TestRunInfo const&) override {
+
+        // a full report is too verbose...
+        // reportQuESTEnv();
+
+        // so we summarise the important info
+        QuESTEnv env = getQuESTEnv();
+        std::cout << std::endl;
+        std::cout << "QuEST execution environment:" << std::endl;
+        std::cout << "  precision:       " << FLOAT_PRECISION      << std::endl;
+        std::cout << "  multithreaded:   " << env.isMultithreaded  << std::endl;
+        std::cout << "  distributed:     " << env.isDistributed    << std::endl;
+        std::cout << "  GPU-accelerated: " << env.isGpuAccelerated << std::endl;
+        std::cout << "  cuQuantum:       " << (env.isGpuAccelerated && COMPILE_CUQUANTUM) << std::endl;
+        std::cout << "  node count:      " << env.numNodes         << std::endl;
+        std::cout << "  unit Qureg size: " << NUM_UNIT_QUREG_QUBITS<< std::endl;
+        std::cout << std::endl;
+
+        std::cout << "Tested Qureg deployments:" << std::endl;
+        for (auto& [label, qureg]: getCachedStatevecs())
+            std::cout << "  " << label << std::endl;
+        std::cout << std::endl;
+    }
+};
+
+CATCH_REGISTER_LISTENER(startListener)
+
+
+/*
+ * setup QuEST before Catch2 session
+ */
+
 int main(int argc, char* argv[]) {
 
     initQuESTEnv();
+    createCachedQuregs();
 
+    // disable Catch2 output on non-root nodes
+    if (getQuESTEnv().rank != 0)
+        std::cout.rdbuf(NULL);
+
+    // launch Catch2, triggering above event listener
     int result = Catch::Session().run( argc, argv );
 
+    destroyCachedQuregs();
     finalizeQuESTEnv();
     return result;
 }

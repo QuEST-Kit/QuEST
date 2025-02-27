@@ -13,16 +13,38 @@
 #include "tests/utils/random.hpp"
 
 
-// TODO: 
-// use CMake to obtain catch2 and replace #include "catch.hpp"
-// with "#include <catch2/catch_test_macros.hpp>""
+
+/*
+ * TODO:
+ * UNTESTED FUNCTIONS BELOW
+ */
+
+PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis);
+PauliStr getPauliStr(int* paulis, int* indices, int numPaulis);
+PauliStr getPauliStr(std::string paulis, int* indices, int numPaulis);
+PauliStr getPauliStr(std::string paulis, std::vector<int> indices);
+PauliStr getPauliStr(std::string paulis);
 
 
+// (macro) getInlinePauliStr
 
-TEST_CASE( "func7", "[paulis]" ) {
 
-    SECTION( "a" ) {
+PauliStrSum createPauliStrSum(PauliStr* strings, qcomp* coeffs, qindex numTerms);
+PauliStrSum createPauliStrSum(std::vector<PauliStr> strings, std::vector<qcomp> coeffs);
 
-        REQUIRE( true );
-    }
-}
+
+PauliStrSum createInlinePauliStrSum(const char* str);
+PauliStrSum createInlinePauliStrSum(std::string str);
+
+PauliStrSum createPauliStrSumFromFile(const char* fn);
+PauliStrSum createPauliStrSumFromFile(std::string fn);
+
+PauliStrSum createPauliStrSumFromReversedFile(const char* fn);
+PauliStrSum createPauliStrSumFromReversedFile(std::string fn);
+
+
+void destroyPauliStrSum(PauliStrSum sum);
+
+void reportPauliStr(PauliStr str);
+
+void reportPauliStrSum(PauliStrSum str);

@@ -13,16 +13,43 @@
 #include "tests/utils/random.hpp"
 
 
-// TODO: 
-// use CMake to obtain catch2 and replace #include "catch.hpp"
-// with "#include <catch2/catch_test_macros.hpp>""
+
+/*
+ * TODO:
+ * UNTESTED FUNCTIONS BELOW
+ */
+
+void initBlankState(Qureg qureg);
+
+void initZeroState(Qureg qureg);
+
+void initPlusState(Qureg qureg);
+
+void initPureState(Qureg qureg, Qureg pure);
+
+void initClassicalState(Qureg qureg, qindex stateInd);
+
+void initDebugState(Qureg qureg);
+
+void initArbitraryPureState(Qureg qureg, qcomp* amps);
+
+void initRandomPureState(Qureg qureg);
+
+void initRandomMixedState(Qureg qureg, qindex numPureStates);
 
 
+void setQuregAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps);
 
-TEST_CASE( "func4", "[initialisations]" ) {
+void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qcomp** amps, qindex numRows, qindex numCols);
 
-    SECTION( "a" ) {
+void setDensityQuregFlatAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps);
 
-        REQUIRE( true );
-    }
-}
+void setQuregToClone(Qureg targetQureg, Qureg copyQureg);
+
+void setQuregToSuperposition(qcomp facOut, Qureg out, qcomp fac1, Qureg qureg1, qcomp fac2, Qureg qureg2);
+
+qreal setQuregToRenormalized(Qureg qureg);
+
+void setQuregToPauliStrSum(Qureg qureg, PauliStrSum sum);
+
+

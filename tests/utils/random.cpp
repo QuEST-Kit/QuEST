@@ -6,11 +6,13 @@
 #include "lists.hpp"
 #include "quest/include/quest.h"
 
-#include <random>
 #include <vector>
+#include <tuple>
+#include <random>
 #include <algorithm>
 
 using std::vector;
+using std::tuple;
 
 
 
@@ -65,6 +67,78 @@ qcomp getRandomComplex() {
     qreal re = getRandomReal(-1,1);
     qreal im = getRandomReal(-1,1);
     return qcomp(re, im);
+}
+
+
+
+/*
+ * LIST
+ */
+
+
+vector<int> getRandomInts(int min, int maxExcl, int len) {
+    DEMAND( len >= 0 ); // permit empty
+
+    vector<int> outcomes(len);
+    
+    for (auto& x : outcomes)
+        x = getRandomInt(min, maxExcl);
+
+    return outcomes;
+}
+
+
+vector<int> getRandomSubRange(int start, int endExcl, int numElems) {
+    DEMAND( endExcl >= start );
+    DEMAND( numElems >= 1 );
+    DEMAND( numElems <= endExcl - start );
+
+    // shuffle entire range
+    vector<int> range = getRange(start, endExcl);
+    std::shuffle(range.begin(), range.end(), RNG);
+    
+    // return first subrange
+    return vector<int>(range.begin(), range.begin() + numElems);
+}
+
+
+vector<qreal> getRandomProbabilities(int numProbs) {
+    
+    vector<qreal> probs(numProbs, 0);
+
+    // generate random unnormalised scalars
+    for (auto& p : probs)
+        p = getRandomReal(0, 1);
+
+    // normalise
+    qreal total = 0;
+    for (auto& p : probs)
+        total += p;
+
+    for (auto& p : probs)
+        p /= total;
+ 
+    return probs;
+}
+
+
+auto getRandomCtrlsStatesTargs(int numQubits, int minNumTargs, int maxNumTargsIncl) {
+    DEMAND( minNumTargs <= maxNumTargsIncl );
+    DEMAND( maxNumTargsIncl <= numQubits );
+
+    int numTargs = getRandomInt(minNumTargs, maxNumTargsIncl+1);
+
+    // numCtrls in [0, remainingNumQb]
+    int minNumCtrls = 0;
+    int maxNumCtrls = numQubits - numTargs;
+    int numCtrls = getRandomInt(minNumCtrls, maxNumCtrls+1);
+
+    vector<int> targsCtrls = getRandomSubRange(0, numQubits, numTargs + numCtrls);
+    vector<int> targs = getSublist(targsCtrls, 0, numTargs);
+    vector<int> ctrls = getSublist(targsCtrls, numTargs, numCtrls);
+    vector<int> states = getRandomInts(0, 2, numCtrls);
+
+    return tuple{ctrls,states,targs};
 }
 
 
@@ -145,32 +219,6 @@ qmatrix getRandomMatrix(size_t dim) {
 
 
 /*
- * PROBABILITIES
- */
-
-
-vector<qreal> getRandomProbabilities(int numProbs) {
-    
-    vector<qreal> probs(numProbs, 0);
-
-    // generate random unnormalised scalars
-    for (auto& p : probs)
-        p = getRandomReal(0, 1);
-
-    // normalise
-    qreal total = 0;
-    for (auto& p : probs)
-        total += p;
-
-    for (auto& p : probs)
-        p /= total;
- 
-    return probs;
-}
-
-
-
-/*
  * STATES
  */
 
@@ -213,6 +261,14 @@ qmatrix getRandomPureDensityMatrix(int numQb) {
 }
 
 
+void setToRandomState(qvector& state) {
+    state = getRandomStateVector(getLog2(state.size()));
+}
+void setToRandomState(qmatrix& state) {
+    state = getRandomDensityMatrix(getLog2(state.size()));
+}
+
+
 
 /*
  * OPERATORS
@@ -245,7 +301,7 @@ qmatrix getRandomUnitary(int numQb) {
     // create U = Q D
     qmatrix matrU = matrQ * matrD;
 
-    DEMAND( isUnitary(matrU) );
+    DEMAND( isApproxUnitary(matrU) );
     return matrU;
 }
 
@@ -307,6 +363,16 @@ PauliStr getRandomPauliStr(int numQubits) {
 }
 
 
+PauliStr getRandomPauliStr(vector<int> targs) {
+
+    std::string paulis = "";
+    for (size_t i=0; i<targs.size(); i++)
+        paulis += "IXYZ"[getRandomInt(0,4)];
+
+    return getPauliStr(paulis, targs);
+}
+
+
 PauliStr getRandomDiagPauliStr(int numQubits) {
 
     std::string paulis = "";
@@ -317,21 +383,26 @@ PauliStr getRandomDiagPauliStr(int numQubits) {
 }
 
 
+PauliStrSum createRandomNonHermitianPauliStrSum(int numQubits, int numTerms) {
 
-/*
- * LISTS
- */
+    vector<PauliStr> strings(numTerms);
+    for (auto& str : strings)
+        str = getRandomPauliStr(numQubits);
+
+    vector<qcomp> coeffs(numTerms);
+    for (auto& c : coeffs)
+        c = getRandomComplex();
+
+    return createPauliStrSum(strings, coeffs);
+}
 
 
-vector<int> getRandomSubRange(int start, int endExcl, int numElems) {
-    DEMAND( endExcl >= start );
-    DEMAND( numElems >= 1 );
-    DEMAND( numElems <= endExcl - start );
+PauliStrSum createRandomPauliStrSum(int numQubits, int numTerms) {
 
-    // shuffle entire range
-    vector<int> range = getRange(start, endExcl);
-    std::shuffle(range.begin(), range.end(), RNG);
-    
-    // return first subrange
-    return vector<int>(range.begin(), range.begin() + numElems);
+    PauliStrSum out = createRandomNonHermitianPauliStrSum(numQubits, numTerms);
+
+    for (qindex i=0; i<numTerms; i++)
+        out.coeffs[i] = real(out.coeffs[i]);
+
+    return out;
 }

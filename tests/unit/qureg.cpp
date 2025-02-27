@@ -13,16 +13,39 @@
 #include "tests/utils/random.hpp"
 
 
-// TODO: 
-// use CMake to obtain catch2 and replace #include "catch.hpp"
-// with "#include <catch2/catch_test_macros.hpp>""
+
+/*
+ * TODO:
+ * UNTESTED FUNCTIONS BELOW
+ */
 
 
+Qureg createQureg(int numQubits);
+Qureg createDensityQureg(int numQubits);
 
-TEST_CASE( "func8", "[qureg]" ) {
+Qureg createForcedQureg(int numQubits);
+Qureg createForcedDensityQureg(int numQubits);
 
-    SECTION( "a" ) {
+Qureg createCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread);
 
-        REQUIRE( true );
-    }
-}
+Qureg createCloneQureg(Qureg qureg);
+
+void destroyQureg(Qureg qureg);
+
+void reportQuregParams(Qureg qureg);
+void reportQureg(Qureg qureg);
+void reportQuregToFile(Qureg qureg, char* fn);
+
+void syncQuregToGpu  (Qureg qureg);
+void syncQuregFromGpu(Qureg qureg);
+
+void syncSubQuregToGpu  (Qureg qureg, qindex localStartInd, qindex numLocalAmps);
+void syncSubQuregFromGpu(Qureg qureg, qindex localStartInd, qindex numLocalAmps);
+
+void getQuregAmps(qcomp* outAmps, Qureg qureg, qindex startInd, qindex numAmps);
+void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);
+
+
+qcomp getQuregAmp(Qureg qureg, qindex index);
+
+qcomp getDensityQuregAmp(Qureg qureg, qindex row, qindex column);
