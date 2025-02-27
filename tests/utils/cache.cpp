@@ -1,4 +1,5 @@
-#include "quest.h"
+#include "quest/include/quest.h"
+
 #include "macros.hpp"
 #include "qvector.hpp"
 #include "qmatrix.hpp"
