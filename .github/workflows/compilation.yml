@@ -29,17 +29,12 @@ jobs:
         include:
           - os: ubuntu-latest
             compiler: g++
-            cmakeflag:
-            makecmd: make
           - os: macos-latest
             compiler: clang++
-            cmakeflag:
-            makecmd: make
           - os: windows-latest
             compiler: cl
-            cmakeflag: -G "NMake Makefiles"
-            makecmd: nmake
 
+    # perform the job
     steps:
       - name: Get QuEST
         uses: actions/checkout@v4
@@ -47,16 +42,15 @@ jobs:
       - name: Make build directory
         run: mkdir build_dir
 
-      - name: Run CMake
+      - name: Configure CMake
         working-directory: build_dir
         run: >
           cmake .. 
-          ${{ matrix.cmakeflag }}
           -DENABLE_MULTITHREADING=OFF
           -DFLOAT_PRECISION=${{ matrix.precision }}
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
 
-      - name: Run Make
-        working-directory: build_dir
-        run: ${{ matrix.makecmd }}
-        
+      - name: Compile
+        run: >
+          cmake --build build_dir
+
