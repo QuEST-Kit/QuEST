@@ -1,89 +1,92 @@
-# name: Compilation
+name: Compilation
 
-# on:
-#   push:
-#     branches:
-#       - ci-compiling
-#   pull_request:
-#     branches:
-#       - ci-compiling
+on:
+  push:
+    branches:
+      - ci-compiling
+  pull_request:
+    branches:
+      - ci-compiling
 
-# jobs:
+jobs:
 
-#   # test only compilation succeeds (no execution)
-#   build-test:
-#     name: Testing compilation
-#     runs-on: ${{ matrix.os }}
+  # test only compilation succeeds (no execution)
+  build-test:
+    name: Testing compilation
+    runs-on: ${{ matrix.os }}
 
-#     strategy:
-#       # continue other jobs if any fail
-#       fail-fast: false
+    strategy:
+      # continue other jobs if any fail
+      fail-fast: false
 
-#       # limit concurrent jobs to avoid running out of disk
-#       max-parallel: 8
+      # limit concurrent jobs to avoid running out of disk
+      max-parallel: 8
 
-#       # perform job for all combinations of...
-#       matrix:
-#         os: [ubuntu-latest, macos-latest, windows-latest]
-#         precision: [1, 2, 4]
-#         omp: [ON, OFF]
-#         mpi: [ON, OFF]
-#         gpu: [ON, OFF]
+      # perform job for all combinations of...
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        precision: [1, 2, 4]
+        omp: [ON, OFF]
+        mpi: [ON, OFF]
+        gpu: [ON, OFF]
 
-#         # assign each OS a bespoke compiler
-#         include:
-#           - os: ubuntu-latest
-#             compiler: g++
-#           - os: macos-latest
-#             compiler: clang++
-#           - os: windows-latest
-#             compiler: cl
+        # assign each OS a bespoke compiler
+        include:
+          - os: ubuntu-latest
+            compiler: g++
+          - os: macos-latest
+            compiler: clang++
+          - os: windows-latest
+            compiler: cl
 
-#         # cannot use GPU with MacOS nor quad-precision
-#         exclude:
-#           - gpu: ON
-#             precision: 4
-#           - gpu: ON
-#             os: macos-latest
+        # cannot use GPU with MacOS nor quad-precision
+        exclude:
+          - gpu: ON
+            precision: 4
+          - gpu: ON
+            os: macos-latest
 
-#     # constants
-#     env:
-#       build_dir: "build"
-#       cuda_arch: 70
+    # constants
+    env:
+      build_dir: "build"
+      cuda_arch: 70
 
-#     # perform the job
-#     steps:
-#       - name: Get QuEST
-#         uses: actions/checkout@v4
+    # perform the job
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
 
-#       # obtain OMP for Clang multithreading
-#       - name: Setup libomp 
-#         if: ${{ matrix.compiler == 'clang++' && matrix.omp == 'ON' }}
-#         run: >
-#           brew install libomp;
-#           echo "OpenMP_ROOT=$(brew --prefix)/opt/libomp" >> $GITHUB_ENV
+      # obtain OMP for Clang multithreading
+      - name: Setup libomp 
+        if: ${{ matrix.compiler == 'clang++' && matrix.omp == 'ON' }}
+        run: >
+          brew install libomp;
+          echo "OpenMP_ROOT=$(brew --prefix)/opt/libomp" >> $GITHUB_ENV
 
-#       # obtain MPI for distribution
-#       - name: Setup MPI
-#         if: ${{ matrix.mpi == 'ON' }}
-#         uses: mpi4py/setup-mpi@v1
+      # obtain MPI for distribution
+      - name: Setup MPI
+        if: ${{ matrix.mpi == 'ON' }}
+        uses: mpi4py/setup-mpi@v1
 
-#       # obtain CUDA for GPU acceleration
-#       - name: Setup CUDA
-#         if: ${{ matrix.gpu == 'ON' }}
-#         uses: Jimver/cuda-toolkit@v0.2.21
+      # obtain CUDA for GPU acceleration
+      - name: Setup CUDA
+        if: ${{ matrix.gpu == 'ON' }}
+        uses: Jimver/cuda-toolkit@v0.2.21
+        with:
+          method: network
+          sub-packages: '["nvcc", "cudart", "thrust"]'
 
-#       - name: Configure CMake
-#         run: >
-#           cmake -B ${{ env.build_dir }}
-#           -DENABLE_MULTITHREADING=${{ matrix.omp }}
-#           -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
-#           -DENABLE_CUDA=${{ matrix.gpu }}
-#           -DFLOAT_PRECISION=${{ matrix.precision }}
-#           -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
-#           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
+      - name: Configure CMake
+        run: >
+          cmake -B ${{ env.build_dir }}
+          -DENABLE_MULTITHREADING=${{ matrix.omp }}
+          -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
+          -DENABLE_CUDA=${{ matrix.gpu }}
+          -DFLOAT_PRECISION=${{ matrix.precision }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+          -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
 
-#       - name: Compile
-#         run: >
-#           cmake --build ${{ env.build_dir }}
+      - name: Compile
+        run: >
+          cmake --build ${{ env.build_dir }}
 
