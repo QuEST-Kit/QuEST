@@ -1,0 +1,31 @@
+name: Choco MSVC CUDA test
+
+on:
+  push:
+    branches:
+      - ci-compiling
+
+jobs:
+
+  # test only compilation succeeds (no execution)
+  build-test:
+    name: Testing compilation
+    runs-on: windows-latest
+
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      - name: Install CUDA
+        run: |
+          choco install cuda -y
+
+      - name: Configure CMake
+        run: >
+          cmake -B build
+          -DENABLE_CUDA=ON
+          -DCMAKE_CUDA_ARCHITECTURES=70
+
+      - name: Compile
+        run: >
+          cmake --build build

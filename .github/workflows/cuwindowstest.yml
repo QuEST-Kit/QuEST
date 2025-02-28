@@ -1,3 +1,10 @@
+# THIS JUST SIMPLY WILL NOT WORK!
+# cuda is installed fine, but CMake is passing ill-formed commands to NVCC when
+# attempting to compile gpu_config and gpu_subroutines, and I cannot determine why!
+
+
+
+
 name: NVCC Windows test
 
 on:
@@ -10,7 +17,7 @@ jobs:
   # test only compilation succeeds (no execution)
   build-test:
     name: Testing compilation
-    runs-on: windows-2019
+    runs-on: windows-latest
 
     # perform the job
     steps:
@@ -26,7 +33,6 @@ jobs:
         uses: Jimver/cuda-toolkit@v0.2.21
         id: cuda-toolkit
         with:
-          cuda: '12.5.0'
           method: network
           sub-packages: '["nvcc", "cudart", "thrust", "visual_studio_integration"]'
 
@@ -38,10 +44,6 @@ jobs:
           -DENABLE_CUDA=ON
           -DCMAKE_CUDA_ARCHITECTURES=70
         
-
-        # might be causing issue
-        ##  -DCMAKE_GENERATOR_TOOLSET="cuda=${{steps.cuda-toolkit.outputs.CUDA_PATH}}"
-
       - name: Compile
         run: >
           cmake --build build --verbose
