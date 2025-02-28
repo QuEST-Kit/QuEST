@@ -1,9 +1,5 @@
 name: Compilation
 
-# pausing this for the moment
-on:
-    workflow_dispatch
-
 on:
   push:
     branches:
