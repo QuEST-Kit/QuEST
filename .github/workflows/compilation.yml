@@ -4,13 +4,13 @@ name: Compilation
 on:
     workflow_dispatch
 
-# on:
-#   push:
-#     branches:
-#       - ci-compiling
-#   pull_request:
-#     branches:
-#       - ci-compiling
+on:
+  push:
+    branches:
+      - ci-compiling
+  pull_request:
+    branches:
+      - ci-compiling
 
 jobs:
 
