@@ -1,19 +1,19 @@
-name: Compilation test
+name: compilation test
 
 on:
   push:
     branches:
-      - ci-compiling
+      - v4
   pull_request:
     branches:
-      - ci-compiling
+      - v4
 
 jobs:
 
   # test only compilation succeeds (no execution)
   build-test:
     name: >
-      ${{ matrix.os == 'ubuntu-latest' && 'Lin' || matrix.os == 'macos-latest' && 'Mac' || 'Win' }}
+      ${{ matrix.os == 'ubuntu-latest' && 'Linux' || matrix.os == 'macos-latest' && 'MacOS' || 'Windows' }}
       [${{ matrix.precision }}]
       ${{ matrix.omp == 'ON' && 'OMP' || '' }}
       ${{ matrix.mpi == 'ON' && 'MPI' || '' }}
