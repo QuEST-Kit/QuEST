@@ -24,3 +24,15 @@ jobs:
           cuda: '12.5.0'
           method: network
           sub-packages: '["nvcc", "cudart", "thrust"]'
+
+      # invoke cmake, disabling LTO (it duplicates symbols with CUDA+MPI)
+      - name: Configure CMake
+        run: >
+          cmake -B build
+          -DCMAKE_CXX_FLAGS="-fno-lto ${CMAKE_CXX_FLAGS}"
+          -DENABLE_CUDA=ON
+          -DCMAKE_CUDA_ARCHITECTURES=70
+
+      - name: Compile
+        run: >
+          cmake --build build
