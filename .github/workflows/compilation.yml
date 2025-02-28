@@ -85,13 +85,13 @@ jobs:
         if: ${{ matrix.mpi == 'ON' }}
         uses: mpi4py/setup-mpi@v1
 
-      # obtain CUDA for GPU acceleration
+      # obtain CUDA for GPU acceleration (cublas only needed for cuQuantum)
       - name: Setup CUDA
         if: ${{ matrix.gpu == 'ON' }}
         uses: Jimver/cuda-toolkit@v0.2.21
         with:
           method: network
-          sub-packages: '["nvcc", "cudart", "thrust"]'
+          sub-packages: '["nvcc", "cudart", "thrust", "cublas"]'
 
       # obtain cuQuantum on linux
       - name: Setup cuQuantum
