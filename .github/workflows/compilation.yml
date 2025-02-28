@@ -35,14 +35,17 @@ jobs:
         gpu: [ON, OFF]
         cuquantum: [ON, OFF]
 
-        # assign each OS a bespoke compiler
+        # assign each OS a bespoke compiler, and disable deprecated API on MSVC
         include:
           - os: ubuntu-latest
             compiler: g++
+            deprecated: ON
           - os: macos-latest
             compiler: clang++
+            deprecated: ON
           - os: windows-latest
             compiler: cl
+            deprecated: OFF
             
         exclude:
           # cannot use GPU with quad-precision
@@ -116,7 +119,7 @@ jobs:
           cmake -B ${{ env.build_dir }}
           -DCMAKE_CXX_FLAGS="-fno-lto ${CMAKE_CXX_FLAGS}"
           -DBUILD_EXAMPLES=ON
-          -DENABLE_DEPRECATED_API=ON
+          -DENABLE_DEPRECATED_API=${{ matrix.deprecated }}
           -DENABLE_MULTITHREADING=${{ matrix.omp }}
           -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
           -DENABLE_CUDA=${{ matrix.gpu }}

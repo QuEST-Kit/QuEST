@@ -79,7 +79,8 @@ void demo_getCompMatr() {
 
 void demo_createInlineCompMatr() {
 
-    // inline literal without gross C compound literal syntax
+    // inline literal without gross C compound literal syntax (non-MSVC only)
+#if !defined(__MSC_VER)
     CompMatr a = createInlineCompMatr(2, {
         {1,2,3i,4},
         {4,5,6,7},
@@ -88,8 +89,10 @@ void demo_createInlineCompMatr() {
     });
     reportCompMatr(a);
     destroyCompMatr(a);
+#endif
 
-    // unspecified elements default to 0 (C only)
+    // unspecified elements default to 0 (non-MSVC C only)
+#if !defined(__MSC_VER)
     CompMatr b = createInlineCompMatr(3, {
         {1,2,3,4,5,6,7,8},
         {8i, 7i, 6i, 5i},
@@ -98,18 +101,23 @@ void demo_createInlineCompMatr() {
     });
     reportCompMatr(b);
     destroyCompMatr(b);
+#endif
+
 }
 
 
 void demo_setInlineCompMatr() {
 
-    // inline literal without gross C compound-literal syntax
+    // inline literal without gross C compound-literal syntax (non-MSVC only)
+#if !defined(__MSC_VER)
     CompMatr a = createCompMatr(1);
     setInlineCompMatr(a, 1, {{.3,.4},{.6,.7}});
     reportCompMatr(a);
     destroyCompMatr(a);
+#endif
 
-    // unspecified elements default to 0 (C only)
+    // unspecified elements default to 0 (non-MSVC C only)
+#if !defined(__MSC_VER)
     CompMatr b = createCompMatr(3);
     setInlineCompMatr(b, 3, {
         {1,2,3,4,5,6,7,8},
@@ -119,19 +127,24 @@ void demo_setInlineCompMatr() {
     });
     reportCompMatr(b);
     destroyCompMatr(b);
+#endif
+
 }
 
 
 void demo_setCompMatr() {
 
-    // 2D compile-time array passed to VLA arg (C only) 
+    // 2D compile-time array passed to VLA arg (non-MSVC C only)
+#if !defined(__MSC_VER)
     qcomp arr[2][2] = {{5, 4},{3, 2}};
     CompMatr a = createCompMatr(1);
     setCompMatr(a, arr);
     reportCompMatr(a);
     destroyCompMatr(a);
+#endif
 
-    // 2D VLA (C only)
+    // 2D VLA (non-MSVC C only)
+#if !defined(__MSC_VER)
     int len = 2;
     qcomp elems[len][len];
     elems[0][0] = .1;
@@ -142,6 +155,7 @@ void demo_setCompMatr() {
     setCompMatr(b, elems);
     reportCompMatr(b);
     destroyCompMatr(b);
+#endif
 
     // nested pointers
     int dim = 8;
@@ -254,15 +268,20 @@ void demo_getDiagMatr() {
 
 void demo_createInlineDiagMatr() {
 
-    // inline literal without gross C compound-literal syntax
+    // inline literal without gross C compound-literal syntax (non-MSVC only)
+#if !defined(__MSC_VER)
     DiagMatr a = createInlineDiagMatr(1, {3i,5i});
     reportDiagMatr(a);
     destroyDiagMatr(a);
+#endif
 
-    // unspecified elemenrts default to 0 (C only)
+    // unspecified elemenrts default to 0 (non-MSVC C only)
+#if !defined(__MSC_VER)
     DiagMatr b = createInlineDiagMatr(4, {1, 2, 3});
     reportDiagMatr(b);
     destroyDiagMatr(b);
+#endif
+
 }
 
 

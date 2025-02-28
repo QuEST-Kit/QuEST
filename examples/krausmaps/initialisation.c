@@ -5,7 +5,8 @@
 
 void demo_createInlineKrausMap() {
 
-    // inline literal without C99 compound-literal syntax
+    // inline literal without C99 compound-literal syntax (non-MSVC only)
+#if !defined(__MSC_VER)
     KrausMap a = createInlineKrausMap(1, 3, {
         {{1,2},{3,4}},
         {{5,5},{6,6}},
@@ -13,8 +14,10 @@ void demo_createInlineKrausMap() {
     });
     reportKrausMap(a);
     destroyKrausMap(a);
+#endif
 
-    // unspecified elements/rows/matrices will be defaulted to all 0 (C only)
+    // unspecified elements/rows/matrices will be defaulted to all 0 (non-MSVC C only)
+#if !defined(__MSC_VER)
     KrausMap b = createInlineKrausMap(2, 5, {
         {
             {1,2,3,4},
@@ -30,12 +33,15 @@ void demo_createInlineKrausMap() {
     });
     reportKrausMap(b);
     destroyKrausMap(b);
+#endif
+
 }
 
 
 void demo_setInlineKrausMap() {
 
-    // inline literal without C99 compound-literal syntax
+    // inline literal without C99 compound-literal syntax (non-MSVC only)
+#if !defined(__MSC_VER)
     KrausMap a = createKrausMap(1, 3);
     setInlineKrausMap(a, 1, 3, {
         {{1,2},{3,4}},
@@ -44,8 +50,10 @@ void demo_setInlineKrausMap() {
     });
     reportKrausMap(a);
     destroyKrausMap(a);
+#endif
 
-    // unspecified elements/rows/matrices will be defaulted to all 0 (C only)
+    // unspecified elements/rows/matrices will be defaulted to all 0 (non-MSVC C only)
+#if !defined(__MSC_VER)
     KrausMap b = createKrausMap(2, 5);
     setInlineKrausMap(b, 2, 5, {
         {
@@ -62,12 +70,15 @@ void demo_setInlineKrausMap() {
     });
     reportKrausMap(b);
     destroyKrausMap(b);
+#endif
+
 }
 
 
 void demo_setKrausMap() {
 
-    // 3D compile-time array passed to VLA arg (C only) 
+    // 3D compile-time array passed to VLA arg (non-MSVC C only)
+#if !defined(__MSC_VER)
     qcomp arr[2][4][4] = {
         {
             {1,2,3,4},
@@ -83,11 +94,13 @@ void demo_setKrausMap() {
     setKrausMap(a, arr);
     reportKrausMap(a);
     destroyKrausMap(a);
+#endif
 
-    // 3D VLA (C only)
+    // 3D VLA (non-MSVC C only)
     int nQb = 2;
     int nOps = 3;
     int dim = 1 << nQb;
+#if !defined(__MSC_VER)
     qcomp elems[nOps][dim][dim];
     for (int n=0; n<nOps; n++)
         for (int r=0; r<dim; r++)
@@ -97,6 +110,7 @@ void demo_setKrausMap() {
     setKrausMap(b, elems);
     reportKrausMap(b);
     destroyKrausMap(b);
+#endif
 
     // 3D nested pointers
     nQb = 2;
@@ -117,7 +131,7 @@ void demo_setKrausMap() {
     destroyKrausMap(c);
 
     // 1D array of 2D pointers
-    qcomp** ptrArr[nOps];
+    qcomp** ptrArr[4];
     for (int n=0; n<nOps; n++)
         ptrArr[n] = ptrs[n];
     KrausMap d = createKrausMap(nQb, nOps);
@@ -125,7 +139,8 @@ void demo_setKrausMap() {
     reportKrausMap(d);
     destroyKrausMap(d);
 
-    // inline C99 temporary array (C only)
+    // inline C99 temporary array -> VLA (non-MSVC C only)
+#if !defined(__MSC_VER)
     KrausMap e = createKrausMap(1, 3);
     setKrausMap(e, (qcomp[3][2][2]) {
         {{1,2},{3,4}},
@@ -134,6 +149,7 @@ void demo_setKrausMap() {
     });
     reportKrausMap(e);
     destroyKrausMap(e);
+#endif
 
     // cleanup
     for (int n=0; n<nOps; n++) {

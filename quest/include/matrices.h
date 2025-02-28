@@ -500,7 +500,7 @@ extern "C" {
  */
 
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 
     // C++ defines vector overloads, permitting inline initialisation
 
@@ -514,7 +514,7 @@ extern "C" {
     // C++ cannot accept 2D arrays at all, because it does not support C99 VLA. 
     // It can however accept 1D arrays (which decay to pointers) already to setDiagMatr()
 
-#else
+#elif !defined(__MSC_VER)
 
     // C first defines a bespoke functions receiving C99 VLAs, which we have to define here in
     // the header becauses the C++ source cannot use VLA, nor should we pass a 2D qcomp array
@@ -553,6 +553,12 @@ extern "C" {
 
     // no need to define bespoke overload for diagonal matrices, because 1D arrays decay to pointers
 
+#else
+
+    // MSVC's C11 does not support C99 VLAs (which the standard left optional, grr!), so
+    // we cannot support 2D-array initialisation of CompMatr at all. This means only the 
+    // existing setCompMatr(qcomp**) declared previously is usable by MSVC C users
+
 #endif
 
 
@@ -569,7 +575,7 @@ extern "C" {
  */
 
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 
     // C++ redirects to vector overloads, passing initialiser lists.  The args like 'numQb'
     // are superfluous, but needed for consistency with the C API, so we additionally
@@ -581,7 +587,7 @@ extern "C" {
 
     void setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, std::vector<qcomp> in);
 
-#else 
+#elif !defined(__MSC_VER)
 
     // C defines macros which add compound literal syntax so that the user's passed lists
     // become compile-time-sized temporary arrays. C99 does not permit inline-initialised
@@ -614,6 +620,9 @@ extern "C" {
     }
 
 
+    // happily, macro arg 'numQb' must be a compile-time constant, so there is no risk of
+    // unexpectedly re-evaluating user expressions due to its repetition in the macro
+
     #define setInlineCompMatr(matr, numQb, ...) \
         _setInlineCompMatr((matr), (numQb), (qcomp[1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
@@ -622,6 +631,36 @@ extern "C" {
 
     #define setInlineFullStateDiagMatr(matr, startInd, numElems, ...) \
         _setInlineFullStateDiagMatr((matr), (startInd), (numElems), (qcomp[(numElems)]) __VA_ARGS__)
+
+#else
+
+    // MSVC C11 does not support C99 VLAs, so the inner functions above are illegal.
+    // As such, we must choose to either forego the internal validation (which 
+    // checks that the passed matrix object has been prior created with e.g.
+    // createDiagMatr), or expand the macro into a do-while which users cannot ergo
+    // place inside another function call. We opt to preclude the latter, since it
+    // seems an unlikely use-case (because the function returns void) and will give
+    // a compile-time error, whereas removing validation could cause silent seg-faults
+    // when users incorrectly initialise an un-created matrix.
+
+    // Note however that because MSVC does not support C99 VLA in C11, such that
+    // _setCompMatrFromArr() was not defined, so we cannot define setInlineCompMatr();
+    // MSVC C users simply miss out on this convenience function. Take it up with Bill!
+
+    extern void _validateParamsToSetInlineDiagMatr(DiagMatr matr, int numQb);
+    extern void _validateParamsToSetInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems);
+
+    #define setInlineDiagMatr(matr, numQb, ...) \
+        do { \
+            _validateParamsToSetInlineDiagMatr((matr), (numQb)); \
+            setDiagMatr((matr), (numQb), (qcomp[1<<(numQb)]) __VA_ARGS__); \
+        } while (0)
+
+    #define setInlineFullStateDiagMatr(matr, startInd, numElems, ...) \
+        do { \
+            _validateParamsToSetInlineFullStateDiagMatr((matr), (startInd), (numElems)); \
+            setFullStateDiagMatr((matr), (startInd), (elems), (numElems)); \
+        } while (0)
 
 #endif
 
@@ -642,7 +681,7 @@ extern "C" {
  */
 
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 
     // C++ accepts vector initialiser lists
 
@@ -650,7 +689,7 @@ extern "C" {
 
     DiagMatr createInlineDiagMatr(int numQb, std::vector<qcomp> elems);
 
-#else
+#elif !defined(__MSC_VER)
 
     // C defines macros which add compound literal syntax so that the user's passed lists
     // become compile-time-sized temporary arrays. We use bespoke validation so that the
@@ -684,6 +723,12 @@ extern "C" {
 
     #define createInlineDiagMatr(numQb, ...) \
         _createInlineDiagMatr((numQb), (qcomp[1<<(numQb)]) __VA_ARGS__)
+
+#else
+
+    // MSVC's C11 does not support C99 VLA, so we cannot use the above inner functions.
+    // The nuisance of trying to create, modify then return a matrix instance using
+    // MSVC-specific preprocessors is too annoying, so Windows C users miss out! :(
 
 #endif
 
