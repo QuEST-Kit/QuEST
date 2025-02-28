@@ -74,11 +74,12 @@ jobs:
         uses: Jimver/cuda-toolkit@v0.2.21
         with:
           method: network
-          sub-packages: '["nvcc", "cudart", "thrust", "nvrtc"]'
+          sub-packages: '["nvcc", "cudart", "thrust"]'
 
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
+          -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF
           -DENABLE_MULTITHREADING=${{ matrix.omp }}
           -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
           -DENABLE_CUDA=${{ matrix.gpu }}
