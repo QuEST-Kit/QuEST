@@ -3,8 +3,14 @@
 
 name: Windows CUDA (via choco) test
 
+# huh it doesn't appear under manual workflows yet!
 on:
-    workflow_dispatch
+    push:
+      branches:
+        - ci-compiling
+    pull_request:
+      branches:
+        - ci-compiling
 
 jobs:
 

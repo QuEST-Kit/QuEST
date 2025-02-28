@@ -1,12 +1,16 @@
 name: Compilation
 
+# pausing this for the moment
 on:
-  push:
-    branches:
-      - ci-compiling
-  pull_request:
-    branches:
-      - ci-compiling
+    workflow_dispatch
+
+# on:
+#   push:
+#     branches:
+#       - ci-compiling
+#   pull_request:
+#     branches:
+#       - ci-compiling
 
 jobs:
 
