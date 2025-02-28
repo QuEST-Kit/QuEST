@@ -315,12 +315,6 @@ set_target_properties(QuEST PROPERTIES OUTPUT_NAME ${LIB_NAME})
 # Add source files
 add_subdirectory(quest)
 
-# I'm desperate
-string(REPLACE "-std=c++20" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-string(REPLACE "-std=c++20" "" CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS}")
-message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
-message(STATUS "CMAKE_CUDA_FLAGS: ${CMAKE_CUDA_FLAGS}")
-
 ## Examples
 
 add_executable(min_example
@@ -429,3 +423,7 @@ install(EXPORT QuESTTargets
         NAMESPACE QuEST::
         DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
 )
+
+message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+message(STATUS "CMAKE_CUDA_FLAGS: ${CMAKE_CUDA_FLAGS}")
+message(STATUS "CUDA_NVCC_FLAGS: ${CUDA_NVCC_FLAGS}")

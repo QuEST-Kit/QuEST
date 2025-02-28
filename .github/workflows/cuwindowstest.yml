@@ -44,4 +44,4 @@ jobs:
 
       - name: Compile
         run: >
-          cmake --build build
+          cmake --build build --verbose
