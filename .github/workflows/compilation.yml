@@ -90,6 +90,7 @@ jobs:
         if: ${{ matrix.gpu == 'ON' }}
         uses: Jimver/cuda-toolkit@v0.2.21
         with:
+          cuda: '12.5.0'
           method: network
           sub-packages: '["nvcc", "cudart", "thrust", "cublas", "cublas_dev"]'
 
