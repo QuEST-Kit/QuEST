@@ -261,7 +261,7 @@ if (ENABLE_CUDA)
   # forcefully removing LTO with CUDA+MPI, since it causes
   # symbol duplication on github actions
   if (ENABLE_DISTRIBUTION)
-    string(REPLACE "-flto=auto" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    set(CMAKE_CUDA_FLAGS "-Xcompiler=-fno-lto ${CMAKE_CUDA_FLAGS}")
   endif()
 
   target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=1)
