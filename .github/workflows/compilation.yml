@@ -1,128 +1,126 @@
-# name: Compilation
+name: Compilation
 
-# on:
-#   push:
-#     branches:
-#       - ci-compiling
-#   pull_request:
-#     branches:
-#       - ci-compiling
+on:
+  push:
+    branches:
+      - ci-compiling
+  pull_request:
+    branches:
+      - ci-compiling
 
-# jobs:
+jobs:
 
-#   # test only compilation succeeds (no execution)
-#   build-test:
-#     name: Testing compilation
-#     runs-on: ${{ matrix.os }}
+  # test only compilation succeeds (no execution)
+  build-test:
+    name: Testing compilation
+    runs-on: ${{ matrix.os }}
 
-#     strategy:
-#       # continue other jobs if any fail
-#       fail-fast: false
+    strategy:
+      # continue other jobs if any fail
+      fail-fast: false
 
-#       # limit concurrent jobs to avoid running out of disk
-#       max-parallel: 64
+      # limit concurrent jobs to avoid running out of disk
+      max-parallel: 64
 
-#       # compile QuEST with all combinations of below flags
-#       matrix:
-#         os: [ubuntu-latest, macos-latest, windows-latest]
-#         precision: [1, 2, 4]
-#         omp: [ON, OFF]
-#         mpi: [ON, OFF]
-#         gpu: [ON, OFF]
-#         cuquantum: [ON, OFF]
+      # compile QuEST with all combinations of below flags
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        precision: [1, 2, 4]
+        omp: [ON, OFF]
+        mpi: [ON, OFF]
+        gpu: [ON, OFF]
+        cuquantum: [ON, OFF]
 
-#         # assign each OS a bespoke compiler
-#         include:
-#           - os: ubuntu-latest
-#             compiler: g++
-#           - os: macos-latest
-#             compiler: clang++
-#           - os: windows-latest
-#             compiler: cl
+        # assign each OS a bespoke compiler
+        include:
+          - os: ubuntu-latest
+            compiler: g++
+          - os: macos-latest
+            compiler: clang++
+          - os: windows-latest
+            compiler: cl
             
-#         exclude:
-#           # cannot use GPU with quad-precision
-#           - gpu: ON
-#             precision: 4
+        exclude:
+          # cannot use GPU with quad-precision
+          - gpu: ON
+            precision: 4
 
-#           # cannot use GPU on MacOS
-#           - gpu: ON
-#             os: macos-latest
+          # cannot use cuquantum when not using GPU
+          - gpu: OFF
+            cuquantum: ON
 
-#           # cannot presently use multithreading with MSVC
-#           - omp: ON
-#             os: windows-latest
+          # cannot use GPU on MacOS
+          - gpu: ON
+            os: macos-latest
+
+          # cannot use cuquantum on Windows or MacOS
+          - cuquantum: ON
+            os: windows-latest
+          - cuquantum: ON
+            os: macos-latest
+
+          # cannot presently use multithreading with MSVC
+          - omp: ON
+            os: windows-latest
           
-#           # cannot use cuquantum when not using GPU
-#           - gpu: OFF
-#             cuquantum: ON
-
-#           # cannot use cuquantum on Windows or MacOS
-#           - cuquantum: ON
-#             os: windows-latest
-#           - cuquantum: ON
-#             os: macos-latest
+          # cannot get GPU working on Windows CI (grr!)
+          - gpu: ON
+            os: windows-latest
             
-#     # constants
-#     env:
-#       build_dir: "build"
-#       cuda_arch: 70
+    # constants
+    env:
+      build_dir: "build"
+      cuda_arch: 70
 
-#     # perform the job
-#     steps:
-#       - name: Get QuEST
-#         uses: actions/checkout@v4
+    # perform the job
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
 
-#       # obtain OMP for Clang multithreading
-#       - name: Setup libomp 
-#         if: ${{ matrix.compiler == 'clang++' && matrix.omp == 'ON' }}
-#         run: >
-#           brew install libomp;
-#           echo "OpenMP_ROOT=$(brew --prefix)/opt/libomp" >> $GITHUB_ENV
+      # obtain OMP for Clang multithreading
+      - name: Setup libomp 
+        if: ${{ matrix.compiler == 'clang++' && matrix.omp == 'ON' }}
+        run: >
+          brew install libomp;
+          echo "OpenMP_ROOT=$(brew --prefix)/opt/libomp" >> $GITHUB_ENV
 
-#       # obtain MPI for distribution
-#       - name: Setup MPI
-#         if: ${{ matrix.mpi == 'ON' }}
-#         uses: mpi4py/setup-mpi@v1
+      # obtain MPI for distribution
+      - name: Setup MPI
+        if: ${{ matrix.mpi == 'ON' }}
+        uses: mpi4py/setup-mpi@v1
 
-#       # obtain CUDA for GPU acceleration (cublas only needed for cuQuantum)
-#       - name: Setup CUDA
-#         if: ${{ matrix.gpu == 'ON' }}
-#         uses: Jimver/cuda-toolkit@v0.2.21
-#         with:
-#           cuda: '12.5.0'
-#           method: network
-#           sub-packages: '["nvcc", "cudart", "thrust"]'
-#           non-cuda-sub-packages: '["libcublas"]'
+      # obtain CUDA for GPU acceleration (cublas only needed for cuQuantum)
+      - name: Setup CUDA
+        if: ${{ matrix.gpu == 'ON' }}
+        uses: Jimver/cuda-toolkit@v0.2.21
+        with:
+          method: network
+          sub-packages: '["nvcc", "cudart", "thrust"]'
+          non-cuda-sub-packages: '["libcublas"]'
 
-#       # obtain cuQuantum on linux
-#       - name: Setup cuQuantum
-#         if: ${{ matrix.cuquantum == 'ON' }}
-#         run: >
-#           wget https://developer.download.nvidia.com/compute/cuquantum/redist/cuquantum/linux-x86_64/cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
-#           tar -xvf cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
-#           echo "CUQUANTUM_ROOT=cuquantum-linux-x86_64-24.08.0.5_cuda12-archive" >> $GITHUB_ENV
+      # obtain cuQuantum on linux
+      - name: Setup cuQuantum
+        if: ${{ matrix.cuquantum == 'ON' }}
+        run: >
+          wget https://developer.download.nvidia.com/compute/cuquantum/redist/cuquantum/linux-x86_64/cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
+          tar -xvf cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
+          echo "CUQUANTUM_ROOT=cuquantum-linux-x86_64-24.08.0.5_cuda12-archive" >> $GITHUB_ENV
 
-#       # invoke cmake, disabling LTO (it duplicates symbols with CUDA+MPI)
-#       - name: Configure CMake
-#         run: >
-#           cmake -B ${{ env.build_dir }}
-#           -DCMAKE_CXX_FLAGS="-fno-lto ${CMAKE_CXX_FLAGS}"
-#           -DBUILD_EXAMPLES=ON
-#           -DENABLE_DEPRECATED_API=ON
-#           -DENABLE_MULTITHREADING=${{ matrix.omp }}
-#           -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
-#           -DENABLE_CUDA=${{ matrix.gpu }}
-#           -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
-#           -DFLOAT_PRECISION=${{ matrix.precision }}
-#           -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
-#           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
+      # invoke cmake, disabling LTO (it duplicates symbols with CUDA+MPI)
+      - name: Configure CMake
+        run: >
+          cmake -B ${{ env.build_dir }}
+          -DCMAKE_CXX_FLAGS="-fno-lto ${CMAKE_CXX_FLAGS}"
+          -DBUILD_EXAMPLES=ON
+          -DENABLE_DEPRECATED_API=ON
+          -DENABLE_MULTITHREADING=${{ matrix.omp }}
+          -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
+          -DENABLE_CUDA=${{ matrix.gpu }}
+          -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
+          -DFLOAT_PRECISION=${{ matrix.precision }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+          -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
 
-#       - name: Compile
-#         run: >
-#           cmake --build ${{ env.build_dir }}
-
-
-# # CUDA install on Windows not working.
-# # Could try this? (via choco)
-# # https://github.com/MarkSchofield/WindowsToolchain/blob/main/.github/workflows/ci.yaml
+      - name: Compile
+        run: >
+          cmake --build ${{ env.build_dir }}

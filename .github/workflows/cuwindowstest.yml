@@ -1,16 +1,7 @@
-# THIS JUST SIMPLY WILL NOT WORK!
-# cuda is installed fine, but CMake is passing ill-formed commands to NVCC when
-# attempting to compile gpu_config and gpu_subroutines, and I cannot determine why!
-
-
-
-
-name: NVCC Windows test
+name: Windows CUDA (via cuda-toolkit) test
 
 on:
-  push:
-    branches:
-      - ci-compiling
+    workflow_dispatch
 
 jobs:
 
@@ -24,11 +15,7 @@ jobs:
       - name: Get QuEST
         uses: actions/checkout@v4
 
-      # obtain CUDA for GPU acceleration
-      # NOTE:
-      # - cuQuantum (Linux only) requires: non-cuda-sub-packages: '["libcublas"]'
-      # - Windows requires additional sub-package: "visual_studio_integration"
-
+      # obtain CUDA, including "visual_studio_integration" for MSVC
       - name: Obtain CUDA
         uses: Jimver/cuda-toolkit@v0.2.21
         id: cuda-toolkit
