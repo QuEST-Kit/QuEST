@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
 
       # limit concurrent jobs to avoid running out of disk
-      max-parallel: 8
+      max-parallel: 64
 
       # perform job for all combinations of...
       matrix:
@@ -81,6 +81,8 @@ jobs:
         run: >
           cmake -B ${{ env.build_dir }}
           -DCMAKE_CXX_FLAGS="-fno-lto ${CMAKE_CXX_FLAGS}"
+          -DBUILD_EXAMPLES=ON
+          -DENABLE_DEPRECATED_API=ON
           -DENABLE_MULTITHREADING=${{ matrix.omp }}
           -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
           -DENABLE_CUDA=${{ matrix.gpu }}
