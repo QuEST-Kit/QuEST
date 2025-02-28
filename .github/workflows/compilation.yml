@@ -29,29 +29,40 @@ jobs:
         omp: [ON, OFF]
         mpi: [ON, OFF]
         gpu: [ON, OFF]
-        cuquantum: [OFF]
+        cuquantum: [ON, OFF]
 
+        # assign each OS a bespoke compiler
         include:
-          # assign each OS a bespoke compiler
           - os: ubuntu-latest
             compiler: g++
           - os: macos-latest
             compiler: clang++
           - os: windows-latest
             compiler: cl
-
-          # linux GPU can also toggle cuQuantum
-          - os: ubuntu-latest
-            gpu: ON
-            cuquantum: [ON, OFF]
             
-        # cannot use GPU with MacOS nor quad-precision
         exclude:
+          # cannot use GPU with quad-precision
           - gpu: ON
             precision: 4
+
+          # cannot use GPU on MacOS
           - gpu: ON
             os: macos-latest
 
+          # cannot presently use multithreading with MSVC
+          - omp: ON
+            compiler: cl
+          
+          # cannot use cuquantum when not using GPU
+          - gpu: OFF
+            cuquantum: ON
+
+          # cannot use cuquantum on Windows or MacOS
+          - cuquantum: ON
+            os: windows-latest
+          - cuquantum: ON
+            os: macos-latest
+            
     # constants
     env:
       build_dir: "build"
