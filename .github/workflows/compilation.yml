@@ -13,7 +13,7 @@ jobs:
   # test only compilation succeeds (no execution)
   build-test:
     name: >
-      os=${{ replace(matrix.os, '-latest', '') }}
+      ${{ matrix.os == 'ubuntu-latest' && 'Lin' || matrix.os == 'macos-latest' && 'Mac' || 'Win' }}
       prec=${{ matrix.precision }}
       omp=${{ matrix.omp == 'ON' && 1 || 0 }}
       mpi=${{ matrix.mpi == 'ON' && 1 || 0 }}
