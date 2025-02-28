@@ -92,7 +92,8 @@ jobs:
         with:
           cuda: '12.5.0'
           method: network
-          sub-packages: '["nvcc", "cudart", "thrust", "cublas", "cublas_dev"]'
+          sub-packages: '["nvcc", "cudart", "thrust"]'
+          non-cuda-sub-packages: '["libcublas"]'
 
       # obtain cuQuantum on linux
       - name: Setup cuQuantum
