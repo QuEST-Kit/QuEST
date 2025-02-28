@@ -37,7 +37,10 @@ jobs:
           -DCMAKE_CXX_FLAGS="-fno-lto ${CMAKE_CXX_FLAGS}"
           -DENABLE_CUDA=ON
           -DCMAKE_CUDA_ARCHITECTURES=70
-          -DCMAKE_GENERATOR_TOOLSET="cuda=${{steps.cuda-toolkit.outputs.CUDA_PATH}}"
+        
+
+        # might be causing issue
+        ##  -DCMAKE_GENERATOR_TOOLSET="cuda=${{steps.cuda-toolkit.outputs.CUDA_PATH}}"
 
       - name: Compile
         run: >
