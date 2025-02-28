@@ -4,6 +4,7 @@
 #include "macros.hpp"
 #include "linalg.hpp"
 #include "lists.hpp"
+#include "random.hpp"
 #include "quest/include/quest.h"
 
 #include <vector>
@@ -122,7 +123,7 @@ vector<qreal> getRandomProbabilities(int numProbs) {
 }
 
 
-auto getRandomCtrlsStatesTargs(int numQubits, int minNumTargs, int maxNumTargsIncl) {
+vectortriple getRandomCtrlsStatesTargs(int numQubits, int minNumTargs, int maxNumTargsIncl) {
     DEMAND( minNumTargs <= maxNumTargsIncl );
     DEMAND( maxNumTargsIncl <= numQubits );
 

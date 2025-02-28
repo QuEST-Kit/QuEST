@@ -11,7 +11,7 @@ using std::vector;
 int    getLog2(qindex);
 qindex getPow2(int);
 qcomp  getExpI(qreal);
-int    getBit(qindex num, int ind);
+int    getBitAt(qindex num, int ind);
 
 qvector getNormalised(qvector);
 qvector getDisceteFourierTransform(qvector);

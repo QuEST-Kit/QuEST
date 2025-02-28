@@ -89,7 +89,7 @@ vector<qreal> getAllRefProbsInner(auto& state, vector<int> targets) {
     for (size_t i=0; i<out.size(); i++) {
 
         for (size_t j=0; j<outcomes.size(); j++)
-            outcomes[j] = getBit(i, j);
+            outcomes[j] = getBitAt(i, j);
 
         out[i] = getReferenceProbability(state, targets, outcomes);
     }

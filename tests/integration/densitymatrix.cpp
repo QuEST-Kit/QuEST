@@ -138,7 +138,7 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
     for (int r=0; r<numReps; r++) {
         auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,maxNumPauliGadTargs);
         PauliStr str = getRandomPauliStr(targs);
-        qreal phi = getRandomReal(-2*M_PI, 2*M_PI);
+        qreal phi = getRandomReal(-2 * 3.14, 2 * 3.14);
         applyMultiStateControlledPauliGadget(psi, ctrls.data(), states.data(), ctrls.size(), str, phi);
         applyMultiStateControlledPauliGadget(rho, ctrls.data(), states.data(), ctrls.size(), str, phi);
     }
@@ -146,7 +146,7 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
     // apply phase gadet
     for (int r=0; r<numReps; r++) {
         auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,maxNumPhaseGadTargs);
-        qreal phi = getRandomReal(-2*M_PI, 2*M_PI);
+        qreal phi = getRandomReal(-2 * 3.14, 2 * 3.14);
         applyMultiStateControlledPhaseGadget(psi, ctrls.data(), states.data(), ctrls.size(), targs.data(), targs.size(), phi);
         applyMultiStateControlledPhaseGadget(rho, ctrls.data(), states.data(), ctrls.size(), targs.data(), targs.size(), phi);
     }

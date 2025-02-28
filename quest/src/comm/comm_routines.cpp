@@ -93,23 +93,35 @@ qindex MAX_MESSAGE_LENGTH = powerOf2(28);
 
 #if COMPILE_MPI
 
-    #if (FLOAT_PRECISION == 1)
+    // declare MPI type for qreal
+    #if   (FLOAT_PRECISION == 1)
         #define MPI_QREAL MPI_FLOAT
-        #define MPI_QCOMP MPI_CXX_FLOAT_COMPLEX
-
     #elif (FLOAT_PRECISION == 2)
         #define MPI_QREAL MPI_DOUBLE
+    #elif (FLOAT_PRECISION == 4)
+        #define MPI_QREAL MPI_LONG_DOUBLE
+    #endif
+
+    // declare MPI type for qcomp, falling back to C types
+    // when the C++ type does not exist, as is the case for 
+    // MS MPI and other compilers at quad precision
+    #if   (FLOAT_PRECISION == 1) && defined(MPI_CXX_FLOAT_COMPLEX)
+        #define MPI_QCOMP MPI_CXX_FLOAT_COMPLEX
+    #elif (FLOAT_PRECISION == 1)
+        #define MPI_QCOMP MPI_C_FLOAT_COMPLEX
+
+    #elif (FLOAT_PRECISION == 2) && defined(MPI_CXX_DOUBLE_COMPLEX)
         #define MPI_QCOMP MPI_CXX_DOUBLE_COMPLEX
+    #elif (FLOAT_PRECISION == 2)
+        #define MPI_QCOMP MPI_C_DOUBLE_COMPLEX
 
-    // sometimes 'MPI_CXX_LONG_DOUBLE_COMPLEX' isn't defined
     #elif (FLOAT_PRECISION == 4) && defined(MPI_CXX_LONG_DOUBLE_COMPLEX)
-        #define MPI_QREAL MPI_LONG_DOUBLE
         #define MPI_QCOMP MPI_CXX_LONG_DOUBLE_COMPLEX
-
-    // in that case, fall back to the C type (identical memory layout)
-    #else
-        #define MPI_QREAL MPI_LONG_DOUBLE
+    #elif (FLOAT_PRECISION == 4)
         #define MPI_QCOMP MPI_C_LONG_DOUBLE_COMPLEX
+
+    #else
+        #error "Something went horribly wrong in inferring the MPI type"
     #endif
 
 #endif

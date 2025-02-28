@@ -20,7 +20,8 @@ int getRandomInt(int min, int maxExcl);
 qreal getRandomReal(qreal min, qreal max);
 qcomp getRandomComplex();
 
-tuple<vector<int>,vector<int>,vector<int>> getRandomCtrlsStatesTargs(int numQubits, int minNumTargs, int maxNumTargsIncl);
+using vectortriple = tuple<vector<int>,vector<int>,vector<int>>;
+vectortriple getRandomCtrlsStatesTargs(int numQubits, int minNumTargs, int maxNumTargsIncl);
 
 qvector getRandomVector(size_t dim);
 qmatrix getRandomMatrix(size_t dim);

@@ -40,7 +40,7 @@ qcomp getExpI(qreal x) {
 }
 
 
-int getBit(qindex num, int ind) {
+int getBitAt(qindex num, int ind) {
     return (num >> ind) & 1;
 }
 
@@ -308,7 +308,7 @@ qmatrix getPartialTrace(qmatrix in, vector<int> targets) {
         // prepare { |0>, I, I, |1>, ... }
         vector<qmatrix> matrices(numQubits, getIdentityMatrix(2));
         for (size_t t=0; t<numTargs; t++) {
-            int bit = getBit(v, t);
+            int bit = getBitAt(v, t);
             matrices[targets[t]] = {
                 {bit? 0.:1.}, 
                 {bit? 1.:0.}};
