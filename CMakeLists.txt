@@ -255,7 +255,6 @@ endif()
 if (ENABLE_CUDA)
   enable_language(CUDA)
   set(CMAKE_CUDA_STANDARD_REQUIRED ON)
-  set_property(TARGET QuEST PROPERTY CUDA_STANDARD 20)
 
   target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=1)
   
