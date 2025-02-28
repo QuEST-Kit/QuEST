@@ -91,7 +91,7 @@ jobs:
         uses: Jimver/cuda-toolkit@v0.2.21
         with:
           method: network
-          sub-packages: '["nvcc", "cudart", "thrust", "cublas"]'
+          sub-packages: '["nvcc", "cudart", "thrust", "cublas"", "cublas_dev"]'
 
       # obtain cuQuantum on linux
       - name: Setup cuQuantum
