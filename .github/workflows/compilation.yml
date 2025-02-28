@@ -76,11 +76,11 @@ jobs:
           method: network
           sub-packages: '["nvcc", "cudart", "thrust"]'
 
+      # invoke cmake, disabling LTO (it duplicates symbols with CUDA+MPI)
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
-          -DCMAKE_VERBOSE_MAKEFILE=ON
-          -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF
+          -DCMAKE_CXX_FLAGS="-fno-lto ${CMAKE_CXX_FLAGS}"
           -DENABLE_MULTITHREADING=${{ matrix.omp }}
           -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
           -DENABLE_CUDA=${{ matrix.gpu }}
