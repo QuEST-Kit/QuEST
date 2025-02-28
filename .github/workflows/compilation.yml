@@ -1,4 +1,4 @@
-name: Compilation
+name: Compilation test
 
 on:
   push:
@@ -12,7 +12,14 @@ jobs:
 
   # test only compilation succeeds (no execution)
   build-test:
-    name: Testing compilation
+    name: >
+      os=${{ replace(matrix.os, '-latest', '') }}
+      prec=${{ matrix.precision }}
+      omp=${{ matrix.omp == 'ON' && 1 || 0 }}
+      mpi=${{ matrix.mpi == 'ON' && 1 || 0 }}
+      gpu=${{ matrix.gpu == 'ON' && 1 || 0 }}
+      cuq=${{ matrix.cuquantum == 'ON' && 1 || 0 }}
+
     runs-on: ${{ matrix.os }}
 
     strategy:
