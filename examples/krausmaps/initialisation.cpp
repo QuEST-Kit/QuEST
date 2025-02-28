@@ -114,7 +114,7 @@ void demo_setKrausMap() {
     destroyKrausMap(c);
 
     // 1D array of 2D pointers (decays, so C++ supported)
-    qcomp** ptrArr[nOps];
+    qcomp** ptrArr[4];
     for (int n=0; n<nOps; n++)
         ptrArr[n] = ptrs[n];
     KrausMap d = createKrausMap(nQb, nOps);

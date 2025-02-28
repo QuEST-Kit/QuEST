@@ -4,6 +4,14 @@
 
 
 
+// MSVC's C11 (which is already weird) doesn't support
+// assigning any non-complex literal to complex variables
+// nor any complex arithmetic operators, so it doesn't
+// get to play with the other children.
+#if !defined(_MSC_VER)
+
+
+
 /*
  * CompMatr1, CompMatr2
  */
@@ -79,7 +87,7 @@ void demo_getCompMatr() {
 
 void demo_createInlineCompMatr() {
 
-    // inline literal without gross C compound literal syntax
+    // inline literal without gross C compound literal syntax (non-MSVC only)
     CompMatr a = createInlineCompMatr(2, {
         {1,2,3i,4},
         {4,5,6,7},
@@ -89,7 +97,7 @@ void demo_createInlineCompMatr() {
     reportCompMatr(a);
     destroyCompMatr(a);
 
-    // unspecified elements default to 0 (C only)
+    // unspecified elements default to 0 (non-MSVC C only)
     CompMatr b = createInlineCompMatr(3, {
         {1,2,3,4,5,6,7,8},
         {8i, 7i, 6i, 5i},
@@ -103,13 +111,13 @@ void demo_createInlineCompMatr() {
 
 void demo_setInlineCompMatr() {
 
-    // inline literal without gross C compound-literal syntax
+    // inline literal without gross C compound-literal syntax (non-MSVC only)
     CompMatr a = createCompMatr(1);
     setInlineCompMatr(a, 1, {{.3,.4},{.6,.7}});
     reportCompMatr(a);
     destroyCompMatr(a);
 
-    // unspecified elements default to 0 (C only)
+    // unspecified elements default to 0 (non-MSVC C only)
     CompMatr b = createCompMatr(3);
     setInlineCompMatr(b, 3, {
         {1,2,3,4,5,6,7,8},
@@ -124,14 +132,14 @@ void demo_setInlineCompMatr() {
 
 void demo_setCompMatr() {
 
-    // 2D compile-time array passed to VLA arg (C only) 
+    // 2D compile-time array passed to VLA arg (non-MSVC C only)
     qcomp arr[2][2] = {{5, 4},{3, 2}};
     CompMatr a = createCompMatr(1);
     setCompMatr(a, arr);
     reportCompMatr(a);
     destroyCompMatr(a);
 
-    // 2D VLA (C only)
+    // 2D VLA (non-MSVC C only)
     int len = 2;
     qcomp elems[len][len];
     elems[0][0] = .1;
@@ -254,12 +262,12 @@ void demo_getDiagMatr() {
 
 void demo_createInlineDiagMatr() {
 
-    // inline literal without gross C compound-literal syntax
+    // inline literal without gross C compound-literal syntax (non-MSVC only)
     DiagMatr a = createInlineDiagMatr(1, {3i,5i});
     reportDiagMatr(a);
     destroyDiagMatr(a);
 
-    // unspecified elemenrts default to 0 (C only)
+    // unspecified elemenrts default to 0 (non-MSVC C only)
     DiagMatr b = createInlineDiagMatr(4, {1, 2, 3});
     reportDiagMatr(b);
     destroyDiagMatr(b);
@@ -436,3 +444,10 @@ int main() {
     finalizeQuESTEnv();
     return 0;
 }
+
+
+
+// MSVC's naughty corner
+#else
+int main() { return 0; }
+#endif

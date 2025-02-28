@@ -163,7 +163,7 @@ extern "C" {
  */
 
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 
     // C++ overloads to accept vectors, which also enables vector initialiser literals
 
@@ -174,7 +174,7 @@ extern "C" {
 
     // C++ cannot accept VLAs so does not define 2D array overloads
 
-#else
+#elif !defined(_MSC_VER)
 
     // C first defines bespoke functions which accept C99 VLAs, which we have to define here in
     // the header becauses the C++ source cannot use VLA, nor should we pass a 2D qcomp array
@@ -232,6 +232,12 @@ extern "C" {
             default : _setSuperOpFromArr \
         )((op), (__VA_ARGS__))
 
+#else
+
+    // MSVC's C11 does not support C99 VLAs, so there is no way to support _setKrausMapFromArr(),
+    // and ergo no need for setKrausMap() or setSuperOp() wrappers. This sadly means MSVC C users
+    // can only use the existing functions which accept qcomp*** and qcomp** respectively.
+
 #endif
 
 
@@ -249,7 +255,7 @@ extern "C" {
  */
 
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 
     // C++ redirects to vector overloads, passing initialiser lists.  The args like 'numQb'
     // and 'numOps' are superfluous, but needed for consistency with the C API, so we additionally
@@ -259,7 +265,7 @@ extern "C" {
 
     void setInlineSuperOp(SuperOp op, int numQb, std::vector<std::vector<qcomp>> matrix);
 
-#else
+#elif !defined(_MSC_VER)
 
     // C defines macros which add compound literal syntax so that the user's passed lists
     // become compile-time-sized temporary arrays. C99 does not permit inline-initialised
@@ -292,6 +298,11 @@ extern "C" {
     #define setInlineSuperOp(matr, numQb, ...) \
         _setInlineSuperOp((matr), (numQb), (qcomp[1<<(2*(numQb))][1<<(2*(numQb))]) __VA_ARGS__)
 
+#else
+
+    // MSVC's C11 does not support C99 VLA, so the inner *FromArr() functions have not
+    // been defined, and ergo we cannot define setInlineKrausMap() nor setInlineSuperOp()
+
 #endif
 
 
@@ -305,7 +316,7 @@ extern "C" {
  */
 
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 
     // C++ accepts vector initialiser lists
 
@@ -313,7 +324,7 @@ extern "C" {
 
     SuperOp createInlineSuperOp(int numQubits, std::vector<std::vector<qcomp>> matrix);
 
-#else
+#elif !defined(_MSC_VER)
 
     // C defines macros which add compound literal syntax so that the user's passed lists
     // become compile-time-sized temporary arrays. We use bespoke validation so that the
@@ -347,6 +358,11 @@ extern "C" {
 
     #define createInlineSuperOp(numQb, ...) \
         _createInlineSuperOp((numQb), (qcomp[1<<(2*(numQb))][1<<(2*(numQb))]) __VA_ARGS__)
+
+#else
+
+    // MSVC's C11 does not support C99 VLA, so none of the necessary inner functions are defined,
+    // and ergo Windows C users cannot use createInlineKrausMap() nor createInlineSuperOp(). Tragic!
 
 #endif
 

@@ -159,13 +159,19 @@ message(STATUS "Deprecated API support is turned ${ENABLE_DEPRECATED_API}. Set E
 
 # Windows Specific Options
 if(WIN32)
-    set(ENABLE_MULTITHREADING OFF)
-    message(WARNING "multithreading disabled on Windows")
-    # Force MSVC to export all symbols in a shared library, like GCC and clang
-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-    if (ENABLE_TESTING)
-      set(BUILD_SHARED_LIBS OFF)
-    endif ()
+
+  # Warn MSVC-multithreading not supported
+  if (ENABLE_MULTITHREADING)
+    message(WARNING "Multithreading is currently not supported on Windows and has been disabled")
+  endif()
+
+  set(ENABLE_MULTITHREADING OFF)
+  
+  # Force MSVC to export all symbols in a shared library, like GCC and clang
+  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+  if (ENABLE_TESTING)
+    set(BUILD_SHARED_LIBS OFF)
+  endif()
 endif()
 
 ## Library
@@ -202,7 +208,21 @@ endif()
 target_compile_definitions(QuEST PUBLIC FLOAT_PRECISION=${FLOAT_PRECISION})
 
 if (ENABLE_MULTITHREADING)
-  find_package(OpenMP REQUIRED)
+
+  # find OpenMP, but fail gracefully...
+  find_package(OpenMP QUIET)
+
+  # so that we can customise the error message on MacOS
+  if (NOT OpenMP_FOUND)
+    set(ErrorMsg "Could not find OpenMP, necessary for enabling multithreading.")
+    if (APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+      string(APPEND ErrorMsg " Try first calling `brew install libomp` then `export OpenMP_ROOT=$(brew --prefix)/opt/libomp`")
+    endif()
+
+    # before fatally crashing
+    message(FATAL_ERROR ${ErrorMsg})
+  endif()
+
   target_compile_definitions(QuEST PUBLIC COMPILE_OPENMP=1)
   target_link_libraries(QuEST
     PRIVATE
@@ -235,7 +255,10 @@ endif()
 if (ENABLE_CUDA)
   enable_language(CUDA)
   set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+  
   set_property(TARGET QuEST PROPERTY CUDA_STANDARD 20)
+  
+  set(CUDA_PROPAGATE_HOST_FLAGS OFF)
 
   target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=1)
   
@@ -334,7 +357,10 @@ endif()
 ## Tests
 
 if (ENABLE_TESTING)
-  find_package(Catch2 3.1.1 QUIET)
+
+  set(CatchVersion 3.8.0)
+
+  find_package(Catch2 ${CatchVersion} QUIET)
 
   if (NOT TARGET Catch2::Catch2 AND DOWNLOAD_CATCH2)
     message(STATUS "Catch2 not found, it will be downloaded and built in the build directory.")
@@ -343,7 +369,7 @@ if (ENABLE_TESTING)
     FetchContent_Declare(
       Catch2
       GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-      GIT_TAG        v3.1.1
+      GIT_TAG        v${CatchVersion}
     )
     
     FetchContent_MakeAvailable(Catch2)
@@ -352,7 +378,7 @@ if (ENABLE_TESTING)
     # We won't magically find it here, but this is the easiest way to
     # a) Force the build to fail, and
     # b) Print out all the useful information for helping CMake find Catch2
-    find_package(Catch2 3.1.1 REQUIRED)
+    find_package(Catch2 ${CatchVersion} REQUIRED)
   endif()
 
   include(Catch)

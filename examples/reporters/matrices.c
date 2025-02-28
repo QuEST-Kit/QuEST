@@ -4,6 +4,14 @@
 
 
 
+// MSVC's C11 (which is already weird) doesn't support
+// assigning any non-complex literal to complex variables
+// nor any complex arithmetic operators, so it doesn't
+// get to play with the other children.
+#if !defined(_MSC_VER)
+
+
+
 /*
  * This demo is most interesting when run distributed with up to 64 nodes
  */
@@ -99,3 +107,10 @@ int main() {
     finalizeQuESTEnv();
     return 0;
 }
+
+
+
+// MSVC's naughty corner
+#else
+int main() { return 0; }
+#endif
