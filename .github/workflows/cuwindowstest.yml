@@ -10,7 +10,7 @@ jobs:
   # test only compilation succeeds (no execution)
   build-test:
     name: Testing compilation
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     # perform the job
     steps:
