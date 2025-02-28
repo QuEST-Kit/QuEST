@@ -14,11 +14,11 @@ jobs:
   build-test:
     name: >
       ${{ matrix.os == 'ubuntu-latest' && 'Lin' || matrix.os == 'macos-latest' && 'Mac' || 'Win' }}
-      prec=${{ matrix.precision }}
-      omp=${{ matrix.omp == 'ON' && 1 || 0 }}
-      mpi=${{ matrix.mpi == 'ON' && 1 || 0 }}
-      gpu=${{ matrix.gpu == 'ON' && 1 || 0 }}
-      cuq=${{ matrix.cuquantum == 'ON' && 1 || 0 }}
+      ${{ matrix.os == 1 && '(single)' || matrix.os == 2 && '(double)' || '(quad)' }}
+      ${{ matrix.omp == 'ON' && 'OMP' || '' }}
+      ${{ matrix.mpi == 'ON' && 'MPI' || '' }}
+      ${{ matrix.gpu == 'ON' && 'GPU' || '' }}
+      ${{ matrix.cuquantum == 'ON' && 'CUQ' || '' }}
 
     runs-on: ${{ matrix.os }}
 
