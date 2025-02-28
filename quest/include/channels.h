@@ -174,7 +174,7 @@ extern "C" {
 
     // C++ cannot accept VLAs so does not define 2D array overloads
 
-#elif !defined(__MSC_VER)
+#elif !defined(_MSC_VER)
 
     // C first defines bespoke functions which accept C99 VLAs, which we have to define here in
     // the header becauses the C++ source cannot use VLA, nor should we pass a 2D qcomp array
@@ -265,7 +265,7 @@ extern "C" {
 
     void setInlineSuperOp(SuperOp op, int numQb, std::vector<std::vector<qcomp>> matrix);
 
-#elif !defined(__MSC_VER)
+#elif !defined(_MSC_VER)
 
     // C defines macros which add compound literal syntax so that the user's passed lists
     // become compile-time-sized temporary arrays. C99 does not permit inline-initialised
@@ -324,7 +324,7 @@ extern "C" {
 
     SuperOp createInlineSuperOp(int numQubits, std::vector<std::vector<qcomp>> matrix);
 
-#elif !defined(__MSC_VER)
+#elif !defined(_MSC_VER)
 
     // C defines macros which add compound literal syntax so that the user's passed lists
     // become compile-time-sized temporary arrays. We use bespoke validation so that the

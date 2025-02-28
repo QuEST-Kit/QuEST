@@ -514,7 +514,7 @@ extern "C" {
     // C++ cannot accept 2D arrays at all, because it does not support C99 VLA. 
     // It can however accept 1D arrays (which decay to pointers) already to setDiagMatr()
 
-#elif !defined(__MSC_VER)
+#elif !defined(_MSC_VER)
 
     // C first defines a bespoke functions receiving C99 VLAs, which we have to define here in
     // the header becauses the C++ source cannot use VLA, nor should we pass a 2D qcomp array
@@ -587,7 +587,7 @@ extern "C" {
 
     void setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, std::vector<qcomp> in);
 
-#elif !defined(__MSC_VER)
+#elif !defined(_MSC_VER)
 
     // C defines macros which add compound literal syntax so that the user's passed lists
     // become compile-time-sized temporary arrays. C99 does not permit inline-initialised
@@ -689,7 +689,7 @@ extern "C" {
 
     DiagMatr createInlineDiagMatr(int numQb, std::vector<qcomp> elems);
 
-#elif !defined(__MSC_VER)
+#elif !defined(_MSC_VER)
 
     // C defines macros which add compound literal syntax so that the user's passed lists
     // become compile-time-sized temporary arrays. We use bespoke validation so that the

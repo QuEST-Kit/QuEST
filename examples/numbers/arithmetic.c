@@ -7,7 +7,7 @@ int main() {
 // I solemnly swear to never ever try to use
 // complex literals nor arithmetic overloads
 // in MSVC C11 again, on my heart of hearts
-#if !defined(__MSC_VER)
+#if !defined(_MSC_VER)
 
     qcomp x = 1.2 + 3.4i;
 

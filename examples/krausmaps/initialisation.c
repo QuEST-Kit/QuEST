@@ -6,7 +6,7 @@
 void demo_createInlineKrausMap() {
 
     // inline literal without C99 compound-literal syntax (non-MSVC only)
-#if !defined(__MSC_VER)
+#if !defined(_MSC_VER)
     KrausMap a = createInlineKrausMap(1, 3, {
         {{1,2},{3,4}},
         {{5,5},{6,6}},
@@ -17,7 +17,7 @@ void demo_createInlineKrausMap() {
 #endif
 
     // unspecified elements/rows/matrices will be defaulted to all 0 (non-MSVC C only)
-#if !defined(__MSC_VER)
+#if !defined(_MSC_VER)
     KrausMap b = createInlineKrausMap(2, 5, {
         {
             {1,2,3,4},
@@ -41,7 +41,7 @@ void demo_createInlineKrausMap() {
 void demo_setInlineKrausMap() {
 
     // inline literal without C99 compound-literal syntax (non-MSVC only)
-#if !defined(__MSC_VER)
+#if !defined(_MSC_VER)
     KrausMap a = createKrausMap(1, 3);
     setInlineKrausMap(a, 1, 3, {
         {{1,2},{3,4}},
@@ -53,7 +53,7 @@ void demo_setInlineKrausMap() {
 #endif
 
     // unspecified elements/rows/matrices will be defaulted to all 0 (non-MSVC C only)
-#if !defined(__MSC_VER)
+#if !defined(_MSC_VER)
     KrausMap b = createKrausMap(2, 5);
     setInlineKrausMap(b, 2, 5, {
         {
@@ -78,7 +78,7 @@ void demo_setInlineKrausMap() {
 void demo_setKrausMap() {
 
     // 3D compile-time array passed to VLA arg (non-MSVC C only)
-#if !defined(__MSC_VER)
+#if !defined(_MSC_VER)
     qcomp arr[2][4][4] = {
         {
             {1,2,3,4},
@@ -100,7 +100,7 @@ void demo_setKrausMap() {
     int nQb = 2;
     int nOps = 3;
     int dim = 1 << nQb;
-#if !defined(__MSC_VER)
+#if !defined(_MSC_VER)
     qcomp elems[nOps][dim][dim];
     for (int n=0; n<nOps; n++)
         for (int r=0; r<dim; r++)
@@ -140,7 +140,7 @@ void demo_setKrausMap() {
     destroyKrausMap(d);
 
     // inline C99 temporary array -> VLA (non-MSVC C only)
-#if !defined(__MSC_VER)
+#if !defined(_MSC_VER)
     KrausMap e = createKrausMap(1, 3);
     setKrausMap(e, (qcomp[3][2][2]) {
         {{1,2},{3,4}},

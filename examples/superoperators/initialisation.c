@@ -6,7 +6,7 @@
 void demo_createInlineSuperOp() {
 
     // inline literal without gross C99 compound-literal syntax (non-MSVC only)
-#if !defined(__MSC_VER)
+#if !defined(_MSC_VER)
     SuperOp a = createInlineSuperOp(1, {
         {1,2,3,4},
         {5,0.0000000006-(10E-11) * 3.14i,7,8},
@@ -18,7 +18,7 @@ void demo_createInlineSuperOp() {
 #endif
 
     // unspecified elements default to 0 (C only)
-#if !defined(__MSC_VER)
+#if !defined(_MSC_VER)
     SuperOp b = createInlineSuperOp(3, {
         {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16},
         {5},
@@ -34,7 +34,7 @@ void demo_createInlineSuperOp() {
 void demo_setInlineSuperOp() {
 
     // inline literal without gross C99 compound-literal syntax (non-MSVC only)
-#if !defined(__MSC_VER)
+#if !defined(_MSC_VER)
     SuperOp a = createSuperOp(1);
     setInlineSuperOp(a, 1, {
         {1,2,3,4},
@@ -47,7 +47,7 @@ void demo_setInlineSuperOp() {
 #endif
 
     // unspecified elements default to 0 (non-MSVC C only)
-#if !defined(__MSC_VER)
+#if !defined(_MSC_VER)
     SuperOp b = createSuperOp(3);
     setInlineSuperOp(b, 3, {
         {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16},
@@ -64,7 +64,7 @@ void demo_setInlineSuperOp() {
 void demo_setSuperOp() {
 
     // 2D compile-time array passed to VLA arg (non-MSVC C only)
-#if !defined(__MSC_VER)
+#if !defined(_MSC_VER)
     qcomp arr[4][4] = {
         {1,2,3,4},
         {5,6,7,8},
@@ -80,7 +80,7 @@ void demo_setSuperOp() {
     // 2D VLA (non-MSVC C only)
     int n = 2;
     int d = 1 << (2*n);
-#if !defined(__MSC_VER)
+#if !defined(_MSC_VER)
     qcomp elems[d][d];
     for (int i=0; i<d; i++)
         for (int j=0; j<d; j++)
@@ -115,7 +115,7 @@ void demo_setSuperOp() {
     destroySuperOp(e);
 
     // inline C99 temporary array -> VLA (non-MSVC only)
-#if !defined(__MSC_VER)
+#if !defined(_MSC_VER)
     SuperOp f = createSuperOp(1);
     setSuperOp(f, (qcomp[4][4]) {
         {1,2,3,4},
