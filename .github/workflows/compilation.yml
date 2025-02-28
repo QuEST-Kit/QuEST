@@ -51,7 +51,7 @@ jobs:
 
           # cannot presently use multithreading with MSVC
           - omp: ON
-            compiler: cl
+            os: windows-latest
           
           # cannot use cuquantum when not using GPU
           - gpu: OFF
