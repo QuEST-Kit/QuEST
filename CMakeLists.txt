@@ -191,11 +191,13 @@ target_include_directories(QuEST
 )
 
 # Add required C and C++ standards
-target_compile_features(QuEST
-  PUBLIC
-  c_std_11
-  cxx_std_20
-)
+# target_compile_features(QuEST
+#   PUBLIC
+#   c_std_11
+#   cxx_std_20
+# )
+# surely this changes nothing - surely?!?!?!
+set(CMAKE_CXX_STANDARD 20)
 
 # Turn on all compiler warnings
 if (MSVC)
@@ -255,6 +257,8 @@ endif()
 if (ENABLE_CUDA)
   enable_language(CUDA)
   set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+  
+  set_property(TARGET QuEST PROPERTY CUDA_STANDARD 20)
 
   target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=1)
   
