@@ -258,14 +258,6 @@ if (ENABLE_CUDA)
   
   set_property(TARGET QuEST PROPERTY CUDA_STANDARD 20)
 
-  # I'm desperate
-  string(REPLACE "-std=c++20" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  string(REPLACE "-std=c++20" "" CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS}")
-
-  # debug
-  message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
-  message(STATUS "CMAKE_CUDA_FLAGS: ${CMAKE_CUDA_FLAGS}")
-
   target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=1)
   
   if (VERBOSE_LIB_NAME)
@@ -322,6 +314,12 @@ set_target_properties(QuEST PROPERTIES OUTPUT_NAME ${LIB_NAME})
 
 # Add source files
 add_subdirectory(quest)
+
+# I'm desperate
+string(REPLACE "-std=c++20" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+string(REPLACE "-std=c++20" "" CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS}")
+message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+message(STATUS "CMAKE_CUDA_FLAGS: ${CMAKE_CUDA_FLAGS}")
 
 ## Examples
 
