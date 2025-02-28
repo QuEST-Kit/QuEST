@@ -1,0 +1,26 @@
+name: CUBLAS test
+
+on:
+  push:
+    branches:
+      - ci-compiling
+
+jobs:
+
+  # test only compilation succeeds (no execution)
+  build-test:
+    name: Testing compilation
+    runs-on: ubuntu-latest
+
+    # perform the job
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      # obtain CUDA for GPU acceleration (cublas only needed for cuQuantum)
+      - name: Obtain CUDA
+        uses: Jimver/cuda-toolkit@v0.2.21
+        with:
+          cuda: '12.5.0'
+          method: network
+          sub-packages: '["nvcc", "cudart", "thrust", "cublas"]'
