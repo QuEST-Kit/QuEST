@@ -79,6 +79,7 @@ jobs:
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
+          -DCMAKE_VERBOSE_MAKEFILE=ON
           -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF
           -DENABLE_MULTITHREADING=${{ matrix.omp }}
           -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
