@@ -3,10 +3,18 @@
 #include <stdlib.h>
 
 
+
+// MSVC's C11 (which is already weird) doesn't support
+// assigning any non-complex literal to complex variables
+// nor any complex arithmetic operators, so it doesn't
+// get to play with the other children.
+#if !defined(_MSC_VER)
+
+
+
 void demo_createInlineSuperOp() {
 
     // inline literal without gross C99 compound-literal syntax (non-MSVC only)
-#if !defined(_MSC_VER)
     SuperOp a = createInlineSuperOp(1, {
         {1,2,3,4},
         {5,0.0000000006-(10E-11) * 3.14i,7,8},
@@ -15,10 +23,8 @@ void demo_createInlineSuperOp() {
     });
     reportSuperOp(a);
     destroySuperOp(a);
-#endif
 
     // unspecified elements default to 0 (C only)
-#if !defined(_MSC_VER)
     SuperOp b = createInlineSuperOp(3, {
         {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16},
         {5},
@@ -26,15 +32,12 @@ void demo_createInlineSuperOp() {
     });
     reportSuperOp(b);
     destroySuperOp(b);
-#endif
-
 }
 
 
 void demo_setInlineSuperOp() {
 
     // inline literal without gross C99 compound-literal syntax (non-MSVC only)
-#if !defined(_MSC_VER)
     SuperOp a = createSuperOp(1);
     setInlineSuperOp(a, 1, {
         {1,2,3,4},
@@ -44,10 +47,8 @@ void demo_setInlineSuperOp() {
     });
     reportSuperOp(a);
     destroySuperOp(a);
-#endif
 
     // unspecified elements default to 0 (non-MSVC C only)
-#if !defined(_MSC_VER)
     SuperOp b = createSuperOp(3);
     setInlineSuperOp(b, 3, {
         {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16},
@@ -56,15 +57,12 @@ void demo_setInlineSuperOp() {
     });
     reportSuperOp(b);
     destroySuperOp(b);
-#endif
-
 }
 
 
 void demo_setSuperOp() {
 
     // 2D compile-time array passed to VLA arg (non-MSVC C only)
-#if !defined(_MSC_VER)
     qcomp arr[4][4] = {
         {1,2,3,4},
         {5,6,7,8},
@@ -75,12 +73,10 @@ void demo_setSuperOp() {
     setSuperOp(a, arr);
     reportSuperOp(a);
     destroySuperOp(a);
-#endif
 
     // 2D VLA (non-MSVC C only)
     int n = 2;
     int d = 1 << (2*n);
-#if !defined(_MSC_VER)
     qcomp elems[d][d];
     for (int i=0; i<d; i++)
         for (int j=0; j<d; j++)
@@ -89,7 +85,6 @@ void demo_setSuperOp() {
     setSuperOp(b, elems);
     reportSuperOp(b);
     destroySuperOp(b);
-#endif
 
     // nested pointers
     n = 3;
@@ -115,7 +110,6 @@ void demo_setSuperOp() {
     destroySuperOp(e);
 
     // inline C99 temporary array -> VLA (non-MSVC only)
-#if !defined(_MSC_VER)
     SuperOp f = createSuperOp(1);
     setSuperOp(f, (qcomp[4][4]) {
         {1,2,3,4},
@@ -125,7 +119,6 @@ void demo_setSuperOp() {
     });
     reportSuperOp(f);
     destroySuperOp(f);
-#endif
 
     // cleanup
     for (int i=0; i<d; i++)
@@ -159,3 +152,10 @@ int main() {
     finalizeQuESTEnv();
     return 0;
 }
+
+
+
+// MSVC's naughty corner
+#else
+int main() { return 0; }
+#endif

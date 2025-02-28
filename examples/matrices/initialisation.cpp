@@ -74,7 +74,7 @@ void demo_getCompMatr() {
     reportCompMatr2(d);
 
     // array of pointers
-    qcomp* ptrArr[dim];
+    qcomp* ptrArr[4];
     for (int i=0; i<dim; i++)
         ptrArr[i] = ptrs[i];
     CompMatr2 e = getCompMatr2(ptrArr);

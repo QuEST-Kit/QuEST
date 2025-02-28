@@ -51,13 +51,13 @@ void demo_PauliStr() {
 
 PauliStrSum prepareRandomPauliStrSum(int numQubits, int numTerms) {
 
-    char paulis[numQubits];
-    int qubits[numQubits];
+    char paulis[64];
+    int qubits[64];
     for (int i=0; i<numQubits; i++)
         qubits[i] = i;
 
-    qcomp coeffs[numTerms];
-    PauliStr strings[numTerms];
+    qcomp coeffs[100];
+    PauliStr strings[100];
     
     for (int i=0; i<numTerms; i++) {
         coeffs[i] = getQcomp(
@@ -77,7 +77,7 @@ PauliStrSum prepareRandomPauliStrSum(int numQubits, int numTerms) {
 void demo_PauliStrSum() {
 
     int numQubits = 64; // max 64
-    int numTerms = 100;
+    int numTerms = 100; // max 100, only imposed by hardcoded arrays
     PauliStrSum sum = prepareRandomPauliStrSum(numQubits, numTerms);
 
     int len = 3;

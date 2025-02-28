@@ -1,7 +1,13 @@
 name: Windows CUDA (via cuda-toolkit) test
 
+# get this started again real quick
 on:
-    workflow_dispatch
+  push:
+    branches:
+      - ci-compiling
+  pull_request:
+    branches:
+      - ci-compiling
 
 jobs:
 
