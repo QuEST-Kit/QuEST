@@ -480,21 +480,9 @@ void applyMultiStateControlledT(Qureg qureg, int* controls, int* states, int num
  * Hadamard 
  */
 
-__attribute__((noinline, optnone)) 
-int spoofAddressError(int target) {
-    int *array = new int[10000];
-    delete [] array;
-    return *(volatile int*)array; // BOOM
-}
-
 void applyHadamard(Qureg qureg, int target) {
     validate_quregFields(qureg, __func__);
     validate_target(qureg, target, __func__);
-
-    // trying to spoof an error that the compiler won't optimise away,
-    // but which won't introduce a logical error in the testing
-    int newtarget = spoofAddressError(target);
-    target = (qureg.isDensityMatrix == 42)? newtarget : target;
 
     // harmlessly re-validates
     applyMultiStateControlledHadamard(qureg, nullptr, nullptr, 0, target);
