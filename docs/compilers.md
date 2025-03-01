@@ -26,6 +26,7 @@ The backend is divided into subdirectories [`api/`](/quest/src/api), [`core/`](/
 ### comm
 
 Enabling distribution requires compiling `comm/` with an [MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface)-compatible compiler, which has so far been tested with
+- [openmpi](https://www-lb.open-mpi.org/software/ompi/v4.0/) 4
 - [openmpi](https://www.open-mpi.org/software/ompi/v5.0/) 5
 - [mpich](https://www.mpich.org/) 4
 - [msmpi](https://learn.microsoft.com/en-us/message-passing-interface/microsoft-mpi) 2
@@ -51,6 +52,7 @@ Enabling acceleration on NVIDIA or AMD GPUs requires compiling `gpu/` with a [CU
 
 Simultaneously emabling both distribution _and_ GPU-acceleration is possible with use of the separate compilers above. However, simulation can be accelerated by using a [CUDA-aware MPI](https://developer.nvidia.com/blog/introduction-cuda-aware-mpi/) compiler, enabling QuEST to use [GPUDirect](https://developer.nvidia.com/gpudirect) and avoid superfluous exchanges of CPU and GPU memories. So far, QuEST has been tested with:
 - [UCX](https://openucx.org/) 1.13
+- [UCX](https://openucx.org/) 1.15
 
 ### gpu + cuquantum
 
