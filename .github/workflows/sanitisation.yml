@@ -1,4 +1,5 @@
-name: address sanitisation
+name: sanitisation and leak test
+
 
 on:
   push:
@@ -8,28 +9,23 @@ on:
     branches:
       - llvm-memcheck
 
+
 jobs:
 
+
+  # run LLVM address sanitiser
   sanitisation-test:
-    name: >
-      ${{ matrix.os == 'ubuntu-latest' && 'Linux' || 'MacOS' }}
-      [${{ matrix.precision }}]
+    name: address sanitisation [${{ matrix.precision }}]
+    runs-on: macos-latest
 
-    runs-on: ${{ matrix.os }}
-
+    # try all precisions
     strategy:
-      # continue other jobs if any fail
-      fail-fast: false
-
-      # try all precisions but only on UNIX OS (to use LLVM correctly), and with no parallelisations
       matrix:
-        os: [ubuntu-latest, macos-latest]
         precision: [1, 2, 4]
 
-    # constants
+    # constants (which I cannot split overlines, GRR)
     env:
       build_dir: "build"
-      compiler: clang++
       sanitiser_flags: -g -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize=address -fsanitize-address-use-after-scope
 
     # perform the job
@@ -41,9 +37,8 @@ jobs:
       - name: Configure CMake to use sanitiser
         run: >
           cmake -B ${{ env.build_dir }}
-          -DENABLE_MULTITHREADING=OFF
+          -DCMAKE_CXX_COMPILER=clang++
           -DFLOAT_PRECISION=${{ matrix.precision }}
-          -DCMAKE_CXX_COMPILER=${{ env.compiler }}
           -DCMAKE_CXX_FLAGS="${{ env.sanitiser_flags }}"
           -DCMAKE_EXE_LINKER_FLAGS="${{ env.sanitiser_flags }}"
 
@@ -53,3 +48,39 @@ jobs:
       - name: Run unit tests with active sanitiser
         run: ctest -j2 --output-on-failure
         working-directory: ${{ env.build_dir }}
+
+  
+  # run valgrind
+  memory-leak-test:
+    name: memory checks [${{ matrix.precision }}]
+    runs-on: ubuntu-latest
+
+    # try all precisions
+    strategy:
+      matrix:
+        precision: [1, 2, 4]
+
+    # constants (which I cannot split overlines, GRR)
+    env:
+      build_dir: "build"
+
+    # perform the job
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      # compile QuEST like normal
+      - name: Configure CMake
+        run: >
+          cmake -B ${{ env.build_dir }}
+          -DFLOAT_PRECISION=${{ matrix.precision }}
+
+      - name: Compile QuEST
+        run: cmake --build ${{ env.build_dir }}
+  
+      # run valgrind, stopping before 6h job timeout
+      - name: Run Valgrind
+        uses: Ximaz/valgrind-action@v1.2.0
+        with:
+          binary_path: ${{ env.build_dir }}/tests/tests
+          timeout: 5h30m
