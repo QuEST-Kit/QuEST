@@ -3349,12 +3349,18 @@ void validate_measurementOutcomesAreValid(int* outcomes, int numOutcomes, const 
 
 void validate_measurementOutcomeProbNotZero(int outcome, qreal prob, const char* caller) {
 
+    if (isNumericalValidationDisabled())
+        return;
+
     // TODO: report 'prob' once validation reporting can handle floats
 
     assertThat(prob >= global_validationEpsilon, report::ONE_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY, {{"${OUTCOME}", outcome}}, caller);
 }
 
 void validate_measurementOutcomesProbNotZero(int* outcomes, int numQubits, qreal prob, const char* caller) {
+
+    if (isNumericalValidationDisabled())
+        return;
 
     // TODO: report 'prob' and 'outcomes' (as binary sequence) once validation reporting can handle floats
     qindex outcomeValue = getIntegerFromBits(outcomes, numQubits);
@@ -3389,6 +3395,9 @@ void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const c
  */
 
 void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller) {
+
+    if (isNumericalValidationDisabled())
+        return;
 
     qreal norm = sqrt(pow(x,2) + pow(y,2) + pow(z,2));
 
@@ -3665,6 +3674,9 @@ void validate_throwErrorBecauseCalcFidOfDensMatrNotYetImplemented(const char* ca
 
 void validate_fidelityIsReal(qcomp fid, const char* caller) {
 
+    if (isNumericalValidationDisabled())
+        return;
+
     // TODO: include imag(fid) in error message when non-integers are supported
 
     assertThat(abs(imag(fid)) < global_validationEpsilon, report::CALC_FIDELITY_NOT_APPROX_REAL, caller);
@@ -3672,12 +3684,18 @@ void validate_fidelityIsReal(qcomp fid, const char* caller) {
 
 void validate_buresDistanceInnerProdIsNormalised(qreal mag, const char* caller) {
 
+    if (isNumericalValidationDisabled())
+        return;
+
     // TODO: include mag in error message when non-integers are supported
 
     assertThat(mag <= 1 + global_validationEpsilon, report::CALC_BURES_DISTANCE_MAG_EXCEEDED_ONE, caller);
 }
 
 void validate_purifiedDistanceIsNormalised(qcomp fid, const char* caller) {
+
+    if (isNumericalValidationDisabled())
+        return;
 
     // TODO: include scalars in error message when non-integers are supported
     
@@ -3692,6 +3710,9 @@ void validate_purifiedDistanceIsNormalised(qcomp fid, const char* caller) {
  */
 
 void validate_quregRenormProbIsNotZero(qreal prob, const char* caller) {
+
+    if (isNumericalValidationDisabled())
+        return;
 
     // TODO: include 'prob' in error message when non-integers are supported
 
@@ -3711,6 +3732,9 @@ void validate_numInitRandomPureStates(qindex numPureStates,  const char* caller)
 
 void validate_expecPauliStrValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
 
+    if (isNumericalValidationDisabled())
+        return;
+
     // TODO: include imag(value) in error message when non-integers are supported
 
     string msg = (isDensMatr)?
@@ -3722,6 +3746,9 @@ void validate_expecPauliStrValueIsReal(qcomp value, bool isDensMatr, const char*
 
 void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
 
+    if (isNumericalValidationDisabled())
+        return;
+
     string msg = (isDensMatr)?
         report::CALC_DENSMATR_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL:
         report::CALC_STATEVEC_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL;
@@ -3730,6 +3757,9 @@ void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const ch
 }
 
 void validate_expecFullStateDiagMatrValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
+
+    if (isNumericalValidationDisabled())
+        return;
 
     string msg = (isDensMatr)?
         report::CALC_DENSMATR_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL:

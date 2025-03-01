@@ -68,10 +68,6 @@ jobs:
             os: windows-latest
           - cuquantum: ON
             os: macos-latest
-
-          # cannot presently use multithreading with MSVC
-          - omp: ON
-            os: windows-latest
           
           # cannot get GPU working on Windows CI (grr!)
           - gpu: ON
