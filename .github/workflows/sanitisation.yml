@@ -48,8 +48,8 @@ jobs:
           cmake -B ${{ env.build_dir }}
           -DENABLE_MULTITHREADING=OFF
           -DCMAKE_CXX_COMPILER=${{ env.compiler }}
-          -DCMAKE_CXX_FLAGS=${{ env.sanitiser_flags }}
-          -DCMAKE_EXE_LINKER_FLAGS=${{ env.sanitiser_flags }}
+          -DCMAKE_CXX_FLAGS="${{ env.sanitiser_flags }}"
+          -DCMAKE_EXE_LINKER_FLAGS="${{ env.sanitiser_flags }}"
 
       - name: Compile with sanitiser
         run: cmake --build ${{ env.build_dir }}
