@@ -802,7 +802,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
     // whenever each thread has at least 1 iteration for itself. And of course
     // we serialise both inner and outer loops when qureg multithreading is off.
 
-    if (numOuterIts >= cpu_getCurrentNumThreads() || !qureg.isMultithreaded) {
+    if (!qureg.isMultithreaded || numOuterIts >= cpu_getCurrentNumThreads()) {
     
         // parallel
         #pragma omp parallel for if(qureg.isMultithreaded)
