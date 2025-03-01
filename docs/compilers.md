@@ -1,0 +1,70 @@
+# Compilers
+
+QuEST separates compilation of the **_frontend_**, **_backend_** and the **_tests_** which have progressively stricter compiler requirements.
+
+## Frontend
+
+[![Languages](https://img.shields.io/badge/C-11-ff69b4.svg)](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3631.pdf)
+[![Languages](https://img.shields.io/badge/C++-14-ff69b4.svg)](https://isocpp.org/wiki/faq/cpp14)
+
+User code can be written in either `C11` or `C++14`, and has so far been tested with compilers
+- [clang](https://clang.llvm.org/) 15
+- [gnu](https://gcc.gnu.org/) 13
+- [gnu](https://gcc.gnu.org/) 14
+- [msvc](https://learn.microsoft.com/en-us/cpp/build/reference/compiling-a-c-cpp-program?view=msvc-170) 19
+
+> The standards are imposed by the QuEST header's use of `C11` [generics](https://en.cppreference.com/w/c/language/generic) and `C++14` complex arithmetic overloads. Each can be relaxed to enable compatibility with `C99` and `C++11` by simple modifications to the headers - ask us for help! 
+
+
+## Backend
+
+[![Languages](https://img.shields.io/badge/C++-17-ff69b4.svg)](https://en.cppreference.com/w/cpp/17)
+
+The backend is divided into subdirectories [`api/`](/quest/src/api), [`core/`](/quest/src/core), [`comm/`](/quest/src/comm),  [`cpu/`](/quest/src/cpu) and [`gpu/`](/quest/src/gpu). All can be compiled with a generic `C++17` compiler, but enabling distribution, multithreading and GPU-acceleration requires using specialised compilers for the latter three. Each can be toggled and compiled independently. Note however that tightly-coupled multi-GPU simulations (`comm` + `gpu`) can be accelerated using bespoke compilers, and use of [cuQuantum](https://developer.nvidia.com/cuquantum-sdk) requires modern compilers (`gpu + cuquantum`), detailed below.
+
+
+### comm
+
+Enabling distribution requires compiling `comm/` with an [MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface)-compatible compiler, which has so far been tested with
+- [openmpi](https://www.open-mpi.org/software/ompi/v5.0/) 5
+- [mpich](https://www.mpich.org/) 4
+- [msmpi](https://learn.microsoft.com/en-us/message-passing-interface/microsoft-mpi) 2
+
+when wrapping all previously mentioned compilers.
+
+### cpu
+
+Enabling multithreading requires compiling `cpu/` with an [OpenMP](https://www.openmp.org/)-compatible compiler. Versions
+- [openmp](https://www.openmp.org/specifications/) 2.0
+- [openmp](https://www.openmp.org/specifications/) 4.5
+
+have been explicitly tested, as used by the aforementioned compilers.
+
+
+### gpu
+
+Enabling acceleration on NVIDIA or AMD GPUs requires compiling `gpu/` with a [CUDA](https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/) or [ROCm](https://rocm.docs.amd.com/en/docs-6.0.2/) compiler respectively. These must be compatible with [Thrust](https://developer.nvidia.com/thrust) and [rocThrust](https://github.com/ROCm/rocThrust) respectively. QuEST v4 has been so far tested with
+- [cuda](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html) 11
+- [cuda](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html) 12
+
+### comm + gpu
+
+Simultaneously emabling both distribution _and_ GPU-acceleration is possible with use of the separate compilers above. However, simulation can be accelerated by using a [CUDA-aware MPI](https://developer.nvidia.com/blog/introduction-cuda-aware-mpi/) compiler, enabling QuEST to use [GPUDirect](https://developer.nvidia.com/gpudirect) and avoid superfluous exchanges of CPU and GPU memories. So far, QuEST has been tested with:
+- [UCX](https://openucx.org/) 1.13
+
+### gpu + cuquantum
+
+Enabling [cuQuantum](https://developer.nvidia.com/cuquantum-sdk) on NVIDIA GPUs with [compute-capability](https://developer.nvidia.com/cuda-gpus) >= `7.0` requires use of a modern CUDA compiler, specifically
+- [cuda](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html) 11
+- [cuda](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html) 12
+
+
+## Tests
+
+[![Languages](https://img.shields.io/badge/C++-20-ff69b4.svg)](https://en.cppreference.com/w/cpp/20)
+
+QuEST's [`tests/`](/tests/) make use of several `C++20` features and may not be compatible with older compilers. So far, they have been tested with
+- [clang](https://clang.llvm.org/) 15
+- [gnu](https://gcc.gnu.org/) 13
+- [gnu](https://gcc.gnu.org/) 14
+- [msvc](https://learn.microsoft.com/en-us/cpp/build/reference/compiling-a-c-cpp-program?view=msvc-170) 19
