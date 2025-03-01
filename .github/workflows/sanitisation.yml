@@ -38,6 +38,7 @@ jobs:
         run: >
           cmake -B ${{ env.build_dir }}
           -DCMAKE_CXX_COMPILER=clang++
+          -DENABLE_MULTITHREADING=OFF
           -DFLOAT_PRECISION=${{ matrix.precision }}
           -DCMAKE_CXX_FLAGS="${{ env.sanitiser_flags }}"
           -DCMAKE_EXE_LINKER_FLAGS="${{ env.sanitiser_flags }}"
@@ -80,7 +81,7 @@ jobs:
   
       # run valgrind, stopping before 6h job timeout
       - name: Run Valgrind
-        uses: Ximaz/valgrind-action@v1.2.0
+        uses: Ximaz/valgrind-action@v1.2.1
         with:
-          binary_path: ${{ env.build_dir }}/tests/tests
+          binary_path: "${{ env.build_dir }}/tests/tests"
           timeout: 5h30m
