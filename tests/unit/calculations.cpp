@@ -17,6 +17,7 @@
 #include "tests/utils/measure.hpp"
 
 #include <vector>
+#include <type_traits>
 
 using std::vector;
 using namespace Catch::Matchers;
@@ -43,6 +44,10 @@ void TEST_ON_CACHED_QUREGS(quregCache quregs, auto refState, auto apiFunc, auto 
             auto refResult = refFunc(refState);
 
             REQUIRE_AGREE( apiResult, refResult );
+
+            // free API result if it is a newly created Qureg
+            if constexpr (std::is_same_v<decltype(apiResult),Qureg>)
+                destroyQureg(apiResult);
         }
     }
 }
