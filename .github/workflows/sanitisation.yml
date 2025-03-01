@@ -12,7 +12,7 @@ jobs:
 
   sanitisation-test:
     name: >
-      ${{ matrix.os == 'ubuntu-latest' && 'Linux' || matrix.os == 'macos-latest' && 'MacOS' || 'Windows' }}
+      ${{ matrix.os == 'ubuntu-latest' && 'Linux' || 'MacOS' }}
       [${{ matrix.precision }}]
 
     runs-on: ${{ matrix.os }}
@@ -23,7 +23,7 @@ jobs:
 
       # try all precisions but only on UNIX OS (to use LLVM correctly), and with no parallelisations
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         precision: [1, 2, 4]
 
     # constants
