@@ -55,5 +55,5 @@ jobs:
         run: cmake --build ${{ env.build_dir }}
 
       - name: Run unit tests with active sanitiser
-        run: ctest --output-on-failure
+        run: ctest -j2 --output-on-failure
         working-directory: ${{ env.build_dir }}
