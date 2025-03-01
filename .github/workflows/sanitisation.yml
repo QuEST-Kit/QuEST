@@ -30,7 +30,7 @@ jobs:
     env:
       build_dir: "build"
       compiler: clang++
-      sanitiser_flags: >
+      sanitiser_flags: |
         -g
         -fno-omit-frame-pointer
         -fno-optimize-sibling-calls
