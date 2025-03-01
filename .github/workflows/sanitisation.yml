@@ -31,7 +31,7 @@ jobs:
       build_dir: "build"
       compiler: clang++
       sanitiser_flags: >
-        -g 
+        -g
         -fno-omit-frame-pointer
         -fno-optimize-sibling-calls
         -fsanitize=address
@@ -47,9 +47,12 @@ jobs:
         run: >
           cmake -B ${{ env.build_dir }}
           -DENABLE_MULTITHREADING=OFF
+          -DFLOAT_PRECISION=${{ matrix.precision }}
           -DCMAKE_CXX_COMPILER=${{ env.compiler }}
-          -DCMAKE_CXX_FLAGS="${{ env.sanitiser_flags }}"
-          -DCMAKE_EXE_LINKER_FLAGS="${{ env.sanitiser_flags }}"
+
+
+      # -DCMAKE_CXX_FLAGS="${{ env.sanitiser_flags }}"
+      # -DCMAKE_EXE_LINKER_FLAGS="${{ env.sanitiser_flags }}"
 
       - name: Compile with sanitiser
         run: cmake --build ${{ env.build_dir }}
