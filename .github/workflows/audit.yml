@@ -18,7 +18,7 @@ jobs:
     name: address sanitisation [${{ matrix.precision }}]
     runs-on: macos-latest
 
-    # try all precisions
+    # try all precisions, but forego all parallelisation
     strategy:
       matrix:
         precision: [1, 2, 4]
@@ -56,7 +56,7 @@ jobs:
     name: memory checks [${{ matrix.precision }}]
     runs-on: ubuntu-latest
 
-    # try all precisions
+    # try all precisions, but forego all parallelisation
     strategy:
       matrix:
         precision: [1, 2, 4]
@@ -65,23 +65,24 @@ jobs:
     env:
       build_dir: "build"
 
-    # perform the job
+    # compile QuEST like normal and run valgrind upon it
     steps:
       - name: Get QuEST
         uses: actions/checkout@v4
 
-      # compile QuEST like normal
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
           -DFLOAT_PRECISION=${{ matrix.precision }}
+          -DENABLE_MULTITHREADING=OFF
 
       - name: Compile QuEST
         run: cmake --build ${{ env.build_dir }}
   
-      # run valgrind, stopping before 6h job timeout
-      - name: Run Valgrind
-        uses: Ximaz/valgrind-action@v1.2.1
-        with:
-          binary_path: "${{ env.build_dir }}/tests/tests"
-          timeout: 5h30m
+      - name: Install valgrind
+        run: sudo apt install -y valgrind
+
+      # make valgrind fail CI if detecting issue
+      - name: Run unit tests under valgrind
+        run: valgrind --leak-check=full --error-exitcode=1 ./tests/tests
+        working-directory: ${{ env.build_dir }}
