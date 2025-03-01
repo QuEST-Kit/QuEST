@@ -42,17 +42,15 @@ jobs:
       - name: Get QuEST
         uses: actions/checkout@v4
 
-      # compile QuEST using clang address sanitiser
+      # compile QuEST using clang address sanitiser (will alias MSVC on Windows)
       - name: Configure CMake to use sanitiser
         run: >
           cmake -B ${{ env.build_dir }}
           -DENABLE_MULTITHREADING=OFF
           -DFLOAT_PRECISION=${{ matrix.precision }}
           -DCMAKE_CXX_COMPILER=${{ env.compiler }}
-
-
-      # -DCMAKE_CXX_FLAGS="${{ env.sanitiser_flags }}"
-      # -DCMAKE_EXE_LINKER_FLAGS="${{ env.sanitiser_flags }}"
+          -DCMAKE_CXX_FLAGS="${{ env.sanitiser_flags }}"
+          -DCMAKE_EXE_LINKER_FLAGS="${{ env.sanitiser_flags }}"
 
       - name: Compile with sanitiser
         run: cmake --build ${{ env.build_dir }}
