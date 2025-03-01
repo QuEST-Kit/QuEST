@@ -1,0 +1,59 @@
+name: address sanitisation
+
+on:
+  push:
+    branches:
+      - llvm-memcheck
+  pull_request:
+    branches:
+      - llvm-memcheck
+
+jobs:
+
+  sanitisation-test:
+    name: >
+      ${{ matrix.os == 'ubuntu-latest' && 'Linux' || matrix.os == 'macos-latest' && 'MacOS' || 'Windows' }}
+      [${{ matrix.precision }}]
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # continue other jobs if any fail
+      fail-fast: false
+
+      # try all OS and precisions (but deprecated-API and all parallelisations are disabled)
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        precision: [1, 2, 4]
+
+    # constants
+    env:
+      build_dir: "build"
+      compiler: clang++
+      sanitiser_flags: >
+        -g 
+        -fno-omit-frame-pointer
+        -fno-optimize-sibling-calls
+        -fsanitize=address
+        -fsanitize-address-use-after-scope
+
+    # perform the job
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      # compile QuEST using clang address sanitiser
+      - name: Configure CMake to use sanitiser
+        run: >
+          cmake -B ${{ env.build_dir }}
+          -DENABLE_MULTITHREADING=OFF
+          -DCMAKE_CXX_COMPILER=${{ env.compiler }}
+          -DCMAKE_CXX_FLAGS=${{ env.sanitiser_flags }}
+          -DCMAKE_EXE_LINKER_FLAGS=${{ env.sanitiser_flags }}
+
+      - name: Compile with sanitiser
+        run: cmake --build ${{ env.build_dir }}
+
+      - name: Run unit tests with active sanitiser
+        run: ctest --output-on-failure
+        working-directory: ${{ env.build_dir }}
