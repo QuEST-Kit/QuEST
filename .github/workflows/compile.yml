@@ -1,24 +1,13 @@
 name: compile
 
 
-
-# just testing
 on:
   push:
     branches:
-      - llvm-memcheck
+      - v4
   pull_request:
     branches:
-      - llvm-memcheck
-
-
-# on:
-#   push:
-#     branches:
-#       - v4
-#   pull_request:
-#     branches:
-#       - v4
+      - v4
 
 
 jobs:
@@ -108,13 +97,13 @@ jobs:
         if: ${{ matrix.mpi == 'ON' }}
         uses: mpi4py/setup-mpi@v1
 
-      # obtain CUDA for GPU acceleration (cuQuantum needs cuBLAS, and MSVC needs VSI)
+      # obtain CUDA for GPU acceleration (cuQuantum needs cuBLAS)
       - name: Setup CUDA
         if: ${{ matrix.gpu == 'ON' }}
         uses: Jimver/cuda-toolkit@v0.2.21
         with:
           method: network
-          sub-packages: ${{ format('["nvcc", "cudart", "thrust"{0}]', matrix.compiler == 'cl' && ', "visual_studio_integration"' || '') }}
+          sub-packages: '["nvcc", "cudart", "thrust"]'
           non-cuda-sub-packages: ${{ matrix.cuquantum == 'ON' && '["libcublas"]' || '[]' }}
 
       # obtain cuQuantum on linux
