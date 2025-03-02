@@ -54,8 +54,9 @@ jobs:
           -DENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
           -DFLOAT_PRECISION=${{ matrix.precision }}
 
+      # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
-        run: cmake --build ${{ env.build_dir }}
+        run: cmake --build ${{ env.build_dir }} --config Release
 
       # run v4 unit tests in random order, excluding the integration tests
       # TODO:

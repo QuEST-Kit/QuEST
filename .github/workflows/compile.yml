@@ -130,8 +130,9 @@ jobs:
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
 
+      # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
-        run: cmake --build ${{ env.build_dir }}
+        run: cmake --build ${{ env.build_dir }} --config Release
 
 
 
