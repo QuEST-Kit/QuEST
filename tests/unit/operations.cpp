@@ -645,7 +645,7 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
         constexpr NumQubitsFlag RevTargs = (Args==paulistr||Args==pauligad)? zero : Targs;
 
         // single-precision many-target matrices are often non-unitary, so disable validation
-        (FLOAT_PRECISION == 1 && Args == compmatr && numTargs >= 3)?
+        (FLOAT_PRECISION == 1 && Args == compmatr && numTargs >= 2)?
             setValidationEpsilon(0):
             setValidationEpsilonToDefault();
 

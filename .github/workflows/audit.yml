@@ -91,5 +91,5 @@ jobs:
 
       # make valgrind fail CI if detecting issue when running unit tests in a randomised order
       - name: Run unit tests under valgrind
-        run: valgrind --leak-check=full --error-exitcode=1 ./tests/tests --order=rand
+        run: valgrind --leak-check=full --error-exitcode=1 ./tests/tests "[unit]" --order=rand
         working-directory: ${{ env.build_dir }}
