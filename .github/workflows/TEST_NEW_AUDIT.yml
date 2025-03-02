@@ -55,11 +55,15 @@ jobs:
         working-directory: ${{ env.build_dir }}
 
       # remove testing code from coverage data
-      - name: Filter LCOV
+      - name: Filter LCOV results
         run: lcov --remove ${{ env.tracefile }} '*/tests/*' --output-file ${{ env.tracefile }}
         working-directory: ${{ env.build_dir }}
+
+      - name: Preview LCOV results
+        run: lcov --list ${{ env.tracefile }}
+        working-directory: ${{ env.build_dir }}
       
-      # report coverage of remaining files
+      # report coverage of remaining files in the triggering PR
       - name: Report code coverage
         uses: zgosalvez/github-actions-report-lcov@v4
         with:
