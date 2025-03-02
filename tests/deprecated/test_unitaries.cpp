@@ -641,12 +641,12 @@ TEST_CASE( "controlledRotateAroundAxis", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
-    // each test will use a random parameter and axis vector    
+    // each test will use a random parameter and axis vector
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
     Vector vec; 
-    vec.x=getRandomReal(-1,1);
-    vec.y=getRandomReal(-1,1);
-    vec.z=getRandomReal(-1,1);
+    vec.x=getRandomReal(1,2);
+    vec.y=getRandomReal(-1,-2);
+    vec.z=getRandomReal(-1,1);   // lazily avoiding (x,y,z)=0  
     
     // Rn(a) = cos(a/2)I - i sin(a/2) n . paulivector
     // (pg 24 of vcpc.univie.ac.at/~ian/hotlist/qc/talks/bloch-sphere-rotations.pdf)
@@ -2543,9 +2543,9 @@ TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
     // each test will use a random parameter and axis vector    
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
     Vector vec; 
-    vec.x=getRandomReal(-1,1);
-    vec.y=getRandomReal(-1,1); 
-    vec.z=getRandomReal(-1,1);
+    vec.x=getRandomReal(1,2);
+    vec.y=getRandomReal(-1,-2);
+    vec.z=getRandomReal(-1,1);   // lazily avoiding (x,y,z)=0  
     
     // Rn(a) = cos(a/2)I - i sin(a/2) n . paulivector
     // (pg 24 of vcpc.univie.ac.at/~ian/hotlist/qc/talks/bloch-sphere-rotations.pdf)
