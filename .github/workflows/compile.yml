@@ -132,3 +132,10 @@ jobs:
 
       - name: Compile
         run: cmake --build ${{ env.build_dir }}
+
+
+
+# TODO:
+# - get Windows GPU working
+# - test AMD compilation
+# - CUDA-aware MPI?!?!?!

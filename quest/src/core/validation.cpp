@@ -933,7 +933,7 @@ namespace report {
      */
 
     string CALC_STATEVEC_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL =
-        "The calculated statevector expectation value was not approximately real (i.e. within epsilon). This cannot result from an unnormalised state, and must instead be the result of unexpected arithmetic errors; please notify the QuEST developers!";
+        "The calculated statevector expectation value was not approximately real (i.e. within epsilon). This should not result even from an unnormalised state, and is the result of unexpected arithmetic errors; please notify the QuEST developers!";
 
     string CALC_DENSMATR_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL =
         "The calculated density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests the density matrix was unnormalised and/or not Hermitian.";
@@ -3741,7 +3741,16 @@ void validate_expecPauliStrValueIsReal(qcomp value, bool isDensMatr, const char*
         report::CALC_DENSMATR_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL:
         report::CALC_STATEVEC_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL;
 
-    assertThat(abs(imag(value)) < global_validationEpsilon, msg, caller);
+    // TODO:
+    // comparing the output of these reduction-type functions to global_validationEpsilon
+    // is pretty strict since they can result from an exponential-number of summed terms,
+    // so should be much much less accurate than direct user inputs validated with the
+    // same epsilon. We should use a more relaxed threshold for such validations!
+    // This particular assertion causes trouble in single-precision in the CI unit tests,
+    // so we are merely ad-hoc patching for now
+    qreal FACTOR = 10;
+
+    assertThat(abs(imag(value)) <= FACTOR * global_validationEpsilon, msg, caller);
 }
 
 void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const char* caller) {

@@ -71,3 +71,9 @@ jobs:
         if: ${{ matrix.version == 3 }}
         run: ctest -j2 --output-on-failure --schedule-random
         working-directory: ${{ env.build_dir }}/tests/deprecated
+
+
+
+# TODO
+# - accelerated unit tests
+# - accelerated integration tests

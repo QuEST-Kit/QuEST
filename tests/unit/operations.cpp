@@ -644,10 +644,11 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
         // PauliStr arg replaces target qubit list in API operations
         constexpr NumQubitsFlag RevTargs = (Args==paulistr||Args==pauligad)? zero : Targs;
 
-        // many-target matrices are often non-unitary, so disable validation
-        // (this is only really necessary for >= 5 targets on single and quad
-        //  precision, but we disable more generally to avoid CI edge-cases)
-        (Args == compmatr && numTargs >= 2)?
+        // disabling unitary-check validation for compmatr, since it's hard to
+        // generate numerically-precise random unitaries upon many qubits, or
+        // upon few qubits are single-precision. So we disable completely until
+        // we re-implement 'input validation' checks which force us to fix thresholds
+        (Args == compmatr)?
             setValidationEpsilon(0):
             setValidationEpsilonToDefault();
 

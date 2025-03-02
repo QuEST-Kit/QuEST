@@ -100,3 +100,8 @@ jobs:
           valgrind --leak-check=full --error-exitcode=1 
           ctest -j2 --output-on-failure --schedule-random -E "density evolution"
         working-directory: ${{ env.build_dir }}
+
+
+
+# TODO:
+# - code coverage!

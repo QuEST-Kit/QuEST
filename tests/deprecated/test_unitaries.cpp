@@ -903,7 +903,7 @@ TEST_CASE( "controlledTwoQubitUnitary", "[unitaries]" ) {
         }
         SECTION( "unitarity" ) {
 
-            matr.real[0][0] = 0; // break matr unitarity
+            matr.real[0][0] = 999; // break matr unitarity
             REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, 0, 1, 2, matr), ContainsSubstring("unitary") );
         }
         SECTION( "unitary fits in node" ) {
@@ -2941,7 +2941,7 @@ TEST_CASE( "twoQubitUnitary", "[unitaries]" ) {
         }
         SECTION( "unitarity" ) {
 
-            matr.real[0][0] = 0; // break matr unitarity
+            matr.real[0][0] = 9999; // break matr unitarity
             REQUIRE_THROWS_WITH( twoQubitUnitary(quregVec, 0, 1, matr), ContainsSubstring("unitary") );
         }
         SECTION( "unitary fits in node" ) {
