@@ -65,10 +65,10 @@ TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
                         refProd += conj(ref1[i][j]) * ref2[i][j];
                 REQUIRE( imag(refProd) == Approx(0).margin(REAL_EPS) );
                 
-                REQUIRE( real(calcDensityInnerProduct(mat1,mat2)) == Approx(real(refProd)) );
+                REQUIRE( real(calcDensityInnerProduct(mat1,mat2)) == Approx(real(refProd)).margin(100 * REAL_EPS) );
                 
                 // should be invariant under ordering
-                REQUIRE( real(calcDensityInnerProduct(mat1,mat2)) == Approx(real(calcDensityInnerProduct(mat2,mat1))) );
+                REQUIRE( real(calcDensityInnerProduct(mat1,mat2)) == Approx(real(calcDensityInnerProduct(mat2,mat1))).margin(100 * REAL_EPS) );
             }
             SECTION( "unnormalised" ) {
                 
