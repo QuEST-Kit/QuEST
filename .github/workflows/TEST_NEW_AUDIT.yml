@@ -1,4 +1,4 @@
-name: audit
+name: TESTING NEW AUDIT
 
 
 on:
@@ -22,6 +22,7 @@ jobs:
     # constants
     env:
       build_dir: "build"
+      tracefile: "coverage.info"
 
     # perform the job
     steps:
@@ -42,17 +43,27 @@ jobs:
 
       # run the unit tests, saving coverage data to file
       - name: Run unit tests
-        run: ctest -j2 --output-on-failure
+        run: ctest -j2 --output-on-failure -R applyHadamard  ########## not waiting for full tst right now
         working-directory: ${{ env.build_dir }}
 
+      # analyse the unit test coverage
       - name: Setup LCOV
         uses: hrishikesh-kadam/setup-lcov@v1
 
-      # 
+      - name: Run LCOV
+        run: lcov --directory . --capture --output-file ${{ env.tracefile }}
+        working-directory: ${{ env.build_dir }}
+
+      # remove testing code from coverage data
+      - name: Filter LCOV
+        run: lcov --remove ${{ env.tracefile }} '*/tests/*' --output-file ${{ env.tracefile }}
+        working-directory: ${{ env.build_dir }}
+      
+      # report coverage of remaining files
       - name: Report code coverage
         uses: zgosalvez/github-actions-report-lcov@v4
         with:
-          coverage-files: ${{ env.build_dir }}/coverage/lcov.*.info
+          coverage-files: ${{ env.tracefile }}
           minimum-coverage: 50
           artifact-name: code-coverage-report
           update-comment: true
