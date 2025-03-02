@@ -1,0 +1,107 @@
+name: audit
+
+
+on:
+  push:
+    branches:
+      - v4
+  pull_request:
+    branches:
+      - v4
+
+
+jobs:
+
+
+  # run LLVM address sanitiser
+  sanitisation-test:
+    name: address sanitisation [${{ matrix.precision }}]
+    runs-on: macos-latest
+
+    # try all precisions without aborting
+    strategy:
+      fail-fast: false
+      matrix:
+        precision: [1, 2, 4]
+
+    # constants (which I cannot split overlines, GRR)
+    env:
+      build_dir: "build"
+      sanitiser_flags: -g -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize=address -fsanitize-address-use-after-scope
+
+    # perform the job
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      # compile QuEST using clang address sanitiser, foregoing all parallelisations
+      - name: Configure CMake to use sanitiser
+        run: >
+          cmake -B ${{ env.build_dir }}
+          -DCMAKE_CXX_COMPILER=clang++
+          -DENABLE_TESTING=ON
+          -DENABLE_MULTITHREADING=OFF
+          -DFLOAT_PRECISION=${{ matrix.precision }}
+          -DCMAKE_CXX_FLAGS="${{ env.sanitiser_flags }}"
+          -DCMAKE_EXE_LINKER_FLAGS="${{ env.sanitiser_flags }}"
+
+      - name: Compile with sanitiser
+        run: cmake --build ${{ env.build_dir }}
+
+      # run unit tests in random order, excluding the integration tests
+      # TODO:
+      # ctest currently doesn't know of our Catch2 tags, so we
+      # are manually excluding each integration test by name
+      - name: Run unit tests with active sanitiser
+        run: ctest -j2 --output-on-failure --schedule-random -E "density evolution"
+        working-directory: ${{ env.build_dir }}
+
+  
+  # run valgrind
+  memory-leak-test:
+    name: memory checks [${{ matrix.precision }}]
+    runs-on: ubuntu-latest
+
+    # try all precisions without aborting
+    strategy:
+      fail-fast: false
+      matrix:
+        precision: [1, 2, 4]
+
+    # constants (which I cannot split overlines, GRR)
+    env:
+      build_dir: "build"
+
+    # perform the job
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      # compile QuEST like normal albeit without parallelisations
+      - name: Configure CMake
+        run: >
+          cmake -B ${{ env.build_dir }}
+          -DENABLE_TESTING=ON
+          -DENABLE_MULTITHREADING=OFF
+          -DFLOAT_PRECISION=${{ matrix.precision }}
+
+      - name: Compile QuEST
+        run: cmake --build ${{ env.build_dir }}
+  
+      - name: Install valgrind
+        run: sudo apt install -y valgrind
+
+      # make valgrind fail CI if detecting issue when running unit tests in a randomised order
+      # TODO:
+      # ctest currently doesn't know of our Catch2 tags, so we are 
+      # manually excluding each integration test by name
+      - name: Run unit tests under valgrind
+        run: >
+          valgrind --leak-check=full --error-exitcode=1 
+          ctest -j2 --output-on-failure --schedule-random -E "density evolution"
+        working-directory: ${{ env.build_dir }}
+
+
+
+# TODO:
+# - code coverage!

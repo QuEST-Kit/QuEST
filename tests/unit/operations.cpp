@@ -23,7 +23,7 @@
 using std::tuple;
 
 
-#define TEST_CATEGORY "[operations]"
+#define TEST_CATEGORY "[unit][operations]"
 
 
 
@@ -644,6 +644,14 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
         // PauliStr arg replaces target qubit list in API operations
         constexpr NumQubitsFlag RevTargs = (Args==paulistr||Args==pauligad)? zero : Targs;
 
+        // disabling unitary-check validation for compmatr, since it's hard to
+        // generate numerically-precise random unitaries upon many qubits, or
+        // upon few qubits are single-precision. So we disable completely until
+        // we re-implement 'input validation' checks which force us to fix thresholds
+        (Args == compmatr)?
+            setValidationEpsilon(0):
+            setValidationEpsilonToDefault();
+
         // prepare test function which will receive both statevectors and density matrices
         auto testFunc = [&](Qureg qureg, auto& stateRef) -> void { 
             
@@ -665,8 +673,9 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
         SECTION( LABEL_STATEVEC ) { testQuregIsCorrectOnAllDeployments(statevecQuregs, statevecRef, testFunc); }
         SECTION( LABEL_DENSMATR ) { testQuregIsCorrectOnAllDeployments(densmatrQuregs, densmatrRef, testFunc); }
 
-        // free any heap-alloated API matrices
+        // free any heap-alloated API matrices and restore epsilon
         freeRemainingArgs<Targs,Args>(furtherArgs);
+        setValidationEpsilonToDefault();
     }
 
     // TODO:

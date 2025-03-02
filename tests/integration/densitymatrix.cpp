@@ -217,7 +217,7 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
 }
 
 
-TEST_CASE( "density evolution", "[integration]" ) {
+TEST_CASE( "density evolution", TEST_TAG ) {
 
     auto deployments = getSupportedDeployments();
     

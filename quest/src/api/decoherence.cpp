@@ -112,7 +112,7 @@ void mixKrausMap(Qureg qureg, int* qubits, int numQubits, KrausMap map) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_targets(qureg, qubits, numQubits, __func__);
-    validate_mixedAmpsFitInNode(qureg, numQubits, __func__);
+    validate_mixedAmpsFitInNode(qureg, 2*numQubits, __func__); // superop acts on 2x
     validate_krausMapIsCPTP(map, __func__); // also checks fields and is-sync
     validate_krausMapMatchesTargets(map, numQubits, __func__);
 

@@ -1,4 +1,5 @@
-name: compilation test
+name: compile
+
 
 on:
   push:
@@ -7,6 +8,7 @@ on:
   pull_request:
     branches:
       - v4
+
 
 jobs:
 
@@ -95,14 +97,14 @@ jobs:
         if: ${{ matrix.mpi == 'ON' }}
         uses: mpi4py/setup-mpi@v1
 
-      # obtain CUDA for GPU acceleration (cublas only needed for cuQuantum)
+      # obtain CUDA for GPU acceleration (cuQuantum needs cuBLAS)
       - name: Setup CUDA
         if: ${{ matrix.gpu == 'ON' }}
         uses: Jimver/cuda-toolkit@v0.2.21
         with:
           method: network
           sub-packages: '["nvcc", "cudart", "thrust"]'
-          non-cuda-sub-packages: '["libcublas"]'
+          non-cuda-sub-packages: ${{ matrix.cuquantum == 'ON' && '["libcublas"]' || '[]' }}
 
       # obtain cuQuantum on linux
       - name: Setup cuQuantum
@@ -118,6 +120,7 @@ jobs:
           cmake -B ${{ env.build_dir }}
           -DCMAKE_CXX_FLAGS="-fno-lto ${CMAKE_CXX_FLAGS}"
           -DBUILD_EXAMPLES=ON
+          -DENABLE_TESTING=ON
           -DENABLE_DEPRECATED_API=${{ matrix.deprecated }}
           -DENABLE_MULTITHREADING=${{ matrix.omp }}
           -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
@@ -127,6 +130,13 @@ jobs:
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
 
+      # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
-        run: >
-          cmake --build ${{ env.build_dir }}
+        run: cmake --build ${{ env.build_dir }} --config Release
+
+
+
+# TODO:
+# - get Windows GPU working
+# - test AMD compilation
+# - CUDA-aware MPI?!?!?!

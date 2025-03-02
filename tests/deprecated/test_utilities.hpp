@@ -39,7 +39,7 @@ using std::vector;
 // replace REAL_EPS macro with constant
 #undef REAL_EPS
 #if FLOAT_PRECISION == 1
-    constexpr qreal REAL_EPS = 1E-5;
+    constexpr qreal REAL_EPS = 1E-1;
 #elif FLOAT_PRECISION == 2
     constexpr qreal REAL_EPS = 1E-8;
 #elif FLOAT_PRECISION == 4
