@@ -1,39 +1,85 @@
 
-<!-- TODO:
-     update paths to be relative as per below comment
- -->>
+<!-- TODO: update all paths to be absolute (rather than relative) as per below comment ->
+
 <!-- This README avoids relative paths since it is also used as Doxygen's mainpage -->
 
 
-<!-- banner -->
-[<img src="doxyconfig/banner.png?raw=true" alt="The QuEST logo" width=500>](https://quest.qtechtheory.org)
 
-<!-- TODO: restore CI 'compilation/test pass' badge! -->
-[![GitHub release](https://img.shields.io/github/release/QuEST-Kit/QuEST)](https://GitHub.com/QuEST-Kit/QuEST/releases/) 
-[![Doc](https://img.shields.io/badge/doc-Github.io-orange.svg)](https://quest-kit.github.io/QuEST/modules.html)
-[![MIT license](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENCE.txt)
+<!-- banner and top badges (centered) -->
+<div align="center">
 
-The **Quantum Exact Simulation Toolkit** (QuEST) is a high-performance simulator of quantum statevectors and density matrices. It hybridises **multithreading**, **GPU acceleration** and **distribution** to run lightning fast on laptops, desktops and supercomputers, parallelising over multiple cores, CPUs and GPUs. Behind the scenes, QuEST leverages [OpenMP](https://www.openmp.org/), [MPI](https://www.mpi-forum.org/), [CUDA](https://developer.nvidia.com/cuda-zone), [HIP](https://rocm.docs.amd.com/projects/HIP/en/docs-develop/what_is_hip.html), [Thrust](https://developer.nvidia.com/thrust), [cuQuantum](https://developer.nvidia.com/cuquantum-sdk) and [GPUDirect](https://developer.nvidia.com/gpudirect) for cutting-edge performance on modern multi-GPU clusters, and compatibility with older NVIDIA and AMD GPUs. These deployments can be combined in any combination, or automatically decided at runtime, yet are abstracted behind a single, seamless interface, accessible by both `C` and `C++` and all the major compilers (detailed [here](docs/compilers.md)).
+  <!-- banner -->
+  <a href="https://quest.qtechtheory.org">
+    <img src="docs/config/banner.png?raw=true" alt="The QuEST logo" width=500>
+  </a>
 
-[![Languages](https://img.shields.io/badge/C-11-ff69b4.svg)](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3631.pdf)
-[![Languages](https://img.shields.io/badge/C++-14-ff69b4.svg)](https://isocpp.org/wiki/faq/cpp14)
-![OS](https://img.shields.io/badge/os-MacOS-9cbd3c.svg)
-![OS](https://img.shields.io/badge/os-Linux-9cbd3c.svg)
-![OS](https://img.shields.io/badge/os-Windows-9cbd3c.svg)
-[![Platforms](https://img.shields.io/badge/multithreaded-OpenMP-6699ff.svg)](https://www.openmp.org/)
-[![Platforms](https://img.shields.io/badge/distributed-MPI-6699ff.svg)](https://www.mpi-forum.org/) 
-[![Platforms](https://img.shields.io/badge/GPU-CUDA-6699ff.svg)](https://developer.nvidia.com/cuda-zone)
-[![Platforms](https://img.shields.io/badge/GPU-AMD-6699ff.svg)](https://docs.amd.com/bundle/HIP-Programming-Guide-v5.3)
+  <!-- TODO: restore CI 'compilation/test pass' badge! -->
+  [![DOI](https://img.shields.io/badge/DOI-10.1038%2Fs41598--019--47174--9-yellow.svg)](https://doi.org/10.1038/s41598-019-47174-9)
+  <br>
+  [![GitHub release](https://img.shields.io/github/release/QuEST-Kit/QuEST)](https://GitHub.com/QuEST-Kit/QuEST/releases/) 
+  [![Doc](https://img.shields.io/badge/doc-Github.io-orange.svg)](https://quest-kit.github.io/QuEST/modules.html)
+  [![MIT license](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENCE.txt)
 
-QuEST is developed by the [QTechTheory](http://qtechtheory.org/) group at the University of Oxford, and [these authors](https://github.com/QuEST-Kit/QuEST/blob/master/AUTHORS.txt). To learn more:
-- see the [tutorial](https://github.com/QuEST-Kit/QuEST/blob/master/examples/README.md)
-- view the [documentation](https://quest-kit.github.io/QuEST/modules.html)
+
+</div>
+
+
+
+<!-- intro -->
+
+The **Quantum Exact Simulation Toolkit** (QuEST) is a high-performance simulator of quantum statevectors and density matrices.
+It hybridises **multithreading**, **GPU acceleration** and **distribution** to run lightning fast on laptops, desktops and 
+supercomputers, parallelising over multiple cores, CPUs and GPUs. Behind the scenes, QuEST leverages [OpenMP](https://www.openmp.org/),
+[MPI](https://www.mpi-forum.org/), [CUDA](https://developer.nvidia.com/cuda-zone), [HIP](https://rocm.docs.amd.com/projects/HIP/en/docs-develop/what_is_hip.html),
+[Thrust](https://developer.nvidia.com/thrust), [cuQuantum](https://developer.nvidia.com/cuquantum-sdk) and [GPUDirect](https://developer.nvidia.com/gpudirect)
+for cutting-edge performance on modern multi-GPU clusters, and compatibility with older NVIDIA and AMD GPUs. These deployments can 
+be combined in any combination, or automatically decided at runtime, yet are abstracted behind a single, seamless interface, accessible 
+by both `C` and `C++` and all the major compilers (detailed [here](docs/compilers.md)).
+
+
+
+<!-- detail badgets (centered) -->
+
+<div align="center">
+
+  [![Languages](https://img.shields.io/badge/C-11-ff69b4.svg)](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3631.pdf)
+  [![Languages](https://img.shields.io/badge/C++-14-ff69b4.svg)](https://isocpp.org/wiki/faq/cpp14)
+  ![OS](https://img.shields.io/badge/os-MacOS-9cbd3c.svg)
+  ![OS](https://img.shields.io/badge/os-Linux-9cbd3c.svg)
+  ![OS](https://img.shields.io/badge/os-Windows-9cbd3c.svg) <br>
+  [![Platforms](https://img.shields.io/badge/multithreaded-OpenMP-6699ff.svg)](https://www.openmp.org/)
+  [![Platforms](https://img.shields.io/badge/distributed-MPI-6699ff.svg)](https://www.mpi-forum.org/) 
+  [![Platforms](https://img.shields.io/badge/GPU-CUDA-6699ff.svg)](https://developer.nvidia.com/cuda-zone)
+  [![Platforms](https://img.shields.io/badge/GPU-AMD-6699ff.svg)](https://docs.amd.com/bundle/HIP-Programming-Guide-v5.3)
+
+</div>
+
+
+QuEST development is led by the [QTechTheory](http://qtechtheory.org/) group at the University of Oxford, with active contributions from the [EPCC](https://www.epcc.ed.ac.uk/) team at the University of Edinburgh, and support from the below organisations.
+In particular, QuEST `v4` was made possible through the support of the UK National Quantum Computing centre (_NQCC200921_) and the [UKRI SEEQA](https://gtr.ukri.org/projects?ref=EP%2FY004655%2F1#/tabOverview) project.
+
+<div align="center">
+
+  <img src="docs/config/logos/nqcc.png" alt="NQCC" height=30 style="margin:5">
+  <img src="docs/config/logos/amd.png" alt="AMD" height=25 style="margin:5">
+  <img src="docs/config/logos/nvidia.png" alt="NVIDIA" height=25 style="margin:5">
+  <img src="docs/config/logos/qmt.png" alt="Quantum Motion" height=25 style="margin:5">
+  <img src="docs/config/logos/edinburgh.png" alt="University of Edinburgh" height=32 style="margin:5">
+  <img src="docs/config/logos/oxford.png" alt="University of Oxford" height=28 style="margin:5">
+
+</div>
+
+To learn more:
+
 - visit the [website](https://quest.qtechtheory.org/)
-- see some [examples](https://github.com/QuEST-Kit/QuEST/blob/master/examples/)
+- see some [examples](/examples/)
+- view the [documentation](/docs/)
 - read the [whitepaper](https://www.nature.com/articles/s41598-019-47174-9), which featured in Scientific Report's [Top 100 in Physics](https://www.nature.com/collections/ecehgdfcba/) :trophy:
 
-[![DOI](https://img.shields.io/badge/DOI-10.1038%2Fs41598--019--47174--9-yellow.svg)](https://doi.org/10.1038/s41598-019-47174-9)
-[![Email](https://img.shields.io/badge/email-quest@materials.ox.ac.uk-red.svg)](mailto:quest@materials.ox.ac.uk)
+<div align="center">
+
+
+</div>
 
 ---------------------------------
 
