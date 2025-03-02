@@ -1,6 +1,8 @@
 #ifndef MACROS_HPP
 #define MACROS_HPP
 
+#include "quest/include/quest.h"
+
 #include <catch2/catch_test_macros.hpp>
 
 
@@ -11,9 +13,18 @@
 
 
 // TODO:
-// adjust TEST_EPSILON according to QuEST's FLOAT_PRECISION
+// move this (and above # quregs) out of macros.hpp and into 
+// a new e.g. 'config.cpp' so we don't have to recompile
+// all tests when changing precision and qureg sizes, DAYUM
 
-#define TEST_EPSILON 1E-10
+#if FLOAT_PRECISION == 1
+    #define TEST_EPSILON 1E-4
+#elif FLOAT_PRECISION == 2
+    #define TEST_EPSILON 1E-10
+#elif FLOAT_PRECISION == 4
+    #define TEST_EPSILON 1E-12
+#endif
+
 
 
 /*
