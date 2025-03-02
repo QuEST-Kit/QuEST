@@ -672,8 +672,9 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
         SECTION( LABEL_STATEVEC ) { testQuregIsCorrectOnAllDeployments(statevecQuregs, statevecRef, testFunc); }
         SECTION( LABEL_DENSMATR ) { testQuregIsCorrectOnAllDeployments(densmatrQuregs, densmatrRef, testFunc); }
 
-        // free any heap-alloated API matrices
+        // free any heap-alloated API matrices and restore epsilon
         freeRemainingArgs<Targs,Args>(furtherArgs);
+        setValidationEpsilonToDefault();
     }
 
     // TODO:
