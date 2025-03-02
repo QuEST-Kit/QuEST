@@ -72,8 +72,8 @@ jobs:
             os: macos-latest
           
           # cannot get GPU working on Windows CI (grr!)
-          # - gpu: ON
-          #   os: windows-latest
+          - gpu: ON
+            os: windows-latest
             
     # constants
     env:
