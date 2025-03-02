@@ -1,29 +1,17 @@
 #ifndef MACROS_HPP
 #define MACROS_HPP
 
-#include "quest/include/quest.h"
-
 #include <catch2/catch_test_macros.hpp>
 
 
 // TODO:
-// should this even be a macro? eh
+// this shouldn't be a macro; Catch2 can handle fine when
+// we make this a runtime variable (changing some of our
+// GENERATE to GENERATE_COPY). As a macro, changing the
+// qureg size requires recompiling the entire tests, which
+// is certainly annoying for development!
+
 #define NUM_UNIT_QUREG_QUBITS 6
-
-
-
-// TODO:
-// move this (and above # quregs) out of macros.hpp and into 
-// a new e.g. 'config.cpp' so we don't have to recompile
-// all tests when changing precision and qureg sizes, DAYUM
-
-#if FLOAT_PRECISION == 1
-    #define TEST_EPSILON 1E-4
-#elif FLOAT_PRECISION == 2
-    #define TEST_EPSILON 1E-10
-#elif FLOAT_PRECISION == 4
-    #define TEST_EPSILON 1E-12
-#endif
 
 
 

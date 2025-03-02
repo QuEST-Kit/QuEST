@@ -23,7 +23,7 @@
 using std::tuple;
 
 
-#define TEST_CATEGORY "[operations]"
+#define TEST_CATEGORY "[unit][operations]"
 
 
 

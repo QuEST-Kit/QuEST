@@ -18,8 +18,9 @@ jobs:
     name: address sanitisation [${{ matrix.precision }}]
     runs-on: macos-latest
 
-    # try all precisions, but forego all parallelisation
+    # try all precisions without aborting
     strategy:
+      fail-fast: false
       matrix:
         precision: [1, 2, 4]
 
@@ -33,7 +34,7 @@ jobs:
       - name: Get QuEST
         uses: actions/checkout@v4
 
-      # compile QuEST using clang address sanitiser (will alias MSVC on Windows)
+      # compile QuEST using clang address sanitiser, foregoing all parallelisations
       - name: Configure CMake to use sanitiser
         run: >
           cmake -B ${{ env.build_dir }}
@@ -46,8 +47,12 @@ jobs:
       - name: Compile with sanitiser
         run: cmake --build ${{ env.build_dir }}
 
+      # run unit tests in random order, excluding the integration tests
+      # TODO:
+      # ctest currently doesn't know of our Catch2 tags, so we
+      # are manually excluding each integration test by name
       - name: Run unit tests with active sanitiser
-        run: ctest -j2 --output-on-failure
+        run: ctest -j2 --output-on-failure --schedule-random -E "density evolution"
         working-directory: ${{ env.build_dir }}
 
   
@@ -56,8 +61,9 @@ jobs:
     name: memory checks [${{ matrix.precision }}]
     runs-on: ubuntu-latest
 
-    # try all precisions, but forego all parallelisation
+    # try all precisions without aborting
     strategy:
+      fail-fast: false
       matrix:
         precision: [1, 2, 4]
 
@@ -65,11 +71,12 @@ jobs:
     env:
       build_dir: "build"
 
-    # compile QuEST like normal and run valgrind upon it
+    # perform the job
     steps:
       - name: Get QuEST
         uses: actions/checkout@v4
 
+      # compile QuEST like normal albeit without parallelisations
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
@@ -82,7 +89,7 @@ jobs:
       - name: Install valgrind
         run: sudo apt install -y valgrind
 
-      # make valgrind fail CI if detecting issue
+      # make valgrind fail CI if detecting issue when running unit tests in a randomised order
       - name: Run unit tests under valgrind
-        run: valgrind --leak-check=full --error-exitcode=1 ./tests/tests
+        run: valgrind --leak-check=full --error-exitcode=1 ./tests/tests --order=rand
         working-directory: ${{ env.build_dir }}

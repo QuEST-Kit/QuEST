@@ -23,7 +23,7 @@ using std::vector;
 using namespace Catch::Matchers;
 
 
-#define TEST_CATEGORY "[calculations]"
+#define TEST_CATEGORY "[unit][calculations]"
 
 
 
