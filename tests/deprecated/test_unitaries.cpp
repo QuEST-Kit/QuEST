@@ -645,7 +645,7 @@ TEST_CASE( "controlledRotateAroundAxis", "[unitaries]" ) {
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
     Vector vec; 
     vec.x=getRandomReal(1,2);
-    vec.y=getRandomReal(-1,-2);
+    vec.y=getRandomReal(-2,-1);
     vec.z=getRandomReal(-1,1);   // lazily avoiding (x,y,z)=0  
     
     // Rn(a) = cos(a/2)I - i sin(a/2) n . paulivector
@@ -2544,7 +2544,7 @@ TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
     Vector vec; 
     vec.x=getRandomReal(1,2);
-    vec.y=getRandomReal(-1,-2);
+    vec.y=getRandomReal(-2,-1);
     vec.z=getRandomReal(-1,1);   // lazily avoiding (x,y,z)=0  
     
     // Rn(a) = cos(a/2)I - i sin(a/2) n . paulivector
