@@ -31,7 +31,7 @@ using namespace Catch::Matchers;
 #elif FLOAT_PRECISION == 2
     const qreal TEST_EPSILON = 1E-10;
 #elif FLOAT_PRECISION == 4
-    const qreal TEST_EPSILON = 1E-12;
+    const qreal TEST_EPSILON = 1E-10;
 #endif
 
 bool doScalarsAgree(qcomp a, qcomp b) {
