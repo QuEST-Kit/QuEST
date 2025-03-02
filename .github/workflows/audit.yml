@@ -1,4 +1,4 @@
-name: sanitisation and leak test
+name: audit
 
 
 on:
@@ -39,6 +39,7 @@ jobs:
         run: >
           cmake -B ${{ env.build_dir }}
           -DCMAKE_CXX_COMPILER=clang++
+          -DENABLE_TESTING=ON
           -DENABLE_MULTITHREADING=OFF
           -DFLOAT_PRECISION=${{ matrix.precision }}
           -DCMAKE_CXX_FLAGS="${{ env.sanitiser_flags }}"
@@ -80,8 +81,9 @@ jobs:
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
-          -DFLOAT_PRECISION=${{ matrix.precision }}
+          -DENABLE_TESTING=ON
           -DENABLE_MULTITHREADING=OFF
+          -DFLOAT_PRECISION=${{ matrix.precision }}
 
       - name: Compile QuEST
         run: cmake --build ${{ env.build_dir }}
@@ -90,6 +92,11 @@ jobs:
         run: sudo apt install -y valgrind
 
       # make valgrind fail CI if detecting issue when running unit tests in a randomised order
+      # TODO:
+      # ctest currently doesn't know of our Catch2 tags, so we are 
+      # manually excluding each integration test by name
       - name: Run unit tests under valgrind
-        run: valgrind --leak-check=full --error-exitcode=1 ./tests/tests "[unit]" --order=rand
+        run: >
+          valgrind --leak-check=full --error-exitcode=1 
+          ctest -j2 --output-on-failure --schedule-random -E "density evolution"
         working-directory: ${{ env.build_dir }}

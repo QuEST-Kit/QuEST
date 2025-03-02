@@ -1,4 +1,4 @@
-name: compilation test
+name: compile
 
 
 on:
@@ -120,6 +120,7 @@ jobs:
           cmake -B ${{ env.build_dir }}
           -DCMAKE_CXX_FLAGS="-fno-lto ${CMAKE_CXX_FLAGS}"
           -DBUILD_EXAMPLES=ON
+          -DENABLE_TESTING=ON
           -DENABLE_DEPRECATED_API=${{ matrix.deprecated }}
           -DENABLE_MULTITHREADING=${{ matrix.omp }}
           -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
@@ -130,5 +131,4 @@ jobs:
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
 
       - name: Compile
-        run: >
-          cmake --build ${{ env.build_dir }}
+        run: cmake --build ${{ env.build_dir }}
