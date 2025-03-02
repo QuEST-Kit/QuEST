@@ -108,14 +108,14 @@ jobs:
         if: ${{ matrix.mpi == 'ON' }}
         uses: mpi4py/setup-mpi@v1
 
-      # obtain CUDA for GPU acceleration (cublas only needed for cuQuantum)
+      # obtain CUDA for GPU acceleration (cuQuantum needs cuBLAS, and MSVC needs VSI)
       - name: Setup CUDA
         if: ${{ matrix.gpu == 'ON' }}
         uses: Jimver/cuda-toolkit@v0.2.21
         with:
           method: network
-          sub-packages: '["nvcc", "cudart", "thrust"]'
-          non-cuda-sub-packages: '["libcublas"]'
+          sub-packages: ${{ format('["nvcc", "cudart", "thrust"{0}]', matrix.compiler == 'cl' && ', "visual_studio_integration"' || '') }}
+          non-cuda-sub-packages: ${{ matrix.cuquantum == 'ON' && '["libcublas"]' || '[]' }}
 
       # obtain cuQuantum on linux
       - name: Setup cuQuantum
