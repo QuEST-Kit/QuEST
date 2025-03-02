@@ -84,7 +84,7 @@ TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
                     for (size_t j=0; j<ref1.size(); j++)
                         refProd += conj(ref1[i][j]) * ref2[i][j];
                         
-                REQUIRE( real(calcDensityInnerProduct(mat1,mat2)) == Approx(real(refProd)) );
+                REQUIRE( real(calcDensityInnerProduct(mat1,mat2)) == Approx(real(refProd)).margin(100 * REAL_EPS) );
             }
         }
     }

@@ -1,13 +1,24 @@
 name: compile
 
 
+
+# just testing
 on:
   push:
     branches:
-      - v4
+      - llvm-memcheck
   pull_request:
     branches:
-      - v4
+      - llvm-memcheck
+
+
+# on:
+#   push:
+#     branches:
+#       - v4
+#   pull_request:
+#     branches:
+#       - v4
 
 
 jobs:
@@ -72,8 +83,8 @@ jobs:
             os: macos-latest
           
           # cannot get GPU working on Windows CI (grr!)
-          - gpu: ON
-            os: windows-latest
+          # - gpu: ON
+          #   os: windows-latest
             
     # constants
     env:
