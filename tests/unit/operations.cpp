@@ -644,6 +644,11 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
         // PauliStr arg replaces target qubit list in API operations
         constexpr NumQubitsFlag RevTargs = (Args==paulistr||Args==pauligad)? zero : Targs;
 
+        // single-precision many-target matrices are often non-unitary, so disable validation
+        (FLOAT_PRECISION == 1 && Args == compmatr && numTargs >= 3)?
+            setValidationEpsilon(0):
+            setValidationEpsilonToDefault();
+
         // prepare test function which will receive both statevectors and density matrices
         auto testFunc = [&](Qureg qureg, auto& stateRef) -> void { 
             
