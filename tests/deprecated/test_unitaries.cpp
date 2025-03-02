@@ -218,12 +218,12 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             syncDiagMatr(op);
             
             // break unitarity via reals
-            op.cpuElems[2] = -.1;
+            op.cpuElems[2] = -9999.1;
             REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, op.numQubits, op), ContainsSubstring("unitary") );
             
             // restore reals and break unitarity via imag
             op.cpuElems[2] = 1;
-            op.cpuElems[3] = -3.5;
+            op.cpuElems[3] = -9999.5;
             REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, op.numQubits, op), ContainsSubstring("unitary") );
             
             destroySubDiagonalOp(op);
@@ -964,7 +964,7 @@ TEST_CASE( "controlledUnitary", "[unitaries]" ) {
         }
         SECTION( "unitarity" ) {
             
-            matr.real[0][0] = 0; // break unitarity
+            matr.real[0][0] = 9999; // break unitarity
             REQUIRE_THROWS_WITH( controlledUnitary(quregVec, 0, 1, matr), ContainsSubstring("unitary") );
         }
     }
@@ -1798,7 +1798,7 @@ TEST_CASE( "multiControlledTwoQubitUnitary", "[unitaries]" ) {
         SECTION( "unitarity " ) {
             
             int ctrls[1] = {0};
-            matr.real[0][0] = 0; // break unitarity
+            matr.real[0][0] = 99999; // break unitarity
             REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, 1, 1, 2, matr), ContainsSubstring("unitary") );
         }
         SECTION( "unitary fits in node" ) {
@@ -1879,7 +1879,7 @@ TEST_CASE( "multiControlledUnitary", "[unitaries]" ) {
         }
         SECTION( "unitarity" ) {
 
-            matr.real[0][0] = 0; // break matr unitarity
+            matr.real[0][0] = 9999; // break matr unitarity
             int ctrls[] = {0};
             REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 1, 1, matr), ContainsSubstring("unitary") );
         }
@@ -2353,7 +2353,7 @@ TEST_CASE( "multiStateControlledUnitary", "[unitaries]" ) {
         }
         SECTION( "unitarity" ) {
 
-            matr.real[0][0] = 0; // break matr unitarity
+            matr.real[0][0] = 99999; // break matr unitarity
             int ctrls[] = {0};
             int ctrlState[1] = {0};
             REQUIRE_THROWS_WITH( multiStateControlledUnitary(quregVec, ctrls, ctrlState, 1, 1, matr), ContainsSubstring("unitary") );
@@ -2996,7 +2996,7 @@ TEST_CASE( "unitary", "[unitaries]" ) {
         }
         SECTION( "unitarity" ) {
             
-            matr.real[0][0] = 0; // break matr unitarity
+            matr.real[0][0] = 9999999; // break matr unitarity
             REQUIRE_THROWS_WITH( unitary(quregVec, 0, matr), ContainsSubstring("unitary") );
         }
     }
