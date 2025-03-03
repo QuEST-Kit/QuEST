@@ -41,7 +41,7 @@ jobs:
         # mpi: [ON, OFF]
         # gpu: [ON, OFF]
         # cuquantum: [ON, OFF]
-        os: [windows-2019] # only version to work with CUDA GI (but fails with default MSVC)
+        os: [windows-latest] # only version to work with CUDA GI (but fails with default MSVC)
         precision: [2]
         omp: [OFF]
         mpi: [ON, OFF]
@@ -56,12 +56,7 @@ jobs:
           - os: macos-latest
             compiler: clang++
             deprecated: ON
-
-          # DEBUG
-          # - os: windows-latest
-          #   compiler: cl
-          #   deprecated: OFF
-          - os: windows-2019
+          - os: windows-latest
             compiler: cl
             deprecated: OFF
             
@@ -94,13 +89,6 @@ jobs:
       - name: Get QuEST
         uses: actions/checkout@v4
 
-      # obtain more modern MSVC compiler than default (to work with CUDA)
-      - name: Update MSVC
-        if: ${{ matrix.compiler == 'cl' }}
-        uses: TheMrMilchmann/setup-msvc-dev@v3
-        with:
-          arch: x64
-
       # obtain OMP for Clang multithreading
       - name: Setup libomp 
         if: ${{ matrix.compiler == 'clang++' && matrix.omp == 'ON' }}
@@ -125,7 +113,7 @@ jobs:
       - name: Setup CUDA (MSVC)
         if: ${{ matrix.gpu == 'ON' && matrix.compiler == 'cl' }}
         shell: pwsh
-        run: ../scripts/setup_cuda.ps1
+        run: .github/scripts/setup_cuda.ps1
         env:
           INPUT_CUDA_VERSION: 12.5.0
 
