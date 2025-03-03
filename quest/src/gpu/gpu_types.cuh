@@ -24,7 +24,7 @@
 #if defined(__NVCC__)
     #include <cuComplex.h>
 #elif defined(__HIPCC__)
-    #include "quest/src/gpu/cuda_to_hip.h"
+    #include "quest/src/gpu/cuda_to_hip.hpp"
 #endif
 
 #include <array>

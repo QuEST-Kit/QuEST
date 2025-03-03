@@ -27,7 +27,7 @@
  * accelerator.cpp file.
  *
  * When compiling for AMD GPUs, the CUDA symbols invoked herein are
- * mapped to HIP symbols by cuda_to_hip.h 
+ * mapped to HIP symbols by cuda_to_hip.hpp
  */
 
 #include "quest/include/modes.h"
