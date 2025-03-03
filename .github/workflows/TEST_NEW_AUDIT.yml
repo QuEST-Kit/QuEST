@@ -58,7 +58,7 @@ jobs:
 
       # remove standard-library and testing and code from coverage data
       - name: Filter LCOV results
-        run: lcov --remove ${{ env.tracefile }} '/usr/*' '*/tests/*' --output-file ${{ env.tracefile }}
+        run: lcov --remove ${{ env.tracefile }} '/usr/*' '*/tests/*' '*/_deps/*' --output-file ${{ env.tracefile }}
 
       - name: Preview LCOV results
         run: lcov --list ${{ env.tracefile }}
