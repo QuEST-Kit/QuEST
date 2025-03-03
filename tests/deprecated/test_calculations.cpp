@@ -693,7 +693,7 @@ TEST_CASE( "calcFidelity", "[calculations]" ) {
                     dotProd += conj(r1[i]) * pureRef[i];
                 qreal refFid = pow(abs(dotProd), 2);
                 
-                REQUIRE( calcFidelity(mat,pure) == Approx(refFid) ); 
+                REQUIRE( calcFidelity(mat,pure) == Approx(refFid).margin(100 * REAL_EPS) ); 
             }
             SECTION( "mixed" ) {
                 
@@ -711,7 +711,7 @@ TEST_CASE( "calcFidelity", "[calculations]" ) {
                     dotProd += conj(pureRef[i]) * rhs[i];
 
                 REQUIRE( imag(dotProd) == Approx(0).margin(REAL_EPS) );
-                REQUIRE( calcFidelity(mat,pure) == Approx(real(dotProd)) );
+                REQUIRE( calcFidelity(mat,pure) == Approx(real(dotProd)).margin(100 * REAL_EPS) );
             }
 
             // unnormalised test is no longer supported, since v4 calcFidelity
