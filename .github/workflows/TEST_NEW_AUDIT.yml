@@ -56,7 +56,7 @@ jobs:
 
       # remove testing code from coverage data
       - name: Filter LCOV results
-        run: lcov --remove ${{ env.tracefile }} '*/tests/*' --output-file ${{ env.tracefile }}
+        run: lcov --remove ${{ env.tracefile }} '*/tests/*' --output-file ${{ env.tracefile }} --ignore-errors
         working-directory: ${{ env.build_dir }}
 
       - name: Preview LCOV results
