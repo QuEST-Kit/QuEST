@@ -85,6 +85,9 @@ __host__ inline cu_qcomp* toCuQcomps(qcomp* a) {
 
 /*
  * cu_qcomp ARITHMETIC OVERLOADS
+ *
+ * note we cannot use *= overloads with
+ * HIP complex numbers, so we forego them
  */
 
 
@@ -164,32 +167,6 @@ INLINE cu_qcomp operator * (const qreal& b, const cu_qcomp& a) {
         .y = a.y * b
     };
     return out;
-}
-
-
-INLINE void operator += (cu_qcomp& a, const cu_qcomp& b) {
-    a = a + b;
-}
-
-INLINE void operator -= (cu_qcomp& a, const cu_qcomp& b) {
-    a = a - b;
-}
-
-INLINE void operator *= (cu_qcomp& a, const cu_qcomp& b) {
-    a = a * b;
-}
-
-
-INLINE void operator += (cu_qcomp& a, const qreal& b) {
-    a = a + b;
-}
-
-INLINE void operator -= (cu_qcomp& a, const qreal& b) {
-    a = a - b;
-}
-
-INLINE void operator *= (cu_qcomp& a, const qreal& b) {
-    a = a * b;
 }
 
 #endif
