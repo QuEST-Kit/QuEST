@@ -33,12 +33,20 @@ jobs:
 
       # compile QuEST with all combinations of below flags
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        precision: [1, 2, 4]
-        omp: [ON, OFF]
+
+        # DEBUG - testing MSVC GPU
+        # os: [ubuntu-latest, macos-latest, windows-latest] 
+        # precision: [1, 2, 4]
+        # omp: [ON, OFF]
+        # mpi: [ON, OFF]
+        # gpu: [ON, OFF]
+        # cuquantum: [ON, OFF]
+        os: [windows-2025, windows-2022, windows-2019]
+        precision: [2]
+        omp: [OFF]
         mpi: [ON, OFF]
-        gpu: [ON, OFF]
-        cuquantum: [ON, OFF]
+        gpu: [ON]
+        cuquantum: [OFF]
 
         # assign each OS a bespoke compiler, and disable deprecated API on MSVC
         include:
@@ -48,7 +56,18 @@ jobs:
           - os: macos-latest
             compiler: clang++
             deprecated: ON
-          - os: windows-latest
+
+          # DEBUG
+          # - os: windows-latest
+          #   compiler: cl
+          #   deprecated: OFF
+          - os: windows-2019
+            compiler: cl
+            deprecated: OFF
+          - os: windows-2022
+            compiler: cl
+            deprecated: OFF
+          - os: windows-2025
             compiler: cl
             deprecated: OFF
             
