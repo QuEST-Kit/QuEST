@@ -54,7 +54,7 @@ jobs:
         uses: hrishikesh-kadam/setup-lcov@v1
 
       - name: Run LCOV
-        run: lcov --directory . --capture --output-file ${{ env.tracefile }} --ignore-errors source
+        run: lcov --directory . --capture --output-file ${{ env.tracefile }}
 
       # remove standard-library and testing and code from coverage data
       - name: Filter LCOV results
