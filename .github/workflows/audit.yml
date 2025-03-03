@@ -102,6 +102,76 @@ jobs:
         working-directory: ${{ env.build_dir }}
 
 
+  # run lcov
+  coverage-test:
+    name: code coverage
 
-# TODO:
-# - code coverage!
+    # test only serial double-precision QuEST on Ubuntu
+    runs-on: ubuntu-latest
+
+    # constants: CI will fail if coverage less than below percent
+    # TODO: this is currently so low (1%) because we really need
+    # to run in MPI + GPU mode for reliable coverage statistics
+    env:
+      min_coverage: 1 # %
+      tracefile: "coverage.info"
+
+    # perform the job
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      # work in a build directory to reduce verbosity below
+      - run: > 
+          mkdir build;
+          cd build
+
+      # compile QuEST and unit tests in coverage mode. We opt to use
+      # Release mode (rather than Debug) and permit e.g. inlining for
+      # performance (else the runner times out), though this could
+      # corrupt the statistics in the future (it doesn't now, strangely)
+      - name: Configure CMake
+        run: >
+          cmake -B .
+          -DCMAKE_BUILD_TYPE=Release
+          -DENABLE_TESTING=ON
+          -DENABLE_MULTITHREADING=OFF
+          -DCMAKE_CXX_FLAGS="--coverage"
+          -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+
+      - name: Compile unit tests
+        run: make
+
+      # run the unit tests, saving coverage data to file
+      - name: Run unit tests
+        run: ctest -j2 --output-on-failure
+
+      # analyse the unit test coverage
+      - name: Setup LCOV
+        uses: hrishikesh-kadam/setup-lcov@v1
+
+      - name: Run LCOV
+        run: lcov --directory . --capture --output-file ${{ env.tracefile }} --ignore-errors source
+
+      # remove standard-library and testing and code from coverage data
+      - name: Filter LCOV results
+        run: lcov --remove ${{ env.tracefile }} '/usr/*' '*/tests/*' '*/_deps/*' --output-file ${{ env.tracefile }}
+
+      # TODO: temporarily remove MPI and GPU files from coverage stats, since unused
+      - name: Remove MPI and GPU coverage
+        run: lcov --remove ${{ env.tracefile }} '*/comm/*' '*/gpu/*' --output-file ${{ env.tracefile }}
+
+      # touched files are correct but percentages are strangely reported wrong in preview,
+      # even though the subsequent reporting below is correct - weird! 
+      - name: Preview LCOV results (percentages are wrong)
+        run: lcov --list ${{ env.tracefile }}
+      
+      # report coverage of remaining files in the triggering PR
+      - name: Report code coverage
+        uses: zgosalvez/github-actions-report-lcov@v4
+        with:
+          artifact-name: code-coverage-report
+          update-comment: true
+          coverage-files: ./${{ env.tracefile }}
+          minimum-coverage: ${{ env.min_coverage }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
