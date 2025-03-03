@@ -94,6 +94,8 @@ __host__ inline cu_qcomp* toCuQcomps(qcomp* a) {
 //   to make the algebra implementation-agnostic
 
 
+#if defined(__NVCC__)
+
 INLINE cu_qcomp operator + (const cu_qcomp& a, const cu_qcomp& b) {
     cu_qcomp out = {
         .x = a.x + b.x,
@@ -189,6 +191,8 @@ INLINE void operator -= (cu_qcomp& a, const qreal& b) {
 INLINE void operator *= (cu_qcomp& a, const qreal& b) {
     a = a * b;
 }
+
+#endif
 
 
 
