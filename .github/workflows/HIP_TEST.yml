@@ -20,10 +20,17 @@ jobs:
         run: |
           sudo apt install "linux-headers-$(uname -r)" "linux-modules-extra-$(uname -r)"
           sudo apt install python3-setuptools python3-wheel
-          sudo usermod -a -G render,video $LOGNAME
+        
+      - run: |
+          sudo usermod -a -G render,video $USER
+
+      - run: |
           wget https://repo.radeon.com/amdgpu-install/6.3.3/ubuntu/noble/amdgpu-install_6.3.60303-1_all.deb
+      - run: |
           sudo apt install ./amdgpu-install_6.3.60303-1_all.deb
+      - run: |
           sudo apt update
+      - run: |
           sudo apt install amdgpu-dkms rocm
 
       - name: test
