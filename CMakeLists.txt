@@ -137,6 +137,7 @@ endif()
 option(
   ENABLE_HIP
   "Whether QuEST will be built with support for AMD GPU acceleration. Turned OFF by default."
+  OFF
 )
 message(STATUS "AMD GPU acceleration is turned ${ENABLE_HIP}. Set ENABLE_HIP to modify.")
 
