@@ -21,7 +21,6 @@ jobs:
 
     # constants
     env:
-      build_dir: "build"
       tracefile: "coverage.info"
 
     # perform the job
@@ -29,47 +28,47 @@ jobs:
       - name: Get QuEST
         uses: actions/checkout@v4
 
+      # work in a build directory to reduce verbosity below
+      - run: > 
+            mkdir build;
+            cd build
+
       # compile QuEST and unit tests in coverage mode
       - name: Configure CMake
         run: >
-          cmake -B ${{ env.build_dir }}
+          cmake ..
           -DENABLE_TESTING=ON
           -DENABLE_MULTITHREADING=OFF
           -DCMAKE_CXX_FLAGS=--coverage
           -DCMAKE_EXE_LINKER_FLAGS=--coverage
 
       - name: Compile unit tests
-        run: cmake --build ${{ env.build_dir }}
+        run: cmake --build .
 
       # run the unit tests, saving coverage data to file
       - name: Run unit tests
         run: ctest -j2 --output-on-failure -R applyHadamard  ########## not waiting for full tst right now
-        working-directory: ${{ env.build_dir }}
 
       # analyse the unit test coverage
       - name: Setup LCOV
         uses: hrishikesh-kadam/setup-lcov@v1
 
       - name: Run LCOV
-        run: lcov --directory . --capture --output-file ${{ env.tracefile }} --ignore-errors
-        working-directory: ${{ env.build_dir }}
+        run: lcov --directory . --capture --output-file ${{ env.tracefile }} --ignore-errors source
 
       # remove standard-library and testing and code from coverage data
       - name: Filter LCOV results
         run: lcov --remove ${{ env.tracefile }} '/usr/*' '*/tests/*' --output-file ${{ env.tracefile }}
-        working-directory: ${{ env.build_dir }}
 
       - name: Preview LCOV results
         run: lcov --list ${{ env.tracefile }}
-        working-directory: ${{ env.build_dir }}
       
       # report coverage of remaining files in the triggering PR
       - name: Report code coverage
         uses: zgosalvez/github-actions-report-lcov@v4
         with:
-          coverage-files: ${{ env.tracefile }}
+          coverage-files: ./${{ env.tracefile }} ######### github issue claims this is bugged and needs build dir prefix
           minimum-coverage: 50
           artifact-name: code-coverage-report
           update-comment: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          working-directory: ${{ env.build_dir }}
