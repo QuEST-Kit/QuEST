@@ -137,6 +137,7 @@ endif()
 option(
   ENABLE_HIP
   "Whether QuEST will be built with support for AMD GPU acceleration. Turned OFF by default."
+  OFF
 )
 message(STATUS "AMD GPU acceleration is turned ${ENABLE_HIP}. Set ENABLE_HIP to modify.")
 
@@ -192,10 +193,17 @@ target_compile_features(QuEST
 
 # Turn on all compiler warnings
 if (MSVC)
-  target_compile_options(QuEST PRIVATE /W4)
+  set(WARNING_FLAG /W4)
 else()
-  target_compile_options(QuEST PRIVATE -Wall)
+  set(WARNING_FLAG -Wall)
 endif()
+
+target_compile_options(QuEST 
+  PRIVATE
+  $<$<COMPILE_LANGUAGE:CXX>:${WARNING_FLAG}>
+  $<$<COMPILE_LANGUAGE:C>:${WARNING_FLAG}>
+)
+
 
 # Set user options
 target_compile_definitions(QuEST PUBLIC FLOAT_PRECISION=${FLOAT_PRECISION})
