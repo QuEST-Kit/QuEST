@@ -51,7 +51,6 @@ static constexpr int maxWarpsPerBlock = 1024/WARPSIZE;
 #define cudaDeviceGetAttribute hipDeviceGetAttribute
 #define cudaDevAttrMemoryPoolsSupported hipDeviceAttributeMemoryPoolsSupported
 
-
 #define cufftDestroy hipfftDestroy
 #define cufftDoubleComplex hipfftDoubleComplex
 #define cufftDoubleReal hipfftDoubleReal
@@ -62,9 +61,15 @@ static constexpr int maxWarpsPerBlock = 1024/WARPSIZE;
 #define cufftPlan3d hipfftPlan3d
 #define cufftPlanMany hipfftPlanMany
 
-
 #define cuFloatComplex hipFloatComplex
 #define cuDoubleComplex hipDoubleComplex
+#define make_cuFloatComplex make_hipFloatComplex
+#define make_cuDoubleComplex make_hipDoubleComplex
+
+
+#define cuda​Dev​Attr​Max​Threads​Per​Block hip​Device​Attribute​Max​Threads​Per​Block
+
+
 
 static void __attribute__((unused)) check(const hipError_t err, const char *const file, const int line)
 {

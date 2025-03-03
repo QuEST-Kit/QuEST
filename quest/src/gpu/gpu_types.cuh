@@ -61,8 +61,11 @@
 
 INLINE cu_qcomp getCuQcomp(qreal re, qreal im) {
 
-    // agnostic to NVCC or HIP
-    return {re, im};
+#if (FLOAT_PRECISION == 1)
+    return make_cuFloatComplex(re, im);
+#else
+    return make_cuDoubleComplex(re, im);
+#endif
 }
 
 
