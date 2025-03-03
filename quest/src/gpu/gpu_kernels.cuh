@@ -25,6 +25,13 @@
     #error "A file being compiled somehow included gpu_kernels.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 
+// cuda keyword 'register' is misinterpreted by HIP
+#if defined(__NVCC__)
+    #define REGISTER register
+#elif defined(__HIPCC__)
+    #define REGISTER
+#endif
+
 
 
 /*
@@ -298,7 +305,7 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
     // spill to local memory). Hence, this _subA() function is not a subroutine 
     // despite some logic being common to non-compile-time _subB(), and hence
     // why the loops below are explicitly compile-time unrolled
-    register cu_qcomp privateCache[1 << NumTargs];
+    REGISTER cu_qcomp privateCache[1 << NumTargs];
 
     // we know NumTargs <= 5, though NumCtrls is permitted anything (including -1)
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);

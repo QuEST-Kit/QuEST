@@ -138,7 +138,7 @@ INLINE QCOMP_ALIAS fast_getPauliStrElem(PauliStr str, qindex row, qindex col) {
         int p = getTwoAdjacentBits(str.lowPaulis, 2*t);
         int i = getBit(row, t);
         int j = getBit(col, t);
-        elem *= matrices[p][i][j];
+        elem = elem * matrices[p][i][j]; // HIP-friendly avoiding *=
     }
 
     // could be compile-time unrolled into 32 iterations
@@ -146,7 +146,7 @@ INLINE QCOMP_ALIAS fast_getPauliStrElem(PauliStr str, qindex row, qindex col) {
         int p = getTwoAdjacentBits(str.highPaulis, 2*t);
         int i = getBit(row, t + numPaulisPerMask);
         int j = getBit(col, t + numPaulisPerMask);
-        elem *= matrices[p][i][j];
+        elem = elem * matrices[p][i][j];
     }
 
     return elem;
@@ -163,7 +163,7 @@ INLINE QCOMP_ALIAS fast_getPauliStrSumElem(QCOMP_ALIAS* coeffs, PauliStr* string
 
     // this loop is expected exponentially smaller than caller's loop
     for (qindex n=0; n<numTerms; n++)
-        elem += coeffs[n] * fast_getPauliStrElem(strings[n], row, col);
+        elem = elem + coeffs[n] * fast_getPauliStrElem(strings[n], row, col); // += is HIP-incomaptible
 
     return elem;
 }

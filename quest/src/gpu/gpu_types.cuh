@@ -86,8 +86,11 @@ __host__ inline cu_qcomp* toCuQcomps(qcomp* a) {
 /*
  * cu_qcomp ARITHMETIC OVERLOADS
  *
- * note we cannot use *= overloads with
- * HIP complex numbers, so we forego them
+ * which are only needed by NVCC because
+ * HIP defines them for us. This good deed
+ * goes punished; a HIP bug disables our
+ * use of *= and += overloads, so kernels.cuh
+ * has disgusting (x = x * y) statements. Bah!
  */
 
 

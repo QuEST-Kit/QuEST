@@ -619,7 +619,7 @@ struct functor_setRandomStateVecAmp : public thrust::unary_function<qindex,cu_qc
         auto amp = sqrt(prob) * thrust::exp(iphase);
 
         // cast thrust::complex to cu_qcomp
-        return {.x = amp.real(), .y=amp.imag()};
+        return getCuQcomp(amp.real(), amp.imag());
     }
 };
 
@@ -918,8 +918,7 @@ cu_qcomp thrust_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vect
 
     cu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
 
-    value *= toCuQcomp(util_getPowerOfI(y.size()));
-    return value;
+    return value * toCuQcomp(util_getPowerOfI(y.size()));
 }
 
 
@@ -937,8 +936,7 @@ cu_qcomp thrust_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vect
 
     cu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
 
-    value *= toCuQcomp(util_getPowerOfI(y.size()));
-    return value;
+    return value * toCuQcomp(util_getPowerOfI(y.size()));
 }
 
 
@@ -956,8 +954,7 @@ cu_qcomp thrust_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vecto
 
     cu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
 
-    value *= toCuQcomp(util_getPowerOfI(y.size()));
-    return value;
+    return value * toCuQcomp(util_getPowerOfI(y.size()));
 }
 
 
