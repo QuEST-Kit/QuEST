@@ -99,19 +99,26 @@ bool gpu_isCuQuantumCompiled() {
 }
 
 
+int gpu_getNumberOfLocalGpus() {
+#if COMPILE_CUDA
+
+    // HIP throws an error when a CUDA API function
+    // is called but no devices exist, which we handle
+    int num;
+    auto status = cudaGetDeviceCount(&num);
+    return (success == cudaSuccess)? num : 0;
+
+#else
+    error_gpuQueriedButGpuNotCompiled();
+    return -1;
+#endif
+}
+
+
 bool gpu_isGpuAvailable() {
 #if COMPILE_CUDA
 
-    // DEBUG: cudaGetDeviceProperties is (for some reason) being auto-suffixed with _v2
-    // in Cuda 12, which is the only sm=90 compatible version we can use. But then the
-    // function is not found in -lcuda and -lcudart, WTF
-
-    // ask CUDA for the number of available "devices"
-    int numDevices;
-    cudaError_t successCode = cudaGetDeviceCount(&numDevices);
-
-    // if the query failed, we can't use any devices anyway, so we abort
-    if (successCode != cudaSuccess)
+    if (gpu_getNumberOfLocalGpus() == 0)
         return false;
 
     // so for each reported device...
@@ -158,23 +165,6 @@ bool gpu_isDirectGpuCommPossible() {
 #else
     error_gpuQueriedButGpuNotCompiled();
     return false;
-#endif
-}
-
-
-int gpu_getNumberOfLocalGpus() {
-#if COMPILE_CUDA
-
-    // TODO: this will over-report, since it may include virtual devices!
-    // see gpu_isGpuAvailable()
-
-    int num;
-    CUDA_CHECK( cudaGetDeviceCount(&num) );
-    return num;
-
-#else
-    error_gpuQueriedButGpuNotCompiled();
-    return -1;
 #endif
 }
 
