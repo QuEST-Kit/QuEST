@@ -21,9 +21,14 @@
     #error "A file being compiled somehow included gpu_types.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 
+#if defined(__NVCC__)
+    #include <cuComplex.h>
+#elif defined(__HIPCC__)
+    #include "quest/src/gpu/cuda_to_hip.h"
+#endif
+
 #include <array>
 #include <vector>
-#include <cuComplex.h>
 
 
 
