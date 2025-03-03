@@ -104,6 +104,8 @@ jobs:
       - name: Update MSVC
         if: ${{ matrix.compiler == 'cl' }}
         uses: TheMrMilchmann/setup-msvc-dev@v3
+        with:
+          arch: x64
 
       # obtain OMP for Clang multithreading
       - name: Setup libomp 
