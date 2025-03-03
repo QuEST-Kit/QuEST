@@ -106,7 +106,7 @@ int gpu_getNumberOfLocalGpus() {
     // is called but no devices exist, which we handle
     int num;
     auto status = cudaGetDeviceCount(&num);
-    return (success == cudaSuccess)? num : 0;
+    return (status == cudaSuccess)? num : 0;
 
 #else
     error_gpuQueriedButGpuNotCompiled();
@@ -118,18 +118,19 @@ int gpu_getNumberOfLocalGpus() {
 bool gpu_isGpuAvailable() {
 #if COMPILE_CUDA
 
-    if (gpu_getNumberOfLocalGpus() == 0)
+    int numDevices = gpu_getNumberOfLocalGpus();
+    if (numDevices == 0)
         return false;
 
-    // so for each reported device...
+    // check if any reported device is a valid GPU
     for (int deviceInd=0; deviceInd < numDevices; deviceInd++) {
 
-        // query its properties
+        // by checking the properties of each device
         struct cudaDeviceProp props;
-        successCode = cudaGetDeviceProperties(&props, deviceInd);
+        auto status = cudaGetDeviceProperties(&props, deviceInd);
 
         // if the query failed, device is anyway unusable
-        if (successCode != cudaSuccess) 
+        if (status != cudaSuccess) 
             continue;
 
         // if the device is a real GPU, it's 'major' compute capability is != 9999 (meaning emulation)
