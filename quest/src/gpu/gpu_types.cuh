@@ -85,64 +85,73 @@ __host__ inline cu_qcomp* toCuQcomps(qcomp* a) {
 
 
 INLINE cu_qcomp operator + (const cu_qcomp& a, const cu_qcomp& b) {
-    return (cu_qcomp) {
+    cu_qcomp out = {
         .x = a.x + b.x,
         .y = a.y + b.y
     };
+    return out;
 }
 
 INLINE cu_qcomp operator - (const cu_qcomp& a, const cu_qcomp& b) {
-    return (cu_qcomp) {
+    cu_qcomp out = {
         .x = a.x - b.x,
         .y = a.y - b.y
     };
+    return out;
 }
 
 INLINE cu_qcomp operator * (const cu_qcomp& a, const cu_qcomp& b) {
-    return (cu_qcomp) {
+    cu_qcomp out = {
         .x = a.x * b.x - a.y * b.y,
         .y = a.x * b.y + a.y * b.x
     };
+    return out;
 }
 
 
 INLINE cu_qcomp operator + (const cu_qcomp& a, const qreal& b) {
-    return (cu_qcomp) {
+    cu_qcomp out = {
         .x = a.x + b,
         .y = a.y + b
     };
+    return out;
 }
 INLINE cu_qcomp operator + (const qreal& b, const cu_qcomp& a) {
-    return (cu_qcomp) {
+    cu_qcomp out = {
         .x = a.x + b,
         .y = a.y + b
     };
+    return out;
 }
 
 INLINE cu_qcomp operator - (const cu_qcomp& a, const qreal& b) {
-    return (cu_qcomp) {
+    cu_qcomp out = {
         .x = a.x - b,
         .y = a.y - b
     };
+    return out;
 }
 INLINE cu_qcomp operator - (const qreal& b, const cu_qcomp& a) {
-    return (cu_qcomp) {
+    cu_qcomp out = {
         .x = a.x - b,
         .y = a.y - b
     };
+    return out;
 }
 
 INLINE cu_qcomp operator * (const cu_qcomp& a, const qreal& b) {
-    return (cu_qcomp) {
+    cu_qcomp out = {
         .x = a.x * b,
         .y = a.y * b
     };
+    return out;
 }
 INLINE cu_qcomp operator * (const qreal& b, const cu_qcomp& a) {
-    return (cu_qcomp) {
+    cu_qcomp out = {
         .x = a.x * b,
         .y = a.y * b
     };
+    return out;
 }
 
 
