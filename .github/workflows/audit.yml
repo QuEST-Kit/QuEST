@@ -1,13 +1,13 @@
 name: audit
 
-# temporarily forcing crash to lazily avoid test
-# on:
-#   push:
-#     branches:
-#       - v4
-#   pull_request:
-#     branches:
-#       - v4
+
+on:
+  push:
+    branches:
+      - v4
+  pull_request:
+    branches:
+      - v4
 
 
 jobs:

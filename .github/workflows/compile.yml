@@ -33,20 +33,12 @@ jobs:
 
       # compile QuEST with all combinations of below flags
       matrix:
-
-        # DEBUG - testing MSVC GPU
-        # os: [ubuntu-latest, macos-latest, windows-latest] 
-        # precision: [1, 2, 4]
-        # omp: [ON, OFF]
-        # mpi: [ON, OFF]
-        # gpu: [ON, OFF]
-        # cuquantum: [ON, OFF]
-        os: [windows-latest] # only version to work with CUDA GI (but fails with default MSVC)
-        precision: [2]
-        omp: [OFF]
+        os: [ubuntu-latest, macos-latest, windows-latest] 
+        precision: [1, 2, 4]
+        omp: [ON, OFF]
         mpi: [ON, OFF]
-        gpu: [ON]
-        cuquantum: [OFF]
+        gpu: [ON, OFF]
+        cuquantum: [ON, OFF]
 
         # assign each OS a bespoke compiler, and disable deprecated API on MSVC
         include:
@@ -110,6 +102,7 @@ jobs:
           sub-packages: '["nvcc", "cudart", "thrust"]'
           non-cuda-sub-packages: ${{ matrix.cuquantum == 'ON' && '["libcublas"]' || '[]' }}
 
+      # bug in Nsight for MSVC breaks above action for windows-2022, so we revert to script
       - name: Setup CUDA (MSVC)
         if: ${{ matrix.gpu == 'ON' && matrix.compiler == 'cl' }}
         shell: pwsh
