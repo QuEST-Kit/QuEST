@@ -1,23 +1,13 @@
 name: audit
 
 
-
-# for testing
 on:
   push:
     branches:
-      - code-cov
+      - v4
   pull_request:
     branches:
-      - code-cov
-
-# on:
-#   push:
-#     branches:
-#       - v4
-#   pull_request:
-#     branches:
-#       - v4
+      - v4
 
 
 jobs:
