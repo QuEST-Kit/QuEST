@@ -10,16 +10,21 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: rocm-setup
-        uses: neoblizz/rocm-setup@v0.1.0-beta
-        with:
-          rocm: '5.5.0'
+      - name: Install ROCm
+        run: |
+          apt install "linux-headers-$(uname -r)" "linux-modules-extra-$(uname -r)"
+          apt install python3-setuptools python3-wheel
+          usermod -a -G render,video $LOGNAME
+          wget https://repo.radeon.com/amdgpu-install/6.3.3/ubuntu/noble/amdgpu-install_6.3.60303-1_all.deb
+          apt install ./amdgpu-install_6.3.60303-1_all.deb
+          apt update
+          apt install amdgpu-dkms rocm
 
       - name: test
         run: hipcc --version
