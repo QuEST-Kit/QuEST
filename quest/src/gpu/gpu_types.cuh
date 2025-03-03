@@ -60,7 +60,9 @@
 
 
 INLINE cu_qcomp getCuQcomp(qreal re, qreal im) {
-    return {.x=re, .y=im};
+
+    // agnostic to NVCC or HIP
+    return {re, im};
 }
 
 
