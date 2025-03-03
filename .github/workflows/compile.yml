@@ -41,7 +41,7 @@ jobs:
         # mpi: [ON, OFF]
         # gpu: [ON, OFF]
         # cuquantum: [ON, OFF]
-        os: [windows-2025, windows-2022, windows-2019]
+        os: [windows-2019] # only version to work with CUDA GI (but fails with default MSVC)
         precision: [2]
         omp: [OFF]
         mpi: [ON, OFF]
@@ -99,6 +99,11 @@ jobs:
     steps:
       - name: Get QuEST
         uses: actions/checkout@v4
+
+      # obtain more modern MSVC compiler than default (to work with CUDA)
+      - name: Update MSVC
+        if: ${{ matrix.compiler == 'cl' }}
+        uses: TheMrMilchmann/setup-msvc-dev@v3
 
       # obtain OMP for Clang multithreading
       - name: Setup libomp 
