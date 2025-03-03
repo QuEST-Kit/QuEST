@@ -30,8 +30,8 @@ jobs:
 
       # work in a build directory to reduce verbosity below
       - run: > 
-            mkdir build;
-            cd build
+          mkdir build;
+          cd build
 
       # compile QuEST and unit tests in coverage mode
       - name: Configure CMake
@@ -43,7 +43,7 @@ jobs:
           -DCMAKE_EXE_LINKER_FLAGS=--coverage
 
       - name: Compile unit tests
-        run: cmake --build .
+        run: make
 
       # run the unit tests, saving coverage data to file
       - name: Run unit tests
@@ -54,7 +54,7 @@ jobs:
         uses: hrishikesh-kadam/setup-lcov@v1
 
       - name: Run LCOV
-        run: lcov --directory . --capture --output-file ${{ env.tracefile }}
+        run: lcov --directory . --capture --output-file ${{ env.tracefile }} --ignore-errors source
 
       # remove standard-library and testing and code from coverage data
       - name: Filter LCOV results
