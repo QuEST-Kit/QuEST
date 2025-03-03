@@ -70,10 +70,6 @@ jobs:
             os: windows-latest
           - cuquantum: ON
             os: macos-latest
-          
-          # cannot get GPU working on Windows CI (grr!)
-          - gpu: ON
-            os: windows-latest
             
     # constants
     env:
@@ -97,13 +93,13 @@ jobs:
         if: ${{ matrix.mpi == 'ON' }}
         uses: mpi4py/setup-mpi@v1
 
-      # obtain CUDA for GPU acceleration (cuQuantum needs cuBLAS)
+      # obtain CUDA for GPU acceleration (cuQuantum needs cuBLAS, MSVC needs VS integration)
       - name: Setup CUDA
         if: ${{ matrix.gpu == 'ON' }}
         uses: Jimver/cuda-toolkit@v0.2.21
         with:
           method: network
-          sub-packages: '["nvcc", "cudart", "thrust"]'
+          sub-packages: ${{ format('["nvcc", "cudart", "thrust"{0}]', matrix.compiler == 'cl' && ', "visual_studio_integration"' || '') }}
           non-cuda-sub-packages: ${{ matrix.cuquantum == 'ON' && '["libcublas"]' || '[]' }}
 
       # obtain cuQuantum on linux
@@ -137,6 +133,5 @@ jobs:
 
 
 # TODO:
-# - get Windows GPU working
 # - test AMD compilation
 # - CUDA-aware MPI?!?!?!
