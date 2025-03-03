@@ -33,14 +33,16 @@ jobs:
           mkdir build;
           cd build
 
-      # compile QuEST and unit tests in coverage mode
+      # compile QuEST and unit tests in coverage mode,
+      # and with the debug release to suppress inlining
       - name: Configure CMake
         run: >
           cmake -B .
+          -DCMAKE_BUILD_TYPE=Debug
           -DENABLE_TESTING=ON
           -DENABLE_MULTITHREADING=OFF
-          -DCMAKE_CXX_FLAGS=--coverage
-          -DCMAKE_EXE_LINKER_FLAGS=--coverage
+          -DCMAKE_CXX_FLAGS="--coverage -fno-inline"
+          -DCMAKE_EXE_LINKER_FLAGS="--coverage -fno-inline"
 
       - name: Compile unit tests
         run: make
@@ -61,7 +63,7 @@ jobs:
         run: lcov --remove ${{ env.tracefile }} '/usr/*' '*/tests/*' '*/_deps/*' --output-file ${{ env.tracefile }}
 
       - name: Preview LCOV results
-        run: lcov --list ${{ env.tracefile }}
+        run: lcov --list ${{ env.tracefile }} --rc lcov_branch_coverage=1
       
       # report coverage of remaining files in the triggering PR
       - name: Report code coverage
