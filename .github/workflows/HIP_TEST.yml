@@ -16,13 +16,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y build-essential cmake \
-              rocminfo rocm-dev hipcc
+      - name: rocm-setup
+        uses: neoblizz/rocm-setup@v0.1.0-beta
+        with:
+          rocm: '5.5.0'
 
-      - name: Verify HIP installation
-        run: |
-          hipcc --version
-          rocminfo
+      - name: test
+        run: hipcc --version
