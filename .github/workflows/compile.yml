@@ -161,7 +161,8 @@ jobs:
         
       # disable LTO with CUDA+MPI (duplicates symbols), and
       # disable RDC with HIP+MPI (causes vtable fail) and use hipcc
-      - run: |
+      - name: Adjusting flags and compiler
+        run: |
           mpicuda=${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' }}
           mpihip=${{  matrix.mpi == 'ON' && matrix.hip  == 'ON' }}
           compiler=${{ matrix.compiler }}
@@ -190,7 +191,7 @@ jobs:
           -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
-          -DCMAKE_CXX_FLAGS="${{ env.flags }}
+          -DCMAKE_CXX_FLAGS="${{ env.flags }}"
           -DCMAKE_CXX_COMPILER=${{ env.compiler }}
 
       # force 'Release' build (needed by MSVC to enable optimisations)
