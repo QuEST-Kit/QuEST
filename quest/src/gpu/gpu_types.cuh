@@ -55,7 +55,7 @@
 
 
 /*
- * CASTS BETWEEN qcomp AND cu_qcomp
+ * TRANSFORMING qcomp AND cu_qcomp
  */
 
 
@@ -78,8 +78,56 @@ __host__ inline qcomp toQcomp(cu_qcomp a) {
 
 
 __host__ inline cu_qcomp* toCuQcomps(qcomp* a) {
+
+    // reinterpret a qcomp ptr as a cu_qcomp ptr,
+    // which is ONLY SAFE when comp and cu_qcomp 
+    // have identical memory layouts. Be very
+    // careful; HIP stack arrays (e.g. qcomp[])
+    // seg-fault when passed here, so this funciton
+    // should only ever be used on malloc'd data!
+    // Stack objects should use the below unpacks.
+
     return reinterpret_cast<cu_qcomp*>(a);
 }
+
+
+__host__ inline std::array<cu_qcomp,2> unpackMatrixToCuQcomps(DiagMatr1 in) {
+
+    // it's crucial we explicitly copy over the elements,
+    // rather than just reinterpret the pointer, to avoid
+    // segmentation faults when memory misaligns (like on HIP)
+
+    return {toCuQcomp(in.elems[0]), toCuQcomp(in.elems[1])};
+}
+
+
+__host__ inline std::array<cu_qcomp,4> unpackMatrixToCuQcomps(DiagMatr2 in) {
+
+    return {
+        toCuQcomp(in.elems[0]), toCuQcomp(in.elems[1]),
+        toCuQcomp(in.elems[2]), toCuQcomp(in.elems[3])};
+}
+
+
+__host__ inline std::array<cu_qcomp,4> unpackMatrixToCuQcomps(CompMatr1 in) {
+
+    std::array<cu_qcomp,4> out{};
+    for (int i=0; i<4; i++)
+        out[i] = toCuQcomp(in.elems[i/2][i%2]);
+
+    return out;
+}
+
+
+__host__ inline std::array<cu_qcomp,16> unpackMatrixToCuQcomps(CompMatr2 in) {
+
+    std::array<cu_qcomp,16> out{};
+    for (int i=0; i<16; i++)
+        out[i] = toCuQcomp(in.elems[i/4][i%4]);
+
+    return out;
+}
+
 
 
 
@@ -216,32 +264,6 @@ INLINE cu_qcomp getCompPower(cu_qcomp base, cu_qcomp exponent) {
     qreal re = fac * cos(ang);
     qreal im = fac * sin(ang);
     return getCuQcomp(re, im);
-}
-
-
-
-/*
- * MATRIX CASTING AND UNPACKING
- */
-
-
-__host__ inline std::array<cu_qcomp,4> unpackMatrixToCuQcomps(CompMatr1 in) {
-
-    std::array<cu_qcomp,4> arr{};
-    for (int i=0; i<4; i++)
-        arr[i] = toCuQcomp(in.elems[i/2][i%2]);
-
-    return arr;
-}
-
-
-__host__ inline std::array<cu_qcomp,16> unpackMatrixToCuQcomps(CompMatr2 in) {
-
-    std::array<cu_qcomp,16> arr{};
-    for (int i=0; i<16; i++)
-        arr[i] = toCuQcomp(in.elems[i/4][i%4]);
-
-    return arr;
 }
 
 
