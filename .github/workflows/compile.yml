@@ -42,7 +42,10 @@ jobs:
         hip:       [ON, OFF]
         cuquantum: [ON, OFF]
 
-        # assign each OS a bespoke compiler, and disable deprecated API on MSVC
+        # disable deprecated API on MSVC, and assign unique compilers,
+        # so that we can concisely consult e.g. matrix.compiler=='cl'
+        # instead of hardcoding the operating system label. Note that
+        # ultimately env.compiler, not matrix.compiler, will be set/used
         include:
           - os: ubuntu-latest
             compiler: g++
@@ -95,14 +98,6 @@ jobs:
     # perform the job
     steps:
 
-      # DEBUG
-      - name: DEBUG
-        run: |
-          mpicuda=${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' }}
-          mpihip=${{  matrix.mpi == 'ON' && matrix.hip  == 'ON' }}
-          echo "$mpicuda"
-          echo "$mpihip"
-
       # free space for big-chungus ROCm compiler
       - name: Free disk space
         if: ${{ matrix.hip == 'ON' }}
@@ -143,7 +138,15 @@ jobs:
         env:
           INPUT_CUDA_VERSION: 12.5.0
 
-      # obtain ROCm for HIP acceleration
+      # obtain cuQuantum on linux
+      - name: Setup cuQuantum
+        if: ${{ matrix.cuquantum == 'ON' }}
+        run: >
+          wget https://developer.download.nvidia.com/compute/cuquantum/redist/cuquantum/linux-x86_64/cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
+          tar -xvf cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
+          echo "CUQUANTUM_ROOT=cuquantum-linux-x86_64-24.08.0.5_cuda12-archive" >> $GITHUB_ENV
+
+      # obtain ROCm for HIP acceleration on Linux
       - name: Install ROCm
         if: ${{ matrix.hip == 'ON' }}
         run: |
@@ -155,42 +158,40 @@ jobs:
           sudo apt update
           sudo apt install amdgpu-dkms rocm
           echo "${{ env.rocm_path }}" >> $GITHUB_PATH
-
-      # attempt to patch MPI + HIP error when compiling Thrust
-      - name: Patch MPI and HIP
-        if: ${{ matrix.hip == 'ON' && matrix.mpi == 'ON' }}
-        run: |
-          hipcc --version
-          echo | hipcc -dM -E - | grep -i std
-          mpicxx --version
-          echo | mpicxx -dM -E - | grep -i std
-          export MPICXX=hipcc
-
-      # obtain cuQuantum on linux
-      - name: Setup cuQuantum
-        if: ${{ matrix.cuquantum == 'ON' }}
-        run: >
-          wget https://developer.download.nvidia.com/compute/cuquantum/redist/cuquantum/linux-x86_64/cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
-          tar -xvf cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
-          echo "CUQUANTUM_ROOT=cuquantum-linux-x86_64-24.08.0.5_cuda12-archive" >> $GITHUB_ENV
+        
+      # disable LTO with CUDA+MPI (duplicates symbols), and
+      # disable RDC with HIP+MPI (causes vtable fail) and use hipcc
+      - run: >-
+          mpicuda=${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' }}
+          mpihip=${{  matrix.mpi == 'ON' && matrix.hip  == 'ON' }}
+          compiler=${{ matrix.compiler }}
+          flags=''
+          if [[ "$mpicuda" == "true" ]]; then
+            flags='-fno-lto'
+          elif [[ "$mpihip" == "true" ]]; then
+            flags='-fno-gpu-rdc'
+            compiler=hipcc
+          fi
+          echo "flags=$flags" >> $GITHUB_ENV
+          echo "compiler=$compiler" >> $GITHUB_ENV
 
       # invoke cmake, disabling LTO (it duplicates symbols with CUDA+MPI)
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
-          -DCMAKE_CXX_FLAGS="-fno-lto${{(matrix.hip && matrix.mpi && ' -fno-gpu-rdc') || '' }}"
           -DBUILD_EXAMPLES=ON
           -DENABLE_TESTING=ON
+          -DFLOAT_PRECISION=${{ matrix.precision }}
           -DENABLE_DEPRECATED_API=${{ matrix.deprecated }}
           -DENABLE_MULTITHREADING=${{ matrix.omp }}
           -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
           -DENABLE_CUDA=${{ matrix.cuda }}
           -DENABLE_HIP=${{ matrix.hip }}
+          -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
-          -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
-          -DFLOAT_PRECISION=${{ matrix.precision }}
-          -DCMAKE_CXX_COMPILER=${{ (matrix.hip && matrix.mpi && 'hipcc') || matrix.compiler }}
+          -DCMAKE_CXX_FLAGS="${{ env.flags }}
+          -DCMAKE_CXX_COMPILER=${{ env.compiler }}
 
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
