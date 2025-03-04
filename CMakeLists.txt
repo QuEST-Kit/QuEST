@@ -287,11 +287,10 @@ if (ENABLE_HIP)
   
   target_compile_definitions(QuEST
     PUBLIC COMPILE_CUQUANTUM=0
-    PUBLIC COMPILE_HIP=1
     PUBLIC __HIP_PLATFORM_AMD__
   )
 
-  target_link_libraries(QuEST PUBLIC hip::amdhip64)
+  target_link_libraries(QuEST PUBLIC hip::host hip::device)
 
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+hip")

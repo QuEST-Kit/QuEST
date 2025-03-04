@@ -52,6 +52,12 @@ jobs:
       - name: Update environment variables
         run: echo "ROCM_PATH=${{ env.rocm_dir }}" >> $GITHUB_ENV
 
+
+      # DEBUG
+      - name: Show me the contents!
+        run: ls /opt/rocm/lib/
+
+      
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
