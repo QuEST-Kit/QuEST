@@ -26,8 +26,9 @@ jobs:
       - run: cd ${{ env.direc }}
 
       - name: Download AMD HIP Compiler
-        run: |
-          Invoke-WebRequest -Uri "https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q4-WinSvr2022-For-HIP.exe"
+        run: Invoke-WebRequest -Uri "https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q4-WinSvr2022-For-HIP.exe"
+        working-directory: ${{ env.direc }}
+
       - name: Install AMD HIP Compiler
-        run: |
-          Start-Process -FilePath "AMD-HIP-Compiler.exe" -ArgumentList "/S" -NoNewWindow -Wait
+        run: Start-Process -FilePath "AMD-HIP-Compiler.exe" -ArgumentList "/S" -NoNewWindow -Wait
+        working-directory: ${{ env.direc }}
