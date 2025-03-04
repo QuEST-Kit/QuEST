@@ -23,6 +23,7 @@ jobs:
       build_dir: "build"
       hip_arch: gfx801
       rocm_dir: /opt/rocm
+      path_dir: /opt/rocm/bin
       hip_dir: /opt/rocm/hip
 
     steps:
@@ -51,8 +52,7 @@ jobs:
           sudo apt install amdgpu-dkms rocm
 
       - name: Update environment variables
-        run: echo "ROCM_PATH=${{ env.rocm_dir }}" >> $GITHUB_ENV
-
+        run: echo "ROCM_PATH=${{ env.path_dir }}" >> $GITHUB_ENV
 
       # DEBUG
       - name: Show me the contents!
@@ -60,6 +60,8 @@ jobs:
           ls /opt/rocm/lib/
           ls /opt/rocm/hip/
 
+      - name: Test HIP compiler
+        run: hipcc --version
       
       - name: Configure CMake
         run: >
