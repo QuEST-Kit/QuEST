@@ -31,6 +31,6 @@ jobs:
         working-directory: ${{ env.direc }}
 
       - name: Install AMD HIP Compiler
-        run: Start-Process "install.exe" -ArgumentList '-install' -NoNewWindow -Wait
+        run: Start-Process "install.exe" -NoNewWindow -Wait
         shell: pwsh
         working-directory: ${{ env.direc }}
