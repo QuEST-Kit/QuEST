@@ -9,10 +9,15 @@ on:
     branches:
       - amd-patch
 
+
 jobs:
   build:
-    # WARNING: paid runner (with large enough disk to install ROCm)
-    runs-on: ubuntu-latest-m
+
+    # our custom installation commands below are Ubuntu specific,
+    # and take up more disk space than available in the free
+    # Ubuntu runners...
+    # unless...
+    runs-on: ubuntu-latest
 
     env:
       build_dir: "build"
@@ -20,9 +25,20 @@ jobs:
       rocm_dir: /opt/rocm
 
     steps:
+
+      # free space for big ROCm installer
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+
+      # then obtain QuEST
       - name: Get QuEST
         uses: actions/checkout@v4
 
+      # download and install ROCm (takes about 10 minutes)
       - name: Install ROCm
         run: |
           sudo apt install "linux-headers-$(uname -r)" "linux-modules-extra-$(uname -r)"
