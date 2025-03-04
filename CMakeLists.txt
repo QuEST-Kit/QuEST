@@ -306,7 +306,10 @@ if (ENABLE_HIP)
     PUBLIC __HIP_PLATFORM_AMD__
   )
 
-  target_link_libraries(QuEST PUBLIC HIP::amdhip64)
+  # DEBUG
+  # target_link_libraries(QuEST PUBLIC HIP::amdhip64)
+  target_link_libraries(QuEST PUBLIC /opt/rocm/lib/libamdhip64.so)
+
 
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+hip")

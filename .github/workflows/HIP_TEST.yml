@@ -66,10 +66,10 @@ jobs:
           -DENABLE_TESTING=ON
           -DENABLE_MULTITHREADING=OFF
           -DENABLE_HIP=ON
-          -DHIP_PATH=${{ env.hip_dir }}
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
-          -DCMAKE_PREFIX_PATH=${{ env.rocm_dir }};${{ env.hip_dir }}
+          -DHIP_PATH=${{ env.hip_dir }}
           -DHIP_ROOT_DIR=${{ env.rocm_dir }}
+          -DCMAKE_PREFIX_PATH=${{ env.rocm_dir }};${{ env.hip_dir }}
 
       - name: Compile
         run: cmake --build ${{ env.build_dir }}
