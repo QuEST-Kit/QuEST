@@ -85,7 +85,6 @@ jobs:
           - hip: ON
             os: windows-latest
 
-            
     # constants
     env:
       build_dir: "build"
@@ -148,6 +147,16 @@ jobs:
           sudo apt update
           sudo apt install amdgpu-dkms rocm
           echo "${{ env.rocm_path }}" >> $GITHUB_PATH
+
+      # attempt to patch MPI + HIP error when compiling Thrust
+      - name: Patch MPI and HIP
+        if: ${{ matrix.hip == 'ON' && matrix.mpi == 'ON' }}
+        run: |
+          hipcc --version
+          echo | hipcc -dM -E - | grep -i std
+          mpicxx --version
+          echo | mpicxx -dM -E - | grep -i std
+          export MPICXX=hipcc
 
       # obtain cuQuantum on linux
       - name: Setup cuQuantum
