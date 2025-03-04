@@ -46,6 +46,9 @@ jobs:
 
       - name: Update path
         run: echo "${{ env.path_dir }}" >> $GITHUB_PATH
+
+      - name: Show version
+        run: hipcc --version
       
       - name: Configure CMake
         run: >
