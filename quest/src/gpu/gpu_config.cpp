@@ -18,7 +18,7 @@
 
 
 
-#if COMPILE_CUDA && ! (defined(__NVCC__) || defined(__HIPCC__))
+#if COMPILE_CUDA && ! (defined(__NVCC__) || defined(__HIP__))
     #error \
         "Attempted to compile gpu_config.cpp in GPU-accelerated mode with a non-GPU compiler. "\
         "Please compile this file with a CUDA (nvcc) or ROCm (hipcc) compiler."
@@ -29,7 +29,7 @@
     #include <cuda.h>
     #include <cuda_runtime.h>
 #endif
-#if COMPILE_CUDA && defined(__HIPCC__)
+#if COMPILE_CUDA && defined(__HIP__)
     #include "quest/src/gpu/cuda_to_hip.hpp"
 #endif
 

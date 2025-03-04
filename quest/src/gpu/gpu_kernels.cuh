@@ -28,7 +28,7 @@
 // cuda keyword 'register' is misinterpreted by HIP
 #if defined(__NVCC__)
     #define REGISTER register
-#elif defined(__HIPCC__)
+#elif defined(__HIP__)
     #define REGISTER
 #endif
 

@@ -23,7 +23,7 @@
 
 #if defined(__NVCC__)
     #include <cuComplex.h>
-#elif defined(__HIPCC__)
+#elif defined(__HIP__)
     #include "quest/src/gpu/cuda_to_hip.hpp"
 #endif
 

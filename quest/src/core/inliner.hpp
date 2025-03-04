@@ -33,7 +33,7 @@
     // compatible code inside an INLINE function.
     #define INLINE __forceinline__ __device__ __host__
 
-#elif defined(__HIPCC__)
+#elif defined(__HIP__)
 
     // HIP has the same syntax as GNU below, but we must also
     // declare that all INLINE functions can be invoked by kernels
