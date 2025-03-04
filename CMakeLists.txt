@@ -285,7 +285,11 @@ if (ENABLE_HIP)
   # (suitable when shared library libamdhip64.so is located in /opt/rocm/lib/
   #  or /opt/rocm/hip/lib/ respectively). We avoid setting CMAKE_MODULE_PATH
   # pre-emptively since it made successful generation less likely in our tests!
-  # example: list(APPEND CMAKE_MODULE_PATH "/opt/rocm/cmake")
+  # example: list(APPEND CMAKE_MODULE_PATH "/opt/rocm/cmake"). Users should
+  # also add '/opt/rocm/bin' or '/opt/rocm/hip/bin' to their $PATH env-var.
+  # for example:
+  # export PATH="/opt/rocm/hip/bin:${PATH}"
+  # cmake .. -DCMAKE_MODULE_PATH=/opt/rocm/cmake
 
   enable_language(HIP)
   set(CMAKE_HIP_STANDARD_REQUIRED ON)
@@ -301,6 +305,7 @@ if (ENABLE_HIP)
   )
 
   target_link_libraries(QuEST PUBLIC hip::amdhip64)
+  target_link_libraries(QuEST PUBLIC hip::hiprtc)
 
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+hip")
