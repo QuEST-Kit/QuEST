@@ -170,7 +170,7 @@ jobs:
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
-          -DCMAKE_CXX_FLAGS="-fno-lto ${CMAKE_CXX_FLAGS}"
+          -DCMAKE_CXX_FLAGS="-fno-lto"
           -DBUILD_EXAMPLES=ON
           -DENABLE_TESTING=ON
           -DENABLE_DEPRECATED_API=${{ matrix.deprecated }}
