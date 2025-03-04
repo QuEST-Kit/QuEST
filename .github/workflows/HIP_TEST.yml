@@ -1,4 +1,5 @@
-name: HIP test
+name: HIP compile
+
 
 on:
   push:
@@ -31,6 +32,9 @@ jobs:
           sudo apt install ./amdgpu-install_6.3.60303-1_all.deb
           sudo apt update
           sudo apt install amdgpu-dkms rocm
+
+      - name: Update environment variables
+        run: echo "ROCM_PATH=${{ env.rocm_dir }}" >> $GITHUB_ENV
 
       - name: Configure CMake
         run: >
