@@ -290,8 +290,9 @@ if (ENABLE_HIP)
   endif()
   endif()
 
-  # discover HIP cmake scripts
-  set(CMAKE_MODULE_PATH "${HIP_PATH}/lib/cmake/hip" ${CMAKE_MODULE_PATH})
+  # discover HIP cmake scripts (v6 location given by Martin Hilgeman)
+  set(CMAKE_MODULE_PATH "${HIP_PATH}/cmake" ${CMAKE_MODULE_PATH})         # ROCM <6
+  set(CMAKE_MODULE_PATH "${HIP_PATH}/lib/cmake/hip" ${CMAKE_MODULE_PATH}) # ROCM 6.x
 
   enable_language(HIP)
   set(CMAKE_HIP_STANDARD_REQUIRED ON)
