@@ -56,7 +56,9 @@ jobs:
 
       # DEBUG
       - name: Show me the contents!
-        run: ls /opt/rocm/lib/
+        run: |
+          ls /opt/rocm/lib/
+          ls /opt/rocm/hip/
 
       
       - name: Configure CMake
@@ -68,7 +70,6 @@ jobs:
           -DENABLE_HIP=ON
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
           -DHIP_PATH=${{ env.hip_dir }}
-          -DHIP_ROOT_DIR=${{ env.rocm_dir }}
           -DCMAKE_PREFIX_PATH=${{ env.rocm_dir }};${{ env.hip_dir }}
 
       - name: Compile
