@@ -51,8 +51,8 @@ jobs:
           sudo apt update
           sudo apt install amdgpu-dkms rocm
 
-      - name: Update environment variables
-        run: echo "ROCM_PATH=${{ env.path_dir }}" >> $GITHUB_ENV
+      - name: Update path
+        run: echo "${{ env.path_dir }}" >> $GITHUB_PATH
 
       # DEBUG
       - name: Show me the contents!
