@@ -170,7 +170,7 @@ jobs:
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
-          -DCMAKE_CXX_FLAGS="-fno-lto"
+          -DCMAKE_CXX_FLAGS="-fno-lto${{(matrix.hip && matrix.mpi && ' -fno-gpu-rdc') || '' }}"
           -DBUILD_EXAMPLES=ON
           -DENABLE_TESTING=ON
           -DENABLE_DEPRECATED_API=${{ matrix.deprecated }}
@@ -182,7 +182,7 @@ jobs:
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
           -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
           -DFLOAT_PRECISION=${{ matrix.precision }}
-          -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+          -DCMAKE_CXX_COMPILER=${{ (matrix.hip && matrix.mpi && 'hipcc') || matrix.compiler }}
 
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
@@ -191,4 +191,5 @@ jobs:
 
 
 # TODO:
+# - ARM compilation (on paid linux and windows runners)
 # - CUDA-aware MPI?!?!?!
