@@ -30,7 +30,8 @@ jobs:
         shell: pwsh
         working-directory: ${{ env.direc }}
 
-      - run: ls
+      - run: Get-ChildItem ${{ env.direc }}
+        shell: pwsh
 
       - name: Install AMD HIP Compiler
         run: Start-Process "install.exe" -NoNewWindow -Wait
