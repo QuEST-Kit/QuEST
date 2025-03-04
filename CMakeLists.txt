@@ -280,19 +280,12 @@ endif()
 
 if (ENABLE_HIP)
 
-  # set HIP_PATH to default if not passed to CMake or environment variables
-  # if(NOT DEFINED HIP_PATH)
-  # if(NOT DEFINED ENV{HIP_PATH})
-  #   message(WARNING "HIP_PATH was not defined. Using linux default of HIP_PATH=/opt/rocm")
-  #   set(HIP_PATH "/opt/rocm" CACHE PATH "Path to which HIP has been installed")
-  # else()
-  #   set(HIP_PATH $ENV{HIP_PATH}	CACHE PATH "Path to which HIP has been installed")
-  # endif()
-  # endif()
-
-  # discover HIP cmake scripts (v6 location given by Martin Hilgeman)
-  #list(APPEND CMAKE_MODULE_PATH "${HIP_PATH}/cmake") #######  HIP_PATH=/opt/rocm
-  #list(APPEND CMAKE_MODULE_PATH "${HIP_PATH}/lib/cmake/hip") ###  HIP_PATH=/opt/rocm/hip
+  # if generation fails (hip::amdhip64 not found), users can try setting
+  # CMAKE_MODULE_PATH to either /opt/rocm/cmake or /opt/rocm/hip/lib/cmake/hip
+  # (suitable when shared library libamdhip64.so is located in /opt/rocm/lib/
+  #  or /opt/rocm/hip/lib/ respectively). We avoid setting CMAKE_MODULE_PATH
+  # pre-emptively since it make successful generation less likely in our tests!
+  # example: list(APPEND CMAKE_MODULE_PATH "/opt/rocm/cmake")
 
   enable_language(HIP)
   set(CMAKE_HIP_STANDARD_REQUIRED ON)
