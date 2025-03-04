@@ -1,0 +1,23 @@
+name: HIP Windows compile
+
+
+
+on:
+  push:
+    branches:
+      - amd-patch
+  pull_request:
+    branches:
+      - amd-patch
+
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Download AMD HIP Compiler
+        run: |
+          Invoke-WebRequest -Uri "https://www.amd.com/en/developer/resources/rocm-hub/eula/licenses.html?filename=AMD-Software-PRO-Edition-24.Q4-WinSvr2022-For-HIP.exe&accept-eula=true" -OutFile "AMD-HIP-Compiler.exe"
+      - name: Install AMD HIP Compiler
+        run: |
+          Start-Process -FilePath "AMD-HIP-Compiler.exe" -ArgumentList "/S" -NoNewWindow -Wait

@@ -1,13 +1,15 @@
 name: HIP compile
 
 
+
+# disabled since confirmed workin
 on:
   push:
     branches:
-      - amd-patch
+      - v4
   pull_request:
     branches:
-      - amd-patch
+      - v4
 
 
 jobs:
