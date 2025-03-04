@@ -294,7 +294,6 @@ if (ENABLE_HIP)
 
   find_package(HIP REQUIRED)
   message(STATUS "Found HIP: " ${HIP_VERSION})
-  message(STATUS "HIP PATH: " ${HIP_PATH})
   
   target_compile_definitions(QuEST
     PUBLIC COMPILE_CUQUANTUM=0
