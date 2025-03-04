@@ -15,6 +15,13 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
+
+      # free space for big ROCm installer
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+
       - name: Download AMD HIP Compiler
         run: |
           Invoke-WebRequest -Uri "https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q4-WinSvr2022-For-HIP.exe"
