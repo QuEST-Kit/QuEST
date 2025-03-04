@@ -14,10 +14,16 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      direc: "C:/workdirec"
+
     steps:
 
       - name: view drives
         run: Get-PSDrive
+
+      - run: mkdir ${{ env.direc }}
+      - run: cd direc
 
       - name: Download AMD HIP Compiler
         run: |
