@@ -6,10 +6,10 @@ name: HIP compile
 on:
   push:
     branches:
-      - amd-patch
+      - v4
   pull_request:
     branches:
-      - amd-patch
+      - v4
 
 
 jobs:
@@ -20,7 +20,6 @@ jobs:
     env:
       build_dir: "build"
       hip_arch: gfx801
-      rocm_dir: /opt/rocm
       path_dir: /opt/rocm/bin
 
     steps:
@@ -46,8 +45,8 @@ jobs:
           sudo apt update
           sudo apt install amdgpu-dkms rocm
 
-      # - name: Update path
-      #   run: echo "${{ env.path_dir }}" >> $GITHUB_PATH
+      - name: Update path
+        run: echo "${{ env.path_dir }}" >> $GITHUB_PATH
 
       - name: Show version
         run: hipcc --version
@@ -61,7 +60,5 @@ jobs:
           -DENABLE_HIP=ON
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
    
-      # -DHIP_PATH=${{ env.rocm_dir }}
-
       - name: Compile
         run: cmake --build ${{ env.build_dir }}

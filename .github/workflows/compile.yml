@@ -4,10 +4,10 @@ name: compile
 on:
   push:
     branches:
-      - v4
+      - amd-patch
   pull_request:
     branches:
-      - v4
+      - amd-patch
 
 
 jobs:
@@ -17,10 +17,11 @@ jobs:
     name: >
       ${{ matrix.os == 'ubuntu-latest' && 'Linux' || matrix.os == 'macos-latest' && 'MacOS' || 'Windows' }}
       [${{ matrix.precision }}]
-      ${{ matrix.omp == 'ON' && 'OMP' || '' }}
-      ${{ matrix.mpi == 'ON' && 'MPI' || '' }}
-      ${{ matrix.gpu == 'ON' && 'GPU' || '' }}
-      ${{ matrix.cuquantum == 'ON' && 'CUQ' || '' }}
+      ${{ matrix.omp       == 'ON' && 'OMP'  || '' }}
+      ${{ matrix.mpi       == 'ON' && 'MPI'  || '' }}
+      ${{ matrix.cuda      == 'ON' && 'CUDA' || '' }}
+      ${{ matrix.hip       == 'ON' && 'HIP'  || '' }}
+      ${{ matrix.cuquantum == 'ON' && 'CUQ'  || '' }}
 
     runs-on: ${{ matrix.os }}
 
@@ -35,9 +36,10 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         precision: [1, 2, 4]
-        omp: [ON, OFF]
-        mpi: [ON, OFF]
-        gpu: [ON, OFF]
+        omp:       [ON, OFF]
+        mpi:       [ON, OFF]
+        cuda:      [ON, OFF]
+        hip:       [ON, OFF]
         cuquantum: [ON, OFF]
 
         # assign each OS a bespoke compiler, and disable deprecated API on MSVC
@@ -53,16 +55,24 @@ jobs:
             deprecated: OFF
             
         exclude:
+          # cannot simultaneously use CUDA and HIP
+          - cuda: ON
+            hip: ON
+
           # cannot use GPU with quad-precision
-          - gpu: ON
+          - cuda: ON
+            precision: 4
+          - hip: ON
             precision: 4
 
-          # cannot use cuquantum when not using GPU
-          - gpu: OFF
+          # cannot use cuquantum without CUDA
+          - cuda: OFF
             cuquantum: ON
 
           # cannot use GPU on MacOS
-          - gpu: ON
+          - cuda: ON
+            os: macos-latest
+          - hip: ON
             os: macos-latest
 
           # cannot use cuquantum on Windows or MacOS
@@ -70,14 +80,30 @@ jobs:
             os: windows-latest
           - cuquantum: ON
             os: macos-latest
+
+          # cannot presently install HIP on Windows CI (times out)
+          - hip: ON
+            os: windows-latest
+
             
     # constants
     env:
       build_dir: "build"
       cuda_arch: 70
+      hip_arch: gfx801
+      rocm_path: /opt/rocm/bin
 
     # perform the job
     steps:
+
+      # free space for big-chungus ROCm compiler
+      - name: Free disk space
+        if: ${{ matrix.hip == 'ON' }}
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+
+      # download QuEST
       - name: Get QuEST
         uses: actions/checkout@v4
 
@@ -95,7 +121,7 @@ jobs:
 
       # obtain CUDA for GPU acceleration (cuQuantum needs cuBLAS)
       - name: Setup CUDA (non-MSVC)
-        if: ${{ matrix.gpu == 'ON' && matrix.compiler != 'cl' }}
+        if: ${{ matrix.cuda == 'ON' && matrix.compiler != 'cl' }}
         uses: Jimver/cuda-toolkit@v0.2.21
         with:
           method: network
@@ -104,11 +130,23 @@ jobs:
 
       # bug in Nsight for MSVC breaks above action for windows-2022, so we revert to script
       - name: Setup CUDA (MSVC)
-        if: ${{ matrix.gpu == 'ON' && matrix.compiler == 'cl' }}
+        if: ${{ matrix.cuda == 'ON' && matrix.compiler == 'cl' }}
         shell: pwsh
         run: .github/scripts/setup_cuda.ps1
         env:
           INPUT_CUDA_VERSION: 12.5.0
+
+      # obtain ROCm for HIP acceleration
+      - name: Install ROCm
+        run: |
+          sudo apt install "linux-headers-$(uname -r)" "linux-modules-extra-$(uname -r)"
+          sudo apt install python3-setuptools python3-wheel
+          sudo usermod -a -G render,video $USER
+          wget https://repo.radeon.com/amdgpu-install/6.3.3/ubuntu/noble/amdgpu-install_6.3.60303-1_all.deb
+          sudo apt install ./amdgpu-install_6.3.60303-1_all.deb
+          sudo apt update
+          sudo apt install amdgpu-dkms rocm
+          echo "${{ env.rocm_path }}" >> $GITHUB_PATH
 
       # obtain cuQuantum on linux
       - name: Setup cuQuantum
@@ -128,11 +166,13 @@ jobs:
           -DENABLE_DEPRECATED_API=${{ matrix.deprecated }}
           -DENABLE_MULTITHREADING=${{ matrix.omp }}
           -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
-          -DENABLE_CUDA=${{ matrix.gpu }}
+          -DENABLE_CUDA=${{ matrix.cuda }}
+          -DENABLE_HIP=${{ matrix.hip }}
+          -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
+          -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
           -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
           -DFLOAT_PRECISION=${{ matrix.precision }}
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
-          -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
 
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
@@ -141,5 +181,4 @@ jobs:
 
 
 # TODO:
-# - test AMD compilation
 # - CUDA-aware MPI?!?!?!
