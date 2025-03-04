@@ -23,7 +23,7 @@ jobs:
         run: Get-PSDrive
 
       - run: mkdir ${{ env.direc }}
-      - run: cd direc
+      - run: cd ${{ env.direc }}
 
       - name: Download AMD HIP Compiler
         run: |
