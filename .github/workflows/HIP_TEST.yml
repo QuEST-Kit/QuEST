@@ -46,8 +46,8 @@ jobs:
           sudo apt update
           sudo apt install amdgpu-dkms rocm
 
-      #- name: Update path
-      #  run: echo "${{ env.path_dir }}" >> $GITHUB_PATH
+      - name: Update path
+        run: echo "${{ env.path_dir }}" >> $GITHUB_PATH
 
       - name: Show version
         run: hipcc --version
