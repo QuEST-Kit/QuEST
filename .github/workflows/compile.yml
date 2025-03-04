@@ -161,7 +161,7 @@ jobs:
         
       # disable LTO with CUDA+MPI (duplicates symbols), and
       # disable RDC with HIP+MPI (causes vtable fail) and use hipcc
-      - run: >-
+      - run: |
           mpicuda=${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' }}
           mpihip=${{  matrix.mpi == 'ON' && matrix.hip  == 'ON' }}
           compiler=${{ matrix.compiler }}
