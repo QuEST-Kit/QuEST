@@ -4,10 +4,10 @@ name: compile
 on:
   push:
     branches:
-      - amd-patch
+      - v4
   pull_request:
     branches:
-      - amd-patch
+      - v4
 
 
 jobs:
