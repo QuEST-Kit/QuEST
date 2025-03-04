@@ -24,7 +24,7 @@ jobs:
       hip_arch: gfx801
       rocm_dir: /opt/rocm
       path_dir: /opt/rocm/bin
-      hip_dir: /opt/rocm/hip
+      # hip_dir: /opt/rocm/hip ######### not being created?!
 
     steps:
 
@@ -71,8 +71,11 @@ jobs:
           -DENABLE_MULTITHREADING=OFF
           -DENABLE_HIP=ON
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
-          -DHIP_PATH=${{ env.hip_dir }}
-          -DCMAKE_PREFIX_PATH=${{ env.rocm_dir }};${{ env.hip_dir }}
+          -DCMAKE_PREFIX_PATH=${{ env.rocm_dir }}
+
+        #;${{ env.hip_dir }}
+        #-DHIP_PATH=${{ env.hip_dir }}
+          
 
       - name: Compile
         run: cmake --build ${{ env.build_dir }}
