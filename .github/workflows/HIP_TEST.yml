@@ -22,7 +22,7 @@ jobs:
     env:
       build_dir: "build"
       hip_arch: gfx801
-      rocm_dir: /opt/rocm
+      rocm_dir: /opt/rocm/hip
 
     steps:
 
