@@ -57,8 +57,10 @@ jobs:
       # DEBUG
       - name: Show me the contents!
         run: |
+          ls /opt/rocm/
           ls /opt/rocm/lib/
-          ls /opt/rocm/hip/
+        
+        #  ls /opt/rocm/hip/
 
       - name: Test HIP compiler
         run: hipcc --version
