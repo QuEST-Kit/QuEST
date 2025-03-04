@@ -1,85 +1,119 @@
+# Taken from:
+# ROCm / HIP Github repository
+# https://github.com/ROCm/HIP
+# perm: https://github.com/ROCm/HIP/blob/0031ab056f4bfb177082950b2d96d4644eb4c57e/cmake/FindHIP.cmake#L4
+
+
+# Copyright (c) 2016 - 2021 Advanced Micro Devices, Inc. All Rights Reserved.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
 ###############################################################################
 # FindHIP.cmake
 ###############################################################################
-
+include(CheckCXXCompilerFlag)
 ###############################################################################
 # SET: Variable defaults
 ###############################################################################
 # User defined flags
 set(HIP_HIPCC_FLAGS "" CACHE STRING "Semicolon delimited flags for HIPCC")
-set(HIP_HCC_FLAGS "" CACHE STRING "Semicolon delimited flags for HCC")
+set(HIP_CLANG_FLAGS "" CACHE STRING "Semicolon delimited flags for CLANG")
 set(HIP_NVCC_FLAGS "" CACHE STRING "Semicolon delimted flags for NVCC")
-mark_as_advanced(HIP_HIPCC_FLAGS HIP_HCC_FLAGS HIP_NVCC_FLAGS)
+mark_as_advanced(HIP_HIPCC_FLAGS HIP_CLANG_FLAGS HIP_NVCC_FLAGS)
+
 set(_hip_configuration_types ${CMAKE_CONFIGURATION_TYPES} ${CMAKE_BUILD_TYPE} Debug MinSizeRel Release RelWithDebInfo)
 list(REMOVE_DUPLICATES _hip_configuration_types)
 foreach(config ${_hip_configuration_types})
     string(TOUPPER ${config} config_upper)
     set(HIP_HIPCC_FLAGS_${config_upper} "" CACHE STRING "Semicolon delimited flags for HIPCC")
-    set(HIP_HCC_FLAGS_${config_upper} "" CACHE STRING "Semicolon delimited flags for HCC")
+    set(HIP_CLANG_FLAGS_${config_upper} "" CACHE STRING "Semicolon delimited flags for CLANG")
     set(HIP_NVCC_FLAGS_${config_upper} "" CACHE STRING "Semicolon delimited flags for NVCC")
-    mark_as_advanced(HIP_HIPCC_FLAGS_${config_upper} HIP_HCC_FLAGS_${config_upper} HIP_NVCC_FLAGS_${config_upper})
+    mark_as_advanced(HIP_HIPCC_FLAGS_${config_upper} HIP_CLANG_FLAGS_${config_upper} HIP_NVCC_FLAGS_${config_upper})
 endforeach()
 option(HIP_HOST_COMPILATION_CPP "Host code compilation mode" ON)
 option(HIP_VERBOSE_BUILD "Print out the commands run while compiling the HIP source file.  With the Makefile generator this defaults to VERBOSE variable specified on the command line, but can be forced on with this option." OFF)
 mark_as_advanced(HIP_HOST_COMPILATION_CPP)
 
 ###############################################################################
-# Set HIP CMAKE Flags
-###############################################################################
-# Copy the invocation styles from CXX to HIP
-set(CMAKE_HIP_ARCHIVE_CREATE ${CMAKE_CXX_ARCHIVE_CREATE})
-set(CMAKE_HIP_ARCHIVE_APPEND ${CMAKE_CXX_ARCHIVE_APPEND})
-set(CMAKE_HIP_ARCHIVE_FINISH ${CMAKE_CXX_ARCHIVE_FINISH})
-set(CMAKE_SHARED_LIBRARY_SONAME_HIP_FLAG ${CMAKE_SHARED_LIBRARY_SONAME_CXX_FLAG})
-set(CMAKE_SHARED_LIBRARY_CREATE_HIP_FLAGS ${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS})
-set(CMAKE_SHARED_LIBRARY_HIP_FLAGS ${CMAKE_SHARED_LIBRARY_CXX_FLAGS})
-#set(CMAKE_SHARED_LIBRARY_LINK_HIP_FLAGS ${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS})
-set(CMAKE_SHARED_LIBRARY_RUNTIME_HIP_FLAG ${CMAKE_SHARED_LIBRARY_RUNTIME_CXX_FLAG})
-set(CMAKE_SHARED_LIBRARY_RUNTIME_HIP_FLAG_SEP ${CMAKE_SHARED_LIBRARY_RUNTIME_CXX_FLAG_SEP})
-set(CMAKE_SHARED_LIBRARY_LINK_STATIC_HIP_FLAGS ${CMAKE_SHARED_LIBRARY_LINK_STATIC_CXX_FLAGS})
-set(CMAKE_SHARED_LIBRARY_LINK_DYNAMIC_HIP_FLAGS ${CMAKE_SHARED_LIBRARY_LINK_DYNAMIC_CXX_FLAGS})
-
-# Set the CMake Flags to use the HCC Compilier.
-set(CMAKE_HIP_CREATE_SHARED_LIBRARY "${HIP_HIPCC_CMAKE_LINKER_HELPER} ${HCC_PATH} <CMAKE_SHARED_LIBRARY_CXX_FLAGS> <LANGUAGE_COMPILE_FLAGS> <LINK_FLAGS> <CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS> <SONAME_FLAG><TARGET_SONAME> -o <TARGET> <OBJECTS> <LINK_LIBRARIES>")
-set(CMAKE_HIP_CREATE_SHARED_MODULE "${HIP_HIPCC_CMAKE_LINKER_HELPER} ${HCC_PATH} <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> <SONAME_FLAG><TARGET_SONAME> -o <TARGET> <LINK_LIBRARIES> -shared" )
-set(CMAKE_HIP_LINK_EXECUTABLE "${HIP_HIPCC_CMAKE_LINKER_HELPER} ${HCC_PATH} <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
-
-###############################################################################
 # FIND: HIP and associated helper binaries
 ###############################################################################
-# HIP is supported on Linux only
-if(UNIX AND NOT APPLE AND NOT CYGWIN)
+
+if(NOT HIP_CXX_COMPILER)
+  set(HIP_CXX_COMPILER ${CMAKE_CXX_COMPILER})
+endif()
+
+# Approach: To find HIP_CLANG_PATH for HIP_CXX_COMPILER types
+# For HIP_CXX_COMPILER as *hipcc use hipconfig -l option to get the clang path.
+# For HIP_CXX_COMPILER as *clang use real path of HIP_CXX_COMPILER
+# IF not successful in getting the CLANG_PATH using HIP_CXX_COMPILER
+# fallback to Old Method to find HIP_CLANG_PATH from ENV Vars, ROCMPATH, HIPPATH etc.
+if(HIP_CXX_COMPILER MATCHES ".*hipcc")
+  get_filename_component(HIPCC_PATH "${HIP_CXX_COMPILER}" DIRECTORY)
+  set(_HIPCONFIG_EXECUTABLE "${HIPCC_PATH}/hipconfig")
+  execute_process(COMMAND ${_HIPCONFIG_EXECUTABLE} -l
+             OUTPUT_VARIABLE _HIP_CLANG_INSTALL_PATH
+             OUTPUT_STRIP_TRAILING_WHITESPACE
+             ERROR_VARIABLE _HIPCONFIG_EXE_ERROR
+             ERROR_STRIP_TRAILING_WHITESPACE
+             RESULT_VARIABLE _HIPCONFIG_EXE_EXIT_CODE)
+  if( _HIPCONFIG_EXE_ERROR )
+      message( STATUS "hipconfig -l option failed with error: ${_HIPCONFIG_EXE_ERROR}" )
+  else() #IF hipconfig -l executed with no error
+    if( "${_HIPCONFIG_EXE_EXIT_CODE}" STREQUAL "0" )
+      set(HIP_CLANG_PATH "${_HIP_CLANG_INSTALL_PATH}")
+    else()
+      message( STATUS "${_HIPCONFIG_EXECUTABLE} Failed with Exit code: ${_HIPCONFIG_EXE_EXIT_CODE}" )
+    endif()
+  endif()
+elseif (HIP_CXX_COMPILER MATCHES ".*clang\\+\\+")
+  get_filename_component(_HIP_CLANG_REAL_PATH "${HIP_CXX_COMPILER}" REALPATH)
+  get_filename_component(_HIP_CLANG_BIN_PATH "${_HIP_CLANG_REAL_PATH}" DIRECTORY)
+  set(HIP_CLANG_PATH "${_HIP_CLANG_BIN_PATH}")
+endif()
+
+if(WIN32)
+    # In windows FindHIP.cmake is installed in <Install_Prefix>/cmake
+    get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_DIR}/../" REALPATH)
+else()
+    # In Linux FindHIP.cmake is installed in <Install_Prefix>/lib/cmake/hip
+    # RealPath: <Install_Prefix>/lib/cmake/hip/FindHIP.cmake
+    # Go 4 level up to get IMPORT PREFIX as <Install_Prefix>
+    get_filename_component(_FILE_PATH "${CMAKE_CURRENT_LIST_FILE}" REALPATH)
+    get_filename_component(_IMPORT_PREFIX "${_FILE_PATH}/../../../../" ABSOLUTE)
+endif()
+
+# HIP is currently not supported for apple
+if(NOT APPLE)
     # Search for HIP installation
     if(NOT HIP_ROOT_DIR)
         # Search in user specified path first
         find_path(
             HIP_ROOT_DIR
-            NAMES hipconfig
+            NAMES bin/hipconfig
             PATHS
-            ENV ROCM_PATH
+            "$ENV{ROCM_PATH}"
+            "$ENV{ROCM_PATH}/hip"
             ENV HIP_PATH
-            PATH_SUFFIXES bin
+            ${_IMPORT_PREFIX}
             DOC "HIP installed location"
             NO_DEFAULT_PATH
             )
-        # Now search in default path
-        find_path(
-            HIP_ROOT_DIR
-            NAMES hipconfig
-            PATHS
-            /opt/rocm
-            /opt/rocm/hip
-            PATH_SUFFIXES bin
-            DOC "HIP installed location"
-            )
-
-        # Check if we found HIP installation
-        if(HIP_ROOT_DIR)
-            # If so, fix the path
-            string(REGEX REPLACE "[/\\\\]?bin[64]*[/\\\\]?$" "" HIP_ROOT_DIR ${HIP_ROOT_DIR})
-            # And push it back to the cache
-            set(HIP_ROOT_DIR ${HIP_ROOT_DIR} CACHE PATH "HIP installed location" FORCE)
-        endif()
         if(NOT EXISTS ${HIP_ROOT_DIR})
             if(HIP_FIND_REQUIRED)
                 message(FATAL_ERROR "Specify HIP_ROOT_DIR")
@@ -87,6 +121,8 @@ if(UNIX AND NOT APPLE AND NOT CYGWIN)
                 message("HIP_ROOT_DIR not found or specified")
             endif()
         endif()
+        # And push it back to the cache
+        set(HIP_ROOT_DIR ${HIP_ROOT_DIR} CACHE PATH "HIP installed location" FORCE)
     endif()
 
     # Find HIPCC executable
@@ -97,8 +133,6 @@ if(UNIX AND NOT APPLE AND NOT CYGWIN)
         "${HIP_ROOT_DIR}"
         ENV ROCM_PATH
         ENV HIP_PATH
-        /opt/rocm
-        /opt/rocm/hip
         PATH_SUFFIXES bin
         NO_DEFAULT_PATH
         )
@@ -106,7 +140,6 @@ if(UNIX AND NOT APPLE AND NOT CYGWIN)
         # Now search in default paths
         find_program(HIP_HIPCC_EXECUTABLE hipcc)
     endif()
-    mark_as_advanced(HIP_HIPCC_EXECUTABLE)
 
     # Find HIPCONFIG executable
     find_program(
@@ -116,8 +149,6 @@ if(UNIX AND NOT APPLE AND NOT CYGWIN)
         "${HIP_ROOT_DIR}"
         ENV ROCM_PATH
         ENV HIP_PATH
-        /opt/rocm
-        /opt/rocm/hip
         PATH_SUFFIXES bin
         NO_DEFAULT_PATH
         )
@@ -125,7 +156,15 @@ if(UNIX AND NOT APPLE AND NOT CYGWIN)
         # Now search in default paths
         find_program(HIP_HIPCONFIG_EXECUTABLE hipconfig)
     endif()
+    if(NOT UNIX)
+        get_filename_component(HIPCONFIG_EXECUTABLE_EXT ${HIP_HIPCONFIG_EXECUTABLE} EXT)
+        if(NOT HIPCONFIG_EXECUTABLE_EXT STREQUAL ".bat")
+          set(HIP_HIPCONFIG_EXECUTABLE "${HIP_HIPCONFIG_EXECUTABLE}.bat")
+          set(HIP_HIPCC_EXECUTABLE "${HIP_HIPCC_EXECUTABLE}.bat")
+        endif()
+    endif()
     mark_as_advanced(HIP_HIPCONFIG_EXECUTABLE)
+    mark_as_advanced(HIP_HIPCC_EXECUTABLE)
 
     # Find HIPCC_CMAKE_LINKER_HELPER executable
     find_program(
@@ -135,8 +174,6 @@ if(UNIX AND NOT APPLE AND NOT CYGWIN)
         "${HIP_ROOT_DIR}"
         ENV ROCM_PATH
         ENV HIP_PATH
-        /opt/rocm
-        /opt/rocm/hip
         PATH_SUFFIXES bin
         NO_DEFAULT_PATH
         )
@@ -180,6 +217,28 @@ if(UNIX AND NOT APPLE AND NOT CYGWIN)
         set(HIP_PLATFORM ${_hip_platform} CACHE STRING "HIP platform as computed by hipconfig")
         mark_as_advanced(HIP_PLATFORM)
     endif()
+
+    if(HIP_HIPCONFIG_EXECUTABLE AND NOT HIP_COMPILER)
+        # Compute the compiler
+        execute_process(
+            COMMAND ${HIP_HIPCONFIG_EXECUTABLE} --compiler
+            OUTPUT_VARIABLE _hip_compiler
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+        set(HIP_COMPILER ${_hip_compiler} CACHE STRING "HIP compiler as computed by hipconfig")
+        mark_as_advanced(HIP_COMPILER)
+    endif()
+
+    if(HIP_HIPCONFIG_EXECUTABLE AND NOT HIP_RUNTIME)
+        # Compute the runtime
+        execute_process(
+            COMMAND ${HIP_HIPCONFIG_EXECUTABLE} --runtime
+            OUTPUT_VARIABLE _hip_runtime
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+        set(HIP_RUNTIME ${_hip_runtime} CACHE STRING "HIP runtime as computed by hipconfig")
+        mark_as_advanced(HIP_RUNTIME)
+    endif()
 endif()
 
 include(FindPackageHandleStandardArgs)
@@ -190,8 +249,96 @@ find_package_handle_standard_args(
     HIP_HIPCC_EXECUTABLE
     HIP_HIPCONFIG_EXECUTABLE
     HIP_PLATFORM
+    HIP_COMPILER
+    HIP_RUNTIME
     VERSION_VAR HIP_VERSION
     )
+
+###############################################################################
+# Set HIP CMAKE Flags
+###############################################################################
+# Copy the invocation styles from CXX to HIP
+set(CMAKE_HIP_ARCHIVE_CREATE ${CMAKE_CXX_ARCHIVE_CREATE})
+set(CMAKE_HIP_ARCHIVE_APPEND ${CMAKE_CXX_ARCHIVE_APPEND})
+set(CMAKE_HIP_ARCHIVE_FINISH ${CMAKE_CXX_ARCHIVE_FINISH})
+set(CMAKE_SHARED_LIBRARY_SONAME_HIP_FLAG ${CMAKE_SHARED_LIBRARY_SONAME_CXX_FLAG})
+set(CMAKE_SHARED_LIBRARY_CREATE_HIP_FLAGS ${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS})
+set(CMAKE_SHARED_LIBRARY_HIP_FLAGS ${CMAKE_SHARED_LIBRARY_CXX_FLAGS})
+#set(CMAKE_SHARED_LIBRARY_LINK_HIP_FLAGS ${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS})
+set(CMAKE_SHARED_LIBRARY_RUNTIME_HIP_FLAG ${CMAKE_SHARED_LIBRARY_RUNTIME_CXX_FLAG})
+set(CMAKE_SHARED_LIBRARY_RUNTIME_HIP_FLAG_SEP ${CMAKE_SHARED_LIBRARY_RUNTIME_CXX_FLAG_SEP})
+set(CMAKE_SHARED_LIBRARY_LINK_STATIC_HIP_FLAGS ${CMAKE_SHARED_LIBRARY_LINK_STATIC_CXX_FLAGS})
+set(CMAKE_SHARED_LIBRARY_LINK_DYNAMIC_HIP_FLAGS ${CMAKE_SHARED_LIBRARY_LINK_DYNAMIC_CXX_FLAGS})
+
+set(HIP_CLANG_PARALLEL_BUILD_COMPILE_OPTIONS "")
+set(HIP_CLANG_PARALLEL_BUILD_LINK_OPTIONS "")
+
+if("${HIP_COMPILER}" STREQUAL "nvcc")
+    # Set the CMake Flags to use the nvcc Compiler.
+    set(CMAKE_HIP_CREATE_SHARED_LIBRARY "${HIP_HIPCC_CMAKE_LINKER_HELPER} <CMAKE_SHARED_LIBRARY_CXX_FLAGS> <LANGUAGE_COMPILE_FLAGS> <LINK_FLAGS> <CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS> <SONAME_FLAG><TARGET_SONAME> -o <TARGET> <OBJECTS> <LINK_LIBRARIES>")
+    set(CMAKE_HIP_CREATE_SHARED_MODULE "${HIP_HIPCC_CMAKE_LINKER_HELPER} <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> <SONAME_FLAG><TARGET_SONAME> -o <TARGET> <LINK_LIBRARIES> -shared" )
+    set(CMAKE_HIP_LINK_EXECUTABLE "${HIP_HIPCC_CMAKE_LINKER_HELPER} <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
+elseif("${HIP_COMPILER}" STREQUAL "clang")
+    #Set HIP_CLANG_PATH
+    if("x${HIP_CLANG_PATH}" STREQUAL "x")
+      # IF HIP_CLANG_INSTALL_DIR is Found
+      if( HIP_CLANG_INSTALL_DIR )
+        set(HIP_CLANG_PATH ${HIP_CLANG_INSTALL_DIR})
+      else() # IF HIP_CLANG_INSTALL_DIR is not found
+        if(DEFINED ENV{HIP_CLANG_PATH})
+            set(HIP_CLANG_PATH $ENV{HIP_CLANG_PATH})
+        elseif(DEFINED ENV{ROCM_PATH})
+            set(HIP_CLANG_PATH "$ENV{ROCM_PATH}/llvm/bin")
+        elseif(DEFINED ENV{HIP_PATH})
+            if(EXISTS "$ENV{HIP_PATH}/llvm/bin") #File Reorg backward compatibility
+                set(HIP_CLANG_PATH "$ENV{HIP_PATH}/llvm/bin")
+            else()
+                set(HIP_CLANG_PATH "$ENV{HIP_PATH}/../llvm/bin")
+            endif()
+        elseif(DEFINED HIP_PATH)
+            if(EXISTS "${HIP_PATH}/llvm/bin") #File Reorg backward compatibility
+                set(HIP_CLANG_PATH "${HIP_PATH}/llvm/bin")
+            else()
+                set(HIP_CLANG_PATH "${HIP_PATH}/../llvm/bin")
+            endif()
+        # Handle the case where ROCM_PATH is defined and not set in ENV
+        elseif(DEFINED ROCM_PATH)
+            set(HIP_CLANG_PATH "${ROCM_PATH}/llvm/bin")
+        else()
+            message(FATAL_ERROR "Unable to find the clang compiler path. Set ROCM_PATH or HIP_PATH in env ")
+        endif()
+      endif() # HIP_CLANG_INSTALL_DIR Check
+    endif() # Set HIP_CLANG_PATH
+
+    #Number of parallel jobs by default is 1
+    if(NOT DEFINED HIP_CLANG_NUM_PARALLEL_JOBS)
+      set(HIP_CLANG_NUM_PARALLEL_JOBS 1)
+    endif()
+    #Add support for parallel build and link
+    if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+      check_cxx_compiler_flag("-parallel-jobs=1" HIP_CLANG_SUPPORTS_PARALLEL_JOBS)
+    endif()
+    if(HIP_CLANG_NUM_PARALLEL_JOBS GREATER 1)
+      if(${HIP_CLANG_SUPPORTS_PARALLEL_JOBS})
+        set(HIP_CLANG_PARALLEL_BUILD_COMPILE_OPTIONS "-Wno-format-nonliteral -parallel-jobs=${HIP_CLANG_NUM_PARALLEL_JOBS}")
+        set(HIP_CLANG_PARALLEL_BUILD_LINK_OPTIONS "-parallel-jobs=${HIP_CLANG_NUM_PARALLEL_JOBS}")
+      else()
+        message("clang compiler doesn't support parallel jobs")
+      endif()
+    endif()
+
+    # Set the CMake Flags to use the HIP-Clang Compiler.
+    set(CMAKE_HIP_CREATE_SHARED_LIBRARY "${HIP_HIPCC_CMAKE_LINKER_HELPER} ${HIP_CLANG_PATH} ${HIP_CLANG_PARALLEL_BUILD_LINK_OPTIONS} <CMAKE_SHARED_LIBRARY_CXX_FLAGS> <LANGUAGE_COMPILE_FLAGS> <LINK_FLAGS> <CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS> <SONAME_FLAG><TARGET_SONAME> -o <TARGET> <OBJECTS> <LINK_LIBRARIES>")
+    set(CMAKE_HIP_CREATE_SHARED_MODULE "${HIP_HIPCC_CMAKE_LINKER_HELPER} ${HIP_CLANG_PATH} ${HIP_CLANG_PARALLEL_BUILD_LINK_OPTIONS} <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> <SONAME_FLAG><TARGET_SONAME> -o <TARGET> <LINK_LIBRARIES> -shared" )
+    set(CMAKE_HIP_LINK_EXECUTABLE "${HIP_HIPCC_CMAKE_LINKER_HELPER} ${HIP_CLANG_PATH} ${HIP_CLANG_PARALLEL_BUILD_LINK_OPTIONS} <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
+
+    if("${HIP_RUNTIME}" STREQUAL "rocclr")
+      if(TARGET host)
+        message(STATUS "host interface - found")
+        set(HIP_HOST_INTERFACE host)
+      endif()
+    endif()
+endif()
 
 ###############################################################################
 # MACRO: Locate helper files
@@ -224,12 +371,12 @@ hip_find_helper_file(run_hipcc cmake)
 ###############################################################################
 macro(HIP_RESET_FLAGS)
     unset(HIP_HIPCC_FLAGS)
-    unset(HIP_HCC_FLAGS)
+    unset(HIP_CLANG_FLAGS)
     unset(HIP_NVCC_FLAGS)
     foreach(config ${_hip_configuration_types})
         string(TOUPPER ${config} config_upper)
         unset(HIP_HIPCC_FLAGS_${config_upper})
-        unset(HIP_HCC_FLAGS_${config_upper})
+        unset(HIP_CLANG_FLAGS_${config_upper})
         unset(HIP_NVCC_FLAGS_${config_upper})
     endforeach()
 endmacro()
@@ -237,27 +384,27 @@ endmacro()
 ###############################################################################
 # MACRO: Separate the options from the sources
 ###############################################################################
-macro(HIP_GET_SOURCES_AND_OPTIONS _sources _cmake_options _hipcc_options _hcc_options _nvcc_options)
+macro(HIP_GET_SOURCES_AND_OPTIONS _sources _cmake_options _hipcc_options _clang_options _nvcc_options)
     set(${_sources})
     set(${_cmake_options})
     set(${_hipcc_options})
-    set(${_hcc_options})
+    set(${_clang_options})
     set(${_nvcc_options})
     set(_hipcc_found_options FALSE)
-    set(_hcc_found_options FALSE)
+    set(_clang_found_options FALSE)
     set(_nvcc_found_options FALSE)
     foreach(arg ${ARGN})
         if("x${arg}" STREQUAL "xHIPCC_OPTIONS")
             set(_hipcc_found_options TRUE)
-            set(_hcc_found_options FALSE)
+            set(_clang_found_options FALSE)
             set(_nvcc_found_options FALSE)
-        elseif("x${arg}" STREQUAL "xHCC_OPTIONS")
+        elseif("x${arg}" STREQUAL "xCLANG_OPTIONS")
             set(_hipcc_found_options FALSE)
-            set(_hcc_found_options TRUE)
+            set(_clang_found_options TRUE)
             set(_nvcc_found_options FALSE)
         elseif("x${arg}" STREQUAL "xNVCC_OPTIONS")
             set(_hipcc_found_options FALSE)
-            set(_hcc_found_options FALSE)
+            set(_clang_found_options FALSE)
             set(_nvcc_found_options TRUE)
         elseif(
                 "x${arg}" STREQUAL "xEXCLUDE_FROM_ALL" OR
@@ -269,8 +416,8 @@ macro(HIP_GET_SOURCES_AND_OPTIONS _sources _cmake_options _hipcc_options _hcc_op
         else()
             if(_hipcc_found_options)
                 list(APPEND ${_hipcc_options} ${arg})
-            elseif(_hcc_found_options)
-                list(APPEND ${_hcc_options} ${arg})
+            elseif(_clang_found_options)
+                list(APPEND ${_clang_options} ${arg})
             elseif(_nvcc_found_options)
                 list(APPEND ${_nvcc_options} ${arg})
             else()
@@ -404,9 +551,9 @@ macro(HIP_PREPARE_TARGET_COMMANDS _target _format _generated_files _source_files
         endforeach()
     endif()
 
-    HIP_GET_SOURCES_AND_OPTIONS(_hip_sources _hip_cmake_options _hipcc_options _hcc_options _nvcc_options ${ARGN})
+    HIP_GET_SOURCES_AND_OPTIONS(_hip_sources _hip_cmake_options _hipcc_options _clang_options _nvcc_options ${ARGN})
     HIP_PARSE_HIPCC_OPTIONS(HIP_HIPCC_FLAGS ${_hipcc_options})
-    HIP_PARSE_HIPCC_OPTIONS(HIP_HCC_FLAGS ${_hcc_options})
+    HIP_PARSE_HIPCC_OPTIONS(HIP_CLANG_FLAGS ${_clang_options})
     HIP_PARSE_HIPCC_OPTIONS(HIP_NVCC_FLAGS ${_nvcc_options})
 
     # Add the compile definitions
@@ -427,7 +574,7 @@ macro(HIP_PREPARE_TARGET_COMMANDS _target _format _generated_files _source_files
 
     # If we are building a shared library, add extra flags to HIP_HIPCC_FLAGS
     if(_hip_build_shared_libs)
-        list(APPEND HIP_HCC_FLAGS "-fPIC")
+        list(APPEND HIP_CLANG_FLAGS "-fPIC")
         list(APPEND HIP_NVCC_FLAGS "--shared -Xcompiler '-fPIC'")
     endif()
 
@@ -437,13 +584,13 @@ macro(HIP_PREPARE_TARGET_COMMANDS _target _format _generated_files _source_files
     # Set compiler flags
     set(_HIP_HOST_FLAGS "set(CMAKE_HOST_FLAGS ${CMAKE_${HIP_C_OR_CXX}_FLAGS})")
     set(_HIP_HIPCC_FLAGS "set(HIP_HIPCC_FLAGS ${HIP_HIPCC_FLAGS})")
-    set(_HIP_HCC_FLAGS "set(HIP_HCC_FLAGS ${HIP_HCC_FLAGS})")
+    set(_HIP_CLANG_FLAGS "set(HIP_CLANG_FLAGS ${HIP_CLANG_FLAGS})")
     set(_HIP_NVCC_FLAGS "set(HIP_NVCC_FLAGS ${HIP_NVCC_FLAGS})")
     foreach(config ${_hip_configuration_types})
         string(TOUPPER ${config} config_upper)
         set(_HIP_HOST_FLAGS "${_HIP_HOST_FLAGS}\nset(CMAKE_HOST_FLAGS_${config_upper} ${CMAKE_${HIP_C_OR_CXX}_FLAGS_${config_upper}})")
         set(_HIP_HIPCC_FLAGS "${_HIP_HIPCC_FLAGS}\nset(HIP_HIPCC_FLAGS_${config_upper} ${HIP_HIPCC_FLAGS_${config_upper}})")
-        set(_HIP_HCC_FLAGS "${_HIP_HCC_FLAGS}\nset(HIP_HCC_FLAGS_${config_upper} ${HIP_HCC_FLAGS_${config_upper}})")
+        set(_HIP_CLANG_FLAGS "${_HIP_CLANG_FLAGS}\nset(HIP_CLANG_FLAGS_${config_upper} ${HIP_CLANG_FLAGS_${config_upper}})")
         set(_HIP_NVCC_FLAGS "${_HIP_NVCC_FLAGS}\nset(HIP_NVCC_FLAGS_${config_upper} ${HIP_NVCC_FLAGS_${config_upper}})")
     endforeach()
 
@@ -549,17 +696,65 @@ endmacro()
 ###############################################################################
 macro(HIP_ADD_EXECUTABLE hip_target)
     # Separate the sources from the options
-    HIP_GET_SOURCES_AND_OPTIONS(_sources _cmake_options _hipcc_options _hcc_options _nvcc_options ${ARGN})
-    HIP_PREPARE_TARGET_COMMANDS(${hip_target} OBJ _generated_files _source_files ${_sources} HIPCC_OPTIONS ${_hipcc_options} HCC_OPTIONS ${_hcc_options} NVCC_OPTIONS ${_nvcc_options})
+    HIP_GET_SOURCES_AND_OPTIONS(_sources _cmake_options _hipcc_options _clang_options _nvcc_options ${ARGN})
+    HIP_PREPARE_TARGET_COMMANDS(${hip_target} OBJ _generated_files _source_files ${_sources} HIPCC_OPTIONS ${_hipcc_options} CLANG_OPTIONS ${_clang_options} NVCC_OPTIONS ${_nvcc_options})
     if(_source_files)
         list(REMOVE_ITEM _sources ${_source_files})
     endif()
-    if("x${HCC_HOME}" STREQUAL "x")
-        set(HCC_HOME "/opt/rocm/hcc")
+    if("${HIP_COMPILER}" STREQUAL "clang")
+        if("x${HIP_CLANG_PATH}" STREQUAL "x")
+          # IF HIP_CLANG_INSTALL_DIR is Found
+          if( HIP_CLANG_INSTALL_DIR )
+            set(HIP_CLANG_PATH ${HIP_CLANG_INSTALL_DIR})
+          else() # IF HIP_CLANG_INSTALL_DIR is not found
+            if(DEFINED ENV{HIP_CLANG_PATH})
+                set(HIP_CLANG_PATH $ENV{HIP_CLANG_PATH})
+            elseif(DEFINED ENV{ROCM_PATH})
+                set(HIP_CLANG_PATH "$ENV{ROCM_PATH}/llvm/bin")
+            elseif(DEFINED ENV{HIP_PATH})
+                if(EXISTS "$ENV{HIP_PATH}/llvm/bin") #file reorg backward compatibility
+                    set(HIP_CLANG_PATH "$ENV{HIP_PATH}/llvm/bin")
+                else()
+                    set(HIP_CLANG_PATH "$ENV{HIP_PATH}/../llvm/bin")
+                endif()
+            elseif(DEFINED HIP_PATH)
+                if(EXISTS "${HIP_PATH}/llvm/bin") #file reorg backward compatibility
+                    set(HIP_CLANG_PATH "${HIP_PATH}/llvm/bin")
+                else()
+                    set(HIP_CLANG_PATH "${HIP_PATH}/../llvm/bin")
+                endif()
+            # Handle  the case where ROCM_PATH is defined and not set in ENV
+            elseif(DEFINED ROCM_PATH)
+                set(HIP_CLANG_PATH "${ROCM_PATH}/llvm/bin")
+            else()
+                message(FATAL_ERROR "Unable to find the clang compiler path. Set ROCM_PATH or HIP_PATH in env")
+            endif()
+          endif() # HIP_CLANG_INSTALL_DIR Check
+        endif()
+
+        set(CMAKE_HIP_LINK_EXECUTABLE "${HIP_HIPCC_CMAKE_LINKER_HELPER} ${HIP_CLANG_PATH} ${HIP_CLANG_PARALLEL_BUILD_LINK_OPTIONS} <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
+    else()
+        set(CMAKE_HIP_LINK_EXECUTABLE "${HIP_HIPCC_CMAKE_LINKER_HELPER} <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
     endif()
-    set(CMAKE_HIP_LINK_EXECUTABLE "${HIP_HIPCC_CMAKE_LINKER_HELPER} ${HCC_HOME} <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
-    add_executable(${hip_target} ${_cmake_options} ${_generated_files} ${_sources})
+    if ("${_sources}" STREQUAL "")
+        add_executable(${hip_target} ${_cmake_options} ${_generated_files} "")
+    else()
+        add_executable(${hip_target} ${_cmake_options} ${_generated_files} ${_sources})
+    endif()
+    #LINK_OPTIONS
+    if("${HIP_COMPILER}" STREQUAL "nvcc")
+        # Some arch flags need be sent to linker. _nvcc_options mixes compiling and linker flags.
+        string(REPLACE ";"  " " _nvcc_flags "${_nvcc_options}") # Replace ',' with space
+        if(NOT "x${_nvcc_flags}" STREQUAL "x")
+            set_target_properties(${hip_target} PROPERTIES LINK_FLAGS "${_nvcc_flags}")
+        endif()
+    endif()
     set_target_properties(${hip_target} PROPERTIES LINKER_LANGUAGE HIP)
+    # Link with host
+    if (HIP_HOST_INTERFACE)
+        # hip rt should be rocclr, compiler should be clang
+        target_link_libraries(${hip_target} ${HIP_HOST_INTERFACE})
+    endif()
 endmacro()
 
 ###############################################################################
@@ -567,13 +762,22 @@ endmacro()
 ###############################################################################
 macro(HIP_ADD_LIBRARY hip_target)
     # Separate the sources from the options
-    HIP_GET_SOURCES_AND_OPTIONS(_sources _cmake_options _hipcc_options _hcc_options _nvcc_options ${ARGN})
-    HIP_PREPARE_TARGET_COMMANDS(${hip_target} OBJ _generated_files _source_files ${_sources} ${_cmake_options} HIPCC_OPTIONS ${_hipcc_options} HCC_OPTIONS ${_hcc_options} NVCC_OPTIONS ${_nvcc_options})
+    HIP_GET_SOURCES_AND_OPTIONS(_sources _cmake_options _hipcc_options _clang_options _nvcc_options ${ARGN})
+    HIP_PREPARE_TARGET_COMMANDS(${hip_target} OBJ _generated_files _source_files ${_sources} ${_cmake_options} HIPCC_OPTIONS ${_hipcc_options} CLANG_OPTIONS ${_clang_options} NVCC_OPTIONS ${_nvcc_options})
     if(_source_files)
         list(REMOVE_ITEM _sources ${_source_files})
     endif()
-    add_library(${hip_target} ${_cmake_options} ${_generated_files} ${_sources})
+    if ("${_sources}" STREQUAL "")
+        add_library(${hip_target} ${_cmake_options} ${_generated_files} "")
+    else()
+        add_library(${hip_target} ${_cmake_options} ${_generated_files} ${_sources})
+    endif()
     set_target_properties(${hip_target} PROPERTIES LINKER_LANGUAGE ${HIP_C_OR_CXX})
+    # Link with host
+    if (HIP_HOST_INTERFACE)
+        # hip rt should be rocclr, compiler should be clang
+        target_link_libraries(${hip_target} ${HIP_HOST_INTERFACE})
+    endif()
 endmacro()
 
 # vim: ts=4:sw=4:expandtab:smartindent
