@@ -60,7 +60,6 @@ jobs:
           -DENABLE_MULTITHREADING=OFF
           -DENABLE_HIP=ON
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
-          -DHIP_PATH=${{ env.rocm_dir }}
 
       - name: Compile
         run: cmake --build ${{ env.build_dir }}
