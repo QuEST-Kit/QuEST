@@ -27,7 +27,7 @@
  * accelerator.cpp file.
  *
  * When compiling for AMD GPUs, the CUDA symbols invoked herein are
- * mapped to HIP symbols by cuda_to_hip.h 
+ * mapped to HIP symbols by cuda_to_hip.hpp
  */
 
 #include "quest/include/modes.h"
@@ -531,7 +531,7 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
     devints deviceCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
-    cu_qcomp* elems = toCuQcomps(matr.elems);
+    auto elems = unpackMatrixToCuQcomps(matr);
 
     kernel_statevec_anyCtrlOneTargDiagMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
@@ -577,7 +577,7 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
     devints deviceCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
-    cu_qcomp* elems = toCuQcomps(matr.elems);
+    auto elems = unpackMatrixToCuQcomps(matr);
 
     kernel_statevec_anyCtrlTwoTargDiagMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,

@@ -220,14 +220,17 @@ void printGpuInfo() {
     // - GPU compute capability
     // - GPU #SVMs etc
 
+    // must not query any GPU facilities unless confirmed compiled and available
+    bool isGpu = gpu_isGpuCompiled() && gpu_isGpuAvailable();
+
     print_table(
         "gpu", {
-        {"numGpus",       (gpu_isGpuCompiled())? printer_toStr(gpu_getNumberOfLocalGpus()) : un},
-        {"gpuDirect",     (gpu_isGpuCompiled())? printer_toStr(gpu_isDirectGpuCommPossible()) : na},
-        {"gpuMemPools",   (gpu_isGpuCompiled())? printer_toStr(gpu_doesGpuSupportMemPools()) : na},
-        {"gpuMemory",     (gpu_isGpuCompiled())? printer_getMemoryWithUnitStr(gpu_getTotalMemoryInBytes()) + pg : na},
-        {"gpuMemoryFree", (gpu_isGpuCompiled())? printer_getMemoryWithUnitStr(gpu_getCurrentAvailableMemoryInBytes()) + pg : na},
-        {"gpuCache",      (gpu_isGpuCompiled())? printer_getMemoryWithUnitStr(gpu_getCacheMemoryInBytes()) + pg : na},
+        {"numGpus",       printer_toStr(gpu_getNumberOfLocalGpus())}, // safe to call
+        {"gpuDirect",     isGpu? printer_toStr(gpu_isDirectGpuCommPossible()) : na},
+        {"gpuMemPools",   isGpu? printer_toStr(gpu_doesGpuSupportMemPools()) : na},
+        {"gpuMemory",     isGpu? printer_getMemoryWithUnitStr(gpu_getTotalMemoryInBytes()) + pg : na},
+        {"gpuMemoryFree", isGpu? printer_getMemoryWithUnitStr(gpu_getCurrentAvailableMemoryInBytes()) + pg : na},
+        {"gpuCache",      isGpu? printer_getMemoryWithUnitStr(gpu_getCacheMemoryInBytes()) + pg : na},
     });
 }
 

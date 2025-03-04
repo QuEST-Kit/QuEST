@@ -260,14 +260,10 @@ if (ENABLE_CUDA)
   set_property(TARGET QuEST PROPERTY CUDA_STANDARD 20)
   
   set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-
-  target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=1)
   
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+cuda")
   endif()
-else()
-  target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=0)
 endif()
 
 if (ENABLE_CUQUANTUM)
@@ -283,20 +279,38 @@ else()
 endif()
 
 if (ENABLE_HIP)
+
+  # if generation fails (hip::amdhip64 not found), users can try setting
+  # CMAKE_MODULE_PATH to '/opt/rocm/cmake' or '/opt/rocm/hip/lib/cmake/hip'
+  # (suitable when shared library libamdhip64.so is located in /opt/rocm/lib/
+  #  or /opt/rocm/hip/lib/ respectively). We avoid setting CMAKE_MODULE_PATH
+  # pre-emptively since it made successful generation less likely in our tests!
+  # example: list(APPEND CMAKE_MODULE_PATH "/opt/rocm/cmake"). Users should
+  # also add '/opt/rocm/bin' or '/opt/rocm/hip/bin' to their $PATH env-var.
+
   enable_language(HIP)
   set(CMAKE_HIP_STANDARD_REQUIRED ON)
   set_property(TARGET QuEST PROPERTY HIP_STANDARD 20)
+
+  find_package(HIP REQUIRED)
+  message(STATUS "Found HIP: " ${HIP_VERSION})
   
   target_compile_definitions(QuEST
-    PUBLIC COMPILE_CUDA=1
     PUBLIC COMPILE_CUQUANTUM=0
-    PUBLIC COMPILE_HIP=1
     PUBLIC __HIP_PLATFORM_AMD__
   )
+
+  target_link_libraries(QuEST PRIVATE hip::amdhip64)
 
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+hip")
   endif()
+endif()
+
+if (ENABLE_CUDA OR ENABLE_HIP)
+  target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=1)
+else()
+  target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=0)
 endif()
 
 if (ENABLE_DEPRECATED_API)

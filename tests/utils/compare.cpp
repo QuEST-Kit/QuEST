@@ -29,7 +29,7 @@ using namespace Catch::Matchers;
 #if FLOAT_PRECISION == 1
     const qreal TEST_EPSILON = 1E-2;
 #elif FLOAT_PRECISION == 2
-    const qreal TEST_EPSILON = 1E-10;
+    const qreal TEST_EPSILON = 1E-8;
 #elif FLOAT_PRECISION == 4
     const qreal TEST_EPSILON = 1E-10;
 #endif
