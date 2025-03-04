@@ -190,7 +190,7 @@ jobs:
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
           -DCMAKE_CXX_COMPILER=${{ env.compiler }}
-          -DCMAKE_CXX_FLAGS="${{ env.flags }}"
+          -DCMAKE_CXX_FLAGS=${{ env.flags }}
 
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
