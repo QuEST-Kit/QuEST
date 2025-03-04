@@ -95,6 +95,14 @@ jobs:
     # perform the job
     steps:
 
+      # DEBUG
+      - name: DEBUG
+        run: |
+          mpicuda=${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' }}
+          mpihip=${{  matrix.mpi == 'ON' && matrix.hip  == 'ON' }}
+          echo "$mpicuda"
+          echo "$mpihip"
+
       # free space for big-chungus ROCm compiler
       - name: Free disk space
         if: ${{ matrix.hip == 'ON' }}
