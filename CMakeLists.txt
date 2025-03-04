@@ -281,17 +281,17 @@ endif()
 if (ENABLE_HIP)
 
   # set HIP_PATH to default if not passed to CMake or environment variables
-  if(NOT DEFINED HIP_PATH)
-  if(NOT DEFINED ENV{HIP_PATH})
-    message(WARNING "HIP_PATH was not defined. Using linux default of HIP_PATH=/opt/rocm")
-    set(HIP_PATH "/opt/rocm" CACHE PATH "Path to which HIP has been installed")
-  else()
-    set(HIP_PATH $ENV{HIP_PATH}	CACHE PATH "Path to which HIP has been installed")
-  endif()
-  endif()
+  # if(NOT DEFINED HIP_PATH)
+  # if(NOT DEFINED ENV{HIP_PATH})
+  #   message(WARNING "HIP_PATH was not defined. Using linux default of HIP_PATH=/opt/rocm")
+  #   set(HIP_PATH "/opt/rocm" CACHE PATH "Path to which HIP has been installed")
+  # else()
+  #   set(HIP_PATH $ENV{HIP_PATH}	CACHE PATH "Path to which HIP has been installed")
+  # endif()
+  # endif()
 
   # discover HIP cmake scripts (v6 location given by Martin Hilgeman)
-  list(APPEND CMAKE_MODULE_PATH "${HIP_PATH}/cmake") #######  HIP_PATH=/opt/rocm
+  #list(APPEND CMAKE_MODULE_PATH "${HIP_PATH}/cmake") #######  HIP_PATH=/opt/rocm
   #list(APPEND CMAKE_MODULE_PATH "${HIP_PATH}/lib/cmake/hip") ###  HIP_PATH=/opt/rocm/hip
 
   enable_language(HIP)
