@@ -171,7 +171,7 @@ jobs:
       - name: Disabling LTO + RDC on MPI + HIP, using HIPCC
         if: ${{ matrix.mpi == 'ON' && matrix.hip == 'ON' }}
         run: |
-          echo "flags=\"-fno-lto -fno-gpu-rdc\"" >> $GITHUB_ENV
+          echo "flags='-fno-lto -fno-gpu-rdc'" >> $GITHUB_ENV
           echo "compiler=hipcc" >> $GITHUB_ENV
           export MPICXX=hipcc
 
