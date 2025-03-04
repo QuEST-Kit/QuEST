@@ -41,6 +41,7 @@ jobs:
           -DENABLE_HIP=ON
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
           -DCMAKE_PREFIX_PATH=${{ env.rocm_dir }}
+          -DHIP_ROOT_DIR=${{ env.rocm_dir }}
 
       - name: Compile
         run: cmake --build ${{ env.build_dir }}
