@@ -16,6 +16,7 @@ jobs:
     env:
       build_dir: "build"
       hip_arch: gfx801
+      rocm_dir: /opt/rocm
 
     steps:
       - name: Get QuEST
@@ -39,6 +40,7 @@ jobs:
           -DENABLE_MULTITHREADING=OFF
           -DENABLE_HIP=ON
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
+          -DCMAKE_PREFIX_PATH=${{ env.rocm_dir }}
 
       - name: Compile
         run: cmake --build ${{ env.build_dir }}
