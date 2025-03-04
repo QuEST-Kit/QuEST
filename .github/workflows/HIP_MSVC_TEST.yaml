@@ -16,11 +16,8 @@ jobs:
     runs-on: windows-latest
     steps:
 
-      # free space for big ROCm installer
-      - name: Free disk space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
+      - name: view drives
+        run: Get-PSDrive
 
       - name: Download AMD HIP Compiler
         run: |
