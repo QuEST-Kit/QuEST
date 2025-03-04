@@ -159,22 +159,20 @@ jobs:
           sudo apt install amdgpu-dkms rocm
           echo "${{ env.rocm_path }}" >> $GITHUB_PATH
         
-      # disable LTO with CUDA+MPI (duplicates symbols), and
-      # disable RDC with HIP+MPI (causes vtable fail) and use hipcc
-      - name: Adjusting flags and compiler
+      # OS-agnostic adjustment of flags
+      - name: Adjusting compiler and flags
         run: |
-          mpicuda=${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' }}
-          mpihip=${{  matrix.mpi == 'ON' && matrix.hip  == 'ON' }}
-          compiler=${{ matrix.compiler }}
-          flags=''
-          if [[ "$mpicuda" == "true" ]]; then
-            flags='-fno-lto'
-          elif [[ "$mpihip" == "true" ]]; then
-            flags='-fno-gpu-rdc'
-            compiler=hipcc
-          fi
-          echo "flags=$flags" >> $GITHUB_ENV
-          echo "compiler=$compiler" >> $GITHUB_ENV
+          echo "flags=''" >> $GITHUB_ENV
+          echo "compiler=${{ matrix.compiler }}" >> $GITHUB_ENV
+      - name: Disabling LTO on MPI + CUDA
+        if: ${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' }}
+        run: |
+          echo "flags='-fno-lto'" >> $GITHUB_ENV
+      - name: Disabling RDC on MPI + HIP
+        if: ${{ matrix.mpi == 'ON' && matrix.hip == 'ON' }}
+        run: |
+          echo "flags='-fno-gpu-rdc'" >> $GITHUB_ENV
+          echo "compiler=hipcc"       >> $GITHUB_ENV
 
       # invoke cmake, disabling LTO (it duplicates symbols with CUDA+MPI)
       - name: Configure CMake
@@ -191,8 +189,8 @@ jobs:
           -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
-          -DCMAKE_CXX_FLAGS="${{ env.flags }}"
           -DCMAKE_CXX_COMPILER=${{ env.compiler }}
+          -DCMAKE_CXX_FLAGS="${{ env.flags }}"
 
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
