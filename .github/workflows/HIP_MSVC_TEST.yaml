@@ -27,8 +27,10 @@ jobs:
 
       - name: Download AMD HIP Compiler
         run: Invoke-WebRequest -Uri "https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q4-WinSvr2022-For-HIP.exe" -OutFile "install.exe"
+        shell: pwsh
         working-directory: ${{ env.direc }}
 
       - name: Install AMD HIP Compiler
         run: Start-Process "install.exe" -ArgumentList '-install' -NoNewWindow -Wait
+        shell: pwsh
         working-directory: ${{ env.direc }}
