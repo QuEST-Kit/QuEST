@@ -88,6 +88,11 @@ jobs:
           - hip: ON
             os: windows-latest
 
+          # cannot presently compile HIP + MPI; the linker fails with
+          # "undefined reference to 'vtable for thrust::system::system_error'
+          - hip: ON
+            mpi: ON
+
     # constants
     env:
       build_dir: "build"
@@ -158,24 +163,8 @@ jobs:
           sudo apt update
           sudo apt install amdgpu-dkms rocm
           echo "${{ env.rocm_path }}" >> $GITHUB_PATH
-        
-      # OS-agnostic adjustment of flags
-      - name: Adjusting compiler and flags
-        run: |
-          echo "flags=''" >> $GITHUB_ENV
-          echo "compiler=${{ matrix.compiler }}" >> $GITHUB_ENV
-      - name: Disabling LTO on MPI + CUDA
-        if: ${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' }}
-        run: |
-          echo "flags='-fno-lto'" >> $GITHUB_ENV
-      - name: Disabling LTO + RDC on MPI + HIP, using HIPCC
-        if: ${{ matrix.mpi == 'ON' && matrix.hip == 'ON' }}
-        run: |
-          echo "flags='-fno-lto -fno-gpu-rdc'" >> $GITHUB_ENV
-          echo "compiler=hipcc" >> $GITHUB_ENV
-          export MPICXX=hipcc
 
-      # invoke cmake, disabling LTO (it duplicates symbols with CUDA+MPI)
+      # invoke cmake, disabling LTO (it duplicates symbols with CUDA + MPI)
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
@@ -191,8 +180,8 @@ jobs:
           -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
-          -DCMAKE_CXX_COMPILER=${{ env.compiler }}
-          -DCMAKE_CXX_FLAGS=${{ env.flags }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+          -DCMAKE_CXX_FLAGS=${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' && '-fno-lto' || '' }}
 
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
