@@ -307,7 +307,7 @@ if (ENABLE_HIP)
     PUBLIC __HIP_PLATFORM_AMD__
   )
 
-  target_link_libraries(QuEST PUBLIC HIP::amdhip64)
+  target_link_libraries(QuEST PUBLIC hip::amdhip64)
 
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+hip")

@@ -330,7 +330,7 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
 
         // i = nth local index where ctrls are active and targs form value k
         qindex i = setBits(i0, targs, NumTargs, k); // loop will be unrolled
-        amps[i] = {0, 0}; // zero cu_comp literal
+        amps[i] = getCuQcomp(0, 0);
     
         // force unroll to ensure compile-time cache indices
         #pragma unroll
@@ -391,7 +391,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
 
             // i = nth local index where ctrls are active and targs form value k
             qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
-            amps[i] = {0, 0}; // zero cu_comp literal
+            amps[i] = getCuQcomp(0, 0);
         
             for (qindex l=0; l<numTargAmps; l++) {
                 qindex j = getThreadsNthGlobalArrInd(l, n, cacheStride);
