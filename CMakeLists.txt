@@ -284,7 +284,7 @@ if (ENABLE_HIP)
   # CMAKE_MODULE_PATH to either /opt/rocm/cmake or /opt/rocm/hip/lib/cmake/hip
   # (suitable when shared library libamdhip64.so is located in /opt/rocm/lib/
   #  or /opt/rocm/hip/lib/ respectively). We avoid setting CMAKE_MODULE_PATH
-  # pre-emptively since it make successful generation less likely in our tests!
+  # pre-emptively since it made successful generation less likely in our tests!
   # example: list(APPEND CMAKE_MODULE_PATH "/opt/rocm/cmake")
 
   enable_language(HIP)

@@ -6,10 +6,10 @@ name: HIP compile
 on:
   push:
     branches:
-      - v4
+      - amd-patch
   pull_request:
     branches:
-      - v4
+      - amd-patch
 
 
 jobs:
