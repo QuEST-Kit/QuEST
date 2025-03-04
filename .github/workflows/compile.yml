@@ -138,6 +138,7 @@ jobs:
 
       # obtain ROCm for HIP acceleration
       - name: Install ROCm
+        if: ${{ matrix.hip == 'ON' }}
         run: |
           sudo apt install "linux-headers-$(uname -r)" "linux-modules-extra-$(uname -r)"
           sudo apt install python3-setuptools python3-wheel
