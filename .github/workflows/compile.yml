@@ -182,7 +182,7 @@ jobs:
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
-          -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' && 'OFF' || 'ON' }}
+          -DINTERPROCEDURAL_OPTIMIZATION=${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' && 'OFF' || 'ON' }}
 
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
