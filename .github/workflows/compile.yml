@@ -191,6 +191,8 @@ jobs:
           -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
+          -DGPU_TARGETS=${{ env.hip_arch }}
+          -DAMDGPU_TARGETS=${{ env.hip_arch }}
           -DCMAKE_CXX_COMPILER=${{ env.compiler }}
           -DCMAKE_CXX_FLAGS=${{ env.flags }}
 
