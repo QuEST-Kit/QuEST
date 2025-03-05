@@ -90,6 +90,7 @@ jobs:
 
           # cannot presently compile HIP + MPI; the linker fails with
           # "undefined reference to 'vtable for thrust::system::system_error'
+          # (see failed attempted solutions in PR #554)
           - hip: ON
             mpi: ON
 
