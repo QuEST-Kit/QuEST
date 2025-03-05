@@ -1,0 +1,26 @@
+name: lint
+
+
+on:
+  push:
+    branches:
+      - linter
+  pull_request:
+    branches:
+      - linter
+
+jobs:
+  run-linter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cpp-linter/cpp-linter-action@v2
+        id: linter
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          extensions: 'c,h,cpp,hpp,cu,cuh'
+          thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
+      - name: fail if code stinky
+        if: steps.linter.outputs.checks-failed > 0
+        run: exit 1
