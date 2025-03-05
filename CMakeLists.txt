@@ -294,13 +294,12 @@ if (ENABLE_HIP)
 
   find_package(HIP REQUIRED)
   message(STATUS "Found HIP: " ${HIP_VERSION})
-  
+
   target_compile_definitions(QuEST
     PUBLIC COMPILE_CUQUANTUM=0
-    PUBLIC __HIP_PLATFORM_AMD__
   )
 
-  target_link_libraries(QuEST PRIVATE hip::amdhip64)
+  target_link_libraries(QuEST PRIVATE hip::host)
 
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+hip")
