@@ -168,12 +168,15 @@ jobs:
         if: ${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' }}
         run: |
           echo "flags='-fno-lto'" >> $GITHUB_ENV
-      - name: Disabling LTO + RDC on MPI + HIP, using HIPCC
-        if: ${{ matrix.mpi == 'ON' && matrix.hip == 'ON' }}
+      - name: Using hipcc as base compiler (even MPI or not)
+        if: ${{ matrix.hip == 'ON' }}
         run: |
-          echo "flags='-fno-lto -fno-gpu-rdc'" >> $GITHUB_ENV
           echo "compiler=hipcc" >> $GITHUB_ENV
-          export MPICXX=hipcc
+      # - name: Disabling LTO + RDC on MPI + HIP, using HIPCC
+      #   if: ${{ matrix.mpi == 'ON' && matrix.hip == 'ON' }}
+      #   run: |
+      #     echo "compiler=hipcc" >> $GITHUB_ENV
+      #     export MPICXX=hipcc
 
       # invoke cmake, disabling LTO (it duplicates symbols with CUDA + MPI)
       - name: Configure CMake
