@@ -293,13 +293,14 @@ if (ENABLE_HIP)
   set_property(TARGET QuEST PROPERTY HIP_STANDARD 20)
 
   find_package(HIP REQUIRED)
+  find_package(rocthrust REQUIRED)
+
   message(STATUS "Found HIP: " ${HIP_VERSION})
 
-  target_compile_definitions(QuEST
-    PUBLIC COMPILE_CUQUANTUM=0
-  )
+  target_compile_definitions(QuEST PUBLIC COMPILE_CUQUANTUM=0)
 
   target_link_libraries(QuEST PRIVATE hip::host)
+  target_link_libraries(QuEST PRIVATE roc::rocthrust)
 
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+hip")
