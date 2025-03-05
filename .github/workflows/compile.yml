@@ -88,6 +88,12 @@ jobs:
           - hip: ON
             os: windows-latest
 
+          # cannot presently compile HIP + MPI; the linker fails with
+          # "undefined reference to 'vtable for thrust::system::system_error'
+          # (see failed attempted solutions in PR #554)
+          - hip: ON
+            mpi: ON
+
     # constants
     env:
       build_dir: "build"
@@ -159,25 +165,6 @@ jobs:
           sudo apt install amdgpu-dkms rocm
           echo "${{ env.rocm_path }}" >> $GITHUB_PATH
 
-      # adjust compiler flags (in OS-agnostic fashion)
-      - name: Adjusting compiler and flags
-        run: |
-          echo "flags=''" >> $GITHUB_ENV
-          echo "compiler=${{ matrix.compiler }}" >> $GITHUB_ENV
-      - name: Disabling LTO on MPI + CUDA
-        if: ${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' }}
-        run: |
-          echo "flags='-fno-lto'" >> $GITHUB_ENV
-      - name: Using hipcc as base compiler (even MPI or not)
-        if: ${{ matrix.hip == 'ON' }}
-        run: |
-          echo "compiler=hipcc" >> $GITHUB_ENV
-      # - name: Disabling LTO + RDC on MPI + HIP, using HIPCC
-      #   if: ${{ matrix.mpi == 'ON' && matrix.hip == 'ON' }}
-      #   run: |
-      #     echo "compiler=hipcc" >> $GITHUB_ENV
-      #     export MPICXX=hipcc
-
       # invoke cmake, disabling LTO (it duplicates symbols with CUDA + MPI)
       - name: Configure CMake
         run: >
@@ -194,10 +181,8 @@ jobs:
           -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
-          -DGPU_TARGETS=${{ env.hip_arch }}
-          -DAMDGPU_TARGETS=${{ env.hip_arch }}
-          -DCMAKE_CXX_COMPILER=${{ env.compiler }}
-          -DCMAKE_CXX_FLAGS=${{ env.flags }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+          -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' && 'OFF' || 'ON' }}
 
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
