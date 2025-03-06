@@ -405,7 +405,7 @@ vector<string> getBasisKets(qindex startInd, qindex numInds) {
     vector<string> kets(numInds);
 
     for (qindex i=0; i<numInds; i++)
-        kets[i] = "|" + toStr(i+startInd) + "⟩";
+        kets[i] = std::string("|") + toStr(i+startInd) + std::string("⟩");
 
     return kets;
 }
