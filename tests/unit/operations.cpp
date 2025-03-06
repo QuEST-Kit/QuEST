@@ -645,6 +645,15 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
         vector<int> ctrls = std::get<0>(listpair);
         vector<int> targs = std::get<1>(listpair);
 
+
+
+
+        // DEBUG
+        for (int i=0; i<6; i++)
+            targs[i] = 6 - i - 1;
+
+
+
         // randomise control states (if operation accepts them)
         vector<int> states = getRandomInts(0, 1+1, numCtrls * (Ctrls == anystates));
 
