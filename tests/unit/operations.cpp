@@ -1,5 +1,3 @@
-#define _USE_MATH_DEFINES
-
 #include "quest/include/quest.h"
 
 #include <catch2/catch_test_macros.hpp>
@@ -50,9 +48,10 @@ namespace FixedMatrices {
     qmatrix Y = getPauliMatrix(2);
     qmatrix Z = getPauliMatrix(3);
 
+    qreal PI = 3.14159265358979323846;
     qmatrix T = {
         {1, 0},
-        {0, exp(1_i*M_PI/4)}};
+        {0, exp(1_i * PI/4)}};
 
     qmatrix S = {
         {1, 0},
@@ -397,12 +396,12 @@ auto getRandomRemainingArgs(vector<int> targs) {
         return tuple{ };
 
     if constexpr (Args == scalar) {
-        qreal angle = getRandomReal(-2*M_PI, 2*M_PI);
+        qreal angle = getRandomPhase();
         return tuple{ angle };
     }
 
     if constexpr (Args == axisrots) {
-        qreal angle = getRandomReal(-2*M_PI, 2*M_PI);
+        qreal angle = getRandomPhase();
         qreal x = getRandomReal(-1, 1);
         qreal y = getRandomReal(-1, 1);
         qreal z = getRandomReal(-1, 1);
@@ -427,7 +426,7 @@ auto getRandomRemainingArgs(vector<int> targs) {
 
     if constexpr (Args == pauligad) {
         PauliStr str = getRandomPauliStr(targs);
-        qreal angle = getRandomReal(-2*M_PI, 2*M_PI);
+        qreal angle = getRandomPhase();
         return tuple{ str, angle };
     }
 }

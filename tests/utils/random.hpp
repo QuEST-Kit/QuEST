@@ -18,6 +18,7 @@ void setRandomTestStateSeeds();
 
 int getRandomInt(int min, int maxExcl);
 qreal getRandomReal(qreal min, qreal max);
+qreal getRandomPhase();
 qcomp getRandomComplex();
 
 using vectortriple = tuple<vector<int>,vector<int>,vector<int>>;

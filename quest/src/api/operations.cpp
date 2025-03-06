@@ -4,7 +4,7 @@
  * arbitrary matrices) upon Quregs, which can be
  * statevectors or density matrices
  */
-#define _USE_MATH_DEFINES
+
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 #include "quest/include/operations.h"
@@ -15,6 +15,7 @@
 #include "quest/src/core/randomiser.hpp"
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/constants.hpp"
 
 #include <vector>
 
@@ -1443,7 +1444,7 @@ void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets) {
     for (int n=numTargets-1; n>=0; n--) {
         applyHadamard(qureg, targets[n]);
         for (int m=0; m<n; m++) {
-            qreal arg = M_PI / powerOf2(m+1);
+            qreal arg = const_PI / powerOf2(m+1);
             applyTwoQubitPhaseShift(qureg, targets[n], targets[n-m-1], arg);
         }
     }

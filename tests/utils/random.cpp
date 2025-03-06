@@ -1,4 +1,3 @@
-#define _USE_MATH_DEFINES
 #include "qvector.hpp"
 #include "qmatrix.hpp"
 #include "macros.hpp"
@@ -56,6 +55,14 @@ qreal getRandomReal(qreal min, qreal maxIncl) {
 
     qreal r = rand() / static_cast<qreal>(RAND_MAX);
     return min + r * (maxIncl - min);
+}
+
+
+qreal getRandomPhase() {
+
+    // accuracy of PI does not matter here
+    qreal pi = 3.14159265358979323846;
+    return getRandomReal(-2*pi, 2*pi);
 }
 
 
@@ -313,7 +320,7 @@ qmatrix getRandomDiagonalUnitary(int numQb) {
     qmatrix matr = getZeroMatrix(getPow2(numQb));
 
     for (size_t i=0; i<matr.size(); i++)
-        matr[i][i] = getExpI(getRandomReal(0,4*M_PI));
+        matr[i][i] = getExpI(getRandomPhase());
 
     return matr;
 }
