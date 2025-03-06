@@ -479,7 +479,7 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
 
         // DEBUG
         // fake lower hardware thread count
-        numThreads = 1000;
+        numThreads = 100;
 
         
         // use strictly 2^# threads to maintain precondition of all kernels
