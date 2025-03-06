@@ -20,6 +20,8 @@ cd build
 make
 ```
 
+> Windows or MSVC users should additionally supply `--config Release` during compilation to enable optimisations.
+
 ## QuEST CMake variables
 
 | Variable | (Default) Values | Notes |

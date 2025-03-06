@@ -1,24 +1,35 @@
-Contact: quest@materials.ox.ac.uk
+
+
+Contact: tyson.jones.input@gmail.com
 
 Current team:
-Mr Tyson Jones [developer]
-    HPC
+Dr Tyson Ray Jones [developer]
+    algorithms
+    parallelisation
     architecture
     interface
-    quantum ops
     testing
-    doc
-Dr Balint Koczor [developer]
-    Kraus maps
-    debugging
-Mr Richard Meister [developer]
-    quantum ops
-Prof Simon Benjamin [consultant]
+    documentation
+Dr Oliver Thomson Brown [developer]
+    build
+    patches
+Dr Erich Essmann [developer]
+    build
+    patches
+Dr Ali Rezaei [developer]
+    optimisation prototyping
+Dr Richard Meister [consultant]
+    design
+    patches
+    previous development
+Dr Balint Koczor [consultant]
+    patches
+    previous development
+Prof Simon C. Benjamin [consultant]
     user requirements
-    algorithm prototyping
 
 Past members:
-Ms Anna Brown [developer]
+Dr Ania (Anna) Brown [developer]
     HPC
     build
     quantum ops
@@ -26,11 +37,11 @@ Dr Fergus Cooper [developer]
     continuous integration
 Mr Jacob Wilkins [developer]
     testing
+Dr Mihai Duta [developer]
+    original prototyping
 Dr Ian Bush [consultant]
     software development
     HPC
-Dr Mihai Duta [developer]
-    original prototyping
 
 External contributors:
 Jakub Adamski
