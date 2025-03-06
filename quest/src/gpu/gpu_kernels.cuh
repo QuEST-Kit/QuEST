@@ -275,10 +275,6 @@ __global__ void kernel_statevec_anyCtrlTwoTargDenseMatr_sub(
  */
 
 
-__forceinline__ __device__ qindex getStrideOfGlobalThreadArr() {
-    return gridDim.x * blockDim.x;
-}
-
 __forceinline__ __device__ qindex getThreadsNthGlobalArrInd(qindex n, qindex threadInd, qindex stride) {
     return (n * stride) + threadInd;
 }
@@ -360,8 +356,6 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
 ) {
     GET_THREAD_IND(t, numThreads);
 
-    qindex cacheStride = getStrideOfGlobalThreadArr();
-
     // NumCtrls might be compile-time known, but numTargBits>5 is always unknown/runtime
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
     qindex numTargAmps = powerOf2(numTargBits);
@@ -382,7 +376,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
             qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
 
             // j = index of k-th element of thread's private cache partition
-            qindex j = getThreadsNthGlobalArrInd(k, n, cacheStride);
+            qindex j = getThreadsNthGlobalArrInd(k, n, numThreads);
             globalCache[j] = amps[i];
         }
 
@@ -394,7 +388,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
             amps[i] = getCuQcomp(0, 0);
         
             for (qindex l=0; l<numTargAmps; l++) {
-                qindex j = getThreadsNthGlobalArrInd(l, n, cacheStride);
+                qindex j = getThreadsNthGlobalArrInd(l, n, numThreads);
                 qindex h = getFlattenedMatrInd(k, l, numTargAmps);
 
                 // optionally conjugate matrix elem
