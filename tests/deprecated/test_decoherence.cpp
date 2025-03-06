@@ -354,18 +354,21 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
             
             REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs, NUM_QUBITS, spoofOps, 1), ContainsSubstring("Invalid target qubit") );
         }
-        SECTION( "number of operators" ) {
-            
-            int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
-            int numOps = GENERATE_REF( -1, 0 );
-                        
-            // make valid targets to avoid triggering target validation
-            vector<int> targs(numTargs);
-            for (int i=0; i<numTargs; i++)
-                targs[i] = i;
 
-            REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs.data(), numTargs, spoofOps, numOps), ContainsSubstring("must be given a strictly positive number of matrices") );
-        }
+        // cannot test this with deprecated API, since 'numOps' informs a copy before validation
+
+            // SECTION( "number of operators" ) {
+                
+            //     int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
+            //     int numOps = GENERATE_REF( -1, 0 );
+                            
+            //     // make valid targets to avoid triggering target validation
+            //     vector<int> targs(numTargs);
+            //     for (int i=0; i<numTargs; i++)
+            //         targs[i] = i;
+
+            //     REQUIRE_THROWS_WITH( mixMultiQubitKrausMap(qureg, targs.data(), numTargs, spoofOps, numOps), ContainsSubstring("must be given a strictly positive number of matrices") );
+            // }
 
         // this validation cannot be performed by the deprecation API which copies
         // over all ops arguments without prior checking them as NULL
@@ -442,7 +445,7 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
             }
             
             // make only one invalid
-            ops[GENERATE_REF( range(0,numOps) )].cpuElems[0][0] = -123456789;
+            ops[GENERATE_COPY( 0, numOps - 1)].cpuElems[0][0] = -123456789;
             
             // make valid targets to avoid triggering target validation
             vector<int> targs(numTargs);
@@ -634,7 +637,7 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
                 ops[i] = toComplexMatrix2(matrs[i]);
                 
             // make invalid
-            ops[GENERATE_REF( range(0,numOps) )].real[0][0] = 0;
+            ops[GENERATE_REF( range(0,numOps) )].real[0][0] = 9999;
             REQUIRE_THROWS_WITH( v3_mixKrausMap(qureg, 0, ops.data(), numOps), ContainsSubstring("trace preserving") );
         }
         SECTION( "qubit index" ) {
@@ -830,17 +833,20 @@ TEST_CASE( "mixNonTPMultiQubitKrausMap", "[decoherence]" ) {
             
             REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(qureg, targs, NUM_QUBITS, spoofOps, 1), ContainsSubstring("Invalid target qubit") );
         }
-        SECTION( "number of operators" ) {
-            
-            int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
-            int numOps = GENERATE_REF( -1, 0 ); 
-                        
-            // make valid targets to avoid triggering target validation
-            vector<int> targs(numTargs);
-            for (int i=0; i<numTargs; i++)
-                targs[i] = i;
-            REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(qureg, targs.data(), numTargs, spoofOps, numOps), ContainsSubstring("must be given a strictly positive number of matrices") );
-        }
+
+        // cannot test this with deprecated API, since 'numOps' informs a copy before validation
+
+            // SECTION( "number of operators" ) {
+                
+            //     int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
+            //     int numOps = GENERATE_REF( -1, 0 ); 
+                            
+            //     // make valid targets to avoid triggering target validation
+            //     vector<int> targs(numTargs);
+            //     for (int i=0; i<numTargs; i++)
+            //         targs[i] = i;
+            //     REQUIRE_THROWS_WITH( mixNonTPMultiQubitKrausMap(qureg, targs.data(), numTargs, spoofOps, numOps), ContainsSubstring("must be given a strictly positive number of matrices") );
+            // }
 
         // this validation cannot be performed by the deprecation API which copies
         // over all ops arguments without prior checking them as NULL
@@ -987,12 +993,15 @@ TEST_CASE( "mixNonTPTwoQubitKrausMap", "[decoherence]" ) {
 
         // deprecated v3 API copies ops before v4 validation, so we cannot pass ops=NULL
         ComplexMatrix4 spoofOps[1];
+
+        // cannot test this with deprecated API, since 'numOps' informs a copy before validation
         
-        SECTION( "number of operators" ) {
+            // SECTION( "number of operators" ) {
+                
+            //     int numOps = GENERATE( -1, 0 );
+            //     REQUIRE_THROWS_WITH( mixNonTPTwoQubitKrausMap(qureg, 0,1, spoofOps, numOps), ContainsSubstring("must be given a strictly positive number of matrices") );
+            // }
             
-            int numOps = GENERATE( -1, 0 );
-            REQUIRE_THROWS_WITH( mixNonTPTwoQubitKrausMap(qureg, 0,1, spoofOps, numOps), ContainsSubstring("must be given a strictly positive number of matrices") );
-        }
         SECTION( "target collision" ) {
             
             int target = GENERATE( range(0,NUM_QUBITS) );

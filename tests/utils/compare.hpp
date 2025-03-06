@@ -17,6 +17,9 @@
 using std::vector;
 
 
+bool doScalarsAgree(qcomp a, qcomp b);
+
+
 void REQUIRE_AGREE( Qureg qureg, qvector reference );
 void REQUIRE_AGREE( Qureg qureg, qmatrix reference );
 

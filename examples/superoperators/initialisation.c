@@ -105,6 +105,7 @@ void demo_setSuperOp() {
 
     // array of pointers
     qcomp* ptrArr[1 << (2*2)];
+    d = 1 << (2*2);
     for (int i=0; i<d; i++)
         ptrArr[i] = ptrs[i];
     SuperOp e = createSuperOp(n);

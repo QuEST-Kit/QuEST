@@ -40,24 +40,6 @@ using std::vector;
 
 
 /*
- * ENABLE OPENMP REDUCTION OF qcomp
- * 
- * which is incompatible with MSVC; we have not yet decided
- * how to remedy this - force Windows users who seek multithreading
- * to compile using another compiler? Note we set omp_priv=0 in
- * lieu of omp_priv=omp_orig to workaround a clang + libomp bug
- */
-
-
-#if defined(COMPILE_OPENMP) && !defined(_MSC_VER)
-    #pragma omp declare \
-        reduction(+ : qcomp : omp_out += omp_in ) \
-        initializer( omp_priv = 0 )
-#endif
-
-
-
-/*
  * GETTERS
  */
 
@@ -809,7 +791,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
     // whenever each thread has at least 1 iteration for itself. And of course
     // we serialise both inner and outer loops when qureg multithreading is off.
 
-    if (numOuterIts >= cpu_getCurrentNumThreads() || !qureg.isMultithreaded) {
+    if (!qureg.isMultithreaded || numOuterIts >= cpu_getCurrentNumThreads()) {
     
         // parallel
         #pragma omp parallel for if(qureg.isMultithreaded)
@@ -1846,16 +1828,22 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_calcProbsOfAllMulti
 
 qcomp cpu_statevec_calcInnerProduct_sub(Qureg quregA, Qureg quregB) {
 
-    qcomp prod = 0;
+    // separately reduce real and imag components to make MSVC happy
+    qreal prodRe = 0;
+    qreal prodIm = 0;
 
     // every local amp contributes to the reduction
     qindex numIts = quregA.numAmpsPerNode;
 
-    #pragma omp parallel for reduction(+:prod) if(quregA.isMultithreaded||quregB.isMultithreaded)
-    for (qindex n=0; n<numIts; n++)
-        prod += conj(quregA.cpuAmps[n]) * quregB.cpuAmps[n];
+    #pragma omp parallel for reduction(+:prodRe,prodIm) if(quregA.isMultithreaded||quregB.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+        qcomp term = conj(quregA.cpuAmps[n]) * quregB.cpuAmps[n];
 
-    return prod;
+        prodRe += real(term);
+        prodIm += imag(term);
+    }
+
+    return qcomp(prodRe, prodIm);
 }
 
 
@@ -1877,12 +1865,14 @@ qreal cpu_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB) {
 template <bool Conj>
 qcomp cpu_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
 
-    qcomp fid = 0;
+    // separately reduce real and imag components to make MSVC happy
+    qreal fidRe = 0;
+    qreal fidIm = 0;
 
     // every local density matrix amp contributes to the reduction
     qindex numIts = rho.numAmpsPerNode;
 
-    #pragma omp parallel for reduction(+:fid) if(rho.isMultithreaded)
+    #pragma omp parallel for reduction(+:fidRe,fidIm) if(rho.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = global index of nth local amp of rho
@@ -1904,10 +1894,12 @@ qcomp cpu_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
         } else
             rowAmp = conj(rowAmp);
 
-        fid += rhoAmp * rowAmp * colAmp;
+        qcomp term = rhoAmp * rowAmp * colAmp;
+        fidRe += real(term);
+        fidIm += imag(term);
     }
 
-    return fid;
+    return qcomp(fidRe, fidIm);
 }
 
 
@@ -1944,7 +1936,9 @@ qreal cpu_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 
 qcomp cpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 
-    qcomp value = 0;
+    // separately reduce real and imag components to make MSVC happy
+    qreal valueRe = 0;
+    qreal valueIm = 0;
 
     // each column contributes one amp to sum
     qindex numIts = powerOf2(qureg.logNumColsPerNode);
@@ -1953,7 +1947,7 @@ qcomp cpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 
     qindex targMask = util_getBitMask(targs);
 
-    #pragma omp parallel for reduction(+:value) if(qureg.isMultithreaded)
+    #pragma omp parallel for reduction(+:valueRe,valueIm) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = local index of nth local diagonal element
@@ -1962,17 +1956,21 @@ qcomp cpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
         // r = global row of nth local diagonal, which determines amp sign
         qindex r = n + firstDiagInd;
         int sign = fast_getPlusOrMinusMaskedBitParity(r, targMask);
+        qcomp term = sign * qureg.cpuAmps[i];
 
-        value += sign * qureg.cpuAmps[i];
+        valueRe += real(term);
+        valueIm += imag(term);
     }
 
-    return value;
+    return qcomp(valueRe, valueIm);
 }
 
 
 qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
-    qcomp value = 0;
+    // separately reduce real and imag components to make MSVC happy
+    qreal valueRe = 0;
+    qreal valueIm = 0;
 
     // all local amps appear twice, and each iteration contributes two amps
     qindex numIts = qureg.numAmpsPerNode;
@@ -1980,7 +1978,7 @@ qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int
     qindex maskXY = util_getBitMask(util_getConcatenated(x, y));
     qindex maskYZ = util_getBitMask(util_getConcatenated(y, z));
 
-    #pragma omp parallel for reduction(+:value) if(qureg.isMultithreaded)
+    #pragma omp parallel for reduction(+:valueRe,valueIm) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // j = local index of amp which combines with nth local amp
@@ -1988,13 +1986,14 @@ qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int
 
         // sign = +-1 induced by Y and Z (excludes Y i factors)
         int sign = fast_getPlusOrMinusMaskedBitParity(j, maskYZ);
+        qcomp term = sign * conj(qureg.cpuAmps[n]) * qureg.cpuAmps[j];
 
-        value += sign * conj(qureg.cpuAmps[n]) * qureg.cpuAmps[j];
+        valueRe += real(term);
+        valueIm += imag(term);
     }
 
     // scale by i^numY (because sign above exlcuded i)
-    value *= util_getPowerOfI(y.size());
-    return value;
+    return qcomp(valueRe,valueIm) * util_getPowerOfI(y.size());
 }
 
 
@@ -2008,7 +2007,9 @@ qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int
     // with memory movement optimisations? I doubt so, but check
     // and if not, perform the replacement to reduce code-dupe!
 
-    qcomp value = 0;
+    // separately reduce real and imag components to make MSVC happy
+    qreal valueRe = 0;
+    qreal valueIm = 0;
 
     // all local amps contribute to the sum
     qindex numIts = qureg.numAmpsPerNode;
@@ -2016,7 +2017,7 @@ qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int
     qindex maskXY = util_getBitMask(util_getConcatenated(x, y));
     qindex maskYZ = util_getBitMask(util_getConcatenated(y, z));
 
-    #pragma omp parallel for reduction(+:value) if(qureg.isMultithreaded)
+    #pragma omp parallel for reduction(+:valueRe,valueIm) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // j = buffer index of amp to be multiplied with nth local amp
@@ -2024,19 +2025,22 @@ qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int
 
         // sign = +-1 induced by Y and Z (excludes Y i factors)
         int sign = fast_getPlusOrMinusMaskedBitParity(j, maskYZ);
+        qcomp term = sign * conj(qureg.cpuAmps[n]) * qureg.cpuCommBuffer[j];
 
-        value += sign * conj(qureg.cpuAmps[n]) * qureg.cpuCommBuffer[j];
+        valueRe += real(term);
+        valueIm += imag(term);
     }
 
     // scale by i^numY (because sign above exlcuded i)
-    value *= util_getPowerOfI(y.size());
-    return value;
+    return qcomp(valueRe,valueIm) * util_getPowerOfI(y.size());
 }
 
 
 qcomp cpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
-    qcomp value = 0;
+    // separately reduce real and imag components to make MSVC happy
+    qreal valueRe = 0;
+    qreal valueIm = 0;
 
     // each column contributes one amp to sum
     qindex numIts = powerOf2(qureg.logNumColsPerNode);
@@ -2047,7 +2051,7 @@ qcomp cpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int>
     qindex maskXY = util_getBitMask(util_getConcatenated(x, y));
     qindex maskYZ = util_getBitMask(util_getConcatenated(y, z));
 
-    #pragma omp parallel for reduction(+:value) if(qureg.isMultithreaded)
+    #pragma omp parallel for reduction(+:valueRe,valueIm) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // r = global row of nth local diagonal of (qureg)
@@ -2061,12 +2065,14 @@ qcomp cpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int>
 
         // sign = +-1 induced by Y and Z (excludes Y's imaginary factors)
         int sign = fast_getPlusOrMinusMaskedBitParity(i, maskYZ);
-        value += sign * qureg.cpuAmps[m];
+        qcomp term = sign * qureg.cpuAmps[m];
+
+        valueRe += real(term);
+        valueIm += imag(term);
     }
 
     // scale by i^numY (because sign above exlcuded i)
-    value *= util_getPowerOfI(y.size());
-    return value;
+    return qcomp(valueRe,valueIm) * util_getPowerOfI(y.size());
 }
 
 
@@ -2082,12 +2088,14 @@ qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
     assert_quregAndFullStateDiagMatrHaveSameDistrib(qureg, matr);
     assert_exponentMatchesTemplateParam(exponent, HasPower);
 
-    qcomp value = 0;
+    // separately reduce real and imag components to make MSVC happy
+    qreal valueRe = 0;
+    qreal valueIm = 0;
 
     // every amp, iterated independently, contributes to the expectation value
     qindex numIts = qureg.numAmpsPerNode;
 
-    #pragma omp parallel for reduction(+:value) if(qureg.isMultithreaded)
+    #pragma omp parallel for reduction(+:valueRe,valueIm) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // compile-time decide if applying power to avoid in-loop branching
@@ -2095,10 +2103,13 @@ qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
         if constexpr (HasPower)
             elem = pow(elem, exponent);
         
-        value += elem * std::norm(qureg.cpuAmps[n]);
+        qcomp term = elem * std::norm(qureg.cpuAmps[n]);
+
+        valueRe += real(term);
+        valueIm += imag(term);
     }
 
-    return value;
+    return qcomp(valueRe, valueIm);
 }
 
 
@@ -2108,14 +2119,16 @@ qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
     assert_quregAndFullStateDiagMatrHaveSameDistrib(qureg, matr);
     assert_exponentMatchesTemplateParam(exponent, HasPower);
 
-    qcomp value = 0;
+    // separately reduce real and imag components to make MSVC happy
+    qreal valueRe = 0;
+    qreal valueIm = 0;
 
     // iterate each column, of which one amp (the diagonal) contributes
     qindex numIts = powerOf2(qureg.logNumColsPerNode);
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
     qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
 
-    #pragma omp parallel for reduction(+:value) if(qureg.isMultithreaded)
+    #pragma omp parallel for reduction(+:valueRe,valueIm) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         qcomp elem = matr.cpuElems[n];
@@ -2126,10 +2139,13 @@ qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
 
         // i = local index of nth local diagonal element
         qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
-        value += elem * qureg.cpuAmps[i];
+        qcomp term = elem * qureg.cpuAmps[i];
+
+        valueRe += real(term);
+        valueIm += imag(term);
     }
 
-    return value;
+    return qcomp(valueRe, valueIm);
 }
 
 

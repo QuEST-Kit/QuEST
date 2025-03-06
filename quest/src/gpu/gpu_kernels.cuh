@@ -33,6 +33,13 @@
     #error "A file being compiled somehow included gpu_kernels.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 
+// cuda keyword 'register' is misinterpreted by HIP
+#if defined(__NVCC__)
+    #define REGISTER register
+#elif defined(__HIP__)
+    #define REGISTER
+#endif
+
 
 
 /*
@@ -306,7 +313,7 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
     // spill to local memory). Hence, this _subA() function is not a subroutine 
     // despite some logic being common to non-compile-time _subB(), and hence
     // why the loops below are explicitly compile-time unrolled
-    register cu_qcomp privateCache[1 << NumTargs];
+    REGISTER cu_qcomp privateCache[1 << NumTargs];
 
     // we know NumTargs <= 5, though NumCtrls is permitted anything (including -1)
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
@@ -331,7 +338,7 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
 
         // i = nth local index where ctrls are active and targs form value k
         qindex i = setBits(i0, targs, NumTargs, k); // loop will be unrolled
-        amps[i] = {0, 0}; // zero cu_comp literal
+        amps[i] = getCuQcomp(0, 0);
     
         // force unroll to ensure compile-time cache indices
         #pragma unroll
@@ -346,7 +353,7 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
                 elem.y *= -1;
 
             // thread-private cache is accessed with compile-time known index
-            amps[i] += elem * privateCache[l];
+            amps[i] = amps[i] + (elem * privateCache[l]);
         }
     }
 }
@@ -392,7 +399,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
 
             // i = nth local index where ctrls are active and targs form value k
             qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
-            amps[i] = {0, 0}; // zero cu_comp literal
+            amps[i] = getCuQcomp(0, 0);
         
             for (qindex l=0; l<numTargAmps; l++) {
                 qindex j = getThreadsNthGlobalArrInd(l, n, cacheStride);
@@ -403,7 +410,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
                 if constexpr (ApplyConj)
                     elem.y *= -1;
 
-                amps[i] += elem * globalCache[j];
+                amps[i] = amps[i] + (elem * globalCache[j]);
             }
         }
     }
@@ -445,7 +452,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
     qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
 
     int b = getBit(i, targ);
-    amps[j] *= m1 + b * (m2 - m1);
+    amps[j] = amps[j] * (m1 + b * (m2 - m1));
 }
 
 
@@ -486,7 +493,7 @@ __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
     // k = local elem index
     int k = getTwoBits(i, targ2, targ1);
     cu_qcomp elems[] = {m1, m2, m3, m4};
-    amps[j] *= elems[k];
+    amps[j] = amps[j] * elems[k];
 }
 
 
@@ -536,7 +543,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     if constexpr (ApplyConj)
         elem.y *= -1;
 
-    amps[j] *= elem;
+    amps[j] = amps[j] * elem;
 }
 
 
@@ -574,10 +581,10 @@ __global__ void kernel_densmatr_allTargDiagMatr_sub(
 
         // conj after pow
         term.y *= -1;
-        fac *= term;
+        fac = fac * term;
     }
 
-    amps[n] *= fac;
+    amps[n] = amps[n] * fac;
 }
 
 
@@ -652,8 +659,7 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
     int par = cudaGetBitMaskParity(k & maskYZ);
     cu_qcomp coeff = powI * fast_getPlusOrMinusOne(par);
 
-    amps[i] *= thisAmpFac;
-    amps[i] += otherAmpFac * coeff * buffer[j];
+    amps[i] = (thisAmpFac * amps[i]) + (otherAmpFac * coeff * buffer[j]);
 }
 
 
@@ -681,7 +687,7 @@ __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     int p = cudaGetBitMaskParity(i & targMask);
 
     cu_qcomp facs[] = {fac0, fac1};
-    amps[i] *= facs[p];
+    amps[i] = amps[i] * facs[p];
 }
 
 
@@ -754,8 +760,8 @@ __global__ void kernel_densmatr_oneQubitDephasing_subA(
     qindex i01 = insertTwoBits(n, braQubit, 0, ketQubit, 1);
     qindex i10 = insertTwoBits(n, braQubit, 1, ketQubit, 0);
 
-    amps[i01] *= fac;
-    amps[i10] *= fac;
+    amps[i01] = amps[i01] * fac;
+    amps[i10] = amps[i10] * fac;
 }
 
 
@@ -772,7 +778,7 @@ __global__ void kernel_densmatr_oneQubitDephasing_subB(
 
     // i = nth local index where bra-qubit differs from ket-qubit
     qindex i = insertBit(n, ketQubit, ! braBit);
-    amps[i] *= fac;
+    amps[i] = amps[i] * fac;
 }
 
 
@@ -795,7 +801,7 @@ __global__ void kernel_densmatr_twoQubitDephasing_subB(
     int flag = bitA | bitB;
 
     // by multiplying by 1 or (1 + term)
-    amps[n] *= (term * flag) + 1;
+    amps[n] = amps[n] * ((term * flag) + 1);
 }
 
 
@@ -820,8 +826,8 @@ __global__ void kernel_densmatr_oneQubitDepolarising_subA(
     // modify 4 amps, mixing a pair, and scaling the other
     cu_qcomp amp00 = amps[i00];
     amps[i00] = (facAA * amp00) + (facBB * amps[i11]);
-    amps[i01] *= facAB;
-    amps[i10] *= facAB;
+    amps[i01] = amps[i01] * facAB;
+    amps[i10] = amps[i10] * facAB;
     amps[i11] = (facAA * amps[i11]) + (facBB * amp00);
 }
 
@@ -834,12 +840,11 @@ __global__ void kernel_densmatr_oneQubitDepolarising_subB(
 
     // iAA = nth local index where ket qubit agrees with bra qubit
     qindex iAA = insertBit(n, ketQubit, braBit);
-    amps[iAA] *= facAA;
-    amps[iAA] += facBB * buffer[n];
+    amps[iAA] = (facAA * amps[iAA]) + (facBB * buffer[n]);
 
     // iAB = nth local index where ket qubit disagrees with bra qubit
     qindex iAB = insertBit(n, ketQubit, ! braBit);
-    amps[iAB] *= facAB;
+    amps[iAB] = facAB * amps[iAB];
 }
 
 
@@ -861,7 +866,7 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subA(
     int mod   = !(flag1 & flag2);
 
     // multiply amp by 1 or (1 + c3)
-    amps[n] *= 1 + c3 * mod;
+    amps[n] = amps[n] * (1 + c3 * mod);
 }
 
 
@@ -904,7 +909,7 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subC(
     bool mod   = !(flag1 & flag2);
 
     // scale amp by 1 or (1 + c3)
-    amps[n] *= 1 + c3 * mod;
+    amps[n] = amps[n] * (1 + c3 * mod);
 }
 
 
@@ -940,7 +945,7 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subE(
     bool flag = (same1 & same2);
 
     // scale amp by c1 or (1+c3)
-    amps[n] *=  fac1 * flag + fac0;
+    amps[n] = amps[n] * (fac1 * flag + fac0);
 }
 
 
@@ -954,7 +959,7 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subF(
     qindex i = insertTwoBits(n, ketQb2, braBit2, ketQb1, braBit1);
 
     // mix local amp with received buffer amp
-    amps[i] += c2*buffer[n];
+    amps[i] = amps[i] + (c2 * buffer[n]);
 }
 
 
@@ -1030,12 +1035,12 @@ __global__ void kernel_densmatr_oneQubitDamping_subA(
     qindex i11 = flipBit(i01, braQubit);
     
     // mix both-zero amp with both-one amp (but not vice versa)
-    amps[i00] += prob * amps[i11];
+    amps[i00] = amps[i00] + (prob * amps[i11]);
 
     // scale other amps
-    amps[i01] *= c1;
-    amps[i10] *= c1;
-    amps[i11] *= c2;
+    amps[i01] = amps[i01] * c1;
+    amps[i10] = amps[i10] * c1;
+    amps[i11] = amps[i11] * c2;
 }
 
 
@@ -1052,7 +1057,7 @@ __global__ void kernel_densmatr_oneQubitDamping_subB(
 
     // i = nth local index where qubit=1
     qindex i = insertBit(n, qubit, 1);
-    amps[i] *= c2;
+    amps[i] = amps[i] * c2;
 }
 
 
@@ -1069,7 +1074,7 @@ __global__ void kernel_densmatr_oneQubitDamping_subC(
 
     // i = nth local index where ket differs from bra
     qindex i = insertBit(n, ketQubit, ! braBit);
-    amps[i] *= c1;
+    amps[i] = amps[i] * c1;
 }
 
 
@@ -1081,7 +1086,7 @@ __global__ void kernel_densmatr_oneQubitDamping_subD(
 
     // i = nth local index where ket is 0
     qindex i = insertBit(n, qubit, 0);
-    amps[i] += prob * buffer[n];
+    amps[i] = amps[i] + (prob * buffer[n]);
 }
 
 
@@ -1114,7 +1119,7 @@ __global__ void kernel_densmatr_partialTrace_sub(
     qindex k = insertBits(n, allTargs, numAllTargs, 0); // loop may be unrolled
 
     // each outQureg amp results from summing 2^targs inQureg amps
-    cu_qcomp outAmp = {0, 0}; // zero cu_comp literal
+    cu_qcomp outAmp = getCuQcomp(0, 0);
 
     // loop may be unrolled
     for (qindex j=0; j<numIts; j++) {
@@ -1124,7 +1129,7 @@ __global__ void kernel_densmatr_partialTrace_sub(
         i = setBits(i, ketTargs,  numTargPairs, j); // loops may be unrolled
         i = setBits(i, pairTargs, numTargPairs, j);
 
-        outAmp += ampsIn[i];
+        outAmp = outAmp + ampsIn[i];
     }
 
     ampsOut[n] = outAmp;

@@ -24,7 +24,7 @@
  */
 
 
-#if defined(__NVCC__) || defined(__HIPCC__)
+#if defined(__NVCC__)
 
     // CUDA compilers define '__forceinline__'. We declare
     // all inlined functions as __device__ so they can be
@@ -35,6 +35,12 @@
     // though it constrains us to never use non-kernel
     // compatible code inside an INLINE function.
     #define INLINE __forceinline__ __device__ __host__
+
+#elif defined(__HIP__)
+
+    // HIP has the same syntax as GNU below, but we must also
+    // declare that all INLINE functions can be invoked by kernels
+    #define INLINE inline __attribute__((always_inline)) __device__ __host__
 
 #elif defined(_MSC_VER) || defined(__INTEL_COMPILER)
 

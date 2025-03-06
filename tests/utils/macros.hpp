@@ -11,15 +11,14 @@
 
 
 // TODO:
-// should this even be a macro? eh
+// this shouldn't be a macro; Catch2 can handle fine when
+// we make this a runtime variable (changing some of our
+// GENERATE to GENERATE_COPY). As a macro, changing the
+// qureg size requires recompiling the entire tests, which
+// is certainly annoying for development!
+
 #define NUM_UNIT_QUREG_QUBITS 6
 
-
-
-// TODO:
-// adjust TEST_EPSILON according to QuEST's FLOAT_PRECISION
-
-#define TEST_EPSILON 1E-10
 
 
 /*

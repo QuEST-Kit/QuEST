@@ -18,7 +18,14 @@
 using std::vector;
 
 
-#if COMPILE_OPENMP && !defined(_OPENMP)
+// when COMPILE_OPENMP=1, the compiler expects arguments like -fopenmp
+// which cause _OPENMP to be defined, which we check to ensure that
+// COMPILE_OPENMP has been set correctly. Note that HIP compilers do
+// not define _OPENMP even when parsing OpenMP, and it's possible that
+// the user is compiling all the source code (including this file) with
+// HIP; we tolerate _OPENMP being undefined in that instance
+
+#if COMPILE_OPENMP && !defined(_OPENMP) && !defined(__HIP__)
     #error "Attempted to compile in multithreaded mode without enabling OpenMP in the compiler flags."
 #endif
 

@@ -12,6 +12,7 @@
 #include "qmatrix.hpp"
 #include "linalg.hpp"
 #include "macros.hpp"
+#include "compare.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -158,7 +159,7 @@ bool isApproxUnitary(qmatrix m) {
 
     for (size_t r=0; r<md.size(); r++)
         for (size_t c=0; c<md.size(); c++)
-            if (abs(md[r][c] - (r==c)) > TEST_EPSILON)
+            if (!doScalarsAgree(md[r][c], r==c))
                 return false;
 
     return true;

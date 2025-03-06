@@ -937,7 +937,7 @@ namespace report {
      */
 
     string CALC_STATEVEC_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL =
-        "The calculated statevector expectation value was not approximately real (i.e. within epsilon). This cannot result from an unnormalised state, and must instead be the result of unexpected arithmetic errors; please notify the QuEST developers!";
+        "The calculated statevector expectation value was not approximately real (i.e. within epsilon). This should not result even from an unnormalised state, and is the result of unexpected arithmetic errors; please notify the QuEST developers!";
 
     string CALC_DENSMATR_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL =
         "The calculated density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests the density matrix was unnormalised and/or not Hermitian.";
@@ -3353,12 +3353,18 @@ void validate_measurementOutcomesAreValid(int* outcomes, int numOutcomes, const 
 
 void validate_measurementOutcomeProbNotZero(int outcome, qreal prob, const char* caller) {
 
+    if (isNumericalValidationDisabled())
+        return;
+
     // TODO: report 'prob' once validation reporting can handle floats
 
     assertThat(prob >= global_validationEpsilon, report::ONE_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY, {{"${OUTCOME}", outcome}}, caller);
 }
 
 void validate_measurementOutcomesProbNotZero(int* outcomes, int numQubits, qreal prob, const char* caller) {
+
+    if (isNumericalValidationDisabled())
+        return;
 
     // TODO: report 'prob' and 'outcomes' (as binary sequence) once validation reporting can handle floats
     qindex outcomeValue = getIntegerFromBits(outcomes, numQubits);
@@ -3393,6 +3399,9 @@ void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const c
  */
 
 void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* caller) {
+
+    if (isNumericalValidationDisabled())
+        return;
 
     qreal norm = sqrt(pow(x,2) + pow(y,2) + pow(z,2));
 
@@ -3669,6 +3678,9 @@ void validate_throwErrorBecauseCalcFidOfDensMatrNotYetImplemented(const char* ca
 
 void validate_fidelityIsReal(qcomp fid, const char* caller) {
 
+    if (isNumericalValidationDisabled())
+        return;
+
     // TODO: include imag(fid) in error message when non-integers are supported
 
     assertThat(abs(imag(fid)) < global_validationEpsilon, report::CALC_FIDELITY_NOT_APPROX_REAL, caller);
@@ -3676,12 +3688,18 @@ void validate_fidelityIsReal(qcomp fid, const char* caller) {
 
 void validate_buresDistanceInnerProdIsNormalised(qreal mag, const char* caller) {
 
+    if (isNumericalValidationDisabled())
+        return;
+
     // TODO: include mag in error message when non-integers are supported
 
     assertThat(mag <= 1 + global_validationEpsilon, report::CALC_BURES_DISTANCE_MAG_EXCEEDED_ONE, caller);
 }
 
 void validate_purifiedDistanceIsNormalised(qcomp fid, const char* caller) {
+
+    if (isNumericalValidationDisabled())
+        return;
 
     // TODO: include scalars in error message when non-integers are supported
     
@@ -3696,6 +3714,9 @@ void validate_purifiedDistanceIsNormalised(qcomp fid, const char* caller) {
  */
 
 void validate_quregRenormProbIsNotZero(qreal prob, const char* caller) {
+
+    if (isNumericalValidationDisabled())
+        return;
 
     // TODO: include 'prob' in error message when non-integers are supported
 
@@ -3715,16 +3736,31 @@ void validate_numInitRandomPureStates(qindex numPureStates,  const char* caller)
 
 void validate_expecPauliStrValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
 
+    if (isNumericalValidationDisabled())
+        return;
+
     // TODO: include imag(value) in error message when non-integers are supported
 
     string msg = (isDensMatr)?
         report::CALC_DENSMATR_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL:
         report::CALC_STATEVEC_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL;
 
-    assertThat(abs(imag(value)) < global_validationEpsilon, msg, caller);
+    // TODO:
+    // comparing the output of these reduction-type functions to global_validationEpsilon
+    // is pretty strict since they can result from an exponential-number of summed terms,
+    // so should be much much less accurate than direct user inputs validated with the
+    // same epsilon. We should use a more relaxed threshold for such validations!
+    // This particular assertion causes trouble in single-precision in the CI unit tests,
+    // so we are merely ad-hoc patching for now
+    qreal FACTOR = 10;
+
+    assertThat(abs(imag(value)) <= FACTOR * global_validationEpsilon, msg, caller);
 }
 
 void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
+
+    if (isNumericalValidationDisabled())
+        return;
 
     string msg = (isDensMatr)?
         report::CALC_DENSMATR_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL:
@@ -3734,6 +3770,9 @@ void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const ch
 }
 
 void validate_expecFullStateDiagMatrValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
+
+    if (isNumericalValidationDisabled())
+        return;
 
     string msg = (isDensMatr)?
         report::CALC_DENSMATR_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL:

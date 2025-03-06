@@ -142,6 +142,7 @@ endif()
 option(
   ENABLE_HIP
   "Whether QuEST will be built with support for AMD GPU acceleration. Turned OFF by default."
+  OFF
 )
 message(STATUS "AMD GPU acceleration is turned ${ENABLE_HIP}. Set ENABLE_HIP to modify.")
 
@@ -164,13 +165,6 @@ message(STATUS "Deprecated API support is turned ${ENABLE_DEPRECATED_API}. Set E
 
 # Windows Specific Options
 if(WIN32)
-
-  # Warn MSVC-multithreading not supported
-  if (ENABLE_MULTITHREADING)
-    message(WARNING "Multithreading is currently not supported on Windows and has been disabled")
-  endif()
-
-  set(ENABLE_MULTITHREADING OFF)
   
   # Force MSVC to export all symbols in a shared library, like GCC and clang
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -204,10 +198,17 @@ target_compile_features(QuEST
 
 # Turn on all compiler warnings
 if (MSVC)
-  target_compile_options(QuEST PRIVATE /W4)
+  set(WARNING_FLAG /W4)
 else()
-  target_compile_options(QuEST PRIVATE -Wall)
+  set(WARNING_FLAG -Wall)
 endif()
+
+target_compile_options(QuEST 
+  PRIVATE
+  $<$<COMPILE_LANGUAGE:CXX>:${WARNING_FLAG}>
+  $<$<COMPILE_LANGUAGE:C>:${WARNING_FLAG}>
+)
+
 
 # Set user options
 target_compile_definitions(QuEST PUBLIC FLOAT_PRECISION=${FLOAT_PRECISION})
@@ -264,14 +265,10 @@ if (ENABLE_CUDA)
   set_property(TARGET QuEST PROPERTY CUDA_STANDARD 20)
   
   set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-
-  target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=1)
   
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+cuda")
   endif()
-else()
-  target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=0)
 endif()
 
 if (ENABLE_CUQUANTUM)
@@ -287,20 +284,34 @@ else()
 endif()
 
 if (ENABLE_HIP)
+
+  # if generation fails (hip::amdhip64 not found), users can try setting
+  # CMAKE_MODULE_PATH to '/opt/rocm/cmake' or '/opt/rocm/hip/lib/cmake/hip'
+  # (suitable when shared library libamdhip64.so is located in /opt/rocm/lib/
+  #  or /opt/rocm/hip/lib/ respectively). We avoid setting CMAKE_MODULE_PATH
+  # pre-emptively since it made successful generation less likely in our tests!
+  # example: list(APPEND CMAKE_MODULE_PATH "/opt/rocm/cmake"). Users should
+  # also add '/opt/rocm/bin' or '/opt/rocm/hip/bin' to their $PATH env-var.
+
   enable_language(HIP)
   set(CMAKE_HIP_STANDARD_REQUIRED ON)
   set_property(TARGET QuEST PROPERTY HIP_STANDARD 20)
-  
-  target_compile_definitions(QuEST
-    PUBLIC COMPILE_CUDA=1
-    PUBLIC COMPILE_CUQUANTUM=0
-    PUBLIC COMPILE_HIP=1
-    PUBLIC __HIP_PLATFORM_AMD__
-  )
+
+  find_package(HIP REQUIRED)
+  message(STATUS "Found HIP: " ${HIP_VERSION})
+
+  target_compile_definitions(QuEST PUBLIC COMPILE_CUQUANTUM=0)
+  target_link_libraries(QuEST PRIVATE hip::host)
 
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+hip")
   endif()
+endif()
+
+if (ENABLE_CUDA OR ENABLE_HIP)
+  target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=1)
+else()
+  target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=0)
 endif()
 
 if (ENABLE_DEPRECATED_API)

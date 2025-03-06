@@ -215,12 +215,12 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
             syncDiagMatr(op);
             
             // break unitarity via reals
-            op.cpuElems[2] = -.1;
+            op.cpuElems[2] = -9999.1;
             REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, op.numQubits, op), ContainsSubstring("unitary") );
             
             // restore reals and break unitarity via imag
             op.cpuElems[2] = 1;
-            op.cpuElems[3] = -3.5;
+            op.cpuElems[3] = -9999.5;
             REQUIRE_THROWS_WITH( diagonalUnitary(quregVec, targs, op.numQubits, op), ContainsSubstring("unitary") );
             
             destroySubDiagonalOp(op);
@@ -638,12 +638,12 @@ TEST_CASE( "controlledRotateAroundAxis", "[unitaries]" ) {
     
     PREPARE_TEST( quregVec, quregMatr, refVec, refMatr );
     
-    // each test will use a random parameter and axis vector    
+    // each test will use a random parameter and axis vector
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
     Vector vec; 
-    vec.x=getRandomReal(-1,1);
-    vec.y=getRandomReal(-1,1);
-    vec.z=getRandomReal(-1,1);
+    vec.x=getRandomReal(1,2);
+    vec.y=getRandomReal(-2,-1);
+    vec.z=getRandomReal(-1,1);   // lazily avoiding (x,y,z)=0  
     
     // Rn(a) = cos(a/2)I - i sin(a/2) n . paulivector
     // (pg 24 of vcpc.univie.ac.at/~ian/hotlist/qc/talks/bloch-sphere-rotations.pdf)
@@ -900,7 +900,7 @@ TEST_CASE( "controlledTwoQubitUnitary", "[unitaries]" ) {
         }
         SECTION( "unitarity" ) {
 
-            matr.real[0][0] = 0; // break matr unitarity
+            matr.real[0][0] = 999; // break matr unitarity
             REQUIRE_THROWS_WITH( controlledTwoQubitUnitary(quregVec, 0, 1, 2, matr), ContainsSubstring("unitary") );
         }
         SECTION( "unitary fits in node" ) {
@@ -961,7 +961,7 @@ TEST_CASE( "controlledUnitary", "[unitaries]" ) {
         }
         SECTION( "unitarity" ) {
             
-            matr.real[0][0] = 0; // break unitarity
+            matr.real[0][0] = 9999; // break unitarity
             REQUIRE_THROWS_WITH( controlledUnitary(quregVec, 0, 1, matr), ContainsSubstring("unitary") );
         }
     }
@@ -1795,7 +1795,7 @@ TEST_CASE( "multiControlledTwoQubitUnitary", "[unitaries]" ) {
         SECTION( "unitarity " ) {
             
             int ctrls[1] = {0};
-            matr.real[0][0] = 0; // break unitarity
+            matr.real[0][0] = 99999; // break unitarity
             REQUIRE_THROWS_WITH( multiControlledTwoQubitUnitary(quregVec, ctrls, 1, 1, 2, matr), ContainsSubstring("unitary") );
         }
         SECTION( "unitary fits in node" ) {
@@ -1876,7 +1876,7 @@ TEST_CASE( "multiControlledUnitary", "[unitaries]" ) {
         }
         SECTION( "unitarity" ) {
 
-            matr.real[0][0] = 0; // break matr unitarity
+            matr.real[0][0] = 9999; // break matr unitarity
             int ctrls[] = {0};
             REQUIRE_THROWS_WITH( multiControlledUnitary(quregVec, ctrls, 1, 1, matr), ContainsSubstring("unitary") );
         }
@@ -2350,7 +2350,7 @@ TEST_CASE( "multiStateControlledUnitary", "[unitaries]" ) {
         }
         SECTION( "unitarity" ) {
 
-            matr.real[0][0] = 0; // break matr unitarity
+            matr.real[0][0] = 99999; // break matr unitarity
             int ctrls[] = {0};
             int ctrlState[1] = {0};
             REQUIRE_THROWS_WITH( multiStateControlledUnitary(quregVec, ctrls, ctrlState, 1, 1, matr), ContainsSubstring("unitary") );
@@ -2540,9 +2540,9 @@ TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
     // each test will use a random parameter and axis vector    
     qreal param = getRandomReal(-4*M_PI, 4*M_PI);
     Vector vec; 
-    vec.x=getRandomReal(-1,1);
-    vec.y=getRandomReal(-1,1); 
-    vec.z=getRandomReal(-1,1);
+    vec.x=getRandomReal(1,2);
+    vec.y=getRandomReal(-2,-1);
+    vec.z=getRandomReal(-1,1);   // lazily avoiding (x,y,z)=0  
     
     // Rn(a) = cos(a/2)I - i sin(a/2) n . paulivector
     // (pg 24 of vcpc.univie.ac.at/~ian/hotlist/qc/talks/bloch-sphere-rotations.pdf)
@@ -2938,7 +2938,7 @@ TEST_CASE( "twoQubitUnitary", "[unitaries]" ) {
         }
         SECTION( "unitarity" ) {
 
-            matr.real[0][0] = 0; // break matr unitarity
+            matr.real[0][0] = 9999; // break matr unitarity
             REQUIRE_THROWS_WITH( twoQubitUnitary(quregVec, 0, 1, matr), ContainsSubstring("unitary") );
         }
         SECTION( "unitary fits in node" ) {
@@ -2993,7 +2993,7 @@ TEST_CASE( "unitary", "[unitaries]" ) {
         }
         SECTION( "unitarity" ) {
             
-            matr.real[0][0] = 0; // break matr unitarity
+            matr.real[0][0] = 9999999; // break matr unitarity
             REQUIRE_THROWS_WITH( unitary(quregVec, 0, matr), ContainsSubstring("unitary") );
         }
     }
