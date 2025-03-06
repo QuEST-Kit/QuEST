@@ -387,6 +387,13 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_anyCtrlTwoTargDense
  */
 
 
+
+// DEBUG
+#include <iostream>
+
+
+
+
 template <int NumCtrls, int NumTargs, bool ApplyConj>
 void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
 
@@ -482,6 +489,14 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
 
         // expand the cache if necessary
         qindex numKernelInvocations = numBlocks * NUM_THREADS_PER_BLOCK;
+
+
+        std::cout << "numTargs=" << targs.size() << ", numCtrls=" << ctrls.size() << ", numBatches=" << numBatches << std::endl;
+        std::cout << "maxThrds=" << gpu_getMaxNumConcurrentThreads() << ", numThreads=" << numThreads << ", numBatchesPerThread" << numBatchesPerThread;
+        std::cout << << ", nThrdsPerBlock=" << NUM_THREADS_PER_BLOCK << ", numBlocks=" << numBlocks << ", numKernelInvocs=" << numKernelInvocations << std::endl;
+        std::cout << "cachesize=" << (powerOf2(targs.size()) * numKernelInvocations) " * B" << std::endl;
+
+
         qcomp* cache = gpu_getCacheOfSize(powerOf2(targs.size()), numKernelInvocations);
 
         kernel_statevec_anyCtrlManyTargDenseMatr <NumCtrls, ApplyConj> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
