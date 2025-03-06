@@ -483,8 +483,12 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
         if (numThreads > numBatches)
             numThreads = numBatches;
 
-        // DEBUG - allocate 1 thread per batch (ememory wasteful)
-        numThreads = numBatches;
+
+
+
+
+
+
         // evenly distribute the batches between threads, and the threads unevenly between blocks
         qindex numBatchesPerThread = numBatches / numThreads; // divides evenly
         qindex numBlocks = getNumBlocks(numThreads);
