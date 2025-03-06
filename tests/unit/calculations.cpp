@@ -68,8 +68,9 @@ TEST_CASE( "calcExpecPauliStr", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
-        int numTargs = GENERATE_COPY( range(1,NUM_UNIT_QUREG_QUBITS+1) );
-        auto targets = GENERATE_COPY( sublists(range(0,NUM_UNIT_QUREG_QUBITS), numTargs) );
+        int numQubits = getNumCachedQubits();
+        int numTargs = GENERATE_COPY( range(1,numQubits+1) );
+        auto targets = GENERATE_COPY( sublists(range(0,numQubits), numTargs) );
 
         GENERATE( range(0,10) );
         PauliStr str = getRandomPauliStr(targets);
@@ -89,10 +90,11 @@ TEST_CASE( "calcExpecPauliStrSum", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
-        int numTerms = GENERATE( 1, NUM_UNIT_QUREG_QUBITS, getPow2(2*NUM_UNIT_QUREG_QUBITS) );
+        int numQubits = getNumCachedQubits();
+        int numTerms = GENERATE_COPY( 1, numQubits, getPow2(2*numQubits) );
 
         GENERATE( range(0,100) );
-        PauliStrSum sum = createRandomPauliStrSum(NUM_UNIT_QUREG_QUBITS, numTerms);
+        PauliStrSum sum = createRandomPauliStrSum(numQubits, numTerms);
 
         TEST_ALL_QUREGS(
             qureg, calcExpecPauliStrSum(qureg, sum),  
@@ -112,9 +114,10 @@ TEST_CASE( "calcExpecNonHermitianPauliStrSum", TEST_CATEGORY ) {
     SECTION( LABEL_CORRECTNESS ) {
 
         GENERATE( range(0,100) );
-        int numTerms = GENERATE( 1, NUM_UNIT_QUREG_QUBITS, getPow2(2*NUM_UNIT_QUREG_QUBITS) );
+        int numQubits = getNumCachedQubits();
+        int numTerms = GENERATE_COPY( 1, numQubits, getPow2(2*numQubits) );
 
-        PauliStrSum sum = createRandomNonHermitianPauliStrSum(NUM_UNIT_QUREG_QUBITS, numTerms);
+        PauliStrSum sum = createRandomNonHermitianPauliStrSum(numQubits, numTerms);
 
         TEST_ALL_QUREGS(
             qureg, calcExpecNonHermitianPauliStrSum(qureg, sum),  
@@ -133,7 +136,7 @@ TEST_CASE( "calcProbOfBasisState", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
-        qindex index = GENERATE( range(0, 1<<NUM_UNIT_QUREG_QUBITS) );
+        qindex index = GENERATE( range(0, 1 << getNumCachedQubits()) );
 
         TEST_ALL_QUREGS(
             qureg, calcProbOfBasisState(qureg, index),  
@@ -150,7 +153,7 @@ TEST_CASE( "calcProbOfQubitOutcome", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
-        int target = GENERATE( range(0,NUM_UNIT_QUREG_QUBITS) );
+        int target = GENERATE( range(0, getNumCachedQubits()) );
         int outcome = GENERATE( 0, 1 );
 
         TEST_ALL_QUREGS(
@@ -168,8 +171,9 @@ TEST_CASE( "calcProbOfMultiQubitOutcome", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
-        int numTargs = GENERATE( range(1,NUM_UNIT_QUREG_QUBITS+1) );
-        auto targets = GENERATE_COPY( sublists(range(0,NUM_UNIT_QUREG_QUBITS), numTargs) );
+        int numQubits = getNumCachedQubits();
+        int numTargs = GENERATE_COPY( range(1, numQubits+1) );
+        auto targets = GENERATE_COPY( sublists(range(0,numQubits), numTargs) );
         auto outcomes = getRandomInts(0, 1+1, numTargs);
 
         TEST_ALL_QUREGS(
@@ -187,8 +191,9 @@ TEST_CASE( "calcProbsOfAllMultiQubitOutcomes", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
-        int numTargs = GENERATE( range(1,NUM_UNIT_QUREG_QUBITS+1) );
-        auto targets = GENERATE_COPY( sublists(range(0,NUM_UNIT_QUREG_QUBITS), numTargs) );
+        int numQubits = getNumCachedQubits();
+        int numTargs = GENERATE_COPY( range(1,numQubits+1) );
+        auto targets = GENERATE_COPY( sublists(range(0,numQubits), numTargs) );
 
         auto apiFunc = [&](Qureg qureg) { 
             vector<qreal> out(getPow2(numTargs));
@@ -241,15 +246,15 @@ TEST_CASE( "calcPurity", TEST_CATEGORY ) {
 
 
 
-int getMaxNumTracedQubits() {
+int getMaxNumTracedQubits(int numQubits) {
 
     // cannot reduce all qubits, nor so many that the final qureg is
     // illegally distributed (which we enforce even upon the testsed
     // non-distributed Quregs for simplicity)
 
     return std::min(
-        NUM_UNIT_QUREG_QUBITS - 1,
-        NUM_UNIT_QUREG_QUBITS - getLog2(getQuESTEnv().numNodes));
+        numQubits - 1,
+        numQubits - getLog2(getQuESTEnv().numNodes));
 }
 
 TEST_CASE( "calcPartialTrace", TEST_CATEGORY ) {
@@ -258,9 +263,10 @@ TEST_CASE( "calcPartialTrace", TEST_CATEGORY ) {
 
         SECTION( LABEL_DENSMATR ) {
 
-            int maxNumTargs = getMaxNumTracedQubits();
+            int numQubits = getNumCachedQubits();
+            int maxNumTargs = getMaxNumTracedQubits(numQubits);
             int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
-            auto targets = GENERATE_COPY( sublists(range(0,NUM_UNIT_QUREG_QUBITS), numTargs) );
+            auto targets = GENERATE_COPY( sublists(range(0,numQubits), numTargs) );
 
             auto apiFunc = [&](Qureg qureg) { return calcPartialTrace(qureg, targets.data(), numTargs); };
             auto refFunc = [&](qmatrix ref) { return getPartialTrace(ref, targets); };
@@ -280,12 +286,13 @@ TEST_CASE( "calcReducedDensityMatrix", TEST_CATEGORY ) {
 
         SECTION( LABEL_DENSMATR ) {
 
-            int maxNumTraced = getMaxNumTracedQubits();
-            int minNumRetained = NUM_UNIT_QUREG_QUBITS - maxNumTraced;
-            int maxNumRetained = NUM_UNIT_QUREG_QUBITS - 1;
+            int numQubits = getNumCachedQubits();
+            int maxNumTraced = getMaxNumTracedQubits(numQubits);
+            int minNumRetained = numQubits - maxNumTraced;
+            int maxNumRetained = numQubits - 1;
             int numRetained = GENERATE_COPY( range(minNumRetained, maxNumRetained+1) );
-            auto retains = GENERATE_COPY( sublists(range(0,NUM_UNIT_QUREG_QUBITS), numRetained) );
-            auto targets = getComplement(getRange(NUM_UNIT_QUREG_QUBITS), retains);
+            auto retains = GENERATE_COPY( sublists(range(0,numQubits), numRetained) );
+            auto targets = getComplement(getRange(numQubits), retains);
 
             auto apiFunc = [&](Qureg qureg) { return calcReducedDensityMatrix(qureg, retains.data(), numRetained); };
             auto refFunc = [&](qmatrix ref) { return getPartialTrace(ref, targets); };

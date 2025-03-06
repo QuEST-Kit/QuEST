@@ -497,7 +497,7 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
         std::cout << "maxThrds=" << gpu_getMaxNumConcurrentThreads() << ", numThreads=" << numThreads << ", numBatchesPerThread=" << numBatchesPerThread;
         std::cout << ", nThrdsPerBlock=" << NUM_THREADS_PER_BLOCK << ", numBlocks=" << numBlocks << ", numKernelInvocs=" << numKernelInvocations << std::endl;
         std::cout << "cachesize=" << (powerOf2(targs.size()) * numKernelInvocations) << " * B" << std::endl;
-
+        std::cout << std::endl;
 
         qcomp* cache = gpu_getCacheOfSize(powerOf2(targs.size()), numKernelInvocations);
 
