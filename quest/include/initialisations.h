@@ -1,5 +1,10 @@
 /** @file
- * API signatures for initialisaing Qureg states.
+ * API signatures for initialising Quregs into 
+ * particular states. Note when a Qureg is GPU-
+ * accelerated, these functions only update the
+ * state in GPU memory; the CPU amps are unchanged.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef INITIALISATIONS_H

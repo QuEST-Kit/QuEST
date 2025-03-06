@@ -1,6 +1,8 @@
 /** @file
  * API signatures for calculating properties of quantum states,
- * such as probabilities and expectation values.
+ * such as probabilities, expectation values and partial traces.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef CALCULATIONS_H

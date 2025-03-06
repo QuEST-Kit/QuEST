@@ -1,10 +1,18 @@
 /** @file
  * Custom CUDA kernels invoked by gpu_subroutines.cpp, usually only necessary 
  * when there is no equivalent utility in Thrust (or cuQuantum, when it is
- * targeted). This file is only ever included when COMPILE_CUDA=1 
- * so it can safely invoke CUDA signatures without guards.
- * Some kernels are templated to compile-time optimise their bitwise
- * and indexing logic depending on the number of control qubits.
+ * targeted). 
+ * 
+ * This file is only ever included when COMPILE_CUDA=1 so it can safely invoke 
+ * CUDA signatures without guards. Some kernels are templated to compile-time 
+ * optimise their bitwise and indexing logic depending on the number of qubits.
+ * This file is a header since only ever included by gpu_subroutines.cpp.
+ * 
+ * When compiling for AMD GPUs, the CUDA symbols invoked herein are
+ * mapped to HIP symbols by cuda_to_hip.h 
+ * 
+ * @author Tyson Jones
+ * @author Ania (Anna) Brown (developed QuEST v1 logic)
  */
 
 #ifndef GPU_KERNELS_HPP

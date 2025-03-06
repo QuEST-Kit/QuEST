@@ -9,6 +9,13 @@
  * since the latter may lead to sub-optimal memory access (e.g. non-coalesced).
  * Alas, some functors are too complicated (e.g. they access multiple non-contiguous
  * amps per natural iteration) and fall-back to binding the GPU memory.
+ * 
+ * This file is a (CUDA) header since only ever included by gpu_subroutines.cpp.
+ * 
+ * When compiling for AMD GPUs, the Thrust and CUDA symbols invoked herein are
+ * mapped to RocmThrust and HIP symbols by cuda_to_hip.h.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef GPU_THRUST_HPP

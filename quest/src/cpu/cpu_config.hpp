@@ -1,5 +1,8 @@
 /** @file
- * Utility signatures for querying CPU hardware.
+ * Utility signatures for querying the CPU multithreadng
+ * configuration, and allocating and copying RAM data.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef CPU_CONFIG_HPP

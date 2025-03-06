@@ -1,20 +1,22 @@
-#include "quest.h"
+/** @file
+ * Examples of using matrix reporters, specifically
+ * reportCompMatr, reportDiagMatr, reportFullStateDiagMatr,
+ * in C11. We exclude reporting of fixed-size matrices (e.g.
+ * CompMatr1) which is almost exactly the same as shown here.
+ * This example is most interested when run distributed over
+ * up to 64 nodes, spoofed using mpirun --oversubscribe.
+ * Note MSVC's C11 (which is already weird) doesn't support 
+ * assigning any non-complex literal to complex variables nor 
+ * any complex arithmetic operators, so it doesn't get to play 
+ * with the other children.
+ * 
+ * @author Tyson Jones
+*/
 
+#include "quest.h"
 #include <stdio.h>
 
-
-
-// MSVC's C11 (which is already weird) doesn't support
-// assigning any non-complex literal to complex variables
-// nor any complex arithmetic operators, so it doesn't
-// get to play with the other children.
 #if !defined(_MSC_VER)
-
-
-
-/*
- * This demo is most interesting when run distributed with up to 64 nodes
- */
 
 
 

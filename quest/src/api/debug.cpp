@@ -1,6 +1,9 @@
 /** @file
- * API definitions for debugging QuEST behaviour, or controlling
- * input validation.
+ * API definitions for debugging QuEST behaviour, 
+ * controlling input validation, changing reporter
+ * parameters or seeding random generation.
+ * 
+ * @author Tyson Jones
  */
 
 #include "quest/include/types.h"

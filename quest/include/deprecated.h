@@ -3,7 +3,14 @@
  * work as expected, but issue a user-toggleable warning during 
  * compilation. The deprecated functions are necessarily instantiated
  * here as macros so that they are only resolved (and the compiler
- * warnings therein triggered) when a user actually calls them.
+ * warnings therein triggered) when a user actually calls them. Note
+ * that uses should NOT dely upon these, but instead use them to ease
+ * the process of refactoring v3-compatible QuEST code to v4. Further,
+ * they do not enable every v3 function signatures to compile - some 
+ * manual modification of the v3 QuEST program will be required, as 
+ * attemptedly reported by this header during compilation.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef DEPRECATED_H
@@ -390,6 +397,10 @@ typedef enum pauliOpType _NoWarnPauliOpType;
     _ERROR_FUNC_REMOVED("getStaticComplexMatrixN()")
 
 
+#define reportState(qureg) \
+    _ERROR_FUNC_REMOVED("reportState(qureg)", "reportQuregToFile(qureg, char* fn)")
+
+
 
 /*
  * FUNCTIONS WITH REPLACEMENTS WHICH CANNOT BE AUTOMATICALLY CALLED
@@ -432,10 +443,6 @@ typedef enum pauliOpType _NoWarnPauliOpType;
     _ERROR_FUNC_RENAMED( \
         "setDensityAmps(Qureg, qindex startRow, qindex startCol, qreal* flatAmpsRe, qreal* flatAmpsIm, qindex numFlatAmps)", \
         "setDensityQuregAmps(Qureg, qindex startRow, qindex startCol, qcomp** amps, qindex numRows, qindex numCols)")
-
-
-#define reportState(qureg) \
-    _ERROR_FUNC_RENAMED("reportState(qureg)", "reportQuregToFile(qureg, char* fn)")
 
 
 #define getQuESTSeeds(...) \

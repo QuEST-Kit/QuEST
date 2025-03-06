@@ -1,6 +1,8 @@
 /** @file
- * API definitions for creating and managing Quregs, and automatically
- * choosing their deployment modes.
+ * API definitions for creating and managing Quregs, 
+ * and automatically choosing their deployment modes.
+ * 
+ * @author Tyson Jones
  */
 
 #include "quest/include/qureg.h"
@@ -18,8 +20,6 @@
 #include "quest/src/comm/comm_routines.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
-
-#include "quest/src/core/errors.hpp" // only needed for function-not-implemented error
 
 #include <string>
 
@@ -376,13 +376,6 @@ void reportQureg(Qureg qureg) {
 
     print_header(qureg, localMem);
     print_elems(qureg);
-}
-
-
-void reportQuregToFile(Qureg qureg, char* fn) {
-
-    // TODO
-    error_functionNotImplemented(__func__);
 }
 
 

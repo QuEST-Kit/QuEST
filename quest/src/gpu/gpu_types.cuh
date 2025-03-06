@@ -1,11 +1,14 @@
 /** @file
- * CUDA-compatible complex types. This file is only ever included
- * when COMPILE_CUDA=1 so it can safely invoke CUDA
- * signatures without guards. This is safe to re-include by
- * multiple files because typedef redefinition is legal in C++,
- * and all functions herein are inline. Furthermore, since it
- * is only ever parsed by nvcc, the __host__ symbols are safely
- * processed by the cuquantum backend.
+ * CUDA and HIP-compatible complex types. This file is only ever included
+ * when COMPILE_CUDA=1 so it can safely invoke CUDA signatures without guards. 
+ * 
+ * This header is safe to re-include by multiple files because typedef 
+ * redefinition is legal in C++, and all functions herein are inline. 
+ * Furthermore, since it is only ever parsed by nvcc, the __host__ symbols 
+ * are safely processed by other nvcc-only GPU files, like the cuquantum backend.
+ * 
+ * @author Tyson Jones
+ * @author Oliver Brown (patched HIP arithmetic overloads)
  */
 
 #ifndef GPU_TYPES_HPP

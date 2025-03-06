@@ -1,5 +1,9 @@
 /** @file
- * API signatures for managing QuESTEnv instances.
+ * API signatures for managing the QuEST
+ * execution environment.
+ * 
+ * @author Tyson Jones
+ * @author Richard Meister (aided in design)
  */
 
 #ifndef ENVIRONMENT_H

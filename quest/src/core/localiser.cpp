@@ -5,7 +5,10 @@
  * the necessary communication, before finally calling the 
  * embarrassingly parallel subroutines in accelerator.cpp. This is
  * done agnostically of whether amplitudes of the Qureg are being
- * stored in RAM (CPU) or VRAM (GPU).
+ * stored in RAM (CPU) or VRAM (GPU). The bespoke per-operator logic
+ * herein is what makes QuEST v4 truly unique among simulators!
+ * 
+ * @author Tyson Jones
  */
 
 #include "quest/include/qureg.h"
@@ -639,7 +642,11 @@ void localiser_densmatr_initPureState(Qureg qureg, Qureg pure) {
 
     // we sneakily re-use the above mixing functions, since the
     // superfluous flops (multiplication of existing qureg amps
-    // with zero) are completely eclipsed by the memory move costs
+    // with zero) are completely eclipsed by the memory move costs.
+    // note however we forego the chance to perform some minor
+    // numerical optimisations, like setting the diagonals to
+    // strictly real (true regardless of qureg normalisation)
+
     qreal quregProb = 0;
     qreal pureProb = 1;
     mixDensityMatrixWithStatevector(quregProb, qureg, pureProb, pure);

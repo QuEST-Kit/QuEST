@@ -1,7 +1,10 @@
 /** @file
  * Functions for generating random numbers consistent
  * between distributed nodes, used for emulating
- * quantum measurements
+ * quantum measurements and randomly initialising Quregs.
+ * 
+ * @author Tyson Jones
+ * @author Balint Koczor (patched v3 MSVC seeding)
  */
 
 #include "quest/include/types.h"

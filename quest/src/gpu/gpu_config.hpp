@@ -1,7 +1,12 @@
 /** @file
- * Utility functions for querying GPU hardware. Note this header is included by
- * /core/ and parsed by non-CUDA compilers, so it must not contain any CUDA-specific
- * signatures.
+ * Utility signatures for querying GPU hardware,
+ * and allocating and copying GPU VRAM data.
+ * 
+ * Note that this header is included by /core/ and
+ * parsed by non-CUDA compilers, so must never contain
+ * any CUDA-specific signatures
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef GPU_CONFIG_HPP
@@ -11,8 +16,6 @@
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 #include "quest/include/channels.h"
-
-#include <cstdlib>
 
 
 

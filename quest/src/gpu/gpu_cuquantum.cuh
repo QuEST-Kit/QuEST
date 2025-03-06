@@ -1,10 +1,16 @@
 /** @file
- * Subroutines which invoke cuQuantum. This file is only ever included
- * when COMPILE_CUQUANTUM=1 and COMPILE_CUDA=1 so it can safely invoke 
- * CUDA signatures without guards. Note that many of the statevector
- * functions herein will be re-leveraged by QuEST's density matrix
- * simulation, so it important we do not pass Qureg.numQubits to
- * the cuStateVec API, and instead pass qureg.logNumAmpsPerNode
+ * Subroutines which invoke cuStateVec, which are alternatives to the
+ * kernels defined in gpu_kernels.cuh, as invoked by gpu_subroutines.cpp
+ * 
+ * This file is only ever included when COMPILE_CUQUANTUM=1 and COMPILE_CUDA=1
+ * so it can safely invoke CUDA signatures without guards. Note that many of 
+ * the statevector functions herein will be re-leveraged by QuEST's density
+ * matrix simulation, so it important we do not pass Qureg.numQubits to the 
+ * cuStateVec API, and instead pass qureg.logNumAmpsPerNode. 
+ * 
+ * This file is a (CUDA) header since only ever included by gpu_subroutines.cpp.
+ * 
+ * @author Tyson Jones
  */
 
 

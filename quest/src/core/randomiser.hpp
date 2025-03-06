@@ -1,7 +1,9 @@
 /** @file
  * Functions for generating random numbers consistent
  * between distributed nodes, used for emulating
- * quantum measurements
+ * quantum measurements and randomly initialising Quregs.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef RANDOMISER_HPP

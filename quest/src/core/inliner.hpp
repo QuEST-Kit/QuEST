@@ -5,6 +5,9 @@
  * compiler agnostic way. Inlined functions may be called
  * invoked by OpenMP threads, or CUDA kernels. They never
  * cause symbol duplication when multiply-imported.
+ * 
+ * @author Tyson Jones
+ * @author Oliver Thomson Brown (patched HIP guards)
  */
 
 #ifndef INLINER_HPP

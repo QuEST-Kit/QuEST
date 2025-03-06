@@ -1,8 +1,10 @@
 /** @file
- * Defensively designed functions for checking internal preconditions, 
+ * Defensively designed functions for checking internal preconditions 
  * and raising internal errors. These primarily check that that
  * hardware accelerators are behaving as expected, and that runtime
  * deployment is consistent with the compiled deployment modes.
+ * 
+ * @author Tyson Jones
  */
 
 #include "quest/include/types.h"
@@ -37,21 +39,6 @@ void raiseInternalError(string errorMsg) {
     );
 
     exit(EXIT_FAILURE);
-}
-
-
-
-/*
- * DEVELOPMENT ERRORS
- */
-
-void error_functionNotImplemented(const char* caller) {
-
-    string name = caller;
-    
-    // DEBUG
-    // raiseInternalError("The function '" + name + "' has not yet been implemented.");
-    print("The function '" + name + "' has not yet been implemented.");
 }
 
 

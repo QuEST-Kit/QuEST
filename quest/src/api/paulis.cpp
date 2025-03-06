@@ -1,6 +1,8 @@
 /** @file
- * API definitions for creating and managing Pauli strings,
- * and weighted sums thereof.
+ * API functions for creating PauliStr and PauliStrSum,
+ * and initialising and reporting them
+ * 
+ * @author Tyson Jones
  */
 
 #include "quest/include/precision.h"

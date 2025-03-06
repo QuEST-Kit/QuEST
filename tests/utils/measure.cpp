@@ -1,3 +1,11 @@
+/** @file
+ * Testing utilities which evaluate measurements upon
+ * reference qvector and qmatrix states. These are slow, 
+ * serial, un-optimised, defensively-designed routines.
+ *
+ * @author Tyson Jones
+ */
+
 #include "quest/include/quest.h"
 
 #include "qvector.hpp"

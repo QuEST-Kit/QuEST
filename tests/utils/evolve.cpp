@@ -1,3 +1,12 @@
+/** @file
+ * Testing utilities which evolve a reference state
+ * (qvector or qmatrix) under the action of a 
+ * reference operation. These are slow, serial,
+ * un-optimised, defensively-designed routines.
+ *
+ * @author Tyson Jones
+ */
+
 #include "qvector.hpp"
 #include "qmatrix.hpp"
 #include "macros.hpp"

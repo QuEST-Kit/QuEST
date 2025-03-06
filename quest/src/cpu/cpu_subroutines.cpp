@@ -1,10 +1,17 @@
 /** @file
- * CPU OpenMP-accelerated definitions of the subroutines called by
- * accelerator.cpp. Some of these definitions are templated, defining
- * multiple versions optimised (at compile-time) for handling different
- * numbers of control qubits; such functions are proceeded by macro
- * INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS(), to force the compilation
- * of their needed versions within this translation unit for later linkage.
+ * CPU OpenMP-accelerated definitions of the main backend simulation routines,
+ * as mirrored by gpu_subroutines.cpp, and called by accelerator.cpp. 
+ * 
+ * Some of these definitions are templated, defining multiple versions optimised 
+ * (at compile-time) for handling different numbers of input qubits; such functions
+ * are proceeded by macro INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS(), to force the 
+ * compilation of their needed versions within this translation unit for later linkage.
+ * 
+ * @author Tyson Jones
+ * @author Oliver Brown (OpenMP 'if' clauses)
+ * @author Richard Meister (helped patch on LLVM)
+ * @author Kshitij Chhabra (patched v3 clauses with gcc9)
+ * @author Ania (Anna) Brown (developed QuEST v1 logic)
  */
 
 #include "quest/include/modes.h"

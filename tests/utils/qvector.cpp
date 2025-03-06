@@ -1,3 +1,10 @@
+/** @file
+ * Testing utilities which define 'qvector', used
+ * as a reference proxy to a quantum statevector.
+ *
+ * @author Tyson Jones
+ */
+
 #include "qvector.hpp"
 #include "macros.hpp"
 

@@ -1,3 +1,8 @@
+<!--
+  Explanation of QuEST's software architecture
+  
+  @author Tyson Jones
+-->
 
 # Architecture
 

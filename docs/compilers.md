@@ -1,3 +1,10 @@
+<!--
+  A summary of necessary compilers to use QuEST's
+  various backend parallelisation deployments
+  
+  @author Tyson Jones
+-->
+
 # Compilers
 
 QuEST separates compilation of the **_frontend_**, **_backend_** and the **_tests_** which have progressively stricter compiler requirements.

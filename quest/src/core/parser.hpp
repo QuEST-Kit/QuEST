@@ -1,5 +1,7 @@
 /** @file
  * Internal signatures for parsing user-given strings.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef PARSER_HPP

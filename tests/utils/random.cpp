@@ -1,3 +1,10 @@
+/** @file
+ * Testing utilities which generate random objects
+ * independently of QuEST's internal generators. 
+ *
+ * @author Tyson Jones
+ */
+
 #define _USE_MATH_DEFINES
 #include "qvector.hpp"
 #include "qmatrix.hpp"

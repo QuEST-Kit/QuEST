@@ -1,5 +1,11 @@
-#include "quest.h"
+/** @file
+ * Examples of using reportPauliStr and 
+ * reportPauliStrSum in C++14.
+ * 
+ * @author Tyson Jones
+*/
 
+#include "quest.h"
 #include <iostream>
 #include <cstdlib>
 #include <vector>

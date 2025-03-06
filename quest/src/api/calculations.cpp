@@ -1,6 +1,9 @@
 /** @file
  * API definitions for calculating properties of quantum states,
- * such as probabilities and expectation values.
+ * such as probabilities, expectation values and partial traces.
+ * 
+ * @author Tyson Jones
+ * @author Balint Koczor (prototyped v3 calcHilbertSchmidtDistance and calcDensityInnerProduct)
  */
 
 #include "quest/include/types.h"

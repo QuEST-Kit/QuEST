@@ -6,6 +6,8 @@
  * embarrassingly parallel subroutines in accelerator.cpp. This is
  * done agnostically of whether amplitudes of the Qureg are being
  * stored in RAM (CPU) or VRAM (GPU).
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef LOCALISER_HPP

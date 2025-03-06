@@ -1,8 +1,10 @@
 /** @file
- * API definitions for initialisaing Qureg states.
- * Note that when the Qureg is GPU-accelerated,
- * these methods will update only the GPU memory
- * and leave the CPU copy unchanged.
+ * API definitions for initialising Quregs into 
+ * particular states. Note when a Qureg is GPU-
+ * accelerated, these functions only update the
+ * state in GPU memory; the CPU amps are unchanged.
+ * 
+ * @author Tyson Jones
  */
 
 #include "quest/include/qureg.h"

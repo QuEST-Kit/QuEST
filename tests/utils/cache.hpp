@@ -1,3 +1,10 @@
+/** @file
+ * Testing utilities which create Quregs across all
+ * available hardware deployments
+ *
+ * @author Tyson Jones
+ */
+
 #ifndef CACHE_HPP
 #define CACHE_HPP
 

@@ -1,6 +1,8 @@
 /** @file
  * API signatures for effecting decohering channels upon Quregs
  * which are instantiated as density matrices.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef DECOHERENCE_H

@@ -1,3 +1,9 @@
+/** @file
+ * Unit tests of the operations module.
+ *
+ * @author Tyson Jones
+ */
+
 #define _USE_MATH_DEFINES
 
 #include "quest/include/quest.h"

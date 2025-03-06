@@ -1,33 +1,29 @@
 /** @file
  * Functions for querying the distributed configuration
- * using the MPI interface, attemptedly agnostically to
- * the implementation (like OpenMPI vs MPICH).
+ * using the MPI interface, agnostically to the specific
+ * implementation (like OpenMPI vs MPICH). These functions
+ * are callable even when MPI has not been compiled/linked.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef COMM_CONFIG_HPP
 #define COMM_CONFIG_HPP
 
 
-
 bool comm_isMpiCompiled();
-
 bool comm_isMpiGpuAware();
 
-bool comm_isInit();
-
 void comm_init();
-
 void comm_end();
-
-int comm_getRank();
-
-bool comm_isRootNode();
-bool comm_isRootNode(int rank);
-
-int comm_getNumNodes();
-
 void comm_sync();
 
+int comm_getRank();
+int comm_getNumNodes();
+
+bool comm_isInit();
+bool comm_isRootNode();
+bool comm_isRootNode(int rank);
 
 
 #endif // COMM_CONFIG_HPP

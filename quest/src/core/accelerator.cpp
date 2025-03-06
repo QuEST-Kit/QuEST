@@ -1,15 +1,17 @@
 /** @file
  * Internal functions for choosing which accelerator backend
  * (CPU or GPU) to dispatch to, and which preconditions the 
- * qubit indices satisfy in order (informing which compile-time
- * optimisations to use), to effect local simulation subroutines 
- * upon Quregs.
+ * qubit indices satisfy (informing which compile-time
+ * optimisations to use) in order to effect local simulation 
+ * subroutines upon Quregs.
  * 
  * These routines are called by localiser.cpp and are embarrassingly 
  * parallel, so are always called before/after any necessary
  * communication has happened. The data they need must already be
  * localised into the appropriate memory (RAM or VRAM) and location
  * (qureg's amplitudes or buffer space).
+ * 
+ * @author Tyson Jones
  */
 
 #include "quest/include/types.h"

@@ -1,7 +1,12 @@
+<!-- 
+  QuEST README page and doxygen-doc mainpage.
 
-<!-- TODO: update all paths to be absolute (rather than relative) as per below comment ->
+  Because this file doubles as the doxygen mainpage, it must use absolute paths.
 
-<!-- This README avoids relative paths since it is also used as Doxygen's mainpage -->
+  @author Tyson Jones
+-->
+
+<!-- TODO: update all paths to be absolute (rather than relative) as per above ->
 
 
 

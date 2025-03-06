@@ -9,6 +9,34 @@
  * herein expand to single-line definitions for safety. Some 
  * intendedly private functions are necessarily exposed here to 
  * the user, and are prefixed with an underscore.
+ * 
+ * Design nuances:
+ * - SuperOp is a separate, independent data-structure from KrausMap 
+ *   which is never assumed/validated to be CPTP. This is because the 
+ *   runtime assessment of CPTP of an arbitrary superoperator is expensive, 
+ *   requiring diagonalisation.
+ * - KrausMap contains an internal SuperOp instance which it uses to 
+ *   simulate the channel, which is re-populated whenever the constituent 
+ *   Kraus operators of the map are changed by the user.
+ * - KrausMap maintains an explicit list of Kraus operators, even though 
+ *   only the single resulting superoperator is used for simulation. This is 
+ *   so that CPTP validation can be efficiently performed at any time, and so 
+ *   that KrausMap reporting can display the individual quadratically-smaller 
+ *   Kraus operators, for user clarity. This is an insignificant memory waste.
+ * - KrausMap must know the number of constituent Kraus operators upfront, in 
+ *   order to allocate their memory. It is not possible to specify fewer Kraus 
+ *   operators later when initialising the KrausMap, because tracking a "number
+ *   of Kraus operators" independently of the "maximum number of Kraus operators" 
+ *   is smelly and over-engineered. Changing operators requires a new KrausMap.
+ * - There are no fixed-size stack-memory versions of KrausMap and SuperOp, 
+ *   unlike their matrix counterparts which have (e.g.) CompMatr1. This is 
+ *   because fixed-size KrausMap creation involves populating the superoperator 
+ *   (and in GPU settings, copying to GPU memory) which may be an astonishingly
+ *   large overhead, and expensive to copy between function stacks.
+ * 
+ * @author Tyson Jones
+ * @author Richard Meister (aided in design)
+ * @author Erich Essmann (aided in design)
  */
 
 #ifndef CHANNELS_H

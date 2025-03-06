@@ -1,8 +1,14 @@
 /** @file
- * This file is left mostly empty so that catch doesn't need 
- * slow (~16s) recompilation each time unit tests are edited
+ * Entry-point for the ported tests of QuEST's deprecated
+ * v3 API.
+ * 
+ * This file was originally written for catch2 v2, though has
+ * since been refactored for compatibility with catch2 v3. The
+ * comments however have not been updated and may mislead.
  *
  * @author Tyson Jones
+ * @author Oliver Thomson Brown (ported to Catch2 v3)
+ * @author Ali Rezaei (tested porting to QuEST v4)
  */
 
 

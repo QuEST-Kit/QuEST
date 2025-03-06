@@ -1,3 +1,6 @@
+# @author Oliver Thomson Brown
+# @author Erich Essmann (updating rpath)
+
 add_executable(krausmap_cpp_initialisation
   initialisation.cpp
 )

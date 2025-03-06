@@ -1,6 +1,8 @@
 /** @file
- * Signatures of API Pauli string and sum data structures, and their getters and setters, 
- * as well as reporting utilities.
+ * Definitions of PauliStr and PauliStrSum,
+ * their initialisers, and reporting utilities.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef PAULIS_H

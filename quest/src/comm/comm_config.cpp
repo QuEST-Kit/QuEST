@@ -1,12 +1,15 @@
 /** @file
  * Functions for querying the distributed configuration
- * using the MPI interface, attemptedly agnostically to
- * the implementation (like OpenMPI vs MPICH).
+ * using the MPI interface, agnostically to the specific
+ * implementation (like OpenMPI vs MPICH). These functions
+ * are callable even when MPI has not been compiled/linked.
  * 
  * Note that even when COMPILE_MPI=1, the user may have
  * disabled distribution when creating the QuEST environment
  * at runtime. Ergo we use comm_isInit() to determine whether
  * functions should invoke the MPI API.
+ * 
+ * @author Tyson Jones
  */
 
 #include "quest/include/modes.h"

@@ -2,7 +2,9 @@
  * API definitions for effecting operators (including
  * unitaries, projectors, channels, Hermitians, and
  * arbitrary matrices) upon Quregs, which can be
- * statevectors or density matrices
+ * statevectors or density matrices.
+ * 
+ * @author Tyson Jones
  */
 #define _USE_MATH_DEFINES
 #include "quest/include/qureg.h"

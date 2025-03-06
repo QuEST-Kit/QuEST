@@ -1,5 +1,7 @@
 /** @file
- * API definitions of convenience functions for using QuEST's numerical types
+ * API convenience functions related to types.
+ * 
+ * @author Tyson Jones
  */
 
 #include "quest/include/types.h"

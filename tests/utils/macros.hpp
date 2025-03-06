@@ -1,3 +1,9 @@
+/** @file
+ * Macros used by the tests and testing utilities.
+ *
+ * @author Tyson Jones
+ */
+
 #ifndef MACROS_HPP
 #define MACROS_HPP
 

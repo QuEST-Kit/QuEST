@@ -4,6 +4,8 @@
  * 
  * This file defines several layers of initialisation of complex
  * matrices, as explained in the header file.
+ * 
+ * @author Tyson Jones
  */
 
 #include "quest/include/matrices.h"

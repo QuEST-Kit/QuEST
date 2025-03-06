@@ -1,3 +1,9 @@
+/** @file
+ * Unit tests of the matrices module.
+ *
+ * @author Tyson Jones
+ */
+
 #include "quest/include/quest.h"
 
 #include <catch2/catch_test_macros.hpp>

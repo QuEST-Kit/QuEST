@@ -1,5 +1,7 @@
 /** @file
  * CUDA GPU-accelerated signatures of the subroutines called by accelerator.cpp.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef GPU_SUBROUTINES_HPP

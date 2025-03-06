@@ -1,12 +1,19 @@
+/** @file
+ * Examples of using QuEST's precision-agnostic
+ * overloaded arithmetic operators between qcomp 
+ * and other types like ints and floats, in C11.
+ * MSVC does not support C complex arithmetic.
+ * 
+ * @author Tyson Jones
+*/
+
 #include "quest.h"
+
 
 int main() {
 
     initQuESTEnv();
 
-// I solemnly swear to never ever try to use
-// complex literals nor arithmetic overloads
-// in MSVC C11 again, on my heart of hearts
 #if !defined(_MSC_VER)
 
     qcomp x = 1.2 + 3.4i;

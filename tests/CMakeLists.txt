@@ -1,3 +1,5 @@
+# @author Oliver Thomson Brown
+
 add_executable(tests
   main.cpp
 )

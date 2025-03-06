@@ -1,8 +1,10 @@
 /** @file
- * Functions which automatically choose QuESTEnv and Qureg deployment
- * parameters, replacing flag modeflag::USE_AUTO with 0 or 1,
- * depending on the compiled facilities, available hardware, and
- * Qureg dimensions.
+ * Functions which automatically choose QuESTEnv, Qureg and
+ * FullStateDiagMatr deployment parameters, replacing flag 
+ * modeflag::USE_AUTO with 0 or 1, depending on the compiled 
+ * facilities, available hardware, and object dimensions.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef AUTODEPLOYER_HPP

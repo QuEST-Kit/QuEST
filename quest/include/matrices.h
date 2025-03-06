@@ -8,6 +8,10 @@
  * and setters of complex matrices. All macros herein expand to single-line 
  * definitions, for safety. Some intendedly private functions are necessarily
  * exposed here to the user, and are prefixed with an underscore.
+ * 
+ * @author Tyson Jones
+ * @author Richard Meister (aided in design)
+ * @author Erich Essmann (aided in design, patched on MSVC)
  */
 
 #ifndef MATRICES_H
@@ -220,7 +224,7 @@ typedef struct {
 
 static inline CompMatr1 getCompMatr1(qcomp** in) {
 
-     CompMatr1 out = {
+    CompMatr1 out = {
         .numQubits = 1,
         .numRows = 2,
         .elems = {

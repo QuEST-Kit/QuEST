@@ -3,6 +3,8 @@
  * superoperators and Kraus maps, including their constructors, 
  * getters, setters and reporters. Note the functions to
  * actually simulate these channels are exposed in decoherence.h
+ * 
+ * @author Tyson Jones
  */
 
 #include "quest/include/channels.h"

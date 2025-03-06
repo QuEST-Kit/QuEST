@@ -1,14 +1,9 @@
 /** @file
- * Unoptimised, analytic implementations of matrix operations used by QuEST's unit tests
- *
- * @defgroup unittest Unit tests
- *      Unit tests of the QuEST API, using Catch2 in C++14.
- * @defgroup testutilities Unit test utilities
- *      Functions used in the unit testing. These are mostly unoptimised, analytic implementations
- *      of the complex linear algebra that QuEST ultimately effects on quantum states.
- *      These are not part of the QuEST API, and require C++14.
+ * Utility signatures used by the ported v3 tests of QuEST's deprecated v3 API.
  *
  * @author Tyson Jones
+ * @author Oliver Thomson Brown (ported to Catch2 v3)
+ * @author Ali Rezaei (tested porting to QuEST v4)
  */
  
 #ifndef QUEST_TEST_UTILS_H

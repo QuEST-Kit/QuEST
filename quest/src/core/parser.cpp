@@ -1,10 +1,13 @@
 /** @file
  * Internal functions which parse strings given by users.
+ * 
  * Performance here is not critical, so we opt to use
- * sub-optimal but clear, defensively functions.
+ * sub-optimal but clear, defensively-designed functions.
  * We also use quite stringent internal error checking
  * due to the many risks and uncertainties caused by 
  * parsing user-given strings with regex.
+ * 
+ * @author Tyson Jones
  */
 
 #include "quest/include/types.h"

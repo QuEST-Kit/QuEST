@@ -4,6 +4,7 @@ FindCuQuantum
  
 Attempts to find NVIDIA's cuQuantum library. 
 Use CUQUANTUM_ROOT or CUQUANTUM_DIR to specify the prefix path.
+@author Oliver Thomson Brown
 
 
 Result Variables

@@ -21,6 +21,8 @@
  * declarations are superfluous (the behaviour is default), but used
  * to explicitly distinguish the intendedly-private internal functions
  * from the C API functions herein defined.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef WRAPPERS_H

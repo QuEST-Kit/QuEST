@@ -1,5 +1,11 @@
-#include "quest.h"
+/** @file
+ * Examples of using reportPauliStr and 
+ * reportPauliStrSum in C11.
+ * 
+ * @author Tyson Jones
+*/
 
+#include "quest.h"
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,5 +1,7 @@
 /** @file
  * API signatures for creating and managing Quregs.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef QUREG_H
@@ -61,7 +63,6 @@ void destroyQureg(Qureg qureg);
 
 void reportQuregParams(Qureg qureg);
 void reportQureg(Qureg qureg);
-void reportQuregToFile(Qureg qureg, char* fn);
 
 void syncQuregToGpu  (Qureg qureg);
 void syncQuregFromGpu(Qureg qureg);
