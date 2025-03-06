@@ -275,16 +275,12 @@ __global__ void kernel_statevec_anyCtrlTwoTargDenseMatr_sub(
  */
 
 
-__forceinline__ __device__ qindex getStrideOfGlobalThreadArr() {
-    return gridDim.x * blockDim.x;
-}
+__forceinline__ __device__ qindex getThreadsNthGlobalArrInd(qindex n, qindex threadInd, qindex numThreads) {
 
-__forceinline__ __device__ qindex getThreadsNthGlobalArrInd(qindex n, qindex threadInd, qindex stride) {
-    return (n * stride) + threadInd;
-}
-
-__forceinline__ __device__ qindex getFlattenedMatrInd(qindex row, qindex col, qindex dim) {
-    return (row * dim) + col;
+    // threads store their i-th element contiguously to one another,
+    // so that neighbouring threads in a warp access neighbouring 
+    // elements of global memory (i.e. coalesce), for caching efficiency
+    return (n * numThreads) + threadInd;
 }
 
 
@@ -337,7 +333,7 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
         for (qindex l=0; l<numTargAmps; l++) {
 
             // h = flat index of matrix's (k,l)-th element
-            qindex h = getFlattenedMatrInd(k, l, numTargAmps);
+            qindex h = fast_getLocalFlatIndex(k, l, numTargAmps);
 
             // optionally conjugate matrix elem
             cu_qcomp elem = flatMatrElems[h];
@@ -360,8 +356,6 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
     cu_qcomp* flatMatrElems
 ) {
     GET_THREAD_IND(t, numThreads);
-
-    qindex cacheStride = getStrideOfGlobalThreadArr();
 
     // NumCtrls might be compile-time known, but numTargBits>5 is always unknown/runtime
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
@@ -395,7 +389,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
         
             for (qindex l=0; l<numTargAmps; l++) {
                 qindex j = getThreadsNthGlobalArrInd(l, t, cacheStride);
-                qindex h = getFlattenedMatrInd(k, l, numTargAmps);
+                qindex h = fast_getLocalFlatIndex(k, l, numTargAmps);
 
                 // optionally conjugate matrix elem
                 cu_qcomp elem = flatMatrElems[h];
