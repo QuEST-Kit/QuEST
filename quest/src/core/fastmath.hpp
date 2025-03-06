@@ -84,7 +84,7 @@ INLINE qindex fast_getLocalIndexOfDiagonalAmp(qindex localIndOfBasisState, qinde
 
 INLINE qindex fast_getLocalFlatIndex(qindex row, qindex localCol, qindex numAmpsPerCol) {
 
-    return row +  localCol * numAmpsPerCol;
+    return row + localCol * numAmpsPerCol;
 }
 
 

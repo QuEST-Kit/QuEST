@@ -481,8 +481,11 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
                 // loop may be unrolled
                 for (qindex j=0; j<numTargAmps; j++) {
 
+                    // matr.cpuElems[k][j] = matr.cpuElemsFlat[l]
+                    qindex l = fast_getLocalFlatIndex(k, j, numTargAmps);
+                    qcomp elem = matr.cpuElemsFlat[l];
+
                     // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
-                    qcomp elem = matr.cpuElems[k][j];
                     if constexpr (ApplyConj)
                         elem = conj(elem);
 
