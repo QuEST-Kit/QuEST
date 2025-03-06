@@ -475,6 +475,13 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
         // bandwidth bound (so we don't expect many interweaved blocks per MP).
         qindex numThreads = gpu_getMaxNumConcurrentThreads();
         
+
+
+        // DEBUG
+        // fake lower hardware thread count
+        numThreads = 1000;
+
+        
         // use strictly 2^# threads to maintain precondition of all kernels
         if (!isPowerOf2(numThreads))
             numThreads = util_getNextPowerOf2(numThreads);
