@@ -355,7 +355,8 @@ template <int NumCtrls, bool ApplyConj>
 __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
     cu_qcomp* globalCache,
     cu_qcomp* amps, qindex numThreads, qindex numBatchesPerThread,
-    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int* targs, int numTargBits,
+    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, 
+    int* targs, int numTargBits, qindex numTargAmps,
     cu_qcomp* flatMatrElems
 ) {
     GET_THREAD_IND(t, numThreads);
@@ -364,7 +365,6 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
 
     // NumCtrls might be compile-time known, but numTargBits>5 is always unknown/runtime
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
-    qindex numTargAmps = powerOf2(numTargBits);
 
     // unlike all other kernels, each thread modifies multiple batches of amplitudes
     for (qindex b=0; b<numBatchesPerThread; b++) {

@@ -483,6 +483,8 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
         if (numThreads > numBatches)
             numThreads = numBatches;
 
+        // DEBUG - allocate 1 thread per batch (ememory wasteful)
+        numThreads = numBatches;
         // evenly distribute the batches between threads, and the threads unevenly between blocks
         qindex numBatchesPerThread = numBatches / numThreads; // divides evenly
         qindex numBlocks = getNumBlocks(numThreads);
@@ -492,7 +494,7 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
 
 
         std::cout << "numTargs=" << targs.size() << ", numCtrls=" << ctrls.size() << ", numBatches=" << numBatches << std::endl;
-        std::cout << "maxThrds=" << gpu_getMaxNumConcurrentThreads() << ", numThreads=" << numThreads << ", numBatchesPerThread" << numBatchesPerThread;
+        std::cout << "maxThrds=" << gpu_getMaxNumConcurrentThreads() << ", numThreads=" << numThreads << ", numBatchesPerThread=" << numBatchesPerThread;
         std::cout << ", nThrdsPerBlock=" << NUM_THREADS_PER_BLOCK << ", numBlocks=" << numBlocks << ", numKernelInvocs=" << numKernelInvocations << std::endl;
         std::cout << "cachesize=" << (powerOf2(targs.size()) * numKernelInvocations) << " * B" << std::endl;
 
@@ -503,7 +505,7 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
             toCuQcomps(cache),
             ampsPtr, numThreads, numBatchesPerThread, 
             qubitsPtr, nCtrls, qubitStateMask, 
-            targsPtr, targs.size(), matrPtr
+            targsPtr, targs.size(), powerOf2(targs.size()), matrPtr
         );
     }
 
