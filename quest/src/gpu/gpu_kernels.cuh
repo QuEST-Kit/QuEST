@@ -382,7 +382,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
             qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
 
             // j = index of k-th element of thread's private cache partition
-            qindex j = getThreadsNthGlobalArrInd(k, n, cacheStride);
+            qindex j = getThreadsNthGlobalArrInd(k, t, cacheStride);
             globalCache[j] = amps[i];
         }
 
@@ -394,7 +394,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
             amps[i] = getCuQcomp(0, 0);
         
             for (qindex l=0; l<numTargAmps; l++) {
-                qindex j = getThreadsNthGlobalArrInd(l, n, cacheStride);
+                qindex j = getThreadsNthGlobalArrInd(l, t, cacheStride);
                 qindex h = getFlattenedMatrInd(k, l, numTargAmps);
 
                 // optionally conjugate matrix elem
