@@ -625,34 +625,11 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
         // try all possible number of ctrls and targs
         int numTargs = GENERATE_NUM_TARGS<Ctrls,Targs,Args>(numQubits);
         int numCtrls = GENERATE_NUM_CTRLS<Ctrls>(numQubits - numTargs);
-
-
-        
-
-
-        // DEBUG
-        numCtrls = 0;
-        numTargs = 6;
-
-
-
-
-
-
         
         // try all possible ctrls and targs
         auto listpair = GENERATE_COPY( disjointsublists(range(0,numQubits), numCtrls, numTargs) );
         vector<int> ctrls = std::get<0>(listpair);
         vector<int> targs = std::get<1>(listpair);
-
-
-
-
-        // DEBUG
-        for (int i=0; i<6; i++)
-            targs[i] = 6 - i - 1;
-
-
 
         // randomise control states (if operation accepts them)
         vector<int> states = getRandomInts(0, 1+1, numCtrls * (Ctrls == anystates));

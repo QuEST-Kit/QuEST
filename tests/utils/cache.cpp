@@ -35,7 +35,7 @@ quregCache densmatrs;
  * without having to recompiling the entire test suite
  */
 
-static constexpr int NUM_QUBITS_IN_QUREGS = 7;
+static constexpr int NUM_QUBITS_IN_QUREGS = 6;
 
 int getNumCachedQubits() {
     return NUM_QUBITS_IN_QUREGS;

@@ -387,13 +387,6 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevec_anyCtrlTwoTargDense
  */
 
 
-
-// DEBUG
-#include <iostream>
-
-
-
-
 template <int NumCtrls, int NumTargs, bool ApplyConj>
 void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr) {
 
@@ -475,13 +468,6 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
         // bandwidth bound (so we don't expect many interweaved blocks per MP).
         qindex numThreads = gpu_getMaxNumConcurrentThreads();
         
-
-
-        // DEBUG
-        // fake lower hardware thread count
-        numThreads = 100;
-
-        
         // use strictly 2^# threads to maintain precondition of all kernels
         if (!isPowerOf2(numThreads))
             numThreads = util_getNextPowerOf2(numThreads);
@@ -490,26 +476,12 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
         if (numThreads > numBatches)
             numThreads = numBatches;
 
-
-
-
-
-
-
         // evenly distribute the batches between threads, and the threads unevenly between blocks
         qindex numBatchesPerThread = numBatches / numThreads; // divides evenly
         qindex numBlocks = getNumBlocks(numThreads);
 
         // expand the cache if necessary
         qindex numKernelInvocations = numBlocks * NUM_THREADS_PER_BLOCK;
-
-
-        std::cout << "numTargs=" << targs.size() << ", numCtrls=" << ctrls.size() << ", numBatches=" << numBatches << std::endl;
-        std::cout << "maxThrds=" << gpu_getMaxNumConcurrentThreads() << ", numThreads=" << numThreads << ", numBatchesPerThread=" << numBatchesPerThread;
-        std::cout << ", nThrdsPerBlock=" << NUM_THREADS_PER_BLOCK << ", numBlocks=" << numBlocks << ", numKernelInvocs=" << numKernelInvocations << std::endl;
-        std::cout << "cachesize=" << (powerOf2(targs.size()) * numKernelInvocations) << " * B" << std::endl;
-        std::cout << std::endl;
-
         qcomp* cache = gpu_getCacheOfSize(powerOf2(targs.size()), numKernelInvocations);
 
         kernel_statevec_anyCtrlManyTargDenseMatr <NumCtrls, ApplyConj> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
