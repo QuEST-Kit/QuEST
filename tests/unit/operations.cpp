@@ -618,15 +618,16 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
-        qvector statevecRef = getZeroVector(getPow2(NUM_UNIT_QUREG_QUBITS));
-        qmatrix densmatrRef = getZeroMatrix(getPow2(NUM_UNIT_QUREG_QUBITS));
+        int numQubits = getNumCachedQubits();
+        qvector statevecRef = getZeroVector(getPow2(numQubits));
+        qmatrix densmatrRef = getZeroMatrix(getPow2(numQubits));
 
         // try all possible number of ctrls and targs
-        int numTargs = GENERATE_NUM_TARGS<Ctrls,Targs,Args>(NUM_UNIT_QUREG_QUBITS);
-        int numCtrls = GENERATE_NUM_CTRLS<Ctrls>(NUM_UNIT_QUREG_QUBITS - numTargs);
+        int numTargs = GENERATE_NUM_TARGS<Ctrls,Targs,Args>(numQubits);
+        int numCtrls = GENERATE_NUM_CTRLS<Ctrls>(numQubits - numTargs);
         
         // try all possible ctrls and targs
-        auto listpair = GENERATE_COPY( disjointsublists(range(0,NUM_UNIT_QUREG_QUBITS), numCtrls, numTargs) );
+        auto listpair = GENERATE_COPY( disjointsublists(range(0,numQubits), numCtrls, numTargs) );
         vector<int> ctrls = std::get<0>(listpair);
         vector<int> targs = std::get<1>(listpair);
 

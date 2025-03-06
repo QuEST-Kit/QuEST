@@ -488,7 +488,7 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
             toCuQcomps(cache),
             ampsPtr, numThreads, numBatchesPerThread, 
             qubitsPtr, nCtrls, qubitStateMask, 
-            targsPtr, targs.size(), matrPtr
+            targsPtr, targs.size(), powerOf2(targs.size()), matrPtr
         );
     }
 

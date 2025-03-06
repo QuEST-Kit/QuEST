@@ -11,14 +11,41 @@
 #include <vector>
 #include <string>
 
-quregCache statevecs;
-quregCache densmatrs;
-
 using std::tuple;
 using std::vector;
 using std::string;
 
 
+
+/*
+ * cached quregs which persist between
+ * calls of getCachedStatevecs() and
+ * getCachedDensmatrs()
+ */
+
+quregCache statevecs;
+quregCache densmatrs;
+
+
+
+/*
+ * while the number of qubits in the unit-test Quregs
+ * is fixed, it is defined privately here (with internal
+ * linkage) so that it can be changed between compilations
+ * without having to recompiling the entire test suite
+ */
+
+static constexpr int NUM_QUBITS_IN_QUREGS = 6;
+
+int getNumCachedQubits() {
+    return NUM_QUBITS_IN_QUREGS;
+}
+
+
+
+/*
+ * manage cached quregs
+ */
 
 deployInfo getSupportedDeployments() {
 
@@ -44,24 +71,21 @@ deployInfo getSupportedDeployments() {
     return out;
 }
 
-
 quregCache createCachedStatevecsOrDensmatrs(bool isDensMatr) {
 
     quregCache out;
 
     // only add supported-deployment quregs to the cache
     for (auto [label, mpi, gpu, omp] : getSupportedDeployments())
-        out[label] = createCustomQureg(NUM_UNIT_QUREG_QUBITS, isDensMatr, mpi, gpu, omp);
+        out[label] = createCustomQureg(NUM_QUBITS_IN_QUREGS, isDensMatr, mpi, gpu, omp);
 
     return out;
 }
-
 
 void createCachedQuregs() {
     statevecs = createCachedStatevecsOrDensmatrs(false);
     densmatrs = createCachedStatevecsOrDensmatrs(true);
 }
-
 
 void destroyCachedQuregs() {
 
@@ -72,7 +96,6 @@ void destroyCachedQuregs() {
         destroyQureg(qureg);
 }
 
-
 quregCache getCachedStatevecs() {
     return statevecs;
 }
@@ -81,9 +104,15 @@ quregCache getCachedDensmatrs() {
 }
 
 
+
+/*
+ * reference states of equivalent 
+ * dimension to the cached quregs
+ */
+
 qvector getRefStatevec() {
-    return getZeroVector(getPow2(NUM_UNIT_QUREG_QUBITS));
+    return getZeroVector(getPow2(NUM_QUBITS_IN_QUREGS));
 }
 qmatrix getRefDensmatr() {
-    return getZeroMatrix(getPow2(NUM_UNIT_QUREG_QUBITS));
+    return getZeroMatrix(getPow2(NUM_QUBITS_IN_QUREGS));
 }

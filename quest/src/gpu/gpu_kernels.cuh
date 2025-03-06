@@ -351,14 +351,14 @@ template <int NumCtrls, bool ApplyConj>
 __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
     cu_qcomp* globalCache,
     cu_qcomp* amps, qindex numThreads, qindex numBatchesPerThread,
-    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int* targs, int numTargBits,
+    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, 
+    int* targs, int numTargBits, qindex numTargAmps,
     cu_qcomp* flatMatrElems
 ) {
     GET_THREAD_IND(t, numThreads);
 
     // NumCtrls might be compile-time known, but numTargBits>5 is always unknown/runtime
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
-    qindex numTargAmps = powerOf2(numTargBits);
 
     // unlike all other kernels, each thread modifies multiple batches of amplitudes
     for (qindex b=0; b<numBatchesPerThread; b++) {
@@ -376,7 +376,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
             qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
 
             // j = index of k-th element of thread's private cache partition
-            qindex j = getThreadsNthGlobalArrInd(k, n, numThreads);
+            qindex j = getThreadsNthGlobalArrInd(k, t, cacheStride);
             globalCache[j] = amps[i];
         }
 
@@ -388,7 +388,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
             amps[i] = getCuQcomp(0, 0);
         
             for (qindex l=0; l<numTargAmps; l++) {
-                qindex j = getThreadsNthGlobalArrInd(l, n, numThreads);
+                qindex j = getThreadsNthGlobalArrInd(l, t, cacheStride);
                 qindex h = fast_getLocalFlatIndex(k, l, numTargAmps);
 
                 // optionally conjugate matrix elem
