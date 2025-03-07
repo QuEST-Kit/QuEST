@@ -389,7 +389,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
         
             for (qindex l=0; l<numTargAmps; l++) {
                 qindex j = getThreadsNthGlobalArrInd(l, t, numThreads);
-                qindex h = fast_getQuregLocalFlatIndex(k, l, numTargAmps);
+                qindex h = fast_getMatrixFlatIndex(k, l, numTargAmps);
 
                 // optionally conjugate matrix elem
                 cu_qcomp elem = flatMatrElems[h];
