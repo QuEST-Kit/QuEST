@@ -1,3 +1,12 @@
+# Tests for heap memory leaks, invalid memory
+# addressing, and assesses the code coverage
+# of the unit tests, using ASan, valgrind and
+# LCOV, which involves compiling and serially
+# running the unit tests at all precisions
+#
+# @author Tyson Jones
+# @author Fergus Cooper (v3 CI)
+
 name: audit
 
 

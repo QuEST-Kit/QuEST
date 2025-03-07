@@ -1,7 +1,12 @@
-# - written by thewh1teagle (github.com/thewh1teagle)
-# - taken from Vibe (github.com/thewh1teagle/vibe)
-# - perma: https://github.com/thewh1teagle/vibe/blob/5ee8bf7e74a01429cfd164590fce2e4fcd07fae0/.github/workflows/windows_special.yml#L80
-
+# @file 
+# A script to download CUDA and install it upon a Windows
+# virtual machine, as an alternative to the cuda-toolkit
+# github action (https://github.com/Jimver/cuda-toolkit)
+# which experienced a regression in v12 as documented
+# here: https://github.com/Jimver/cuda-toolkit/issues/382
+#
+# This file was taken from repository Vibe, written by
+# @author thewh1teagle (github.com/thewh1teagle)
 
 
 $CUDA_VERSION_FULL = $env:INPUT_CUDA_VERSION # v12.5.0 or v11.8.0
