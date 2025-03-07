@@ -333,7 +333,7 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
         for (qindex l=0; l<numTargAmps; l++) {
 
             // h = flat index of matrix's (k,l)-th element
-            qindex h = fast_getLocalFlatIndex(k, l, numTargAmps);
+            qindex h = fast_getMatrixFlatIndex(k, l, numTargAmps);
 
             // optionally conjugate matrix elem
             cu_qcomp elem = flatMatrElems[h];
@@ -389,7 +389,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
         
             for (qindex l=0; l<numTargAmps; l++) {
                 qindex j = getThreadsNthGlobalArrInd(l, t, numThreads);
-                qindex h = fast_getLocalFlatIndex(k, l, numTargAmps);
+                qindex h = fast_getQuregLocalFlatIndex(k, l, numTargAmps);
 
                 // optionally conjugate matrix elem
                 cu_qcomp elem = flatMatrElems[h];
@@ -1170,7 +1170,7 @@ __global__ void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, numQubits);
 
     // i = index of nth local diagonal elem
-    qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
+    qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
     qreal prob = getCompReal(amps[i]);
 
     // j = global index of i
