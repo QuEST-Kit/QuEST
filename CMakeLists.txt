@@ -219,8 +219,6 @@ if (ENABLE_MULTITHREADING)
     if (APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
       string(APPEND ErrorMsg " Try first calling `brew install libomp` then `export OpenMP_ROOT=$(brew --prefix)/opt/libomp`")
     endif()
-
-    # before fatally crashing
     message(FATAL_ERROR ${ErrorMsg})
   endif()
 
@@ -230,10 +228,18 @@ if (ENABLE_MULTITHREADING)
     OpenMP::OpenMP_CXX
     OpenMP::OpenMP_C
   )
+
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+mt")
   endif()
+
 else()
+
+  # suppress GCC "unknown pragma" warning when OpenMP disabled
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(QuEST PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-Wno-unknown-pragmas>)
+  endif()
+  
   target_compile_definitions(QuEST PUBLIC COMPILE_OPENMP=0)
 endif()
 
