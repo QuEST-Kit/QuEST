@@ -84,7 +84,8 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
 
     // optionally initialise MPI; necessary before completing validation,
     // and before any GPU initialisation and validation, since we will
-    // perform that specifically upon the MPI-process-bound GPU(s)
+    // perform that specifically upon the MPI-process-bound GPU(s). Further,
+    // we can make sure validation errors are reported only by the root node.
     if (useDistrib)
         comm_init();
 
@@ -230,11 +231,12 @@ void printGpuInfo() {
     // - GPU #SVMs etc
 
     // must not query any GPU facilities unless confirmed compiled and available
-    bool isGpu = gpu_isGpuCompiled() && gpu_isGpuAvailable();
+    bool isComp = gpu_isGpuCompiled();
+    bool isGpu = isGpu && gpu_isGpuAvailable();
 
     print_table(
         "gpu", {
-        {"numGpus",       printer_toStr(gpu_getNumberOfLocalGpus())}, // safe to call
+        {"numGpus",       isComp? printer_toStr(gpu_getNumberOfLocalGpus()) : na}, // safe to call
         {"gpuDirect",     isGpu? printer_toStr(gpu_isDirectGpuCommPossible()) : na},
         {"gpuMemPools",   isGpu? printer_toStr(gpu_doesGpuSupportMemPools()) : na},
         {"gpuMemory",     isGpu? printer_getMemoryWithUnitStr(gpu_getTotalMemoryInBytes()) + pg : na},

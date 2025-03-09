@@ -594,7 +594,7 @@ void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps)
 #if COMPILE_MPI
 
     // only the sender and root nodes need to continue
-    int recvRank = 0;
+    int recvRank = ROOT_RANK;
     int myRank = comm_getRank();
     if (myRank != sendRank && myRank != recvRank)
         return;
@@ -621,7 +621,7 @@ void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps)
 void comm_broadcastUnsignedsFromRoot(unsigned* arr, qindex length) {
 #if COMPILE_MPI
 
-    int sendRank = 0;
+    int sendRank = ROOT_RANK;
     MPI_Bcast(arr, length, MPI_UNSIGNED, sendRank, MPI_COMM_WORLD);
 
 #else
