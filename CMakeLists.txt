@@ -260,15 +260,17 @@ else()
 endif()
 
 if (ENABLE_CUDA)
+
+  # make nvcc use user cxx-compiler as default host (before cuda-host is set below)
+  if (NOT DEFINED CMAKE_CUDA_HOST_COMPILER)
+    set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
+  endif()
+
   enable_language(CUDA)
   set(CMAKE_CUDA_STANDARD_REQUIRED ON)
   
   set_property(TARGET QuEST PROPERTY CUDA_STANDARD 20)
   
-  if (NOT DEFINED CMAKE_CUDA_HOST_COMPILER)
-    set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
-  endif()
-
   set(CUDA_PROPAGATE_HOST_FLAGS OFF)
   
   if (VERBOSE_LIB_NAME)
