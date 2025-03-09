@@ -127,6 +127,10 @@ int deallocMemInPool(void* ctx, void* ptr, size_t size, cudaStream_t stream) {
 
 void gpu_initCuQuantum() {
 
+    // custatevecCreate below must only ever be initialised once per-GPU
+    if (gpu_areAnyNodesBoundToSameGpu())
+        error_cuQuantumInitWithGpuSharedByNodes();
+
     // create new stream and cuQuantum handle, binding to global config
     CUDA_CHECK( custatevecCreate(&config.handle) );
     CUDA_CHECK( cudaStreamCreate(&config.stream) );

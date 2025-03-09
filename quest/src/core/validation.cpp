@@ -37,6 +37,14 @@ using std::vector;
 
 
 /*
+ * TODO:
+ *   Invalid input error messages are currently limited to containing only integer
+ *   variables, whereas the ability to embed floats and strings would be useful.
+ */
+
+
+
+/*
  * INVALID INPUT ERROR MESSAGES
  * which can contain variables with syntax ${VAR1} ${VAR2}, substituted at error-throw with
  * runtime parameters via assertThat(..., {{"${VAR1}",1}, {"${VAR2}",2}}, ...)
@@ -82,8 +90,14 @@ namespace report {
     string CANNOT_DISTRIB_ENV_BETWEEN_NON_POW_2_NODES =
         "Cannot distribute QuEST between ${NUM_NODES} nodes; must use a power-of-2 number of nodes.";
 
+    string MULTIPLE_NODES_BOUND_TO_SAME_GPU =
+        "Multiple MPI processes (nodes) were bound to the same GPU which can cause errors when combined with cuQuantum, but is otherwise detrimental to performance. Please re-launch QuEST with one unique GPU per MPI process.";
+
+    string CUQUANTUM_DEPLOYED_ON_BELOW_CC_GPU =
+        "Cannot use cuQuantum on a GPU with compute-capability ${OUR_CC}; a compute-capability of ${MIN_CC} or above is required. Recompile with cuQuantum disabled to fall-back to using Thrust and custom kernels.";
+
     string CUQUANTUM_DEPLOYED_ON_GPU_WITHOUT_MEM_POOLS =
-        "Cannot use cuQuantum since your GPU does not support memory pools. Please recompile with cuQuantum disabled to fall-back to using Thrust and custom kernels.";
+        "Cannot use cuQuantum since your GPU does not support memory pools. Recompile with cuQuantum disabled to fall-back to using Thrust and custom kernels.";
 
     
     /*
@@ -1263,15 +1277,24 @@ void validate_newEnvDistributedBetweenPower2Nodes(const char* caller) {
     assertThat(isPowerOf2(numNodes), report::CANNOT_DISTRIB_ENV_BETWEEN_NON_POW_2_NODES, vars, caller);
 }
 
+void validate_newEnvNodesEachHaveUniqueGpu(const char* caller) {
+
+    bool uniqueGpus = ! gpu_areAnyNodesBoundToSameGpu();
+    assertAllNodesAgreeThat(uniqueGpus, report::MULTIPLE_NODES_BOUND_TO_SAME_GPU, caller);
+}
+
 void validate_gpuIsCuQuantumCompatible(const char* caller) {
 
-    // require node consensus in case nodes have heterogeneous GPU hardware
-    assertAllNodesAgreeThat(
-        gpu_doesGpuSupportMemPools(), 
-        report::CUQUANTUM_DEPLOYED_ON_GPU_WITHOUT_MEM_POOLS, caller);
+    int minCC = 70;
+    int ourCC = gpu_getComputeCapability();
+    tokenSubs vars = {
+        {"${MIN_CC}", minCC},
+        {"${OUR_CC}", ourCC}
+    };
+    assertAllNodesAgreeThat(ourCC >= minCC, report::CUQUANTUM_DEPLOYED_ON_BELOW_CC_GPU, vars, caller);
 
-    // TODO:
-    // check other requirements like compute-capability?
+    bool hasMemPools = gpu_doesGpuSupportMemPools();
+    assertAllNodesAgreeThat(hasMemPools, report::CUQUANTUM_DEPLOYED_ON_GPU_WITHOUT_MEM_POOLS, caller);
 }
 
 

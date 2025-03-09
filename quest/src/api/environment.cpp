@@ -82,42 +82,40 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     // overwrite deployments left as modeflag::USE_AUTO
     autodep_chooseQuESTEnvDeployment(useDistrib, useGpuAccel, useMultithread);
 
-    // use of cuQuantum requires a modern GPU
-    if (useGpuAccel && gpu_isCuQuantumCompiled())
-        validate_gpuIsCuQuantumCompatible(caller);
-
-    // optionally initialise MPI; necessary before completing validation
+    // optionally initialise MPI; necessary before completing validation,
+    // and before any GPU initialisation and validation, since we will
+    // perform that specifically upon the MPI-process-bound GPU(s)
     if (useDistrib)
         comm_init();
 
     validate_newEnvDistributedBetweenPower2Nodes(caller);
 
-    if (useGpuAccel && useDistrib) {
+    // TODO:
+    // consider immediately disabling MPI here if comm_numNodes() == 1
+    // (also overwriting useDistrib = 0)
 
-        // TODO:
-        // validate 2^N local GPUs
-    }
+    // bind MPI nodes to unique GPUs; even when not distributed,
+    // and before we have validated local GPUs are compatible
+    if (useGpuAccel)
+        gpu_bindLocalGPUsToNodes();
 
-    // make a new, local env
-    QuESTEnv env = {
-
-        // bind deployment info
-        .isMultithreaded  = useMultithread,
-        .isGpuAccelerated = useGpuAccel,
-        .isDistributed    = useDistrib,
-
-        // set distributed info
-        .rank     = (useDistrib)? comm_getRank()     : 0,
-        .numNodes = (useDistrib)? comm_getNumNodes() : 1,
-    };
-
-    // in multi-GPU settings, bind each MPI process to one GPU
+    // each MPI process must use a unique GPU. This is critical when
+    // initializing cuQuantum, so we don't re-init cuStateVec on any
+    // paticular GPU (causing runtime error), but still ensures we 
+    // keep good performance in our custom backend GPU code; there is
+    // no reason to use multi-nodes-per-GPU except for dev/debugging.
     if (useGpuAccel && useDistrib)
-        gpu_bindLocalGPUsToNodes(env.rank);
+        validate_newEnvNodesEachHaveUniqueGpu(caller);
 
-    // in GPU settings, if cuQuantum is being used, initialise it
-    if (useGpuAccel && gpu_isCuQuantumCompiled())
+    // TODO:
+    // should we warn here if each machine contains
+    // more GPUs than deployed MPI-processes (some GPUs idle)?
+
+    // use cuQuantum if compiled
+    if (useGpuAccel && gpu_isCuQuantumCompiled()) {
+        validate_gpuIsCuQuantumCompatible(caller); // assesses above bound GPU
         gpu_initCuQuantum();
+    }
 
     // initialise RNG, used by measurements and random-state generation
     rand_setSeedsToDefault();
@@ -131,7 +129,18 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
 
     // TODO: the below memcpy is naughty (QuESTEnv has no trivial copy-assignment) and causes compiler warning. Fix!
 
-    // initialise it to our local env
+    // initialise it to a local env
+    QuESTEnv env = {
+
+        // bind deployment info
+        .isMultithreaded  = useMultithread,
+        .isGpuAccelerated = useGpuAccel,
+        .isDistributed    = useDistrib,
+
+        // set distributed info
+        .rank     = (useDistrib)? comm_getRank()     : 0,
+        .numNodes = (useDistrib)? comm_getNumNodes() : 1,
+    };
     memcpy(globalEnvPtr, &env, sizeof(QuESTEnv));
 }
 
