@@ -232,7 +232,7 @@ void printGpuInfo() {
 
     // must not query any GPU facilities unless confirmed compiled and available
     bool isComp = gpu_isGpuCompiled();
-    bool isGpu = isGpu && gpu_isGpuAvailable();
+    bool isGpu = isComp && gpu_isGpuAvailable();
 
     print_table(
         "gpu", {
@@ -369,7 +369,9 @@ void printQuregAutoDeployments(bool isDensMatr) {
     // tailor table title to type of Qureg
     string prefix = (isDensMatr)? "density matrix" : "statevector";
     string title = prefix + " autodeployment";
-    print_table(title, rows);
+    rows.empty()?
+        print_table(title, "(no parallelisations available)"):
+        print_table(title, rows);
 }
 
 
