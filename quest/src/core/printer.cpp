@@ -1392,5 +1392,5 @@ void print_table(string title, string emptyPlaceholder, string indent) {
 
     // print indented table title and placeholder
     cout << indent << getTableTitleStr(title) << endl;
-    cout << indent << indent << emptyPlaceholder;
+    cout << indent << indent << emptyPlaceholder << endl;
 }
