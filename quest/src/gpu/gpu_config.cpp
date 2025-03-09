@@ -98,7 +98,7 @@ void gpu_finalizeCuQuantum() {
 // functions must not be called before we have
 // explicitly bound GPUs to MPI processes, which
 // we use this flag to defensively ensure
-static bool hasGpuBeenBound = false;
+bool hasGpuBeenBound = false;
 
 
 int getBoundGpuId() {
