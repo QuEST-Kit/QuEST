@@ -122,7 +122,7 @@ int gpu_getComputeCapability() {
 
     cudaDeviceProp props;
     CUDA_CHECK( cudaGetDeviceProperties(&props, getBoundGpuId()) );
-    return prop.major * 10 + prop.minor;
+    return props.major * 10 + props.minor;
 
 #else
     error_gpuQueriedButGpuNotCompiled();
