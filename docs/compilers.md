@@ -16,8 +16,7 @@ QuEST separates compilation of the **_frontend_**, **_backend_** and the **_test
 
 User code can be written in either `C11` or `C++14`, and has so far been tested with compilers
 - [clang](https://clang.llvm.org/) 15
-- [gnu](https://gcc.gnu.org/) 13
-- [gnu](https://gcc.gnu.org/) 14
+- [gnu](https://gcc.gnu.org/) 10-14
 - [msvc](https://learn.microsoft.com/en-us/cpp/build/reference/compiling-a-c-cpp-program?view=msvc-170) 19
 
 > The standards are imposed by the QuEST header's use of `C11` [generics](https://en.cppreference.com/w/c/language/generic) and `C++14` complex arithmetic overloads. Each can be relaxed to enable compatibility with `C99` and `C++11` by simple modifications to the headers - ask us for help! 
