@@ -311,6 +311,12 @@ void gpu_bindLocalGPUsToNodes() {
 }
 
 
+
+// DEBUG
+#include <iostream>
+#include <string>
+
+
 bool gpu_areAnyNodesBoundToSameGpu() {
 #if COMPILE_CUDA
     assert_gpuHasBeenBound(hasGpuBeenBound);
@@ -318,14 +324,31 @@ bool gpu_areAnyNodesBoundToSameGpu() {
     if (!comm_isInit())
         return false;
 
-    constexpr int idLen = 20;
-    char localDeviceId[idLen];
-    cudaDeviceGetPCIBusId(localDeviceId, idLen, getBoundGpuId());
+    // constexpr int idLen = 20;
+    // char localDeviceId[idLen];
+    // cudaDeviceGetPCIBusId(localDeviceId, idLen, getBoundGpuId());
 
-    auto allIds = comm_gatherStringsToRoot(localDeviceId, idLen);
-    auto uniqueIds = std::set<std::string>(allIds.begin(), allIds.end());
 
-    bool localGpusAreUnique = allIds.size() == uniqueIds.size();
+    
+    CUuuid uuid;
+    CUDA_CHECK( cuDeviceGetUuid(&uuid, getBoundGpuId()) );
+
+    // be carefu; a chatGPT hallucination
+    constexpr int len = 37;
+    char uuidStr[len];
+    snprintf(uuidStr, sizeof(uuidStr), "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", 
+        uuid.bytes[0], uuid.bytes[1], uuid.bytes[2], uuid.bytes[3], 
+        uuid.bytes[4], uuid.bytes[5], uuid.bytes[6], uuid.bytes[7], 
+        uuid.bytes[8], uuid.bytes[9], uuid.bytes[10], uuid.bytes[11], 
+        uuid.bytes[12], uuid.bytes[13], uuid.bytes[14], uuid.bytes[15]);
+
+    
+    std::cout << "rank=" << comm_getRank() << ", uuidStr=" << std::string(uuidStr) << std::endl;
+
+    auto allUuids = comm_gatherStringsToRoot(uuidStr, len);
+    auto uniqueUuids = std::set<std::string>(allUuids.begin(), allUuids.end());
+
+    bool localGpusAreUnique = allUuids.size() == uniqueUuids.size();
     bool globalGpusAreUnique = comm_isTrueOnAllNodes(localGpusAreUnique);
     return ! globalGpusAreUnique;
 

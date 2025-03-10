@@ -236,12 +236,12 @@ void printGpuInfo() {
 
     print_table(
         "gpu", {
-        {"numGpus",       isComp? printer_toStr(gpu_getNumberOfLocalGpus()) : na}, // safe to call
-        {"gpuDirect",     isGpu? printer_toStr(gpu_isDirectGpuCommPossible()) : na},
-        {"gpuMemPools",   isGpu? printer_toStr(gpu_doesGpuSupportMemPools()) : na},
-        {"gpuMemory",     isGpu? printer_getMemoryWithUnitStr(gpu_getTotalMemoryInBytes()) + pg : na},
-        {"gpuMemoryFree", isGpu? printer_getMemoryWithUnitStr(gpu_getCurrentAvailableMemoryInBytes()) + pg : na},
-        {"gpuCache",      isGpu? printer_getMemoryWithUnitStr(gpu_getCacheMemoryInBytes()) + pg : na},
+        {"numGpus",       isComp? printer_toStr(gpu_getNumberOfLocalGpus())    : na},
+        {"gpuDirect",     isGpu?  printer_toStr(gpu_isDirectGpuCommPossible()) : na},
+        {"gpuMemPools",   isGpu?  printer_toStr(gpu_doesGpuSupportMemPools())  : na},
+        {"gpuMemory",     isGpu?  printer_getMemoryWithUnitStr(gpu_getTotalMemoryInBytes())            + pg : na},
+        {"gpuMemoryFree", isGpu?  printer_getMemoryWithUnitStr(gpu_getCurrentAvailableMemoryInBytes()) + pg : na},
+        {"gpuCache",      isGpu?  printer_getMemoryWithUnitStr(gpu_getCacheMemoryInBytes())            + pg : na},
     });
 }
 

@@ -53,6 +53,8 @@ static constexpr int maxWarpsPerBlock = 1024/WARPSIZE;
 #define cudaDevAttrMaxThreadsPerBlock hipDeviceAttributeMaxThreadsPerBlock
 #define cudaDevAttrMultiProcessorCount hipDeviceAttributeMultiprocessorCount
 
+#define cuDeviceGetUuid hipDeviceGetUuid
+
 #define cufftDestroy hipfftDestroy
 #define cufftDoubleComplex hipfftDoubleComplex
 #define cufftDoubleReal hipfftDoubleReal
