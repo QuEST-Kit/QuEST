@@ -1,8 +1,12 @@
 /** @file
  * Testing utilities which create Quregs across all
  * available hardware deployments
- *
+
  * @author Tyson Jones
+ * 
+ * @defgroup cache Cache
+ * @ingroup utils
+ * @{
  */
 
 #ifndef CACHE_HPP
@@ -35,3 +39,5 @@ qmatrix getRefDensmatr();
 
 
 #endif // CACHE_HPP
+
+/** @} (end defgroup) */

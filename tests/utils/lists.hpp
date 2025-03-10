@@ -2,6 +2,10 @@
  * Testing utilities which generate lists of integers.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup lists Lists
+ * @ingroup utils
+ * @{
  */
 
 #ifndef LISTS_HPP
@@ -31,3 +35,5 @@ CatchGen<listpair> disjointsublists(CatchGen<int>&& gen, int sublen1, int sublen
 
 
 #endif // LISTS_HPP
+
+/** @} (end defgroup) */

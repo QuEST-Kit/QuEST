@@ -5,6 +5,10 @@
  * un-optimised, defensively-designed routines.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup evolve Evolve
+ * @ingroup utils
+ * @{
  */
 
 #ifndef EVOLVE_HPP
@@ -35,3 +39,5 @@ void multiplyReferenceOperator(qmatrix& state, vector<int> targs, qmatrix matrix
 
 
 #endif // EVOLVE_HPP
+
+/** @} (end defgroup) */

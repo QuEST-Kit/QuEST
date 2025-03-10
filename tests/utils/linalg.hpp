@@ -5,6 +5,10 @@
  * designed routines.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup linalg Linalg
+ * @ingroup utils
+ * @{
  */
 
 #ifndef LINALG_HPP
@@ -53,3 +57,5 @@ bool isCompletelyPositiveTracePreserving(vector<qmatrix>);
 
 
 #endif // LINALG_HPP
+
+/** @} (end defgroup) */

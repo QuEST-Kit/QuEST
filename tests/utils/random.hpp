@@ -3,6 +3,10 @@
  * independently of QuEST's internal generators. 
  *
  * @author Tyson Jones
+ * 
+ * @defgroup random Random
+ * @ingroup utils
+ * @{
  */
 
 #ifndef RANDOM_HPP
@@ -61,3 +65,5 @@ PauliStrSum createRandomNonHermitianPauliStrSum(int numQubits, int numTerms);
 
 
 #endif // RANDOM_HPP
+
+/** @} (end defgroup) */

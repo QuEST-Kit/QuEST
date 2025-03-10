@@ -3,6 +3,10 @@
  * as a reference proxy to a quantum statevector.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup qvector qvector
+ * @ingroup utils
+ * @{
  */
 
 #ifndef QVECTOR_HPP
@@ -40,3 +44,5 @@ void setToDebugState(qvector &v);
 
 
 #endif // QVECTOR_HPP
+
+/** @} (end defgroup) */

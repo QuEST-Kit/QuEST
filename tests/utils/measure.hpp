@@ -4,6 +4,10 @@
  * serial, un-optimised, defensively-designed routines.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup measure Measure
+ * @ingroup utils
+ * @{
  */
 
 #ifndef MEASURE_HPP
@@ -41,3 +45,5 @@ qreal getReferencePurity(qmatrix state);
 
 
 #endif // MEASURE_HPP
+
+/** @} (end defgroup) */
