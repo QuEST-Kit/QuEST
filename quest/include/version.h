@@ -2,6 +2,8 @@
  * QuEST version information.
  * 
  * @author Tyson Jones
+ * 
+ * (no doxygen doc)
  */
 
 #ifndef VERSION_H

@@ -3,7 +3,9 @@
  * such as probabilities, expectation values and partial traces.
  * 
  * @author Tyson Jones
+ *
  * @defgroup calculations Calculations
+ * @ingroup api
  * @{
  */
 

@@ -5,7 +5,9 @@
  * state in GPU memory; the CPU amps are unchanged.
  * 
  * @author Tyson Jones
+ * 
  * @defgroup initialisations Initialisations
+ * @ingroup api
  * @{
  */
 

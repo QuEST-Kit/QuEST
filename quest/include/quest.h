@@ -7,6 +7,8 @@
  * deprecated v3 API, before including this header.
  * 
  * @author Tyson Jones
+ * 
+ * @defgroup api API
  */
 
 #ifndef QUEST_H

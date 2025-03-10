@@ -4,7 +4,9 @@
  * 
  * @author Tyson Jones
  * @author Milos Prokop (patched trig overloads in v3)
+ * 
  * @defgroup precision Precision
+ * @ingroup api
  * @{
  */
 

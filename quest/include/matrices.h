@@ -12,7 +12,9 @@
  * @author Tyson Jones
  * @author Richard Meister (aided in design)
  * @author Erich Essmann (aided in design, patched on MSVC)
+ * 
  * @defgroup matrices Matrices
+ * @ingroup api
  * @{
  */
 

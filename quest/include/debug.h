@@ -4,7 +4,9 @@
  * parameters or seeding random generation.
  * 
  * @author Tyson Jones
+ *
  * @defgroup debug Debug
+ * @ingroup api
  * @{
  */
 

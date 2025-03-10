@@ -9,7 +9,9 @@
  * 
  * @author Tyson Jones
  * @author Ali Rezaei (aided in design)
+ *
  * @defgroup types Types
+ * @ingroup api
  * @{
  */
 

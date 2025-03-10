@@ -3,7 +3,9 @@
  * their initialisers, and reporting utilities.
  * 
  * @author Tyson Jones
+ * 
  * @defgroup paulis Paulis
+ * @ingroup api
  * @{
  */
 

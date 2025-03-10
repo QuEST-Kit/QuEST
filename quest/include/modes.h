@@ -3,7 +3,9 @@
  * preprocessor macros are defined and valid 
  * 
  * @author Tyson Jones
+ * 
  * @defgroup modes Modes
+ * @ingroup api
  * @{
  */
 

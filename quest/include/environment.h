@@ -4,7 +4,9 @@
  * 
  * @author Tyson Jones
  * @author Richard Meister (aided in design)
+ * 
  * @defgroup environment Environment
+ * @ingroup api
  * @{
  */
 

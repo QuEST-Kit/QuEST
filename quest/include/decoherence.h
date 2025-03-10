@@ -3,7 +3,9 @@
  * which are instantiated as density matrices.
  * 
  * @author Tyson Jones
+ * 
  * @defgroup decoherence Decoherence
+ * @ingroup api
  * @{
  */
 

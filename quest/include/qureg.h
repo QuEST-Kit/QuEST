@@ -2,7 +2,9 @@
  * API signatures for creating and managing Quregs.
  * 
  * @author Tyson Jones
+ * 
  * @defgroup qureg Qureg
+ * @ingroup api
  * @{
  */
 

@@ -37,7 +37,9 @@
  * @author Tyson Jones
  * @author Richard Meister (aided in design)
  * @author Erich Essmann (aided in design)
+ * 
  * @defgroup channels Channels
+ * @ingroup api
  * @{
  */
 

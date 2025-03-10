@@ -5,7 +5,9 @@
  * instead exposed in decoherence.h
  * 
  * @author Tyson Jones
+ * 
  * @defgroup operations Operations
+ * @ingroup api
  * @{
  */
 
