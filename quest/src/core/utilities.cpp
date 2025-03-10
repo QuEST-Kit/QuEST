@@ -158,6 +158,20 @@ vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg) {
     return braInds;
 }
 
+vector<int> util_getNonTargetedQubits(int* targets, int numTargets, int numQubits) {
+    
+    qindex mask = getBitMask(targets, numTargets);
+
+    vector<int> nonTargets;
+    nonTargets.reserve(numQubits - numTargets);
+
+    for (int i=0; i<numQubits; i++)
+        if (getBit(mask, i) == 0)
+            nonTargets.push_back(i);
+
+    return nonTargets;
+}
+
 vector<int> util_getConcatenated(vector<int> list1, vector<int> list2) {
 
     // modify the copy of list1
