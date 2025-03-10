@@ -338,6 +338,9 @@ bool gpu_areAnyNodesBoundToSameGpu() {
     char uuidStr[len];
     snprintf(uuidStr, len, "%s", uuid.bytes);
 
+    // DEBUG
+    std::cout << "rank=" << comm_getRank() << ", uuidStr=" << uuidStr << std::endl;
+
     auto allUuids = comm_gatherStringsToRoot(uuidStr, len);
     auto uniqueUuids = std::set<std::string>(allUuids.begin(), allUuids.end());
 
