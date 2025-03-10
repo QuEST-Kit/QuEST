@@ -4,8 +4,8 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup qvector qvector
- * @ingroup utils
+ * @defgroup testutilsqvector qvector
+ * @ingroup testutils
  * @{
  */
 

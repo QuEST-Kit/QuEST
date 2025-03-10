@@ -2,6 +2,9 @@
  * Unit tests of the initialisations module.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup unitinit Initialisation unit tests
+ * @ingroup unittests
  */
 
 #include "quest/include/quest.h"
@@ -59,3 +62,6 @@ qreal setQuregToRenormalized(Qureg qureg);
 void setQuregToPauliStrSum(Qureg qureg, PauliStrSum sum);
 
 
+void setQuregToPartialTrace(Qureg out, Qureg in, int* traceOutQubits, int numTraceQubits);
+
+void setQuregToReducedDensityMatrix(Qureg out, Qureg in, int* retainQubits, int numRetainQubits);

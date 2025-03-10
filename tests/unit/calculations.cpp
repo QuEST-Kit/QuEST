@@ -2,6 +2,9 @@
  * Unit tests of the calculations module.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup unitcalcs Calculations unit tests
+ * @ingroup unittests
  */
 
 #include "quest/include/quest.h"

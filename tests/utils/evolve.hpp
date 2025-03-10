@@ -6,8 +6,8 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup evolve Evolve
- * @ingroup utils
+ * @defgroup testutilsevolve Evolve
+ * @ingroup testutils
  * @{
  */
 

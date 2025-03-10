@@ -4,8 +4,8 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup random Random
- * @ingroup utils
+ * @defgroup testutilsrandom Random
+ * @ingroup testutils
  * @{
  */
 

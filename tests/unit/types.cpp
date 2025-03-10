@@ -2,6 +2,9 @@
  * Unit tests of the types module.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup unittypes Types unit tests
+ * @ingroup unittests
  */
 
 #include "quest/include/quest.h"

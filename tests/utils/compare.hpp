@@ -5,8 +5,8 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup compare Compare
- * @ingroup utils
+ * @defgroup testutilscompare Compare
+ * @ingroup testutils
  * @{
  */
 

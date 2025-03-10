@@ -2,6 +2,9 @@
  * Unit tests of the decoherence module.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup unitdeco Decoherence unit tests
+ * @ingroup unittests
  */
 
 #include "quest/include/quest.h"

@@ -3,8 +3,8 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup macros Macros
- * @ingroup utils
+ * @defgroup testutilsmacros Macros
+ * @ingroup testutils
  * @{
  */
 

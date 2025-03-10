@@ -4,8 +4,8 @@
 
  * @author Tyson Jones
  * 
- * @defgroup cache Cache
- * @ingroup utils
+ * @defgroup testutilscache Cache
+ * @ingroup testutils
  * @{
  */
 

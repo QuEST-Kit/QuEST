@@ -2,6 +2,9 @@
  * Unit tests of the operations module.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup unitops Operations unit tests
+ * @ingroup unittests
  */
 
 #include "quest/include/quest.h"

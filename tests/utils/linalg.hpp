@@ -6,8 +6,8 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup linalg Linalg
- * @ingroup utils
+ * @defgroup testutilslinalg Linalg
+ * @ingroup testutils
  * @{
  */
 

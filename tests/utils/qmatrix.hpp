@@ -5,8 +5,8 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup qmatrix qmatrix
- * @ingroup utils
+ * @defgroup testutilsqmatrix qmatrix
+ * @ingroup testutils
  * @{
  */
 

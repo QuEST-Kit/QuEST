@@ -2,6 +2,9 @@
  * Unit tests of the matrices module.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup unitmatr Matrices unit tests
+ * @ingroup unittests
  */
 
 #include "quest/include/quest.h"

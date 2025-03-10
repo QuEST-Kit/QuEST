@@ -2,6 +2,9 @@
  * Unit tests of the qureg module.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup unitqureg Qureg unit tests
+ * @ingroup unittests
  */
 
 #include "quest/include/quest.h"

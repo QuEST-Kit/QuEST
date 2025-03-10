@@ -3,8 +3,8 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup lists Lists
- * @ingroup utils
+ * @defgroup testutilslists Lists
+ * @ingroup testutils
  * @{
  */
 

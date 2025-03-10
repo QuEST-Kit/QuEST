@@ -5,8 +5,8 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup convert Convert
- * @ingroup utils
+ * @defgroup testutilsconvert Convert
+ * @ingroup testutils
  * @{
  */
 

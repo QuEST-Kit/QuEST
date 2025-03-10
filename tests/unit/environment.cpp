@@ -2,6 +2,9 @@
  * Unit tests of the environment module.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup unitenv Environment unit tests
+ * @ingroup unittests
  */
 
 #include "quest/include/quest.h"
