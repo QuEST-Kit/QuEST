@@ -346,6 +346,17 @@ bool gpu_areAnyNodesBoundToSameGpu() {
 
     bool localGpusAreUnique = allUuids.size() == uniqueUuids.size();
     bool globalGpusAreUnique = comm_isTrueOnAllNodes(localGpusAreUnique);
+
+
+    // DEBUG
+    if (comm_isRootNode()) {
+        std::cout << "root received uuids:" << std::endl;
+        for (auto elem : allUuids)
+            std::cout << "    " << elem << std::endl;
+        std::cout << "so areUnique=" << globalGpusAreUnique << std::endl;
+    }
+
+
     return ! globalGpusAreUnique;
 
 #else
