@@ -63,6 +63,8 @@ void comm_reduceReals(qreal* localReals, qindex numLocalReals);
 
 bool comm_isTrueOnAllNodes(bool val);
 
+bool comm_isTrueOnRootNode(bool val);
+
 
 
 /*

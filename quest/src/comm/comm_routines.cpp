@@ -694,6 +694,23 @@ bool comm_isTrueOnAllNodes(bool val) {
 }
 
 
+bool comm_isTrueOnRootNode(bool val) {
+    #if COMPILE_MPI
+
+    // this isn't really a reduction - it's a broadcast - but
+    // it's semantically relevant to comm_isTrueOnAllNodes()
+
+    unsigned out = (unsigned) val;
+    comm_broadcastUnsignedsFromRoot(&out, 1);
+    return (bool) out;
+
+#else
+    error_commButEnvNotDistributed();
+    return false;
+#endif
+}
+
+
 
 /*
  * PUBLIC GATHER METHODS
