@@ -54,7 +54,7 @@ using std::vector;
  * This data-structure is not partitioned between nodes in distributed mode.
  * That is, every node has a complete copy, allowing for safe comparisons.
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 typedef vector<vector<qcomp>> QMatrix;
@@ -65,14 +65,14 @@ typedef vector<vector<qcomp>> QMatrix;
  * This data-structure is not partitioned between nodes in distributed mode.
  * That is, every node has a complete copy, allowing for safe comparisons.
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 typedef vector<qcomp> QVector;
 
 /** Seed the C and C++ RNGs using hardware CSPRNG
  * 
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 void setRandomTestStateSeeds();
@@ -88,7 +88,7 @@ qreal absComp(qcomp x);
  * toward unit test statistics. This should be called within every PREPARE_TEST macro, to ensure that
  * the test states themselves are initially correct, and do not accidentally agree by (e.g.) being all-zero.
  * 
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 void assertQuregAndRefInDebugState(Qureg qureg, QVector ref);
@@ -98,7 +98,7 @@ void assertQuregAndRefInDebugState(Qureg qureg, QVector ref);
  * toward unit test statistics. This should be called within every PREPARE_TEST macro, to ensure that
  * the test states themselves are initially correct, and do not accidentally agree by (e.g.) being all-zero.
  * 
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 void assertQuregAndRefInDebugState(Qureg qureg, QMatrix ref);
@@ -115,7 +115,7 @@ void assertQuregAndRefInDebugState(Qureg qureg, QMatrix ref);
  * Definition of division using multiplication can furthermore 
  * heighten numerical errors.
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 QVector operator + (const QVector& v1, const QVector& v2);
@@ -145,7 +145,7 @@ QVector operator * (const QMatrix& m, const QVector& v);
  * In GPU mode, this function involves a copy of \p qureg from GPU memory to RAM.
  * In distributed mode, this involves an all-to-all broadcast of \p qureg.
  * 
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 QVector toQVector(Qureg qureg);
@@ -153,7 +153,7 @@ QVector toQVector(Qureg qureg);
 /** Returns a vector with the given diagonal's elements.
  * In distributed mode, this involves an all-to-all broadcast of \p op.
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 QVector toQVector(DiagMatr op);
@@ -161,7 +161,7 @@ QVector toQVector(DiagMatr op);
 /** Returns a vector with the given diagonal's elements.
  * In distributed mode, this involves an all-to-all broadcast of \p op.
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 QVector toQVector(FullStateDiagMatr op);
@@ -170,28 +170,28 @@ QVector toQVector(FullStateDiagMatr op);
  * In GPU mode, this function involves a copy of \p qureg from GPU memory to RAM.
  * In distributed mode, this involves an all-to-all broadcast of \p qureg.
  * 
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 QMatrix toQMatrix(Qureg qureg);
 
 /** Returns a copy of the given 2-by-2 matrix.
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 QMatrix toQMatrix(CompMatr1 src);
 
 /** Returns a copy of the given 4-by-4 matrix.
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 QMatrix toQMatrix(CompMatr2 src);
 
 /** Returns a copy of the given matrix
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 QMatrix toQMatrix(CompMatr src);
@@ -199,14 +199,14 @@ QMatrix toQMatrix(CompMatr src);
 /** Returns a 2^\p N-by-2^\p N Hermitian matrix form of the specified 
  * weighted sum of Pauli products
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 QMatrix toQMatrix(qreal* coeffs, pauliOpType* paulis, int numQubits, int numTerms);
 
 /** Returns a 2^\p N-by-2^\p N Hermitian matrix form of the PauliHamil
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 QMatrix toQMatrix(PauliHamil hamil);
@@ -216,21 +216,21 @@ QMatrix toQMatrix(PauliHamil hamil);
  * strings, where N is the number of non-Identity
  * operators.
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 QMatrix toQMatrix(PauliStrSum sum);
 
 /** Returns a dense matrix equivalent to the given diagonal
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 QMatrix toQMatrix(DiagMatr matr);
 
 /** Returns a dense matrix equivalent to the given diagonal
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 QMatrix toQMatrix(FullStateDiagMatr matr);
@@ -238,7 +238,7 @@ QMatrix toQMatrix(FullStateDiagMatr matr);
 /** Returns a \p ComplexMatrix2 copy of QMatix \p qm.
  * Demands that \p qm is a 2-by-2 matrix.
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 ComplexMatrix2 toComplexMatrix2(QMatrix qm);
@@ -246,7 +246,7 @@ ComplexMatrix2 toComplexMatrix2(QMatrix qm);
 /** Returns a \p ComplexMatrix4 copy of QMatix \p qm.
  * Demands that \p qm is a 4-by-4 matrix.
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 ComplexMatrix4 toComplexMatrix4(QMatrix qm);
@@ -255,14 +255,14 @@ ComplexMatrix4 toComplexMatrix4(QMatrix qm);
  * GPU-mode, this will then sync the elements ot the matrix's
  * persistent GPU memory
  * 
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 void toComplexMatrixN(QMatrix qm, ComplexMatrixN cm);
 
 /** Returns a diagonal complex matrix formed by the given vector 
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones 
  */
 QMatrix toDiagonalQMatrix(QVector vec);
@@ -272,7 +272,7 @@ QMatrix toDiagonalQMatrix(QVector vec);
  * In GPU mode, this function involves a copy from RAM to GPU memory.
  * This function has no communication cost in distributed mode.
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 void toQureg(Qureg qureg, QVector vec);
@@ -282,7 +282,7 @@ void toQureg(Qureg qureg, QVector vec);
  * In GPU mode, this function involves a copy from RAM to GPU memory.
  * This function has no communication cost in distributed mode.
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 void toQureg(Qureg qureg, QMatrix mat);
@@ -291,21 +291,21 @@ void toQureg(Qureg qureg, QMatrix mat);
  * product is the seperable state formed by joining the qubits in the state-vectors, 
  * producing |b>|a> (a is least significant)
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 QVector getKroneckerProduct(QVector b, QVector a);
 
 /** Returns a dim-by-dim square complex matrix, initialised to all zeroes.
  * 
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 QMatrix getZeroMatrix(size_t dim);
 
 /** Returns a dim-by-dim identity matrix
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 QMatrix getIdentityMatrix(size_t dim);
@@ -313,7 +313,7 @@ QMatrix getIdentityMatrix(size_t dim);
 /** Returns the matrix exponential of a diagonal, square, complex matrix.
  * This method explicitly checks that the passed matrix \p a is diagonal.
  * 
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 QMatrix getExponentialOfDiagonalMatrix(QMatrix a);
@@ -324,7 +324,7 @@ QMatrix getExponentialOfDiagonalMatrix(QMatrix a);
  * kronecker product of involutory matrices, but will otherwise return an 
  * incorrect exponential.
  * 
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 QMatrix getExponentialOfPauliMatrix(qreal angle, QMatrix a);
@@ -332,7 +332,7 @@ QMatrix getExponentialOfPauliMatrix(qreal angle, QMatrix a);
 /** Returns the kronecker product of \p a and \p b, where \p a and \p b are 
  * square but possibly differently-sized complex matrices.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 QMatrix getKroneckerProduct(QMatrix a, QMatrix b);
@@ -341,7 +341,7 @@ QMatrix getKroneckerProduct(QMatrix a, QMatrix b);
  * \p qb1 and \p qb2; the SWAP gate of not-necessarily-adjacent qubits.
  * If \p qb1 == \p qb2, returns the identity matrix.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 QMatrix getSwapMatrix(int qb1, int qb2, int numQb);
@@ -357,7 +357,7 @@ QMatrix getSwapMatrix(int qb1, int qb2, int numQb);
  * the full Hilbert space, and then 'unswapping'. The returned matrix has form:
  * swap1 ... swapN . controlled(\p op) . swapN ... swap1
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 QMatrix getFullOperatorMatrix(int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op, int numQubits);
@@ -367,14 +367,14 @@ QMatrix getFullOperatorMatrix(int* ctrls, int numCtrls, int *targs, int numTargs
  * The dimensions of bra and ket must agree, and the returned square complex matrix 
  * has dimensions size(bra) x size(bra).
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 QMatrix getKetBra(QVector ket, QVector bra);
 
 /** Returns the conjugate transpose of the complex square matrix \p a
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 QMatrix getConjugateTranspose(QMatrix a);
@@ -383,7 +383,7 @@ QMatrix getConjugateTranspose(QMatrix a);
  * from the uniform distribution.
  * Demands that \p max > \p min.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 int getRandomInt(int min, int max);
@@ -392,7 +392,7 @@ int getRandomInt(int min, int max);
  * from the uniform distribution.
  * Demands that \p max > \p min.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 qreal getRandomReal(qreal min, qreal max);
@@ -401,7 +401,7 @@ qreal getRandomReal(qreal min, qreal max);
  * from a distribution uniformly randomising the individual real and imaginary 
  * components in their domains.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 qcomp getRandomComplex();
@@ -410,7 +410,7 @@ qcomp getRandomComplex();
  * square joining {-1-i, 1+i}, of an undisclosed distribution. The resulting 
  * vector is NOT L2-normalised.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 QVector getRandomQVector(int dim);
@@ -419,7 +419,7 @@ QVector getRandomQVector(int dim);
  * each element are independently random, under the standard normal distribution 
  * (mean 0, standard deviation 1).
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 QMatrix getRandomQMatrix(int dim);
@@ -434,7 +434,7 @@ QMatrix getRandomQMatrix(int dim);
  * This routine may return an identity matrix if it was unable to sufficiently 
  * precisely produce a unitary of the given size.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 QMatrix getRandomUnitary(int numQb);
@@ -443,7 +443,7 @@ QMatrix getRandomUnitary(int numQb);
  * undisclosed distribution. This function works by randomly generating each 
  * complex amplitude, then L2-normalising.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 QVector getRandomStateVector(int numQb);
@@ -452,7 +452,7 @@ QVector getRandomStateVector(int numQb);
  * distribution, in a very mixed state. This function works by generating 
  * 2^\p numQb random pure states, and mixing them with random probabilities.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 QMatrix getRandomDensityMatrix(int numQb);
@@ -460,21 +460,21 @@ QMatrix getRandomDensityMatrix(int numQb);
 /** Returns a random \p numQb-by-\p numQb density matrix, from an undisclosed 
  * distribution, which is pure (corresponds to a random state-vector)
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 QMatrix getRandomPureDensityMatrix(int numQb);
 
 /** Returns a density matrix initialised into the given pure state 
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones 
  */
 QMatrix getPureDensityMatrix(QVector state);
 
 /** Returns the diagonal vector of the given matrix
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 QVector getMatrixDiagonal(QMatrix matr);
@@ -485,14 +485,14 @@ QVector getMatrixDiagonal(QMatrix matr);
  * It works by generating \p numOps random unitary matrices, and randomly 
  * re-normalising them, such that the sum of ops[j]^dagger ops[j] = 1
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 vector<QMatrix> getRandomKrausMap(int numQb, int numOps);
 
 /** Returns a list of random real scalars, each in [0, 1], which sum to unity. 
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 vector<qreal> getRandomProbabilities(int numProbs);
@@ -500,7 +500,7 @@ vector<qreal> getRandomProbabilities(int numProbs);
 /** Returns a list of random orthonormal complex vectors, from an undisclosed 
  * distribution. 
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 vector<QVector> getRandomOrthonormalVectors(int numQb, int numStates);
@@ -508,28 +508,28 @@ vector<QVector> getRandomOrthonormalVectors(int numQb, int numStates);
 /** Returns a mixed density matrix formed from mixing the given pure states, 
  * which are assumed normalised, but not necessarily orthogonal.
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones 
  */
 QMatrix getMixedDensityMatrix(vector<qreal> probs, vector<QVector> states);
 
 /** Returns an L2-normalised copy of \p vec, using Kahan summation for improved accuracy.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 QVector getNormalised(QVector vec);
 
 /** Returns the discrete fourier transform of vector in 
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones 
  */
 QVector getDFT(QVector in);
 
 /** Returns the discrete fourier transform of a sub-partition of the vector in.
  * 
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones 
  */
 QVector getDFT(QVector in, int* targs, int numTargs);
@@ -537,7 +537,7 @@ QVector getDFT(QVector in, int* targs, int numTargs);
 /** Returns the integer value of the targeted sub-register for the given 
  * full state index \p ind. 
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones 
  */
 long long int getValueOfTargets(long long int ind, int* targs, int numTargs);
@@ -547,7 +547,7 @@ long long int getValueOfTargets(long long int ind, int* targs, int numTargs);
  * with the complete elements of sub.
  * This demands that dest.size() >= sub.size() + max(r,c).
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void setSubMatrix(QMatrix &dest, QMatrix sub, size_t r, size_t c);
@@ -568,7 +568,7 @@ void setSubMatrix(QMatrix &dest, QMatrix sub, size_t r, size_t c);
   * arguments, and left-multipling it to \p state, then right-multiplying its 
   * conjugate transpose onto the result.
   *
-  * @ingroup testutilities 
+  * @ingroup deprecatedutils 
   * @author Tyson Jones
   */
 void applyReferenceOp(QMatrix &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op);
@@ -589,7 +589,7 @@ void applyReferenceOp(QMatrix &state, int* ctrls, int numCtrls, int *targs, int 
  * arguments, and left-multipling it to \p state, then right-multiplying its 
  * conjugate transpose onto the result.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceOp(QMatrix &state, int* ctrls, int numCtrls, int targ1, int targ2, QMatrix op);
@@ -609,7 +609,7 @@ void applyReferenceOp(QMatrix &state, int* ctrls, int numCtrls, int targ1, int t
  * arguments, and left-multipling it to \p state, then right-multiplying its 
  * conjugate transpose onto the result.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceOp(QMatrix &state, int* ctrls, int numCtrls, int target, QMatrix op);
@@ -629,7 +629,7 @@ void applyReferenceOp(QMatrix &state, int* ctrls, int numCtrls, int target, QMat
  * arguments, and left-multipling it to \p state, then right-multiplying its 
  * conjugate transpose onto the result.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceOp(QMatrix &state, int *targs, int numTargs, QMatrix op);
@@ -648,7 +648,7 @@ void applyReferenceOp(QMatrix &state, int *targs, int numTargs, QMatrix op);
  * arguments, and left-multipling it to \p state, then right-multiplying its 
  * conjugate transpose onto the result.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceOp(QMatrix &state, int ctrl, int targ, QMatrix op);
@@ -668,7 +668,7 @@ void applyReferenceOp(QMatrix &state, int ctrl, int targ, QMatrix op);
  * arguments, and left-multipling it to \p state, then right-multiplying its 
  * conjugate transpose onto the result.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceOp(QMatrix &state, int ctrl, int* targs, int numTargs, QMatrix op);
@@ -687,7 +687,7 @@ void applyReferenceOp(QMatrix &state, int ctrl, int* targs, int numTargs, QMatri
  * arguments, and left-multipling it to \p state, then right-multiplying its 
  * conjugate transpose onto the result.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceOp(QMatrix &state, int ctrl, int targ1, int targ2, QMatrix op);
@@ -706,7 +706,7 @@ void applyReferenceOp(QMatrix &state, int ctrl, int targ1, int targ2, QMatrix op
  * arguments, and left-multipling it to \p state, then right-multiplying its 
  * conjugate transpose onto the result.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceOp(QMatrix &state, int targ, QMatrix op);
@@ -726,7 +726,7 @@ void applyReferenceOp(QMatrix &state, int targ, QMatrix op);
  * This function works by computing getFullOperatorMatrix() from the given 
  * arguments, and left-multiplying it onto \p state.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceOp(QVector &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op);
@@ -744,7 +744,7 @@ void applyReferenceOp(QVector &state, int* ctrls, int numCtrls, int *targs, int 
  * This function works by computing getFullOperatorMatrix() from the given 
  * arguments, and left-multiplying it onto \p state.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceOp(QVector &state, int* ctrls, int numCtrls, int targ1, int targ2, QMatrix op);
@@ -762,7 +762,7 @@ void applyReferenceOp(QVector &state, int* ctrls, int numCtrls, int targ1, int t
  * This function works by computing getFullOperatorMatrix() from the given 
  * arguments, and left-multiplying it onto \p state.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceOp(QVector &state, int* ctrls, int numCtrls, int target, QMatrix op);
@@ -779,7 +779,7 @@ void applyReferenceOp(QVector &state, int* ctrls, int numCtrls, int target, QMat
  * This function works by computing getFullOperatorMatrix() from the given 
  * arguments, and left-multiplying it onto \p state.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceOp(QVector &state, int *targs, int numTargs, QMatrix op);
@@ -796,7 +796,7 @@ void applyReferenceOp(QVector &state, int *targs, int numTargs, QMatrix op);
  * This function works by computing getFullOperatorMatrix() from the given 
  * arguments, and left-multiplying it onto \p state.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceOp(QVector &state, int ctrl, int targ, QMatrix op);
@@ -814,7 +814,7 @@ void applyReferenceOp(QVector &state, int ctrl, int targ, QMatrix op);
  * This function works by computing getFullOperatorMatrix() from the given 
  * arguments, and left-multiplying it onto \p state.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceOp(QVector &state, int ctrl, int* targs, int numTargs, QMatrix op);
@@ -832,7 +832,7 @@ void applyReferenceOp(QVector &state, int ctrl, int* targs, int numTargs, QMatri
  * This function works by computing getFullOperatorMatrix() from the given 
  * arguments, and left-multiplying it onto \p state.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceOp(QVector &state, int ctrl, int targ1, int targ2, QMatrix op);
@@ -849,7 +849,7 @@ void applyReferenceOp(QVector &state, int ctrl, int targ1, int targ2, QMatrix op
  * This function works by computing getFullOperatorMatrix() from the given 
  * arguments, and left-multiplying it onto \p state.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceOp(QVector &state, int targ, QMatrix op);
@@ -859,7 +859,7 @@ void applyReferenceOp(QVector &state, int targ, QMatrix op);
  * respectively). This is an alias of applyReferenceOp(), since operators are always 
  * left-multiplied as matrices onto state-vectors.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceMatrix(QVector &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op);
@@ -867,7 +867,7 @@ void applyReferenceMatrix(QVector &state, int* ctrls, int numCtrls, int *targs, 
 /** Modifies the state-vector \p state to be the result of left-multiplying the multi-target operator 
  * matrix \p op, with the specified target qubits (assuming no control qubits). T
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceMatrix(QVector &state, int *targs, int numTargs, QMatrix op);
@@ -877,7 +877,7 @@ void applyReferenceMatrix(QVector &state, int *targs, int numTargs, QMatrix op);
  * respectively). Here, \p op is treated like a simple matrix and is hence left-multiplied 
  * onto the state once.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceMatrix(QMatrix &state, int* ctrls, int numCtrls, int *targs, int numTargs, QMatrix op);
@@ -886,7 +886,7 @@ void applyReferenceMatrix(QMatrix &state, int* ctrls, int numCtrls, int *targs, 
  * matrix \p op, with the target qubits (assuming no control qubits). 
  * Here, \p op is treated like a simple matrix and is hence left-multiplied onto the state once.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void applyReferenceMatrix(QMatrix &state, int *targs, int numTargs, QMatrix op); 
@@ -901,7 +901,7 @@ void applyReferenceMatrix(QMatrix &state, int *targs, int numTargs, QMatrix op);
  * In GPU mode, this function involves a GPU to CPU memory copy overhead.
  * In distributed mode, it involves a all-to-all single-int broadcast.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 bool areEqual(Qureg qureg1, Qureg qureg2);
@@ -915,7 +915,7 @@ bool areEqual(Qureg qureg1, Qureg qureg2);
  * In GPU mode, this function involves a GPU to CPU memory copy overhead.
  * In distributed mode, it involves a all-to-all single-int broadcast.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 bool areEqual(Qureg qureg, QVector vec);
@@ -929,7 +929,7 @@ bool areEqual(Qureg qureg, QVector vec);
  * In GPU mode, this function involves a GPU to CPU memory copy overhead.
  * In distributed mode, it involves a all-to-all single-int broadcast.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 bool areEqual(Qureg qureg, QMatrix matr);
@@ -944,7 +944,7 @@ bool areEqual(Qureg qureg, QMatrix matr);
  * In GPU mode, this function involves a GPU to CPU memory copy overhead.
  * In distributed mode, it involves a all-to-all single-int broadcast.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 bool areEqual(Qureg qureg1, Qureg qureg2, qreal precision);
@@ -958,7 +958,7 @@ bool areEqual(Qureg qureg1, Qureg qureg2, qreal precision);
  * In GPU mode, this function involves a GPU to CPU memory copy overhead.
  * In distributed mode, it involves a all-to-all single-int broadcast.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 bool areEqual(Qureg qureg, QVector vec, qreal precision);
@@ -972,7 +972,7 @@ bool areEqual(Qureg qureg, QVector vec, qreal precision);
  * In GPU mode, this function involves a GPU to CPU memory copy overhead.
  * In distributed mode, it involves a all-to-all single-int broadcast.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 bool areEqual(Qureg qureg, QMatrix matr, qreal precision);
@@ -980,7 +980,7 @@ bool areEqual(Qureg qureg, QMatrix matr, qreal precision);
 /** Returns true if the absolute value of the difference between every amplitude in 
  * vectors \p a and \p b is less than \p REAL_EPS.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 bool areEqual(QVector a, QVector b);
@@ -988,7 +988,7 @@ bool areEqual(QVector a, QVector b);
 /** Returns true if the absolute value of the difference between every amplitude in 
  * matrices \p a and \p b is less than \p REAL_EPS.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 bool areEqual(QMatrix a, QMatrix b);
@@ -996,7 +996,7 @@ bool areEqual(QMatrix a, QMatrix b);
 /** Returns true if the absolute value of the difference between every element in 
  * \p vec and those implied by \p reals and \p imags, is less than \p REAL_EPS.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 bool areEqual(QVector vec, qreal* reals, qreal* imags);
@@ -1005,7 +1005,7 @@ bool areEqual(QVector vec, qreal* reals, qreal* imags);
  * \p vec (which must be strictly real) and those implied by \p reals, is less 
  * than \p REAL_EPS.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 bool areEqual(QVector vec, qreal* reals);
@@ -1018,7 +1018,7 @@ qcomp expI(qreal phase);
 
 /** Returns log2 of numbers which must be gauranteed to be 2^n 
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 unsigned int calcLog2(long unsigned int res);
@@ -1026,14 +1026,14 @@ unsigned int calcLog2(long unsigned int res);
 /** Populates the \p coeffs array with random qreals in (-5, 5), and 
  * populates \p codes with random Pauli codes
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void setRandomPauliSum(qreal* coeffs, pauliOpType* codes, int numQubits, int numTerms);
 
 /** Populates \p hamil with random coefficients and pauli codes
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void setRandomPauliSum(PauliHamil hamil, int numQubits);
@@ -1041,7 +1041,7 @@ void setRandomPauliSum(PauliHamil hamil, int numQubits);
 /** Populates \p hamil with random coefficients and a random amount number of 
  * PAULI_I and PAULI_Z operators.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void setRandomDiagPauliHamil(PauliHamil hamil, int numQubits);
@@ -1049,7 +1049,7 @@ void setRandomDiagPauliHamil(PauliHamil hamil, int numQubits);
 /** Populates \p targs with a random selection of \p numTargs elements from [0,\p numQb-1].
  * List \p targs does not need to be initialised and its elements are overwritten.
  * 
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void setRandomTargets(int* targs, int numTargs, int numQb);
@@ -1057,7 +1057,7 @@ void setRandomTargets(int* targs, int numTargs, int numQb);
 /** Populates \p targs with a random selection of elements from [0,\p numQb-1].
  * List \p targs does not need to be initialised and its elements are overwritten.
  * 
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 void setRandomTargets(vector<int> &targs, int numQb);
@@ -1066,7 +1066,7 @@ void setRandomTargets(vector<int> &targs, int numQb);
  * which must be a number between 0 and 2^numBits (exclusive). The returned number 
  * lies in [-2^(numBits-1), 2^(numBits-1)-1]
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 long long int getTwosComplement(long long int decimal, int numBits);
@@ -1075,7 +1075,7 @@ long long int getTwosComplement(long long int decimal, int numBits);
  * two's complement, encodes the signed number twosComp. The returned number 
  * lies in [0, 2^(numBits)-1]
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 long long int getUnsigned(long long int twosComp, int numBits);
@@ -1088,7 +1088,7 @@ long long int getUnsigned(long long int twosComp, int numBits);
 //  * combined. Overrides can be repeated, and only the first encountered for a given 
 //  * index will be effected (much like applyMultiVarPhaseFuncOverrides()).
 //  *
-//  * @ingroup testutilities
+//  * @ingroup deprecatedutils
 //  * @author Tyson Jones
 //  */
 // void setDiagMatrixOverrides(QMatrix &matr, int* numQubitsPerReg, int numRegs, enum bitEncoding encoding, long long int* overrideInds, qreal* overridePhases, int numOverrides);
@@ -1098,7 +1098,7 @@ long long int getUnsigned(long long int twosComp, int numBits);
  * independent test cases of functions requiring reading/writing to file, to 
  * avoid IO locks (especially common in distributed mode).
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 void setUniqueFilename(char* outFn, int maxlen, char* prefix);
@@ -1106,7 +1106,7 @@ void setUniqueFilename(char* outFn, int maxlen, char* prefix);
 /** Writes contents to the file with filename fn, which is created and/or overwritten.
  * In distributed mode, the master node writes while the other nodes wait until complete. 
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 void writeToFileSynch(char* fn, const string& contents);
@@ -1114,7 +1114,7 @@ void writeToFileSynch(char* fn, const string& contents);
 /** Deletes all files with filename starting with prefix. In distributed mode, the 
  * master node deletes while the other nodes wait until complete.
  *
- * @ingroup testutilities
+ * @ingroup deprecatedutils
  * @author Tyson Jones
  */
 void deleteFilesWithPrefixSynch(char* prefix);
@@ -1141,7 +1141,7 @@ template<class T> using CatchGen = Catch::Generators::GeneratorWrapper<T>;
   * to generate {1,2}, {1,3}, {1,4}, {2,1}, {2,3}, {2,4}, {3,1}, {3,2}, {3, 4},
   * {4,1}, {4,2}, {4, 3}.
   *
-  * @ingroup testutilities 
+  * @ingroup deprecatedutils 
   * @author Tyson Jones
   */
 CatchGen<int*> sublists(int* list, int len, int sublen);
@@ -1168,7 +1168,7 @@ CatchGen<int*> sublists(int* list, int len, int sublen);
  *
  * to generate {1,2}, {1,5}, {2,1}, {2,5}, {5,1}, {5,2}
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 CatchGen<int*> sublists(CatchGen<int>&& gen, int numSamps, const int* exclude, int numExclude);
@@ -1195,7 +1195,7 @@ CatchGen<int*> sublists(CatchGen<int>&& gen, int numSamps, const int* exclude, i
  *
  * to generate {2,3}, {3,2}.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 CatchGen<int*> sublists(CatchGen<int>&& gen, int numSamps, int excluded);
@@ -1217,7 +1217,7 @@ CatchGen<int*> sublists(CatchGen<int>&& gen, int numSamps, int excluded);
  * to generate {1,2}, {1,3}, {1,4}, {2,1}, {2,3}, {2,4}, {3,1}, {3,2}, {3, 4},
  * {4,1}, {4,2}, {4, 3}.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 CatchGen<int*> sublists(CatchGen<int>&& gen, int sublen);
@@ -1233,7 +1233,7 @@ CatchGen<int*> sublists(CatchGen<int>&& gen, int sublen);
  *
  * to produce {0,0,0}, {1,0,0}, {0,1,0}, {1,1,0}, {0,0,1}, {1,0,1}, {0,1,1}, {1,1,1}.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 CatchGen<int*> bitsets(int numBits);
@@ -1251,7 +1251,7 @@ CatchGen<int*> bitsets(int numBits);
  *
  * to produce {0,0}, {1,0}, {2,0}, {0,1}, {1,1}, {2,1}, {0,2}, {1,2}, {2,2}.
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 CatchGen<int*> sequences(int base, int numDigits);
@@ -1269,7 +1269,7 @@ CatchGen<int*> sequences(int base, int numDigits);
  * to produce {I,I}, {X,I}, {Y,I}, {Z,I}, {I,X}, {X,X}, {Y,X}, {Z,X}, {I,Y},
  * {X,Y}, {Y,Y}, {Z,Y}, {I,Z}, {X,Z}, {Y,Z}, {Z,Z}/
  *
- * @ingroup testutilities 
+ * @ingroup deprecatedutils 
  * @author Tyson Jones
  */
 CatchGen<pauliOpType*> pauliseqs(int numPaulis);

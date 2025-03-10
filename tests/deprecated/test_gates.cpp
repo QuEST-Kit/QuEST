@@ -33,7 +33,7 @@ using Catch::Approx;
 
 
 /** @sa collapseToOutcome
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "collapseToOutcome", "[gates]" ) {
@@ -139,7 +139,7 @@ TEST_CASE( "collapseToOutcome", "[gates]" ) {
 
 
 /** @sa measure
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "measure", "[gates]" ) {
@@ -231,7 +231,7 @@ TEST_CASE( "measure", "[gates]" ) {
 
 
 /** @sa measureWithStats
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "measureWithStats", "[gates]" ) {

@@ -30,7 +30,7 @@ using Catch::Approx;
 
 
 /** @sa calcDensityInnerProduct
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
@@ -130,7 +130,7 @@ TEST_CASE( "calcDensityInnerProduct", "[calculations]" ) {
 
 
 /** @sa calcExpecDiagonalOp
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "calcExpecDiagonalOp", "[calculations]" ) {
@@ -203,7 +203,7 @@ TEST_CASE( "calcExpecDiagonalOp", "[calculations]" ) {
 // and replacement PauliStrSum presently has no compatible constructor
 
     // /** @sa calcExpecPauliHamil
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "calcExpecPauliHamil", "[calculations]" ) {
@@ -316,7 +316,7 @@ TEST_CASE( "calcExpecDiagonalOp", "[calculations]" ) {
 
 
 /** @sa calcExpecPauliProd
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
@@ -490,7 +490,7 @@ TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
 
 
 /** @sa calcExpecPauliSum
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
@@ -615,7 +615,7 @@ TEST_CASE( "calcExpecPauliSum", "[calculations]" ) {
 
 
 /** @sa calcFidelity
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "calcFidelity", "[calculations]" ) {
@@ -775,7 +775,7 @@ TEST_CASE( "calcFidelity", "[calculations]" ) {
 
 
 /** @sa calcHilbertSchmidtDistance
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "calcHilbertSchmidtDistance", "[calculations]" ) {
@@ -874,7 +874,7 @@ TEST_CASE( "calcHilbertSchmidtDistance", "[calculations]" ) {
 
 
 /** @sa calcInnerProduct
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "calcInnerProduct", "[calculations]" ) {
@@ -952,7 +952,7 @@ TEST_CASE( "calcInnerProduct", "[calculations]" ) {
 
 
 /** @sa calcProbOfAllOutcomes
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "calcProbOfAllOutcomes", "[calculations]" ) {
@@ -1084,7 +1084,7 @@ TEST_CASE( "calcProbOfAllOutcomes", "[calculations]" ) {
 
 
 /** @sa calcProbOfOutcome
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "calcProbOfOutcome", "[calculations]" ) {
@@ -1202,7 +1202,7 @@ TEST_CASE( "calcProbOfOutcome", "[calculations]" ) {
 
 
 /** @sa calcPurity
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "calcPurity", "[calculations]" ) {
@@ -1276,7 +1276,7 @@ TEST_CASE( "calcPurity", "[calculations]" ) {
 
 
 /** @sa calcTotalProb
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "calcTotalProb", "[calculations]" ) {
@@ -1343,7 +1343,7 @@ TEST_CASE( "calcTotalProb", "[calculations]" ) {
 
 
 /** @sa getAmp
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "getAmp", "[calculations]" ) {
@@ -1382,7 +1382,7 @@ TEST_CASE( "getAmp", "[calculations]" ) {
 
 
 /** @sa getDensityAmp
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "getDensityAmp", "[calculations]" ) {
@@ -1425,7 +1425,7 @@ TEST_CASE( "getDensityAmp", "[calculations]" ) {
 
 
 /** @sa getImagAmp
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "getImagAmp", "[calculations]" ) {
@@ -1463,7 +1463,7 @@ TEST_CASE( "getImagAmp", "[calculations]" ) {
 
 
 /** @sa getNumAmps
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "getNumAmps", "[calculations]" ) {
@@ -1496,7 +1496,7 @@ TEST_CASE( "getNumAmps", "[calculations]" ) {
 
 
 /** @sa getNumQubits
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "getNumQubits", "[calculations]" ) {
@@ -1533,7 +1533,7 @@ TEST_CASE( "getNumQubits", "[calculations]" ) {
 
 
 /** @sa getProbAmp
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "getProbAmp", "[calculations]" ) {
@@ -1576,7 +1576,7 @@ TEST_CASE( "getProbAmp", "[calculations]" ) {
 
 
 /** @sa getRealAmp
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "getRealAmp", "[calculations]" ) {
