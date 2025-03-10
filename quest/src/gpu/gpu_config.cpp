@@ -326,7 +326,7 @@ bool gpu_areAnyNodesBoundToSameGpu() {
     // cast into a string (i.e. add a terminal char), so that...
     constexpr int len = 16 + 1;
     char uuidStr[len];
-    snprintf(uuidStr, len, "%s", uuid.bytes);
+    snprintf(uuidStr, len, "%s", uuid.bytes); // not human-readable however
 
     // we can repurpose string-to-root sending to collect all uuids
     auto allUuids = comm_gatherStringsToRoot(uuidStr, len);
