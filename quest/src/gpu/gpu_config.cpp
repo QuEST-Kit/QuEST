@@ -328,20 +328,17 @@ bool gpu_areAnyNodesBoundToSameGpu() {
     // char localDeviceId[idLen];
     // cudaDeviceGetPCIBusId(localDeviceId, idLen, getBoundGpuId());
 
+    // obtain bound GPU's UUID (a unique identifier)
+    cudaDeviceProp prop;
+    CUDA_CHECK( cudaGetDeviceProperties(&prop, getBoundGpuId()) );
+    cudaUUID_t uuid = prop.uuid;
 
-    
-    CUuuid uuid;
-    CUDA_CHECK( cuDeviceGetUuid(&uuid, getBoundGpuId()) );
-
-    // be carefu; a chatGPT hallucination
-    constexpr int len = 37;
+    // cast it into a string to repurpose our string gatherer 
+    // BEWARE: this is a chatgpt halluciantion so far!
+    constexpr int len = 64;
     char uuidStr[len];
-    snprintf(uuidStr, sizeof(uuidStr), "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", 
-        uuid.bytes[0], uuid.bytes[1], uuid.bytes[2], uuid.bytes[3], 
-        uuid.bytes[4], uuid.bytes[5], uuid.bytes[6], uuid.bytes[7], 
-        uuid.bytes[8], uuid.bytes[9], uuid.bytes[10], uuid.bytes[11], 
-        uuid.bytes[12], uuid.bytes[13], uuid.bytes[14], uuid.bytes[15]);
-
+    snprintf(uuidStr, len, "%08x-%04x-%04x-%04x-%04x%04x%04x", 
+        uuid.x, uuid.y, uuid.z, uuid.w, uuid.a, uuid.b, uuid.c);
     
     std::cout << "rank=" << comm_getRank() << ", uuidStr=" << std::string(uuidStr) << std::endl;
 
