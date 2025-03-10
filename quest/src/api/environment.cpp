@@ -84,42 +84,41 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     // overwrite deployments left as modeflag::USE_AUTO
     autodep_chooseQuESTEnvDeployment(useDistrib, useGpuAccel, useMultithread);
 
-    // use of cuQuantum requires a modern GPU
-    if (useGpuAccel && gpu_isCuQuantumCompiled())
-        validate_gpuIsCuQuantumCompatible(caller);
-
-    // optionally initialise MPI; necessary before completing validation
+    // optionally initialise MPI; necessary before completing validation,
+    // and before any GPU initialisation and validation, since we will
+    // perform that specifically upon the MPI-process-bound GPU(s). Further,
+    // we can make sure validation errors are reported only by the root node.
     if (useDistrib)
         comm_init();
 
     validate_newEnvDistributedBetweenPower2Nodes(caller);
 
-    if (useGpuAccel && useDistrib) {
+    // TODO:
+    // consider immediately disabling MPI here if comm_numNodes() == 1
+    // (also overwriting useDistrib = 0)
 
-        // TODO:
-        // validate 2^N local GPUs
-    }
+    // bind MPI nodes to unique GPUs; even when not distributed,
+    // and before we have validated local GPUs are compatible
+    if (useGpuAccel)
+        gpu_bindLocalGPUsToNodes();
 
-    // make a new, local env
-    QuESTEnv env = {
+    // each MPI process must use a unique GPU. This is critical when
+    // initializing cuQuantum, so we don't re-init cuStateVec on any
+    // paticular GPU (causing runtime error), but still ensures we 
+    // keep good performance in our custom backend GPU code; there is
+    // no reason to use multi-nodes-per-GPU except for dev/debugging.
+    if (useGpuAccel && useDistrib && ! PERMIT_NODES_TO_SHARE_GPU)
+        validate_newEnvNodesEachHaveUniqueGpu(caller);
 
-        // bind deployment info
-        .isMultithreaded  = useMultithread,
-        .isGpuAccelerated = useGpuAccel,
-        .isDistributed    = useDistrib,
+    // TODO:
+    // should we warn here if each machine contains
+    // more GPUs than deployed MPI-processes (some GPUs idle)?
 
-        // set distributed info
-        .rank     = (useDistrib)? comm_getRank()     : 0,
-        .numNodes = (useDistrib)? comm_getNumNodes() : 1,
-    };
-
-    // in multi-GPU settings, bind each MPI process to one GPU
-    if (useGpuAccel && useDistrib)
-        gpu_bindLocalGPUsToNodes(env.rank);
-
-    // in GPU settings, if cuQuantum is being used, initialise it
-    if (useGpuAccel && gpu_isCuQuantumCompiled())
+    // use cuQuantum if compiled
+    if (useGpuAccel && gpu_isCuQuantumCompiled()) {
+        validate_gpuIsCuQuantumCompatible(caller); // assesses above bound GPU
         gpu_initCuQuantum();
+    }
 
     // initialise RNG, used by measurements and random-state generation
     rand_setSeedsToDefault();
@@ -133,7 +132,18 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
 
     // TODO: the below memcpy is naughty (QuESTEnv has no trivial copy-assignment) and causes compiler warning. Fix!
 
-    // initialise it to our local env
+    // initialise it to a local env
+    QuESTEnv env = {
+
+        // bind deployment info
+        .isMultithreaded  = useMultithread,
+        .isGpuAccelerated = useGpuAccel,
+        .isDistributed    = useDistrib,
+
+        // set distributed info
+        .rank     = (useDistrib)? comm_getRank()     : 0,
+        .numNodes = (useDistrib)? comm_getNumNodes() : 1,
+    };
     memcpy(globalEnvPtr, &env, sizeof(QuESTEnv));
 }
 
@@ -223,16 +233,17 @@ void printGpuInfo() {
     // - GPU #SVMs etc
 
     // must not query any GPU facilities unless confirmed compiled and available
-    bool isGpu = gpu_isGpuCompiled() && gpu_isGpuAvailable();
+    bool isComp = gpu_isGpuCompiled();
+    bool isGpu = isComp && gpu_isGpuAvailable();
 
     print_table(
         "gpu", {
-        {"numGpus",       printer_toStr(gpu_getNumberOfLocalGpus())}, // safe to call
-        {"gpuDirect",     isGpu? printer_toStr(gpu_isDirectGpuCommPossible()) : na},
-        {"gpuMemPools",   isGpu? printer_toStr(gpu_doesGpuSupportMemPools()) : na},
-        {"gpuMemory",     isGpu? printer_getMemoryWithUnitStr(gpu_getTotalMemoryInBytes()) + pg : na},
-        {"gpuMemoryFree", isGpu? printer_getMemoryWithUnitStr(gpu_getCurrentAvailableMemoryInBytes()) + pg : na},
-        {"gpuCache",      isGpu? printer_getMemoryWithUnitStr(gpu_getCacheMemoryInBytes()) + pg : na},
+        {"numGpus",       isComp? printer_toStr(gpu_getNumberOfLocalGpus())    : na},
+        {"gpuDirect",     isGpu?  printer_toStr(gpu_isDirectGpuCommPossible()) : na},
+        {"gpuMemPools",   isGpu?  printer_toStr(gpu_doesGpuSupportMemPools())  : na},
+        {"gpuMemory",     isGpu?  printer_getMemoryWithUnitStr(gpu_getTotalMemoryInBytes())            + pg : na},
+        {"gpuMemoryFree", isGpu?  printer_getMemoryWithUnitStr(gpu_getCurrentAvailableMemoryInBytes()) + pg : na},
+        {"gpuCache",      isGpu?  printer_getMemoryWithUnitStr(gpu_getCacheMemoryInBytes())            + pg : na},
     });
 }
 
@@ -360,7 +371,9 @@ void printQuregAutoDeployments(bool isDensMatr) {
     // tailor table title to type of Qureg
     string prefix = (isDensMatr)? "density matrix" : "statevector";
     string title = prefix + " autodeployment";
-    print_table(title, rows);
+    rows.empty()?
+        print_table(title, "(no parallelisations available)"):
+        print_table(title, rows);
 }
 
 

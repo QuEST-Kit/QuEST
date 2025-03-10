@@ -4,8 +4,6 @@
  * @author Tyson Jones
  */
 
-#define _USE_MATH_DEFINES
-
 #include "quest/include/quest.h"
 
 #include <catch2/catch_test_macros.hpp>
@@ -56,9 +54,10 @@ namespace FixedMatrices {
     qmatrix Y = getPauliMatrix(2);
     qmatrix Z = getPauliMatrix(3);
 
+    qreal PI = 3.14159265358979323846;
     qmatrix T = {
         {1, 0},
-        {0, exp(1_i*M_PI/4)}};
+        {0, exp(1_i * PI/4)}};
 
     qmatrix S = {
         {1, 0},
@@ -403,12 +402,12 @@ auto getRandomRemainingArgs(vector<int> targs) {
         return tuple{ };
 
     if constexpr (Args == scalar) {
-        qreal angle = getRandomReal(-2*M_PI, 2*M_PI);
+        qreal angle = getRandomPhase();
         return tuple{ angle };
     }
 
     if constexpr (Args == axisrots) {
-        qreal angle = getRandomReal(-2*M_PI, 2*M_PI);
+        qreal angle = getRandomPhase();
         qreal x = getRandomReal(-1, 1);
         qreal y = getRandomReal(-1, 1);
         qreal z = getRandomReal(-1, 1);
@@ -433,7 +432,7 @@ auto getRandomRemainingArgs(vector<int> targs) {
 
     if constexpr (Args == pauligad) {
         PauliStr str = getRandomPauliStr(targs);
-        qreal angle = getRandomReal(-2*M_PI, 2*M_PI);
+        qreal angle = getRandomPhase();
         return tuple{ str, angle };
     }
 }
@@ -625,15 +624,16 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
-        qvector statevecRef = getZeroVector(getPow2(NUM_UNIT_QUREG_QUBITS));
-        qmatrix densmatrRef = getZeroMatrix(getPow2(NUM_UNIT_QUREG_QUBITS));
+        int numQubits = getNumCachedQubits();
+        qvector statevecRef = getZeroVector(getPow2(numQubits));
+        qmatrix densmatrRef = getZeroMatrix(getPow2(numQubits));
 
         // try all possible number of ctrls and targs
-        int numTargs = GENERATE_NUM_TARGS<Ctrls,Targs,Args>(NUM_UNIT_QUREG_QUBITS);
-        int numCtrls = GENERATE_NUM_CTRLS<Ctrls>(NUM_UNIT_QUREG_QUBITS - numTargs);
+        int numTargs = GENERATE_NUM_TARGS<Ctrls,Targs,Args>(numQubits);
+        int numCtrls = GENERATE_NUM_CTRLS<Ctrls>(numQubits - numTargs);
         
         // try all possible ctrls and targs
-        auto listpair = GENERATE_COPY( disjointsublists(range(0,NUM_UNIT_QUREG_QUBITS), numCtrls, numTargs) );
+        auto listpair = GENERATE_COPY( disjointsublists(range(0,numQubits), numCtrls, numTargs) );
         vector<int> ctrls = std::get<0>(listpair);
         vector<int> targs = std::get<1>(listpair);
 

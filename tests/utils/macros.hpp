@@ -10,16 +10,6 @@
 #include <catch2/catch_test_macros.hpp>
 
 
-// TODO:
-// this shouldn't be a macro; Catch2 can handle fine when
-// we make this a runtime variable (changing some of our
-// GENERATE to GENERATE_COPY). As a macro, changing the
-// qureg size requires recompiling the entire tests, which
-// is certainly annoying for development!
-
-#define NUM_UNIT_QUREG_QUBITS 6
-
-
 
 /*
  * preconditions to the internal unit testing functions are checked using 

@@ -83,8 +83,8 @@ void cpu_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
         qindex i = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
 
         // r, c = global row and column
-        qindex r = fast_getGlobalRowFromFlatIndex(i, dim);
-        qindex c = fast_getGlobalColFromFlatIndex(i, dim);
+        qindex r = fast_getQuregGlobalRowFromFlatIndex(i, dim);
+        qindex c = fast_getQuregGlobalColFromFlatIndex(i, dim);
 
         // contains non-unrolled loop (and args unpacked due to CUDA qcomp incompatibility, grr)
         qureg.cpuAmps[n] = fast_getPauliStrSumElem(sum.coeffs, sum.strings, sum.numTerms, r, c);
@@ -488,8 +488,11 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
                 // loop may be unrolled
                 for (qindex j=0; j<numTargAmps; j++) {
 
+                    // matr.cpuElems[k][j] = matr.cpuElemsFlat[l]
+                    qindex l = fast_getMatrixFlatIndex(k, j, numTargAmps);
+                    qcomp elem = matr.cpuElemsFlat[l];
+
                     // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
-                    qcomp elem = matr.cpuElems[k][j];
                     if constexpr (ApplyConj)
                         elem = conj(elem);
 
@@ -672,7 +675,7 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
     for (qindex n=0; n<numIts; n++) {
 
         // i = global row of nth local index
-        qindex i = fast_getGlobalRowFromFlatIndex(n, matr.numElems);
+        qindex i = fast_getQuregGlobalRowFromFlatIndex(n, matr.numElems);
         qcomp fac = matr.cpuElems[i];
 
         // compile-time decide if applying power to avoid in-loop branching...
@@ -686,7 +689,7 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
             qindex m = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
 
             // j = global column corresponding to n
-            qindex j = fast_getGlobalColFromFlatIndex(m, matr.numElems);
+            qindex j = fast_getQuregGlobalColFromFlatIndex(m, matr.numElems);
             qcomp term = matr.cpuElems[j];
 
             // right-apply matrix elem may also need to be exponentiated
@@ -955,8 +958,8 @@ void cpu_densmatr_mixQureg_subB(qreal outProb, Qureg outQureg, qreal inProb, Qur
     for (qindex n=0; n<numIts; n++) {
 
         // (i,j) = row & column of outQureg corresponding to n
-        qindex i = fast_getGlobalRowFromFlatIndex(n, dim);
-        qindex j = fast_getGlobalColFromFlatIndex(n, dim);
+        qindex i = fast_getQuregGlobalRowFromFlatIndex(n, dim);
+        qindex j = fast_getQuregGlobalColFromFlatIndex(n, dim);
 
         out[n] = (outProb * out[n]) + (inProb * in[i] * conj(in[j]));
     }
@@ -978,8 +981,8 @@ void cpu_densmatr_mixQureg_subC(qreal outProb, Qureg outQureg, qreal inProb) {
         qindex m = concatenateBits(outQureg.rank, n, outQureg.logNumAmpsPerNode);
 
         // (i,j) = global row & column of outQureg corresponding to n
-        qindex i = fast_getGlobalRowFromFlatIndex(m, dim);
-        qindex j = fast_getGlobalColFromFlatIndex(m, dim);
+        qindex i = fast_getQuregGlobalRowFromFlatIndex(m, dim);
+        qindex j = fast_getQuregGlobalColFromFlatIndex(m, dim);
 
         out[n] = (outProb * out[n]) + (inProb * in[i] * conj(in[j]));
     }
@@ -1667,7 +1670,7 @@ qreal cpu_densmatr_calcTotalProb_sub(Qureg qureg) {
     for (qindex n=0; n<numIts; n++) {
 
         // i = local index of nth local diagonal element
-        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
+        qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
         prob += real(qureg.cpuAmps[i]);
     }
 
@@ -1733,7 +1736,7 @@ qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
         qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitStateMask); // may be unrolled at compile-time
 
         // j = local, flat, density-matrix index of diagonal amp corresponding to state i
-        qindex j = fast_getLocalIndexOfDiagonalAmp(i, firstDiagInd, numAmpsPerCol);
+        qindex j = fast_getQuregLocalIndexOfDiagonalAmp(i, firstDiagInd, numAmpsPerCol);
 
         prob += std::real(qureg.cpuAmps[j]);
     }
@@ -1799,7 +1802,7 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     for (qindex n=0; n<numIts; n++) {
 
         // i = local index of nth local diagonal element
-        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
+        qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
         qreal prob = std::real(qureg.cpuAmps[i]);
 
         // j = global index of i
@@ -1951,7 +1954,7 @@ qcomp cpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
     for (qindex n=0; n<numIts; n++) {
 
         // i = local index of nth local diagonal element
-        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
+        qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
 
         // r = global row of nth local diagonal, which determines amp sign
         qindex r = n + firstDiagInd;
@@ -2061,7 +2064,7 @@ qcomp cpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int>
         qindex i = flipBits(r, maskXY);
 
         // m = local flat index of i
-        qindex m = fast_getLocalFlatIndex(i, n, numAmpsPerCol);
+        qindex m = fast_getQuregLocalFlatIndex(i, n, numAmpsPerCol);
 
         // sign = +-1 induced by Y and Z (excludes Y's imaginary factors)
         int sign = fast_getPlusOrMinusMaskedBitParity(i, maskYZ);
@@ -2138,7 +2141,7 @@ qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
             elem = pow(elem, exponent);
 
         // i = local index of nth local diagonal element
-        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
+        qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
         qcomp term = elem * qureg.cpuAmps[i];
 
         valueRe += real(term);

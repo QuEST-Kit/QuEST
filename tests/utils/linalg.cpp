@@ -7,7 +7,6 @@
  * @author Tyson Jones
  */
 
-#define _USE_MATH_DEFINES
 #include "qvector.hpp"
 #include "qmatrix.hpp"
 #include "linalg.hpp"
@@ -93,8 +92,10 @@ qvector getDisceteFourierTransform(qvector in) {
     size_t dim = in.size();
     qvector out = getZeroVector(dim);
 
+    // PI must be accurate here
+    qreal pi = 3.14159265358979323846;
     qreal a = 1 / sqrt(dim);
-    qreal b = 2 * M_PI / dim;
+    qreal b = 2 * pi / dim;
     
     for (size_t x=0; x<dim; x++)
         for (size_t y=0; y<dim; y++)

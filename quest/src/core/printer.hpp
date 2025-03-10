@@ -167,8 +167,9 @@ void print_elems(FullStateDiagMatr qureg, string indent=defaultMatrIndent);
  * TABLE PRINTING
  */
 
-void print_table(string title, vector<tuple<string, string       >> rows, string indent=defaultTableIndent);
+void print_table(string title, vector<tuple<string, string>>        rows, string indent=defaultTableIndent);
 void print_table(string title, vector<tuple<string, long long int>> rows, string indent=defaultTableIndent);
+void print_table(string title, string emptyPlaceholder,                   string indent=defaultTableIndent);
 
 
 

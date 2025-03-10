@@ -600,7 +600,7 @@ void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps)
 #if COMPILE_MPI
 
     // only the sender and root nodes need to continue
-    int recvRank = 0;
+    int recvRank = ROOT_RANK;
     int myRank = comm_getRank();
     if (myRank != sendRank && myRank != recvRank)
         return;
@@ -627,7 +627,7 @@ void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps)
 void comm_broadcastUnsignedsFromRoot(unsigned* arr, qindex length) {
 #if COMPILE_MPI
 
-    int sendRank = 0;
+    int sendRank = ROOT_RANK;
     MPI_Bcast(arr, length, MPI_UNSIGNED, sendRank, MPI_COMM_WORLD);
 
 #else
@@ -696,5 +696,57 @@ bool comm_isTrueOnAllNodes(bool val) {
 #else
     error_commButEnvNotDistributed();
     return false;
+#endif
+}
+
+
+bool comm_isTrueOnRootNode(bool val) {
+    #if COMPILE_MPI
+
+    // this isn't really a reduction - it's a broadcast - but
+    // it's semantically relevant to comm_isTrueOnAllNodes()
+
+    unsigned out = (unsigned) val;
+    comm_broadcastUnsignedsFromRoot(&out, 1);
+    return (bool) out;
+
+#else
+    error_commButEnvNotDistributed();
+    return false;
+#endif
+}
+
+
+
+/*
+ * PUBLIC GATHER METHODS
+ */
+
+
+vector<string> comm_gatherStringsToRoot(char* localChars, int maxNumLocalChars) {
+#if COMPILE_MPI
+
+    // no need to validate array sizes and memory alloc successes;
+    // these are trivial O(#nodes)-size arrays containing <20 chars
+    int numNodes = comm_getNumNodes();
+
+    // root makes one big contiguous array to receive all chars contiguously
+    vector<char> allChars(maxNumLocalChars * numNodes);
+
+    // all nodes send root all their local chars
+    int recvRank = ROOT_RANK;
+    MPI_Gather(localChars, maxNumLocalChars, MPI_CHAR, allChars.data(),
+        maxNumLocalChars, MPI_CHAR, recvRank, MPI_COMM_WORLD);
+
+    // divide allChars into stings, delimited by each node's terminal char
+    vector<string> out(numNodes);
+    for (int r=0; r<numNodes; r++)
+        out[r] = std::string(&allChars[r*maxNumLocalChars]);
+
+    return out;
+
+#else
+    error_commButEnvNotDistributed();
+    return {};
 #endif
 }

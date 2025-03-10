@@ -65,28 +65,35 @@ INLINE int fast_getPlusOrMinusMaskedBitParity(qindex num, qindex mask) {
  */
 
 
-INLINE qindex fast_getGlobalRowFromFlatIndex(qindex localOrGlobalInd, qindex numAmpsPerCol) {
+INLINE qindex fast_getQuregGlobalRowFromFlatIndex(qindex localOrGlobalInd, qindex numAmpsPerCol) {
 
     return localOrGlobalInd % numAmpsPerCol;
 }
 
 
-INLINE qindex fast_getGlobalColFromFlatIndex(qindex globalInd, qindex numAmpsPerCol) {
+INLINE qindex fast_getQuregGlobalColFromFlatIndex(qindex globalInd, qindex numAmpsPerCol) {
 
     return globalInd / numAmpsPerCol; // floors
 }
 
 
-INLINE qindex fast_getLocalIndexOfDiagonalAmp(qindex localIndOfBasisState, qindex localIndOfFirstDiagAmp, qindex numAmpsPerCol) {
+INLINE qindex fast_getQuregLocalIndexOfDiagonalAmp(qindex localIndOfBasisState, qindex localIndOfFirstDiagAmp, qindex numAmpsPerCol) {
 
     qindex interDiagSpace = 1 + numAmpsPerCol; // constant and optimised away
     return localIndOfFirstDiagAmp + (localIndOfBasisState * interDiagSpace);
 }
 
 
-INLINE qindex fast_getLocalFlatIndex(qindex row, qindex localCol, qindex numAmpsPerCol) {
+INLINE qindex fast_getQuregLocalFlatIndex(qindex row, qindex localCol, qindex numAmpsPerCol) {
 
-    return row +  localCol * numAmpsPerCol;
+    // Qureg density matrices are column-major
+    return row + localCol * numAmpsPerCol;
+}
+
+INLINE qindex fast_getMatrixFlatIndex(qindex row, qindex col, qindex numAmpsPerCol) {
+
+    // non-distributed matrices are row-major
+    return col + row * numAmpsPerCol;
 }
 
 

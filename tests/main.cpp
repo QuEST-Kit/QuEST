@@ -50,7 +50,7 @@ public:
         std::cout << "  GPU-accelerated: " << env.isGpuAccelerated << std::endl;
         std::cout << "  cuQuantum:       " << (env.isGpuAccelerated && COMPILE_CUQUANTUM) << std::endl;
         std::cout << "  node count:      " << env.numNodes         << std::endl;
-        std::cout << "  unit Qureg size: " << NUM_UNIT_QUREG_QUBITS<< std::endl;
+        std::cout << "  unit Qureg size: " << getNumCachedQubits() << std::endl;
         std::cout << std::endl;
 
         std::cout << "Tested Qureg deployments:" << std::endl;

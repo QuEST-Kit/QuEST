@@ -78,12 +78,7 @@ bool doesGateRequireComm(Qureg qureg, vector<int> targs) {
         return false;
 
     // communication necessary when any prefix qubit is targeted
-    for (int targ : targs)
-        if (!util_isQubitInSuffix(targ, qureg))
-            return true;
-
-    // sufix qubit targets need no communication
-    return false;
+    return ! util_areAllQubitsInSuffix(targs, qureg);
 }
 
 bool doesGateRequireComm(Qureg qureg, int targ) {
@@ -1599,7 +1594,7 @@ void localiser_densmatr_oneQubitDamping(Qureg qureg, int qubit, qreal prob) {
  */
 
 
-CompMatr getCompMatrFromSuperOp(SuperOp op) {
+CompMatr getSpoofedCompMatrFromSuperOp(SuperOp op) {
 
      CompMatr out = {
         // superoperator acts on twice as many qubits
@@ -1611,6 +1606,7 @@ CompMatr getCompMatrFromSuperOp(SuperOp op) {
 
         // copy pointers (noting cpuElems is 2D/nested)
         .cpuElems = op.cpuElems,
+        .cpuElemsFlat = op.cpuElemsFlat,
         .gpuElemsFlat = op.gpuElemsFlat
     };
     return out;
@@ -1624,7 +1620,7 @@ void localiser_densmatr_superoperator(Qureg qureg, SuperOp op, vector<int> ketTa
     bool conj = false;
     auto braTargs = util_getBraQubits(ketTargs, qureg);
     auto allTargs = util_getConcatenated(ketTargs, braTargs);
-    CompMatr matr = getCompMatrFromSuperOp(op);
+    CompMatr matr = getSpoofedCompMatrFromSuperOp(op);
     localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, {}, {}, allTargs, matr, conj);
 }
 

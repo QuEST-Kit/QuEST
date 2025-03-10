@@ -35,6 +35,7 @@ using std::vector;
 
 bool util_isQubitInSuffix(int qubit, Qureg qureg);
 bool util_isBraQubitInSuffix(int ketQubit, Qureg qureg);
+bool util_areAllQubitsInSuffix(vector<int> qubits, Qureg qureg);
 
 int util_getBraQubit(int ketQubit, Qureg qureg);
 
