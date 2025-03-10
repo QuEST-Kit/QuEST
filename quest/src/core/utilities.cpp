@@ -58,6 +58,15 @@ bool util_isQubitInSuffix(int qubit, Qureg qureg) {
     return qubit < qureg.logNumAmpsPerNode;
 }
 
+bool util_areAllQubitsInSuffix(vector<int> qubits, Qureg qureg) {
+
+    for (int q : qubits)
+        if (!util_isQubitInSuffix(q, qureg))
+            return false;
+        
+    return true;
+}
+
 bool util_isBraQubitInSuffix(int ketQubit, Qureg qureg) {
     if (!qureg.isDensityMatrix)
         error_utilsIsBraQubitInSuffixGivenNonDensMatr();

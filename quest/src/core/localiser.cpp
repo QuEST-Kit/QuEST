@@ -75,12 +75,7 @@ bool doesGateRequireComm(Qureg qureg, vector<int> targs) {
         return false;
 
     // communication necessary when any prefix qubit is targeted
-    for (int targ : targs)
-        if (!util_isQubitInSuffix(targ, qureg))
-            return true;
-
-    // sufix qubit targets need no communication
-    return false;
+    return ! util_areAllQubitsInSuffix(targs, qureg);
 }
 
 bool doesGateRequireComm(Qureg qureg, int targ) {

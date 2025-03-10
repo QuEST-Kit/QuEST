@@ -127,6 +127,11 @@ int deallocMemInPool(void* ctx, void* ptr, size_t size, cudaStream_t stream) {
 
 void gpu_initCuQuantum() {
 
+    // the cuStateVec docs say custatevecCreate() should be called
+    // once per physical GPU, though oversubscribing MPI processes
+    // while setting PERMIT_NODES_TO_SHARE_GPU=1 worked fine in our
+    // testing - we will treat it as tolerable but undefined behaviour
+
     // create new stream and cuQuantum handle, binding to global config
     CUDA_CHECK( custatevecCreate(&config.handle) );
     CUDA_CHECK( cudaStreamCreate(&config.stream) );
@@ -213,6 +218,9 @@ void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> 
 
 void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, cu_qcomp* flatMatrElems, bool conj) {
 
+    // beware that despite diagonal matrices being embarrassingly parallel,
+    // the target qubits must still all be suffix-only to avoid a cuStateVec error
+
     // apply no permutation matrix
     custatevecIndex_t *perm = nullptr;
 
@@ -264,8 +272,9 @@ void cuquantum_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal 
     cu_qcomp fac = {1 - 2*prob, 0};
     cu_qcomp elems[] = {fac, fac};
 
-    // we choose to target the largest possible qubit, expecting best cuStateVec performance
-    int targ = qureg.numQubits * 2 - 1; // leftmost bra qubit
+    // we choose to target the largest possible qubit, expecting best cuStateVec performance;
+    // note it must still be a suffix qubit since cuQuantum does not know qureg is distributed
+    int targ = qureg.logNumAmpsPerNode - 1; // leftmost suffix bra qubit
 
     bool conj = false;
     cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {ketQubit}, {!braBit}, {targ}, elems, conj);
@@ -321,7 +330,7 @@ qreal cuquantum_statevec_calcTotalProb_sub(Qureg qureg) {
 }
 
 
-qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+qreal cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
 
     // cuQuantum probabilities are always double
     double prob;

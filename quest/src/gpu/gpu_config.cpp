@@ -14,8 +14,11 @@
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/comm/comm_config.hpp"
+#include "quest/src/comm/comm_routines.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
+#include <set>
+#include <string>
 
 
 #if COMPILE_CUDA && ! (defined(__NVCC__) || defined(__HIP__))
@@ -87,6 +90,45 @@ void gpu_finalizeCuQuantum() {
 /*
  * HARDWARE AVAILABILITY
  */
+
+
+// many of the below functions must be assessed
+// per-device, when MPI + CUDA hybridisation means
+// MPI processes are bound to unique GPUs. Such
+// functions must not be called before we have
+// explicitly bound GPUs to MPI processes, which
+// we use this flag to defensively ensure
+bool hasGpuBeenBound = false;
+
+
+int getBoundGpuId() {
+#if COMPILE_CUDA
+    assert_gpuHasBeenBound(hasGpuBeenBound);
+
+    int id;
+    CUDA_CHECK( cudaGetDevice(&id) );
+    return id;
+    
+#else
+    error_gpuQueriedButGpuNotCompiled();
+    return -1;
+#endif
+}
+
+
+int gpu_getComputeCapability() {
+#if COMPILE_CUDA
+    assert_gpuHasBeenBound(hasGpuBeenBound);
+
+    cudaDeviceProp props;
+    CUDA_CHECK( cudaGetDeviceProperties(&props, getBoundGpuId()) );
+    return props.major * 10 + props.minor;
+
+#else
+    error_gpuQueriedButGpuNotCompiled();
+    return -1;
+#endif
+}
 
 
 bool gpu_isGpuCompiled() {
@@ -172,6 +214,7 @@ bool gpu_isDirectGpuCommPossible() {
 
 size_t gpu_getCurrentAvailableMemoryInBytes() {
 #if COMPILE_CUDA
+    assert_gpuHasBeenBound(hasGpuBeenBound);
 
     // note that in distributed settings, all GPUs
     // are being simultaneously queried, and it is
@@ -190,6 +233,7 @@ size_t gpu_getCurrentAvailableMemoryInBytes() {
 
 size_t gpu_getTotalMemoryInBytes() {
 #if COMPILE_CUDA
+    assert_gpuHasBeenBound(hasGpuBeenBound);
 
     size_t free, total;
     CUDA_CHECK( cudaMemGetInfo(&free, &total) );
@@ -204,11 +248,10 @@ size_t gpu_getTotalMemoryInBytes() {
 
 bool gpu_doesGpuSupportMemPools() {
 #if COMPILE_CUDA
+    assert_gpuHasBeenBound(hasGpuBeenBound);
 
-    // consult only the first device (garuanteed already to exist)
-    int deviceId, supports;
-    CUDA_CHECK( cudaGetDevice(&deviceId) );
-    CUDA_CHECK( cudaDeviceGetAttribute(&supports, cudaDevAttrMemoryPoolsSupported, deviceId) );
+    int supports;
+    CUDA_CHECK( cudaDeviceGetAttribute(&supports, cudaDevAttrMemoryPoolsSupported, getBoundGpuId()) );
     return (bool) supports;
 
 #else
@@ -220,10 +263,11 @@ bool gpu_doesGpuSupportMemPools() {
 
 qindex gpu_getMaxNumConcurrentThreads() {
 #if COMPILE_CUDA
+    assert_gpuHasBeenBound(hasGpuBeenBound);
 
-    int deviceId = 0;
-    CUDA_CHECK( cudaGetDevice(&deviceId) );
+    int deviceId = getBoundGpuId();
 
+    // this may differ between nodes (which have different GPUs), which is fine
     int maxThreadsPerBlock;
     int maxNumBlocks;
     CUDA_CHECK( cudaDeviceGetAttribute(&maxThreadsPerBlock, cudaDevAttrMaxThreadsPerBlock,  deviceId) );
@@ -244,15 +288,59 @@ qindex gpu_getMaxNumConcurrentThreads() {
  */
 
 
-void gpu_bindLocalGPUsToNodes(int rank) {
+void gpu_bindLocalGPUsToNodes() {
 #if COMPILE_CUDA
 
+    // distribute local MPI processes across local GPUs;
     int numLocalGpus = gpu_getNumberOfLocalGpus();
-    int localGpuInd = rank % numLocalGpus;
+    int localGpuInd = comm_getRank() % numLocalGpus;
     CUDA_CHECK( cudaSetDevice(localGpuInd) );
+
+    // note it is possible for multiple MPI processes
+    // to bind to the same local GPU (as can be assessed
+    // with gpu_doAnyMpiProcessesShareLocalGpu()), but
+    // this will incur slowdowns due to context-switching
+    // and has no benefit - is if further illegal when
+    // using cuStateVec, as the caller will validate
+
+    // indicate that other GPU-queries are now legal
+    hasGpuBeenBound = true;
 
 #else
     error_gpuQueriedButGpuNotCompiled();
+#endif 
+}
+
+
+bool gpu_areAnyNodesBoundToSameGpu() {
+#if COMPILE_CUDA
+    assert_gpuHasBeenBound(hasGpuBeenBound);
+
+    if (!comm_isInit())
+        return false;
+
+    // obtain bound GPU's UUID; a unique identifier 16-char identifier
+    cudaDeviceProp prop;
+    CUDA_CHECK( cudaGetDeviceProperties(&prop, getBoundGpuId()) );
+    cudaUUID_t uuid = prop.uuid;
+
+    // cast into a string (i.e. add a terminal char), so that...
+    constexpr int len = 16 + 1;
+    char uuidStr[len];
+    snprintf(uuidStr, len, "%s", uuid.bytes); // not human-readable however
+
+    // we can repurpose string-to-root sending to collect all uuids
+    auto allUuids = comm_gatherStringsToRoot(uuidStr, len);
+    auto uniqueUuids = std::set<std::string>(allUuids.begin(), allUuids.end());
+
+    // and assess whether they're all unique (non-root's bools are overwritten)
+    bool localGpusAreUnique = allUuids.size() == uniqueUuids.size();
+    bool globalGpusAreUnique = comm_isTrueOnRootNode(localGpusAreUnique);
+    return ! globalGpusAreUnique;
+
+#else
+    error_gpuQueriedButGpuNotCompiled();
+    return false;
 #endif 
 }
 
@@ -521,7 +609,6 @@ qcomp* gpu_getCacheOfSize(qindex numElemsPerThread, qindex numThreads) {
 
 
 void gpu_clearCache() {
-
 #if COMPILE_CUDA
 
     // cudaFree on nullptr is fine

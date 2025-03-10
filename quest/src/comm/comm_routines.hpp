@@ -11,6 +11,7 @@
 #include "quest/include/matrices.h"
 
 #include <vector>
+#include <string>
 
 using std::vector;
 
@@ -61,6 +62,16 @@ void comm_reduceReal(qreal* localReal);
 void comm_reduceReals(qreal* localReals, qindex numLocalReals);
 
 bool comm_isTrueOnAllNodes(bool val);
+
+bool comm_isTrueOnRootNode(bool val);
+
+
+
+/*
+ * GATHER METHODS
+ */
+
+vector<std::string> comm_gatherStringsToRoot(char* localChars, int maxNumLocalChars);
 
 
 

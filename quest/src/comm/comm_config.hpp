@@ -8,6 +8,8 @@
 #define COMM_CONFIG_HPP
 
 
+constexpr int ROOT_RANK = 0;
+
 
 bool comm_isMpiCompiled();
 

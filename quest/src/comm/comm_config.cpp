@@ -12,6 +12,7 @@
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
 
+#include "quest/src/comm/comm_config.hpp"
 #include "quest/src/core/errors.hpp"
 
 #if COMPILE_MPI
@@ -125,7 +126,7 @@ int comm_getRank() {
     // triggered), every node (if many MPI processes were launched)
     // believes it is the root rank
     if (!comm_isInit())
-        return 0;
+        return ROOT_RANK;
 
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -134,13 +135,13 @@ int comm_getRank() {
 #else
 
     // if MPI isn't compiled, we're definitely non-distributed; return main rank 
-    return 0;
+    return ROOT_RANK;
 #endif
 }
 
 
 bool comm_isRootNode(int rank) {
-    return rank == 0;
+    return rank == ROOT_RANK;
 }
 bool comm_isRootNode() {
     return comm_isRootNode(comm_getRank());

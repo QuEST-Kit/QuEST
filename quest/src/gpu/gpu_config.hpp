@@ -45,6 +45,8 @@ bool gpu_isDirectGpuCommPossible();
 
 int gpu_getNumberOfLocalGpus();
 
+int gpu_getComputeCapability();
+
 size_t gpu_getCurrentAvailableMemoryInBytes();
 
 size_t gpu_getTotalMemoryInBytes();
@@ -59,13 +61,15 @@ qindex gpu_getMaxNumConcurrentThreads();
  * ENVIRONMENT MANAGEMENT
  */
 
+void gpu_bindLocalGPUsToNodes();
+
+bool gpu_areAnyNodesBoundToSameGpu();
+
+void gpu_sync();
+
 void gpu_initCuQuantum();
 
 void gpu_finalizeCuQuantum();
-
-void gpu_bindLocalGPUsToNodes(int rank);
-
-void gpu_sync();
 
 
 

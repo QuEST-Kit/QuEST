@@ -512,15 +512,39 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
+    // diagonal matrices are always embarrassingly parallel, but alas
+    // cuQuantum's API cannot handle when the targeted qubits are prefix,
+    // since they appear larger than the local statevector (unknown by it
+    // to be distributed). cuQuantum would require we gratuitously swap
+    // such qubits into the suffix qubits before invocation, which is unnece-
+    // ssary. As such, we will only invoke cuQuantum when the targeted qubits
+    // (in this function, only one) are within the suffix substate, otherwise
+    // we fall back to using our custom kernels which never require comm.
+
 #if COMPILE_CUQUANTUM
 
-    // we never conjugate DiagMatr1 at this level; the caller will have already conjugated
-    bool conj = false;
+    if (util_isQubitInSuffix(targ, qureg)) {
 
-    // we can pass 1D CPU array directly to cuQuantum, and it will recognise host pointers
-    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, {targ}, toCuQcomps(matr.elems), conj);
+        // we never conjugate DiagMatr1 at this level; the caller will have already conjugated
+        bool conj = false;
 
-#elif COMPILE_CUDA
+        // we can pass 1D CPU .elems array directly to cuQuantum which will recognise host pointers
+        cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, {targ}, toCuQcomps(matr.elems), conj);
+        
+        // explicitly return to avoid re-simulation below
+        return;
+    }
+
+    // this is one of few functions which will fail to operate correctly if
+    // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
+    // true but the latter is not), so we explicitly ensure this is the case
+    if (!COMPILE_CUDA)
+        error_cuQuantumCompiledButNotCuda();
+
+#endif
+
+// note preprocessors are not exclusive
+#if COMPILE_CUDA
 
     // TODO:
     // when NumCtrls==0, a Thrust functor would be undoubtedly more
@@ -538,9 +562,13 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         getPtr(deviceCtrls), ctrls.size(), ctrlStateMask, targ, elems[0], elems[1]
     );
 
-#else
-    error_gpuSimButGpuNotCompiled();
+    // explicitly return to avoid runtime error below
+    return;
+
 #endif
+
+    // only reachable when nothing above simulated
+    error_gpuSimButGpuNotCompiled();
 }
 
 
@@ -558,15 +586,39 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
+    // diagonal matrices are always embarrassingly parallel, but alas
+    // cuQuantum's API cannot handle when the targeted qubits are prefix,
+    // since they appear larger than the local statevector (unknown by it
+    // to be distributed). cuQuantum would require we gratuitously swap
+    // such qubits into the suffix qubits before invocation, which is unnece-
+    // ssary. As such, we will only invoke cuQuantum when the targeted qubits
+    // are both within the suffix substate, otherwise we fall back to using 
+    // our custom kernels which never require comm.
+
 #if COMPILE_CUQUANTUM
 
-    // we never conjugate DiagMatr2 at this level; the caller will have already conjugated
-    bool conj = false;
+    if (util_areAllQubitsInSuffix({targ1,targ2}, qureg)) {
 
-    // we can pass 1D CPU array directly to cuQuantum, and it will recognise host pointers
-    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, {targ1, targ2}, toCuQcomps(matr.elems), conj);
+        // we never conjugate DiagMatr2 at this level; the caller will have already conjugated
+        bool conj = false;
 
-#elif COMPILE_CUDA
+        // we can pass 1D CPU array directly to cuQuantum, and it will recognise host pointers
+        cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, {targ1, targ2}, toCuQcomps(matr.elems), conj);
+
+        // explicitly return to avoid re-simulation below
+        return;
+    }
+
+    // this is one of few functions which will fail to operate correctly if
+    // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
+    // true but the latter is not), so we explicitly ensure this is the case
+    if (!COMPILE_CUDA)
+        error_cuQuantumCompiledButNotCuda();
+
+#endif 
+
+// note preprocessors are not exclusive
+#if COMPILE_CUDA
 
     // TODO:
     // when NumCtrls==0, a Thrust functor would be undoubtedly more
@@ -585,9 +637,13 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         elems[0], elems[1], elems[2], elems[3]
     );
 
-#else
-    error_gpuSimButGpuNotCompiled();
+    // explicitly return to avoid runtime error below
+    return;
+
 #endif
+
+    // only reachable when nothing above simulated
+    error_gpuSimButGpuNotCompiled();
 }
 
 
@@ -607,10 +663,20 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
     assert_exponentMatchesTemplateParam(exponent, HasPower);
 
+    // diagonal matrices are always embarrassingly parallel, but alas
+    // cuQuantum's API cannot handle when the targeted qubits are prefix,
+    // since they appear larger than the local statevector (unknown by it
+    // to be distributed). cuQuantum would require we gratuitously swap
+    // such qubits into the suffix qubits before invocation, which is unnece-
+    // ssary. As such, we will only invoke cuQuantum when the targeted qubits
+    // are both within the suffix substate, otherwise we fall back to using 
+    // our custom kernels which never require comm. Furthermore, cuQuantum
+    // cannot handle when exponent != 1, for which we also fallback to custom.
+
 #if COMPILE_CUQUANTUM
 
     // cuQuantum cannot handle HasPower, in which case we fall back to custom kernel
-    if (!HasPower) {
+    if (!HasPower && util_areAllQubitsInSuffix(targs, qureg)) {
         cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, toCuQcomps(util_getGpuMemPtr(matr)), ApplyConj);
 
         // must return to avoid re-simulation below
@@ -625,6 +691,7 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
 #endif
 
+// note preprocessors are not exclusive
 #if COMPILE_CUDA
 
     // TODO:
@@ -644,9 +711,13 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         toCuQcomps(util_getGpuMemPtr(matr)), toCuQcomp(exponent)
     );
 
-#else
-    error_gpuSimButGpuNotCompiled();
+    // must return to avoid runtime error below
+    return;
+
 #endif
+
+    // only reachable when nothing above simulated
+    error_gpuSimButGpuNotCompiled();
 }
 
 
@@ -907,6 +978,7 @@ void gpu_densmatr_oneQubitDephasing_subA(Qureg qureg, int ketQubit, qreal prob) 
 
 #if COMPILE_CUQUANTUM
 
+    // gauranteed that corresponding braQubit is in suffix, so always safe to call cuQuantum
     cuquantum_densmatr_oneQubitDephasing_subA(qureg, ketQubit, prob);
 
 #elif COMPILE_CUDA
@@ -931,6 +1003,8 @@ void gpu_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal prob) 
 
 #if COMPILE_CUQUANTUM 
 
+    // gauranteed that corresponding braQubit is in prefix; however, cuQuantum effects
+    // the gate as a phase*Id gate on any qubit, so just picks one in suffix
     cuquantum_densmatr_oneQubitDephasing_subB(qureg, ketQubit, prob);
 
 #elif COMPILE_CUDA
@@ -961,6 +1035,7 @@ void gpu_densmatr_twoQubitDephasing_subA(Qureg qureg, int ketQubitA, int ketQubi
 
 #if COMPILE_CUQUANTUM
 
+    // gauranteed that both corresponding braQubits are in prefix, so safe to invoke cuQuantum
     cuquantum_densmatr_twoQubitDephasing_subA(qureg, ketQubitA, ketQubitB, prob);
 
 #elif COMPILE_CUDA
@@ -1400,7 +1475,7 @@ qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
 #if COMPILE_CUQUANTUM
 
     // cuQuantum disregards NumQubits compile-time param
-    return gpu_statevec_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes);
+    return cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes);
 
 #elif COMPILE_CUDA 
 
