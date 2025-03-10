@@ -5,6 +5,8 @@
  * instead exposed in decoherence.h
  * 
  * @author Tyson Jones
+ * @defgroup operations Operations
+ * @{
  */
 
 #ifndef OPERATIONS_H
@@ -419,3 +421,5 @@ void applyFullQuantumFourierTransform(Qureg qureg);
 #endif
 
 #endif // OPERATIONS_H
+
+/** @} (end doxygen defgroup) */

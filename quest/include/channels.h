@@ -37,6 +37,8 @@
  * @author Tyson Jones
  * @author Richard Meister (aided in design)
  * @author Erich Essmann (aided in design)
+ * @defgroup channels Channels
+ * @{
  */
 
 #ifndef CHANNELS_H
@@ -210,10 +212,13 @@ extern "C" {
 
 
     // C must validate the struct fields before accessing passed 2D arrays to avoid seg-faults
+    /// @private
     extern void _validateParamsToSetKrausMapFromArr(KrausMap map);
+    /// @private
     extern void _validateParamsToSetSuperOpFromArr(SuperOp op);
 
 
+    /// @private
     static inline void _setKrausMapFromArr(KrausMap map, qcomp matrices[map.numMatrices][map.numRows][map.numRows]) {
         _validateParamsToSetKrausMapFromArr(map);
 
@@ -231,6 +236,7 @@ extern "C" {
         setKrausMap(map, ptrs); // validation gauranteed to pass
     }
 
+    /// @private
     static inline void _setSuperOpFromArr(SuperOp op, qcomp matrix[op.numRows][op.numRows]) {
         _validateParamsToSetSuperOpFromArr(op);
 
@@ -305,15 +311,19 @@ extern "C" {
 
 
     // C validators check 'numQb' and 'numOps' are consistent with the struct, but cannot check the user's passed literal sizes
+    /// @private
     extern void _validateParamsToSetInlineKrausMap(KrausMap map, int numQb, int numOps);
+    /// @private
     extern void _validateParamsToSetInlineSuperOp(SuperOp op, int numQb);
 
 
+    /// @private
     static inline void _setInlineKrausMap(KrausMap map, int numQb, int numOps, qcomp elems[numOps][1<<numQb][1<<numQb]) {
         _validateParamsToSetInlineKrausMap(map, numQb, numOps);
         _setKrausMapFromArr(map, elems);
     }
 
+    /// @private
     static inline void _setInlineSuperOp(SuperOp op, int numQb, qcomp elems[1<<(2*numQb)][1<<(2*numQb)] ) {
         _validateParamsToSetInlineSuperOp(op, numQb);
         _setSuperOpFromArr(op, elems);
@@ -362,10 +372,13 @@ extern "C" {
     // can wrap the macro invocation with another function call.
 
 
+    /// @private
     extern void _validateParamsToCreateInlineKrausMap(int numQb, int numOps);
+    /// @private
     extern void _validateParamsToCreateInlineSuperOp(int numQb);
 
 
+    /// @private
     static inline KrausMap _createInlineKrausMap(int numQb, int numOps, qcomp matrices[numOps][1<<numQb][1<<numQb]) {
         _validateParamsToCreateInlineKrausMap(numQb, numOps);
         KrausMap out = createKrausMap(numQb, numOps); // malloc failures will report 'createKrausMap', rather than 'inline' version. Alas!
@@ -373,6 +386,7 @@ extern "C" {
         return out;
     }
 
+    /// @private
     static inline SuperOp _createInlineSuperOp(int numQb, qcomp matrix[1<<numQb][1<<numQb]) {
         _validateParamsToCreateInlineSuperOp(numQb);
         SuperOp out = createSuperOp(numQb); // malloc failures will report 'createSuperOp', rather than 'inline' version. Alas!
@@ -397,3 +411,5 @@ extern "C" {
 
 
 #endif // CHANNELS_H
+
+/** @} (end doxygen defgroup) */

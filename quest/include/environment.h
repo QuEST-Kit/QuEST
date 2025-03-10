@@ -4,6 +4,8 @@
  * 
  * @author Tyson Jones
  * @author Richard Meister (aided in design)
+ * @defgroup environment Environment
+ * @{
  */
 
 #ifndef ENVIRONMENT_H
@@ -61,3 +63,5 @@ QuESTEnv getQuESTEnv();
 #endif
 
 #endif // ENVIRONMENT_H
+
+/** @} (end doxygen defgroup) */

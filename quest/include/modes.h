@@ -3,6 +3,8 @@
  * preprocessor macros are defined and valid 
  * 
  * @author Tyson Jones
+ * @defgroup modes Modes
+ * @{
  */
 
 #ifndef MODES_H
@@ -91,3 +93,5 @@ namespace modeflag {
 
 
 #endif // MODES_H
+
+/** @} (end doxygen defgroup) */

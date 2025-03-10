@@ -5,6 +5,8 @@
  * state in GPU memory; the CPU amps are unchanged.
  * 
  * @author Tyson Jones
+ * @defgroup initialisations Initialisations
+ * @{
  */
 
 #ifndef INITIALISATIONS_H
@@ -67,3 +69,5 @@ void setQuregToReducedDensityMatrix(Qureg out, Qureg in, int* retainQubits, int 
 #endif
 
 #endif // INITIALISATIONS_H
+
+/** @} (end doxygen defgroup) */

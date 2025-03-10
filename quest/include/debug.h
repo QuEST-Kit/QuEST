@@ -4,6 +4,8 @@
  * parameters or seeding random generation.
  * 
  * @author Tyson Jones
+ * @defgroup debug Debug
+ * @{
  */
 
 #ifndef DEBUG_H
@@ -71,3 +73,5 @@ void getEnvironmentString(char str[200]);
 #endif
 
 #endif // DEBUG_H
+
+/** @} (end doxygen defgroup) */

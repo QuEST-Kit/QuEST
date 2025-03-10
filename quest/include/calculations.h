@@ -3,6 +3,8 @@
  * such as probabilities, expectation values and partial traces.
  * 
  * @author Tyson Jones
+ * @defgroup calculations Calculations
+ * @{
  */
 
 #ifndef CALCULATIONS_H
@@ -86,5 +88,6 @@ qcomp calcExpecNonHermitianFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr
 #endif
 
 
-
 #endif // CALCULATIONS_H
+
+/** @} (end doxygen defgroup) */
