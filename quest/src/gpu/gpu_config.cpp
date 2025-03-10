@@ -328,19 +328,15 @@ bool gpu_areAnyNodesBoundToSameGpu() {
     // char localDeviceId[idLen];
     // cudaDeviceGetPCIBusId(localDeviceId, idLen, getBoundGpuId());
 
-    // obtain bound GPU's UUID (a unique identifier)
+    // obtain bound GPU's UUID; a unique identifier of 16 chars
     cudaDeviceProp prop;
     CUDA_CHECK( cudaGetDeviceProperties(&prop, getBoundGpuId()) );
-    cudaUUID_t uuid = prop.uuid;
+    cudaUUID_t uuid = prop.uuid; // char[16]
 
-    // cast it into a string to repurpose our string gatherer 
-    // BEWARE: this is a chatgpt halluciantion so far!
-    constexpr int len = 64;
+    // send to root node as a string; i.e. those 16 chars and a trailing terminal char
+    constexpr int len = 16 + 1;
     char uuidStr[len];
-    snprintf(uuidStr, len, "%08x-%04x-%04x-%04x-%04x%04x%04x", 
-        uuid.x, uuid.y, uuid.z, uuid.w, uuid.a, uuid.b, uuid.c);
-    
-    std::cout << "rank=" << comm_getRank() << ", uuidStr=" << std::string(uuidStr) << std::endl;
+    snprintf(uuidStr, len, "%s", uuid);
 
     auto allUuids = comm_gatherStringsToRoot(uuidStr, len);
     auto uniqueUuids = std::set<std::string>(allUuids.begin(), allUuids.end());
