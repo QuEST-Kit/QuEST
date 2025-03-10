@@ -105,7 +105,7 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     // paticular GPU (causing runtime error), but still ensures we 
     // keep good performance in our custom backend GPU code; there is
     // no reason to use multi-nodes-per-GPU except for dev/debugging.
-    if (useGpuAccel && useDistrib)
+    if (useGpuAccel && useDistrib && ! PERMIT_NODES_TO_SHARE_GPU)
         validate_newEnvNodesEachHaveUniqueGpu(caller);
 
     // TODO:

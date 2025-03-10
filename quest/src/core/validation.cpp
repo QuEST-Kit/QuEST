@@ -1279,6 +1279,11 @@ void validate_newEnvDistributedBetweenPower2Nodes(const char* caller) {
 
 void validate_newEnvNodesEachHaveUniqueGpu(const char* caller) {
 
+    // this validation can be disabled for debugging/dev purposes
+    // (caller should explicitly check this preprocessor too for clarity)
+    if (PERMIT_NODES_TO_SHARE_GPU)
+        return;
+
     bool uniqueGpus = ! gpu_areAnyNodesBoundToSameGpu();
     assertAllNodesAgreeThat(uniqueGpus, report::MULTIPLE_NODES_BOUND_TO_SAME_GPU, caller);
 }

@@ -303,6 +303,7 @@ void gpu_bindLocalGPUsToNodes() {
     // and has no benefit - is if further illegal when
     // using cuStateVec, as the caller will validate
 
+    // indicate that other GPU-queries are now legal
     hasGpuBeenBound = true;
 
 #else
