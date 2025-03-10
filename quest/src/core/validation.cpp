@@ -91,7 +91,7 @@ namespace report {
         "Cannot distribute QuEST between ${NUM_NODES} nodes; must use a power-of-2 number of nodes.";
 
     string MULTIPLE_NODES_BOUND_TO_SAME_GPU =
-        "Multiple MPI processes (nodes) were bound to the same GPU which can cause errors when combined with cuQuantum, and is otherwise detrimental to performance. Please re-launch QuEST with one unique GPU per MPI process.";
+        "Multiple MPI processes (nodes) were bound to the same GPU which is detrimental to performance and almost never intended. Please re-deploy QuEST with no more MPI processes than there are total GPUs. Alternatively, recompile QuEST with macro PERMIT_NODES_TO_SHARE_GPU=1.";
 
     string CUQUANTUM_DEPLOYED_ON_BELOW_CC_GPU =
         "Cannot use cuQuantum on a GPU with compute-capability ${OUR_CC}; a compute-capability of ${MIN_CC} or above is required. Recompile with cuQuantum disabled to fall-back to using Thrust and custom kernels.";

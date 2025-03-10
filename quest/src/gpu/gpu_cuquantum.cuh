@@ -127,22 +127,10 @@ int deallocMemInPool(void* ctx, void* ptr, size_t size, cudaStream_t stream) {
 
 void gpu_initCuQuantum() {
 
-    // DEBUG
-    // if we're restricting gpu-sharing already, there's no
-    // reason to check this pre-con; I want to test whether I
-    // can relax it and call custatevecCreate() several times
-    // per GPU even despite the doc which forbids it!
-
-                // // custatevecCreate below must only ever be initialised once per-GPU...
-                // if (!PERMIT_NODES_TO_SHARE_GPU && gpu_areAnyNodesBoundToSameGpu())
-                //     error_cuQuantumInitWithGpuSharedByNodes();
-
-                // // unless we're in a debug mode, where root initialises and others receive...
-
-                // PERMIT_NODES_TO_SHARE_GPU
-
-                //     // HOW
-
+    // the cuStateVec docs say custatevecCreate() should be called
+    // once per physical GPU, though oversubscribing MPI processes
+    // while setting PERMIT_NODES_TO_SHARE_GPU=1 worked fine in our
+    // testing - we will treat it as tolerable but undefined behaviour
 
     // create new stream and cuQuantum handle, binding to global config
     CUDA_CHECK( custatevecCreate(&config.handle) );
