@@ -15,12 +15,15 @@ static constexpr int maxWarpsPerBlock = 1024/WARPSIZE;
 #define CUFFT_Z2D HIPFFT_Z2D
 #define CUFFT_Z2Z HIPFFT_Z2Z
 
-#define cudaDeviceSynchronize hipDeviceSynchronize
+#define cudaUUID_t hipUUID
 #define cudaError hipError_t
 #define cudaError_t hipError_t
+#define cudaEvent_t hipEvent_t
+#define cudaDeviceProp hipDeviceProp_t
+
+#define cudaDeviceSynchronize hipDeviceSynchronize
 #define cudaErrorInsufficientDriver hipErrorInsufficientDriver
 #define cudaErrorNoDevice hipErrorNoDevice
-#define cudaEvent_t hipEvent_t
 #define cudaEventCreate hipEventCreate
 #define cudaEventElapsedTime hipEventElapsedTime
 #define cudaEventRecord hipEventRecord
@@ -44,7 +47,6 @@ static constexpr int maxWarpsPerBlock = 1024/WARPSIZE;
 #define cudaReadModeElementType hipReadModeElementType
 #define cudaSetDevice hipSetDevice
 #define cudaSuccess hipSuccess
-#define cudaDeviceProp hipDeviceProp_t
 #define cudaGetDeviceProperties hipGetDeviceProperties
 #define cudaThreadSynchronize hipDeviceSynchronize
 #define cudaErrorMemoryAllocation hipErrorMemoryAllocation
@@ -52,8 +54,6 @@ static constexpr int maxWarpsPerBlock = 1024/WARPSIZE;
 #define cudaDevAttrMemoryPoolsSupported hipDeviceAttributeMemoryPoolsSupported
 #define cudaDevAttrMaxThreadsPerBlock hipDeviceAttributeMaxThreadsPerBlock
 #define cudaDevAttrMultiProcessorCount hipDeviceAttributeMultiprocessorCount
-
-#define cuDeviceGetUuid hipDeviceGetUuid
 
 #define cufftDestroy hipfftDestroy
 #define cufftDoubleComplex hipfftDoubleComplex
