@@ -311,12 +311,6 @@ void gpu_bindLocalGPUsToNodes() {
 }
 
 
-
-// DEBUG
-#include <iostream>
-#include <string>
-
-
 bool gpu_areAnyNodesBoundToSameGpu() {
 #if COMPILE_CUDA
     assert_gpuHasBeenBound(hasGpuBeenBound);
@@ -324,38 +318,23 @@ bool gpu_areAnyNodesBoundToSameGpu() {
     if (!comm_isInit())
         return false;
 
-    // constexpr int idLen = 20;
-    // char localDeviceId[idLen];
-    // cudaDeviceGetPCIBusId(localDeviceId, idLen, getBoundGpuId());
-
-    // obtain bound GPU's UUID; a unique identifier of 16 chars
+    // obtain bound GPU's UUID; a unique identifier 16-char identifier
     cudaDeviceProp prop;
     CUDA_CHECK( cudaGetDeviceProperties(&prop, getBoundGpuId()) );
     cudaUUID_t uuid = prop.uuid;
 
-    // send to root node as a string; i.e. those 16 chars and a trailing terminal char
+    // cast into a string (i.e. add a terminal char), so that...
     constexpr int len = 16 + 1;
     char uuidStr[len];
     snprintf(uuidStr, len, "%s", uuid.bytes);
 
-    // DEBUG
-    std::cout << "rank=" << comm_getRank() << ", uuidStr=" << uuidStr << std::endl;
-
+    // we can repurpose string-to-root sending to collect all uuids
     auto allUuids = comm_gatherStringsToRoot(uuidStr, len);
     auto uniqueUuids = std::set<std::string>(allUuids.begin(), allUuids.end());
 
+    // and assess whether they're all unique (non-root's bools are overwritten)
     bool localGpusAreUnique = allUuids.size() == uniqueUuids.size();
     bool globalGpusAreUnique = comm_isTrueOnRootNode(localGpusAreUnique);
-
-    // DEBUG
-    if (comm_isRootNode()) {
-        std::cout << "root received uuids:" << std::endl;
-        for (auto elem : allUuids)
-            std::cout << "    " << elem << std::endl;
-        std::cout << "so areUnique=" << globalGpusAreUnique << std::endl;
-    }
-
-
     return ! globalGpusAreUnique;
 
 #else
