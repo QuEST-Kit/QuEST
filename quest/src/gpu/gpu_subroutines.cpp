@@ -523,7 +523,7 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
 #if COMPILE_CUQUANTUM
 
-    if (util_areAllQubitsInSuffix({targ})) {
+    if (util_isQubitInSuffix(targ, qureg)) {
 
         // we never conjugate DiagMatr1 at this level; the caller will have already conjugated
         bool conj = false;
@@ -597,7 +597,7 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
 #if COMPILE_CUQUANTUM
 
-    if (util_areAllQubitsInSuffix({targ1,targ2})) {
+    if (util_areAllQubitsInSuffix({targ1,targ2}, qureg)) {
 
         // we never conjugate DiagMatr2 at this level; the caller will have already conjugated
         bool conj = false;
@@ -676,7 +676,7 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 #if COMPILE_CUQUANTUM
 
     // cuQuantum cannot handle HasPower, in which case we fall back to custom kernel
-    if (!HasPower && util_areAllQubitsInSuffix(targs)) {
+    if (!HasPower && util_areAllQubitsInSuffix(targs, qureg)) {
         cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, toCuQcomps(util_getGpuMemPtr(matr)), ApplyConj);
 
         // must return to avoid re-simulation below
