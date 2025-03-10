@@ -24,6 +24,29 @@
 
 
 /*
+ * UTILITIES
+ */
+
+#define TEST_CATEGORY "[unit][types]"
+
+
+
+/** 
+ * TESTS
+ * 
+ * @ingroup unittypes
+ * @{
+ */
+
+TEST_CASE( "placeholder", TEST_CATEGORY) {
+
+}
+
+/** @} (end defgroup) */
+
+
+
+/*
  * TODO:
  * UNTESTED FUNCTIONS BELOW
  */

@@ -26,16 +26,15 @@
 #include "tests/utils/random.hpp"
 
 #include <tuple>
-
 using std::tuple;
 
 
+
+/*
+ * UTILITIES
+ */
+
 #define TEST_CATEGORY "[unit][operations]"
-
-
-
-// TODO:
-// some of the below functions may move into utils/
 
 auto contains(std::string str) {
     
@@ -717,9 +716,15 @@ void testOperation(auto operation, auto matrixRefGen) {
 
 
 
+/** 
+ * TESTS
+ * 
+ * @ingroup unitops
+ * @{
+ */
+
 TEST_ANY_CTRL_OPERATION( PauliStr,    any, paulistr, nullptr );
 TEST_ANY_CTRL_OPERATION( PauliGadget, any, pauligad, nullptr );
-
 TEST_ANY_CTRL_OPERATION( CompMatr1, one, compmatr, nullptr );
 TEST_ANY_CTRL_OPERATION( CompMatr2, two, compmatr, nullptr );
 TEST_ANY_CTRL_OPERATION( CompMatr,  any, compmatr, nullptr );
@@ -771,6 +776,8 @@ TEST_CASE( "applyMultiQubitPhaseFlip", TEST_CATEGORY ) { testOperation<zero,any,
 TEST_CASE( "applyPhaseShift",           TEST_CATEGORY ) { testOperation<zero,one,scalar>(applyPhaseShift,           ParameterisedMatrices::PS); }
 TEST_CASE( "applyTwoQubitPhaseShift",   TEST_CATEGORY ) { testOperation<zero,two,scalar>(applyTwoQubitPhaseShift,   ParameterisedMatrices::PS2); }
 TEST_CASE( "applyMultiQubitPhaseShift", TEST_CATEGORY ) { testOperation<zero,any,scalar>(applyMultiQubitPhaseShift, VariableSizeParameterisedMatrices::PS); }
+
+/** @} (end defgroup) */
 
 
 

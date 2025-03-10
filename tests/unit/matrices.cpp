@@ -24,6 +24,29 @@
 
 
 /*
+ * UTILITIES
+ */
+
+#define TEST_CATEGORY "[unit][matrices]"
+
+
+
+/** 
+ * TESTS
+ * 
+ * @ingroup unitmatr
+ * @{
+ */
+
+TEST_CASE( "placeholder", TEST_CATEGORY) {
+
+}
+
+/** @} (end defgroup) */
+
+
+
+/*
  * TODO:
  * UNTESTED FUNCTIONS BELOW
  */

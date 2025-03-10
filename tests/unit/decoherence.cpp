@@ -24,6 +24,29 @@
 
 
 /*
+ * UTILITIES
+ */
+
+#define TEST_CATEGORY "[unit][decoherence]"
+
+
+
+/** 
+ * TESTS
+ * 
+ * @ingroup unitdeco
+ * @{
+ */
+
+TEST_CASE( "placeholder", TEST_CATEGORY) {
+
+}
+
+/** @} (end defgroup) */
+
+
+
+/*
  * TODO:
  * UNTESTED FUNCTIONS
  */
