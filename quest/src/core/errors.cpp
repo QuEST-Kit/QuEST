@@ -675,11 +675,6 @@ void error_cuQuantumInitOrFinalizedButNotCompiled() {
     raiseInternalError("Attempted to initialise or finalise cuQuantum, but cuQuantum was not compiled.");
 }
 
-void error_cuQuantumInitWithGpuSharedByNodes() {
-
-    raiseInternalError("Attempted to initialise cuQuantum in a distributed environment whereby multiple MPI processes (nodes) were bound to the same GPU.");
-}
-
 void error_cuQuantumTempCpuAllocFailed() {
 
     raiseInternalError("Attempted allocation of temporary host-memory for a cuQuantum routine failed.");

@@ -268,8 +268,6 @@ void error_thrustTempGpuAllocFailed();
 
 void error_cuQuantumInitOrFinalizedButNotCompiled();
 
-void error_cuQuantumInitWithGpuSharedByNodes();
-
 void error_cuQuantumTempCpuAllocFailed();
 
 
