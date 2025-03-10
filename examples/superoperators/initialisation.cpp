@@ -1,26 +1,29 @@
-#include "quest.h"
+/** @file
+ * Examples of initialising a SuperOp in C++14. 
+ * Note that when compiling QuEST in C++ with 'double' 
+ * or 'long double' precision, you can freely use <complex>'s 
+ * double-precision literals, e.g.
+ * 
+ *      qcomp x = 1.3i
+ * 
+ * However, such literals are forbidden when compiling in 'single' 
+ * precision; the compiler will not allow the double-precision 
+ * literal to be autocast to a float. If you want to use 
+ * precision-agnostic complex literals, you can use "_i", e.g.
+ * 
+ *      qcomp x = 1.3_i
+ * 
+ * This file will use the latter literal.
+ * 
+ * @author Tyson Jones
+*/
 
+#include "quest.h"
 #include <stdlib.h>
 #include <vector>
 
 using std::vector;
 
-
-/*
- * When compiling QuEST in C++ with 'double' or 'long double' precision,
- * you can freely use <complex>'s double-precision literals, e.g.
- * 
- *      qcomp x = 1.3i
- * 
- * However, such literals are forbidden when compiling in 'single' 
- * precision; the compiler will not allow the double-precision literal
- * to be autocast to a float. If you want to use precision-agnostic
- * complex literals, you can use "_i" instead, e.g.
- * 
- *      qcomp x = 1.3_i
- * 
- * This file will use the latter literal.
- */
 
 
 void demo_createInlineSuperOp() {

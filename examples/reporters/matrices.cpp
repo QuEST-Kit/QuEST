@@ -1,13 +1,16 @@
+/** @file
+ * Examples of using matrix reporters, specifically
+ * reportCompMatr, reportDiagMatr, reportFullStateDiagMatr,
+ * in C++14. We exclude reporting of fixed-size matrices (e.g.
+ * CompMatr1) which is almost exactly the same as shown here.
+ * This example is most interested when run distributed over
+ * up to 64 nodes, spoofed using mpirun --oversubscribe.
+ * 
+ * @author Tyson Jones
+*/
+
 #include "quest.h"
-
 #include <iostream>
-
-
-
-/*
- * This demo is most interesting when run distributed with up to 64 nodes
- */
-
 
 
 void rootPrint(qindex num) {

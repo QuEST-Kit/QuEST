@@ -1,16 +1,13 @@
 /** @file
- * Unit testing for QuEST's 'unitaries' API. 
- * The tests are in alphabetical order of the API doc. 
- *
- * These tests work by constructing, from the unitary specification (e.g. 
- * control and target qubits), a full-Hilbert space complex matrix. This is 
- * then multiplied onto statevectors, or multiplied and it's conjugate-transpose
- * right-multiplied onto density matrices.
- *
- * QuEST's user validation handling is unit tested by redefining exitWithError 
- * (a weak C symbol) to throw a C++ exception, caught by the Catch2 library.
- *
+ * Ported tests of the deprecated QuEST v3 interface,
+ * unit testing the "unitaries" module.
+ * 
+ * This file should be excluded from doxygen parsing so 
+ * as not to conflict with the doc of the v4 unit tests.
+ * 
  * @author Tyson Jones
+ * @author Oliver Thomson Brown (ported to Catch2 v3)
+ * @author Ali Rezaei (tested porting to QuEST v4)
  */
  
 #include <catch2/catch_test_macros.hpp>

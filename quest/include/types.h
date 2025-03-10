@@ -1,5 +1,14 @@
 /** @file
- * Definitions of API and backend numerical types.
+ * Definitions of the variable-precision API 
+ * scalar types (qindex, qreal and qcomp) and
+ * convenience arithmetic operator overloads.
+ * Note both the user code and backend parse
+ * this file and may disagree on the underlying
+ * qcomp type which is no issue; we ensure the
+ * frontend-backend interface is agnostic to it.
+ * 
+ * @author Tyson Jones
+ * @author Ali Rezaei (aided in design)
  */
 
 #ifndef TYPES_H

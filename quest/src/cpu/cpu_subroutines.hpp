@@ -1,5 +1,8 @@
 /** @file
- * CPU signatures of the subroutines called by accelerator.cpp. 
+ * CPU OpenMP-accelerated signatures of the main backend simulation routines,
+ * as mirrored by gpu_subroutines.cpp, and called by accelerator.cpp. 
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef CPU_SUBROUTINES_HPP

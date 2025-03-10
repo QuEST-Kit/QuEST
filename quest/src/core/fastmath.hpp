@@ -2,6 +2,8 @@
  * Oerations used by all deployment modes for fast,
  * low-level maths, inlined and callable within hot
  * loops (i.e OpenMP loops and CUDA kernels)
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef FASTMATH_HPP

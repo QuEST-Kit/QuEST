@@ -1,3 +1,11 @@
+/** @file
+ * Testing utilities which define 'qmatrix', used
+ * to perform reference complex matrix algebra, and
+ * as a reference proxy to a quantum density matrix.
+ *
+ * @author Tyson Jones
+ */
+
 #include "qmatrix.hpp"
 #include "qvector.hpp"
 #include "macros.hpp"

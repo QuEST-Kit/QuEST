@@ -1,3 +1,12 @@
+/** @file
+ * Testing utilities which perform linear algebra
+ * routines upon reference qvector and qmatrix. 
+ * These are slow, serial, un-optimised, defensively-
+ * designed routines.
+ *
+ * @author Tyson Jones
+ */
+
 #include "qvector.hpp"
 #include "qmatrix.hpp"
 #include "linalg.hpp"

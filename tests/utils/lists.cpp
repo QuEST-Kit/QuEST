@@ -1,3 +1,9 @@
+/** @file
+ * Testing utilities which generate lists of integers.
+ *
+ * @author Tyson Jones
+ */
+
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 #include <catch2/generators/catch_generators_adapters.hpp>

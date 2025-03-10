@@ -1,3 +1,6 @@
+# @author Oliver Thomson Brown
+# @author Erich Essmann (patched MPI)
+
 add_executable(dep_tests
     test_main.cpp
     test_calculations.cpp

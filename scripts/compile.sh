@@ -1,9 +1,10 @@
 # A hacky Unix bash script which compiles QuEST alongside user
-# source code, or the deprecated v3 unit tests, into a single 
-# executable. This script should be copied to, and run in, the
-# root directory (i.e. that containing the quest/ direc). Beware,
-# this is NOT the recommended method of compiling QuEST, and
-# users should instead use the CMake build
+# source code, or the v4 tests, or the deprecated v3 unit tests, 
+# into a single executable. This script should be copied to, and 
+# run in, the root directory (i.e. that containing the quest/ direc). 
+# Beware, this is NOT the recommended method of compiling QuEST, and
+# users should instead use the CMake build. This script is mostly
+# useful for experimenting with the flags passed to the unix build.
 # 
 # @author Tyson Jones
 

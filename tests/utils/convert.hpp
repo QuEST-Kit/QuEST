@@ -1,3 +1,11 @@
+/** @file
+ * Testing utilities for converting QuEST API structures
+ * (like Qureg, CompMatr, PauliStr) to/from testing types 
+ * (like qvector and qmatrix).
+ *
+ * @author Tyson Jones
+ */
+
 #ifndef CONVERT_HPP
 #define CONVERT_HPP
 

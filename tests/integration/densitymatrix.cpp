@@ -1,3 +1,12 @@
+/** @file
+ * Integration tests which combine many QuEST API functions in
+ * a single test using Quregs which are too large to validate via
+ * serial replication (like the unit tests perform), which instead
+ * utilise known scale-invariant analytic properties.
+ *
+ * @author Tyson Jones
+ */
+
 #include "quest/include/quest.h"
 
 #include <catch2/catch_test_macros.hpp>

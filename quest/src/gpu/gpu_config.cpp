@@ -1,5 +1,8 @@
 /** @file
- * Utility functions for querying GPU hardware.
+ * Utility functions for querying GPU hardware,
+ * and allocating and copying GPU VRAM data.
+ * 
+ * @author Tyson Jones
  */
 
 #include "quest/include/modes.h"

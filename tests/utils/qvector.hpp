@@ -1,3 +1,10 @@
+/** @file
+ * Testing utilities which define 'qvector', used
+ * as a reference proxy to a quantum statevector.
+ *
+ * @author Tyson Jones
+ */
+
 #ifndef QVECTOR_HPP
 #define QVECTOR_HPP
 

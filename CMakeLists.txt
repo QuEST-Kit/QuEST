@@ -1,11 +1,16 @@
-# Authors : 
-#  - Oliver Thomson Brown
+# @author Oliver Thomson Brown
+# @author Erich Essmann (patches including MSVC support)
 #
-# Contributions to previous builds from :
+# Contributions to previous builds from:
 #  - Ania Brown
 #  - Jacob Wilkins
 #  - Balint Koczor
+#  - Richard Meister
 #  - Tyson Jones
+#  - Gleb Struchalin
+#  - Sachin Compton
+#  - Christopher J. Anders
+#  - Drew Silcock
 
 cmake_minimum_required(VERSION 3.21)
 

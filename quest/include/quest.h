@@ -1,5 +1,12 @@
 /** @file
  * The main QuEST header, exposing the entire API.
+ * This header is intendedly included by user
+ * source-code, and is both C11 and C++14 compatible.
+ * Preprocessor 'INCLUDE_DEPRECATED_FUNCTIONS' can
+ * be defined as 1 to additionally include QuEST's
+ * deprecated v3 API, before including this header.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef QUEST_H

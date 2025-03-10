@@ -1,5 +1,9 @@
 /** @file
- * User-overridable numerical precisions of the API and backend
+ * User-overridable numerical precision of
+ * both the QuEST API and backends
+ * 
+ * @author Tyson Jones
+ * @author Milos Prokop (patched trig overloads in v3)
  */
 
 #ifndef PRECISION_H

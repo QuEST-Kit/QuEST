@@ -1,14 +1,18 @@
-#include "quest.h"
+/** @file
+ * Examples of initialising PauliStr and PauliStrSum
+ * from strings, types or files, in C11. Note that
+ * MSVC's C11 (which is already weird) doesn't support
+ * assigning any non-complex literal to complex variables
+ * nor any complex arithmetic operators, so it doesn't
+ * get to play with the other children.
+ * 
+ * @author Tyson Jones
+*/
 
+#include "quest.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-
-
-// MSVC's C11 (which is already weird) doesn't support
-// assigning any non-complex literal to complex variables
-// nor any complex arithmetic operators, so it doesn't
-// get to play with the other children.
 #if !defined(_MSC_VER)
 
 

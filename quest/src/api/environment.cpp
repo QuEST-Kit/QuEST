@@ -1,6 +1,8 @@
 /** @file
  * API definitions for managing QuESTEnv instances, which
- * themselves control and query the deployment environment. 
+ * themselves control and query the deployment environment.
+ * 
+ * @author Tyson Jones 
  */
 
 #include "quest/include/environment.h"

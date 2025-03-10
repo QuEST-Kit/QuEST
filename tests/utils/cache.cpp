@@ -1,3 +1,10 @@
+/** @file
+ * Testing utilities which create Quregs across all
+ * available hardware deployments
+ *
+ * @author Tyson Jones
+ */
+
 #include "quest/include/quest.h"
 
 #include "macros.hpp"

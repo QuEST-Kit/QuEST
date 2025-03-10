@@ -1,3 +1,11 @@
+/** @file
+ * Testing utilities which compare scalars produced by the
+ * QuEST API to those produced by other test utilities, and
+ * Quregs modified by the API to qvector qmatrix references.
+ *
+ * @author Tyson Jones
+ */
+
 #ifndef COMPARE_HPP
 #define COMPARE_HPP
 

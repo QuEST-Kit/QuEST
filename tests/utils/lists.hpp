@@ -1,3 +1,9 @@
+/** @file
+ * Testing utilities which generate lists of integers.
+ *
+ * @author Tyson Jones
+ */
+
 #ifndef LISTS_HPP
 #define LISTS_HPP
 

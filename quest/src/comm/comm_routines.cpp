@@ -1,6 +1,12 @@
 /** @file
  * Functions for communicating and exchanging amplitudes between compute
  * nodes, when running in distributed mode, using the C MPI standard.
+ * Calling these functions when COMPILE_MPI=0, or when the passed Quregs
+ * are not distributed, will throw a runtime internal error. 
+ * 
+ * @author Tyson Jones
+ * @author Jakub Adamski (sped-up large comm by asynch messages)
+ * @author Ania (Anna) Brown (developed QuEST v1 logic)
  */
 
 #include "quest/include/types.h"
@@ -129,7 +135,7 @@ qindex MAX_MESSAGE_LENGTH = powerOf2(28);
 
 
 /*
- * MESSAGE SIZES
+ * PRIVATE MESSAGE SIZES
  */
 
 

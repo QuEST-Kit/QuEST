@@ -2,15 +2,11 @@
  * CUDA GPU-accelerated definitions of the subroutines called by
  * accelerator.cpp. This file is always compiled, even when GPU
  * acceleration is disabled and when parsed by a non-CUDA compiler,
- * and so uses precompiler guards to disable CUDA-only code. Note
- * that COMPILE_CUDA=1 whenever COMPILE_CUQUANTUM=1, but we may
- * still use superfluous (COMPILE_CUDA || COMPILE_CUQUANTUM) guards
- * to communicate when there is no bespoke cuQuantum routine.
- * 
+ * and so uses precompiler guards to disable CUDA-only code. 
  * This file contains host definitions and associated memory and
  * thread management, and invokes custom kernels defined in
- * kernels.hpp which is never parsed by non-CUDA compilers. This
- * file also invokes Thrust and cuQuantum routines, defined in
+ * gpu_kernels.hpp which is never parsed by non-CUDA compilers. 
+ * This file also invokes Thrust and cuQuantum routines, defined in
  * gpu_thrust.hpp and gpu_cuquantum.hpp respectively, which are
  * also never parsed by non-CUDA compilers.
  * 
@@ -25,9 +21,15 @@
  * the template-dispatch logic (which would then also be defined in
  * cpu_subroutines.cpp) and moving it out of the aptly-named
  * accelerator.cpp file.
+ * 
+ * Despite COMPILE_CUDA=1 whenever COMPILE_CUQUANTUM=1, we will
+ * still use superfluous (COMPILE_CUDA || COMPILE_CUQUANTUM) guards
+ * to communicate when there is no bespoke cuQuantum routine.
  *
  * When compiling for AMD GPUs, the CUDA symbols invoked herein are
- * mapped to HIP symbols by cuda_to_hip.hpp
+ * mapped to HIP symbols by cuda_to_hip.h 
+ * 
+ * @author Tyson Jones
  */
 
 #include "quest/include/modes.h"

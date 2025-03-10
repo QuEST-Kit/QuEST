@@ -1,5 +1,8 @@
 /** @file
- * String formatting functions, primarily used by reportQureg and reportQuESTEnv()
+ * Functions for formatting and outputting strings, used
+ * primarily by reporters (e.g. reportQureg). 
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef PRINTER_HPP

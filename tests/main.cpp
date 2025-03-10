@@ -1,3 +1,9 @@
+/** @file
+ * Entry-point for all unit and integration tests.
+ *
+ * @author Tyson Jones
+ */
+
 #include <catch2/catch_session.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>

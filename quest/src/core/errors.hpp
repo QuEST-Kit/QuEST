@@ -3,6 +3,8 @@
  * and raising internal errors. These primarily check that that
  * hardware accelerators are behaving as expected, and that runtime
  * deployment is consistent with the compiled deployment modes.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef ERRORS_HPP
@@ -15,14 +17,6 @@
 #include <string>
 
 using std::string;
-
-
-
-/*
- * DEVELOPMENT ERRORS
- */
-
-void error_functionNotImplemented(const char* caller);
 
 
 

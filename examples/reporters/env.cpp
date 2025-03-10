@@ -1,15 +1,16 @@
-#include "quest.h"
+/** @file
+ * Examples of using reportQuESTEnv() in C++14. This example
+ * is most interesting when compiling to simultaneously 
+ * enable multithreaded, GPU-accelerated and distributed 
+ * deployments. When launching, pass an integer 1-6 as a 
+ * command-line argument to choose a deployment.
+ * 
+ * @author Tyson Jones
+*/
 
+#include "quest.h"
 #include <iostream>
 #include <string>
-
-
-/*
- * This demo is most interesting when compiling to simultaneously
- * enable multithreaded, GPU-accelerated and distributed deployments.
- * When launching, pass an integer 1-6 as a command-line argument to
- * choose a deployment.
- */
 
 
 

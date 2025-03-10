@@ -1,13 +1,15 @@
 /** @file
  * Internal functions which query available CPU memory (in an
- * attemptedly OS-agnostic way), and provided needed memory
+ * attemptedly OS-agnostic way), and provide needed memory
  * querents. Note GPU memory querying is performed by 
  * the dedicated GPU backend, though this file is always 
  * compiled (even in GPU mode) because GPU-acceleration still 
  * requires accompanying CPU memory arrays. This file does not
  * perform any allocation of memory; that is instead performed
  * by cpu_config.cpp, to be symmetric with the GPU-memory
- * allocators in gpu_config.cpp.
+ * allocators in gpu_config.cpp, and use NUMA strategies.
+ * 
+ * @author Tyson Jones
  */
 
 #include "quest/include/types.h"

@@ -1,6 +1,12 @@
 /** @file
  * Functions which unambiguously identify the buffer indices
- * at which communicated amplitudes are sent and received
+ * at which communicated amplitudes are sent and received.
+ * These are inlined mainly to avoid symbol duplication as
+ * a header-only file, but also so that callers of e.g.
+ * getBufferRecvInd() (which use the result as an index-offset 
+ * in hot loops) can exploit the compile-time known constant.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef COMM_INDICES_HPP
@@ -11,16 +17,6 @@
 
 #include <utility>
 
-
-
-/*
- * BUFFER INDICES
- *
- * which are inlined mainly to avoid symbol duplication,
- * but also so that callers of getBufferRecvInd() which
- * use the result as an index-offset in hot loops can
- * exploit the compile-time known constant.
- */
 
 
 static inline qindex getSubBufferSendInd(Qureg qureg) {

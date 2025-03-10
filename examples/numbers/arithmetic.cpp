@@ -1,4 +1,13 @@
+/** @file
+ * Examples of using QuEST's precision-agnostic
+ * overloaded arithmetic operators between qcomp 
+ * and other types like ints and floats, in C++14
+ * 
+ * @author Tyson Jones
+*/
+
 #include "quest.h"
+
 
 int main() {
 

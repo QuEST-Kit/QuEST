@@ -1,13 +1,15 @@
-#include "quest.h"
+/** @file
+ * Examples of using reportQureg in C++14. This
+ * example is most interesting when using 
+ * simultaneously multithreaded, GPU-accelerated 
+ * and distributed deployments
+ * 
+ * @author Tyson Jones
+*/
 
+#include "quest.h"
 #include <iostream>
 #include <string>
-
-
-/*
- * This demo is most interesting when using simultaneous
- * multithreaded, GPU-accelerated and distributed deployments
- */
 
 
 

@@ -1,3 +1,9 @@
+/** @file
+ * Unit tests of the qureg module.
+ *
+ * @author Tyson Jones
+ */
+
 #include "quest/include/quest.h"
 
 #include <catch2/catch_test_macros.hpp>
@@ -34,7 +40,6 @@ void destroyQureg(Qureg qureg);
 
 void reportQuregParams(Qureg qureg);
 void reportQureg(Qureg qureg);
-void reportQuregToFile(Qureg qureg, char* fn);
 
 void syncQuregToGpu  (Qureg qureg);
 void syncQuregFromGpu(Qureg qureg);

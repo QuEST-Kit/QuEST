@@ -1,5 +1,8 @@
 /** @file
- * Utility definitions for querying CPU hardware.
+ * Utility functions for querying the CPU multithreadng
+ * configuration, and allocating and copying RAM data.
+ * 
+ * @author Tyson Jones
  */
 
 #include "quest/include/modes.h"

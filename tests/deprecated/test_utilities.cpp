@@ -1,7 +1,9 @@
 /** @file
- * Unoptimised, analytic implementations of matrix operations used by QuEST_unit_tests
+ * Utility functions used by the ported v3 tests of QuEST's deprecated v3 API.
  *
  * @author Tyson Jones
+ * @author Oliver Thomson Brown (ported to Catch2 v3)
+ * @author Ali Rezaei (tested porting to QuEST v4)
  */
 
 #include <catch2/catch_test_macros.hpp>

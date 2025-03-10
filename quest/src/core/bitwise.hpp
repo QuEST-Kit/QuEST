@@ -1,6 +1,9 @@
 /** @file
  * Bitwise operations used by all deployment modes for fast,
  * low-level processing of basis state indices (qindex). 
+ * 
+ * @author Tyson Jones
+ * @author Erich Essmann (improved OS agnosticism)
  */
 
 #ifndef BITWISE_HPP

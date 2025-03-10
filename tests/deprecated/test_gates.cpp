@@ -1,3 +1,15 @@
+/** @file
+ * Ported tests of the deprecated QuEST v3 interface,
+ * unit testing the "gates" module.
+ * 
+ * This file should be excluded from doxygen parsing so 
+ * as not to conflict with the doc of the v4 unit tests.
+ * 
+ * @author Tyson Jones
+ * @author Oliver Thomson Brown (ported to Catch2 v3)
+ * @author Ali Rezaei (tested porting to QuEST v4)
+ */
+
 // must include catch.hpp first, because quest's
 // deprecation library will include a definition
 // of Vector{}

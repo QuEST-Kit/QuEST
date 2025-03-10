@@ -1,5 +1,12 @@
 /** @file
- * String formatting functions, primarily used by reportQureg and reportQuESTEnv()
+ * Functions for formatting and outputting strings, used
+ * primarily by reporters (e.g. reportQureg). A substantial
+ * amount of logic is dedicated to making outputs look
+ * extra pretty, managing distributed objects, and 
+ * aesthetically truncating large matrices.
+ * 
+ * @author Tyson Jones
+ * @author Erich Essmann (improved OS agnosticism, patched mem-leak)
  */
 
 #include "quest/include/qureg.h"

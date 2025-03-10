@@ -1,3 +1,5 @@
+# @author Oliver Thomson Brown
+
 add_subdirectory(krausmaps)
 add_subdirectory(matrices)
 add_subdirectory(numbers)

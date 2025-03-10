@@ -1,12 +1,17 @@
-#include "quest.h"
+/** @file
+ * Examples of initialising PauliStr and PauliStrSum
+ * from strings, types or files, in C++14.
+ * 
+ * @author Tyson Jones
+*/
 
+#include "quest.h"
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
 #include <vector>
 
 using std::vector;
-
 
 
 

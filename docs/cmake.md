@@ -1,3 +1,10 @@
+<!--
+  Instructions for compiling QuEST with CMake
+
+  @author Oliver Thomson Brown
+-->
+
+
 # CMake Configuration Options in QuEST
 
 Version 4 of QuEST includes reworked CMake to support library builds, CMake export, and installation. Here we detail useful variables to configure the compilation of QuEST. If using a Unix-like operating system any of these variables can be set using the `-D` flag when invoking CMake, for example:
@@ -12,6 +19,8 @@ Then one need only move to the build directory, and invoke make:
 cd build
 make
 ```
+
+> Windows or MSVC users should additionally supply `--config Release` during compilation to enable optimisations.
 
 ## QuEST CMake variables
 

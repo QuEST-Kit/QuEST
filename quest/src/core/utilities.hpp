@@ -1,5 +1,12 @@
 /** @file
- * Miscellaneous utility functions needed internally.
+ * Miscellaneous utility signatures needed internally,
+ * which are not performance critical (i.e. not used
+ * in hot loops). These include qubit and state index
+ * logic, matrix algebra, and channel parameters. This
+ * header also defines several compile-time type-trait
+ * functions needed for internal generic functions.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef UTILITIES_HPP

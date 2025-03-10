@@ -1,5 +1,10 @@
 /** @file
- * Miscellaneous utility functions needed internally.
+ * Miscellaneous utility functions needed internally,
+ * which are not performance critical (i.e. not used
+ * in hot loops). These include qubit and state index
+ * logic, matrix algebra, and channel parameters.
+ * 
+ * @author Tyson Jones
  */
 
 #include "quest/include/types.h"

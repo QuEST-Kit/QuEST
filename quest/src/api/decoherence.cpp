@@ -1,6 +1,10 @@
 /** @file
  * API definitions for effecting decohering channels upon Quregs
  * which are instantiated as density matrices.
+ * 
+ * @author Tyson Jones
+ * @author Balint Koczor (prototyped v3 mixKrausMap)
+ * @author Nicolas Vogt (prototyped v3 mixDamping)
  */
 
 #include "quest/include/types.h"
@@ -10,8 +14,6 @@
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/utilities.hpp"
-
-#include "quest/src/core/errors.hpp" // only needed for not-implemented functions
 
 // enable invocation by both C and C++ binaries
 extern "C" {

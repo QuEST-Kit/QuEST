@@ -1,5 +1,8 @@
 /** @file
- * API signatures for users to specify deployment modes.
+ * Compile-time checks that all expected
+ * preprocessor macros are defined and valid 
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef MODES_H

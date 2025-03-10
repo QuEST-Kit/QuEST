@@ -1,6 +1,9 @@
 /** @file
- * API signatures for debugging QuEST behaviour, or controlling
- * input validation.
+ * API signatures for debugging QuEST behaviour, 
+ * controlling input validation, changing reporter
+ * parameters or seeding random generation.
+ * 
+ * @author Tyson Jones
  */
 
 #ifndef DEBUG_H
