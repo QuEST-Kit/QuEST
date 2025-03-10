@@ -315,9 +315,12 @@ qreal cuquantum_statevec_calcTotalProb_sub(Qureg qureg) {
     double prob0;
     double prob1;
 
-    // find probablity of leftmost qubit, so that reduction is 
-    // contiguous, which we expect has the optimum performance
-    int qubit = qureg.numQubits - 1;
+    // we can find the probability via any qubit, though we target
+    // the leftmost so that the reduction is contiguous which we
+    // expect has the best performance; beware though that cuQuantum
+    // does not know the state is distributed, so we must use the
+    // leftmost suffix qubit
+    int qubit = qureg.logNumAmpsPerNode - 1;
     int numQubits = 1;
 
     CUDA_CHECK( custatevecAbs2SumOnZBasis(
