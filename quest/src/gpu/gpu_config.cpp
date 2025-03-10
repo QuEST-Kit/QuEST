@@ -331,12 +331,12 @@ bool gpu_areAnyNodesBoundToSameGpu() {
     // obtain bound GPU's UUID; a unique identifier of 16 chars
     cudaDeviceProp prop;
     CUDA_CHECK( cudaGetDeviceProperties(&prop, getBoundGpuId()) );
-    cudaUUID_t uuid = prop.uuid; // char[16]
+    cudaUUID_t uuid = prop.uuid;
 
     // send to root node as a string; i.e. those 16 chars and a trailing terminal char
     constexpr int len = 16 + 1;
     char uuidStr[len];
-    snprintf(uuidStr, len, "%s", uuid);
+    snprintf(uuidStr, len, "%s", uuid.bytes);
 
     auto allUuids = comm_gatherStringsToRoot(uuidStr, len);
     auto uniqueUuids = std::set<std::string>(allUuids.begin(), allUuids.end());
