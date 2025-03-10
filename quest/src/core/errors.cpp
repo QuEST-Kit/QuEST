@@ -23,6 +23,16 @@ using std::string;
 
 
 /*
+ * TODO:
+ * This design doesn't pass info useful for debugging,
+ * line erroneous caller's line-number or function name.
+ * Consider refactoring to be more similar to CUDA_CHECK().
+ */
+
+
+
+
+/*
  * INTERNAL ERROR RESPONSE
  */
 
@@ -605,6 +615,12 @@ void assert_gpuIsAccessible() {
         error_gpuUnexpectedlyInaccessible();
 }
 
+void assert_gpuHasBeenBound(bool isBound) {
+
+    if (!isBound)
+        raiseInternalError("An internal GPU-querying function was illegally called before local GPUs had been bound to local MPI processes.");
+}
+
 
 
 /*
@@ -656,7 +672,7 @@ void error_thrustTempGpuAllocFailed() {
 
 void error_cuQuantumInitOrFinalizedButNotCompiled() {
 
-    raiseInternalError("Attempted to initialize or finalize cuQuantum, but cuQuantum was not compiled.");
+    raiseInternalError("Attempted to initialise or finalise cuQuantum, but cuQuantum was not compiled.");
 }
 
 void error_cuQuantumTempCpuAllocFailed() {

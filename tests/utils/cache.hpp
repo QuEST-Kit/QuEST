@@ -14,6 +14,7 @@
 using quregCache = std::unordered_map<std::string,Qureg>;
 using deployInfo = std::vector<std::tuple<std::string,int,int,int>>;
 
+int getNumCachedQubits();
 deployInfo getSupportedDeployments();
 
 void createCachedQuregs();

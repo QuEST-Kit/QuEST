@@ -59,6 +59,10 @@ typedef struct {
 
 typedef struct {
 
+    // beware that CompMatr instances are sometimes 'spoofed' inside localiser.cpp,
+    // which will set the fields from other object instances (like a SuperOp). As
+    // such, additional fields to this struct may require updating these spoofers.
+
     int numQubits;
     qindex numRows;
 

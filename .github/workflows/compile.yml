@@ -1,3 +1,16 @@
+# Tests for successful compilation of the source
+# code with (attemptedly) all possible configurations
+# of operating system, precision, multithreading,
+# distribution, GPU-acceleration (via CUDA or HIP),
+# and cuQuantum (else custom kernels). Currently,
+# this wastefully downlaods and installs all needed
+# compilers (like libomp, CUDA, ROCm). Compilation
+# includes the v4 unit and integration tests, the
+# deprecated v3 tests (when possible), and all the
+# example programs. No compiled execs are run however.
+#
+# @author Tyson Jones
+
 name: compile
 
 

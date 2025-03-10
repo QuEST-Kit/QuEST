@@ -405,7 +405,7 @@ vector<string> getBasisKets(qindex startInd, qindex numInds) {
     vector<string> kets(numInds);
 
     for (qindex i=0; i<numInds; i++)
-        kets[i] = "|" + toStr(i+startInd) + "⟩";
+        kets[i] = std::string("|") + toStr(i+startInd) + std::string("⟩");
 
     return kets;
 }
@@ -1375,14 +1375,22 @@ void print_table(string title, vector<tuple<string, string>> rows, string indent
 
 void print_table(string title, vector<tuple<string, long long int>> rows, string indent) {
 
-    // only root node prints
-    if (!comm_isRootNode())
-        return;
-
     // convert all values to strings
     vector<tuple<string, string>> casted;
     for (auto const& [key, value] : rows)
         casted.push_back({key, std::to_string(value)});
 
     print_table(title, casted, indent);
+}
+
+
+void print_table(string title, string emptyPlaceholder, string indent) {
+
+    // only root node prints
+    if (!comm_isRootNode())
+        return;
+
+    // print indented table title and placeholder
+    cout << indent << getTableTitleStr(title) << endl;
+    cout << indent << indent << emptyPlaceholder << endl;
 }

@@ -55,6 +55,24 @@
 
 
 
+// define optional-macro defaults (mostly to list them)
+
+#ifndef PERMIT_NODES_TO_SHARE_GPU
+#define PERMIT_NODES_TO_SHARE_GPU 0
+#endif
+
+#ifndef INCLUDE_DEPRECATED_FUNCTIONS
+#define INCLUDE_DEPRECATED_FUNCTIONS 0
+#endif
+
+#ifndef DISABLE_DEPRECATION_WARNINGS
+#define DISABLE_DEPRECATION_WARNINGS 0
+#endif
+
+// further macros are defined in precision.h
+
+
+
 // user flags for choosing automatic deployment; only accessible by C++ 
 // backend and C++ users; C users must hardcode -1 
 

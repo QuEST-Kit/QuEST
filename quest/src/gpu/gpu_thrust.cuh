@@ -212,7 +212,7 @@ struct functor_getExpecDensMatrZTerm : public thrust::unary_function<qindex,cu_q
 
     __device__ cu_qcomp operator()(qindex n) {
 
-        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
+        qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
         qindex r = n + firstDiagInd;
 
         int par = cudaGetBitMaskParity(r & targMask); // device-only
@@ -263,7 +263,7 @@ struct functor_getExpecDensMatrPauliTerm : public thrust::unary_function<qindex,
 
         qindex r = n + firstDiagInd;
         qindex i = flipBits(r, maskXY);
-        qindex m = fast_getLocalFlatIndex(i, n, numAmpsPerCol);
+        qindex m = fast_getQuregLocalFlatIndex(i, n, numAmpsPerCol);
 
         // sign excludes i^numY contribution
         int par = cudaGetBitMaskParity(i & maskYZ); // device-only
@@ -292,7 +292,7 @@ struct functor_getExpecDensMatrDiagMatrTerm : public thrust::unary_function<qind
         if constexpr (HasPower)
             elem = getCompPower(elem, expo);
 
-        qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
+        qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
 
         return amps[i] * elem;
     }
@@ -331,8 +331,8 @@ struct functor_setAmpToPauliStrSumElem {
             r = i;
             c = i;
         } else {
-            r = fast_getGlobalRowFromFlatIndex(i, dim);
-            c = fast_getGlobalColFromFlatIndex(i, dim);
+            r = fast_getQuregGlobalRowFromFlatIndex(i, dim);
+            c = fast_getQuregGlobalColFromFlatIndex(i, dim);
         }
 
         amps[n] = fast_getPauliStrSumElem(coeffs, strings, numTerms, r, c);
@@ -409,7 +409,7 @@ struct functor_getDiagInd : public thrust::unary_function<qindex,qindex> {
     }
 
     __host__ __device__ qindex operator()(qindex i) {
-        return fast_getLocalIndexOfDiagonalAmp(i, firstDiagInd, numAmpsPerCol);
+        return fast_getQuregLocalIndexOfDiagonalAmp(i, firstDiagInd, numAmpsPerCol);
     }
 };
 

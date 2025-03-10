@@ -1,3 +1,11 @@
+# Tests serial execution of the v4 unit tests
+# (but not the larger integration tests), and
+# the deprecated v3 unit tests (when possible),
+# on all OS and at all precisions. Presently,
+# all runners are single-thread and free-tier.
+# 
+# @author Tyson Jones
+
 name: test
 
 

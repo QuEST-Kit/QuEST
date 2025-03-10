@@ -275,16 +275,12 @@ __global__ void kernel_statevec_anyCtrlTwoTargDenseMatr_sub(
  */
 
 
-__forceinline__ __device__ qindex getStrideOfGlobalThreadArr() {
-    return gridDim.x * blockDim.x;
-}
+__forceinline__ __device__ qindex getThreadsNthGlobalArrInd(qindex n, qindex threadInd, qindex numThreads) {
 
-__forceinline__ __device__ qindex getThreadsNthGlobalArrInd(qindex n, qindex threadInd, qindex stride) {
-    return (n * stride) + threadInd;
-}
-
-__forceinline__ __device__ qindex getFlattenedMatrInd(qindex row, qindex col, qindex dim) {
-    return (row * dim) + col;
+    // threads store their i-th element contiguously to one another,
+    // so that neighbouring threads in a warp access neighbouring 
+    // elements of global memory (i.e. coalesce), for caching efficiency
+    return (n * numThreads) + threadInd;
 }
 
 
@@ -337,7 +333,7 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
         for (qindex l=0; l<numTargAmps; l++) {
 
             // h = flat index of matrix's (k,l)-th element
-            qindex h = getFlattenedMatrInd(k, l, numTargAmps);
+            qindex h = fast_getMatrixFlatIndex(k, l, numTargAmps);
 
             // optionally conjugate matrix elem
             cu_qcomp elem = flatMatrElems[h];
@@ -355,16 +351,14 @@ template <int NumCtrls, bool ApplyConj>
 __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
     cu_qcomp* globalCache,
     cu_qcomp* amps, qindex numThreads, qindex numBatchesPerThread,
-    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int* targs, int numTargBits,
+    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, 
+    int* targs, int numTargBits, qindex numTargAmps,
     cu_qcomp* flatMatrElems
 ) {
     GET_THREAD_IND(t, numThreads);
 
-    qindex cacheStride = getStrideOfGlobalThreadArr();
-
     // NumCtrls might be compile-time known, but numTargBits>5 is always unknown/runtime
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
-    qindex numTargAmps = powerOf2(numTargBits);
 
     // unlike all other kernels, each thread modifies multiple batches of amplitudes
     for (qindex b=0; b<numBatchesPerThread; b++) {
@@ -382,7 +376,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
             qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
 
             // j = index of k-th element of thread's private cache partition
-            qindex j = getThreadsNthGlobalArrInd(k, n, cacheStride);
+            qindex j = getThreadsNthGlobalArrInd(k, t, numThreads);
             globalCache[j] = amps[i];
         }
 
@@ -394,8 +388,8 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
             amps[i] = getCuQcomp(0, 0);
         
             for (qindex l=0; l<numTargAmps; l++) {
-                qindex j = getThreadsNthGlobalArrInd(l, n, cacheStride);
-                qindex h = getFlattenedMatrInd(k, l, numTargAmps);
+                qindex j = getThreadsNthGlobalArrInd(l, t, numThreads);
+                qindex h = fast_getMatrixFlatIndex(k, l, numTargAmps);
 
                 // optionally conjugate matrix elem
                 cu_qcomp elem = flatMatrElems[h];
@@ -1176,7 +1170,7 @@ __global__ void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, numQubits);
 
     // i = index of nth local diagonal elem
-    qindex i = fast_getLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
+    qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
     qreal prob = getCompReal(amps[i]);
 
     // j = global index of i
