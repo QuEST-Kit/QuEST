@@ -4,6 +4,10 @@
  * 
  * @author Tyson Jones
  * @author Milos Prokop (patched trig overloads in v3)
+ * 
+ * @defgroup precision Precision
+ * @ingroup api
+ * @{
  */
 
 #ifndef PRECISION_H
@@ -122,3 +126,5 @@
 
 
 #endif // PRECISION_H
+
+/** @} (end doxygen defgroup) */

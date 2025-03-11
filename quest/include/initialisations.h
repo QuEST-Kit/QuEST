@@ -5,6 +5,10 @@
  * state in GPU memory; the CPU amps are unchanged.
  * 
  * @author Tyson Jones
+ * 
+ * @defgroup initialisations Initialisations
+ * @ingroup api
+ * @{
  */
 
 #ifndef INITIALISATIONS_H
@@ -55,6 +59,10 @@ qreal setQuregToRenormalized(Qureg qureg);
 
 void setQuregToPauliStrSum(Qureg qureg, PauliStrSum sum);
 
+void setQuregToPartialTrace(Qureg out, Qureg in, int* traceOutQubits, int numTraceQubits);
+
+void setQuregToReducedDensityMatrix(Qureg out, Qureg in, int* retainQubits, int numRetainQubits);
+
 
 
 // end de-mangler
@@ -63,3 +71,5 @@ void setQuregToPauliStrSum(Qureg qureg, PauliStrSum sum);
 #endif
 
 #endif // INITIALISATIONS_H
+
+/** @} (end doxygen defgroup) */

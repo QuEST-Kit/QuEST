@@ -32,7 +32,7 @@ using Catch::Matchers::ContainsSubstring;
 // fromComplex removed because Complex is completely deprecated
 
     // /** @sa fromComplex
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "fromComplex", "[data_structures]" ) {
@@ -51,7 +51,7 @@ using Catch::Matchers::ContainsSubstring;
 // getStaticComplexMatrixN is completely deprecated
 
     // /** @sa getStaticComplexMatrixN
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "getStaticComplexMatrixN", "[data_structures]" ) {
@@ -65,7 +65,7 @@ using Catch::Matchers::ContainsSubstring;
 // toComplex removed because Complex is completely deprecated 
 
     // /** @sa toComplex
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "toComplex", "[data_structures]" ) {
@@ -85,7 +85,7 @@ using Catch::Matchers::ContainsSubstring;
 
 
 /** @sa createCloneQureg
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "createCloneQureg", "[data_structures]" ) {
@@ -153,7 +153,7 @@ TEST_CASE( "createCloneQureg", "[data_structures]" ) {
 
 
 /** @sa createComplexMatrixN
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "createComplexMatrixN", "[data_structures]" ) {
@@ -181,7 +181,7 @@ TEST_CASE( "createComplexMatrixN", "[data_structures]" ) {
 
 
 /** @sa createDensityQureg
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "createDensityQureg", "[data_structures]" ) {
@@ -251,7 +251,7 @@ TEST_CASE( "createDensityQureg", "[data_structures]" ) {
 
 
 /** @sa createDiagonalOp
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
@@ -325,7 +325,7 @@ TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
 // createFullStateDiagMatrFromPauliStrSumFile) is incompatible
 
     // /** @sa createDiagonalOpFromPauliHamilFile
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "createDiagonalOpFromPauliHamilFile", "[data_structures]" ) {
@@ -500,7 +500,7 @@ TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
 // replacement PauliStrSum has an incompatible constructor
 
     // /** @sa createPauliHamil
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "createPauliHamil", "[data_structures]" ) {
@@ -551,7 +551,7 @@ TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
 // has incompatible struct fields
 
     // /** @sa createPauliHamilFromFile
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "createPauliHamilFromFile", "[data_structures]" ) {
@@ -683,7 +683,7 @@ TEST_CASE( "createDiagonalOp", "[data_structures]" ) {
 
 
 /** @sa createQuESTEnv
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "createQuESTEnv", "[data_structures]" ) {
@@ -695,7 +695,7 @@ TEST_CASE( "createQuESTEnv", "[data_structures]" ) {
 
 
 /** @sa createQureg
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "createQureg", "[data_structures]" ) {
@@ -763,7 +763,7 @@ TEST_CASE( "createQureg", "[data_structures]" ) {
 
 
 /** @sa createSubDiagonalOp
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "createSubDiagonalOp", "[data_structures]" ) {
@@ -796,7 +796,7 @@ TEST_CASE( "createSubDiagonalOp", "[data_structures]" ) {
 
 
 /** @sa destroyComplexMatrixN
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "destroyComplexMatrixN", "[data_structures]" ) {
@@ -827,7 +827,7 @@ TEST_CASE( "destroyComplexMatrixN", "[data_structures]" ) {
 
 
 /** @sa destroyDiagonalOp
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "destroyDiagonalOp", "[data_structures]" ) {
@@ -839,7 +839,7 @@ TEST_CASE( "destroyDiagonalOp", "[data_structures]" ) {
 
 
 /** @sa destroyPauliHamil
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "destroyPauliHamil", "[data_structures]" ) {
@@ -856,7 +856,7 @@ TEST_CASE( "destroyPauliHamil", "[data_structures]" ) {
 
 
 /** @sa destroyQuESTEnv
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "destroyQuESTEnv", "[data_structures]" ) {
@@ -868,7 +868,7 @@ TEST_CASE( "destroyQuESTEnv", "[data_structures]" ) {
 
 
 /** @sa destroyQureg
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "destroyQureg", "[data_structures]" ) {
@@ -885,7 +885,7 @@ TEST_CASE( "destroyQureg", "[data_structures]" ) {
 
 
 /** @sa destroySubDiagonalOp
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "destroySubDiagonalOp", "[data_structures]" ) {
@@ -901,7 +901,7 @@ TEST_CASE( "destroySubDiagonalOp", "[data_structures]" ) {
 // an incompatible signature
 
     // /** @sa initComplexMatrixN
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "initComplexMatrixN", "[data_structures]" ) {
@@ -917,7 +917,7 @@ TEST_CASE( "destroySubDiagonalOp", "[data_structures]" ) {
 // FullStateDiagMatr has an incompatible signature
 
     /** @sa initDiagonalOp
-     * @ingroup unittest 
+     * @ingroup deprecatedtests 
      * @author Tyson Jones 
      */
     // TEST_CASE( "initDiagonalOp", "[data_structures]" ) {
@@ -979,7 +979,7 @@ TEST_CASE( "destroySubDiagonalOp", "[data_structures]" ) {
 // PauliHamil
 
     /** @sa initDiagonalOpFromPauliHamil
-     * @ingroup unittest 
+     * @ingroup deprecatedtests 
      * @author Tyson Jones 
      */
     // TEST_CASE( "initDiagonalOpFromPauliHamil", "[data_structures]" ) {
@@ -1060,7 +1060,7 @@ TEST_CASE( "destroySubDiagonalOp", "[data_structures]" ) {
 // favour of PauliStrSum with (so far) an incompatible initialiser
 
     /** @sa initPauliHamil
-     * @ingroup unittest 
+     * @ingroup deprecatedtests 
      * @author Tyson Jones 
      */
     // TEST_CASE( "initPauliHamil", "[data_structures]" ) {
@@ -1130,7 +1130,7 @@ TEST_CASE( "destroySubDiagonalOp", "[data_structures]" ) {
 // setFullStateDiagMatr() with an incompatible signature
 
     // /** @sa setDiagonalOpElems
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "setDiagonalOpElems", "[data_structures]" ) {
@@ -1198,7 +1198,7 @@ TEST_CASE( "destroySubDiagonalOp", "[data_structures]" ) {
 
 
 /** @sa syncDiagonalOp
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "syncDiagonalOp", "[data_structures]" ) {

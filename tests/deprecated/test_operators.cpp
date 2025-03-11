@@ -49,7 +49,7 @@ using Catch::Matchers::ContainsSubstring;
 
 
 /** @sa applyDiagonalOp
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "applyDiagonalOp", "[operators]" ) {
@@ -98,7 +98,7 @@ TEST_CASE( "applyDiagonalOp", "[operators]" ) {
 }
 
 /** @sa applyFullQFT
- * @ingroup unittest
+ * @ingroup deprecatedtests
  * @author Tyson Jones 
  */
 TEST_CASE( "applyFullQFT", "[operators]" ) {
@@ -218,7 +218,7 @@ TEST_CASE( "applyFullQFT", "[operators]" ) {
 
 
 /** @sa applyGateMatrixN
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "applyGateMatrixN", "[operators]" ) {
@@ -329,7 +329,7 @@ TEST_CASE( "applyGateMatrixN", "[operators]" ) {
 
 
 /** @sa applyGateSubDiagonalOp
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "applyGateSubDiagonalOp", "[operators]" ) {
@@ -433,7 +433,7 @@ TEST_CASE( "applyGateSubDiagonalOp", "[operators]" ) {
 
 
 /** @sa applyMatrix2
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "applyMatrix2", "[operators]" ) {
@@ -483,7 +483,7 @@ TEST_CASE( "applyMatrix2", "[operators]" ) {
 
 
 /** @sa applyMatrix4
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "applyMatrix4", "[operators]" ) {
@@ -550,7 +550,7 @@ TEST_CASE( "applyMatrix4", "[operators]" ) {
 
 
 /** @sa applyMatrixN
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "applyMatrixN", "[operators]" ) {
@@ -664,7 +664,7 @@ TEST_CASE( "applyMatrixN", "[operators]" ) {
 
 
 /** @sa applyMultiControlledGateMatrixN
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
@@ -825,7 +825,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
 // matrix??)
 
     // /** @sa applyMultiControlledMatrixN
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "applyMultiControlledMatrixN", "[operators]" ) {
@@ -988,7 +988,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
 // setDiagMatrFromMultiVarFunc and setFullStateDiagMatrFromMultiDimLists
 
     // /** @sa applyMultiVarPhaseFunc
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "applyMultiVarPhaseFunc", "[operators]" ) {
@@ -1193,7 +1193,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
 // setDiagMatrFromMultiVarFunc and setFullStateDiagMatrFromMultiDimLists
 
     // /** @sa applyMultiVarPhaseFuncOverrides
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "applyMultiVarPhaseFuncOverrides", "[operators]" ) {
@@ -1468,7 +1468,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
 // setDiagMatrFromMultiVarFunc and setFullStateDiagMatrFromMultiDimLists
 
     // /** @sa applyNamedPhaseFunc
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "applyNamedPhaseFunc", "[operators]" ) {
@@ -1684,7 +1684,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
 // setDiagMatrFromMultiVarFunc and setFullStateDiagMatrFromMultiDimLists
 
     // /** @sa applyNamedPhaseFuncOverrides
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "applyNamedPhaseFuncOverrides", "[operators]" ) {
@@ -1967,7 +1967,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
 // setDiagMatrFromMultiVarFunc and setFullStateDiagMatrFromMultiDimLists
 
     // /** @sa applyParamNamedPhaseFunc
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "applyParamNamedPhaseFunc", "[operators]" ) {
@@ -2556,7 +2556,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
     // setDiagMatrFromMultiVarFunc and setFullStateDiagMatrFromMultiDimLists
 
     // /** @sa applyParamNamedPhaseFuncOverrides
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "applyParamNamedPhaseFuncOverrides", "[operators]" ) {
@@ -3214,7 +3214,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
 // presently has an incompatible initialiser
 
     // /** @sa applyPauliHamil
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "applyPauliHamil", "[operators]" ) {
@@ -3318,7 +3318,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
 // with an incompatible initialiser
 
     // /** @sa applyPauliSum
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "applyPauliSum", "[operators]" ) {
@@ -3418,7 +3418,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
 // setDiagMatrFromMultiVarFunc and setFullStateDiagMatrFromMultiDimLists
 
     // /** @sa applyPhaseFunc
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "applyPhaseFunc", "[operators]" ) {
@@ -3552,7 +3552,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
 // setDiagMatrFromMultiVarFunc and setFullStateDiagMatrFromMultiDimLists
 
     // /** @sa applyPhaseFuncOverrides
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "applyPhaseFuncOverrides", "[operators]" ) {
@@ -3765,7 +3765,7 @@ TEST_CASE( "applyMultiControlledGateMatrixN", "[operators]" ) {
 
 
 /** @sa applyProjector
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "applyProjector", "[operators]" ) {
@@ -3900,7 +3900,7 @@ TEST_CASE( "applyProjector", "[operators]" ) {
 
 
 /** @sa applyQFT
- * @ingroup unittest
+ * @ingroup deprecatedtests
  * @author Tyson Jones 
  */
 TEST_CASE( "applyQFT", "[operators]" ) {
@@ -4053,7 +4053,7 @@ TEST_CASE( "applyQFT", "[operators]" ) {
 
 
 /** @sa applySubDiagonalOp
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
@@ -4163,7 +4163,7 @@ TEST_CASE( "applySubDiagonalOp", "[operators]" ) {
 // incompatible with the deprecated PauliHamil
 
     // /** @sa applyTrotterCircuit
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "applyTrotterCircuit", "[operators]" ) {

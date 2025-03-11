@@ -15,7 +15,7 @@
 
   <!-- banner -->
   <a href="https://quest.qtechtheory.org">
-    <img src="docs/config/banner.png?raw=true" alt="The QuEST logo" width=400>
+    <img src="aux/docs/banner.png?raw=true" alt="The QuEST logo" width=400>
   </a>
 
   <!-- TODO: restore CI 'compilation/test pass' badge! -->
@@ -67,12 +67,12 @@ In particular, QuEST `v4` was made possible through the support of the UK Nation
 
 <div align="center">
 
-  <img src="docs/config/logos/nqcc.png" alt="NQCC" height=30> &nbsp;
-  <img src="docs/config/logos/amd.png" alt="AMD" height=25> &nbsp;
-  <img src="docs/config/logos/nvidia.png" alt="NVIDIA" height=25> &nbsp;
-  <img src="docs/config/logos/qmt.png" alt="Quantum Motion" height=25> &nbsp;
-  <img src="docs/config/logos/edinburgh.png" alt="University of Edinburgh" height=25> &nbsp;
-  <img src="docs/config/logos/oxford.png" alt="University of Oxford" height=28> &nbsp;
+  <img src="aux/docs/logos/nqcc.png" alt="NQCC" height=30> &nbsp;
+  <img src="aux/docs/logos/amd.png" alt="AMD" height=25> &nbsp;
+  <img src="aux/docs/logos/nvidia.png" alt="NVIDIA" height=25> &nbsp;
+  <img src="aux/docs/logos/qmt.png" alt="Quantum Motion" height=25> &nbsp;
+  <img src="aux/docs/logos/edinburgh.png" alt="University of Edinburgh" height=25> &nbsp;
+  <img src="aux/docs/logos/oxford.png" alt="University of Oxford" height=28> &nbsp;
 
 </div>
 

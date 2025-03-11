@@ -2,6 +2,10 @@
  * API signatures for creating and managing Quregs.
  * 
  * @author Tyson Jones
+ * 
+ * @defgroup qureg Qureg
+ * @ingroup api
+ * @{
  */
 
 #ifndef QUREG_H
@@ -106,3 +110,5 @@ qcomp getDensityQuregAmp(Qureg qureg, qindex row, qindex column);
 
 
 #endif // QUREG_H
+
+/** @} (end doxygen defgroup) */
