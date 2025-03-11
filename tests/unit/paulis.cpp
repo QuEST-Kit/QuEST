@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup unitpaulis Paulis unit tests
+ * @defgroup unitpaulis Paulis
  * @ingroup unittests
  */
 
@@ -46,9 +46,9 @@ TEST_CASE( "placeholder", TEST_CATEGORY) {
 
 
 
-/*
- * TODO:
- * UNTESTED FUNCTIONS BELOW
+/**
+ * @todo
+ * UNTESTED FUNCTIONS
  */
 
 PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis);

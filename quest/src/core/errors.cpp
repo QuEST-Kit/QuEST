@@ -24,8 +24,8 @@ using std::string;
 
 
 
-/*
- * TODO:
+/**
+ * @todo
  * This design doesn't pass info useful for debugging,
  * line erroneous caller's line-number or function name.
  * Consider refactoring to be more similar to CUDA_CHECK().

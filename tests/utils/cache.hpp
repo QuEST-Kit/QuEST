@@ -1,11 +1,11 @@
 /** @file
- * Testing utilities which create Quregs across all
- * available hardware deployments
-
  * @author Tyson Jones
  * 
  * @defgroup testutilscache Cache
  * @ingroup testutils
+ * @brief 
+ * Testing utilities which create Quregs across all
+ * available hardware deployments
  * @{
  */
 

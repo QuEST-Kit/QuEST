@@ -145,10 +145,10 @@ __host__ inline std::array<cu_qcomp,16> unpackMatrixToCuQcomps(CompMatr2 in) {
  */
 
 
-// TODO:
-// - clean this up (with templates?)
-// - use getCuQcomp() rather than struct creation,
-//   to make the algebra implementation-agnostic
+/// @todo
+/// - clean this up (with templates?)
+/// - use getCuQcomp() rather than struct creation,
+///   to make the algebra implementation-agnostic
 
 
 #if defined(__NVCC__)

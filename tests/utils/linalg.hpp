@@ -1,13 +1,13 @@
 /** @file
- * Testing utilities which perform linear algebra
- * routines upon reference qvector and qmatrix. 
- * These are slow, serial, un-optimised, defensively-
- * designed routines.
- *
  * @author Tyson Jones
  * 
  * @defgroup testutilslinalg Linalg
  * @ingroup testutils
+ * @brief 
+ * Testing utilities which perform linear algebra
+ * routines upon reference qvector and qmatrix. 
+ * These are slow, serial, un-optimised, defensively-
+ * designed routines.
  * @{
  */
 
@@ -52,6 +52,7 @@ qmatrix getKroneckerProduct(vector<qmatrix> matrices);
 qmatrix getProjector(int outcome);
 qmatrix getProjector(vector<int> targets, vector<int> outcomes, int numQubits);
 qmatrix getPartialTrace(qmatrix matrix, vector<int> targets);
+qmatrix getControlledMatrix(qmatrix matrix, int numCtrls);
 
 bool isCompletelyPositiveTracePreserving(vector<qmatrix>);
 

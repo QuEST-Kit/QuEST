@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup unittypes Types unit tests
+ * @defgroup unittypes Types
  * @ingroup unittests
  */
 
@@ -46,9 +46,9 @@ TEST_CASE( "placeholder", TEST_CATEGORY) {
 
 
 
-/*
- * TODO:
- * UNTESTED FUNCTIONS BELOW
+/**
+ * @todo
+ * UNTESTED FUNCTIONS
  */
 
 

@@ -114,18 +114,6 @@ auto getSwapAndUnswapMatrices(vector<int> ctrls, vector<int> targs, size_t numQu
 }
 
 
-qmatrix getControlledMatrix(qmatrix matrix, int numCtrls) {
-
-    size_t dim = getPow2(numCtrls) * matrix.size();
-    size_t off = dim - matrix.size();
-    
-    qmatrix out = getIdentityMatrix(dim);
-    setSubMatrix(out, matrix, off, off);
-
-    return out;
-}
-
-
 qmatrix getFullStateOperator(vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qmatrix matrix, size_t numQubits) {
     DEMAND( numQubits >= ctrls.size() + targs.size() );
     DEMAND( getPow2(targs.size()) == (qindex) matrix.size() );

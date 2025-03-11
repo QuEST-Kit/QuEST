@@ -6,6 +6,7 @@
  * 
  * @defgroup modes Modes
  * @ingroup api
+ * @brief Macros for controlling QuEST compilation.
  * @{
  */
 

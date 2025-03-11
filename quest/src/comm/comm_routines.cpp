@@ -30,8 +30,8 @@
 using std::vector;
 
 
-/*
- * TODO:
+/**
+ * @todo
  *
  * - create an MPI error handler for custom comm internal error messages:
  *   https://docs.open-mpi.org/en/v5.0.x/man-openmpi/man3/MPI_Comm_create_errhandler.3.html#mpi-comm-create-errhandler

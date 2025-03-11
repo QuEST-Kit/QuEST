@@ -399,25 +399,25 @@ void localiser_statevec_getAmps(qcomp* outAmps, Qureg qureg, qindex globalStartI
 void localiser_densmatr_getAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
     assert_localiserGivenDensMatr(qureg);
 
-    // TODO: improve the performance!
-    // this function simply serially invokes localiser_statevec_getAmps() upon 
-    // every indicated column, for simplicity, and since we believe this function
-    // will only ever be called upon tractably small sub-matrices. After all, the
-    // user is likely to serially process outAmps themselves. Our method incurs the
-    // below insignificant performance penalties:
-    // - we must allocate temporary memory that is the same size as outAmps,
-    //   but transposed, because we cannot make a pointer to a column of outAmps
-    //   in order to invoke localiser_statevec_getAmps() thereupon. Thereafter, we
-    //   serially populate outAmps with the transposed temp memory.
-    // - every invocation of localiser_statevec_getAmps() invokes synchronous
-    //   GPU-CPU copying (a total of #numCols), whereas a bespoke implementation
-    //   could perform each non-contiguous copy asynchronously then wait
-    // - every invocation invokes synchronous MPI broadcasting, whereas a bespoke
-    //   method could asynch all per-col broadcasts before a final wait
-    // A custom function to remedy these issues is complicated; it would involve
-    // e.g. exposing MPI_Request outside of comm_routines.cpp (unacceptable for
-    // compiler compatibility), or having comm_routines cache un-fulfilled asynch
-    // requests, etc.
+    /// @todo improve the performance!
+    /// this function simply serially invokes localiser_statevec_getAmps() upon 
+    /// every indicated column, for simplicity, and since we believe this function
+    /// will only ever be called upon tractably small sub-matrices. After all, the
+    /// user is likely to serially process outAmps themselves. Our method incurs the
+    /// below insignificant performance penalties:
+    /// - we must allocate temporary memory that is the same size as outAmps,
+    ///   but transposed, because we cannot make a pointer to a column of outAmps
+    ///   in order to invoke localiser_statevec_getAmps() thereupon. Thereafter, we
+    ///   serially populate outAmps with the transposed temp memory.
+    /// - every invocation of localiser_statevec_getAmps() invokes synchronous
+    ///   GPU-CPU copying (a total of #numCols), whereas a bespoke implementation
+    ///   could perform each non-contiguous copy asynchronously then wait
+    /// - every invocation invokes synchronous MPI broadcasting, whereas a bespoke
+    ///   method could asynch all per-col broadcasts before a final wait
+    /// A custom function to remedy these issues is complicated; it would involve
+    /// e.g. exposing MPI_Request outside of comm_routines.cpp (unacceptable for
+    /// compiler compatibility), or having comm_routines cache un-fulfilled asynch
+    /// requests, etc.
 
     vector<vector<qcomp>> tempOut;
     util_tryAllocMatrix(tempOut, numCols, numRows, error_localiserFailedToAllocTempMemory); // transposed dim of outAmps
@@ -484,17 +484,17 @@ void localiser_statevec_setAmps(qcomp* inAmps, Qureg qureg, qindex globalStartIn
 void localiser_densmatr_setAmps(qcomp** inAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
     assert_localiserGivenDensMatr(qureg);
 
-    // TODO: improve the performance!
-    // this function works by simply enumerating each column of inAmps
-    // (which requires explicit preparation, because inAmps is passed
-    // column-wise, rather than row-wise), passing each to the above
-    // statevec routine. It is ergo similar to the naive method used by
-    // localiser_densmatr_getAmps(), though is embarrassingly parallel.
-    // This func allocates temporary memory as large as numRows*numCols 
-    // (which could be an entire Qureg's worth), and serially computes 
-    // the transpose (which can be as bad as serial iteration of the
-    // whole qureg). This is grossly inefficient, and worse than merely
-    // parallel-overwriting CPU memory then copying to GPU.
+    /// @todo improve the performance!
+    /// this function works by simply enumerating each column of inAmps
+    /// (which requires explicit preparation, because inAmps is passed
+    /// column-wise, rather than row-wise), passing each to the above
+    /// statevec routine. It is ergo similar to the naive method used by
+    /// localiser_densmatr_getAmps(), though is embarrassingly parallel.
+    /// This func allocates temporary memory as large as numRows*numCols 
+    /// (which could be an entire Qureg's worth), and serially computes 
+    /// the transpose (which can be as bad as serial iteration of the
+    /// whole qureg). This is grossly inefficient, and worse than merely
+    /// parallel-overwriting CPU memory then copying to GPU.
 
     vector<vector<qcomp>> tempAmps;
     util_tryAllocMatrix(tempAmps, numCols, numRows, error_localiserFailedToAllocTempMemory); // transpose of inAmps
@@ -594,9 +594,9 @@ void localiser_densmatr_initArbitraryPureState(Qureg qureg, qcomp* amps) {
 
 void localiser_densmatr_initArbitraryMixedState(Qureg qureg, qcomp** amps) {
 
-    // TODO:
-    // the current invoked implementation of setAmps() is extraordinarily
-    // inefficient in the full-Qureg regime. Fix setAmps(), then update this!
+    /// @todo
+    /// the current invoked implementation of setAmps() is extraordinarily
+    /// inefficient in the full-Qureg regime. Fix setAmps(), then update this!
 
     qindex startRow = 0;
     qindex startCol = 0;
@@ -858,15 +858,15 @@ void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, vector<int> ctrls, vect
     // performing a sequence of SWAPs to reorder qubits, or move them into suffix.
     // the SWAPs act on unique qubit pairs and so commute.
 
-    // TODO:
-    //   - the sequence of pair-wise full-swaps should be more efficient as a
-    //     "single" sequence of smaller messages sending amps directly to their
-    //     final destination node. This could use a new "multiSwap" function.
-    //   - if the user has compiled cuQuantum, and Qureg is GPU-accelerated, the
-    //     multiSwap function should use custatevecSwapIndexBits() if local,
-    //     or custatevecDistIndexBitSwapSchedulerSetIndexBitSwaps() if distributed,
-    //     although the latter requires substantially more work like setting up
-    //     a communicator which may be inelegant alongside our own distribution scheme.
+    /// @todo
+    ///   - the sequence of pair-wise full-swaps should be more efficient as a
+    ///     "single" sequence of smaller messages sending amps directly to their
+    ///     final destination node. This could use a new "multiSwap" function.
+    ///   - if the user has compiled cuQuantum, and Qureg is GPU-accelerated, the
+    ///     multiSwap function should use custatevecSwapIndexBits() if local,
+    ///     or custatevecDistIndexBitSwapSchedulerSetIndexBitSwaps() if distributed,
+    ///     although the latter requires substantially more work like setting up
+    ///     a communicator which may be inelegant alongside our own distribution scheme.
 
     // perform necessary swaps to move all targets into suffix, each of which invokes communication
     for (size_t i=0; i<targsA.size(); i++) {
@@ -964,13 +964,12 @@ void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ct
     // only unmoved ctrls can be applied to the swaps, to accelerate them
     auto [unmovedCtrls, unmovedCtrlStates] = getNonSwappedCtrlsAndStates(ctrls, ctrlStates, newCtrls); 
 
-    // TODO:
-    // DEBUG:
-    // above, we track which control qubits are un-targeted by the SWAPs; such controls can be
-    // seen as 'meta' to the entire operation, and so SHOULD be passable to the SWAPs below in
-    // order to accelerate them (since more ctrls = fewer comm). However, this is strangely not
-    // working; controlling the SWAPs upon these 'meta' control qubits is breaking the unit tests!
-    // Until we better understand this, we disable this optimisation by removing all SWAP controls.
+    /// @todo
+    /// above, we track which control qubits are un-targeted by the SWAPs; such controls can be
+    /// seen as 'meta' to the entire operation, and so SHOULD be passable to the SWAPs below in
+    /// order to accelerate them (since more ctrls = fewer comm). However, this is strangely not
+    /// working; controlling the SWAPs upon these 'meta' control qubits is breaking the unit tests!
+    /// Until we better understand this, we disable this optimisation by removing all SWAP controls.
     unmovedCtrls = {};
     unmovedCtrlStates = {};
 
@@ -1318,12 +1317,12 @@ void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vecto
 
 void localiser_statevec_setQuregToSuperposition(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2) {
 
-    // TODO:
-    // this function requires (as validated) distributions are identical.
-    // It would be trivial to generalise this so that Qureg distributions
-    // can differ (we merely spoof local Quregs, offsetting their memory).
-    // They must still however be identically GPU-accelerated; this is a
-    // low priority because this situation is non-sensical
+    /// @todo
+    /// this function requires (as validated) distributions are identical.
+    /// It would be trivial to generalise this so that Qureg distributions
+    /// can differ (we merely spoof local Quregs, offsetting their memory).
+    /// They must still however be identically GPU-accelerated; this is a
+    /// low priority because this situation is non-sensical
 
     // given Qureg dimensions must match, this is always embarrassingly parallel
     accel_statevec_setQuregToSuperposition_sub(facOut, outQureg, fac1, inQureg1, fac2, inQureg2);
@@ -1680,11 +1679,11 @@ auto getNonTracedQubitOrder(Qureg qureg, vector<int> originalTargs, vector<int> 
 
 void reorderReducedQureg(Qureg inQureg, Qureg outQureg, vector<int> allTargs, vector<int> suffixTargs) {
 
-    // TODO: 
-    // this function performs a sequence of SWAPs which are NOT necessarily upon disjoint qubits,
-    // and ergo do not commute. We still however may be able to effect this more efficiently in
-    // a single communicating operation rather than this sequence of SWAP gates, and might still
-    // even be able to use cuQuantum's distributed bit index swaps API. Check this!
+    /// @todo 
+    /// this function performs a sequence of SWAPs which are NOT necessarily upon disjoint qubits,
+    /// and ergo do not commute. We still however may be able to effect this more efficiently in
+    /// a single communicating operation rather than this sequence of SWAP gates, and might still
+    /// even be able to use cuQuantum's distributed bit index swaps API. Check this!
 
     // determine the relative ordering of outQureg's remaining qubits
     auto remainingQubits = getNonTracedQubitOrder(inQureg, allTargs, suffixTargs);
@@ -1973,13 +1972,13 @@ qcomp localiser_statevec_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
     // have identical communication patterns, and so can all be processed after one round 
     // of amps exchange. 
     
-    // TODO: 
-    // We can optimise further in a similar spirit to above by grouping identically-
-    // communicating strings into those which differ only by suffix I <-> Z and X <-> Y,
-    // which have identical amplitude-mixing patterns, to avoid repeated enumeration of 
-    // all amplitudes and reduce the associated memory-movement / caching costs.
-    // (This is facilitated "for free" by cuStateVec in GPU settings, although we do not
-    // wish to here differentiate localiser logic based on CPU vs GPU deployment)
+    /// @todo 
+    /// We can optimise further in a similar spirit to above by grouping identically-
+    /// communicating strings into those which differ only by suffix I <-> Z and X <-> Y,
+    /// which have identical amplitude-mixing patterns, to avoid repeated enumeration of 
+    /// all amplitudes and reduce the associated memory-movement / caching costs.
+    /// (This is facilitated "for free" by cuStateVec in GPU settings, although we do not
+    /// wish to here differentiate localiser logic based on CPU vs GPU deployment)
 
     qcomp totalValue = 0;
 

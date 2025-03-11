@@ -8,6 +8,7 @@
  * 
  * @defgroup operations Operations
  * @ingroup api
+ * @brief Functions for effecting operators upon Quregs.
  * @{
  */
 

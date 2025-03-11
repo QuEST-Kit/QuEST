@@ -581,15 +581,15 @@ struct functor_setRandomStateVecAmp : public thrust::unary_function<qindex,cu_qc
     // statevector amplitude which, after normalisation
     // of all amps, produces uniformly-random pure states
 
-    // TODO:
-    // this method of parallel RNG is slow, since every
-    // amplitude uses an independent freshly-created 
-    // generator, as per the limitations of Thrust. A
-    // lower-level method like use of cuRAND may prove
-    // faster, though we should ensure continued compatibility
-    // with AMD GPUs via HIP/ROCm and RocThrust. We should
-    // first quantify the speed of this function in comparison to
-    // a single-qubit gate; being slower than <5 gates is acceptable
+    /// @todo
+    /// this method of parallel RNG is slow, since every
+    /// amplitude uses an independent freshly-created 
+    /// generator, as per the limitations of Thrust. A
+    /// lower-level method like use of cuRAND may prove
+    /// faster, though we should ensure continued compatibility
+    /// with AMD GPUs via HIP/ROCm and RocThrust. We should
+    /// first quantify the speed of this function in comparison to
+    /// a single-qubit gate; being slower than <5 gates is acceptable
 
     unsigned baseSeed;
     functor_setRandomStateVecAmp(unsigned seed) : baseSeed(seed) {}
@@ -742,13 +742,13 @@ void thrust_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu
 
 qreal thrust_statevec_calcTotalProb_sub(Qureg qureg) {
 
-    // TODO:
-    // this function should be more accurate than other
-    // functions (like calcProbOfQubitOutcome) because it
-    // is primarily used for checking normalisation and ergo
-    // numerical accuracy. We such, naively trusting thrust's
-    // reduction may be suboptimal; it may be necessary to
-    // implement a custom numerically-stable CUDA reduction.
+    /// @todo
+    /// this function should be more accurate than other
+    /// functions (like calcProbOfQubitOutcome) because it
+    /// is primarily used for checking normalisation and ergo
+    /// numerical accuracy. We such, naively trusting thrust's
+    /// reduction may be suboptimal; it may be necessary to
+    /// implement a custom numerically-stable CUDA reduction.
 
     // this being a 0 integral literal instead of a 0. float 
     // literal causes a silent Thrust error. Grr...
@@ -764,13 +764,13 @@ qreal thrust_statevec_calcTotalProb_sub(Qureg qureg) {
 
 qreal thrust_densmatr_calcTotalProb_sub(Qureg qureg) {
 
-    // TODO:
-    // this function should be more accurate than other
-    // functions (like calcProbOfQubitOutcome) because it
-    // is primarily used for checking normalisation and ergo
-    // numerical accuracy. We such, naively trusting thrust's
-    // reduction may be suboptimal; it may be necessary to
-    // implement a custom numerically-stable CUDA reduction.
+    /// @todo
+    /// this function should be more accurate than other
+    /// functions (like calcProbOfQubitOutcome) because it
+    /// is primarily used for checking normalisation and ergo
+    /// numerical accuracy. We such, naively trusting thrust's
+    /// reduction may be suboptimal; it may be necessary to
+    /// implement a custom numerically-stable CUDA reduction.
 
     auto rawIter = thrust::make_counting_iterator(0);
     auto indIter = thrust::make_transform_iterator(rawIter, functor_getDiagInd(qureg));

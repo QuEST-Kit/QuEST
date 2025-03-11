@@ -7,6 +7,7 @@
  * 
  * @defgroup environment Environment
  * @ingroup api
+ * @brief Data structures for managing the QuEST execution environment.
  * @{
  */
 

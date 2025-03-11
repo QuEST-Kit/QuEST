@@ -8,6 +8,7 @@
  * 
  * @defgroup initialisations Initialisations
  * @ingroup api
+ * @brief Functions for preparing Quregs in particular states.
  * @{
  */
 

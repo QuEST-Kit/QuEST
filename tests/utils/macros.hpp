@@ -1,10 +1,10 @@
 /** @file
- * Macros used by the tests and testing utilities.
- *
  * @author Tyson Jones
  * 
  * @defgroup testutilsmacros Macros
  * @ingroup testutils
+ * @brief
+ * Macros used by the tests and testing utilities.
  * @{
  */
 

@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup unitinit Initialisation unit tests
+ * @defgroup unitinit Initialisation
  * @ingroup unittests
  */
 
@@ -46,9 +46,9 @@ TEST_CASE( "placeholder", TEST_CATEGORY) {
 
 
 
-/*
- * TODO:
- * UNTESTED FUNCTIONS BELOW
+/**
+ * @todo
+ * UNTESTED FUNCTIONS
  */
 
 void initBlankState(Qureg qureg);

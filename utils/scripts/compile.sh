@@ -182,6 +182,8 @@ TEST_UTIL_FILES=(
 # files in TEST_UNIT_DIR
 TEST_UNIT_FILES=(
     "calculations"
+    "channels"
+    "debug"
     "decoherence"
     "environment"
     "initialisations"

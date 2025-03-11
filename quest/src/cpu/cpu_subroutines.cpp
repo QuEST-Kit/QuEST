@@ -425,18 +425,18 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
     assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
 
-    // TODO:
-    // this function allocates powerOf2(targs.size())-sized caches for each thread, sometimes in
-    // heap. At the ~max non-distributed double CompMatr of 16 qubits = 64 GiB, this is 1 MiB 
-    // per thread; for a conceivable 100 thread execution, this is 100 MiB being alloc/dealloced
-    // at every call. It is debatable whether this justifies pre-allocating persistent cache space
-    // (one for each thread, to avoid false sharing), similar to GPU's AnyTargDenseMatr, though
-    // for an order of magnitude fewer threads, and using non-coalesced memory. Certainly making
-    // persistent heap caches is inadvisable when the cache fits in the stack (currently automated 
-    // using std::vector). Perhaps we should keep the current re-allocs, constrain that this 
-    // function is only called for few-targets (e.g. <= qureg.numQubits - 5), and define another
-    // function for almost-all target matrices which uses persistent heap memory, wherein the 
-    // optimal parallelisation scheme is anyway different.
+    /// @todo
+    /// this function allocates powerOf2(targs.size())-sized caches for each thread, sometimes in
+    /// heap. At the ~max non-distributed double CompMatr of 16 qubits = 64 GiB, this is 1 MiB 
+    /// per thread; for a conceivable 100 thread execution, this is 100 MiB being alloc/dealloced
+    /// at every call. It is debatable whether this justifies pre-allocating persistent cache space
+    /// (one for each thread, to avoid false sharing), similar to GPU's AnyTargDenseMatr, though
+    /// for an order of magnitude fewer threads, and using non-coalesced memory. Certainly making
+    /// persistent heap caches is inadvisable when the cache fits in the stack (currently automated 
+    /// using std::vector). Perhaps we should keep the current re-allocs, constrain that this 
+    /// function is only called for few-targets (e.g. <= qureg.numQubits - 5), and define another
+    /// function for almost-all target matrices which uses persistent heap memory, wherein the 
+    /// optimal parallelisation scheme is anyway different.
 
     // we tested a variant of this function where a mask for each ctrl-targ state is calculated
     // upfront (of which there are numTargAmps many), replacing all setBits() calls with
@@ -1004,15 +1004,15 @@ void cpu_densmatr_oneQubitDephasing_subA(Qureg qureg, int ketQubit, qreal prob) 
     qreal fac = util_getOneQubitDephasingFactor(prob);
     int braQubit = util_getBraQubit(ketQubit, qureg);
 
-    // TODO:
-    // this enumeration order is suboptimal and seems unnecessary in this simple two
-    // bit scenario, where we are modifying but not at all mixing two strided and
-    // potentially very-distant amplitudes. It is of course trivial to split this
-    // into two separate loops accessing monotonically increasing indices, although
-    // we then pay double the caching costs when ketQubit is low-index. We can also
-    // turn it into two nested loops to force monotonically increasing index access,
-    // but then the parallelisation is not optimal when ketQubit is high-index. Experiment
-    // with what's fastest and replace below or delete this comment!
+    /// @todo
+    /// this enumeration order is suboptimal and seems unnecessary in this simple two
+    /// bit scenario, where we are modifying but not at all mixing two strided and
+    /// potentially very-distant amplitudes. It is of course trivial to split this
+    /// into two separate loops accessing monotonically increasing indices, although
+    /// we then pay double the caching costs when ketQubit is low-index. We can also
+    /// turn it into two nested loops to force monotonically increasing index access,
+    /// but then the parallelisation is not optimal when ketQubit is high-index. Experiment
+    /// with what's fastest and replace below or delete this comment!
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -1055,9 +1055,9 @@ void cpu_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal prob) 
 
 void cpu_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubitB, qreal prob) {
 
-    // TODO: 
-    // test whether use of subB has identical performance, or whether changing i=n below
-    // non-negligibly accelerates the routine; if so, make a templated inner func.
+    /// @todo 
+    /// test whether use of subB has identical performance, or whether changing i=n below
+    /// non-negligibly accelerates the routine; if so, make a templated inner func.
 
     // the rank-agnostic version is identical to the subB algorithm below, because the
     // queried bits of the global index i below will always be in the suffix substate.
@@ -1151,11 +1151,11 @@ void cpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal pro
     auto facBB = factors.c2;
     auto facAB = factors.c3;
 
-    // TODO:
-    // each iteration below modifies 2 independent amps without mixing,
-    // which we can trivially split into two loops which may improve
-    // per-iteration caching performance; test if this outweights the 
-    // cost of re-iteration
+    /// @todo
+    /// each iteration below modifies 2 independent amps without mixing,
+    /// which we can trivially split into two loops which may improve
+    /// per-iteration caching performance; test if this outweights the 
+    /// cost of re-iteration
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -1257,11 +1257,11 @@ void cpu_densmatr_twoQubitDepolarising_subC(Qureg qureg, int ketQb1, int ketQb2,
 
     auto c3 = util_getTwoQubitDepolarisingFactors(prob).c3;
 
-    // TODO:
-    // are we really inefficiently enumerating all amps and applying a non-unity
-    // factor to only 25%?! Is this because we do not know braBit2 and ergo 
-    // cannot be sure a direct enumeration is accessing indicies in a monotonically
-    // increasing order? Can that really outweigh a 3x slowdown?! Test and fix!
+    /// @todo
+    /// are we really inefficiently enumerating all amps and applying a non-unity
+    /// factor to only 25%?! Is this because we do not know braBit2 and ergo 
+    /// cannot be sure a direct enumeration is accessing indicies in a monotonically
+    /// increasing order? Can that really outweigh a 3x slowdown?! Test and fix!
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -1389,11 +1389,11 @@ void cpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int ketQubit, qreal pI,
     // for brevity
     qcomp* amps = qureg.cpuAmps;
 
-    // TODO:
-    // each iteration modifies 4 amps in two separable mixed pairs, which may
-    // lead to sub-optimal caching. Iterating twice and modifying a single pair
-    // might lead to better performance, though note the stride from i00 to i11
-    // will always be adverserially large. Test this!
+    /// @todo
+    /// each iteration modifies 4 amps in two separable mixed pairs, which may
+    /// lead to sub-optimal caching. Iterating twice and modifying a single pair
+    /// might lead to better performance, though note the stride from i00 to i11
+    /// will always be adverserially large. Test this!
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -1435,11 +1435,11 @@ void cpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI,
     auto facAB = factors.c3;
     auto facBA = factors.c4;
 
-    // TODO:
-    // each iteration below modifies 2 independent amps without mixing,
-    // which we can trivially split into two loops which may improve
-    // per-iteration caching performance; test if this outweights the 
-    // cost of re-iteration
+    /// @todo
+    /// each iteration below modifies 2 independent amps without mixing,
+    /// which we can trivially split into two loops which may improve
+    /// per-iteration caching performance; test if this outweights the 
+    /// cost of re-iteration
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -1580,12 +1580,12 @@ void cpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> ta
     int numAllTargs = 2*numTargPairs;
     qindex numInnerIts = powerOf2(numTargPairs);
 
-    // TODO:
-    // note our parallelisation of only the outer-loop assumes that the number of 
-    // amps in outQureg equals or exceeds the number of threads. Ergo tracing out 
-    // all but very few qubits will leave threads idle; when only a single qubit
-    // remains, the below code would be serial. In that scenario, we should
-    // parallelise the inner loop, or preclude this scenario in validation.
+    /// @todo
+    /// note our parallelisation of only the outer-loop assumes that the number of 
+    /// amps in outQureg equals or exceeds the number of threads. Ergo tracing out 
+    /// all but very few qubits will leave threads idle; when only a single qubit
+    /// remains, the below code would be serial. In that scenario, we should
+    /// parallelise the inner loop, or preclude this scenario in validation.
 
     // consult inQureg for multithreading, because total iters = inQureg dim
     #pragma omp parallel for if(inQureg.isMultithreaded)
@@ -1624,15 +1624,15 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_partialTrace_sub, (
 
 qreal cpu_statevec_calcTotalProb_sub(Qureg qureg) {
 
-    // TODO:
-    // check whether OpenMP is performing a numerically stable
-    // reduction, e.g. via 'parallel summation', to avoid the
-    // otherwise catastrophic cancellatin errors. If not, we
-    // should implement Kahan summation (parallelise by 
-    // having each thread Kahan-sum independently before a
-    // final serial combination). This invokes several times
-    // as many arithmetic operations (4x?) but we are anyway
-    // memory-bandwidth bound
+    /// @todo
+    /// check whether OpenMP is performing a numerically stable
+    /// reduction, e.g. via 'parallel summation', to avoid the
+    /// otherwise catastrophic cancellatin errors. If not, we
+    /// should implement Kahan summation (parallelise by 
+    /// having each thread Kahan-sum independently before a
+    /// final serial combination). This invokes several times
+    /// as many arithmetic operations (4x?) but we are anyway
+    /// memory-bandwidth bound
 
     qreal prob = 0;
 
@@ -1649,15 +1649,15 @@ qreal cpu_statevec_calcTotalProb_sub(Qureg qureg) {
 
 qreal cpu_densmatr_calcTotalProb_sub(Qureg qureg) {
 
-    // TODO:
-    // check whether OpenMP is performing a numerically stable
-    // reduction, e.g. via 'parallel summation', to avoid the
-    // otherwise catastrophic cancellatin errors. If not, we
-    // should implement Kahan summation (parallelise by 
-    // having each thread Kahan-sum independently before a
-    // final serial combination). This invokes several times
-    // as many arithmetic operations (4x?) but we are anyway
-    // memory-bandwidth bound
+    /// @todo
+    /// check whether OpenMP is performing a numerically stable
+    /// reduction, e.g. via 'parallel summation', to avoid the
+    /// otherwise catastrophic cancellatin errors. If not, we
+    /// should implement Kahan summation (parallelise by 
+    /// having each thread Kahan-sum independently before a
+    /// final serial combination). This invokes several times
+    /// as many arithmetic operations (4x?) but we are anyway
+    /// memory-bandwidth bound
 
     qreal prob = 0;
 
@@ -2002,13 +2002,13 @@ qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int
 
 qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
-    // TODO:
-    // this is identical to the subA() version above, except that
-    // qureg.cpuAmps[j] becomes qureg.cpuCommBuffer[j]. We could
-    // ergo replace subA() with an invocation of subB(), binding
-    // the buffer to the amps ptr. Would this affect/interfere
-    // with memory movement optimisations? I doubt so, but check
-    // and if not, perform the replacement to reduce code-dupe!
+    /// @todo
+    /// this is identical to the subA() version above, except that
+    /// qureg.cpuAmps[j] becomes qureg.cpuCommBuffer[j]. We could
+    /// ergo replace subA() with an invocation of subB(), binding
+    /// the buffer to the amps ptr. Would this affect/interfere
+    /// with memory movement optimisations? I doubt so, but check
+    /// and if not, perform the replacement to reduce code-dupe!
 
     // separately reduce real and imag components to make MSVC happy
     qreal valueRe = 0;

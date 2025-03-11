@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup unitmatr Matrices unit tests
+ * @defgroup unitmatr Matrices
  * @ingroup unittests
  */
 
@@ -46,9 +46,9 @@ TEST_CASE( "placeholder", TEST_CATEGORY) {
 
 
 
-/*
- * TODO:
- * UNTESTED FUNCTIONS BELOW
+/**
+ * @todo
+ * UNTESTED FUNCTIONS
  */
 
 static inline CompMatr1 getCompMatr1(qcomp** in);

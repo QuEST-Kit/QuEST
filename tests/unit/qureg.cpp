@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup unitqureg Qureg unit tests
+ * @defgroup unitqureg Qureg
  * @ingroup unittests
  */
 
@@ -46,9 +46,9 @@ TEST_CASE( "placeholder", TEST_CATEGORY) {
 
 
 
-/*
- * TODO:
- * UNTESTED FUNCTIONS BELOW
+/**
+ * @todo
+ * UNTESTED FUNCTIONS
  */
 
 

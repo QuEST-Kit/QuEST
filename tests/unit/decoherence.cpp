@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup unitdeco Decoherence unit tests
+ * @defgroup unitdeco Decoherence
  * @ingroup unittests
  */
 
@@ -46,8 +46,8 @@ TEST_CASE( "placeholder", TEST_CATEGORY) {
 
 
 
-/*
- * TODO:
+/**
+ * @todo
  * UNTESTED FUNCTIONS
  */
 

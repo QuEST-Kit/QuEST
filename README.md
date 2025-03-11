@@ -15,7 +15,7 @@
 
   <!-- banner -->
   <a href="https://quest.qtechtheory.org">
-    <img src="aux/docs/banner.png?raw=true" alt="The QuEST logo" width=400>
+    <img src="utils/docs/banner.png?raw=true" alt="The QuEST logo" width=400>
   </a>
 
   <!-- TODO: restore CI 'compilation/test pass' badge! -->
@@ -67,12 +67,12 @@ In particular, QuEST `v4` was made possible through the support of the UK Nation
 
 <div align="center">
 
-  <img src="aux/docs/logos/nqcc.png" alt="NQCC" height=30> &nbsp;
-  <img src="aux/docs/logos/amd.png" alt="AMD" height=25> &nbsp;
-  <img src="aux/docs/logos/nvidia.png" alt="NVIDIA" height=25> &nbsp;
-  <img src="aux/docs/logos/qmt.png" alt="Quantum Motion" height=25> &nbsp;
-  <img src="aux/docs/logos/edinburgh.png" alt="University of Edinburgh" height=25> &nbsp;
-  <img src="aux/docs/logos/oxford.png" alt="University of Oxford" height=28> &nbsp;
+  <img src="utils/docs/logos/nqcc.png" alt="NQCC" height=30> &nbsp;
+  <img src="utils/docs/logos/amd.png" alt="AMD" height=25> &nbsp;
+  <img src="utils/docs/logos/nvidia.png" alt="NVIDIA" height=25> &nbsp;
+  <img src="utils/docs/logos/qmt.png" alt="Quantum Motion" height=25> &nbsp;
+  <img src="utils/docs/logos/edinburgh.png" alt="University of Edinburgh" height=25> &nbsp;
+  <img src="utils/docs/logos/oxford.png" alt="University of Oxford" height=28> &nbsp;
 
 </div>
 
@@ -80,7 +80,8 @@ To learn more:
 
 - visit the [website](https://quest.qtechtheory.org/)
 - see some [examples](/examples/)
-- view the [documentation](/docs/)
+- view the [documentation](#book-documentation)
+- browse the [API](https://quest-kit.github.io/QuEST/group__api.html)
 - read the [whitepaper](https://www.nature.com/articles/s41598-019-47174-9), which featured in Scientific Report's [Top 100 in Physics](https://www.nature.com/collections/ecehgdfcba/) :trophy:
 
 <div align="center">
@@ -166,7 +167,65 @@ QuEST supports:
 ## :book:&nbsp; Documentation
 
 > [!IMPORTANT]
-> QuEST v4's documentation is currently under construction!
+> QuEST v4's documentation is still under construction!
+
+Visit the [docs](docs/) to:
+  - [see what's new in v4](docs/version4.md)
+  - [compile with cmake](docs/cmake.md)
+  - [find compatible compilers](docs/compilers.md)
+  - [view some examples](examples/)
+
+The [API](https://quest-kit.github.io/QuEST/group__api.html) documentation is divided into the following groups:
+  - [calculations](https://quest-kit.github.io/QuEST/group__calculations.html)
+  - [channels](https://quest-kit.github.io/QuEST/group__channels.html)
+  - [debug](https://quest-kit.github.io/QuEST/group__debug.html)
+  - [decoherence](https://quest-kit.github.io/QuEST/group__decoherence.html)
+  - [environment](https://quest-kit.github.io/QuEST/group__environment.html)
+  - [initialisations](https://quest-kit.github.io/QuEST/group__initialisations.html)
+  - [matrices](https://quest-kit.github.io/QuEST/group__matrices.html)
+  - [modes](https://quest-kit.github.io/QuEST/group__modes.html)
+  - [operations](https://quest-kit.github.io/QuEST/group__operations.html)
+  - [paulis](https://quest-kit.github.io/QuEST/group__paulis.html)
+  - [precision](https://quest-kit.github.io/QuEST/group__precision.html)
+  - [qureg](https://quest-kit.github.io/QuEST/group__qureg.html)
+  - [types](https://quest-kit.github.io/QuEST/group__types.html)
+  - [tests](https://quest-kit.github.io/QuEST/group__tests.html)
+
+<!-- hiding test doc since too large, but preserved here for useful links -->
+<!--
+You can also browse QuEST's extensive [tests](https://quest-kit.github.io/QuEST/group__tests.html):
+  - [test utilities](https://quest-kit.github.io/QuEST/group__testutils.html)
+    - [cache](https://quest-kit.github.io/QuEST/group__testutilscache.html)
+    - [compare](https://quest-kit.github.io/QuEST/group__testutilscompare.html)
+    - [convert](https://quest-kit.github.io/QuEST/group__testutilsconvert.html)
+    - [evolve](https://quest-kit.github.io/QuEST/group__testutilsevolve.html)
+    - [linalg](https://quest-kit.github.io/QuEST/group__testutilslinalg.html)
+    - [lists](https://quest-kit.github.io/QuEST/group__testutilslists.html)
+    - [macros](https://quest-kit.github.io/QuEST/group__testutilsmacros.html)
+    - [measure](https://quest-kit.github.io/QuEST/group__testutilsmeasure.html)
+    - [qmatrix](https://quest-kit.github.io/QuEST/group__testutilsqmatrix.html)
+    - [qvector](https://quest-kit.github.io/QuEST/group__testutilsqvector.html)
+    - [random](https://quest-kit.github.io/QuEST/group__testutilsrandom.html)
+  - [unit tests](https://quest-kit.github.io/QuEST/group__unittests.html)
+    - [calculations](https://quest-kit.github.io/QuEST/group__unitcalcs.html)
+    - [channels](https://quest-kit.github.io/QuEST/group__unitchannels.html)
+    - [debug](https://quest-kit.github.io/QuEST/group__unitdebug.html)
+    - [decoherence](https://quest-kit.github.io/QuEST/group__unitdeco.html)
+    - [environment](https://quest-kit.github.io/QuEST/group__unitenv.html)
+    - [initialisations](https://quest-kit.github.io/QuEST/group__unitinit.html)
+    - [matrices](https://quest-kit.github.io/QuEST/group__unitmatr.html)
+    - [operations](https://quest-kit.github.io/QuEST/group__unitops.html)
+    - [paulis](https://quest-kit.github.io/QuEST/group__unitpaulis.html)
+    - [qureg](https://quest-kit.github.io/QuEST/group__unitqureg.html)
+    - [types](https://quest-kit.github.io/QuEST/group__unittypes.html)
+  - [integration tests](https://quest-kit.github.io/QuEST/group__integrationtests.html)
+  - [deprecated tests](https://quest-kit.github.io/QuEST/group__deprecatedtests.html)
+  - [deprecated test utilities](https://quest-kit.github.io/QuEST/group__deprecatedutils.html)
+-->
+
+Contributers to QuEST should also check out the:
+  - [software architecture](docs/architecture.md)
+  - [style guide](docs/styleguide.md)
 
 ---------------------------------
 

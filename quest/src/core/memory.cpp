@@ -30,8 +30,7 @@
 
 qindex mem_tryGetLocalRamCapacityInBytes() {
 
-    // TODO:
-    //      attempt to find total Ram
+    /// @todo attempt to find total Ram
 
     // if we're unable to find total RAM, throw an exception
     // (which the caller should catch and gracefully continue)
@@ -56,11 +55,11 @@ int mem_getEffectiveNumStateVecQubitsPerNode(int numQubits, bool isDensMatr, int
 
 qindex mem_getTotalGlobalMemoryUsed(Qureg qureg) {
 
-    // TODO:
-    //  if sizeof(qcomp) is a power of 2 (which it almost always is, c'mon now),
-    //  then we could instead return the LOG of the total memory and always
-    //  avoid overflow, permitting reporters to display mem=2^exp.
-    //  it would also make changing units (e.g. to GB) easier.
+    /// @todo
+    ///  if sizeof(qcomp) is a power of 2 (which it almost always is, c'mon now),
+    ///  then we could instead return the LOG of the total memory and always
+    ///  avoid overflow, permitting reporters to display mem=2^exp.
+    ///  it would also make changing units (e.g. to GB) easier.
 
     // work out individual array costs
     qindex memLocalArray = (qindex) mem_getLocalQuregMemoryRequired(qureg.numAmpsPerNode); // never overflows

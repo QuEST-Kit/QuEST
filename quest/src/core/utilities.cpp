@@ -418,11 +418,11 @@ bool util_isUnitary(CompMatr2 matrix, qreal eps) {
 }
 bool util_isUnitary(CompMatr matrix, qreal eps) {
 
-    // TODO:
-    // if matrix is GPU-accelerated, we should maybe
-    // instead perform this calculation using the GPU.
-    // otherwise, if matrix is large, we should potentially
-    // use a multithreaded routine
+    /// @todo
+    /// if matrix is GPU-accelerated, we should maybe
+    /// instead perform this calculation using the GPU.
+    /// otherwise, if matrix is large, we should potentially
+    /// use a multithreaded routine
 
     return isUnitary(matrix.cpuElems, matrix.numRows, eps);
 }
@@ -435,20 +435,20 @@ bool util_isUnitary(DiagMatr2 matrix, qreal eps) {
 }
 bool util_isUnitary(DiagMatr matrix, qreal eps) {
 
-    // TODO:
-    // if matrix is GPU-accelerated, we should maybe
-    // instead perform this calculation using the GPU.
-    // otherwise, if matrix is large, we should potentially
-    // use a multithreaded routine
+    /// @todo
+    /// if matrix is GPU-accelerated, we should maybe
+    /// instead perform this calculation using the GPU.
+    /// otherwise, if matrix is large, we should potentially
+    /// use a multithreaded routine
 
     return isUnitary(matrix.cpuElems, matrix.numElems, eps);
 }
 
 bool util_isUnitary(FullStateDiagMatr matrix, qreal eps) {
 
-    // TODO:
-    // we should definitely be using an accelerated routine
-    // here, e.g. GPU-acceleration or multithreading
+    /// @todo
+    /// we should definitely be using an accelerated routine
+    /// here, e.g. GPU-acceleration or multithreading
 
     // we must check all node's sub-diagonals satisfy unitarity
     bool res = isUnitary(matrix.cpuElems, matrix.numElems, eps);
@@ -505,11 +505,11 @@ bool util_isHermitian(CompMatr2 matrix, qreal eps) {
 }
 bool util_isHermitian(CompMatr matrix, qreal eps) {
 
-    // TODO:
-    // if matrix is GPU-accelerated, we should maybe
-    // instead perform this calculation using the GPU.
-    // otherwise, if matrix is large, we should potentially
-    // use a multithreaded routine
+    /// @todo
+    /// if matrix is GPU-accelerated, we should maybe
+    /// instead perform this calculation using the GPU.
+    /// otherwise, if matrix is large, we should potentially
+    /// use a multithreaded routine
 
     return isHermitian(matrix.cpuElems, matrix.numRows, eps);
 }
@@ -522,20 +522,20 @@ bool util_isHermitian(DiagMatr2 matrix, qreal eps) {
 }
 bool util_isHermitian(DiagMatr matrix, qreal eps) {
 
-    // TODO:
-    // if matrix is GPU-accelerated, we should maybe
-    // instead perform this calculation using the GPU.
-    // otherwise, if matrix is large, we should potentially
-    // use a multithreaded routine
+    /// @todo
+    /// if matrix is GPU-accelerated, we should maybe
+    /// instead perform this calculation using the GPU.
+    /// otherwise, if matrix is large, we should potentially
+    /// use a multithreaded routine
 
     return isHermitian(matrix.cpuElems, matrix.numElems, eps);
 }
 
 bool util_isHermitian(FullStateDiagMatr matrix, qreal eps) {
 
-    // TODO:
-    // we should definitely be using an accelerated routine
-    // here, e.g. GPU-acceleration or multithreading
+    /// @todo
+    /// we should definitely be using an accelerated routine
+    /// here, e.g. GPU-acceleration or multithreading
 
     // we must check all node's sub-diagonals satisfy unitarity
     bool res = isHermitian(matrix.cpuElems, matrix.numElems, eps);
@@ -566,11 +566,11 @@ bool util_isHermitian(PauliStrSum sum, qreal eps) {
 bool util_isCPTP(KrausMap map, qreal eps) {
     assert_utilsGivenNonZeroEpsilon(eps);
 
-    // TODO:
-    // if KrausMap is GPU-accelerated, we should maybe
-    // instead perform this calculation using the GPU.
-    // otherwise, if matrix is large, we should potentially
-    // use a multithreaded routine
+    /// @todo
+    /// if KrausMap is GPU-accelerated, we should maybe
+    /// instead perform this calculation using the GPU.
+    /// otherwise, if matrix is large, we should potentially
+    /// use a multithreaded routine
 
     qreal epsSquared = eps * eps;
 
@@ -598,11 +598,11 @@ bool util_isCPTP(KrausMap map, qreal eps) {
 template <typename T> 
 void setSuperoperator(qcomp** superop, T matrices, int numMatrices, qindex logMatrixDim) {
 
-    // TODO:
-    // we initialise the superoperator completely serially, under the assumption that the
-    // superoperator will be small in size and initialised infrequently. Still, it would
-    // be better to provide backend initialisation functions (OpenMP and CUDA accelerated),
-    // called when the superoperator size is above some threshold!
+    /// @todo
+    /// we initialise the superoperator completely serially, under the assumption that the
+    /// superoperator will be small in size and initialised infrequently. Still, it would
+    /// be better to provide backend initialisation functions (OpenMP and CUDA accelerated),
+    /// called when the superoperator size is above some threshold!
 
     qindex matrixDim = powerOf2(logMatrixDim);
     qindex superopDim = matrixDim * matrixDim;

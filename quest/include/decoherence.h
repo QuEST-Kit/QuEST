@@ -6,6 +6,7 @@
  * 
  * @defgroup decoherence Decoherence
  * @ingroup api
+ * @brief Functions for effecting decoherence channels upon density matrices.
  * @{
  */
 

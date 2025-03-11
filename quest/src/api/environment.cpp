@@ -93,9 +93,9 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
 
     validate_newEnvDistributedBetweenPower2Nodes(caller);
 
-    // TODO:
-    // consider immediately disabling MPI here if comm_numNodes() == 1
-    // (also overwriting useDistrib = 0)
+    /// @todo
+    /// consider immediately disabling MPI here if comm_numNodes() == 1
+    /// (also overwriting useDistrib = 0)
 
     // bind MPI nodes to unique GPUs; even when not distributed,
     // and before we have validated local GPUs are compatible
@@ -110,9 +110,9 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     if (useGpuAccel && useDistrib && ! PERMIT_NODES_TO_SHARE_GPU)
         validate_newEnvNodesEachHaveUniqueGpu(caller);
 
-    // TODO:
-    // should we warn here if each machine contains
-    // more GPUs than deployed MPI-processes (some GPUs idle)?
+    /// @todo
+    /// should we warn here if each machine contains
+    /// more GPUs than deployed MPI-processes (some GPUs idle)?
 
     // use cuQuantum if compiled
     if (useGpuAccel && gpu_isCuQuantumCompiled()) {
@@ -130,7 +130,7 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     if (globalEnvPtr == nullptr)
         error_allocOfQuESTEnvFailed();
 
-    // TODO: the below memcpy is naughty (QuESTEnv has no trivial copy-assignment) and causes compiler warning. Fix!
+    /// @todo the below memcpy is naughty (QuESTEnv has no trivial copy-assignment) and causes compiler warning. Fix!
 
     // initialise it to a local env
     QuESTEnv env = {
@@ -165,13 +165,13 @@ void printPrecisionInfo() {
         "precision", {
         {"qreal",  printer_getQrealType()  + " (" + printer_getMemoryWithUnitStr(sizeof(qreal)) + ")"},
 
-        // TODO: this is showing the backend C++ qcomp type, rather than that actually wieldable
-        // by the user which could the C-type. No idea how to solve this however!
+        /// @todo this is showing the backend C++ qcomp type, rather than that actually wieldable
+        /// by the user which could the C-type. No idea how to solve this however!
         {"qcomp",  printer_getQcompType()  + " (" + printer_getMemoryWithUnitStr(sizeof(qcomp)) + ")"},
 
         {"qindex", printer_getQindexType() + " (" + printer_getMemoryWithUnitStr(sizeof(qindex)) + ")"},
 
-        // TODO: this currently prints 0 when epsilon is inf (encoded by zero), i.e. disabled
+        /// @todo this currently prints 0 when epsilon is inf (encoded by zero), i.e. disabled
         {"validationEpsilon", printer_toStr(validateconfig_getEpsilon())},
     });
 }
@@ -452,7 +452,7 @@ void syncQuESTEnv() {
 void reportQuESTEnv() {
     validate_envIsInit(__func__);
 
-    // TODO: add function to write this output to file (useful for HPC debugging)
+    /// @todo add function to write this output to file (useful for HPC debugging)
 
     print("QuEST execution environment:");
 
