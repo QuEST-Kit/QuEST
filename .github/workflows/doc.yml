@@ -39,4 +39,5 @@ jobs:
           branch: gh-pages
           folder: Doxygen_doc/html
           config_file: aux/docs/Doxyfile
+          target_folder: docs/api
           doxygen_version: 1.13.2
