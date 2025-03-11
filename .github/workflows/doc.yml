@@ -30,7 +30,7 @@ concurrency:
 jobs:
 
   build-doc:
-    name: Generation of documentation
+    name: Generate doc
     runs-on: ubuntu-latest
 
     environment:
@@ -53,26 +53,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload Doxygen_doc/html
           path: ./Doxygen_doc/html
           
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-
-# # generate doc and upload to gh-pages
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
-#     permissions:
-#       contents: write
-#     steps:
-#       - uses: DenverCoder1/doxygen-github-pages-action@v2.0.0
-#         with:
-#           github_token: ${{ secrets.GITHUB_TOKEN }}
-#           branch: gh-pages
-#           folder: Doxygen_doc/html
-#           config_file: aux/docs/Doxyfile
-#           target_folder: docs/api
-#           doxygen_version: 1.13.2

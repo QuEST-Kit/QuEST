@@ -6,6 +6,7 @@
  *
  * @defgroup calculations Calculations
  * @ingroup api
+ * @brief test
  * @{
  */
 
