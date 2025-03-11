@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup unitinit Initialisation unit tests
+ * @defgroup unitinit Initialisation
  * @ingroup unittests
  */
 

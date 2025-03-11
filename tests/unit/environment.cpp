@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup unitenv Environment unit tests
+ * @defgroup unitenv Environment
  * @ingroup unittests
  */
 

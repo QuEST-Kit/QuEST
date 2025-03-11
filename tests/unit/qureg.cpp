@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup unitqureg Qureg unit tests
+ * @defgroup unitqureg Qureg
  * @ingroup unittests
  */
 

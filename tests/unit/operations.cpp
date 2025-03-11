@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup unitops Operations unit tests
+ * @defgroup unitops Operations
  * @ingroup unittests
  */
 

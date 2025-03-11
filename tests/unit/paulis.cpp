@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup unitpaulis Paulis unit tests
+ * @defgroup unitpaulis Paulis
  * @ingroup unittests
  */
 

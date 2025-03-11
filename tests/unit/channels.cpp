@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup unitchannels Channels unit tests
+ * @defgroup unitchannels Channels
  * @ingroup unittests
  */
 

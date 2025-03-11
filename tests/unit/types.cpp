@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup unittypes Types unit tests
+ * @defgroup unittypes Types
  * @ingroup unittests
  */
 

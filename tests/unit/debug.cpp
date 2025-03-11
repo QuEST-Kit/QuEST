@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup unitdebug Debug unit tests
+ * @defgroup unitdebug Debug
  * @ingroup unittests
  */
 

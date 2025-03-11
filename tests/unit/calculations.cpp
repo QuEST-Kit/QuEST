@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup unitcalcs Calculations unit tests
+ * @defgroup unitcalcs Calculations
  * @ingroup unittests
  */
 

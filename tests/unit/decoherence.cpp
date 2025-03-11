@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup unitdeco Decoherence unit tests
+ * @defgroup unitdeco Decoherence
  * @ingroup unittests
  */
 

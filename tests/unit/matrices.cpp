@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup unitmatr Matrices unit tests
+ * @defgroup unitmatr Matrices
  * @ingroup unittests
  */
 
