@@ -26,18 +26,53 @@ concurrency:
   cancel-in-progress: false
 
 
-# generate doc and upload to gh-pages
+
 jobs:
-  deploy:
+
+  build-doc:
+    name: Generation of documentation
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
-      - uses: DenverCoder1/doxygen-github-pages-action@v2.0.0
+      - name: obtain copy of repository
+        uses: actions/checkout@v4
+
+      - name: run doxygen to generate doc, outputting to Doxygen_doc/html
+        uses: mattnotmitt/doxygen-action@v1.12.0
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: gh-pages
-          folder: Doxygen_doc/html
-          config_file: aux/docs/Doxyfile
-          target_folder: docs/api
-          doxygen_version: 1.13.2
+          doxyfile-path: aux/docs/Doxyfile
+          enable-latex: true
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload Doxygen_doc/html
+          path: ./Doxygen_doc/html
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+
+# # generate doc and upload to gh-pages
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     permissions:
+#       contents: write
+#     steps:
+#       - uses: DenverCoder1/doxygen-github-pages-action@v2.0.0
+#         with:
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           branch: gh-pages
+#           folder: Doxygen_doc/html
+#           config_file: aux/docs/Doxyfile
+#           target_folder: docs/api
+#           doxygen_version: 1.13.2
