@@ -1,0 +1,42 @@
+# Generates API documentation using doxygen,
+# and hosts it on Github using Github Pages
+#
+# @author Tyson Jones
+
+name: doc
+
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+
+# DEBUG; regenerate when doc-ci is modified
+on:
+  push:
+    branches:
+      - doc-ci
+  workflow_dispatch:
+
+
+# prevent concurrent deployments
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+
+# generate doc and upload to gh-pages
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: DenverCoder1/doxygen-github-pages-action@v2.0.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: Doxygen_doc/html
+          config_file: aux/docs/Doxyfile
+          doxygen_version: 1.13.2
