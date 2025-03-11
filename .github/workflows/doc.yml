@@ -12,11 +12,11 @@ permissions:
   id-token: write
 
 
-# DEBUG; regenerate when doc-ci is modified
+# DEBUG: testing didn't break
 on:
   push:
     branches:
-      - master
+      - doc-ci
   workflow_dispatch:
 
 
@@ -43,7 +43,7 @@ jobs:
       - name: run doxygen to generate doc, outputting to Doxygen_doc/html
         uses: mattnotmitt/doxygen-action@v1.12.0
         with:
-          doxyfile-path: aux/docs/Doxyfile
+          doxyfile-path: utils/docs/Doxyfile
           enable-latex: true
 
       - name: Setup Pages
