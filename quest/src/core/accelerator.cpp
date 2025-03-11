@@ -107,16 +107,16 @@ using std::min;
         GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs ))
 
 
-// @todo
-// GET_CPU_OR_GPU_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS,
-// as defined below, is only ever called by used by anyCtrlAnyTargDenseMatr,
-// which only ever receives numTargs>=3 (due to accelerator redirecting 
-// fewer targets to faster bespoke functions which e.g. avoid global GPU
-// cache emory access). This means its instantiation with numTargs=0,1,2
-// is useless, though contributes to 42% of the function's compilation
-// time which is large because of the 7*7*2=98 unique instantiations. We
-// can ergo non-negligibly speed up compilation by avoiding these redundant 
-// instances at the cost of increased code complexity/asymmetry. Consider!
+/// @todo
+/// GET_CPU_OR_GPU_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS,
+/// as defined below, is only ever called by used by anyCtrlAnyTargDenseMatr,
+/// which only ever receives numTargs>=3 (due to accelerator redirecting 
+/// fewer targets to faster bespoke functions which e.g. avoid global GPU
+/// cache emory access). This means its instantiation with numTargs=0,1,2
+/// is useless, though contributes to 42% of the function's compilation
+/// time which is large because of the 7*7*2=98 unique instantiations. We
+/// can ergo non-negligibly speed up compilation by avoiding these redundant 
+/// instances at the cost of increased code complexity/asymmetry. Consider!
 
 #define GET_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(f, numctrls, numtargs, c) \
     (vector <CONJ_ARR(f)> { \
@@ -142,11 +142,11 @@ using std::min;
             GET_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs, false ) ) )
 
 
-// @todo
-// This has gotten a bit ridiculous. Is there a way to use (likely)
-// more abominable pre-processor mischief which negates the need
-// to repeat the entire macro(s) when the number of templated
-// parameters grows?
+/// @todo
+/// This has gotten a bit ridiculous. Is there a way to use (likely)
+/// more abominable pre-processor mischief which negates the need
+/// to repeat the entire macro(s) when the number of templated
+/// parameters grows?
 
 
 #define GET_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(f, numctrls, numtargs, c, h) \

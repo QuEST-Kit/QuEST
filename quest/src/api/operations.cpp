@@ -606,11 +606,11 @@ void applyMultiStateControlledSqrtSwap(Qureg qureg, int* controls, int* states, 
     validate_controlsAndTwoTargets(qureg, controls, numControls, target1, target2, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    // @todo
-    // this function exacts sqrtSwap as a dense 2-qubit matrix,
-    // where as bespoke communication and simulation strategy is
-    // clearly possible which we have not supported because the gate
-    // is somewhat esoteric. As such, we must validate mixed-amps fit
+    /// @todo
+    /// this function exacts sqrtSwap as a dense 2-qubit matrix,
+    /// where as bespoke communication and simulation strategy is
+    /// clearly possible which we have not supported because the gate
+    /// is somewhat esoteric. As such, we must validate mixed-amps fit
 
     validate_mixedAmpsFitInNode(qureg, 2, __func__); // to throw SqrtSwap error, not generic CompMatr2 error
 
@@ -869,10 +869,10 @@ void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle
     validate_pauliStrSumIsHermitian(sum, __func__);
     validate_trotterParams(qureg, order, reps, __func__);
 
-    // @todo
-    // the accuracy of Trotterisation is greatly improved by randomisation
-    // or (even sub-optimal) grouping into commuting terms. Should we 
-    // implement these here or into another function?
+    /// @todo
+    /// the accuracy of Trotterisation is greatly improved by randomisation
+    /// or (even sub-optimal) grouping into commuting terms. Should we 
+    /// implement these here or into another function?
 
     if (angle == 0)
         return;
@@ -1080,11 +1080,11 @@ void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* state
     validate_controlsAndPauliStrTargets(qureg, controls, numControls, str, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    // @todo
-    // CRUCIAL NOTE:
-    // exp(theta I..I) might be algorithmically ok (I'm not sure), but it WILL NOT
-    // effect a global phase change of theta (I think). Should validate against this
-    // sitaution just in case, or make the doc extremely explicit
+    /// @todo
+    /// CRUCIAL NOTE:
+    /// exp(theta I..I) might be algorithmically ok (I'm not sure), but it WILL NOT
+    /// effect a global phase change of theta (I think). Should validate against this
+    /// sitaution just in case, or make the doc extremely explicit
 
     qreal phase = util_getPhaseFromGateAngle(angle);
     auto ctrlVec = util_getVector(controls, numControls);
@@ -1439,9 +1439,9 @@ void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets) {
     validate_quregFields(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
 
-    // @todo
-    // change this placeholder implementation to the bespoke, optimised routine,
-    // wherein each contiguous controlled-phase gate is merged
+    /// @todo
+    /// change this placeholder implementation to the bespoke, optimised routine,
+    /// wherein each contiguous controlled-phase gate is merged
 
     for (int n=numTargets-1; n>=0; n--) {
         applyHadamard(qureg, targets[n]);

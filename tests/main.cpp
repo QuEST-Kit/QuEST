@@ -29,11 +29,13 @@
  * 
  * @defgroup deprecatedtests Deprecated tests
  * @ingroup tests
+ * @deprecated
  * @brief
  * Unit tests of QuEST's deprecated v3 API functions.
  * 
  * @defgroup deprecatedutils Deprecated utilities
  * @ingroup tests
+ * @deprecated
  * @brief
  * Utilities for testing QuEST's deprecated v3 API functions.
  */

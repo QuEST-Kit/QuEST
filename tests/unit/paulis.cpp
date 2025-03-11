@@ -46,9 +46,9 @@ TEST_CASE( "placeholder", TEST_CATEGORY) {
 
 
 
-/*
+/**
  * @todo
- * UNTESTED FUNCTIONS BELOW
+ * UNTESTED FUNCTIONS
  */
 
 PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis);

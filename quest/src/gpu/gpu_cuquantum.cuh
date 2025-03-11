@@ -289,11 +289,11 @@ void cuquantum_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal 
 
 void cuquantum_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubitB, qreal prob) {
 
-    // @todo
-    // only 75% of the amps are changed, each of which is multiplied by the same scalar,
-    // but our below method multiplies all amps with 16 separate scalars - can we accel?
-    // we are applying a prefactor b to all states except where the ket & bra qubits
-    // are the same, i.e. we skip |00><00|, |01><01|, |10><10|, |11><11|
+    /// @todo
+    /// only 75% of the amps are changed, each of which is multiplied by the same scalar,
+    /// but our below method multiplies all amps with 16 separate scalars - can we accel?
+    /// we are applying a prefactor b to all states except where the ket & bra qubits
+    /// are the same, i.e. we skip |00><00|, |01><01|, |10><10|, |11><11|
 
     // effect the superoperator as a four-qubit diagonal upon a statevector suffix state
     cu_qcomp a = {1,          0};

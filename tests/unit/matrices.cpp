@@ -46,9 +46,9 @@ TEST_CASE( "placeholder", TEST_CATEGORY) {
 
 
 
-/*
+/**
  * @todo
- * UNTESTED FUNCTIONS BELOW
+ * UNTESTED FUNCTIONS
  */
 
 static inline CompMatr1 getCompMatr1(qcomp** in);

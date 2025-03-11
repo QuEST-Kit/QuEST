@@ -24,7 +24,7 @@ using std::string;
 
 
 
-/*
+/**
  * @todo
  * This design doesn't pass info useful for debugging,
  * line erroneous caller's line-number or function name.

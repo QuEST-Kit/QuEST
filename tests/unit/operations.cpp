@@ -781,9 +781,9 @@ TEST_CASE( "applyMultiQubitPhaseShift", TEST_CATEGORY ) { testOperation<zero,any
 
 
 
-/*
+/**
  * @todo
- * UNTESTED FUNCTIONS BELOW
+ * UNTESTED FUNCTIONS
  */
 
 void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);

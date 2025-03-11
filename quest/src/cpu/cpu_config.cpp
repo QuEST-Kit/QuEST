@@ -98,15 +98,15 @@ int cpu_getOpenmpThreadInd() {
 
 qcomp* cpu_allocArray(qindex length) {
 
-    // @todo
-    // here, we calloc the entire array in a serial setting, rather than one malloc 
-    // followed by threads subsequently memset'ing their own partitions. The latter
-    // approach would distribute the array pages across NUMA nodes, accelerating 
-    // their subsequent access by the same threads (via NUMA's first-touch policy).
-    // We have so far foregone this optimisation since a thread's memory-access pattern
-    // in many of the QuEST functions is non-trivial, and likely to be inconsistent 
-    // with the memset pattern. As such, I expect the benefit is totally occluded
-    // and only introduces potential new bugs - but this should be tested and confirmed!
+    /// @todo
+    /// here, we calloc the entire array in a serial setting, rather than one malloc 
+    /// followed by threads subsequently memset'ing their own partitions. The latter
+    /// approach would distribute the array pages across NUMA nodes, accelerating 
+    /// their subsequent access by the same threads (via NUMA's first-touch policy).
+    /// We have so far foregone this optimisation since a thread's memory-access pattern
+    /// in many of the QuEST functions is non-trivial, and likely to be inconsistent 
+    /// with the memset pattern. As such, I expect the benefit is totally occluded
+    /// and only introduces potential new bugs - but this should be tested and confirmed!
 
     // we call calloc over malloc in order to fail immediately if mem isn't available;
     // caller must handle nullptr result
@@ -253,9 +253,9 @@ void cpu_copyArray(qcomp* dest, qcomp* src, qindex dim) {
 
 void cpu_copyMatrix(qcomp** dest, qcomp** src, qindex dim) {
 
-    // @todo
-    // there may be a faster, asynchronous way to perform
-    // these memcpys then do a final wait
+    /// @todo
+    /// there may be a faster, asynchronous way to perform
+    /// these memcpys then do a final wait
 
     // note that we cannot call a single memcpy to copy all rows at once,
     // because dest/src may not be contiguous stack arrays; instead, each
@@ -267,9 +267,9 @@ void cpu_copyMatrix(qcomp** dest, qcomp** src, qindex dim) {
 
 void cpu_copyMatrix(qcomp** dest, vector<vector<qcomp>> src, qindex dim) {
 
-    // @todo
-    // there may be a faster, asynchronous way to perform
-    // these memcpys then do a final wait
+    /// @todo
+    /// there may be a faster, asynchronous way to perform
+    /// these memcpys then do a final wait
 
     for (qindex r=0; r<dim; r++)
         cpu_copyArray(dest[r], src[r].data(), dim);

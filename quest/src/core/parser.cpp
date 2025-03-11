@@ -377,7 +377,7 @@ void parseLine(string line, qcomp &coeff, PauliStr &pauli, bool rightIsLeastSign
 
 qindex getNumLines(string lines) {
 
-    // @todo is this platform agnostic?
+    /// @todo is this platform agnostic?
     char newline = '\n';
 
     return 1 + count(lines.begin(), lines.end(), newline);

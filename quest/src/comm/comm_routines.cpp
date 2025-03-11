@@ -30,7 +30,7 @@
 using std::vector;
 
 
-/*
+/**
  * @todo
  *
  * - create an MPI error handler for custom comm internal error messages:

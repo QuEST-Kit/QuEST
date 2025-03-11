@@ -57,9 +57,9 @@ __forceinline__ __device__ qindex getThreadInd() {
 
 __host__ qindex getNumBlocks(qindex numThreads) {
 
-    // @todo
-    // improve this with cudaOccupancyMaxPotentialBlockSize(),
-    // making it function specific
+    /// @todo
+    /// improve this with cudaOccupancyMaxPotentialBlockSize(),
+    /// making it function specific
 
     return ceil(numThreads / static_cast<qreal>(NUM_THREADS_PER_BLOCK));
 }
@@ -425,16 +425,16 @@ __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // @todo
-    // we have implemented a custom kernel, rather than a thrust
-    // functor, for efficient treatment of control qubits (even
-    // when not exploiting the compile-time parameter NumCtrls).
-    // Our kernel enumerates only amps which satisfy the control
-    // condition, whereas a natural Thrust functor would involve
-    // enumerating all amplitudes and skipping some via a condition.
-    // This might still be beneficial in memory-bandwidth-bound
-    // regimes, but is expected inferior for many control qubits.
-    // We should verify this!
+    /// @todo
+    /// we have implemented a custom kernel, rather than a thrust
+    /// functor, for efficient treatment of control qubits (even
+    /// when not exploiting the compile-time parameter NumCtrls).
+    /// Our kernel enumerates only amps which satisfy the control
+    /// condition, whereas a natural Thrust functor would involve
+    /// enumerating all amplitudes and skipping some via a condition.
+    /// This might still be beneficial in memory-bandwidth-bound
+    /// regimes, but is expected inferior for many control qubits.
+    /// We should verify this!
 
     // use template params to compile-time unroll loops in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
@@ -464,16 +464,16 @@ __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // @todo
-    // we have implemented a custom kernel, rather than a thrust
-    // functor, for efficient treatment of control qubits (even
-    // when not exploiting the compile-time parameter NumCtrls).
-    // Our kernel enumerates only amps which satisfy the control
-    // condition, whereas a natural Thrust functor would involve
-    // enumerating all amplitudes and skipping some via a condition.
-    // This might still be beneficial in memory-bandwidth-bound
-    // regimes, but is expected inferior for many control qubits.
-    // We should verify this!
+    /// @todo
+    /// we have implemented a custom kernel, rather than a thrust
+    /// functor, for efficient treatment of control qubits (even
+    /// when not exploiting the compile-time parameter NumCtrls).
+    /// Our kernel enumerates only amps which satisfy the control
+    /// condition, whereas a natural Thrust functor would involve
+    /// enumerating all amplitudes and skipping some via a condition.
+    /// This might still be beneficial in memory-bandwidth-bound
+    /// regimes, but is expected inferior for many control qubits.
+    /// We should verify this!
 
     // use template params to compile-time unroll loops in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
@@ -505,16 +505,16 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // @todo
-    // we have implemented a custom kernel, rather than a thrust
-    // functor, for efficient treatment of control qubits (even
-    // when not exploiting the compile-time parameter NumCtrls).
-    // Our kernel enumerates only amps which satisfy the control
-    // condition, whereas a natural Thrust functor would involve
-    // enumerating all amplitudes and skipping some via a condition.
-    // This might still be beneficial in memory-bandwidth-bound
-    // regimes, but is expected inferior for many control qubits.
-    // We should verify this!
+    /// @todo
+    /// we have implemented a custom kernel, rather than a thrust
+    /// functor, for efficient treatment of control qubits (even
+    /// when not exploiting the compile-time parameter NumCtrls).
+    /// Our kernel enumerates only amps which satisfy the control
+    /// condition, whereas a natural Thrust functor would involve
+    /// enumerating all amplitudes and skipping some via a condition.
+    /// This might still be beneficial in memory-bandwidth-bound
+    /// regimes, but is expected inferior for many control qubits.
+    /// We should verify this!
 
     // use template params to compile-time unroll loops in insertBits() and getValueOfBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
@@ -745,10 +745,10 @@ __global__ void kernel_densmatr_oneQubitDephasing_subA(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // @todo
-    // each kernel modifies two amps strided by 2^qureg.numQubits, which is terrible!
-    // we can easy template this kernel to modify only 1 thread-local amp, and invoke
-    // two kernels at launch. Benchmark this and update
+    /// @todo
+    /// each kernel modifies two amps strided by 2^qureg.numQubits, which is terrible!
+    /// we can easy template this kernel to modify only 1 thread-local amp, and invoke
+    /// two kernels at launch. Benchmark this and update
 
     // i01 = nth local index of |*0*><*1*|
     qindex i01 = insertTwoBits(n, braQubit, 0, ketQubit, 1);
@@ -765,10 +765,10 @@ __global__ void kernel_densmatr_oneQubitDephasing_subB(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // @todo
-    // this extremely simple kernel can be definitely
-    // be replaced with a Thrust invocation, to reduce
-    // boilerplate
+    /// @todo
+    /// this extremely simple kernel can be definitely
+    /// be replaced with a Thrust invocation, to reduce
+    /// boilerplate
 
     // i = nth local index where bra-qubit differs from ket-qubit
     qindex i = insertBit(n, ketQubit, ! braBit);
@@ -892,10 +892,10 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subC(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // @todo
-    // this kernel modifies every amplitude, but I think only
-    // 25% are actually being changed; fix this by dispatching
-    // 25% fewer kernels which go straight to the modified amps
+    /// @todo
+    /// this kernel modifies every amplitude, but I think only
+    /// 25% are actually being changed; fix this by dispatching
+    /// 25% fewer kernels which go straight to the modified amps
 
     // decide whether or not to modify nth local
     bool flag1 = getBit(n, ketQb1) == getBit(n, braQb1); 
@@ -1044,10 +1044,10 @@ __global__ void kernel_densmatr_oneQubitDamping_subB(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // @todo
-    // this extremely simple kernel can be definitely
-    // be replaced with a Thrust invocation, to reduce
-    // boilerplate
+    /// @todo
+    /// this extremely simple kernel can be definitely
+    /// be replaced with a Thrust invocation, to reduce
+    /// boilerplate
 
     // i = nth local index where qubit=1
     qindex i = insertBit(n, qubit, 1);
@@ -1061,10 +1061,10 @@ __global__ void kernel_densmatr_oneQubitDamping_subC(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // @todo
-    // this extremely simple kernel can be definitely
-    // be replaced with a Thrust invocation, to reduce
-    // boilerplate
+    /// @todo
+    /// this extremely simple kernel can be definitely
+    /// be replaced with a Thrust invocation, to reduce
+    /// boilerplate
 
     // i = nth local index where ket differs from bra
     qindex i = insertBit(n, ketQubit, ! braBit);
@@ -1104,10 +1104,10 @@ __global__ void kernel_densmatr_partialTrace_sub(
     int numAllTargs = 2*numTargPairs;
     qindex numIts = powerOf2(numTargPairs);
 
-    // @todo
-    // this implementation assumes that the number of amps in outQureg equals or exceeds the 
-    // number of CUDA cores, which may not be true when tracing out almost all qubits. We 
-    // should change the parallelisation axis in this scenario, or preclude it with validation!
+    /// @todo
+    /// this implementation assumes that the number of amps in outQureg equals or exceeds the 
+    /// number of CUDA cores, which may not be true when tracing out almost all qubits. We 
+    /// should change the parallelisation axis in this scenario, or preclude it with validation!
 
     // k = nth local index of inQureg where all targs and pairs are zero
     qindex k = insertBits(n, allTargs, numAllTargs, 0); // loop may be unrolled
@@ -1144,11 +1144,11 @@ __global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // @todo
-    // it might be possible to replace this custom kernel 
-    // with an invocation of Thrust's reduce_by_key(),
-    // where the key is j as computed below. Look into
-    // whether this is worthwhile and faster!
+    /// @todo
+    /// it might be possible to replace this custom kernel 
+    /// with an invocation of Thrust's reduce_by_key(),
+    /// where the key is j as computed below. Look into
+    /// whether this is worthwhile and faster!
 
     // use template param to compile-time unroll below loops
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, numQubits);

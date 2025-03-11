@@ -351,7 +351,7 @@ void destroyQureg(Qureg qureg) {
 void reportQuregParams(Qureg qureg) {
     validate_quregFields(qureg, __func__);
 
-    // @todo add function to write this output to file (useful for HPC debugging)
+    /// @todo add function to write this output to file (useful for HPC debugging)
 
     // printer routines will consult env rank to avoid duplicate printing
     print("Qureg:");
