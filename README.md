@@ -55,7 +55,7 @@ And it hides these deployment modes behind a single, seamless interface.
 
 QuEST is developed by the [QTechTheory](http://qtechtheory.org/) group at the University of Oxford, with support of the UK [National Quantum Computing centre](https://www.nqcc.ac.uk/) (_NQCC200921_), and [these authors](https://github.com/QuEST-Kit/QuEST/blob/master/AUTHORS.txt). To learn more:
 - see the [tutorial](https://github.com/QuEST-Kit/QuEST/blob/master/examples/README.md)
-- view the [documentation](https://quest-kit.github.io/QuEST/modules.html)
+- view the [documentation](#book-documentation)
 - visit the [website](https://quest.qtechtheory.org/)
 - see some [examples](https://github.com/QuEST-Kit/QuEST/blob/master/examples/)
 - read the [whitepaper](https://www.nature.com/articles/s41598-019-47174-9), which featured in Scientific Report's [Top 100 in Physics](https://www.nature.com/collections/ecehgdfcba/) :trophy:
@@ -64,6 +64,8 @@ QuEST is developed by the [QTechTheory](http://qtechtheory.org/) group at the Un
 [![Email](https://img.shields.io/badge/email-quest@materials.ox.ac.uk-red.svg)](mailto:quest@materials.ox.ac.uk)
 
 ---------------------------------
+
+## test
 
 
 ## :tada:&nbsp; Introduction
@@ -128,7 +130,7 @@ QuEST supports:
   - [running](/examples/README.md#running) QuEST locally and on supercomputers
   - [testing](/examples/README.md#testing) QuEST using the comprehensive [unit tests](https://quest-kit.github.io/QuEST/group__unittest.html)
   <br><br>
-- The [documentation](https://quest-kit.github.io/QuEST/modules.html) is divided into the following modules (collated [here](https://quest-kit.github.io/QuEST/QuEST_8h.html))
+- The documentation is divided into the following modules:
   - [data structures](https://quest-kit.github.io/QuEST/group__type.html)
   - [initialisations](https://quest-kit.github.io/QuEST/group__init.html)
   - [unitaries](https://quest-kit.github.io/QuEST/group__unitary.html)
