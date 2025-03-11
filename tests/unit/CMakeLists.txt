@@ -3,6 +3,8 @@
 target_sources(tests
   PUBLIC
   calculations.cpp
+  channels.cpp
+  debug.cpp
   decoherence.cpp
   environment.cpp
   initialisations.cpp
