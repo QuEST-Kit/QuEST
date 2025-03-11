@@ -16,7 +16,7 @@ permissions:
 on:
   push:
     branches:
-      - doc-ci
+      - master
   workflow_dispatch:
 
 
