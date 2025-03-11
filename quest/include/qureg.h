@@ -5,6 +5,7 @@
  * 
  * @defgroup qureg Qureg
  * @ingroup api
+ * @brief Data structures for representing quantum states.
  * @{
  */
 

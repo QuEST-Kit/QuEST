@@ -6,6 +6,7 @@
  * 
  * @defgroup paulis Paulis
  * @ingroup api
+ * @brief Data structures for representing Pauli strings and their weighted sums.
  * @{
  */
 

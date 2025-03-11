@@ -7,6 +7,7 @@
  *
  * @defgroup debug Debug
  * @ingroup api
+ * @brief Utilities for controlling QuEST behaviour such as seeding, input validation and printing.
  * @{
  */
 

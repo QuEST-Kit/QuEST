@@ -40,6 +40,7 @@
  * 
  * @defgroup channels Channels
  * @ingroup api
+ * @brief Data structures for representing arbitrary channels as Kraus maps and superoperators.
  * @{
  */
 

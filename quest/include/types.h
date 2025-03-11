@@ -12,6 +12,7 @@
  *
  * @defgroup types Types
  * @ingroup api
+ * @brief Macros for precision-agnostic real and complex arithmetic.
  * @{
  */
 

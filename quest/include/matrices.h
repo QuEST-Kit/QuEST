@@ -15,6 +15,7 @@
  * 
  * @defgroup matrices Matrices
  * @ingroup api
+ * @brief Data structures for representing operator matrices.
  * @{
  */
 

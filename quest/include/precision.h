@@ -7,6 +7,7 @@
  * 
  * @defgroup precision Precision
  * @ingroup api
+ * @brief Macros for controlling QuEST's numerical precision.
  * @{
  */
 

@@ -6,7 +6,7 @@
  *
  * @defgroup calculations Calculations
  * @ingroup api
- * @brief test
+ * @brief Functions for calculating properties of quantum states without modifying them.
  * @{
  */
 
