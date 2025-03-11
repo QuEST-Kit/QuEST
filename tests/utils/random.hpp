@@ -16,6 +16,7 @@
 #include "qmatrix.hpp"
 #include "macros.hpp"
 #include "linalg.hpp"
+#include "lists.hpp"
 #include "quest/include/quest.h"
 
 #include <vector>
@@ -32,8 +33,8 @@ qreal getRandomReal(qreal min, qreal max);
 qreal getRandomPhase();
 qcomp getRandomComplex();
 
-using vectortriple = tuple<vector<int>,vector<int>,vector<int>>;
-vectortriple getRandomCtrlsStatesTargs(int numQubits, int minNumTargs, int maxNumTargsIncl);
+listpair getRandomFixedNumCtrlsTargs(int numQubits, int numCtrls, int numTargs);
+listtrio getRandomVariNumCtrlsStatesTargs(int numQubits, int minNumTargs, int maxNumTargsIncl);
 
 qvector getRandomVector(size_t dim);
 qmatrix getRandomMatrix(size_t dim);

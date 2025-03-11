@@ -14,12 +14,26 @@
 #include <catch2/catch_test_macros.hpp>
 
 
+/*
+ * macros which affect the speed and rigour of the unit tests, useful
+ * for accelerating tests on particular platforms (e.g. paid github runners)
+ */
+
+#ifndef FAST_UNIT_TESTS
+#define FAST_UNIT_TESTS 0
+#endif
+
+#ifndef MAX_NUM_FAST_QUBIT_PERMUTATIONS
+#define MAX_NUM_FAST_QUBIT_PERMUTATIONS 50
+#endif
+
 
 /*
  * preconditions to the internal unit testing functions are checked using 
  * DEMAND rather than Catch2's REQUIRE, so that they are not counted in the 
  * total unit testing statistics (e.g. number of checks passed). 
  */
+
 #define DEMAND( cond ) do { if (!(cond)) { FAIL( ); } } while (0)
 
 

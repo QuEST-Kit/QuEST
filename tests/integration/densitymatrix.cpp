@@ -65,7 +65,7 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
 
     // apply CompMatr1
     for (int r=0; r<numReps; r++) {
-        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,1);
+        auto [ctrls,states,targs] = getRandomVariNumCtrlsStatesTargs(psi.numQubits, 1,1);
         CompMatr1 matr = getCompMatr1(getRandomUnitary(1));
         applyMultiStateControlledCompMatr1(psi, ctrls.data(), states.data(), ctrls.size(), targs[0], matr);
         applyMultiStateControlledCompMatr1(rho, ctrls.data(), states.data(), ctrls.size(), targs[0], matr);
@@ -73,7 +73,7 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
 
     // apply CompMatr2
     for (int r=0; r<numReps; r++) {
-        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 2,2);
+        auto [ctrls,states,targs] = getRandomVariNumCtrlsStatesTargs(psi.numQubits, 2,2);
         CompMatr2 matr = getCompMatr2(getRandomUnitary(2));
         applyMultiStateControlledCompMatr2(psi, ctrls.data(), states.data(), ctrls.size(), targs[0], targs[1], matr);
         applyMultiStateControlledCompMatr2(rho, ctrls.data(), states.data(), ctrls.size(), targs[0], targs[1], matr);
@@ -81,7 +81,7 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
 
     // apply CompMatr
     for (int r=0; r<numReps; r++) {
-        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,maxNumCompMatrTargs);
+        auto [ctrls,states,targs] = getRandomVariNumCtrlsStatesTargs(psi.numQubits, 1,maxNumCompMatrTargs);
         CompMatr matr = createCompMatr(targs.size());
         setCompMatr(matr, getRandomUnitary(targs.size()));
         applyMultiStateControlledCompMatr(psi, ctrls.data(), states.data(), ctrls.size(), targs.data(), targs.size(), matr);
@@ -91,7 +91,7 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
         
     // apply DiagMatr1
     for (int r=0; r<numReps; r++) {
-        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,1);
+        auto [ctrls,states,targs] = getRandomVariNumCtrlsStatesTargs(psi.numQubits, 1,1);
         DiagMatr1 matr = getDiagMatr1(getDiagonals(getRandomDiagonalUnitary(1)));
         applyMultiStateControlledDiagMatr1(psi, ctrls.data(), states.data(), ctrls.size(), targs[0], matr);
         applyMultiStateControlledDiagMatr1(rho, ctrls.data(), states.data(), ctrls.size(), targs[0], matr);
@@ -99,7 +99,7 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
 
     // apply DiagMatr2
     for (int r=0; r<numReps; r++) {
-        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 2,2);
+        auto [ctrls,states,targs] = getRandomVariNumCtrlsStatesTargs(psi.numQubits, 2,2);
         DiagMatr2 matr = getDiagMatr2(getDiagonals(getRandomDiagonalUnitary(2)));
         applyMultiStateControlledDiagMatr2(psi, ctrls.data(), states.data(), ctrls.size(), targs[0], targs[1], matr);
         applyMultiStateControlledDiagMatr2(rho, ctrls.data(), states.data(), ctrls.size(), targs[0], targs[1], matr);
@@ -107,7 +107,7 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
 
     // apply DiagMatr
     for (int r=0; r<numReps; r++) {
-        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,maxNumDiagMatrTargs);
+        auto [ctrls,states,targs] = getRandomVariNumCtrlsStatesTargs(psi.numQubits, 1,maxNumDiagMatrTargs);
         DiagMatr matr = createDiagMatr(targs.size());
         setDiagMatr(matr, getDiagonals(getRandomDiagonalUnitary(targs.size())));
         applyMultiStateControlledDiagMatr(psi, ctrls.data(), states.data(), ctrls.size(), targs.data(), targs.size(), matr);
@@ -117,7 +117,7 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
 
     // apply DiagMatr raised to power (real to retain unitarity)
     for (int r=0; r<numReps; r++) {
-        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,maxNumDiagMatrTargs);
+        auto [ctrls,states,targs] = getRandomVariNumCtrlsStatesTargs(psi.numQubits, 1,maxNumDiagMatrTargs);
         DiagMatr matr = createDiagMatr(targs.size());
         qreal expo = getRandomReal(0, 10);
         setDiagMatr(matr, getDiagonals(getRandomDiagonalUnitary(targs.size())));
@@ -130,14 +130,14 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
 
     // apply SWAP
     for (int r=0; r<numReps; r++) {
-        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 2,2);
+        auto [ctrls,states,targs] = getRandomVariNumCtrlsStatesTargs(psi.numQubits, 2,2);
         applyMultiStateControlledSwap(psi, ctrls.data(), states.data(), ctrls.size(), targs[0], targs[1]);
         applyMultiStateControlledSwap(rho, ctrls.data(), states.data(), ctrls.size(), targs[0], targs[1]);
     }
 
     // apply PauliStr
     for (int r=0; r<numReps; r++) {
-        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,maxNumPauliStrTargs);
+        auto [ctrls,states,targs] = getRandomVariNumCtrlsStatesTargs(psi.numQubits, 1,maxNumPauliStrTargs);
         PauliStr str = getRandomPauliStr(targs);
         applyMultiStateControlledPauliStr(psi, ctrls.data(), states.data(), ctrls.size(), str);
         applyMultiStateControlledPauliStr(rho, ctrls.data(), states.data(), ctrls.size(), str);
@@ -145,7 +145,7 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
 
     // apply Pauli gadget
     for (int r=0; r<numReps; r++) {
-        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,maxNumPauliGadTargs);
+        auto [ctrls,states,targs] = getRandomVariNumCtrlsStatesTargs(psi.numQubits, 1,maxNumPauliGadTargs);
         PauliStr str = getRandomPauliStr(targs);
         qreal phi = getRandomReal(-2 * 3.14, 2 * 3.14);
         applyMultiStateControlledPauliGadget(psi, ctrls.data(), states.data(), ctrls.size(), str, phi);
@@ -154,7 +154,7 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
 
     // apply phase gadet
     for (int r=0; r<numReps; r++) {
-        auto [ctrls,states,targs] = getRandomCtrlsStatesTargs(psi.numQubits, 1,maxNumPhaseGadTargs);
+        auto [ctrls,states,targs] = getRandomVariNumCtrlsStatesTargs(psi.numQubits, 1,maxNumPhaseGadTargs);
         qreal phi = getRandomReal(-2 * 3.14, 2 * 3.14);
         applyMultiStateControlledPhaseGadget(psi, ctrls.data(), states.data(), ctrls.size(), targs.data(), targs.size(), phi);
         applyMultiStateControlledPhaseGadget(rho, ctrls.data(), states.data(), ctrls.size(), targs.data(), targs.size(), phi);

@@ -20,11 +20,11 @@
 #include <vector>
 using std::vector;
 
-
-int    getLog2(qindex);
+int getLog2(qindex);
+int getBitAt(qindex num, int ind);
+int getNumPermutations(int n, int k);
 qindex getPow2(int);
-qcomp  getExpI(qreal);
-int    getBitAt(qindex num, int ind);
+qcomp getExpI(qreal);
 
 qvector getNormalised(qvector);
 qvector getDisceteFourierTransform(qvector);

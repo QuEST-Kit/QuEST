@@ -8,8 +8,10 @@
 #include <catch2/generators/catch_generators_range.hpp>
 #include <catch2/generators/catch_generators_adapters.hpp>
 
+#include "lists.hpp"
 #include "macros.hpp"
 #include "random.hpp"
+#include "linalg.hpp"
 
 #include <tuple>
 #include <vector>
@@ -184,11 +186,6 @@ GeneratorWrapper<vector<int>> sublists(GeneratorWrapper<int>&& gen, int sublen) 
  */
 
 
-using listpair = tuple<
-    vector<int>,
-    vector<int>>;
-
-
 class DisjointSublistsGenerator : public IGenerator<listpair> {
 
     // list of all possible (unique) elements
@@ -242,4 +239,49 @@ GeneratorWrapper<listpair> disjointsublists(GeneratorWrapper<int>&& gen, int sub
     return GeneratorWrapper<listpair>(
         Catch::Detail::make_unique<DisjointSublistsGenerator>(
             list, sublen1, sublen2));
+}
+
+
+
+/*
+ * GENERATOR WRAPPERS
+ */
+
+
+listpair GENERATE_CTRLS_AND_TARGS(int numQubits, int numCtrls, int numTargs) {
+    DEMAND( numQubits >= numCtrls + numTargs );
+
+#if FAST_UNIT_TESTS
+
+    // avoid testing all combinations (for speed), and instead repeatedly
+    // generate a random combination of disjoint control and target qubits,
+    // avoiding superfluously repeating permutations when numRepeats is small
+
+    int numRepeats = getNumPermutations(numQubits, numCtrls + numTargs);
+    if (numRepeats > MAX_NUM_FAST_QUBIT_PERMUTATIONS)
+        numRepeats = MAX_NUM_FAST_QUBIT_PERMUTATIONS;
+    
+    GENERATE_COPY( range(0,numRepeats) );
+
+    return getRandomFixedNumCtrlsTargs(numQubits, numCtrls, numTargs);
+
+#else
+
+    // generate every possible combination of disjoint control and target lists,
+    // upon all possible qubits, in every possible order. Note this even generates
+    // every ordering of the control qubits (e.g. {1,2} and {2,1}) which should
+    // have no effect on the resulting operation, but we check it to be super
+    // careful anyway!
+
+    return GENERATE_COPY( disjointsublists(range(0,numQubits), numCtrls, numTargs) );
+
+#endif
+}
+
+
+vector<int> GENERATE_TARGS(int numQubits, int numTargs) {
+    DEMAND( numQubits >= numTargs );
+
+    auto [ctrls, targs] = GENERATE_CTRLS_AND_TARGS(numQubits, 0, numTargs);
+    return targs;
 }

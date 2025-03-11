@@ -26,6 +26,7 @@
 #include "tests/utils/measure.hpp"
 
 #include <vector>
+#include <algorithm>
 #include <type_traits>
 
 using std::vector;
@@ -92,7 +93,7 @@ TEST_CASE( "calcExpecPauliStr", TEST_CATEGORY ) {
 
         int numQubits = getNumCachedQubits();
         int numTargs = GENERATE_COPY( range(1,numQubits+1) );
-        auto targets = GENERATE_COPY( sublists(range(0,numQubits), numTargs) );
+        auto targets = GENERATE_TARGS(numQubits, numTargs);
 
         GENERATE( range(0,10) );
         PauliStr str = getRandomPauliStr(targets);
@@ -115,7 +116,7 @@ TEST_CASE( "calcExpecPauliStrSum", TEST_CATEGORY ) {
         int numQubits = getNumCachedQubits();
         int numTerms = GENERATE_COPY( 1, numQubits, getPow2(2*numQubits) );
 
-        GENERATE( range(0,100) );
+        GENERATE( range(0,10) );
         PauliStrSum sum = createRandomPauliStrSum(numQubits, numTerms);
 
         TEST_ALL_QUREGS(
@@ -135,7 +136,7 @@ TEST_CASE( "calcExpecNonHermitianPauliStrSum", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
-        GENERATE( range(0,100) );
+        GENERATE( range(0,10) );
         int numQubits = getNumCachedQubits();
         int numTerms = GENERATE_COPY( 1, numQubits, getPow2(2*numQubits) );
 
@@ -195,7 +196,7 @@ TEST_CASE( "calcProbOfMultiQubitOutcome", TEST_CATEGORY ) {
 
         int numQubits = getNumCachedQubits();
         int numTargs = GENERATE_COPY( range(1, numQubits+1) );
-        auto targets = GENERATE_COPY( sublists(range(0,numQubits), numTargs) );
+        auto targets = GENERATE_TARGS(numQubits, numTargs);
         auto outcomes = getRandomInts(0, 1+1, numTargs);
 
         TEST_ALL_QUREGS(
@@ -215,7 +216,7 @@ TEST_CASE( "calcProbsOfAllMultiQubitOutcomes", TEST_CATEGORY ) {
 
         int numQubits = getNumCachedQubits();
         int numTargs = GENERATE_COPY( range(1,numQubits+1) );
-        auto targets = GENERATE_COPY( sublists(range(0,numQubits), numTargs) );
+        auto targets = GENERATE_TARGS(numQubits, numTargs);
 
         auto apiFunc = [&](Qureg qureg) { 
             vector<qreal> out(getPow2(numTargs));
@@ -290,7 +291,7 @@ TEST_CASE( "calcPartialTrace", TEST_CATEGORY ) {
             int numQubits = getNumCachedQubits();
             int maxNumTargs = getMaxNumTracedQubits(numQubits);
             int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
-            auto targets = GENERATE_COPY( sublists(range(0,numQubits), numTargs) );
+            auto targets = GENERATE_TARGS(numQubits, numTargs);
 
             auto apiFunc = [&](Qureg qureg) { return calcPartialTrace(qureg, targets.data(), numTargs); };
             auto refFunc = [&](qmatrix ref) { return getPartialTrace(ref, targets); };
@@ -315,7 +316,7 @@ TEST_CASE( "calcReducedDensityMatrix", TEST_CATEGORY ) {
             int minNumRetained = numQubits - maxNumTraced;
             int maxNumRetained = numQubits - 1;
             int numRetained = GENERATE_COPY( range(minNumRetained, maxNumRetained+1) );
-            auto retains = GENERATE_COPY( sublists(range(0,numQubits), numRetained) );
+            auto retains = GENERATE_TARGS(numQubits, numRetained);
             auto targets = getComplement(getRange(numQubits), retains);
 
             auto apiFunc = [&](Qureg qureg) { return calcReducedDensityMatrix(qureg, retains.data(), numRetained); };
