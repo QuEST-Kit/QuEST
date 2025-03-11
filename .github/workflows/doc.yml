@@ -20,11 +20,10 @@ on:
   workflow_dispatch:
 
 
-# prevent concurrent deployments
+# prevent concurrent generation
 concurrency:
   group: "pages"
   cancel-in-progress: false
-
 
 
 jobs:
