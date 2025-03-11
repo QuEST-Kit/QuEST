@@ -334,6 +334,18 @@ qmatrix getPartialTrace(qmatrix in, vector<int> targets) {
 }
 
 
+qmatrix getControlledMatrix(qmatrix matrix, int numCtrls) {
+
+    size_t dim = getPow2(numCtrls) * matrix.size();
+    size_t off = dim - matrix.size();
+    
+    qmatrix out = getIdentityMatrix(dim);
+    setSubMatrix(out, matrix, off, off);
+
+    return out;
+}
+
+
 
 /*
  * MATRIX & VECTOR OPERATIONS

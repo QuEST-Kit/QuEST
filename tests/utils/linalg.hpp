@@ -52,6 +52,7 @@ qmatrix getKroneckerProduct(vector<qmatrix> matrices);
 qmatrix getProjector(int outcome);
 qmatrix getProjector(vector<int> targets, vector<int> outcomes, int numQubits);
 qmatrix getPartialTrace(qmatrix matrix, vector<int> targets);
+qmatrix getControlledMatrix(qmatrix matrix, int numCtrls);
 
 bool isCompletelyPositiveTracePreserving(vector<qmatrix>);
 
