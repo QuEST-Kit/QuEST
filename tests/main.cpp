@@ -8,8 +8,9 @@
  * @defgroup testutils Utilities
  * @ingroup tests
  * @brief
- * Testing utilities which validate QuEST's correctness by 
- * using un-optimised reference linear-algebra implementations.
+ * Testing utilities which include un-optimised, reference
+ * implementations of common quantum simulation routines 
+ * using serial linear algebra. 
  * 
  * @defgroup unittests Unit tests
  * @ingroup tests
