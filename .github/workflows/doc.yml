@@ -32,22 +32,23 @@ jobs:
 
     steps:
       - name: obtain copy of repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
 
       - name: run doxygen to generate doc, outputting to Doxygen_doc/html
-        uses: mattnotmitt/doxygen-action@v1.9.5
+        uses: mattnotmitt/doxygen-action@v1.12.0
         with:
           doxyfile-path: doxyconfig/config
+          enable-latex: true
 
       - name: Setup Pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@v5
         
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           # Upload Doxygen_doc/html
           path: ./Doxygen_doc/html
           
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
