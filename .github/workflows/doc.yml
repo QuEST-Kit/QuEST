@@ -12,11 +12,10 @@ permissions:
   id-token: write
 
 
-# DEBUG: testing didn't break
 on:
   push:
     branches:
-      - doc-ci
+      - master
   workflow_dispatch:
 
 
