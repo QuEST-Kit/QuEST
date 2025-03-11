@@ -4,6 +4,10 @@
  * (like qvector and qmatrix).
  *
  * @author Tyson Jones
+ * 
+ * @defgroup testutilsconvert Convert
+ * @ingroup testutils
+ * @{
  */
 
 #ifndef CONVERT_HPP
@@ -28,3 +32,5 @@ qmatrix getMatrix(PauliStrSum sum, int numQubits);
 
 
 #endif // CONVERT_HPP
+
+/** @} (end defgroup) */

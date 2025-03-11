@@ -55,6 +55,8 @@ int util_getRankWithBraQubitsFlipped(vector<int> ketQubits, Qureg qureg);
 
 vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg);
 
+vector<int> util_getNonTargetedQubits(int* targets, int numTargets, int numQubits);
+
 vector<int> util_getVector(int* qubits, int numQubits);
 
 vector<int> util_getConcatenated(vector<int> list1, vector<int> list2);

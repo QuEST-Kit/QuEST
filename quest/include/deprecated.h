@@ -11,6 +11,8 @@
  * attemptedly reported by this header during compilation.
  * 
  * @author Tyson Jones
+ * 
+ * (excluded from doxygen doc)
  */
 
 #ifndef DEPRECATED_H

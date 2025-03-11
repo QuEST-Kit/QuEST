@@ -23,6 +23,8 @@
  * from the C API functions herein defined.
  * 
  * @author Tyson Jones
+ * 
+ * (no doxygen doc)
  */
 
 #ifndef WRAPPERS_H

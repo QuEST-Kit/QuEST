@@ -12,6 +12,10 @@
  * @author Tyson Jones
  * @author Richard Meister (aided in design)
  * @author Erich Essmann (aided in design, patched on MSVC)
+ * 
+ * @defgroup matrices Matrices
+ * @ingroup api
+ * @{
  */
 
 #ifndef MATRICES_H
@@ -293,12 +297,14 @@ static inline DiagMatr2 getDiagMatr2(qcomp* in) {
 // define the array overloads with a distinct name from the base
 // C function - we will alias it with getCompMatr() using Generics
 
+/// @private
 static inline CompMatr1 _getCompMatr1FromArr(qcomp in[2][2]) {
 
     qcomp* rowPtrs[] = {in[0], in[1]};
     return getCompMatr1(rowPtrs);
 }
 
+/// @private
 static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
 
     qcomp* rowPtrs[] = {in[0], in[1], in[2], in[3]};
@@ -530,10 +536,12 @@ extern "C" {
 
 
     // C must validate struct fields before accessing passed 2D arrays to avoid seg-faults
+    /// @private
     extern void _validateParamsToSetCompMatrFromArr(CompMatr matr);
 
 
-     // static inline to avoid header-symbol duplication
+    // static inline to avoid header-symbol duplication
+    /// @private
     static inline void _setCompMatrFromArr(CompMatr matr, qcomp arr[matr.numRows][matr.numRows]) {
         _validateParamsToSetCompMatrFromArr(matr);
 
@@ -607,21 +615,27 @@ extern "C" {
 
 
     // the C validators check 'numQb' is consistent with the struct, but cannot check the user's passed literal sizes
+    /// @private
     extern void _validateParamsToSetInlineCompMatr(CompMatr matr, int numQb);
+    /// @private
     extern void _validateParamsToSetInlineDiagMatr(DiagMatr matr, int numQb);
+    /// @private
     extern void _validateParamsToSetInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems);
 
 
+    /// @private
     static inline void _setInlineCompMatr(CompMatr matr, int numQb, qcomp elems[1<<numQb][1<<numQb]) {
         _validateParamsToSetInlineCompMatr(matr, numQb);
         _setCompMatrFromArr(matr, elems); // validation gauranteed to pass
     }
 
+    /// @private
     static inline void _setInlineDiagMatr(DiagMatr matr, int numQb, qcomp elems[1<<numQb]) {
         _validateParamsToSetInlineDiagMatr(matr, numQb);
         setDiagMatr(matr, elems); // 1D array decays into pointer, validation gauranteed to pass
     }
 
+    /// @private
     static inline void _setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, qcomp elems[numElems]) {
         _validateParamsToSetInlineFullStateDiagMatr(matr, startInd, numElems);
         setFullStateDiagMatr(matr, startInd, elems, numElems); // 1D array decays into pointer, validation gauranteed to pass
@@ -655,7 +669,9 @@ extern "C" {
     // _setCompMatrFromArr() was not defined, so we cannot define setInlineCompMatr();
     // MSVC C users simply miss out on this convenience function. Take it up with Bill!
 
+    /// @private
     extern void _validateParamsToSetInlineDiagMatr(DiagMatr matr, int numQb);
+    /// @private
     extern void _validateParamsToSetInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems);
 
     #define setInlineDiagMatr(matr, numQb, ...) \
@@ -707,10 +723,13 @@ extern "C" {
     // can wrap the macro invocation with another function call.
 
 
+    /// @private
     extern void _validateParamsToCreateInlineCompMatr(int numQb);
+    /// @private
     extern void _validateParamsToCreateInlineDiagMatr(int numQb);
 
 
+    /// @private
     static inline CompMatr _createInlineCompMatr(int numQb, qcomp elems[1<<numQb][1<<numQb]) {
         _validateParamsToCreateInlineCompMatr(numQb);
         CompMatr out = createCompMatr(numQb); // malloc failures will report 'createCompMatr', rather than 'inline' version. Alas!
@@ -718,6 +737,7 @@ extern "C" {
         return out;
     }
 
+    /// @private
     static inline DiagMatr _createInlineDiagMatr(int numQb, qcomp elems[1<<numQb]) {
         _validateParamsToCreateInlineDiagMatr(numQb);
         DiagMatr out = createDiagMatr(numQb); // malloc failures will report 'createCompMatr', rather than 'inline' version. Alas!
@@ -803,3 +823,5 @@ extern "C" {
 
 
 #endif // MATRICES_H
+
+/** @} (end doxygen defgroup) */

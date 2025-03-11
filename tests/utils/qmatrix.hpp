@@ -4,6 +4,10 @@
  * as a reference proxy to a quantum density matrix.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup testutilsqmatrix qmatrix
+ * @ingroup testutils
+ * @{
  */
 
 #ifndef QMATRIX_HPP
@@ -52,3 +56,5 @@ qvector getDiagonals(qmatrix m);
 
 
 #endif // QMATRIX_HPP
+
+/** @} (end defgroup) */

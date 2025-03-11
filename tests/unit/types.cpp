@@ -2,6 +2,9 @@
  * Unit tests of the types module.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup unittypes Types unit tests
+ * @ingroup unittests
  */
 
 #include "quest/include/quest.h"
@@ -17,6 +20,29 @@
 #include "tests/utils/lists.hpp"
 #include "tests/utils/macros.hpp"
 #include "tests/utils/random.hpp"
+
+
+
+/*
+ * UTILITIES
+ */
+
+#define TEST_CATEGORY "[unit][types]"
+
+
+
+/** 
+ * TESTS
+ * 
+ * @ingroup unittypes
+ * @{
+ */
+
+TEST_CASE( "placeholder", TEST_CATEGORY) {
+
+}
+
+/** @} (end defgroup) */
 
 
 

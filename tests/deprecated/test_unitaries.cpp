@@ -51,7 +51,7 @@ using Catch::Matchers::ContainsSubstring;
 
 
 /** @sa compactUnitary
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "compactUnitary", "[unitaries]" ) {
@@ -104,7 +104,7 @@ TEST_CASE( "compactUnitary", "[unitaries]" ) {
 
 
 /** @sa diagonalUnitary
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
@@ -232,7 +232,7 @@ TEST_CASE( "diagonalUnitary", "[unitaries]" ) {
 
 
 /** @sa controlledCompactUnitary
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
@@ -292,7 +292,7 @@ TEST_CASE( "controlledCompactUnitary", "[unitaries]" ) {
 
 
 /** @sa controlledMultiQubitUnitary
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
@@ -441,7 +441,7 @@ TEST_CASE( "controlledMultiQubitUnitary", "[unitaries]" ) {
 
 
 /** @sa controlledNot
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE(  "controlledNot", "[unitaries]" ) {
@@ -487,7 +487,7 @@ TEST_CASE(  "controlledNot", "[unitaries]" ) {
 
 
 /** @sa controlledPauliY
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE(  "controlledPauliY", "[unitaries]" ) {
@@ -533,7 +533,7 @@ TEST_CASE(  "controlledPauliY", "[unitaries]" ) {
 
 
 /** @sa controlledPhaseFlip
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "controlledPhaseFlip", "[unitaries]" ) {
@@ -582,7 +582,7 @@ TEST_CASE( "controlledPhaseFlip", "[unitaries]" ) {
 
 
 /** @sa controlledPhaseShift
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "controlledPhaseShift", "[unitaries]" ) {
@@ -631,7 +631,7 @@ TEST_CASE( "controlledPhaseShift", "[unitaries]" ) {
 
 
 /** @sa controlledRotateAroundAxis
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "controlledRotateAroundAxis", "[unitaries]" ) {
@@ -696,7 +696,7 @@ TEST_CASE( "controlledRotateAroundAxis", "[unitaries]" ) {
 
 
 /** @sa controlledRotateX
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "controlledRotateX", "[unitaries]" ) {
@@ -745,7 +745,7 @@ TEST_CASE( "controlledRotateX", "[unitaries]" ) {
 
 
 /** @sa controlledRotateY
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "controlledRotateY", "[unitaries]" ) {
@@ -792,7 +792,7 @@ TEST_CASE( "controlledRotateY", "[unitaries]" ) {
 
 
 /** @sa controlledRotateZ
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "controlledRotateZ", "[unitaries]" ) {
@@ -839,7 +839,7 @@ TEST_CASE( "controlledRotateZ", "[unitaries]" ) {
 
 
 /** @sa controlledTwoQubitUnitary
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "controlledTwoQubitUnitary", "[unitaries]" ) {
@@ -919,7 +919,7 @@ TEST_CASE( "controlledTwoQubitUnitary", "[unitaries]" ) {
 
 
 /** @sa controlledUnitary
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "controlledUnitary", "[unitaries]" ) {
@@ -971,7 +971,7 @@ TEST_CASE( "controlledUnitary", "[unitaries]" ) {
 
 
 /** @sa hadamard
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "hadamard", "[unitaries]" ) {
@@ -1011,7 +1011,7 @@ TEST_CASE( "hadamard", "[unitaries]" ) {
 
 
 /** @sa multiControlledMultiQubitNot
- * @ingroup unittest
+ * @ingroup deprecatedtests
  * @author Tyson Jones
  */
 TEST_CASE( "multiControlledMultiQubitNot", "[unitaries]" ) {
@@ -1110,7 +1110,7 @@ TEST_CASE( "multiControlledMultiQubitNot", "[unitaries]" ) {
 
 
 /** @sa multiControlledMultiQubitUnitary
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
@@ -1287,7 +1287,7 @@ TEST_CASE( "multiControlledMultiQubitUnitary", "[unitaries]" ) {
 
 
 /** @sa multiControlledMultiRotatePauli
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "multiControlledMultiRotatePauli", "[unitaries]" ) {
@@ -1469,7 +1469,7 @@ TEST_CASE( "multiControlledMultiRotatePauli", "[unitaries]" ) {
 
 
 /** @sa multiControlledMultiRotateZ
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "multiControlledMultiRotateZ", "[unitaries]" ) {
@@ -1589,7 +1589,7 @@ TEST_CASE( "multiControlledMultiRotateZ", "[unitaries]" ) {
 
 
 /** @sa multiControlledPhaseFlip
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "multiControlledPhaseFlip", "[unitaries]" ) {
@@ -1648,7 +1648,7 @@ TEST_CASE( "multiControlledPhaseFlip", "[unitaries]" ) {
 
 
 /** @sa multiControlledPhaseShift
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "multiControlledPhaseShift", "[unitaries]" ) {
@@ -1706,7 +1706,7 @@ TEST_CASE( "multiControlledPhaseShift", "[unitaries]" ) {
 
 
 /** @sa multiControlledTwoQubitUnitary
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "multiControlledTwoQubitUnitary", "[unitaries]" ) {
@@ -1815,7 +1815,7 @@ TEST_CASE( "multiControlledTwoQubitUnitary", "[unitaries]" ) {
 
 
 /** @sa multiControlledUnitary
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "multiControlledUnitary", "[unitaries]" ) {
@@ -1887,7 +1887,7 @@ TEST_CASE( "multiControlledUnitary", "[unitaries]" ) {
 
 
 /** @sa multiQubitNot
- * @ingroup unittest
+ * @ingroup deprecatedtests
  * @author Tyson Jones
  */
 TEST_CASE( "multiQubitNot", "[unitaries]" ) {
@@ -1954,7 +1954,7 @@ TEST_CASE( "multiQubitNot", "[unitaries]" ) {
 
 
 /** @sa multiQubitUnitary
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
@@ -2079,7 +2079,7 @@ TEST_CASE( "multiQubitUnitary", "[unitaries]" ) {
 
 
 /** @sa multiRotatePauli
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
@@ -2190,7 +2190,7 @@ TEST_CASE( "multiRotatePauli", "[unitaries]" ) {
 
 
 /** @sa multiRotateZ
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "multiRotateZ", "[unitaries]" ) {
@@ -2263,7 +2263,7 @@ TEST_CASE( "multiRotateZ", "[unitaries]" ) {
 
 
 /** @sa multiStateControlledUnitary
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "multiStateControlledUnitary", "[unitaries]" ) {
@@ -2373,7 +2373,7 @@ TEST_CASE( "multiStateControlledUnitary", "[unitaries]" ) {
 
 
 /** @sa pauliX
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "pauliX", "[unitaries]" ) {
@@ -2412,7 +2412,7 @@ TEST_CASE( "pauliX", "[unitaries]" ) {
 
 
 /** @sa pauliY
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "pauliY", "[unitaries]" ) {
@@ -2451,7 +2451,7 @@ TEST_CASE( "pauliY", "[unitaries]" ) {
 
 
 /** @sa pauliZ
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "pauliZ", "[unitaries]" ) {
@@ -2490,7 +2490,7 @@ TEST_CASE( "pauliZ", "[unitaries]" ) {
 
 
 /** @sa phaseShift
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "phaseShift", "[unitaries]" ) {
@@ -2530,7 +2530,7 @@ TEST_CASE( "phaseShift", "[unitaries]" ) {
 
 
 /** @sa rotateAroundAxis
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
@@ -2591,7 +2591,7 @@ TEST_CASE( "rotateAroundAxis", "[unitaries]" ) {
 
 
 /** @sa rotateX
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "rotateX", "[unitaries]" ) {
@@ -2633,7 +2633,7 @@ TEST_CASE( "rotateX", "[unitaries]" ) {
 
 
 /** @sa rotateY
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "rotateY", "[unitaries]" ) {
@@ -2673,7 +2673,7 @@ TEST_CASE( "rotateY", "[unitaries]" ) {
 
 
 /** @sa rotateZ
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "rotateZ", "[unitaries]" ) {
@@ -2713,7 +2713,7 @@ TEST_CASE( "rotateZ", "[unitaries]" ) {
 
 
 /** @sa sGate
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "sGate", "[unitaries]" ) {
@@ -2752,7 +2752,7 @@ TEST_CASE( "sGate", "[unitaries]" ) {
 
 
 /** @sa sqrtSwapGate
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "sqrtSwapGate", "[unitaries]" ) {
@@ -2802,7 +2802,7 @@ TEST_CASE( "sqrtSwapGate", "[unitaries]" ) {
 
 
 /** @sa swapGate
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "swapGate", "[unitaries]" ) {
@@ -2850,7 +2850,7 @@ TEST_CASE( "swapGate", "[unitaries]" ) {
 
 
 /** @sa tGate
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "tGate", "[unitaries]" ) {
@@ -2889,7 +2889,7 @@ TEST_CASE( "tGate", "[unitaries]" ) {
 
 
 /** @sa twoQubitUnitary
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "twoQubitUnitary", "[unitaries]" ) {
@@ -2956,7 +2956,7 @@ TEST_CASE( "twoQubitUnitary", "[unitaries]" ) {
 
 
 /** @sa unitary
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "unitary", "[unitaries]" ) {

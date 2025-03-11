@@ -3,6 +3,10 @@
  * which are instantiated as density matrices.
  * 
  * @author Tyson Jones
+ * 
+ * @defgroup decoherence Decoherence
+ * @ingroup api
+ * @{
  */
 
 #ifndef DECOHERENCE_H
@@ -41,3 +45,5 @@ void mixKrausMap(Qureg qureg, int* qubits, int numQubits, KrausMap map);
 #endif
 
 #endif // DECOHERENCE_H
+
+/** @} (end doxygen defgroup) */

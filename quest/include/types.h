@@ -9,6 +9,10 @@
  * 
  * @author Tyson Jones
  * @author Ali Rezaei (aided in design)
+ *
+ * @defgroup types Types
+ * @ingroup api
+ * @{
  */
 
 #ifndef TYPES_H
@@ -275,3 +279,5 @@ extern "C" {
 
 
 #endif // TYPES_H
+
+/** @} (end doxygen defgroup) */

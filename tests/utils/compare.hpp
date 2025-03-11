@@ -4,6 +4,10 @@
  * Quregs modified by the API to qvector qmatrix references.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup testutilscompare Compare
+ * @ingroup testutils
+ * @{
  */
 
 #ifndef COMPARE_HPP
@@ -33,3 +37,5 @@ void REQUIRE_AGREE( vector<qreal> apiList, vector<qreal> refList );
 
 
 #endif // COMPARE_HPP
+
+/** @} (end defgroup) */
