@@ -57,7 +57,7 @@ __forceinline__ __device__ qindex getThreadInd() {
 
 __host__ qindex getNumBlocks(qindex numThreads) {
 
-    // TODO:
+    // @todo
     // improve this with cudaOccupancyMaxPotentialBlockSize(),
     // making it function specific
 
@@ -425,7 +425,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // TODO:
+    // @todo
     // we have implemented a custom kernel, rather than a thrust
     // functor, for efficient treatment of control qubits (even
     // when not exploiting the compile-time parameter NumCtrls).
@@ -464,7 +464,7 @@ __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // TODO:
+    // @todo
     // we have implemented a custom kernel, rather than a thrust
     // functor, for efficient treatment of control qubits (even
     // when not exploiting the compile-time parameter NumCtrls).
@@ -505,7 +505,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // TODO:
+    // @todo
     // we have implemented a custom kernel, rather than a thrust
     // functor, for efficient treatment of control qubits (even
     // when not exploiting the compile-time parameter NumCtrls).
@@ -745,7 +745,7 @@ __global__ void kernel_densmatr_oneQubitDephasing_subA(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // TODO:
+    // @todo
     // each kernel modifies two amps strided by 2^qureg.numQubits, which is terrible!
     // we can easy template this kernel to modify only 1 thread-local amp, and invoke
     // two kernels at launch. Benchmark this and update
@@ -765,7 +765,7 @@ __global__ void kernel_densmatr_oneQubitDephasing_subB(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // TODO:
+    // @todo
     // this extremely simple kernel can be definitely
     // be replaced with a Thrust invocation, to reduce
     // boilerplate
@@ -892,7 +892,7 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subC(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // TODO:
+    // @todo
     // this kernel modifies every amplitude, but I think only
     // 25% are actually being changed; fix this by dispatching
     // 25% fewer kernels which go straight to the modified amps
@@ -1044,7 +1044,7 @@ __global__ void kernel_densmatr_oneQubitDamping_subB(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // TODO:
+    // @todo
     // this extremely simple kernel can be definitely
     // be replaced with a Thrust invocation, to reduce
     // boilerplate
@@ -1061,7 +1061,7 @@ __global__ void kernel_densmatr_oneQubitDamping_subC(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // TODO:
+    // @todo
     // this extremely simple kernel can be definitely
     // be replaced with a Thrust invocation, to reduce
     // boilerplate
@@ -1104,7 +1104,7 @@ __global__ void kernel_densmatr_partialTrace_sub(
     int numAllTargs = 2*numTargPairs;
     qindex numIts = powerOf2(numTargPairs);
 
-    // TODO:
+    // @todo
     // this implementation assumes that the number of amps in outQureg equals or exceeds the 
     // number of CUDA cores, which may not be true when tracing out almost all qubits. We 
     // should change the parallelisation axis in this scenario, or preclude it with validation!
@@ -1144,7 +1144,7 @@ __global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // TODO:
+    // @todo
     // it might be possible to replace this custom kernel 
     // with an invocation of Thrust's reduce_by_key(),
     // where the key is j as computed below. Look into

@@ -41,7 +41,7 @@ using std::vector;
 
 
 /*
- * TODO:
+ * @todo
  *   Invalid input error messages are currently limited to containing only integer
  *   variables, whereas the ability to embed floats and strings would be useful.
  */
@@ -603,7 +603,7 @@ namespace report {
     string NEW_PAULI_STR_NUM_PAULIS_EXCEEDS_TYPE =
         "Cannot make a Pauli string of ${NUM_PAULIS} Paulis since this exceeds the maximum of ${MAX_PAULIS} imposed by the typing of PauliStr's fields.";
     
-    // TODO: replace BAD_CHAR ascii code with actual character, once tokenSubs is generalised to any-type
+    // @todo replace BAD_CHAR ascii code with actual character, once tokenSubs is generalised to any-type
     string NEW_PAULI_STR_UNRECOGNISED_PAULI_CHAR = 
         "Given an unrecognised Pauli character (ASCII code ${BAD_CHAR}) at index ${CHAR_IND}. Each character must be one of I X Y Z (or lower case), or equivalently 0 1 2 3'.";
 
@@ -1746,7 +1746,7 @@ void assertMatrixFitsInCpuMem(int numQubits, bool isDense, int isDistrib, int nu
         vars["${NUM_QB_MINUS_LOG_NODES}"] = numQubits - logBase2(numMatrNodes);
     }
     
-    // TODO:
+    // @todo
     // seek expensive node consensus in case of heterogeneous RAM - alas this may induce
     // unnecessary slowdown (due to sync and broadcast) in applications allocating many
     // small matrices in the heap. If this turns out to be the case, we could opt to
@@ -1802,7 +1802,7 @@ void assertMatrixFitsInGpuMem(int numQubits, bool isDense, int isDistrib, int is
         vars["${NUM_QB_MINUS_LOG_NODES}"] = numQubits - logBase2(numMatrNodes);
     }
     
-    // TODO:
+    // @todo
     // seek expensive node consensus in case of heterogeneous GPU hardware - alas this may 
     // induce unnecessary slowdown (due to sync and broadcast) in applications allocating many
     // small matrices in the GPU. If this turns out to be the case, we could opt to
@@ -2393,7 +2393,7 @@ void assertSuperOpFitsInCpuMem(int numQubits, bool isInKrausMap, const char* cal
         {"${QCOMP_BYTES}", sizeof(qcomp)},
         {"${RAM_SIZE}",    memPerNode}};
     
-    // TODO:
+    // @todo
     // seek expensive node consensus in case of heterogeneous RAM - alas this may induce
     // unnecessary slowdown (due to sync and broadcast) in applications allocating many
     // small matrices in the heap. If this turns out to be the case, we could opt to
@@ -2424,7 +2424,7 @@ void assertSuperOpFitsInGpuMem(int numQubits, int isEnvGpuAccel, bool isInKrausM
         report::NEW_KRAUS_MAPS_SUPER_OP_CANNOT_FIT_INTO_GPU_MEM:
         report::NEW_SUPER_OP_CANNOT_FIT_INTO_GPU_MEM;
 
-    // TODO:
+    // @todo
     // seek expensive node consensus in case of heterogeneous GPU hardware - alas this may 
     // induce unnecessary slowdown (due to sync and broadcast) in applications allocating many
     // small matrices in the GPU. If this turns out to be the case, we could opt to
@@ -2849,7 +2849,7 @@ void assertRecognisedNewPaulis(const char* paulis, int numPaulis, const char* ca
 
     for (int i=0; i<numPaulis; i++) {
 
-        // TODO: we can only display the ascii code of unrecognised characters,
+        // @todo we can only display the ascii code of unrecognised characters,
         // because tokenSubs only accepts integers (not chars/substrings). Fix this!
         char ch = paulis[i];
         int ascii = (int) ch;
@@ -3000,7 +3000,7 @@ void validate_newPauliStrSumAllocs(PauliStrSum sum, qindex numBytesStrings, qind
 
 void validate_parsedPauliStrSumLineIsInterpretable(bool isInterpretable, string line, qindex lineIndex, const char* caller) {
 
-    // TODO: we cannot yet report 'line' because tokenSubs so far only accepts integers :(
+    // @todo we cannot yet report 'line' because tokenSubs so far only accepts integers :(
 
     tokenSubs vars = {{"${LINE_NUMBER}", lineIndex + 1}}; // line numbers begin at 1
     assertThat(isInterpretable, report::PARSED_PAULI_STR_SUM_UNINTERPRETABLE_LINE, vars, caller);
@@ -3008,7 +3008,7 @@ void validate_parsedPauliStrSumLineIsInterpretable(bool isInterpretable, string 
 
 void validate_parsedPauliStrSumLineHasConsistentNumPaulis(int numPaulis, int numLinePaulis, string line, qindex lineIndex, const char* caller) {
 
-    // TODO: we cannot yet report 'line' because tokenSubs so far only accepts integers :(
+    // @todo we cannot yet report 'line' because tokenSubs so far only accepts integers :(
 
     tokenSubs vars = {
         {"${NUM_PAULIS}",      numPaulis},
@@ -3019,7 +3019,7 @@ void validate_parsedPauliStrSumLineHasConsistentNumPaulis(int numPaulis, int num
 
 void validate_parsedPauliStrSumCoeffIsValid(bool isCoeffValid, string line, qindex lineIndex, const char* caller) {
 
-    // TODO: we cannot yet report 'line' because tokenSubs so far only accepts integers :(
+    // @todo we cannot yet report 'line' because tokenSubs so far only accepts integers :(
 
     tokenSubs vars = {{"${LINE_NUMBER}", lineIndex + 1}}; // lines begin at 1
     assertThat(isCoeffValid, report::PARSED_PAULI_STR_SUM_COEFF_IS_INVALID, vars, caller);
@@ -3384,7 +3384,7 @@ void validate_measurementOutcomeProbNotZero(int outcome, qreal prob, const char*
     if (isNumericalValidationDisabled())
         return;
 
-    // TODO: report 'prob' once validation reporting can handle floats
+    // @todo report 'prob' once validation reporting can handle floats
 
     assertThat(prob >= global_validationEpsilon, report::ONE_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY, {{"${OUTCOME}", outcome}}, caller);
 }
@@ -3394,7 +3394,7 @@ void validate_measurementOutcomesProbNotZero(int* outcomes, int numQubits, qreal
     if (isNumericalValidationDisabled())
         return;
 
-    // TODO: report 'prob' and 'outcomes' (as binary sequence) once validation reporting can handle floats
+    // @todo report 'prob' and 'outcomes' (as binary sequence) once validation reporting can handle floats
     qindex outcomeValue = getIntegerFromBits(outcomes, numQubits);
 
     assertThat(prob >= global_validationEpsilon, report::MANY_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY, {{"${OUTCOME_VALUE}", outcomeValue}}, caller);
@@ -3476,14 +3476,14 @@ void validate_trotterParams(Qureg qureg, int order, int reps, const char* caller
 
 void validate_probability(qreal prob, const char* caller) {
 
-    // TODO: report 'prob' once validation reporting can handle floats
+    // @todo report 'prob' once validation reporting can handle floats
 
     assertThat(prob >= 0 && prob <= 1, report::INVALID_PROBABILITY, caller);
 }
 
 void validate_oneQubitDepashingProb(qreal prob, const char* caller) {
 
-    // TODO: report 'prob' once validation reporting can handle floats
+    // @todo report 'prob' once validation reporting can handle floats
 
     validate_probability(prob, caller);
     assertThat(
@@ -3493,7 +3493,7 @@ void validate_oneQubitDepashingProb(qreal prob, const char* caller) {
 
 void validate_twoQubitDepashingProb(qreal prob, const char* caller) {
 
-    // TODO: report 'prob' once validation reporting can handle floats
+    // @todo report 'prob' once validation reporting can handle floats
 
     validate_probability(prob, caller);
     assertThat(
@@ -3503,7 +3503,7 @@ void validate_twoQubitDepashingProb(qreal prob, const char* caller) {
 
 void validate_oneQubitDepolarisingProb(qreal prob, const char* caller) {
 
-    // TODO: report 'prob' once validation reporting can handle floats
+    // @todo report 'prob' once validation reporting can handle floats
 
     validate_probability(prob, caller);
     assertThat(
@@ -3513,7 +3513,7 @@ void validate_oneQubitDepolarisingProb(qreal prob, const char* caller) {
 
 void validate_twoQubitDepolarisingProb(qreal prob, const char* caller) {
 
-    // TODO: report 'prob' once validation reporting can handle floats
+    // @todo report 'prob' once validation reporting can handle floats
 
     validate_probability(prob, caller);
     assertThat(
@@ -3523,7 +3523,7 @@ void validate_twoQubitDepolarisingProb(qreal prob, const char* caller) {
 
 void validate_oneQubitDampingProb(qreal prob, const char* caller) {
 
-    // TODO: report 'prob' once validation reporting can handle floats
+    // @todo report 'prob' once validation reporting can handle floats
 
     // permit one-qubit amplitude damping of any valid probability, 
     // so that it can surpass maximal mixing and induce purity
@@ -3536,7 +3536,7 @@ void validate_oneQubitPauliChannelProbs(qreal pX, qreal pY, qreal pZ, const char
     validate_probability(pY, caller);
     validate_probability(pZ, caller);
 
-    // TODO: report 'prob' once validation reporting can handle floats
+    // @todo report 'prob' once validation reporting can handle floats
 
     qreal pXYZ = pX + pY + pZ;
     assertThat(pXYZ <= 1, report::ONE_QUBIT_PAULI_CHANNEL_TOTAL_PROBS_EXCEED_ONE, caller);
@@ -3709,7 +3709,7 @@ void validate_fidelityIsReal(qcomp fid, const char* caller) {
     if (isNumericalValidationDisabled())
         return;
 
-    // TODO: include imag(fid) in error message when non-integers are supported
+    // @todo include imag(fid) in error message when non-integers are supported
 
     assertThat(abs(imag(fid)) < global_validationEpsilon, report::CALC_FIDELITY_NOT_APPROX_REAL, caller);
 }
@@ -3719,7 +3719,7 @@ void validate_buresDistanceInnerProdIsNormalised(qreal mag, const char* caller) 
     if (isNumericalValidationDisabled())
         return;
 
-    // TODO: include mag in error message when non-integers are supported
+    // @todo include mag in error message when non-integers are supported
 
     assertThat(mag <= 1 + global_validationEpsilon, report::CALC_BURES_DISTANCE_MAG_EXCEEDED_ONE, caller);
 }
@@ -3729,7 +3729,7 @@ void validate_purifiedDistanceIsNormalised(qcomp fid, const char* caller) {
     if (isNumericalValidationDisabled())
         return;
 
-    // TODO: include scalars in error message when non-integers are supported
+    // @todo include scalars in error message when non-integers are supported
     
     assertThat(abs(imag(fid)) < global_validationEpsilon, report::CALC_PURIFIED_DISTANCE_NOT_APPROX_REAL, caller);
     assertThat(real(fid) <= 1 + global_validationEpsilon, report::CALC_PURIFIED_DISTANCE_REAL_EXCEEDED_ONE, caller);
@@ -3746,7 +3746,7 @@ void validate_quregRenormProbIsNotZero(qreal prob, const char* caller) {
     if (isNumericalValidationDisabled())
         return;
 
-    // TODO: include 'prob' in error message when non-integers are supported
+    // @todo include 'prob' in error message when non-integers are supported
 
     assertThat(prob > global_validationEpsilon, report::QUREG_RENORM_PROB_IS_ZERO, caller);
 }
@@ -3767,13 +3767,13 @@ void validate_expecPauliStrValueIsReal(qcomp value, bool isDensMatr, const char*
     if (isNumericalValidationDisabled())
         return;
 
-    // TODO: include imag(value) in error message when non-integers are supported
+    // @todo include imag(value) in error message when non-integers are supported
 
     string msg = (isDensMatr)?
         report::CALC_DENSMATR_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL:
         report::CALC_STATEVEC_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL;
 
-    // TODO:
+    // @todo
     // comparing the output of these reduction-type functions to global_validationEpsilon
     // is pretty strict since they can result from an exponential-number of summed terms,
     // so should be much much less accurate than direct user inputs validated with the
@@ -3865,6 +3865,6 @@ void validate_quregCanBeSetToReducedDensMatr(Qureg out, Qureg in, int numTraceQu
 
 void validate_canReadFile(string fn, const char* caller) {
 
-    // TODO: embed filename into error message when tokenSubs is updated to permit strings
+    // @todo embed filename into error message when tokenSubs is updated to permit strings
     assertThat(parser_canReadFile(fn), report::CANNOT_READ_FILE, caller);
 }

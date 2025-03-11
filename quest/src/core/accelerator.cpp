@@ -107,7 +107,7 @@ using std::min;
         GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs ))
 
 
-// TODO:
+// @todo
 // GET_CPU_OR_GPU_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS,
 // as defined below, is only ever called by used by anyCtrlAnyTargDenseMatr,
 // which only ever receives numTargs>=3 (due to accelerator redirecting 
@@ -142,7 +142,7 @@ using std::min;
             GET_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs, false ) ) )
 
 
-// TODO:
+// @todo
 // This has gotten a bit ridiculous. Is there a way to use (likely)
 // more abominable pre-processor mischief which negates the need
 // to repeat the entire macro(s) when the number of templated

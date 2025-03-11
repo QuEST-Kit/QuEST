@@ -6,7 +6,7 @@
  * @author Tyson Jones
  * 
  * @defgroup measure Measure
- * @ingroup utils
+ * @ingroup testutils
  * @{
  */
 

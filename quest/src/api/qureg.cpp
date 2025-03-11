@@ -351,7 +351,7 @@ void destroyQureg(Qureg qureg) {
 void reportQuregParams(Qureg qureg) {
     validate_quregFields(qureg, __func__);
 
-    // TODO: add function to write this output to file (useful for HPC debugging)
+    // @todo add function to write this output to file (useful for HPC debugging)
 
     // printer routines will consult env rank to avoid duplicate printing
     print("Qureg:");
@@ -369,7 +369,7 @@ void reportQureg(Qureg qureg) {
     // because it occupies distinct memory spaces, confusing accounting
     size_t localMem = mem_getLocalQuregMemoryRequired(qureg.numAmpsPerNode);
     if (qureg.isDistributed)
-        localMem *= 2; // include buffer. TODO: will this ever overflow?!?!
+        localMem *= 2; // include buffer. @todo will this ever overflow?!?!
     
     // include struct size (expected negligibly tiny)
     localMem += sizeof(qureg);

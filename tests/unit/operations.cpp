@@ -525,7 +525,7 @@ qmatrix getReferenceMatrix(auto matrixRefGen, vector<int> targs, auto additional
  */
 
 
-// TODO: surely this should live somewhere else,
+// @todo surely this should live somewhere else,
 // and/or re-use printer_ functions as much as possible
 
 std::string toString(vector<int> list) {
@@ -686,7 +686,7 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
         setValidationEpsilonToDefault();
     }
 
-    // TODO:
+    // @todo
     // input validation!
 }
 
@@ -782,7 +782,7 @@ TEST_CASE( "applyMultiQubitPhaseShift", TEST_CATEGORY ) { testOperation<zero,any
 
 
 /*
- * TODO:
+ * @todo
  * UNTESTED FUNCTIONS BELOW
  */
 

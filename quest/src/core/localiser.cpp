@@ -399,7 +399,7 @@ void localiser_statevec_getAmps(qcomp* outAmps, Qureg qureg, qindex globalStartI
 void localiser_densmatr_getAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
     assert_localiserGivenDensMatr(qureg);
 
-    // TODO: improve the performance!
+    // @todo improve the performance!
     // this function simply serially invokes localiser_statevec_getAmps() upon 
     // every indicated column, for simplicity, and since we believe this function
     // will only ever be called upon tractably small sub-matrices. After all, the
@@ -484,7 +484,7 @@ void localiser_statevec_setAmps(qcomp* inAmps, Qureg qureg, qindex globalStartIn
 void localiser_densmatr_setAmps(qcomp** inAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
     assert_localiserGivenDensMatr(qureg);
 
-    // TODO: improve the performance!
+    // @todo improve the performance!
     // this function works by simply enumerating each column of inAmps
     // (which requires explicit preparation, because inAmps is passed
     // column-wise, rather than row-wise), passing each to the above
@@ -594,7 +594,7 @@ void localiser_densmatr_initArbitraryPureState(Qureg qureg, qcomp* amps) {
 
 void localiser_densmatr_initArbitraryMixedState(Qureg qureg, qcomp** amps) {
 
-    // TODO:
+    // @todo
     // the current invoked implementation of setAmps() is extraordinarily
     // inefficient in the full-Qureg regime. Fix setAmps(), then update this!
 
@@ -858,7 +858,7 @@ void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, vector<int> ctrls, vect
     // performing a sequence of SWAPs to reorder qubits, or move them into suffix.
     // the SWAPs act on unique qubit pairs and so commute.
 
-    // TODO:
+    // @todo
     //   - the sequence of pair-wise full-swaps should be more efficient as a
     //     "single" sequence of smaller messages sending amps directly to their
     //     final destination node. This could use a new "multiSwap" function.
@@ -964,7 +964,7 @@ void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ct
     // only unmoved ctrls can be applied to the swaps, to accelerate them
     auto [unmovedCtrls, unmovedCtrlStates] = getNonSwappedCtrlsAndStates(ctrls, ctrlStates, newCtrls); 
 
-    // TODO:
+    // @todo
     // DEBUG:
     // above, we track which control qubits are un-targeted by the SWAPs; such controls can be
     // seen as 'meta' to the entire operation, and so SHOULD be passable to the SWAPs below in
@@ -1318,7 +1318,7 @@ void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vecto
 
 void localiser_statevec_setQuregToSuperposition(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2) {
 
-    // TODO:
+    // @todo
     // this function requires (as validated) distributions are identical.
     // It would be trivial to generalise this so that Qureg distributions
     // can differ (we merely spoof local Quregs, offsetting their memory).
@@ -1680,7 +1680,7 @@ auto getNonTracedQubitOrder(Qureg qureg, vector<int> originalTargs, vector<int> 
 
 void reorderReducedQureg(Qureg inQureg, Qureg outQureg, vector<int> allTargs, vector<int> suffixTargs) {
 
-    // TODO: 
+    // @todo 
     // this function performs a sequence of SWAPs which are NOT necessarily upon disjoint qubits,
     // and ergo do not commute. We still however may be able to effect this more efficiently in
     // a single communicating operation rather than this sequence of SWAP gates, and might still
@@ -1973,7 +1973,7 @@ qcomp localiser_statevec_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
     // have identical communication patterns, and so can all be processed after one round 
     // of amps exchange. 
     
-    // TODO: 
+    // @todo 
     // We can optimise further in a similar spirit to above by grouping identically-
     // communicating strings into those which differ only by suffix I <-> Z and X <-> Y,
     // which have identical amplitude-mixing patterns, to avoid repeated enumeration of 

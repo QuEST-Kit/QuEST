@@ -47,7 +47,7 @@ TEST_CASE( "placeholder", TEST_CATEGORY) {
 
 
 /*
- * TODO:
+ * @todo
  * UNTESTED FUNCTIONS
  */
 

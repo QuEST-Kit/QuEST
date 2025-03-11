@@ -41,7 +41,7 @@
         #endif
     #endif
 
-    // TODO: check whether MPICH is CUDA-aware
+    // @todo check whether MPICH is CUDA-aware
 
 #endif
 
@@ -60,7 +60,7 @@ bool comm_isMpiCompiled() {
 
 bool comm_isMpiGpuAware() {
 
-    // TODO: these checks may be OpenMPI specific, so that
+    // @todo these checks may be OpenMPI specific, so that
     // non-OpenMPI MPI compilers are always dismissed as
     // not being CUDA-aware. Check e.g. MPICH method!
 

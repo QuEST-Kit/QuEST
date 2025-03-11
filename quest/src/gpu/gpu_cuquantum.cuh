@@ -289,7 +289,7 @@ void cuquantum_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal 
 
 void cuquantum_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubitB, qreal prob) {
 
-    // TODO:
+    // @todo
     // only 75% of the amps are changed, each of which is multiplied by the same scalar,
     // but our below method multiplies all amps with 16 separate scalars - can we accel?
     // we are applying a prefactor b to all states except where the ket & bra qubits

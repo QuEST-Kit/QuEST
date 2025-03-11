@@ -442,7 +442,7 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
         // this array per-block is 16 * 128 * 2^5 B = 64 KiB which exceeds shared
         // memory capacity, but does NOT exceed maximum register capacity.
 
-        // TODO:
+        // @todo
         // We should really check the above claims, otherwise the thread-private arrays could
         // silently "spill" from registers into "local memory" (which is really slow,
         // global memory) and greatly sabotage performance on some GPUs.
@@ -548,7 +548,7 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 // note preprocessors are not exclusive
 #if COMPILE_CUDA
 
-    // TODO:
+    // @todo
     // when NumCtrls==0, a Thrust functor would be undoubtedly more
     // efficient (because of improved parallelisation granularity) 
 
@@ -622,7 +622,7 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 // note preprocessors are not exclusive
 #if COMPILE_CUDA
 
-    // TODO:
+    // @todo
     // when NumCtrls==0, a Thrust functor would be undoubtedly more
     // efficient (because of improved parallelisation granularity) 
 
@@ -696,7 +696,7 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 // note preprocessors are not exclusive
 #if COMPILE_CUDA
 
-    // TODO:
+    // @todo
     // when NumCtrls==0, a Thrust functor would be undoubtedly more
     // efficient (because of improved parallelisation granularity) 
 

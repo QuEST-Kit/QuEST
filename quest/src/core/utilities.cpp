@@ -418,7 +418,7 @@ bool util_isUnitary(CompMatr2 matrix, qreal eps) {
 }
 bool util_isUnitary(CompMatr matrix, qreal eps) {
 
-    // TODO:
+    // @todo
     // if matrix is GPU-accelerated, we should maybe
     // instead perform this calculation using the GPU.
     // otherwise, if matrix is large, we should potentially
@@ -435,7 +435,7 @@ bool util_isUnitary(DiagMatr2 matrix, qreal eps) {
 }
 bool util_isUnitary(DiagMatr matrix, qreal eps) {
 
-    // TODO:
+    // @todo
     // if matrix is GPU-accelerated, we should maybe
     // instead perform this calculation using the GPU.
     // otherwise, if matrix is large, we should potentially
@@ -446,7 +446,7 @@ bool util_isUnitary(DiagMatr matrix, qreal eps) {
 
 bool util_isUnitary(FullStateDiagMatr matrix, qreal eps) {
 
-    // TODO:
+    // @todo
     // we should definitely be using an accelerated routine
     // here, e.g. GPU-acceleration or multithreading
 
@@ -505,7 +505,7 @@ bool util_isHermitian(CompMatr2 matrix, qreal eps) {
 }
 bool util_isHermitian(CompMatr matrix, qreal eps) {
 
-    // TODO:
+    // @todo
     // if matrix is GPU-accelerated, we should maybe
     // instead perform this calculation using the GPU.
     // otherwise, if matrix is large, we should potentially
@@ -522,7 +522,7 @@ bool util_isHermitian(DiagMatr2 matrix, qreal eps) {
 }
 bool util_isHermitian(DiagMatr matrix, qreal eps) {
 
-    // TODO:
+    // @todo
     // if matrix is GPU-accelerated, we should maybe
     // instead perform this calculation using the GPU.
     // otherwise, if matrix is large, we should potentially
@@ -533,7 +533,7 @@ bool util_isHermitian(DiagMatr matrix, qreal eps) {
 
 bool util_isHermitian(FullStateDiagMatr matrix, qreal eps) {
 
-    // TODO:
+    // @todo
     // we should definitely be using an accelerated routine
     // here, e.g. GPU-acceleration or multithreading
 
@@ -566,7 +566,7 @@ bool util_isHermitian(PauliStrSum sum, qreal eps) {
 bool util_isCPTP(KrausMap map, qreal eps) {
     assert_utilsGivenNonZeroEpsilon(eps);
 
-    // TODO:
+    // @todo
     // if KrausMap is GPU-accelerated, we should maybe
     // instead perform this calculation using the GPU.
     // otherwise, if matrix is large, we should potentially
@@ -598,7 +598,7 @@ bool util_isCPTP(KrausMap map, qreal eps) {
 template <typename T> 
 void setSuperoperator(qcomp** superop, T matrices, int numMatrices, qindex logMatrixDim) {
 
-    // TODO:
+    // @todo
     // we initialise the superoperator completely serially, under the assumption that the
     // superoperator will be small in size and initialised infrequently. Still, it would
     // be better to provide backend initialisation functions (OpenMP and CUDA accelerated),

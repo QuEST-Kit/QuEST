@@ -581,7 +581,7 @@ struct functor_setRandomStateVecAmp : public thrust::unary_function<qindex,cu_qc
     // statevector amplitude which, after normalisation
     // of all amps, produces uniformly-random pure states
 
-    // TODO:
+    // @todo
     // this method of parallel RNG is slow, since every
     // amplitude uses an independent freshly-created 
     // generator, as per the limitations of Thrust. A
@@ -742,7 +742,7 @@ void thrust_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu
 
 qreal thrust_statevec_calcTotalProb_sub(Qureg qureg) {
 
-    // TODO:
+    // @todo
     // this function should be more accurate than other
     // functions (like calcProbOfQubitOutcome) because it
     // is primarily used for checking normalisation and ergo
@@ -764,7 +764,7 @@ qreal thrust_statevec_calcTotalProb_sub(Qureg qureg) {
 
 qreal thrust_densmatr_calcTotalProb_sub(Qureg qureg) {
 
-    // TODO:
+    // @todo
     // this function should be more accurate than other
     // functions (like calcProbOfQubitOutcome) because it
     // is primarily used for checking normalisation and ergo

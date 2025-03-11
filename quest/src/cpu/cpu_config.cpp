@@ -98,7 +98,7 @@ int cpu_getOpenmpThreadInd() {
 
 qcomp* cpu_allocArray(qindex length) {
 
-    // TODO:
+    // @todo
     // here, we calloc the entire array in a serial setting, rather than one malloc 
     // followed by threads subsequently memset'ing their own partitions. The latter
     // approach would distribute the array pages across NUMA nodes, accelerating 
@@ -253,7 +253,7 @@ void cpu_copyArray(qcomp* dest, qcomp* src, qindex dim) {
 
 void cpu_copyMatrix(qcomp** dest, qcomp** src, qindex dim) {
 
-    // TODO:
+    // @todo
     // there may be a faster, asynchronous way to perform
     // these memcpys then do a final wait
 
@@ -267,7 +267,7 @@ void cpu_copyMatrix(qcomp** dest, qcomp** src, qindex dim) {
 
 void cpu_copyMatrix(qcomp** dest, vector<vector<qcomp>> src, qindex dim) {
 
-    // TODO:
+    // @todo
     // there may be a faster, asynchronous way to perform
     // these memcpys then do a final wait
 

@@ -31,8 +31,8 @@ using namespace Catch::Matchers;
  * scalar in order to be considered equivalent.
  */
 
-// TODO: banish this macro
-// TODO: change comparisons to relative, not abs, to avoid tiny epsilon
+// @todo banish this macro
+// @todo change comparisons to relative, not abs, to avoid tiny epsilon
 
 #if FLOAT_PRECISION == 1
     const qreal TEST_EPSILON = 1E-2;

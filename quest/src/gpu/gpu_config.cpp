@@ -202,7 +202,7 @@ bool gpu_isDirectGpuCommPossible() {
     if (!gpu_isGpuAvailable())
         return false;
 
-    // TODO:
+    // @todo
     // and are GPUs compatible?
     // (the above might need to call a GPU-compiled func)
 

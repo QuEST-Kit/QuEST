@@ -425,7 +425,7 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
     assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
 
-    // TODO:
+    // @todo
     // this function allocates powerOf2(targs.size())-sized caches for each thread, sometimes in
     // heap. At the ~max non-distributed double CompMatr of 16 qubits = 64 GiB, this is 1 MiB 
     // per thread; for a conceivable 100 thread execution, this is 100 MiB being alloc/dealloced
@@ -1004,7 +1004,7 @@ void cpu_densmatr_oneQubitDephasing_subA(Qureg qureg, int ketQubit, qreal prob) 
     qreal fac = util_getOneQubitDephasingFactor(prob);
     int braQubit = util_getBraQubit(ketQubit, qureg);
 
-    // TODO:
+    // @todo
     // this enumeration order is suboptimal and seems unnecessary in this simple two
     // bit scenario, where we are modifying but not at all mixing two strided and
     // potentially very-distant amplitudes. It is of course trivial to split this
@@ -1055,7 +1055,7 @@ void cpu_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal prob) 
 
 void cpu_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubitB, qreal prob) {
 
-    // TODO: 
+    // @todo 
     // test whether use of subB has identical performance, or whether changing i=n below
     // non-negligibly accelerates the routine; if so, make a templated inner func.
 
@@ -1151,7 +1151,7 @@ void cpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal pro
     auto facBB = factors.c2;
     auto facAB = factors.c3;
 
-    // TODO:
+    // @todo
     // each iteration below modifies 2 independent amps without mixing,
     // which we can trivially split into two loops which may improve
     // per-iteration caching performance; test if this outweights the 
@@ -1257,7 +1257,7 @@ void cpu_densmatr_twoQubitDepolarising_subC(Qureg qureg, int ketQb1, int ketQb2,
 
     auto c3 = util_getTwoQubitDepolarisingFactors(prob).c3;
 
-    // TODO:
+    // @todo
     // are we really inefficiently enumerating all amps and applying a non-unity
     // factor to only 25%?! Is this because we do not know braBit2 and ergo 
     // cannot be sure a direct enumeration is accessing indicies in a monotonically
@@ -1389,7 +1389,7 @@ void cpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int ketQubit, qreal pI,
     // for brevity
     qcomp* amps = qureg.cpuAmps;
 
-    // TODO:
+    // @todo
     // each iteration modifies 4 amps in two separable mixed pairs, which may
     // lead to sub-optimal caching. Iterating twice and modifying a single pair
     // might lead to better performance, though note the stride from i00 to i11
@@ -1435,7 +1435,7 @@ void cpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI,
     auto facAB = factors.c3;
     auto facBA = factors.c4;
 
-    // TODO:
+    // @todo
     // each iteration below modifies 2 independent amps without mixing,
     // which we can trivially split into two loops which may improve
     // per-iteration caching performance; test if this outweights the 
@@ -1580,7 +1580,7 @@ void cpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> ta
     int numAllTargs = 2*numTargPairs;
     qindex numInnerIts = powerOf2(numTargPairs);
 
-    // TODO:
+    // @todo
     // note our parallelisation of only the outer-loop assumes that the number of 
     // amps in outQureg equals or exceeds the number of threads. Ergo tracing out 
     // all but very few qubits will leave threads idle; when only a single qubit
@@ -1624,7 +1624,7 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_partialTrace_sub, (
 
 qreal cpu_statevec_calcTotalProb_sub(Qureg qureg) {
 
-    // TODO:
+    // @todo
     // check whether OpenMP is performing a numerically stable
     // reduction, e.g. via 'parallel summation', to avoid the
     // otherwise catastrophic cancellatin errors. If not, we
@@ -1649,7 +1649,7 @@ qreal cpu_statevec_calcTotalProb_sub(Qureg qureg) {
 
 qreal cpu_densmatr_calcTotalProb_sub(Qureg qureg) {
 
-    // TODO:
+    // @todo
     // check whether OpenMP is performing a numerically stable
     // reduction, e.g. via 'parallel summation', to avoid the
     // otherwise catastrophic cancellatin errors. If not, we
@@ -2002,7 +2002,7 @@ qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int
 
 qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
-    // TODO:
+    // @todo
     // this is identical to the subA() version above, except that
     // qureg.cpuAmps[j] becomes qureg.cpuCommBuffer[j]. We could
     // ergo replace subA() with an invocation of subB(), binding

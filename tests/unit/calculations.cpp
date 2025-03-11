@@ -103,7 +103,7 @@ TEST_CASE( "calcExpecPauliStr", TEST_CATEGORY ) {
         );
     }
 
-    // TODO: input validation
+    // @todo input validation
 }
 
 
@@ -126,7 +126,7 @@ TEST_CASE( "calcExpecPauliStrSum", TEST_CATEGORY ) {
         destroyPauliStrSum(sum);
     }
 
-    // TODO: input validation
+    // @todo input validation
 }
 
 
@@ -149,7 +149,7 @@ TEST_CASE( "calcExpecNonHermitianPauliStrSum", TEST_CATEGORY ) {
         destroyPauliStrSum(sum);
     }
 
-    // TODO: input validation
+    // @todo input validation
 }
 
 
@@ -166,7 +166,7 @@ TEST_CASE( "calcProbOfBasisState", TEST_CATEGORY ) {
         );
     }
 
-    // TODO: input validation
+    // @todo input validation
 }
 
 
@@ -184,7 +184,7 @@ TEST_CASE( "calcProbOfQubitOutcome", TEST_CATEGORY ) {
         );
     }
 
-    // TODO: input validation
+    // @todo input validation
 }
 
 
@@ -204,7 +204,7 @@ TEST_CASE( "calcProbOfMultiQubitOutcome", TEST_CATEGORY ) {
         );
     }
 
-    // TODO: input validation
+    // @todo input validation
 }
 
 
@@ -229,7 +229,7 @@ TEST_CASE( "calcProbsOfAllMultiQubitOutcomes", TEST_CATEGORY ) {
         TEST_ON_CACHED_STATEVECS_AND_DENSMATRS( apiFunc, refFunc );
     }
 
-    // TODO: input validation
+    // @todo input validation
 }
 
 
@@ -246,7 +246,7 @@ TEST_CASE( "calcTotalProb", TEST_CATEGORY ) {
         );
     }
 
-    // TODO: input validation
+    // @todo input validation
 }
 
 
@@ -263,7 +263,7 @@ TEST_CASE( "calcPurity", TEST_CATEGORY ) {
         );
     }
 
-    // TODO: input validation
+    // @todo input validation
 }
 
 
@@ -299,7 +299,7 @@ TEST_CASE( "calcPartialTrace", TEST_CATEGORY ) {
         }
     }
 
-    // TODO: input validation
+    // @todo input validation
 }
 
 
@@ -325,7 +325,7 @@ TEST_CASE( "calcReducedDensityMatrix", TEST_CATEGORY ) {
         }
     }
 
-    // TODO: input validation
+    // @todo input validation
 }
 
 
@@ -334,7 +334,7 @@ TEST_CASE( "calcReducedDensityMatrix", TEST_CATEGORY ) {
 
 
 /*
- * TODO:
+ * @todo
  * UNTESTED FUNCTIONS BELOW
  */
 

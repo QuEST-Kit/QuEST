@@ -606,7 +606,7 @@ void applyMultiStateControlledSqrtSwap(Qureg qureg, int* controls, int* states, 
     validate_controlsAndTwoTargets(qureg, controls, numControls, target1, target2, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    // TODO:
+    // @todo
     // this function exacts sqrtSwap as a dense 2-qubit matrix,
     // where as bespoke communication and simulation strategy is
     // clearly possible which we have not supported because the gate
@@ -869,7 +869,7 @@ void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle
     validate_pauliStrSumIsHermitian(sum, __func__);
     validate_trotterParams(qureg, order, reps, __func__);
 
-    // TODO:
+    // @todo
     // the accuracy of Trotterisation is greatly improved by randomisation
     // or (even sub-optimal) grouping into commuting terms. Should we 
     // implement these here or into another function?
@@ -1080,7 +1080,7 @@ void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* state
     validate_controlsAndPauliStrTargets(qureg, controls, numControls, str, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    // TODO:
+    // @todo
     // CRUCIAL NOTE:
     // exp(theta I..I) might be algorithmically ok (I'm not sure), but it WILL NOT
     // effect a global phase change of theta (I think). Should validate against this
@@ -1439,7 +1439,7 @@ void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets) {
     validate_quregFields(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
 
-    // TODO:
+    // @todo
     // change this placeholder implementation to the bespoke, optimised routine,
     // wherein each contiguous controlled-phase gate is merged
 

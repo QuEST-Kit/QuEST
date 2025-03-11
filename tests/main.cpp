@@ -10,10 +10,7 @@
  * 
  * @defgroup unittests Unit tests
  * @ingroup tests
- * @todo
- *   we cannot really document the v4 unit tests this way because
- *   many are produced by macros rather than individual TEST_CASE, hmm
- * 
+ *
  * @defgroup integrationtests Integration tests
  * @ingroup tests
  * 
