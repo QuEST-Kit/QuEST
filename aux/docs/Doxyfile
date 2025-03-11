@@ -586,7 +586,12 @@ STRICT_PROTO_MATCHING  = NO
 # documentation.
 # The default value is: YES.
 
-GENERATE_TODOLIST      = YES
+# Tyson: enabling TODOLIST means we must also change RECURSIVE=YES
+# (to avoid having to list every source directory), which then makes
+# Catch2 files get captured somehow! But in any-case, standalone 
+# @todo comments (rather than those attached to a documented file)
+# will NOT be collected itno the todolist; so it's almost pointless!
+GENERATE_TODOLIST      = NO
 
 # The GENERATE_TESTLIST tag can be used to enable ( YES) or disable ( NO) the
 # test list. This list is created by putting \test commands in the
@@ -768,8 +773,6 @@ INPUT_ENCODING         = UTF-8
 # *.h++, *.cs, *.d, *.php, *.php4, *.php5, *.phtml, *.inc, *.m, *.markdown,
 # *.md, *.mm, *.dox, *.py, *.f90, *.f, *.for, *.tcl, *.vhd, *.vhdl, *.ucf,
 # *.qsf, *.as and *.js.
-
-EXTENSION_MAPPING      = cu=c++ cpp=c++ c=c h=c
 
 FILE_PATTERNS          = *.cu *.c *.cpp *.h *.hpp
 

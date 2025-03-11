@@ -167,7 +167,7 @@ QuEST supports:
 ## :book:&nbsp; Documentation
 
 > [!IMPORTANT]
-> QuEST v4's documentation is currently under construction!
+> QuEST v4's documentation is still under construction!
 
 Visit the [docs](docs/) to:
   - [see what's new in v4](docs/version4.md)
