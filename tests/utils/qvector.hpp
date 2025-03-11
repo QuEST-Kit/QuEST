@@ -1,11 +1,11 @@
 /** @file
- * Testing utilities which define 'qvector', used
- * as a reference proxy to a quantum statevector.
- *
  * @author Tyson Jones
  * 
  * @defgroup testutilsqvector qvector
  * @ingroup testutils
+ * @brief
+ * Testing utilities which define 'qvector', used
+ * as a reference proxy to a quantum statevector.
  * @{
  */
 

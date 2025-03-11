@@ -1,13 +1,13 @@
 /** @file
- * Testing utilities which perform linear algebra
- * routines upon reference qvector and qmatrix. 
- * These are slow, serial, un-optimised, defensively-
- * designed routines.
- *
  * @author Tyson Jones
  * 
  * @defgroup testutilslinalg Linalg
  * @ingroup testutils
+ * @brief 
+ * Testing utilities which perform linear algebra
+ * routines upon reference qvector and qmatrix. 
+ * These are slow, serial, un-optimised, defensively-
+ * designed routines.
  * @{
  */
 

@@ -7,18 +7,34 @@
  * 
  * @defgroup testutils Utilities
  * @ingroup tests
+ * @brief
+ * Testing utilities which validate QuEST's correctness by 
+ * using un-optimised reference linear-algebra implementations.
  * 
  * @defgroup unittests Unit tests
  * @ingroup tests
+ * @brief
+ * Tests of each QuEST API function in isolation for all
+ * possible input states and parameters (where feasible),
+ * validated against numerical reference implementations
+ * using relatively small Quregs.
  *
  * @defgroup integrationtests Integration tests
  * @ingroup tests
+ * @brief
+ * Tests which combine many QuEST API functions to perform
+ * computations using relatively large Quregs, validated
+ * against known analytic results.
  * 
  * @defgroup deprecatedtests Deprecated tests
  * @ingroup tests
+ * @brief
+ * Unit tests of QuEST's deprecated v3 API functions.
  * 
  * @defgroup deprecatedutils Deprecated utilities
  * @ingroup tests
+ * @brief
+ * Utilities for testing QuEST's deprecated v3 API functions.
  */
 
 #include <catch2/catch_session.hpp>

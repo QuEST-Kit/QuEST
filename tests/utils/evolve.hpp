@@ -1,13 +1,13 @@
 /** @file
- * Testing utilities which evolve a reference state
- * (qvector or qmatrix) under the action of a 
- * reference operation. These are slow, serial,
- * un-optimised, defensively-designed routines.
- *
  * @author Tyson Jones
  * 
  * @defgroup testutilsevolve Evolve
  * @ingroup testutils
+ * @brief
+ * Testing utilities which evolve a reference state
+ * (qvector or qmatrix) under the action of a 
+ * reference operation. These are slow, serial,
+ * un-optimised, defensively-designed routines.
  * @{
  */
 

@@ -1,10 +1,10 @@
 /** @file
- * Testing utilities which generate lists of integers.
- *
  * @author Tyson Jones
  * 
  * @defgroup testutilslists Lists
  * @ingroup testutils
+ * @brief
+ * Testing utilities which generate lists of integers.
  * @{
  */
 

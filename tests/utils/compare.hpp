@@ -1,12 +1,12 @@
 /** @file
- * Testing utilities which compare scalars produced by the
- * QuEST API to those produced by other test utilities, and
- * Quregs modified by the API to qvector qmatrix references.
- *
  * @author Tyson Jones
  * 
  * @defgroup testutilscompare Compare
  * @ingroup testutils
+ * @brief
+ * Testing utilities which compare scalars produced by the
+ * QuEST API to those produced by other test utilities, and
+ * Quregs modified by the API to qvector qmatrix references.
  * @{
  */
 

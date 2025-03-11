@@ -1,11 +1,11 @@
 /** @file
- * Testing utilities which generate random objects
- * independently of QuEST's internal generators. 
- *
  * @author Tyson Jones
  * 
  * @defgroup testutilsrandom Random
  * @ingroup testutils
+ * @brief
+ * Testing utilities which generate random objects
+ * independently of QuEST's internal generators. 
  * @{
  */
 
