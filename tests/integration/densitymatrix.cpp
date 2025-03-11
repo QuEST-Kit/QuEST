@@ -226,6 +226,7 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
 }
 
 
+/// @ingroup integrationtests
 TEST_CASE( "density evolution", TEST_TAG ) {
 
     auto deployments = getSupportedDeployments();

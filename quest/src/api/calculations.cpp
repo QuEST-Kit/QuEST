@@ -28,21 +28,6 @@ extern Qureg validateAndCreateCustomQureg(
     int useGpuAccel, int useMultithread, const char* caller);
 
 
-vector<int> getNonTargetedQubits(int* targets, int numTargets, int numQubits) {
-    
-    qindex mask = getBitMask(targets, numTargets);
-
-    vector<int> nonTargets;
-    nonTargets.reserve(numQubits - numTargets);
-
-    for (int i=0; i<numQubits; i++)
-        if (getBit(mask, i) == 0)
-            nonTargets.push_back(i);
-
-    return nonTargets;
-}
-
-
 
 /*
  * C++ ONLY FUNCTIONS
@@ -370,38 +355,11 @@ Qureg calcReducedDensityMatrix(Qureg qureg, int* retainQubits, int numRetainQubi
     validate_targets(qureg, retainQubits, numRetainQubits, __func__);
     validate_quregCanBeReduced(qureg, qureg.numQubits - numRetainQubits, __func__);
 
-    auto traceQubits = getNonTargetedQubits(retainQubits, numRetainQubits, qureg.numQubits);
+    auto traceQubits = util_getNonTargetedQubits(retainQubits, numRetainQubits, qureg.numQubits);
 
     // harmlessly re-validates
     return calcPartialTrace(qureg, traceQubits.data(), traceQubits.size());
 }
-
-
-void setQuregToPartialTrace(Qureg out, Qureg in, int* traceOutQubits, int numTraceQubits) {
-    validate_quregFields(in, __func__);
-    validate_quregFields(out, __func__);
-    validate_quregIsDensityMatrix(in, __func__);
-    validate_quregIsDensityMatrix(out, __func__);
-    validate_targets(in, traceOutQubits, numTraceQubits, __func__);
-    validate_quregCanBeSetToReducedDensMatr(out, in, numTraceQubits, __func__);
-
-    auto targets = util_getVector(traceOutQubits, numTraceQubits);
-    localiser_densmatr_partialTrace(in, out, targets);
-}
-
-
-void setQuregToReducedDensityMatrix(Qureg out, Qureg in, int* retainQubits, int numRetainQubits) {
-    validate_quregFields(in, __func__);
-    validate_quregFields(out, __func__);
-    validate_quregIsDensityMatrix(in, __func__);
-    validate_quregIsDensityMatrix(out, __func__);
-    validate_targets(in, retainQubits, numRetainQubits, __func__);
-    validate_quregCanBeSetToReducedDensMatr(out, in, in.numQubits - numRetainQubits, __func__);
-
-    auto traceQubits = getNonTargetedQubits(retainQubits, numRetainQubits, in.numQubits);
-    localiser_densmatr_partialTrace(in, out, traceQubits);
-}
-
 
 
 } // end de-name mangler

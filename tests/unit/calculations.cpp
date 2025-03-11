@@ -2,6 +2,9 @@
  * Unit tests of the calculations module.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup unitcalcs Calculations unit tests
+ * @ingroup unittests
  */
 
 #include "quest/include/quest.h"
@@ -29,8 +32,13 @@ using std::vector;
 using namespace Catch::Matchers;
 
 
-#define TEST_CATEGORY "[unit][calculations]"
 
+/*
+ * UTILITIES
+ */
+
+
+#define TEST_CATEGORY "[unit][calculations]"
 
 
 void TEST_ON_CACHED_QUREGS(quregCache quregs, auto refState, auto apiFunc, auto refFunc) {
@@ -68,6 +76,14 @@ void TEST_ON_CACHED_STATEVECS_AND_DENSMATRS(auto apiFunc, auto refFunc) {
         [&](Qureg quregVar) { return apiExpr; }, \
         [&](auto& stateVar) { return refExpr; } ) \
 
+
+
+/** 
+ * TESTS
+ * 
+ * @ingroup unitcalcs
+ * @{
+ */
 
 
 TEST_CASE( "calcExpecPauliStr", TEST_CATEGORY ) {
@@ -252,6 +268,7 @@ TEST_CASE( "calcPurity", TEST_CATEGORY ) {
 
 
 
+/// @private
 int getMaxNumTracedQubits(int numQubits) {
 
     // cannot reduce all qubits, nor so many that the final qureg is
@@ -262,6 +279,7 @@ int getMaxNumTracedQubits(int numQubits) {
         numQubits - 1,
         numQubits - getLog2(getQuESTEnv().numNodes));
 }
+
 
 TEST_CASE( "calcPartialTrace", TEST_CATEGORY ) {
 
@@ -311,6 +329,9 @@ TEST_CASE( "calcReducedDensityMatrix", TEST_CATEGORY ) {
 }
 
 
+/** @} (end defgroup) */
+
+
 
 /*
  * TODO:
@@ -319,11 +340,6 @@ TEST_CASE( "calcReducedDensityMatrix", TEST_CATEGORY ) {
 
 // these require we deploy input objects (Qureg,FullStateDiagMatr) differently
 // (as is respectively permitted) to thoroughly test all QuEST control flows
-
-void setQuregToPartialTrace(Qureg out, Qureg in, int* traceOutQubits, int numTraceQubits);
-
-void setQuregToReducedDensityMatrix(Qureg out, Qureg in, int* retainQubits, int numRetainQubits);
-
 
 qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
 

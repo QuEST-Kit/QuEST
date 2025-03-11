@@ -45,7 +45,7 @@ using Catch::Matchers::ContainsSubstring;
 
 
 /** @sa mixDamping
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "mixDamping", "[decoherence]" ) {
@@ -96,7 +96,7 @@ TEST_CASE( "mixDamping", "[decoherence]" ) {
 
 
 /** @sa mixDensityMatrix
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "mixDensityMatrix", "[decoherence]" ) {
@@ -160,7 +160,7 @@ TEST_CASE( "mixDensityMatrix", "[decoherence]" ) {
 
 
 /** @sa mixDephasing
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "mixDephasing", "[decoherence]" ) {
@@ -207,7 +207,7 @@ TEST_CASE( "mixDephasing", "[decoherence]" ) {
 
 
 /** @sa mixDepolarising
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "mixDepolarising", "[decoherence]" ) {
@@ -257,7 +257,7 @@ TEST_CASE( "mixDepolarising", "[decoherence]" ) {
 
 
 /** @sa mixMultiQubitKrausMap
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
@@ -504,7 +504,7 @@ TEST_CASE( "mixMultiQubitKrausMap", "[decoherence]" ) {
 
 
 /** @sa mixPauli
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "mixPauli", "[decoherence]" ) {
@@ -585,7 +585,7 @@ TEST_CASE( "mixPauli", "[decoherence]" ) {
 
 
 /** @sa mixKrausMap
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "mixKrausMap", "[decoherence]" ) {
@@ -666,7 +666,7 @@ TEST_CASE( "mixKrausMap", "[decoherence]" ) {
 
 
 /** @sa mixNonTPKrausMap
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "mixNonTPKrausMap", "[decoherence]" ) {
@@ -735,7 +735,7 @@ TEST_CASE( "mixNonTPKrausMap", "[decoherence]" ) {
 
 
 /** @sa mixNonTPMultiQubitKrausMap
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "mixNonTPMultiQubitKrausMap", "[decoherence]" ) {
@@ -953,7 +953,7 @@ TEST_CASE( "mixNonTPMultiQubitKrausMap", "[decoherence]" ) {
 
 
 /** @sa mixNonTPTwoQubitKrausMap
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "mixNonTPTwoQubitKrausMap", "[decoherence]" ) {
@@ -1033,7 +1033,7 @@ TEST_CASE( "mixNonTPTwoQubitKrausMap", "[decoherence]" ) {
 
 
 /** @sa mixTwoQubitDephasing
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "mixTwoQubitDephasing", "[decoherence]" ) {
@@ -1093,7 +1093,7 @@ TEST_CASE( "mixTwoQubitDephasing", "[decoherence]" ) {
 
 
 /** @sa mixTwoQubitDepolarising
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "mixTwoQubitDepolarising", "[decoherence]" ) {
@@ -1161,7 +1161,7 @@ TEST_CASE( "mixTwoQubitDepolarising", "[decoherence]" ) {
 
 
 /** @sa mixTwoQubitKrausMap
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "mixTwoQubitKrausMap", "[decoherence]" ) {

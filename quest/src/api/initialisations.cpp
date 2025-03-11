@@ -27,6 +27,12 @@
 extern "C" {
 
 
+
+/*
+ * INIT
+ */
+
+
 void initBlankState(Qureg qureg) {
     validate_quregFields(qureg, __func__);
 
@@ -130,6 +136,12 @@ void initRandomMixedState(Qureg qureg, qindex numPureStates) {
 }
 
 
+
+/*
+ * SET
+ */
+
+
 void setQuregAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps) {
     validate_quregFields(qureg, __func__);
     validate_quregIsStateVector(qureg, __func__);
@@ -205,6 +217,32 @@ void setQuregToPauliStrSum(Qureg qureg, PauliStrSum sum) {
     // is insufficient to ensure qureg would be physical/valid
 
     localiser_densmatr_setAmpsToPauliStrSum(qureg, sum);
+}
+
+
+void setQuregToPartialTrace(Qureg out, Qureg in, int* traceOutQubits, int numTraceQubits) {
+    validate_quregFields(in, __func__);
+    validate_quregFields(out, __func__);
+    validate_quregIsDensityMatrix(in, __func__);
+    validate_quregIsDensityMatrix(out, __func__);
+    validate_targets(in, traceOutQubits, numTraceQubits, __func__);
+    validate_quregCanBeSetToReducedDensMatr(out, in, numTraceQubits, __func__);
+
+    auto targets = util_getVector(traceOutQubits, numTraceQubits);
+    localiser_densmatr_partialTrace(in, out, targets);
+}
+
+
+void setQuregToReducedDensityMatrix(Qureg out, Qureg in, int* retainQubits, int numRetainQubits) {
+    validate_quregFields(in, __func__);
+    validate_quregFields(out, __func__);
+    validate_quregIsDensityMatrix(in, __func__);
+    validate_quregIsDensityMatrix(out, __func__);
+    validate_targets(in, retainQubits, numRetainQubits, __func__);
+    validate_quregCanBeSetToReducedDensMatr(out, in, in.numQubits - numRetainQubits, __func__);
+
+    auto traceQubits = util_getNonTargetedQubits(retainQubits, numRetainQubits, in.numQubits);
+    localiser_densmatr_partialTrace(in, out, traceQubits);
 }
 
 

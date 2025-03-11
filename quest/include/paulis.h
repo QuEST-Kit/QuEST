@@ -3,6 +3,10 @@
  * their initialisers, and reporting utilities.
  * 
  * @author Tyson Jones
+ * 
+ * @defgroup paulis Paulis
+ * @ingroup api
+ * @{
  */
 
 #ifndef PAULIS_H
@@ -96,6 +100,7 @@ typedef struct {
     PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis);
 
     // or an overload accepting ints, achieved using a C11 _Generic
+    /// @private
     PauliStr _getPauliStrFromInts(int* paulis, int* indices, int numPaulis);
 
     #define getPauliStr(paulis, ...) \
@@ -188,4 +193,8 @@ extern "C" {
 }
 #endif
 
+
+
 #endif // PAULIS_H
+
+/** @} (end doxygen defgroup) */

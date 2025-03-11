@@ -26,7 +26,7 @@ using Catch::Matchers::ContainsSubstring;
     
 
 /** @sa cloneQureg
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "cloneQureg", "[state_initialisations]" ) {
@@ -101,7 +101,7 @@ TEST_CASE( "cloneQureg", "[state_initialisations]" ) {
 
 
 /** @sa initBlankState
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "initBlankState", "[state_initialisations]" ) {
@@ -134,7 +134,7 @@ TEST_CASE( "initBlankState", "[state_initialisations]" ) {
 
 
 /** @sa initClassicalState
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "initClassicalState", "[state_initialisations]" ) {
@@ -177,7 +177,7 @@ TEST_CASE( "initClassicalState", "[state_initialisations]" ) {
 
 
 /** @sa initPlusState
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "initPlusState", "[state_initialisations]" ) {
@@ -222,7 +222,7 @@ TEST_CASE( "initPlusState", "[state_initialisations]" ) {
 
 
 /** @sa initPureState
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "initPureState", "[state_initialisations]" ) {
@@ -297,7 +297,7 @@ TEST_CASE( "initPureState", "[state_initialisations]" ) {
 
 
 /** @sa initArbitraryPureState
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "initArbitraryPureState", "[state_initialisations]" ) {
@@ -336,7 +336,7 @@ TEST_CASE( "initArbitraryPureState", "[state_initialisations]" ) {
 
 
 /** @sa initZeroState
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "initZeroState", "[state_initialisations]" ) {
@@ -377,7 +377,7 @@ TEST_CASE( "initZeroState", "[state_initialisations]" ) {
 
 
 /** @sa setAmps
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "setQuregAmps", "[state_initialisations]" ) {
@@ -444,7 +444,7 @@ TEST_CASE( "setQuregAmps", "[state_initialisations]" ) {
 // I do not know why we updated setQuregAmps above to the v4 API :)
 
     // /** @sa setDensityAmps
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "setDensityAmps", "[state_initialisations]" ) {
@@ -530,7 +530,7 @@ TEST_CASE( "setQuregAmps", "[state_initialisations]" ) {
 // with the deprecated PauliHamil type
 
     // /** @sa setQuregToPauliHamil
-    //  * @ingroup unittest 
+    //  * @ingroup deprecatedtests 
     //  * @author Tyson Jones 
     //  */
     // TEST_CASE( "setQuregToPauliHamil", "[state_initialisations]" ) {
@@ -590,7 +590,7 @@ TEST_CASE( "setQuregAmps", "[state_initialisations]" ) {
 
 
 /** @sa setWeightedQureg
- * @ingroup unittest 
+ * @ingroup deprecatedtests 
  * @author Tyson Jones 
  */
 TEST_CASE( "setWeightedQureg", "[state_initialisations]" ) {

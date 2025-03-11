@@ -2,6 +2,10 @@
  * Macros used by the tests and testing utilities.
  *
  * @author Tyson Jones
+ * 
+ * @defgroup testutilsmacros Macros
+ * @ingroup testutils
+ * @{
  */
 
 #ifndef MACROS_HPP
@@ -28,3 +32,5 @@
 
 
 #endif // MACROS_HPP
+
+/** @} (end defgroup) */

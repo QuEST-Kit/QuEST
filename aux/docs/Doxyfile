@@ -39,7 +39,7 @@ PROJECT_NAME           = "QuEST"
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER         = "v3.6.0"
+PROJECT_NUMBER         = "v4.0.0"
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
@@ -52,7 +52,7 @@ PROJECT_BRIEF          = "The Quantum Exact Simulation Toolkit"
 # and the maximum width should not exceed 200 pixels. Doxygen will copy the logo
 # to the output directory.
 
-PROJECT_LOGO           = doxyconfig/logo.png
+PROJECT_LOGO           = aux/docs/logo.png
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
@@ -410,7 +410,7 @@ EXTRACT_ALL            = YES
 # be included in the documentation.
 # The default value is: NO.
 
-EXTRACT_PRIVATE        = YES
+EXTRACT_PRIVATE        = NO
 
 # If the EXTRACT_PACKAGE tag is set to YES all members with package or internal
 # scope will be included in the documentation.
@@ -667,7 +667,7 @@ FILE_VERSION_FILTER    =
 # DoxygenLayout.xml, doxygen will parse it automatically even if the LAYOUT_FILE
 # tag is left empty.
 
-LAYOUT_FILE            = doxyconfig/layout.xml
+LAYOUT_FILE            = aux/docs/layout/layout.xml
 
 # The CITE_BIB_FILES tag can be used to specify one or more bib files containing
 # the reference definitions. This must be a list of .bib files. The .bib
@@ -749,7 +749,7 @@ WARN_LOGFILE           =
 # spaces.
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = . README.md ./QuEST/src ./QuEST/src/CPU ./QuEST/src/GPU ./QuEST/include ./tests
+INPUT                  = . README.md ./quest/include ./tests ./tests/utils ./tests/unit ./tests/integration ./tests/deprecated
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -906,7 +906,7 @@ SOURCE_BROWSER         = NO
 # classes and enums directly into the documentation.
 # The default value is: NO.
 
-INLINE_SOURCES         = NO
+INLINE_SOURCES         = YES
 
 STRIP_FROM_PATH      = $(QTDIR)/
 
@@ -1039,7 +1039,7 @@ HTML_FILE_EXTENSION    = .html
 # of the possible markers and block names see the documentation.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_HEADER            = doxyconfig/header.html
+HTML_HEADER            = aux/docs/layout/header.html
 
 # The HTML_FOOTER tag can be used to specify a user-defined HTML footer for each
 # generated HTML page. If the tag is left blank doxygen will generate a standard
@@ -1049,7 +1049,7 @@ HTML_HEADER            = doxyconfig/header.html
 # that doxygen normally uses.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_FOOTER            = doxyconfig/footer.html
+HTML_FOOTER            = aux/docs/layout/footer.html
 
 # The HTML_STYLESHEET tag can be used to specify a user-defined cascading style
 # sheet that is used by each HTML page. It can be used to fine-tune the look of
@@ -1072,7 +1072,7 @@ HTML_STYLESHEET        =
 # see the documentation.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_EXTRA_STYLESHEET  = doxyconfig/style.css
+HTML_EXTRA_STYLESHEET  = aux/docs/layout/style.css
 
 # The HTML_EXTRA_FILES tag can be used to specify one or more extra images or
 # other source files which should be copied to the HTML output directory. Note
@@ -1082,7 +1082,7 @@ HTML_EXTRA_STYLESHEET  = doxyconfig/style.css
 # files will be copied as-is; there are no commands or markers available.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_EXTRA_FILES       = doxyconfig/boot.js doxyconfig/jquery.smartmenus.js doxyconfig/jquery.smartmenus.bootstrap.js doxyconfig/jquery.smartmenus.bootstrap.css doxyconfig/dynsections.js
+HTML_EXTRA_FILES       = aux/docs/layout/boot.js aux/docs/layout/jquery.smartmenus.js aux/docs/layout/jquery.smartmenus.bootstrap.js aux/docs/layout/jquery.smartmenus.bootstrap.css aux/docs/layout/dynsections.js
 
 # The HTML_COLORSTYLE_HUE tag controls the color of the HTML output. Doxygen
 # will adjust the colors in the stylesheet and background images according to
@@ -1114,13 +1114,14 @@ HTML_COLORSTYLE_SAT    = 100
 
 HTML_COLORSTYLE_GAMMA  = 80
 
-# If the HTML_TIMESTAMP tag is set to YES then the footer of each generated HTML
-# page will contain the date and time when the page was generated. Setting this
-# to NO can help when comparing the output of multiple runs.
-# The default value is: YES.
-# This tag requires that the tag GENERATE_HTML is set to YES.
+    # If the HTML_TIMESTAMP tag is set to YES then the footer of each generated HTML
+    # page will contain the date and time when the page was generated. Setting this
+    # to NO can help when comparing the output of multiple runs.
+    # The default value is: YES.
+    # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_TIMESTAMP         = YES
+    # deprecated
+    # HTML_TIMESTAMP         = YES
 
 # If the HTML_DYNAMIC_SECTIONS tag is set to YES then the generated HTML
 # documentation will contain sections that can be hidden and shown after the
