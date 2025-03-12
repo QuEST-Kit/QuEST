@@ -15,6 +15,7 @@
 
 #include <tuple>
 #include <vector>
+#include <limits>
 #include <algorithm>
 
 using std::tuple;
@@ -251,31 +252,21 @@ GeneratorWrapper<listpair> disjointsublists(GeneratorWrapper<int>&& gen, int sub
 listpair GENERATE_CTRLS_AND_TARGS(int numQubits, int numCtrls, int numTargs) {
     DEMAND( numQubits >= numCtrls + numTargs );
 
-#if FAST_UNIT_TESTS
+    // impose a limit on the number of {ctrls,targs} to generate (max-int if none set)
+    int numPerms = getNumPermutations(numQubits, numCtrls + numTargs);
+    int maxPerms = MAX_NUM_QUBIT_PERMUTATIONS;
+    if (maxPerms == 0)
+        maxPerms = std::numeric_limits<int>::max();
 
-    // avoid testing all combinations (for speed), and instead repeatedly
-    // generate a random combination of disjoint control and target qubits,
-    // avoiding superfluously repeating permutations when numRepeats is small
+    // if all permutations are permitted, determinstically generate each in turn.
+    // note this wastefully generates all orderings of ctrl qubits, despite that
+    // this has no effect on all API operations, but we carefully check anyway!
+    if (numPerms < maxPerms)
+        return GENERATE_COPY( disjointsublists(range(0,numQubits), numCtrls, numTargs) );
 
-    int numRepeats = getNumPermutations(numQubits, numCtrls + numTargs);
-    if (numRepeats > MAX_NUM_FAST_QUBIT_PERMUTATIONS)
-        numRepeats = MAX_NUM_FAST_QUBIT_PERMUTATIONS;
-    
-    GENERATE_COPY( range(0,numRepeats) );
-
+    // otherwise generate as many random {ctrls,targs} as permitted
+    GENERATE_COPY( range(0,maxPerms) );
     return getRandomFixedNumCtrlsTargs(numQubits, numCtrls, numTargs);
-
-#else
-
-    // generate every possible combination of disjoint control and target lists,
-    // upon all possible qubits, in every possible order. Note this even generates
-    // every ordering of the control qubits (e.g. {1,2} and {2,1}) which should
-    // have no effect on the resulting operation, but we check it to be super
-    // careful anyway!
-
-    return GENERATE_COPY( disjointsublists(range(0,numQubits), numCtrls, numTargs) );
-
-#endif
 }
 
 

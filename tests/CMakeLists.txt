@@ -16,8 +16,8 @@ endif()
 
 
 # map test-related cmake vars to preprocessors
-if (DEFINED FAST_UNIT_TESTS)
-  target_compile_definitions(tests PRIVATE FAST_UNIT_TESTS=${FAST_UNIT_TESTS})
+if (DEFINED MAX_NUM_QUBIT_PERMUTATIONS)
+  target_compile_definitions(tests PRIVATE MAX_NUM_QUBIT_PERMUTATIONS=${MAX_NUM_QUBIT_PERMUTATIONS})
 endif()
 
 

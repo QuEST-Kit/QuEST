@@ -19,12 +19,9 @@
  * for accelerating tests on particular platforms (e.g. paid github runners)
  */
 
-#ifndef FAST_UNIT_TESTS
-#define FAST_UNIT_TESTS 0
-#endif
-
-#ifndef MAX_NUM_FAST_QUBIT_PERMUTATIONS
-#define MAX_NUM_FAST_QUBIT_PERMUTATIONS 50
+// sensible value to accelerate tests is 50
+#ifndef MAX_NUM_QUBIT_PERMUTATIONS
+#define MAX_NUM_QUBIT_PERMUTATIONS 0
 #endif
 
 
