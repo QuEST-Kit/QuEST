@@ -14,14 +14,13 @@
 name: compile
 
 
-# debug; temporary changes to ci-unit-tests from v4
 on:
   push:
     branches:
-      - ci-unit-tests
+      - v4
   pull_request:
     branches:
-      - ci-unit-tests
+      - v4
 
 
 jobs:
@@ -45,7 +44,8 @@ jobs:
       fail-fast: false
 
       # limit concurrent jobs to avoid running out of disk
-      max-parallel: 64
+      # (causes CUDA and MPI installation to fail on Windows)
+      max-parallel: 8
 
       # compile QuEST with all combinations of below flags
       matrix:

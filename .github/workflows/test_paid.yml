@@ -2,29 +2,30 @@
 # on paid runners using multithreading, GPU-
 # acceleration and distribution, only on Linux. 
 # As of 12/03/2025, these "large runners" cost:
-# - 7c/min for each GPU runner (CUDA, cuQuantum)
 # - 16c/min for each ARM runner (OMP, MPI)
-# where [setup, compile, run] take approx
-# - omp:   40s, 70s,  145s  = 4m30s  = $0.68
-# - mpi:   85s, 124s, 1050s = 21m    = $3.36
-# - gpu:   30s, 150s, 490s  = 11m15s = $0.78
-# - cuq:   57s, 125s, 490s  = 11m    = $0.78
+# - 7c/min for each GPU runner (CUDA, cuQuantum)
+# where [setup, compile, run] take approximately
+# - omp: 40s, 70s,  145s  = 4m30s  = $0.68
+# - mpi: 85s, 124s, 1050s = 21m    = $3.36
+# - gpu: 30s, 150s, 490s  = 11m15s = $0.78
+# - cuq: 57s, 125s, 490s  = 11m    = $0.78
 # Ergo execution of this workflow costs ~$5.60.
+# Each bug costs me a coffee!
 # 
 # @author Tyson Jones
 
 name: test (paid, accelerated)
 
 
-# DEBUG; temporarily triggering from this dev branch;
-# we want to move it to some manually-launched main branch
+# @todo
+# this workflow can only be run on the 'default' 
+# branch (i.e. master) when manually triggered by 
+# github actions, so as not to incur unexpected
+# costs. I want for this to be automatically 
+# enqueued but not run in a PR, requiring manual
+# approval - but I don't yet know how to do it!
 on:
-  push:
-    branches:
-      - ci-unit-tests
-  pull_request:
-    branches:
-      - ci-unit-tests
+  workflow_dispatch:
 
 
 jobs:

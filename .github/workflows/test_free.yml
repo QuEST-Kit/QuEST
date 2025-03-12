@@ -10,14 +10,13 @@
 name: test (free, serial)
 
 
-# debug; temporary changes to ci-unit-tests from v4
 on:
   push:
     branches:
-      - ci-unit-tests
+      - v4
   pull_request:
     branches:
-      - ci-unit-tests
+      - v4
 
 
 jobs:
