@@ -14,13 +14,14 @@
 name: compile
 
 
+# debug; temporary changes to ci-unit-tests from v4
 on:
   push:
     branches:
-      - v4
+      - ci-unit-tests
   pull_request:
     branches:
-      - v4
+      - ci-unit-tests
 
 
 jobs:
@@ -199,7 +200,7 @@ jobs:
 
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
-        run: cmake --build ${{ env.build_dir }} --config Release
+        run: cmake --build ${{ env.build_dir }} --config Release --parallel
 
 
 

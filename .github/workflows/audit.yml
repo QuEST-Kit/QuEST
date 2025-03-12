@@ -10,13 +10,14 @@
 name: audit
 
 
+# debug; temporary changes to ci-unit-tests from v4
 on:
   push:
     branches:
-      - v4
+      - ci-unit-tests
   pull_request:
     branches:
-      - v4
+      - ci-unit-tests
 
 
 jobs:
@@ -55,7 +56,7 @@ jobs:
           -DCMAKE_EXE_LINKER_FLAGS="${{ env.sanitiser_flags }}"
 
       - name: Compile with sanitiser
-        run: cmake --build ${{ env.build_dir }}
+        run: cmake --build ${{ env.build_dir }} --parallel
 
       # run unit tests in random order, excluding the integration tests
       # TODO:
@@ -95,7 +96,7 @@ jobs:
           -DFLOAT_PRECISION=${{ matrix.precision }}
 
       - name: Compile QuEST
-        run: cmake --build ${{ env.build_dir }}
+        run: cmake --build ${{ env.build_dir }} --parallel
   
       - name: Install valgrind
         run: sudo apt install -y valgrind

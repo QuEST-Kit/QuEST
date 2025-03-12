@@ -103,7 +103,7 @@ jobs:
           -DTEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}
 
       - name: Compile
-        run: cmake --build ${{ env.build_dir }}
+        run: cmake --build ${{ env.build_dir }} --parallel
 
       - name: Run v4 tests
         if: ${{ matrix.version == 4 }}

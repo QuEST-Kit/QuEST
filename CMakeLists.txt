@@ -109,7 +109,7 @@ option(
 string(CONCAT DESCRIPTON_OF_TEST_MAX_NUM_QUBIT_PERMUTATIONS  # for multiline option
   "The maximum number of control and target qubit permutations under which to unit test each function. "
   "Set to 0 (default) to test all permutations, or to a positive integer (e.g. 50) to accelerate the unit tests. "
-  "This is used to accelerate the unit tests, and has no effect when ENABLE_TESTING is OFF."
+  "This is used to accelerate the v4 unit tests, and has no effect when ENABLE_TESTING is OFF, nor on the v3 deprecated tests."
 )
 set(TEST_MAX_NUM_QUBIT_PERMUTATIONS 0
   CACHE 
@@ -127,7 +127,7 @@ endif()
 string(CONCAT DESCRIPTION_OF_TEST_ALL_DEPLOYMENTS  # for multiline option
   "Whether unit tests will be run using all possible deployment combinations (i.e. OpenMP, CUDA, MPI) in-turn (ON), "
   "or only once using all available deployments simultaneously (OFF). Turned ON by default. "
-  "This is used to accelerate the unit tests, and has no effect when ENABLE_TESTING is OFF."
+  "This is used to accelerate the v4 unit tests, and has no effect when ENABLE_TESTING is OFF, nor on the v3 deprecated tests."
 )
 option(TEST_ALL_DEPLOYMENTS "${DESCRIPTION_OF_TEST_ALL_DEPLOYMENTS}" ON)
 if (ENABLE_TESTING)
