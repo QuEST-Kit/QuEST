@@ -1,8 +1,9 @@
 # Tests execution of v4 unit and integration tests
 # on paid runners using multithreading, GPU-
 # acceleration and distribution, only on Linux. 
-# This uses paid "large" runners and can be expensive; 
-# a single execution of this workflow is expected to cost:
+# This uses paid "large" runners at rates (as of 12/03/2025):
+# - 7c/min for each GPU runner [with & without cuQuantum]
+# - 16c/min for each ARM runner [with and without MPI]
 #
 # TODO
 # 
@@ -131,14 +132,14 @@ jobs:
         run: cmake --build ${{ env.build_dir }} --parallel
 
       # cannot use ctests when distributed, grr!
-      - name: Run distributed v4 tests (16 nodes, 4 threads eeach)
+      - name: Run multithreaded + distributed v4 tests (16 nodes, 4 threads eeach)
         if: ${{ matrix.mpi == 'ON' }}
         run: |
           OMP_NUM_THREADS=${{ env.num_mpi_threads }} \
-          mpirun -np ${{ env.num_mpi_nodes }} ${{ env.mpi_exec}}
+          mpiexec -n ${{ env.num_mpi_nodes }} ${{ env.mpi_exec}}
         working-directory: ${{ env.build_dir }}
          
-      - name: Run GPU v4 tests ()
+      - name: Run GPU v4 tests
         if: ${{ matrix.cuda == 'ON' }}
         run: ctest --output-on-failure
         working-directory: ${{ env.build_dir }}
