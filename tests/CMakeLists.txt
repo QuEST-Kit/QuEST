@@ -31,10 +31,27 @@ target_compile_definitions(tests PRIVATE TEST_ALL_DEPLOYMENTS=$<BOOL:${TEST_ALL_
 if (ENABLE_DISTRIBUTION)
 
   if (DEFINED NUM_CTEST_MPI_PROCS)
-    set_property(
-      TARGET tests 
-      PROPERTY CROSSCOMPILING_EMULATOR 
-      '${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NUM_CTEST_MPI_PROCS}')
+
+    ## works on clang, fails to compile on Fritz and ARCHER2 (missing linker symbols)
+    # set_property(
+    #   TARGET tests 
+    #   PROPERTY CROSSCOMPILING_EMULATOR 
+    #   '${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NUM_CTEST_MPI_PROCS}')
+
+
+
+    # didn't do anything on Fritz
+    #set_property(TARGET tests PROPERTY TEST_LAUNCHER ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NUM_CTEST_MPI_PROCS})
+    #set_property(TARGET tests PROPERTY TEST_EXECUTOR ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NUM_CTEST_MPI_PROCS})
+
+    # when paired with set_property() below, it also did nothing on MacOS
+
+
+    # but potentially because it is missing the below property which needs to be applied PER TEST
+    # set_property(TEST tests PROPERTY PROCESSORS ${NUM_CTEST_MPI_PROCS})
+
+
+
     message(STATUS "CTests will be launched using ${NUM_CTEST_MPI_PROCS} MPI processes.")
   else()
     message(WARNING "Distributed tests were compiled but NUM_CTEST_MPI_PROCS was not passed, so CTest will subsequently run serially.")
@@ -44,4 +61,25 @@ endif()
 
 
 # call after MPI setup above to distribute CTest
-catch_discover_tests(tests)
+# catch_discover_tests(tests)
+
+
+
+# catch_discover_tests(tests OUTPUT_VARIABLE TEST_NAMES)
+
+# foreach(test ${TEST_NAMES})
+#     set_property(TEST ${test} PROPERTY PROCESSORS ${NUM_CTEST_MPI_PROCS})
+# endforeach()
+
+
+
+# works sometimes, but discovers less than 1/4th of the tests, and
+# strangely fails on Fritz and ARCHER2 when ctest is run (though passes
+# on LLVM)
+# include(CTest)
+# include(ParseAndAddCatchTests)
+
+# set(OptionalCatchTestLauncher ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} 4)
+# ParseAndAddCatchTests(tests)
+
+catch_discover_tests(tests OUTPUT_VARIABLE TEST_NAMES)
