@@ -166,6 +166,8 @@ jobs:
       - name: Setup MPI
         if: ${{ matrix.mpi == 'ON' }}
         uses: mpi4py/setup-mpi@v1
+        with:
+          mpi: ${{ matrix.mpilib }}
 
       # obtain CUDA for GPU acceleration (cuQuantum needs cuBLAS)
       - name: Setup CUDA (non-MSVC)

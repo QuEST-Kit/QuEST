@@ -1,11 +1,15 @@
 # Tests execution of v4 unit and integration tests
 # on paid runners using multithreading, GPU-
 # acceleration and distribution, only on Linux. 
-# This uses paid "large" runners at rates (as of 12/03/2025):
-# - 7c/min for each GPU runner [with & without cuQuantum]
-# - 16c/min for each ARM runner [with and without MPI]
-#
-# TODO
+# As of 12/03/2025, these "large runners" cost:
+# - 7c/min for each GPU runner (CUDA, cuQuantum)
+# - 16c/min for each ARM runner (OMP, MPI)
+# where [setup, compile, run] take approx
+# - omp:   40s, 70s,  145s  = 4m30s  = $0.68
+# - mpi:   85s, 124s, 1050s = 21m    = $3.36
+# - gpu:   30s, 150s, 490s  = 11m15s = $0.78
+# - cuq:   57s, 125s, 490s  = 11m    = $0.78
+# Ergo execution of this workflow costs ~$5.60.
 # 
 # @author Tyson Jones
 
@@ -56,11 +60,11 @@ jobs:
         include:
           - cuda: ON
             omp: OFF
-            os: ubuntu-nvidia-gpu # 7c/min
+            os: ubuntu-nvidia-gpu # 7c/min, ubuntu 24.08
           - cuda: OFF
             omp: ON
             os: ubuntu22-arm-64cpu # 16c/min, cheaper than 64cpu x86, 
-            # note use of Ubuntu v22.04 since MPICH mpiexec is bugged.
+            # note use of ubuntu v22.04 since MPICH mpiexec is bugged.
             # see; https://github.com/mpi4py/setup-mpi/issues/13 
 
         # don't run GPU + MPI jobs (too slow/costly on single GPU)
@@ -109,7 +113,7 @@ jobs:
           sub-packages: '["nvcc", "cudart", "thrust"]'
           non-cuda-sub-packages: ${{ matrix.cuquantum == 'ON' && '["libcublas"]' || '[]' }}
 
-      # obtain cuQuantum
+      # obtain cuQuantum (version must match GPU Os = ubuntu 24.08)
       - name: Setup cuQuantum
         if: ${{ matrix.cuquantum == 'ON' }}
         run: >
@@ -141,7 +145,7 @@ jobs:
           OMP_NUM_THREADS=${{ env.num_mpi_threads }} \
           mpiexec -n ${{ env.num_mpi_nodes }} ${{ env.mpi_exec}}
         working-directory: ${{ env.build_dir }}
-         
+    
       - name: Run GPU v4 tests
         if: ${{ matrix.cuda == 'ON' }}
         run: ctest --output-on-failure
