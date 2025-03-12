@@ -64,7 +64,7 @@ jobs:
           - mpi:  ON
             cuda: ON
           - cuda:      OFF
-            cuquantum: OFF
+            cuquantum: ON
 
     # constants
     env:
@@ -74,6 +74,7 @@ jobs:
       mpi_exec: ./tests/tests
       num_mpi_nodes: 16
       num_mpi_threads: 4
+      num_omp_threads: 64
 
       num_qubit_perms: 10     # 0 (all) too slow
       test_all_deploys: OFF   # ON is very wasteful
@@ -82,6 +83,9 @@ jobs:
     steps:
       - name: Get QuEST
         uses: actions/checkout@v4
+
+      - name: Setup CMake
+        run: sudo apt-get install -y cmake
 
       # obtain MPI for distribution
       - name: Setup MPI
@@ -121,21 +125,21 @@ jobs:
         run: cmake --build ${{ env.build_dir }} --parallel
 
       # cannot use ctests when distributed, grr!
-      - name: Run distributed v4 tests
+      - name: Run distributed v4 tests (16 nodes, 4 threads eeach)
         if: ${{ matrix.mpi == 'ON' }}
         run: |
           OMP_NUM_THREADS=${{ env.num_mpi_threads }} \
           mpirun -np ${{ env.num_mpi_nodes }} ${{ env.mpi_exec}}
         working-directory: ${{ env.build_dir }}
          
-      - name: Run GPU v4 tests
+      - name: Run GPU v4 tests ()
         if: ${{ matrix.cuda == 'ON' }}
         run: ctest --output-on-failure
         working-directory: ${{ env.build_dir }}
 
-      - name: Run multithreaded v4 tests
+      - name: Run multithreaded v4 tests (64 threads ARM)
         if: ${{ matrix.cuda == 'OFF' && matrix.mpi == 'OFF' }}
         run: |
-          OMP_NUM_THREADS=${{ env.num_mpi_threads }} \
+          OMP_NUM_THREADS=${{ env.num_omp_threads }} \
           ctest --output-on-failure
         working-directory: ${{ env.build_dir }}
