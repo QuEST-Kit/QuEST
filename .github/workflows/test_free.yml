@@ -1,8 +1,9 @@
 # Tests serial execution of the v4 unit tests
 # (but not the larger integration tests), and
 # the deprecated v3 unit tests (when possible),
-# on all OS and at all precisions. Presently,
-# all runners are single-thread and free-tier.
+# on all OS and at all precisions. All runners 
+# are single-threaded and run on free runners,
+# and as such use the slower, rigorous tests.
 # 
 # @author Tyson Jones
 

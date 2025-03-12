@@ -1,8 +1,8 @@
 # Tests execution of v4 unit and integration tests
 # on paid runners using multithreading, GPU-
-# accelerationa and distribution. This can be
-# expensive; a single execution of this workflow
-# is expected to cost...
+# acceleration and distribution, only on Linux. 
+# This uses paid "large" runners and can be expensive; 
+# a single execution of this workflow is expected to cost:
 #
 # TODO
 # 
@@ -55,9 +55,9 @@ jobs:
         # choose runners; CUDA jobs on x86 GPU, else ARM
         include:
           - cuda: ON
-            os: ubuntu-nvidia-gpu
+            os: ubuntu-nvidia-gpu # 7c/min
           - cuda: OFF
-            os: ubuntu-arm-64cpu # cheaper than 64cpu x86
+            os: ubuntu-arm-64cpu # 16c/min, cheaper than 64cpu x86
 
         # don't run GPU + MPI jobs (too slow/costly on single GPU)
         exclude:
@@ -69,15 +69,19 @@ jobs:
     # constants
     env:
       build_dir: "build"
-      cuda_arch: 75           # Tesla T4 16 GB
 
+      # GPU runner has a Tesla T4 16 GB
+      cuda_arch: 75
+
+      # CPU/MPI runner has 64 cores
       mpi_exec: ./tests/tests
       num_mpi_nodes: 16
       num_mpi_threads: 4
       num_omp_threads: 64
 
-      num_qubit_perms: 10     # 0 (all) too slow
-      test_all_deploys: OFF   # ON is very wasteful
+      # tests will be non-comprehensive/faster to save $$$
+      num_qubit_perms: 10
+      test_all_deploys: OFF
 
     # perform the job
     steps:
@@ -101,7 +105,7 @@ jobs:
           sub-packages: '["nvcc", "cudart", "thrust"]'
           non-cuda-sub-packages: ${{ matrix.cuquantum == 'ON' && '["libcublas"]' || '[]' }}
 
-      # obtain cuQuantum on linux
+      # obtain cuQuantum
       - name: Setup cuQuantum
         if: ${{ matrix.cuquantum == 'ON' }}
         run: >
@@ -120,6 +124,8 @@ jobs:
           -DENABLE_CUDA=${{ matrix.cuda }}
           -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
+          -DTEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}
+          -DTEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}
 
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --parallel
