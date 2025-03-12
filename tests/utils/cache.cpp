@@ -64,17 +64,21 @@ deployInfo getSupportedDeployments() {
     bool mpi = env.isDistributed;
     bool gpu = env.isGpuAccelerated;
 
-    // add only those supported to the output list
-    // order is (MPI, GPU, OMP), matching createCustomQureg
-    if (true)              out.push_back({"CPU",             0, 0, 0});
-    if (mpi)               out.push_back({"CPU + MPI",       1, 0, 0});
-    if (omp)               out.push_back({"CPU + OMP",       0, 0, 1});
-    if (mpi && omp)        out.push_back({"CPU + OMP + MPI", 1, 0, 1});
-    if (gpu)               out.push_back({"GPU",             0, 1, 0});
-    if (gpu && omp)        out.push_back({"GPU + OMP",       0, 1, 1});
-    if (gpu && mpi)        out.push_back({"GPU + MPI",       1, 1, 0});
-    if (gpu && omp && mpi) out.push_back({"GPU + OMP + MPI", 1, 1, 1});
+    // return only the "most-accelerated" deployment, unless all are desired
+    bool one = ! TEST_ALL_DEPLOYMENTS;
 
+    // add only those supported to the output list, in order of preference.
+    // flag order is (MPI, GPU, OMP), matching createCustomQureg
+    if (gpu && omp && mpi) { out.push_back({"GPU + OMP + MPI", 1, 1, 1}); if (one) return out; }
+    if (gpu && mpi)        { out.push_back({"GPU + MPI",       1, 1, 0}); if (one) return out; }
+    if (gpu && omp)        { out.push_back({"GPU + OMP",       0, 1, 1}); if (one) return out; }
+    if (gpu)               { out.push_back({"GPU",             0, 1, 0}); if (one) return out; }
+    if (mpi && omp)        { out.push_back({"CPU + OMP + MPI", 1, 0, 1}); if (one) return out; }
+    if (mpi)               { out.push_back({"CPU + MPI",       1, 0, 0}); if (one) return out; }
+    if (omp)               { out.push_back({"CPU + OMP",       0, 0, 1}); if (one) return out; }
+    if (true)              { out.push_back({"CPU",             0, 0, 0}); if (one) return out; }
+    
+    // return all supported deployments
     return out;
 }
 

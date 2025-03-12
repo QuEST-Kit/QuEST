@@ -21,7 +21,9 @@
 #include "quest/src/gpu/gpu_config.hpp"
 
 #include <set>
+#include <array>
 #include <string>
+#include <algorithm>
 
 
 #if COMPILE_CUDA && ! (defined(__NVCC__) || defined(__HIP__))
@@ -291,6 +293,42 @@ qindex gpu_getMaxNumConcurrentThreads() {
  */
 
 
+std::array<char,17> getBoundGpuUuid() {
+#if COMPILE_CUDA
+    assert_gpuHasBeenBound(hasGpuBeenBound);
+
+    constexpr int numUuidChars = 16;
+    constexpr int numOutChars = numUuidChars + 1; // terminal char
+
+    std::array<char,numOutChars> out;
+    cudaUUID_t uuid;
+
+    // ROCm v5's cudaDeviceProp doesn't have a uuid field
+    #if defined(__HIP__)
+        hipDevice_t device;
+        CUDA_CHECK( hipDeviceGet(&device, getBoundGpuId()) );
+        CUDA_CHECK( hipDeviceGetUuid(&uuid, device) );
+    #else
+        cudaDeviceProp prop;
+        CUDA_CHECK( cudaGetDeviceProperties(&prop, getBoundGpuId()) );
+        uuid = prop.uuid;
+    #endif
+
+    // copy char[16] to out[17] (not human readable)
+    std::copy_n(uuid.bytes, numUuidChars, out.begin());
+
+    // include terminal char so that subsequent to-string
+    // operations will succeed without knowing string length
+    out[numOutChars-1] = '\0';
+    return out;
+
+#else
+    error_gpuQueriedButGpuNotCompiled();
+    return {};
+#endif
+}
+
+
 void gpu_bindLocalGPUsToNodes() {
 #if COMPILE_CUDA
 
@@ -323,17 +361,10 @@ bool gpu_areAnyNodesBoundToSameGpu() {
         return false;
 
     // obtain bound GPU's UUID; a unique identifier 16-char identifier
-    cudaDeviceProp prop;
-    CUDA_CHECK( cudaGetDeviceProperties(&prop, getBoundGpuId()) );
-    cudaUUID_t uuid = prop.uuid;
-
-    // cast into a string (i.e. add a terminal char), so that...
-    constexpr int len = 16 + 1;
-    char uuidStr[len];
-    snprintf(uuidStr, len, "%s", uuid.bytes); // not human-readable however
+    auto uuidStr = getBoundGpuUuid();
 
     // we can repurpose string-to-root sending to collect all uuids
-    auto allUuids = comm_gatherStringsToRoot(uuidStr, len);
+    auto allUuids = comm_gatherStringsToRoot(uuidStr.data(), uuidStr.size());
     auto uniqueUuids = std::set<std::string>(allUuids.begin(), allUuids.end());
 
     // and assess whether they're all unique (non-root's bools are overwritten)

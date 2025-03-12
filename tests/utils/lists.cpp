@@ -8,11 +8,14 @@
 #include <catch2/generators/catch_generators_range.hpp>
 #include <catch2/generators/catch_generators_adapters.hpp>
 
+#include "lists.hpp"
 #include "macros.hpp"
 #include "random.hpp"
+#include "linalg.hpp"
 
 #include <tuple>
 #include <vector>
+#include <limits>
 #include <algorithm>
 
 using std::tuple;
@@ -184,11 +187,6 @@ GeneratorWrapper<vector<int>> sublists(GeneratorWrapper<int>&& gen, int sublen) 
  */
 
 
-using listpair = tuple<
-    vector<int>,
-    vector<int>>;
-
-
 class DisjointSublistsGenerator : public IGenerator<listpair> {
 
     // list of all possible (unique) elements
@@ -242,4 +240,39 @@ GeneratorWrapper<listpair> disjointsublists(GeneratorWrapper<int>&& gen, int sub
     return GeneratorWrapper<listpair>(
         Catch::Detail::make_unique<DisjointSublistsGenerator>(
             list, sublen1, sublen2));
+}
+
+
+
+/*
+ * GENERATOR WRAPPERS
+ */
+
+
+listpair GENERATE_CTRLS_AND_TARGS(int numQubits, int numCtrls, int numTargs) {
+    DEMAND( numQubits >= numCtrls + numTargs );
+
+    // impose a limit on the number of {ctrls,targs} to generate (max-int if none set)
+    int numPerms = getNumPermutations(numQubits, numCtrls + numTargs);
+    int maxPerms = TEST_MAX_NUM_QUBIT_PERMUTATIONS;
+    if (maxPerms == 0)
+        maxPerms = std::numeric_limits<int>::max();
+
+    // if all permutations are permitted, determinstically generate each in turn.
+    // note this wastefully generates all orderings of ctrl qubits, despite that
+    // this has no effect on all API operations, but we carefully check anyway!
+    if (numPerms < maxPerms)
+        return GENERATE_COPY( disjointsublists(range(0,numQubits), numCtrls, numTargs) );
+
+    // otherwise generate as many random {ctrls,targs} as permitted
+    GENERATE_COPY( range(0,maxPerms) );
+    return getRandomFixedNumCtrlsTargs(numQubits, numCtrls, numTargs);
+}
+
+
+vector<int> GENERATE_TARGS(int numQubits, int numTargs) {
+    DEMAND( numQubits >= numTargs );
+
+    auto [ctrls, targs] = GENERATE_CTRLS_AND_TARGS(numQubits, 0, numTargs);
+    return targs;
 }

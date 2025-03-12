@@ -137,7 +137,17 @@ vector<qreal> getRandomProbabilities(int numProbs) {
 }
 
 
-vectortriple getRandomCtrlsStatesTargs(int numQubits, int minNumTargs, int maxNumTargsIncl) {
+listpair getRandomFixedNumCtrlsTargs(int numQubits, int numCtrls, int numTargs) {
+
+    vector<int> targsCtrls = getRandomSubRange(0, numQubits, numTargs + numCtrls);
+    vector<int> targs = getSublist(targsCtrls, 0, numTargs);
+    vector<int> ctrls = getSublist(targsCtrls, numTargs, numCtrls);
+
+    return tuple{ctrls,targs};
+}
+
+
+listtrio getRandomVariNumCtrlsStatesTargs(int numQubits, int minNumTargs, int maxNumTargsIncl) {
     DEMAND( minNumTargs <= maxNumTargsIncl );
     DEMAND( maxNumTargsIncl <= numQubits );
 
@@ -148,9 +158,8 @@ vectortriple getRandomCtrlsStatesTargs(int numQubits, int minNumTargs, int maxNu
     int maxNumCtrls = numQubits - numTargs;
     int numCtrls = getRandomInt(minNumCtrls, maxNumCtrls+1);
 
-    vector<int> targsCtrls = getRandomSubRange(0, numQubits, numTargs + numCtrls);
-    vector<int> targs = getSublist(targsCtrls, 0, numTargs);
-    vector<int> ctrls = getSublist(targsCtrls, numTargs, numCtrls);
+    // distribute qubits randomly
+    auto [ctrls,targs] = getRandomFixedNumCtrlsTargs(numQubits, numCtrls, numTargs);
     vector<int> states = getRandomInts(0, 2, numCtrls);
 
     return tuple{ctrls,states,targs};

@@ -242,17 +242,17 @@ mkdir build
 cd build
 ```
 
-Compile the [examples](/examples/) and [tests](/tests) (without acceleration) using [cmake](https://cmake.org/) into a `build` folder:
+Compile the [minimum example](/examples/tutorials/min_example.cpp) using [cmake](https://cmake.org/):
 ```bash
-cmake .. -DBUILD_EXAMPLES=ON 
+cmake .. 
 make
 ```
-then run them with
+then run it with
 ```bash
 ./min_example
-ctest
 ```
-<br>
+
+See the [docs](docs/) for enabling acceleration and running the unit tests.
 
 ---------------------------------
 

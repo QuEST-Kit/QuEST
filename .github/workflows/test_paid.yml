@@ -1,0 +1,160 @@
+# Tests execution of v4 unit and integration tests
+# on paid runners using multithreading, GPU-
+# acceleration and distribution, only on Linux. 
+# As of 12/03/2025, these "large runners" cost:
+# - 16c/min for each ARM runner (OMP, MPI)
+# - 7c/min for each GPU runner (CUDA, cuQuantum)
+# where [setup, compile, run] take approximately
+# - omp: 40s, 70s,  145s  = 4m30s  = $0.68
+# - mpi: 85s, 124s, 1050s = 21m    = $3.36
+# - gpu: 30s, 150s, 490s  = 11m15s = $0.78
+# - cuq: 57s, 125s, 490s  = 11m    = $0.78
+# Ergo execution of this workflow costs ~$5.60.
+# Each bug costs me a coffee!
+# 
+# @author Tyson Jones
+
+name: test (paid, accelerated)
+
+
+# @todo
+# this workflow can only be run on the 'default' 
+# branch (i.e. master) when manually triggered by 
+# github actions, so as not to incur unexpected
+# costs. I want for this to be automatically 
+# enqueued but not run in a PR, requiring manual
+# approval - but I don't yet know how to do it!
+on:
+  workflow_dispatch:
+
+
+jobs:
+
+  # run multithreaded, distributed, and GPU-accelerated tests,
+  # with and without cuQuantum (excluding multi-GPU and v3)
+  accel-unit-test:
+    name: >
+      Linux
+      [${{ matrix.precision }}]
+      ${{ matrix.omp       == 'ON' && 'OMP'  || '' }}
+      ${{ matrix.mpi       == 'ON' && 'MPI'  || '' }}
+      ${{ matrix.cuda      == 'ON' && 'CUDA' || '' }}
+      ${{ matrix.cuquantum == 'ON' && 'CUQ'  || '' }}
+      unit v${{ matrix.version }}
+
+    # both OS are paid!
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # continue other jobs if any fail
+      fail-fast: false
+
+      # we will compile QuEST with all precisions but no parallelisation
+      matrix:
+        version:   [4]       # excluding v3 deprecated tests to save $$$
+        precision: [2]       # excluding 1 and 4 precision to save $$$
+        mpi:       [ON, OFF]
+        cuda:      [ON, OFF]
+        cuquantum: [ON, OFF]
+
+        # choose runners; CUDA jobs on GPU, CPU on ARM (multithreaded)
+        include:
+          - cuda: ON
+            omp: OFF
+            os: ubuntu-nvidia-gpu # 7c/min, ubuntu 24.08
+          - cuda: OFF
+            omp: ON
+            os: ubuntu22-arm-64cpu # 16c/min, cheaper than 64cpu x86, 
+            # note use of ubuntu v22.04 since MPICH mpiexec is bugged.
+            # see; https://github.com/mpi4py/setup-mpi/issues/13 
+
+        # don't run GPU + MPI jobs (too slow/costly on single GPU)
+        exclude:
+          - mpi:  ON
+            cuda: ON
+          - cuda:      OFF
+            cuquantum: ON
+
+    # constants
+    env:
+      build_dir: "build"
+
+      # GPU runner has a Tesla T4 16 GB
+      cuda_arch: 75
+
+      # CPU/MPI runner has 64 cores
+      mpi_exec: ./tests/tests
+      num_mpi_nodes: 16
+      num_mpi_threads: 4
+      num_omp_threads: 64
+
+      # tests will be non-comprehensive/faster to save $$$
+      num_qubit_perms: 10
+      test_all_deploys: OFF
+
+    # perform the job
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      - name: Setup CMake
+        run: sudo apt-get install -y cmake
+
+      # obtain MPI for distribution
+      - name: Setup MPI
+        if: ${{ matrix.mpi == 'ON' }}
+        uses: mpi4py/setup-mpi@v1
+
+      # obtain CUDA for GPU acceleration (cuQuantum needs cuBLAS)
+      - name: Setup CUDA
+        if: ${{ matrix.cuda == 'ON' }}
+        uses: Jimver/cuda-toolkit@v0.2.21
+        with:
+          method: network
+          sub-packages: '["nvcc", "cudart", "thrust"]'
+          non-cuda-sub-packages: ${{ matrix.cuquantum == 'ON' && '["libcublas"]' || '[]' }}
+
+      # obtain cuQuantum (version must match GPU Os = ubuntu 24.08)
+      - name: Setup cuQuantum
+        if: ${{ matrix.cuquantum == 'ON' }}
+        run: >
+          wget https://developer.download.nvidia.com/compute/cuquantum/redist/cuquantum/linux-x86_64/cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
+          tar -xvf cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
+          echo "CUQUANTUM_ROOT=cuquantum-linux-x86_64-24.08.0.5_cuda12-archive" >> $GITHUB_ENV
+
+      - name: Configure CMake
+        run: >
+          cmake -B ${{ env.build_dir }}
+          -DENABLE_TESTING=ON
+          -DFLOAT_PRECISION=${{ matrix.precision }}
+          -DENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
+          -DENABLE_MULTITHREADING=${{ matrix.omp }}
+          -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
+          -DENABLE_CUDA=${{ matrix.cuda }}
+          -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
+          -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
+          -DTEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}
+          -DTEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}
+
+      - name: Compile
+        run: cmake --build ${{ env.build_dir }} --parallel
+
+      # cannot use ctests when distributed, grr!
+      - name: Run multithreaded + distributed v4 tests (16 nodes, 4 threads eeach)
+        if: ${{ matrix.mpi == 'ON' }}
+        run: |
+          OMP_NUM_THREADS=${{ env.num_mpi_threads }} \
+          mpiexec -n ${{ env.num_mpi_nodes }} ${{ env.mpi_exec}}
+        working-directory: ${{ env.build_dir }}
+    
+      - name: Run GPU v4 tests
+        if: ${{ matrix.cuda == 'ON' }}
+        run: ctest --output-on-failure
+        working-directory: ${{ env.build_dir }}
+
+      - name: Run multithreaded v4 tests (64 threads ARM)
+        if: ${{ matrix.cuda == 'OFF' && matrix.mpi == 'OFF' }}
+        run: |
+          OMP_NUM_THREADS=${{ env.num_omp_threads }} \
+          ctest --output-on-failure
+        working-directory: ${{ env.build_dir }}

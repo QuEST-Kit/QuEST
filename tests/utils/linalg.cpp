@@ -53,6 +53,18 @@ int getBitAt(qindex num, int ind) {
     return (num >> ind) & 1;
 }
 
+int getNumPermutations(int n, int k) {
+    DEMAND( n >= k );
+    DEMAND( n <= 11 ); // else int overflow
+
+    // P(n, k) = n! / (n-k)!
+    qindex p = 1;
+    for (int t=n-k+1; t<=n; t++)
+        p *= t;
+
+    return p;
+}
+
 
 
 /*

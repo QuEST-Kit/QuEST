@@ -26,6 +26,7 @@
 #include "tests/utils/random.hpp"
 
 #include <tuple>
+
 using std::tuple;
 
 
@@ -508,7 +509,7 @@ qmatrix getReferenceMatrix(auto matrixRefGen, vector<int> targs, auto additional
 
     if constexpr (Args == pauligad) {
         PauliStr str = std::get<0>(additionalArgs);
-        qreal angle = std::get<1>(additionalArgs);
+        qreal angle  = std::get<1>(additionalArgs);
         qmatrix matr = getMatrix(str, targs);
         return getExponentialOfPauliMatrix(angle, matr);
     }
@@ -634,10 +635,10 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
         int numTargs = GENERATE_NUM_TARGS<Ctrls,Targs,Args>(numQubits);
         int numCtrls = GENERATE_NUM_CTRLS<Ctrls>(numQubits - numTargs);
         
-        // try all possible ctrls and targs
-        auto listpair = GENERATE_COPY( disjointsublists(range(0,numQubits), numCtrls, numTargs) );
-        vector<int> ctrls = std::get<0>(listpair);
-        vector<int> targs = std::get<1>(listpair);
+        // either try all possible ctrls and targs, or randomise them
+        auto ctrlsAndTargs = GENERATE_CTRLS_AND_TARGS( numQubits, numCtrls, numTargs );
+        vector<int> ctrls = std::get<0>(ctrlsAndTargs);
+        vector<int> targs = std::get<1>(ctrlsAndTargs);
 
         // randomise control states (if operation accepts them)
         vector<int> states = getRandomInts(0, 1+1, numCtrls * (Ctrls == anystates));

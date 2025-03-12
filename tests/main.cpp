@@ -73,6 +73,11 @@ public:
     using Catch::EventListenerBase::EventListenerBase;
     void testRunStarting(Catch::TestRunInfo const&) override {
 
+        /// @todo
+        /// near term: add #threads (needs to be added to QuESTEnv
+        ///   we hook into private QuEST functions)
+        /// far term: replace with something less hideous?
+
         // a full report is too verbose...
         // reportQuESTEnv();
 
@@ -85,8 +90,9 @@ public:
         std::cout << "  distributed:     " << env.isDistributed    << std::endl;
         std::cout << "  GPU-accelerated: " << env.isGpuAccelerated << std::endl;
         std::cout << "  cuQuantum:       " << (env.isGpuAccelerated && COMPILE_CUQUANTUM) << std::endl;
-        std::cout << "  node count:      " << env.numNodes         << std::endl;
-        std::cout << "  unit Qureg size: " << getNumCachedQubits() << std::endl;
+        std::cout << "  num nodes:       " << env.numNodes         << std::endl;
+        std::cout << "  num qubits:      " << getNumCachedQubits() << std::endl;
+        std::cout << "  num qubit perms: " << TEST_MAX_NUM_QUBIT_PERMUTATIONS << std::endl;
         std::cout << std::endl;
 
         std::cout << "Tested Qureg deployments:" << std::endl;

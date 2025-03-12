@@ -55,7 +55,7 @@ jobs:
           -DCMAKE_EXE_LINKER_FLAGS="${{ env.sanitiser_flags }}"
 
       - name: Compile with sanitiser
-        run: cmake --build ${{ env.build_dir }}
+        run: cmake --build ${{ env.build_dir }} --parallel
 
       # run unit tests in random order, excluding the integration tests
       # TODO:
@@ -95,7 +95,7 @@ jobs:
           -DFLOAT_PRECISION=${{ matrix.precision }}
 
       - name: Compile QuEST
-        run: cmake --build ${{ env.build_dir }}
+        run: cmake --build ${{ env.build_dir }} --parallel
   
       - name: Install valgrind
         run: sudo apt install -y valgrind
