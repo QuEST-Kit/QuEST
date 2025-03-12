@@ -28,7 +28,7 @@
  * @{
  */
  
-TEST_CASE( "placeholder", TEST_CATEGORY) {
+TEST_CASE( "placeholder1", TEST_CATEGORY) {
  
 }
  
