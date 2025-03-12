@@ -9,25 +9,88 @@
 name: test
 
 
+# DEBUG; temporarily triggering from this dev branch
 on:
   push:
     branches:
-      - v4
+      - ci-unit-tests
   pull_request:
     branches:
-      - v4
+      - ci-unit-tests
 
 
 jobs:
 
-  # run non-parallelised v3 and v4 unit tests
-  serial-unit-test:
-    name: >
-      serial v${{ matrix.version }} unit
-      ${{ matrix.os == 'ubuntu-latest' && 'Linux' || matrix.os == 'macos-latest' && 'MacOS' || 'Windows' }}
-      [${{ matrix.precision }}]
+  # # run non-parallelised v3 and v4 unit tests
+  # serial-unit-test:
+  #   name: >
+  #     serial v${{ matrix.version }} unit
+  #     ${{ matrix.os == 'ubuntu-latest' && 'Linux' || matrix.os == 'macos-latest' && 'MacOS' || 'Windows' }}
+  #     [${{ matrix.precision }}]
 
-    runs-on: ${{ matrix.os }}
+  #   runs-on: ${{ matrix.os }}
+
+  #   strategy:
+  #     # continue other jobs if any fail
+  #     fail-fast: false
+
+  #     # we will compile QuEST with all precisions but no parallelisation
+  #     matrix:
+  #       os: [ubuntu-latest, macos-latest, windows-latest]
+  #       version: [3, 4]
+  #       precision: [1, 2, 4]
+
+  #       # MSVC cannot compile deprecated v3 tests
+  #       exclude:
+  #         - os: windows-latest
+  #           version: 3
+            
+  #   # constants
+  #   env:
+  #     build_dir: "build"
+  #     depr_dir: "build/tests/deprecated"
+
+  #   # perform the job
+  #   steps:
+  #     - name: Get QuEST
+  #       uses: actions/checkout@v4
+
+  #     # compile serial unit tests, optionally include deprecated test
+  #     - name: Configure CMake
+  #       run: >
+  #         cmake -B ${{ env.build_dir }}
+  #         -DENABLE_TESTING=ON
+  #         -DENABLE_MULTITHREADING=OFF
+  #         -DENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
+  #         -DFLOAT_PRECISION=${{ matrix.precision }}
+
+  #     # force 'Release' build (needed by MSVC to enable optimisations)
+  #     - name: Compile
+  #       run: cmake --build ${{ env.build_dir }} --config Release
+
+  #     # run v4 unit tests in random order, excluding the integration tests
+  #     # TODO:
+  #     # ctest currently doesn't know of our Catch2 tags, so we
+  #     # are manually excluding each integration test by name
+  #     - name: Run v4 tests
+  #       if: ${{ matrix.version == 4 }}
+  #       run: ctest -j2 --output-on-failure --schedule-random -E "density evolution"
+  #       working-directory: ${{ env.build_dir }}
+
+  #     # run v3 unit tests in random order
+  #     - name: Run v3 tests
+  #       if: ${{ matrix.version == 3 }}
+  #       run: ctest -j2 --output-on-failure --schedule-random
+  #       working-directory: ${{ env.depr_dir }}
+
+
+
+  # run GPU-accelerated v3 and v4 unit tests
+  gpu-unit-test:
+    name: >
+      serial v${{ matrix.version }} unit Linux [${{ matrix.precision }}]
+
+    runs-on: ubuntu-nvidia-gpu
 
     strategy:
       # continue other jobs if any fail
@@ -35,52 +98,64 @@ jobs:
 
       # we will compile QuEST with all precisions but no parallelisation
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        version: [3, 4]
-        precision: [1, 2, 4]
-
-        # MSVC cannot compile deprecated v3 tests
-        exclude:
-          - os: windows-latest
-            version: 3
+        version: [4] # [3, 4]
+        precision: [2] # [1, 2] # quad precision illegal on GPU
+        cuquantum: [OFF] # [ON, OFF]
             
     # constants
     env:
       build_dir: "build"
+      depr_dir: "build/tests/deprecated"
+      cuda_arch: 75 # Tesla T4 16GB
 
     # perform the job
     steps:
+
+      # download QuEST
       - name: Get QuEST
         uses: actions/checkout@v4
 
-      # compile serial unit tests, optionally include deprecated test
+      # obtain CUDA for GPU acceleration (cuQuantum needs cuBLAS)
+      - name: Setup CUDA (non-MSVC)
+        uses: Jimver/cuda-toolkit@v0.2.21
+        with:
+          method: network
+          sub-packages: '["nvcc", "cudart", "thrust"]'
+          non-cuda-sub-packages: ${{ matrix.cuquantum == 'ON' && '["libcublas"]' || '[]' }}
+
+      # obtain cuQuantum on linux
+      - name: Setup cuQuantum
+        if: ${{ matrix.cuquantum == 'ON' }}
+        run: >
+          wget https://developer.download.nvidia.com/compute/cuquantum/redist/cuquantum/linux-x86_64/cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
+          tar -xvf cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
+          echo "CUQUANTUM_ROOT=cuquantum-linux-x86_64-24.08.0.5_cuda12-archive" >> $GITHUB_ENV
+
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
-          -DENABLE_TESTING=ON
-          -DENABLE_MULTITHREADING=OFF
-          -DENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
+          -DCMAKE_VERBOSE_MAKEFILE=ON
           -DFLOAT_PRECISION=${{ matrix.precision }}
+          -DENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
+          -DENABLE_MULTITHREADING=OFF
+          -DENABLE_DISTRIBUTION=OFF
+          -DENABLE_CUDA=ON
+          -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
+          -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
 
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --config Release
 
-      # run v4 unit tests in random order, excluding the integration tests
-      # TODO:
-      # ctest currently doesn't know of our Catch2 tags, so we
-      # are manually excluding each integration test by name
       - name: Run v4 tests
         if: ${{ matrix.version == 4 }}
-        run: ctest -j2 --output-on-failure --schedule-random -E "density evolution"
+        run: ctest --output-on-failure
         working-directory: ${{ env.build_dir }}
 
-      # run v3 unit tests in random order
       - name: Run v3 tests
         if: ${{ matrix.version == 3 }}
-        run: ctest -j2 --output-on-failure --schedule-random
-        working-directory: ${{ env.build_dir }}/tests/deprecated
-
+        run: ctest --output-on-failure
+        working-directory: ${{ env.depr_dir }}
 
 
 # TODO
