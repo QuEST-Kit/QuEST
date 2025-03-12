@@ -1,12 +1,12 @@
 # @author Oliver Thomson Brown
 # @author Erich Essmann (patches including MSVC support)
+# @author Tyson Jones (patches including clang multithreading)
 #
 # Contributions to previous builds from:
 #  - Ania Brown
 #  - Jacob Wilkins
 #  - Balint Koczor
 #  - Richard Meister
-#  - Tyson Jones
 #  - Gleb Struchalin
 #  - Sachin Compton
 #  - Christopher J. Anders
@@ -105,6 +105,34 @@ option(
   "Whether Catch2 v3 will be downloaded if it is not found. Turned ON by default."
   ON
 )
+
+string(CONCAT DESCRIPTON_OF_TEST_MAX_NUM_QUBIT_PERMUTATIONS  # for multiline option
+  "The maximum number of control and target qubit permutations under which to unit test each function. "
+  "Set to 0 (default) to test all permutations, or to a positive integer (e.g. 50) to accelerate the unit tests. "
+  "This is used to accelerate the unit tests, and has no effect when ENABLE_TESTING is OFF."
+)
+set(TEST_MAX_NUM_QUBIT_PERMUTATIONS 0
+  CACHE 
+  STRING 
+  "${DESCRIPTON_OF_TEST_MAX_NUM_QUBIT_PERMUTATIONS}"
+)
+if (ENABLE_TESTING)
+  set(PERM_STRING "${TEST_MAX_NUM_QUBIT_PERMUTATIONS} random")
+  if (TEST_MAX_NUM_QUBIT_PERMUTATIONS EQUAL 0)
+    set(PERM_STRING "all")
+  endif()
+  message(STATUS "Tests will use ${PERM_STRING} qubit permutations. Set TEST_MAX_NUM_QUBIT_PERMUTATIONS to modify.")
+endif()
+
+string(CONCAT DESCRIPTION_OF_TEST_ALL_DEPLOYMENTS  # for multiline option
+  "Whether unit tests will be run using all possible deployment combinations (i.e. OpenMP, CUDA, MPI) in-turn (ON), "
+  "or only once using all available deployments simultaneously (OFF). Turned ON by default. "
+  "This is used to accelerate the unit tests, and has no effect when ENABLE_TESTING is OFF."
+)
+option(TEST_ALL_DEPLOYMENTS "${DESCRIPTION_OF_TEST_ALL_DEPLOYMENTS}" ON)
+if (ENABLE_TESTING)
+  message(STATUS "Testing all deployments is turned ${TEST_ALL_DEPLOYMENTS}. Set TEST_ALL_DEPLOYMENTS to modify.")
+endif()
 
 # Multithreading
 option(
@@ -332,6 +360,9 @@ if (ENABLE_DEPRECATED_API)
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+depr")
   endif()
+
+else()
+  target_compile_definitions(QuEST PRIVATE INCLUDE_DEPRECATED_FUNCTIONS=0)
 endif()
 
 # add math library

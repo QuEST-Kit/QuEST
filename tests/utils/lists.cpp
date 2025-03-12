@@ -254,7 +254,7 @@ listpair GENERATE_CTRLS_AND_TARGS(int numQubits, int numCtrls, int numTargs) {
 
     // impose a limit on the number of {ctrls,targs} to generate (max-int if none set)
     int numPerms = getNumPermutations(numQubits, numCtrls + numTargs);
-    int maxPerms = MAX_NUM_QUBIT_PERMUTATIONS;
+    int maxPerms = TEST_MAX_NUM_QUBIT_PERMUTATIONS;
     if (maxPerms == 0)
         maxPerms = std::numeric_limits<int>::max();
 

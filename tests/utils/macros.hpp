@@ -16,13 +16,21 @@
 
 /*
  * macros which affect the speed and rigour of the unit tests, useful
- * for accelerating tests on particular platforms (e.g. paid github runners)
+ * for accelerating tests on particular platforms (e.g. paid github runners).
+ * The default values are those which perform the most rigorous tests at
+ * the slowest speed, so adjusting these macros accelerates tests.
  */
 
-// sensible value to accelerate tests is 50
-#ifndef MAX_NUM_QUBIT_PERMUTATIONS
-#define MAX_NUM_QUBIT_PERMUTATIONS 0
+// 0 = perform all, and a sensible value to accelerate tests is 50
+#ifndef TEST_MAX_NUM_QUBIT_PERMUTATIONS
+#define TEST_MAX_NUM_QUBIT_PERMUTATIONS 0
 #endif
+
+// 0 = use all available deployments at once, 1 = try all combinations in-turn
+#ifndef TEST_ALL_DEPLOYMENTS
+#define TEST_ALL_DEPLOYMENTS 1
+#endif
+
 
 
 /*

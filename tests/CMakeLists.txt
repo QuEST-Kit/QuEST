@@ -1,5 +1,5 @@
 # @author Oliver Thomson Brown
-# @author Tyson Jones (MPI ctests)
+# @author Tyson Jones (macros and MPI ctests)
 
 add_executable(tests
   main.cpp
@@ -16,13 +16,18 @@ endif()
 
 
 # map test-related cmake vars to preprocessors
-if (DEFINED MAX_NUM_QUBIT_PERMUTATIONS)
-  target_compile_definitions(tests PRIVATE MAX_NUM_QUBIT_PERMUTATIONS=${MAX_NUM_QUBIT_PERMUTATIONS})
-endif()
+target_compile_definitions(tests PRIVATE TEST_MAX_NUM_QUBIT_PERMUTATIONS=${TEST_MAX_NUM_QUBIT_PERMUTATIONS})
+target_compile_definitions(tests PRIVATE TEST_ALL_DEPLOYMENTS=$<BOOL:${TEST_ALL_DEPLOYMENTS}>)
 
 
 # when QuEST is MPI-compiled, launch CTest distributed,
-# with as many nodes as set in var NUM_CTEST_MPI_PROCS
+# with as many nodes as set in var NUM_CTEST_MPI_PROCS.
+# note that building/compilation will fail if this exceeds
+# the number of available system slots which is a nuisance
+# if compiling on a smaller system with the intention of
+# running ctest on a larger one. Alas the --oversubscribe
+# flag is OpenMPI specific (and not necessary at all with
+# e.g. MPICH) so we forego solving this for now
 if (ENABLE_DISTRIBUTION)
 
   if (DEFINED NUM_CTEST_MPI_PROCS)
@@ -38,4 +43,5 @@ if (ENABLE_DISTRIBUTION)
 endif()
 
 
+# call after MPI setup above to distribute CTest
 catch_discover_tests(tests)
