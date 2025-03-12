@@ -115,8 +115,12 @@ jobs:
       - name: Get QuEST
         uses: actions/checkout@v4
 
+      # download cmake (it's missing on the GPU runner for some reason)
+      - name: Setup CMake
+        run: sudo apt-get install -y cmake
+
       # obtain CUDA for GPU acceleration (cuQuantum needs cuBLAS)
-      - name: Setup CUDA (non-MSVC)
+      - name: Setup CUDA
         uses: Jimver/cuda-toolkit@v0.2.21
         with:
           method: network
