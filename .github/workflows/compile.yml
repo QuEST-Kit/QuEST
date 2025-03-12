@@ -33,6 +33,7 @@ jobs:
       [${{ matrix.precision }}]
       ${{ matrix.omp       == 'ON' && 'OMP'  || '' }}
       ${{ matrix.mpi       == 'ON' && 'MPI'  || '' }}
+      ${{ matrix.mpi       == 'ON' && format('({0})',matrix.mpilib) || '' }}
       ${{ matrix.cuda      == 'ON' && 'CUDA' || '' }}
       ${{ matrix.hip       == 'ON' && 'HIP'  || '' }}
       ${{ matrix.cuquantum == 'ON' && 'CUQ'  || '' }}
@@ -108,6 +109,8 @@ jobs:
             mpilib: 'impi'  # Intel MPI
           - mpi: OFF
             mpilib: 'msmpi' # Microsoft MPI
+          - mpi: ON
+            mpilib: ''      # must pick lib when using MPI
 
           # exclude OS-incompatible MPI libraries
           - os: ubuntu-latest
