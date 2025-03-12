@@ -28,7 +28,11 @@ jobs:
   # including v4 integration tests, on paid runner
   gpu-unit-test:
     name: >
-      GPU v${{ matrix.version }} unit Linux [${{ matrix.precision }}]
+      Linux 
+      [${{ matrix.precision }}]
+      GPU
+      ${{ matrix.cuquantum == 'ON' && 'CUQ'  || '' }}
+      unit v${{ matrix.version }}
 
     # BEWARE this is a PAID runner (presently 7c/min per runner)
     runs-on: ubuntu-nvidia-gpu

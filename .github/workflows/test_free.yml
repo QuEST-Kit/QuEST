@@ -24,9 +24,10 @@ jobs:
   # excluding the v4 integration tests, for free
   serial-unit-test:
     name: >
-      serial v${{ matrix.version }} unit
       ${{ matrix.os == 'ubuntu-latest' && 'Linux' || matrix.os == 'macos-latest' && 'MacOS' || 'Windows' }}
       [${{ matrix.precision }}]
+      serial
+      unit v${{ matrix.version }}
 
     runs-on: ${{ matrix.os }}
 
