@@ -1,4 +1,4 @@
-# Tests execution of the v3 and v4 unit tests
+# Tests execution of v4 unit and integration tests
 # on paid runners using multithreading, GPU-
 # accelerationa and distribution. This can be
 # expensive; a single execution of this workflow
@@ -8,7 +8,7 @@
 # 
 # @author Tyson Jones
 
-name: test (paid)
+name: test (paid, accelerated)
 
 
 # DEBUG; temporarily triggering from this dev branch;
@@ -24,18 +24,20 @@ on:
 
 jobs:
 
-  # run GPU-accelerated v3 and v4 unit tests,
-  # including v4 integration tests, on paid runner
-  gpu-unit-test:
+  # run multithreaded, distributed, and GPU-accelerated tests,
+  # with and without cuQuantum (excluding multi-GPU and v3)
+  accel-unit-test:
     name: >
-      Linux 
+      Linux
       [${{ matrix.precision }}]
-      GPU
+      ${{ matrix.omp       == 'ON' && 'OMP'  || '' }}
+      ${{ matrix.mpi       == 'ON' && 'MPI'  || '' }}
+      ${{ matrix.cuda      == 'ON' && 'CUDA' || '' }}
       ${{ matrix.cuquantum == 'ON' && 'CUQ'  || '' }}
       unit v${{ matrix.version }}
 
-    # BEWARE this is a PAID runner (presently 7c/min per runner)
-    runs-on: ubuntu-nvidia-gpu
+    # both OS are paid!
+    runs-on: ${{ matrix.os }}
 
     strategy:
       # continue other jobs if any fail
@@ -43,37 +45,52 @@ jobs:
 
       # we will compile QuEST with all precisions but no parallelisation
       matrix:
-        version: [3, 4]
-        precision: [1, 2] # quad precision illegal on GPU
+        version:   [4]       # excluding v3 deprecated tests to save $$$
+        precision: [2]       # excluding 1 and 4 precision to save $$$
+        omp:       [ON]      # always use multithreading to save time = $$$
+        mpi:       [ON, OFF]
+        cuda:      [ON, OFF]
         cuquantum: [ON, OFF]
-            
+
+        # choose runners; CUDA jobs on x86 GPU, else ARM
+        include:
+          - cuda: ON
+            os: ubuntu-nvidia-gpu
+          - cuda: OFF
+            os: ubuntu-arm-64cpu # cheaper than 64cpu x86
+
+        # don't run GPU + MPI jobs (too slow/costly on single GPU)
+        exclude:
+          - mpi:  ON
+            cuda: ON
+          - cuda:      OFF
+            cuquantum: OFF
+
     # constants
     env:
       build_dir: "build"
-      depr_dir: "build/tests/deprecated"
+      cuda_arch: 75           # Tesla T4 16 GB
 
-      # runner has a Tesla T4 16GB
-      cuda_arch: 75 
+      mpi_exec: ./tests/tests
+      num_mpi_nodes: 16
+      num_mpi_threads: 4
 
-      # only run GPU tests with 10 random qubit perms (because runner is paid)
-      num_qubit_perms: 10 # make smaller to accelerate but worsen test coverage
-      test_all_deploys: OFF # should always be OFF to avoid superfluously testing CPU
+      num_qubit_perms: 10     # 0 (all) too slow
+      test_all_deploys: OFF   # ON is very wasteful
 
     # perform the job
     steps:
-
-      # download QuEST
       - name: Get QuEST
         uses: actions/checkout@v4
 
-      # download cmake (it's missing on the GPU runner for some reason)
-      - name: Setup CMake
-        run: sudo apt-get install -y cmake
+      # obtain MPI for distribution
+      - name: Setup MPI
+        if: ${{ matrix.mpi == 'ON' }}
+        uses: mpi4py/setup-mpi@v1
 
-      # obtain CUDA for GPU acceleration (cuQuantum needs cuBLAS).
-      # this appears wastefully duplicated between runs, but takes
-      # only ~25s and is occluded by the ~30min test runtimes
+      # obtain CUDA for GPU acceleration (cuQuantum needs cuBLAS)
       - name: Setup CUDA
+        if: ${{ matrix.cuda == 'ON' }}
         uses: Jimver/cuda-toolkit@v0.2.21
         with:
           method: network
@@ -94,23 +111,31 @@ jobs:
           -DENABLE_TESTING=ON
           -DFLOAT_PRECISION=${{ matrix.precision }}
           -DENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
-          -DENABLE_MULTITHREADING=OFF
-          -DENABLE_DISTRIBUTION=OFF
-          -DENABLE_CUDA=ON
+          -DENABLE_MULTITHREADING=${{ matrix.omp }}
+          -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
+          -DENABLE_CUDA=${{ matrix.cuda }}
           -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
-          -DTEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}
-          -DTEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}
 
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --parallel
 
-      - name: Run v4 tests
-        if: ${{ matrix.version == 4 }}
+      # cannot use ctests when distributed, grr!
+      - name: Run distributed v4 tests
+        if: ${{ matrix.mpi == 'ON' }}
+        run: |
+          OMP_NUM_THREADS=${{ env.num_mpi_threads }} \
+          mpirun -np ${{ env.num_mpi_nodes }} ${{ env.mpi_exec}}
+        working-directory: ${{ env.build_dir }}
+         
+      - name: Run GPU v4 tests
+        if: ${{ matrix.cuda == 'ON' }}
         run: ctest --output-on-failure
         working-directory: ${{ env.build_dir }}
 
-      - name: Run v3 tests
-        if: ${{ matrix.version == 3 }}
-        run: ctest --output-on-failure
-        working-directory: ${{ env.depr_dir }}
+      - name: Run multithreaded v4 tests
+        if: ${{ matrix.cuda == 'OFF' && matrix.mpi == 'OFF' }}
+        run: |
+          OMP_NUM_THREADS=${{ env.num_mpi_threads }} \
+          ctest --output-on-failure
+        working-directory: ${{ env.build_dir }}

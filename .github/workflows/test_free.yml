@@ -6,7 +6,7 @@
 # 
 # @author Tyson Jones
 
-name: test (free)
+name: test (free, serial)
 
 
 # debug; temporary changes to ci-unit-tests from v4
