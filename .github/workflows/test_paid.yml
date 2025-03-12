@@ -1,0 +1,112 @@
+# Tests execution of the v3 and v4 unit tests
+# on paid runners using multithreading, GPU-
+# accelerationa and distribution. This can be
+# expensive; a single execution of this workflow
+# is expected to cost...
+#
+# TODO
+# 
+# @author Tyson Jones
+
+name: test (paid)
+
+
+# DEBUG; temporarily triggering from this dev branch;
+# we want to move it to some manually-launched main branch
+on:
+  push:
+    branches:
+      - ci-unit-tests
+  pull_request:
+    branches:
+      - ci-unit-tests
+
+
+jobs:
+
+  # run GPU-accelerated v3 and v4 unit tests,
+  # including v4 integration tests, on paid runner
+  gpu-unit-test:
+    name: >
+      GPU v${{ matrix.version }} unit Linux [${{ matrix.precision }}]
+
+    # BEWARE this is a PAID runner (presently 7c/min per runner)
+    runs-on: ubuntu-nvidia-gpu
+
+    strategy:
+      # continue other jobs if any fail
+      fail-fast: false
+
+      # we will compile QuEST with all precisions but no parallelisation
+      matrix:
+        version: [3, 4]
+        precision: [1, 2] # quad precision illegal on GPU
+        cuquantum: [ON, OFF]
+            
+    # constants
+    env:
+      build_dir: "build"
+      depr_dir: "build/tests/deprecated"
+
+      # runner has a Tesla T4 16GB
+      cuda_arch: 75 
+
+      # only run GPU tests with 10 random qubit perms (because runner is paid)
+      num_qubit_perms: 10 # make smaller to accelerate but worsen test coverage
+      test_all_deploys: OFF # should always be OFF to avoid superfluously testing CPU
+
+    # perform the job
+    steps:
+
+      # download QuEST
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      # download cmake (it's missing on the GPU runner for some reason)
+      - name: Setup CMake
+        run: sudo apt-get install -y cmake
+
+      # obtain CUDA for GPU acceleration (cuQuantum needs cuBLAS).
+      # this appears wastefully duplicated between runs, but takes
+      # only ~25s and is occluded by the ~30min test runtimes
+      - name: Setup CUDA
+        uses: Jimver/cuda-toolkit@v0.2.21
+        with:
+          method: network
+          sub-packages: '["nvcc", "cudart", "thrust"]'
+          non-cuda-sub-packages: ${{ matrix.cuquantum == 'ON' && '["libcublas"]' || '[]' }}
+
+      # obtain cuQuantum on linux
+      - name: Setup cuQuantum
+        if: ${{ matrix.cuquantum == 'ON' }}
+        run: >
+          wget https://developer.download.nvidia.com/compute/cuquantum/redist/cuquantum/linux-x86_64/cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
+          tar -xvf cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
+          echo "CUQUANTUM_ROOT=cuquantum-linux-x86_64-24.08.0.5_cuda12-archive" >> $GITHUB_ENV
+
+      - name: Configure CMake
+        run: >
+          cmake -B ${{ env.build_dir }}
+          -DENABLE_TESTING=ON
+          -DFLOAT_PRECISION=${{ matrix.precision }}
+          -DENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
+          -DENABLE_MULTITHREADING=OFF
+          -DENABLE_DISTRIBUTION=OFF
+          -DENABLE_CUDA=ON
+          -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
+          -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
+          -DTEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}
+          -DTEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}
+
+      - name: Compile
+        run: cmake --build ${{ env.build_dir }}
+
+      - name: Run v4 tests
+        if: ${{ matrix.version == 4 }}
+        run: ctest --output-on-failure
+        working-directory: ${{ env.build_dir }}
+
+      - name: Run v3 tests
+        if: ${{ matrix.version == 3 }}
+        run: ctest --output-on-failure
+        working-directory: ${{ env.depr_dir }}
