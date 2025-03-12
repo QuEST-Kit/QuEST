@@ -50,6 +50,10 @@ jobs:
   #     build_dir: "build"
   #     depr_dir: "build/tests/deprecated"
 
+  #     # run all slow, rigorous tests (because runner is free)
+  #     num_qubit_perms: 0
+  #     test_all_deploys: ON
+
   #   # perform the job
   #   steps:
   #     - name: Get QuEST
@@ -63,6 +67,8 @@ jobs:
   #         -DENABLE_MULTITHREADING=OFF
   #         -DENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
   #         -DFLOAT_PRECISION=${{ matrix.precision }}
+  #         -DTEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}
+  #         -DTEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}
 
   #     # force 'Release' build (needed by MSVC to enable optimisations)
   #     - name: Compile
@@ -106,7 +112,13 @@ jobs:
     env:
       build_dir: "build"
       depr_dir: "build/tests/deprecated"
-      cuda_arch: 75 # Tesla T4 16GB
+
+      # runner has a Tesla T4 16GB
+      cuda_arch: 75 
+
+      # only run GPU tests with 50 random qubit perms (because runner is paid)
+      num_qubit_perms: 50
+      test_all_deploys: OFF
 
     # perform the job
     steps:
@@ -138,7 +150,7 @@ jobs:
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
-          -DCMAKE_VERBOSE_MAKEFILE=ON
+          -DENABLE_TESTING=ON
           -DFLOAT_PRECISION=${{ matrix.precision }}
           -DENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
           -DENABLE_MULTITHREADING=OFF
@@ -146,6 +158,8 @@ jobs:
           -DENABLE_CUDA=ON
           -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
+          -DTEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}
+          -DTEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}
 
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
