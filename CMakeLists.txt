@@ -96,7 +96,7 @@ message(STATUS "Examples are turned ${BUILD_EXAMPLES}. Set BUILD_EXAMPLES to mod
 option(
   ENABLE_TESTING
   "Whether the test suite will be built alongside the QuEST library. Turned ON by default."
-  ON
+  OFF
 )
 message(STATUS "Testing is turned ${ENABLE_TESTING}. Set ENABLE_TESTING to modify.")
 

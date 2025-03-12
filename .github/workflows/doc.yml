@@ -35,24 +35,29 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
+    env:
+      doxy_file: utils/docs/Doxyfile
+      doxy_out: Doxygen_doc/html
+      build_dir: "build"
+
     steps:
       - name: obtain copy of repository
         uses: actions/checkout@v4
 
-      - name: run doxygen to generate doc, outputting to Doxygen_doc/html
+      - name: generate doc with doxygen
         uses: mattnotmitt/doxygen-action@v1.12.0
         with:
-          doxyfile-path: utils/docs/Doxyfile
+          doxyfile-path: ${{ env.doxy_file }}
           enable-latex: true
 
-      - name: Setup Pages
+      - name: Setup Github Pages
         uses: actions/configure-pages@v5
         
-      - name: Upload artifact
+      - name: Upload doc as artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./Doxygen_doc/html
+          path: ./${{ env.doxy_out }}
           
-      - name: Deploy to GitHub Pages
+      - name: Deploy doc to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

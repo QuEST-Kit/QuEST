@@ -8,6 +8,8 @@
 # includes the v4 unit and integration tests, the
 # deprecated v3 tests (when possible), and all the
 # example programs. No compiled execs are run however.
+# Note that ARM compilation is not yet tested here,
+# but in fact Linux ARM is used by a paid test runner.
 #
 # @author Tyson Jones
 
@@ -229,9 +231,3 @@ jobs:
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --config Release --parallel
-
-
-
-# TODO:
-# - ARM compilation (on paid linux and windows runners)
-# - CUDA-aware MPI?!?!?!
