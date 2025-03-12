@@ -55,6 +55,7 @@ jobs:
         cuda:      [ON, OFF]
         hip:       [ON, OFF]
         cuquantum: [ON, OFF]
+        mpilib:    ['', 'mpich', 'ompi', 'impi', 'msmpi']
 
         # disable deprecated API on MSVC, and assign unique compilers,
         # so that we can concisely consult e.g. matrix.compiler=='cl'
@@ -97,6 +98,28 @@ jobs:
             os: windows-latest
           - cuquantum: ON
             os: macos-latest
+
+          # don't enumerate MPI libraries when not using MPI
+          - mpi: OFF
+            mpilib: 'mpich' # MPICH
+          - mpi: OFF
+            mpilib: 'ompi'  # OpenMPI
+          - mpi: OFF
+            mpilib: 'impi'  # Intel MPI
+          - mpi: OFF
+            mpilib: 'msmpi' # Microsoft MPI
+
+          # exclude OS-incompatible MPI libraries
+          - os: ubuntu-latest
+            mpilib: 'msmpi'    # Linux:   [MPICH, OpenMPI, Intel MPI]
+          - os: macos-latest
+            mpilib: 'msmpi'    # MacOS:   [MPICH, OpenMPI]
+          - os: macos-latest
+            mpilib: 'impi'
+          - os: windows-latest
+            mpilib: 'mpich'    # Windows: [Intel MPI, MS MPI]
+          - os: windows-latest
+            mpilib: 'ompi'
 
           # cannot presently install HIP on Windows CI (times out)
           - hip: ON
