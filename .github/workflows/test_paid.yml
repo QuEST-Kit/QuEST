@@ -48,17 +48,20 @@ jobs:
       matrix:
         version:   [4]       # excluding v3 deprecated tests to save $$$
         precision: [2]       # excluding 1 and 4 precision to save $$$
-        omp:       [ON]      # always use multithreading to save time = $$$
         mpi:       [ON, OFF]
         cuda:      [ON, OFF]
         cuquantum: [ON, OFF]
 
-        # choose runners; CUDA jobs on x86 GPU, else ARM
+        # choose runners; CUDA jobs on GPU, CPU on ARM (multithreaded)
         include:
           - cuda: ON
+            omp: OFF
             os: ubuntu-nvidia-gpu # 7c/min
           - cuda: OFF
-            os: ubuntu-arm-64cpu # 16c/min, cheaper than 64cpu x86
+            omp: ON
+            os: ubuntu22-arm-64cpu # 16c/min, cheaper than 64cpu x86, 
+            # note use of Ubuntu v22.04 since MPICH mpiexec is bugged.
+            # see; https://github.com/mpi4py/setup-mpi/issues/13 
 
         # don't run GPU + MPI jobs (too slow/costly on single GPU)
         exclude:
