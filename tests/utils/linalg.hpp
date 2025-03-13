@@ -39,6 +39,7 @@ bool isApproxUnitary(qmatrix);
 
 qcomp getTrace(qmatrix m);
 qmatrix getTranspose(qmatrix);
+qmatrix getConjugate(qmatrix);
 qmatrix getConjugateTranspose(qmatrix);
 qmatrix getPowerOfDiagonalMatrix(qmatrix diag, qcomp power);
 qmatrix getExponentialOfDiagonalMatrix(qmatrix diag);
@@ -53,6 +54,7 @@ qmatrix getProjector(int outcome);
 qmatrix getProjector(vector<int> targets, vector<int> outcomes, int numQubits);
 qmatrix getPartialTrace(qmatrix matrix, vector<int> targets);
 qmatrix getControlledMatrix(qmatrix matrix, int numCtrls);
+qmatrix getSuperOperator(vector<qmatrix> matrices);
 
 bool isApproxCPTP(vector<qmatrix>);
 

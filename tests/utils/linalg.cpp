@@ -196,6 +196,16 @@ qmatrix getTranspose(qmatrix m) {
 }
 
 
+qmatrix getConjugate(qmatrix m) {
+
+    for (auto& row : m)
+        for (auto& elem : row)
+            elem = conj(elem);
+
+    return m;
+}
+
+
 qmatrix getConjugateTranspose(qmatrix m) {
     DEMAND( m.size() > 0 );
 
@@ -348,6 +358,20 @@ qmatrix getControlledMatrix(qmatrix matrix, int numCtrls) {
     
     qmatrix out = getIdentityMatrix(dim);
     setSubMatrix(out, matrix, off, off);
+
+    return out;
+}
+
+
+qmatrix getSuperOperator(vector<qmatrix> matrices) {
+    DEMAND( matrices.size() > 0 );
+
+    size_t dim = matrices[0].size();
+
+    // out = sum_m conj(m) (x) m
+    qmatrix out = getZeroMatrix(dim * dim);
+    for (auto& matr : matrices)
+        out += getKroneckerProduct(getConjugate(matr), matr);
 
     return out;
 }

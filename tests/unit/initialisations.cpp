@@ -367,6 +367,9 @@ TEST_CASE( "setQuregToRenormalized", TEST_CATEGORY ) {
         qvector refVec = getRandomVector(dim);
         qmatrix refMat = getRandomMatrix(dim);
 
+        // eliminate random chance of tr(refMat)=0, triggering validation
+        refMat[0][0] = 9999;
+
         // [=] stores current (pre-normalised) reference objects
         auto funcVec = [=](Qureg qureg) { setQureg(qureg, refVec); setQuregToRenormalized(qureg); };
         auto funcMat = [=](Qureg qureg) { setQureg(qureg, refMat); setQuregToRenormalized(qureg); };

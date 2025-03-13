@@ -119,7 +119,7 @@ namespace VariableSizeParameterisedMatrices {
  * section, so are accounted distinctly.
  */
 
-void testQuregIsCorrectOnAllDeployments(quregCache& quregs, auto& reference, auto& function) {
+void testQuregIsCorrectOnAllDeployments(quregCache quregs, auto& reference, auto& function) {
 
     for (auto& [label, qureg]: quregs) {
 
@@ -624,13 +624,11 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
 
     assertNumQubitsFlagsAreValid(Ctrls, Targs);
 
-    // use existing cached Quregs
-    auto statevecQuregs = getCachedStatevecs();
-    auto densmatrQuregs = getCachedDensmatrs();
-
     SECTION( LABEL_CORRECTNESS ) {
 
         int numQubits = getNumCachedQubits();
+        auto statevecQuregs = getCachedStatevecs();
+        auto densmatrQuregs = getCachedDensmatrs();
         qvector statevecRef = getZeroVector(getPow2(numQubits));
         qmatrix densmatrRef = getZeroMatrix(getPow2(numQubits));
 
@@ -735,8 +733,7 @@ TEST_ANY_CTRL_OPERATION( CompMatr,  any, compmatr, nullptr );
 TEST_ANY_CTRL_OPERATION( DiagMatr1, one, diagmatr, nullptr );
 TEST_ANY_CTRL_OPERATION( DiagMatr2, two, diagmatr, nullptr );
 TEST_ANY_CTRL_OPERATION( DiagMatr,  any, diagmatr, nullptr );
-
-TEST_ANY_CTRL_OPERATION( DiagMatrPower,  any, diagpower, nullptr );
+TEST_ANY_CTRL_OPERATION( DiagMatrPower, any, diagpower, nullptr );
 
 TEST_ANY_CTRL_OPERATION( Hadamard, one, none, FixedMatrices::H );
 TEST_ANY_CTRL_OPERATION( PauliX,   one, none, FixedMatrices::X );
@@ -780,6 +777,45 @@ TEST_CASE( "applyMultiQubitPhaseFlip", TEST_CATEGORY ) { testOperation<zero,any,
 TEST_CASE( "applyPhaseShift",           TEST_CATEGORY ) { testOperation<zero,one,scalar>(applyPhaseShift,           ParameterisedMatrices::PS); }
 TEST_CASE( "applyTwoQubitPhaseShift",   TEST_CATEGORY ) { testOperation<zero,two,scalar>(applyTwoQubitPhaseShift,   ParameterisedMatrices::PS2); }
 TEST_CASE( "applyMultiQubitPhaseShift", TEST_CATEGORY ) { testOperation<zero,any,scalar>(applyMultiQubitPhaseShift, VariableSizeParameterisedMatrices::PS); }
+
+
+TEST_CASE( "applySuperOp", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        int numQubits = getNumCachedQubits();
+        auto densmatrQuregs = getCachedDensmatrs();
+        qmatrix densmatrRef = getZeroMatrix(getPow2(numQubits));
+
+        int maxFlag = TEST_MAX_NUM_SUPEROP_TARGETS;
+        int maxNumTargs = (maxFlag != 0 && numQubits > maxFlag)?
+            maxFlag : numQubits;
+
+        int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
+        auto targs = GENERATE_TARGS( numQubits, numTargs );
+
+        // reference state will be modified by the Kraus map
+        vector<qmatrix> kraus = getRandomKrausMap(numTargs, getRandomInt(1,5));
+        qmatrix operatorRef = getSuperOperator(kraus);
+
+        // while the Qureg will be modified by the superoperator
+        SuperOp superOp = createSuperOp(numTargs);
+        setSuperOp(superOp, operatorRef);
+
+        auto testFunc = [&](Qureg qureg, qmatrix refMat) {
+            applySuperOp(qureg, targs.data(), numTargs, superOp);
+            applyReferenceOperator(densmatrRef, targs, kraus);
+        };
+
+        CAPTURE( targs );
+        SECTION( LABEL_DENSMATR ) { testQuregIsCorrectOnAllDeployments(densmatrQuregs, densmatrRef, testFunc); }
+
+        destroySuperOp(superOp);
+    }
+
+    /// @todo input validation
+}
+
 
 /** @} (end defgroup) */
 
