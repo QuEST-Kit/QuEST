@@ -3748,7 +3748,11 @@ void validate_quregRenormProbIsNotZero(qreal prob, const char* caller) {
 
     /// @todo include 'prob' in error message when non-integers are supported
 
-    assertThat(prob > global_validationEpsilon, report::QUREG_RENORM_PROB_IS_ZERO, caller);
+    // note use abs(prob) of in lieu of prob; we permit the probability
+    // to be negative as can happen during setQuregToRenormalized() when
+    // given an invalid density-matrix. We only require the magnitude is
+    // non-zero so that division doesn't numerically diverge
+    assertThat(abs(prob) > global_validationEpsilon, report::QUREG_RENORM_PROB_IS_ZERO, caller);
 }
 
 void validate_numInitRandomPureStates(qindex numPureStates,  const char* caller) {

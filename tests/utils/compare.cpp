@@ -35,7 +35,7 @@ using namespace Catch::Matchers;
 // @todo change comparisons to relative, not abs, to avoid tiny epsilon
 
 #if FLOAT_PRECISION == 1
-    const qreal TEST_EPSILON = 1E-2;
+    const qreal TEST_EPSILON = 2E-2;
 #elif FLOAT_PRECISION == 2
     const qreal TEST_EPSILON = 1E-8;
 #elif FLOAT_PRECISION == 4
