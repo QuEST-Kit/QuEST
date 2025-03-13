@@ -372,8 +372,6 @@ template <typename T>
 bool isUnitary(T elems, qindex dim, qreal eps) {
     assert_utilsGivenNonZeroEpsilon(eps);
 
-    qreal epsSq = eps * eps;
-
     // check m * dagger(m) == identity
     for (qindex r=0; r<dim; r++) {
         for (qindex c=0; c<dim; c++) {
@@ -386,7 +384,7 @@ bool isUnitary(T elems, qindex dim, qreal eps) {
             // check if further than epsilon from identity[r,c]
             qcomp dif = elem - qcomp(r == c, 0);
             qreal distSq = norm(dif);
-            if (distSq > epsSq)
+            if (distSq > eps)
                 return false;
         }
     }
@@ -469,15 +467,13 @@ template <typename T>
 bool isHermitian(T elems, qindex dim, qreal eps) {
     assert_utilsGivenNonZeroEpsilon(eps);
 
-    qreal epsSq = eps * eps;
-
     // check adj(elems) == elems
     for (qindex r=0; r<dim; r++) {
         for (qindex c=0; c<r; c++) {
 
             qcomp dif = elems[r][c] - conj(elems[c][r]);
             qreal distSq = norm(dif);
-            if (distSq > epsSq)
+            if (distSq > eps)
                 return false;
         }
     }
@@ -572,8 +568,6 @@ bool util_isCPTP(KrausMap map, qreal eps) {
     /// otherwise, if matrix is large, we should potentially
     /// use a multithreaded routine
 
-    qreal epsSquared = eps * eps;
-
     // each whether each element satisfies Identity = sum dagger(m)*m
     for (qindex r=0; r<map.numRows; r++) {
         for (qindex c=0; c<map.numRows; c++) {
@@ -586,7 +580,7 @@ bool util_isCPTP(KrausMap map, qreal eps) {
 
             // fail if too distant from Identity element
             qreal distSquared = norm(elem - (r==c));
-            if (distSquared > epsSquared)   
+            if (distSquared > eps)   
                 return false;
         }
     }
