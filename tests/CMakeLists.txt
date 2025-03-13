@@ -17,6 +17,7 @@ endif()
 
 # map test-related cmake vars to preprocessors
 target_compile_definitions(tests PRIVATE TEST_MAX_NUM_QUBIT_PERMUTATIONS=${TEST_MAX_NUM_QUBIT_PERMUTATIONS})
+target_compile_definitions(tests PRIVATE TEST_MAX_NUM_SUPEROP_TARGETS=${TEST_MAX_NUM_SUPEROP_TARGETS})
 target_compile_definitions(tests PRIVATE TEST_ALL_DEPLOYMENTS=$<BOOL:${TEST_ALL_DEPLOYMENTS}>)
 
 

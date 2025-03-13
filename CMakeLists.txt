@@ -124,6 +124,25 @@ if (ENABLE_TESTING)
   message(STATUS "Tests will use ${PERM_STRING} qubit permutations. Set TEST_MAX_NUM_QUBIT_PERMUTATIONS to modify.")
 endif()
 
+string(CONCAT DESCRIPTON_OF_TEST_MAX_NUM_SUPEROP_TARGETS  # for multiline option
+  "The maximum number of superoperator targets for which to unit test functions mixKrausMap and applySuperOp. "
+  "This is computationally equivalent to simulating unitaries with double the number of targets upon a density matrix. "
+  "Set to 0 to test all sizes which is likely prohibitively slow, or to a positive integer (e.g. the default of 4) to accelerate the unit tests. "
+  "This is used to accelerate the v4 unit tests, and has no effect when ENABLE_TESTING is OFF, nor on the v3 deprecated tests."
+)
+set(TEST_MAX_NUM_SUPEROP_TARGETS 4
+  CACHE 
+  STRING 
+  "${DESCRIPTON_OF_TEST_MAX_NUM_SUPEROP_TARGETS}"
+)
+if (ENABLE_TESTING)
+  set(PERM_STRING "${TEST_MAX_NUM_SUPEROP_TARGETS} random")
+  if (TEST_MAX_NUM_SUPEROP_TARGETS EQUAL 0)
+    set(PERM_STRING "all")
+  endif()
+  message(STATUS "Tests will use superoperators of up to ${PERM_STRING} qubits. Set TEST_MAX_NUM_SUPEROP_TARGETS to modify.")
+endif()
+
 string(CONCAT DESCRIPTION_OF_TEST_ALL_DEPLOYMENTS  # for multiline option
   "Whether unit tests will be run using all possible deployment combinations (i.e. OpenMP, CUDA, MPI) in-turn (ON), "
   "or only once using all available deployments simultaneously (OFF). Turned ON by default. "

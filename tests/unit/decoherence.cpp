@@ -240,8 +240,12 @@ TEST_CASE( "mixKrausMap", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
+        int maxFlag = TEST_MAX_NUM_SUPEROP_TARGETS;
         int numQubits = getNumCachedQubits();
-        int numTargs = GENERATE_COPY( range(1,numQubits+1) );
+        int maxNumTargs = (maxFlag != 0 && numQubits > maxFlag)?
+            maxFlag : numQubits;
+
+        int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
         int numKraus = GENERATE( 1, 2, 10 );
         auto targs = GENERATE_TARGS( numQubits, numTargs );
         auto matrices = getRandomKrausMap(numTargs, numKraus);
@@ -250,7 +254,7 @@ TEST_CASE( "mixKrausMap", TEST_CATEGORY ) {
         setKrausMap(map, matrices);
         auto func = [&](Qureg qureg) { mixKrausMap(qureg, targs.data(), numTargs, map); };
 
-        CAPTURE( targs, numKraus );
+        CAPTURE( maxNumTargs, targs, numKraus );
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(func, targs, matrices); }
 
         destroyKrausMap(map);
