@@ -22,6 +22,7 @@ using std::vector;
 
 
 bool doScalarsAgree(qcomp a, qcomp b);
+bool doMatricesAgree(qmatrix a, qmatrix b);
 
 
 void REQUIRE_AGREE( Qureg qureg, qvector reference );

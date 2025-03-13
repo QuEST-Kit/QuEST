@@ -47,6 +47,20 @@ bool doScalarsAgree(qcomp a, qcomp b) {
     return abs(a - b) <= TEST_EPSILON;
 }
 
+bool doMatricesAgree(qmatrix a, qmatrix b) {
+    DEMAND( a.size() == b.size() );
+
+    // assumed square and equal-size
+    size_t dim = a.size();
+
+    for (size_t i=0; i<dim; i++)
+        for (size_t j=0; j<dim; j++)
+            if (!doScalarsAgree(a[i][j], b[i][j]))
+                return false;
+
+    return true;
+}
+
 
 
 /*

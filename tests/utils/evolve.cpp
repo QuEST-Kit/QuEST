@@ -216,3 +216,20 @@ void multiplyReferenceOperator(qmatrix& state, vector<int> targs, qmatrix matrix
 
     multiplyReferenceOperator(state, {}, {}, targs, matrix);
 }
+
+
+// kraus overload
+
+void applyReferenceOperator(qmatrix& state, vector<int> targs, vector<qmatrix> matrices) {
+
+    qmatrix in = state;
+    qmatrix out = getZeroMatrix(state.size());
+
+    for (auto& matrix : matrices) {
+        state = in;
+        applyReferenceOperator(state, targs, matrix);
+        out += state;
+    }
+
+    state = out;
+}

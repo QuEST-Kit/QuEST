@@ -21,6 +21,7 @@ typedef std::vector<qcomp> qvector;
 
 
 qvector getZeroVector(size_t dim);
+qvector getConstantVector(size_t dim, qcomp elem);
 
 qvector operator * (const qcomp&, const qvector&);
 qvector operator * (const qvector&, const qcomp&);
@@ -40,6 +41,7 @@ qvector operator += (qvector&, const qvector&);
 qvector operator - (const qvector&, const qvector&);
 qvector operator -= (qvector&, const qvector&);
 
+void setSubVector(qvector &dest, qvector sub, size_t i);
 void setToDebugState(qvector &v);
 
 

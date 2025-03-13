@@ -125,6 +125,9 @@ void testQuregIsCorrectOnAllDeployments(quregCache& quregs, auto& reference, aut
 
         DYNAMIC_SECTION( label ) {
 
+            // no need to validate whether qureg successfully
+            // enters the debug state here, because the below
+            // serial setToDebugState() is guaranteed to succeed
             initDebugState(qureg);
             setToDebugState(reference);
 
@@ -787,12 +790,7 @@ TEST_CASE( "applyMultiQubitPhaseShift", TEST_CATEGORY ) { testOperation<zero,any
  * UNTESTED FUNCTIONS
  */
 
-void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
-void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
-void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
-void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
 
-void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
 
 void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
 
@@ -819,3 +817,14 @@ void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQu
 void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets);
 
 void applyFullQuantumFourierTransform(Qureg qureg);
+
+
+// these require we deploy input objects (Qureg,FullStateDiagMatr) differently
+// (as is respectively permitted) to thoroughly test all QuEST control flows
+
+void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
+
+void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
+void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
+void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
+void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);

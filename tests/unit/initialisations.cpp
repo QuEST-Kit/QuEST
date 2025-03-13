@@ -10,15 +10,18 @@
 #include "quest/include/quest.h"
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 
 #include "tests/utils/qvector.hpp"
 #include "tests/utils/qmatrix.hpp"
+#include "tests/utils/cache.hpp"
 #include "tests/utils/compare.hpp"
 #include "tests/utils/convert.hpp"
 #include "tests/utils/evolve.hpp"
 #include "tests/utils/linalg.hpp"
 #include "tests/utils/lists.hpp"
 #include "tests/utils/macros.hpp"
+#include "tests/utils/measure.hpp"
 #include "tests/utils/random.hpp"
 
 
@@ -27,7 +30,33 @@
  * UTILITIES
  */
 
+
 #define TEST_CATEGORY "[unit][initialisations]"
+
+
+void TEST_ON_CACHED_QUREGS(quregCache quregs, auto testFunc) {
+
+    for (auto& [label, qureg]: quregs) {
+
+        DYNAMIC_SECTION( label ) {
+
+            testFunc(qureg);
+        }
+    }
+}
+
+
+void TEST_ON_CACHED_QUREGS(quregCache quregs, auto apiFunc, auto refState) {
+
+    // assumes refState is already initialised
+
+    auto testFunc = [&](Qureg qureg) {
+        apiFunc(qureg);
+        REQUIRE_AGREE( qureg, refState );
+    };
+
+    TEST_ON_CACHED_QUREGS(quregs, testFunc);
+}
 
 
 
@@ -38,9 +67,342 @@
  * @{
  */
 
-TEST_CASE( "placeholder5", TEST_CATEGORY) {
 
+TEST_CASE( "initBlankState", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        int numQubits = getNumCachedQubits();
+        qvector refVec = getZeroVector(getPow2(numQubits));
+        qmatrix refMat = getZeroMatrix(getPow2(numQubits));
+
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(getCachedStatevecs(), initBlankState, refVec); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), initBlankState, refMat); }
+    }
+
+    /// @todo input validation
 }
+
+
+TEST_CASE( "initZeroState", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        int numQubits = getNumCachedQubits();
+        qvector refVec = getZeroVector(getPow2(numQubits)); refVec[0]    = 1; // |0> = {1, 0...}
+        qmatrix refMat = getZeroMatrix(getPow2(numQubits)); refMat[0][0] = 1; // |0><0| = {{1,0...},{0...}...}
+
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(getCachedStatevecs(), initZeroState, refVec); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), initZeroState, refMat); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "initPlusState", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        int numQubits = getNumCachedQubits();
+        qreal vecElem = 1. / sqrt(getPow2(numQubits));
+        qreal matElem = 1. / getPow2(numQubits);
+
+        qvector refVec = getConstantVector(getPow2(numQubits), vecElem); // |+> = 1/sqrt(2^N) {1, ...}
+        qmatrix refMat = getConstantMatrix(getPow2(numQubits), matElem); // |+><+| = 1/2^N {{1, ...}, ...}
+
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(getCachedStatevecs(), initPlusState, refVec); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), initPlusState, refMat); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "initClassicalState", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        int numQubits = getNumCachedQubits();
+        int numInds = (int) getPow2(numQubits);
+        int stateInd = GENERATE_COPY( range(0,numInds) );
+
+        qvector refVec = getZeroVector(getPow2(numQubits)); refVec[stateInd] = 1; // |i> = {0, ..., 1, 0, ...}
+        qmatrix refMat = getZeroMatrix(getPow2(numQubits)); refMat[stateInd][stateInd] = 1; // |i><i| 
+
+        auto apiFunc = [&](Qureg qureg) { initClassicalState(qureg, stateInd); };
+
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(getCachedStatevecs(), apiFunc, refVec); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), apiFunc, refMat); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "initDebugState", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qindex dim = getPow2(getNumCachedQubits());
+        qvector refVec = getZeroVector(dim); setToDebugState(refVec); // |debug>
+        qmatrix refMat = getZeroMatrix(dim); setToDebugState(refMat); // ||debug>>
+
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(getCachedStatevecs(), initDebugState, refVec); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), initDebugState, refMat); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "initRandomPureState", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        // this test does not use reference states
+
+        auto testFunc = [&](Qureg qureg) {
+
+            initRandomPureState(qureg);
+            
+            /// @todo
+            /// these not-all-same-amp checks can be made much more rigorous,
+            /// by e.g. asserting distinct nodes haven't generated all the same
+            /// amplitudes (we currently observe this by eye)
+            syncQuregFromGpu(qureg);
+            REQUIRE( qureg.cpuAmps[0] != qureg.cpuAmps[1] );
+
+            qreal prob = calcTotalProb(qureg);
+            REQUIRE_AGREE( prob, 1 );
+
+            qreal purity = calcPurity(qureg);
+            REQUIRE_AGREE( purity, 1 );
+        };
+
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(getCachedStatevecs(), testFunc); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), testFunc); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "initRandomMixedState", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        // this test does not use reference states
+
+        int numPureStates = GENERATE( 1, 2, 10 );
+
+        auto testFunc = [&](Qureg qureg) {
+
+            initRandomMixedState(qureg, numPureStates);
+            
+            /// @todo
+            /// these not-all-same-amp checks can be made much more rigorous,
+            /// by e.g. asserting distinct nodes haven't generated all the same
+            /// amplitudes (we currently observe this by eye)
+            syncQuregFromGpu(qureg);
+            REQUIRE( qureg.cpuAmps[0] != qureg.cpuAmps[1] );
+
+            qreal prob = calcTotalProb(qureg);
+            REQUIRE_AGREE( prob, 1 );
+
+            qreal purity = calcPurity(qureg);
+            if (numPureStates == 1)
+                REQUIRE_AGREE( purity, 1 );
+            else
+                REQUIRE( purity < 1 );
+        };
+
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), testFunc); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "initArbitraryPureState", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        // works for unnormalised states
+        qvector refVec = getRandomVector(getPow2(getNumCachedQubits()));
+        qmatrix refMat = getOuterProduct(refVec, refVec);
+
+        auto apiFunc = [&](Qureg qureg) { initArbitraryPureState(qureg, refVec.data()); };
+
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(getCachedStatevecs(), apiFunc, refVec); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), apiFunc, refMat); }
+    }
+
+    /// @todo input validation
+}
+
+
+
+
+TEST_CASE( "setQuregAmps", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        int numTotalAmps = getPow2(getNumCachedQubits());
+        int numSetAmps = GENERATE_COPY( range(0,numTotalAmps+1) ); 
+        int startInd = GENERATE_COPY( range(0,numTotalAmps-numSetAmps) );
+        qvector amps = getRandomVector(numSetAmps);
+
+        auto testFunc = [&](Qureg qureg) {
+
+            // initialise qureg randomly
+            qvector refVec = getRandomVector(numTotalAmps);
+            setQureg(qureg, refVec);
+
+            // modify only subset of refVec amps and qureg...
+            setSubVector(refVec, amps, startInd);
+            setQuregAmps(qureg, startInd, amps.data(), numSetAmps);
+        
+            // so that we simultaneously check targeted amps 
+            // are modified while non-targeted are not
+            REQUIRE_AGREE( qureg, refVec );
+        };
+
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(getCachedStatevecs(), testFunc); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "setDensityQuregFlatAmps", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        int numTotalRows = getPow2(getNumCachedQubits());
+        int numTotalAmps = numTotalRows * numTotalRows;
+
+        // systematic iteration is WAY too slow
+        GENERATE( range(0,1000) );
+        int numSetAmps = getRandomInt(0, numTotalAmps + 1);
+        int startInd = getRandomInt(0, numTotalAmps - numSetAmps);
+        qvector amps = getRandomVector(numSetAmps);
+
+        auto testFunc = [&](Qureg qureg) {
+
+            // initialise qureg randomly
+            qmatrix refMat = getRandomMatrix(numTotalRows);
+            setQureg(qureg, refMat);
+
+            // overwrite a contiguous region of row-major refMat, column-wise
+            refMat = getTranspose(refMat);
+            setSubMatrix(refMat, amps, startInd);
+            refMat = getTranspose(refMat);
+
+            // modify the same contiguous region of column-major qureg
+            setDensityQuregFlatAmps(qureg, startInd, amps.data(), numSetAmps);
+        
+            // check that both targeted and non-targeted amps agree
+            REQUIRE_AGREE( qureg, refMat );
+        };
+
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), testFunc); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "setDensityQuregAmps", TEST_CATEGORY ) {
+
+    //void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qcomp** amps, qindex numRows, qindex numCols);
+
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        int numTotalRowsCols = getPow2(getNumCachedQubits());
+
+        // systematic iteration is WAY too slow
+        GENERATE( range(0,1000) );
+        int numSetRows = getRandomInt(1, numTotalRowsCols+1);
+        int numSetCols = getRandomInt(1, numTotalRowsCols+1);
+        int startRow = getRandomInt(0, numTotalRowsCols - numSetRows);
+        int startCol = getRandomInt(0, numTotalRowsCols - numSetCols);
+
+        // caution that amps is 'qmatrix' despite not being square
+        qmatrix amps = getRandomNonSquareMatrix(numSetRows, numSetCols);
+
+        auto testFunc = [&](Qureg qureg) {
+
+            // initialise qureg randomly
+            qmatrix refMat = getRandomMatrix(numTotalRowsCols);
+            setQureg(qureg, refMat);
+
+            // API needs nested pointers
+            std::vector<qcomp*> rowPtrs(numSetRows);
+            for (size_t r=0; r<numSetRows; r++)
+                rowPtrs[r] = amps[r].data();
+
+            // overwrite a sub-matrix of refMat and Qureg
+            setSubMatrix(refMat, amps, startRow, startCol);
+            setDensityQuregAmps(qureg, startRow, startCol, rowPtrs.data(), numSetRows, numSetCols);
+
+            // check that both targeted and non-targeted amps agree
+            REQUIRE_AGREE( qureg, refMat );
+        };
+
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), testFunc); }
+    
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "setQuregToRenormalized", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qindex dim = getPow2(getNumCachedQubits());
+        qvector refVec = getRandomVector(dim);
+        qmatrix refMat = getRandomMatrix(dim);
+
+        // [=] stores current (pre-normalised) reference objects
+        auto funcVec = [=](Qureg qureg) { setQureg(qureg, refVec); setQuregToRenormalized(qureg); };
+        auto funcMat = [=](Qureg qureg) { setQureg(qureg, refMat); setQuregToRenormalized(qureg); };
+
+        // setQuregToRenormalized() makes statevectors become valid
+        refVec = getNormalised(refVec);
+
+        // but it only divides density matrices by the sum of the real-elems of their diagonals
+        refMat /= getReferenceProbability(refMat);
+
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(getCachedStatevecs(), funcVec, refVec); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), funcMat, refMat); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "setQuregToPauliStrSum", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        GENERATE( range(0,10) );
+        int numQubits = getNumCachedQubits();
+        int numTerms = GENERATE_COPY( 1, numQubits, getPow2(2*numQubits) );
+        PauliStrSum sum = createRandomPauliStrSum(numQubits, numTerms);
+        qmatrix refMat = getMatrix(sum, numQubits);
+
+        auto apiFunc = [&](Qureg qureg) { setQuregToPauliStrSum(qureg, sum); };
+
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), apiFunc, refMat); }
+    }
+
+    /// @todo input validation
+}
+
 
 /** @} (end defgroup) */
 
@@ -51,39 +413,14 @@ TEST_CASE( "placeholder5", TEST_CATEGORY) {
  * UNTESTED FUNCTIONS
  */
 
-void initBlankState(Qureg qureg);
-
-void initZeroState(Qureg qureg);
-
-void initPlusState(Qureg qureg);
+// these require we deploy the Quregs differently
+// to thoroughly test all QuEST control flows
 
 void initPureState(Qureg qureg, Qureg pure);
-
-void initClassicalState(Qureg qureg, qindex stateInd);
-
-void initDebugState(Qureg qureg);
-
-void initArbitraryPureState(Qureg qureg, qcomp* amps);
-
-void initRandomPureState(Qureg qureg);
-
-void initRandomMixedState(Qureg qureg, qindex numPureStates);
-
-
-void setQuregAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps);
-
-void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qcomp** amps, qindex numRows, qindex numCols);
-
-void setDensityQuregFlatAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps);
 
 void setQuregToClone(Qureg targetQureg, Qureg copyQureg);
 
 void setQuregToSuperposition(qcomp facOut, Qureg out, qcomp fac1, Qureg qureg1, qcomp fac2, Qureg qureg2);
-
-qreal setQuregToRenormalized(Qureg qureg);
-
-void setQuregToPauliStrSum(Qureg qureg, PauliStrSum sum);
-
 
 void setQuregToPartialTrace(Qureg out, Qureg in, int* traceOutQubits, int numTraceQubits);
 

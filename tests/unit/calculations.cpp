@@ -54,6 +54,10 @@ void TEST_ON_CACHED_QUREGS(quregCache quregs, auto refState, auto apiFunc, auto 
             setToRandomState(refState);
             setQureg(qureg, refState);
 
+            /// @todo 
+            /// validate that above is correct, i.e. not the all-zero
+            /// state which would permit flawed tests to succeed
+
             // results can be a scalar, a vector, or even a Qureg & qmatrix/qvector
             auto apiResult = apiFunc(qureg);
             auto refResult = refFunc(refState);
@@ -349,7 +353,6 @@ qreal calcExpecFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matr, qcomp
 qcomp calcExpecNonHermitianFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
 
 qcomp calcExpecNonHermitianFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
-
 
 qreal calcFidelity(Qureg qureg, Qureg other);
 

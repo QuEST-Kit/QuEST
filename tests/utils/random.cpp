@@ -74,6 +74,10 @@ qreal getRandomPhase() {
 
 
 int getRandomInt(int min, int maxExcl) {
+
+    if (min == maxExcl)
+        return min;
+
     return (int) round(getRandomReal(min, maxExcl-1));
 }
 
@@ -213,31 +217,26 @@ vector<qvector> getRandomOrthonormalVectors(size_t dim, int numVecs) {
  */
 
 
-qmatrix getRandomMatrix(size_t dim) {
-    DEMAND( dim > 1 );
-    
-    qmatrix out = getZeroMatrix(dim);
-    qreal max = RAND_MAX;
+qmatrix getRandomNonSquareMatrix(size_t numRows, size_t numCols) {
 
-    for (auto& row : out) {
-        for (auto& elem : row) {
-            
-            // generate 2 normally-distributed random numbers via Box-Muller
-            qreal a = rand()/max;
-            qreal b = rand()/max;
-            
-            // prevent log(0) NaNs
-            if (a == 0)
-                a = 1/max;
+    // this function is DANGEROUS; it produces a
+    // non-square matrix, whereas most test utilities
+    // assume qmatrix is square. It should ergo be
+    // used very cautiously!
 
-            qreal fa = sqrt(-2 * log(a));
-            qreal re = fa * cos(2 * 3.14159265 * b);
-            qreal im = fa * sin(2 * 3.14159265 * b);
-            elem = qcomp(re, im);
-        }
-    }
-    
+    qmatrix out = qmatrix(numRows, qvector(numCols));
+
+    for (auto& row : out)
+        for (auto& elem : row)
+            elem = getRandomComplex();
+
     return out;
+}
+
+
+qmatrix getRandomMatrix(size_t dim) {
+
+    return getRandomNonSquareMatrix(dim, dim);
 }
 
 
@@ -366,7 +365,7 @@ vector<qmatrix> getRandomKrausMap(int numQb, int numOps) {
     for (int i=0; i<numOps; i++)
         ops[i] *= weights[i];
 
-    DEMAND( isCompletelyPositiveTracePreserving(ops) );
+    DEMAND( isApproxCPTP(ops) );
     return ops;
 }
 

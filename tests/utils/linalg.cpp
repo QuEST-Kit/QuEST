@@ -169,13 +169,8 @@ bool isApproxUnitary(qmatrix m) {
 
     // should be identity
     qmatrix md = m * getConjugateTranspose(m);
-
-    for (size_t r=0; r<md.size(); r++)
-        for (size_t c=0; c<md.size(); c++)
-            if (!doScalarsAgree(md[r][c], r==c))
-                return false;
-
-    return true;
+    qmatrix id = getIdentityMatrix(m.size());
+    return doMatricesAgree(md, id);
 }
 
 
@@ -437,7 +432,7 @@ qmatrix getKroneckerProduct(qmatrix m, int count) {
  */
 
 
-bool isCompletelyPositiveTracePreserving(vector<qmatrix> matrices) {
+bool isApproxCPTP(vector<qmatrix> matrices) {
     DEMAND( matrices.size() >= 1 );
 
     size_t dim = matrices[0].size();
@@ -447,5 +442,5 @@ bool isCompletelyPositiveTracePreserving(vector<qmatrix> matrices) {
     for (auto& m : matrices)
         sum += getConjugateTranspose(m) * m;
 
-    return sum == id;
+    return doMatricesAgree(sum, id);
 }

@@ -38,6 +38,7 @@ listtrio getRandomVariNumCtrlsStatesTargs(int numQubits, int minNumTargs, int ma
 
 qvector getRandomVector(size_t dim);
 qmatrix getRandomMatrix(size_t dim);
+qmatrix getRandomNonSquareMatrix(size_t numRows, size_t numCols);
 
 qvector getRandomStateVector(int numQb);
 qmatrix getRandomDensityMatrix(int numQb);
