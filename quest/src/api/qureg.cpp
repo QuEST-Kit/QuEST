@@ -384,14 +384,14 @@ void syncQuregToGpu(Qureg qureg) {
 
     // permit this to be called even in non-GPU mode
     if (qureg.isGpuAccelerated)
-        gpu_copyCpuToGpu(qureg); // overwrites all local GPU amps
+        gpu_copyCpuToGpu(qureg); // syncs then overwrites all local GPU amps
 }
 void syncQuregFromGpu(Qureg qureg) {
     validate_quregFields(qureg, __func__);
 
     // permit this to be called even in non-GPU mode
     if (qureg.isGpuAccelerated)
-        gpu_copyGpuToCpu(qureg); // overwrites all local CPU amps
+        gpu_copyGpuToCpu(qureg); // syncs then overwrites all local CPU amps
 }
 
 
