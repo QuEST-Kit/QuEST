@@ -161,6 +161,7 @@ TEST_CASE( "initRandomPureState", TEST_CATEGORY ) {
     SECTION( LABEL_CORRECTNESS ) {
 
         // this test does not use reference states
+        GENERATE( range(0,10) );
 
         auto testFunc = [&](Qureg qureg) {
 
@@ -188,35 +189,13 @@ TEST_CASE( "initRandomPureState", TEST_CATEGORY ) {
 }
 
 
-
-// DEBUG
-// this is strangely failing on Github Actions with
-// error message:
-
-    // initRandomMixedState
-    // correctness
-    // densitymatrix
-    // CPU
-    // -------------------------------------------------------------------------------
-    // /home/runner/work/QuEST/QuEST/tests/unit/initialisations.cpp:41
-    // ...............................................................................
-
-    // /home/runner/work/QuEST/QuEST/tests/unit/initialisations.cpp:41: FAILED:
-    // due to unexpected exception with message:
-    // setQuregToRenormalized: Could not renormalise the Qureg because the current
-    // total probability is zero, or within epsilon to zero.
-
-// which makes absolutely no sense, since
-// setQuregToRenormalized() is not invoked
-// at all within this test! :0 
-
-/*
 TEST_CASE( "initRandomMixedState", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
         // this test does not use reference states
 
+        GENERATE( range(0,10) );
         int numPureStates = GENERATE( 1, 2, 10 );
 
         auto testFunc = [&](Qureg qureg) {
@@ -228,7 +207,7 @@ TEST_CASE( "initRandomMixedState", TEST_CATEGORY ) {
             /// by e.g. asserting distinct nodes haven't generated all the same
             /// amplitudes (we currently observe this by eye)
             syncQuregFromGpu(qureg);
-            REQUIRE( qureg.cpuAmps[0] != qureg.cpuAmps[1] );
+            REQUIRE( qureg.cpuAmps[0] != qureg.cpuAmps[1] ); // performed on all nodes
 
             qreal prob = calcTotalProb(qureg);
             REQUIRE_AGREE( prob, 1 );
@@ -245,7 +224,6 @@ TEST_CASE( "initRandomMixedState", TEST_CATEGORY ) {
 
     /// @todo input validation
 }
-*/
 
 
 TEST_CASE( "initArbitraryPureState", TEST_CATEGORY ) {
@@ -387,6 +365,7 @@ TEST_CASE( "setQuregToRenormalized", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
+        GENERATE( range(0,10) );
         qindex dim = getPow2(getNumCachedQubits());
         qvector refVec = getRandomVector(dim);
         qmatrix refMat = getRandomMatrix(dim);

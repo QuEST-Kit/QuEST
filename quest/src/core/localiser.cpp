@@ -754,17 +754,10 @@ void localiser_densmatr_initMixtureOfUniformlyRandomPureStates(Qureg qureg, qind
     bool wasMemAlloc = false;
     Qureg pure = createSpoofedLocalStateVecFromDensMatr(qureg, wasMemAlloc); // overwrites wasMemAlloc
 
-    // we wish to create qureg = sum_n^N P pure_n, where P = 1/N is
-    // the uniform probability, which we achieve through repeated
-    // mixing of qureg_n = a qureg_(n-1) + b_n pure_n, where
-    // a = P^(1/N) = 1/N^(1/N) and b_n = a^n
-    qreal a = 1. / pow(numPureStates, 1 / numPureStates);
-
+    // create mixture qureg = sum_n^N (1/N) pure_n
     for (qindex n=0; n<numPureStates; n++) {
-        
-        qreal b = pow(a, n);
-        initRandomPureState(pure); // harmlessly re-valdates
-        mixDensityMatrixWithStatevector(a, qureg, b, pure);
+        initRandomPureState(pure);
+        mixDensityMatrixWithStatevector(1, qureg, 1./numPureStates, pure);
     }
 
     // for large numPureStates, the above process is likely to
