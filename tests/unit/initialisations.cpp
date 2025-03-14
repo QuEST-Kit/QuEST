@@ -367,8 +367,12 @@ TEST_CASE( "setQuregToRenormalized", TEST_CATEGORY ) {
         qvector refVec = getRandomVector(dim);
         qmatrix refMat = getRandomMatrix(dim);
 
-        // eliminate random chance of tr(refMat)=0, triggering validation
-        refMat[0][0] = 9999;
+        // eliminate random chance of tr(refMat)=0, triggering validation;
+        // this means we're not testing when the user's maxtrix has (invalidly)
+        // negative diagonals which is not a big deal
+        refMat[0][0] = 1/(qreal) dim;
+        for (size_t i=1; i<refMat.size(); i++)
+            refMat[i][i] = abs(refMat[i][i]);
 
         // [=] stores current (pre-normalised) reference objects
         auto funcVec = [=](Qureg qureg) { setQureg(qureg, refVec); setQuregToRenormalized(qureg); };
