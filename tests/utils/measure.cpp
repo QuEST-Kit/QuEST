@@ -76,7 +76,7 @@ qreal getReferenceProbability(qvector state, qindex basisIndex) {
     DEMAND( basisIndex < (qindex) state.size() );
 
     qcomp elem = state[basisIndex];
-    qreal prob = std::abs(elem) * std::abs(elem);
+    qreal prob = std::norm(elem);
     return prob;
 }
 
@@ -84,7 +84,7 @@ qreal getReferenceProbability(qmatrix state, qindex basisIndex) {
     DEMAND( basisIndex < (qindex) state.size() );
 
     qcomp elem = state[basisIndex][basisIndex];
-    qreal prob = real(elem);
+    qreal prob = std::real(elem);
     return prob;
 }
 
@@ -112,7 +112,7 @@ qreal getReferenceProbability(qvector state) {
 
     qreal out = 0;
     for (auto& elem : state)
-        out += std::abs(elem) * std::abs(elem);
+        out += std::norm(elem);
 
     return out;
 }
@@ -121,7 +121,7 @@ qreal getReferenceProbability(qmatrix state) {
 
     qreal out = 0;
     for (size_t i=0; i<state.size(); i++)
-        out += real(state[i][i]);
+        out += std::real(state[i][i]);
 
     return out;
 }
@@ -129,7 +129,7 @@ qreal getReferenceProbability(qmatrix state) {
 
 qreal getReferencePurity(qmatrix state) {
     
-    return real(getTrace(state * state));
+    return std::real(getTrace(state * state));
 }
 qreal getReferencePurity(qvector state) {
 

@@ -166,8 +166,8 @@ static inline qcomp getQcomp(qreal re, qreal im) {
     // shortcuts for below overload definitions
     #define COMP_TO_QCOMP(a) \
         qcomp( \
-            static_cast<qreal>(real(a)), \
-            static_cast<qreal>(imag(a)))
+            static_cast<qreal>(std::real(a)), \
+            static_cast<qreal>(std::imag(a)))
 
     #define REAL_TO_QCOMP(b) \
         qcomp(static_cast<qreal>(b), 0)

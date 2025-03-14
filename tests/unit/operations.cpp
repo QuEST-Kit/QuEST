@@ -50,8 +50,8 @@ auto contains(std::string str) {
 namespace FixedMatrices {
 
     qmatrix H = {
-        {1/sqrt(2),  1/sqrt(2)},
-        {1/sqrt(2), -1/sqrt(2)}};
+        {1/std::sqrt(2),  1/std::sqrt(2)},
+        {1/std::sqrt(2), -1/std::sqrt(2)}};
 
     qmatrix X = getPauliMatrix(1);
     qmatrix Y = getPauliMatrix(2);
@@ -60,7 +60,7 @@ namespace FixedMatrices {
     qreal PI = 3.14159265358979323846;
     qmatrix T = {
         {1, 0},
-        {0, exp(1_i * PI/4)}};
+        {0, std::exp(1_i * PI/4)}};
 
     qmatrix S = {
         {1, 0},
@@ -85,7 +85,7 @@ namespace ParameterisedMatrices {
     auto Ry = [](qreal p) { return getExponentialOfPauliMatrix(p, FixedMatrices::Y); };
     auto Rz = [](qreal p) { return getExponentialOfPauliMatrix(p, FixedMatrices::Z); };
 
-    auto PS  = [](qreal p) { return qmatrix{{1, 0}, {0, getExpI(p)}}; };
+    auto PS  = [](qreal p) { return qmatrix{{1, 0}, {0, std::exp(p*1_i)}}; };
     auto PS2 = [](qreal p) { return getControlledMatrix(PS(p), 1); };
 }
 
@@ -598,7 +598,7 @@ void CAPTURE_RELEVANT( vector<int> ctrls, vector<int> states, vector<int> targs,
     // display exponent of diagonal matrix
     if constexpr (Args == diagpower) {
         qcomp p = std::get<1>(args);
-        UNSCOPED_INFO( "exponent := " << real(p) << " + (" << imag(p) << ")i" );
+        UNSCOPED_INFO( "exponent := " << std::real(p) << " + (" << std::imag(p) << ")i" );
     }
 
     // display PauliStr

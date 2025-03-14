@@ -12,6 +12,7 @@
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/validation.hpp"
+#include "quest/src/core/constants.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 
@@ -244,8 +245,7 @@ std::uniform_real_distribution<qreal> rand_getThreadPrivateAmpPhaseDistribution(
     // per-thread just to avoid inefficient re-instantiation
     // per iteration of a hot-loop
 
-    qreal pi = 3.141592653589793238462643383279;
-    return std::uniform_real_distribution<qreal>(0, 2*pi); // ~[0, 2 pi]
+    return std::uniform_real_distribution<qreal>(0, 2*const_PI);
 }
 
 
@@ -263,6 +263,6 @@ qcomp rand_getThreadPrivateRandomAmp(std::mt19937_64 &gen, std::normal_distribut
     // (divising by all probs between all nodes) will make
     // prob a chi-squared variate, and amp uniformly random.
     // https://sumeetkhatri.com/wp-content/uploads/2020/05/random_pure_states.pdf
-    qcomp amp = sqrt(prob) * std::exp(qcomp(0, phase));
+    qcomp amp = std::sqrt(prob) * std::exp(phase * 1_i);
     return amp;
 }

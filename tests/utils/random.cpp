@@ -344,7 +344,7 @@ qmatrix getRandomDiagonalUnitary(int numQb) {
     qmatrix matr = getZeroMatrix(getPow2(numQb));
 
     for (size_t i=0; i<matr.size(); i++)
-        matr[i][i] = getExpI(getRandomPhase());
+        matr[i][i] = std::exp(getRandomPhase() * 1_i);
 
     return matr;
 }
@@ -368,7 +368,7 @@ vector<qmatrix> getRandomKrausMap(int numQb, int numOps) {
     for (auto& w : weights)
         sum += w;
     for (auto& w : weights)
-        w = sqrt(w/sum);
+        w = std::sqrt(w/sum);
         
     // normalise unitaries according to weights
     for (int i=0; i<numOps; i++)
@@ -434,7 +434,7 @@ PauliStrSum createRandomPauliStrSum(int numQubits, int numTerms) {
     PauliStrSum out = createRandomNonHermitianPauliStrSum(numQubits, numTerms);
 
     for (qindex i=0; i<numTerms; i++)
-        out.coeffs[i] = real(out.coeffs[i]);
+        out.coeffs[i] = std::real(out.coeffs[i]);
 
     return out;
 }

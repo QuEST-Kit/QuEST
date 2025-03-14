@@ -80,8 +80,8 @@ TEST_CASE( "mixDephasing", TEST_CATEGORY ) {
         qreal prob = getRandomReal(0, 1/2.);
 
         vector<qmatrix> kraus = {
-            sqrt(1-prob) * getPauliMatrix(0),
-            sqrt(prob)   * getPauliMatrix(3)
+            std::sqrt(1-prob) * getPauliMatrix(0),
+            std::sqrt(prob)   * getPauliMatrix(3)
         };
 
         auto func = [&](Qureg qureg) { mixDephasing(qureg, targ, prob); };
@@ -103,10 +103,10 @@ TEST_CASE( "mixDepolarising", TEST_CATEGORY ) {
         qreal prob = getRandomReal(0, 3/4.);
 
         vector<qmatrix> kraus = {
-            sqrt(1-prob) * getPauliMatrix(0),
-            sqrt(prob/3) * getPauliMatrix(1), 
-            sqrt(prob/3) * getPauliMatrix(2), 
-            sqrt(prob/3) * getPauliMatrix(3),
+            std::sqrt(1-prob) * getPauliMatrix(0),
+            std::sqrt(prob/3) * getPauliMatrix(1), 
+            std::sqrt(prob/3) * getPauliMatrix(2), 
+            std::sqrt(prob/3) * getPauliMatrix(3),
         };
 
         auto func = [&](Qureg qureg) { mixDepolarising(qureg, targ, prob); };
@@ -128,8 +128,8 @@ TEST_CASE( "mixDamping", TEST_CATEGORY ) {
         qreal prob = getRandomReal(0, 1);
 
         vector<qmatrix> kraus = {
-            {{1,0},{0,sqrt(1-prob)}},
-            {{0,sqrt(prob)}, {0,0}}
+            {{1,0},{0,std::sqrt(1-prob)}},
+            {{0,std::sqrt(prob)}, {0,0}}
         };
 
         auto func = [&](Qureg qureg) { mixDamping(qureg, targ, prob); };
@@ -170,10 +170,10 @@ TEST_CASE( "mixPaulis", TEST_CATEGORY ) {
         }
 
         vector<qmatrix> kraus = {
-            sqrt(pI) * getPauliMatrix(0),
-            sqrt(pX) * getPauliMatrix(1),
-            sqrt(pY) * getPauliMatrix(2),
-            sqrt(pZ) * getPauliMatrix(3)
+            std::sqrt(pI) * getPauliMatrix(0),
+            std::sqrt(pX) * getPauliMatrix(1),
+            std::sqrt(pY) * getPauliMatrix(2),
+            std::sqrt(pZ) * getPauliMatrix(3)
         };
 
         auto func = [&](Qureg qureg) { mixPaulis(qureg, targ, pX, pY, pZ); };
@@ -197,10 +197,10 @@ TEST_CASE( "mixTwoQubitDephasing", TEST_CATEGORY ) {
         qmatrix z = getPauliMatrix(3);
 
         vector<qmatrix> kraus = {
-            sqrt(1-prob) * getKroneckerProduct(i, i),
-            sqrt(prob/3) * getKroneckerProduct(i, z),
-            sqrt(prob/3) * getKroneckerProduct(z, i),
-            sqrt(prob/3) * getKroneckerProduct(z, z)
+            std::sqrt(1-prob) * getKroneckerProduct(i, i),
+            std::sqrt(prob/3) * getKroneckerProduct(i, z),
+            std::sqrt(prob/3) * getKroneckerProduct(z, i),
+            std::sqrt(prob/3) * getKroneckerProduct(z, z)
         };
 
         auto func = [&](Qureg qureg) { mixTwoQubitDephasing(qureg, targs[0], targs[1], prob); };
@@ -220,10 +220,10 @@ TEST_CASE( "mixTwoQubitDepolarising", TEST_CATEGORY ) {
         auto targs = GENERATE_TARGS( getNumCachedQubits(), 2 );
         qreal prob = getRandomReal(0, 15/16.);
 
-        vector<qmatrix> kraus = { sqrt(1-16*prob/15) * getIdentityMatrix(4) };
+        vector<qmatrix> kraus = { std::sqrt(1-16*prob/15) * getIdentityMatrix(4) };
         for (int a=0; a<4; a++)
             for (int b=0; b<4; b++)
-                kraus.push_back( sqrt(prob/15) * 
+                kraus.push_back( std::sqrt(prob/15) * 
                     getKroneckerProduct(getPauliMatrix(a), getPauliMatrix(b)));
 
         auto func = [&](Qureg qureg) { mixTwoQubitDepolarising(qureg, targs[0], targs[1], prob); };

@@ -1202,8 +1202,8 @@ void anyCtrlZTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStat
     int sign = paulis_getPrefixZSign(qureg, prefixZ);
     
     // tensor multiplies +-1, gadget multiplies exp(+- i phase)
-    qcomp fac0 = (isGadget)? exp(+ phase * sign * 1_i) : +1 * sign;
-    qcomp fac1 = (isGadget)? exp(- phase * sign * 1_i) : -1 * sign;
+    qcomp fac0 = (isGadget)? std::exp(+ phase * sign * 1_i) : +1 * sign;
+    qcomp fac1 = (isGadget)? std::exp(- phase * sign * 1_i) : -1 * sign;
 
     // simulation is always embarrassingly parallel
     accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(qureg, ctrls, ctrlStates, suffixZ, fac0, fac1);
@@ -1296,8 +1296,8 @@ void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vecto
         return;
     }
 
-    qcomp ampFac     = cos(phase);
-    qcomp pairAmpFac = sin(phase) * 1_i;
+    qcomp ampFac     = std::cos(phase);
+    qcomp pairAmpFac = std::sin(phase) * 1_i;
     anyCtrlPauliTensorOrGadget(qureg, ctrls, ctrlStates, str, ampFac, pairAmpFac);
 }
 

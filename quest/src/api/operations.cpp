@@ -473,7 +473,7 @@ void applyMultiControlledT(Qureg qureg, int* controls, int numControls, int targ
 
 void applyMultiStateControlledT(Qureg qureg, int* controls, int* states, int numControls, int target) {
 
-    DiagMatr1 matr = getDiagMatr1({1, 1/sqrt(2) + 1_i/sqrt(2)});
+    DiagMatr1 matr = getDiagMatr1({1, 1/std::sqrt(2) + 1_i/std::sqrt(2)});
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
 }
 
@@ -509,9 +509,10 @@ void applyMultiControlledHadamard(Qureg qureg, int* controls, int numControls, i
 
 void applyMultiStateControlledHadamard(Qureg qureg, int* controls, int* states, int numControls, int target) {
 
+    qcomp a = 1/std::sqrt(2);
     CompMatr1 matr = getCompMatr1({
-        {1/sqrt(2), 1/sqrt(2)}, 
-        {1/sqrt(2), -1/sqrt(2)}});
+        {a, a}, 
+        {a,-a}});
 
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
 }
@@ -832,7 +833,7 @@ void applyFirstOrderTrotter(Qureg qureg, PauliStrSum sum, qreal angle, bool reve
 
     for (qindex i=0; i<sum.numTerms; i++) {
         int j = reverse? sum.numTerms - i - 1 : i;
-        qreal arg = 2 * angle * real(sum.coeffs[j]);  // 2 undoes Gadget convention
+        qreal arg = 2 * angle * std::real(sum.coeffs[j]);  // 2 undoes Gadget convention
         applyPauliGadget(qureg, sum.strings[j], arg); // re-validates, grr
     }
 }
@@ -849,7 +850,7 @@ void applyHigherOrderTrotter(Qureg qureg, PauliStrSum sum, qreal angle, int orde
         applyFirstOrderTrotter(qureg, sum, angle/2, true);
     
     } else {
-        qreal p = 1. / (4 - pow(4, 1./(order-1)));
+        qreal p = 1. / (4 - std::pow(4, 1./(order-1)));
         qreal a = p * angle;
         qreal b = (1-4*p) * angle;
 
@@ -1025,11 +1026,11 @@ void applyMultiStateControlledRotateAroundAxis(Qureg qureg, int* ctrls, int* sta
     validate_rotationAxisNotZeroVector(axisX, axisY, axisZ, __func__);
 
     // defer division of vector norm to improve numerical accuracy
-    qreal norm = sqrt(pow(axisX,2) + pow(axisY,2) + pow(axisZ,2)); // != 0
+    qreal norm = std::sqrt(std::pow(axisX,2) + std::pow(axisY,2) + std::pow(axisZ,2)); // != 0
 
     // treat as generic 1-qubit matrix
-    qreal c = cos(angle/2);
-    qreal s = sin(angle/2);
+    qreal c = std::cos(angle/2);
+    qreal s = std::sin(angle/2);
     qcomp u11 = c - (s * axisZ * 1_i) / norm;
     qcomp u12 =   - (s * (axisY + axisX * 1_i)) / norm;
     qcomp u21 =     (s * (axisY - axisX * 1_i)) / norm;
@@ -1187,7 +1188,7 @@ void applyMultiQubitPhaseShift(Qureg qureg, int* targets, int numTargets, qreal 
     validate_targets(qureg, targets, numTargets, __func__);
 
     // treat as a (numTargets-1)-controlled 1-target diagonal matrix
-    DiagMatr1 matr = getDiagMatr1({1, exp(1_i * angle)});
+    DiagMatr1 matr = getDiagMatr1({1, std::exp(1_i * angle)});
 
     // harmlessly re-validates
     applyMultiStateControlledDiagMatr1(qureg, &targets[1], nullptr, numTargets-1, targets[0], matr);

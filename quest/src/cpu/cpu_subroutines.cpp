@@ -494,7 +494,7 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
 
                     // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
                     if constexpr (ApplyConj)
-                        elem = conj(elem);
+                        elem = std::conj(elem);
 
                     qureg.cpuAmps[i] += elem * cache[j];
                 }
@@ -621,11 +621,11 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
         // decide whether to power and conj at compile-time, to avoid branching in hot-loop
         if constexpr (HasPower)
-            elem = pow(elem, exponent);
+            elem = std::pow(elem, exponent);
 
         // cautiously conjugate AFTER exponentiation, else we must also conj exponent
         if constexpr (ApplyConj)
-            elem = conj(elem);
+            elem = std::conj(elem);
 
         qureg.cpuAmps[j] *= elem;
     }
@@ -656,7 +656,7 @@ void cpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
         // compile-time decide if applying power to avoid in-loop branching
         qcomp elem = matr.cpuElems[n];
         if constexpr (HasPower)
-            elem = pow(elem, exponent);
+            elem = std::pow(elem, exponent);
 
         qureg.cpuAmps[n] *= elem;
     }
@@ -680,7 +680,7 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 
         // compile-time decide if applying power to avoid in-loop branching...
         if constexpr (HasPower)
-            fac = pow(fac, exponent);
+            fac = std::pow(fac, exponent);
 
         // and whether we should also right-apply matr to qureg
         if constexpr (!MultiplyOnly) {
@@ -694,10 +694,10 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 
             // right-apply matrix elem may also need to be exponentiated
             if constexpr(HasPower)
-                term = pow(term, exponent);
+                term = std::pow(term, exponent);
 
             // conj after pow
-            fac *= conj(term);
+            fac *= std::conj(term);
         }
 
         qureg.cpuAmps[n] *= fac;
@@ -961,7 +961,7 @@ void cpu_densmatr_mixQureg_subB(qreal outProb, Qureg outQureg, qreal inProb, Qur
         qindex i = fast_getQuregGlobalRowFromFlatIndex(n, dim);
         qindex j = fast_getQuregGlobalColFromFlatIndex(n, dim);
 
-        out[n] = (outProb * out[n]) + (inProb * in[i] * conj(in[j]));
+        out[n] = (outProb * out[n]) + (inProb * in[i] * std::conj(in[j]));
     }
 }
 
@@ -984,7 +984,7 @@ void cpu_densmatr_mixQureg_subC(qreal outProb, Qureg outQureg, qreal inProb) {
         qindex i = fast_getQuregGlobalRowFromFlatIndex(m, dim);
         qindex j = fast_getQuregGlobalColFromFlatIndex(m, dim);
 
-        out[n] = (outProb * out[n]) + (inProb * in[i] * conj(in[j]));
+        out[n] = (outProb * out[n]) + (inProb * in[i] * std::conj(in[j]));
     }
 }
 
@@ -1671,7 +1671,7 @@ qreal cpu_densmatr_calcTotalProb_sub(Qureg qureg) {
 
         // i = local index of nth local diagonal element
         qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
-        prob += real(qureg.cpuAmps[i]);
+        prob += std::real(qureg.cpuAmps[i]);
     }
 
     return prob;
@@ -1840,10 +1840,10 @@ qcomp cpu_statevec_calcInnerProduct_sub(Qureg quregA, Qureg quregB) {
 
     #pragma omp parallel for reduction(+:prodRe,prodIm) if(quregA.isMultithreaded||quregB.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
-        qcomp term = conj(quregA.cpuAmps[n]) * quregB.cpuAmps[n];
+        qcomp term = std::conj(quregA.cpuAmps[n]) * quregB.cpuAmps[n];
 
-        prodRe += real(term);
-        prodIm += imag(term);
+        prodRe += std::real(term);
+        prodIm += std::imag(term);
     }
 
     return qcomp(prodRe, prodIm);
@@ -1892,14 +1892,14 @@ qcomp cpu_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
 
         // compute term of <psi|rho^dagger|psi> or <psi|rho|psi>
         if constexpr (Conj) {
-            rhoAmp = conj(rhoAmp);
-            colAmp = conj(colAmp);
+            rhoAmp = std::conj(rhoAmp);
+            colAmp = std::conj(colAmp);
         } else
-            rowAmp = conj(rowAmp);
+            rowAmp = std::conj(rowAmp);
 
         qcomp term = rhoAmp * rowAmp * colAmp;
-        fidRe += real(term);
-        fidIm += imag(term);
+        fidRe += std::real(term);
+        fidIm += std::imag(term);
     }
 
     return qcomp(fidRe, fidIm);
@@ -1961,8 +1961,8 @@ qcomp cpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
         int sign = fast_getPlusOrMinusMaskedBitParity(r, targMask);
         qcomp term = sign * qureg.cpuAmps[i];
 
-        valueRe += real(term);
-        valueIm += imag(term);
+        valueRe += std::real(term);
+        valueIm += std::imag(term);
     }
 
     return qcomp(valueRe, valueIm);
@@ -1989,10 +1989,10 @@ qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int
 
         // sign = +-1 induced by Y and Z (excludes Y i factors)
         int sign = fast_getPlusOrMinusMaskedBitParity(j, maskYZ);
-        qcomp term = sign * conj(qureg.cpuAmps[n]) * qureg.cpuAmps[j];
+        qcomp term = sign * std::conj(qureg.cpuAmps[n]) * qureg.cpuAmps[j];
 
-        valueRe += real(term);
-        valueIm += imag(term);
+        valueRe += std::real(term);
+        valueIm += std::imag(term);
     }
 
     // scale by i^numY (because sign above exlcuded i)
@@ -2028,10 +2028,10 @@ qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int
 
         // sign = +-1 induced by Y and Z (excludes Y i factors)
         int sign = fast_getPlusOrMinusMaskedBitParity(j, maskYZ);
-        qcomp term = sign * conj(qureg.cpuAmps[n]) * qureg.cpuCommBuffer[j];
+        qcomp term = sign * std::conj(qureg.cpuAmps[n]) * qureg.cpuCommBuffer[j];
 
-        valueRe += real(term);
-        valueIm += imag(term);
+        valueRe += std::real(term);
+        valueIm += std::imag(term);
     }
 
     // scale by i^numY (because sign above exlcuded i)
@@ -2070,8 +2070,8 @@ qcomp cpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int>
         int sign = fast_getPlusOrMinusMaskedBitParity(i, maskYZ);
         qcomp term = sign * qureg.cpuAmps[m];
 
-        valueRe += real(term);
-        valueIm += imag(term);
+        valueRe += std::real(term);
+        valueIm += std::imag(term);
     }
 
     // scale by i^numY (because sign above exlcuded i)
@@ -2104,12 +2104,12 @@ qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
         // compile-time decide if applying power to avoid in-loop branching
         qcomp elem = matr.cpuElems[n];
         if constexpr (HasPower)
-            elem = pow(elem, exponent);
+            elem = std::pow(elem, exponent);
         
         qcomp term = elem * std::norm(qureg.cpuAmps[n]);
 
-        valueRe += real(term);
-        valueIm += imag(term);
+        valueRe += std::real(term);
+        valueIm += std::imag(term);
     }
 
     return qcomp(valueRe, valueIm);
@@ -2138,14 +2138,14 @@ qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
 
         // compile-time decide if applying power to avoid in-loop branching
         if constexpr (HasPower)
-            elem = pow(elem, exponent);
+            elem = std::pow(elem, exponent);
 
         // i = local index of nth local diagonal element
         qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
         qcomp term = elem * qureg.cpuAmps[i];
 
-        valueRe += real(term);
-        valueIm += imag(term);
+        valueRe += std::real(term);
+        valueIm += std::imag(term);
     }
 
     return qcomp(valueRe, valueIm);
@@ -2171,7 +2171,7 @@ void cpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 
     // visit every amp, setting to zero or multiplying it by renorm
     qindex numIts = qureg.numAmpsPerNode;
-    qreal renorm = 1 / sqrt(prob);
+    qreal renorm = 1 / std::sqrt(prob);
 
     // binary value of targeted qubits in basis states which are to be retained
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());

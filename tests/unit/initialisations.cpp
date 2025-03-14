@@ -105,7 +105,7 @@ TEST_CASE( "initPlusState", TEST_CATEGORY ) {
     SECTION( LABEL_CORRECTNESS ) {
 
         int numQubits = getNumCachedQubits();
-        qreal vecElem = 1. / sqrt(getPow2(numQubits));
+        qreal vecElem = 1. / std::sqrt(getPow2(numQubits));
         qreal matElem = 1. / getPow2(numQubits);
 
         qvector refVec = getConstantVector(getPow2(numQubits), vecElem); // |+> = 1/sqrt(2^N) {1, ...}

@@ -261,15 +261,15 @@ template <typename T>
 string printer_toStr(complex<T> num) {
 
     // precise 0 is rendered as a real integer
-    if (real(num) == 0 && imag(num) == 0)
+    if (std::real(num) == 0 && std::imag(num) == 0)
         return "0";
 
     // real complex-floats neglect imag component
-    if (imag(num) == 0)
-        return floatToStr(real(num));
+    if (std::imag(num) == 0)
+        return floatToStr(std::real(num));
 
     // imaginary complex-floats neglect real component entirely (instead of 0+3i)
-    string realStr = (real(num) == 0)? "" : floatToStr(real(num));
+    string realStr = (std::real(num) == 0)? "" : floatToStr(std::real(num));
 
     // scientific-notation real component (when followed by any imaginary component) gets brackets
     if (realStr.find('e') != string::npos)
@@ -277,26 +277,26 @@ string printer_toStr(complex<T> num) {
 
     // -1i is abbreviated to -i
     if constexpr (std::is_signed_v<T>)
-        if (imag(num) == -1)
+        if (std::imag(num) == -1)
             return realStr + "-" + IMAGINARY_UNIT;
 
     // +1i is abbreviated to +i, although the sign is dropped if there's no preceeding real component
-    if (imag(num) == 1)
-        return realStr + ((real(num) == 0)? IMAGINARY_UNIT : ("+" + IMAGINARY_UNIT));
+    if (std::imag(num) == 1)
+        return realStr + ((std::real(num) == 0)? IMAGINARY_UNIT : ("+" + IMAGINARY_UNIT));
 
     // get imag component string but without sign
-    string imagStr = floatToStr(imag(num), true);
+    string imagStr = floatToStr(std::imag(num), true);
 
     // scientific-notation components always get wrapped in paranthesis
     if (imagStr.find('e') != string::npos)
         imagStr = '(' + imagStr + ')';
 
     // negative imag components always get - sign prefix
-    if (imag(num) < 0)
+    if (std::imag(num) < 0)
         imagStr = '-' + imagStr;
 
     // positive imag components only get + sign prefix if they follow a real component
-    if (imag(num) > 0 && real(num) != 0)
+    if (std::imag(num) > 0 && std::real(num) != 0)
         imagStr = '+' + imagStr;
 
     // all imag components end in 'i'

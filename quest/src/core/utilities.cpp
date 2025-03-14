@@ -323,13 +323,13 @@ template <typename T>
 void setDenseElemsConj(T elems, qindex dim) {
     for (qindex i=0; i<dim; i++)
         for (qindex j=0; j<dim; j++)
-           elems[i][j] = conj(elems[i][j]);
+           elems[i][j] = std::conj(elems[i][j]);
 }
 
 // diagonals don't need templating because arrays decay to pointers, yay!
 void setDiagElemsConj(qcomp* elems, qindex dim) {
     for (qindex i=0; i<dim; i++)
-        elems[i] = conj(elems[i]);
+        elems[i] = std::conj(elems[i]);
 }
 
 CompMatr1 util_getConj(CompMatr1 matrix) {
@@ -379,11 +379,11 @@ bool isUnitary(T elems, qindex dim, qreal eps) {
             // compute m[r,...] * dagger(m)[...,c]
             qcomp elem = 0;
             for (qindex i=0; i<dim; i++)
-                elem += elems[r][i] * conj(elems[c][i]);
+                elem += elems[r][i] * std::conj(elems[c][i]);
 
             // check if further than epsilon from identity[r,c]
             qcomp dif = elem - qcomp(r == c, 0);
-            qreal distSq = norm(dif);
+            qreal distSq = std::norm(dif);
             if (distSq > eps)
                 return false;
         }
@@ -471,8 +471,8 @@ bool isHermitian(T elems, qindex dim, qreal eps) {
     for (qindex r=0; r<dim; r++) {
         for (qindex c=0; c<r; c++) {
 
-            qcomp dif = elems[r][c] - conj(elems[c][r]);
-            qreal distSq = norm(dif);
+            qcomp dif = elems[r][c] - std::conj(elems[c][r]);
+            qreal distSq = std::norm(dif);
             if (distSq > eps)
                 return false;
         }
@@ -487,7 +487,7 @@ bool isHermitian(qcomp* diags, qindex dim, qreal eps) {
 
     // check every element has a zero (or <eps) imaginary component
     for (qindex i=0; i<dim; i++)
-        if (std::abs(imag(diags[i])) > eps)
+        if (std::abs(std::imag(diags[i])) > eps)
             return false;
 
     return true;
@@ -576,10 +576,10 @@ bool util_isCPTP(KrausMap map, qreal eps) {
             qcomp elem = 0;
             for (int n=0; n<map.numMatrices; n++)
                 for (qindex k=0; k<map.numRows; k++)
-                    elem += conj(map.matrices[n][k][r]) * map.matrices[n][k][c];
+                    elem += std::conj(map.matrices[n][k][r]) * map.matrices[n][k][c];
 
             // fail if too distant from Identity element
-            qreal distSquared = norm(elem - (r==c));
+            qreal distSquared = std::norm(elem - (r==c));
             if (distSquared > eps)   
                 return false;
         }
@@ -617,7 +617,7 @@ void setSuperoperator(qcomp** superop, T matrices, int numMatrices, qindex logMa
                     for (qindex l=0; l<matrixDim; l++) {
                         qindex r = i*matrixDim + k;
                         qindex c = j*matrixDim + l;
-                        superop[r][c] += conj(matrix[i][j]) * matrix[k][l];
+                        superop[r][c] += std::conj(matrix[i][j]) * matrix[k][l];
                     }
     }
 }
@@ -747,7 +747,7 @@ util_Scalars util_getOneQubitPauliChannelFactors(qreal pI, qreal pX, qreal pY, q
 util_Scalars util_getOneQubitDampingFactors(qreal prob) {
 
     // we assume 0 < prob < 1 (true even of the inverse channel), so c1 is always real
-    qreal c1 = sqrt(1 - prob);
+    qreal c1 = std::sqrt(1 - prob);
     qreal c2 = 1 - prob;
 
     return {.c1=c1, .c2=c2, .c3=0, .c4=0}; //c3 and c4 ignored

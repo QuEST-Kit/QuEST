@@ -104,7 +104,7 @@ TEST_CASE( "calcExpecPauliStr", TEST_CATEGORY ) {
 
         TEST_ALL_QUREGS(
             qureg, calcExpecPauliStr(qureg, str),  
-            state, real(getReferenceExpectationValue(state, str))
+            state, std::real(getReferenceExpectationValue(state, str))
         );
     }
 
@@ -125,7 +125,7 @@ TEST_CASE( "calcExpecPauliStrSum", TEST_CATEGORY ) {
 
         TEST_ALL_QUREGS(
             qureg, calcExpecPauliStrSum(qureg, sum),  
-            state, real(getReferenceExpectationValue(state, sum))
+            state, std::real(getReferenceExpectationValue(state, sum))
         );
 
         destroyPauliStrSum(sum);

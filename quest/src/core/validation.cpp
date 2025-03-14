@@ -3431,7 +3431,7 @@ void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* c
     if (isNumericalValidationDisabled())
         return;
 
-    qreal norm = sqrt(pow(x,2) + pow(y,2) + pow(z,2));
+    qreal norm = std::sqrt(std::pow(x,2) + std::pow(y,2) + std::pow(z,2));
 
     assertThat(norm > global_validationEpsilon, report::ROTATION_AXIS_VECTOR_IS_ZERO, caller);
 }

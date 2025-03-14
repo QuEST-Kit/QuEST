@@ -73,7 +73,7 @@ INLINE cu_qcomp getCuQcomp(qreal re, qreal im) {
 
 
 __host__ inline cu_qcomp toCuQcomp(qcomp a) {
-    return getCuQcomp(real(a), imag(a));
+    return getCuQcomp(std::real(a), std::imag(a));
 }
 __host__ inline qcomp toQcomp(cu_qcomp a) {
     return getQcomp(a.x, a.y);
@@ -256,7 +256,7 @@ INLINE cu_qcomp getCompPower(cu_qcomp base, cu_qcomp exponent) {
     qreal c = exponent.x;
     qreal d = exponent.y;
 
-    // intermediate quantities
+    // intermediate quantities (uses CUDA atan2,log,pow,exp,cos,sin)
     qreal arg = atan2(b, a);
     qreal mag = a*a + b*b;
     qreal ln = log(mag);

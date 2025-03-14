@@ -1778,7 +1778,7 @@ void gpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 
 #elif COMPILE_CUDA
 
-    qreal renorm = 1 / sqrt(prob);
+    qreal renorm = 1 / std::sqrt(prob);
     thrust_statevec_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, renorm);
 
 #else

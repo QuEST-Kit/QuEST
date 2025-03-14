@@ -56,7 +56,7 @@ void initPlusState(Qureg qureg) {
 
     // |+>    = sum_i 1/sqrt(2^N) |i>  where 2^N = numAmps
     // |+><+| = sum_ij 1/2^N |i><j|    where 2^N = sqrt(numAmps)
-    qcomp amp = 1.0 / sqrt(qureg.numAmps);
+    qcomp amp = 1.0 / std::sqrt(qureg.numAmps);
     localiser_statevec_initUniformState(qureg, amp);
 }
 
@@ -199,7 +199,7 @@ qreal setQuregToRenormalized(Qureg qureg) {
     qreal prob = calcTotalProb(qureg); // harmlessly re-validates
     validate_quregRenormProbIsNotZero(prob, __func__);
 
-    qreal norm = (qureg.isDensityMatrix)? prob : sqrt(prob);
+    qreal norm = (qureg.isDensityMatrix)? prob : std::sqrt(prob);
     qreal fac = 1 / norm;
     localiser_statevec_setQuregToSuperposition(fac, qureg, 0, qureg, 0, qureg);
 

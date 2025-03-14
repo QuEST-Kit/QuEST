@@ -135,8 +135,8 @@ void REQUIRE_AGREE( qreal apiScalar, qreal refScalar ) {
 
 void REQUIRE_AGREE( qcomp apiScalar, qcomp refScalar ) {
 
-    REQUIRE_THAT( real(apiScalar), WithinAbs(real(refScalar), TEST_EPSILON) );
-    REQUIRE_THAT( imag(apiScalar), WithinAbs(imag(refScalar), TEST_EPSILON) );
+    REQUIRE_THAT( std::real(apiScalar), WithinAbs(std::real(refScalar), TEST_EPSILON) );
+    REQUIRE_THAT( std::imag(apiScalar), WithinAbs(std::imag(refScalar), TEST_EPSILON) );
 }
 
 

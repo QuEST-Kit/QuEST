@@ -44,11 +44,6 @@ qindex getPow2(int a) {
 }
 
 
-qcomp getExpI(qreal x) {
-    return qcomp(cos(x), sin(x));
-}
-
-
 int getBitAt(qindex num, int ind) {
     DEMAND( num >= 0 );
 
@@ -111,12 +106,12 @@ qvector getNormalised(qvector vec) {
     
     // compute norm via Kahan summation
     for (auto& x : vec) {
-        y = real(x)*real(x) - c;
+        y = std::pow(std::real(x),2) - c;
         t = norm + y;
         c = ( t - norm ) - y;
         norm = t;
         
-        y = imag(x)*imag(x) - c;
+        y = std::pow(std::imag(x),2) - c;
         t = norm + y;
         c = ( t - norm ) - y;
         norm = t;
@@ -124,7 +119,7 @@ qvector getNormalised(qvector vec) {
     
     // normalise vector
     for (auto& x : vec)
-        x /= sqrt(norm);
+        x /= std::sqrt(norm);
 
     return vec;
 }
@@ -138,12 +133,12 @@ qvector getDisceteFourierTransform(qvector in) {
 
     // PI must be accurate here
     qreal pi = 3.14159265358979323846;
-    qreal a = 1 / sqrt(dim);
+    qreal a = 1 / std::sqrt(dim);
     qreal b = 2 * pi / dim;
     
     for (size_t x=0; x<dim; x++)
         for (size_t y=0; y<dim; y++)
-            out[x] += a * getExpI(b * x * y) * in[y];
+            out[x] += a * std::exp(b * x * y * 1_i) * in[y];
 
     return out;
 }
@@ -157,14 +152,14 @@ qvector getDisceteFourierTransform(qvector in, vector<int> targs) {
     
     qindex len = getPow2(targs.size());
     qreal pi = 3.14159265358979323846;
-    qreal a = 1 / sqrt(len);
+    qreal a = 1 / std::sqrt(len);
     qreal b = 2 * pi / len;
 
     for (size_t i=0; i<dim; i++) {
         size_t x = getBitsAt(i, targs);
         for (size_t y=0; y<len; y++) {
             qindex j = setBitsAt(i, targs, y);
-            out[j] += a * getExpI(b * x * y) * in[i];
+            out[j] += a * std::exp(b * x * y * 1_i) * in[i];
         }
     }
 
@@ -184,7 +179,7 @@ qcomp getInnerProduct(qvector bra, qvector ket) {
     qcomp out = 0;
 
     for (size_t i=0; i<bra.size(); i++)
-        out += conj(bra[i]) * ket[i];
+        out += std::conj(bra[i]) * ket[i];
 
     return out;
 }
@@ -197,7 +192,7 @@ qmatrix getOuterProduct(qvector ket, qvector bra) {
 
     for (size_t i=0; i<ket.size(); i++)
         for (size_t j=0; j<ket.size(); j++)
-            out[i][j] = ket[i] * conj(bra[j]);
+            out[i][j] = ket[i] * std::conj(bra[j]);
 
     return out;
 }
@@ -255,7 +250,7 @@ qmatrix getConjugate(qmatrix m) {
 
     for (auto& row : m)
         for (auto& elem : row)
-            elem = conj(elem);
+            elem = std::conj(elem);
 
     return m;
 }
@@ -273,7 +268,7 @@ qmatrix getConjugateTranspose(qmatrix m) {
 
     for (size_t r=0; r<out.size(); r++)
         for (size_t c=0; c<out[0].size(); c++)
-            out[r][c] = conj(m[c][r]);
+            out[r][c] = std::conj(m[c][r]);
 
     return out;
 }
@@ -285,7 +280,7 @@ qmatrix getPowerOfDiagonalMatrix(qmatrix m, qcomp p) {
     qmatrix out = getZeroMatrix(m.size());
 
     for (size_t i=0; i<m.size(); i++)
-        out[i][i] = pow(m[i][i], p);
+        out[i][i] = std::pow(m[i][i], p);
 
     return out;
 }
@@ -297,7 +292,7 @@ qmatrix getExponentialOfDiagonalMatrix(qmatrix m) {
     qmatrix out = getZeroMatrix(m.size());
 
     for (size_t i=0; i<m.size(); i++)
-        out[i][i] = exp(m[i][i]);
+        out[i][i] = std::exp(m[i][i]);
 
     return out;
 }
@@ -307,7 +302,7 @@ qmatrix getExponentialOfPauliMatrix(qreal arg, qmatrix m) {
     
     // exp(-i arg/2 m) where m = prod(paulis)
     qmatrix id = getIdentityMatrix(m.size());
-    qmatrix out = cos(arg/2)*id - 1_i*sin(arg/2)*m;
+    qmatrix out = std::cos(arg/2)*id - 1_i*std::sin(arg/2)*m;
     return out;
 }
 
@@ -315,13 +310,13 @@ qmatrix getExponentialOfPauliMatrix(qreal arg, qmatrix m) {
 qmatrix getExponentialOfNormalisedPauliVector(qreal arg, qreal x, qreal y, qreal z) {
 
     // exp(-arg/2 i [x^ X + y^ Y + z^ Z])
-    qreal n = sqrt(x*x + y*y + z*z);
+    qreal n = std::sqrt(x*x + y*y + z*z);
     x /= n;
     y /= n;
     z /= n;
 
     qmatrix id = getIdentityMatrix(2);
-    qmatrix out = cos(arg/2)*id - 1_i*sin(arg/2)*(
+    qmatrix out = std::cos(arg/2)*id - 1_i*std::sin(arg/2)*(
         x * getPauliMatrix(1) +
         y * getPauliMatrix(2) +
         z * getPauliMatrix(3));
