@@ -50,8 +50,40 @@ qcomp getExpI(qreal x) {
 
 
 int getBitAt(qindex num, int ind) {
+    DEMAND( num >= 0 );
+
     return (num >> ind) & 1;
 }
+
+
+qindex getBitsAt(qindex num, vector<int> inds) {
+    DEMAND( num >= 0 );
+
+    qindex out = 0;
+
+    for (size_t i=0; i<inds.size(); i++)
+        out |= getBitAt(num, inds[i]) << i;
+    
+    return out;
+}
+
+
+qindex setBitAt(qindex num, int ind, int bit) {
+    DEMAND( num >= 0 );
+
+    qindex one = 1;
+    return (num & ~(one << ind)) | (bit << ind);
+}
+
+
+qindex setBitsAt(qindex num, vector<int> inds, qindex bits) {
+
+    for (size_t i=0; i<inds.size(); i++)
+        num = setBitAt(num, inds[i], getBitAt(bits, i));
+
+    return num;
+}
+
 
 int getNumPermutations(int n, int k) {
     DEMAND( n >= k );
@@ -99,7 +131,7 @@ qvector getNormalised(qvector vec) {
 
 
 qvector getDisceteFourierTransform(qvector in) {
-    REQUIRE( in.size() > 0 );
+    DEMAND( in.size() > 0 );
     
     size_t dim = in.size();
     qvector out = getZeroVector(dim);
@@ -112,6 +144,29 @@ qvector getDisceteFourierTransform(qvector in) {
     for (size_t x=0; x<dim; x++)
         for (size_t y=0; y<dim; y++)
             out[x] += a * getExpI(b * x * y) * in[y];
+
+    return out;
+}
+
+
+qvector getDisceteFourierTransform(qvector in, vector<int> targs) {
+    DEMAND( in.size() > 0 );
+
+    size_t dim = in.size();
+    qvector out = getZeroVector(dim);
+    
+    qindex len = getPow2(targs.size());
+    qreal pi = 3.14159265358979323846;
+    qreal a = 1 / sqrt(len);
+    qreal b = 2 * pi / len;
+
+    for (size_t i=0; i<dim; i++) {
+        size_t x = getBitsAt(i, targs);
+        for (size_t y=0; y<len; y++) {
+            qindex j = setBitsAt(i, targs, y);
+            out[j] += a * getExpI(b * x * y) * in[i];
+        }
+    }
 
     return out;
 }
@@ -360,6 +415,27 @@ qmatrix getControlledMatrix(qmatrix matrix, int numCtrls) {
     setSubMatrix(out, matrix, off, off);
 
     return out;
+}
+
+
+qmatrix getMixture(vector<qmatrix> densmatrs, vector<qreal> probs) {
+    DEMAND( densmatrs.size() > 0 );
+
+    qmatrix out = getZeroMatrix(densmatrs[0].size());
+    for (size_t i=0; i<densmatrs.size(); i++)
+        out += probs[i] * densmatrs[i];
+
+    return out;
+}
+
+
+qmatrix getMixture(vector<qvector> statevecs, vector<qreal> probs) {
+
+    vector<qmatrix> densmatrs(statevecs.size());
+    for (size_t i=0; i<statevecs.size(); i++)
+        densmatrs[i] = getOuterProduct(statevecs[i], statevecs[i]);
+
+    return getMixture(densmatrs, probs);
 }
 
 

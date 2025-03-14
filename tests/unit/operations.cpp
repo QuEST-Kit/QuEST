@@ -778,6 +778,107 @@ TEST_CASE( "applyPhaseShift",           TEST_CATEGORY ) { testOperation<zero,one
 TEST_CASE( "applyTwoQubitPhaseShift",   TEST_CATEGORY ) { testOperation<zero,two,scalar>(applyTwoQubitPhaseShift,   ParameterisedMatrices::PS2); }
 TEST_CASE( "applyMultiQubitPhaseShift", TEST_CATEGORY ) { testOperation<zero,any,scalar>(applyMultiQubitPhaseShift, VariableSizeParameterisedMatrices::PS); }
 
+
+TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        int numQubits = getNumCachedQubits();
+        int numTargs = GENERATE_COPY( range(1,numQubits+1) );
+        auto targs = GENERATE_TARGS( numQubits, numTargs );
+
+        CAPTURE( targs );
+
+        SECTION( LABEL_STATEVEC ) { 
+
+            auto testFunc = [&](Qureg qureg, qvector& ref) {
+                applyQuantumFourierTransform(qureg, targs.data(), targs.size());
+                ref = getDisceteFourierTransform(ref, targs);
+            };
+
+            auto quregs = getCachedStatevecs();
+            qvector ref = getZeroVector(getPow2(numQubits));
+            testQuregIsCorrectOnAllDeployments(quregs, ref, testFunc);
+        }
+
+        SECTION( LABEL_DENSMATR ) { 
+
+            // prepare a random mixture
+            auto states = getRandomOrthonormalStateVectors(numQubits, getRandomInt(1,10));
+            auto probs = getRandomProbabilities(states.size());
+
+            auto testFunc = [&](Qureg qureg, qmatrix& ref) {
+
+                // overwrite the Qureg debug state set by caller to above mixture
+                setQureg(qureg, getMixture(states, probs));
+                applyQuantumFourierTransform(qureg, targs.data(), targs.size());
+                
+                ref = getZeroMatrix(ref.size());
+                for (size_t i=0; i<states.size(); i++) {
+                    qvector vec = getDisceteFourierTransform(states[i], targs);
+                    ref += probs[i] * getOuterProduct(vec, vec);
+                }
+            };
+
+            auto quregs = getCachedDensmatrs();
+            qmatrix ref = getZeroMatrix(getPow2(numQubits));
+            testQuregIsCorrectOnAllDeployments(quregs, ref, testFunc);
+        }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "applyFullQuantumFourierTransform", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        GENERATE( range(0,10) );
+
+        int numQubits = getNumCachedQubits();
+
+        SECTION( LABEL_STATEVEC ) { 
+
+            auto testFunc = [&](Qureg qureg, qvector& ref) {
+                applyFullQuantumFourierTransform(qureg);
+                ref = getDisceteFourierTransform(ref);
+            };
+
+            auto quregs = getCachedStatevecs();
+            qvector ref = getZeroVector(getPow2(numQubits));
+            testQuregIsCorrectOnAllDeployments(quregs, ref, testFunc);
+        }
+
+        SECTION( LABEL_DENSMATR ) { 
+
+            // prepare a random mixture
+            auto states = getRandomOrthonormalStateVectors(numQubits, getRandomInt(1,10));
+            auto probs = getRandomProbabilities(states.size());
+
+            auto testFunc = [&](Qureg qureg, qmatrix& ref) {
+
+                // overwrite the Qureg debug state set by caller to above mixture
+                setQureg(qureg, getMixture(states, probs));
+                applyFullQuantumFourierTransform(qureg);
+                
+                ref = getZeroMatrix(ref.size());
+                for (size_t i=0; i<states.size(); i++) {
+                    qvector vec = getDisceteFourierTransform(states[i]);
+                    ref += probs[i] * getOuterProduct(vec, vec);
+                }
+            };
+
+            auto quregs = getCachedDensmatrs();
+            qmatrix ref = getZeroMatrix(getPow2(numQubits));
+            testQuregIsCorrectOnAllDeployments(quregs, ref, testFunc);
+        }
+    }
+
+    /// @todo input validation
+}
+
+
 /** @} (end defgroup) */
 
 
@@ -786,12 +887,6 @@ TEST_CASE( "applyMultiQubitPhaseShift", TEST_CATEGORY ) { testOperation<zero,any
  * @todo
  * UNTESTED FUNCTIONS
  */
-
-
-
-void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
-
-void applySuperOp(Qureg qureg, int* targets, int numTargets, SuperOp superop);
 
 
 int applyQubitMeasurement(Qureg qureg, int target);
@@ -811,9 +906,9 @@ qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, 
 void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits);
 
 
-void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets);
+void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
 
-void applyFullQuantumFourierTransform(Qureg qureg);
+
 
 
 // these require we deploy input objects (Qureg,FullStateDiagMatr) differently

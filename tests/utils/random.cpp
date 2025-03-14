@@ -97,13 +97,14 @@ qcomp getRandomComplex() {
 
 vector<int> getRandomInts(int min, int maxExcl, int len) {
     DEMAND( len >= 0 ); // permit empty
+    DEMAND( min < maxExcl );
 
-    vector<int> outcomes(len);
-    
-    for (auto& x : outcomes)
+    vector<int> out(len);
+
+    for (auto& x : out)
         x = getRandomInt(min, maxExcl);
 
-    return outcomes;
+    return out;
 }
 
 

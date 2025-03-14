@@ -20,14 +20,18 @@
 #include <vector>
 using std::vector;
 
+int getNumPermutations(int n, int k);
 int getLog2(qindex);
 int getBitAt(qindex num, int ind);
-int getNumPermutations(int n, int k);
+qindex getBitsAt(qindex num, vector<int> inds);
+qindex setBitAt(qindex num, int ind, int bit);
+qindex setBitsAt(qindex num, vector<int> inds, qindex bits);
 qindex getPow2(int);
 qcomp getExpI(qreal);
 
 qvector getNormalised(qvector);
 qvector getDisceteFourierTransform(qvector);
+qvector getDisceteFourierTransform(qvector in, vector<int> targs);
 
 qcomp   getInnerProduct(qvector bra, qvector ket);
 qmatrix getOuterProduct(qvector ket, qvector bra);
@@ -37,24 +41,26 @@ qvector operator * (const qmatrix&, const qvector&);
 bool isDiagonal(qmatrix);
 bool isApproxUnitary(qmatrix);
 
-qcomp getTrace(qmatrix m);
+qcomp getTrace(qmatrix);
 qmatrix getTranspose(qmatrix);
 qmatrix getConjugate(qmatrix);
 qmatrix getConjugateTranspose(qmatrix);
 qmatrix getPowerOfDiagonalMatrix(qmatrix diag, qcomp power);
-qmatrix getExponentialOfDiagonalMatrix(qmatrix diag);
+qmatrix getExponentialOfDiagonalMatrix(qmatrix);
 qmatrix getExponentialOfPauliMatrix(qreal arg, qmatrix pauli);
 qmatrix getExponentialOfNormalisedPauliVector(qreal arg, qreal x, qreal y, qreal z);
 qmatrix getOrthonormalisedRows(qmatrix);
 qmatrix getOrthonormalisedRows(qmatrix);
 qmatrix getKroneckerProduct(qmatrix, qmatrix);
-qmatrix getKroneckerProduct(qmatrix, int);
-qmatrix getKroneckerProduct(vector<qmatrix> matrices);
+qmatrix getKroneckerProduct(qmatrix, int count);
+qmatrix getKroneckerProduct(vector<qmatrix>);
 qmatrix getProjector(int outcome);
 qmatrix getProjector(vector<int> targets, vector<int> outcomes, int numQubits);
 qmatrix getPartialTrace(qmatrix matrix, vector<int> targets);
 qmatrix getControlledMatrix(qmatrix matrix, int numCtrls);
-qmatrix getSuperOperator(vector<qmatrix> matrices);
+qmatrix getMixture(vector<qvector> statevecs, vector<qreal> probs);
+qmatrix getMixture(vector<qmatrix> densmatrs, vector<qreal> probs);
+qmatrix getSuperOperator(vector<qmatrix>);
 
 bool isApproxCPTP(vector<qmatrix>);
 
