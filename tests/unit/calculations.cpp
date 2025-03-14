@@ -201,7 +201,7 @@ TEST_CASE( "calcProbOfMultiQubitOutcome", TEST_CATEGORY ) {
         int numQubits = getNumCachedQubits();
         int numTargs = GENERATE_COPY( range(1, numQubits+1) );
         auto targets = GENERATE_TARGS(numQubits, numTargs);
-        auto outcomes = getRandomInts(0, 1+1, numTargs);
+        auto outcomes = getRandomOutcomes(numTargs);
 
         TEST_ALL_QUREGS(
             qureg, calcProbOfMultiQubitOutcome(qureg, targets.data(), outcomes.data(), numTargs),  

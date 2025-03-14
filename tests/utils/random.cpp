@@ -108,6 +108,14 @@ vector<int> getRandomInts(int min, int maxExcl, int len) {
 }
 
 
+vector<int> getRandomOutcomes(int len) {
+
+    int min = 0;
+    int max = 1;
+    return getRandomInts(min, max+1, len);
+}
+
+
 vector<int> getRandomSubRange(int start, int endExcl, int numElems) {
     DEMAND( endExcl >= start );
     DEMAND( numElems >= 1 );

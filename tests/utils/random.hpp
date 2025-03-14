@@ -56,6 +56,7 @@ PauliStr getRandomPauliStr(vector<int> targs);
 PauliStr getRandomDiagPauliStr(int numQubits);
 
 vector<int> getRandomInts(int min, int maxExcl, int len);
+vector<int> getRandomOutcomes(int len);
 vector<int> getRandomSubRange(int start, int endExcl, int numElems);
 vector<qreal> getRandomProbabilities(int numProbs);
 

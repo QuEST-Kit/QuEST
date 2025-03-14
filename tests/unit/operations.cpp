@@ -642,7 +642,7 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
         vector<int> targs = std::get<1>(ctrlsAndTargs);
 
         // randomise control states (if operation accepts them)
-        vector<int> states = getRandomInts(0, 1+1, numCtrls * (Ctrls == anystates));
+        vector<int> states = getRandomOutcomes(numCtrls * (Ctrls == anystates));
 
         // randomise remaining operation parameters
         auto primaryArgs = tuple{ ctrls, states, targs };
