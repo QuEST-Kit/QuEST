@@ -3711,7 +3711,7 @@ void validate_fidelityIsReal(qcomp fid, const char* caller) {
 
     /// @todo include imag(fid) in error message when non-integers are supported
 
-    assertThat(abs(imag(fid)) < global_validationEpsilon, report::CALC_FIDELITY_NOT_APPROX_REAL, caller);
+    assertThat(std::abs(std::imag(fid)) < global_validationEpsilon, report::CALC_FIDELITY_NOT_APPROX_REAL, caller);
 }
 
 void validate_buresDistanceInnerProdIsNormalised(qreal mag, const char* caller) {
@@ -3731,8 +3731,8 @@ void validate_purifiedDistanceIsNormalised(qcomp fid, const char* caller) {
 
     /// @todo include scalars in error message when non-integers are supported
     
-    assertThat(abs(imag(fid)) < global_validationEpsilon, report::CALC_PURIFIED_DISTANCE_NOT_APPROX_REAL, caller);
-    assertThat(real(fid) <= 1 + global_validationEpsilon, report::CALC_PURIFIED_DISTANCE_REAL_EXCEEDED_ONE, caller);
+    assertThat(std::abs(std::imag(fid)) < global_validationEpsilon, report::CALC_PURIFIED_DISTANCE_NOT_APPROX_REAL, caller);
+    assertThat(std::real(fid) <= 1 + global_validationEpsilon, report::CALC_PURIFIED_DISTANCE_REAL_EXCEEDED_ONE, caller);
 }
 
 
@@ -3752,7 +3752,7 @@ void validate_quregRenormProbIsNotZero(qreal prob, const char* caller) {
     // to be negative as can happen during setQuregToRenormalized() when
     // given an invalid density-matrix. We only require the magnitude is
     // non-zero so that division doesn't numerically diverge
-    assertThat(abs(prob) > global_validationEpsilon, report::QUREG_RENORM_PROB_IS_ZERO, caller);
+    assertThat(std::abs(prob) > global_validationEpsilon, report::QUREG_RENORM_PROB_IS_ZERO, caller);
 }
 
 void validate_numInitRandomPureStates(qindex numPureStates,  const char* caller) {
@@ -3786,7 +3786,7 @@ void validate_expecPauliStrValueIsReal(qcomp value, bool isDensMatr, const char*
     /// so we are merely ad-hoc patching for now
     qreal FACTOR = 10;
 
-    assertThat(abs(imag(value)) <= FACTOR * global_validationEpsilon, msg, caller);
+    assertThat(std::abs(std::imag(value)) <= FACTOR * global_validationEpsilon, msg, caller);
 }
 
 void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
@@ -3798,7 +3798,7 @@ void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const ch
         report::CALC_DENSMATR_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL:
         report::CALC_STATEVEC_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL;
 
-    assertThat(abs(imag(value)) < global_validationEpsilon, msg, caller);
+    assertThat(std::abs(std::imag(value)) < global_validationEpsilon, msg, caller);
 }
 
 void validate_expecFullStateDiagMatrValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
@@ -3810,7 +3810,7 @@ void validate_expecFullStateDiagMatrValueIsReal(qcomp value, bool isDensMatr, co
         report::CALC_DENSMATR_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL:
         report::CALC_STATEVEC_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL;
 
-    assertThat(abs(imag(value)) < global_validationEpsilon, msg, caller);
+    assertThat(std::abs(std::imag(value)) < global_validationEpsilon, msg, caller);
 }
 
 

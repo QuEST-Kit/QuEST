@@ -76,7 +76,7 @@ qreal getReferenceProbability(qvector state, qindex basisIndex) {
     DEMAND( basisIndex < (qindex) state.size() );
 
     qcomp elem = state[basisIndex];
-    qreal prob = abs(elem) * abs(elem);
+    qreal prob = std::abs(elem) * std::abs(elem);
     return prob;
 }
 
@@ -112,7 +112,7 @@ qreal getReferenceProbability(qvector state) {
 
     qreal out = 0;
     for (auto& elem : state)
-        out += abs(elem) * abs(elem);
+        out += std::abs(elem) * std::abs(elem);
 
     return out;
 }

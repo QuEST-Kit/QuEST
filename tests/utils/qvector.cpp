@@ -67,7 +67,7 @@ qvector operator *= (qvector& v, const qreal& a) {
  */
 
 qvector operator / (const qvector& v, const qcomp& a) {
-    DEMAND( abs(a) != 0 );
+    DEMAND( std::abs(a) != 0 );
 
     return (1/a) * v;
 }

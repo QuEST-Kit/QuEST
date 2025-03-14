@@ -49,7 +49,7 @@ qreal getTestEpsilon() {
 
 bool doScalarsAgree(qcomp a, qcomp b) {
 
-    return abs(a - b) <= TEST_EPSILON;
+    return std::abs(a - b) <= TEST_EPSILON;
 }
 
 bool doMatricesAgree(qmatrix a, qmatrix b) {
@@ -77,7 +77,7 @@ bool doMatricesAgree(qmatrix a, qmatrix b) {
 
 
 void REPORT_AND_FAIL( size_t index, qcomp amplitude, qcomp reference ) {
-    qcomp difference = abs(amplitude - reference);
+    qcomp difference = std::abs(amplitude - reference);
     qreal epsilon = TEST_EPSILON;
     CAPTURE( index, amplitude, reference, difference, epsilon );
     FAIL( );

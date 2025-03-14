@@ -112,7 +112,7 @@ qmatrix operator *= (qmatrix& m, const qreal& a) {
  */
 
 qmatrix operator / (const qmatrix& m, const qcomp& a) {
-    DEMAND( abs(a) != 0 );
+    DEMAND( std::abs(a) != 0 );
 
     return (1/a) * m;
 }

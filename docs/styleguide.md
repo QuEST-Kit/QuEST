@@ -16,3 +16,6 @@ Some stylistic choices Tyson personally makes:
       return x;
   ```
   Sue me!
+
+
+- _never_ use `abs()`, always use `std::abs()`. This is because `abs` may actually call `C`'s `abs(int)` function which is utilised by the v3 deprecated unit tests. As such, `abs(0.999)` will return `0` causing insidious bugs. Use of `real` and `imag` (in lieu of `std::real` and `std::imag`) are okay since always defined in terms of floats.

@@ -320,7 +320,7 @@ qmatrix getRandomUnitary(int numQb) {
     // create D = normalised diagonal of R
     qmatrix matrD = getZeroMatrix(dim);
     for (size_t i=0; i<dim; i++)
-        matrD[i][i] = matrR[i][i] / abs(matrR[i][i]);
+        matrD[i][i] = matrR[i][i] / std::abs(matrR[i][i]);
 
     // create U = Q D
     qmatrix matrU = matrQ * matrD;
