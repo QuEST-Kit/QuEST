@@ -42,6 +42,11 @@ using namespace Catch::Matchers;
     const qreal TEST_EPSILON = 1E-10;
 #endif
 
+qreal getTestEpsilon() {
+
+    return TEST_EPSILON;
+}
+
 bool doScalarsAgree(qcomp a, qcomp b) {
 
     return abs(a - b) <= TEST_EPSILON;

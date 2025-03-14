@@ -21,6 +21,8 @@
 using std::vector;
 
 
+qreal getTestEpsilon();
+
 bool doScalarsAgree(qcomp a, qcomp b);
 bool doMatricesAgree(qmatrix a, qmatrix b);
 

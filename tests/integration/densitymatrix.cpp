@@ -14,6 +14,7 @@
 
 #include "tests/utils/macros.hpp"
 #include "tests/utils/cache.hpp"
+#include "tests/utils/compare.hpp"
 #include "tests/utils/random.hpp"
 
 #include <algorithm>
@@ -38,7 +39,7 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
     initPureState(rho, psi);
 
     // we will check all alculations produced within 'eps' of expected
-    qreal eps = 1E-5;
+    qreal eps = std::max({(qreal) 1E-5, getTestEpsilon()});
     REQUIRE_THAT( calcPurity(rho),        WithinAbs(1, eps) );
     REQUIRE_THAT( calcPurity(psi),        WithinAbs(1, eps) );
     REQUIRE_THAT( calcTotalProb(rho),     WithinAbs(1, eps) );
