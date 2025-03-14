@@ -36,6 +36,9 @@ void applyReferenceOperator(   qmatrix& state, vector<int> targs, qmatrix matrix
 void multiplyReferenceOperator(qvector& state, vector<int> targs, qmatrix matrix);
 void multiplyReferenceOperator(qmatrix& state, vector<int> targs, qmatrix matrix);
 
+void applyReferenceOperator(qvector& state, qmatrix matrix);
+void applyReferenceOperator(qmatrix& state, qmatrix matrix);
+
 void applyReferenceOperator(qmatrix& state, vector<int> targs, vector<qmatrix> matrices);
 
 

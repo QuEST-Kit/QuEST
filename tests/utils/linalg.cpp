@@ -51,6 +51,19 @@ int getBitAt(qindex num, int ind) {
 }
 
 
+vector<int> getBits(qindex num, int numBits) {
+    DEMAND( numBits > 0 );
+
+    // out ordered least to most significant
+    vector<int> out(numBits);
+
+    for (int i=0; i<numBits; i++)
+        out[i] = getBitAt(num, i);
+
+    return out;
+}
+
+
 qindex getBitsAt(qindex num, vector<int> inds) {
     DEMAND( num >= 0 );
 
@@ -99,27 +112,46 @@ int getNumPermutations(int n, int k) {
  */
 
 
+qcomp getSum(qvector vec) {
+
+    qcomp sum = qcomp(0,0);
+    qcomp y, t, c=sum;
+    
+    // complex Kahan summation
+    for (auto& x : vec) {
+        y = x - c;
+        t = sum + y;
+        c = ( t - sum ) - y;
+        sum = t;
+    }
+
+    return sum;
+}
+
+
+qreal getSum(vector<qreal> vec) {
+
+    // in = real(vec)
+    qvector in = getZeroVector(vec.size());
+    for (size_t i=0; i<in.size(); i++)
+        in[i] = qcomp(vec[i],0);
+
+    return std::real(getSum(in));
+}
+
+
 qvector getNormalised(qvector vec) {
 
-    qreal norm = 0;
-    qreal y, t, c=0;
-    
-    // compute norm via Kahan summation
-    for (auto& x : vec) {
-        y = std::pow(std::real(x),2) - c;
-        t = norm + y;
-        c = ( t - norm ) - y;
-        norm = t;
-        
-        y = std::pow(std::imag(x),2) - c;
-        t = norm + y;
-        c = ( t - norm ) - y;
-        norm = t;
-    }
-    
+    // prob[i] = abs(vec[i])^2
+    vector<qreal> probs(vec.size());
+    for (size_t i=0; i<vec.size(); i++)
+        probs[i] = std::norm(vec[i]);
+
     // normalise vector
+    qreal norm = getSum(probs);
+    qreal fac = 1 / std::sqrt(norm);
     for (auto& x : vec)
-        x /= std::sqrt(norm);
+        x *= fac;
 
     return vec;
 }

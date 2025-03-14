@@ -22,6 +22,7 @@
 #include "tests/utils/evolve.hpp"
 #include "tests/utils/linalg.hpp"
 #include "tests/utils/lists.hpp"
+#include "tests/utils/measure.hpp"
 #include "tests/utils/macros.hpp"
 #include "tests/utils/random.hpp"
 
@@ -119,7 +120,7 @@ namespace VariableSizeParameterisedMatrices {
  * section, so are accounted distinctly.
  */
 
-void testQuregIsCorrectOnAllDeployments(quregCache quregs, auto& reference, auto& function) {
+void TEST_ON_CACHED_QUREGS(quregCache quregs, auto& reference, auto& function) {
 
     for (auto& [label, qureg]: quregs) {
 
@@ -136,6 +137,18 @@ void testQuregIsCorrectOnAllDeployments(quregCache quregs, auto& reference, auto
         }
     }
 }
+
+
+/*
+ * simply avoids boilerplate
+ */
+
+#define PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef ) \
+    int numQubits = getNumCachedQubits(); \
+    auto statevecQuregs = getCachedStatevecs(); \
+    auto densmatrQuregs = getCachedDensmatrs(); \
+    qvector statevecRef = getZeroVector(getPow2(numQubits)); \
+    qmatrix densmatrRef = getZeroMatrix(getPow2(numQubits));
 
 
 /*
@@ -624,13 +637,9 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
 
     assertNumQubitsFlagsAreValid(Ctrls, Targs);
 
-    SECTION( LABEL_CORRECTNESS ) {
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
 
-        int numQubits = getNumCachedQubits();
-        auto statevecQuregs = getCachedStatevecs();
-        auto densmatrQuregs = getCachedDensmatrs();
-        qvector statevecRef = getZeroVector(getPow2(numQubits));
-        qmatrix densmatrRef = getZeroMatrix(getPow2(numQubits));
+    SECTION( LABEL_CORRECTNESS ) {
 
         // try all possible number of ctrls and targs
         int numTargs = GENERATE_NUM_TARGS<Ctrls,Targs,Args>(numQubits);
@@ -680,8 +689,8 @@ void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
         CAPTURE_RELEVANT<Ctrls,Targs,Args>( ctrls, states, targs, furtherArgs );
 
         // test API operation on all available deployment combinations (e.g. OMP, MPI, MPI+GPU, etc)
-        SECTION( LABEL_STATEVEC ) { testQuregIsCorrectOnAllDeployments(statevecQuregs, statevecRef, testFunc); }
-        SECTION( LABEL_DENSMATR ) { testQuregIsCorrectOnAllDeployments(densmatrQuregs, densmatrRef, testFunc); }
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
 
         // free any heap-alloated API matrices and restore epsilon
         freeRemainingArgs<Targs,Args>(furtherArgs);
@@ -781,9 +790,10 @@ TEST_CASE( "applyMultiQubitPhaseShift", TEST_CATEGORY ) { testOperation<zero,any
 
 TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY ) {
 
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
+
     SECTION( LABEL_CORRECTNESS ) {
 
-        int numQubits = getNumCachedQubits();
         int numTargs = GENERATE_COPY( range(1,numQubits+1) );
         auto targs = GENERATE_TARGS( numQubits, numTargs );
 
@@ -796,9 +806,7 @@ TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY ) {
                 ref = getDisceteFourierTransform(ref, targs);
             };
 
-            auto quregs = getCachedStatevecs();
-            qvector ref = getZeroVector(getPow2(numQubits));
-            testQuregIsCorrectOnAllDeployments(quregs, ref, testFunc);
+            TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc);
         }
 
         SECTION( LABEL_DENSMATR ) { 
@@ -820,9 +828,7 @@ TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY ) {
                 }
             };
 
-            auto quregs = getCachedDensmatrs();
-            qmatrix ref = getZeroMatrix(getPow2(numQubits));
-            testQuregIsCorrectOnAllDeployments(quregs, ref, testFunc);
+            TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc);
         }
     }
 
@@ -832,11 +838,11 @@ TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY ) {
 
 TEST_CASE( "applyFullQuantumFourierTransform", TEST_CATEGORY ) {
 
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
+
     SECTION( LABEL_CORRECTNESS ) {
 
         GENERATE( range(0,10) );
-
-        int numQubits = getNumCachedQubits();
 
         SECTION( LABEL_STATEVEC ) { 
 
@@ -845,9 +851,7 @@ TEST_CASE( "applyFullQuantumFourierTransform", TEST_CATEGORY ) {
                 ref = getDisceteFourierTransform(ref);
             };
 
-            auto quregs = getCachedStatevecs();
-            qvector ref = getZeroVector(getPow2(numQubits));
-            testQuregIsCorrectOnAllDeployments(quregs, ref, testFunc);
+            TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc);
         }
 
         SECTION( LABEL_DENSMATR ) { 
@@ -869,10 +873,288 @@ TEST_CASE( "applyFullQuantumFourierTransform", TEST_CATEGORY ) {
                 }
             };
 
-            auto quregs = getCachedDensmatrs();
-            qmatrix ref = getZeroMatrix(getPow2(numQubits));
-            testQuregIsCorrectOnAllDeployments(quregs, ref, testFunc);
+            TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc);
         }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "applyQubitProjector", TEST_CATEGORY ) {
+
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        GENERATE( range(0,10) );
+        int target = GENERATE_COPY( range(0,numQubits) );
+        int outcome = GENERATE( 0, 1 );
+
+        qmatrix projector = getProjector(outcome);
+
+        auto testFunc = [&](Qureg qureg, auto& ref) {
+            applyQubitProjector(qureg, target, outcome);
+            applyReferenceOperator(ref, {target}, projector);
+        };
+
+        CAPTURE( target, outcome );
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "applyMultiQubitProjector", TEST_CATEGORY ) {
+
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        int numTargs = GENERATE_COPY( range(1,numQubits+1) );
+        auto targets = GENERATE_TARGS( numQubits, numTargs );
+        auto outcomes = getRandomOutcomes(numTargs);
+
+        qmatrix projector = getProjector(targets, outcomes, numQubits);
+
+        auto testFunc = [&](Qureg qureg, auto& ref) {
+            applyMultiQubitProjector(qureg, targets.data(), outcomes.data(), numTargs);
+            applyReferenceOperator(ref, projector);
+        };
+
+        CAPTURE( targets, outcomes );
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "applyForcedQubitMeasurement", TEST_CATEGORY ) {
+
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        GENERATE( range(0,10) );
+        int target = GENERATE_COPY( range(0,numQubits) );
+        int outcome = GENERATE( 0, 1 );
+
+        qmatrix projector = getProjector(outcome);
+
+        auto testFunc = [&](Qureg qureg, auto& ref) {
+
+            // overwrite caller's setting of initDebugState, since
+            // that precludes outcomes=|0><0| due to zero-probability
+            setToRandomState(ref);
+            setQureg(qureg, ref);
+
+            // compare the probabilities...
+            qreal apiProb = applyForcedQubitMeasurement(qureg, target, outcome);
+            qreal refProb = getReferenceProbability(ref, {target}, {outcome});
+            REQUIRE_AGREE( apiProb, refProb );
+
+            // and the post-projection states (caller calls subsequent REQUIRE_AGREE)
+            applyReferenceOperator(ref, {target}, projector);
+            ref /= (qureg.isDensityMatrix)?
+                refProb : std::sqrt(refProb);
+        };
+
+        CAPTURE( target, outcome );
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "applyForcedMultiQubitMeasurement", TEST_CATEGORY ) {
+
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        int numTargs = GENERATE_COPY( range(1,numQubits+1) );
+        auto targets = GENERATE_TARGS( numQubits, numTargs );
+        auto outcomes = getRandomOutcomes(numTargs);
+
+        qmatrix projector = getProjector(targets, outcomes, numQubits);
+
+        auto testFunc = [&](Qureg qureg, auto& ref) {
+
+            // overwrite caller's setting of initDebugState, since
+            // that precludes outcomes=|0><0| due to zero-probability
+            setToRandomState(ref);
+            setQureg(qureg, ref);
+
+            // compare the probabilities...
+            qreal apiProb = applyForcedMultiQubitMeasurement(qureg, targets.data(), outcomes.data(), numTargs);
+            qreal refProb = getReferenceProbability(ref, targets, outcomes);
+            REQUIRE_AGREE( apiProb, refProb );
+
+            // and the post-measurement states (caller calls subsequent REQUIRE_AGREE)
+            applyReferenceOperator(ref, projector);
+            ref /= (qureg.isDensityMatrix)?
+                refProb : std::sqrt(refProb);
+        };
+
+        CAPTURE( targets, outcomes );
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "applyMultiQubitMeasurement", TEST_CATEGORY ) {
+
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        int numTargs = GENERATE_COPY( range(1,numQubits+1) );
+        auto targets = GENERATE_TARGS( numQubits, numTargs );
+
+        auto testFunc = [&](Qureg qureg, auto& ref) {
+
+            // overwrite caller's setting of initDebugState, since
+            // sampling requires the outcome probs are normalised
+            setToRandomState(ref);
+            setQureg(qureg, ref);
+            
+            // the output API state...
+            qindex apiOut = applyMultiQubitMeasurement(qureg, targets.data(), numTargs);
+
+            // informs the projector which determines the post-measurement reference
+            auto apiOutBits = getBits(apiOut, numTargs);
+            qmatrix projector = getProjector(targets, apiOutBits, numQubits);
+            applyReferenceOperator(ref, projector);
+            qreal refProb = getReferenceProbability(ref, targets, apiOutBits);
+            ref /= (qureg.isDensityMatrix)?
+                refProb : std::sqrt(refProb);
+        };
+
+        CAPTURE( targets );
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "applyMultiQubitMeasurementAndGetProb", TEST_CATEGORY ) {
+
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        int numTargs = GENERATE_COPY( range(1,numQubits+1) );
+        auto targets = GENERATE_TARGS( numQubits, numTargs );
+
+        auto testFunc = [&](Qureg qureg, auto& ref) {
+
+            // overwrite caller's setting of initDebugState, since
+            // sampling requires the outcome probs are normalised
+            setToRandomState(ref);
+            setQureg(qureg, ref);
+
+            // compare the measurement probability...
+            qreal apiProb = -1;
+            qindex apiOut = applyMultiQubitMeasurementAndGetProb(qureg, targets.data(), numTargs, &apiProb);
+            auto apiOutBits = getBits(apiOut, numTargs);
+            qreal refProb = getReferenceProbability(ref, targets, apiOutBits);
+            REQUIRE_AGREE( apiProb, refProb );
+            
+            // and the post-measurement states (caller calls subsequent REQUIRE_AGREE)
+            qmatrix projector = getProjector(targets, apiOutBits, numQubits);
+            applyReferenceOperator(ref, projector);
+            ref /= (qureg.isDensityMatrix)?
+                refProb : std::sqrt(refProb);
+        };
+
+        CAPTURE( targets );
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "applyQubitMeasurement", TEST_CATEGORY ) {
+
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        GENERATE( range(0,10) );
+        int target = GENERATE_COPY( range(0,numQubits) );
+
+        auto testFunc = [&](Qureg qureg, auto& ref) {
+
+            // overwrite caller's setting of initDebugState, since
+            // sampling requires the outcome probs are normalised
+            setToRandomState(ref);
+            setQureg(qureg, ref);
+
+            // the output API state...
+            int apiOut = applyQubitMeasurement(qureg, target);
+
+            // informs the projector which determines the post-measurement reference
+            qmatrix projector = getProjector(apiOut);
+            applyReferenceOperator(ref, {target}, projector);
+            qreal refProb = getReferenceProbability(ref, {target}, {apiOut});
+            ref /= (qureg.isDensityMatrix)?
+                refProb : std::sqrt(refProb);
+        };
+
+        CAPTURE( target );
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "applyQubitMeasurementAndGetProb", TEST_CATEGORY ) {
+
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        GENERATE( range(0,10) );
+        int target = GENERATE_COPY( range(0,numQubits) );
+
+        auto testFunc = [&](Qureg qureg, auto& ref) {
+
+            // overwrite caller's setting of initDebugState, since
+            // sampling requires the outcome probs are normalised
+            setToRandomState(ref);
+            setQureg(qureg, ref);
+
+            // compare the measurement probability...
+            qreal apiProb = -1;
+            int apiOut = applyQubitMeasurementAndGetProb(qureg, target, &apiProb);
+            qreal refProb = getReferenceProbability(ref, {target}, {apiOut});
+            REQUIRE_AGREE( apiProb, refProb );
+            
+            // and the post-measurement states (caller calls subsequent REQUIRE_AGREE)
+            qmatrix projector = getProjector(apiOut);
+            applyReferenceOperator(ref, {target}, projector);
+            ref /= (qureg.isDensityMatrix)?
+                refProb : std::sqrt(refProb);            
+        };
+
+        CAPTURE( target );
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
     /// @todo input validation
@@ -888,28 +1170,7 @@ TEST_CASE( "applyFullQuantumFourierTransform", TEST_CATEGORY ) {
  * UNTESTED FUNCTIONS
  */
 
-
-int applyQubitMeasurement(Qureg qureg, int target);
-
-int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability);
-
-qreal applyForcedQubitMeasurement(Qureg qureg, int target, int outcome);
-
-void applyQubitProjector(Qureg qureg, int target, int outcome);
-
-qindex applyMultiQubitMeasurement(Qureg qureg, int* qubits, int numQubits);
-
-qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQubits, qreal* probability);
-
-qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, int numQubits);
-
-void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits);
-
-
 void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
-
-
-
 
 // these require we deploy input objects (Qureg,FullStateDiagMatr) differently
 // (as is respectively permitted) to thoroughly test all QuEST control flows

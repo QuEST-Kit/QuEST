@@ -153,17 +153,32 @@ qmatrix getFullStateOperator(vector<int> ctrls, vector<int> ctrlStates, vector<i
  */
 
 
+// overloads with no targs (given full operator)
+
+void applyReferenceOperator(qvector& state, qmatrix matrix) {
+    DEMAND( state.size() == matrix.size() );
+
+    state = matrix * state;
+}
+void applyReferenceOperator(qmatrix& state, qmatrix matrix) {
+    DEMAND( state.size() == matrix.size() );
+
+    state = matrix * state * getConjugateTranspose(matrix);
+}
+
+
+// overloads with ctrls, states and targs (given sub-operator)
+
 void applyReferenceOperator(qvector& state, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qmatrix matrix) {
 
-    qmatrix ref = getFullStateOperator(ctrls, ctrlStates, targs, matrix, getLog2(state.size()));
-    state = ref * state;
+    qmatrix fullOp = getFullStateOperator(ctrls, ctrlStates, targs, matrix, getLog2(state.size()));
+    applyReferenceOperator(state, fullOp);
 }
 
 void applyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qmatrix matrix) {
     
-    qmatrix left = getFullStateOperator(ctrls, ctrlStates, targs, matrix, getLog2(state.size()));
-    qmatrix right = getConjugateTranspose(left);
-    state = left * state * right;
+    qmatrix fullOp = getFullStateOperator(ctrls, ctrlStates, targs, matrix, getLog2(state.size()));
+    applyReferenceOperator(state, fullOp);
 }
 
 void multiplyReferenceOperator(qvector& state, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qmatrix matrix) {
@@ -178,7 +193,7 @@ void multiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> ct
 }
 
 
-// overloads with no ctrl states
+// overloads with only ctrls and targs
 
 void applyReferenceOperator(qvector& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
 
@@ -198,7 +213,7 @@ void multiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> ta
 }
 
 
-// overloads with no ctrls
+// overloads with only targs
 
 void applyReferenceOperator(qvector& state, vector<int> targs, qmatrix matrix) {
     
@@ -218,7 +233,7 @@ void multiplyReferenceOperator(qmatrix& state, vector<int> targs, qmatrix matrix
 }
 
 
-// kraus overload
+// overloads with only targs and kraus operators
 
 void applyReferenceOperator(qmatrix& state, vector<int> targs, vector<qmatrix> matrices) {
 

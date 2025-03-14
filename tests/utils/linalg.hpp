@@ -23,11 +23,14 @@ using std::vector;
 int getNumPermutations(int n, int k);
 int getLog2(qindex);
 int getBitAt(qindex num, int ind);
+vector<int> getBits(qindex num, int numBits);
 qindex getBitsAt(qindex num, vector<int> inds);
 qindex setBitAt(qindex num, int ind, int bit);
 qindex setBitsAt(qindex num, vector<int> inds, qindex bits);
 qindex getPow2(int);
 
+qreal getSum(vector<qreal> vec);
+qcomp getSum(qvector);
 qvector getNormalised(qvector);
 qvector getDisceteFourierTransform(qvector);
 qvector getDisceteFourierTransform(qvector in, vector<int> targs);
