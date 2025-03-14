@@ -366,6 +366,8 @@ void validate_measurementOutcomesProbNotZero(int* outcomes, int numQubits, qreal
 
 void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const char* caller);
 
+void validate_measurementProbsAreNormalised(vector<qreal> probs, const char* caller);
+
 
 
 /*

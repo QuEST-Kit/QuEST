@@ -793,6 +793,9 @@ namespace report {
     string MANY_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY =
         "The specified multi-qubit measurement outcome (with binary value ${OUTCOME_VALUE}) is impossibly unlikely (i.e. has probability less than epsilon), so the post-measurement state cannot be reliably renormalised.";
 
+    string OUTCOME_PROBS_DO_NOT_SUM_TO_ONE =
+        "The state was unnormalised such that the probabilities of possible outcomes did not sum to one, and ergo cannot be meaningfully sampled.";
+
     string GPU_CANNOT_FIT_TEMP_MEASUREMENT_OUTCOME_PROBS =
         "The GPU has less available memory (${MEM_AVAIL} bytes) than that needed (${MEM_NEEDED} bytes) to temporarily store the ${NUM_OUTCOMES} outcome probabilities of the specified ${NUM_QUBITS} qubits.";
 
@@ -3418,6 +3421,18 @@ void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const c
     };
 
     assertThat(memAvail > memNeeded, report::GPU_CANNOT_FIT_TEMP_MEASUREMENT_OUTCOME_PROBS, vars, caller);
+}
+
+void validate_measurementProbsAreNormalised(vector<qreal> probs, const char* caller) {
+
+    if (isNumericalValidationDisabled())
+        return;
+
+    /// @todo include 'total' in validation msg once supported
+
+    qreal total = util_getSum(probs);
+    qreal dist = std::abs(total - 1);
+    assertThat(dist <= global_validationEpsilon, report::OUTCOME_PROBS_DO_NOT_SUM_TO_ONE, caller);
 }
 
 

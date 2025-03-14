@@ -229,6 +229,14 @@ qcomp* util_getGpuMemPtr(T matr) {
 
 
 /*
+ * VECTOR REDUCTION
+ */
+
+qreal util_getSum(vector<qreal> list);
+
+
+
+/*
  * MATRIX CONJUGATION
  */
 

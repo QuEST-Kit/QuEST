@@ -1296,15 +1296,18 @@ int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability)
     validate_quregFields(qureg, __func__);
     validate_target(qureg, target, __func__);
 
-    // find only the outcome=0 probability, to avoid reducing all amps;
-    // this halves the total iterations though assumes normalisation
-    int outcome = 0;
-    *probability = calcProbOfQubitOutcome(qureg, target, outcome);
+    // we do not assume state normalisation (that is posteriori checked),
+    // so we must perform two reductions; one for each outcome. We choose
+    // to re-enumerate the state (potentially doubling caching costs) to
+    // avoid the nuisances/race-cons of parallel adding to two scalars.
+    vector<qreal> probs(2);
+    probs[0] = calcProbOfQubitOutcome(qureg, target, 0); // harmlessly re-validates
+    probs[1] = calcProbOfQubitOutcome(qureg, target, 1); // " "
+    validate_measurementProbsAreNormalised(probs, __func__);
 
     // randomly choose the outcome
-    outcome = rand_getRandomSingleQubitOutcome(*probability);
-    if (outcome == 1)
-        *probability = 1 - *probability;
+    int outcome = rand_getRandomSingleQubitOutcome(probs[0]);
+    *probability = probs[outcome];
 
     // collapse to the outcome
     (qureg.isDensityMatrix)?
@@ -1350,7 +1353,9 @@ qindex applyMultiQubitMeasurement(Qureg qureg, int* qubits, int numQubits) {
     validate_targets(qureg, qubits, numQubits, __func__);
 
     qreal prob = 0; // ignored
-    return applyMultiQubitMeasurementAndGetProb(qureg, qubits, numQubits, &prob); // harmlessly re-validates
+
+    // below validates post-measurement and would report 'AndGetProb' function suffix. Eh!
+    return applyMultiQubitMeasurementAndGetProb(qureg, qubits, numQubits, &prob);
 }
 
 qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQubits, qreal* probability) {
@@ -1361,6 +1366,9 @@ qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQub
     qindex numProbs = powerOf2(numQubits);
     vector<qreal> probs(numProbs);
     calcProbsOfAllMultiQubitOutcomes(probs.data(), qureg, qubits, numQubits); // harmlessly re-validates
+
+    // we cannot meaningfully sample these probs if not normalised
+    validate_measurementProbsAreNormalised(probs, __func__);
 
     // randomly choose an outcome
     qindex outcome = rand_getRandomMultiQubitOutcome(probs);

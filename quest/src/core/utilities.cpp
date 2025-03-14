@@ -315,6 +315,28 @@ qcomp util_getPowerOfI(size_t exponent) {
 
 
 /*
+ * VECTOR REDUCTION
+ */
+
+qreal util_getSum(vector<qreal> list) {
+
+    qreal sum = 0;
+    qreal y, t, c=0;
+    
+    // complex Kahan summation
+    for (auto& x : list) {
+        y = x - c;
+        t = sum + y;
+        c = ( t - sum ) - y;
+        sum = t;
+    }
+
+    return sum;
+}
+
+
+
+/*
  * MATRIX CONJUGATION
  */
 
