@@ -125,7 +125,7 @@ if (ENABLE_TESTING)
 endif()
 
 string(CONCAT DESCRIPTON_OF_TEST_MAX_NUM_SUPEROP_TARGETS  # for multiline option
-  "The maximum number of superoperator targets for which to unit test functions mixKrausMap and applySuperOp. "
+  "The maximum number of superoperator targets for which to unit test functions mixKrausMap and mixSuperOp. "
   "This is computationally equivalent to simulating unitaries with double the number of targets upon a density matrix. "
   "Set to 0 to test all sizes which is likely prohibitively slow, or to a positive integer (e.g. the default of 4) to accelerate the unit tests. "
   "This is used to accelerate the v4 unit tests, and has no effect when ENABLE_TESTING is OFF, nor on the v3 deprecated tests."

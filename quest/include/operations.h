@@ -379,14 +379,6 @@ void applyMultiStateControlledMultiQubitNot(Qureg, int* controls, int* states, i
 
 
 /*
- * superoperator
- */
-
-void applySuperOp(Qureg qureg, int* targets, int numTargets, SuperOp superop);
-
-
-
-/*
  * measurement
  */
 

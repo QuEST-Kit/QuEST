@@ -778,45 +778,6 @@ TEST_CASE( "applyPhaseShift",           TEST_CATEGORY ) { testOperation<zero,one
 TEST_CASE( "applyTwoQubitPhaseShift",   TEST_CATEGORY ) { testOperation<zero,two,scalar>(applyTwoQubitPhaseShift,   ParameterisedMatrices::PS2); }
 TEST_CASE( "applyMultiQubitPhaseShift", TEST_CATEGORY ) { testOperation<zero,any,scalar>(applyMultiQubitPhaseShift, VariableSizeParameterisedMatrices::PS); }
 
-
-TEST_CASE( "applySuperOp", TEST_CATEGORY ) {
-
-    SECTION( LABEL_CORRECTNESS ) {
-
-        int numQubits = getNumCachedQubits();
-        auto densmatrQuregs = getCachedDensmatrs();
-        qmatrix densmatrRef = getZeroMatrix(getPow2(numQubits));
-
-        int maxFlag = TEST_MAX_NUM_SUPEROP_TARGETS;
-        int maxNumTargs = (maxFlag != 0 && numQubits > maxFlag)?
-            maxFlag : numQubits;
-
-        int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
-        auto targs = GENERATE_TARGS( numQubits, numTargs );
-
-        // reference state will be modified by the Kraus map
-        vector<qmatrix> kraus = getRandomKrausMap(numTargs, getRandomInt(1,5));
-        qmatrix operatorRef = getSuperOperator(kraus);
-
-        // while the Qureg will be modified by the superoperator
-        SuperOp superOp = createSuperOp(numTargs);
-        setSuperOp(superOp, operatorRef);
-
-        auto testFunc = [&](Qureg qureg, qmatrix refMat) {
-            applySuperOp(qureg, targs.data(), numTargs, superOp);
-            applyReferenceOperator(densmatrRef, targs, kraus);
-        };
-
-        CAPTURE( targs );
-        SECTION( LABEL_DENSMATR ) { testQuregIsCorrectOnAllDeployments(densmatrQuregs, densmatrRef, testFunc); }
-
-        destroySuperOp(superOp);
-    }
-
-    /// @todo input validation
-}
-
-
 /** @} (end defgroup) */
 
 

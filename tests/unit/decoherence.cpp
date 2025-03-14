@@ -264,6 +264,33 @@ TEST_CASE( "mixKrausMap", TEST_CATEGORY ) {
 }
 
 
+TEST_CASE( "mixSuperOp", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        int numQubits = getNumCachedQubits();
+        int maxFlag = TEST_MAX_NUM_SUPEROP_TARGETS;
+        int maxNumTargs = (maxFlag != 0 && numQubits > maxFlag)?
+            maxFlag : numQubits;
+
+        int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
+        auto targs = GENERATE_TARGS( numQubits, numTargs );
+        auto matrices = getRandomKrausMap(numTargs, getRandomInt(1,5));
+
+        SuperOp superOp = createSuperOp(numTargs);
+        setSuperOp(superOp, getSuperOperator(matrices));
+        auto func = [&](Qureg qureg) { mixSuperOp(qureg, targs.data(), numTargs, superOp); };
+
+        CAPTURE( targs );
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(func, targs, matrices); }
+
+        destroySuperOp(superOp);
+    }
+
+    /// @todo input validation
+}
+
+
 /** @} (end defgroup) */
 
 
