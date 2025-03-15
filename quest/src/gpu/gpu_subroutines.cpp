@@ -32,12 +32,9 @@
  * @author Tyson Jones
  */
 
-    // this is one of few functions which will fail to operate correctly if
-    // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
-    // true but the latter is not), so we explicitly ensure this is the case
-    if (!COMPILE_CUDA)
-        error_cuQuantumCompiledButNotCuda();
-        
+#if (COMPILE_CUQUANTUM && ! COMPILE_CUDA)
+    #error "Cannot define COMPILE_CUQUANTUM=1 without simultaneously defining COMPILE_CUDA=1"
+#endif
 
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
@@ -544,12 +541,6 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         return;
     }
 
-    // this is one of few functions which will fail to operate correctly if
-    // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
-    // true but the latter is not), so we explicitly ensure this is the case
-    if (!COMPILE_CUDA)
-        error_cuQuantumCompiledButNotCuda();
-
 #endif
 
 // note preprocessors are not exclusive
@@ -618,12 +609,6 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         return;
     }
 
-    // this is one of few functions which will fail to operate correctly if
-    // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
-    // true but the latter is not), so we explicitly ensure this is the case
-    if (!COMPILE_CUDA)
-        error_cuQuantumCompiledButNotCuda();
-
 #endif 
 
 // note preprocessors are not exclusive
@@ -691,12 +676,6 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         // must return to avoid re-simulation below
         return;
     }
-
-    // this is one of few functions which will fail to operate correctly if
-    // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
-    // true but the latter is not), so we explicitly ensure this is the case
-    if (!COMPILE_CUDA)
-        error_cuQuantumCompiledButNotCuda();
 
 #endif
 
@@ -1532,14 +1511,10 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
         // cuQuantum discards NumQubits template param and creates
         // its own temporary GPU memory (to store probs) if necessary
         cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(outProbs, qureg, qubits);
+
+        // explicitly return to avoid re-simulation below
         return;
     }
-
-    // this is one of few functions which will fail to operate correctly if
-    // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
-    // true but the latter is not), so we explicitly ensure this is the case
-    if (!COMPILE_CUDA)
-        error_cuQuantumCompiledButNotCuda();
 
 #endif
 
@@ -1560,6 +1535,8 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
     // overwrite outProbs with GPU memory
     copyFromDeviceVec(devProbs, outProbs);
+
+    // explicitly return to avoid error-msg below
     return;
 
 #endif

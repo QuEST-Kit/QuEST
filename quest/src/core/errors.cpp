@@ -632,13 +632,6 @@ void error_cudaCallFailed(const char* msg, const char* func, const char* caller,
     raiseInternalError(err);
 }
 
-void error_cuQuantumCompiledButNotCuda() {
-
-    raiseInternalError(
-        "Preprocessor COMPILE_CUQUANTUM was set, but COMPILE_CUDA was not. These are not intended to be exclusive fields, so "
-        "a function which depended upon both flags could not continue");
-}
-
 
 
 /*
