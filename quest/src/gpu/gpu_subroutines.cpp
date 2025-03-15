@@ -32,6 +32,13 @@
  * @author Tyson Jones
  */
 
+    // this is one of few functions which will fail to operate correctly if
+    // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
+    // true but the latter is not), so we explicitly ensure this is the case
+    if (!COMPILE_CUDA)
+        error_cuQuantumCompiledButNotCuda();
+        
+
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
@@ -1513,10 +1520,12 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
 #if COMPILE_CUQUANTUM
 
-    // cuQuantum assumes all qubits are local (since it
-    // does not consult rank) and so cannot be used when
-    // any qubits are in prefix, despite that the algorithm
-    // is always embarrassingly parallel
+    /// @todo
+    /// cuQuantum assumes all qubits are local (since it does not consult rank) 
+    /// and so cannot be used when any qubits are in prefix, despite that the 
+    /// algorithm is always embarrassingly parallel. In theory we can workaround
+    /// this by only passing suffix-qubits to the backend, and shuffling the
+    /// resulting outProbs array within localiser.cpp. Experiment with this!
 
     if (util_areAllQubitsInSuffix(qubits, qureg)) {
 

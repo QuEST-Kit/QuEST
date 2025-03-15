@@ -1760,6 +1760,7 @@ void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
     // decide whether to parallelise below amp-clearing, since outProbs ~ dim of a qureg
     bool parallelise = qubits.size() > MIN_NUM_LOCAL_QUBITS_FOR_AUTO_QUREG_MULTITHREADING;
+    (void)parallelise; // suppress unused warning when not-compiling openmp)
 
     // clear amps (may be compile-time unrolled, or parallelised)
     #pragma omp parallel for if(parallelise)

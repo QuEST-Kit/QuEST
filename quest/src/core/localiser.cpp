@@ -1838,7 +1838,35 @@ qreal localiser_densmatr_calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qu
 void localiser_statevec_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg qureg, vector<int> qubits) {
     assert_localiserGivenStateVec(qureg);
 
-    // each node independently populates local outProbs
+    /// @todo
+    /// this algorithm is always embarrassingly parallel, with each node
+    /// overwriting its local 'outProbs' before a final reduction. This
+    /// requires however each thread/kernel processes its rank, and that
+    /// the backend receives all qubits (both prefix and suffix). Alas
+    /// this is incompatible with cuQuantum which can only process suffix.
+    /// In principle, we can remedy this by only passing the suffix qubits
+    /// to all backends, which then simplify their routines (as if non-
+    /// distributed), and write to temporarily wrong outProbs locations. We
+    /// could then use the excluded prefix qubits here to adjust the location 
+    /// of 'outProbs' before the global reduction. This is a small nuisance
+    /// since 'qubits' are arbitrarily ordered and ergo the re-locating will
+    /// not necessarily be as simple as shifting. Some illustrative mockup 
+    /// code is below. We defer this optimisation for now, passing all qubits 
+    /// to the backend, and avoiding cuQuantum whenever any qubit lies within 
+    /// the prefix state. Optimise this!
+
+    // auto [prefixQubits, suffixQubits] = util_getPrefixAndSuffixQubits(qubits, qureg);
+    //
+    // if (suffixQubits.empty())
+    //     outProbs[0] = accel_statevec_calcTotalProb_sub(qureg);
+    // else
+    //     accel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(outProbs, qureg, suffixQubits);
+    //
+    // if (!prefixQubits.empty()) {
+    //     // shuffle
+    // }
+
+    // in lieu of above discussed optimisation, each node independently populates local outProbs
     accel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(outProbs, qureg, qubits);
 
     // nodes sum their arrays
