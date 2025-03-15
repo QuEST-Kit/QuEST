@@ -91,6 +91,7 @@ void TEST_ON_CACHED_STATEVECS_AND_DENSMATRS(auto apiFunc, auto refFunc) {
  */
 
 
+
 TEST_CASE( "calcExpecPauliStr", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
@@ -99,7 +100,6 @@ TEST_CASE( "calcExpecPauliStr", TEST_CATEGORY ) {
         int numTargs = GENERATE_COPY( range(1,numQubits+1) );
         auto targets = GENERATE_TARGS(numQubits, numTargs);
 
-        GENERATE( range(0,10) );
         PauliStr str = getRandomPauliStr(targets);
 
         TEST_ALL_QUREGS(
