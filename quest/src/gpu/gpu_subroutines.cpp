@@ -1790,6 +1790,7 @@ template qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullSta
 template <int NumQubits> 
 void gpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
 
+    // all qubits are in suffix
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
 #if COMPILE_CUQUANTUM
@@ -1810,6 +1811,9 @@ void gpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 
 template <int NumQubits> 
 void gpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
+
+    // qubits are unconstrained, and can include prefix qubits
+    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 

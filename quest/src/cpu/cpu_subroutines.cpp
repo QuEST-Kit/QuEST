@@ -2171,6 +2171,7 @@ template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullSta
 template <int NumQubits>
 void cpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
 
+    // all qubits are in suffix
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
     // visit every amp, setting to zero or multiplying it by renorm
@@ -2186,9 +2187,8 @@ void cpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-        // i = global index of nth local amp
-        qindex i = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
-        qindex val = getValueOfBits(i, qubits.data(), numBits);
+        // val = outcomes corresponding to n-th local amp (all qubits are in suffix)
+        qindex val = getValueOfBits(n, qubits.data(), numBits);
 
         // multiply amp with renorm or zero, if qubit value matches or disagrees
         qcomp fac = renorm * (val == retainValue);
@@ -2200,6 +2200,7 @@ void cpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 template <int NumQubits>
 void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
 
+    // qubits are unconstrained, and can include prefix qubits
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
     // visit every amp, setting most to zero and multiplying the remainder by renorm

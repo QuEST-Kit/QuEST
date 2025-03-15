@@ -2229,16 +2229,16 @@ qreal localiser_densmatr_calcHilbertSchmidtDistance(Qureg quregA, Qureg quregB) 
 void localiser_statevec_multiQubitProjector(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
     assert_localiserGivenStateVec(qureg);
 
-    // we pass all qubits (including prefixes) to backend, which enumerates every
-    // local amp and decides whether to multiply 0 or a renormalisation thereupon.
-    // In distributed settings, it may be that some nodes zero their entire local
-    // partition, while others renormalise; in theory, we could make bespoke routines
-    // for these scenarios, eliminating superfluous flops. This is an unworthwhile
-    // optimisation; there would very likely remain nodes that must do zero-and-renorm
-    // iteration, for which all other nodes would later have to wait at next sync.
+    // this routine is always embarrassingly parallel; however, we handle the
+    // prefix-qubits here so that the backend can receive only the suffix qubits
+    // and ergo be agnostic to distribution (so that we can e.g. use cuQuantum).
+    // any rank which has a prefix-qubit with inconsistent with outcomes is zero'd
 
-    // always embarrassingly parallel
-    accel_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, prob);
+    if (doAnyLocalStatesHaveQubitValues(qureg, qubits, outcomes)) {
+        removePrefixQubitsAndStates(qureg, qubits, outcomes);
+        accel_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, prob);
+    } else
+        localiser_statevec_initUniformState(qureg, 0);
 }
 
 

@@ -501,15 +501,15 @@ struct functor_projectStateVec : public thrust::binary_function<qindex,cu_qcomp,
 
     int* targetsPtr;
     int numTargets, rank;
-    qindex logNumAmpsPerNode, retainValue;
+    qindex retainValue;
     qreal renorm;
 
     functor_projectStateVec(
-        int* targetsPtr, int numTargets, int rank, 
-        qindex logNumAmpsPerNode, qindex retainValue, qreal renorm
+        int* targetsPtr, int numTargets, 
+        qindex retainValue, qreal renorm
     ) :
-        targetsPtr(targetsPtr), numTargets(numTargets), rank(rank), 
-        logNumAmpsPerNode(logNumAmpsPerNode), retainValue(retainValue), renorm(renorm)
+        targetsPtr(targetsPtr), numTargets(numTargets),
+        retainValue(retainValue), renorm(renorm)
     { 
         assert_numTargsMatchesTemplateParam(numTargets, NumTargets);
     }
@@ -519,11 +519,8 @@ struct functor_projectStateVec : public thrust::binary_function<qindex,cu_qcomp,
         // use the compile-time value if possible, to auto-unroll the getValueOfBits() loop below
         SET_VAR_AT_COMPILE_TIME(int, numBits, NumTargets, numTargets);
 
-        // i = global index of nth local amp
-        qindex i = concatenateBits(rank, n, logNumAmpsPerNode);
-
         // return amp scaled by zero or renorm, depending on whether n has projected substate
-        qindex val = getValueOfBits(i, targetsPtr, numBits);
+        qindex val = getValueOfBits(n, targetsPtr, numBits);
         qreal fac = renorm * (val == retainValue);
         return fac * amp;
     }
@@ -1015,8 +1012,7 @@ void thrust_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, ve
     devints devQubits = qubits;
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
     auto projFunctor = functor_projectStateVec<NumQubits>(
-        getPtr(devQubits), qubits.size(), qureg.rank, 
-        qureg.logNumAmpsPerNode, retainValue, renorm);
+        getPtr(devQubits), qubits.size(), retainValue, renorm);
 
     auto indIter = thrust::make_counting_iterator(0);
     auto ampIter = getStartPtr(qureg);
