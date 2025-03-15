@@ -2260,13 +2260,19 @@ void localiser_statevec_multiQubitProjector(Qureg qureg, vector<int> qubits, vec
     // this routine is always embarrassingly parallel; however, we handle the
     // prefix-qubits here so that the backend can receive only the suffix qubits
     // and ergo be agnostic to distribution (so that we can e.g. use cuQuantum).
-    // any rank which has a prefix-qubit with inconsistent with outcomes is zero'd
+    // any rank which has a prefix-qubit inconsistent with outcomes is zero'd
 
-    if (doAnyLocalStatesHaveQubitValues(qureg, qubits, outcomes)) {
-        removePrefixQubitsAndStates(qureg, qubits, outcomes);
+    // nodes with all basis states orthogonal to outcomes (because prefix differs) are zero'd
+    if (!doAnyLocalStatesHaveQubitValues(qureg, qubits, outcomes)) {
+        accel_statevec_initUniformState_sub(qureg, 0);
+        return;
+    }
+
+    // all other nodes has some or all states consistent with suffix outcomes
+    removePrefixQubitsAndStates(qureg, qubits, outcomes);
+    (qubits.empty())?
+        accel_statevec_setQuregToSuperposition_sub(1/std::sqrt(prob), qureg,0,qureg, 0,qureg): // scale by norm
         accel_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, prob);
-    } else
-        localiser_statevec_initUniformState(qureg, 0);
 }
 
 
