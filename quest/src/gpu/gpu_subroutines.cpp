@@ -1513,10 +1513,29 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
 #if COMPILE_CUQUANTUM
 
-    // cuQuantum discards NumQubits template param
-    cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(outProbs, qureg, qubits);
+    // cuQuantum assumes all qubits are local (since it
+    // does not consult rank) and so cannot be used when
+    // any qubits are in prefix, despite that the algorithm
+    // is always embarrassingly parallel
 
-#elif COMPILE_CUDA
+    if (util_areAllQubitsInSuffix(qubits, qureg)) {
+
+        // cuQuantum discards NumQubits template param and creates
+        // its own temporary GPU memory (to store probs) if necessary
+        cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(outProbs, qureg, qubits);
+        return;
+    }
+
+    // this is one of few functions which will fail to operate correctly if
+    // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
+    // true but the latter is not), so we explicitly ensure this is the case
+    if (!COMPILE_CUDA)
+        error_cuQuantumCompiledButNotCuda();
+
+#endif
+
+// note preprocessors are not exclusive
+#if COMPILE_CUDA
 
     qindex numThreads = qureg.numAmpsPerNode;
     qindex numBlocks = getNumBlocks(numThreads);
@@ -1532,10 +1551,12 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
     // overwrite outProbs with GPU memory
     copyFromDeviceVec(devProbs, outProbs);
+    return;
 
-#else
-    error_gpuSimButGpuNotCompiled();
 #endif
+
+    // should be unreadchable
+    error_gpuSimButGpuNotCompiled();
 }
 
 
