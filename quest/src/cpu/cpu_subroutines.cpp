@@ -27,6 +27,7 @@
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/randomiser.hpp"
 #include "quest/src/core/accelerator.hpp"
+#include "quest/src/core/autodeployer.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
 #include "quest/src/comm/comm_config.hpp"
@@ -1757,8 +1758,11 @@ void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
     qindex numOutcomes = powerOf2(numBits);
 
-    // clear amps; be compile-time unrolled, and/or parallelised (independent of qureg)
-    #pragma omp parallel for
+    // decide whether to parallelise below amp-clearing, since outProbs ~ dim of a qureg
+    bool parallelise = qubits.size() > MIN_NUM_LOCAL_QUBITS_FOR_AUTO_QUREG_MULTITHREADING;
+
+    // clear amps (may be compile-time unrolled, or parallelised)
+    #pragma omp parallel for if(parallelise)
     for (int i=0; i<numOutcomes; i++)
         outProbs[i] = 0;
     
