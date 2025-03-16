@@ -254,7 +254,7 @@ TEST_CASE( "setQuregAmps", TEST_CATEGORY ) {
 
             // initialise qureg randomly
             qvector refVec = getRandomVector(numTotalAmps);
-            setQureg(qureg, refVec);
+            setQuregToReference(qureg, refVec);
 
             // modify only subset of refVec amps and qureg...
             setSubVector(refVec, amps, startInd);
@@ -289,7 +289,7 @@ TEST_CASE( "setDensityQuregFlatAmps", TEST_CATEGORY ) {
 
             // initialise qureg randomly
             qmatrix refMat = getRandomMatrix(numTotalRows);
-            setQureg(qureg, refMat);
+            setQuregToReference(qureg, refMat);
 
             // overwrite a contiguous region of row-major refMat, column-wise
             refMat = getTranspose(refMat);
@@ -333,7 +333,7 @@ TEST_CASE( "setDensityQuregAmps", TEST_CATEGORY ) {
 
             // initialise qureg randomly
             qmatrix refMat = getRandomMatrix(numTotalRowsCols);
-            setQureg(qureg, refMat);
+            setQuregToReference(qureg, refMat);
 
             // API needs nested pointers
             std::vector<qcomp*> rowPtrs(numSetRows);
@@ -370,8 +370,8 @@ TEST_CASE( "setQuregToRenormalized", TEST_CATEGORY ) {
             refMat[0][0] += 1/(qreal) dim;
 
         // [=] stores current (pre-normalised) reference objects
-        auto funcVec = [=](Qureg qureg) { setQureg(qureg, refVec); setQuregToRenormalized(qureg); };
-        auto funcMat = [=](Qureg qureg) { setQureg(qureg, refMat); setQuregToRenormalized(qureg); };
+        auto funcVec = [=](Qureg qureg) { setQuregToReference(qureg, refVec); setQuregToRenormalized(qureg); };
+        auto funcMat = [=](Qureg qureg) { setQuregToReference(qureg, refMat); setQuregToRenormalized(qureg); };
 
         // setQuregToRenormalized() makes statevectors become valid
         refVec = getNormalised(refVec);

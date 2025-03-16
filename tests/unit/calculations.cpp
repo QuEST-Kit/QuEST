@@ -53,7 +53,7 @@ void TEST_ON_CACHED_QUREGS(quregCache cache, auto refState, auto apiFunc, auto r
             // debug state, since many API functions validate the output domain
             // which is often invalid for unnormalised states
             setToRandomState(refState);
-            setQureg(qureg, refState);
+            setQuregToReference(qureg, refState);
 
             /// @todo 
             /// validate that above is correct, i.e. not the all-zero
@@ -104,8 +104,8 @@ void TEST_ON_MIXED_CACHED_QUREGS(quregCache cacheA, quregCache cacheB, auto refA
 
                 // initialise to random states (rather than debug) since
                 // tested function will likely validate output domain
-                setToRandomState(refA); setQureg(quregA, refA);
-                setToRandomState(refB); setQureg(quregB, refB);
+                setToRandomState(refA); setQuregToReference(quregA, refA);
+                setToRandomState(refB); setQuregToReference(quregB, refB);
 
                 // results will always be a scalar
                 auto apiResult = apiFunc(quregA, quregB);

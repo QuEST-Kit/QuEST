@@ -819,7 +819,7 @@ TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY ) {
             auto testFunc = [&](Qureg qureg, qmatrix& ref) {
 
                 // overwrite the Qureg debug state set by caller to above mixture
-                setQureg(qureg, getMixture(states, probs));
+                setQuregToReference(qureg, getMixture(states, probs));
                 applyQuantumFourierTransform(qureg, targs.data(), targs.size());
                 
                 ref = getZeroMatrix(ref.size());
@@ -864,7 +864,7 @@ TEST_CASE( "applyFullQuantumFourierTransform", TEST_CATEGORY ) {
             auto testFunc = [&](Qureg qureg, qmatrix& ref) {
 
                 // overwrite the Qureg debug state set by caller to above mixture
-                setQureg(qureg, getMixture(states, probs));
+                setQuregToReference(qureg, getMixture(states, probs));
                 applyFullQuantumFourierTransform(qureg);
                 
                 ref = getZeroMatrix(ref.size());
@@ -951,7 +951,7 @@ TEST_CASE( "applyForcedQubitMeasurement", TEST_CATEGORY ) {
             // overwrite caller's setting of initDebugState, since
             // that precludes outcomes=|0><0| due to zero-probability
             setToRandomState(ref);
-            setQureg(qureg, ref);
+            setQuregToReference(qureg, ref);
 
             // compare the probabilities...
             qreal apiProb = applyForcedQubitMeasurement(qureg, target, outcome);
@@ -990,7 +990,7 @@ TEST_CASE( "applyForcedMultiQubitMeasurement", TEST_CATEGORY ) {
             // overwrite caller's setting of initDebugState, since
             // that precludes outcomes=|0><0| due to zero-probability
             setToRandomState(ref);
-            setQureg(qureg, ref);
+            setQuregToReference(qureg, ref);
 
             // compare the probabilities...
             qreal apiProb = applyForcedMultiQubitMeasurement(qureg, targets.data(), outcomes.data(), numTargs);
@@ -1026,7 +1026,7 @@ TEST_CASE( "applyMultiQubitMeasurement", TEST_CATEGORY ) {
             // overwrite caller's setting of initDebugState, since
             // sampling requires the outcome probs are normalised
             setToRandomState(ref);
-            setQureg(qureg, ref);
+            setQuregToReference(qureg, ref);
             
             // the output API state...
             qindex apiOut = applyMultiQubitMeasurement(qureg, targets.data(), numTargs);
@@ -1063,7 +1063,7 @@ TEST_CASE( "applyMultiQubitMeasurementAndGetProb", TEST_CATEGORY ) {
             // overwrite caller's setting of initDebugState, since
             // sampling requires the outcome probs are normalised
             setToRandomState(ref);
-            setQureg(qureg, ref);
+            setQuregToReference(qureg, ref);
 
             // compare the measurement probability...
             qreal apiProb = -1;
@@ -1102,7 +1102,7 @@ TEST_CASE( "applyQubitMeasurement", TEST_CATEGORY ) {
             // overwrite caller's setting of initDebugState, since
             // sampling requires the outcome probs are normalised
             setToRandomState(ref);
-            setQureg(qureg, ref);
+            setQuregToReference(qureg, ref);
 
             // the output API state...
             int apiOut = applyQubitMeasurement(qureg, target);
@@ -1138,7 +1138,7 @@ TEST_CASE( "applyQubitMeasurementAndGetProb", TEST_CATEGORY ) {
             // overwrite caller's setting of initDebugState, since
             // sampling requires the outcome probs are normalised
             setToRandomState(ref);
-            setQureg(qureg, ref);
+            setQuregToReference(qureg, ref);
 
             // compare the measurement probability...
             qreal apiProb = -1;

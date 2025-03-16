@@ -18,8 +18,8 @@
 #include "qmatrix.hpp"
 
 
-void setQureg(Qureg, qvector);
-void setQureg(Qureg, qmatrix);
+void setQuregToReference(Qureg, qvector);
+void setQuregToReference(Qureg, qmatrix);
 
 qvector getVector(Qureg);
 qmatrix getMatrix(Qureg);

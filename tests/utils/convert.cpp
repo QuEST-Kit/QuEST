@@ -27,7 +27,7 @@ using std::vector;
  */
 
 
-void setQureg(Qureg qureg, qvector vector) {
+void setQuregToReference(Qureg qureg, qvector vector) {
     DEMAND( !qureg.isDensityMatrix );
     DEMAND( qureg.numAmps == (qindex) vector.size() );
 
@@ -35,7 +35,7 @@ void setQureg(Qureg qureg, qvector vector) {
 }
 
 
-void setQureg(Qureg qureg, qmatrix matrix) {
+void setQuregToReference(Qureg qureg, qmatrix matrix) {
     DEMAND( qureg.isDensityMatrix );
     DEMAND( getPow2(qureg.numQubits) == (qindex) matrix.size() );
 
