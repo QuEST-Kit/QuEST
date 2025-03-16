@@ -73,12 +73,8 @@ TEST_CASE( "initBlankState", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
-        int numQubits = getNumCachedQubits();
-        qvector refVec = getZeroVector(getPow2(numQubits));
-        qmatrix refMat = getZeroMatrix(getPow2(numQubits));
-
-        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(getCachedStatevecs(), initBlankState, refVec); }
-        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), initBlankState, refMat); }
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(getCachedStatevecs(), initBlankState, getRefStatevec()); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), initBlankState, getRefDensmatr()); }
     }
 
     /// @todo input validation
@@ -89,9 +85,8 @@ TEST_CASE( "initZeroState", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
-        int numQubits = getNumCachedQubits();
-        qvector refVec = getZeroVector(getPow2(numQubits)); refVec[0]    = 1; // |0> = {1, 0...}
-        qmatrix refMat = getZeroMatrix(getPow2(numQubits)); refMat[0][0] = 1; // |0><0| = {{1,0...},{0...}...}
+        qvector refVec = getRefStatevec(); refVec[0]    = 1; // |0> = {1, 0...}
+        qmatrix refMat = getRefDensmatr(); refMat[0][0] = 1; // |0><0| = {{1,0...},{0...}...}
 
         SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(getCachedStatevecs(), initZeroState, refVec); }
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), initZeroState, refMat); }
@@ -128,8 +123,8 @@ TEST_CASE( "initClassicalState", TEST_CATEGORY ) {
         int numInds = (int) getPow2(numQubits);
         int stateInd = GENERATE_COPY( range(0,numInds) );
 
-        qvector refVec = getZeroVector(getPow2(numQubits)); refVec[stateInd] = 1; // |i> = {0, ..., 1, 0, ...}
-        qmatrix refMat = getZeroMatrix(getPow2(numQubits)); refMat[stateInd][stateInd] = 1; // |i><i| 
+        qvector refVec = getRefStatevec(); refVec[stateInd]           = 1; // |i> = {0, ..., 1, 0, ...}
+        qmatrix refMat = getRefDensmatr(); refMat[stateInd][stateInd] = 1; // |i><i| 
 
         auto apiFunc = [&](Qureg qureg) { initClassicalState(qureg, stateInd); };
 
@@ -145,9 +140,8 @@ TEST_CASE( "initDebugState", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
-        qindex dim = getPow2(getNumCachedQubits());
-        qvector refVec = getZeroVector(dim); setToDebugState(refVec); // |debug>
-        qmatrix refMat = getZeroMatrix(dim); setToDebugState(refMat); // ||debug>>
+        qvector refVec = getRefStatevec(); setToDebugState(refVec); // |debug>
+        qmatrix refMat = getRefDensmatr(); setToDebugState(refMat); // ||debug>>
 
         SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(getCachedStatevecs(), initDebugState, refVec); }
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), initDebugState, refMat); }

@@ -41,7 +41,7 @@ using std::vector;
 void TEST_ON_CACHED_QUREGS(auto apiFunc, vector<int> targs, vector<qmatrix> kraus) {
 
     // all tests use a fixed-size density matrix
-    qmatrix reference = getZeroMatrix(getPow2(getNumCachedQubits()));
+    qmatrix reference = getRefDensmatr();
 
     for (auto& [label, qureg]: getCachedDensmatrs()) {
 
