@@ -22,11 +22,16 @@
 #include <string>
 #include <tuple>
 
-using quregCache = std::unordered_map<std::string,Qureg>;
-using deployInfo = std::vector<std::tuple<std::string,int,int,int>>;
+using quregCache  = std::unordered_map<std::string,Qureg>;
+using matrixCache = std::unordered_map<std::string,FullStateDiagMatr>;
+using deployInfo  = std::vector<std::tuple<std::string,int,int,int>>;
 
 int getNumCachedQubits();
 deployInfo getSupportedDeployments();
+
+void createCachedFullStateDiagMatrs();
+void destroyCachedFullStateDiagMatrs();
+matrixCache getCachedFullStateDiagMatrs();
 
 void createCachedQuregs();
 void destroyCachedQuregs();
