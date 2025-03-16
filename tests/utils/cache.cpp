@@ -30,8 +30,10 @@ using std::string;
  * getCachedDensmatrs()
  */
 
-quregCache statevecs;
-quregCache densmatrs;
+quregCache statevecs1;
+quregCache statevecs2;
+quregCache densmatrs1;
+quregCache densmatrs2;
 
 
 
@@ -94,24 +96,35 @@ quregCache createCachedStatevecsOrDensmatrs(bool isDensMatr) {
 }
 
 void createCachedQuregs() {
-    statevecs = createCachedStatevecsOrDensmatrs(false);
-    densmatrs = createCachedStatevecsOrDensmatrs(true);
+    statevecs1 = createCachedStatevecsOrDensmatrs(false);
+    statevecs2 = createCachedStatevecsOrDensmatrs(false);
+    densmatrs1 = createCachedStatevecsOrDensmatrs(true);
+    densmatrs2 = createCachedStatevecsOrDensmatrs(true);
 }
 
 void destroyCachedQuregs() {
 
-    for (auto& [label, qureg]: statevecs)
-        destroyQureg(qureg);
+    auto caches = {
+        statevecs1, statevecs2, 
+        densmatrs1, densmatrs2};
 
-    for (auto& [label, qureg]: densmatrs)
-        destroyQureg(qureg);
+    for (auto& cache : caches)
+        for (auto& [label, qureg]: cache)
+            destroyQureg(qureg);
 }
 
 quregCache getCachedStatevecs() {
-    return statevecs;
+    return statevecs1;
 }
 quregCache getCachedDensmatrs() {
-    return densmatrs;
+    return densmatrs1;
+}
+
+quregCache getAltCachedStatevecs() {
+    return statevecs2;
+}
+quregCache getAltCachedDensmatrs() {
+    return densmatrs2;
 }
 
 

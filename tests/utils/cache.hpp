@@ -30,9 +30,10 @@ deployInfo getSupportedDeployments();
 
 void createCachedQuregs();
 void destroyCachedQuregs();
-
 quregCache getCachedStatevecs();
 quregCache getCachedDensmatrs();
+quregCache getAltCachedStatevecs();
+quregCache getAltCachedDensmatrs();
 
 qvector getRefStatevec();
 qmatrix getRefDensmatr();
