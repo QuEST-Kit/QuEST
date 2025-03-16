@@ -95,6 +95,11 @@ void TEST_ON_MIXED_CACHED_QUREGS(quregCache cacheA, quregCache cacheB, auto refA
                 quregA.isDistributed   == quregB.isDensityMatrix)    // dm.dist=0
                 continue;
 
+            // skip illegal same-size different-GPU-accel combo
+            if (quregA.isDensityMatrix  == quregB.isDensityMatrix && // (sv,sv) or (dm,dm)
+                quregA.isGpuAccelerated != quregB.isGpuAccelerated)  // differing GPU-accel
+                continue;
+
             DYNAMIC_SECTION( labelA + LABEL_DELIMITER + labelB ) {
 
                 // initialise to random states (rather than debug) since
