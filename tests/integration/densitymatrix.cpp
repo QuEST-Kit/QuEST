@@ -27,7 +27,8 @@ using std::tuple;
 using namespace Catch::Matchers;
 
 
-#define TEST_TAG "[integration]"
+#define TEST_TAG \
+    LABEL_INTEGRATION_TAG
 
 
 

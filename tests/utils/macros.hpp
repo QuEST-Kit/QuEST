@@ -60,6 +60,12 @@
 #define LABEL_STATEVEC "statevector"
 #define LABEL_DENSMATR "densitymatrix"
 
+#define LABEL_DELIMITER ", "
+
+#define LABEL_UNIT_TAG "[unit]"
+#define LABEL_MIXED_DEPLOY_TAG "[mixed]"
+#define LABEL_INTEGRATION_TAG "[integration]"
+
 
 #endif // MACROS_HPP
 

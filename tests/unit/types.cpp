@@ -27,7 +27,8 @@
  * UTILITIES
  */
 
-#define TEST_CATEGORY "[unit][types]"
+#define TEST_CATEGORY \
+    LABEL_UNIT_TAG "[types]"
 
 
 

@@ -36,7 +36,8 @@ using std::tuple;
  * UTILITIES
  */
 
-#define TEST_CATEGORY "[unit][operations]"
+#define TEST_CATEGORY \
+    LABEL_UNIT_TAG "[operations]"
 
 auto contains(std::string str) {
     

@@ -27,7 +27,8 @@
  * UTILITIES
  */
 
-#define TEST_CATEGORY "[unit][paulis]"
+#define TEST_CATEGORY \
+    LABEL_UNIT_TAG "[paulis]"
 
 
 

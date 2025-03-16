@@ -31,7 +31,8 @@
  */
 
 
-#define TEST_CATEGORY "[unit][initialisations]"
+#define TEST_CATEGORY \
+    LABEL_UNIT_TAG "[initialisations]"
 
 
 void TEST_ON_CACHED_QUREGS(quregCache quregs, auto testFunc) {

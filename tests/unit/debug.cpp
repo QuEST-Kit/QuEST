@@ -11,13 +11,16 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include "tests/utils/macros.hpp"
+
 
 
 /*
  * UTILITIES
  */
 
-#define TEST_CATEGORY "[unit][debug]"
+#define TEST_CATEGORY \
+    LABEL_UNIT_TAG "[debug]"
 
 
 

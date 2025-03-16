@@ -39,7 +39,8 @@ using namespace Catch::Matchers;
  */
 
 
-#define TEST_CATEGORY "[unit][calculations]"
+#define TEST_CATEGORY \
+    LABEL_UNIT_TAG "[calculations]"
 
 
 void TEST_ON_CACHED_QUREGS(quregCache quregs, auto refState, auto apiFunc, auto refFunc) {

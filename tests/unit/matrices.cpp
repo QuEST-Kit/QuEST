@@ -27,7 +27,8 @@
  * UTILITIES
  */
 
-#define TEST_CATEGORY "[unit][matrices]"
+#define TEST_CATEGORY \
+    LABEL_UNIT_TAG "[matrices]"
 
 
 
