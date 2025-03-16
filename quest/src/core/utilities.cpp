@@ -250,7 +250,6 @@ qindex util_getLocalIndexOfGlobalIndex(Qureg qureg, qindex globalInd) {
     return globalInd % qureg.numAmpsPerNode;
 }
 
-
 qindex util_getLocalIndexOfFirstDiagonalAmp(Qureg qureg) {
     assert_utilsGivenDensMatr(qureg);
 
@@ -297,6 +296,16 @@ qindex util_getNextPowerOf2(qindex number) {
 
     int nextExponent = static_cast<int>(std::ceil(std::log2(number)));
     return powerOf2(nextExponent);
+}
+
+qcomp util_getElemFromNestedPtrs(void* in, qindex* inds, int numInds) {
+    qindex ind = inds[0];
+
+    if (numInds == 1)
+        return ((qcomp*) in)[ind];
+
+    qcomp* ptr = ((qcomp**) in)[ind];
+    return util_getElemFromNestedPtrs(ptr, &inds[1], numInds-1); // compiler may optimise tail-recursion
 }
 
 

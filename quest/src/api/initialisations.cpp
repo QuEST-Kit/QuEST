@@ -17,8 +17,6 @@
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
-#include "quest/src/core/errors.hpp" // only needed for not-implemented functions
-
 #include <algorithm>
 #include <cmath>
 

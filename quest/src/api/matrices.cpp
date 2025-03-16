@@ -18,13 +18,13 @@
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/printer.hpp"
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/fastmath.hpp"
 #include "quest/src/core/memory.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
-
-#include "quest/src/core/errors.hpp" // only needed for not-implemented functions
+#include "quest/src/cpu/cpu_subroutines.hpp"
 
 #include <iostream>
 #include <cstdlib>
@@ -626,35 +626,16 @@ extern "C" FullStateDiagMatr createFullStateDiagMatrFromPauliStrSum(PauliStrSum 
 }
 
 
-vector<qindex> getMultiVarValuesFromIndex(qindex index, int* numQubitsPerVar, int numVars, bool areSigned) {
-
-    vector<qindex> varValues(numVars);
-    qindex remainingValue = index;
-
-    // find unsigned integer value of each var by partitioning index bits between vars
-    for (int v=0; v<numVars; v++) {
-        varValues[v] =  getBitsRightOfIndex(remainingValue, numQubitsPerVar[v]);
-        remainingValue = getBitsLeftOfIndex(remainingValue, numQubitsPerVar[v]-1);
-    }
-
-    // two's-complement signed integers are negated if the leftmost variable sign bit is 1 
-    if (areSigned)
-        for (int v=0; v<numVars; v++)
-            if (getBit(varValues[v], numQubitsPerVar[v]-1) == 1)
-                varValues[v] -= powerOf2(numQubitsPerVar[v] - 1);
-
-    return varValues;
-}
-
-
 extern "C" void setDiagMatrFromMultiVarFunc(DiagMatr out, qcomp (*callbackFunc)(qindex*), int* numQubitsPerVar, int numVars, int areSigned) {
     validate_matrixFields(out, __func__);
     validate_multiVarFuncQubits(out.numQubits, numQubitsPerVar, numVars, __func__);
     validate_funcVarSignedFlag(areSigned, __func__);
 
+    vector<qindex> varValues(numVars);
+
     // set each element of the diagonal in-turn; user's callback might not be thread-safe
     for (qindex elemInd=0; elemInd<out.numElems; elemInd++) {
-        vector<qindex> varValues = getMultiVarValuesFromIndex(elemInd, numQubitsPerVar, numVars, areSigned);
+        fast_getSubQuregValues(elemInd, numQubitsPerVar, numVars, areSigned, varValues.data());
 
         // call user function, and update only the CPU elems
         out.cpuElems[elemInd] = callbackFunc(varValues.data());
@@ -670,33 +651,12 @@ extern "C" void setFullStateDiagMatrFromMultiVarFunc(FullStateDiagMatr out, qcom
     validate_multiVarFuncQubits(out.numQubits, numQubitsPerVar, numVars, __func__);
     validate_funcVarSignedFlag(areSigned, __func__);
 
-    int rank = getQuESTEnv().rank;
-    int numLocalIndBits = logBase2(out.numElemsPerNode);
-
-    // every node updates their local elems embarrassingly parallel, but user's callback might not be thread-safe
-    for (qindex localInd=0; localInd<out.numElemsPerNode; localInd++) {
-
-        // each local index corresponds to a unique global index which informs variable values
-        qindex globalInd = concatenateBits(rank, localInd, numLocalIndBits);
-        vector<qindex> varValues = getMultiVarValuesFromIndex(globalInd, numQubitsPerVar, numVars, areSigned);
-
-        // call user function, and update only the CPU elems
-        out.cpuElems[localInd] = callbackFunc(varValues.data());
-    }
+    // we assume callbackFunc is thread-safe (!!!!) and possibly use multithreading, but never 
+    // GPU acceleration, since we cannot invoke user callback functions from GPU kernels
+    cpu_fullstatediagmatr_setElemsFromMultiVarFunc(out, callbackFunc, numQubitsPerVar, numVars, areSigned);
 
     // overwrite all GPU elems
     syncFullStateDiagMatr(out);
-}
-
-
-qcomp getElemFromNestedPtrs(void* in, qindex* inds, int numInds) {
-    qindex ind = inds[0];
-
-    if (numInds == 1)
-        return ((qcomp*) in)[ind];
-
-    qcomp* ptr = ((qcomp**) in)[ind];
-    return getElemFromNestedPtrs(ptr, &inds[1], numInds-1); // compiler may optimise tail-recursion
 }
 
 
@@ -704,14 +664,17 @@ extern "C" void setDiagMatrFromMultiDimLists(DiagMatr out, void* lists, int* num
     validate_matrixFields(out, __func__);
     validate_multiVarFuncQubits(out.numQubits, numQubitsPerDim, numDims, __func__);
 
-    // set each element of the diagonal in-turn, which is embarrassingly parallel, although we do not parallelise
+    vector<qindex> listInds(numDims);
+
+    // set each element of the diagonal in-turn, which is embarrassingly parallel, 
+    // although we do not parallelise - the DiagMatr is intendedly small
     for (qindex elemInd=0; elemInd<out.numElems; elemInd++) {
 
         // nested list indices = unsigned integer values of variables
-        vector<qindex> listInds = getMultiVarValuesFromIndex(elemInd, numQubitsPerDim, numDims, false);
+        fast_getSubQuregValues(elemInd, numQubitsPerDim, numDims, false, listInds.data());
 
         // update only the CPU elems
-        out.cpuElems[elemInd] = getElemFromNestedPtrs(lists, listInds.data(), numDims);
+        out.cpuElems[elemInd] = util_getElemFromNestedPtrs(lists, listInds.data(), numDims);
     }
 
     // overwrite all GPU elems
@@ -723,19 +686,9 @@ extern "C" void setFullStateDiagMatrFromMultiDimLists(FullStateDiagMatr out, voi
     validate_matrixFields(out, __func__);
     validate_multiVarFuncQubits(out.numQubits, numQubitsPerDim, numDims, __func__);
 
-    int rank = getQuESTEnv().rank;
-    int numLocalIndBits = logBase2(out.numElemsPerNode);
-
-    // every node updates their local elems embarrassingly parallel, but user's callback might not be thread-safe
-    for (qindex localInd=0; localInd<out.numElemsPerNode; localInd++) {
-
-        // each local diag index corresponds to a unique global index which informs list indices
-        qindex globalInd = concatenateBits(rank, localInd, numLocalIndBits);
-        vector<qindex> listInds = getMultiVarValuesFromIndex(globalInd, numQubitsPerDim, numDims, false);
-
-        // update only the CPU elems using lists which are duplicated on every node
-        out.cpuElems[localInd] = getElemFromNestedPtrs(lists, listInds.data(), numDims);
-    }
+    // possibly use multithreading, but never GPU acceleration, due to the
+    // arbitrarily nested nature of the input lists
+    cpu_fullstatediagmatr_setElemsFromMultiDimLists(out, lists, numQubitsPerDim, numDims);
 
     // overwrite all GPU elems
     syncFullStateDiagMatr(out);

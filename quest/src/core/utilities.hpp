@@ -89,6 +89,8 @@ int util_getRankContainingIndex(FullStateDiagMatr matr, qindex globalInd);
 
 qindex util_getNextPowerOf2(qindex number);
 
+qcomp util_getElemFromNestedPtrs(void* in, qindex* inds, int numInds);
+
 
 
 /*

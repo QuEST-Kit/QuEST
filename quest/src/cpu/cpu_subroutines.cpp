@@ -123,6 +123,70 @@ void cpu_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStr
 }
 
 
+void cpu_fullstatediagmatr_setElemsFromMultiDimLists(FullStateDiagMatr out, void* lists, int* numQubitsPerDim, int numDims) {
+
+    // note that this function has no GPU equivalent! This is because
+    // it processes arbitrarily nested input pointers which would could
+    // be adverserial to loading into GPU memory (and generally painful)
+
+    qindex numIts = out.numElemsPerNode;
+    qindex numLocalIndBits = logBase2(numIts);
+
+    int rank = out.isDistributed? comm_getRank() : 0;
+
+    // create an explicit parallel region to avoid re-initialisation of vectors every iteration
+    #pragma omp parallel
+    {
+        // create a private cache for every thread
+        vector<qindex> listInds(numDims);
+
+        #pragma omp for
+        for (qindex localInd=0; localInd<numIts; localInd++) {
+
+            // each local diag index corresponds to a unique global index which informs list indices
+            qindex globalInd = concatenateBits(rank, localInd, numLocalIndBits);
+            fast_getSubQuregValues(globalInd, numQubitsPerDim, numDims, false, listInds.data());
+
+            // update only the CPU elems using lists which are duplicated on every node.
+            // note we are calling a util-function inside a parallelised hot-loop which
+            // is generally inadvisable, but it does not matter in this case since the
+            // function is recursive and cannot be inlined.
+            out.cpuElems[localInd] = util_getElemFromNestedPtrs(lists, listInds.data(), numDims);
+        }
+    }
+}
+
+
+void cpu_fullstatediagmatr_setElemsFromMultiVarFunc(FullStateDiagMatr out, qcomp (*callbackFunc)(qindex*), int* numQubitsPerVar, int numVars, int areSigned) {
+
+    // note that this function has no GPU equivalent! This is because
+    // the user's callback function cannot be called by a GPU kernel
+
+    qindex numIts = out.numElemsPerNode;
+    qindex numLocalIndBits = logBase2(numIts);
+
+    int rank = out.isDistributed? comm_getRank() : 0;
+
+    // create an explicit parallel region to avoid re-initialisation of vectors every iteration
+    #pragma omp parallel
+    {
+        // create a private cache for every thread
+        vector<qindex> varValues(numVars);
+
+        #pragma omp for
+        for (qindex localInd=0; localInd<out.numElemsPerNode; localInd++) {
+
+            // each local index corresponds to a unique global index which informs variable values
+            qindex globalInd = concatenateBits(rank, localInd, numLocalIndBits);
+            fast_getSubQuregValues(globalInd, numQubitsPerVar, numVars, areSigned, varValues.data());
+    
+            // call user function, which we assume is thread safe!
+            out.cpuElems[localInd] = callbackFunc(varValues.data());
+        }
+    }
+}
+
+
 
 /*
  * COMMUNICATION BUFFER PACKING
