@@ -359,7 +359,7 @@ void demo_setInlineFullStateDiagMatr() {
 
     // force use of available hardware acceleration
     QuESTEnv env = getQuESTEnv();
-    FullStateDiagMatr matr = createCustomFullStateDiagMatr(5, env.isDistributed, env.isGpuAccelerated);
+    FullStateDiagMatr matr = createCustomFullStateDiagMatr(5, env.isDistributed, env.isGpuAccelerated, env.isMultithreaded);
 
     // inline literal; identical to setFullStateDiagMatr() for consistencty with C API
     setInlineFullStateDiagMatr(matr, 3, 10, {3,4,5,6,7,8,9,1,12,13});
@@ -374,7 +374,7 @@ void demo_setFullStateDiagMatr() {
 
     // force use of available hardware acceleration
     QuESTEnv env = getQuESTEnv();
-    FullStateDiagMatr matr = createCustomFullStateDiagMatr(5, env.isDistributed, env.isGpuAccelerated);
+    FullStateDiagMatr matr = createCustomFullStateDiagMatr(5, env.isDistributed, env.isGpuAccelerated, env.isMultithreaded);
 
     // inline literal (C++ only)
     setFullStateDiagMatr(matr, 0, {1,2,3,4});
@@ -404,7 +404,7 @@ void demo_syncFullStateDiagMatr() {
 
     // force use of available hardware acceleration
     QuESTEnv env = getQuESTEnv();
-    FullStateDiagMatr a = createCustomFullStateDiagMatr(5, env.isDistributed, env.isGpuAccelerated);
+    FullStateDiagMatr a = createCustomFullStateDiagMatr(5, env.isDistributed, env.isGpuAccelerated, env.isMultithreaded);
 
     // every node modifies its first local element
     a.cpuElems[0] = -10_i * (1+getQuESTEnv().rank);

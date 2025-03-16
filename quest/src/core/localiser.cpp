@@ -288,6 +288,7 @@ FullStateDiagMatr getSpoofedDistributedMatrFromDistributedQureg(FullStateDiagMat
     // inherit all fields of local, subsequently overwriting those related to distribution
     FullStateDiagMatr spoof = local;
     spoof.isDistributed = 1;
+    spoof.isMultithreaded = local.isMultithreaded; // safely ignored
     spoof.numElemsPerNode = local.numElems / distrib.numNodes; // divides evenly
 
     // offset pointers to local's existing memory, avoiding de-referencing nullptr (illegal)
@@ -439,7 +440,7 @@ void localiser_fullstatediagmatr_getElems(qcomp* outElems, FullStateDiagMatr mat
     // printer.cpp sometimes needs to broadcast the elements of a FullStateDiagMatr;
     // since it has the same memory layout as a statevector Qureg, we spoof one!
     bool isDensMatr = false;
-    bool useMultithr = false;
+    bool useMultithr = matr.isMultithreaded;
     bool useDistrib = matr.isDistributed;
     bool useGpuAccel = matr.isGpuAccelerated;
     Qureg qureg = qureg_populateNonHeapFields(matr.numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithr);
@@ -525,8 +526,9 @@ void localiser_fullstatediagmatr_setElems(FullStateDiagMatr matr, qindex startIn
     // modification of a FullStateDiagMatr is identical to that of a 
     // statevector Qureg, so we spoof an identically-deployed Qureg
     int isDensMatr = 0;
-    int useMultithread = 0; // not used by setAmps()
-    Qureg spoof = qureg_populateNonHeapFields(matr.numQubits, isDensMatr, matr.isDistributed, matr.isGpuAccelerated, useMultithread);
+    Qureg spoof = qureg_populateNonHeapFields(
+        matr.numQubits, isDensMatr, 
+        matr.isDistributed, matr.isGpuAccelerated, matr.isMultithreaded);
 
     // we bind matr's memory to the spoofed Qureg. Note that spoof's
     // communication buffers remain nullptr which may be inconsistent
@@ -2091,8 +2093,9 @@ auto getSpoofsWithMatchingDistributions(Qureg qureg, FullStateDiagMatr matr) {
 
         Qureg quregSpoof = qureg_populateNonHeapFields(
             qureg.numQubits, qureg.isDensityMatrix, 
-            matr.isDistributed,  // !
-            qureg.isGpuAccelerated, qureg.isMultithreaded);
+            matr.isDistributed,     // becomes distributed
+            qureg.isGpuAccelerated, 
+            matr.isMultithreaded);  // consults matr's multithreading (appropriate for reduced size)
 
         quregSpoof = getSpoofedDistributedBufferlessQuregFromLocalQureg(qureg, quregSpoof);
         return tuple{quregSpoof,matr};

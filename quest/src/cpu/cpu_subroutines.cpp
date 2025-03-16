@@ -103,12 +103,7 @@ void cpu_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStr
 
     int rank = out.isDistributed? comm_getRank() : 0;
 
-    // note below there is no if() in #pragma; we choose always to
-    // multithread when OpenMP is enabled, because FullStateDiagMatr
-    // does not carry a .isMultithreaded flag (and this is only an
-    // initialisation function, so sub-optimal threading is fine)
-
-    #pragma omp parallel for
+    #pragma omp parallel for if(out.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = global index corresponding to local index n
@@ -715,7 +710,7 @@ void cpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
     // every iteration modifies one amp, using one element
     qindex numIts = qureg.numAmpsPerNode;
 
-    #pragma omp parallel for if(qureg.isMultithreaded)
+    #pragma omp parallel for if(qureg.isMultithreaded||qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // compile-time decide if applying power to avoid in-loop branching
@@ -736,7 +731,7 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
     // every iteration modifies one qureg amp, using one matr element
     qindex numIts = qureg.numAmpsPerNode;
 
-    #pragma omp parallel for if(qureg.isMultithreaded)
+    #pragma omp parallel for if(qureg.isMultithreaded||matr.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = global row of nth local index
@@ -1823,7 +1818,7 @@ void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     qindex numOutcomes = powerOf2(numBits);
 
     // decide whether to parallelise below amp-clearing, since outProbs ~ dim of a qureg
-    bool parallelise = qubits.size() > MIN_NUM_LOCAL_QUBITS_FOR_AUTO_QUREG_MULTITHREADING;
+    bool parallelise = numBits > MIN_NUM_LOCAL_QUBITS_FOR_AUTO_QUREG_MULTITHREADING;
     (void)parallelise; // suppress unused warning when not-compiling openmp)
 
     // clear amps (may be compile-time unrolled, or parallelised)
@@ -1861,9 +1856,13 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     // use template param to compile-time unroll loop in getValueOfBits()
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
     qindex numOutcomes = powerOf2(numBits);
+
+    // decide whether to parallelise below amp-clearing, since outProbs ~ dim of a qureg
+    bool parallelise = numBits > MIN_NUM_LOCAL_QUBITS_FOR_AUTO_QUREG_MULTITHREADING;
+    (void)parallelise; // suppress unused warning when not-compiling openmp)
     
     // clear amps; be compile-time unrolled, and/or parallelised (independent of qureg)
-    #pragma omp parallel for
+    #pragma omp parallel for if(parallelise)
     for (int i=0; i<numOutcomes; i++)
         outProbs[i] = 0;
 
@@ -2167,7 +2166,7 @@ qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
     // every amp, iterated independently, contributes to the expectation value
     qindex numIts = qureg.numAmpsPerNode;
 
-    #pragma omp parallel for reduction(+:valueRe,valueIm) if(qureg.isMultithreaded)
+    #pragma omp parallel for reduction(+:valueRe,valueIm) if(qureg.isMultithreaded||matr.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // compile-time decide if applying power to avoid in-loop branching
@@ -2200,7 +2199,7 @@ qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
     qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
 
-    #pragma omp parallel for reduction(+:valueRe,valueIm) if(qureg.isMultithreaded)
+    #pragma omp parallel for reduction(+:valueRe,valueIm) if(qureg.isMultithreaded||matr.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         qcomp elem = matr.cpuElems[n];

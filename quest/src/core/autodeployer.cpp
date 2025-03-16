@@ -158,7 +158,7 @@ void autodep_chooseQuregDeployment(int numQubits, int isDensMatr, int &useDistri
  */
 
 
-void autodep_chooseFullStateDiagMatrDeployment(int numQubits, int &useDistrib, int &useGpuAccel, QuESTEnv env) {
+void autodep_chooseFullStateDiagMatrDeployment(int numQubits, int &useDistrib, int &useGpuAccel, int &useMultithread, QuESTEnv env) {
 
     // we choose to deploy just like a equivalently-sized statevector Qureg would 
     // deploy, so that automatically-deployed matrices and Quregs are always 
@@ -170,7 +170,5 @@ void autodep_chooseFullStateDiagMatrDeployment(int numQubits, int &useDistrib, i
     // the FullStateDiagMatr is a statevector Qureg.
     int isDensMatr = 0;
 
-    // multithreading has no effect, and is ignored
-    int useMultithread = 0;
     autodep_chooseQuregDeployment(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread, env);
 }

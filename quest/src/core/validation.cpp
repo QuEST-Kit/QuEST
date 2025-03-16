@@ -237,6 +237,26 @@ namespace report {
      * MATRIX CREATION
      */
 
+    string INVALID_OPTION_FOR_MATRIX_IS_DISTRIB = 
+        "Argument 'useDistrib' must be 1 or 0 to respectively indicate whether or not to distribute the new FullStateDiagMatr, or ${AUTO_DEPLOYMENT_FLAG} to let QuEST choose automatically.";
+
+    string INVALID_OPTION_FOR_MATRIX_IS_GPU_ACCEL = 
+        "Argument 'useGpuAccel' must be 1 or 0 to respetively indicate whether or not to GPU-accelerate the new FullStateDiagMatr, or ${AUTO_DEPLOYMENT_FLAG} to let QuEST choose automatically.";
+
+    string INVALID_OPTION_FOR_MATRIX_IS_MULTITHREAD = 
+        "Argument 'useMultithread' must be 1 or 0 to respectively indicate whether or not to use multithreading when initialising the new FullStateDiagMatr, or ${AUTO_DEPLOYMENT_FLAG} to let QuEST choose automatically.";
+
+
+    string NEW_DISTRIB_MATRIX_IN_NON_DISTRIB_ENV =
+        "Cannot distribute a FullStateDiagMatr when in a non-distributed QuEST environment.";
+
+    string NEW_GPU_MATRIX_IN_NON_GPU_ACCEL_ENV =
+        "Cannot allocate a FullStateDiagMatr to a GPU when in a non-GPU-accelerated QuEST environment.";
+
+    string NEW_MULTITHREAD_MATRIX_IN_NON_MULTITHREAD_ENV =
+        "Cannot enable multithreaded processing of a FullStateDiagMatr created in a non-multithreaded QuEST environment.";
+
+    
     string NEW_MATRIX_NUM_QUBITS_NOT_POSITIVE = 
         "Cannot create a matrix which acts upon ${NUM_QUBITS} qubits; must target one or more qubits.";
 
@@ -287,14 +307,6 @@ namespace report {
 
     string NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED = 
         "Attempted allocation of the matrix's GPU memory (${NUM_BYTES} bytes in VRAM) failed.";
-
-
-    string NEW_DISTRIB_MATRIX_IN_NON_DISTRIB_ENV = 
-        "Cannot distribute a matrix in a non-distributed environment.";
-
-    string INVALID_OPTION_FOR_MATRIX_IS_DISTRIB = 
-        "Argument 'useDistrib' must be 1 or 0 to respectively indicate whether or not to distribute the new matrix, or ${AUTO_DEPLOYMENT_FLAG} to let QuEST choose automatically.";
-
 
 
     /*
@@ -1607,20 +1619,24 @@ void validate_quregIsDensityMatrix(Qureg qureg, const char* caller) {
  * MATRIX CREATION
  */
 
-void assertMatrixDeployFlagsRecognised(int isDistrib, const char* caller) {
+void assertMatrixDeployFlagsRecognised(int isDistrib, int isGpuAccel, int isMultithread, const char* caller) {
 
     // deployment flags must be boolean or auto
-    assertThat(
-        isDistrib == 0 || isDistrib == 1 || isDistrib == modeflag::USE_AUTO, 
-        report::INVALID_OPTION_FOR_MATRIX_IS_DISTRIB,
-        {{"${AUTO_DEPLOYMENT_FLAG}", modeflag::USE_AUTO}}, caller);
+    tokenSubs vars = {{"${AUTO_DEPLOYMENT_FLAG}", modeflag::USE_AUTO}};
+    assertThat(isDistrib     == 0 || isDistrib     == 1 || isDistrib     == modeflag::USE_AUTO, report::INVALID_OPTION_FOR_MATRIX_IS_DISTRIB,     vars, caller);
+    assertThat(isGpuAccel    == 0 || isGpuAccel    == 1 || isGpuAccel    == modeflag::USE_AUTO, report::INVALID_OPTION_FOR_MATRIX_IS_GPU_ACCEL,   vars, caller);
+    assertThat(isMultithread == 0 || isMultithread == 1 || isMultithread == modeflag::USE_AUTO, report::INVALID_OPTION_FOR_MATRIX_IS_MULTITHREAD, vars, caller);
 }
 
-void assertMatrixDeploysEnabledByEnv(int isDistrib, int envIsDistrib, const char* caller) {
+void assertMatrixDeploysEnabledByEnv(int isDistrib, int isGpuAccel, int isMultithread, QuESTEnv env, const char* caller) {
 
     // cannot deploy to backend not already enabled by the environment
-    if (!envIsDistrib)
-        assertThat(isDistrib == 0 || isDistrib == modeflag::USE_AUTO, report::NEW_DISTRIB_MATRIX_IN_NON_DISTRIB_ENV, caller);
+    if (!env.isDistributed)
+        assertThat(isDistrib     == 0 || isDistrib     == modeflag::USE_AUTO, report::NEW_DISTRIB_MATRIX_IN_NON_DISTRIB_ENV, caller);
+    if (!env.isGpuAccelerated)
+        assertThat(isGpuAccel    == 0 || isGpuAccel    == modeflag::USE_AUTO, report::NEW_GPU_MATRIX_IN_NON_GPU_ACCEL_ENV, caller);
+    if (!env.isMultithreaded)
+        assertThat(isMultithread == 0 || isMultithread == modeflag::USE_AUTO, report::NEW_MULTITHREAD_MATRIX_IN_NON_MULTITHREAD_ENV, caller);
 }
 
 void assertMatrixNonEmpty(int numQubits, const char* caller) {
@@ -1814,7 +1830,7 @@ void assertMatrixFitsInGpuMem(int numQubits, bool isDense, int isDistrib, int is
     assertAllNodesAgreeThat(matrFitsInMem, msg, vars, caller);
 }
 
-void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, int useGpu, bool isDenseType, const char* caller) {
+void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, int useGpu, int useMultithread, bool isDenseType, const char* caller) {
 
     // some of the below validation involves getting distributed node consensus, which
     // can be an expensive synchronisation, which we avoid if validation is anyway disabled
@@ -1822,6 +1838,8 @@ void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, int useGpu, bo
         return;
 
     QuESTEnv env = getQuESTEnv();
+    assertMatrixDeployFlagsRecognised(useDistrib, useGpu, useMultithread, caller);
+    assertMatrixDeploysEnabledByEnv(useDistrib, useGpu, useMultithread, env, caller);
     assertMatrixNonEmpty(numQubits, caller);
     assertMatrixTotalNumElemsDontExceedMaxIndex(numQubits, isDenseType, caller);
     assertMatrixLocalMemDoesntExceedMaxSizeof(numQubits,  isDenseType, useDistrib, env.numNodes, caller);
@@ -1833,8 +1851,9 @@ void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, int useGpu, bo
 void validate_newCompMatrParams(int numQubits, const char* caller) {
     validate_envIsInit(caller);
 
-    // CompMatr can never be distributed
+    // CompMatr can never be distributed nor multithreaded
     int useDistrib = 0;
+    int useMultithread = 0;
 
     // CompMatr is always GPU accelerated whenever enabled by the environment
     bool useGpu = getQuESTEnv().isGpuAccelerated;
@@ -1842,13 +1861,14 @@ void validate_newCompMatrParams(int numQubits, const char* caller) {
     // CompMatr stores 2^(2*numQubits) elems
     bool isDenseType = true;
 
-    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, isDenseType, caller);
+    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, useMultithread, isDenseType, caller);
 }
 void validate_newDiagMatrParams(int numQubits, const char* caller) {
     validate_envIsInit(caller);
 
-    // DiagMatr can never be distributed
+    // DiagMatr can never be distributed nor multithreaded
     int useDistrib = 0;
+    int useMultithread = 0;
 
     // DiagMatr is always GPU accelerated whenever enabled by the environment
     bool useGpu = getQuESTEnv().isGpuAccelerated;
@@ -1856,15 +1876,15 @@ void validate_newDiagMatrParams(int numQubits, const char* caller) {
     // DiagMatr stores only the diagonals; 2^numQubits elems
     bool isDenseType = false;
 
-    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, isDenseType, caller);
+    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, useMultithread, isDenseType, caller);
 }
-void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, int useGpu, const char* caller) {
+void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, int useGpu, int useMultithread, const char* caller) {
     validate_envIsInit(caller);
 
     // FullStateDiagMatr stores only the diagonals
     bool isDenseType = false;
 
-    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, isDenseType, caller);
+    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, useMultithread, isDenseType, caller);
 }
 
 // T can be CompMatr, DiagMatr, FullStateDiagMatr (i.e. heap-based matrices)

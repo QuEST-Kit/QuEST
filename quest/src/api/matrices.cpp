@@ -252,15 +252,15 @@ extern "C" DiagMatr createDiagMatr(int numQubits) {
 }
 
 
-FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel, const char* caller) {
+FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel, int useMultithread, const char* caller) {
     validate_envIsInit(caller);
     QuESTEnv env = getQuESTEnv();
 
     // validate parameters before passing them to autodeployer
-    validate_newFullStateDiagMatrParams(numQubits, useDistrib, useGpuAccel, caller);
+    validate_newFullStateDiagMatrParams(numQubits, useDistrib, useGpuAccel, useMultithread, caller);
 
     // overwrite useDistrib and useGpuAccel if they were left as AUTO_FLAG
-    autodep_chooseFullStateDiagMatrDeployment(numQubits, useDistrib, useGpuAccel, env);
+    autodep_chooseFullStateDiagMatrDeployment(numQubits, useDistrib, useGpuAccel, useMultithread, env);
 
     // validation ensures this never overflows
     qindex numElems = powerOf2(numQubits);
@@ -273,6 +273,7 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
 
         // data deployment configuration; disable distrib if deployed to 1 node
         .isGpuAccelerated = useGpuAccel,
+        .isMultithreaded = useMultithread,
         .isDistributed = useDistrib && (env.numNodes > 1),
         .numElemsPerNode = numElemsPerNode,
 
@@ -293,14 +294,14 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
     return out;
 }
 
-extern "C" FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel) {
+extern "C" FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel, int useMultithread) {
 
-    return validateAndCreateCustomFullStateDiagMatr(numQubits, useDistrib, useGpuAccel, __func__);
+    return validateAndCreateCustomFullStateDiagMatr(numQubits, useDistrib, useGpuAccel, useMultithread, __func__);
 }
 
 extern "C" FullStateDiagMatr createFullStateDiagMatr(int numQubits) {
 
-    return validateAndCreateCustomFullStateDiagMatr(numQubits, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
+    return validateAndCreateCustomFullStateDiagMatr(numQubits, modeflag::USE_AUTO, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
 }
 
 
@@ -615,7 +616,7 @@ extern "C" FullStateDiagMatr createFullStateDiagMatrFromPauliStrSum(PauliStrSum 
     
     // ensure createFullStateDiagMatr() below succeeds (so if not, that thrower name is correct)
     int numQubits = 1 + paulis_getIndOfLefmostNonIdentityPauli(in);
-    validate_newFullStateDiagMatrParams(numQubits, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
+    validate_newFullStateDiagMatrParams(numQubits, modeflag::USE_AUTO, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
 
     // permit 'in' to be non-Hermitian since it does not determine 'out' unitarity
 

@@ -175,7 +175,7 @@ typedef struct {
     // unlike other heap-matrices, GPU memory is not always allocated when the QuEST
     // env is GPU-accelerated; instead, it can be disabled by auto-deployer, or the user
     int isGpuAccelerated;
-
+    int isMultithreaded;
     int isDistributed;
     qindex numElemsPerNode;
 
@@ -449,7 +449,7 @@ extern "C" {
 
     FullStateDiagMatr createFullStateDiagMatr(int numQubits);
 
-    FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel);
+    FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel, int useMultithread);
 
 
     void destroyCompMatr(CompMatr matrix);
