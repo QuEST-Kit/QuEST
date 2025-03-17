@@ -99,6 +99,11 @@ void freeHeapMatrix(T matr) {
     cpu_deallocHeapFlag(matr.isUnitary);
     cpu_deallocHeapFlag(matr.isHermitian);
     cpu_deallocHeapFlag(matr.wasGpuSynced);
+
+    // only diagonal matrices (which can be raised to
+    // exponents) need their negativity checked
+    if constexpr (!util_isDenseMatrixType<T>())
+        cpu_deallocHeapFlag(matr.isNonNegative);
 }
 
 
@@ -107,9 +112,14 @@ template <class T>
 bool didAnyLocalAllocsFail(T matr) {
 
     // god help us if these single-integer malloc failed
-    if (!mem_isAllocated(matr.isUnitary))    return true;
-    if (!mem_isAllocated(matr.isHermitian))  return true;
-    if (!mem_isAllocated(matr.wasGpuSynced)) return true;
+    if (!mem_isAllocated(matr.isUnitary))     return true;
+    if (!mem_isAllocated(matr.isHermitian))   return true;
+    if (!mem_isAllocated(matr.wasGpuSynced))  return true;
+
+    // only diagonal matrices have isNonNegative field
+    if constexpr (!util_isDenseMatrixType<T>())
+        if (!mem_isAllocated(matr.isNonNegative))
+            return true;
 
     // outer CPU memory should always be allocated
     if constexpr (util_isDenseMatrixType<T>()) {
@@ -174,8 +184,12 @@ template <class T>
 void setInitialHeapFlags(T matr) {
 
     // set initial propreties of the newly created matrix to unknown
-    *(matr.isUnitary)   = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
-    *(matr.isHermitian) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    *(matr.isUnitary)     = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    *(matr.isHermitian)   = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+
+    // only diagonal matrices have isNonNegative field
+    if constexpr (!util_isDenseMatrixType<T>())
+        *(matr.isNonNegative) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
 
     // indicate that GPU memory has not yet been synchronised
     *(matr.wasGpuSynced) = 0;
@@ -235,9 +249,10 @@ extern "C" DiagMatr createDiagMatr(int numQubits) {
         .numElems = numElems,
 
         // allocate flags in the heap so that struct copies are mutable
-        .isUnitary    = cpu_allocHeapFlag(), // nullptr if failed
-        .isHermitian  = cpu_allocHeapFlag(), // nullptr if failed
-        .wasGpuSynced = cpu_allocHeapFlag(), // nullptr if failed
+        .isUnitary     = cpu_allocHeapFlag(), // nullptr if failed
+        .isHermitian   = cpu_allocHeapFlag(), // nullptr if failed
+        .isNonNegative = cpu_allocHeapFlag(), // nullptr if failed
+        .wasGpuSynced  = cpu_allocHeapFlag(), // nullptr if failed
 
         // 1D CPU memory
         .cpuElems = cpu_allocArray(numElems), // nullptr if failed
@@ -278,9 +293,10 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
         .numElemsPerNode = numElemsPerNode,
 
         // allocate flags in the heap so that struct copies are mutable
-        .isUnitary    = cpu_allocHeapFlag(), // nullptr if failed
-        .isHermitian  = cpu_allocHeapFlag(), // nullptr if failed
-        .wasGpuSynced = cpu_allocHeapFlag(), // nullptr if failed
+        .isUnitary     = cpu_allocHeapFlag(), // nullptr if failed
+        .isHermitian   = cpu_allocHeapFlag(), // nullptr if failed
+        .isNonNegative = cpu_allocHeapFlag(), // nullptr if failed
+        .wasGpuSynced  = cpu_allocHeapFlag(), // nullptr if failed
 
         // 1D CPU memory
         .cpuElems = cpu_allocArray(numElemsPerNode), // nullptr if failed
@@ -321,8 +337,12 @@ void markMatrixAsSynced(T matr) {
 
     // indicate that we do not know the revised matrix properties;
     // we defer establishing that until validation needs to check them
-    *(matr.isUnitary)   = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
-    *(matr.isHermitian) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    *(matr.isUnitary)     = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    *(matr.isHermitian)   = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+
+    // only diagonal matrices have isNonNegative field
+    if constexpr (!util_isDenseMatrixType<T>())
+        *(matr.isNonNegative) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
 }
 
 

@@ -340,6 +340,20 @@ bool util_isApproxReal(qcomp num, qreal eps) {
     return std::abs(std::imag(num)) <= eps;
 }
 
+bool util_isApproxRealInteger(qcomp num, qreal eps) {
+    assert_utilsGivenNonZeroEpsilon(eps);
+
+    // assert almost-real
+    if (!util_isApproxReal(num, eps))
+        return false;
+
+    // determine distance of real component to nearest int
+    qreal re = std::real(num);
+    qreal dist = std::abs(re - std::round(re));
+    return dist <= eps;
+}
+
+
 qcomp util_getPowerOfI(size_t exponent) {
 
     // seems silly, but at least it's precision agnostic!
@@ -592,6 +606,53 @@ bool util_isHermitian(FullStateDiagMatr matrix, qreal eps) {
 
     // we must check all node's sub-diagonals satisfy unitarity
     bool res = isHermitian(matrix.cpuElems, matrix.numElems, eps);
+    if (matrix.isDistributed)
+        res = comm_isTrueOnAllNodes(res);
+
+    return res;
+}
+
+
+
+/*
+ * MATRIX NON-NEGATIVITY
+ */
+
+bool util_areRealsNonNegative(qcomp* diags, qindex dim, qreal eps) {
+
+    // check that all the real components are within eps
+    // of being positive (i.e. >= -eps), but do not check
+    // imaginary components at all (they might be large)
+    for (qindex i=0; i<dim; i++)
+        if (std::real(diags[i]) < - eps)
+            return false;
+
+    return true;
+}
+
+bool util_areRealsNonNegative(DiagMatr1 matrix, qreal eps) {
+    return util_areRealsNonNegative(matrix.elems, matrix.numElems, eps);
+}
+bool util_areRealsNonNegative(DiagMatr2 matrix, qreal eps) {
+    return util_areRealsNonNegative(matrix.elems, matrix.numElems, eps);
+}
+bool util_areRealsNonNegative(DiagMatr matrix, qreal eps) {
+
+    /// @todo
+    /// like other isX(), we should conditionally hardware-accelerate this
+    /// (e.g. when large and GPU-accelerated, blah blah)
+
+    return util_areRealsNonNegative(matrix.cpuElems, matrix.numElems, eps);
+}
+
+bool util_areRealsNonNegative(FullStateDiagMatr matrix, qreal eps) {
+
+    /// @todo
+    /// like other isX(), we should conditionally hardware-accelerate this
+    /// (e.g. when large and GPU-accelerated, blah blah)
+
+    bool res = util_areRealsNonNegative(matrix.cpuElems, matrix.numElemsPerNode, eps);
+    
     if (matrix.isDistributed)
         res = comm_isTrueOnAllNodes(res);
 

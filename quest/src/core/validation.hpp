@@ -180,6 +180,11 @@ void validate_matrixIsHermitian(DiagMatr2 matr, const char* caller);
 void validate_matrixIsHermitian(DiagMatr  matr, const char* caller);
 void validate_matrixIsHermitian(FullStateDiagMatr matr, const char* caller);
 
+void validate_matrixIsHermitian(DiagMatr1 matr, qcomp exponent, const char* caller);
+void validate_matrixIsHermitian(DiagMatr2 matr, qcomp exponent, const char* caller);
+void validate_matrixIsHermitian(DiagMatr  matr, qcomp exponent, const char* caller);
+void validate_matrixIsHermitian(FullStateDiagMatr matr, qcomp exponent, const char* caller);
+
 void validate_matrixDimMatchesTargets(CompMatr1 matr, int numTargs, const char* caller);
 void validate_matrixDimMatchesTargets(CompMatr2 matr, int numTargs, const char* caller);
 void validate_matrixDimMatchesTargets(CompMatr  matr, int numTargs, const char* caller);
@@ -446,7 +451,7 @@ void validate_expecPauliStrValueIsReal(qcomp value, bool isDensMatr, const char*
 
 void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const char* caller);
 
-void validate_expecFullStateDiagMatrValueIsReal(qcomp value, bool isDensMatr, const char* caller);
+void validate_densMatrExpecDiagMatrValueIsReal(qcomp value, qcomp exponent, const char* caller);
 
 
 

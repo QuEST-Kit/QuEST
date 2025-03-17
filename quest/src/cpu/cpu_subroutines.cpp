@@ -679,7 +679,11 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         qindex t = getValueOfBits(i, targs.data(), numTargBits);
         qcomp elem = matr.cpuElems[t];
 
-        // decide whether to power and conj at compile-time, to avoid branching in hot-loop
+        // decide whether to power and conj at compile-time, to avoid branching in hot-loop.
+        // beware that pow(qcomp,qcomp) below gives notable error over pow(qreal,qreal) 
+        // (by producing an unexpected non-zero imaginary component) when the base is real 
+        // and negative, and the exponent is an integer. We tolerate this heightened error
+        // because we have no reason to think matr is real (it's not constrained Hermitian).
         if constexpr (HasPower)
             elem = std::pow(elem, exponent);
 
@@ -713,8 +717,13 @@ void cpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
     #pragma omp parallel for if(qureg.isMultithreaded||qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-        // compile-time decide if applying power to avoid in-loop branching
         qcomp elem = matr.cpuElems[n];
+
+        // compile-time decide if applying power to avoid in-loop branching.
+        // beware that pow(qcomp,qcomp) below gives notable error over pow(qreal,qreal) 
+        // (by producing an unexpected non-zero imaginary component) when the base is real 
+        // and negative, and the exponent is an integer. We tolerate this heightened error
+        // because we have no reason to think matr is real (it's not constrained Hermitian).
         if constexpr (HasPower)
             elem = std::pow(elem, exponent);
 
@@ -739,6 +748,7 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
         qcomp fac = matr.cpuElems[i];
 
         // compile-time decide if applying power to avoid in-loop branching...
+        // (beware that complex pow() is numerically unstable; see below)
         if constexpr (HasPower)
             fac = std::pow(fac, exponent);
 
@@ -752,7 +762,11 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
             qindex j = fast_getQuregGlobalColFromFlatIndex(m, matr.numElems);
             qcomp term = matr.cpuElems[j];
 
-            // right-apply matrix elem may also need to be exponentiated
+            // right-apply matrix elem may also need to be exponentiated.
+            // beware that pow(qcomp,qcomp) below gives notable error over pow(qreal,qreal) 
+            // (by producing an unexpected non-zero imaginary component) when the base is real 
+            // and negative, and the exponent is an integer. We tolerate this heightened error
+            // because we have no reason to think matr is real (it's not constrained Hermitian).
             if constexpr(HasPower)
                 term = std::pow(term, exponent);
 
@@ -2169,8 +2183,16 @@ qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
     #pragma omp parallel for reduction(+:valueRe,valueIm) if(qureg.isMultithreaded||matr.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-        // compile-time decide if applying power to avoid in-loop branching
         qcomp elem = matr.cpuElems[n];
+
+        // compile-time decide if applying power to avoid in-loop branching.
+        // beware that pow(qcomp,qcomp) below gives notable error over pow(qreal,qreal) 
+        // (by producing an unexpected non-zero imaginary component) when the base is real 
+        // and negative, and the exponent is an integer. This is a plausible scenario given 
+        // matr is often Hermitian (ergo real) and the exponent may be effecting repeated 
+        // application of matr. In such scenarios however, the output expected value is
+        // mathematically strictly real, and the real component is not at all affected by
+        // these errors. So we always use pow(qcomp,qcomp) and the caller discards imag-comp.
         if constexpr (HasPower)
             elem = std::pow(elem, exponent);
         
@@ -2204,7 +2226,29 @@ qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
 
         qcomp elem = matr.cpuElems[n];
 
-        // compile-time decide if applying power to avoid in-loop branching
+        /// @todo
+        /// numerical accuracy can be improved (when matr is Hermitian = real and exponent
+        /// is an integer) as per the below comment. We forego this optimisation presently
+        /// because the refactor is involved and the use-case is not yet well motivated.
+
+        // compile-time decide if applying power (!=1) to avoid in-loop branching.
+        // Beware that pow(qcomp,qcomp) below gives notable error over pow(qreal,qreal) 
+        // (by producing an unexpected non-zero imaginary component) when the base is real 
+        // and negative, and the exponent is an integer. This is a plausible scenario given 
+        // matr is often Hermitian (ergo real) and the exponent may be effecting repeated 
+        // application of matr. For statevectors above, we remedy this by having the caller
+        // simply discard the mathematically-impossible imaginary component. But alas,
+        // the same conditions do not gaurantee the expected value is real here, because the
+        // density matrix is permitted un-normalised and non-Hermitian; a complex output
+        // may be mathematically correct/desired (rather than just occurring due to error).
+        // And even assuming qureg IS valid, the erroneously-non-zero imaginary components
+        // are multiplied with the complex density-matrix elems and contribute to the output
+        // real-components; so the caller cannot simply disregard the imaginary component.
+        // In theory, we could compile-time handle (via another template parameter) this
+        // scenario and call the pow(qreal,qreal) overload to improve accuracy, but this
+        // requires substantial changes; we must change templating and perform similar
+        // compile-time branching in the GPU kernels which use a custom pow() implementation,
+        // which cannot be accessed from within fastmath.hpp for example.
         if constexpr (HasPower)
             elem = std::pow(elem, exponent);
 

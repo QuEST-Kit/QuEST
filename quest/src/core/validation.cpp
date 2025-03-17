@@ -224,13 +224,13 @@ namespace report {
      */
 
     string NEW_HEAP_FLAG_ALLOC_FAILED =
-        "Attempted allocation of a heap flag (such as 'isUnitary', 'isHermitian', 'isCPTP', 'wasGpuSynced') miraculously failed, despite being a mere ${NUM_BYTES} bytes. This is unfathomably unlikely - go and have your fortune read at once!";
+        "Attempted allocation of a heap flag (such as 'isUnitary', 'isHermitian', 'isNonNegative', 'isCPTP', 'wasGpuSynced') miraculously failed, despite being a mere ${NUM_BYTES} bytes. This is unfathomably unlikely - go and have your fortune read at once!";
 
     string INVALID_HEAP_FLAG_PTR =
-        "A flag (e.g. 'isUnitary', 'isHermitian', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) was a NULL pointer, instead of an expected pointer to persistent heap memory. This may imply the structure was not created by its proper function (e.g. createCompMatr()).";
+        "A flag (e.g. 'isUnitary', 'isHermitian', 'isNonNegative', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) was a NULL pointer, instead of an expected pointer to persistent heap memory. This may imply the structure was not created by its proper function (e.g. createCompMatr()).";
 
     string INVALID_HEAP_FLAG_VALUE = 
-        "A flag (e.g. 'isUnitary', 'isHermitian', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) had an invalid value of ${BAD_FLAG}. Allowed values are '0', '1', and (except for 'wasGpuSynced') '${UNKNOWN_FLAG}', though these flags should not be modified directly by the user. It is likely the structure was not created by its proper function (e.g. createCompMatr()).";
+        "A flag (e.g. 'isUnitary', 'isHermitian', 'isNonNegative', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) had an invalid value of ${BAD_FLAG}. Allowed values are '0', '1', and (except for 'wasGpuSynced') '${UNKNOWN_FLAG}', though these flags should not be modified directly by the user. It is likely the structure was not created by its proper function (e.g. createCompMatr()).";
 
 
     /*
@@ -400,6 +400,7 @@ namespace report {
     string MATRIX_SIZE_MISMATCHES_NUM_TARGETS =
         "The given matrix has an inconsistent size (${MATRIX_NUM_QUBITS}) with the specified number of target qubits (${NUM_TARGS}).";
 
+
     string MATRIX_NOT_UNITARY = 
         "The given matrix was not (approximately) unitary.";
     
@@ -407,7 +408,13 @@ namespace report {
         "The given exponent was not approximately real (i.e. the imaginary component exceeded epsilon) such that the given diagonal matrix raised to the exponent was no longer approximately unitary. Consider changing the validation epsilon.";
 
     string MATRIX_NOT_HERMITIAN =
-        "THe given matrix was not (approximately) Hermitian.";
+        "The given matrix was not (approximately) Hermitian.";
+
+    string HERMITIAN_DIAG_MATR_EXPONENT_NOT_APPROX_REAL =
+        "The given exponent was not approximately real, such that the given Hermitian matrix raised to the exponent was no longer appoximately Hermitian. Consider using the non-Hermitian variant of this function, or changing the validation epsilon.";
+
+    string REAL_EXPONENTIATED_HERMITIAN_DIAG_MATR_HAS_APPROX_NEGATIVE_ELEMS =
+        "The given exponent was non-negligibly fractional (beyond distance epsilon to an integer) while the given Hermitian matrix contained non-negligibly negative elements. As such, the matrix raised to the exponent contains non-negligible imaginary components and is no longer Hermitian. Consider using the non-Hermitian variant of this function, or changing the validation epsilon.";
 
 
     string INVALID_MATRIX_CPU_ELEMS_PTR =
@@ -878,7 +885,7 @@ namespace report {
         "The given density matrix Quregs are differently distributed and cannot be mixed.";
 
     string MIXED_DENSITY_MATRIX_LOCAL_BUT_STATEVEC_DISTRIBUTED =
-        "THe given density matrix was local, but the statevector was distributed; this configuration is unsupported (and is ridiculous!).";
+        "The given density matrix was local, but the statevector was distributed; this configuration is unsupported (and is ridiculous!).";
 
 
     string SUPERPOSED_QUREGS_ARE_NOT_ALL_STATEVECTORS =
@@ -982,11 +989,11 @@ namespace report {
         "The calculated density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests the density matrix was unnormalised and/or not (sufficiently close to) Hermitian.";
 
 
-    string CALC_STATEVEC_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL =
-        "The calculated statevector expectation value was not approximately real (i.e. was not within epsilon). This suggests that the FullStateDiagMatr, despite being validated as (approximately) Hermitian, contained coefficients with sub-epsilon but non-negligible imaginary components which accumulated in the output value.";
+    string CALC_DENSMATR_EXPECTED_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests either the Qureg was incorrectly normalised (i.e. contained diagonal elements with non-negligible imaginary components), or that the negligible imaginary components of the FullStateDiagMatr (despite being validated as approximately Hermitian) accumulated non-negligibly in the output value.";
 
-    string CALC_DENSMATR_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL =
-        "The calculated density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests either the Qureg was incorrectly normalised (i.e. contained diagonal elements with non-negligible imaginary components), or that the imaginary components of the FullStateDiagMatr (despite being validated as approximately Hermitian) accumulated non-negligibly in the output value.";
+    string  CALC_DENSMATR_EXPECTED_DIAG_MATR_POWER_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests either the Qureg was incorrectly normalised (i.e. contained diagonal elements with non-negligible imaginary components), or that the FullStateDiagMatr raised to the given power was no longer approximately Hermitian, or that the negligible imaginary components of the FullStateDiagMatr accumulated non-negligibly in the output value.";
 
 
     /*
@@ -1919,10 +1926,14 @@ void assertNewMatrixAllocsSucceeded(T matr, qindex numBytes, const char* caller)
         assertAllNodesAgreeThat(mem_isAllocated(util_getGpuMemPtr(matr)), report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
 
     // assert the teeny-tiny heap flags are alloc'd
-    vars["${NUM_BYTES}"] = sizeof(*(matr.isUnitary));
-    assertAllNodesAgreeThat(mem_isAllocated(matr.isUnitary),    report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
-    assertAllNodesAgreeThat(mem_isAllocated(matr.isHermitian),  report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
-    assertAllNodesAgreeThat(mem_isAllocated(matr.wasGpuSynced), report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+    vars["${NUM_BYTES}"] = sizeof(*(matr.isUnitary)); // all fields are same-size
+    assertAllNodesAgreeThat(mem_isAllocated(matr.isUnitary),     report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+    assertAllNodesAgreeThat(mem_isAllocated(matr.isHermitian),   report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+    assertAllNodesAgreeThat(mem_isAllocated(matr.wasGpuSynced),  report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+
+    // only diagonal matrices have isNonNegative field
+    if constexpr (!util_isDenseMatrixType<T>())
+        assertAllNodesAgreeThat(mem_isAllocated(matr.isNonNegative), report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
 }
 
 void validate_newMatrixAllocs(CompMatr matr, const char* caller) {
@@ -2066,9 +2077,13 @@ template <class T>
 void assertAdditionalHeapMatrixFieldsAreValid(T matr, const char* caller) {
 
     // assert heap pointers are not NULL
-    assertThat(mem_isAllocated(matr.isUnitary),    report::INVALID_HEAP_FLAG_PTR, caller);
-    assertThat(mem_isAllocated(matr.isHermitian),  report::INVALID_HEAP_FLAG_PTR, caller);
-    assertThat(mem_isAllocated(matr.wasGpuSynced), report::INVALID_HEAP_FLAG_PTR, caller);
+    assertThat(mem_isAllocated(matr.isUnitary),     report::INVALID_HEAP_FLAG_PTR, caller);
+    assertThat(mem_isAllocated(matr.isHermitian),   report::INVALID_HEAP_FLAG_PTR, caller);
+    assertThat(mem_isAllocated(matr.wasGpuSynced),  report::INVALID_HEAP_FLAG_PTR, caller);
+
+    // only diagonal matrices have isNonNegative field
+    if constexpr (!util_isDenseMatrixType<T>())
+        assertThat(mem_isAllocated(matr.isNonNegative), report::INVALID_HEAP_FLAG_PTR, caller);
 
     tokenSubs vars = {{"${BAD_FLAG}", 0}, {"${UNKNOWN_FLAG}", validate_STRUCT_PROPERTY_UNKNOWN_FLAG}};
 
@@ -2086,6 +2101,13 @@ void assertAdditionalHeapMatrixFieldsAreValid(T matr, const char* caller) {
     flag = *matr.wasGpuSynced;
     vars["${BAD_FLAG}"] = flag;
     assertThat(flag == 0 || flag == 1, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
+
+    // assert isNonNegative has valid value (only bound to diagonal matrices)
+    if constexpr (!util_isDenseMatrixType<T>()) {
+        flag = *matr.isNonNegative;
+        vars["${BAD_FLAG}"] = flag;
+        assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
+    }
 
     // checks whether users have, after destroying their struct, manually set the outer
     // heap-memory pointers to NULL. We do not check inner pointers of 2D structures (which may
@@ -2257,7 +2279,7 @@ void ensureMatrHermiticityIsKnown(T matr) {
     if (*(matr.isHermitian) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
         return;
 
-    // determine local unitarity, modifying matr.isHermitian
+    // determine local hermiticity, modifying matr.isHermitian
     *(matr.isHermitian) = util_isHermitian(matr, global_validationEpsilon);
 }
 
@@ -2265,11 +2287,11 @@ void ensureMatrHermiticityIsKnown(T matr) {
 template <class T> 
 void assertMatrixIsHermitian(T matr, const char* caller) {
 
-    // avoid expensive unitarity check (and do not overwrite .isHermitian) if validation is anyway disabled
+    // avoid expensive hermiticity check (and do not overwrite .isHermitian) if validation is anyway disabled
     if (isNumericalValidationDisabled())
         return;
 
-    // unitarity is determined differently depending on matrix type
+    // hermiticity is determined differently depending on matrix type
     bool isHermitian = false;
 
     // fixed-size matrices have their hermiticity calculated afresh (since cheap)
@@ -2315,6 +2337,91 @@ void validate_matrixIsHermitian(FullStateDiagMatr matr, const char* caller) {
     validate_matrixIsSynced(matr, caller);
     validate_matrixFields(matr, caller);
     assertMatrixIsHermitian(matr, caller);
+}
+
+// type T can be DiagMatr or FullStateDiagMatr
+template <class T> 
+void ensureMatrNonNegativityIsKnown(T matr) {
+
+    // do nothing if we already know
+    if (*(matr.isNonNegative) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        return;
+
+    // determine local non-negativity, modifying matr.isNonNegative
+    *(matr.isNonNegative) = util_areRealsNonNegative(matr, global_validationEpsilon);
+}
+
+// type T can be DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
+template <class T> 
+void assertExponentiatedMatrixIsHermitian(T matr, qcomp exponent, const char* caller) {
+
+    // this function checks that exponent approximately satisfies
+    // the necessary properties for pow(matr,exponent) to be
+    // Hermitian, rather than strictly, because our current imple-
+    // mentation does not leverage strict Hermiticity. This could
+    // change in the future, to leverage the numerically more-
+    // stable pow(qreal,int) overload when exponent is an int.
+
+    if (isNumericalValidationDisabled())
+        return;
+
+    // also checks matrix fields and isSynced
+    validate_matrixIsHermitian(matr, caller);
+
+    // in addition to requiring matrix is Hermitian = real (as above),
+    // we also require matrix^exponent is Hermitian = real. This first
+    // requires that the exponent is real; we only bother checking this
+    // approximately because we will in any case use the pow(qcomp,qcomp)
+    // overload which grows errors even when imag-components are strictly
+    // zero (because pow(a,b)=exp(i b Arg(a)) involes Arg(a)=pi when a<0).
+    // Such errors don't affect the statevector expectation value which
+    // simply drops the imag-component before return (because the imag
+    // error never sabotages the real component), but alas the errors do
+    // sabotage density matrix expectation values
+    bool isApproxReal = util_isApproxReal(exponent, global_validationEpsilon);
+    assertThat(isApproxReal, report::HERMITIAN_DIAG_MATR_EXPONENT_NOT_APPROX_REAL, caller);
+
+    // it also requires that either the exponent is approx a (signed) integer...
+    if (util_isApproxRealInteger(exponent, global_validationEpsilon))
+        return;
+
+    // else that the matrix is approx non-negative so that the surds 
+    // due to fractional real exponents do not produce complex numbers.
+    // this is determined differently for fixed-size vs dynamic matrices
+    bool isNonNegative = false;
+
+    // fixed-size matrices have their hermiticity calculated afresh (since cheap)
+    if constexpr (util_isFixedSizeMatrixType<T>())
+        isNonNegative = util_areRealsNonNegative(matr, global_validationEpsilon);
+
+    // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
+    else {
+        ensureMatrNonNegativityIsKnown(matr);
+        isNonNegative = *(matr.isNonNegative);
+    }
+
+    assertThat(isNonNegative, report::REAL_EXPONENTIATED_HERMITIAN_DIAG_MATR_HAS_APPROX_NEGATIVE_ELEMS, caller);
+}
+
+void validate_matrixIsHermitian(DiagMatr1 matr, qcomp exponent, const char* caller) {
+
+    // also checks fields and isSynced
+    assertExponentiatedMatrixIsHermitian(matr, exponent, caller);
+}
+void validate_matrixIsHermitian(DiagMatr2 matr, qcomp exponent, const char* caller) {
+
+    // also checks fields and isSynced
+    assertExponentiatedMatrixIsHermitian(matr, exponent, caller);
+}
+void validate_matrixIsHermitian(DiagMatr matr, qcomp exponent, const char* caller) {
+
+    // also checks fields and isSynced
+    assertExponentiatedMatrixIsHermitian(matr, exponent, caller);
+}
+void validate_matrixIsHermitian(FullStateDiagMatr matr, qcomp exponent, const char* caller) {
+
+    // also checks fields and isSynced
+    assertExponentiatedMatrixIsHermitian(matr, exponent, caller);
 }
 
 template <class T>
@@ -3848,14 +3955,22 @@ void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const ch
     assertThat(std::abs(std::imag(value)) < global_validationEpsilon, msg, caller);
 }
 
-void validate_expecFullStateDiagMatrValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
+void validate_densMatrExpecDiagMatrValueIsReal(qcomp value, qcomp exponent, const char* caller) {
+
+    // this function is only ever called to validate the output of
+    // expected value calculations of hermitian diagonal matrices
+    // upon density matrices (NOT statevectors) because errors in
+    // the latter (due to state unnormalisation, or exponent doma-
+    // in, or unintended imaginary components of the diagonal)
+    // never damage the real component, which we always safely return
 
     if (isNumericalValidationDisabled())
         return;
 
-    string msg = (isDensMatr)?
-        report::CALC_DENSMATR_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL:
-        report::CALC_STATEVEC_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL;
+    // precise comparison since non-power overload passes epxonent=1
+    string msg = (exponent == qcomp(1,0))?
+        report::CALC_DENSMATR_EXPECTED_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL:
+        report::CALC_DENSMATR_EXPECTED_DIAG_MATR_POWER_VALUE_WAS_NOT_APPROX_REAL;
 
     assertThat(std::abs(std::imag(value)) < global_validationEpsilon, msg, caller);
 }

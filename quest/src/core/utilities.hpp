@@ -100,6 +100,8 @@ qcomp util_getElemFromNestedPtrs(void* in, qindex* inds, int numInds);
 bool util_isStrictlyRealInteger(qcomp num); // presently unused
 
 bool util_isApproxReal(qcomp num, qreal epsilon);
+bool util_isApproxRealInteger(qcomp num, qreal epsilon);
+
 qcomp util_getPowerOfI(size_t exponent);
 
 
@@ -280,6 +282,17 @@ bool util_isHermitian(DiagMatr1 matrix, qreal epsilon);
 bool util_isHermitian(DiagMatr2 matrix, qreal epsilon);
 bool util_isHermitian(DiagMatr  matrix, qreal epsilon);
 bool util_isHermitian(FullStateDiagMatr matrix, qreal epsilon);
+
+
+
+/*
+ * MATRIX NON-NEGATIVITY
+ */
+
+bool util_areRealsNonNegative(DiagMatr1 matrix, qreal epsilon);
+bool util_areRealsNonNegative(DiagMatr2 matrix, qreal epsilon);
+bool util_areRealsNonNegative(DiagMatr  matrix, qreal epsilon);
+bool util_areRealsNonNegative(FullStateDiagMatr matrix, qreal epsilon);
 
 
 

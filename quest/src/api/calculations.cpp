@@ -162,14 +162,30 @@ qreal calcExpecFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qco
     validate_quregFields(qureg, __func__);
     validate_matrixFields(matrix, __func__);
     validate_matrixAndQuregAreCompatible(matrix, qureg, true, __func__);
-    validate_matrixIsHermitian(matrix, __func__);
+
+    // checks both matrix and matrix^exponent are approx Hermitian
+    // (i.e. real) which may require assessing matrix.isNonNegative
+    validate_matrixIsHermitian(matrix, exponent, __func__);
 
     qcomp value = (qureg.isDensityMatrix)?
         localiser_densmatr_calcExpecFullStateDiagMatr(qureg, matrix, exponent):
         localiser_statevec_calcExpecFullStateDiagMatr(qureg, matrix, exponent);
+    
+    // is it impossible for the statevector routine to produce non-zero
+    // imaginary components except through numerical error; due to matrix
+    // being approx non-Hermitian, or because matr<0 and exponent is an
+    // integer (because the pow(qcomp,qcomp) overload therein evaluates
+    // B^P = exp(i P Arg(B)) -> exp(i P 2 pi) which has a sin(2 pi P) error.
+    // Thankfully this imag error never damages the real component, so
+    // we can always safely discard the imaginary component without inducing
+    // algorithmic error. Unfortunately this is not true of the density
+    // matrix, whereby erroneous intermediate imaginary components are
+    // multiplied with the state's complex amplitudes and perturb the real
+    // component of the expected value. As such, we only need to post-
+    // validate this scenario, and never worry about statevector output.
+    if (qureg.isDensityMatrix)
+        validate_densMatrExpecDiagMatrValueIsReal(value, exponent, __func__);
 
-    // demand value is real, despite exponent being complex
-    validate_expecFullStateDiagMatrValueIsReal(value, qureg.isDensityMatrix, __func__);
     return std::real(value);
 }
 

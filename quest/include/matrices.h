@@ -81,7 +81,7 @@ typedef struct {
     // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* isUnitary;
-    int* isHermitian;
+    int* isHermitian; /// @todo currently unused
 
     // whether the user has ever synchronised memory to the GPU, which is performed automatically
     // when calling functions like setCompMatr(), but which requires manual invocation with
@@ -143,7 +143,8 @@ typedef struct {
     // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* isUnitary;
-    int* isHermitian;
+    int* isHermitian;   /// @todo currently unused
+    int* isNonNegative; /// @todo currently unused
 
     // whether the user has ever synchronised memory to the GPU, which is performed automatically
     // when calling functions like setCompMatr(), but which requires manual invocation with
@@ -186,6 +187,7 @@ typedef struct {
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
     int* isUnitary;
     int* isHermitian;
+    int* isNonNegative;
 
     // whether the user has ever synchronised memory to the GPU, which is performed automatically
     // when calling functions like setCompMatr(), but which requires manual invocation with
