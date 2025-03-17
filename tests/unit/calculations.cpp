@@ -117,6 +117,33 @@ void TEST_ON_MIXED_CACHED_QUREGS(quregCache cacheA, quregCache cacheB, auto refA
 }
 
 
+void TEST_ON_CACHED_QUREG_AND_MATRIX(quregCache quregs, matrixCache matrices, auto apiFunc, auto refState, auto refMatr, auto refFunc) {
+
+    // test all combinations of deployments (where cacheA != cacheB)
+
+    for (auto& [labelA, qureg]: quregs) {
+        for (auto& [labelB, matrix]: matrices) {
+
+            DYNAMIC_SECTION( labelA + LABEL_DELIMITER + labelB ) {
+
+                // set API matrix to pre-initialised reference matrix
+                setFullStateDiagMatr(matrix, 0, getDiagonals(refMatr));
+
+                // initialise to random states (rather than debug) since
+                // tested function will likely validate output domain
+                setToRandomState(refState);
+                setQuregToReference(qureg, refState);
+
+                // results will always be a scalar
+                auto apiResult = apiFunc(qureg, matrix);
+                auto refResult = refFunc(refState, refMatr);
+                REQUIRE_AGREE( apiResult, refResult );
+            }
+        }
+    }
+}
+
+
 
 /** 
  * TESTS
@@ -516,22 +543,154 @@ TEST_CASE( "calcDistance", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
 
 
 
+TEST_CASE( "calcExpecFullStateDiagMatr", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qmatrix refMatr = getRandomDiagonalHermitian(getNumCachedQubits());
+        auto apiFunc = calcExpecFullStateDiagMatr;
+
+        GENERATE( range(0,10) );
+
+        SECTION( LABEL_STATEVEC ) {
+
+            auto refFunc = [&] (qvector state, qmatrix matr) { return getReferenceExpectationValue(state, matr); };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedStatevecs(), getCachedFullStateDiagMatrs(), apiFunc, getRefStatevec(), refMatr, refFunc);
+        }
+
+        SECTION( LABEL_DENSMATR ) {
+
+            auto refFunc = [&] (qmatrix state, qmatrix matr) { return getReferenceExpectationValue(state, matr); };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedDensmatrs(), getCachedFullStateDiagMatrs(), apiFunc, getRefDensmatr(), refMatr, refFunc);
+        }
+    }
+
+    /// @todo input validation
+}
+
+
+
+TEST_CASE( "calcExpecNonHermitianFullStateDiagMatr", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qmatrix refMatr = getRandomDiagonalMatrix(getPow2(getNumCachedQubits()));
+        auto apiFunc = calcExpecNonHermitianFullStateDiagMatr;
+
+        GENERATE( range(0,10) );
+
+        SECTION( LABEL_STATEVEC ) {
+
+            auto refFunc = [&] (qvector state, qmatrix matr) { return getReferenceExpectationValue(state, matr); };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedStatevecs(), getCachedFullStateDiagMatrs(), apiFunc, getRefStatevec(), refMatr, refFunc);
+        }
+
+        SECTION( LABEL_DENSMATR ) {
+
+            auto refFunc = [&] (qmatrix state, qmatrix matr) { return getReferenceExpectationValue(state, matr); };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedDensmatrs(), getCachedFullStateDiagMatrs(), apiFunc, getRefDensmatr(), refMatr, refFunc);
+        }
+    }
+
+    /// @todo input validation
+}
+
+
+
+TEST_CASE( "calcExpecFullStateDiagMatrPower", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qmatrix refMatr = getRandomDiagonalHermitian(getNumCachedQubits());
+
+        // to be Hermitian (as validated), exponent must always be real;
+        // but integer and non-integer exponents still have different effects
+        bool isIntegerExp = GENERATE( true, false );
+        qcomp exponent = (isIntegerExp)?
+            getRandomInt(-3, 3):
+            getRandomReal(-3, 3);
+        
+        // when exponent is non-integer, the matrix cannot contain negative 
+        // numbers which otherwise become complex, making the matric
+        if (!isIntegerExp)
+            for (size_t i=0; i<refMatr.size(); i++)
+                refMatr[i][i] = std::abs(refMatr[i][i]);
+
+        auto apiFunc = [&](Qureg qureg, FullStateDiagMatr matr) { 
+            return calcExpecFullStateDiagMatrPower(qureg, matr, exponent);
+        };
+
+        GENERATE( range(0,10) );
+        CAPTURE( exponent );
+
+        SECTION( LABEL_STATEVEC ) {
+
+            auto refFunc = [&] (qvector state, qmatrix matr) { 
+                matr = getPowerOfDiagonalMatrix(matr, exponent);
+                return getReferenceExpectationValue(state, matr);
+            };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedStatevecs(), getCachedFullStateDiagMatrs(), apiFunc, getRefStatevec(), refMatr, refFunc);
+        }
+
+        SECTION( LABEL_DENSMATR ) {
+
+            auto refFunc = [&] (qmatrix state, qmatrix matr) { 
+                matr = getPowerOfDiagonalMatrix(matr, exponent);
+                return getReferenceExpectationValue(state, matr);
+            };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedDensmatrs(), getCachedFullStateDiagMatrs(), apiFunc, getRefDensmatr(), refMatr, refFunc);
+        }
+    }
+
+    /// @todo input validation
+}
+
+
+
+TEST_CASE( "calcExpecNonHermitianFullStateDiagMatrPower", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qmatrix refMatr = getRandomDiagonalMatrix(getPow2(getNumCachedQubits()));
+        qcomp exponent = getRandomComplex();
+
+        auto apiFunc = [&](Qureg qureg, FullStateDiagMatr matr) { 
+            return calcExpecNonHermitianFullStateDiagMatrPower(qureg, matr, exponent);
+        };
+
+        GENERATE( range(0,10) );
+        CAPTURE( exponent );
+
+        SECTION( LABEL_STATEVEC ) {
+
+            auto refFunc = [&] (qvector state, qmatrix matr) { 
+                matr = getPowerOfDiagonalMatrix(matr, exponent);
+                return getReferenceExpectationValue(state, matr);
+            };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedStatevecs(), getCachedFullStateDiagMatrs(), apiFunc, getRefStatevec(), refMatr, refFunc);
+        }
+
+        SECTION( LABEL_DENSMATR ) {
+
+            auto refFunc = [&] (qmatrix state, qmatrix matr) { 
+                matr = getPowerOfDiagonalMatrix(matr, exponent);
+                return getReferenceExpectationValue(state, matr);
+            };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedDensmatrs(), getCachedFullStateDiagMatrs(), apiFunc, getRefDensmatr(), refMatr, refFunc);
+        }
+    }
+
+    /// @todo input validation
+}
+
+
+
 /** @} (end defgroup) */
-
-
-
-/**
- * @todo
- * UNTESTED FUNCTIONS
- */
-
-// these require we deploy input objects (Qureg,FullStateDiagMatr) differently
-// (as is respectively permitted) to thoroughly test all QuEST control flows
-
-qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
-
-qreal calcExpecFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
-
-qcomp calcExpecNonHermitianFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
-
-qcomp calcExpecNonHermitianFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);

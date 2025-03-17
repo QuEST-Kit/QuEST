@@ -38,6 +38,7 @@ listtrio getRandomVariNumCtrlsStatesTargs(int numQubits, int minNumTargs, int ma
 
 qvector getRandomVector(size_t dim);
 qmatrix getRandomMatrix(size_t dim);
+qmatrix getRandomDiagonalMatrix(size_t dim);
 qmatrix getRandomNonSquareMatrix(size_t numRows, size_t numCols);
 
 qvector getRandomStateVector(int numQb);
@@ -49,6 +50,7 @@ void setToRandomState(qmatrix& state);
 
 qmatrix getRandomUnitary(int numQb);
 qmatrix getRandomDiagonalUnitary(int numQb);
+qmatrix getRandomDiagonalHermitian(int numQb);
 vector<qmatrix> getRandomKrausMap(int numQb, int numOps);
 
 PauliStr getRandomPauliStr(int numQubits);

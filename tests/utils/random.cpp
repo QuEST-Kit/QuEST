@@ -249,6 +249,17 @@ qmatrix getRandomMatrix(size_t dim) {
 }
 
 
+qmatrix getRandomDiagonalMatrix(size_t dim) {
+
+    qmatrix out = getZeroMatrix(dim);
+
+    for (size_t i=0; i<dim; i++)
+        out[i][i] = getRandomComplex();
+
+    return out;
+}
+
+
 
 /*
  * STATES
@@ -343,10 +354,24 @@ qmatrix getRandomDiagonalUnitary(int numQb) {
 
     qmatrix matr = getZeroMatrix(getPow2(numQb));
 
+    // unitary diagonals have unit complex scalars
     for (size_t i=0; i<matr.size(); i++)
         matr[i][i] = std::exp(getRandomPhase() * 1_i);
 
     return matr;
+}
+
+
+qmatrix getRandomDiagonalHermitian(int numQb) {
+    DEMAND( numQb >= 1 );
+
+    qmatrix out = getZeroMatrix(getPow2(numQb));
+
+    // Hermitian diagonals are real
+    for (size_t i=0; i<out.size(); i++)
+        out[i][i] = getRandomReal(-10, 10);
+
+    return out;
 }
 
 
