@@ -170,6 +170,8 @@ void validate_matrixIsUnitary(DiagMatr2 matr, const char* caller);
 void validate_matrixIsUnitary(DiagMatr  matr, const char* caller);
 void validate_matrixIsUnitary(FullStateDiagMatr matr, const char* caller);
 
+void validate_exponentIsReal(qcomp exponent, const char* caller); // assesses diag^expo unitarity
+
 void validate_matrixIsHermitian(CompMatr1 matr, const char* caller);
 void validate_matrixIsHermitian(CompMatr2 matr, const char* caller);
 void validate_matrixIsHermitian(CompMatr  matr, const char* caller);

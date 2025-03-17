@@ -97,6 +97,9 @@ qcomp util_getElemFromNestedPtrs(void* in, qindex* inds, int numInds);
  * COMPLEX ALGEBRA
  */
 
+bool util_isStrictlyRealInteger(qcomp num); // presently unused
+
+bool util_isApproxReal(qcomp num, qreal epsilon);
 qcomp util_getPowerOfI(size_t exponent);
 
 

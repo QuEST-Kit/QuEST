@@ -402,6 +402,9 @@ namespace report {
 
     string MATRIX_NOT_UNITARY = 
         "The given matrix was not (approximately) unitary.";
+    
+    string UNITARY_DIAG_MATR_EXPONENT_NOT_APPROX_REAL =
+        "The given exponent was not approximately real (i.e. the imaginary component exceeded epsilon) such that the given diagonal matrix raised to the exponent was no longer approximately unitary. Consider changing the validation epsilon.";
 
     string MATRIX_NOT_HERMITIAN =
         "THe given matrix was not (approximately) Hermitian.";
@@ -2235,6 +2238,15 @@ void validate_matrixIsUnitary(FullStateDiagMatr matr, const char* caller) {
     validate_matrixIsSynced(matr, caller);
     validate_matrixFields(matr, caller);
     assertMatrixIsUnitary(matr, caller);
+}
+
+void validate_exponentIsReal(qcomp exponent, const char* caller) {
+
+    if (isNumericalValidationDisabled())
+        return;
+
+    // assesses diag^expo unitarity for any unitary diag
+    assertThat(util_isApproxReal(exponent, global_validationEpsilon), report::UNITARY_DIAG_MATR_EXPONENT_NOT_APPROX_REAL, caller);
 }
 
 // type T can be CompMatr, DiagMatr, FullStateDiagMatr

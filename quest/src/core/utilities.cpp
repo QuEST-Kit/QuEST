@@ -22,6 +22,7 @@
 
 #include <algorithm>
 #include <complex>
+#include <cmath>
 #include <vector>
 #include <array>
 #include <new>
@@ -313,6 +314,31 @@ qcomp util_getElemFromNestedPtrs(void* in, qindex* inds, int numInds) {
 /*
  * COMPLEX ALGEBRA
  */
+
+bool util_isStrictlyRealInteger(qcomp num) {
+
+    // this function is not currently used; instead
+    // validation uses the below approx-real version,
+    // because we do not use the answer to inform
+    // the simulation method. In the future, we may
+    // handle when pow(qcomp,qcomp) in backend functions
+    // are going to receive pow(qreal,int) and redirect
+    // them to use pow(qreal,qreal) which is numerically
+    // stable when given negative bases, unlike qcomp.
+    
+    // demand strictly real
+    if (std::imag(num) != 0)
+        return false;
+
+    // demand strictly integer
+    qreal re = std::real(num);
+    return std::trunc(re) == re;
+}
+
+bool util_isApproxReal(qcomp num, qreal eps) {
+
+    return std::abs(std::imag(num)) <= eps;
+}
 
 qcomp util_getPowerOfI(size_t exponent) {
 
