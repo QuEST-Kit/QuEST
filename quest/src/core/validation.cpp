@@ -1096,6 +1096,14 @@ bool validateconfig_isEnabled() {
     return global_isValidationEnabled;
 }
 
+// this file validates that the outputs of reductions (like 
+// calcFidelity) are within numerical bounds (e.g. approx
+// real). Because these reductions combine exponentially
+// many decimals, they are much less precise than API inputs,
+// so should be validated with a more tolerant epsilon. We
+// here hackily specify the factor by which to expand eps.
+qreal REDUCTION_EPSILON_FACTOR = 100;
+
 
 
 /*
@@ -3873,7 +3881,8 @@ void validate_fidelityIsReal(qcomp fid, const char* caller) {
 
     /// @todo include imag(fid) in error message when non-integers are supported
 
-    assertThat(std::abs(std::imag(fid)) < global_validationEpsilon, report::CALC_FIDELITY_NOT_APPROX_REAL, caller);
+    qreal eps = REDUCTION_EPSILON_FACTOR * global_validationEpsilon;
+    assertThat(util_isApproxReal(fid, eps), report::CALC_FIDELITY_NOT_APPROX_REAL, caller);
 }
 
 void validate_buresDistanceInnerProdIsNormalised(qreal mag, const char* caller) {
@@ -3883,7 +3892,8 @@ void validate_buresDistanceInnerProdIsNormalised(qreal mag, const char* caller) 
 
     /// @todo include mag in error message when non-integers are supported
 
-    assertThat(mag <= 1 + global_validationEpsilon, report::CALC_BURES_DISTANCE_MAG_EXCEEDED_ONE, caller);
+    qreal eps = REDUCTION_EPSILON_FACTOR * global_validationEpsilon;
+    assertThat(mag <= 1 + eps, report::CALC_BURES_DISTANCE_MAG_EXCEEDED_ONE, caller);
 }
 
 void validate_purifiedDistanceIsNormalised(qcomp fid, const char* caller) {
@@ -3893,8 +3903,9 @@ void validate_purifiedDistanceIsNormalised(qcomp fid, const char* caller) {
 
     /// @todo include scalars in error message when non-integers are supported
     
-    assertThat(std::abs(std::imag(fid)) < global_validationEpsilon, report::CALC_PURIFIED_DISTANCE_NOT_APPROX_REAL, caller);
-    assertThat(std::real(fid) <= 1 + global_validationEpsilon, report::CALC_PURIFIED_DISTANCE_REAL_EXCEEDED_ONE, caller);
+    qreal eps = REDUCTION_EPSILON_FACTOR * global_validationEpsilon;
+    assertThat(util_isApproxReal(fid, eps), report::CALC_PURIFIED_DISTANCE_NOT_APPROX_REAL, caller);
+    assertThat(std::real(fid) <= 1 + eps, report::CALC_PURIFIED_DISTANCE_REAL_EXCEEDED_ONE, caller);
 }
 
 
@@ -3939,16 +3950,8 @@ void validate_expecPauliStrValueIsReal(qcomp value, bool isDensMatr, const char*
         report::CALC_DENSMATR_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL:
         report::CALC_STATEVEC_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL;
 
-    /// @todo
-    /// comparing the output of these reduction-type functions to global_validationEpsilon
-    /// is pretty strict since they can result from an exponential-number of summed terms,
-    /// so should be much much less accurate than direct user inputs validated with the
-    /// same epsilon. We should use a more relaxed threshold for such validations!
-    /// This particular assertion causes trouble in single-precision in the CI unit tests,
-    /// so we are merely ad-hoc patching for now
-    qreal FACTOR = 10;
-
-    assertThat(std::abs(std::imag(value)) <= FACTOR * global_validationEpsilon, msg, caller);
+    qreal eps = REDUCTION_EPSILON_FACTOR * global_validationEpsilon;
+    assertThat(util_isApproxReal(value, eps), msg, caller);
 }
 
 void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
@@ -3960,7 +3963,8 @@ void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const ch
         report::CALC_DENSMATR_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL:
         report::CALC_STATEVEC_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL;
 
-    assertThat(std::abs(std::imag(value)) < global_validationEpsilon, msg, caller);
+    qreal eps = REDUCTION_EPSILON_FACTOR * global_validationEpsilon;
+    assertThat(util_isApproxReal(value, eps), msg, caller);
 }
 
 void validate_densMatrExpecDiagMatrValueIsReal(qcomp value, qcomp exponent, const char* caller) {
@@ -3980,7 +3984,8 @@ void validate_densMatrExpecDiagMatrValueIsReal(qcomp value, qcomp exponent, cons
         report::CALC_DENSMATR_EXPECTED_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL:
         report::CALC_DENSMATR_EXPECTED_DIAG_MATR_POWER_VALUE_WAS_NOT_APPROX_REAL;
 
-    assertThat(std::abs(std::imag(value)) < global_validationEpsilon, msg, caller);
+    qreal eps = REDUCTION_EPSILON_FACTOR * global_validationEpsilon;
+    assertThat(util_isApproxReal(value, eps), msg, caller);
 }
 
 
