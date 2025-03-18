@@ -80,8 +80,8 @@ typedef struct {
     // and the flags fixed until the user modifies the matrix (through sync() or setAmps() etc).
     // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
-    int* isUnitary;
-    int* isHermitian; /// @todo currently unused
+    int* isApproxUnitary;
+    int* isApproxHermitian; /// @todo currently unused (relevant to not-yet-implemented calc-expec-val)
 
     // whether the user has ever synchronised memory to the GPU, which is performed automatically
     // when calling functions like setCompMatr(), but which requires manual invocation with
@@ -142,10 +142,11 @@ typedef struct {
     // and the flags fixed until the user modifies the matrix (through sync() or setAmps() etc).
     // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
-    int* isUnitary;
-    int* isHermitian;   /// @todo currently unused
-    int* isNonNegative; /// @todo currently unused
-
+    int* isApproxUnitary;
+    int* isApproxHermitian;     /// @todo currently unused (relevant to not-yet-implemented calc-expec-val)
+    int* isApproxNonZero;       /// @todo currently unused (relevant to not-yet-implemented calc-expec-val)
+    int* isStrictlyNonNegative; /// @todo currently unused (relevant to not-yet-implemented calc-expec-val)
+    
     // whether the user has ever synchronised memory to the GPU, which is performed automatically
     // when calling functions like setCompMatr(), but which requires manual invocation with
     // syncCompMatr() after manual modification of the cpuElem. Note this can only indicate whether
@@ -185,9 +186,10 @@ typedef struct {
     // and the flags fixed until the user modifies the matrix (through sync() or setAmps() etc).
     // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
-    int* isUnitary;
-    int* isHermitian;
-    int* isNonNegative;
+    int* isApproxUnitary;
+    int* isApproxHermitian;
+    int* isApproxNonZero;
+    int* isStrictlyNonNegative;
 
     // whether the user has ever synchronised memory to the GPU, which is performed automatically
     // when calling functions like setCompMatr(), but which requires manual invocation with

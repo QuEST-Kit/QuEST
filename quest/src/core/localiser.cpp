@@ -1648,8 +1648,10 @@ CompMatr getSpoofedCompMatrFromSuperOp(SuperOp op) {
         .numQubits = 2 * op.numQubits,
         .numRows = op.numRows,
 
-        // isUnitary will not be consulted (we have passed validation)
-        .isUnitary = nullptr,
+        // heap fields are not consulted
+        .isApproxUnitary = nullptr,
+        .isApproxHermitian = nullptr,
+        .wasGpuSynced = nullptr,
 
         // copy pointers (noting cpuElems is 2D/nested)
         .cpuElems = op.cpuElems,

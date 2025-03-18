@@ -224,13 +224,13 @@ namespace report {
      */
 
     string NEW_HEAP_FLAG_ALLOC_FAILED =
-        "Attempted allocation of a heap flag (such as 'isUnitary', 'isHermitian', 'isNonNegative', 'isCPTP', 'wasGpuSynced') miraculously failed, despite being a mere ${NUM_BYTES} bytes. This is unfathomably unlikely - go and have your fortune read at once!";
+        "Attempted allocation of a heap flag (such as 'isApproxUnitary') miraculously failed, despite being a mere ${NUM_BYTES} bytes. This is unfathomably unlikely - go and have your fortune read at once!";
 
     string INVALID_HEAP_FLAG_PTR =
-        "A flag (e.g. 'isUnitary', 'isHermitian', 'isNonNegative', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) was a NULL pointer, instead of an expected pointer to persistent heap memory. This may imply the structure was not created by its proper function (e.g. createCompMatr()).";
+        "A flag (such as 'isApproxUnitary') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) was a NULL pointer, instead of an expected pointer to persistent heap memory. This may imply the structure was not created by its proper function (e.g. createCompMatr()).";
 
     string INVALID_HEAP_FLAG_VALUE = 
-        "A flag (e.g. 'isUnitary', 'isHermitian', 'isNonNegative', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) had an invalid value of ${BAD_FLAG}. Allowed values are '0', '1', and (except for 'wasGpuSynced') '${UNKNOWN_FLAG}', though these flags should not be modified directly by the user. It is likely the structure was not created by its proper function (e.g. createCompMatr()).";
+        "A flag (such as 'isApproxUnitary') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) had an invalid value of ${BAD_FLAG}. Allowed values are '0', '1', and (except for 'wasGpuSynced') '${UNKNOWN_FLAG}', though these flags should not be modified directly by the user. It is likely the structure was not created by its proper function (e.g. createCompMatr()).";
 
 
     /*
@@ -1926,14 +1926,16 @@ void assertNewMatrixAllocsSucceeded(T matr, qindex numBytes, const char* caller)
         assertAllNodesAgreeThat(mem_isAllocated(util_getGpuMemPtr(matr)), report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
 
     // assert the teeny-tiny heap flags are alloc'd
-    vars["${NUM_BYTES}"] = sizeof(*(matr.isUnitary)); // all fields are same-size
-    assertAllNodesAgreeThat(mem_isAllocated(matr.isUnitary),     report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
-    assertAllNodesAgreeThat(mem_isAllocated(matr.isHermitian),   report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+    vars["${NUM_BYTES}"] = sizeof(*(matr.isApproxUnitary)); // all fields are same-size
+    assertAllNodesAgreeThat(mem_isAllocated(matr.isApproxUnitary),     report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+    assertAllNodesAgreeThat(mem_isAllocated(matr.isApproxHermitian),   report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
     assertAllNodesAgreeThat(mem_isAllocated(matr.wasGpuSynced),  report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
 
-    // only diagonal matrices have isNonNegative field
-    if constexpr (!util_isDenseMatrixType<T>())
-        assertAllNodesAgreeThat(mem_isAllocated(matr.isNonNegative), report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+    // only diagonal matrices (which can be exponentiated) have these additional flags
+    if constexpr (!util_isDenseMatrixType<T>()) {
+        assertAllNodesAgreeThat(mem_isAllocated(matr.isApproxNonZero),       report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+        assertAllNodesAgreeThat(mem_isAllocated(matr.isStrictlyNonNegative), report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+    }
 }
 
 void validate_newMatrixAllocs(CompMatr matr, const char* caller) {
@@ -2077,23 +2079,25 @@ template <class T>
 void assertAdditionalHeapMatrixFieldsAreValid(T matr, const char* caller) {
 
     // assert heap pointers are not NULL
-    assertThat(mem_isAllocated(matr.isUnitary),     report::INVALID_HEAP_FLAG_PTR, caller);
-    assertThat(mem_isAllocated(matr.isHermitian),   report::INVALID_HEAP_FLAG_PTR, caller);
+    assertThat(mem_isAllocated(matr.isApproxUnitary),     report::INVALID_HEAP_FLAG_PTR, caller);
+    assertThat(mem_isAllocated(matr.isApproxHermitian),   report::INVALID_HEAP_FLAG_PTR, caller);
     assertThat(mem_isAllocated(matr.wasGpuSynced),  report::INVALID_HEAP_FLAG_PTR, caller);
 
-    // only diagonal matrices have isNonNegative field
-    if constexpr (!util_isDenseMatrixType<T>())
-        assertThat(mem_isAllocated(matr.isNonNegative), report::INVALID_HEAP_FLAG_PTR, caller);
+    // only diagonal matrices (which can be exponentiated) have these additional flags
+    if constexpr (!util_isDenseMatrixType<T>()) {
+        assertThat(mem_isAllocated(matr.isApproxNonZero),       report::INVALID_HEAP_FLAG_PTR, caller);
+        assertThat(mem_isAllocated(matr.isStrictlyNonNegative), report::INVALID_HEAP_FLAG_PTR, caller);
+    }
 
     tokenSubs vars = {{"${BAD_FLAG}", 0}, {"${UNKNOWN_FLAG}", validate_STRUCT_PROPERTY_UNKNOWN_FLAG}};
 
-    // assert isUnitary has valid value
-    int flag = *matr.isUnitary;
+    // assert isApproxUnitary has valid value
+    int flag = *matr.isApproxUnitary;
     vars["${BAD_FLAG}"] = flag;
     assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
 
-    // assert isHermitian has valid value
-    flag = *matr.isHermitian;
+    // assert isApproxHermitian has valid value
+    flag = *matr.isApproxHermitian;
     vars["${BAD_FLAG}"] = flag;
     assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
 
@@ -2102,9 +2106,13 @@ void assertAdditionalHeapMatrixFieldsAreValid(T matr, const char* caller) {
     vars["${BAD_FLAG}"] = flag;
     assertThat(flag == 0 || flag == 1, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
 
-    // assert isNonNegative has valid value (only bound to diagonal matrices)
+    // assert isApproxNonZero and isStrictlyNonNegative have valid values (only bound to diagonal matrices)
     if constexpr (!util_isDenseMatrixType<T>()) {
-        flag = *matr.isNonNegative;
+        flag = *matr.isApproxNonZero;
+        vars["${BAD_FLAG}"] = flag;
+        assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
+
+        flag = *matr.isStrictlyNonNegative;
         vars["${BAD_FLAG}"] = flag;
         assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
     }
@@ -2198,19 +2206,19 @@ template <class T>
 void ensureMatrixUnitarityIsKnown(T matr) {
 
     // do nothing if we already know unitarity
-    if (*(matr.isUnitary) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+    if (*(matr.isApproxUnitary) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
         return;
 
-    // determine local unitarity, modifying matr.isUnitary. This will
+    // determine local unitarity, modifying matr.isApproxUnitary. This will
     // involve MPI communication if matr is a distributed type
-    *(matr.isUnitary) = util_isUnitary(matr, global_validationEpsilon);
+    *(matr.isApproxUnitary) = util_isUnitary(matr, global_validationEpsilon);
 }
 
 // type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template <class T> 
 void assertMatrixIsUnitary(T matr, const char* caller) {
 
-    // avoid expensive unitarity check (and do not overwrite .isUnitary) if validation is anyway disabled
+    // avoid expensive unitarity check (and do not overwrite .isApproxUnitary) if validation is anyway disabled
     if (isNumericalValidationDisabled())
         return;
 
@@ -2224,7 +2232,7 @@ void assertMatrixIsUnitary(T matr, const char* caller) {
     // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
     else {
         ensureMatrixUnitarityIsKnown(matr);
-        isUnitary = *(matr.isUnitary);
+        isUnitary = *(matr.isApproxUnitary);
     }
 
     assertThat(isUnitary, report::MATRIX_NOT_UNITARY, caller);
@@ -2276,35 +2284,35 @@ template <class T>
 void ensureMatrHermiticityIsKnown(T matr) {
 
     // do nothing if we already know hermiticity
-    if (*(matr.isHermitian) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+    if (*(matr.isApproxHermitian) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
         return;
 
-    // determine local hermiticity, modifying matr.isHermitian
-    *(matr.isHermitian) = util_isHermitian(matr, global_validationEpsilon);
+    // determine local hermiticity, modifying matr.isApproxHermitian
+    *(matr.isApproxHermitian) = util_isHermitian(matr, global_validationEpsilon);
 }
 
 // type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template <class T> 
 void assertMatrixIsHermitian(T matr, const char* caller) {
 
-    // avoid expensive hermiticity check (and do not overwrite .isHermitian) if validation is anyway disabled
+    // avoid expensive hermiticity check (and do not overwrite .isApproxHermitian) if validation is anyway disabled
     if (isNumericalValidationDisabled())
         return;
 
     // hermiticity is determined differently depending on matrix type
-    bool isHermitian = false;
+    bool isApproxHermitian = false;
 
     // fixed-size matrices have their hermiticity calculated afresh (since cheap)
     if constexpr (util_isFixedSizeMatrixType<T>())
-        isHermitian = util_isHermitian(matr, global_validationEpsilon);
+        isApproxHermitian = util_isHermitian(matr, global_validationEpsilon);
 
     // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
     else {
         ensureMatrHermiticityIsKnown(matr);
-        isHermitian = *(matr.isHermitian);
+        isApproxHermitian = *(matr.isApproxHermitian);
     }
 
-    assertThat(isHermitian, report::MATRIX_NOT_HERMITIAN, caller);
+    assertThat(isApproxHermitian, report::MATRIX_NOT_HERMITIAN, caller);
 }
 
 void validate_matrixIsHermitian(CompMatr1 matr, const char* caller) {
@@ -2344,11 +2352,11 @@ template <class T>
 void ensureMatrNonNegativityIsKnown(T matr) {
 
     // do nothing if we already know
-    if (*(matr.isNonNegative) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+    if (*(matr.isStrictlyNonNegative) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
         return;
 
-    // determine local non-negativity, modifying matr.isNonNegative
-    *(matr.isNonNegative) = util_areRealsNonNegative(matr, global_validationEpsilon);
+    // determine local non-negativity, modifying matr.isStrictlyNonNegative
+    *(matr.isStrictlyNonNegative) = util_areRealsNonNegative(matr);
 }
 
 // type T can be DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
@@ -2397,7 +2405,7 @@ void assertExponentiatedMatrixIsHermitian(T matr, qcomp exponent, const char* ca
     // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
     else {
         ensureMatrNonNegativityIsKnown(matr);
-        isNonNegative = *(matr.isNonNegative);
+        isNonNegative = *(matr.isStrictlyNonNegative);
     }
 
     assertThat(isNonNegative, report::REAL_EXPONENTIATED_HERMITIAN_DIAG_MATR_HAS_APPROX_NEGATIVE_ELEMS, caller);
@@ -3130,8 +3138,8 @@ void validate_newPauliStrSumAllocs(PauliStrSum sum, qindex numBytesStrings, qind
         {{"${NUM_TERMS}", sum.numTerms}, {"${NUM_BYTES}", numBytesCoeffs}}, caller);
 
     assertThat(
-        mem_isAllocated(sum.isHermitian), report::NEW_HEAP_FLAG_ALLOC_FAILED, 
-        {{"${NUM_BYTES}", sizeof(*(sum.isHermitian))}}, caller);
+        mem_isAllocated(sum.isApproxHermitian), report::NEW_HEAP_FLAG_ALLOC_FAILED, 
+        {{"${NUM_BYTES}", sizeof(*(sum.isApproxHermitian))}}, caller);
 }
 
 
@@ -3188,10 +3196,10 @@ void validate_pauliStrSumFields(PauliStrSum sum, const char* caller) {
     assertThat(mem_isAllocated(sum.coeffs),  report::INVALID_PAULI_STR_HEAP_PTR, caller);
     assertThat(mem_isAllocated(sum.strings), report::INVALID_PAULI_STR_HEAP_PTR, caller);
 
-    assertThat(mem_isAllocated(sum.isHermitian), report::INVALID_HEAP_FLAG_PTR, caller);
+    assertThat(mem_isAllocated(sum.isApproxHermitian), report::INVALID_HEAP_FLAG_PTR, caller);
 
-    // assert isHermitian has valid value
-    int flag = *sum.isHermitian;
+    // assert isApproxHermitian has valid value
+    int flag = *sum.isApproxHermitian;
     tokenSubs vars = {
         {"${BAD_FLAG}", flag}, 
         {"${UNKNOWN_FLAG}", validate_STRUCT_PROPERTY_UNKNOWN_FLAG}};
@@ -3200,15 +3208,15 @@ void validate_pauliStrSumFields(PauliStrSum sum, const char* caller) {
 
 void validate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
 
-    // avoid expensive hermiticity check (and do not overwrite .isHermitian) if validation is anyway disabled
+    // avoid expensive hermiticity check (and do not overwrite .isApproxHermitian) if validation is anyway disabled
     if (isNumericalValidationDisabled())
         return;
 
     // ensure hermiticity is known (if not; compute it)
-    if (*(sum.isHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        *(sum.isHermitian) = util_isHermitian(sum, global_validationEpsilon);
+    if (*(sum.isApproxHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        *(sum.isApproxHermitian) = util_isHermitian(sum, global_validationEpsilon);
 
-    assertThat(*(sum.isHermitian), report::PAULI_STR_SUM_NOT_HERMITIAN, caller);
+    assertThat(*(sum.isApproxHermitian), report::PAULI_STR_SUM_NOT_HERMITIAN, caller);
 }
 
 void validate_pauliStrSumTargets(PauliStrSum sum, Qureg qureg, const char* caller) {

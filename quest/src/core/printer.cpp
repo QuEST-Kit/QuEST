@@ -1045,8 +1045,8 @@ void print_elems(KrausMap map, string indent) {
         CompMatr spoof = {
             .numQubits = map.numQubits,
             .numRows = map.numRows,
-            .isUnitary = nullptr, 
-            .isHermitian = nullptr,
+            .isApproxUnitary = nullptr, 
+            .isApproxHermitian = nullptr,
             .wasGpuSynced = nullptr, 
             .cpuElems = map.matrices[i],
             .gpuElemsFlat = nullptr // printer checks GPU-alloc via non-null

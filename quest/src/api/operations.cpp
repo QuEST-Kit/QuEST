@@ -311,7 +311,7 @@ void applyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matr
     validate_quregFields(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
     validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also checks fields and is-synced
-    validate_matrixIsUnitary(matrix, __func__); // harmlessly rechecks fields and is-synced
+    validate_matrixIsUnitary(matrix, __func__);  // checks abs=1 (so no risk of 0^(-neg exp)) and rechecks fields/synced
     validate_exponentIsReal(exponent, __func__); // checks matrix^exponent is unitary (abs=1)
 
     // harmlessly re-validates
@@ -322,7 +322,7 @@ void applyControlledDiagMatrPower(Qureg qureg, int control, int* targets, int nu
     validate_quregFields(qureg, __func__);
     validate_controlAndTargets(qureg, control, targets, numTargets, __func__);
     validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also checks fields and is-synced
-    validate_matrixIsUnitary(matrix, __func__); // harmlessly rechecks fields and is-synced
+    validate_matrixIsUnitary(matrix, __func__);  // checks abs=1 (so no risk of 0^(-neg exp)) and rechecks fields/synced
     validate_exponentIsReal(exponent, __func__); // checks matrix^exponent is unitary (abs=1)
 
     // harmlessly re-validates
@@ -333,7 +333,7 @@ void applyMultiControlledDiagMatrPower(Qureg qureg, int* controls, int numContro
     validate_quregFields(qureg, __func__);
     validate_controlsAndTargets(qureg, controls, numControls, targets, numTargets, __func__);
     validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also checks fields and is-synced
-    validate_matrixIsUnitary(matrix, __func__); // harmlessly rechecks fields and is-synced
+    validate_matrixIsUnitary(matrix, __func__);  // checks abs=1 (so no risk of 0^(-neg exp)) and rechecks fields/synced
     validate_exponentIsReal(exponent, __func__); // checks matrix^exponent is unitary (abs=1)
 
     // harmlessly re-validates
@@ -345,7 +345,7 @@ void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* sta
     validate_controlsAndTargets(qureg, controls, numControls, targets, numTargets, __func__);
     validate_controlStates(states, numControls, __func__); // can be nullptr, ignoring numControls
     validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also checks fields and is-synced
-    validate_matrixIsUnitary(matrix, __func__); // harmlessly rechecks fields and is-synced
+    validate_matrixIsUnitary(matrix, __func__);  // checks abs=1 (so no risk of 0^(-neg exp)) and rechecks fields/synced
     validate_exponentIsReal(exponent, __func__); // checks matrix^exponent is unitary (abs=1)
 
     bool conj = false;
@@ -401,7 +401,7 @@ void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp ex
     validate_quregFields(qureg, __func__);
     validate_matrixFields(matrix, __func__);
     validate_matrixAndQuregAreCompatible(matrix, qureg, false, __func__);
-    validate_matrixIsUnitary(matrix, __func__);  // checks abs=1
+    validate_matrixIsUnitary(matrix, __func__);  // checks abs=1 (so no risk of 0^(-neg exp))
     validate_exponentIsReal(exponent, __func__); // checks matrix^exponent is unitary (abs=1)
 
     bool onlyMultiply = false;

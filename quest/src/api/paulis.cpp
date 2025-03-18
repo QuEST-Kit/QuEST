@@ -56,7 +56,7 @@ bool didAnyAllocsFailOnAnyNode(PauliStrSum sum) {
     bool anyFail = (
         ! mem_isAllocated(sum.strings) || 
         ! mem_isAllocated(sum.coeffs)  || 
-        ! mem_isAllocated(sum.isHermitian) );
+        ! mem_isAllocated(sum.isApproxHermitian) );
     
     if (comm_isInit())
         anyFail = comm_isTrueOnAllNodes(anyFail);
@@ -70,7 +70,7 @@ void freePauliStrSum(PauliStrSum sum) {
     // these do not need to be allocated (freeing nullptr is legal)
     cpu_deallocPauliStrings(sum.strings);
     cpu_deallocArray(sum.coeffs);
-    cpu_deallocHeapFlag(sum.isHermitian);
+    cpu_deallocHeapFlag(sum.isApproxHermitian);
 }
 
 
@@ -390,9 +390,9 @@ extern "C" PauliStrSum createPauliStrSum(PauliStr* strings, qcomp* coeffs, qinde
     // create struct
     PauliStrSum out = {
         .numTerms = numTerms,
-        .strings =     cpu_allocPauliStrings(numTerms), // nullptr if failed
-        .coeffs  =     cpu_allocArray(numTerms),        // nullptr if failed
-        .isHermitian = cpu_allocHeapFlag(),             // nullptr if failed
+        .strings = cpu_allocPauliStrings(numTerms), // nullptr if failed
+        .coeffs  = cpu_allocArray(numTerms),        // nullptr if failed
+        .isApproxHermitian = cpu_allocHeapFlag(),   // nullptr if failed
     };
 
     // if either alloc failed, clear both before validation to avoid leak
@@ -401,7 +401,7 @@ extern "C" PauliStrSum createPauliStrSum(PauliStr* strings, qcomp* coeffs, qinde
 
     // otherwise copy given data into new heap structure, and set initial flags
     cpu_copyPauliStrSum(out, strings, coeffs);
-    *(out.isHermitian) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    *(out.isApproxHermitian) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
 
     return out;
 }
