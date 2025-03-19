@@ -2167,11 +2167,11 @@ qcomp cpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int>
  */
 
 
-template <bool HasPower> 
+template <bool HasPower, bool UseRealPow> 
 qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
 
     assert_quregAndFullStateDiagMatrHaveSameDistrib(qureg, matr);
-    assert_exponentMatchesTemplateParam(exponent, HasPower);
+    assert_exponentMatchesTemplateParam(exponent, HasPower, UseRealPow);
 
     // separately reduce real and imag components to make MSVC happy
     qreal valueRe = 0;
@@ -2185,17 +2185,18 @@ qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
 
         qcomp elem = matr.cpuElems[n];
 
-        // compile-time decide if applying power to avoid in-loop branching.
+        // compile-time decide if applying power (!= 1) to avoid in-loop branching.
         // beware that pow(qcomp,qcomp) below gives notable error over pow(qreal,qreal) 
         // (by producing an unexpected non-zero imaginary component) when the base is real 
         // and negative, and the exponent is an integer. This is a plausible scenario given 
         // matr is often Hermitian (ergo real) and the exponent may be effecting repeated 
-        // application of matr. In such scenarios however, the output expected value is
-        // mathematically strictly real, and the real component is not at all affected by
-        // these errors. So we always use pow(qcomp,qcomp) and the caller discards imag-comp.
-        if constexpr (HasPower)
-            elem = std::pow(elem, exponent);
-        
+        // application of matr. When UseRealPow is set, we discard the imaginary components
+        // of the matrix and exponent (latter gauranteed zero) and use the stable pow().
+        if constexpr (HasPower && ! UseRealPow)
+            elem = std::pow(elem, exponent); // pow(qcomp)
+        if constexpr (HasPower &&   UseRealPow)
+            elem = qcomp(std::pow(std::real(elem), std::real(exponent)), 0); // pow(qreal)
+
         qcomp term = elem * std::norm(qureg.cpuAmps[n]);
 
         valueRe += std::real(term);
@@ -2206,11 +2207,11 @@ qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
 }
 
 
-template <bool HasPower>
+template <bool HasPower, bool UseRealPow>
 qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
 
     assert_quregAndFullStateDiagMatrHaveSameDistrib(qureg, matr);
-    assert_exponentMatchesTemplateParam(exponent, HasPower);
+    assert_exponentMatchesTemplateParam(exponent, HasPower, UseRealPow);
 
     // separately reduce real and imag components to make MSVC happy
     qreal valueRe = 0;
@@ -2226,31 +2227,22 @@ qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
 
         qcomp elem = matr.cpuElems[n];
 
-        /// @todo
-        /// numerical accuracy can be improved (when matr is Hermitian = real and exponent
-        /// is an integer) as per the below comment. We forego this optimisation presently
-        /// because the refactor is involved and the use-case is not yet well motivated.
-
-        // compile-time decide if applying power (!=1) to avoid in-loop branching.
+        // compile-time decide if applying power (!= 1) to avoid in-loop branching.
         // Beware that pow(qcomp,qcomp) below gives notable error over pow(qreal,qreal) 
         // (by producing an unexpected non-zero imaginary component) when the base is real 
         // and negative, and the exponent is an integer. This is a plausible scenario given 
         // matr is often Hermitian (ergo real) and the exponent may be effecting repeated 
-        // application of matr. For statevectors above, we remedy this by having the caller
-        // simply discard the mathematically-impossible imaginary component. But alas,
-        // the same conditions do not gaurantee the expected value is real here, because the
-        // density matrix is permitted un-normalised and non-Hermitian; a complex output
-        // may be mathematically correct/desired (rather than just occurring due to error).
-        // And even assuming qureg IS valid, the erroneously-non-zero imaginary components
-        // are multiplied with the complex density-matrix elems and contribute to the output
-        // real-components; so the caller cannot simply disregard the imaginary component.
-        // In theory, we could compile-time handle (via another template parameter) this
-        // scenario and call the pow(qreal,qreal) overload to improve accuracy, but this
-        // requires substantial changes; we must change templating and perform similar
-        // compile-time branching in the GPU kernels which use a custom pow() implementation,
-        // which cannot be accessed from within fastmath.hpp for example.
-        if constexpr (HasPower)
+        // application of matr. So when UseRealPow is set, we discard the imaginary components
+        // of the matrix and exponent (latter gauranteed zero) and use the stable pow().
+        // An observant reader may realise the erroneous imaginary components introduced by
+        // complex-pow do not damage the statevector expectation value; the imaginary component
+        // can be discarded entirely at the end without harm to the real component. Alas this
+        // is not true of the density matrix calculation here, where the erroneous imaginary
+        // components of pow(qcomp,qcomp) will sabotage the final result. Wah!
+        if constexpr (HasPower && ! UseRealPow)
             elem = std::pow(elem, exponent);
+        if constexpr (HasPower &&   UseRealPow)
+            elem = qcomp(std::pow(std::real(elem), std::real(exponent)), 0);
 
         // i = local index of nth local diagonal element
         qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
@@ -2264,10 +2256,15 @@ qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
 }
 
 
-template qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub<true> (Qureg, FullStateDiagMatr, qcomp);
-template qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
-template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<true> (Qureg, FullStateDiagMatr, qcomp);
-template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub<true, true >(Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub<true, false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub<false,false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub<false,true >(Qureg, FullStateDiagMatr, qcomp); // uncallable
+
+template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<true, true >(Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<true, false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<false,false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<false,true >(Qureg, FullStateDiagMatr, qcomp); // uncallable
 
 
 

@@ -281,7 +281,7 @@ struct functor_getExpecDensMatrPauliTerm : public thrust::unary_function<qindex,
 };
 
 
-template <bool HasPower>
+template <bool HasPower, bool UseRealPow>
 struct functor_getExpecDensMatrDiagMatrTerm : public thrust::unary_function<qindex,cu_qcomp> {
 
     // this functor computes a single term from the sum in the expectation 
@@ -297,8 +297,10 @@ struct functor_getExpecDensMatrDiagMatrTerm : public thrust::unary_function<qind
 
         cu_qcomp elem = elems[n];
 
-        if constexpr (HasPower)
+        if constexpr (HasPower && ! UseRealPow)
             elem = getCompPower(elem, expo);
+        if constexpr (HasPower &&   UseRealPow)
+            elem = pow(getCompReal(elem), getCompReal(expo)) // CUDA pow(qreal,qreal)
 
         qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
 
@@ -379,21 +381,24 @@ struct functor_superposeAmps {
 };
 
 
-template <bool HasPower, bool Norm>
+template <bool HasPower, bool UseRealPow, bool Norm>
 struct functor_multiplyElemPowerWithAmpOrNorm : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qcomp> {
 
     // this functor multiplies a diagonal matrix element 
     // raised to a power (templated to optimise away the 
     // exponentiation at compile-time when power==1) upon
-    // a statevector amp, used to modify the statevector
+    // a statevector amp (used when modifying the state)
+    // or its norm (used when calculating expected values)
 
     cu_qcomp exponent;
     functor_multiplyElemPowerWithAmpOrNorm(cu_qcomp power) : exponent(power) {}
 
     __host__ __device__ cu_qcomp operator()(cu_qcomp quregAmp, cu_qcomp matrElem) {
 
-        if constexpr (HasPower)
+        if constexpr (HasPower && ! UseRealPow)
             matrElem = getCompPower(matrElem, exponent);
+        if constexpr (HasPower &&   UseRealPow)
+            matrElem = pow(getCompReal(matrElem), getCompReal(exponent)) // CUDA pow(qreal,qreal)
 
         if constexpr (Norm)
             quregAmp = getCuQcomp(getCompNorm(quregAmp), 0);
@@ -727,7 +732,7 @@ void thrust_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu
     thrust::transform(
         getStartPtr(qureg), getEndPtr(qureg), 
         getStartPtr(matr),  getStartPtr(qureg), // 4th arg is output pointer
-        functor_multiplyElemPowerWithAmpOrNorm<HasPower,false>(exponent));
+        functor_multiplyElemPowerWithAmpOrNorm<HasPower,false,false>(exponent));
 }
 
 
@@ -969,11 +974,11 @@ cu_qcomp thrust_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vecto
  */
 
 
-template <bool HasPower> 
+template <bool HasPower, bool UseRealPow, bool UseRealPow> 
 cu_qcomp thrust_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu_qcomp expo) {
 
     cu_qcomp init = getCuQcomp(0, 0);
-    auto functor = functor_multiplyElemPowerWithAmpOrNorm<HasPower,true>(expo);
+    auto functor = functor_multiplyElemPowerWithAmpOrNorm<HasPower,UseRealPow,true>(expo);
 
     cu_qcomp value = thrust::inner_product(
         getStartPtr(qureg), getEndPtr(qureg), getStartPtr(matr), 
@@ -983,14 +988,14 @@ cu_qcomp thrust_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDi
 }
 
 
-template <bool HasPower> 
+template <bool HasPower, bool UseRealPow> 
 cu_qcomp thrust_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu_qcomp expo) {
 
     qindex dim = powerOf2(qureg.numQubits);
     qindex ind = util_getLocalIndexOfFirstDiagonalAmp(qureg);
     auto ampsPtr = toCuQcomps(qureg.gpuAmps);
     auto elemsPtr = toCuQcomps(matr.gpuElems);
-    auto functor = functor_getExpecDensMatrDiagMatrTerm<HasPower>(dim, ind, ampsPtr, elemsPtr, expo);
+    auto functor = functor_getExpecDensMatrDiagMatrTerm<HasPower,UseRealPow>(dim, ind, ampsPtr, elemsPtr, expo);
 
     cu_qcomp init = getCuQcomp(0, 0);
     auto indIter = thrust::make_counting_iterator(0);

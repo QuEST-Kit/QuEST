@@ -311,8 +311,23 @@ qmatrix getPowerOfDiagonalMatrix(qmatrix m, qcomp p) {
 
     qmatrix out = getZeroMatrix(m.size());
 
-    for (size_t i=0; i<m.size(); i++)
-        out[i][i] = std::pow(m[i][i], p);
+    // pow(qcomp,qcomp) introduces wildly erroneous
+    // imaginary components when both base is real
+    // and negative, and exponent is real and integer
+    // (so ergo does not produce complex numbers).
+    // We divert to real-pow in that scenario!
+
+    for (size_t i=0; i<m.size(); i++) {
+        bool mIsRe  = std::imag(m[i][i]) == 0;
+        bool mIsNeg = std::real(m[i][i]) < 0;
+        bool pIsRe  = std::imag(p) == 0;
+        bool pIsInt = std::trunc(std::real(p)) == std::real(p);
+
+        // use pow(qreal,qreal) or pow(qcomp,qcomp)
+        out[i][i] = (mIsRe && mIsNeg && pIsRe && pIsInt)?
+            qcomp(std::pow(std::real(m[i][i]), std::real(p)),0):
+            std::pow(m[i][i], p);
+    }
 
     return out;
 }

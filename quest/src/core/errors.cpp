@@ -342,6 +342,14 @@ void assert_exponentMatchesTemplateParam(qcomp exponent, bool hasPower) {
         raiseInternalError("A CPU or GPU subroutine received a matrix exponent that was inconsistent with its compile-time template parameter, as dispatched by accelerator.cpp.");
 }
 
+void assert_exponentMatchesTemplateParam(qcomp exponent, bool hasPower, bool useRealPow) {
+
+    assert_exponentMatchesTemplateParam(exponent, hasPower);
+
+    if (!hasPower && useRealPow)
+        raiseInternalError("A CPU or GPU subroutine received an invalid combination of HasPower=false and UseRealPow=false template parameters");
+}
+
 
 
 /*
@@ -729,7 +737,7 @@ void assert_utilsGivenDensMatr(Qureg qureg) {
 void assert_utilsGivenNonZeroEpsilon(qreal eps) {
 
     if (eps == 0)
-        raiseInternalError("A utility function (isUnitary, isHermitian, isCPTP) received an epsilon of zero, which should have precluded it being called.");
+        raiseInternalError("A utility function (e.g. isUnitary) received an epsilon of zero, which should have precluded it being called.");
 }
 
 

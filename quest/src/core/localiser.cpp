@@ -2131,7 +2131,7 @@ qcomp localiser_densmatr_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
 }
 
 
-qcomp localiser_statevec_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+qcomp localiser_statevec_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool useRealPow) {
 
     // since this method does not modify qureg, we force qureg & matr distributions to 
     // agree by merely spoofing the non-distributed object to be distributed;
@@ -2139,7 +2139,7 @@ qcomp localiser_statevec_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMa
     auto [quregSpoof, matrSpoof] = getSpoofedQuregAndMatrWithMatchingDistributions(qureg, matr);
 
     // always embarrassingly parallel
-    qcomp value = accel_statevec_calcExpecFullStateDiagMatr_sub(quregSpoof, matrSpoof, exponent);
+    qcomp value = accel_statevec_calcExpecFullStateDiagMatr_sub(quregSpoof, matrSpoof, exponent, useRealPow);
 
     // combine contributions from other nodes
     if (quregSpoof.isDistributed)
@@ -2149,7 +2149,7 @@ qcomp localiser_statevec_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMa
 }
 
 
-qcomp localiser_densmatr_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+qcomp localiser_densmatr_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool useRealPow) {
 
     // since this method does not modify qureg, we force qureg & matr distributions to 
     // agree by merely spoofing the non-distributed object to be distributed;
@@ -2157,7 +2157,7 @@ qcomp localiser_densmatr_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMa
     auto [quregSpoof, matrSpoof] = getSpoofedQuregAndMatrWithMatchingDistributions(qureg, matr);
 
     // always embarrassingly parallel
-    qcomp value = accel_densmatr_calcExpecFullStateDiagMatr_sub(quregSpoof, matrSpoof, exponent);
+    qcomp value = accel_densmatr_calcExpecFullStateDiagMatr_sub(quregSpoof, matrSpoof, exponent, useRealPow);
 
     // combine contributions from other nodes
     if (quregSpoof.isDistributed)

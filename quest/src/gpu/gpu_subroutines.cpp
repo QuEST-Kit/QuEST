@@ -1729,13 +1729,14 @@ qcomp gpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int>
  */
 
 
-template <bool HasPower> 
+template <bool HasPower, bool UseRealPow> 
 qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+    assert_exponentMatchesTemplateParam(exponent, HasPower, UseRealPow);
 
 #if COMPILE_CUQUANTUM || COMPILE_CUDA
 
     cu_qcomp expo = toCuQcomp(exponent);
-    cu_qcomp value = thrust_statevec_calcExpecFullStateDiagMatr_sub<HasPower>(qureg, matr, expo);
+    cu_qcomp value = thrust_statevec_calcExpecFullStateDiagMatr_sub<HasPower,UseRealPow>(qureg, matr, expo);
     return toQcomp(value);
 
 #else
@@ -1745,13 +1746,14 @@ qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
 }
 
 
-template <bool HasPower>
+template <bool HasPower, bool UseRealPow>
 qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+    assert_exponentMatchesTemplateParam(exponent, HasPower, UseRealPow);
 
 #if COMPILE_CUQUANTUM || COMPILE_CUDA
 
     cu_qcomp expo = toCuQcomp(exponent);
-    cu_qcomp value = thrust_densmatr_calcExpecFullStateDiagMatr_sub<HasPower>(qureg, matr, expo);
+    cu_qcomp value = thrust_densmatr_calcExpecFullStateDiagMatr_sub<HasPower,UseRealPow>(qureg, matr, expo);
     return toQcomp(value);
 
 #else
@@ -1761,11 +1763,15 @@ qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
 }
 
 
-template qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub<true> (Qureg, FullStateDiagMatr, qcomp);
-template qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
-template qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub<true> (Qureg, FullStateDiagMatr, qcomp);
-template qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub<true, true >(Qureg, FullStateDiagMatr, qcomp);
+template qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub<true, false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub<false,false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub<false,true >(Qureg, FullStateDiagMatr, qcomp); // uncallable
 
+template qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub<true, true >(Qureg, FullStateDiagMatr, qcomp);
+template qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub<true, false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub<false,false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub<false,true >(Qureg, FullStateDiagMatr, qcomp); // uncallable
 
 
 /*

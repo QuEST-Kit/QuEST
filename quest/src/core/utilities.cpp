@@ -17,6 +17,7 @@
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/utilities.hpp"
+#include "quest/src/core/validation.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 
@@ -312,47 +313,18 @@ qcomp util_getElemFromNestedPtrs(void* in, qindex* inds, int numInds) {
 
 
 /*
- * COMPLEX ALGEBRA
+ * SCALAR ALGEBRA
  */
 
-bool util_isStrictlyRealInteger(qcomp num) {
+bool util_isStrictlyInteger(qreal num) {
 
-    // this function is not currently used; instead
-    // validation uses the below approx-real version,
-    // because we do not use the answer to inform
-    // the simulation method. In the future, we may
-    // handle when pow(qcomp,qcomp) in backend functions
-    // are going to receive pow(qreal,int) and redirect
-    // them to use pow(qreal,qreal) which is numerically
-    // stable when given negative bases, unlike qcomp.
-    
-    // demand strictly real
-    if (std::imag(num) != 0)
-        return false;
-
-    // demand strictly integer
-    qreal re = std::real(num);
-    return std::trunc(re) == re;
+    return std::trunc(num) == num;
 }
 
 bool util_isApproxReal(qcomp num, qreal eps) {
 
     return std::abs(std::imag(num)) <= eps;
 }
-
-bool util_isApproxRealInteger(qcomp num, qreal eps) {
-    assert_utilsGivenNonZeroEpsilon(eps);
-
-    // assert almost-real
-    if (!util_isApproxReal(num, eps))
-        return false;
-
-    // determine distance of real component to nearest int
-    qreal re = std::real(num);
-    qreal dist = std::abs(re - std::round(re));
-    return dist <= eps;
-}
-
 
 qcomp util_getPowerOfI(size_t exponent) {
 
@@ -438,10 +410,21 @@ void util_setConj(DiagMatr matrix) {
  * MATRIX UNITARITY
  */
 
+bool isApprox(qreal a, qreal b, qreal eps) {
+    return std::abs(a-b) <= eps;
+}
+bool isApprox(qcomp a, qcomp b, qreal eps) {
+    return std::norm(a-b) <= eps;
+}
+
 // type T can be qcomp** or qcomp*[]
 template <typename T>
-bool isUnitary(T elems, qindex dim, qreal eps) {
+bool getUnitarity(T elems, qindex dim, qreal eps) {
     assert_utilsGivenNonZeroEpsilon(eps);
+
+    /// @todo
+    /// consider multithreading or GPU-accelerating this
+    /// when caller is big and e.g. has GPU memory
 
     // check m * dagger(m) == identity
     for (qindex r=0; r<dim; r++) {
@@ -453,9 +436,7 @@ bool isUnitary(T elems, qindex dim, qreal eps) {
                 elem += elems[r][i] * std::conj(elems[c][i]);
 
             // check if further than epsilon from identity[r,c]
-            qcomp dif = elem - qcomp(r == c, 0);
-            qreal distSq = std::norm(dif);
-            if (distSq > eps)
+            if (!isApprox(elem, qcomp(r==c,0), eps))
                 return false;
         }
     }
@@ -464,67 +445,58 @@ bool isUnitary(T elems, qindex dim, qreal eps) {
 }
 
 // diagonal version doesn't need templating because array decays to pointer, yay!
-bool isUnitary(qcomp* diags, qindex dim, qreal eps) {
+bool getUnitarity(qcomp* diags, qindex dim, qreal eps) {
     assert_utilsGivenNonZeroEpsilon(eps);
 
-    // check every element has unit magnitude
-    for (qindex i=0; i<dim; i++) {
-        qreal mag = std::abs(diags[i]);
-        qreal dif = std::abs(1 - mag);
+    /// @todo
+    /// consider multithreading or GPU-accelerating this
+    /// when caller is big and e.g. has GPU memory
 
-        if (dif > eps)
+    // check every element has unit magnitude
+    for (qindex i=0; i<dim; i++)
+        if (!isApprox(std::abs(diags[i]), 1, eps))
             return false;
-    }
 
     return true;
 }
 
-bool util_isUnitary(CompMatr1 matrix, qreal eps) {
-    return isUnitary(matrix.elems, matrix.numRows, eps);
+// unitarity of fixed-size matrices is always computed afresh
+bool util_isUnitary(CompMatr1 m, qreal eps) { return getUnitarity(m.elems, m.numRows,  eps); }
+bool util_isUnitary(CompMatr2 m, qreal eps) { return getUnitarity(m.elems, m.numRows,  eps); }
+bool util_isUnitary(DiagMatr1 m, qreal eps) { return getUnitarity(m.elems, m.numElems, eps); }
+bool util_isUnitary(DiagMatr2 m, qreal eps) { return getUnitarity(m.elems, m.numElems, eps); }
+
+// unitarity of heap matrices is cached
+bool util_isUnitary(CompMatr m, qreal eps) {
+
+    // compute and record unitarity if not already known
+    if (*(m.isApproxUnitary) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        *(m.isApproxUnitary) = getUnitarity(m.cpuElems, m.numRows, eps);
+
+    // eps may have been ignored
+    return *(m.isApproxUnitary);
 }
-bool util_isUnitary(CompMatr2 matrix, qreal eps) {
-    return isUnitary(matrix.elems, matrix.numRows, eps);
+bool util_isUnitary(DiagMatr m, qreal eps) {
+
+    // compute and record unitarity if not already known
+    if (*(m.isApproxUnitary) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        *(m.isApproxUnitary) = getUnitarity(m.cpuElems, m.numElems, eps);
+
+    // eps may have been ignored
+    return *(m.isApproxUnitary);
 }
-bool util_isUnitary(CompMatr matrix, qreal eps) {
+bool util_isUnitary(FullStateDiagMatr m, qreal eps) {
 
-    /// @todo
-    /// if matrix is GPU-accelerated, we should maybe
-    /// instead perform this calculation using the GPU.
-    /// otherwise, if matrix is large, we should potentially
-    /// use a multithreaded routine
+    // compute and record unitarity if not already known
+    if (*(m.isApproxUnitary) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        *(m.isApproxUnitary) = getUnitarity(m.cpuElems, m.numElemsPerNode, eps);
 
-    return isUnitary(matrix.cpuElems, matrix.numRows, eps);
-}
+    // communication may be necessary
+    if (m.isDistributed)
+        *(m.isApproxUnitary) = comm_isTrueOnAllNodes(*(m.isApproxUnitary));
 
-bool util_isUnitary(DiagMatr1 matrix, qreal eps) {
-    return isUnitary(matrix.elems, matrix.numElems, eps);
-}
-bool util_isUnitary(DiagMatr2 matrix, qreal eps) {
-    return isUnitary(matrix.elems, matrix.numElems, eps);
-}
-bool util_isUnitary(DiagMatr matrix, qreal eps) {
-
-    /// @todo
-    /// if matrix is GPU-accelerated, we should maybe
-    /// instead perform this calculation using the GPU.
-    /// otherwise, if matrix is large, we should potentially
-    /// use a multithreaded routine
-
-    return isUnitary(matrix.cpuElems, matrix.numElems, eps);
-}
-
-bool util_isUnitary(FullStateDiagMatr matrix, qreal eps) {
-
-    /// @todo
-    /// we should definitely be using an accelerated routine
-    /// here, e.g. GPU-acceleration or multithreading
-
-    // we must check all node's sub-diagonals satisfy unitarity
-    bool res = isUnitary(matrix.cpuElems, matrix.numElems, eps);
-    if (matrix.isDistributed)
-        res = comm_isTrueOnAllNodes(res);
-
-    return res;
+    // eps may have been ignored
+    return *(m.isApproxUnitary);
 }
 
 
@@ -535,128 +507,188 @@ bool util_isUnitary(FullStateDiagMatr matrix, qreal eps) {
 
 // type T can be qcomp** or qcomp*[]
 template <typename T>
-bool isHermitian(T elems, qindex dim, qreal eps) {
+bool getHermiticity(T elems, qindex dim, qreal eps) {
     assert_utilsGivenNonZeroEpsilon(eps);
 
-    // check adj(elems) == elems
-    for (qindex r=0; r<dim; r++) {
-        for (qindex c=0; c<r; c++) {
+    /// @todo
+    /// consider multithreading or GPU-accelerating this
+    /// when caller is big and e.g. has GPU memory
 
-            qcomp dif = elems[r][c] - std::conj(elems[c][r]);
-            qreal distSq = std::norm(dif);
-            if (distSq > eps)
+    // check adjoint(elems) == elems
+    for (qindex r=0; r<dim; r++)
+        for (qindex c=0; c<r; c++)
+            if (!isApprox(elems[r][c], std::conj(elems[c][r]), eps))
                 return false;
-        }
-    }
 
     return true;
 }
 
 // diagonal version doesn't need templating because array decays to pointer, yay!
-bool isHermitian(qcomp* diags, qindex dim, qreal eps) {
+bool getHermiticity(qcomp* diags, qindex dim, qreal eps) {
     assert_utilsGivenNonZeroEpsilon(eps);
+
+    /// @todo
+    /// consider multithreading or GPU-accelerating this
+    /// when caller is big and e.g. has GPU memory
 
     // check every element has a zero (or <eps) imaginary component
     for (qindex i=0; i<dim; i++)
-        if (std::abs(std::imag(diags[i])) > eps)
+        if (!isApprox(std::imag(diags[i]), 0, eps))
             return false;
 
     return true;
 }
 
-bool util_isHermitian(CompMatr1 matrix, qreal eps) {
-    return isHermitian(matrix.elems, matrix.numRows, eps);
+// hermiticity of fixed-size matrices is always computed afresh
+bool util_isHermitian(CompMatr1 m, qreal eps) { return getHermiticity(m.elems, m.numRows,  eps); }
+bool util_isHermitian(CompMatr2 m, qreal eps) { return getHermiticity(m.elems, m.numRows,  eps); }
+bool util_isHermitian(DiagMatr1 m, qreal eps) { return getHermiticity(m.elems, m.numElems, eps); }
+bool util_isHermitian(DiagMatr2 m, qreal eps) { return getHermiticity(m.elems, m.numElems, eps); }
+
+// hermiticity of heap matrices is cached
+bool util_isHermitian(CompMatr m, qreal eps) {
+
+    // compute and record hermiticity if not already known
+    if (*(m.isApproxHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        *(m.isApproxHermitian) = getHermiticity(m.cpuElems, m.numRows, eps);
+
+    // eps may have been ignored
+    return *(m.isApproxHermitian);
 }
-bool util_isHermitian(CompMatr2 matrix, qreal eps) {
-    return isHermitian(matrix.elems, matrix.numRows, eps);
+bool util_isHermitian(DiagMatr m, qreal eps) {
+
+    // compute and record hermiticity if not already known
+    if (*(m.isApproxHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        *(m.isApproxHermitian) = getHermiticity(m.cpuElems, m.numElems, eps);
+
+    // eps may have been ignored
+    return *(m.isApproxHermitian);
 }
-bool util_isHermitian(CompMatr matrix, qreal eps) {
+bool util_isHermitian(FullStateDiagMatr m, qreal eps) {
 
-    /// @todo
-    /// if matrix is GPU-accelerated, we should maybe
-    /// instead perform this calculation using the GPU.
-    /// otherwise, if matrix is large, we should potentially
-    /// use a multithreaded routine
+    // compute and record hermiticity if not already known
+    if (*(m.isApproxHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        *(m.isApproxHermitian) = getHermiticity(m.cpuElems, m.numElemsPerNode, eps);
 
-    return isHermitian(matrix.cpuElems, matrix.numRows, eps);
-}
+    // communication may be necessary
+    if (m.isDistributed)
+        *(m.isApproxHermitian) = comm_isTrueOnAllNodes(*(m.isApproxHermitian));
 
-bool util_isHermitian(DiagMatr1 matrix, qreal eps) {
-    return isHermitian(matrix.elems, matrix.numElems, eps);
-}
-bool util_isHermitian(DiagMatr2 matrix, qreal eps) {
-    return isHermitian(matrix.elems, matrix.numElems, eps);
-}
-bool util_isHermitian(DiagMatr matrix, qreal eps) {
-
-    /// @todo
-    /// if matrix is GPU-accelerated, we should maybe
-    /// instead perform this calculation using the GPU.
-    /// otherwise, if matrix is large, we should potentially
-    /// use a multithreaded routine
-
-    return isHermitian(matrix.cpuElems, matrix.numElems, eps);
-}
-
-bool util_isHermitian(FullStateDiagMatr matrix, qreal eps) {
-
-    /// @todo
-    /// we should definitely be using an accelerated routine
-    /// here, e.g. GPU-acceleration or multithreading
-
-    // we must check all node's sub-diagonals satisfy unitarity
-    bool res = isHermitian(matrix.cpuElems, matrix.numElems, eps);
-    if (matrix.isDistributed)
-        res = comm_isTrueOnAllNodes(res);
-
-    return res;
+    // eps may have been ignored
+    return *(m.isApproxHermitian);
 }
 
 
 
 /*
- * MATRIX NON-NEGATIVITY
+ * EXPONENTIABLE MATRIX IS NON-ZERO
  */
 
-bool util_areRealsNonNegative(qcomp* diags, qindex dim, qreal eps) {
+bool getWhetherNonZero(qcomp* diags, qindex dim, qreal eps) {
+    assert_utilsGivenNonZeroEpsilon(eps);
 
-    // check that all the real components are within eps
-    // of being positive (i.e. >= -eps), but do not check
-    // imaginary components at all (they might be large)
+    /// @todo
+    /// consider multithreading or GPU-accelerating this
+    /// when caller is big and e.g. has GPU memory
+
+    for (qindex i=0; i<dim; i++) {
+
+        // check each complex element has non-zero abs 
+        if (isApprox(std::abs(diags[i]), 0, eps))
+            return false;
+
+        // additionally check that the real-component alone
+        // is non-zero, since calc-expec functions which assume
+        // Hermiticity only consult the real component
+        if (isApprox(std::real(diags[i]), 0, eps))
+            return false;
+    }
+
+    return true;
+}
+
+// non-zeroness of fixed-size matrices is always computed afresh
+bool util_isApproxNonZero(DiagMatr1 m, qreal eps) { return getWhetherNonZero(m.elems, m.numElems, eps); }
+bool util_isApproxNonZero(DiagMatr2 m, qreal eps) { return getWhetherNonZero(m.elems, m.numElems, eps); }
+
+// non-zeroness of heap matrices is cached
+bool util_isApproxNonZero(DiagMatr matrix, qreal eps) {
+
+    // compute and record whether matrix >= 0 if not already known
+    if (*(matrix.isApproxNonZero) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        *(matrix.isApproxNonZero) = getWhetherNonZero(matrix.cpuElems, matrix.numElems, eps);
+
+    // eps may be ignored
+    return *(matrix.isApproxNonZero);
+}
+bool util_isApproxNonZero(FullStateDiagMatr matrix, qreal eps) {
+
+    // compute and record whether matrix >= 0 if not already known
+    if (*(matrix.isApproxNonZero) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        *(matrix.isApproxNonZero) = getWhetherNonZero(matrix.cpuElems, matrix.numElemsPerNode, eps);
+
+    // communication may be necessary
+    if (matrix.isDistributed)
+        *(matrix.isApproxNonZero) = comm_isTrueOnAllNodes(*(matrix.isApproxNonZero));
+
+    return *(matrix.isApproxNonZero);
+}
+
+
+
+/*
+ * EXPONENTIABLE MATRIX IS NON-NEGATIVE
+ */
+
+bool getWhetherRealsAreStrictlyNonNegative(qcomp* diags, qindex dim) {
+
+    /// @todo
+    /// consider multithreading or GPU-accelerating this
+    /// when caller is big and e.g. has GPU memory
+
+    // it may seem like this function should be combined with
+    // getWhetherRealsAreApproxNonZero() above, or indeed with
+    // getHermiticity(), since all three are relevant to vali-
+    // dation of diagonl matrices which can be exponentiated.
+    // Alas, such as design is complicated by this particular
+    // property (non-negativeness) being independent of the
+    // validation epsilon. For example, sometimes it needs to
+    // be computed even when numerical validation is disabled,
+    // and does not need recomputing with the epsilon changes.
+    
+    // check every real component is strictly >= 0
     for (qindex i=0; i<dim; i++)
-        if (std::real(diags[i]) < - eps)
+        if (std::real(diags[i]) < 0)
             return false;
 
     return true;
 }
 
-bool util_areRealsNonNegative(DiagMatr1 matrix, qreal eps) {
-    return util_areRealsNonNegative(matrix.elems, matrix.numElems, eps);
+// non-negativity of fixed-size matrices is always computed afresh
+bool util_isStrictlyNonNegative(DiagMatr1 m) { return getWhetherRealsAreStrictlyNonNegative(m.elems, m.numElems); }
+bool util_isStrictlyNonNegative(DiagMatr2 m) { return getWhetherRealsAreStrictlyNonNegative(m.elems, m.numElems); }
+
+bool util_isStrictlyNonNegative(DiagMatr m) {
+
+    // compute and record whether m >= 0 if not already known
+    if (*(m.isStrictlyNonNegative) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        *(m.isStrictlyNonNegative) = getWhetherRealsAreStrictlyNonNegative(m.cpuElems, m.numElems);
+
+    // eps may be ignored
+    return *(m.isStrictlyNonNegative);
 }
-bool util_areRealsNonNegative(DiagMatr2 matrix, qreal eps) {
-    return util_areRealsNonNegative(matrix.elems, matrix.numElems, eps);
-}
-bool util_areRealsNonNegative(DiagMatr matrix, qreal eps) {
 
-    /// @todo
-    /// like other isX(), we should conditionally hardware-accelerate this
-    /// (e.g. when large and GPU-accelerated, blah blah)
+bool util_isStrictlyNonNegative(FullStateDiagMatr m) {
 
-    return util_areRealsNonNegative(matrix.cpuElems, matrix.numElems, eps);
-}
+    // compute and record whether m >= 0 if not already known
+    if (*(m.isStrictlyNonNegative) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        *(m.isStrictlyNonNegative) = getWhetherRealsAreStrictlyNonNegative(m.cpuElems, m.numElemsPerNode);
 
-bool util_areRealsNonNegative(FullStateDiagMatr matrix, qreal eps) {
+    // communication may be necessary
+    if (m.isDistributed)
+        *(m.isStrictlyNonNegative) = comm_isTrueOnAllNodes(*(m.isStrictlyNonNegative));
 
-    /// @todo
-    /// like other isX(), we should conditionally hardware-accelerate this
-    /// (e.g. when large and GPU-accelerated, blah blah)
-
-    bool res = util_areRealsNonNegative(matrix.cpuElems, matrix.numElemsPerNode, eps);
-    
-    if (matrix.isDistributed)
-        res = comm_isTrueOnAllNodes(res);
-
-    return res;
+    return *(m.isStrictlyNonNegative);
 }
 
 
@@ -668,7 +700,11 @@ bool util_areRealsNonNegative(FullStateDiagMatr matrix, qreal eps) {
 bool util_isHermitian(PauliStrSum sum, qreal eps) {
 
     // check whether all coefficients are real (just like a diagonal matrix)
-    return isHermitian(sum.coeffs, sum.numTerms, eps);
+    if (*(sum.isApproxHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        *(sum.isApproxHermitian) = getHermiticity(sum.coeffs, sum.numTerms, eps);
+
+    // eps may have been ignored
+    return *(sum.isApproxHermitian);
 }
 
 
@@ -680,13 +716,19 @@ bool util_isHermitian(PauliStrSum sum, qreal eps) {
 bool util_isCPTP(KrausMap map, qreal eps) {
     assert_utilsGivenNonZeroEpsilon(eps);
 
+    // use pre-computed CPTP if it exists
+    if (*(map.isCPTP) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        return *(map.isCPTP);
+
     /// @todo
     /// if KrausMap is GPU-accelerated, we should maybe
     /// instead perform this calculation using the GPU.
     /// otherwise, if matrix is large, we should potentially
     /// use a multithreaded routine
 
-    // each whether each element satisfies Identity = sum dagger(m)*m
+    *(map.isCPTP) = true;
+
+    // check whether each element satisfies Identity = sum dagger(m)*m
     for (qindex r=0; r<map.numRows; r++) {
         for (qindex c=0; c<map.numRows; c++) {
 
@@ -696,14 +738,19 @@ bool util_isCPTP(KrausMap map, qreal eps) {
                 for (qindex k=0; k<map.numRows; k++)
                     elem += std::conj(map.matrices[n][k][r]) * map.matrices[n][k][c];
 
-            // fail if too distant from Identity element
+            // fail if too distant from Identity element...
             qreal distSquared = std::norm(elem - (r==c));
-            if (distSquared > eps)   
-                return false;
+            if (distSquared > eps) {
+
+                // by recording the result and returning immediately
+                *(map.isCPTP) = false;
+                return *(map.isCPTP);
+            }
         }
     }
-    
-    return true;
+
+    // always true by this point
+    return *(map.isCPTP);
 }
 
 // T can be qcomp*** or vector<vector<vector<qcomp>>>

@@ -1007,7 +1007,7 @@ qcomp accel_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<in
 }
 
 
-qcomp accel_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+qcomp accel_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool useRealPow) {
 
      // qureg and matr are identically distributed (caller may have spoofed)...
     assert_quregAndFullStateDiagMatrAreBothOrNeitherDistrib(qureg, matr);
@@ -1016,9 +1016,11 @@ qcomp accel_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMa
     bool quregGPU = qureg.isGpuAccelerated;
     bool matrGPU = matr.isGpuAccelerated;
 
+    // disable useRealPow when exponent==1 which never invokes pow()
     bool hasPower = exponent != qcomp(1, 0);
-    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_BOOL( cpu_statevec_calcExpecFullStateDiagMatr_sub, hasPower );
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_BOOL( gpu_statevec_calcExpecFullStateDiagMatr_sub, hasPower );
+    useRealPow = useRealPow && hasPower; 
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( cpu_statevec_calcExpecFullStateDiagMatr_sub, hasPower, useRealPow );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( gpu_statevec_calcExpecFullStateDiagMatr_sub, hasPower, useRealPow );
 
     // when both are GPU-accelerated, we trivially use the GPU backend
     if (quregGPU && matrGPU)
@@ -1038,8 +1040,7 @@ qcomp accel_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMa
     return cpuFunc(qureg, matr, exponent);
 }
 
-
-qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool useRealPow) {
 
      // qureg and matr are identically distributed (caller may have spoofed)...
     assert_quregAndFullStateDiagMatrAreBothOrNeitherDistrib(qureg, matr);
@@ -1048,9 +1049,11 @@ qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMa
     bool quregGPU = qureg.isGpuAccelerated;
     bool matrGPU = matr.isGpuAccelerated;
 
+    // disable useRealPow when exponent==1 which never invokes pow()
     bool hasPower = exponent != qcomp(1, 0);
-    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_BOOL( cpu_densmatr_calcExpecFullStateDiagMatr_sub, hasPower );
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_BOOL( gpu_densmatr_calcExpecFullStateDiagMatr_sub, hasPower );
+    useRealPow = useRealPow && hasPower;
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( cpu_densmatr_calcExpecFullStateDiagMatr_sub, hasPower, useRealPow );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( gpu_densmatr_calcExpecFullStateDiagMatr_sub, hasPower, useRealPow );
 
     // if deployments agree, trivially call the common backend
     if (quregGPU == matrGPU)

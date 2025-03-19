@@ -170,7 +170,7 @@ void validate_matrixIsUnitary(DiagMatr2 matr, const char* caller);
 void validate_matrixIsUnitary(DiagMatr  matr, const char* caller);
 void validate_matrixIsUnitary(FullStateDiagMatr matr, const char* caller);
 
-void validate_exponentIsReal(qcomp exponent, const char* caller); // assesses diag^expo unitarity
+void validate_unitaryExponentIsReal(qcomp exponent, const char* caller);
 
 void validate_matrixIsHermitian(CompMatr1 matr, const char* caller);
 void validate_matrixIsHermitian(CompMatr2 matr, const char* caller);
@@ -180,10 +180,11 @@ void validate_matrixIsHermitian(DiagMatr2 matr, const char* caller);
 void validate_matrixIsHermitian(DiagMatr  matr, const char* caller);
 void validate_matrixIsHermitian(FullStateDiagMatr matr, const char* caller);
 
-void validate_matrixIsHermitian(DiagMatr1 matr, qcomp exponent, const char* caller);
-void validate_matrixIsHermitian(DiagMatr2 matr, qcomp exponent, const char* caller);
-void validate_matrixIsHermitian(DiagMatr  matr, qcomp exponent, const char* caller);
-void validate_matrixIsHermitian(FullStateDiagMatr matr, qcomp exponent, const char* caller);
+void validate_matrixExpIsHermitian(DiagMatr          matr, qreal exponent, const char* caller);
+void validate_matrixExpIsHermitian(FullStateDiagMatr matr, qreal exponent, const char* caller);
+
+void validate_matrixExpIsNonDiverging(DiagMatr          matr, qcomp exponent, const char* caller);
+void validate_matrixExpIsNonDiverging(FullStateDiagMatr matr, qcomp exponent, const char* caller);
 
 void validate_matrixDimMatchesTargets(CompMatr1 matr, int numTargs, const char* caller);
 void validate_matrixDimMatchesTargets(CompMatr2 matr, int numTargs, const char* caller);

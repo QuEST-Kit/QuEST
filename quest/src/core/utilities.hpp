@@ -94,13 +94,12 @@ qcomp util_getElemFromNestedPtrs(void* in, qindex* inds, int numInds);
 
 
 /*
- * COMPLEX ALGEBRA
+ * SCALAR ALGEBRA
  */
 
-bool util_isStrictlyRealInteger(qcomp num); // presently unused
+bool util_isStrictlyInteger(qreal num);
 
 bool util_isApproxReal(qcomp num, qreal epsilon);
-bool util_isApproxRealInteger(qcomp num, qreal epsilon);
 
 qcomp util_getPowerOfI(size_t exponent);
 
@@ -258,7 +257,7 @@ void util_setConj(DiagMatr matrix);
 
 
 /*
- * MATRIX UNITARITY
+ * MATRIX PROPERTIES
  */
 
 bool util_isUnitary(CompMatr1 matrix, qreal epsilon);
@@ -269,12 +268,6 @@ bool util_isUnitary(DiagMatr2 matrix, qreal epsilon);
 bool util_isUnitary(DiagMatr  matrix, qreal epsilon);
 bool util_isUnitary(FullStateDiagMatr matrix, qreal epsilon);
 
-
-
-/*
- * MATRIX HERMITICITY
- */
-
 bool util_isHermitian(CompMatr1 matrix, qreal epsilon);
 bool util_isHermitian(CompMatr2 matrix, qreal epsilon);
 bool util_isHermitian(CompMatr  matrix, qreal epsilon);
@@ -283,21 +276,20 @@ bool util_isHermitian(DiagMatr2 matrix, qreal epsilon);
 bool util_isHermitian(DiagMatr  matrix, qreal epsilon);
 bool util_isHermitian(FullStateDiagMatr matrix, qreal epsilon);
 
+bool util_isApproxNonZero(DiagMatr1 matrix, qreal epsilon);
+bool util_isApproxNonZero(DiagMatr2 matrix, qreal epsilon);
+bool util_isApproxNonZero(DiagMatr  matrix, qreal epsilon);
+bool util_isApproxNonZero(FullStateDiagMatr matrix, qreal epsilon);
+
+bool util_isStrictlyNonNegative(DiagMatr1 matrix);
+bool util_isStrictlyNonNegative(DiagMatr2 matrix);
+bool util_isStrictlyNonNegative(DiagMatr  matrix);
+bool util_isStrictlyNonNegative(FullStateDiagMatr matrix);
+
 
 
 /*
- * MATRIX NON-NEGATIVITY
- */
-
-bool util_areRealsNonNegative(DiagMatr1 matrix, qreal epsilon);
-bool util_areRealsNonNegative(DiagMatr2 matrix, qreal epsilon);
-bool util_areRealsNonNegative(DiagMatr  matrix, qreal epsilon);
-bool util_areRealsNonNegative(FullStateDiagMatr matrix, qreal epsilon);
-
-
-
-/*
- * PAULI STR SUM HERMITICITY
+ * PAULI STR SUM PROPERTIES
  */
 
 bool util_isHermitian(PauliStrSum sum, qreal epsilon);
@@ -305,7 +297,7 @@ bool util_isHermitian(PauliStrSum sum, qreal epsilon);
 
 
 /*
- * KRAUS MAPS AND SUPEROPERATORS
+ * KRAUS MAP AND SUPEROPERATOR PROPERTIES
  */
 
 bool util_isCPTP(KrausMap map, qreal epsilon);

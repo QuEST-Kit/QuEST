@@ -133,6 +133,7 @@ void assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(int numCtrls, int numCt
 void assert_numTargsMatchesTemplateParam(int numTargs, int templateParam);
 
 void assert_exponentMatchesTemplateParam(qcomp exponent, bool hasPower);
+void assert_exponentMatchesTemplateParam(qcomp exponent, bool hasPower, bool useRealPow);
 
 void assert_mixedQuregIsDensityMatrix(Qureg qureg);
 

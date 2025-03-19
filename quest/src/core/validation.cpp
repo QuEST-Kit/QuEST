@@ -410,11 +410,11 @@ namespace report {
     string MATRIX_NOT_HERMITIAN =
         "The given matrix was not (approximately) Hermitian.";
 
-    string HERMITIAN_DIAG_MATR_EXPONENT_NOT_APPROX_REAL =
-        "The given exponent was not approximately real, such that the given Hermitian matrix raised to the exponent was no longer appoximately Hermitian. Consider using the non-Hermitian variant of this function, or changing the validation epsilon.";
+    string DIAG_MATR_APPROX_ZERO_WHILE_EXPONENT_REAL_AND_NEGATIVE =
+        "The given exponent was (real and) negative while one or more elements of the diagonal matrix had magnitudes near (within epsilon) to zero, which would cause divergences or divison-by-zero errors.";
 
-    string REAL_EXPONENTIATED_HERMITIAN_DIAG_MATR_HAS_APPROX_NEGATIVE_ELEMS =
-        "The given exponent was non-negligibly fractional (beyond distance epsilon to an integer) while the given Hermitian matrix contained non-negligibly negative elements. As such, the matrix raised to the exponent contains non-negligible imaginary components and is no longer Hermitian. Consider using the non-Hermitian variant of this function, or changing the validation epsilon.";
+    string HERMITIAN_DIAG_MATR_NEGATIVE_WHILE_EXPONENT_NOT_INTEGER =
+        "The given exponent was a non-integer while one or more real components of the given Hermitian diagonal matrix were negative. The exponentiated matrix would ergo contain complex elements which violate Hermiticity. This validation is strict and not affected by the validation epsilon since it is necessary to avoid NaN output from a strictly-real pow() function, used for its improved numerical accuracy over complex pow().";
 
 
     string INVALID_MATRIX_CPU_ELEMS_PTR =
@@ -2178,14 +2178,13 @@ void assertMatrixFieldsAreValid(T matr, int expectedNumQb, string badFieldMsg, c
     // no risk that they're wrong (because they're const so users cannot modify them) unless 
     // the struct was unitialised, which we have already validated against
 }
-
-void validate_matrixFields(CompMatr1 matr, const char* caller) { assertMatrixFieldsAreValid(matr, 1,              report::INVALID_COMP_MATR_1_FIELDS, caller); }
-void validate_matrixFields(CompMatr2 matr, const char* caller) { assertMatrixFieldsAreValid(matr, 2,              report::INVALID_COMP_MATR_2_FIELDS, caller); }
-void validate_matrixFields(CompMatr  matr, const char* caller) { assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_COMP_MATR_FIELDS,   caller); }
-void validate_matrixFields(DiagMatr1 matr, const char* caller) { assertMatrixFieldsAreValid(matr, 1,              report::INVALID_DIAG_MATR_1_FIELDS, caller); }
-void validate_matrixFields(DiagMatr2 matr, const char* caller) { assertMatrixFieldsAreValid(matr, 2,              report::INVALID_DIAG_MATR_2_FIELDS, caller); }
-void validate_matrixFields(DiagMatr  matr, const char* caller) { assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_DIAG_MATR_FIELDS,   caller); }
-void validate_matrixFields(FullStateDiagMatr matr, const char* caller) { assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_FULL_STATE_DIAG_MATR_FIELDS, caller); }
+void validate_matrixFields(CompMatr1 m, const char* caller) { assertMatrixFieldsAreValid(m, 1,           report::INVALID_COMP_MATR_1_FIELDS, caller); }
+void validate_matrixFields(CompMatr2 m, const char* caller) { assertMatrixFieldsAreValid(m, 2,           report::INVALID_COMP_MATR_2_FIELDS, caller); }
+void validate_matrixFields(CompMatr  m, const char* caller) { assertMatrixFieldsAreValid(m, m.numQubits, report::INVALID_COMP_MATR_FIELDS,   caller); }
+void validate_matrixFields(DiagMatr1 m, const char* caller) { assertMatrixFieldsAreValid(m, 1,           report::INVALID_DIAG_MATR_1_FIELDS, caller); }
+void validate_matrixFields(DiagMatr2 m, const char* caller) { assertMatrixFieldsAreValid(m, 2,           report::INVALID_DIAG_MATR_2_FIELDS, caller); }
+void validate_matrixFields(DiagMatr  m, const char* caller) { assertMatrixFieldsAreValid(m, m.numQubits, report::INVALID_DIAG_MATR_FIELDS,   caller); }
+void validate_matrixFields(FullStateDiagMatr m, const char* caller) { assertMatrixFieldsAreValid(m, m.numQubits, report::INVALID_FULL_STATE_DIAG_MATR_FIELDS, caller); }
 
 // type T can be CompMatr, DiagMatr or FullStateDiagMatr
 template <class T>
@@ -2198,87 +2197,42 @@ void assertMatrixIsSynced(T matr, string errMsg, const char* caller) {
     // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though
     assertThat(*(matr.wasGpuSynced) == 1, errMsg, caller);
 }
-
-void validate_matrixIsSynced(CompMatr matr, const char* caller) {
-    assertMatrixIsSynced(matr, report::COMP_MATR_NOT_SYNCED_TO_GPU, caller);
-}
-void validate_matrixIsSynced(DiagMatr matr, const char* caller) {
-    assertMatrixIsSynced(matr, report::DIAG_MATR_NOT_SYNCED_TO_GPU, caller);
-}
-void validate_matrixIsSynced(FullStateDiagMatr matr, const char* caller) {
-    assertMatrixIsSynced(matr, report::FULL_STATE_DIAG_MATR_NOT_SYNCED_TO_GPU, caller);
-}
-
-// type T can be CompMatr, DiagMatr, FullStateDiagMatr
-template <class T> 
-void ensureMatrixUnitarityIsKnown(T matr) {
-
-    // do nothing if we already know unitarity
-    if (*(matr.isApproxUnitary) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        return;
-
-    // determine local unitarity, modifying matr.isApproxUnitary. This will
-    // involve MPI communication if matr is a distributed type
-    *(matr.isApproxUnitary) = util_isUnitary(matr, global_validationEpsilon);
-}
+void validate_matrixIsSynced(CompMatr matr, const char* caller) { assertMatrixIsSynced(matr, report::COMP_MATR_NOT_SYNCED_TO_GPU, caller);}
+void validate_matrixIsSynced(DiagMatr matr, const char* caller) { assertMatrixIsSynced(matr, report::DIAG_MATR_NOT_SYNCED_TO_GPU, caller); }
+void validate_matrixIsSynced(FullStateDiagMatr matr, const char* caller) { assertMatrixIsSynced(matr, report::FULL_STATE_DIAG_MATR_NOT_SYNCED_TO_GPU, caller); }
 
 // type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template <class T> 
 void assertMatrixIsUnitary(T matr, const char* caller) {
 
-    // avoid expensive unitarity check (and do not overwrite .isApproxUnitary) if validation is anyway disabled
+    // validate both stack and heap matrices have been correctly initialised
+    validate_matrixFields(matr, caller);
+
+    // validate heap matrices have ever written to their GPU memories (if exists)
+    if constexpr (util_isHeapMatrixType<T>())
+        validate_matrixIsSynced(matr, caller);
+
+    // avoid superfluous expensive unitarity check below (do not overwrite .isApproxUnitary)
     if (isNumericalValidationDisabled())
         return;
 
-    // unitarity is determined differently depending on matrix type
-    bool isUnitary = false;
+    // may overwrite matr.isApproxUnitary of heap matrices, otherwise ignores epsilon
+    assertThat(util_isUnitary(matr, global_validationEpsilon), report::MATRIX_NOT_UNITARY, caller);
+}
+void validate_matrixIsUnitary(CompMatr1 m, const char* caller) { assertMatrixIsUnitary(m, caller); }
+void validate_matrixIsUnitary(CompMatr2 m, const char* caller) { assertMatrixIsUnitary(m, caller); }
+void validate_matrixIsUnitary(CompMatr  m, const char* caller) { assertMatrixIsUnitary(m, caller); }
+void validate_matrixIsUnitary(DiagMatr1 m, const char* caller) { assertMatrixIsUnitary(m, caller); }
+void validate_matrixIsUnitary(DiagMatr2 m, const char* caller) { assertMatrixIsUnitary(m, caller); }
+void validate_matrixIsUnitary(DiagMatr  m, const char* caller) { assertMatrixIsUnitary(m, caller); }
+void validate_matrixIsUnitary(FullStateDiagMatr m, const char* caller) { assertMatrixIsUnitary(m, caller); }
 
-    // fixed-size matrices have their unitarity calculated afresh (since cheap)
-    if constexpr (util_isFixedSizeMatrixType<T>())
-        isUnitary = util_isUnitary(matr, global_validationEpsilon);
+void validate_unitaryExponentIsReal(qcomp exponent, const char* caller) {
 
-    // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
-    else {
-        ensureMatrixUnitarityIsKnown(matr);
-        isUnitary = *(matr.isApproxUnitary);
-    }
-
-    assertThat(isUnitary, report::MATRIX_NOT_UNITARY, caller);
-}
-
-void validate_matrixIsUnitary(CompMatr1 matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    assertMatrixIsUnitary(matr, caller);
-}
-void validate_matrixIsUnitary(CompMatr2 matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    assertMatrixIsUnitary(matr, caller);
-}
-void validate_matrixIsUnitary(CompMatr matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    validate_matrixIsSynced(matr, caller);
-    assertMatrixIsUnitary(matr, caller);
-}
-void validate_matrixIsUnitary(DiagMatr1 matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    assertMatrixIsUnitary(matr, caller);
-}
-void validate_matrixIsUnitary(DiagMatr2 matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    assertMatrixIsUnitary(matr, caller);
-}
-void validate_matrixIsUnitary(DiagMatr matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    validate_matrixIsSynced(matr, caller);
-    assertMatrixIsUnitary(matr, caller);
-}
-void validate_matrixIsUnitary(FullStateDiagMatr matr, const char* caller) {
-    validate_matrixIsSynced(matr, caller);
-    validate_matrixFields(matr, caller);
-    assertMatrixIsUnitary(matr, caller);
-}
-
-void validate_exponentIsReal(qcomp exponent, const char* caller) {
+    // this validation always checks that 'exponent' is only
+    // approximately real, permitting non-zero imaginary
+    // component. Functions which require a strictly real
+    // exponent never call this; they accept 'qreal' exponents.
 
     if (isNumericalValidationDisabled())
         return;
@@ -2287,158 +2241,98 @@ void validate_exponentIsReal(qcomp exponent, const char* caller) {
     assertThat(util_isApproxReal(exponent, global_validationEpsilon), report::UNITARY_DIAG_MATR_EXPONENT_NOT_APPROX_REAL, caller);
 }
 
-// type T can be CompMatr, DiagMatr, FullStateDiagMatr
-template <class T> 
-void ensureMatrHermiticityIsKnown(T matr) {
-
-    // do nothing if we already know hermiticity
-    if (*(matr.isApproxHermitian) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        return;
-
-    // determine local hermiticity, modifying matr.isApproxHermitian
-    *(matr.isApproxHermitian) = util_isHermitian(matr, global_validationEpsilon);
-}
-
 // type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template <class T> 
 void assertMatrixIsHermitian(T matr, const char* caller) {
 
-    // avoid expensive hermiticity check (and do not overwrite .isApproxHermitian) if validation is anyway disabled
+    // validate both stack and heap matrices have been correctly initialised
+    validate_matrixFields(matr, caller);
+
+    // validate heap matrices have ever written to their GPU memories (if exists)
+    if constexpr (util_isHeapMatrixType<T>())
+        validate_matrixIsSynced(matr, caller);
+
+    // avoid superfluous expensive hermiticity check below (do not overwrite  matr.isApproxHermitian)
     if (isNumericalValidationDisabled())
         return;
 
-    // hermiticity is determined differently depending on matrix type
-    bool isApproxHermitian = false;
+    // may overwrite matr.isApproxHermitian of heap matrices, otherwise ignores epsilon
+    assertThat(util_isHermitian(matr, global_validationEpsilon), report::MATRIX_NOT_HERMITIAN, caller);
+}
+void validate_matrixIsHermitian(CompMatr1 m, const char* caller) { assertMatrixIsHermitian(m, caller); }
+void validate_matrixIsHermitian(CompMatr2 m, const char* caller) { assertMatrixIsHermitian(m, caller); }
+void validate_matrixIsHermitian(CompMatr  m, const char* caller) { assertMatrixIsHermitian(m, caller); }
+void validate_matrixIsHermitian(DiagMatr1 m, const char* caller) { assertMatrixIsHermitian(m, caller); }
+void validate_matrixIsHermitian(DiagMatr2 m, const char* caller) { assertMatrixIsHermitian(m, caller); }
+void validate_matrixIsHermitian(DiagMatr  m, const char* caller) { assertMatrixIsHermitian(m, caller); }
+void validate_matrixIsHermitian(FullStateDiagMatr m, const char* caller) { assertMatrixIsHermitian(m, caller); }
 
-    // fixed-size matrices have their hermiticity calculated afresh (since cheap)
-    if constexpr (util_isFixedSizeMatrixType<T>())
-        isApproxHermitian = util_isHermitian(matr, global_validationEpsilon);
-
-    // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
-    else {
-        ensureMatrHermiticityIsKnown(matr);
-        isApproxHermitian = *(matr.isApproxHermitian);
-    }
-
-    assertThat(isApproxHermitian, report::MATRIX_NOT_HERMITIAN, caller);
-}
-
-void validate_matrixIsHermitian(CompMatr1 matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    assertMatrixIsHermitian(matr, caller);
-}
-void validate_matrixIsHermitian(CompMatr2 matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    assertMatrixIsHermitian(matr, caller);
-}
-void validate_matrixIsHermitian(CompMatr matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    validate_matrixIsSynced(matr, caller);
-    assertMatrixIsHermitian(matr, caller);
-}
-void validate_matrixIsHermitian(DiagMatr1 matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    assertMatrixIsHermitian(matr, caller);
-}
-void validate_matrixIsHermitian(DiagMatr2 matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    assertMatrixIsHermitian(matr, caller);
-}
-void validate_matrixIsHermitian(DiagMatr matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    validate_matrixIsSynced(matr, caller);
-    assertMatrixIsHermitian(matr, caller);
-}
-void validate_matrixIsHermitian(FullStateDiagMatr matr, const char* caller) {
-    validate_matrixIsSynced(matr, caller);
-    validate_matrixFields(matr, caller);
-    assertMatrixIsHermitian(matr, caller);
-}
-
-// type T can be DiagMatr or FullStateDiagMatr
+// type T can be DiagMatr, FullStateDiagMatr
 template <class T> 
-void ensureMatrNonNegativityIsKnown(T matr) {
+void assertMatrExpIsNonDiverging(T matr, qcomp exponent, const char* caller) {
 
-    // do nothing if we already know
-    if (*(matr.isStrictlyNonNegative) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        return;
+    validate_matrixFields(matr, caller);
+    validate_matrixIsSynced(matr, caller);
 
-    // determine local non-negativity, modifying matr.isStrictlyNonNegative
-    *(matr.isStrictlyNonNegative) = util_areRealsNonNegative(matr);
-}
-
-// type T can be DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
-template <class T> 
-void assertExponentiatedMatrixIsHermitian(T matr, qcomp exponent, const char* caller) {
-
-    // this function checks that exponent approximately satisfies
-    // the necessary properties for pow(matr,exponent) to be
-    // Hermitian, rather than strictly, because our current imple-
-    // mentation does not leverage strict Hermiticity. This could
-    // change in the future, to leverage the numerically more-
-    // stable pow(qreal,int) overload when exponent is an int.
-
+    // avoid exepensive and epsilon-dependent validation below (do not overwrite matr.isApproxNonZero)
     if (isNumericalValidationDisabled())
         return;
 
-    // also checks matrix fields and isSynced
+    // divergences are only validated when the imaginary component is strictly 
+    // zero, otherwise alternate complex exponentiation is sometimes performed
+    // with a more complicated numerical stability
+    if (std::imag(exponent) != 0)
+        return;
+
+    // when the real exponent is STRICTLY less than zero, it is required that every
+    // matrix element's magnitude is APPROX non-zero, to avoid 1/0 divergences. 
+    // We do this independent of the size of exponent, even despite that exponents
+    // really close to 0 (from below) can "counteract" the blowing up, because
+    // precision is too poor near epsilon for this to be implicitly relied upon.
+    if (std::real(exponent) < 0)
+        assertThat(util_isApproxNonZero(matr, global_validationEpsilon), report::DIAG_MATR_APPROX_ZERO_WHILE_EXPONENT_REAL_AND_NEGATIVE, caller);
+}
+void validate_matrixExpIsNonDiverging(DiagMatr          m, qcomp p, const char* caller) { assertMatrExpIsNonDiverging(m, p, caller); }
+void validate_matrixExpIsNonDiverging(FullStateDiagMatr m, qcomp p, const char* caller) { assertMatrExpIsNonDiverging(m, p, caller); }
+
+// type T can be DiagMatr, FullStateDiagMatr
+template <class T> 
+void assertMatrExpIsHermitian(T matr, qreal exponent, const char* caller) {
+
+    // below validation can invoke communication and expensive data processing,
+    // even when numerical-epsilon is zero, which we avoid when all validation is off.
+    // we always proceed however if merely numerical-validation is disabled (via zero
+    // epsilon) because some checks below are epsilon independent
+    if (!global_isValidationEnabled)
+        return;
+
+    // the calling function will use the std::pow(qreal,qreal) overload, rather than
+    // std::pow(qcomp,qcomp), passing in the real components of matr and the given
+    // exponent. As such, the result must never be complex which instead becomes NaN.
+    // The validation below ergo ensures that pow(a,b) is always real and stable. 
+    // All validations upon 'matr' consult existing properties (like .isHermitian),
+    // computing them fresh and recording them if not already known
+
+    // the matrix itself must be approximately real, since we consult only its reals.
+    // this also validates the matrix fields, and whether GPU-matrices are synced
     validate_matrixIsHermitian(matr, caller);
 
-    // in addition to requiring matrix is Hermitian = real (as above),
-    // we also require matrix^exponent is Hermitian = real. This first
-    // requires that the exponent is real; we only bother checking this
-    // approximately because we will in any case use the pow(qcomp,qcomp)
-    // overload which grows errors even when imag-components are strictly
-    // zero (because pow(a,b)=exp(i b Arg(a)) involes Arg(a)=pi when a<0).
-    // Such errors don't affect the statevector expectation value which
-    // simply drops the imag-component before return (because the imag
-    // error never sabotages the real component), but alas the errors do
-    // sabotage density matrix expectation values
-    bool isApproxReal = util_isApproxReal(exponent, global_validationEpsilon);
-    assertThat(isApproxReal, report::HERMITIAN_DIAG_MATR_EXPONENT_NOT_APPROX_REAL, caller);
+    // when the exponent is not STRICTLY an integer, it is required that every matrix
+    // elem's real component is STRICTLY positive, so that real-pow doesn't create NaNs.
+    // this can overwrite matr.isStrictlyNonNegative even when validation epsilon=0
+    if (!util_isStrictlyInteger(exponent))
+        assertThat(util_isStrictlyNonNegative(matr), report::HERMITIAN_DIAG_MATR_NEGATIVE_WHILE_EXPONENT_NOT_INTEGER, caller);
 
-    // it also requires that either the exponent is approx a (signed) integer...
-    if (util_isApproxRealInteger(exponent, global_validationEpsilon))
-        return;
+    // divergences don't break Hermiticity per se, but do sabotage numerical accuracy.
+    validate_matrixExpIsNonDiverging(matr, qcomp(exponent,0), caller);
 
-    // else that the matrix is approx non-negative so that the surds 
-    // due to fractional real exponents do not produce complex numbers.
-    // this is determined differently for fixed-size vs dynamic matrices
-    bool isNonNegative = false;
-
-    // fixed-size matrices have their hermiticity calculated afresh (since cheap)
-    if constexpr (util_isFixedSizeMatrixType<T>())
-        isNonNegative = util_areRealsNonNegative(matr, global_validationEpsilon);
-
-    // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
-    else {
-        ensureMatrNonNegativityIsKnown(matr);
-        isNonNegative = *(matr.isStrictlyNonNegative);
-    }
-
-    assertThat(isNonNegative, report::REAL_EXPONENTIATED_HERMITIAN_DIAG_MATR_HAS_APPROX_NEGATIVE_ELEMS, caller);
+    // the final plausible scenario we have not checked is when both the matrix elem
+    // and exponent are strictly positive but very close to zero. In that case, the
+    // result tends to 1 so does not vanish or blow up unexpectedly. All fine!
 }
 
-void validate_matrixIsHermitian(DiagMatr1 matr, qcomp exponent, const char* caller) {
-
-    // also checks fields and isSynced
-    assertExponentiatedMatrixIsHermitian(matr, exponent, caller);
-}
-void validate_matrixIsHermitian(DiagMatr2 matr, qcomp exponent, const char* caller) {
-
-    // also checks fields and isSynced
-    assertExponentiatedMatrixIsHermitian(matr, exponent, caller);
-}
-void validate_matrixIsHermitian(DiagMatr matr, qcomp exponent, const char* caller) {
-
-    // also checks fields and isSynced
-    assertExponentiatedMatrixIsHermitian(matr, exponent, caller);
-}
-void validate_matrixIsHermitian(FullStateDiagMatr matr, qcomp exponent, const char* caller) {
-
-    // also checks fields and isSynced
-    assertExponentiatedMatrixIsHermitian(matr, exponent, caller);
-}
+void validate_matrixExpIsHermitian(DiagMatr          m, qreal p, const char* caller) { assertMatrExpIsHermitian(m, p, caller); }
+void validate_matrixExpIsHermitian(FullStateDiagMatr m, qreal p, const char* caller) { assertMatrExpIsHermitian(m, p, caller); }
 
 template <class T>
 void assertMatrixDimMatchesTargs(T matr, int numTargs, const char* caller) {

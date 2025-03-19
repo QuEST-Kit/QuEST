@@ -124,6 +124,8 @@ void TEST_ON_CACHED_QUREG_AND_MATRIX(quregCache quregs, matrixCache matrices, au
     for (auto& [labelA, qureg]: quregs) {
         for (auto& [labelB, matrix]: matrices) {
 
+            // all combinations are legal; none are skipped!
+
             DYNAMIC_SECTION( labelA + LABEL_DELIMITER + labelB ) {
 
                 // set API matrix to pre-initialised reference matrix
@@ -607,18 +609,27 @@ TEST_CASE( "calcExpecFullStateDiagMatrPower", TEST_CATEGORY LABEL_MIXED_DEPLOY_T
 
         qmatrix refMatr = getRandomDiagonalHermitian(getNumCachedQubits());
 
-        // to be Hermitian (as validated), exponent must always be real;
-        // but integer and non-integer exponents still have different effects
+        // integer and non-integer exponents have different requirements
         bool isIntegerExp = GENERATE( true, false );
-        qcomp exponent = (isIntegerExp)?
+        qreal exponent = (isIntegerExp)?
             getRandomInt(-3, 3):
             getRandomReal(-3, 3);
         
         // when exponent is non-integer, the matrix cannot contain negative 
-        // numbers which otherwise become complex, making the matric
+        // numbers which otherwise become complex, making the matrix non-
+        // Hermitian and triggering validation
         if (!isIntegerExp)
             for (size_t i=0; i<refMatr.size(); i++)
-                refMatr[i][i] = std::abs(refMatr[i][i]);
+                refMatr[i][i] = std::abs(std::real(refMatr[i][i]));
+
+        // when exponent is negative, the matrix cannot contain near-zero
+        // magnitude numbers which create divergences and trigger validation.
+        // Negative exponents are particularly unstable (they can produce 
+        // very large matrix elements which ergo have less post-decimal
+        // precision and sum catastrophically), so we scale up matrix.
+        if (exponent < 0)
+            for (size_t i=0; i<refMatr.size(); i++)
+                refMatr[i][i] *= 100;
 
         auto apiFunc = [&](Qureg qureg, FullStateDiagMatr matr) { 
             return calcExpecFullStateDiagMatrPower(qureg, matr, exponent);
@@ -630,7 +641,7 @@ TEST_CASE( "calcExpecFullStateDiagMatrPower", TEST_CATEGORY LABEL_MIXED_DEPLOY_T
         SECTION( LABEL_STATEVEC ) {
 
             auto refFunc = [&] (qvector state, qmatrix matr) { 
-                matr = getPowerOfDiagonalMatrix(matr, exponent);
+                matr = getPowerOfDiagonalMatrix(matr, qcomp(exponent,0));
                 return getReferenceExpectationValue(state, matr);
             };
 
@@ -640,7 +651,7 @@ TEST_CASE( "calcExpecFullStateDiagMatrPower", TEST_CATEGORY LABEL_MIXED_DEPLOY_T
         SECTION( LABEL_DENSMATR ) {
 
             auto refFunc = [&] (qmatrix state, qmatrix matr) { 
-                matr = getPowerOfDiagonalMatrix(matr, exponent);
+                matr = getPowerOfDiagonalMatrix(matr, qcomp(exponent,0));
                 return getReferenceExpectationValue(state, matr);
             };
 
