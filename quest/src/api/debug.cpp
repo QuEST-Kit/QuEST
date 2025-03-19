@@ -73,6 +73,13 @@ void setValidationOn() {
 void setValidationOff() {
     validate_envIsInit(__func__);
 
+    // disables all validation and computation
+    // of matrix properties like isUnitary. Also
+    // means pre-computed matrix properties are
+    // ignored. It does not however erase pre-
+    // computed properties; subsequently restoring 
+    // validation will not necessitate re-eval.
+
     validateconfig_disable();
 }
 
@@ -81,11 +88,25 @@ void setValidationEpsilon(qreal eps) {
     validate_envIsInit(__func__);
     validate_newEpsilonValue(eps, __func__);
 
+    // note this does not automatically invoke 
+    // re-assessment of matrix fields such as
+    // .isUnitary; they will keep their old
+    // values (if set) with respect to the
+    // old epsilon. To update them, users must
+    // explicitly call a sync() function.
+
     validateconfig_setEpsilon(eps);
 }
 
 void setValidationEpsilonToDefault() {
     validate_envIsInit(__func__);
+
+    // note this does not automatically invoke 
+    // re-assessment of matrix fields such as
+    // .isUnitary; they will keep their old
+    // values (if set) with respect to the
+    // old epsilon. To update them, users must
+    // explicitly call a sync() function.
 
     validateconfig_setEpsilonToDefault();
 }
