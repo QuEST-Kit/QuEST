@@ -62,6 +62,40 @@ void TEST_ON_CACHED_QUREGS(auto apiFunc, vector<int> targs, vector<qmatrix> krau
 }
 
 
+void TEST_ON_MIXED_CACHED_QUREGS(auto altQuregCache, auto apiFunc, auto refAlt, auto refFunc) {
+
+    // test all combinations of deployments (where cacheA != cacheB)
+
+    for (auto& [labelA, quregOut]: getCachedDensmatrs()) {
+        for (auto& [labelB, quregAlt]: altQuregCache) {
+
+            // skip illegal (local densitymatrix, distributed statevector) combo
+            if (!quregOut.isDistributed && quregAlt.isDistributed && !quregAlt.isDensityMatrix)
+                continue;
+
+            // skip illegal (local densitymatrix, distributed densitymatrix) combo
+            if (quregAlt.isDensityMatrix && quregOut.isDistributed != quregAlt.isDistributed)
+                continue;
+
+            DYNAMIC_SECTION( labelA + LABEL_DELIMITER + labelB ) {
+
+                // randomise the output density matrix (both qureg and reference)
+                qmatrix refOut = getRandomDensityMatrix(getNumCachedQubits());
+                setQuregToReference(quregOut, refOut);
+
+                // randomise the alternate state (may be statevector or density matrix)
+                setToRandomState(refAlt);
+                setQuregToReference(quregAlt, refAlt);
+
+                apiFunc(quregOut, quregAlt);
+                refFunc(refOut, refAlt);
+                REQUIRE_AGREE( quregOut, refOut );
+            }
+        }
+    }
+}
+
+
 
 /** 
  * TESTS
@@ -84,10 +118,10 @@ TEST_CASE( "mixDephasing", TEST_CATEGORY ) {
             std::sqrt(prob)   * getPauliMatrix(3)
         };
 
-        auto func = [&](Qureg qureg) { mixDephasing(qureg, targ, prob); };
+        auto apiFunc = [&](Qureg qureg) { mixDephasing(qureg, targ, prob); };
 
         CAPTURE( targ, prob );
-        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(func, {targ}, kraus); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(apiFunc, {targ}, kraus); }
     }
 
     /// @todo input validation
@@ -109,10 +143,10 @@ TEST_CASE( "mixDepolarising", TEST_CATEGORY ) {
             std::sqrt(prob/3) * getPauliMatrix(3),
         };
 
-        auto func = [&](Qureg qureg) { mixDepolarising(qureg, targ, prob); };
+        auto apiFunc = [&](Qureg qureg) { mixDepolarising(qureg, targ, prob); };
 
         CAPTURE( targ, prob );
-        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(func, {targ}, kraus); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(apiFunc, {targ}, kraus); }
     }
 
     /// @todo input validation
@@ -132,10 +166,10 @@ TEST_CASE( "mixDamping", TEST_CATEGORY ) {
             {{0,std::sqrt(prob)}, {0,0}}
         };
 
-        auto func = [&](Qureg qureg) { mixDamping(qureg, targ, prob); };
+        auto apiFunc = [&](Qureg qureg) { mixDamping(qureg, targ, prob); };
 
         CAPTURE( targ, prob );
-        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(func, {targ}, kraus); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(apiFunc, {targ}, kraus); }
     }
 
     /// @todo input validation
@@ -176,10 +210,10 @@ TEST_CASE( "mixPaulis", TEST_CATEGORY ) {
             std::sqrt(pZ) * getPauliMatrix(3)
         };
 
-        auto func = [&](Qureg qureg) { mixPaulis(qureg, targ, pX, pY, pZ); };
+        auto apiFunc = [&](Qureg qureg) { mixPaulis(qureg, targ, pX, pY, pZ); };
 
         CAPTURE( targ, pX, pY, pZ );
-        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(func, {targ}, kraus); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(apiFunc, {targ}, kraus); }
     }
 
     /// @todo input validation
@@ -203,10 +237,10 @@ TEST_CASE( "mixTwoQubitDephasing", TEST_CATEGORY ) {
             std::sqrt(prob/3) * getKroneckerProduct(z, z)
         };
 
-        auto func = [&](Qureg qureg) { mixTwoQubitDephasing(qureg, targs[0], targs[1], prob); };
+        auto apiFunc = [&](Qureg qureg) { mixTwoQubitDephasing(qureg, targs[0], targs[1], prob); };
 
         CAPTURE( targs, prob );
-        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(func, targs, kraus); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(apiFunc, targs, kraus); }
     }
 
     /// @todo input validation
@@ -226,10 +260,10 @@ TEST_CASE( "mixTwoQubitDepolarising", TEST_CATEGORY ) {
                 kraus.push_back( std::sqrt(prob/15) * 
                     getKroneckerProduct(getPauliMatrix(a), getPauliMatrix(b)));
 
-        auto func = [&](Qureg qureg) { mixTwoQubitDepolarising(qureg, targs[0], targs[1], prob); };
+        auto apiFunc = [&](Qureg qureg) { mixTwoQubitDepolarising(qureg, targs[0], targs[1], prob); };
 
         CAPTURE( targs, prob );
-        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(func, targs, kraus); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(apiFunc, targs, kraus); }
     }
 
     /// @todo input validation
@@ -252,10 +286,10 @@ TEST_CASE( "mixKrausMap", TEST_CATEGORY ) {
 
         KrausMap map = createKrausMap(numTargs, numKraus);
         setKrausMap(map, matrices);
-        auto func = [&](Qureg qureg) { mixKrausMap(qureg, targs.data(), numTargs, map); };
+        auto apiFunc = [&](Qureg qureg) { mixKrausMap(qureg, targs.data(), numTargs, map); };
 
         CAPTURE( maxNumTargs, targs, numKraus );
-        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(func, targs, matrices); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(apiFunc, targs, matrices); }
 
         destroyKrausMap(map);
     }
@@ -279,10 +313,10 @@ TEST_CASE( "mixSuperOp", TEST_CATEGORY ) {
 
         SuperOp superOp = createSuperOp(numTargs);
         setSuperOp(superOp, getSuperOperator(matrices));
-        auto func = [&](Qureg qureg) { mixSuperOp(qureg, targs.data(), numTargs, superOp); };
+        auto apiFunc = [&](Qureg qureg) { mixSuperOp(qureg, targs.data(), numTargs, superOp); };
 
         CAPTURE( targs );
-        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(func, targs, matrices); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(apiFunc, targs, matrices); }
 
         destroySuperOp(superOp);
     }
@@ -291,16 +325,30 @@ TEST_CASE( "mixSuperOp", TEST_CATEGORY ) {
 }
 
 
+TEST_CASE( "mixQureg", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qreal prob = getRandomReal(0, 1);
+        auto apiFunc = [&](Qureg a, Qureg b) { mixQureg(a, b, prob); };
+
+        SECTION( LABEL_DENSMATR LABEL_DELIMITER LABEL_STATEVEC ) { 
+
+            auto refFunc = [&](qmatrix& a, qvector b) { a = (1-prob)*a + prob*getOuterProduct(b,b); };
+            
+            TEST_ON_MIXED_CACHED_QUREGS( getAltCachedStatevecs(), apiFunc, getRefStatevec(), refFunc); 
+        }
+
+        SECTION( LABEL_DENSMATR LABEL_DELIMITER LABEL_DENSMATR ) {
+
+            auto refFunc = [&](qmatrix& a, qmatrix b) { a = (1-prob)*a + prob*b; };
+
+            TEST_ON_MIXED_CACHED_QUREGS( getAltCachedDensmatrs(), apiFunc, getRefDensmatr(), refFunc); 
+        }
+    }
+
+    /// @todo input validation
+}
+
+
 /** @} (end defgroup) */
-
-
-
-/**
- * @todo
- * UNTESTED FUNCTIONS
- */
-
-// these require we deploy the Quregs differently
-// to thoroughly test all QuEST control flows
-
-void mixQureg(Qureg qureg, Qureg other, qreal prob);

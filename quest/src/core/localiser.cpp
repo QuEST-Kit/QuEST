@@ -1412,7 +1412,7 @@ void localiser_densmatr_mixQureg(qreal outProb, Qureg out, qreal inProb, Qureg i
     assert_localiserGivenDensMatr(out);
 
     (in.isDensityMatrix)?
-        accel_densmatr_mixQureg_subA(outProb, out, inProb, in): // trivial
+        accel_densmatr_mixQureg_subA(outProb, out, inProb, in):
         mixDensityMatrixWithStatevector(outProb, out, inProb, in);
 }
 

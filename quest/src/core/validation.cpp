@@ -3644,7 +3644,7 @@ void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller
 
     // the statevector can only be distributed if the density matrix is (because there is otherwise no buffer to receive broadcast)
     if (!quregOut.isDistributed)
-        assertThat(!quregOut.isDistributed, report::MIXED_DENSITY_MATRIX_LOCAL_BUT_STATEVEC_DISTRIBUTED, caller);
+        assertThat(!quregIn.isDistributed, report::MIXED_DENSITY_MATRIX_LOCAL_BUT_STATEVEC_DISTRIBUTED, caller);
 }
 
 void validate_quregsCanBeSuperposed(Qureg qureg1, Qureg qureg2, Qureg qureg3, const char* caller) {
