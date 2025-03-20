@@ -518,6 +518,17 @@ void assertHeapObjectGpuMemIsAllocated(T obj) {
 }
 
 
+void gpu_copyArray(qcomp* dest, qcomp* src, qindex dim) {
+#if COMPILE_CUDA
+
+    CUDA_CHECK( cudaMemcpy(dest, src, dim * sizeof(qcomp), cudaMemcpyDeviceToDevice) );
+
+#else
+    error_gpuCopyButGpuNotCompiled();
+#endif
+}
+
+
 void gpu_copyCpuToGpu(qcomp* cpuArr, qcomp* gpuArr, qindex numElems) {
     copyArrayIfGpuCompiled(cpuArr, gpuArr, numElems, TO_DEVICE);
 }

@@ -325,12 +325,16 @@ TEST_CASE( "mixSuperOp", TEST_CATEGORY ) {
 }
 
 
-TEST_CASE( "mixQureg", TEST_CATEGORY ) {
+TEST_CASE( "mixQureg", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
         qreal prob = getRandomReal(0, 1);
         auto apiFunc = [&](Qureg a, Qureg b) { mixQureg(a, b, prob); };
+
+        CAPTURE( prob );
+        
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
 
         SECTION( LABEL_DENSMATR LABEL_DELIMITER LABEL_STATEVEC ) { 
 

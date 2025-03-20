@@ -467,8 +467,16 @@ auto getRandomRemainingArgs(vector<int> targs) {
     }
 
     if constexpr (Args == diagpower) {
-        auto matrix = getRandomApiMatrix<Targs,Args>(targs.size()); // allocates heap mem
+        DiagMatr matrix = getRandomApiMatrix<Targs,Args>(targs.size()); // allocates heap mem
         qcomp exponent = qcomp(getRandomReal(-3, 3), 0); // real for unitarity
+
+        // avoid divergences
+        if (std::real(exponent) < 0) {
+            for (size_t i=0; i<matrix.numElems; i++)
+                matrix.cpuElems[i] *= 100;
+            syncDiagMatr(matrix);
+        }
+
         return tuple{ matrix, exponent };
     }
 
@@ -1200,7 +1208,7 @@ TEST_CASE( "multiplyFullStateDiagMatr", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
         qmatrix refMatr = getRandomDiagonalMatrix(getPow2(numQubits));
         auto apiFunc = multiplyFullStateDiagMatr;
 
-        GENERATE( range(0,10) );
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
 
         SECTION( LABEL_STATEVEC ) {
 
@@ -1236,8 +1244,9 @@ TEST_CASE( "multiplyFullStateDiagMatrPower", TEST_CATEGORY LABEL_MIXED_DEPLOY_TA
             return multiplyFullStateDiagMatrPower(qureg, matr, exponent);
         };
 
-        GENERATE( range(0,10) );
         CAPTURE( exponent );
+        
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
 
         SECTION( LABEL_STATEVEC ) {
 
@@ -1275,7 +1284,7 @@ TEST_CASE( "applyFullStateDiagMatr", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
         qmatrix refMatr = getRandomDiagonalUnitary(numQubits);
         auto apiFunc = applyFullStateDiagMatr;
 
-        GENERATE( range(0,10) );
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
 
         SECTION( LABEL_STATEVEC ) {
 
@@ -1317,8 +1326,9 @@ TEST_CASE( "applyFullStateDiagMatrPower", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG )
             return applyFullStateDiagMatrPower(qureg, matr, exponent);
         };
 
-        GENERATE( range(0,10) );
         CAPTURE( exponent );
+
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
 
         if (!testRealExp)
             setValidationEpsilon(0);

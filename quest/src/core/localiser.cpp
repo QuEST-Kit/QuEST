@@ -1820,6 +1820,7 @@ qreal localiser_statevec_calcTotalProb(Qureg qureg) {
     // this routine for calcHilbertSchmidtDistance
 
     qreal prob = accel_statevec_calcTotalProb_sub(qureg);
+
     if (qureg.isDistributed)
         comm_reduceReal(&prob);
 
@@ -1831,6 +1832,7 @@ qreal localiser_densmatr_calcTotalProb(Qureg qureg) {
     assert_localiserGivenDensMatr(qureg);
 
     qreal prob = accel_densmatr_calcTotalProb_sub(qureg);
+    
     if (qureg.isDistributed)
         comm_reduceReal(&prob);
 
@@ -2217,15 +2219,15 @@ qcomp localiser_densmatr_calcFidelityWithPureState(Qureg rho, Qureg psi, bool co
     bool psiDist = psi.isDistributed;
 
     // when psi is duplicated on every node, local eval is trivial
-    if (!psiDist)
+    if (!psiDist) {
         fid = accel_densmatr_calcFidelityWithPureState_sub(rho, psi, conj);
 
     // psi distributed but rho duplicated is illegal
-    else if (!rhoDist)
+    } else if (!rhoDist) {
         error_calcFidStateVecDistribWhileDensMatrLocal();
 
     // when both are distributed...
-    else {
+    } else {
         // we broadcast psi to every node's rho comm buffer...
         comm_combineAmpsIntoBuffer(rho, psi);
 
@@ -2250,12 +2252,12 @@ qreal localiser_densmatr_calcHilbertSchmidtDistance(Qureg quregA, Qureg quregB) 
     qreal dist = 0;
 
     // when distributions match, routine is embarrassingly parallel
-    if (quregA.isDistributed == quregB.isDistributed)
+    if (quregA.isDistributed == quregB.isDistributed) {
         dist = accel_densmatr_calcHilbertSchmidtDistance_sub(quregA, quregB);
 
     // otherwise, we simply spoof a distributed qureg from the local 
     // one, offsetting its amp pointers, modifying copies in defensive design
-    else {
+    } else {
         Qureg copyA = (quregA.isDistributed)? quregA : getSpoofedDistributedBufferlessQuregFromLocalQureg(quregA, quregB);
         Qureg copyB = (quregB.isDistributed)? quregB : getSpoofedDistributedBufferlessQuregFromLocalQureg(quregB, quregA);
         dist = accel_densmatr_calcHilbertSchmidtDistance_sub(copyA, copyB);
