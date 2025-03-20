@@ -593,15 +593,24 @@ bool getWhetherNonZero(qcomp* diags, qindex dim, qreal eps) {
 
     for (qindex i=0; i<dim; i++) {
 
-        // check each complex element has non-zero abs 
+        // check each complex element has non-zero abs
         if (isApprox(std::abs(diags[i]), 0, eps))
             return false;
 
-        // additionally check that the real-component alone
-        // is non-zero, since calc-expec functions which assume
-        // Hermiticity only consult the real component
-        if (isApprox(std::real(diags[i]), 0, eps))
-            return false;
+        // note that calc-expec functions which assume
+        // hermiticity will only consult the real component,
+        // so its magnitude alone should determine divergence.
+        // But alas an elem = eps*i will pass the above validation
+        // yet also be validly Hermitian (imag <= eps), and cause
+        // real(elem)=0 to be accepted within the matrix. This
+        // will cause a divergence or divison-by-zero error when
+        // the matrix is raised to a negative exponent; as this
+        // function was supposed to detect and prevent! Fixing
+        // this thoroughly would necessitate creating another
+        // matrix field, separating when .absIsApproxNonZero and
+        // .realIsApproxNonZero. But this is revolting and we 
+        // simply accept the above strange scenario as a
+        // non-validated dge-case.
     }
 
     return true;

@@ -469,14 +469,6 @@ auto getRandomRemainingArgs(vector<int> targs) {
     if constexpr (Args == diagpower) {
         DiagMatr matrix = getRandomApiMatrix<Targs,Args>(targs.size()); // allocates heap mem
         qcomp exponent = qcomp(getRandomReal(-3, 3), 0); // real for unitarity
-
-        // avoid divergences
-        if (std::real(exponent) < 0) {
-            for (size_t i=0; i<matrix.numElems; i++)
-                matrix.cpuElems[i] *= 100;
-            syncDiagMatr(matrix);
-        }
-
         return tuple{ matrix, exponent };
     }
 
