@@ -139,6 +139,33 @@ void TEST_ON_CACHED_QUREGS(quregCache quregs, auto& reference, auto& function) {
     }
 }
 
+void TEST_ON_CACHED_QUREG_AND_MATRIX(quregCache quregs, matrixCache matrices, auto apiFunc, auto refState, auto refMatr, auto refFunc) {
+
+    for (auto& [labelA, qureg]: quregs) {
+        for (auto& [labelB, matrix]: matrices) {
+
+            // skip illegal (distributed matrix, local qureg) combo
+            if (matrix.isDistributed && ! qureg.isDistributed)
+                continue;
+
+            DYNAMIC_SECTION( labelA + LABEL_DELIMITER + labelB ) {
+
+                // set qureg and reference to debug
+                initDebugState(qureg);
+                setToDebugState(refState);
+
+                // set API matrix to pre-initialised ref matrix
+                setFullStateDiagMatr(matrix, 0, getDiagonals(refMatr));
+
+                // API and reference functions should produce agreeing states
+                apiFunc(qureg, matrix);
+                refFunc(refState, refMatr);
+                REQUIRE_AGREE( qureg, refState );
+            }
+        }
+    }
+}
+
 
 /*
  * simply avoids boilerplate
@@ -1162,6 +1189,167 @@ TEST_CASE( "applyQubitMeasurementAndGetProb", TEST_CATEGORY ) {
 }
 
 
+TEST_CASE( "multiplyFullStateDiagMatr", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
+
+    PREPARE_TEST( numQubits, cachedSV, cachedDM, refSV, refDM );
+
+    auto cachedMatrs = getCachedFullStateDiagMatrs();
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qmatrix refMatr = getRandomDiagonalMatrix(getPow2(numQubits));
+        auto apiFunc = multiplyFullStateDiagMatr;
+
+        GENERATE( range(0,10) );
+
+        SECTION( LABEL_STATEVEC ) {
+
+            auto refFunc = [&] (qvector& state, qmatrix matr) { multiplyReferenceOperator(state, matr); };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( cachedSV, cachedMatrs, apiFunc, refSV, refMatr, refFunc);
+        }
+
+        SECTION( LABEL_DENSMATR ) {
+
+            auto refFunc = [&] (qmatrix& state, qmatrix matr) { multiplyReferenceOperator(state, matr); };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( cachedDM, cachedMatrs, apiFunc, refDM, refMatr, refFunc);
+        }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "multiplyFullStateDiagMatrPower", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
+
+    PREPARE_TEST( numQubits, cachedSV, cachedDM, refSV, refDM );
+
+    auto cachedMatrs = getCachedFullStateDiagMatrs();
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qmatrix refMatr = getRandomDiagonalMatrix(getPow2(numQubits));
+        qcomp exponent = getRandomComplex();
+
+        auto apiFunc = [&](Qureg qureg, FullStateDiagMatr matr) { 
+            return multiplyFullStateDiagMatrPower(qureg, matr, exponent);
+        };
+
+        GENERATE( range(0,10) );
+        CAPTURE( exponent );
+
+        SECTION( LABEL_STATEVEC ) {
+
+            auto refFunc = [&] (qvector& state, qmatrix matr) { 
+                matr = getPowerOfDiagonalMatrix(matr, exponent);
+                multiplyReferenceOperator(state, matr);
+            };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( cachedSV, cachedMatrs, apiFunc, refSV, refMatr, refFunc);
+        }
+
+        SECTION( LABEL_DENSMATR ) {
+
+            auto refFunc = [&] (qmatrix& state, qmatrix matr) { 
+                matr = getPowerOfDiagonalMatrix(matr, exponent);
+                multiplyReferenceOperator(state, matr);
+            };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( cachedDM, cachedMatrs, apiFunc, refDM, refMatr, refFunc);
+        }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "applyFullStateDiagMatr", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
+
+    PREPARE_TEST( numQubits, cachedSV, cachedDM, refSV, refDM );
+
+    auto cachedMatrs = getCachedFullStateDiagMatrs();
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qmatrix refMatr = getRandomDiagonalUnitary(numQubits);
+        auto apiFunc = applyFullStateDiagMatr;
+
+        GENERATE( range(0,10) );
+
+        SECTION( LABEL_STATEVEC ) {
+
+            auto refFunc = [&] (qvector& state, qmatrix matr) { applyReferenceOperator(state, matr); };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( cachedSV, cachedMatrs, apiFunc, refSV, refMatr, refFunc);
+        }
+
+        SECTION( LABEL_DENSMATR ) {
+
+            auto refFunc = [&] (qmatrix& state, qmatrix matr) { applyReferenceOperator(state, matr); };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( cachedDM, cachedMatrs, apiFunc, refDM, refMatr, refFunc);
+        }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "applyFullStateDiagMatrPower", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
+
+    PREPARE_TEST( numQubits, cachedSV, cachedDM, refSV, refDM );
+
+    auto cachedMatrs = getCachedFullStateDiagMatrs();
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qmatrix refMatr = getRandomDiagonalUnitary(numQubits);
+
+        // supplying a complex exponent requires disabling
+        // numerical validation to relax unitarity
+        bool testRealExp = GENERATE( true, false );
+        qcomp exponent = (testRealExp)?
+            qcomp(getRandomReal(-2, 2), 0):
+            getRandomComplex();
+
+        auto apiFunc = [&](Qureg qureg, FullStateDiagMatr matr) { 
+            return applyFullStateDiagMatrPower(qureg, matr, exponent);
+        };
+
+        GENERATE( range(0,10) );
+        CAPTURE( exponent );
+
+        if (!testRealExp)
+            setValidationEpsilon(0);
+
+        SECTION( LABEL_STATEVEC ) {
+
+            auto refFunc = [&] (qvector& state, qmatrix matr) { 
+                matr = getPowerOfDiagonalMatrix(matr, exponent);
+                applyReferenceOperator(state, matr);
+            };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( cachedSV, cachedMatrs, apiFunc, refSV, refMatr, refFunc);
+        }
+
+        SECTION( LABEL_DENSMATR ) {
+
+            auto refFunc = [&] (qmatrix& state, qmatrix matr) { 
+                matr = getPowerOfDiagonalMatrix(matr, exponent);
+                applyReferenceOperator(state, matr);
+            };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( cachedDM, cachedMatrs, apiFunc, refDM, refMatr, refFunc);
+        }
+
+        setValidationEpsilonToDefault();
+    }
+
+    /// @todo input validation
+}
+
+
 /** @} (end defgroup) */
 
 
@@ -1175,10 +1363,6 @@ void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle
 
 // these require we deploy input objects (Qureg,FullStateDiagMatr) differently
 // (as is respectively permitted) to thoroughly test all QuEST control flows
-
+ 
 void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
-
-void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
-void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
-void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
-void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
+ 

@@ -166,6 +166,20 @@ void applyReferenceOperator(qmatrix& state, qmatrix matrix) {
     state = matrix * state * getConjugateTranspose(matrix);
 }
 
+void multiplyReferenceOperator(qvector& state, qmatrix matrix) {
+    DEMAND( state.size() == matrix.size() );
+
+    // for statevectors, multiplying is the same as applying
+    applyReferenceOperator(state, matrix);
+}
+
+void multiplyReferenceOperator(qmatrix& state, qmatrix matrix) {
+    DEMAND( state.size() == matrix.size() );
+
+    // we left-multiply upon density matrices only
+    state = matrix * state;
+}
+
 
 // overloads with ctrls, states and targs (given sub-operator)
 
@@ -189,7 +203,7 @@ void multiplyReferenceOperator(qvector& state, vector<int> ctrls, vector<int> ct
 void multiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qmatrix matrix) {
     
     qmatrix left = getFullStateOperator(ctrls, ctrlStates, targs, matrix, getLog2(state.size()));
-    state = left * state;
+    multiplyReferenceOperator(state, left);
 }
 
 
