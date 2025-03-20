@@ -32,6 +32,7 @@ int getRandomInt(int min, int maxExcl);
 qreal getRandomReal(qreal min, qreal max);
 qreal getRandomPhase();
 qcomp getRandomComplex();
+qcomp getRandomUnitComplex();
 
 listpair getRandomFixedNumCtrlsTargs(int numQubits, int numCtrls, int numTargs);
 listtrio getRandomVariNumCtrlsStatesTargs(int numQubits, int minNumTargs, int maxNumTargsIncl);

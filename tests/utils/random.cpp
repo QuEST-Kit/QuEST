@@ -89,6 +89,11 @@ qcomp getRandomComplex() {
 }
 
 
+qcomp getRandomUnitComplex() {
+    return std::exp(1_i * getRandomPhase());
+}
+
+
 
 /*
  * LIST
@@ -356,7 +361,7 @@ qmatrix getRandomDiagonalUnitary(int numQb) {
 
     // unitary diagonals have unit complex scalars
     for (size_t i=0; i<matr.size(); i++)
-        matr[i][i] = std::exp(getRandomPhase() * 1_i);
+        matr[i][i] = getRandomUnitComplex();
 
     return matr;
 }

@@ -409,10 +409,9 @@ TEST_CASE( "calcInnerProduct", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
 
         qvector refSV = getRefStatevec();
         qmatrix refDM = getRefDensmatr();
+        auto apiFunc = calcInnerProduct;
 
-        GENERATE( range(0,10) );
-
-        auto apiFunc = [&](Qureg a, Qureg b) { return calcInnerProduct(a,b); };
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
 
         SECTION( LABEL_STATEVEC LABEL_DELIMITER LABEL_STATEVEC ) {
 
@@ -459,10 +458,9 @@ TEST_CASE( "calcFidelity", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
 
         qvector refSV = getRefStatevec();
         qmatrix refDM = getRefDensmatr();
+        auto apiFunc = calcFidelity;
 
-        GENERATE( range(0,10) );
-
-        auto apiFunc = [&](Qureg a, Qureg b) { return calcFidelity(a,b); };
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
 
         SECTION( LABEL_STATEVEC LABEL_DELIMITER LABEL_STATEVEC ) {
 
@@ -502,10 +500,9 @@ TEST_CASE( "calcDistance", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
 
         qvector refSV = getRefStatevec();
         qmatrix refDM = getRefDensmatr();
+        auto apiFunc = calcDistance;
 
-        GENERATE( range(0,10) );
-
-        auto apiFunc = [&](Qureg a, Qureg b) { return calcDistance(a,b); };
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
 
         SECTION( LABEL_STATEVEC LABEL_DELIMITER LABEL_STATEVEC ) {
 
@@ -552,7 +549,7 @@ TEST_CASE( "calcExpecFullStateDiagMatr", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) 
         qmatrix refMatr = getRandomDiagonalHermitian(getNumCachedQubits());
         auto apiFunc = calcExpecFullStateDiagMatr;
 
-        GENERATE( range(0,10) );
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
 
         SECTION( LABEL_STATEVEC ) {
 
@@ -581,7 +578,7 @@ TEST_CASE( "calcExpecNonHermitianFullStateDiagMatr", TEST_CATEGORY LABEL_MIXED_D
         qmatrix refMatr = getRandomDiagonalMatrix(getPow2(getNumCachedQubits()));
         auto apiFunc = calcExpecNonHermitianFullStateDiagMatr;
 
-        GENERATE( range(0,10) );
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
 
         SECTION( LABEL_STATEVEC ) {
 
@@ -635,8 +632,9 @@ TEST_CASE( "calcExpecFullStateDiagMatrPower", TEST_CATEGORY LABEL_MIXED_DEPLOY_T
             return calcExpecFullStateDiagMatrPower(qureg, matr, exponent);
         };
 
-        GENERATE( range(0,10) );
         CAPTURE( exponent );
+
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
 
         SECTION( LABEL_STATEVEC ) {
 
@@ -675,8 +673,9 @@ TEST_CASE( "calcExpecNonHermitianFullStateDiagMatrPower", TEST_CATEGORY LABEL_MI
             return calcExpecNonHermitianFullStateDiagMatrPower(qureg, matr, exponent);
         };
 
-        GENERATE( range(0,10) );
         CAPTURE( exponent );
+
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
 
         SECTION( LABEL_STATEVEC ) {
 

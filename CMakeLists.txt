@@ -106,7 +106,7 @@ option(
   ON
 )
 
-string(CONCAT DESCRIPTON_OF_TEST_MAX_NUM_QUBIT_PERMUTATIONS  # for multiline option
+string(CONCAT DESCRIPTON_OF_TEST_MAX_NUM_QUBIT_PERMUTATIONS  # for multiline description
   "The maximum number of control and target qubit permutations under which to unit test each function. "
   "Set to 0 (default) to test all permutations, or to a positive integer (e.g. 50) to accelerate the unit tests. "
   "This is used to accelerate the v4 unit tests, and has no effect when ENABLE_TESTING is OFF, nor on the v3 deprecated tests."
@@ -124,7 +124,7 @@ if (ENABLE_TESTING)
   message(STATUS "Tests will use ${PERM_STRING} qubit permutations. Set TEST_MAX_NUM_QUBIT_PERMUTATIONS to modify.")
 endif()
 
-string(CONCAT DESCRIPTON_OF_TEST_MAX_NUM_SUPEROP_TARGETS  # for multiline option
+string(CONCAT DESCRIPTON_OF_TEST_MAX_NUM_SUPEROP_TARGETS  # for multiline description
   "The maximum number of superoperator targets for which to unit test functions mixKrausMap and mixSuperOp. "
   "This is computationally equivalent to simulating unitaries with double the number of targets upon a density matrix. "
   "Set to 0 to test all sizes which is likely prohibitively slow, or to a positive integer (e.g. the default of 4) to accelerate the unit tests. "
@@ -143,7 +143,19 @@ if (ENABLE_TESTING)
   message(STATUS "Tests will use superoperators of up to ${PERM_STRING} qubits. Set TEST_MAX_NUM_SUPEROP_TARGETS to modify.")
 endif()
 
-string(CONCAT DESCRIPTION_OF_TEST_ALL_DEPLOYMENTS  # for multiline option
+set(TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS 10
+  CACHE 
+  STRING 
+  "The number of times (minimum=1) to repeat each mixed-deployment unit test for each deployment combination."
+)
+if (ENABLE_TESTING)
+  if (TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS LESS_EQUAL 0)
+    message(FATAL_ERROR "Cannot set TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS <= 0. Must be at least 1.")
+  endif()
+  message(STATUS "Tests will repeat each mixed-deployment unit test ${TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS} times. Set TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS to modify.")
+endif()
+
+string(CONCAT DESCRIPTION_OF_TEST_ALL_DEPLOYMENTS  # for multiline description
   "Whether unit tests will be run using all possible deployment combinations (i.e. OpenMP, CUDA, MPI) in-turn (ON), "
   "or only once using all available deployments simultaneously (OFF). Turned ON by default. "
   "This is used to accelerate the v4 unit tests, and has no effect when ENABLE_TESTING is OFF, nor on the v3 deprecated tests."

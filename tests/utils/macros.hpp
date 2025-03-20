@@ -42,6 +42,10 @@
 #define TEST_ALL_DEPLOYMENTS 1
 #endif
 
+// number of times to repeat each "[mixed]" test (minimum 1)
+#ifndef TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS
+#define TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS 10
+#endif
 
 
 /*

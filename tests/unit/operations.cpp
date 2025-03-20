@@ -468,7 +468,7 @@ auto getRandomRemainingArgs(vector<int> targs) {
 
     if constexpr (Args == diagpower) {
         auto matrix = getRandomApiMatrix<Targs,Args>(targs.size()); // allocates heap mem
-        qcomp exponent = getRandomComplex();
+        qcomp exponent = getRandomUnitComplex(); // abs=1 for unitarity
         return tuple{ matrix, exponent };
     }
 
