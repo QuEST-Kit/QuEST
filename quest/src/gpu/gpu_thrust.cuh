@@ -300,7 +300,7 @@ struct functor_getExpecDensMatrDiagMatrTerm : public thrust::unary_function<qind
         if constexpr (HasPower && ! UseRealPow)
             elem = getCompPower(elem, expo);
         if constexpr (HasPower &&   UseRealPow)
-            elem = pow(getCompReal(elem), getCompReal(expo)) // CUDA pow(qreal,qreal)
+            elem = getCuQcomp(pow(getCompReal(elem), getCompReal(expo)),0); // CUDA pow(qreal,qreal)
 
         qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
 
@@ -398,7 +398,7 @@ struct functor_multiplyElemPowerWithAmpOrNorm : public thrust::binary_function<c
         if constexpr (HasPower && ! UseRealPow)
             matrElem = getCompPower(matrElem, exponent);
         if constexpr (HasPower &&   UseRealPow)
-            matrElem = pow(getCompReal(matrElem), getCompReal(exponent)) // CUDA pow(qreal,qreal)
+            matrElem = getCuQcomp(pow(getCompReal(matrElem), getCompReal(exponent)),0); // CUDA pow(qreal,qreal)
 
         if constexpr (Norm)
             quregAmp = getCuQcomp(getCompNorm(quregAmp), 0);
@@ -974,7 +974,7 @@ cu_qcomp thrust_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vecto
  */
 
 
-template <bool HasPower, bool UseRealPow, bool UseRealPow> 
+template <bool HasPower, bool UseRealPow> 
 cu_qcomp thrust_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu_qcomp expo) {
 
     cu_qcomp init = getCuQcomp(0, 0);

@@ -215,7 +215,6 @@ jobs:
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
-          -DCMAKE_VERBOSE_MAKEFILE=ON
           -DBUILD_EXAMPLES=ON
           -DENABLE_TESTING=ON
           -DFLOAT_PRECISION=${{ matrix.precision }}

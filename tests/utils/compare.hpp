@@ -21,7 +21,8 @@
 using std::vector;
 
 
-qreal getTestEpsilon();
+qreal getTestAbsoluteEpsilon();
+qreal getTestRelativeEpsilon();
 
 bool doScalarsAgree(qcomp a, qcomp b);
 bool doMatricesAgree(qmatrix a, qmatrix b);
@@ -30,13 +31,10 @@ bool doMatricesAgree(qmatrix a, qmatrix b);
 void REQUIRE_AGREE( Qureg qureg, qvector reference );
 void REQUIRE_AGREE( Qureg qureg, qmatrix reference );
 
-void REQUIRE_AGREE( qvector reference, Qureg qureg );
-void REQUIRE_AGREE( qmatrix reference, Qureg qureg );
+void REQUIRE_AGREE( qreal scalar, qreal reference );
+void REQUIRE_AGREE( qcomp scalar, qcomp reference );
 
-void REQUIRE_AGREE( qreal apiScalar, qreal refScalar );
-void REQUIRE_AGREE( qcomp apiScalar, qcomp refScalar );
-
-void REQUIRE_AGREE( vector<qreal> apiList, vector<qreal> refList );
+void REQUIRE_AGREE( vector<qreal> scalars, vector<qreal> references );
 
 
 #endif // COMPARE_HPP

@@ -40,7 +40,7 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
     initPureState(rho, psi);
 
     // we will check all alculations produced within 'eps' of expected
-    qreal eps = std::max({(qreal) 1E-5, getTestEpsilon()});
+    qreal eps = std::max({(qreal) 1E-5, getTestAbsoluteEpsilon()});
     REQUIRE_THAT( calcPurity(rho),        WithinAbs(1, eps) );
     REQUIRE_THAT( calcPurity(psi),        WithinAbs(1, eps) );
     REQUIRE_THAT( calcTotalProb(rho),     WithinAbs(1, eps) );

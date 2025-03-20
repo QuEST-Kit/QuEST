@@ -314,7 +314,7 @@ void applyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matr
     validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also checks fields and is-synced
     validate_matrixIsUnitary(matrix, __func__);  // checks abs=1 (so no risk of 0^(-neg exp)) and rechecks fields/synced
     validate_matrixExpIsNonDiverging(matrix, exponent, __func__); // harmlessly re-validates fields and is-sync
-    validate_unitaryExponentIsReal(exponent, __func__); // checks matrix^exponent is approx unitary (abs=1) and non-diverging
+    validate_unitaryExponentIsReal(exponent, __func__); // checks matrix^exponent is approx unitary (abs=1)
 
     // notice exponent is a 'qcomp' not a 'qreal' despite validation; see applyMultiStateControlledDiagMatrPower()
 
@@ -328,7 +328,7 @@ void applyControlledDiagMatrPower(Qureg qureg, int control, int* targets, int nu
     validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also checks fields and is-synced
     validate_matrixIsUnitary(matrix, __func__);  // checks abs=1 (so no risk of 0^(-neg exp)) and rechecks fields/synced
     validate_matrixExpIsNonDiverging(matrix, exponent, __func__); // harmlessly re-validates fields and is-sync
-    validate_unitaryExponentIsReal(exponent, __func__); // checks matrix^exponent is approx unitary (abs=1) and non-diverging
+    validate_unitaryExponentIsReal(exponent, __func__); // checks matrix^exponent is approx unitary (abs=1)
 
     // notice exponent is a 'qcomp' not a 'qreal' despite validation; see applyMultiStateControlledDiagMatrPower()
 
@@ -342,7 +342,7 @@ void applyMultiControlledDiagMatrPower(Qureg qureg, int* controls, int numContro
     validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also checks fields and is-synced
     validate_matrixIsUnitary(matrix, __func__);  // checks abs=1 (so no risk of 0^(-neg exp)) and rechecks fields/synced
     validate_matrixExpIsNonDiverging(matrix, exponent, __func__); // harmlessly re-validates fields and is-sync
-    validate_unitaryExponentIsReal(exponent, __func__); // checks matrix^exponent is approx unitary (abs=1) and non-diverging
+    validate_unitaryExponentIsReal(exponent, __func__); // checks matrix^exponent is approx unitary (abs=1)
 
     // notice exponent is a 'qcomp' not a 'qreal' despite validation; see applyMultiStateControlledDiagMatrPower()
 
@@ -357,7 +357,7 @@ void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* sta
     validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also checks fields and is-synced
     validate_matrixIsUnitary(matrix, __func__);  // checks abs=1 (so no risk of 0^(-neg exp)) and rechecks fields/synced
     validate_matrixExpIsNonDiverging(matrix, exponent, __func__); // harmlessly re-validates fields and is-sync
-    validate_unitaryExponentIsReal(exponent, __func__); // checks matrix^exponent is approx unitary (abs=1) and non-diverging
+    validate_unitaryExponentIsReal(exponent, __func__); // checks matrix^exponent is approx unitary (abs=1)
 
     // unlike calcExpecDiagMatrPower which accepts a 'qreal' exponent,
     // this function accepts a 'qcomp'. This is because it always
@@ -423,7 +423,7 @@ void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp ex
     validate_matrixFields(matrix, __func__);
     validate_matrixAndQuregAreCompatible(matrix, qureg, false, __func__);
     validate_matrixIsUnitary(matrix, __func__);  // checks abs=1 (so no risk of 0^(-neg exp))
-    validate_unitaryExponentIsReal(exponent, __func__); // checks matrix^exponent is approx unitary (abs=1) and non-diverging
+    validate_unitaryExponentIsReal(exponent, __func__); // checks matrix^exponent is approx unitary (abs=1)
     validate_matrixExpIsNonDiverging(matrix, exponent, __func__);
 
     bool onlyMultiply = false;
