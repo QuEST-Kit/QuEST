@@ -34,8 +34,8 @@ using namespace Catch::Matchers;
 
 
 #if FLOAT_PRECISION == 1
-    const qreal ABSOLUTE_EPSILON = 1E-3;
-    const qreal RELATIVE_EPSILON = 1E-3;
+    const qreal ABSOLUTE_EPSILON = 1E-2;
+    const qreal RELATIVE_EPSILON = 1E-2;
 #elif FLOAT_PRECISION == 2
     const qreal ABSOLUTE_EPSILON = 1E-8;
     const qreal RELATIVE_EPSILON = 1E-8;

@@ -215,8 +215,8 @@ jobs:
       cuda_arch: 75
 
       # which will be shared between 4 MPI processes
+      # (no --oversubscribe flag necessary on MPICH)
       num_mpi_nodes: 4
-      mpi_flag: --oversubscribe
       mpi_share_gpu: ON
 
       # we will test all combinations of deployments
@@ -277,5 +277,5 @@ jobs:
       # cannot use ctests when distributed, grr!
       - name: Run GPU + distributed v4 mixed tests (4 nodes sharing 1 GPU)
         run: |
-          mpiexec -n ${{ env.num_mpi_nodes }} ${{ env.mpi_flag }} ${{ env.test_exec }} ${{ env.test_flag }}
+          mpiexec -n ${{ env.num_mpi_nodes }} ${{ env.test_exec }} ${{ env.test_flag }}
         working-directory: ${{ env.build_dir }}
