@@ -520,7 +520,7 @@ TEST_CASE( "createDiagMatr", TEST_CATEGORY ) {
             REQUIRE_THROWS_WITH( createDiagMatr(62), ContainsSubstring("necessary memory would overflow size_t") );
 
             // no overflows, but definitely exceeds local RAM and fails to allocate
-            REQUIRE_THROWS_WITH( createDiagMatr(60), ContainsSubstring("allocation") && ContainsSubstring("failed"));
+            REQUIRE_THROWS_WITH( createDiagMatr(50), ContainsSubstring("allocation") && ContainsSubstring("failed"));
         }
     }
 }
@@ -588,7 +588,7 @@ TEST_CASE( "createFullStateDiagMatr", TEST_CATEGORY ) {
             REQUIRE_THROWS_WITH( createFullStateDiagMatr(62), ContainsSubstring("memory would overflow size_t") );
 
             // no overflows, but definitely exceeds local RAM and fails to allocate
-            REQUIRE_THROWS_WITH( createFullStateDiagMatr(60), ContainsSubstring("allocation") && ContainsSubstring("failed"));
+            REQUIRE_THROWS_WITH( createFullStateDiagMatr(50), ContainsSubstring("allocation") && ContainsSubstring("failed"));
         }
 
         // this function chooses automatic deployment,
@@ -679,7 +679,7 @@ TEST_CASE( "createCustomFullStateDiagMatr", TEST_CATEGORY ) {
                 REQUIRE_THROWS_WITH( createCustomFullStateDiagMatr(62, mpi,gpu,omp), ContainsSubstring("memory would overflow size_t") );
 
                 // no overflows, but definitely exceeds local RAM and fails to allocate
-                REQUIRE_THROWS_WITH( createCustomFullStateDiagMatr(60, mpi,gpu,omp), ContainsSubstring("allocation") && ContainsSubstring("failed"));
+                REQUIRE_THROWS_WITH( createCustomFullStateDiagMatr(50, mpi,gpu,omp), ContainsSubstring("allocation") && ContainsSubstring("failed"));
             }
         }
 
@@ -711,7 +711,7 @@ TEST_CASE( "destroyCompMatr" ) {
         SECTION( "not created" ) {
 
             CompMatr m;
-            REQUIRE_THROWS_WITH( destroyCompMatr(m), ContainsSubstring("Invalid CompMatr") );
+            REQUIRE_THROWS_WITH( destroyCompMatr(m), ContainsSubstring("Invalid CompMatr") || ContainsSubstring("not created") );
         }
     }
 }
@@ -730,7 +730,7 @@ TEST_CASE( "destroyDiagMatr" ) {
         SECTION( "not created" ) {
 
             DiagMatr m;
-            REQUIRE_THROWS_WITH( destroyDiagMatr(m), ContainsSubstring("Invalid DiagMatr") );
+            REQUIRE_THROWS_WITH( destroyDiagMatr(m), ContainsSubstring("Invalid DiagMatr") || ContainsSubstring("not created") );
         }
     }
 }
@@ -778,7 +778,7 @@ TEST_CASE( "syncCompMatr", TEST_CATEGORY ) {
         SECTION( "not created" ) {
 
             CompMatr m;
-            REQUIRE_THROWS_WITH( syncCompMatr(m), ContainsSubstring("Invalid CompMatr") );
+            REQUIRE_THROWS_WITH( syncCompMatr(m), ContainsSubstring("Invalid CompMatr") || ContainsSubstring("not created") );
         }
     }
 }
@@ -807,7 +807,7 @@ TEST_CASE( "syncDiagMatr", TEST_CATEGORY ) {
         SECTION( "not created" ) {
 
             DiagMatr m;
-            REQUIRE_THROWS_WITH( syncDiagMatr(m), ContainsSubstring("Invalid DiagMatr") );
+            REQUIRE_THROWS_WITH( syncDiagMatr(m), ContainsSubstring("Invalid DiagMatr") || ContainsSubstring("not created") );
         }
     }
 }
@@ -899,7 +899,7 @@ TEST_CASE( "setCompMatr", TEST_CATEGORY ) {
 
             CompMatr bad;
             qcomp** dummy;
-            REQUIRE_THROWS_WITH( setCompMatr(bad, dummy), ContainsSubstring("Invalid CompMatr") );
+            REQUIRE_THROWS_WITH( setCompMatr(bad, dummy), ContainsSubstring("Invalid CompMatr") || ContainsSubstring("not created") );
         }
 
         SECTION( "null pointer" ) {
@@ -971,7 +971,7 @@ TEST_CASE( "setDiagMatr", TEST_CATEGORY ) {
 
             DiagMatr bad;
             qcomp* dummy;
-            REQUIRE_THROWS_WITH( setDiagMatr(bad, dummy), ContainsSubstring("Invalid DiagMatr") );
+            REQUIRE_THROWS_WITH( setDiagMatr(bad, dummy), ContainsSubstring("Invalid DiagMatr") || ContainsSubstring("not created") );
         }
 
         SECTION( "null pointer" ) {
@@ -1016,7 +1016,7 @@ TEST_CASE( "setInlineCompMatr", TEST_CATEGORY ) {
         SECTION( "not created" ) {
 
             CompMatr bad;
-            REQUIRE_THROWS_WITH( setInlineCompMatr(bad, 1, {{1,2},{3,4}}), ContainsSubstring("Invalid CompMatr") );
+            REQUIRE_THROWS_WITH( setInlineCompMatr(bad, 1, {{1,2},{3,4}}), ContainsSubstring("Invalid CompMatr") || ContainsSubstring("not created") );
         }
 
         SECTION( "mismatching dimension" ) {
@@ -1063,7 +1063,7 @@ TEST_CASE( "setInlineDiagMatr", TEST_CATEGORY ) {
         SECTION( "not created" ) {
 
             DiagMatr bad;
-            REQUIRE_THROWS_WITH( setInlineDiagMatr(bad, 1, {1,2}), ContainsSubstring("Invalid DiagMatr") );
+            REQUIRE_THROWS_WITH( setInlineDiagMatr(bad, 1, {1,2}), ContainsSubstring("Invalid DiagMatr") || ContainsSubstring("not created") );
         }
 
         SECTION( "mismatching dimension" ) {

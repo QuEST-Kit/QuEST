@@ -236,10 +236,20 @@ typedef struct {
 
 
 // private validators
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /// @private
-extern "C" void _validateNewNestedElemsPtrNotNull(qcomp** ptrs, int numQubits, const char* caller);
+extern void _validateNewNestedElemsPtrNotNull(qcomp** ptrs, int numQubits, const char* caller);
+
 /// @private
-extern "C" void _validateNewElemsPtrNotNull(qcomp* ptr, const char* caller);
+extern void _validateNewElemsPtrNotNull(qcomp* ptr, const char* caller);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 static inline CompMatr1 getCompMatr1(qcomp** in) {
     _validateNewNestedElemsPtrNotNull(in, 1, __func__);
