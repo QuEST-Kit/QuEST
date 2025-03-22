@@ -34,7 +34,15 @@ void REQUIRE_AGREE( Qureg qureg, qmatrix reference );
 void REQUIRE_AGREE( qreal scalar, qreal reference );
 void REQUIRE_AGREE( qcomp scalar, qcomp reference );
 
-void REQUIRE_AGREE( vector<qreal> scalars, vector<qreal> references );
+void REQUIRE_AGREE( vector<qreal> list, vector<qreal> reference );
+
+void REQUIRE_AGREE( qmatrix   matrix, qmatrix reference );
+void REQUIRE_AGREE( CompMatr1 matrix, qmatrix reference );
+void REQUIRE_AGREE( CompMatr2 matrix, qmatrix reference );
+void REQUIRE_AGREE( CompMatr  matrix, qmatrix reference );
+void REQUIRE_AGREE( DiagMatr1 matrix, qmatrix reference );
+void REQUIRE_AGREE( DiagMatr2 matrix, qmatrix reference );
+void REQUIRE_AGREE( DiagMatr  matrix, qmatrix reference );
 
 
 #endif // COMPARE_HPP

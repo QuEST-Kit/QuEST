@@ -206,3 +206,43 @@ void REQUIRE_AGREE( vector<qreal> apiList, vector<qreal> refList ) {
 
     SUCCEED( );
 }
+
+
+
+/*
+ * MATRICES
+ */
+
+
+void REPORT_ELEM_AND_FAIL( size_t row, size_t col, qcomp elem, qcomp reference ) {
+    qreal absolute_difference = getAbsDif(elem, reference);
+    qreal relative_difference = getRelDif(elem, reference);
+    CAPTURE( 
+        row, col, elem, reference, 
+        absolute_difference, ABSOLUTE_EPSILON,
+        relative_difference, RELATIVE_EPSILON
+    );
+    FAIL( );
+}
+
+
+void REQUIRE_AGREE( qmatrix matrix, qmatrix reference ) {
+    DEMAND( matrix.size() == reference.size() );
+
+    size_t dim = matrix.size();
+
+    for (size_t r=0; r<dim; r++)
+        for (size_t c=0; c<dim; c++)
+            if (!doScalarsAgree(matrix[r][c], reference[r][c]))
+                REPORT_ELEM_AND_FAIL(r, c, matrix[r][c], reference[r][c]);
+
+    SUCCEED( );
+}
+
+
+void REQUIRE_AGREE( CompMatr1 matrix, qmatrix reference ) { REQUIRE_AGREE( getMatrix(matrix), reference ); }
+void REQUIRE_AGREE( CompMatr2 matrix, qmatrix reference ) { REQUIRE_AGREE( getMatrix(matrix), reference ); }
+void REQUIRE_AGREE( CompMatr  matrix, qmatrix reference ) { REQUIRE_AGREE( getMatrix(matrix), reference ); }
+void REQUIRE_AGREE( DiagMatr1 matrix, qmatrix reference ) { REQUIRE_AGREE( getMatrix(matrix), reference ); }
+void REQUIRE_AGREE( DiagMatr2 matrix, qmatrix reference ) { REQUIRE_AGREE( getMatrix(matrix), reference ); }
+void REQUIRE_AGREE( DiagMatr  matrix, qmatrix reference ) { REQUIRE_AGREE( getMatrix(matrix), reference ); }

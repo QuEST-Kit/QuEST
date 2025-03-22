@@ -105,7 +105,7 @@ qcomp getElem(T m, size_t r, size_t c) {
 
 
 template <typename T> 
-qmatrix getMatrix(T m) {
+qmatrix getMatrixInner(T m) {
 
     qmatrix out = getZeroMatrix(getPow2(m.numQubits));
 
@@ -116,14 +116,13 @@ qmatrix getMatrix(T m) {
     return out;
 }
 
-template qmatrix getMatrix(CompMatr1);
-template qmatrix getMatrix(CompMatr2);
-template qmatrix getMatrix(CompMatr );
-template qmatrix getMatrix(DiagMatr1);
-template qmatrix getMatrix(DiagMatr2);
-template qmatrix getMatrix(DiagMatr );
 
-// FullStateDiagMatr excluded
+qmatrix getMatrix(CompMatr1 m) { return getMatrixInner(m); }
+qmatrix getMatrix(CompMatr2 m) { return getMatrixInner(m); }
+qmatrix getMatrix(CompMatr  m) { return getMatrixInner(m); }
+qmatrix getMatrix(DiagMatr1 m) { return getMatrixInner(m); }
+qmatrix getMatrix(DiagMatr2 m) { return getMatrixInner(m); }
+qmatrix getMatrix(DiagMatr  m) { return getMatrixInner(m); }
 
 
 

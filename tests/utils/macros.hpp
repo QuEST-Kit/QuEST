@@ -63,6 +63,8 @@
 #define LABEL_VALIDATION "validation"
 #define LABEL_STATEVEC "statevector"
 #define LABEL_DENSMATR "densitymatrix"
+#define LABEL_C_INTERFACE "C interface"
+#define LABEL_CPP_INTERFACE "C++ interface"
 
 #define LABEL_DELIMITER ", "
 
