@@ -132,13 +132,6 @@ bool didAnyLocalAllocsFail(T matr) {
     } else
         if (!mem_isAllocated(matr.cpuElems)) return true;
 
-    // if memory is 2D, we must also check each inner array was allocated
-    if constexpr (util_isDenseMatrixType<T>()) {
-        if (!mem_isAllocated(matr.cpuElems, matr.numRows)) return true;
-    } else {
-        if (!mem_isAllocated(matr.cpuElems)) return true;
-    }
-
     // if GPU memory is not allocated in a GPU environment...
     bool isGpuAlloc = mem_isAllocated(util_getGpuMemPtr(matr));
     if (getQuESTEnv().isGpuAccelerated && !isGpuAlloc) {
@@ -426,6 +419,7 @@ void setAndSyncDenseMatrElems(CompMatr out, T elems) {
 
 extern "C" void setCompMatr(CompMatr out, qcomp** in) {
     validate_matrixFields(out, __func__);
+    validate_matrixNewElemsPtrNotNull(in, out.numQubits, __func__);
 
     setAndSyncDenseMatrElems(out, in);
 }
@@ -433,6 +427,7 @@ extern "C" void setCompMatr(CompMatr out, qcomp** in) {
 
 extern "C" void setDiagMatr(DiagMatr out, qcomp* in) {
     validate_matrixFields(out, __func__);
+    validate_matrixNewElemsPtrNotNull(in, __func__);
 
     // overwrite CPU memory
     cpu_copyArray(out.cpuElems, in, out.numElems);
@@ -445,6 +440,7 @@ extern "C" void setDiagMatr(DiagMatr out, qcomp* in) {
 extern "C" void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qcomp* in, qindex numElems) {
     validate_matrixFields(out, __func__);
     validate_fullStateDiagMatrNewElems(out, startInd, numElems, __func__);
+    validate_matrixNewElemsPtrNotNull(in, __func__);
 
     // overwrites both the CPU and GPU memory (if it exists), maintaining consistency.
     // note that cpu_copyArray() isn't called directly here like setDiagMatr() above
@@ -573,6 +569,15 @@ DiagMatr createInlineDiagMatr(int numQb, vector<qcomp> elems) {
 
 
 extern "C" {
+
+    void _validateNewNestedElemsPtrNotNull(qcomp** ptrs, int numQubits, const char* caller) {
+
+        validate_matrixNewElemsPtrNotNull(ptrs, numQubits, caller);
+    }
+    void _validateNewElemsPtrNotNull(qcomp* ptr, const char* caller) {
+        
+        validate_matrixNewElemsPtrNotNull(ptr, caller);
+    }
 
     void _validateParamsToSetCompMatrFromArr(CompMatr matr) { 
 

@@ -235,7 +235,14 @@ typedef struct {
  */
 
 
+// private validators
+/// @private
+extern "C" void _validateNewNestedElemsPtrNotNull(qcomp** ptrs, int numQubits, const char* caller);
+/// @private
+extern "C" void _validateNewElemsPtrNotNull(qcomp* ptr, const char* caller);
+
 static inline CompMatr1 getCompMatr1(qcomp** in) {
+    _validateNewNestedElemsPtrNotNull(in, 1, __func__);
 
     CompMatr1 out = {
         .numQubits = 1,
@@ -248,6 +255,7 @@ static inline CompMatr1 getCompMatr1(qcomp** in) {
 }
 
 static inline CompMatr2 getCompMatr2(qcomp** in) {
+    _validateNewNestedElemsPtrNotNull(in, 2, __func__);
 
     CompMatr2 out = {
         .numQubits = 2,
@@ -263,6 +271,7 @@ static inline CompMatr2 getCompMatr2(qcomp** in) {
 
 
 static inline DiagMatr1 getDiagMatr1(qcomp* in) {
+    _validateNewElemsPtrNotNull(in, __func__);
 
     DiagMatr1 out = {
         .numQubits = 1,
@@ -273,6 +282,7 @@ static inline DiagMatr1 getDiagMatr1(qcomp* in) {
 }
 
 static inline DiagMatr2 getDiagMatr2(qcomp* in) {
+    _validateNewElemsPtrNotNull(in, __func__);
 
     DiagMatr2 out = {
         .numQubits = 2,

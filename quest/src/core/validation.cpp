@@ -321,6 +321,15 @@ namespace report {
 
     string DIAG_MATR_WRONG_NUM_NEW_ELEMS = 
         "Incompatible number of elements (${NUM_GIVEN_ELEMS}) assigned to a ${NUM_QUBITS}-qubit DiagMatr, which expects ${NUM_EXPECTED_ELEMS} elements.";
+
+    string DIAG_MATR_NEW_ELEMS_NULL_PTR =
+        "The given list of new elements was a null pointer.";
+
+    string COMP_MATR_NEW_ELEMS_OUTER_NULL_PTR =
+        "The given matrix of new elements was a null pointer.";
+
+    string COMP_MATR_NEW_ELEMS_INNER_NULL_PTR =
+        "The given matrix of new elements contained a null pointer, suggesting an issue with initialising one or more rows.";
     
 
     string FULL_STATE_DIAG_MATR_NEW_ELEMS_INVALID_START_INDEX =
@@ -1919,9 +1928,11 @@ void assertNewMatrixAllocsSucceeded(T matr, qindex numBytes, const char* caller)
 
     // assert CPU array (which may be nested arrays) all allocated successfully
     bool isAlloc;
-    if constexpr (util_isDenseMatrixType<T>())
-        isAlloc = mem_isAllocated(matr.cpuElems, matr.numRows);
-    else
+    if constexpr (util_isDenseMatrixType<T>()) {
+        // size of .cpuElems isn't included in numBytes report which is fine; it's
+        // quadratically smaller than .cpuElemsFlat so quickly negligible
+        isAlloc = mem_isAllocated(matr.cpuElemsFlat) && mem_isOuterAllocated(matr.cpuElems);
+    } else
         isAlloc = mem_isAllocated(matr.cpuElems);
     assertAllNodesAgreeThat(isAlloc, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
 
@@ -2005,6 +2016,20 @@ void validate_matrixNumNewElems(int numQubits, vector<qcomp> elems, const char* 
         {"${NUM_GIVEN_ELEMS}",    elems.size()}};
 
     assertThat(dim == (qindex) elems.size(), report::DIAG_MATR_WRONG_NUM_NEW_ELEMS, vars, caller);
+}
+
+void validate_matrixNewElemsPtrNotNull(qcomp* elems, const char* caller) {
+
+    assertThat(elems != nullptr, report::DIAG_MATR_NEW_ELEMS_NULL_PTR, caller);
+}
+
+void validate_matrixNewElemsPtrNotNull(qcomp** elems, int numQubits, const char* caller) {
+
+    assertThat(elems != nullptr, report::COMP_MATR_NEW_ELEMS_OUTER_NULL_PTR, caller);
+
+    qindex dim = powerOf2(numQubits);
+    for (qindex i=0; i<dim; i++)
+        assertThat(elems[i] != nullptr, report::COMP_MATR_NEW_ELEMS_INNER_NULL_PTR, caller);
 }
 
 void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd, qindex numElems, const char* caller) {
@@ -2515,7 +2540,10 @@ void assertNewSuperOpAllocs(SuperOp op, bool isInKrausMap, const char* caller) {
     auto msg = (isInKrausMap)?
         report::NEW_KRAUS_MAPS_SUPER_OP_CPU_ELEMS_ALLOC_FAILED:
         report::NEW_SUPER_OP_CPU_ELEMS_ALLOC_FAILED;
-    assertAllNodesAgreeThat(mem_isAllocated(op.cpuElems, op.numRows), msg, vars, caller);
+
+    // note .cpuElems size is not included in error msg; fine since quadratically smaller than .cpuElemsFlat
+    bool isAlloc = mem_isAllocated(op.cpuElemsFlat) && mem_isOuterAllocated(op.cpuElems);
+    assertAllNodesAgreeThat(isAlloc, msg, vars, caller);
 
     // optionally assert GPU memory was malloc'd successfully
     msg = (isInKrausMap)?
