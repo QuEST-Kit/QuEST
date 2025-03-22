@@ -1382,9 +1382,9 @@ void validate_randomSeeds(unsigned* seeds, int numSeeds, const char* caller) {
     // nodes to have invalid parameters. All nodes however must know/agree
     // when the root node's seeds are invalid, to synchronise validation
 
-    unsigned numRootSeeds = (unsigned) numSeeds;
+    int numRootSeeds = numSeeds;
     if (getQuESTEnv().isDistributed)
-        comm_broadcastUnsignedsFromRoot(&numRootSeeds, 1);
+        comm_broadcastIntsFromRoot(&numRootSeeds, 1);
 
     assertThat(numRootSeeds > 0, report::INVALID_NUM_RANDOM_SEEDS, {{"${NUM_SEEDS}", numSeeds}}, caller);
 }

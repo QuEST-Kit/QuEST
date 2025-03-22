@@ -641,6 +641,18 @@ void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps)
 }
 
 
+void comm_broadcastIntsFromRoot(int* arr, qindex length) {
+#if COMPILE_MPI
+
+    int sendRank = ROOT_RANK;
+    MPI_Bcast(arr, length, MPI_INT, sendRank, MPI_COMM_WORLD);
+
+#else
+    error_commButEnvNotDistributed();
+#endif
+}
+
+
 void comm_broadcastUnsignedsFromRoot(unsigned* arr, qindex length) {
 #if COMPILE_MPI
 
