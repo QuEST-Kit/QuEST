@@ -144,10 +144,10 @@ namespace report {
         "Cannot create density Qureg of ${NUM_QUBITS} qubits: the density matrix would contain more amplitudes (4^${NUM_QUBITS}) than can be addressed by the qindex type (4^${MAX_QUBITS}). See reportQuESTEnv().";
 
     string NEW_STATEVEC_QUREG_LOCAL_MEM_WOULD_EXCEED_SIZEOF =
-        "Cannot create Qureg of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the necessary local memory (in bytes) of each node would overflow size_t. In this deployment, the maximum number of qubits in a statevector Qureg is ${MAX_QUBITS}. See reportQuESTEnv().";
+        "Cannot create Qureg of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the size (in bytes) of the necessary global memory would overflow size_t. In this deployment, the maximum number of qubits in a statevector Qureg is ${MAX_QUBITS}. See reportQuESTEnv().";
 
     string NEW_DENSMATR_QUREG_LOCAL_MEM_WOULD_EXCEED_SIZEOF =
-        "Cannot create density Qureg of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the necessary local memory (in bytes) of each node would overflow size_t. In this deployment, the maximum number of qubits in a density-matrix Qureg is ${MAX_QUBITS}. See reportQuESTEnv().";
+        "Cannot create density Qureg of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the size (in bytes) of the necessary global memory would overflow size_t. In this deployment, the maximum number of qubits in a density-matrix Qureg is ${MAX_QUBITS}. See reportQuESTEnv().";
 
     string NEW_DISTRIB_STATEVEC_QUREG_HAS_TOO_FEW_AMPS = 
         "Cannot create a distributed Qureg of only ${NUM_QUBITS} qubits between ${NUM_NODES} nodes, because each node would contain fewer than one amplitude of the statevector. The minimum size in this deployment is ${MIN_QUBITS} qubits; see reportQuESTEnv(). Consider disabling distribution for this Qureg.";
@@ -269,13 +269,13 @@ namespace report {
 
 
     string NEW_LOCAL_COMP_MATR_MEM_WOULD_EXCEED_SIZEOF =
-        "Cannot create a local, dense matrix of ${NUM_QUBITS} qubits because the necessary memory (in bytes) would overflow size_t. In this deployment, the maximum number of qubits in such a matrix is ${MAX_QUBITS}.";
+        "Cannot create a local, dense matrix of ${NUM_QUBITS} qubits because the size (in bytes) of the necessary memory would overflow size_t. In this deployment, the maximum number of qubits in such a matrix is ${MAX_QUBITS}.";
 
     string NEW_LOCAL_DIAG_MATR_MEM_WOULD_EXCEED_SIZEOF =
-        "Cannot create a local, diagonal matrix of ${NUM_QUBITS} qubits because the necessary memory (in bytes) would overflow size_t. In this deployment, the maximum number of qubits in such a matrix is ${MAX_QUBITS}.";
+        "Cannot create a local, diagonal matrix of ${NUM_QUBITS} qubits because the size (in bytes) of the necessary memory would overflow size_t. In this deployment, the maximum number of qubits in such a matrix is ${MAX_QUBITS}.";
 
     string NEW_DISTRIB_DIAG_MATR_LOCAL_MEM_WOULD_EXCEED_SIZEOF =
-        "Cannot create a diagonal matrix of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the necessary local memory (in bytes) of each node would overflow size_t. In this deployment, the maximum number of qubits in such a matrix is ${MAX_QUBITS}.";
+        "Cannot create a diagonal matrix of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the size (in bytes) of the necessary global memory would overflow size_t. In this deployment, the maximum number of qubits in such a matrix is ${MAX_QUBITS}.";
 
 
     string NEW_DISTRIB_DIAG_MATR_HAS_TOO_FEW_AMPS =
@@ -303,7 +303,7 @@ namespace report {
 
 
     string NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED = 
-        "Attempted allocation of memory for one or more rows of the matrix (a total of ${NUM_BYTES} bytes in RAM) failed.";
+        "Attempted allocation of the matrix memory (a total of ${NUM_BYTES} bytes in RAM) failed.";
 
     string NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED = 
         "Attempted allocation of the matrix's GPU memory (${NUM_BYTES} bytes in VRAM) failed.";
@@ -466,7 +466,7 @@ namespace report {
 
 
     string NEW_SUPER_OP_CPU_ELEMS_ALLOC_FAILED =
-        "Attempted allocation of memory for one or more rows of superoperator matrix (a total of ${NUM_BYTES} bytes in RAM) failed.";
+        "Attempted allocation of memory for the superoperator matrix (a total of ${NUM_BYTES} bytes in RAM) failed.";
         
     string NEW_SUPER_OP_GPU_ELEMS_ALLOC_FAILED =
         "Attempted allocation of GPU memory (a total of ${NUM_BYTES} in VRAM) for the superoperator matrix failed.";
@@ -532,7 +532,7 @@ namespace report {
         "Cannot create a Kraus map of ${NUM_QUBITS} qubits because the corresponding superoperator would contain more elements (16^${NUM_QUBITS}) than the maximum which can be addressed by the qindex type (16^${MAX_QUBITS}).";
 
     string NEW_KRAUS_MAPS_SUPER_OP_MEM_WOULD_EXCEED_SIZEOF =
-        "Cannot create a Kraus map of ${NUM_QUBITS} qubits because the necessary memory for its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) would overflow size_t. In this deployment, the maximum number of qubits in a Kraus map is ${MAX_QUBITS}.";
+        "Cannot create a Kraus map of ${NUM_QUBITS} qubits because the size (in bytes) of the necessary memory for its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) would overflow size_t. In this deployment, the maximum number of qubits in a Kraus map is ${MAX_QUBITS}.";
 
 
     string NEW_KRAUS_MAPS_SUPER_OP_CANNOT_FIT_INTO_CPU_MEM =
@@ -543,8 +543,8 @@ namespace report {
 
 
     string NEW_KRAUS_MAPS_SUPER_OP_CPU_ELEMS_ALLOC_FAILED =
-        "Attempted allocation of memory for one or more rows of the Kraus map's correspondng superoperator matrix (a total of ${NUM_BYTES} bytes in RAM) failed.";
-                
+        "Attempted allocation of memory for the Kraus map's correspondng superoperator matrix (a total of ${NUM_BYTES} bytes in RAM) failed.";
+
     string NEW_KRAUS_MAPS_SUPER_OP_GPU_ELEMS_ALLOC_FAILED =
         "Attempted allocation of GPU memory (a total of ${NUM_BYTES} bytes in VRAM) for the Kraus map's corresponding superoperator matrix failed.";
 
@@ -1150,6 +1150,17 @@ bool isNumericalValidationDisabled() {
  * UTILITIES
  */
 
+
+/// @todo
+/// this method of stringification is terrible; it precludes us
+/// from displaying non-integral types, like floating-point or
+/// strings. But further, it requires casting integral types
+/// (like size_t) to long long int. But alas size_t can be bigger
+/// than long long int, causing overflow - this happens when
+/// reporting failed max-smemory allocations. We cannot simply
+/// switch to 'size_t' which is unsigned, losing the ability to
+/// show small negative numbers. Grr!
+
 // map like "${X}" -> 5, with max-size signed int values to prevent overflows.
 // in C++11, these can be initialised with {{"${X}", 5}, ...}
 using tokenSubs = std::map<string, long long int>;
@@ -1450,7 +1461,7 @@ void assertQuregLocalMemDoesntExceedMaxSizeof(int numQubits, int isDensMatr, int
     // per node and is ergo more permissive - and the auto-deployer would never choose non-distribution
     // in a distributed env if the memory would exceed the max sizeof!
     int numQuregNodes = (isDistrib == 0 || ! env.isDistributed)? 1 : env.numNodes;
-    int maxNumQubits = (int) mem_getMaxNumQuregQubitsBeforeLocalMemSizeofOverflow(isDensMatr, numQuregNodes);
+    int maxNumQubits = (int) mem_getMaxNumQuregQubitsBeforeGlobalMemSizeofOverflow(isDensMatr, numQuregNodes);
 
     tokenSubs vars = {
         {"${NUM_QUBITS}", numQubits},
@@ -1699,7 +1710,7 @@ void assertMatrixLocalMemDoesntExceedMaxSizeof(int numQubits, bool isDense, int 
     // per node and is ergo more permissive - and the auto-deployer would never choose non-distribution
     // in a distributed env if the memory would exceed the max sizeof!
     int numMatrNodes = (isDistrib == 0)? 1 : numEnvNodes;
-    int maxNumQubits = mem_getMaxNumMatrixQubitsBeforeLocalMemSizeofOverflow(isDense, numMatrNodes);
+    int maxNumQubits = mem_getMaxNumMatrixQubitsBeforeGlobalMemSizeofOverflow(isDense, numMatrNodes);
 
     // make error message specific to whether the matrix is distributed or non-distributed type;
     // non-distributed matrices (e.g. CompMatr) should only ever cause the local error message
@@ -1916,7 +1927,7 @@ void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, int useG
 
 // T can be CompMatr, DiagMatr, FullStateDiagMatr (i.e. heap-based matrices)
 template <typename T>
-void assertNewMatrixAllocsSucceeded(T matr, qindex numBytes, const char* caller) {
+void assertNewMatrixAllocsSucceeded(T matr, size_t numBytes, const char* caller) {
 
     // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads,
     // but we avoid this potetially expensive synchronisation if validation is anyway disabled
@@ -1924,7 +1935,19 @@ void assertNewMatrixAllocsSucceeded(T matr, qindex numBytes, const char* caller)
     if (!global_isValidationEnabled)
         return;
 
-    tokenSubs vars = {{"${NUM_BYTES}", numBytes}};
+    /// @todo
+    /// fix this abhorrent hackiness! Presently, tokenSubs accepts only qindex (in lieu of 
+    /// unsigned size_t) in order to be able to report negative numbers. But alas, the max
+    /// size_t is bigger than max qindex, due to the sign-bit. So trying to report numBytes
+    /// can cause a size_t -> qindex overflow. This is a realistic scenario, occurring when
+    /// when the user tries to allocate the max-size memory for which malloc incidentally
+    /// fails. This is when numBytes is +1 too big to be a qindex; we simply reduce by 2!
+    /// We under-report the memory by 2 bytes, instead of 1, just to avoid an odd number 
+    /// which an astute user would immediately notice is not a power-of-2 and be confused by.
+    /// This is a hacky evil, but it is better than reporting a negative memory size!
+    tokenSubs vars;
+    vars["${NUM_BYTES}"] = ((qindex) numBytes <= 0)?
+        numBytes - 2 : numBytes;
 
     // assert CPU array (which may be nested arrays) all allocated successfully
     bool isAlloc;
@@ -1961,21 +1984,21 @@ void validate_newMatrixAllocs(CompMatr matr, const char* caller) {
 
     bool isDenseMatrix = true;
     int numNodes = 1;
-    qindex numBytes = mem_getLocalMatrixMemoryRequired(matr.numQubits, isDenseMatrix, numNodes);
+    size_t numBytes = mem_getLocalMatrixMemoryRequired(matr.numQubits, isDenseMatrix, numNodes);
     assertNewMatrixAllocsSucceeded(matr, numBytes, caller);
 }
 void validate_newMatrixAllocs(DiagMatr matr, const char* caller) {
 
     bool isDenseMatrix = false;
     int numNodes = 1;
-    qindex numBytes = mem_getLocalMatrixMemoryRequired(matr.numQubits, isDenseMatrix, numNodes);
+    size_t numBytes = mem_getLocalMatrixMemoryRequired(matr.numQubits, isDenseMatrix, numNodes);
     assertNewMatrixAllocsSucceeded(matr, numBytes, caller);
 }
 void validate_newMatrixAllocs(FullStateDiagMatr matr, const char* caller) {
 
     bool isDenseMatrix = false;
     int numNodes = (matr.isDistributed)? comm_getNumNodes() : 1;
-    qindex numBytes = mem_getLocalMatrixMemoryRequired(matr.numQubits, isDenseMatrix, numNodes);
+    size_t numBytes = mem_getLocalMatrixMemoryRequired(matr.numQubits, isDenseMatrix, numNodes);
     assertNewMatrixAllocsSucceeded(matr, numBytes, caller);
 }
 
@@ -2439,7 +2462,7 @@ void assertSuperOpTotalNumElemsDontExceedMaxIndex(int numQubits, bool isInKrausM
 
 void assertSuperOpLocalMemDoesntExceedMaxSizeof(int numQubits, bool isInKrausMap, const char* caller) {
 
-    int maxNumQubits = mem_getMaxNumSuperOpQubitsBeforeLocalMemSizeofOverflow();
+    int maxNumQubits = mem_getMaxNumSuperOpQubitsBeforeGlobalMemSizeofOverflow();
 
     tokenSubs vars = {
         {"${NUM_QUBITS}", numQubits},

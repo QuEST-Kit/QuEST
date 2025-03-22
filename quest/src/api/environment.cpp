@@ -312,7 +312,7 @@ void printQuregSizeLimits(bool isDensMatr) {
         {"maxQubitsForGpu",     maxQbForGpu},
         {"maxQubitsForMpiCpu",  maxQbForMpiCpu},
         {"maxQubitsForMpiGpu",  maxQbForMpiGpu},
-        {"maxQubitsForMemOverflow", printer_toStr(mem_getMaxNumQuregQubitsBeforeLocalMemSizeofOverflow(isDensMatr, numNodes))},
+        {"maxQubitsForMemOverflow", printer_toStr(mem_getMaxNumQuregQubitsBeforeGlobalMemSizeofOverflow(isDensMatr, numNodes))},
         {"maxQubitsForIndOverflow", printer_toStr(mem_getMaxNumQuregQubitsBeforeIndexOverflow(isDensMatr))},
     });
 }
@@ -334,7 +334,7 @@ void printQuregAutoDeployments(bool isDensMatr) {
 
     // test to theoretically max #qubits, surpassing max that can fit in RAM and GPUs, because
     // auto-deploy will still try to deploy there to (then subsequent validation will fail)
-    int maxQubits = mem_getMaxNumQuregQubitsBeforeLocalMemSizeofOverflow(isDensMatr, globalEnvPtr->numNodes);
+    int maxQubits = mem_getMaxNumQuregQubitsBeforeGlobalMemSizeofOverflow(isDensMatr, globalEnvPtr->numNodes);
 
     for (int numQubits=1; numQubits<maxQubits; numQubits++) {
 

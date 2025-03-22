@@ -24,141 +24,11 @@
 
 
 /*
- * HARDWARE QUERYING
+ * MEMORY BOUNDS
  */
 
 
-qindex mem_tryGetLocalRamCapacityInBytes() {
-
-    /// @todo attempt to find total Ram
-
-    // if we're unable to find total RAM, throw an exception
-    // (which the caller should catch and gracefully continue)
-    throw (mem::COULD_NOT_QUERY_RAM) false;
-}
-
-
-
-/*
- * MEMORY USAGE
- */
-
-
-int mem_getEffectiveNumStateVecQubitsPerNode(int numQubits, bool isDensMatr, int numNodes) {
-
-    // compute logs directly to avoid overflows (even though validation should preclude them)
-    qindex logNumAmpsTotal = ((isDensMatr)? 2 : 1) * numQubits;
-    qindex logNumAmpsPerNode = logNumAmpsTotal - logBase2(numNodes);
-    return logNumAmpsPerNode;
-}
-
-
-qindex mem_getTotalGlobalMemoryUsed(Qureg qureg) {
-
-    /// @todo
-    ///  if sizeof(qcomp) is a power of 2 (which it almost always is, c'mon now),
-    ///  then we could instead return the LOG of the total memory and always
-    ///  avoid overflow, permitting reporters to display mem=2^exp.
-    ///  it would also make changing units (e.g. to GB) easier.
-
-    // work out individual array costs
-    qindex memLocalArray = (qindex) mem_getLocalQuregMemoryRequired(qureg.numAmpsPerNode); // never overflows
-    int numLocalArrays = 
-        mem_isAllocated(qureg.cpuAmps) + mem_isAllocated(qureg.cpuCommBuffer) +
-        mem_isAllocated(qureg.gpuAmps) + mem_isAllocated(qureg.gpuCommBuffer);  // but 4*memLocalArray might overflow
-
-    // if total local costs would overflow qindex, return 0
-    qindex maxQindex = std::numeric_limits<qindex>::max();
-    qindex maxLocalArrayMem = maxQindex / numLocalArrays; // floors
-    if (memLocalArray > maxLocalArrayMem)
-        return 0;
-
-    // if qureg is non-distributed, compute local CPU+GPU+buffers costs and return
-    qindex memLocalTotal = numLocalArrays * memLocalArray;
-    if (!qureg.isDistributed)
-        return memLocalTotal;
-
-    // else if total global costs would overflow qindex, return 0
-    qindex maxLocalTotalMem = maxQindex / qureg.numNodes; // floors
-    if (memLocalTotal > maxLocalTotalMem)
-        return 0;
-
-    // else compute total costs between all nodes
-    qindex memGlobalTotal = memLocalTotal * qureg.numNodes;
-    return memGlobalTotal;
-}
-
-
-
-/*
- * MEMORY REQUIRED
- */
-
-
-size_t getLocalMemoryRequired(int numQubits, int numNodes, bool isDenseMatrix, bool hasBuffers) {
-
-    // assert no-overflow precondition
-    if (numQubits > mem_getMaxNumQuregQubitsBeforeLocalMemSizeofOverflow(isDenseMatrix, numNodes))
-        error_memSizeQueriedButWouldOverflow();
-
-    // no risk of overflow; we have already validated numAmpsTotal fits in qindex
-    qindex numAmpsTotal = (isDenseMatrix)? powerOf2(2*numQubits) : powerOf2(numQubits);
-    qindex numAmpsPerNode = numAmpsTotal / numNodes; // divides evenly
-
-    // communication buffers double costs
-    if (hasBuffers && numNodes > 1)
-        numAmpsPerNode *= 2;
-
-    // return number of bytes to store local amps
-    return numAmpsPerNode * sizeof(qcomp);
-}
-
-
-size_t mem_getLocalQuregMemoryRequired(int numQubits, bool isDensityMatr, int numNodes) {
-
-    // Quregs may need buffers for inter-node communication, depending on numNodes > 1
-    bool hasBuffers = true;
-    return getLocalMemoryRequired(numQubits, numNodes, isDensityMatr, hasBuffers);
-}
-
-
-size_t mem_getLocalQuregMemoryRequired(qindex numAmpsPerNode) {
-
-    // assert no-overflow precondition
-    qindex maxNumAmpsPerNode = std::numeric_limits<size_t>::max() / sizeof(qcomp); // floors
-    if (numAmpsPerNode > maxNumAmpsPerNode)
-        error_memSizeQueriedButWouldOverflow();
-
-    // return number of bytes to store local array, EXCLUDING communication buffer
-    return numAmpsPerNode * sizeof(qcomp);
-}
-
-
-size_t mem_getLocalMatrixMemoryRequired(int numQubits, bool isDenseMatrix, int numNodes) {
-
-    // matrix types don't store buffers - they'll use those of Quregs they're applied to
-    bool hasBuffers = false;
-    return getLocalMemoryRequired(numQubits, numNodes, isDenseMatrix, hasBuffers);
-}
-
-
-size_t mem_getLocalSuperOpMemoryRequired(int numQubits) {
-
-    // superoperators have square-bigger superoperators than dense matrices, and are never distributed
-    int numMatrixQubits = 2 * numQubits;
-    bool isDense = true;
-    int numNodes = 1;
-    return mem_getLocalMatrixMemoryRequired(numMatrixQubits, isDense, numNodes);
-}
-
-
-
-/*
- * QUBIT BOUNDS
- */
-
-
-int getMaxNumQubitsWhichCanFitInMemory(bool isDensMatr, int numNodes, bool hasBuffer, bool isSuperOp, qindex memBytesPerNode) {
+ int getMaxNumQubitsWhichCanFitInMemory(bool isDensMatr, int numNodes, bool hasBuffer, bool isSuperOp, qindex memBytesPerNode) {
 
     // distribution requires communication buffers, doubling costs, halving fittable amps-per-qureg
     qindex maxLocalNumAmps = memBytesPerNode / sizeof(qcomp); // floors
@@ -243,14 +113,21 @@ qindex mem_getMaxNumKrausMapMatricesBeforeIndexOverflow(int numQubits) {
     return maxNumMatrices;
 }
 
+int getMaxNumQubitsBeforeGlobalMemSizeofOverflow(bool isDensMatr, int numNodes, bool hasBuffer, bool isSuperOp) {
 
-int getMaxNumQubitsBeforeLocalMemSizeofOverflow(bool isDensMatr, int numNodes, bool hasBuffer, bool isSuperOp) {
+    // this function assumes we must be able to store the total 
+    // CPU memory (in bytes) used by a single data structure, 
+    // aggregate across all nodes, in a single size_t primitive. 
+    // This is a defensively-designed constraint; we do not ever
+    // actually need to know the full memory, but assuring that
+    // we could principally store it in a size_t will futureproof
+    // reporter functions against future overflows etc. Note it
+    // does not meaningfully restrict the maximum simulatable size
+    // except on ~8 EiB supercomputers. Looking at you, Jupiter!
 
-    // we return largest N satisfying 2^(2N + [numNodes > 1]) * sizeof(qcomp) / numNodes <= max[sizeof]
     size_t maxSizeof = std::numeric_limits<size_t>::max();
-    size_t maxLocalNumAmps = maxSizeof / sizeof(qcomp); // floors
-    size_t maxLocalNumQubits = std::floor(std::log2(maxLocalNumAmps));
-    size_t maxGlobalNumQubits = maxLocalNumQubits + logBase2(numNodes);
+    size_t maxGlobalNumAmps = maxSizeof / sizeof(qcomp); // floors
+    size_t maxGlobalNumQubits = std::floor(std::log2(maxGlobalNumAmps)); // floors
 
     // distributing Quregs requires communication buffers, doubling memory, decreasing qubits by 1
     if (hasBuffer && numNodes > 1)
@@ -264,32 +141,44 @@ int getMaxNumQubitsBeforeLocalMemSizeofOverflow(bool isDensMatr, int numNodes, b
     if (isSuperOp)
         maxGlobalNumQubits /= 2; // floors
 
+    /// @todo
+    /// above sometimes overestimates by one; suggesting N can fit
+    /// in fact only N-1 can fit without causing overflows. It's
+    /// a chore to correct this precision-agnostically, and we cannot
+    /// just try get the total-memory and provoke the overflow because
+    /// a call to mem_getLocalQuregMemoryRequired() would recurse! As
+    /// this function is only needed for ridiculously overzealous
+    /// validation, and does not risk any logical error, we simply
+    /// subtract one to avoid the overflowing edge-case. The returned
+    /// max-size remains completely unreachable by users of course!
+    maxGlobalNumQubits -= 1;
+
     return maxGlobalNumQubits;
 }
 
-int mem_getMaxNumQuregQubitsBeforeLocalMemSizeofOverflow(bool isDensityMatrix, int numNodes) {
+int mem_getMaxNumQuregQubitsBeforeGlobalMemSizeofOverflow(bool isDensityMatrix, int numNodes) {
 
     bool hasBuffer = true;
     bool isSuperOp = false;
-    return getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDensityMatrix, numNodes, hasBuffer, isSuperOp);
+    return getMaxNumQubitsBeforeGlobalMemSizeofOverflow(isDensityMatrix, numNodes, hasBuffer, isSuperOp);
 }
 
-int mem_getMaxNumMatrixQubitsBeforeLocalMemSizeofOverflow(bool isDenseMatrix, int numNodes) {
+int mem_getMaxNumMatrixQubitsBeforeGlobalMemSizeofOverflow(bool isDenseMatrix, int numNodes) {
 
     // matrix types don't store buffers - they'll use those of Quregs they're applied to
     bool hasBuffer = false;
     bool isSuperOp = false;
-    return getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDenseMatrix, numNodes, hasBuffer, isSuperOp);
+    return getMaxNumQubitsBeforeGlobalMemSizeofOverflow(isDenseMatrix, numNodes, hasBuffer, isSuperOp);
 }
 
-int mem_getMaxNumSuperOpQubitsBeforeLocalMemSizeofOverflow() {
+int mem_getMaxNumSuperOpQubitsBeforeGlobalMemSizeofOverflow() {
 
     // superoperators have square-bigger superoperators than dense matrices, and are never distributed
     int numNodes = 1;
     bool isDense = true;
     bool hasBuffer = false;
     bool isSuperOp = true;
-    return getMaxNumQubitsBeforeLocalMemSizeofOverflow(isDense, numNodes, hasBuffer, isSuperOp);
+    return getMaxNumQubitsBeforeGlobalMemSizeofOverflow(isDense, numNodes, hasBuffer, isSuperOp);
 }
 
 qindex mem_getMaxNumKrausMapMatricesBeforeLocalMemSizeofOverflow(int numQubits) {
@@ -297,6 +186,137 @@ qindex mem_getMaxNumKrausMapMatricesBeforeLocalMemSizeofOverflow(int numQubits) 
     qindex numMatrWithMaxTotalElems = mem_getMaxNumKrausMapMatricesBeforeIndexOverflow(numQubits);
     qindex numMatrWithMaxTotalMem = numMatrWithMaxTotalElems / sizeof(qcomp); // floors
     return numMatrWithMaxTotalMem;
+}
+
+
+
+/*
+ * HARDWARE QUERYING
+ */
+
+
+qindex mem_tryGetLocalRamCapacityInBytes() {
+
+    /// @todo attempt to find total Ram
+
+    // if we're unable to find total RAM, throw an exception
+    // (which the caller should catch and gracefully continue)
+    throw (mem::COULD_NOT_QUERY_RAM) false;
+}
+
+
+
+/*
+ * MEMORY USAGE
+ */
+
+
+int mem_getEffectiveNumStateVecQubitsPerNode(int numQubits, bool isDensMatr, int numNodes) {
+
+    // compute logs directly to avoid overflows (even though validation should preclude them)
+    qindex logNumAmpsTotal = ((isDensMatr)? 2 : 1) * numQubits;
+    qindex logNumAmpsPerNode = logNumAmpsTotal - logBase2(numNodes);
+    return logNumAmpsPerNode;
+}
+
+
+qindex mem_getTotalGlobalMemoryUsed(Qureg qureg) {
+
+    /// @todo
+    ///  if sizeof(qcomp) is a power of 2 (which it almost always is, c'mon now),
+    ///  then we could instead return the LOG of the total memory and always
+    ///  avoid overflow, permitting reporters to display mem=2^exp.
+    ///  it would also make changing units (e.g. to GB) easier.
+
+    // work out individual array costs
+    qindex memLocalArray = (qindex) mem_getLocalQuregMemoryRequired(qureg.numAmpsPerNode); // never overflows
+    int numLocalArrays = 
+        mem_isAllocated(qureg.cpuAmps) + mem_isAllocated(qureg.cpuCommBuffer) +
+        mem_isAllocated(qureg.gpuAmps) + mem_isAllocated(qureg.gpuCommBuffer);  // but 4*memLocalArray might overflow
+
+    // if total local costs would overflow qindex, return 0
+    qindex maxQindex = std::numeric_limits<qindex>::max();
+    qindex maxLocalArrayMem = maxQindex / numLocalArrays; // floors
+    if (memLocalArray > maxLocalArrayMem)
+        return 0;
+
+    // if qureg is non-distributed, compute local CPU+GPU+buffers costs and return
+    qindex memLocalTotal = numLocalArrays * memLocalArray;
+    if (!qureg.isDistributed)
+        return memLocalTotal;
+
+    // else if total global costs would overflow qindex, return 0
+    qindex maxLocalTotalMem = maxQindex / qureg.numNodes; // floors
+    if (memLocalTotal > maxLocalTotalMem)
+        return 0;
+
+    // else compute total costs between all nodes
+    qindex memGlobalTotal = memLocalTotal * qureg.numNodes;
+    return memGlobalTotal;
+}
+
+
+
+/*
+ * MEMORY REQUIRED
+ */
+
+
+size_t getLocalMemoryRequired(int numQubits, int numNodes, bool isDenseMatrix, bool hasBuffers) {
+
+    // assert no-overflow precondition
+    if (numQubits > getMaxNumQubitsBeforeGlobalMemSizeofOverflow(isDenseMatrix, numNodes, hasBuffers, false)) // isSuperop=false
+        error_memSizeQueriedButWouldOverflow();
+
+    // no risk of overflow; we have already validated numAmpsTotal fits in qindex
+    qindex numAmpsTotal = (isDenseMatrix)? powerOf2(2*numQubits) : powerOf2(numQubits);
+    qindex numAmpsPerNode = numAmpsTotal / numNodes; // divides evenly
+
+    // communication buffers double costs
+    if (hasBuffers && numNodes > 1)
+        numAmpsPerNode *= 2;
+
+    // beware that we must cast to a size_t (which can be greater 
+    // than qindex) BEFORE multiplying, to avoid overflows
+    return static_cast<size_t>(numAmpsPerNode) *  sizeof(qcomp);
+}
+
+
+size_t mem_getLocalQuregMemoryRequired(int numQubits, bool isDensityMatr, int numNodes) {
+
+    // Quregs may need buffers for inter-node communication, depending on numNodes > 1
+    bool hasBuffers = true;
+    return getLocalMemoryRequired(numQubits, numNodes, isDensityMatr, hasBuffers);
+}
+
+
+size_t mem_getLocalQuregMemoryRequired(qindex numAmpsPerNode) {
+
+    // assert no-overflow precondition
+    qindex maxNumAmpsPerNode = std::numeric_limits<size_t>::max() / sizeof(qcomp); // floors
+    if (numAmpsPerNode > maxNumAmpsPerNode)
+        error_memSizeQueriedButWouldOverflow();
+
+    // return number of bytes to store local array, EXCLUDING communication buffer
+    return numAmpsPerNode * sizeof(qcomp);
+}
+
+
+size_t mem_getLocalMatrixMemoryRequired(int numQubits, bool isDenseMatrix, int numNodes) {
+
+    // matrix types don't store buffers - they'll use those of Quregs they're applied to
+    bool hasBuffers = false;
+    return getLocalMemoryRequired(numQubits, numNodes, isDenseMatrix, hasBuffers);
+}
+
+
+size_t mem_getLocalSuperOpMemoryRequired(int numQubits) {
+
+    // superoperators have square-bigger superoperators than dense matrices, and are never distributed
+    int numMatrixQubits = 2 * numQubits;
+    bool isDense = true;
+    int numNodes = 1;
+    return mem_getLocalMatrixMemoryRequired(numMatrixQubits, isDense, numNodes);
 }
 
 

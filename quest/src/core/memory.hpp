@@ -80,11 +80,11 @@ int mem_getMaxNumSuperOpQubitsBeforeIndexOverflow();
 qindex mem_getMaxNumKrausMapMatricesBeforeIndexOverflow(int numQubits);
 
 
-int mem_getMaxNumQuregQubitsBeforeLocalMemSizeofOverflow(bool isDensityMatrix, int numNodes);
+int mem_getMaxNumQuregQubitsBeforeGlobalMemSizeofOverflow(bool isDensityMatrix, int numNodes);
 
-int mem_getMaxNumMatrixQubitsBeforeLocalMemSizeofOverflow(bool isDenseMatrix, int numNodes);
+int mem_getMaxNumMatrixQubitsBeforeGlobalMemSizeofOverflow(bool isDenseMatrix, int numNodes);
 
-int mem_getMaxNumSuperOpQubitsBeforeLocalMemSizeofOverflow();
+int mem_getMaxNumSuperOpQubitsBeforeGlobalMemSizeofOverflow();
 
 qindex mem_getMaxNumKrausMapMatricesBeforeLocalMemSizeofOverflow(int numQubits);
 

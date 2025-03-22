@@ -101,7 +101,7 @@ void error_allocOfQuESTEnvFailed() {
 
 void error_memSizeQueriedButWouldOverflow() {
 
-    raiseInternalError("Attempted to obtain memory necessary to allocate local Qureg partition but it overflowed size_t despite prior validation.");
+    raiseInternalError("Attempted to obtain memory necessary to allocate a distributed object's single-node partition but it overflowed size_t despite prior validation.");
 }
 
 
