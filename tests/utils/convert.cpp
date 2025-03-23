@@ -90,7 +90,7 @@ qmatrix getMatrix(Qureg qureg) {
 template <typename T> 
 qcomp getElem(T m, size_t r, size_t c) {
 
-    if constexpr (is_same_v<T, CompMatr>)
+    if constexpr (is_same_v<T, CompMatr> || is_same_v<T, SuperOp>)
         return m.cpuElems[r][c];
     
     if constexpr (is_same_v<T, CompMatr1> || is_same_v<T, CompMatr2>)
@@ -107,7 +107,11 @@ qcomp getElem(T m, size_t r, size_t c) {
 template <typename T> 
 qmatrix getMatrixInner(T m) {
 
-    qmatrix out = getZeroMatrix(getPow2(m.numQubits));
+    qindex dim = (is_same_v<T, SuperOp>)?
+        getPow2(2*m.numQubits):
+        getPow2(  m.numQubits);
+
+    qmatrix out = getZeroMatrix(dim);
 
     for (size_t r=0; r<out.size(); r++)
         for (size_t c=0; c<out.size(); c++)
@@ -123,6 +127,7 @@ qmatrix getMatrix(CompMatr  m) { return getMatrixInner(m); }
 qmatrix getMatrix(DiagMatr1 m) { return getMatrixInner(m); }
 qmatrix getMatrix(DiagMatr2 m) { return getMatrixInner(m); }
 qmatrix getMatrix(DiagMatr  m) { return getMatrixInner(m); }
+qmatrix getMatrix(SuperOp   m) { return getMatrixInner(m); }
 
 
 

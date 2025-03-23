@@ -111,7 +111,7 @@ TEST_CASE( "getCompMatr1", TEST_CATEGORY ) {
             REQUIRE_THROWS_WITH( getCompMatr1({{0,0},{0,0},{0,0}}), ContainsSubstring("Incompatible number of rows") );
         
             REQUIRE_THROWS_WITH( getCompMatr1({{0,0},{0}}),     ContainsSubstring("incompatible number of elements") );
-            REQUIRE_THROWS_WITH( getCompMatr1({{0,0},{0,0,0}}), ContainsSubstring("incompatible number of element") );
+            REQUIRE_THROWS_WITH( getCompMatr1({{0,0},{0,0,0}}), ContainsSubstring("incompatible number of elements") );
         }
     }
 }
@@ -194,7 +194,7 @@ TEST_CASE( "getCompMatr2", TEST_CATEGORY ) {
             REQUIRE_THROWS_WITH( getCompMatr2(bad2), ContainsSubstring("Incompatible number of rows") );
         
             REQUIRE_THROWS_WITH( getCompMatr2({{0,0,0,0},{0},{0},{0}}),   ContainsSubstring("incompatible number of elements") );
-            REQUIRE_THROWS_WITH( getCompMatr2({{0,0,0,0,0},{0},{0},{0}}), ContainsSubstring("incompatible number of element") );
+            REQUIRE_THROWS_WITH( getCompMatr2({{0,0,0,0,0},{0},{0},{0}}), ContainsSubstring("incompatible number of elements") );
         }
     }
 }
@@ -311,7 +311,7 @@ TEST_CASE( "getInlineCompMatr1", TEST_CATEGORY ) {
             REQUIRE_THROWS_WITH( getInlineCompMatr1({{0,0},{0,0},{0,0}}), ContainsSubstring("Incompatible number of rows") );
         
             REQUIRE_THROWS_WITH( getInlineCompMatr1({{0,0},{0}}),     ContainsSubstring("incompatible number of elements") );
-            REQUIRE_THROWS_WITH( getInlineCompMatr1({{0,0},{0,0,0}}), ContainsSubstring("incompatible number of element") );
+            REQUIRE_THROWS_WITH( getInlineCompMatr1({{0,0},{0,0,0}}), ContainsSubstring("incompatible number of elements") );
         }
     }
 }
@@ -346,7 +346,7 @@ TEST_CASE( "getInlineCompMatr2", TEST_CATEGORY ) {
             REQUIRE_THROWS_WITH( getInlineCompMatr2({{0,0,0,0},{0,0,0,0},{0,0,0,0}}), ContainsSubstring("Incompatible number of rows") );
         
             REQUIRE_THROWS_WITH( getInlineCompMatr2({{0,0,0,0},{0},{0},{0}}),   ContainsSubstring("incompatible number of elements") );
-            REQUIRE_THROWS_WITH( getInlineCompMatr2({{0,0,0,0,0},{0},{0},{0}}), ContainsSubstring("incompatible number of element") );
+            REQUIRE_THROWS_WITH( getInlineCompMatr2({{0,0,0,0,0},{0},{0},{0}}), ContainsSubstring("incompatible number of elements") );
         }
     }
 }
@@ -932,7 +932,7 @@ TEST_CASE( "setCompMatr", TEST_CATEGORY ) {
             REQUIRE_THROWS_WITH( setCompMatr(matr, {{1,2},{3,4},{5,6}}), ContainsSubstring("Incompatible number of rows") );
         
             REQUIRE_THROWS_WITH( setCompMatr(matr, {{0,0},{0}}),     ContainsSubstring("incompatible number of elements") );
-            REQUIRE_THROWS_WITH( setCompMatr(matr, {{0,0},{0,0,0}}), ContainsSubstring("incompatible number of element") );
+            REQUIRE_THROWS_WITH( setCompMatr(matr, {{0,0},{0,0,0}}), ContainsSubstring("incompatible number of elements") );
         }
 
         destroyCompMatr(matr);

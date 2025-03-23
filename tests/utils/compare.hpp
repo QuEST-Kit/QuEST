@@ -43,6 +43,7 @@ void REQUIRE_AGREE( CompMatr  matrix, qmatrix reference );
 void REQUIRE_AGREE( DiagMatr1 matrix, qmatrix reference );
 void REQUIRE_AGREE( DiagMatr2 matrix, qmatrix reference );
 void REQUIRE_AGREE( DiagMatr  matrix, qmatrix reference );
+void REQUIRE_AGREE( SuperOp   matrix, qmatrix reference );
 
 
 #endif // COMPARE_HPP

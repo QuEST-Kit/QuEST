@@ -246,3 +246,4 @@ void REQUIRE_AGREE( CompMatr  matrix, qmatrix reference ) { REQUIRE_AGREE( getMa
 void REQUIRE_AGREE( DiagMatr1 matrix, qmatrix reference ) { REQUIRE_AGREE( getMatrix(matrix), reference ); }
 void REQUIRE_AGREE( DiagMatr2 matrix, qmatrix reference ) { REQUIRE_AGREE( getMatrix(matrix), reference ); }
 void REQUIRE_AGREE( DiagMatr  matrix, qmatrix reference ) { REQUIRE_AGREE( getMatrix(matrix), reference ); }
+void REQUIRE_AGREE( SuperOp   matrix, qmatrix reference ) { REQUIRE_AGREE( getMatrix(matrix), reference ); }

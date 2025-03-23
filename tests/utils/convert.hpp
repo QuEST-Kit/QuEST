@@ -30,6 +30,7 @@ qmatrix getMatrix(CompMatr );
 qmatrix getMatrix(DiagMatr1);
 qmatrix getMatrix(DiagMatr2);
 qmatrix getMatrix(DiagMatr );
+qmatrix getMatrix(SuperOp  );
 
 qmatrix getMatrix(PauliStr str, vector<int> targs);
 qmatrix getMatrix(PauliStr str,    int numQubits);

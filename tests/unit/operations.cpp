@@ -39,11 +39,6 @@ using std::tuple;
 #define TEST_CATEGORY \
     LABEL_UNIT_TAG "[operations]"
 
-auto contains(std::string str) {
-    
-    return Catch::Matchers::ContainsSubstring(str, Catch::CaseSensitive::No);
-}
-
 
 /*
  * reference operator matrices used by testing
