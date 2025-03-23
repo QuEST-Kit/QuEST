@@ -73,6 +73,16 @@
 #define LABEL_INTEGRATION_TAG "[integration]"
 
 
+// detect LLVM address sanitizer (on GCC and Clang only)
+#if defined(__SANITIZE_ADDRESS__)
+    #define SANITIZER_IS_ACTIVE
+#elif defined(__has_feature)
+    #if __has_feature(address_sanitizer)
+        #define SANITIZER_IS_ACTIVE
+    #endif
+#endif
+
+
 #endif // MACROS_HPP
 
 /** @} (end defgroup) */

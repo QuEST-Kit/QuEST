@@ -411,7 +411,7 @@ TEST_CASE( "setValidationEpsilon", TEST_CATEGORY ) {
         REQUIRE_THROWS( applyCompMatr1(qureg, -1, m) );
 
         // confirm non-zero (forgive all) works
-        setValidationEpsilon(500); // bigger than dist of m*conj(m) from identity
+        setValidationEpsilon(9999); // bigger than dist of m*conj(m) from identity squared
         REQUIRE_NOTHROW( applyCompMatr1(qureg, 0, m) );
 
         destroyQureg(qureg);
