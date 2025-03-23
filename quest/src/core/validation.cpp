@@ -325,10 +325,10 @@ namespace report {
     string DIAG_MATR_NEW_ELEMS_NULL_PTR =
         "The given list of new elements was a null pointer.";
 
-    string COMP_MATR_NEW_ELEMS_OUTER_NULL_PTR =
+    string DENSE_MATR_NEW_ELEMS_OUTER_NULL_PTR =
         "The given matrix of new elements was a null pointer.";
 
-    string COMP_MATR_NEW_ELEMS_INNER_NULL_PTR =
+    string DENSE_MATR_NEW_ELEMS_INNER_NULL_PTR =
         "The given matrix of new elements contained a null pointer, suggesting an issue with initialising one or more rows.";
     
 
@@ -1592,6 +1592,12 @@ void validate_newQuregParams(int numQubits, int isDensMatr, int isDistrib, int i
 
 void validate_newQuregAllocs(Qureg qureg, const char* caller) {
 
+    // this validation is called AFTER the caller has checked for failed
+    // allocs and (in that scenario) freed every pointer, but does not 
+    // overwrite any pointers to nullptr, so the failed alloc is known.
+    // This is only safe to do so (rather than making the caller set ptrs
+    // to nullptr) because the struct contains only 1D pointers (no nesting)
+
     // we get node consensus in case mallocs fail on some nodes but not others, as may occur
     // in heterogeneous settings, or where nodes may have other processes and loads hogging RAM. 
     assertAllNodesAgreeThat(mem_isAllocated(qureg.cpuAmps), report::NEW_QUREG_CPU_AMPS_ALLOC_FAILED, caller);
@@ -1929,6 +1935,13 @@ void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, int useG
 template <typename T>
 void assertNewMatrixAllocsSucceeded(T matr, size_t numBytes, const char* caller) {
 
+    // this validation is called AFTER the caller has checked for failed
+    // allocs and (in that scenario) freed every pointer, but does not 
+    // overwrite any pointers to nullptr, so the failed alloc is known.
+    // This is only safe to do so (rather than making the caller set ptrs
+    // to nullptr) because the structs contains only 1D pointer; even 
+    // CompMatr which "fakes" a 2D ptr via offsets of a contiguous array.
+
     // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads,
     // but we avoid this potetially expensive synchronisation if validation is anyway disabled
     // (which also avoids us enumerating the matrix rows)
@@ -2046,13 +2059,14 @@ void validate_matrixNewElemsPtrNotNull(qcomp* elems, const char* caller) {
     assertThat(elems != nullptr, report::DIAG_MATR_NEW_ELEMS_NULL_PTR, caller);
 }
 
-void validate_matrixNewElemsPtrNotNull(qcomp** elems, int numQubits, const char* caller) {
+void validate_matrixNewElemsPtrNotNull(qcomp** elems, qindex numRows, const char* caller) {
 
-    assertThat(elems != nullptr, report::COMP_MATR_NEW_ELEMS_OUTER_NULL_PTR, caller);
+    // messages are suitable for all dense matrices, including SuperOp
 
-    qindex dim = powerOf2(numQubits);
-    for (qindex i=0; i<dim; i++)
-        assertThat(elems[i] != nullptr, report::COMP_MATR_NEW_ELEMS_INNER_NULL_PTR, caller);
+    assertThat(elems != nullptr, report::DENSE_MATR_NEW_ELEMS_OUTER_NULL_PTR, caller);
+
+    for (qindex i=0; i<numRows; i++)
+        assertThat(elems[i] != nullptr, report::DENSE_MATR_NEW_ELEMS_INNER_NULL_PTR, caller);
 }
 
 void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd, qindex numElems, const char* caller) {
@@ -2552,6 +2566,13 @@ void validate_newSuperOpParams(int numQubits, const char* caller) {
 }
 
 void assertNewSuperOpAllocs(SuperOp op, bool isInKrausMap, const char* caller) {
+
+    // this validation is called AFTER the caller has checked for failed
+    // allocs and (in that scenario) freed every pointer, but does not 
+    // overwrite any pointers to nullptr, so the failed alloc is known.
+    // This is only safe to do so (rather than making the caller set ptrs
+    // to nullptr) because the struct contains only 1D pointers (no nesting)
+
     tokenSubs vars = {{"${NUM_BYTES}", mem_getLocalSuperOpMemoryRequired(op.numQubits)}};
 
     // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads,
@@ -2765,6 +2786,16 @@ void validate_newKrausMapParams(int numQubits, int numMatrices, const char* call
 
 void validate_newKrausMapAllocs(KrausMap map, const char* caller) {
 
+    // unlike other post-creation allocation validation, this function
+    // expects that when allocation failed and the heap fields have already
+    // been cleared, that any nested field (like map.matrices) has had the
+    // outer pointer set to null. Otherwise, we would illegally attempt to
+    // enumerate the outer pointer to check non-null-ness of inner pointers,
+    // which would segmentation fault after the outer pointer was freed!
+    // Ergo, we know map.matrices=nullptr whenever anything else failed
+    // (and is nullptr), so we must check it last so as not to false report 
+    // it as the cause of the failure!
+
     // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads,
     // but we avoid this if validation is anyway disabled
     if (!global_isValidationEnabled)
@@ -2773,13 +2804,9 @@ void validate_newKrausMapAllocs(KrausMap map, const char* caller) {
     // prior validation gaurantees this will not overflow
     qindex matrListMem = map.numMatrices * mem_getLocalMatrixMemoryRequired(map.numQubits, true, 1);
     tokenSubs vars = {
-        {"${NUM_BYTES}", matrListMem},
+        {"${NUM_BYTES}",    matrListMem},
         {"${NUM_MATRICES}", map.numMatrices},
-        {"${NUM_QUBITS}", map.numQubits}};
-
-    // assert the list of Kraus operator matrices, and all matrices nad rows therein, were allocated
-    bool krausAreAlloc = mem_isAllocated(map.matrices, map.numMatrices, map.numQubits);
-    assertAllNodesAgreeThat(krausAreAlloc, report::NEW_KRAUS_MAP_CPU_MATRICES_ALLOC_FAILED, vars, caller);
+        {"${NUM_QUBITS}",   map.numQubits}};
 
     // assert the teeny-tiny heap flag was alloc'd
     assertAllNodesAgreeThat(mem_isAllocated(map.isCPTP), report::NEW_HEAP_FLAG_ALLOC_FAILED, {{"${NUM_BYTES}", sizeof(*(map.isCPTP))}}, caller);
@@ -2787,6 +2814,11 @@ void validate_newKrausMapAllocs(KrausMap map, const char* caller) {
     // assert that the superoperator itself was allocated (along with its own heap fields)
     bool isInKrausMap = true;
     assertNewSuperOpAllocs(map.superop, isInKrausMap, caller);
+
+    // assert the list of Kraus operator matrices, and all matrices nad rows therein, were allocated
+    // (this must be done last, since caller sets .matrices=nullptr) whenever an inner alloc failed
+    bool krausAreAlloc = mem_isOuterAllocated(map.matrices);
+    assertAllNodesAgreeThat(krausAreAlloc, report::NEW_KRAUS_MAP_CPU_MATRICES_ALLOC_FAILED, vars, caller);
 }
 
 void validate_newInlineKrausMapDimMatchesVectors(int numQubits, int numOperators, vector<vector<vector<qcomp>>> matrices, const char* caller) {
@@ -3081,6 +3113,12 @@ void validate_newPauliStrSumMatchingListLens(qindex numStrs, qindex numCoeffs, c
 }
 
 void validate_newPauliStrSumAllocs(PauliStrSum sum, qindex numBytesStrings, qindex numBytesCoeffs, const char* caller) {
+
+    // this validation is called AFTER the caller has checked for failed
+    // allocs and (in that scenario) freed every pointer, but does not 
+    // overwrite any pointers to nullptr, so the failed alloc is known.
+    // This is only safe to do so (rather than making the caller set ptrs
+    // to nullptr) because the struct contains only 1D pointers (no nesting)
 
     assertThat(
         mem_isAllocated(sum.strings), report::NEW_PAULI_STR_SUM_STRINGS_ALLOC_FAILED, 

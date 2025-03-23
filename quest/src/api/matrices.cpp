@@ -83,6 +83,12 @@ DiagMatr2 getDiagMatr2(vector<qcomp> in) {
 template <class T>
 void freeHeapMatrix(T matr) {
 
+    // WARNING: this is not overwriting any freed pointers with null, 
+    // since the caller's struct is not changed. This is fine here,
+    // but would be an issue if the struct contained nested pointers,
+    // since caller would not know an outer pointer was freed and
+    // ergo that it should not be enumerated (to check/free inner ptr)
+
     // free the 1D or 2D matrix - safe even if nullptr
     if constexpr (util_isDenseMatrixType<T>()) {
         cpu_deallocMatrixWrapper(matr.cpuElems);
@@ -419,7 +425,7 @@ void setAndSyncDenseMatrElems(CompMatr out, T elems) {
 
 extern "C" void setCompMatr(CompMatr out, qcomp** in) {
     validate_matrixFields(out, __func__);
-    validate_matrixNewElemsPtrNotNull(in, out.numQubits, __func__);
+    validate_matrixNewElemsPtrNotNull(in, out.numRows, __func__);
 
     setAndSyncDenseMatrElems(out, in);
 }
@@ -572,7 +578,7 @@ extern "C" {
 
     void _validateNewNestedElemsPtrNotNull(qcomp** ptrs, int numQubits, const char* caller) {
 
-        validate_matrixNewElemsPtrNotNull(ptrs, numQubits, caller);
+        validate_matrixNewElemsPtrNotNull(ptrs, powerOf2(numQubits), caller);
     }
     void _validateNewElemsPtrNotNull(qcomp* ptr, const char* caller) {
         

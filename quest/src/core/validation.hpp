@@ -137,7 +137,7 @@ void validate_matrixNumNewElems(int numQubits, vector<vector<qcomp>> elems, cons
 void validate_matrixNumNewElems(int numQubits, vector<qcomp> elems, const char* caller);
 
 void validate_matrixNewElemsPtrNotNull(qcomp* elems, const char* caller);
-void validate_matrixNewElemsPtrNotNull(qcomp** elems, int numQubits, const char* caller);
+void validate_matrixNewElemsPtrNotNull(qcomp** elems, qindex numRows, const char* caller);
 
 void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd, qindex numElems, const char* caller);
 

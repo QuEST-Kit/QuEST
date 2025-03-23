@@ -417,7 +417,7 @@ bool mem_isAllocated(qcomp** matrix, qindex numRows) {
     return true;
 }
 
-bool mem_isAllocated(qcomp*** matrixList, qindex numMatrices, qindex numRows) {
+bool mem_isAllocated(qcomp*** matrixList, qindex numRows, int numMatrices) {
 
     if (matrixList == nullptr)
         return false;

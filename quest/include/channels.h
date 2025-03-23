@@ -93,7 +93,7 @@ typedef struct {
 
     // representation of the map as a collection of Kraus operators, kept exclusively 
     // in CPU memory, and used only for CPTP validation and reporting the map
-    qindex numMatrices;
+    int numMatrices;
     qindex numRows;
     qcomp*** matrices;
 

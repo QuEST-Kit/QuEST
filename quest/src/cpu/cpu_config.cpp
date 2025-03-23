@@ -190,7 +190,7 @@ void cpu_deallocMatrix(qcomp** matrix, qindex dim) {
 }
 
 
-qcomp*** cpu_allocMatrixList(int numMatrices, qindex numRows) {
+qcomp*** cpu_allocMatrixList(qindex numRows, int numMatrices) {
 
     // attempt to allocate the outer list
     qcomp*** matrices = (qcomp***) malloc(numMatrices * sizeof *matrices); // nullptr if failed
@@ -204,7 +204,7 @@ qcomp*** cpu_allocMatrixList(int numMatrices, qindex numRows) {
 }
 
 
-void cpu_deallocMatrixList(qcomp*** matrices, int numMatrices, qindex numRows) {
+void cpu_deallocMatrixList(qcomp*** matrices, qindex numRows, int numMatrices) {
 
     // free everything that allocated (but permit anything to have failed)
     if (matrices != nullptr)

@@ -50,8 +50,8 @@ void cpu_deallocMatrixWrapper(qcomp** wrapper);
 qcomp** cpu_allocMatrix(qindex dim);
 void cpu_deallocMatrix(qcomp** matrix, qindex dim);
 
-qcomp*** cpu_allocMatrixList(int numMatrices, qindex numRows);
-void cpu_deallocMatrixList(qcomp*** matrices, int numMatrices, qindex numRows);
+qcomp*** cpu_allocMatrixList( qindex numRows, int numMatrices);
+void cpu_deallocMatrixList(qcomp*** matrices, qindex numRows, int numMatrices);
 
 int* cpu_allocHeapFlag();
 void cpu_deallocHeapFlag(int* ptr);

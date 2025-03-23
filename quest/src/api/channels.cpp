@@ -51,7 +51,7 @@ void freeSuperOp(SuperOp op) {
 void freeKrausMap(KrausMap map) {
 
     // free CPU matrices of Kraus operators
-    cpu_deallocMatrixList(map.matrices, map.numMatrices, map.numRows);
+    cpu_deallocMatrixList(map.matrices, map.numRows, map.numMatrices);
 
     // free teeny-tiny heap flag
     cpu_deallocHeapFlag(map.isCPTP);
@@ -61,11 +61,15 @@ void freeKrausMap(KrausMap map) {
 }
 
 
-void freeObj(SuperOp op) {
+void freeObj(SuperOp& op) {
     freeSuperOp(op);
 }
-void freeObj(KrausMap map) {
+void freeObj(KrausMap& map) {
     freeKrausMap(map);
+
+    // must overwrite any nested pointer structure to have a null
+    // outer pointer, so that post-alloc validationw won't seg-fault 
+    map.matrices = nullptr;
 }
 
 
@@ -87,7 +91,7 @@ bool didAnyLocalAllocsFail(KrausMap map) {
     if (!mem_isAllocated(map.isCPTP))
         return true;
 
-    if (!mem_isAllocated(map.matrices, map.numMatrices, map.numRows))
+    if (!mem_isAllocated(map.matrices, map.numRows, map.numMatrices))
         return true;
 
     if (didAnyLocalAllocsFail(map.superop))
@@ -97,9 +101,9 @@ bool didAnyLocalAllocsFail(KrausMap map) {
 }
 
 
-// T will be SuperOp or KrausMap
+// T will be SuperOp or KrausMap (passed by reference, so modifiable)
 template <typename T>
-void freeAllMemoryIfAnyAllocsFailed(T obj) {
+void freeAllMemoryIfAnyAllocsFailed(T& obj) {
 
     // determine whether any node experienced a failure
     bool anyFail = didAnyLocalAllocsFail(obj);
@@ -108,7 +112,7 @@ void freeAllMemoryIfAnyAllocsFailed(T obj) {
 
     // if so, free all memory before subsequent validation
     if (anyFail)
-        freeObj(obj);
+        freeObj(obj); // may modify obj
 }
 
 
@@ -177,14 +181,14 @@ extern "C" KrausMap createKrausMap(int numQubits, int numOperators) {
         .numMatrices = numOperators,
         .numRows = numRows,
 
-        .matrices = cpu_allocMatrixList(numOperators, numRows), // is or contains nullptr if failed
+        .matrices = cpu_allocMatrixList(numRows, numOperators), // is or contains nullptr if failed
         .superop = allocSuperOp(numQubits), // heap fields are or contain nullptr if failed
 
         .isCPTP = cpu_allocHeapFlag(), // nullptr if failed
     };
 
     // free memory before throwing validation error to avoid memory leaks
-    freeAllMemoryIfAnyAllocsFailed(out);
+    freeAllMemoryIfAnyAllocsFailed(out); // sets out.matrices=nullptr if failed
     validate_newKrausMapAllocs(out, __func__);
 
     // mark CPTP as unknown; it will be lazily evaluated whene a function asserts CPTP-ness
@@ -264,6 +268,7 @@ void setAndSyncSuperOpElems(SuperOp op, T matrix) {
 
 extern "C" void setSuperOp(SuperOp op, qcomp** matrix) {
     validate_superOpFields(op, __func__);
+    validate_matrixNewElemsPtrNotNull(matrix, op.numRows, __func__); // fine for superop
 
     setAndSyncSuperOpElems(op, matrix);
 }
