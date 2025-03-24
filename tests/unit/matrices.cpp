@@ -719,7 +719,7 @@ TEST_CASE( "destroyCompMatr" ) {
         SECTION( "not created" ) {
 
             CompMatr m;
-            REQUIRE_THROWS_WITH( destroyCompMatr(m), ContainsSubstring("Invalid CompMatr") || ContainsSubstring("not created") );
+            REQUIRE_THROWS_WITH( destroyCompMatr(m), ContainsSubstring("Invalid CompMatr") && ContainsSubstring("not created") );
         }
     }
 }
@@ -738,7 +738,7 @@ TEST_CASE( "destroyDiagMatr" ) {
         SECTION( "not created" ) {
 
             DiagMatr m;
-            REQUIRE_THROWS_WITH( destroyDiagMatr(m), ContainsSubstring("Invalid DiagMatr") || ContainsSubstring("not created") );
+            REQUIRE_THROWS_WITH( destroyDiagMatr(m), ContainsSubstring("Invalid DiagMatr") && ContainsSubstring("not created") );
         }
     }
 }
@@ -786,7 +786,7 @@ TEST_CASE( "syncCompMatr", TEST_CATEGORY ) {
         SECTION( "not created" ) {
 
             CompMatr m;
-            REQUIRE_THROWS_WITH( syncCompMatr(m), ContainsSubstring("Invalid CompMatr") || ContainsSubstring("not created") );
+            REQUIRE_THROWS_WITH( syncCompMatr(m), ContainsSubstring("Invalid CompMatr") && ContainsSubstring("not created") );
         }
     }
 }
@@ -815,7 +815,7 @@ TEST_CASE( "syncDiagMatr", TEST_CATEGORY ) {
         SECTION( "not created" ) {
 
             DiagMatr m;
-            REQUIRE_THROWS_WITH( syncDiagMatr(m), ContainsSubstring("Invalid DiagMatr") || ContainsSubstring("not created") );
+            REQUIRE_THROWS_WITH( syncDiagMatr(m), ContainsSubstring("Invalid DiagMatr") && ContainsSubstring("not created") );
         }
     }
 }
@@ -909,7 +909,7 @@ TEST_CASE( "setCompMatr", TEST_CATEGORY ) {
 
             CompMatr bad;
             qcomp** dummy;
-            REQUIRE_THROWS_WITH( setCompMatr(bad, dummy), ContainsSubstring("Invalid CompMatr") || ContainsSubstring("not created") );
+            REQUIRE_THROWS_WITH( setCompMatr(bad, dummy), ContainsSubstring("Invalid CompMatr") && ContainsSubstring("not created") );
         }
         #endif
 
@@ -982,7 +982,7 @@ TEST_CASE( "setDiagMatr", TEST_CATEGORY ) {
 
             DiagMatr bad;
             qcomp* dummy;
-            REQUIRE_THROWS_WITH( setDiagMatr(bad, dummy), ContainsSubstring("Invalid DiagMatr") || ContainsSubstring("not created") );
+            REQUIRE_THROWS_WITH( setDiagMatr(bad, dummy), ContainsSubstring("Invalid DiagMatr") && ContainsSubstring("not created") );
         }
 
         SECTION( "null pointer" ) {
@@ -1029,7 +1029,7 @@ TEST_CASE( "setInlineCompMatr", TEST_CATEGORY ) {
         SECTION( "not created" ) {
 
             CompMatr bad;
-            REQUIRE_THROWS_WITH( setInlineCompMatr(bad, 1, {{1,2},{3,4}}), ContainsSubstring("Invalid CompMatr") || ContainsSubstring("not created") );
+            REQUIRE_THROWS_WITH( setInlineCompMatr(bad, 1, {{1,2},{3,4}}), ContainsSubstring("Invalid CompMatr") && ContainsSubstring("not created") );
         }
         #endif
 
@@ -1079,7 +1079,7 @@ TEST_CASE( "setInlineDiagMatr", TEST_CATEGORY ) {
         SECTION( "not created" ) {
 
             DiagMatr bad;
-            REQUIRE_THROWS_WITH( setInlineDiagMatr(bad, 1, {1,2}), ContainsSubstring("Invalid DiagMatr") || ContainsSubstring("not created") );
+            REQUIRE_THROWS_WITH( setInlineDiagMatr(bad, 1, {1,2}), ContainsSubstring("Invalid DiagMatr") && ContainsSubstring("not created") );
         }
         #endif
 

@@ -2056,17 +2056,17 @@ void validate_matrixNumNewElems(int numQubits, vector<qcomp> elems, const char* 
 
 void validate_matrixNewElemsPtrNotNull(qcomp* elems, const char* caller) {
 
-    assertThat(elems != nullptr, report::DIAG_MATR_NEW_ELEMS_NULL_PTR, caller);
+    assertThat(mem_isAllocated(elems), report::DIAG_MATR_NEW_ELEMS_NULL_PTR, caller);
 }
 
 void validate_matrixNewElemsPtrNotNull(qcomp** elems, qindex numRows, const char* caller) {
 
     // messages are suitable for all dense matrices, including SuperOp
 
-    assertThat(elems != nullptr, report::DENSE_MATR_NEW_ELEMS_OUTER_NULL_PTR, caller);
+    assertThat(mem_isOuterAllocated(elems), report::DENSE_MATR_NEW_ELEMS_OUTER_NULL_PTR, caller);
 
     for (qindex i=0; i<numRows; i++)
-        assertThat(elems[i] != nullptr, report::DENSE_MATR_NEW_ELEMS_INNER_NULL_PTR, caller);
+        assertThat(mem_isAllocated(elems[i]), report::DENSE_MATR_NEW_ELEMS_INNER_NULL_PTR, caller);
 }
 
 void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd, qindex numElems, const char* caller) {
@@ -3417,7 +3417,7 @@ void assertValidQubits(
     assertThat(numQubits <= qureg.numQubits, msgNumExceedsQureg, {{"${NUM_QUBITS}", numQubits}, {"${QUREG_QUBITS}", qureg.numQubits}}, caller);
 
     if (numQubits > 0)
-        assertThat(qubits != nullptr, msgNullPtr, caller);
+        assertThat(mem_isAllocated(qubits), msgNullPtr, caller);
 
     for (int n=0; n<numQubits; n++)
         assertValidQubit(qureg, qubits[n], msgBadInd, caller);
@@ -3491,8 +3491,8 @@ void validate_controlsAndTwoTargets(Qureg qureg, int* ctrls, int numCtrls, int t
 
 void validate_controlStates(int* states, int numCtrls, const char* caller) {
 
-    // states is permittedly nullptr even when numCtrls != 0
-    if (states == nullptr)
+    // states is permittedly unallocated (nullptr) even when numCtrls != 0
+    if (!mem_isAllocated(states))
         return;
 
     for (int n=0; n<numCtrls; n++)
