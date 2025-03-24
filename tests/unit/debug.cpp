@@ -234,7 +234,7 @@ TEST_CASE( "setSeedsToDefault", TEST_CATEGORY ) {
 }
 
 
-TEST_CASE( "getSeeds" ) {
+TEST_CASE( "getSeeds", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
@@ -283,7 +283,7 @@ TEST_CASE( "getSeeds" ) {
 }
 
 
-TEST_CASE( "getNumSeeds" ) {
+TEST_CASE( "getNumSeeds", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 

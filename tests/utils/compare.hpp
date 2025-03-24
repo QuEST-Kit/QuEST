@@ -36,6 +36,7 @@ void REQUIRE_AGREE( qreal scalar, qreal reference );
 void REQUIRE_AGREE( qcomp scalar, qcomp reference );
 
 void REQUIRE_AGREE( vector<qreal> list, vector<qreal> reference );
+void REQUIRE_AGREE( vector<qcomp> list, vector<qcomp> reference );
 
 void REQUIRE_AGREE( qmatrix   matrix, qmatrix reference );
 void REQUIRE_AGREE( CompMatr1 matrix, qmatrix reference );

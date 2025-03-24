@@ -475,7 +475,7 @@ qcomp localiser_statevec_getAmp(Qureg qureg, qindex globalInd) {
 
     // only one (or all) node contains the target amp
     qcomp amp = 0;
-    int sender = util_getRankContainingIndex(qureg, globalInd); // 0 if qureg not distributed
+    int sender = util_getRankContainingIndex(qureg, globalInd); // root=0 if qureg not distributed
 
     // only node(s) containing the target amp bother to fetch 
     // it, avoiding superfluous cache costs on other nodes

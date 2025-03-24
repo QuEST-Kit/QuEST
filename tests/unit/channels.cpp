@@ -43,7 +43,7 @@ using std::vector;
  */
 
 
-TEST_CASE( "createKrausMap", TEST_CATEGORY)  {
+TEST_CASE( "createKrausMap", TEST_CATEGORY ) {
  
     SECTION( LABEL_CORRECTNESS ) {
 
@@ -122,8 +122,11 @@ TEST_CASE( "createKrausMap", TEST_CATEGORY)  {
             REQUIRE_THROWS_WITH( createKrausMap(15,1), ContainsSubstring("necessary memory") && ContainsSubstring("would overflow") );
 
             // no overflows, but definitely exceeds local RAM and fails to allocate; frightens address sanitizer!
+            // note the specific error message depends on the what backend the auto-deployer tried to use (e.g.
+            // GPU-accel or distributed) and whether memory-probers realised there was insufficient memory in
+            // advance or whether it proceeded to malloc() which subsequently failed
             #ifndef SANITIZER_IS_ACTIVE
-            REQUIRE_THROWS_WITH( createKrausMap(12,1), ContainsSubstring("allocation") && ContainsSubstring("failed") );
+            REQUIRE_THROWS_WITH( createKrausMap(12,1), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") );
             #endif
         }
 
@@ -415,7 +418,7 @@ TEST_CASE( "createInlineKrausMap", TEST_CATEGORY ) {
 
 
 
-TEST_CASE( "createSuperOp", TEST_CATEGORY)  {
+TEST_CASE( "createSuperOp", TEST_CATEGORY ) {
  
     SECTION( LABEL_CORRECTNESS ) {
 
@@ -471,8 +474,11 @@ TEST_CASE( "createSuperOp", TEST_CATEGORY)  {
             REQUIRE_THROWS_WITH( createSuperOp(15), ContainsSubstring("size_t") );
 
             // no overflows, but definitely exceeds local RAM and fails to allocate; frightens address sanitizer!
+            // note the specific error message depends on the what backend the auto-deployer tried to use (e.g.
+            // GPU-accel or distributed) and whether memory-probers realised there was insufficient memory in
+            // advance or whether it proceeded to malloc() which subsequently failed
             #ifndef SANITIZER_IS_ACTIVE
-            REQUIRE_THROWS_WITH( createSuperOp(12), ContainsSubstring("allocation") && ContainsSubstring("failed") );
+            REQUIRE_THROWS_WITH( createSuperOp(12), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") );
             #endif
         }
     }
@@ -511,7 +517,7 @@ TEST_CASE( "syncSuperOp", TEST_CATEGORY ) {
 }
 
 
-TEST_CASE( "destroySuperOp" ) {
+TEST_CASE( "destroySuperOp", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 

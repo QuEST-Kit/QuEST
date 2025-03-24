@@ -452,8 +452,11 @@ TEST_CASE( "createCompMatr", TEST_CATEGORY ) {
             REQUIRE_THROWS_WITH( createCompMatr(31), ContainsSubstring("necessary memory would overflow size_t") );
 
             // no overflows, but definitely exceeds local RAM and fails to allocate; frightens address sanitizer!
+            // note the specific error message depends on the what backend the auto-deployer tried to use (e.g.
+            // GPU-accel or distributed) and whether memory-probers realised there was insufficient memory in
+            // advance or whether it proceeded to malloc() which subsequently failed
             #ifndef SANITIZER_IS_ACTIVE
-            REQUIRE_THROWS_WITH( createCompMatr(25), ContainsSubstring("allocation") && ContainsSubstring("failed") );
+            REQUIRE_THROWS_WITH( createCompMatr(25), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") );
             #endif
         }
     }
@@ -522,8 +525,11 @@ TEST_CASE( "createDiagMatr", TEST_CATEGORY ) {
             REQUIRE_THROWS_WITH( createDiagMatr(62), ContainsSubstring("necessary memory would overflow size_t") );
 
             // no overflows, but definitely exceeds local RAM and fails to allocate; frightens address sanitizer!
+            // note the specific error message depends on the what backend the auto-deployer tried to use (e.g.
+            // GPU-accel or distributed) and whether memory-probers realised there was insufficient memory in
+            // advance or whether it proceeded to malloc() which subsequently failed
             #ifndef SANITIZER_IS_ACTIVE
-            REQUIRE_THROWS_WITH( createDiagMatr(50), ContainsSubstring("allocation") && ContainsSubstring("failed") );
+            REQUIRE_THROWS_WITH( createDiagMatr(50), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") );
             #endif
         }
     }
@@ -592,8 +598,11 @@ TEST_CASE( "createFullStateDiagMatr", TEST_CATEGORY ) {
             REQUIRE_THROWS_WITH( createFullStateDiagMatr(62), ContainsSubstring("memory would overflow size_t") );
 
             // no overflows, but definitely exceeds local RAM and fails to allocate; frightens address sanitizer!
+            // note the specific error message depends on the what backend the auto-deployer tried to use (e.g.
+            // GPU-accel or distributed) and whether memory-probers realised there was insufficient memory in
+            // advance or whether it proceeded to malloc() which subsequently failed
             #ifndef SANITIZER_IS_ACTIVE
-            REQUIRE_THROWS_WITH( createFullStateDiagMatr(50), ContainsSubstring("allocation") && ContainsSubstring("failed") );
+            REQUIRE_THROWS_WITH( createFullStateDiagMatr(50), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") );
             #endif
         }
 
@@ -685,8 +694,11 @@ TEST_CASE( "createCustomFullStateDiagMatr", TEST_CATEGORY ) {
                 REQUIRE_THROWS_WITH( createCustomFullStateDiagMatr(62, mpi,gpu,omp), ContainsSubstring("memory would overflow size_t") );
 
                 // no overflows, but definitely exceeds local RAM and fails to allocate; frightens address sanitizer!
+                // note the specific error message depends on the what backend the auto-deployer tried to use (e.g.
+                // GPU-accel or distributed) and whether memory-probers realised there was insufficient memory in
+                // advance or whether it proceeded to malloc() which subsequently failed
                 #ifndef SANITIZER_IS_ACTIVE
-                REQUIRE_THROWS_WITH( createCustomFullStateDiagMatr(50, mpi,gpu,omp), ContainsSubstring("allocation") && ContainsSubstring("failed") );
+                REQUIRE_THROWS_WITH( createCustomFullStateDiagMatr(50, mpi,gpu,omp), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") );
                 #endif
             }
         }
@@ -706,7 +718,7 @@ TEST_CASE( "createCustomFullStateDiagMatr", TEST_CATEGORY ) {
 }
 
 
-TEST_CASE( "destroyCompMatr" ) {
+TEST_CASE( "destroyCompMatr", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
@@ -725,7 +737,7 @@ TEST_CASE( "destroyCompMatr" ) {
 }
 
 
-TEST_CASE( "destroyDiagMatr" ) {
+TEST_CASE( "destroyDiagMatr", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
@@ -744,7 +756,7 @@ TEST_CASE( "destroyDiagMatr" ) {
 }
 
 
-TEST_CASE( "destroyFullStateDiagMatr" ) {
+TEST_CASE( "destroyFullStateDiagMatr", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
@@ -903,7 +915,7 @@ TEST_CASE( "setCompMatr", TEST_CATEGORY ) {
 
         CompMatr matr = createCompMatr(1);
 
-        /// @todo this bizarrely fails in MSVC - no time to debug! 
+        /// @todo this bizarrely fails in MSVC - no time to debug!
         #if !defined(_MSC_VER)
         SECTION( "not created" ) {
 
@@ -928,7 +940,7 @@ TEST_CASE( "setCompMatr", TEST_CATEGORY ) {
 
             REQUIRE_NOTHROW( setCompMatr(matr, {{1,2},{3,4}}) );
 
-            REQUIRE_THROWS_WITH( setCompMatr(matr,{{1,2}}),        ContainsSubstring("Incompatible number of rows") );
+            REQUIRE_THROWS_WITH( setCompMatr(matr,{{1,2}}),              ContainsSubstring("Incompatible number of rows") );
             REQUIRE_THROWS_WITH( setCompMatr(matr, {{1,2},{3,4},{5,6}}), ContainsSubstring("Incompatible number of rows") );
         
             REQUIRE_THROWS_WITH( setCompMatr(matr, {{0,0},{0}}),     ContainsSubstring("incompatible number of elements") );

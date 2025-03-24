@@ -208,6 +208,17 @@ void REQUIRE_AGREE( vector<qreal> apiList, vector<qreal> refList ) {
 }
 
 
+void REQUIRE_AGREE( vector<qcomp> apiList, vector<qcomp> refList ) {
+    DEMAND( apiList.size() == refList.size() );
+
+    for (size_t i=0; i<apiList.size(); i++)
+        if (!doScalarsAgree(apiList[i], refList[i]))
+            REPORT_SCALAR_AND_FAIL(apiList[i], refList[i]);
+
+    SUCCEED( );
+}
+
+
 
 /*
  * MATRICES

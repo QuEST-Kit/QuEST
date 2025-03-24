@@ -267,18 +267,18 @@ qindex util_getGlobalFlatIndex(Qureg qureg, qindex globalRow, qindex globalCol) 
 
 int util_getRankContainingIndex(Qureg qureg, qindex globalInd) {
 
-    // when not distributed, all nodes (each believing themselves root) contain the index
+    // when not distributed, root contains the index (as incidentally do all nodes)
     if (!qureg.isDistributed)
-        return 0;
+        return ROOT_RANK;
 
     // accepts flat density matrix index too
     return globalInd / qureg.numAmpsPerNode; // floors
 }
 int util_getRankContainingIndex(FullStateDiagMatr matr, qindex globalInd) {
 
-    // when not distributed, all nodes (each believing themselves root) contain the index
+    // when not distributed, root contains the index (as incidentally do all nodes)
     if (!matr.isDistributed)
-        return 0;
+        return ROOT_RANK;
 
     return globalInd / matr.numElemsPerNode; // floors
 }
@@ -286,9 +286,9 @@ int util_getRankContainingIndex(FullStateDiagMatr matr, qindex globalInd) {
 int util_getRankContainingColumn(Qureg qureg, qindex globalCol) {
     assert_utilsGivenDensMatr(qureg);
 
-    // when not distributed, all nodes (each believing themselves root) contain the index
+    /// when not distributed, root contains the column (as incidentally do all nodes)
     if (!qureg.isDistributed)
-        return 0;
+        return ROOT_RANK;
 
     qindex numColsPerNode = powerOf2(qureg.logNumColsPerNode);
     return globalCol / numColsPerNode; // floors
