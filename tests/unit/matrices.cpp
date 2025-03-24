@@ -456,7 +456,7 @@ TEST_CASE( "createCompMatr", TEST_CATEGORY ) {
             // GPU-accel or distributed) and whether memory-probers realised there was insufficient memory in
             // advance or whether it proceeded to malloc() which subsequently failed
             #ifndef SANITIZER_IS_ACTIVE
-            REQUIRE_THROWS_WITH( createCompMatr(25), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") );
+            REQUIRE_THROWS_WITH( createCompMatr(25), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") || ContainsSubstring("available GPU memory") );
             #endif
         }
     }
@@ -529,7 +529,7 @@ TEST_CASE( "createDiagMatr", TEST_CATEGORY ) {
             // GPU-accel or distributed) and whether memory-probers realised there was insufficient memory in
             // advance or whether it proceeded to malloc() which subsequently failed
             #ifndef SANITIZER_IS_ACTIVE
-            REQUIRE_THROWS_WITH( createDiagMatr(50), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") );
+            REQUIRE_THROWS_WITH( createDiagMatr(50), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") || ContainsSubstring("available GPU memory") );
             #endif
         }
     }
@@ -602,7 +602,7 @@ TEST_CASE( "createFullStateDiagMatr", TEST_CATEGORY ) {
             // GPU-accel or distributed) and whether memory-probers realised there was insufficient memory in
             // advance or whether it proceeded to malloc() which subsequently failed
             #ifndef SANITIZER_IS_ACTIVE
-            REQUIRE_THROWS_WITH( createFullStateDiagMatr(50), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") );
+            REQUIRE_THROWS_WITH( createFullStateDiagMatr(50), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") || ContainsSubstring("available GPU memory") );
             #endif
         }
 
@@ -698,7 +698,7 @@ TEST_CASE( "createCustomFullStateDiagMatr", TEST_CATEGORY ) {
                 // GPU-accel or distributed) and whether memory-probers realised there was insufficient memory in
                 // advance or whether it proceeded to malloc() which subsequently failed
                 #ifndef SANITIZER_IS_ACTIVE
-                REQUIRE_THROWS_WITH( createCustomFullStateDiagMatr(50, mpi,gpu,omp), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") );
+                REQUIRE_THROWS_WITH( createCustomFullStateDiagMatr(50, mpi,gpu,omp), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") || ContainsSubstring("available GPU memory") );
                 #endif
             }
         }

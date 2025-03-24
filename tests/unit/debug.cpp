@@ -535,10 +535,12 @@ TEST_CASE( "getGpuCacheSize", TEST_CATEGORY ) {
                 // expand the cache
                 applyMultiControlledCompMatr(qureg, ctrls, numCtrls, targs, 6, matr);
 
-                // confirm it expanded
+                // confirm it expanded, OR stayed the same, which happens when
+                // the total number of simultaneous threads needed hits/exceeds
+                // the number available in the hardware
                 qindex newSize = getGpuCacheSize();
                 CAPTURE( cacheSize, newSize );
-                REQUIRE( newSize > cacheSize );
+                REQUIRE( newSize >= cacheSize );
 
                 cacheSize = newSize;
             }

@@ -126,7 +126,7 @@ TEST_CASE( "createKrausMap", TEST_CATEGORY ) {
             // GPU-accel or distributed) and whether memory-probers realised there was insufficient memory in
             // advance or whether it proceeded to malloc() which subsequently failed
             #ifndef SANITIZER_IS_ACTIVE
-            REQUIRE_THROWS_WITH( createKrausMap(12,1), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") );
+            REQUIRE_THROWS_WITH( createKrausMap(12,1), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") || ContainsSubstring("available GPU memory") );
             #endif
         }
 
@@ -478,7 +478,7 @@ TEST_CASE( "createSuperOp", TEST_CATEGORY ) {
             // GPU-accel or distributed) and whether memory-probers realised there was insufficient memory in
             // advance or whether it proceeded to malloc() which subsequently failed
             #ifndef SANITIZER_IS_ACTIVE
-            REQUIRE_THROWS_WITH( createSuperOp(12), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") );
+            REQUIRE_THROWS_WITH( createSuperOp(12), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") || ContainsSubstring("available GPU memory") );
             #endif
         }
     }
