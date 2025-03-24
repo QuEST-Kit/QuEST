@@ -1347,6 +1347,36 @@ TEST_CASE( "applyFullStateDiagMatrPower", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG )
 }
 
 
+TEST_CASE( "multiplyPauliStrSum", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
+
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        int numQubits = getNumCachedQubits();
+        int numTerms = GENERATE_COPY( 1, 2, 10 );
+
+        PauliStrSum sum = createRandomPauliStrSum(numQubits, numTerms);
+
+        auto testFunc = [&](Qureg qureg, auto& ref) {
+
+            // must use (and ergo make) an identically-deployed workspace
+            Qureg workspace = createCloneQureg(qureg);
+            multiplyPauliStrSum(qureg, sum, workspace);
+            destroyQureg(workspace);
+
+            ref = getMatrix(sum, numQubits) * ref;
+        };
+
+        CAPTURE( numTerms );
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
+    }
+
+    /// @todo input validation
+}
+
+
 /** @} (end defgroup) */
 
 
@@ -1357,9 +1387,3 @@ TEST_CASE( "applyFullStateDiagMatrPower", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG )
  */
 
 void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
-
-// these require we deploy input objects (Qureg,FullStateDiagMatr) differently
-// (as is respectively permitted) to thoroughly test all QuEST control flows
- 
-void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
- 
