@@ -8,6 +8,8 @@
 #include <catch2/generators/catch_generators_range.hpp>
 #include <catch2/generators/catch_generators_adapters.hpp>
 
+#include "quest/include/quest.h"
+
 #include "lists.hpp"
 #include "macros.hpp"
 #include "random.hpp"
@@ -49,6 +51,12 @@ vector<int> getGeneratorElems(GeneratorWrapper<int>& gen) {
 vector<int> getSublist(vector<int> list, int start, int len) {
 
     return vector<int>(list.begin() + start, list.begin() + start + len);
+}
+
+
+vector<qcomp> getSublist(vector<qcomp> list, int start, int len) {
+
+    return vector<qcomp>(list.begin() + start, list.begin() + start + len);
 }
 
 

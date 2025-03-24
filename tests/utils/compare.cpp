@@ -247,3 +247,21 @@ void REQUIRE_AGREE( DiagMatr1 matrix, qmatrix reference ) { REQUIRE_AGREE( getMa
 void REQUIRE_AGREE( DiagMatr2 matrix, qmatrix reference ) { REQUIRE_AGREE( getMatrix(matrix), reference ); }
 void REQUIRE_AGREE( DiagMatr  matrix, qmatrix reference ) { REQUIRE_AGREE( getMatrix(matrix), reference ); }
 void REQUIRE_AGREE( SuperOp   matrix, qmatrix reference ) { REQUIRE_AGREE( getMatrix(matrix), reference ); }
+
+
+
+/*
+ * we lazily compare quregs by converting one into qvector
+ * or qmatrix, rather than an optimised direct comparison,
+ * so that we can compare the states of distinct deployments
+ */
+
+
+void REQUIRE_AGREE( Qureg qureg, Qureg other ) {
+    DEMAND( qureg.numQubits == other.numQubits );
+    DEMAND( qureg.isDensityMatrix == other.isDensityMatrix );
+
+    return (qureg.isDensityMatrix)?
+        REQUIRE_AGREE( qureg, getMatrix(other) ):
+        REQUIRE_AGREE( qureg, getVector(other) );
+}
