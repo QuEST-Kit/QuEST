@@ -145,6 +145,16 @@ void error_commGivenInconsistentNumSubArraysANodes() {
     raiseInternalError("A distributed function was given a different number of per-node subarray lengths than exist nodes.");
 }
 
+void error_commTagUpperBoundNotSet() {
+
+    raiseInternalError("The MPI attribute MPI_TAG_UB was not set for communicator MPI_COMM_WORLD, such that the maximum number of messages per communication-round could not be determined.");
+}
+
+void error_commNumMessagesExceedTagMax() {
+
+    raiseInternalError("A function attempted to communicate via more messages than permitted (since there would be more uniquely-tagged messages than the tag upperbound).");
+}
+
 void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps) {
 
     bool valid = (
