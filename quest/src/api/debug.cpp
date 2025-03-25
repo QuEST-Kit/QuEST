@@ -10,6 +10,7 @@
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/printer.hpp"
+#include "quest/src/core/utilities.hpp"
 #include "quest/src/core/randomiser.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
@@ -88,27 +89,15 @@ void setValidationEpsilon(qreal eps) {
     validate_envIsInit(__func__);
     validate_newEpsilonValue(eps, __func__);
 
-    // note this does not automatically invoke 
-    // re-assessment of matrix fields such as
-    // .isUnitary; they will keep their old
-    // values (if set) with respect to the
-    // old epsilon. To update them, users must
-    // explicitly call a sync() function.
-
     validateconfig_setEpsilon(eps);
+    util_setEpsilonSensitiveStructFieldsToUnknown();
 }
 
 void setValidationEpsilonToDefault() {
     validate_envIsInit(__func__);
 
-    // note this does not automatically invoke 
-    // re-assessment of matrix fields such as
-    // .isUnitary; they will keep their old
-    // values (if set) with respect to the
-    // old epsilon. To update them, users must
-    // explicitly call a sync() function.
-
     validateconfig_setEpsilonToDefault();
+    util_setEpsilonSensitiveStructFieldsToUnknown();
 }
 
 qreal getValidationEpsilon() {

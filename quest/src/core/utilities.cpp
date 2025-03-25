@@ -16,8 +16,10 @@
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/memory.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/validation.hpp"
+#include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 
@@ -26,6 +28,7 @@
 #include <cmath>
 #include <vector>
 #include <array>
+#include <list>
 #include <new>
 
 using std::vector;
@@ -800,6 +803,44 @@ void util_setSuperoperator(qcomp** superop, vector<vector<vector<qcomp>>> matric
 }
 void util_setSuperoperator(qcomp** superop, qcomp*** matrices, int numMatrices, int numQubits) {
     setSuperoperator(superop, matrices, numMatrices, numQubits);
+}
+
+
+
+/*
+ * STRUCT PROPERTY CACHING
+ */
+
+std::list<int*> globalStructFieldPtrs(0);
+
+int* util_allocEpsilonSensitiveHeapFlag() {
+
+    int* ptr = cpu_allocHeapFlag(); // may be nullptr
+
+    // if allocated successfully, record the ptr, so that
+    // we can set it to -1 when user changes epsilon
+    if (mem_isAllocated(ptr))
+        globalStructFieldPtrs.push_back(ptr);
+
+    // caller will handle nullptr
+    return ptr;
+}
+
+void util_deallocEpsilonSensitiveHeapFlag(int* ptr) {
+
+    // nothing to do if the heap flag wasn't allocated;
+    // it was never added to the list nor needs freeing
+    if (!mem_isAllocated(ptr))
+        return;
+
+    globalStructFieldPtrs.remove(ptr);
+    cpu_deallocHeapFlag(ptr);
+}
+
+void util_setEpsilonSensitiveStructFieldsToUnknown() {
+
+    for (auto ptr : globalStructFieldPtrs)
+        *ptr = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
 }
 
 

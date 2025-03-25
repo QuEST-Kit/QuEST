@@ -54,7 +54,7 @@ void freeKrausMap(KrausMap map) {
     cpu_deallocMatrixList(map.matrices, map.numRows, map.numMatrices);
 
     // free teeny-tiny heap flag
-    cpu_deallocHeapFlag(map.isCPTP);
+    util_deallocEpsilonSensitiveHeapFlag(map.isCPTP);
 
     // free superoperator (which may include freeing GPU memory)
     freeSuperOp(map.superop);
@@ -184,7 +184,7 @@ extern "C" KrausMap createKrausMap(int numQubits, int numOperators) {
         .matrices = cpu_allocMatrixList(numRows, numOperators), // is or contains nullptr if failed
         .superop = allocSuperOp(numQubits), // heap fields are or contain nullptr if failed
 
-        .isCPTP = cpu_allocHeapFlag(), // nullptr if failed
+        .isCPTP = util_allocEpsilonSensitiveHeapFlag(), // nullptr if failed
     };
 
     // free memory before throwing validation error to avoid memory leaks
