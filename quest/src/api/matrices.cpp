@@ -18,13 +18,13 @@
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/printer.hpp"
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/fastmath.hpp"
 #include "quest/src/core/memory.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
-
-#include "quest/src/core/errors.hpp" // only needed for not-implemented functions
+#include "quest/src/cpu/cpu_subroutines.hpp"
 
 #include <iostream>
 #include <cstdlib>
@@ -83,6 +83,12 @@ DiagMatr2 getDiagMatr2(vector<qcomp> in) {
 template <class T>
 void freeHeapMatrix(T matr) {
 
+    // WARNING: this is not overwriting any freed pointers with null, 
+    // since the caller's struct is not changed. This is fine here,
+    // but would be an issue if the struct contained nested pointers,
+    // since caller would not know an outer pointer was freed and
+    // ergo that it should not be enumerated (to check/free inner ptr)
+
     // free the 1D or 2D matrix - safe even if nullptr
     if constexpr (util_isDenseMatrixType<T>()) {
         cpu_deallocMatrixWrapper(matr.cpuElems);
@@ -96,9 +102,16 @@ void freeHeapMatrix(T matr) {
         gpu_deallocArray(gpuPtr);
 
     // free the teeny tiny heap flags
-    cpu_deallocHeapFlag(matr.isUnitary);
-    cpu_deallocHeapFlag(matr.isHermitian);
+    cpu_deallocHeapFlag(matr.isApproxUnitary);
+    cpu_deallocHeapFlag(matr.isApproxHermitian);
     cpu_deallocHeapFlag(matr.wasGpuSynced);
+
+    // only diagonal matrices (which can be raised to
+    // exponents) need their negativity/zeroness checked
+    if constexpr (!util_isDenseMatrixType<T>()) {
+        cpu_deallocHeapFlag(matr.isApproxNonZero);
+        cpu_deallocHeapFlag(matr.isStrictlyNonNegative);
+    }
 }
 
 
@@ -107,9 +120,16 @@ template <class T>
 bool didAnyLocalAllocsFail(T matr) {
 
     // god help us if these single-integer malloc failed
-    if (!mem_isAllocated(matr.isUnitary))    return true;
-    if (!mem_isAllocated(matr.isHermitian))  return true;
-    if (!mem_isAllocated(matr.wasGpuSynced)) return true;
+    if (!mem_isAllocated(matr.isApproxUnitary))     return true;
+    if (!mem_isAllocated(matr.isApproxHermitian))   return true;
+    if (!mem_isAllocated(matr.wasGpuSynced))  return true;
+
+    // only diagonal matrices (which can be raised to
+    // exponents) have these addtional fields
+    if constexpr (!util_isDenseMatrixType<T>()) {
+        if (!mem_isAllocated(matr.isApproxNonZero))     return true;
+        if (!mem_isAllocated(matr.isStrictlyNonNegative)) return true;
+    }
 
     // outer CPU memory should always be allocated
     if constexpr (util_isDenseMatrixType<T>()) {
@@ -117,13 +137,6 @@ bool didAnyLocalAllocsFail(T matr) {
         if (!mem_isOuterAllocated(matr.cpuElems)) return true;
     } else
         if (!mem_isAllocated(matr.cpuElems)) return true;
-
-    // if memory is 2D, we must also check each inner array was allocated
-    if constexpr (util_isDenseMatrixType<T>()) {
-        if (!mem_isAllocated(matr.cpuElems, matr.numRows)) return true;
-    } else {
-        if (!mem_isAllocated(matr.cpuElems)) return true;
-    }
 
     // if GPU memory is not allocated in a GPU environment...
     bool isGpuAlloc = mem_isAllocated(util_getGpuMemPtr(matr));
@@ -174,8 +187,15 @@ template <class T>
 void setInitialHeapFlags(T matr) {
 
     // set initial propreties of the newly created matrix to unknown
-    *(matr.isUnitary)   = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
-    *(matr.isHermitian) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    *(matr.isApproxUnitary)     = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    *(matr.isApproxHermitian)   = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+
+    // only diagonal matrices (which can be exponentiated)
+    // have these additional fields
+    if constexpr (!util_isDenseMatrixType<T>()) {
+        *(matr.isApproxNonZero)       = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+        *(matr.isStrictlyNonNegative) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    }
 
     // indicate that GPU memory has not yet been synchronised
     *(matr.wasGpuSynced) = 0;
@@ -207,8 +227,8 @@ extern "C" CompMatr createCompMatr(int numQubits) {
         .numRows = numRows,
 
         // allocate flags in the heap so that struct copies are mutable
-        .isUnitary    = cpu_allocHeapFlag(), // nullptr if failed
-        .isHermitian  = cpu_allocHeapFlag(), // nullptr if failed
+        .isApproxUnitary    = cpu_allocHeapFlag(), // nullptr if failed
+        .isApproxHermitian  = cpu_allocHeapFlag(), // nullptr if failed
         .wasGpuSynced = cpu_allocHeapFlag(), // nullptr if failed
 
         .cpuElems = cpu_allocAndInitMatrixWrapper(cpuMem, numRows), // nullptr if failed
@@ -235,9 +255,11 @@ extern "C" DiagMatr createDiagMatr(int numQubits) {
         .numElems = numElems,
 
         // allocate flags in the heap so that struct copies are mutable
-        .isUnitary    = cpu_allocHeapFlag(), // nullptr if failed
-        .isHermitian  = cpu_allocHeapFlag(), // nullptr if failed
-        .wasGpuSynced = cpu_allocHeapFlag(), // nullptr if failed
+        .isApproxUnitary       = cpu_allocHeapFlag(), // nullptr if failed
+        .isApproxHermitian     = cpu_allocHeapFlag(),
+        .isApproxNonZero       = cpu_allocHeapFlag(),
+        .isStrictlyNonNegative = cpu_allocHeapFlag(),
+        .wasGpuSynced          = cpu_allocHeapFlag(),
 
         // 1D CPU memory
         .cpuElems = cpu_allocArray(numElems), // nullptr if failed
@@ -252,15 +274,15 @@ extern "C" DiagMatr createDiagMatr(int numQubits) {
 }
 
 
-FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel, const char* caller) {
+FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel, int useMultithread, const char* caller) {
     validate_envIsInit(caller);
     QuESTEnv env = getQuESTEnv();
 
     // validate parameters before passing them to autodeployer
-    validate_newFullStateDiagMatrParams(numQubits, useDistrib, useGpuAccel, caller);
+    validate_newFullStateDiagMatrParams(numQubits, useDistrib, useGpuAccel, useMultithread, caller);
 
     // overwrite useDistrib and useGpuAccel if they were left as AUTO_FLAG
-    autodep_chooseFullStateDiagMatrDeployment(numQubits, useDistrib, useGpuAccel, env);
+    autodep_chooseFullStateDiagMatrDeployment(numQubits, useDistrib, useGpuAccel, useMultithread, env);
 
     // validation ensures this never overflows
     qindex numElems = powerOf2(numQubits);
@@ -273,13 +295,16 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
 
         // data deployment configuration; disable distrib if deployed to 1 node
         .isGpuAccelerated = useGpuAccel,
+        .isMultithreaded = useMultithread,
         .isDistributed = useDistrib && (env.numNodes > 1),
         .numElemsPerNode = numElemsPerNode,
 
         // allocate flags in the heap so that struct copies are mutable
-        .isUnitary    = cpu_allocHeapFlag(), // nullptr if failed
-        .isHermitian  = cpu_allocHeapFlag(), // nullptr if failed
-        .wasGpuSynced = cpu_allocHeapFlag(), // nullptr if failed
+        .isApproxUnitary       = cpu_allocHeapFlag(), // nullptr if failed
+        .isApproxHermitian     = cpu_allocHeapFlag(),
+        .isApproxNonZero       = cpu_allocHeapFlag(),
+        .isStrictlyNonNegative = cpu_allocHeapFlag(),
+        .wasGpuSynced          = cpu_allocHeapFlag(),
 
         // 1D CPU memory
         .cpuElems = cpu_allocArray(numElemsPerNode), // nullptr if failed
@@ -293,14 +318,14 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
     return out;
 }
 
-extern "C" FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel) {
+extern "C" FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel, int useMultithread) {
 
-    return validateAndCreateCustomFullStateDiagMatr(numQubits, useDistrib, useGpuAccel, __func__);
+    return validateAndCreateCustomFullStateDiagMatr(numQubits, useDistrib, useGpuAccel, useMultithread, __func__);
 }
 
 extern "C" FullStateDiagMatr createFullStateDiagMatr(int numQubits) {
 
-    return validateAndCreateCustomFullStateDiagMatr(numQubits, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
+    return validateAndCreateCustomFullStateDiagMatr(numQubits, modeflag::USE_AUTO, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
 }
 
 
@@ -320,8 +345,15 @@ void markMatrixAsSynced(T matr) {
 
     // indicate that we do not know the revised matrix properties;
     // we defer establishing that until validation needs to check them
-    *(matr.isUnitary)   = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
-    *(matr.isHermitian) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    *(matr.isApproxUnitary)     = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    *(matr.isApproxHermitian)   = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+
+    // only diagonal matrices (which can be exponentiated)
+    // have these additional fields
+    if constexpr (!util_isDenseMatrixType<T>()) {
+        *(matr.isApproxNonZero)       = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+        *(matr.isStrictlyNonNegative) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    }
 }
 
 
@@ -393,6 +425,7 @@ void setAndSyncDenseMatrElems(CompMatr out, T elems) {
 
 extern "C" void setCompMatr(CompMatr out, qcomp** in) {
     validate_matrixFields(out, __func__);
+    validate_matrixNewElemsPtrNotNull(in, out.numRows, __func__);
 
     setAndSyncDenseMatrElems(out, in);
 }
@@ -400,6 +433,7 @@ extern "C" void setCompMatr(CompMatr out, qcomp** in) {
 
 extern "C" void setDiagMatr(DiagMatr out, qcomp* in) {
     validate_matrixFields(out, __func__);
+    validate_matrixNewElemsPtrNotNull(in, __func__);
 
     // overwrite CPU memory
     cpu_copyArray(out.cpuElems, in, out.numElems);
@@ -412,6 +446,7 @@ extern "C" void setDiagMatr(DiagMatr out, qcomp* in) {
 extern "C" void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qcomp* in, qindex numElems) {
     validate_matrixFields(out, __func__);
     validate_fullStateDiagMatrNewElems(out, startInd, numElems, __func__);
+    validate_matrixNewElemsPtrNotNull(in, __func__);
 
     // overwrites both the CPU and GPU memory (if it exists), maintaining consistency.
     // note that cpu_copyArray() isn't called directly here like setDiagMatr() above
@@ -541,6 +576,15 @@ DiagMatr createInlineDiagMatr(int numQb, vector<qcomp> elems) {
 
 extern "C" {
 
+    void _validateNewNestedElemsPtrNotNull(qcomp** ptrs, int numQubits, const char* caller) {
+
+        validate_matrixNewElemsPtrNotNull(ptrs, powerOf2(numQubits), caller);
+    }
+    void _validateNewElemsPtrNotNull(qcomp* ptr, const char* caller) {
+        
+        validate_matrixNewElemsPtrNotNull(ptr, caller);
+    }
+
     void _validateParamsToSetCompMatrFromArr(CompMatr matr) { 
 
         validate_matrixFields(matr, "setCompMatr");
@@ -615,7 +659,7 @@ extern "C" FullStateDiagMatr createFullStateDiagMatrFromPauliStrSum(PauliStrSum 
     
     // ensure createFullStateDiagMatr() below succeeds (so if not, that thrower name is correct)
     int numQubits = 1 + paulis_getIndOfLefmostNonIdentityPauli(in);
-    validate_newFullStateDiagMatrParams(numQubits, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
+    validate_newFullStateDiagMatrParams(numQubits, modeflag::USE_AUTO, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
 
     // permit 'in' to be non-Hermitian since it does not determine 'out' unitarity
 
@@ -626,35 +670,16 @@ extern "C" FullStateDiagMatr createFullStateDiagMatrFromPauliStrSum(PauliStrSum 
 }
 
 
-vector<qindex> getMultiVarValuesFromIndex(qindex index, int* numQubitsPerVar, int numVars, bool areSigned) {
-
-    vector<qindex> varValues(numVars);
-    qindex remainingValue = index;
-
-    // find unsigned integer value of each var by partitioning index bits between vars
-    for (int v=0; v<numVars; v++) {
-        varValues[v] =  getBitsRightOfIndex(remainingValue, numQubitsPerVar[v]);
-        remainingValue = getBitsLeftOfIndex(remainingValue, numQubitsPerVar[v]-1);
-    }
-
-    // two's-complement signed integers are negated if the leftmost variable sign bit is 1 
-    if (areSigned)
-        for (int v=0; v<numVars; v++)
-            if (getBit(varValues[v], numQubitsPerVar[v]-1) == 1)
-                varValues[v] -= powerOf2(numQubitsPerVar[v] - 1);
-
-    return varValues;
-}
-
-
 extern "C" void setDiagMatrFromMultiVarFunc(DiagMatr out, qcomp (*callbackFunc)(qindex*), int* numQubitsPerVar, int numVars, int areSigned) {
     validate_matrixFields(out, __func__);
     validate_multiVarFuncQubits(out.numQubits, numQubitsPerVar, numVars, __func__);
     validate_funcVarSignedFlag(areSigned, __func__);
 
+    vector<qindex> varValues(numVars);
+
     // set each element of the diagonal in-turn; user's callback might not be thread-safe
     for (qindex elemInd=0; elemInd<out.numElems; elemInd++) {
-        vector<qindex> varValues = getMultiVarValuesFromIndex(elemInd, numQubitsPerVar, numVars, areSigned);
+        fast_getSubQuregValues(elemInd, numQubitsPerVar, numVars, areSigned, varValues.data());
 
         // call user function, and update only the CPU elems
         out.cpuElems[elemInd] = callbackFunc(varValues.data());
@@ -670,33 +695,12 @@ extern "C" void setFullStateDiagMatrFromMultiVarFunc(FullStateDiagMatr out, qcom
     validate_multiVarFuncQubits(out.numQubits, numQubitsPerVar, numVars, __func__);
     validate_funcVarSignedFlag(areSigned, __func__);
 
-    int rank = getQuESTEnv().rank;
-    int numLocalIndBits = logBase2(out.numElemsPerNode);
-
-    // every node updates their local elems embarrassingly parallel, but user's callback might not be thread-safe
-    for (qindex localInd=0; localInd<out.numElemsPerNode; localInd++) {
-
-        // each local index corresponds to a unique global index which informs variable values
-        qindex globalInd = concatenateBits(rank, localInd, numLocalIndBits);
-        vector<qindex> varValues = getMultiVarValuesFromIndex(globalInd, numQubitsPerVar, numVars, areSigned);
-
-        // call user function, and update only the CPU elems
-        out.cpuElems[localInd] = callbackFunc(varValues.data());
-    }
+    // we assume callbackFunc is thread-safe (!!!!) and possibly use multithreading, but never 
+    // GPU acceleration, since we cannot invoke user callback functions from GPU kernels
+    cpu_fullstatediagmatr_setElemsFromMultiVarFunc(out, callbackFunc, numQubitsPerVar, numVars, areSigned);
 
     // overwrite all GPU elems
     syncFullStateDiagMatr(out);
-}
-
-
-qcomp getElemFromNestedPtrs(void* in, qindex* inds, int numInds) {
-    qindex ind = inds[0];
-
-    if (numInds == 1)
-        return ((qcomp*) in)[ind];
-
-    qcomp* ptr = ((qcomp**) in)[ind];
-    return getElemFromNestedPtrs(ptr, &inds[1], numInds-1); // compiler may optimise tail-recursion
 }
 
 
@@ -704,14 +708,17 @@ extern "C" void setDiagMatrFromMultiDimLists(DiagMatr out, void* lists, int* num
     validate_matrixFields(out, __func__);
     validate_multiVarFuncQubits(out.numQubits, numQubitsPerDim, numDims, __func__);
 
-    // set each element of the diagonal in-turn, which is embarrassingly parallel, although we do not parallelise
+    vector<qindex> listInds(numDims);
+
+    // set each element of the diagonal in-turn, which is embarrassingly parallel, 
+    // although we do not parallelise - the DiagMatr is intendedly small
     for (qindex elemInd=0; elemInd<out.numElems; elemInd++) {
 
         // nested list indices = unsigned integer values of variables
-        vector<qindex> listInds = getMultiVarValuesFromIndex(elemInd, numQubitsPerDim, numDims, false);
+        fast_getSubQuregValues(elemInd, numQubitsPerDim, numDims, false, listInds.data());
 
         // update only the CPU elems
-        out.cpuElems[elemInd] = getElemFromNestedPtrs(lists, listInds.data(), numDims);
+        out.cpuElems[elemInd] = util_getElemFromNestedPtrs(lists, listInds.data(), numDims);
     }
 
     // overwrite all GPU elems
@@ -723,19 +730,9 @@ extern "C" void setFullStateDiagMatrFromMultiDimLists(FullStateDiagMatr out, voi
     validate_matrixFields(out, __func__);
     validate_multiVarFuncQubits(out.numQubits, numQubitsPerDim, numDims, __func__);
 
-    int rank = getQuESTEnv().rank;
-    int numLocalIndBits = logBase2(out.numElemsPerNode);
-
-    // every node updates their local elems embarrassingly parallel, but user's callback might not be thread-safe
-    for (qindex localInd=0; localInd<out.numElemsPerNode; localInd++) {
-
-        // each local diag index corresponds to a unique global index which informs list indices
-        qindex globalInd = concatenateBits(rank, localInd, numLocalIndBits);
-        vector<qindex> listInds = getMultiVarValuesFromIndex(globalInd, numQubitsPerDim, numDims, false);
-
-        // update only the CPU elems using lists which are duplicated on every node
-        out.cpuElems[localInd] = getElemFromNestedPtrs(lists, listInds.data(), numDims);
-    }
+    // possibly use multithreading, but never GPU acceleration, due to the
+    // arbitrarily nested nature of the input lists
+    cpu_fullstatediagmatr_setElemsFromMultiDimLists(out, lists, numQubitsPerDim, numDims);
 
     // overwrite all GPU elems
     syncFullStateDiagMatr(out);

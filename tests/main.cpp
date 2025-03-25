@@ -113,6 +113,7 @@ int main(int argc, char* argv[]) {
 
     initQuESTEnv();
     createCachedQuregs();
+    createCachedFullStateDiagMatrs();
 
     // disable Catch2 output on non-root nodes
     if (getQuESTEnv().rank != 0)
@@ -121,6 +122,7 @@ int main(int argc, char* argv[]) {
     // launch Catch2, triggering above event listener
     int result = Catch::Session().run( argc, argv );
 
+    destroyCachedFullStateDiagMatrs();
     destroyCachedQuregs();
     finalizeQuESTEnv();
     return result;

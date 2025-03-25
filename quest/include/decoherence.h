@@ -39,6 +39,8 @@ void mixQureg(Qureg qureg, Qureg other, qreal prob);
 
 void mixKrausMap(Qureg qureg, int* qubits, int numQubits, KrausMap map);
 
+void mixSuperOp(Qureg qureg, int* targets, int numTargets, SuperOp superop);
+
 
 // end de-mangler
 #ifdef __cplusplus

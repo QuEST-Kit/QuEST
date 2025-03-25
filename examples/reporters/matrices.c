@@ -80,7 +80,7 @@ void demo_FullStateDiagMatr() {
 
     // force use of available hardware acceleration
     QuESTEnv env = getQuESTEnv();
-    FullStateDiagMatr matr = createCustomFullStateDiagMatr(6, env.isDistributed, env.isGpuAccelerated);
+    FullStateDiagMatr matr = createCustomFullStateDiagMatr(6, env.isDistributed, env.isGpuAccelerated, env.isMultithreaded);
 
     // lazily set each element individually
     for (qindex i=0; i<matr.numElems; i++)

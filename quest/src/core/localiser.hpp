@@ -193,8 +193,8 @@ qcomp localiser_densmatr_calcExpecPauliStr(Qureg qureg, PauliStr str);
 qcomp localiser_statevec_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum);
 qcomp localiser_densmatr_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum);
 
-qcomp localiser_statevec_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
-qcomp localiser_densmatr_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+qcomp localiser_statevec_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool useRealPow);
+qcomp localiser_densmatr_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool useRealPow);
 
 
 /*

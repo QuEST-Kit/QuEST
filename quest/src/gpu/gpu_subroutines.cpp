@@ -32,6 +32,10 @@
  * @author Tyson Jones
  */
 
+#if (COMPILE_CUQUANTUM && ! COMPILE_CUDA)
+    #error "Cannot define COMPILE_CUQUANTUM=1 without simultaneously defining COMPILE_CUDA=1"
+#endif
+
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
@@ -537,12 +541,6 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         return;
     }
 
-    // this is one of few functions which will fail to operate correctly if
-    // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
-    // true but the latter is not), so we explicitly ensure this is the case
-    if (!COMPILE_CUDA)
-        error_cuQuantumCompiledButNotCuda();
-
 #endif
 
 // note preprocessors are not exclusive
@@ -611,12 +609,6 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         return;
     }
 
-    // this is one of few functions which will fail to operate correctly if
-    // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
-    // true but the latter is not), so we explicitly ensure this is the case
-    if (!COMPILE_CUDA)
-        error_cuQuantumCompiledButNotCuda();
-
 #endif 
 
 // note preprocessors are not exclusive
@@ -684,12 +676,6 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         // must return to avoid re-simulation below
         return;
     }
-
-    // this is one of few functions which will fail to operate correctly if
-    // COMPILE_CUQUANTUM => COMPILE_CUDA is not satisfied (i.e. if the former is
-    // true but the latter is not), so we explicitly ensure this is the case
-    if (!COMPILE_CUDA)
-        error_cuQuantumCompiledButNotCuda();
 
 #endif
 
@@ -1513,10 +1499,27 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
 #if COMPILE_CUQUANTUM
 
-    // cuQuantum discards NumQubits template param
-    cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(outProbs, qureg, qubits);
+    /// @todo
+    /// cuQuantum assumes all qubits are local (since it does not consult rank) 
+    /// and so cannot be used when any qubits are in prefix, despite that the 
+    /// algorithm is always embarrassingly parallel. In theory we can workaround
+    /// this by only passing suffix-qubits to the backend, and shuffling the
+    /// resulting outProbs array within localiser.cpp. Experiment with this!
 
-#elif COMPILE_CUDA
+    if (util_areAllQubitsInSuffix(qubits, qureg)) {
+
+        // cuQuantum discards NumQubits template param and creates
+        // its own temporary GPU memory (to store probs) if necessary
+        cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(outProbs, qureg, qubits);
+
+        // explicitly return to avoid re-simulation below
+        return;
+    }
+
+#endif
+
+// note preprocessors are not exclusive
+#if COMPILE_CUDA
 
     qindex numThreads = qureg.numAmpsPerNode;
     qindex numBlocks = getNumBlocks(numThreads);
@@ -1533,9 +1536,13 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     // overwrite outProbs with GPU memory
     copyFromDeviceVec(devProbs, outProbs);
 
-#else
-    error_gpuSimButGpuNotCompiled();
+    // explicitly return to avoid error-msg below
+    return;
+
 #endif
+
+    // should be unreadchable
+    error_gpuSimButGpuNotCompiled();
 }
 
 
@@ -1722,13 +1729,14 @@ qcomp gpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int>
  */
 
 
-template <bool HasPower> 
+template <bool HasPower, bool UseRealPow> 
 qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+    assert_exponentMatchesTemplateParam(exponent, HasPower, UseRealPow);
 
 #if COMPILE_CUQUANTUM || COMPILE_CUDA
 
     cu_qcomp expo = toCuQcomp(exponent);
-    cu_qcomp value = thrust_statevec_calcExpecFullStateDiagMatr_sub<HasPower>(qureg, matr, expo);
+    cu_qcomp value = thrust_statevec_calcExpecFullStateDiagMatr_sub<HasPower,UseRealPow>(qureg, matr, expo);
     return toQcomp(value);
 
 #else
@@ -1738,13 +1746,14 @@ qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
 }
 
 
-template <bool HasPower>
+template <bool HasPower, bool UseRealPow>
 qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+    assert_exponentMatchesTemplateParam(exponent, HasPower, UseRealPow);
 
 #if COMPILE_CUQUANTUM || COMPILE_CUDA
 
     cu_qcomp expo = toCuQcomp(exponent);
-    cu_qcomp value = thrust_densmatr_calcExpecFullStateDiagMatr_sub<HasPower>(qureg, matr, expo);
+    cu_qcomp value = thrust_densmatr_calcExpecFullStateDiagMatr_sub<HasPower,UseRealPow>(qureg, matr, expo);
     return toQcomp(value);
 
 #else
@@ -1754,11 +1763,15 @@ qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
 }
 
 
-template qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub<true> (Qureg, FullStateDiagMatr, qcomp);
-template qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
-template qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub<true> (Qureg, FullStateDiagMatr, qcomp);
-template qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub<true, true >(Qureg, FullStateDiagMatr, qcomp);
+template qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub<true, false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub<false,false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub<false,true >(Qureg, FullStateDiagMatr, qcomp); // uncallable
 
+template qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub<true, true >(Qureg, FullStateDiagMatr, qcomp);
+template qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub<true, false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub<false,false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub<false,true >(Qureg, FullStateDiagMatr, qcomp); // uncallable
 
 
 /*
@@ -1769,6 +1782,7 @@ template qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullSta
 template <int NumQubits> 
 void gpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
 
+    // all qubits are in suffix
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
 #if COMPILE_CUQUANTUM
@@ -1778,7 +1792,7 @@ void gpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 
 #elif COMPILE_CUDA
 
-    qreal renorm = 1 / sqrt(prob);
+    qreal renorm = 1 / std::sqrt(prob);
     thrust_statevec_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, renorm);
 
 #else
@@ -1789,6 +1803,9 @@ void gpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 
 template <int NumQubits> 
 void gpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
+
+    // qubits are unconstrained, and can include prefix qubits
+    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 

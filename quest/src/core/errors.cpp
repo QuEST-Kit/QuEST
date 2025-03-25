@@ -101,7 +101,7 @@ void error_allocOfQuESTEnvFailed() {
 
 void error_memSizeQueriedButWouldOverflow() {
 
-    raiseInternalError("Attempted to obtain memory necessary to allocate local Qureg partition but it overflowed size_t despite prior validation.");
+    raiseInternalError("Attempted to obtain memory necessary to allocate a distributed object's single-node partition but it overflowed size_t despite prior validation.");
 }
 
 
@@ -340,6 +340,14 @@ void assert_exponentMatchesTemplateParam(qcomp exponent, bool hasPower) {
     // require hasPower==false => exponent==1
     if (!hasPower && exponent != qcomp(1,0))
         raiseInternalError("A CPU or GPU subroutine received a matrix exponent that was inconsistent with its compile-time template parameter, as dispatched by accelerator.cpp.");
+}
+
+void assert_exponentMatchesTemplateParam(qcomp exponent, bool hasPower, bool useRealPow) {
+
+    assert_exponentMatchesTemplateParam(exponent, hasPower);
+
+    if (!hasPower && useRealPow)
+        raiseInternalError("A CPU or GPU subroutine received an invalid combination of HasPower=false and UseRealPow=false template parameters");
 }
 
 
@@ -632,13 +640,6 @@ void error_cudaCallFailed(const char* msg, const char* func, const char* caller,
     raiseInternalError(err);
 }
 
-void error_cuQuantumCompiledButNotCuda() {
-
-    raiseInternalError(
-        "Preprocessor COMPILE_CUQUANTUM was set, but COMPILE_CUDA was not. These are not intended to be exclusive fields, so "
-        "a function which depended upon both flags could not continue");
-}
-
 
 
 /*
@@ -736,7 +737,7 @@ void assert_utilsGivenDensMatr(Qureg qureg) {
 void assert_utilsGivenNonZeroEpsilon(qreal eps) {
 
     if (eps == 0)
-        raiseInternalError("A utility function (isUnitary, isHermitian, isCPTP) received an epsilon of zero, which should have precluded it being called.");
+        raiseInternalError("A utility function (e.g. isUnitary) received an epsilon of zero, which should have precluded it being called.");
 }
 
 

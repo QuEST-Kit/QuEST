@@ -39,12 +39,13 @@ using namespace Catch::Matchers;
  */
 
 
-#define TEST_CATEGORY "[unit][calculations]"
+#define TEST_CATEGORY \
+    LABEL_UNIT_TAG "[calculations]"
 
 
-void TEST_ON_CACHED_QUREGS(quregCache quregs, auto refState, auto apiFunc, auto refFunc) {
+void TEST_ON_CACHED_QUREGS(quregCache cache, auto refState, auto apiFunc, auto refFunc) {
 
-    for (auto& [label, qureg]: quregs) {
+    for (auto& [label, qureg]: cache) {
 
         DYNAMIC_SECTION( label ) {
 
@@ -52,12 +53,15 @@ void TEST_ON_CACHED_QUREGS(quregCache quregs, auto refState, auto apiFunc, auto 
             // debug state, since many API functions validate the output domain
             // which is often invalid for unnormalised states
             setToRandomState(refState);
-            setQureg(qureg, refState);
+            setQuregToReference(qureg, refState);
+
+            /// @todo 
+            /// validate that above is correct, i.e. not the all-zero
+            /// state, which would permit flawed tests to succeed
 
             // results can be a scalar, a vector, or even a Qureg & qmatrix/qvector
             auto apiResult = apiFunc(qureg);
             auto refResult = refFunc(refState);
-
             REQUIRE_AGREE( apiResult, refResult );
 
             // free API result if it is a newly created Qureg
@@ -78,6 +82,70 @@ void TEST_ON_CACHED_STATEVECS_AND_DENSMATRS(auto apiFunc, auto refFunc) {
         [&](auto& stateVar) { return refExpr; } ) \
 
 
+void TEST_ON_MIXED_CACHED_QUREGS(quregCache cacheA, quregCache cacheB, auto refA, auto refB, auto apiFunc, auto refFunc) {
+
+    // test all combinations of deployments (where cacheA != cacheB)
+
+    for (auto& [labelA, quregA]: cacheA) {
+        for (auto& [labelB, quregB]: cacheB) {
+
+            // skip illegal (local densitymatrix, distributed statevector) combo
+            if (quregA.isDensityMatrix != quregB.isDensityMatrix &&  // (sv,dm) or (dm,sv)
+                quregA.isDistributed   != quregB.isDistributed   &&  // differing distributions
+                quregA.isDistributed   == quregB.isDensityMatrix)    // dm.dist=0
+                continue;
+
+            // skip illegal same-size different-GPU-accel combo
+            if (quregA.isDensityMatrix  == quregB.isDensityMatrix && // (sv,sv) or (dm,dm)
+                quregA.isGpuAccelerated != quregB.isGpuAccelerated)  // differing GPU-accel
+                continue;
+
+            DYNAMIC_SECTION( labelA + LABEL_DELIMITER + labelB ) {
+
+                // initialise to random states (rather than debug) since
+                // tested function will likely validate output domain
+                setToRandomState(refA); setQuregToReference(quregA, refA);
+                setToRandomState(refB); setQuregToReference(quregB, refB);
+
+                // results will always be a scalar
+                auto apiResult = apiFunc(quregA, quregB);
+                auto refResult = refFunc(refA, refB);
+                REQUIRE_AGREE( apiResult, refResult );
+            }
+        }
+    }
+}
+
+
+void TEST_ON_CACHED_QUREG_AND_MATRIX(quregCache quregs, matrixCache matrices, auto apiFunc, auto refState, auto refMatr, auto refFunc) {
+
+    // test all combinations of deployments (where cacheA != cacheB)
+
+    for (auto& [labelA, qureg]: quregs) {
+        for (auto& [labelB, matrix]: matrices) {
+
+            // all combinations are legal; none are skipped!
+
+            DYNAMIC_SECTION( labelA + LABEL_DELIMITER + labelB ) {
+
+                // set API matrix to pre-initialised reference matrix
+                setFullStateDiagMatr(matrix, 0, getDiagonals(refMatr));
+
+                // initialise to random states (rather than debug) since
+                // tested function will likely validate output domain
+                setToRandomState(refState);
+                setQuregToReference(qureg, refState);
+
+                // results will always be a scalar
+                auto apiResult = apiFunc(qureg, matrix);
+                auto refResult = refFunc(refState, refMatr);
+                REQUIRE_AGREE( apiResult, refResult );
+            }
+        }
+    }
+}
+
+
 
 /** 
  * TESTS
@@ -85,6 +153,7 @@ void TEST_ON_CACHED_STATEVECS_AND_DENSMATRS(auto apiFunc, auto refFunc) {
  * @ingroup unitcalcs
  * @{
  */
+
 
 
 TEST_CASE( "calcExpecPauliStr", TEST_CATEGORY ) {
@@ -95,12 +164,11 @@ TEST_CASE( "calcExpecPauliStr", TEST_CATEGORY ) {
         int numTargs = GENERATE_COPY( range(1,numQubits+1) );
         auto targets = GENERATE_TARGS(numQubits, numTargs);
 
-        GENERATE( range(0,10) );
         PauliStr str = getRandomPauliStr(targets);
 
         TEST_ALL_QUREGS(
             qureg, calcExpecPauliStr(qureg, str),  
-            state, real(getReferenceExpectationValue(state, str))
+            state, std::real(getReferenceExpectationValue(state, str))
         );
     }
 
@@ -121,7 +189,7 @@ TEST_CASE( "calcExpecPauliStrSum", TEST_CATEGORY ) {
 
         TEST_ALL_QUREGS(
             qureg, calcExpecPauliStrSum(qureg, sum),  
-            state, real(getReferenceExpectationValue(state, sum))
+            state, std::real(getReferenceExpectationValue(state, sum))
         );
 
         destroyPauliStrSum(sum);
@@ -197,7 +265,7 @@ TEST_CASE( "calcProbOfMultiQubitOutcome", TEST_CATEGORY ) {
         int numQubits = getNumCachedQubits();
         int numTargs = GENERATE_COPY( range(1, numQubits+1) );
         auto targets = GENERATE_TARGS(numQubits, numTargs);
-        auto outcomes = getRandomInts(0, 1+1, numTargs);
+        auto outcomes = getRandomOutcomes(numTargs);
 
         TEST_ALL_QUREGS(
             qureg, calcProbOfMultiQubitOutcome(qureg, targets.data(), outcomes.data(), numTargs),  
@@ -284,6 +352,8 @@ int getMaxNumTracedQubits(int numQubits) {
 
 TEST_CASE( "calcPartialTrace", TEST_CATEGORY ) {
 
+    // no statevector equivalent
+
     SECTION( LABEL_CORRECTNESS ) {
 
         SECTION( LABEL_DENSMATR ) {
@@ -306,6 +376,8 @@ TEST_CASE( "calcPartialTrace", TEST_CATEGORY ) {
 
 
 TEST_CASE( "calcReducedDensityMatrix", TEST_CATEGORY ) {
+
+    // no statevector equivalent
 
     SECTION( LABEL_CORRECTNESS ) {
 
@@ -330,29 +402,305 @@ TEST_CASE( "calcReducedDensityMatrix", TEST_CATEGORY ) {
 }
 
 
+
+TEST_CASE( "calcInnerProduct", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qvector refSV = getRefStatevec();
+        qmatrix refDM = getRefDensmatr();
+        auto apiFunc = calcInnerProduct;
+
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+
+        SECTION( LABEL_STATEVEC LABEL_DELIMITER LABEL_STATEVEC ) {
+
+            // <a|b>
+            auto refFunc = [&](qvector a, qvector b) { return getInnerProduct (a,b); };
+
+            TEST_ON_MIXED_CACHED_QUREGS( getCachedStatevecs(), getAltCachedStatevecs(), refSV, refSV, apiFunc, refFunc );
+        }
+
+        SECTION( LABEL_STATEVEC LABEL_DELIMITER LABEL_DENSMATR ) {
+
+            // <A|B|A>
+            auto refFunc = [&](qvector a, qmatrix b) { return getInnerProduct(a, b * a); };
+
+            TEST_ON_MIXED_CACHED_QUREGS( getCachedStatevecs(), getAltCachedDensmatrs(), refSV, refDM, apiFunc, refFunc );
+        }
+
+        SECTION( LABEL_DENSMATR LABEL_DELIMITER LABEL_STATEVEC ) {
+
+            // <B|A^dagger|B>
+            
+            auto refFunc = [&](qmatrix a, qvector b) { return getInnerProduct(b, getConjugateTranspose(a) * b); };
+
+            TEST_ON_MIXED_CACHED_QUREGS( getCachedDensmatrs(), getAltCachedStatevecs(), refDM, refSV, apiFunc, refFunc );
+        }
+
+        SECTION( LABEL_DENSMATR LABEL_DELIMITER LABEL_DENSMATR ) {
+
+            // Tr(a^dagger b)
+            auto refFunc = [&](qmatrix a, qmatrix b) { return getTrace(getConjugateTranspose(a) * b); };
+
+            TEST_ON_MIXED_CACHED_QUREGS( getCachedDensmatrs(), getAltCachedDensmatrs(), refDM, refDM, apiFunc, refFunc );
+        }
+    }
+
+    /// @todo input validation
+}
+
+
+
+TEST_CASE( "calcFidelity", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qvector refSV = getRefStatevec();
+        qmatrix refDM = getRefDensmatr();
+        auto apiFunc = calcFidelity;
+
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+
+        SECTION( LABEL_STATEVEC LABEL_DELIMITER LABEL_STATEVEC ) {
+
+            // |<a|b>|^2
+            auto refFunc = [&](qvector a, qvector b) { return std::norm(getInnerProduct(a,b)); };
+
+            TEST_ON_MIXED_CACHED_QUREGS( getCachedStatevecs(), getAltCachedStatevecs(), refSV, refSV, apiFunc, refFunc );
+        }
+
+        SECTION( LABEL_STATEVEC LABEL_DELIMITER LABEL_DENSMATR ) {
+
+            // Re[<A|B|A>]
+            auto refFunc = [&](qvector a, qmatrix b) { return std::real(getInnerProduct(a, b * a)); };
+
+            TEST_ON_MIXED_CACHED_QUREGS( getCachedStatevecs(), getAltCachedDensmatrs(), refSV, refDM, apiFunc, refFunc );
+        }
+
+        SECTION( LABEL_DENSMATR LABEL_DELIMITER LABEL_STATEVEC ) {
+
+            // Re[<B|A|B>]
+            auto refFunc = [&](qmatrix a, qvector b) { return std::real(getInnerProduct(b, a * b)); };
+
+            TEST_ON_MIXED_CACHED_QUREGS( getCachedDensmatrs(), getAltCachedStatevecs(), refDM, refSV, apiFunc, refFunc );
+        }
+
+        // (densitymatrix, densitymatrix) not supported
+    }
+
+    /// @todo input validation
+}
+
+
+
+TEST_CASE( "calcDistance", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qvector refSV = getRefStatevec();
+        qmatrix refDM = getRefDensmatr();
+        auto apiFunc = calcDistance;
+
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+
+        SECTION( LABEL_STATEVEC LABEL_DELIMITER LABEL_STATEVEC ) {
+
+            // sqrt(2 - 2 |<A|B>|)
+            auto refFunc = [&](qvector a, qvector b) { return std::sqrt(2 - 2 * std::abs(getInnerProduct(a,b))); };
+
+            TEST_ON_MIXED_CACHED_QUREGS( getCachedStatevecs(), getAltCachedStatevecs(), refSV, refSV, apiFunc, refFunc);
+        }
+
+        SECTION( LABEL_STATEVEC LABEL_DELIMITER LABEL_DENSMATR ) {
+
+            // sqrt(1 - <psi|rho|psi>)
+            auto refFunc = [&](qvector a, qmatrix b) { return std::sqrt(1 - std::real(getInnerProduct(a, b * a))); };
+
+            TEST_ON_MIXED_CACHED_QUREGS( getCachedStatevecs(), getAltCachedDensmatrs(), refSV, refDM, apiFunc, refFunc );
+        }
+
+        SECTION( LABEL_DENSMATR LABEL_DELIMITER LABEL_STATEVEC ) {
+
+            // sqrt(1 - <psi|rho|psi>)
+            auto refFunc = [&](qmatrix a, qvector b) { return std::sqrt(1 - std::real(getInnerProduct(b, a * b))); };
+
+            TEST_ON_MIXED_CACHED_QUREGS( getCachedDensmatrs(), getAltCachedStatevecs(), refDM, refSV, apiFunc, refFunc );
+        }
+
+        SECTION( LABEL_DENSMATR LABEL_DELIMITER LABEL_DENSMATR ) {
+
+            // sqrt(Tr((A-B)(A-B)^dagger)
+            auto refFunc = [&](qmatrix a, qmatrix b) { return std::sqrt(std::real(getTrace((a-b)*getConjugateTranspose(a-b)))); };
+
+            TEST_ON_MIXED_CACHED_QUREGS( getCachedDensmatrs(), getAltCachedDensmatrs(), refDM, refDM, apiFunc, refFunc );
+        }
+    }
+
+    /// @todo input validation
+}
+
+
+
+TEST_CASE( "calcExpecFullStateDiagMatr", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qmatrix refMatr = getRandomDiagonalHermitian(getNumCachedQubits());
+        auto apiFunc = calcExpecFullStateDiagMatr;
+
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+
+        SECTION( LABEL_STATEVEC ) {
+
+            auto refFunc = [&] (qvector state, qmatrix matr) { return getReferenceExpectationValue(state, matr); };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedStatevecs(), getCachedFullStateDiagMatrs(), apiFunc, getRefStatevec(), refMatr, refFunc);
+        }
+
+        SECTION( LABEL_DENSMATR ) {
+
+            auto refFunc = [&] (qmatrix state, qmatrix matr) { return getReferenceExpectationValue(state, matr); };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedDensmatrs(), getCachedFullStateDiagMatrs(), apiFunc, getRefDensmatr(), refMatr, refFunc);
+        }
+    }
+
+    /// @todo input validation
+}
+
+
+
+TEST_CASE( "calcExpecNonHermitianFullStateDiagMatr", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qmatrix refMatr = getRandomDiagonalMatrix(getPow2(getNumCachedQubits()));
+        auto apiFunc = calcExpecNonHermitianFullStateDiagMatr;
+
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+
+        SECTION( LABEL_STATEVEC ) {
+
+            auto refFunc = [&] (qvector state, qmatrix matr) { return getReferenceExpectationValue(state, matr); };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedStatevecs(), getCachedFullStateDiagMatrs(), apiFunc, getRefStatevec(), refMatr, refFunc);
+        }
+
+        SECTION( LABEL_DENSMATR ) {
+
+            auto refFunc = [&] (qmatrix state, qmatrix matr) { return getReferenceExpectationValue(state, matr); };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedDensmatrs(), getCachedFullStateDiagMatrs(), apiFunc, getRefDensmatr(), refMatr, refFunc);
+        }
+    }
+
+    /// @todo input validation
+}
+
+
+
+TEST_CASE( "calcExpecFullStateDiagMatrPower", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qmatrix refMatr = getRandomDiagonalHermitian(getNumCachedQubits());
+
+        // integer and non-integer exponents have different requirements
+        bool isIntegerExp = GENERATE( true, false );
+        qreal exponent = (isIntegerExp)?
+            getRandomInt(-3, 3):
+            getRandomReal(-3, 3);
+        
+        // when exponent is non-integer, the matrix cannot contain negative 
+        // numbers which otherwise become complex, making the matrix non-
+        // Hermitian and triggering validation
+        if (!isIntegerExp)
+            for (size_t i=0; i<refMatr.size(); i++)
+                refMatr[i][i] = std::abs(std::real(refMatr[i][i]));
+
+        // when exponent is negative, the matrix cannot contain near-zero
+        // magnitude numbers which create divergences and trigger validation.
+        // Negative exponents are particularly unstable (they can produce 
+        // very large matrix elements which ergo have less post-decimal
+        // precision and sum catastrophically), so we scale up matrix.
+        if (exponent < 0)
+            for (size_t i=0; i<refMatr.size(); i++)
+                refMatr[i][i] *= 100;
+
+        auto apiFunc = [&](Qureg qureg, FullStateDiagMatr matr) { 
+            return calcExpecFullStateDiagMatrPower(qureg, matr, exponent);
+        };
+
+        CAPTURE( exponent );
+
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+
+        SECTION( LABEL_STATEVEC ) {
+
+            auto refFunc = [&] (qvector state, qmatrix matr) { 
+                matr = getPowerOfDiagonalMatrix(matr, qcomp(exponent,0));
+                return getReferenceExpectationValue(state, matr);
+            };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedStatevecs(), getCachedFullStateDiagMatrs(), apiFunc, getRefStatevec(), refMatr, refFunc);
+        }
+
+        SECTION( LABEL_DENSMATR ) {
+
+            auto refFunc = [&] (qmatrix state, qmatrix matr) { 
+                matr = getPowerOfDiagonalMatrix(matr, qcomp(exponent,0));
+                return getReferenceExpectationValue(state, matr);
+            };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedDensmatrs(), getCachedFullStateDiagMatrs(), apiFunc, getRefDensmatr(), refMatr, refFunc);
+        }
+    }
+
+    /// @todo input validation
+}
+
+
+
+TEST_CASE( "calcExpecNonHermitianFullStateDiagMatrPower", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qmatrix refMatr = getRandomDiagonalMatrix(getPow2(getNumCachedQubits()));
+        qcomp exponent = getRandomComplex();
+
+        auto apiFunc = [&](Qureg qureg, FullStateDiagMatr matr) { 
+            return calcExpecNonHermitianFullStateDiagMatrPower(qureg, matr, exponent);
+        };
+
+        CAPTURE( exponent );
+
+        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+
+        SECTION( LABEL_STATEVEC ) {
+
+            auto refFunc = [&] (qvector state, qmatrix matr) { 
+                matr = getPowerOfDiagonalMatrix(matr, exponent);
+                return getReferenceExpectationValue(state, matr);
+            };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedStatevecs(), getCachedFullStateDiagMatrs(), apiFunc, getRefStatevec(), refMatr, refFunc);
+        }
+
+        SECTION( LABEL_DENSMATR ) {
+
+            auto refFunc = [&] (qmatrix state, qmatrix matr) { 
+                matr = getPowerOfDiagonalMatrix(matr, exponent);
+                return getReferenceExpectationValue(state, matr);
+            };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedDensmatrs(), getCachedFullStateDiagMatrs(), apiFunc, getRefDensmatr(), refMatr, refFunc);
+        }
+    }
+
+    /// @todo input validation
+}
+
+
+
 /** @} (end defgroup) */
-
-
-
-/**
- * @todo
- * UNTESTED FUNCTIONS
- */
-
-// these require we deploy input objects (Qureg,FullStateDiagMatr) differently
-// (as is respectively permitted) to thoroughly test all QuEST control flows
-
-qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
-
-qreal calcExpecFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
-
-qcomp calcExpecNonHermitianFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
-
-qcomp calcExpecNonHermitianFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
-
-
-qreal calcFidelity(Qureg qureg, Qureg other);
-
-qreal calcDistance(Qureg qureg1, Qureg qureg2);
-
-qcomp calcInnerProduct(Qureg qureg1, Qureg qureg2);

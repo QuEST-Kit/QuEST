@@ -31,7 +31,7 @@ qreal calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum);
 
 qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
 
-qreal calcExpecFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+qreal calcExpecFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matr, qreal exponent);
 
 
 qreal calcTotalProb(Qureg qureg);

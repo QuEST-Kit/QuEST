@@ -80,8 +80,8 @@ typedef struct {
     // and the flags fixed until the user modifies the matrix (through sync() or setAmps() etc).
     // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
-    int* isUnitary;
-    int* isHermitian;
+    int* isApproxUnitary;
+    int* isApproxHermitian; /// @todo currently unused (relevant to not-yet-implemented calc-expec-val)
 
     // whether the user has ever synchronised memory to the GPU, which is performed automatically
     // when calling functions like setCompMatr(), but which requires manual invocation with
@@ -142,9 +142,11 @@ typedef struct {
     // and the flags fixed until the user modifies the matrix (through sync() or setAmps() etc).
     // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
-    int* isUnitary;
-    int* isHermitian;
-
+    int* isApproxUnitary;
+    int* isApproxHermitian;     /// @todo currently unused (relevant to not-yet-implemented calc-expec-val)
+    int* isApproxNonZero;       /// @todo currently unused (relevant to not-yet-implemented calc-expec-val)
+    int* isStrictlyNonNegative; /// @todo currently unused (relevant to not-yet-implemented calc-expec-val)
+    
     // whether the user has ever synchronised memory to the GPU, which is performed automatically
     // when calling functions like setCompMatr(), but which requires manual invocation with
     // syncCompMatr() after manual modification of the cpuElem. Note this can only indicate whether
@@ -175,7 +177,7 @@ typedef struct {
     // unlike other heap-matrices, GPU memory is not always allocated when the QuEST
     // env is GPU-accelerated; instead, it can be disabled by auto-deployer, or the user
     int isGpuAccelerated;
-
+    int isMultithreaded;
     int isDistributed;
     qindex numElemsPerNode;
 
@@ -184,8 +186,10 @@ typedef struct {
     // and the flags fixed until the user modifies the matrix (through sync() or setAmps() etc).
     // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
-    int* isUnitary;
-    int* isHermitian;
+    int* isApproxUnitary;
+    int* isApproxHermitian;
+    int* isApproxNonZero;
+    int* isStrictlyNonNegative;
 
     // whether the user has ever synchronised memory to the GPU, which is performed automatically
     // when calling functions like setCompMatr(), but which requires manual invocation with
@@ -231,7 +235,24 @@ typedef struct {
  */
 
 
+// private validators
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/// @private
+extern void _validateNewNestedElemsPtrNotNull(qcomp** ptrs, int numQubits, const char* caller);
+
+/// @private
+extern void _validateNewElemsPtrNotNull(qcomp* ptr, const char* caller);
+
+#ifdef __cplusplus
+}
+#endif
+
+
 static inline CompMatr1 getCompMatr1(qcomp** in) {
+    _validateNewNestedElemsPtrNotNull(in, 1, __func__);
 
     CompMatr1 out = {
         .numQubits = 1,
@@ -244,6 +265,7 @@ static inline CompMatr1 getCompMatr1(qcomp** in) {
 }
 
 static inline CompMatr2 getCompMatr2(qcomp** in) {
+    _validateNewNestedElemsPtrNotNull(in, 2, __func__);
 
     CompMatr2 out = {
         .numQubits = 2,
@@ -259,6 +281,7 @@ static inline CompMatr2 getCompMatr2(qcomp** in) {
 
 
 static inline DiagMatr1 getDiagMatr1(qcomp* in) {
+    _validateNewElemsPtrNotNull(in, __func__);
 
     DiagMatr1 out = {
         .numQubits = 1,
@@ -269,6 +292,7 @@ static inline DiagMatr1 getDiagMatr1(qcomp* in) {
 }
 
 static inline DiagMatr2 getDiagMatr2(qcomp* in) {
+    _validateNewElemsPtrNotNull(in, __func__);
 
     DiagMatr2 out = {
         .numQubits = 2,
@@ -449,7 +473,7 @@ extern "C" {
 
     FullStateDiagMatr createFullStateDiagMatr(int numQubits);
 
-    FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel);
+    FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel, int useMultithread);
 
 
     void destroyCompMatr(CompMatr matrix);

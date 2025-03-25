@@ -9,8 +9,9 @@
 # - mpi: 85s, 124s, 1050s = 21m    = $3.36
 # - gpu: 30s, 150s, 490s  = 11m15s = $0.78
 # - cuq: 57s, 125s, 490s  = 11m    = $0.78
-# Ergo execution of this workflow costs ~$5.60.
-# Each bug costs me a coffee!
+# - mix: 51s, 150s, 550s  = 12m30s = $0.88
+# Ergo execution of this workflow costs ~$6.50.
+# Each bug costs me a Le Pointu lavender coffee!
 # 
 # @author Tyson Jones
 
@@ -30,7 +31,7 @@ on:
 
 jobs:
 
-  # run multithreaded, distributed, and GPU-accelerated tests,
+  # separate mulstithreaded, distributed, and GPU-accelerated tests,
   # with and without cuQuantum (excluding multi-GPU and v3)
   accel-unit-test:
     name: >
@@ -83,7 +84,7 @@ jobs:
       cuda_arch: 75
 
       # CPU/MPI runner has 64 cores
-      mpi_exec: ./tests/tests
+      test_exec: ./tests/tests
       num_mpi_nodes: 16
       num_mpi_threads: 4
       num_omp_threads: 64
@@ -144,7 +145,7 @@ jobs:
         if: ${{ matrix.mpi == 'ON' }}
         run: |
           OMP_NUM_THREADS=${{ env.num_mpi_threads }} \
-          mpiexec -n ${{ env.num_mpi_nodes }} ${{ env.mpi_exec}}
+          mpiexec -n ${{ env.num_mpi_nodes }} ${{ env.test_exec }}
         working-directory: ${{ env.build_dir }}
     
       - name: Run GPU v4 tests
@@ -157,4 +158,114 @@ jobs:
         run: |
           OMP_NUM_THREADS=${{ env.num_omp_threads }} \
           ctest --output-on-failure
+        working-directory: ${{ env.build_dir }}
+
+    
+  # a single distributed + GPU-accelerated test, running
+  # only "[mixed]" unit tests which accept multiple objects
+  # with different deployments. Multiple MPI processes will
+  # share the single GPU, and multithreading is disabled to
+  # reduce the number of deployment combinations. We do not
+  # test cuQuantum nor CUDA-aware MPI (for GPUDirect).
+  multi-gpu-mixed-test:
+    name: >
+      Linux
+      [${{ matrix.precision }}]
+      ${{ matrix.omp       == 'ON' && 'OMP'  || '' }}
+      ${{ matrix.mpi       == 'ON' && 'MPI'  || '' }}
+      ${{ matrix.cuda      == 'ON' && 'CUDA' || '' }}
+      ${{ matrix.cuquantum == 'ON' && 'CUQ'  || '' }}
+      mixed v${{ matrix.version }}
+
+    # a paid OS!
+    runs-on: ubuntu-nvidia-gpu
+
+    strategy:
+      # continue other jobs if any fail
+      fail-fast: false
+
+      # we will compile QuEST with all precisions but no parallelisation
+      matrix:
+        version:   [4]   # excluding v3 deprecated tests to save $$$
+        precision: [2]   # excluding 1 and 4 precision to save $$$
+        omp:       [OFF] # excluding multithreading to save $$$
+        mpi:       [ON]  # always on; we're testing MULTI-gpu deployment
+        cuda:      [ON]  # always on; we're testing multi-GPU deployment
+        cuquantum: [OFF] # excluding cuQuantum to save $$$
+
+    # constants
+    env:
+      build_dir: "build"
+
+      # we will only execute mixed-deployment unit tests
+      test_exec: ./tests/tests
+      test_flag: "[mixed]"
+
+      # the runner has a single Tesla T4 16 GB GPU...
+      cuda_arch: 75
+
+      # which will be shared between 4 MPI processes
+      # (no --oversubscribe flag necessary on MPICH)
+      num_mpi_nodes: 4
+      mpi_share_gpu: ON
+
+      # we will test all combinations of deployments
+      # (e.g. CPU + MPI vs GPU), repeated 5 times each
+      test_all_deploys: ON
+      test_repetitions: 5
+
+    # perform the job
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      - name: Setup CMake
+        run: sudo apt-get install -y cmake
+
+      # obtain MPI for distribution
+      - name: Setup MPI
+        if: ${{ matrix.mpi == 'ON' }}
+        uses: mpi4py/setup-mpi@v1
+
+      # obtain CUDA for GPU acceleration (cuQuantum needs cuBLAS)
+      - name: Setup CUDA
+        if: ${{ matrix.cuda == 'ON' }}
+        uses: Jimver/cuda-toolkit@v0.2.21
+        with:
+          method: network
+          sub-packages: '["nvcc", "cudart", "thrust"]'
+          non-cuda-sub-packages: ${{ matrix.cuquantum == 'ON' && '["libcublas"]' || '[]' }}
+
+      # obtain cuQuantum (version must match GPU Os = ubuntu 24.08)
+      - name: Setup cuQuantum
+        if: ${{ matrix.cuquantum == 'ON' }}
+        run: >
+          wget https://developer.download.nvidia.com/compute/cuquantum/redist/cuquantum/linux-x86_64/cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
+          tar -xvf cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
+          echo "CUQUANTUM_ROOT=cuquantum-linux-x86_64-24.08.0.5_cuda12-archive" >> $GITHUB_ENV
+
+      # disable link-time optimisation which leads to symbol duplication
+      - name: Configure CMake
+        run: >
+          cmake -B ${{ env.build_dir }}
+          -DENABLE_TESTING=ON
+          -DFLOAT_PRECISION=${{ matrix.precision }}
+          -DENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
+          -DENABLE_MULTITHREADING=${{ matrix.omp }}
+          -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
+          -DENABLE_CUDA=${{ matrix.cuda }}
+          -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
+          -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
+          -DTEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}
+          -DTEST_NUM_MIXED_DEPLOYMENT_REPETITIONS=${{ env.test_repetitions }}
+          -DPERMIT_NODES_TO_SHARE_GPU=${{ env.mpi_share_gpu }}
+          -DCMAKE_CXX_FLAGS=${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' && '-fno-lto' || '' }}
+
+      - name: Compile
+        run: cmake --build ${{ env.build_dir }} --parallel
+
+      # cannot use ctests when distributed, grr!
+      - name: Run GPU + distributed v4 mixed tests (4 nodes sharing 1 GPU)
+        run: |
+          mpiexec -n ${{ env.num_mpi_nodes }} ${{ env.test_exec }} ${{ env.test_flag }}
         working-directory: ${{ env.build_dir }}

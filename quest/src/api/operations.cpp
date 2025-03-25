@@ -302,6 +302,7 @@ void multiplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr m
     validate_quregFields(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
     validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also validates fields and is-sync, but not unitarity
+    validate_matrixExpIsNonDiverging(matrix, exponent, __func__); // harmlessly re-validates fields and is-sync
 
     bool conj = false;
     localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, {}, {}, util_getVector(targets, numTargets), matrix, exponent, conj);
@@ -311,7 +312,11 @@ void applyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matr
     validate_quregFields(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
     validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also checks fields and is-synced
-    validate_matrixIsUnitary(matrix, __func__); // harmlessly rechecks fields and is-synced
+    validate_matrixIsUnitary(matrix, __func__);  // checks abs=1 (so no risk of 0^(-neg exp)) and rechecks fields/synced
+    validate_matrixExpIsNonDiverging(matrix, exponent, __func__); // harmlessly re-validates fields and is-sync
+    validate_unitaryExponentIsReal(exponent, __func__); // checks matrix^exponent is approx unitary (abs=1)
+
+    // notice exponent is a 'qcomp' not a 'qreal' despite validation; see applyMultiStateControlledDiagMatrPower()
 
     // harmlessly re-validates
     applyMultiStateControlledDiagMatrPower(qureg, nullptr, nullptr, 0, targets, numTargets, matrix, exponent);
@@ -321,7 +326,11 @@ void applyControlledDiagMatrPower(Qureg qureg, int control, int* targets, int nu
     validate_quregFields(qureg, __func__);
     validate_controlAndTargets(qureg, control, targets, numTargets, __func__);
     validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also checks fields and is-synced
-    validate_matrixIsUnitary(matrix, __func__); // harmlessly rechecks fields and is-synced
+    validate_matrixIsUnitary(matrix, __func__);  // checks abs=1 (so no risk of 0^(-neg exp)) and rechecks fields/synced
+    validate_matrixExpIsNonDiverging(matrix, exponent, __func__); // harmlessly re-validates fields and is-sync
+    validate_unitaryExponentIsReal(exponent, __func__); // checks matrix^exponent is approx unitary (abs=1)
+
+    // notice exponent is a 'qcomp' not a 'qreal' despite validation; see applyMultiStateControlledDiagMatrPower()
 
     // harmlessly re-validates
     applyMultiStateControlledDiagMatrPower(qureg, &control, nullptr, 1, targets, numTargets, matrix, exponent);
@@ -331,7 +340,11 @@ void applyMultiControlledDiagMatrPower(Qureg qureg, int* controls, int numContro
     validate_quregFields(qureg, __func__);
     validate_controlsAndTargets(qureg, controls, numControls, targets, numTargets, __func__);
     validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also checks fields and is-synced
-    validate_matrixIsUnitary(matrix, __func__); // harmlessly rechecks fields and is-synced
+    validate_matrixIsUnitary(matrix, __func__);  // checks abs=1 (so no risk of 0^(-neg exp)) and rechecks fields/synced
+    validate_matrixExpIsNonDiverging(matrix, exponent, __func__); // harmlessly re-validates fields and is-sync
+    validate_unitaryExponentIsReal(exponent, __func__); // checks matrix^exponent is approx unitary (abs=1)
+
+    // notice exponent is a 'qcomp' not a 'qreal' despite validation; see applyMultiStateControlledDiagMatrPower()
 
     // harmlessly re-validates
     applyMultiStateControlledDiagMatrPower(qureg, controls, nullptr, numControls, targets, numTargets, matrix, exponent);
@@ -342,7 +355,18 @@ void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* sta
     validate_controlsAndTargets(qureg, controls, numControls, targets, numTargets, __func__);
     validate_controlStates(states, numControls, __func__); // can be nullptr, ignoring numControls
     validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also checks fields and is-synced
-    validate_matrixIsUnitary(matrix, __func__); // harmlessly rechecks fields and is-synced
+    validate_matrixIsUnitary(matrix, __func__);  // checks abs=1 (so no risk of 0^(-neg exp)) and rechecks fields/synced
+    validate_matrixExpIsNonDiverging(matrix, exponent, __func__); // harmlessly re-validates fields and is-sync
+    validate_unitaryExponentIsReal(exponent, __func__); // checks matrix^exponent is approx unitary (abs=1)
+
+    // unlike calcExpecDiagMatrPower which accepts a 'qreal' exponent,
+    // this function accepts a 'qcomp'. This is because it always
+    // evaluates the relatively numerically unstable pow(qcomp,qcomp)
+    // overload, rather than pow(qreal,qreal), since there is no reason
+    // to think matrix is real (unitarity permits it to be complex).
+    // As such, despite unitarity requiring exponent is also real, we
+    // accept a qcomp types so that complex exponents can be passed
+    // when numerical validation is disabled without a separate func.
 
     bool conj = false;
     auto ctrlVec = util_getVector(controls, numControls);
@@ -377,6 +401,7 @@ void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp
     validate_quregFields(qureg, __func__);
     validate_matrixFields(matrix, __func__);
     validate_matrixAndQuregAreCompatible(matrix, qureg, false, __func__); // matrix can be non-unitary
+    validate_matrixExpIsNonDiverging(matrix, exponent, __func__);
 
     bool onlyMultiply = true;
     (qureg.isDensityMatrix)?
@@ -397,7 +422,9 @@ void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp ex
     validate_quregFields(qureg, __func__);
     validate_matrixFields(matrix, __func__);
     validate_matrixAndQuregAreCompatible(matrix, qureg, false, __func__);
-    validate_matrixIsUnitary(matrix, __func__);
+    validate_matrixIsUnitary(matrix, __func__);  // checks abs=1 (so no risk of 0^(-neg exp))
+    validate_unitaryExponentIsReal(exponent, __func__); // checks matrix^exponent is approx unitary (abs=1)
+    validate_matrixExpIsNonDiverging(matrix, exponent, __func__);
 
     bool onlyMultiply = false;
     (qureg.isDensityMatrix)?
@@ -473,7 +500,7 @@ void applyMultiControlledT(Qureg qureg, int* controls, int numControls, int targ
 
 void applyMultiStateControlledT(Qureg qureg, int* controls, int* states, int numControls, int target) {
 
-    DiagMatr1 matr = getDiagMatr1({1, 1/sqrt(2) + 1_i/sqrt(2)});
+    DiagMatr1 matr = getDiagMatr1({1, 1/std::sqrt(2) + 1_i/std::sqrt(2)});
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
 }
 
@@ -509,9 +536,10 @@ void applyMultiControlledHadamard(Qureg qureg, int* controls, int numControls, i
 
 void applyMultiStateControlledHadamard(Qureg qureg, int* controls, int* states, int numControls, int target) {
 
+    qcomp a = 1/std::sqrt(2);
     CompMatr1 matr = getCompMatr1({
-        {1/sqrt(2), 1/sqrt(2)}, 
-        {1/sqrt(2), -1/sqrt(2)}});
+        {a, a}, 
+        {a,-a}});
 
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
 }
@@ -832,7 +860,7 @@ void applyFirstOrderTrotter(Qureg qureg, PauliStrSum sum, qreal angle, bool reve
 
     for (qindex i=0; i<sum.numTerms; i++) {
         int j = reverse? sum.numTerms - i - 1 : i;
-        qreal arg = 2 * angle * real(sum.coeffs[j]);  // 2 undoes Gadget convention
+        qreal arg = 2 * angle * std::real(sum.coeffs[j]);  // 2 undoes Gadget convention
         applyPauliGadget(qureg, sum.strings[j], arg); // re-validates, grr
     }
 }
@@ -849,7 +877,7 @@ void applyHigherOrderTrotter(Qureg qureg, PauliStrSum sum, qreal angle, int orde
         applyFirstOrderTrotter(qureg, sum, angle/2, true);
     
     } else {
-        qreal p = 1. / (4 - pow(4, 1./(order-1)));
+        qreal p = 1. / (4 - std::pow(4, 1./(order-1)));
         qreal a = p * angle;
         qreal b = (1-4*p) * angle;
 
@@ -1025,11 +1053,11 @@ void applyMultiStateControlledRotateAroundAxis(Qureg qureg, int* ctrls, int* sta
     validate_rotationAxisNotZeroVector(axisX, axisY, axisZ, __func__);
 
     // defer division of vector norm to improve numerical accuracy
-    qreal norm = sqrt(pow(axisX,2) + pow(axisY,2) + pow(axisZ,2)); // != 0
+    qreal norm = std::sqrt(std::pow(axisX,2) + std::pow(axisY,2) + std::pow(axisZ,2)); // != 0
 
     // treat as generic 1-qubit matrix
-    qreal c = cos(angle/2);
-    qreal s = sin(angle/2);
+    qreal c = std::cos(angle/2);
+    qreal s = std::sin(angle/2);
     qcomp u11 = c - (s * axisZ * 1_i) / norm;
     qcomp u12 =   - (s * (axisY + axisX * 1_i)) / norm;
     qcomp u21 =     (s * (axisY - axisX * 1_i)) / norm;
@@ -1187,7 +1215,7 @@ void applyMultiQubitPhaseShift(Qureg qureg, int* targets, int numTargets, qreal 
     validate_targets(qureg, targets, numTargets, __func__);
 
     // treat as a (numTargets-1)-controlled 1-target diagonal matrix
-    DiagMatr1 matr = getDiagMatr1({1, exp(1_i * angle)});
+    DiagMatr1 matr = getDiagMatr1({1, std::exp(1_i * angle)});
 
     // harmlessly re-validates
     applyMultiStateControlledDiagMatr1(qureg, &targets[1], nullptr, numTargets-1, targets[0], matr);
@@ -1280,23 +1308,6 @@ void applyMultiStateControlledMultiQubitNot(Qureg qureg, int* controls, int* sta
 
 
 /*
- * superoperator
- */
-
-void applySuperOp(Qureg qureg, int* targets, int numTargets, SuperOp superop) {
-    validate_quregFields(qureg, __func__);
-    validate_targets(qureg, targets, numTargets, __func__);
-    validate_superOpFields(superop, __func__);
-    validate_superOpIsSynced(superop, __func__);
-    validate_superOpDimMatchesTargs(superop, numTargets, __func__);
-    validate_mixedAmpsFitInNode(qureg, 2*numTargets, __func__); // superop acts on 2x
-
-    localiser_densmatr_superoperator(qureg, superop, util_getVector(targets, numTargets));
-}
-
-
-
-/*
  * measurement
  */
 
@@ -1312,15 +1323,18 @@ int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability)
     validate_quregFields(qureg, __func__);
     validate_target(qureg, target, __func__);
 
-    // find only the outcome=0 probability, to avoid reducing all amps;
-    // this halves the total iterations though assumes normalisation
-    int outcome = 0;
-    *probability = calcProbOfQubitOutcome(qureg, target, outcome);
+    // we do not assume state normalisation (that is posteriori checked),
+    // so we must perform two reductions; one for each outcome. We choose
+    // to re-enumerate the state (potentially doubling caching costs) to
+    // avoid the nuisances/race-cons of parallel adding to two scalars.
+    vector<qreal> probs(2);
+    probs[0] = calcProbOfQubitOutcome(qureg, target, 0); // harmlessly re-validates
+    probs[1] = calcProbOfQubitOutcome(qureg, target, 1); // " "
+    validate_measurementProbsAreNormalised(probs, __func__);
 
     // randomly choose the outcome
-    outcome = rand_getRandomSingleQubitOutcome(*probability);
-    if (outcome == 1)
-        *probability = 1 - *probability;
+    int outcome = rand_getRandomSingleQubitOutcome(probs[0]);
+    *probability = probs[outcome];
 
     // collapse to the outcome
     (qureg.isDensityMatrix)?
@@ -1366,7 +1380,9 @@ qindex applyMultiQubitMeasurement(Qureg qureg, int* qubits, int numQubits) {
     validate_targets(qureg, qubits, numQubits, __func__);
 
     qreal prob = 0; // ignored
-    return applyMultiQubitMeasurementAndGetProb(qureg, qubits, numQubits, &prob); // harmlessly re-validates
+
+    // below validates post-measurement and would report 'AndGetProb' function suffix. Eh!
+    return applyMultiQubitMeasurementAndGetProb(qureg, qubits, numQubits, &prob);
 }
 
 qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQubits, qreal* probability) {
@@ -1377,6 +1393,9 @@ qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQub
     qindex numProbs = powerOf2(numQubits);
     vector<qreal> probs(numProbs);
     calcProbsOfAllMultiQubitOutcomes(probs.data(), qureg, qubits, numQubits); // harmlessly re-validates
+
+    // we cannot meaningfully sample these probs if not normalised
+    validate_measurementProbsAreNormalised(probs, __func__);
 
     // randomly choose an outcome
     qindex outcome = rand_getRandomMultiQubitOutcome(probs);

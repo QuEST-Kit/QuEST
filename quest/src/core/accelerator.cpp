@@ -70,11 +70,11 @@ using std::min;
 
 #define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS(f, numctrls) \
     (vector <decltype(&f<0>)> {&f<0>, &f<1>, &f<2>, &f<3>, &f<4>, &f<5>, &f<-1>}) \
-    [min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS + 1)]
+    [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS + 1)]
 
 #define GET_FUNC_OPTIMISED_FOR_NUM_TARGS(f, numtargs) \
     (vector <decltype(&f<0>)> {&f<0>, &f<1>, &f<2>, &f<3>, &f<4>, &f<5>, &f<-1>}) \
-    [min((int) numtargs, MAX_OPTIMISED_NUM_TARGS + 1)]
+    [std::min((int) numtargs, MAX_OPTIMISED_NUM_TARGS + 1)]
 
 #define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(f, numctrls, numtargs) \
     (vector <ARR(f)> { \
@@ -85,8 +85,8 @@ using std::min;
         ARR(f) {&f<4,0>,  &f<4,1>,  &f<4,2>,  &f<4,3>,  &f<4,4>,  &f<4,5>,  &f<4,-1>}, \
         ARR(f) {&f<5,0>,  &f<5,1>,  &f<5,2>,  &f<5,3>,  &f<5,4>,  &f<5,5>,  &f<5,-1>}, \
         ARR(f) {&f<-1,0>, &f<-1,1>, &f<-1,2>, &f<-1,3>, &f<-1,4>, &f<-1,5>, &f<-1,-1>}}) \
-    [min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS + 1)] \
-    [min((int) numtargs, MAX_OPTIMISED_NUM_TARGS + 1)]
+    [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS + 1)] \
+    [std::min((int) numtargs, MAX_OPTIMISED_NUM_TARGS + 1)]
 
 #define ARR(f) vector<decltype(&f<0,0>)>
 
@@ -127,8 +127,8 @@ using std::min;
         CONJ_ARR(f) {&f<4,0,c>,  &f<4,1,c>,  &f<4,2,c>,  &f<4,3,c>,  &f<4,4,c>,  &f<4,5,c>,  &f<4,-1,c>}, \
         CONJ_ARR(f) {&f<5,0,c>,  &f<5,1,c>,  &f<5,2,c>,  &f<5,3,c>,  &f<5,4,c>,  &f<5,5,c>,  &f<5,-1,c>}, \
         CONJ_ARR(f) {&f<-1,0,c>, &f<-1,1,c>, &f<-1,2,c>, &f<-1,3,c>, &f<-1,4,c>, &f<-1,5,c>, &f<-1,-1,c>}}) \
-    [min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS + 1)] \
-    [min((int) numtargs, MAX_OPTIMISED_NUM_TARGS + 1)]
+    [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS + 1)] \
+    [std::min((int) numtargs, MAX_OPTIMISED_NUM_TARGS + 1)]
 
 #define CONJ_ARR(f) vector<decltype(&f<0,0,false>)>
 
@@ -158,8 +158,8 @@ using std::min;
         POWER_CONJ_ARR(f) {&f<4,0,c,h>,  &f<4,1,c,h>,  &f<4,2,c,h>,  &f<4,3,c,h>,  &f<4,4,c,h>,  &f<4,5,c,h>,  &f<4,-1,c,h>}, \
         POWER_CONJ_ARR(f) {&f<5,0,c,h>,  &f<5,1,c,h>,  &f<5,2,c,h>,  &f<5,3,c,h>,  &f<5,4,c,h>,  &f<5,5,c,h>,  &f<5,-1,c,h>}, \
         POWER_CONJ_ARR(f) {&f<-1,0,c,h>, &f<-1,1,c,h>, &f<-1,2,c,h>, &f<-1,3,c,h>, &f<-1,4,c,h>, &f<-1,5,c,h>, &f<-1,-1,c,h>}}) \
-    [min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS + 1)] \
-    [min((int) numtargs, MAX_OPTIMISED_NUM_TARGS + 1)]
+    [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS + 1)] \
+    [std::min((int) numtargs, MAX_OPTIMISED_NUM_TARGS + 1)]
 
 #define POWER_CONJ_ARR(f) vector<decltype(&f<0,0,false,false>)>
 
@@ -1007,7 +1007,7 @@ qcomp accel_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<in
 }
 
 
-qcomp accel_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+qcomp accel_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool useRealPow) {
 
      // qureg and matr are identically distributed (caller may have spoofed)...
     assert_quregAndFullStateDiagMatrAreBothOrNeitherDistrib(qureg, matr);
@@ -1016,9 +1016,11 @@ qcomp accel_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMa
     bool quregGPU = qureg.isGpuAccelerated;
     bool matrGPU = matr.isGpuAccelerated;
 
+    // disable useRealPow when exponent==1 which never invokes pow()
     bool hasPower = exponent != qcomp(1, 0);
-    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_BOOL( cpu_statevec_calcExpecFullStateDiagMatr_sub, hasPower );
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_BOOL( gpu_statevec_calcExpecFullStateDiagMatr_sub, hasPower );
+    useRealPow = useRealPow && hasPower; 
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( cpu_statevec_calcExpecFullStateDiagMatr_sub, hasPower, useRealPow );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( gpu_statevec_calcExpecFullStateDiagMatr_sub, hasPower, useRealPow );
 
     // when both are GPU-accelerated, we trivially use the GPU backend
     if (quregGPU && matrGPU)
@@ -1038,8 +1040,7 @@ qcomp accel_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMa
     return cpuFunc(qureg, matr, exponent);
 }
 
-
-qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool useRealPow) {
 
      // qureg and matr are identically distributed (caller may have spoofed)...
     assert_quregAndFullStateDiagMatrAreBothOrNeitherDistrib(qureg, matr);
@@ -1048,9 +1049,11 @@ qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMa
     bool quregGPU = qureg.isGpuAccelerated;
     bool matrGPU = matr.isGpuAccelerated;
 
+    // disable useRealPow when exponent==1 which never invokes pow()
     bool hasPower = exponent != qcomp(1, 0);
-    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_BOOL( cpu_densmatr_calcExpecFullStateDiagMatr_sub, hasPower );
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_BOOL( gpu_densmatr_calcExpecFullStateDiagMatr_sub, hasPower );
+    useRealPow = useRealPow && hasPower;
+    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( cpu_densmatr_calcExpecFullStateDiagMatr_sub, hasPower, useRealPow );
+    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( gpu_densmatr_calcExpecFullStateDiagMatr_sub, hasPower, useRealPow );
 
     // if deployments agree, trivially call the common backend
     if (quregGPU == matrGPU)

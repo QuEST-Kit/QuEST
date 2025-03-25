@@ -18,15 +18,21 @@
 #include "qmatrix.hpp"
 
 
-void setQureg(Qureg, qvector);
-void setQureg(Qureg, qmatrix);
+void setQuregToReference(Qureg, qvector);
+void setQuregToReference(Qureg, qmatrix);
 
 qvector getVector(Qureg);
 qmatrix getMatrix(Qureg);
 
-template <typename T> qmatrix getMatrix(T);
+qmatrix getMatrix(CompMatr1);
+qmatrix getMatrix(CompMatr2);
+qmatrix getMatrix(CompMatr );
+qmatrix getMatrix(DiagMatr1);
+qmatrix getMatrix(DiagMatr2);
+qmatrix getMatrix(DiagMatr );
+qmatrix getMatrix(SuperOp  );
 
-qmatrix getMatrix(PauliStr str,     vector<int> targs);
+qmatrix getMatrix(PauliStr str, vector<int> targs);
 qmatrix getMatrix(PauliStr str,    int numQubits);
 qmatrix getMatrix(PauliStrSum sum, int numQubits);
 

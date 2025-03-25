@@ -27,7 +27,7 @@ using std::vector;
  */
 
 
-void setQureg(Qureg qureg, qvector vector) {
+void setQuregToReference(Qureg qureg, qvector vector) {
     DEMAND( !qureg.isDensityMatrix );
     DEMAND( qureg.numAmps == (qindex) vector.size() );
 
@@ -35,7 +35,7 @@ void setQureg(Qureg qureg, qvector vector) {
 }
 
 
-void setQureg(Qureg qureg, qmatrix matrix) {
+void setQuregToReference(Qureg qureg, qmatrix matrix) {
     DEMAND( qureg.isDensityMatrix );
     DEMAND( getPow2(qureg.numQubits) == (qindex) matrix.size() );
 
@@ -90,7 +90,7 @@ qmatrix getMatrix(Qureg qureg) {
 template <typename T> 
 qcomp getElem(T m, size_t r, size_t c) {
 
-    if constexpr (is_same_v<T, CompMatr>)
+    if constexpr (is_same_v<T, CompMatr> || is_same_v<T, SuperOp>)
         return m.cpuElems[r][c];
     
     if constexpr (is_same_v<T, CompMatr1> || is_same_v<T, CompMatr2>)
@@ -105,9 +105,13 @@ qcomp getElem(T m, size_t r, size_t c) {
 
 
 template <typename T> 
-qmatrix getMatrix(T m) {
+qmatrix getMatrixInner(T m) {
 
-    qmatrix out = getZeroMatrix(getPow2(m.numQubits));
+    qindex dim = (is_same_v<T, SuperOp>)?
+        getPow2(2*m.numQubits):
+        getPow2(  m.numQubits);
+
+    qmatrix out = getZeroMatrix(dim);
 
     for (size_t r=0; r<out.size(); r++)
         for (size_t c=0; c<out.size(); c++)
@@ -116,14 +120,14 @@ qmatrix getMatrix(T m) {
     return out;
 }
 
-template qmatrix getMatrix(CompMatr1);
-template qmatrix getMatrix(CompMatr2);
-template qmatrix getMatrix(CompMatr );
-template qmatrix getMatrix(DiagMatr1);
-template qmatrix getMatrix(DiagMatr2);
-template qmatrix getMatrix(DiagMatr );
 
-// FullStateDiagMatr excluded
+qmatrix getMatrix(CompMatr1 m) { return getMatrixInner(m); }
+qmatrix getMatrix(CompMatr2 m) { return getMatrixInner(m); }
+qmatrix getMatrix(CompMatr  m) { return getMatrixInner(m); }
+qmatrix getMatrix(DiagMatr1 m) { return getMatrixInner(m); }
+qmatrix getMatrix(DiagMatr2 m) { return getMatrixInner(m); }
+qmatrix getMatrix(DiagMatr  m) { return getMatrixInner(m); }
+qmatrix getMatrix(SuperOp   m) { return getMatrixInner(m); }
 
 
 

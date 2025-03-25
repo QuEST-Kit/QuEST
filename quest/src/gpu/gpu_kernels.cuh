@@ -61,6 +61,7 @@ __host__ qindex getNumBlocks(qindex numThreads) {
     /// improve this with cudaOccupancyMaxPotentialBlockSize(),
     /// making it function specific
 
+    // CUDA ceil
     return ceil(numThreads / static_cast<qreal>(NUM_THREADS_PER_BLOCK));
 }
 

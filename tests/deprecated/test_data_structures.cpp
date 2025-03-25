@@ -1218,7 +1218,7 @@ TEST_CASE( "syncDiagonalOp", "[data_structures]" ) {
         // so we resort to custom invocation
 
         QuESTEnv env = getQuESTEnv();
-        DiagonalOp op = createCustomFullStateDiagMatr(numQb, env.isDistributed, env.isGpuAccelerated);
+        DiagonalOp op = createCustomFullStateDiagMatr(numQb, env.isDistributed, env.isGpuAccelerated, env.isMultithreaded);
 
         // check that changes get sync'd to the GPU...
         long long int n;

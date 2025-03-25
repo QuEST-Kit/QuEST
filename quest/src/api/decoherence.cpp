@@ -133,5 +133,17 @@ void mixQureg(Qureg outQureg, Qureg inQureg, qreal inProb) {
 }
 
 
+void mixSuperOp(Qureg qureg, int* targets, int numTargets, SuperOp superop) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, targets, numTargets, __func__);
+    validate_superOpFields(superop, __func__);
+    validate_superOpIsSynced(superop, __func__);
+    validate_superOpDimMatchesTargs(superop, numTargets, __func__);
+    validate_mixedAmpsFitInNode(qureg, 2*numTargets, __func__); // superop acts on 2x
+
+    localiser_densmatr_superoperator(qureg, superop, util_getVector(targets, numTargets));
+}
+
+
 
 } // end de-mangler

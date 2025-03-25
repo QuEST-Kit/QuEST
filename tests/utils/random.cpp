@@ -74,6 +74,10 @@ qreal getRandomPhase() {
 
 
 int getRandomInt(int min, int maxExcl) {
+
+    if (min == maxExcl)
+        return min;
+
     return (int) round(getRandomReal(min, maxExcl-1));
 }
 
@@ -85,6 +89,11 @@ qcomp getRandomComplex() {
 }
 
 
+qcomp getRandomUnitComplex() {
+    return std::exp(1_i * getRandomPhase());
+}
+
+
 
 /*
  * LIST
@@ -93,13 +102,22 @@ qcomp getRandomComplex() {
 
 vector<int> getRandomInts(int min, int maxExcl, int len) {
     DEMAND( len >= 0 ); // permit empty
+    DEMAND( min < maxExcl );
 
-    vector<int> outcomes(len);
-    
-    for (auto& x : outcomes)
+    vector<int> out(len);
+
+    for (auto& x : out)
         x = getRandomInt(min, maxExcl);
 
-    return outcomes;
+    return out;
+}
+
+
+vector<int> getRandomOutcomes(int len) {
+
+    int min = 0;
+    int max = 1;
+    return getRandomInts(min, max+1, len);
 }
 
 
@@ -213,30 +231,36 @@ vector<qvector> getRandomOrthonormalVectors(size_t dim, int numVecs) {
  */
 
 
+qmatrix getRandomNonSquareMatrix(size_t numRows, size_t numCols) {
+
+    // this function is DANGEROUS; it produces a
+    // non-square matrix, whereas most test utilities
+    // assume qmatrix is square. It should ergo be
+    // used very cautiously!
+
+    qmatrix out = qmatrix(numRows, qvector(numCols));
+
+    for (auto& row : out)
+        for (auto& elem : row)
+            elem = getRandomComplex();
+
+    return out;
+}
+
+
 qmatrix getRandomMatrix(size_t dim) {
-    DEMAND( dim > 1 );
-    
+
+    return getRandomNonSquareMatrix(dim, dim);
+}
+
+
+qmatrix getRandomDiagonalMatrix(size_t dim) {
+
     qmatrix out = getZeroMatrix(dim);
-    qreal max = RAND_MAX;
 
-    for (auto& row : out) {
-        for (auto& elem : row) {
-            
-            // generate 2 normally-distributed random numbers via Box-Muller
-            qreal a = rand()/max;
-            qreal b = rand()/max;
-            
-            // prevent log(0) NaNs
-            if (a == 0)
-                a = 1/max;
+    for (size_t i=0; i<dim; i++)
+        out[i][i] = getRandomComplex();
 
-            qreal fa = sqrt(-2 * log(a));
-            qreal re = fa * cos(2 * 3.14159265 * b);
-            qreal im = fa * sin(2 * 3.14159265 * b);
-            elem = qcomp(re, im);
-        }
-    }
-    
     return out;
 }
 
@@ -320,7 +344,7 @@ qmatrix getRandomUnitary(int numQb) {
     // create D = normalised diagonal of R
     qmatrix matrD = getZeroMatrix(dim);
     for (size_t i=0; i<dim; i++)
-        matrD[i][i] = matrR[i][i] / abs(matrR[i][i]);
+        matrD[i][i] = matrR[i][i] / std::abs(matrR[i][i]);
 
     // create U = Q D
     qmatrix matrU = matrQ * matrD;
@@ -335,10 +359,24 @@ qmatrix getRandomDiagonalUnitary(int numQb) {
 
     qmatrix matr = getZeroMatrix(getPow2(numQb));
 
+    // unitary diagonals have unit complex scalars
     for (size_t i=0; i<matr.size(); i++)
-        matr[i][i] = getExpI(getRandomPhase());
+        matr[i][i] = getRandomUnitComplex();
 
     return matr;
+}
+
+
+qmatrix getRandomDiagonalHermitian(int numQb) {
+    DEMAND( numQb >= 1 );
+
+    qmatrix out = getZeroMatrix(getPow2(numQb));
+
+    // Hermitian diagonals are real
+    for (size_t i=0; i<out.size(); i++)
+        out[i][i] = getRandomReal(-10, 10);
+
+    return out;
 }
 
 
@@ -360,13 +398,13 @@ vector<qmatrix> getRandomKrausMap(int numQb, int numOps) {
     for (auto& w : weights)
         sum += w;
     for (auto& w : weights)
-        w = sqrt(w/sum);
+        w = std::sqrt(w/sum);
         
     // normalise unitaries according to weights
     for (int i=0; i<numOps; i++)
         ops[i] *= weights[i];
 
-    DEMAND( isCompletelyPositiveTracePreserving(ops) );
+    DEMAND( isApproxCPTP(ops) );
     return ops;
 }
 
@@ -426,7 +464,7 @@ PauliStrSum createRandomPauliStrSum(int numQubits, int numTerms) {
     PauliStrSum out = createRandomNonHermitianPauliStrSum(numQubits, numTerms);
 
     for (qindex i=0; i<numTerms; i++)
-        out.coeffs[i] = real(out.coeffs[i]);
+        out.coeffs[i] = std::real(out.coeffs[i]);
 
     return out;
 }

@@ -121,7 +121,7 @@ void validate_quregIsDensityMatrix(Qureg qureg, const char* caller);
 
 void validate_newCompMatrParams(int numQubits, const char* caller);
 void validate_newDiagMatrParams(int numQubits, const char* caller);
-void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, int useGpu, const char* caller);
+void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, int useGpu, int useMultithread, const char* caller);
 
 void validate_newMatrixAllocs(CompMatr matr, const char* caller);
 void validate_newMatrixAllocs(DiagMatr matr, const char* caller);
@@ -135,6 +135,9 @@ void validate_newMatrixAllocs(FullStateDiagMatr matr, const char* caller);
 
 void validate_matrixNumNewElems(int numQubits, vector<vector<qcomp>> elems, const char* caller);
 void validate_matrixNumNewElems(int numQubits, vector<qcomp> elems, const char* caller);
+
+void validate_matrixNewElemsPtrNotNull(qcomp* elems, const char* caller);
+void validate_matrixNewElemsPtrNotNull(qcomp** elems, qindex numRows, const char* caller);
 
 void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd, qindex numElems, const char* caller);
 
@@ -170,6 +173,8 @@ void validate_matrixIsUnitary(DiagMatr2 matr, const char* caller);
 void validate_matrixIsUnitary(DiagMatr  matr, const char* caller);
 void validate_matrixIsUnitary(FullStateDiagMatr matr, const char* caller);
 
+void validate_unitaryExponentIsReal(qcomp exponent, const char* caller);
+
 void validate_matrixIsHermitian(CompMatr1 matr, const char* caller);
 void validate_matrixIsHermitian(CompMatr2 matr, const char* caller);
 void validate_matrixIsHermitian(CompMatr  matr, const char* caller);
@@ -177,6 +182,12 @@ void validate_matrixIsHermitian(DiagMatr1 matr, const char* caller);
 void validate_matrixIsHermitian(DiagMatr2 matr, const char* caller);
 void validate_matrixIsHermitian(DiagMatr  matr, const char* caller);
 void validate_matrixIsHermitian(FullStateDiagMatr matr, const char* caller);
+
+void validate_matrixExpIsHermitian(DiagMatr          matr, qreal exponent, const char* caller);
+void validate_matrixExpIsHermitian(FullStateDiagMatr matr, qreal exponent, const char* caller);
+
+void validate_matrixExpIsNonDiverging(DiagMatr          matr, qcomp exponent, const char* caller);
+void validate_matrixExpIsNonDiverging(FullStateDiagMatr matr, qcomp exponent, const char* caller);
 
 void validate_matrixDimMatchesTargets(CompMatr1 matr, int numTargs, const char* caller);
 void validate_matrixDimMatchesTargets(CompMatr2 matr, int numTargs, const char* caller);
@@ -366,6 +377,8 @@ void validate_measurementOutcomesProbNotZero(int* outcomes, int numQubits, qreal
 
 void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const char* caller);
 
+void validate_measurementProbsAreNormalised(vector<qreal> probs, const char* caller);
+
 
 
 /*
@@ -442,7 +455,7 @@ void validate_expecPauliStrValueIsReal(qcomp value, bool isDensMatr, const char*
 
 void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const char* caller);
 
-void validate_expecFullStateDiagMatrValueIsReal(qcomp value, bool isDensMatr, const char* caller);
+void validate_densMatrExpecDiagMatrValueIsReal(qcomp value, qcomp exponent, const char* caller);
 
 
 

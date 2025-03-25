@@ -80,11 +80,11 @@ int mem_getMaxNumSuperOpQubitsBeforeIndexOverflow();
 qindex mem_getMaxNumKrausMapMatricesBeforeIndexOverflow(int numQubits);
 
 
-int mem_getMaxNumQuregQubitsBeforeLocalMemSizeofOverflow(bool isDensityMatrix, int numNodes);
+int mem_getMaxNumQuregQubitsBeforeGlobalMemSizeofOverflow(bool isDensityMatrix, int numNodes);
 
-int mem_getMaxNumMatrixQubitsBeforeLocalMemSizeofOverflow(bool isDenseMatrix, int numNodes);
+int mem_getMaxNumMatrixQubitsBeforeGlobalMemSizeofOverflow(bool isDenseMatrix, int numNodes);
 
-int mem_getMaxNumSuperOpQubitsBeforeLocalMemSizeofOverflow();
+int mem_getMaxNumSuperOpQubitsBeforeGlobalMemSizeofOverflow();
 
 qindex mem_getMaxNumKrausMapMatricesBeforeLocalMemSizeofOverflow(int numQubits);
 
@@ -112,7 +112,7 @@ bool mem_isAllocated(int* heapflag);
 bool mem_isAllocated(PauliStr* array);
 bool mem_isAllocated(qcomp* array);
 bool mem_isAllocated(qcomp** matrix, qindex numRows);
-bool mem_isAllocated(qcomp*** matrixList, qindex numMatrices, qindex numRows);
+bool mem_isAllocated(qcomp*** matrixList, qindex numRows, int numMatrices);
 
 bool mem_isOuterAllocated(qcomp*   ptr);
 bool mem_isOuterAllocated(qcomp**  ptr);

@@ -144,10 +144,10 @@ namespace report {
         "Cannot create density Qureg of ${NUM_QUBITS} qubits: the density matrix would contain more amplitudes (4^${NUM_QUBITS}) than can be addressed by the qindex type (4^${MAX_QUBITS}). See reportQuESTEnv().";
 
     string NEW_STATEVEC_QUREG_LOCAL_MEM_WOULD_EXCEED_SIZEOF =
-        "Cannot create Qureg of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the necessary local memory (in bytes) of each node would overflow size_t. In this deployment, the maximum number of qubits in a statevector Qureg is ${MAX_QUBITS}. See reportQuESTEnv().";
+        "Cannot create Qureg of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the size (in bytes) of the necessary global memory would overflow size_t. In this deployment, the maximum number of qubits in a statevector Qureg is ${MAX_QUBITS}. See reportQuESTEnv().";
 
     string NEW_DENSMATR_QUREG_LOCAL_MEM_WOULD_EXCEED_SIZEOF =
-        "Cannot create density Qureg of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the necessary local memory (in bytes) of each node would overflow size_t. In this deployment, the maximum number of qubits in a density-matrix Qureg is ${MAX_QUBITS}. See reportQuESTEnv().";
+        "Cannot create density Qureg of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the size (in bytes) of the necessary global memory would overflow size_t. In this deployment, the maximum number of qubits in a density-matrix Qureg is ${MAX_QUBITS}. See reportQuESTEnv().";
 
     string NEW_DISTRIB_STATEVEC_QUREG_HAS_TOO_FEW_AMPS = 
         "Cannot create a distributed Qureg of only ${NUM_QUBITS} qubits between ${NUM_NODES} nodes, because each node would contain fewer than one amplitude of the statevector. The minimum size in this deployment is ${MIN_QUBITS} qubits; see reportQuESTEnv(). Consider disabling distribution for this Qureg.";
@@ -224,19 +224,39 @@ namespace report {
      */
 
     string NEW_HEAP_FLAG_ALLOC_FAILED =
-        "Attempted allocation of a heap flag (such as 'isUnitary', 'isHermitian', 'isCPTP', 'wasGpuSynced') miraculously failed, despite being a mere ${NUM_BYTES} bytes. This is unfathomably unlikely - go and have your fortune read at once!";
+        "Attempted allocation of a heap flag (such as 'isApproxUnitary') miraculously failed, despite being a mere ${NUM_BYTES} bytes. This is unfathomably unlikely - go and have your fortune read at once!";
 
     string INVALID_HEAP_FLAG_PTR =
-        "A flag (e.g. 'isUnitary', 'isHermitian', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) was a NULL pointer, instead of an expected pointer to persistent heap memory. This may imply the structure was not created by its proper function (e.g. createCompMatr()).";
+        "A flag (such as 'isApproxUnitary') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) was a NULL pointer, instead of an expected pointer to persistent heap memory. This may imply the structure was not created by its proper function (e.g. createCompMatr()).";
 
     string INVALID_HEAP_FLAG_VALUE = 
-        "A flag (e.g. 'isUnitary', 'isHermitian', 'isCPTP', 'wasGpuSynced') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) had an invalid value of ${BAD_FLAG}. Allowed values are '0', '1', and (except for 'wasGpuSynced') '${UNKNOWN_FLAG}', though these flags should not be modified directly by the user. It is likely the structure was not created by its proper function (e.g. createCompMatr()).";
+        "A flag (such as 'isApproxUnitary') bound to the given operator data structure (e.g. matrix, superoperator, Kraus map) had an invalid value of ${BAD_FLAG}. Allowed values are '0', '1', and (except for 'wasGpuSynced') '${UNKNOWN_FLAG}', though these flags should not be modified directly by the user. It is likely the structure was not created by its proper function (e.g. createCompMatr()).";
 
 
     /*
      * MATRIX CREATION
      */
 
+    string INVALID_OPTION_FOR_MATRIX_IS_DISTRIB = 
+        "Argument 'useDistrib' must be 1 or 0 to respectively indicate whether or not to distribute the new FullStateDiagMatr, or ${AUTO_DEPLOYMENT_FLAG} to let QuEST choose automatically.";
+
+    string INVALID_OPTION_FOR_MATRIX_IS_GPU_ACCEL = 
+        "Argument 'useGpuAccel' must be 1 or 0 to respetively indicate whether or not to GPU-accelerate the new FullStateDiagMatr, or ${AUTO_DEPLOYMENT_FLAG} to let QuEST choose automatically.";
+
+    string INVALID_OPTION_FOR_MATRIX_IS_MULTITHREAD = 
+        "Argument 'useMultithread' must be 1 or 0 to respectively indicate whether or not to use multithreading when initialising the new FullStateDiagMatr, or ${AUTO_DEPLOYMENT_FLAG} to let QuEST choose automatically.";
+
+
+    string NEW_DISTRIB_MATRIX_IN_NON_DISTRIB_ENV =
+        "Cannot distribute a FullStateDiagMatr when in a non-distributed QuEST environment.";
+
+    string NEW_GPU_MATRIX_IN_NON_GPU_ACCEL_ENV =
+        "Cannot allocate a FullStateDiagMatr to a GPU when in a non-GPU-accelerated QuEST environment.";
+
+    string NEW_MULTITHREAD_MATRIX_IN_NON_MULTITHREAD_ENV =
+        "Cannot enable multithreaded processing of a FullStateDiagMatr created in a non-multithreaded QuEST environment.";
+
+    
     string NEW_MATRIX_NUM_QUBITS_NOT_POSITIVE = 
         "Cannot create a matrix which acts upon ${NUM_QUBITS} qubits; must target one or more qubits.";
 
@@ -249,13 +269,13 @@ namespace report {
 
 
     string NEW_LOCAL_COMP_MATR_MEM_WOULD_EXCEED_SIZEOF =
-        "Cannot create a local, dense matrix of ${NUM_QUBITS} qubits because the necessary memory (in bytes) would overflow size_t. In this deployment, the maximum number of qubits in such a matrix is ${MAX_QUBITS}.";
+        "Cannot create a local, dense matrix of ${NUM_QUBITS} qubits because the size (in bytes) of the necessary memory would overflow size_t. In this deployment, the maximum number of qubits in such a matrix is ${MAX_QUBITS}.";
 
     string NEW_LOCAL_DIAG_MATR_MEM_WOULD_EXCEED_SIZEOF =
-        "Cannot create a local, diagonal matrix of ${NUM_QUBITS} qubits because the necessary memory (in bytes) would overflow size_t. In this deployment, the maximum number of qubits in such a matrix is ${MAX_QUBITS}.";
+        "Cannot create a local, diagonal matrix of ${NUM_QUBITS} qubits because the size (in bytes) of the necessary memory would overflow size_t. In this deployment, the maximum number of qubits in such a matrix is ${MAX_QUBITS}.";
 
     string NEW_DISTRIB_DIAG_MATR_LOCAL_MEM_WOULD_EXCEED_SIZEOF =
-        "Cannot create a diagonal matrix of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the necessary local memory (in bytes) of each node would overflow size_t. In this deployment, the maximum number of qubits in such a matrix is ${MAX_QUBITS}.";
+        "Cannot create a diagonal matrix of ${NUM_QUBITS} qubits distributed over ${NUM_NODES} nodes because the size (in bytes) of the necessary global memory would overflow size_t. In this deployment, the maximum number of qubits in such a matrix is ${MAX_QUBITS}.";
 
 
     string NEW_DISTRIB_DIAG_MATR_HAS_TOO_FEW_AMPS =
@@ -283,18 +303,10 @@ namespace report {
 
 
     string NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED = 
-        "Attempted allocation of memory for one or more rows of the matrix (a total of ${NUM_BYTES} bytes in RAM) failed.";
+        "Attempted allocation of the matrix memory (a total of ${NUM_BYTES} bytes in RAM) failed.";
 
     string NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED = 
         "Attempted allocation of the matrix's GPU memory (${NUM_BYTES} bytes in VRAM) failed.";
-
-
-    string NEW_DISTRIB_MATRIX_IN_NON_DISTRIB_ENV = 
-        "Cannot distribute a matrix in a non-distributed environment.";
-
-    string INVALID_OPTION_FOR_MATRIX_IS_DISTRIB = 
-        "Argument 'useDistrib' must be 1 or 0 to respectively indicate whether or not to distribute the new matrix, or ${AUTO_DEPLOYMENT_FLAG} to let QuEST choose automatically.";
-
 
 
     /*
@@ -309,6 +321,15 @@ namespace report {
 
     string DIAG_MATR_WRONG_NUM_NEW_ELEMS = 
         "Incompatible number of elements (${NUM_GIVEN_ELEMS}) assigned to a ${NUM_QUBITS}-qubit DiagMatr, which expects ${NUM_EXPECTED_ELEMS} elements.";
+
+    string DIAG_MATR_NEW_ELEMS_NULL_PTR =
+        "The given list of new elements was a null pointer.";
+
+    string DENSE_MATR_NEW_ELEMS_OUTER_NULL_PTR =
+        "The given matrix of new elements was a null pointer.";
+
+    string DENSE_MATR_NEW_ELEMS_INNER_NULL_PTR =
+        "The given matrix of new elements contained a null pointer, suggesting an issue with initialising one or more rows.";
     
 
     string FULL_STATE_DIAG_MATR_NEW_ELEMS_INVALID_START_INDEX =
@@ -388,11 +409,21 @@ namespace report {
     string MATRIX_SIZE_MISMATCHES_NUM_TARGETS =
         "The given matrix has an inconsistent size (${MATRIX_NUM_QUBITS}) with the specified number of target qubits (${NUM_TARGS}).";
 
+
     string MATRIX_NOT_UNITARY = 
         "The given matrix was not (approximately) unitary.";
+    
+    string UNITARY_DIAG_MATR_EXPONENT_NOT_APPROX_REAL =
+        "The given exponent was not approximately real (i.e. the imaginary component exceeded epsilon) such that the given diagonal matrix raised to the exponent was no longer approximately unitary. Consider changing the validation epsilon.";
 
     string MATRIX_NOT_HERMITIAN =
-        "THe given matrix was not (approximately) Hermitian.";
+        "The given matrix was not (approximately) Hermitian.";
+
+    string DIAG_MATR_APPROX_ZERO_WHILE_EXPONENT_REAL_AND_NEGATIVE =
+        "The given exponent was (real and) negative while one or more elements of the diagonal matrix had magnitudes near (within epsilon) to zero, which would cause divergences or divison-by-zero errors.";
+
+    string HERMITIAN_DIAG_MATR_NEGATIVE_WHILE_EXPONENT_NOT_INTEGER =
+        "The given exponent was a non-integer while one or more real components of the given Hermitian diagonal matrix were negative. The exponentiated matrix would ergo contain complex elements which violate Hermiticity. This validation is strict and not affected by the validation epsilon since it is necessary to avoid NaN output from a strictly-real pow() function, used for its improved numerical accuracy over complex pow().";
 
 
     string INVALID_MATRIX_CPU_ELEMS_PTR =
@@ -435,7 +466,7 @@ namespace report {
 
 
     string NEW_SUPER_OP_CPU_ELEMS_ALLOC_FAILED =
-        "Attempted allocation of memory for one or more rows of superoperator matrix (a total of ${NUM_BYTES} bytes in RAM) failed.";
+        "Attempted allocation of memory for the superoperator matrix (a total of ${NUM_BYTES} bytes in RAM) failed.";
         
     string NEW_SUPER_OP_GPU_ELEMS_ALLOC_FAILED =
         "Attempted allocation of GPU memory (a total of ${NUM_BYTES} in VRAM) for the superoperator matrix failed.";
@@ -501,7 +532,7 @@ namespace report {
         "Cannot create a Kraus map of ${NUM_QUBITS} qubits because the corresponding superoperator would contain more elements (16^${NUM_QUBITS}) than the maximum which can be addressed by the qindex type (16^${MAX_QUBITS}).";
 
     string NEW_KRAUS_MAPS_SUPER_OP_MEM_WOULD_EXCEED_SIZEOF =
-        "Cannot create a Kraus map of ${NUM_QUBITS} qubits because the necessary memory for its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) would overflow size_t. In this deployment, the maximum number of qubits in a Kraus map is ${MAX_QUBITS}.";
+        "Cannot create a Kraus map of ${NUM_QUBITS} qubits because the size (in bytes) of the necessary memory for its corresponding superoperator (${QCOMP_BYTES} * 16^${NUM_QUBITS} bytes) would overflow size_t. In this deployment, the maximum number of qubits in a Kraus map is ${MAX_QUBITS}.";
 
 
     string NEW_KRAUS_MAPS_SUPER_OP_CANNOT_FIT_INTO_CPU_MEM =
@@ -512,8 +543,8 @@ namespace report {
 
 
     string NEW_KRAUS_MAPS_SUPER_OP_CPU_ELEMS_ALLOC_FAILED =
-        "Attempted allocation of memory for one or more rows of the Kraus map's correspondng superoperator matrix (a total of ${NUM_BYTES} bytes in RAM) failed.";
-                
+        "Attempted allocation of memory for the Kraus map's correspondng superoperator matrix (a total of ${NUM_BYTES} bytes in RAM) failed.";
+
     string NEW_KRAUS_MAPS_SUPER_OP_GPU_ELEMS_ALLOC_FAILED =
         "Attempted allocation of GPU memory (a total of ${NUM_BYTES} bytes in VRAM) for the Kraus map's corresponding superoperator matrix failed.";
 
@@ -793,6 +824,9 @@ namespace report {
     string MANY_QUBIT_MEASUREMENT_OUTCOME_IMPOSSIBLY_UNLIKELY =
         "The specified multi-qubit measurement outcome (with binary value ${OUTCOME_VALUE}) is impossibly unlikely (i.e. has probability less than epsilon), so the post-measurement state cannot be reliably renormalised.";
 
+    string OUTCOME_PROBS_DO_NOT_SUM_TO_ONE =
+        "The state was unnormalised such that the probabilities of possible outcomes did not sum to one, and ergo cannot be meaningfully sampled.";
+
     string GPU_CANNOT_FIT_TEMP_MEASUREMENT_OUTCOME_PROBS =
         "The GPU has less available memory (${MEM_AVAIL} bytes) than that needed (${MEM_NEEDED} bytes) to temporarily store the ${NUM_OUTCOMES} outcome probabilities of the specified ${NUM_QUBITS} qubits.";
 
@@ -860,7 +894,7 @@ namespace report {
         "The given density matrix Quregs are differently distributed and cannot be mixed.";
 
     string MIXED_DENSITY_MATRIX_LOCAL_BUT_STATEVEC_DISTRIBUTED =
-        "THe given density matrix was local, but the statevector was distributed; this configuration is unsupported (and is ridiculous!).";
+        "The given density matrix was local, but the statevector was distributed; this configuration is unsupported (and is ridiculous!).";
 
 
     string SUPERPOSED_QUREGS_ARE_NOT_ALL_STATEVECTORS =
@@ -964,11 +998,11 @@ namespace report {
         "The calculated density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests the density matrix was unnormalised and/or not (sufficiently close to) Hermitian.";
 
 
-    string CALC_STATEVEC_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL =
-        "The calculated statevector expectation value was not approximately real (i.e. was not within epsilon). This suggests that the FullStateDiagMatr, despite being validated as (approximately) Hermitian, contained coefficients with sub-epsilon but non-negligible imaginary components which accumulated in the output value.";
+    string CALC_DENSMATR_EXPECTED_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests either the Qureg was incorrectly normalised (i.e. contained diagonal elements with non-negligible imaginary components), or that the negligible imaginary components of the FullStateDiagMatr (despite being validated as approximately Hermitian) accumulated non-negligibly in the output value.";
 
-    string CALC_DENSMATR_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL =
-        "The calculated density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests either the Qureg was incorrectly normalised (i.e. contained diagonal elements with non-negligible imaginary components), or that the imaginary components of the FullStateDiagMatr (despite being validated as approximately Hermitian) accumulated non-negligibly in the output value.";
+    string  CALC_DENSMATR_EXPECTED_DIAG_MATR_POWER_VALUE_WAS_NOT_APPROX_REAL =
+        "The calculated density-matrix expectation value was not approximately real (i.e. within epsilon). This suggests either the Qureg was incorrectly normalised (i.e. contained diagonal elements with non-negligible imaginary components), or that the FullStateDiagMatr raised to the given power was no longer approximately Hermitian, or that the negligible imaginary components of the FullStateDiagMatr accumulated non-negligibly in the output value.";
 
 
     /*
@@ -1071,6 +1105,14 @@ bool validateconfig_isEnabled() {
     return global_isValidationEnabled;
 }
 
+// this file validates that the outputs of reductions (like 
+// calcFidelity) are within numerical bounds (e.g. approx
+// real). Because these reductions combine exponentially
+// many decimals, they are much less precise than API inputs,
+// so should be validated with a more tolerant epsilon. We
+// here hackily specify the factor by which to expand eps.
+qreal REDUCTION_EPSILON_FACTOR = 100;
+
 
 
 /*
@@ -1107,6 +1149,17 @@ bool isNumericalValidationDisabled() {
 /*
  * UTILITIES
  */
+
+
+/// @todo
+/// this method of stringification is terrible; it precludes us
+/// from displaying non-integral types, like floating-point or
+/// strings. But further, it requires casting integral types
+/// (like size_t) to long long int. But alas size_t can be bigger
+/// than long long int, causing overflow - this happens when
+/// reporting failed max-smemory allocations. We cannot simply
+/// switch to 'size_t' which is unsigned, losing the ability to
+/// show small negative numbers. Grr!
 
 // map like "${X}" -> 5, with max-size signed int values to prevent overflows.
 // in C++11, these can be initialised with {{"${X}", 5}, ...}
@@ -1329,9 +1382,9 @@ void validate_randomSeeds(unsigned* seeds, int numSeeds, const char* caller) {
     // nodes to have invalid parameters. All nodes however must know/agree
     // when the root node's seeds are invalid, to synchronise validation
 
-    unsigned numRootSeeds = (unsigned) numSeeds;
+    int numRootSeeds = numSeeds;
     if (getQuESTEnv().isDistributed)
-        comm_broadcastUnsignedsFromRoot(&numRootSeeds, 1);
+        comm_broadcastIntsFromRoot(&numRootSeeds, 1);
 
     assertThat(numRootSeeds > 0, report::INVALID_NUM_RANDOM_SEEDS, {{"${NUM_SEEDS}", numSeeds}}, caller);
 }
@@ -1408,7 +1461,7 @@ void assertQuregLocalMemDoesntExceedMaxSizeof(int numQubits, int isDensMatr, int
     // per node and is ergo more permissive - and the auto-deployer would never choose non-distribution
     // in a distributed env if the memory would exceed the max sizeof!
     int numQuregNodes = (isDistrib == 0 || ! env.isDistributed)? 1 : env.numNodes;
-    int maxNumQubits = (int) mem_getMaxNumQuregQubitsBeforeLocalMemSizeofOverflow(isDensMatr, numQuregNodes);
+    int maxNumQubits = (int) mem_getMaxNumQuregQubitsBeforeGlobalMemSizeofOverflow(isDensMatr, numQuregNodes);
 
     tokenSubs vars = {
         {"${NUM_QUBITS}", numQubits},
@@ -1539,6 +1592,12 @@ void validate_newQuregParams(int numQubits, int isDensMatr, int isDistrib, int i
 
 void validate_newQuregAllocs(Qureg qureg, const char* caller) {
 
+    // this validation is called AFTER the caller has checked for failed
+    // allocs and (in that scenario) freed every pointer, but does not 
+    // overwrite any pointers to nullptr, so the failed alloc is known.
+    // This is only safe to do so (rather than making the caller set ptrs
+    // to nullptr) because the struct contains only 1D pointers (no nesting)
+
     // we get node consensus in case mallocs fail on some nodes but not others, as may occur
     // in heterogeneous settings, or where nodes may have other processes and loads hogging RAM. 
     assertAllNodesAgreeThat(mem_isAllocated(qureg.cpuAmps), report::NEW_QUREG_CPU_AMPS_ALLOC_FAILED, caller);
@@ -1604,20 +1663,24 @@ void validate_quregIsDensityMatrix(Qureg qureg, const char* caller) {
  * MATRIX CREATION
  */
 
-void assertMatrixDeployFlagsRecognised(int isDistrib, const char* caller) {
+void assertMatrixDeployFlagsRecognised(int isDistrib, int isGpuAccel, int isMultithread, const char* caller) {
 
     // deployment flags must be boolean or auto
-    assertThat(
-        isDistrib == 0 || isDistrib == 1 || isDistrib == modeflag::USE_AUTO, 
-        report::INVALID_OPTION_FOR_MATRIX_IS_DISTRIB,
-        {{"${AUTO_DEPLOYMENT_FLAG}", modeflag::USE_AUTO}}, caller);
+    tokenSubs vars = {{"${AUTO_DEPLOYMENT_FLAG}", modeflag::USE_AUTO}};
+    assertThat(isDistrib     == 0 || isDistrib     == 1 || isDistrib     == modeflag::USE_AUTO, report::INVALID_OPTION_FOR_MATRIX_IS_DISTRIB,     vars, caller);
+    assertThat(isGpuAccel    == 0 || isGpuAccel    == 1 || isGpuAccel    == modeflag::USE_AUTO, report::INVALID_OPTION_FOR_MATRIX_IS_GPU_ACCEL,   vars, caller);
+    assertThat(isMultithread == 0 || isMultithread == 1 || isMultithread == modeflag::USE_AUTO, report::INVALID_OPTION_FOR_MATRIX_IS_MULTITHREAD, vars, caller);
 }
 
-void assertMatrixDeploysEnabledByEnv(int isDistrib, int envIsDistrib, const char* caller) {
+void assertMatrixDeploysEnabledByEnv(int isDistrib, int isGpuAccel, int isMultithread, QuESTEnv env, const char* caller) {
 
     // cannot deploy to backend not already enabled by the environment
-    if (!envIsDistrib)
-        assertThat(isDistrib == 0 || isDistrib == modeflag::USE_AUTO, report::NEW_DISTRIB_MATRIX_IN_NON_DISTRIB_ENV, caller);
+    if (!env.isDistributed)
+        assertThat(isDistrib     == 0 || isDistrib     == modeflag::USE_AUTO, report::NEW_DISTRIB_MATRIX_IN_NON_DISTRIB_ENV, caller);
+    if (!env.isGpuAccelerated)
+        assertThat(isGpuAccel    == 0 || isGpuAccel    == modeflag::USE_AUTO, report::NEW_GPU_MATRIX_IN_NON_GPU_ACCEL_ENV, caller);
+    if (!env.isMultithreaded)
+        assertThat(isMultithread == 0 || isMultithread == modeflag::USE_AUTO, report::NEW_MULTITHREAD_MATRIX_IN_NON_MULTITHREAD_ENV, caller);
 }
 
 void assertMatrixNonEmpty(int numQubits, const char* caller) {
@@ -1653,7 +1716,7 @@ void assertMatrixLocalMemDoesntExceedMaxSizeof(int numQubits, bool isDense, int 
     // per node and is ergo more permissive - and the auto-deployer would never choose non-distribution
     // in a distributed env if the memory would exceed the max sizeof!
     int numMatrNodes = (isDistrib == 0)? 1 : numEnvNodes;
-    int maxNumQubits = mem_getMaxNumMatrixQubitsBeforeLocalMemSizeofOverflow(isDense, numMatrNodes);
+    int maxNumQubits = mem_getMaxNumMatrixQubitsBeforeGlobalMemSizeofOverflow(isDense, numMatrNodes);
 
     // make error message specific to whether the matrix is distributed or non-distributed type;
     // non-distributed matrices (e.g. CompMatr) should only ever cause the local error message
@@ -1811,7 +1874,7 @@ void assertMatrixFitsInGpuMem(int numQubits, bool isDense, int isDistrib, int is
     assertAllNodesAgreeThat(matrFitsInMem, msg, vars, caller);
 }
 
-void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, int useGpu, bool isDenseType, const char* caller) {
+void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, int useGpu, int useMultithread, bool isDenseType, const char* caller) {
 
     // some of the below validation involves getting distributed node consensus, which
     // can be an expensive synchronisation, which we avoid if validation is anyway disabled
@@ -1819,6 +1882,8 @@ void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, int useGpu, bo
         return;
 
     QuESTEnv env = getQuESTEnv();
+    assertMatrixDeployFlagsRecognised(useDistrib, useGpu, useMultithread, caller);
+    assertMatrixDeploysEnabledByEnv(useDistrib, useGpu, useMultithread, env, caller);
     assertMatrixNonEmpty(numQubits, caller);
     assertMatrixTotalNumElemsDontExceedMaxIndex(numQubits, isDenseType, caller);
     assertMatrixLocalMemDoesntExceedMaxSizeof(numQubits,  isDenseType, useDistrib, env.numNodes, caller);
@@ -1830,8 +1895,9 @@ void assertNewMatrixParamsAreValid(int numQubits, int useDistrib, int useGpu, bo
 void validate_newCompMatrParams(int numQubits, const char* caller) {
     validate_envIsInit(caller);
 
-    // CompMatr can never be distributed
+    // CompMatr can never be distributed nor multithreaded
     int useDistrib = 0;
+    int useMultithread = 0;
 
     // CompMatr is always GPU accelerated whenever enabled by the environment
     bool useGpu = getQuESTEnv().isGpuAccelerated;
@@ -1839,13 +1905,14 @@ void validate_newCompMatrParams(int numQubits, const char* caller) {
     // CompMatr stores 2^(2*numQubits) elems
     bool isDenseType = true;
 
-    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, isDenseType, caller);
+    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, useMultithread, isDenseType, caller);
 }
 void validate_newDiagMatrParams(int numQubits, const char* caller) {
     validate_envIsInit(caller);
 
-    // DiagMatr can never be distributed
+    // DiagMatr can never be distributed nor multithreaded
     int useDistrib = 0;
+    int useMultithread = 0;
 
     // DiagMatr is always GPU accelerated whenever enabled by the environment
     bool useGpu = getQuESTEnv().isGpuAccelerated;
@@ -1853,20 +1920,27 @@ void validate_newDiagMatrParams(int numQubits, const char* caller) {
     // DiagMatr stores only the diagonals; 2^numQubits elems
     bool isDenseType = false;
 
-    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, isDenseType, caller);
+    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, useMultithread, isDenseType, caller);
 }
-void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, int useGpu, const char* caller) {
+void validate_newFullStateDiagMatrParams(int numQubits, int useDistrib, int useGpu, int useMultithread, const char* caller) {
     validate_envIsInit(caller);
 
     // FullStateDiagMatr stores only the diagonals
     bool isDenseType = false;
 
-    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, isDenseType, caller);
+    assertNewMatrixParamsAreValid(numQubits, useDistrib, useGpu, useMultithread, isDenseType, caller);
 }
 
 // T can be CompMatr, DiagMatr, FullStateDiagMatr (i.e. heap-based matrices)
 template <typename T>
-void assertNewMatrixAllocsSucceeded(T matr, qindex numBytes, const char* caller) {
+void assertNewMatrixAllocsSucceeded(T matr, size_t numBytes, const char* caller) {
+
+    // this validation is called AFTER the caller has checked for failed
+    // allocs and (in that scenario) freed every pointer, but does not 
+    // overwrite any pointers to nullptr, so the failed alloc is known.
+    // This is only safe to do so (rather than making the caller set ptrs
+    // to nullptr) because the structs contains only 1D pointer; even 
+    // CompMatr which "fakes" a 2D ptr via offsets of a contiguous array.
 
     // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads,
     // but we avoid this potetially expensive synchronisation if validation is anyway disabled
@@ -1874,13 +1948,27 @@ void assertNewMatrixAllocsSucceeded(T matr, qindex numBytes, const char* caller)
     if (!global_isValidationEnabled)
         return;
 
-    tokenSubs vars = {{"${NUM_BYTES}", numBytes}};
+    /// @todo
+    /// fix this abhorrent hackiness! Presently, tokenSubs accepts only qindex (in lieu of 
+    /// unsigned size_t) in order to be able to report negative numbers. But alas, the max
+    /// size_t is bigger than max qindex, due to the sign-bit. So trying to report numBytes
+    /// can cause a size_t -> qindex overflow. This is a realistic scenario, occurring when
+    /// when the user tries to allocate the max-size memory for which malloc incidentally
+    /// fails. This is when numBytes is +1 too big to be a qindex; we simply reduce by 2!
+    /// We under-report the memory by 2 bytes, instead of 1, just to avoid an odd number 
+    /// which an astute user would immediately notice is not a power-of-2 and be confused by.
+    /// This is a hacky evil, but it is better than reporting a negative memory size!
+    tokenSubs vars;
+    vars["${NUM_BYTES}"] = ((qindex) numBytes <= 0)?
+        numBytes - 2 : numBytes;
 
     // assert CPU array (which may be nested arrays) all allocated successfully
     bool isAlloc;
-    if constexpr (util_isDenseMatrixType<T>())
-        isAlloc = mem_isAllocated(matr.cpuElems, matr.numRows);
-    else
+    if constexpr (util_isDenseMatrixType<T>()) {
+        // size of .cpuElems isn't included in numBytes report which is fine; it's
+        // quadratically smaller than .cpuElemsFlat so quickly negligible
+        isAlloc = mem_isAllocated(matr.cpuElemsFlat) && mem_isOuterAllocated(matr.cpuElems);
+    } else
         isAlloc = mem_isAllocated(matr.cpuElems);
     assertAllNodesAgreeThat(isAlloc, report::NEW_MATRIX_CPU_ELEMS_ALLOC_FAILED, vars, caller);
 
@@ -1893,31 +1981,37 @@ void assertNewMatrixAllocsSucceeded(T matr, qindex numBytes, const char* caller)
         assertAllNodesAgreeThat(mem_isAllocated(util_getGpuMemPtr(matr)), report::NEW_MATRIX_GPU_ELEMS_ALLOC_FAILED, vars, caller);
 
     // assert the teeny-tiny heap flags are alloc'd
-    vars["${NUM_BYTES}"] = sizeof(*(matr.isUnitary));
-    assertAllNodesAgreeThat(mem_isAllocated(matr.isUnitary),    report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
-    assertAllNodesAgreeThat(mem_isAllocated(matr.isHermitian),  report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
-    assertAllNodesAgreeThat(mem_isAllocated(matr.wasGpuSynced), report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+    vars["${NUM_BYTES}"] = sizeof(*(matr.isApproxUnitary)); // all fields are same-size
+    assertAllNodesAgreeThat(mem_isAllocated(matr.isApproxUnitary),     report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+    assertAllNodesAgreeThat(mem_isAllocated(matr.isApproxHermitian),   report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+    assertAllNodesAgreeThat(mem_isAllocated(matr.wasGpuSynced),  report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+
+    // only diagonal matrices (which can be exponentiated) have these additional flags
+    if constexpr (!util_isDenseMatrixType<T>()) {
+        assertAllNodesAgreeThat(mem_isAllocated(matr.isApproxNonZero),       report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+        assertAllNodesAgreeThat(mem_isAllocated(matr.isStrictlyNonNegative), report::NEW_HEAP_FLAG_ALLOC_FAILED, vars, caller);
+    }
 }
 
 void validate_newMatrixAllocs(CompMatr matr, const char* caller) {
 
     bool isDenseMatrix = true;
     int numNodes = 1;
-    qindex numBytes = mem_getLocalMatrixMemoryRequired(matr.numQubits, isDenseMatrix, numNodes);
+    size_t numBytes = mem_getLocalMatrixMemoryRequired(matr.numQubits, isDenseMatrix, numNodes);
     assertNewMatrixAllocsSucceeded(matr, numBytes, caller);
 }
 void validate_newMatrixAllocs(DiagMatr matr, const char* caller) {
 
     bool isDenseMatrix = false;
     int numNodes = 1;
-    qindex numBytes = mem_getLocalMatrixMemoryRequired(matr.numQubits, isDenseMatrix, numNodes);
+    size_t numBytes = mem_getLocalMatrixMemoryRequired(matr.numQubits, isDenseMatrix, numNodes);
     assertNewMatrixAllocsSucceeded(matr, numBytes, caller);
 }
 void validate_newMatrixAllocs(FullStateDiagMatr matr, const char* caller) {
 
     bool isDenseMatrix = false;
     int numNodes = (matr.isDistributed)? comm_getNumNodes() : 1;
-    qindex numBytes = mem_getLocalMatrixMemoryRequired(matr.numQubits, isDenseMatrix, numNodes);
+    size_t numBytes = mem_getLocalMatrixMemoryRequired(matr.numQubits, isDenseMatrix, numNodes);
     assertNewMatrixAllocsSucceeded(matr, numBytes, caller);
 }
 
@@ -1958,6 +2052,21 @@ void validate_matrixNumNewElems(int numQubits, vector<qcomp> elems, const char* 
         {"${NUM_GIVEN_ELEMS}",    elems.size()}};
 
     assertThat(dim == (qindex) elems.size(), report::DIAG_MATR_WRONG_NUM_NEW_ELEMS, vars, caller);
+}
+
+void validate_matrixNewElemsPtrNotNull(qcomp* elems, const char* caller) {
+
+    assertThat(mem_isAllocated(elems), report::DIAG_MATR_NEW_ELEMS_NULL_PTR, caller);
+}
+
+void validate_matrixNewElemsPtrNotNull(qcomp** elems, qindex numRows, const char* caller) {
+
+    // messages are suitable for all dense matrices, including SuperOp
+
+    assertThat(mem_isOuterAllocated(elems), report::DENSE_MATR_NEW_ELEMS_OUTER_NULL_PTR, caller);
+
+    for (qindex i=0; i<numRows; i++)
+        assertThat(mem_isAllocated(elems[i]), report::DENSE_MATR_NEW_ELEMS_INNER_NULL_PTR, caller);
 }
 
 void validate_fullStateDiagMatrNewElems(FullStateDiagMatr matr, qindex startInd, qindex numElems, const char* caller) {
@@ -2040,19 +2149,25 @@ template <class T>
 void assertAdditionalHeapMatrixFieldsAreValid(T matr, const char* caller) {
 
     // assert heap pointers are not NULL
-    assertThat(mem_isAllocated(matr.isUnitary),    report::INVALID_HEAP_FLAG_PTR, caller);
-    assertThat(mem_isAllocated(matr.isHermitian),  report::INVALID_HEAP_FLAG_PTR, caller);
-    assertThat(mem_isAllocated(matr.wasGpuSynced), report::INVALID_HEAP_FLAG_PTR, caller);
+    assertThat(mem_isAllocated(matr.isApproxUnitary),     report::INVALID_HEAP_FLAG_PTR, caller);
+    assertThat(mem_isAllocated(matr.isApproxHermitian),   report::INVALID_HEAP_FLAG_PTR, caller);
+    assertThat(mem_isAllocated(matr.wasGpuSynced),  report::INVALID_HEAP_FLAG_PTR, caller);
+
+    // only diagonal matrices (which can be exponentiated) have these additional flags
+    if constexpr (!util_isDenseMatrixType<T>()) {
+        assertThat(mem_isAllocated(matr.isApproxNonZero),       report::INVALID_HEAP_FLAG_PTR, caller);
+        assertThat(mem_isAllocated(matr.isStrictlyNonNegative), report::INVALID_HEAP_FLAG_PTR, caller);
+    }
 
     tokenSubs vars = {{"${BAD_FLAG}", 0}, {"${UNKNOWN_FLAG}", validate_STRUCT_PROPERTY_UNKNOWN_FLAG}};
 
-    // assert isUnitary has valid value
-    int flag = *matr.isUnitary;
+    // assert isApproxUnitary has valid value
+    int flag = *matr.isApproxUnitary;
     vars["${BAD_FLAG}"] = flag;
     assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
 
-    // assert isHermitian has valid value
-    flag = *matr.isHermitian;
+    // assert isApproxHermitian has valid value
+    flag = *matr.isApproxHermitian;
     vars["${BAD_FLAG}"] = flag;
     assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
 
@@ -2060,6 +2175,17 @@ void assertAdditionalHeapMatrixFieldsAreValid(T matr, const char* caller) {
     flag = *matr.wasGpuSynced;
     vars["${BAD_FLAG}"] = flag;
     assertThat(flag == 0 || flag == 1, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
+
+    // assert isApproxNonZero and isStrictlyNonNegative have valid values (only bound to diagonal matrices)
+    if constexpr (!util_isDenseMatrixType<T>()) {
+        flag = *matr.isApproxNonZero;
+        vars["${BAD_FLAG}"] = flag;
+        assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
+
+        flag = *matr.isStrictlyNonNegative;
+        vars["${BAD_FLAG}"] = flag;
+        assertThat(flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG, report::INVALID_HEAP_FLAG_VALUE, vars, caller);
+    }
 
     // checks whether users have, after destroying their struct, manually set the outer
     // heap-memory pointers to NULL. We do not check inner pointers of 2D structures (which may
@@ -2114,14 +2240,13 @@ void assertMatrixFieldsAreValid(T matr, int expectedNumQb, string badFieldMsg, c
     // no risk that they're wrong (because they're const so users cannot modify them) unless 
     // the struct was unitialised, which we have already validated against
 }
-
-void validate_matrixFields(CompMatr1 matr, const char* caller) { assertMatrixFieldsAreValid(matr, 1,              report::INVALID_COMP_MATR_1_FIELDS, caller); }
-void validate_matrixFields(CompMatr2 matr, const char* caller) { assertMatrixFieldsAreValid(matr, 2,              report::INVALID_COMP_MATR_2_FIELDS, caller); }
-void validate_matrixFields(CompMatr  matr, const char* caller) { assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_COMP_MATR_FIELDS,   caller); }
-void validate_matrixFields(DiagMatr1 matr, const char* caller) { assertMatrixFieldsAreValid(matr, 1,              report::INVALID_DIAG_MATR_1_FIELDS, caller); }
-void validate_matrixFields(DiagMatr2 matr, const char* caller) { assertMatrixFieldsAreValid(matr, 2,              report::INVALID_DIAG_MATR_2_FIELDS, caller); }
-void validate_matrixFields(DiagMatr  matr, const char* caller) { assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_DIAG_MATR_FIELDS,   caller); }
-void validate_matrixFields(FullStateDiagMatr matr, const char* caller) { assertMatrixFieldsAreValid(matr, matr.numQubits, report::INVALID_FULL_STATE_DIAG_MATR_FIELDS, caller); }
+void validate_matrixFields(CompMatr1 m, const char* caller) { assertMatrixFieldsAreValid(m, 1,           report::INVALID_COMP_MATR_1_FIELDS, caller); }
+void validate_matrixFields(CompMatr2 m, const char* caller) { assertMatrixFieldsAreValid(m, 2,           report::INVALID_COMP_MATR_2_FIELDS, caller); }
+void validate_matrixFields(CompMatr  m, const char* caller) { assertMatrixFieldsAreValid(m, m.numQubits, report::INVALID_COMP_MATR_FIELDS,   caller); }
+void validate_matrixFields(DiagMatr1 m, const char* caller) { assertMatrixFieldsAreValid(m, 1,           report::INVALID_DIAG_MATR_1_FIELDS, caller); }
+void validate_matrixFields(DiagMatr2 m, const char* caller) { assertMatrixFieldsAreValid(m, 2,           report::INVALID_DIAG_MATR_2_FIELDS, caller); }
+void validate_matrixFields(DiagMatr  m, const char* caller) { assertMatrixFieldsAreValid(m, m.numQubits, report::INVALID_DIAG_MATR_FIELDS,   caller); }
+void validate_matrixFields(FullStateDiagMatr m, const char* caller) { assertMatrixFieldsAreValid(m, m.numQubits, report::INVALID_FULL_STATE_DIAG_MATR_FIELDS, caller); }
 
 // type T can be CompMatr, DiagMatr or FullStateDiagMatr
 template <class T>
@@ -2134,153 +2259,142 @@ void assertMatrixIsSynced(T matr, string errMsg, const char* caller) {
     // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though
     assertThat(*(matr.wasGpuSynced) == 1, errMsg, caller);
 }
-
-void validate_matrixIsSynced(CompMatr matr, const char* caller) {
-    assertMatrixIsSynced(matr, report::COMP_MATR_NOT_SYNCED_TO_GPU, caller);
-}
-void validate_matrixIsSynced(DiagMatr matr, const char* caller) {
-    assertMatrixIsSynced(matr, report::DIAG_MATR_NOT_SYNCED_TO_GPU, caller);
-}
-void validate_matrixIsSynced(FullStateDiagMatr matr, const char* caller) {
-    assertMatrixIsSynced(matr, report::FULL_STATE_DIAG_MATR_NOT_SYNCED_TO_GPU, caller);
-}
-
-// type T can be CompMatr, DiagMatr, FullStateDiagMatr
-template <class T> 
-void ensureMatrixUnitarityIsKnown(T matr) {
-
-    // do nothing if we already know unitarity
-    if (*(matr.isUnitary) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        return;
-
-    // determine local unitarity, modifying matr.isUnitary. This will
-    // involve MPI communication if matr is a distributed type
-    *(matr.isUnitary) = util_isUnitary(matr, global_validationEpsilon);
-}
+void validate_matrixIsSynced(CompMatr matr, const char* caller) { assertMatrixIsSynced(matr, report::COMP_MATR_NOT_SYNCED_TO_GPU, caller);}
+void validate_matrixIsSynced(DiagMatr matr, const char* caller) { assertMatrixIsSynced(matr, report::DIAG_MATR_NOT_SYNCED_TO_GPU, caller); }
+void validate_matrixIsSynced(FullStateDiagMatr matr, const char* caller) { assertMatrixIsSynced(matr, report::FULL_STATE_DIAG_MATR_NOT_SYNCED_TO_GPU, caller); }
 
 // type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template <class T> 
 void assertMatrixIsUnitary(T matr, const char* caller) {
 
-    // avoid expensive unitarity check (and do not overwrite .isUnitary) if validation is anyway disabled
+    // validate both stack and heap matrices have been correctly initialised
+    validate_matrixFields(matr, caller);
+
+    // validate heap matrices have ever written to their GPU memories (if exists)
+    if constexpr (util_isHeapMatrixType<T>())
+        validate_matrixIsSynced(matr, caller);
+
+    // avoid superfluous expensive unitarity check below (do not overwrite .isApproxUnitary)
     if (isNumericalValidationDisabled())
         return;
 
-    // unitarity is determined differently depending on matrix type
-    bool isUnitary = false;
+    // may overwrite matr.isApproxUnitary of heap matrices, otherwise ignores epsilon
+    assertThat(util_isUnitary(matr, global_validationEpsilon), report::MATRIX_NOT_UNITARY, caller);
+}
+void validate_matrixIsUnitary(CompMatr1 m, const char* caller) { assertMatrixIsUnitary(m, caller); }
+void validate_matrixIsUnitary(CompMatr2 m, const char* caller) { assertMatrixIsUnitary(m, caller); }
+void validate_matrixIsUnitary(CompMatr  m, const char* caller) { assertMatrixIsUnitary(m, caller); }
+void validate_matrixIsUnitary(DiagMatr1 m, const char* caller) { assertMatrixIsUnitary(m, caller); }
+void validate_matrixIsUnitary(DiagMatr2 m, const char* caller) { assertMatrixIsUnitary(m, caller); }
+void validate_matrixIsUnitary(DiagMatr  m, const char* caller) { assertMatrixIsUnitary(m, caller); }
+void validate_matrixIsUnitary(FullStateDiagMatr m, const char* caller) { assertMatrixIsUnitary(m, caller); }
 
-    // fixed-size matrices have their unitarity calculated afresh (since cheap)
-    if constexpr (util_isFixedSizeMatrixType<T>())
-        isUnitary = util_isUnitary(matr, global_validationEpsilon);
+void validate_unitaryExponentIsReal(qcomp exponent, const char* caller) {
 
-    // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
-    else {
-        ensureMatrixUnitarityIsKnown(matr);
-        isUnitary = *(matr.isUnitary);
-    }
+    // this validation always checks that 'exponent' is only
+    // approximately real, permitting non-zero imaginary
+    // component. Functions which require a strictly real
+    // exponent never call this; they accept 'qreal' exponents.
 
-    assertThat(isUnitary, report::MATRIX_NOT_UNITARY, caller);
-}
-
-void validate_matrixIsUnitary(CompMatr1 matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    assertMatrixIsUnitary(matr, caller);
-}
-void validate_matrixIsUnitary(CompMatr2 matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    assertMatrixIsUnitary(matr, caller);
-}
-void validate_matrixIsUnitary(CompMatr matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    validate_matrixIsSynced(matr, caller);
-    assertMatrixIsUnitary(matr, caller);
-}
-void validate_matrixIsUnitary(DiagMatr1 matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    assertMatrixIsUnitary(matr, caller);
-}
-void validate_matrixIsUnitary(DiagMatr2 matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    assertMatrixIsUnitary(matr, caller);
-}
-void validate_matrixIsUnitary(DiagMatr matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    validate_matrixIsSynced(matr, caller);
-    assertMatrixIsUnitary(matr, caller);
-}
-void validate_matrixIsUnitary(FullStateDiagMatr matr, const char* caller) {
-    validate_matrixIsSynced(matr, caller);
-    validate_matrixFields(matr, caller);
-    assertMatrixIsUnitary(matr, caller);
-}
-
-// type T can be CompMatr, DiagMatr, FullStateDiagMatr
-template <class T> 
-void ensureMatrHermiticityIsKnown(T matr) {
-
-    // do nothing if we already know hermiticity
-    if (*(matr.isHermitian) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+    if (isNumericalValidationDisabled())
         return;
 
-    // determine local unitarity, modifying matr.isHermitian
-    *(matr.isHermitian) = util_isHermitian(matr, global_validationEpsilon);
+    // assesses diag^expo unitarity for any unitary diag
+    assertThat(util_isApproxReal(exponent, global_validationEpsilon), report::UNITARY_DIAG_MATR_EXPONENT_NOT_APPROX_REAL, caller);
 }
 
 // type T can be CompMatr1, CompMatr2, CompMatr, DiagMatr1, DiagMatr2, DiagMatr, FullStateDiagMatr
 template <class T> 
 void assertMatrixIsHermitian(T matr, const char* caller) {
 
-    // avoid expensive unitarity check (and do not overwrite .isHermitian) if validation is anyway disabled
+    // validate both stack and heap matrices have been correctly initialised
+    validate_matrixFields(matr, caller);
+
+    // validate heap matrices have ever written to their GPU memories (if exists)
+    if constexpr (util_isHeapMatrixType<T>())
+        validate_matrixIsSynced(matr, caller);
+
+    // avoid superfluous expensive hermiticity check below (do not overwrite  matr.isApproxHermitian)
     if (isNumericalValidationDisabled())
         return;
 
-    // unitarity is determined differently depending on matrix type
-    bool isHermitian = false;
-
-    // fixed-size matrices have their hermiticity calculated afresh (since cheap)
-    if constexpr (util_isFixedSizeMatrixType<T>())
-        isHermitian = util_isHermitian(matr, global_validationEpsilon);
-
-    // dynamic matrices have their field consulted, which may invoke lazy eval and global synchronisation
-    else {
-        ensureMatrHermiticityIsKnown(matr);
-        isHermitian = *(matr.isHermitian);
-    }
-
-    assertThat(isHermitian, report::MATRIX_NOT_HERMITIAN, caller);
+    // may overwrite matr.isApproxHermitian of heap matrices, otherwise ignores epsilon
+    assertThat(util_isHermitian(matr, global_validationEpsilon), report::MATRIX_NOT_HERMITIAN, caller);
 }
+void validate_matrixIsHermitian(CompMatr1 m, const char* caller) { assertMatrixIsHermitian(m, caller); }
+void validate_matrixIsHermitian(CompMatr2 m, const char* caller) { assertMatrixIsHermitian(m, caller); }
+void validate_matrixIsHermitian(CompMatr  m, const char* caller) { assertMatrixIsHermitian(m, caller); }
+void validate_matrixIsHermitian(DiagMatr1 m, const char* caller) { assertMatrixIsHermitian(m, caller); }
+void validate_matrixIsHermitian(DiagMatr2 m, const char* caller) { assertMatrixIsHermitian(m, caller); }
+void validate_matrixIsHermitian(DiagMatr  m, const char* caller) { assertMatrixIsHermitian(m, caller); }
+void validate_matrixIsHermitian(FullStateDiagMatr m, const char* caller) { assertMatrixIsHermitian(m, caller); }
 
-void validate_matrixIsHermitian(CompMatr1 matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    assertMatrixIsHermitian(matr, caller);
-}
-void validate_matrixIsHermitian(CompMatr2 matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    assertMatrixIsHermitian(matr, caller);
-}
-void validate_matrixIsHermitian(CompMatr matr, const char* caller) {
+// type T can be DiagMatr, FullStateDiagMatr
+template <class T> 
+void assertMatrExpIsNonDiverging(T matr, qcomp exponent, const char* caller) {
+
     validate_matrixFields(matr, caller);
     validate_matrixIsSynced(matr, caller);
-    assertMatrixIsHermitian(matr, caller);
+
+    // avoid exepensive and epsilon-dependent validation below (do not overwrite matr.isApproxNonZero)
+    if (isNumericalValidationDisabled())
+        return;
+
+    // divergences are only validated when the imaginary component is strictly 
+    // zero, otherwise alternate complex exponentiation is sometimes performed
+    // with a more complicated numerical stability
+    if (std::imag(exponent) != 0)
+        return;
+
+    // when the real exponent is STRICTLY less than zero, it is required that every
+    // matrix element's magnitude is APPROX non-zero, to avoid 1/0 divergences. 
+    // We do this independent of the size of exponent, even despite that exponents
+    // really close to 0 (from below) can "counteract" the blowing up, because
+    // precision is too poor near epsilon for this to be implicitly relied upon.
+    if (std::real(exponent) < 0)
+        assertThat(util_isApproxNonZero(matr, global_validationEpsilon), report::DIAG_MATR_APPROX_ZERO_WHILE_EXPONENT_REAL_AND_NEGATIVE, caller);
 }
-void validate_matrixIsHermitian(DiagMatr1 matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    assertMatrixIsHermitian(matr, caller);
+void validate_matrixExpIsNonDiverging(DiagMatr          m, qcomp p, const char* caller) { assertMatrExpIsNonDiverging(m, p, caller); }
+void validate_matrixExpIsNonDiverging(FullStateDiagMatr m, qcomp p, const char* caller) { assertMatrExpIsNonDiverging(m, p, caller); }
+
+// type T can be DiagMatr, FullStateDiagMatr
+template <class T> 
+void assertMatrExpIsHermitian(T matr, qreal exponent, const char* caller) {
+
+    // below validation can invoke communication and expensive data processing,
+    // even when numerical-epsilon is zero, which we avoid when all validation is off.
+    // we always proceed however if merely numerical-validation is disabled (via zero
+    // epsilon) because some checks below are epsilon independent
+    if (!global_isValidationEnabled)
+        return;
+
+    // the calling function will use the std::pow(qreal,qreal) overload, rather than
+    // std::pow(qcomp,qcomp), passing in the real components of matr and the given
+    // exponent. As such, the result must never be complex which instead becomes NaN.
+    // The validation below ergo ensures that pow(a,b) is always real and stable. 
+    // All validations upon 'matr' consult existing properties (like .isHermitian),
+    // computing them fresh and recording them if not already known
+
+    // the matrix itself must be approximately real, since we consult only its reals.
+    // this also validates the matrix fields, and whether GPU-matrices are synced
+    validate_matrixIsHermitian(matr, caller);
+
+    // when the exponent is not STRICTLY an integer, it is required that every matrix
+    // elem's real component is STRICTLY positive, so that real-pow doesn't create NaNs.
+    // this can overwrite matr.isStrictlyNonNegative even when validation epsilon=0
+    if (!util_isStrictlyInteger(exponent))
+        assertThat(util_isStrictlyNonNegative(matr), report::HERMITIAN_DIAG_MATR_NEGATIVE_WHILE_EXPONENT_NOT_INTEGER, caller);
+
+    // divergences don't break Hermiticity per se, but do sabotage numerical accuracy.
+    validate_matrixExpIsNonDiverging(matr, qcomp(exponent,0), caller);
+
+    // the final plausible scenario we have not checked is when both the matrix elem
+    // and exponent are strictly positive but very close to zero. In that case, the
+    // result tends to 1 so does not vanish or blow up unexpectedly. All fine!
 }
-void validate_matrixIsHermitian(DiagMatr2 matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    assertMatrixIsHermitian(matr, caller);
-}
-void validate_matrixIsHermitian(DiagMatr matr, const char* caller) {
-    validate_matrixFields(matr, caller);
-    validate_matrixIsSynced(matr, caller);
-    assertMatrixIsHermitian(matr, caller);
-}
-void validate_matrixIsHermitian(FullStateDiagMatr matr, const char* caller) {
-    validate_matrixIsSynced(matr, caller);
-    validate_matrixFields(matr, caller);
-    assertMatrixIsHermitian(matr, caller);
-}
+
+void validate_matrixExpIsHermitian(DiagMatr          m, qreal p, const char* caller) { assertMatrExpIsHermitian(m, p, caller); }
+void validate_matrixExpIsHermitian(FullStateDiagMatr m, qreal p, const char* caller) { assertMatrExpIsHermitian(m, p, caller); }
 
 template <class T>
 void assertMatrixDimMatchesTargs(T matr, int numTargs, const char* caller) {
@@ -2362,7 +2476,7 @@ void assertSuperOpTotalNumElemsDontExceedMaxIndex(int numQubits, bool isInKrausM
 
 void assertSuperOpLocalMemDoesntExceedMaxSizeof(int numQubits, bool isInKrausMap, const char* caller) {
 
-    int maxNumQubits = mem_getMaxNumSuperOpQubitsBeforeLocalMemSizeofOverflow();
+    int maxNumQubits = mem_getMaxNumSuperOpQubitsBeforeGlobalMemSizeofOverflow();
 
     tokenSubs vars = {
         {"${NUM_QUBITS}", numQubits},
@@ -2452,6 +2566,13 @@ void validate_newSuperOpParams(int numQubits, const char* caller) {
 }
 
 void assertNewSuperOpAllocs(SuperOp op, bool isInKrausMap, const char* caller) {
+
+    // this validation is called AFTER the caller has checked for failed
+    // allocs and (in that scenario) freed every pointer, but does not 
+    // overwrite any pointers to nullptr, so the failed alloc is known.
+    // This is only safe to do so (rather than making the caller set ptrs
+    // to nullptr) because the struct contains only 1D pointers (no nesting)
+
     tokenSubs vars = {{"${NUM_BYTES}", mem_getLocalSuperOpMemoryRequired(op.numQubits)}};
 
     // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads,
@@ -2463,7 +2584,10 @@ void assertNewSuperOpAllocs(SuperOp op, bool isInKrausMap, const char* caller) {
     auto msg = (isInKrausMap)?
         report::NEW_KRAUS_MAPS_SUPER_OP_CPU_ELEMS_ALLOC_FAILED:
         report::NEW_SUPER_OP_CPU_ELEMS_ALLOC_FAILED;
-    assertAllNodesAgreeThat(mem_isAllocated(op.cpuElems, op.numRows), msg, vars, caller);
+
+    // note .cpuElems size is not included in error msg; fine since quadratically smaller than .cpuElemsFlat
+    bool isAlloc = mem_isAllocated(op.cpuElemsFlat) && mem_isOuterAllocated(op.cpuElems);
+    assertAllNodesAgreeThat(isAlloc, msg, vars, caller);
 
     // optionally assert GPU memory was malloc'd successfully
     msg = (isInKrausMap)?
@@ -2662,6 +2786,16 @@ void validate_newKrausMapParams(int numQubits, int numMatrices, const char* call
 
 void validate_newKrausMapAllocs(KrausMap map, const char* caller) {
 
+    // unlike other post-creation allocation validation, this function
+    // expects that when allocation failed and the heap fields have already
+    // been cleared, that any nested field (like map.matrices) has had the
+    // outer pointer set to null. Otherwise, we would illegally attempt to
+    // enumerate the outer pointer to check non-null-ness of inner pointers,
+    // which would segmentation fault after the outer pointer was freed!
+    // Ergo, we know map.matrices=nullptr whenever anything else failed
+    // (and is nullptr), so we must check it last so as not to false report 
+    // it as the cause of the failure!
+
     // we expensively get node consensus about malloc failure, in case of heterogeneous hardware/loads,
     // but we avoid this if validation is anyway disabled
     if (!global_isValidationEnabled)
@@ -2670,13 +2804,9 @@ void validate_newKrausMapAllocs(KrausMap map, const char* caller) {
     // prior validation gaurantees this will not overflow
     qindex matrListMem = map.numMatrices * mem_getLocalMatrixMemoryRequired(map.numQubits, true, 1);
     tokenSubs vars = {
-        {"${NUM_BYTES}", matrListMem},
+        {"${NUM_BYTES}",    matrListMem},
         {"${NUM_MATRICES}", map.numMatrices},
-        {"${NUM_QUBITS}", map.numQubits}};
-
-    // assert the list of Kraus operator matrices, and all matrices nad rows therein, were allocated
-    bool krausAreAlloc = mem_isAllocated(map.matrices, map.numMatrices, map.numQubits);
-    assertAllNodesAgreeThat(krausAreAlloc, report::NEW_KRAUS_MAP_CPU_MATRICES_ALLOC_FAILED, vars, caller);
+        {"${NUM_QUBITS}",   map.numQubits}};
 
     // assert the teeny-tiny heap flag was alloc'd
     assertAllNodesAgreeThat(mem_isAllocated(map.isCPTP), report::NEW_HEAP_FLAG_ALLOC_FAILED, {{"${NUM_BYTES}", sizeof(*(map.isCPTP))}}, caller);
@@ -2684,6 +2814,11 @@ void validate_newKrausMapAllocs(KrausMap map, const char* caller) {
     // assert that the superoperator itself was allocated (along with its own heap fields)
     bool isInKrausMap = true;
     assertNewSuperOpAllocs(map.superop, isInKrausMap, caller);
+
+    // assert the list of Kraus operator matrices, and all matrices nad rows therein, were allocated
+    // (this must be done last, since caller sets .matrices=nullptr) whenever an inner alloc failed
+    bool krausAreAlloc = mem_isOuterAllocated(map.matrices);
+    assertAllNodesAgreeThat(krausAreAlloc, report::NEW_KRAUS_MAP_CPU_MATRICES_ALLOC_FAILED, vars, caller);
 }
 
 void validate_newInlineKrausMapDimMatchesVectors(int numQubits, int numOperators, vector<vector<vector<qcomp>>> matrices, const char* caller) {
@@ -2979,6 +3114,12 @@ void validate_newPauliStrSumMatchingListLens(qindex numStrs, qindex numCoeffs, c
 
 void validate_newPauliStrSumAllocs(PauliStrSum sum, qindex numBytesStrings, qindex numBytesCoeffs, const char* caller) {
 
+    // this validation is called AFTER the caller has checked for failed
+    // allocs and (in that scenario) freed every pointer, but does not 
+    // overwrite any pointers to nullptr, so the failed alloc is known.
+    // This is only safe to do so (rather than making the caller set ptrs
+    // to nullptr) because the struct contains only 1D pointers (no nesting)
+
     assertThat(
         mem_isAllocated(sum.strings), report::NEW_PAULI_STR_SUM_STRINGS_ALLOC_FAILED, 
         {{"${NUM_TERMS}", sum.numTerms}, {"${NUM_BYTES}", numBytesStrings}}, caller);
@@ -2988,8 +3129,8 @@ void validate_newPauliStrSumAllocs(PauliStrSum sum, qindex numBytesStrings, qind
         {{"${NUM_TERMS}", sum.numTerms}, {"${NUM_BYTES}", numBytesCoeffs}}, caller);
 
     assertThat(
-        mem_isAllocated(sum.isHermitian), report::NEW_HEAP_FLAG_ALLOC_FAILED, 
-        {{"${NUM_BYTES}", sizeof(*(sum.isHermitian))}}, caller);
+        mem_isAllocated(sum.isApproxHermitian), report::NEW_HEAP_FLAG_ALLOC_FAILED, 
+        {{"${NUM_BYTES}", sizeof(*(sum.isApproxHermitian))}}, caller);
 }
 
 
@@ -3046,10 +3187,10 @@ void validate_pauliStrSumFields(PauliStrSum sum, const char* caller) {
     assertThat(mem_isAllocated(sum.coeffs),  report::INVALID_PAULI_STR_HEAP_PTR, caller);
     assertThat(mem_isAllocated(sum.strings), report::INVALID_PAULI_STR_HEAP_PTR, caller);
 
-    assertThat(mem_isAllocated(sum.isHermitian), report::INVALID_HEAP_FLAG_PTR, caller);
+    assertThat(mem_isAllocated(sum.isApproxHermitian), report::INVALID_HEAP_FLAG_PTR, caller);
 
-    // assert isHermitian has valid value
-    int flag = *sum.isHermitian;
+    // assert isApproxHermitian has valid value
+    int flag = *sum.isApproxHermitian;
     tokenSubs vars = {
         {"${BAD_FLAG}", flag}, 
         {"${UNKNOWN_FLAG}", validate_STRUCT_PROPERTY_UNKNOWN_FLAG}};
@@ -3058,15 +3199,15 @@ void validate_pauliStrSumFields(PauliStrSum sum, const char* caller) {
 
 void validate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
 
-    // avoid expensive hermiticity check (and do not overwrite .isHermitian) if validation is anyway disabled
+    // avoid expensive hermiticity check (and do not overwrite .isApproxHermitian) if validation is anyway disabled
     if (isNumericalValidationDisabled())
         return;
 
     // ensure hermiticity is known (if not; compute it)
-    if (*(sum.isHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        *(sum.isHermitian) = util_isHermitian(sum, global_validationEpsilon);
+    if (*(sum.isApproxHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        *(sum.isApproxHermitian) = util_isHermitian(sum, global_validationEpsilon);
 
-    assertThat(*(sum.isHermitian), report::PAULI_STR_SUM_NOT_HERMITIAN, caller);
+    assertThat(*(sum.isApproxHermitian), report::PAULI_STR_SUM_NOT_HERMITIAN, caller);
 }
 
 void validate_pauliStrSumTargets(PauliStrSum sum, Qureg qureg, const char* caller) {
@@ -3276,7 +3417,7 @@ void assertValidQubits(
     assertThat(numQubits <= qureg.numQubits, msgNumExceedsQureg, {{"${NUM_QUBITS}", numQubits}, {"${QUREG_QUBITS}", qureg.numQubits}}, caller);
 
     if (numQubits > 0)
-        assertThat(qubits != nullptr, msgNullPtr, caller);
+        assertThat(mem_isAllocated(qubits), msgNullPtr, caller);
 
     for (int n=0; n<numQubits; n++)
         assertValidQubit(qureg, qubits[n], msgBadInd, caller);
@@ -3350,8 +3491,8 @@ void validate_controlsAndTwoTargets(Qureg qureg, int* ctrls, int numCtrls, int t
 
 void validate_controlStates(int* states, int numCtrls, const char* caller) {
 
-    // states is permittedly nullptr even when numCtrls != 0
-    if (states == nullptr)
+    // states is permittedly unallocated (nullptr) even when numCtrls != 0
+    if (!mem_isAllocated(states))
         return;
 
     for (int n=0; n<numCtrls; n++)
@@ -3420,6 +3561,18 @@ void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const c
     assertThat(memAvail > memNeeded, report::GPU_CANNOT_FIT_TEMP_MEASUREMENT_OUTCOME_PROBS, vars, caller);
 }
 
+void validate_measurementProbsAreNormalised(vector<qreal> probs, const char* caller) {
+
+    if (isNumericalValidationDisabled())
+        return;
+
+    /// @todo include 'total' in validation msg once supported
+
+    qreal total = util_getSum(probs);
+    qreal dist = std::abs(total - 1);
+    assertThat(dist <= global_validationEpsilon, report::OUTCOME_PROBS_DO_NOT_SUM_TO_ONE, caller);
+}
+
 
 
 /*
@@ -3431,7 +3584,7 @@ void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* c
     if (isNumericalValidationDisabled())
         return;
 
-    qreal norm = sqrt(pow(x,2) + pow(y,2) + pow(z,2));
+    qreal norm = std::sqrt(std::pow(x,2) + std::pow(y,2) + std::pow(z,2));
 
     assertThat(norm > global_validationEpsilon, report::ROTATION_AXIS_VECTOR_IS_ZERO, caller);
 }
@@ -3580,7 +3733,7 @@ void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller
 
     // the statevector can only be distributed if the density matrix is (because there is otherwise no buffer to receive broadcast)
     if (!quregOut.isDistributed)
-        assertThat(!quregOut.isDistributed, report::MIXED_DENSITY_MATRIX_LOCAL_BUT_STATEVEC_DISTRIBUTED, caller);
+        assertThat(!quregIn.isDistributed, report::MIXED_DENSITY_MATRIX_LOCAL_BUT_STATEVEC_DISTRIBUTED, caller);
 }
 
 void validate_quregsCanBeSuperposed(Qureg qureg1, Qureg qureg2, Qureg qureg3, const char* caller) {
@@ -3711,7 +3864,8 @@ void validate_fidelityIsReal(qcomp fid, const char* caller) {
 
     /// @todo include imag(fid) in error message when non-integers are supported
 
-    assertThat(abs(imag(fid)) < global_validationEpsilon, report::CALC_FIDELITY_NOT_APPROX_REAL, caller);
+    qreal eps = REDUCTION_EPSILON_FACTOR * global_validationEpsilon;
+    assertThat(util_isApproxReal(fid, eps), report::CALC_FIDELITY_NOT_APPROX_REAL, caller);
 }
 
 void validate_buresDistanceInnerProdIsNormalised(qreal mag, const char* caller) {
@@ -3721,7 +3875,8 @@ void validate_buresDistanceInnerProdIsNormalised(qreal mag, const char* caller) 
 
     /// @todo include mag in error message when non-integers are supported
 
-    assertThat(mag <= 1 + global_validationEpsilon, report::CALC_BURES_DISTANCE_MAG_EXCEEDED_ONE, caller);
+    qreal eps = REDUCTION_EPSILON_FACTOR * global_validationEpsilon;
+    assertThat(mag <= 1 + eps, report::CALC_BURES_DISTANCE_MAG_EXCEEDED_ONE, caller);
 }
 
 void validate_purifiedDistanceIsNormalised(qcomp fid, const char* caller) {
@@ -3731,8 +3886,9 @@ void validate_purifiedDistanceIsNormalised(qcomp fid, const char* caller) {
 
     /// @todo include scalars in error message when non-integers are supported
     
-    assertThat(abs(imag(fid)) < global_validationEpsilon, report::CALC_PURIFIED_DISTANCE_NOT_APPROX_REAL, caller);
-    assertThat(real(fid) <= 1 + global_validationEpsilon, report::CALC_PURIFIED_DISTANCE_REAL_EXCEEDED_ONE, caller);
+    qreal eps = REDUCTION_EPSILON_FACTOR * global_validationEpsilon;
+    assertThat(util_isApproxReal(fid, eps), report::CALC_PURIFIED_DISTANCE_NOT_APPROX_REAL, caller);
+    assertThat(std::real(fid) <= 1 + eps, report::CALC_PURIFIED_DISTANCE_REAL_EXCEEDED_ONE, caller);
 }
 
 
@@ -3748,7 +3904,11 @@ void validate_quregRenormProbIsNotZero(qreal prob, const char* caller) {
 
     /// @todo include 'prob' in error message when non-integers are supported
 
-    assertThat(prob > global_validationEpsilon, report::QUREG_RENORM_PROB_IS_ZERO, caller);
+    // note use abs(prob) of in lieu of prob; we permit the probability
+    // to be negative as can happen during setQuregToRenormalized() when
+    // given an invalid density-matrix. We only require the magnitude is
+    // non-zero so that division doesn't numerically diverge
+    assertThat(std::abs(prob) > global_validationEpsilon, report::QUREG_RENORM_PROB_IS_ZERO, caller);
 }
 
 void validate_numInitRandomPureStates(qindex numPureStates,  const char* caller) {
@@ -3773,16 +3933,8 @@ void validate_expecPauliStrValueIsReal(qcomp value, bool isDensMatr, const char*
         report::CALC_DENSMATR_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL:
         report::CALC_STATEVEC_EXPECTED_PAULI_STR_VALUE_WAS_NOT_APPROX_REAL;
 
-    /// @todo
-    /// comparing the output of these reduction-type functions to global_validationEpsilon
-    /// is pretty strict since they can result from an exponential-number of summed terms,
-    /// so should be much much less accurate than direct user inputs validated with the
-    /// same epsilon. We should use a more relaxed threshold for such validations!
-    /// This particular assertion causes trouble in single-precision in the CI unit tests,
-    /// so we are merely ad-hoc patching for now
-    qreal FACTOR = 10;
-
-    assertThat(abs(imag(value)) <= FACTOR * global_validationEpsilon, msg, caller);
+    qreal eps = REDUCTION_EPSILON_FACTOR * global_validationEpsilon;
+    assertThat(util_isApproxReal(value, eps), msg, caller);
 }
 
 void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
@@ -3794,19 +3946,29 @@ void validate_expecPauliStrSumValueIsReal(qcomp value, bool isDensMatr, const ch
         report::CALC_DENSMATR_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL:
         report::CALC_STATEVEC_EXPECTED_PAULI_STR_SUM_VALUE_WAS_NOT_APPROX_REAL;
 
-    assertThat(abs(imag(value)) < global_validationEpsilon, msg, caller);
+    qreal eps = REDUCTION_EPSILON_FACTOR * global_validationEpsilon;
+    assertThat(util_isApproxReal(value, eps), msg, caller);
 }
 
-void validate_expecFullStateDiagMatrValueIsReal(qcomp value, bool isDensMatr, const char* caller) {
+void validate_densMatrExpecDiagMatrValueIsReal(qcomp value, qcomp exponent, const char* caller) {
+
+    // this function is only ever called to validate the output of
+    // expected value calculations of hermitian diagonal matrices
+    // upon density matrices (NOT statevectors) because errors in
+    // the latter (due to state unnormalisation, or exponent doma-
+    // in, or unintended imaginary components of the diagonal)
+    // never damage the real component, which we always safely return
 
     if (isNumericalValidationDisabled())
         return;
 
-    string msg = (isDensMatr)?
-        report::CALC_DENSMATR_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL:
-        report::CALC_STATEVEC_EXPECTED_FULL_STATE_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL;
+    // precise comparison since non-power overload passes epxonent=1
+    string msg = (exponent == qcomp(1,0))?
+        report::CALC_DENSMATR_EXPECTED_DIAG_MATR_VALUE_WAS_NOT_APPROX_REAL:
+        report::CALC_DENSMATR_EXPECTED_DIAG_MATR_POWER_VALUE_WAS_NOT_APPROX_REAL;
 
-    assertThat(abs(imag(value)) < global_validationEpsilon, msg, caller);
+    qreal eps = REDUCTION_EPSILON_FACTOR * global_validationEpsilon;
+    assertThat(util_isApproxReal(value, eps), msg, caller);
 }
 
 

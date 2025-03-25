@@ -264,7 +264,8 @@ void receiveArray(qcomp* dest, qindex numElems, int pairRank) {
 
 void globallyCombineNonUniformSubArrays(
     qcomp* recv, qcomp* send,
-    vector<qindex> globalRecvIndPerRank, vector<qindex> localSendIndPerRank, vector<qindex> numSendPerRank
+    vector<qindex> globalRecvIndPerRank, vector<qindex> localSendIndPerRank, vector<qindex> numSendPerRank,
+    bool areGpuPtrs
 ) {
 #if COMPILE_MPI
 
@@ -277,11 +278,13 @@ void globallyCombineNonUniformSubArrays(
     // every node first copies their 'send' portion into a distinct part of their local 'recv',
     // which they will subsequently broadcast to the other nodes, if it is non-zero in size;
     // if send is nullptr, then the caller already prepared the relevant portion of recv
-    if (send != nullptr)
-        cpu_copyArray(
+    if (send != nullptr) {
+        auto func = (areGpuPtrs)? gpu_copyArray : cpu_copyArray;
+        func(
             &recv[globalRecvIndPerRank[myRank]], 
             &send[localSendIndPerRank[myRank]], 
             numSendPerRank[myRank]); // may be zero
+    }
 
     // all node-broadcasts will be asynch, and each involves one request per sent message,
     // but unlikely in other routines, their payloads can differ significantly in size,
@@ -319,7 +322,7 @@ void globallyCombineNonUniformSubArrays(
 }
 
 
-void globallyCombineSubArrays(qcomp* recv, qcomp* send, qindex numAmpsPerRank) {
+void globallyCombineSubArrays(qcomp* recv, qcomp* send, qindex numAmpsPerRank, bool areGpuPtrs) {
 #if COMPILE_MPI
 
     // simply wrap and call the non-uniform case has no performance penalty, 
@@ -337,7 +340,7 @@ void globallyCombineSubArrays(qcomp* recv, qcomp* send, qindex numAmpsPerRank) {
         numAmps[r] = numAmpsPerRank;
     }
 
-    globallyCombineNonUniformSubArrays(recv, send, recvInds, sendInds, numAmps);
+    globallyCombineNonUniformSubArrays(recv, send, recvInds, sendInds, numAmps, areGpuPtrs);
 
 #else
     error_commButEnvNotDistributed();
@@ -534,7 +537,8 @@ void comm_combineAmpsIntoBuffer(Qureg receiver, Qureg sender) {
     // Qureg is GPU-accelerated, we have to fall back entirely to copying through host.
     // There is ergo only a single scenario possible when we can directly GPU-exchange:
     if (receiver.isGpuAccelerated && sender.isGpuAccelerated && gpu_isDirectGpuCommPossible()) {
-        globallyCombineSubArrays(receiver.gpuCommBuffer, sender.gpuAmps, numSendAmps);
+        gpu_sync();
+        globallyCombineSubArrays(receiver.gpuCommBuffer, sender.gpuAmps, numSendAmps, true);
         return;
     }
 
@@ -543,7 +547,7 @@ void comm_combineAmpsIntoBuffer(Qureg receiver, Qureg sender) {
     if (sender.isGpuAccelerated)
         gpu_copyGpuToCpu(sender, sender.gpuAmps, sender.cpuAmps, numSendAmps);
 
-    globallyCombineSubArrays(receiver.cpuCommBuffer, sender.cpuAmps, numSendAmps);
+    globallyCombineSubArrays(receiver.cpuCommBuffer, sender.cpuAmps, numSendAmps, false);
 
     if (receiver.isGpuAccelerated)
         gpu_copyCpuToGpu(receiver, receiver.cpuCommBuffer, receiver.gpuCommBuffer, numRecvAmps);
@@ -561,12 +565,15 @@ void comm_combineElemsIntoBuffer(Qureg receiver, FullStateDiagMatr sender) {
 
     // like in comm_combineAmpsIntoBuffer(), direct-GPU comm only possible if both ptrs are GPU
     if (receiver.isGpuAccelerated && sender.isGpuAccelerated && gpu_isDirectGpuCommPossible() ) {
-        globallyCombineSubArrays(receiver.gpuCommBuffer, sender.gpuElems, numSendAmps);
+        gpu_sync();
+        globallyCombineSubArrays(receiver.gpuCommBuffer, sender.gpuElems, numSendAmps, true);
         return;
     }
 
+    // there is no need to copy sender's elems from GPU to CPU; they should never diverge
+
     // even if sender is GPU-accelerated, we safely assume its CPU elements are unchanged from GPU
-    globallyCombineSubArrays(receiver.cpuCommBuffer, sender.cpuElems, numSendAmps);
+    globallyCombineSubArrays(receiver.cpuCommBuffer, sender.cpuElems, numSendAmps, false);
 
     if (receiver.isGpuAccelerated)
         gpu_copyCpuToGpu(receiver, receiver.cpuCommBuffer, receiver.gpuCommBuffer, numRecvAmps);
@@ -634,6 +641,18 @@ void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps)
 }
 
 
+void comm_broadcastIntsFromRoot(int* arr, qindex length) {
+#if COMPILE_MPI
+
+    int sendRank = ROOT_RANK;
+    MPI_Bcast(arr, length, MPI_INT, sendRank, MPI_COMM_WORLD);
+
+#else
+    error_commButEnvNotDistributed();
+#endif
+}
+
+
 void comm_broadcastUnsignedsFromRoot(unsigned* arr, qindex length) {
 #if COMPILE_MPI
 
@@ -651,7 +670,8 @@ void comm_combineSubArrays(qcomp* recv, vector<qindex> recvInds, vector<qindex> 
     // recv has already been overwritten with local contributions, which enables
     // direct GPU-to-recv writing (avoiding a superfluous CPU-CPU copy)
     qcomp* send = nullptr;
-    globallyCombineNonUniformSubArrays(recv, send, recvInds, sendInds, numSend);
+    bool areGpuPtrs = false;
+    globallyCombineNonUniformSubArrays(recv, send, recvInds, sendInds, numSend, areGpuPtrs);
 }
 
 

@@ -124,6 +124,10 @@ void cpu_deallocArray(qcomp* arr) {
 
 qcomp** cpu_allocAndInitMatrixWrapper(qcomp* arr, qindex dim) {
 
+    // do not allocate if arr alloc failed (caller will handle)
+    if (arr == nullptr)
+        return nullptr;
+
     // allocate only the outer memory (i.e. one row's worth)
     qcomp** out = (qcomp**) malloc(dim * sizeof *out);
 
@@ -135,7 +139,7 @@ qcomp** cpu_allocAndInitMatrixWrapper(qcomp* arr, qindex dim) {
     for (qindex i=0; i<dim; i++)
         out[i] = &arr[i*dim];
 
-    return out;
+    return out; // may be nullptr
 }
 
 
@@ -143,7 +147,8 @@ void cpu_deallocMatrixWrapper(qcomp** wrapper) {
 
     // only the outer pointer is freed; the
     // inner pointers are offsets to another
-    // malloc which is separately freed
+    // malloc which is separately freed. 
+    // Safe to call even when nullptr
     free(wrapper);
 }
 
@@ -185,7 +190,7 @@ void cpu_deallocMatrix(qcomp** matrix, qindex dim) {
 }
 
 
-qcomp*** cpu_allocMatrixList(int numMatrices, qindex numRows) {
+qcomp*** cpu_allocMatrixList(qindex numRows, int numMatrices) {
 
     // attempt to allocate the outer list
     qcomp*** matrices = (qcomp***) malloc(numMatrices * sizeof *matrices); // nullptr if failed
@@ -199,7 +204,7 @@ qcomp*** cpu_allocMatrixList(int numMatrices, qindex numRows) {
 }
 
 
-void cpu_deallocMatrixList(qcomp*** matrices, int numMatrices, qindex numRows) {
+void cpu_deallocMatrixList(qcomp*** matrices, qindex numRows, int numMatrices) {
 
     // free everything that allocated (but permit anything to have failed)
     if (matrices != nullptr)

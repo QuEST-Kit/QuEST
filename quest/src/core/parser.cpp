@@ -402,7 +402,7 @@ PauliStrSum parser_validateAndParsePauliStrSum(string lines, bool rightIsLeastSi
 
         qcomp coeff;
         PauliStr string;
-        parseLine(line, coeff, string, rightIsLeastSignificant);
+        parseLine(line, coeff, string, rightIsLeastSignificant); // validates
 
         coeffs.push_back(coeff);
         strings.push_back(string);

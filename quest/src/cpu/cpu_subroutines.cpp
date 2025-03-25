@@ -27,6 +27,7 @@
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/randomiser.hpp"
 #include "quest/src/core/accelerator.hpp"
+#include "quest/src/core/autodeployer.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
 #include "quest/src/comm/comm_config.hpp"
@@ -102,12 +103,7 @@ void cpu_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStr
 
     int rank = out.isDistributed? comm_getRank() : 0;
 
-    // note below there is no if() in #pragma; we choose always to
-    // multithread when OpenMP is enabled, because FullStateDiagMatr
-    // does not carry a .isMultithreaded flag (and this is only an
-    // initialisation function, so sub-optimal threading is fine)
-
-    #pragma omp parallel for
+    #pragma omp parallel for if(out.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = global index corresponding to local index n
@@ -118,6 +114,70 @@ void cpu_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStr
         // is a superfluous optimisation since this function is expected to
         // be called infrequently (i.e. only for data structure initialisation)
         out.cpuElems[n] = fast_getPauliStrSumElem(in.coeffs, in.strings, in.numTerms, i, i);
+    }
+}
+
+
+void cpu_fullstatediagmatr_setElemsFromMultiDimLists(FullStateDiagMatr out, void* lists, int* numQubitsPerDim, int numDims) {
+
+    // note that this function has no GPU equivalent! This is because
+    // it processes arbitrarily nested input pointers which would could
+    // be adverserial to loading into GPU memory (and generally painful)
+
+    qindex numIts = out.numElemsPerNode;
+    qindex numLocalIndBits = logBase2(numIts);
+
+    int rank = out.isDistributed? comm_getRank() : 0;
+
+    // create an explicit parallel region to avoid re-initialisation of vectors every iteration
+    #pragma omp parallel
+    {
+        // create a private cache for every thread
+        vector<qindex> listInds(numDims);
+
+        #pragma omp for
+        for (qindex localInd=0; localInd<numIts; localInd++) {
+
+            // each local diag index corresponds to a unique global index which informs list indices
+            qindex globalInd = concatenateBits(rank, localInd, numLocalIndBits);
+            fast_getSubQuregValues(globalInd, numQubitsPerDim, numDims, false, listInds.data());
+
+            // update only the CPU elems using lists which are duplicated on every node.
+            // note we are calling a util-function inside a parallelised hot-loop which
+            // is generally inadvisable, but it does not matter in this case since the
+            // function is recursive and cannot be inlined.
+            out.cpuElems[localInd] = util_getElemFromNestedPtrs(lists, listInds.data(), numDims);
+        }
+    }
+}
+
+
+void cpu_fullstatediagmatr_setElemsFromMultiVarFunc(FullStateDiagMatr out, qcomp (*callbackFunc)(qindex*), int* numQubitsPerVar, int numVars, int areSigned) {
+
+    // note that this function has no GPU equivalent! This is because
+    // the user's callback function cannot be called by a GPU kernel
+
+    qindex numIts = out.numElemsPerNode;
+    qindex numLocalIndBits = logBase2(numIts);
+
+    int rank = out.isDistributed? comm_getRank() : 0;
+
+    // create an explicit parallel region to avoid re-initialisation of vectors every iteration
+    #pragma omp parallel
+    {
+        // create a private cache for every thread
+        vector<qindex> varValues(numVars);
+
+        #pragma omp for
+        for (qindex localInd=0; localInd<out.numElemsPerNode; localInd++) {
+
+            // each local index corresponds to a unique global index which informs variable values
+            qindex globalInd = concatenateBits(rank, localInd, numLocalIndBits);
+            fast_getSubQuregValues(globalInd, numQubitsPerVar, numVars, areSigned, varValues.data());
+    
+            // call user function, which we assume is thread safe!
+            out.cpuElems[localInd] = callbackFunc(varValues.data());
+        }
     }
 }
 
@@ -494,7 +554,7 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
 
                     // optionally conjugate matrix elems on the fly to avoid pre-modifying heap structure
                     if constexpr (ApplyConj)
-                        elem = conj(elem);
+                        elem = std::conj(elem);
 
                     qureg.cpuAmps[i] += elem * cache[j];
                 }
@@ -619,13 +679,17 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
         qindex t = getValueOfBits(i, targs.data(), numTargBits);
         qcomp elem = matr.cpuElems[t];
 
-        // decide whether to power and conj at compile-time, to avoid branching in hot-loop
+        // decide whether to power and conj at compile-time, to avoid branching in hot-loop.
+        // beware that pow(qcomp,qcomp) below gives notable error over pow(qreal,qreal) 
+        // (by producing an unexpected non-zero imaginary component) when the base is real 
+        // and negative, and the exponent is an integer. We tolerate this heightened error
+        // because we have no reason to think matr is real (it's not constrained Hermitian).
         if constexpr (HasPower)
-            elem = pow(elem, exponent);
+            elem = std::pow(elem, exponent);
 
         // cautiously conjugate AFTER exponentiation, else we must also conj exponent
         if constexpr (ApplyConj)
-            elem = conj(elem);
+            elem = std::conj(elem);
 
         qureg.cpuAmps[j] *= elem;
     }
@@ -650,13 +714,18 @@ void cpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
     // every iteration modifies one amp, using one element
     qindex numIts = qureg.numAmpsPerNode;
 
-    #pragma omp parallel for if(qureg.isMultithreaded)
+    #pragma omp parallel for if(qureg.isMultithreaded||qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-        // compile-time decide if applying power to avoid in-loop branching
         qcomp elem = matr.cpuElems[n];
+
+        // compile-time decide if applying power to avoid in-loop branching.
+        // beware that pow(qcomp,qcomp) below gives notable error over pow(qreal,qreal) 
+        // (by producing an unexpected non-zero imaginary component) when the base is real 
+        // and negative, and the exponent is an integer. We tolerate this heightened error
+        // because we have no reason to think matr is real (it's not constrained Hermitian).
         if constexpr (HasPower)
-            elem = pow(elem, exponent);
+            elem = std::pow(elem, exponent);
 
         qureg.cpuAmps[n] *= elem;
     }
@@ -671,7 +740,7 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
     // every iteration modifies one qureg amp, using one matr element
     qindex numIts = qureg.numAmpsPerNode;
 
-    #pragma omp parallel for if(qureg.isMultithreaded)
+    #pragma omp parallel for if(qureg.isMultithreaded||matr.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = global row of nth local index
@@ -679,8 +748,9 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
         qcomp fac = matr.cpuElems[i];
 
         // compile-time decide if applying power to avoid in-loop branching...
+        // (beware that complex pow() is numerically unstable; see below)
         if constexpr (HasPower)
-            fac = pow(fac, exponent);
+            fac = std::pow(fac, exponent);
 
         // and whether we should also right-apply matr to qureg
         if constexpr (!MultiplyOnly) {
@@ -692,12 +762,16 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
             qindex j = fast_getQuregGlobalColFromFlatIndex(m, matr.numElems);
             qcomp term = matr.cpuElems[j];
 
-            // right-apply matrix elem may also need to be exponentiated
+            // right-apply matrix elem may also need to be exponentiated.
+            // beware that pow(qcomp,qcomp) below gives notable error over pow(qreal,qreal) 
+            // (by producing an unexpected non-zero imaginary component) when the base is real 
+            // and negative, and the exponent is an integer. We tolerate this heightened error
+            // because we have no reason to think matr is real (it's not constrained Hermitian).
             if constexpr(HasPower)
-                term = pow(term, exponent);
+                term = std::pow(term, exponent);
 
             // conj after pow
-            fac *= conj(term);
+            fac *= std::conj(term);
         }
 
         qureg.cpuAmps[n] *= fac;
@@ -961,7 +1035,7 @@ void cpu_densmatr_mixQureg_subB(qreal outProb, Qureg outQureg, qreal inProb, Qur
         qindex i = fast_getQuregGlobalRowFromFlatIndex(n, dim);
         qindex j = fast_getQuregGlobalColFromFlatIndex(n, dim);
 
-        out[n] = (outProb * out[n]) + (inProb * in[i] * conj(in[j]));
+        out[n] = (outProb * out[n]) + (inProb * in[i] * std::conj(in[j]));
     }
 }
 
@@ -984,7 +1058,7 @@ void cpu_densmatr_mixQureg_subC(qreal outProb, Qureg outQureg, qreal inProb) {
         qindex i = fast_getQuregGlobalRowFromFlatIndex(m, dim);
         qindex j = fast_getQuregGlobalColFromFlatIndex(m, dim);
 
-        out[n] = (outProb * out[n]) + (inProb * in[i] * conj(in[j]));
+        out[n] = (outProb * out[n]) + (inProb * in[i] * std::conj(in[j]));
     }
 }
 
@@ -1671,7 +1745,7 @@ qreal cpu_densmatr_calcTotalProb_sub(Qureg qureg) {
 
         // i = local index of nth local diagonal element
         qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
-        prob += real(qureg.cpuAmps[i]);
+        prob += std::real(qureg.cpuAmps[i]);
     }
 
     return prob;
@@ -1757,8 +1831,12 @@ void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
     qindex numOutcomes = powerOf2(numBits);
 
-    // clear amps; be compile-time unrolled, and/or parallelised (independent of qureg)
-    #pragma omp parallel for
+    // decide whether to parallelise below amp-clearing, since outProbs ~ dim of a qureg
+    bool parallelise = numBits > MIN_NUM_LOCAL_QUBITS_FOR_AUTO_QUREG_MULTITHREADING;
+    (void)parallelise; // suppress unused warning when not-compiling openmp)
+
+    // clear amps (may be compile-time unrolled, or parallelised)
+    #pragma omp parallel for if(parallelise)
     for (int i=0; i<numOutcomes; i++)
         outProbs[i] = 0;
     
@@ -1792,9 +1870,13 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     // use template param to compile-time unroll loop in getValueOfBits()
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
     qindex numOutcomes = powerOf2(numBits);
+
+    // decide whether to parallelise below amp-clearing, since outProbs ~ dim of a qureg
+    bool parallelise = numBits > MIN_NUM_LOCAL_QUBITS_FOR_AUTO_QUREG_MULTITHREADING;
+    (void)parallelise; // suppress unused warning when not-compiling openmp)
     
     // clear amps; be compile-time unrolled, and/or parallelised (independent of qureg)
-    #pragma omp parallel for
+    #pragma omp parallel for if(parallelise)
     for (int i=0; i<numOutcomes; i++)
         outProbs[i] = 0;
 
@@ -1840,10 +1922,10 @@ qcomp cpu_statevec_calcInnerProduct_sub(Qureg quregA, Qureg quregB) {
 
     #pragma omp parallel for reduction(+:prodRe,prodIm) if(quregA.isMultithreaded||quregB.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
-        qcomp term = conj(quregA.cpuAmps[n]) * quregB.cpuAmps[n];
+        qcomp term = std::conj(quregA.cpuAmps[n]) * quregB.cpuAmps[n];
 
-        prodRe += real(term);
-        prodIm += imag(term);
+        prodRe += std::real(term);
+        prodIm += std::imag(term);
     }
 
     return qcomp(prodRe, prodIm);
@@ -1892,14 +1974,14 @@ qcomp cpu_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
 
         // compute term of <psi|rho^dagger|psi> or <psi|rho|psi>
         if constexpr (Conj) {
-            rhoAmp = conj(rhoAmp);
-            colAmp = conj(colAmp);
+            rhoAmp = std::conj(rhoAmp);
+            colAmp = std::conj(colAmp);
         } else
-            rowAmp = conj(rowAmp);
+            rowAmp = std::conj(rowAmp);
 
         qcomp term = rhoAmp * rowAmp * colAmp;
-        fidRe += real(term);
-        fidIm += imag(term);
+        fidRe += std::real(term);
+        fidIm += std::imag(term);
     }
 
     return qcomp(fidRe, fidIm);
@@ -1961,8 +2043,8 @@ qcomp cpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
         int sign = fast_getPlusOrMinusMaskedBitParity(r, targMask);
         qcomp term = sign * qureg.cpuAmps[i];
 
-        valueRe += real(term);
-        valueIm += imag(term);
+        valueRe += std::real(term);
+        valueIm += std::imag(term);
     }
 
     return qcomp(valueRe, valueIm);
@@ -1989,10 +2071,10 @@ qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int
 
         // sign = +-1 induced by Y and Z (excludes Y i factors)
         int sign = fast_getPlusOrMinusMaskedBitParity(j, maskYZ);
-        qcomp term = sign * conj(qureg.cpuAmps[n]) * qureg.cpuAmps[j];
+        qcomp term = sign * std::conj(qureg.cpuAmps[n]) * qureg.cpuAmps[j];
 
-        valueRe += real(term);
-        valueIm += imag(term);
+        valueRe += std::real(term);
+        valueIm += std::imag(term);
     }
 
     // scale by i^numY (because sign above exlcuded i)
@@ -2028,10 +2110,10 @@ qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int
 
         // sign = +-1 induced by Y and Z (excludes Y i factors)
         int sign = fast_getPlusOrMinusMaskedBitParity(j, maskYZ);
-        qcomp term = sign * conj(qureg.cpuAmps[n]) * qureg.cpuCommBuffer[j];
+        qcomp term = sign * std::conj(qureg.cpuAmps[n]) * qureg.cpuCommBuffer[j];
 
-        valueRe += real(term);
-        valueIm += imag(term);
+        valueRe += std::real(term);
+        valueIm += std::imag(term);
     }
 
     // scale by i^numY (because sign above exlcuded i)
@@ -2070,8 +2152,8 @@ qcomp cpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int>
         int sign = fast_getPlusOrMinusMaskedBitParity(i, maskYZ);
         qcomp term = sign * qureg.cpuAmps[m];
 
-        valueRe += real(term);
-        valueIm += imag(term);
+        valueRe += std::real(term);
+        valueIm += std::imag(term);
     }
 
     // scale by i^numY (because sign above exlcuded i)
@@ -2085,11 +2167,11 @@ qcomp cpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int>
  */
 
 
-template <bool HasPower> 
+template <bool HasPower, bool UseRealPow> 
 qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
 
     assert_quregAndFullStateDiagMatrHaveSameDistrib(qureg, matr);
-    assert_exponentMatchesTemplateParam(exponent, HasPower);
+    assert_exponentMatchesTemplateParam(exponent, HasPower, UseRealPow);
 
     // separately reduce real and imag components to make MSVC happy
     qreal valueRe = 0;
@@ -2098,29 +2180,38 @@ qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
     // every amp, iterated independently, contributes to the expectation value
     qindex numIts = qureg.numAmpsPerNode;
 
-    #pragma omp parallel for reduction(+:valueRe,valueIm) if(qureg.isMultithreaded)
+    #pragma omp parallel for reduction(+:valueRe,valueIm) if(qureg.isMultithreaded||matr.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-        // compile-time decide if applying power to avoid in-loop branching
         qcomp elem = matr.cpuElems[n];
-        if constexpr (HasPower)
-            elem = pow(elem, exponent);
-        
+
+        // compile-time decide if applying power (!= 1) to avoid in-loop branching.
+        // beware that pow(qcomp,qcomp) below gives notable error over pow(qreal,qreal) 
+        // (by producing an unexpected non-zero imaginary component) when the base is real 
+        // and negative, and the exponent is an integer. This is a plausible scenario given 
+        // matr is often Hermitian (ergo real) and the exponent may be effecting repeated 
+        // application of matr. When UseRealPow is set, we discard the imaginary components
+        // of the matrix and exponent (latter gauranteed zero) and use the stable pow().
+        if constexpr (HasPower && ! UseRealPow)
+            elem = std::pow(elem, exponent); // pow(qcomp)
+        if constexpr (HasPower &&   UseRealPow)
+            elem = qcomp(std::pow(std::real(elem), std::real(exponent)), 0); // pow(qreal)
+
         qcomp term = elem * std::norm(qureg.cpuAmps[n]);
 
-        valueRe += real(term);
-        valueIm += imag(term);
+        valueRe += std::real(term);
+        valueIm += std::imag(term);
     }
 
     return qcomp(valueRe, valueIm);
 }
 
 
-template <bool HasPower>
+template <bool HasPower, bool UseRealPow>
 qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
 
     assert_quregAndFullStateDiagMatrHaveSameDistrib(qureg, matr);
-    assert_exponentMatchesTemplateParam(exponent, HasPower);
+    assert_exponentMatchesTemplateParam(exponent, HasPower, UseRealPow);
 
     // separately reduce real and imag components to make MSVC happy
     qreal valueRe = 0;
@@ -2131,31 +2222,49 @@ qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
     qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
 
-    #pragma omp parallel for reduction(+:valueRe,valueIm) if(qureg.isMultithreaded)
+    #pragma omp parallel for reduction(+:valueRe,valueIm) if(qureg.isMultithreaded||matr.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         qcomp elem = matr.cpuElems[n];
 
-        // compile-time decide if applying power to avoid in-loop branching
-        if constexpr (HasPower)
-            elem = pow(elem, exponent);
+        // compile-time decide if applying power (!= 1) to avoid in-loop branching.
+        // Beware that pow(qcomp,qcomp) below gives notable error over pow(qreal,qreal) 
+        // (by producing an unexpected non-zero imaginary component) when the base is real 
+        // and negative, and the exponent is an integer. This is a plausible scenario given 
+        // matr is often Hermitian (ergo real) and the exponent may be effecting repeated 
+        // application of matr. So when UseRealPow is set, we discard the imaginary components
+        // of the matrix and exponent (latter gauranteed zero) and use the stable pow().
+        // An observant reader may realise the erroneous imaginary components introduced by
+        // complex-pow do not damage the statevector expectation value; the imaginary component
+        // can be discarded entirely at the end without harm to the real component. Alas this
+        // is not true of the density matrix calculation here, where the erroneous imaginary
+        // components of pow(qcomp,qcomp) will sabotage the final result. Wah!
+        if constexpr (HasPower && ! UseRealPow)
+            elem = std::pow(elem, exponent);
+        if constexpr (HasPower &&   UseRealPow)
+            elem = qcomp(std::pow(std::real(elem), std::real(exponent)), 0);
 
         // i = local index of nth local diagonal element
         qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
         qcomp term = elem * qureg.cpuAmps[i];
 
-        valueRe += real(term);
-        valueIm += imag(term);
+        valueRe += std::real(term);
+        valueIm += std::imag(term);
     }
 
     return qcomp(valueRe, valueIm);
 }
 
 
-template qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub<true> (Qureg, FullStateDiagMatr, qcomp);
-template qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
-template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<true> (Qureg, FullStateDiagMatr, qcomp);
-template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub<true, true >(Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub<true, false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub<false,false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub<false,true >(Qureg, FullStateDiagMatr, qcomp); // uncallable
+
+template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<true, true >(Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<true, false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<false,false>(Qureg, FullStateDiagMatr, qcomp);
+template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<false,true >(Qureg, FullStateDiagMatr, qcomp); // uncallable
 
 
 
@@ -2167,11 +2276,12 @@ template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<false>(Qureg, FullSta
 template <int NumQubits>
 void cpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
 
+    // all qubits are in suffix
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
     // visit every amp, setting to zero or multiplying it by renorm
     qindex numIts = qureg.numAmpsPerNode;
-    qreal renorm = 1 / sqrt(prob);
+    qreal renorm = 1 / std::sqrt(prob);
 
     // binary value of targeted qubits in basis states which are to be retained
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
@@ -2182,9 +2292,8 @@ void cpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-        // i = global index of nth local amp
-        qindex i = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
-        qindex val = getValueOfBits(i, qubits.data(), numBits);
+        // val = outcomes corresponding to n-th local amp (all qubits are in suffix)
+        qindex val = getValueOfBits(n, qubits.data(), numBits);
 
         // multiply amp with renorm or zero, if qubit value matches or disagrees
         qcomp fac = renorm * (val == retainValue);
@@ -2196,6 +2305,7 @@ void cpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 template <int NumQubits>
 void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
 
+    // qubits are unconstrained, and can include prefix qubits
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
     // visit every amp, setting most to zero and multiplying the remainder by renorm

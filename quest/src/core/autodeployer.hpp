@@ -26,7 +26,7 @@ void autodep_chooseQuESTEnvDeployment(int &useDistrib, int &useGpuAccel, int &us
 
 void autodep_chooseQuregDeployment(int numQubits, int isDensMatr, int &useDistrib, int &useGpuAccel, int &useMultithread, QuESTEnv env);
 
-void autodep_chooseFullStateDiagMatrDeployment(int numQubits, int &useDistrib, int &useGpuAccel, QuESTEnv env);
+void autodep_chooseFullStateDiagMatrDeployment(int numQubits, int &useDistrib, int &useGpuAccel, int &useMultithread, QuESTEnv env);
 
 
 

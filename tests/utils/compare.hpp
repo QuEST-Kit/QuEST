@@ -21,19 +21,31 @@
 using std::vector;
 
 
-bool doScalarsAgree(qcomp a, qcomp b);
+qreal getTestAbsoluteEpsilon();
+qreal getTestRelativeEpsilon();
 
+bool doScalarsAgree(qcomp a, qcomp b);
+bool doMatricesAgree(qmatrix a, qmatrix b);
+
+void REQUIRE_AGREE( Qureg qureg, Qureg other );
 
 void REQUIRE_AGREE( Qureg qureg, qvector reference );
 void REQUIRE_AGREE( Qureg qureg, qmatrix reference );
 
-void REQUIRE_AGREE( qvector reference, Qureg qureg );
-void REQUIRE_AGREE( qmatrix reference, Qureg qureg );
+void REQUIRE_AGREE( qreal scalar, qreal reference );
+void REQUIRE_AGREE( qcomp scalar, qcomp reference );
 
-void REQUIRE_AGREE( qreal apiScalar, qreal refScalar );
-void REQUIRE_AGREE( qcomp apiScalar, qcomp refScalar );
+void REQUIRE_AGREE( vector<qreal> list, vector<qreal> reference );
+void REQUIRE_AGREE( vector<qcomp> list, vector<qcomp> reference );
 
-void REQUIRE_AGREE( vector<qreal> apiList, vector<qreal> refList );
+void REQUIRE_AGREE( qmatrix   matrix, qmatrix reference );
+void REQUIRE_AGREE( CompMatr1 matrix, qmatrix reference );
+void REQUIRE_AGREE( CompMatr2 matrix, qmatrix reference );
+void REQUIRE_AGREE( CompMatr  matrix, qmatrix reference );
+void REQUIRE_AGREE( DiagMatr1 matrix, qmatrix reference );
+void REQUIRE_AGREE( DiagMatr2 matrix, qmatrix reference );
+void REQUIRE_AGREE( DiagMatr  matrix, qmatrix reference );
+void REQUIRE_AGREE( SuperOp   matrix, qmatrix reference );
 
 
 #endif // COMPARE_HPP

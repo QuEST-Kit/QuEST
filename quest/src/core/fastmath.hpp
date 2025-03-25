@@ -97,6 +97,24 @@ INLINE qindex fast_getMatrixFlatIndex(qindex row, qindex col, qindex numAmpsPerC
 }
 
 
+INLINE void fast_getSubQuregValues(qindex basisStateIndex, int* numQubitsPerSubQureg, int numSubQuregs, bool areSigned, qindex* outValues) {
+
+    qindex remainingValue = basisStateIndex;
+
+    // find unsigned integer value of each var by partitioning index bits between vars (never unrolled)
+    for (int n=0; n<numSubQuregs; n++) {
+        outValues[n] =  getBitsRightOfIndex(remainingValue, numQubitsPerSubQureg[n]);
+        remainingValue = getBitsLeftOfIndex(remainingValue, numQubitsPerSubQureg[n]-1);
+    }
+
+    // two's-complement signed integers are negated if the leftmost variable sign bit is 1 
+    if (areSigned)
+        for (int v=0; v<numSubQuregs; v++)
+            if (getBit(outValues[v], numQubitsPerSubQureg[v]-1))
+                outValues[v] -= powerOf2(numQubitsPerSubQureg[v] - 1);
+}
+
+
 
 /*
  * PAULI ALGEBRA

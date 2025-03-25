@@ -133,6 +133,7 @@ void assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(int numCtrls, int numCt
 void assert_numTargsMatchesTemplateParam(int numTargs, int templateParam);
 
 void assert_exponentMatchesTemplateParam(qcomp exponent, bool hasPower);
+void assert_exponentMatchesTemplateParam(qcomp exponent, bool hasPower, bool useRealPow);
 
 void assert_mixedQuregIsDensityMatrix(Qureg qureg);
 
@@ -243,8 +244,6 @@ void assert_applyFullStateDiagMatrTempGpuAllocSucceeded(qcomp* gpuPtr);
  */
 
 void error_cudaCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line);
-
-void error_cuQuantumCompiledButNotCuda();
 
 
 

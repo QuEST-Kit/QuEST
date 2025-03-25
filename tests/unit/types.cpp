@@ -27,7 +27,8 @@
  * UTILITIES
  */
 
-#define TEST_CATEGORY "[unit][types]"
+#define TEST_CATEGORY \
+    LABEL_UNIT_TAG "[types]"
 
 
 
@@ -38,9 +39,49 @@
  * @{
  */
 
-TEST_CASE( "placeholder9", TEST_CATEGORY) {
 
+TEST_CASE( "getQcomp", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qreal re = getRandomReal(-10, 10);
+        qreal im = getRandomReal(-10, 10);
+
+        qcomp comp = getQcomp(re, im);
+        REQUIRE( std::real(comp) == re );
+        REQUIRE( std::imag(comp) == im );
+    }
+
+    SECTION( LABEL_VALIDATION ) {
+
+        // no validation!
+        SUCCEED( );
+    }
 }
+
+
+TEST_CASE( "complex arithmetic", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        qcomp x;
+        x  =   1 + 2_i;
+        x +=   3 - 4_i;
+        x -= - 5 + 6_i;
+        x *= - 7 - 8_i;
+        x /=   9 + 10_i;
+
+        qcomp ref = getQcomp(-1303/181., 1126/181.);
+        REQUIRE_AGREE( x, ref );
+    }
+
+    SECTION( LABEL_VALIDATION ) {
+
+        // no validation!
+        SUCCEED( );
+    }
+}
+
 
 /** @} (end defgroup) */
 
@@ -52,10 +93,4 @@ TEST_CASE( "placeholder9", TEST_CATEGORY) {
  */
 
 
-static inline qcomp getQcomp(qreal re, qreal im);
-
 void reportQcomp(qcomp num);
-
-// qcomp literals
-
-// qcomp arithmatic overloads

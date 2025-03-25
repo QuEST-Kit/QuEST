@@ -553,10 +553,7 @@ QVector getRandomQVector(int dim) {
     QVector vec = QVector(dim);
     for (int i=0; i<dim; i++)
         vec[i] = getRandomComplex();
-        
-    // check we didn't get the impossibly-unlikely zero-amplitude outcome 
-    DEMAND( real(vec[0]) != 0 );
-        
+    
     return vec;
 }
 

@@ -14,6 +14,7 @@
 
 #include "tests/utils/macros.hpp"
 #include "tests/utils/cache.hpp"
+#include "tests/utils/compare.hpp"
 #include "tests/utils/random.hpp"
 
 #include <algorithm>
@@ -26,7 +27,8 @@ using std::tuple;
 using namespace Catch::Matchers;
 
 
-#define TEST_TAG "[integration]"
+#define TEST_TAG \
+    LABEL_INTEGRATION_TAG
 
 
 
@@ -38,7 +40,7 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
     initPureState(rho, psi);
 
     // we will check all alculations produced within 'eps' of expected
-    qreal eps = 1E-5;
+    qreal eps = std::max({(qreal) 1E-5, getTestAbsoluteEpsilon()});
     REQUIRE_THAT( calcPurity(rho),        WithinAbs(1, eps) );
     REQUIRE_THAT( calcPurity(psi),        WithinAbs(1, eps) );
     REQUIRE_THAT( calcTotalProb(rho),     WithinAbs(1, eps) );
@@ -188,7 +190,7 @@ void testDensityMatrixEvolution(Qureg psi, Qureg rho) {
     for (int r=0; r<numReps; r++) {
         int numTargets = getRandomInt(1, 6+1);
         vector<int> targets = getRandomSubRange(0, psi.numQubits, numTargets);
-        vector<int> outcomes = getRandomInts(0, 1+1, targets.size());
+        vector<int> outcomes = getRandomOutcomes(targets.size());
         qreal psiProb = calcProbOfMultiQubitOutcome(psi, targets.data(), outcomes.data(), numTargets);
         qreal rhoProb = calcProbOfMultiQubitOutcome(rho, targets.data(), outcomes.data(), numTargets);
         REQUIRE_THAT( psiProb, WithinAbs(rhoProb, eps) );

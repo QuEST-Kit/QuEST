@@ -18,7 +18,13 @@
 qmatrix getZeroMatrix(size_t dim) {
     DEMAND( dim >= 1 );
 
-    return qmatrix(dim, qvector(dim));
+    return qmatrix(dim, qvector(dim, 0));
+}
+
+qmatrix getConstantMatrix(size_t dim, qcomp elem) {
+    DEMAND( dim >= 1 );
+
+    return qmatrix(dim, qvector(dim, elem));
 }
 
 qmatrix getIdentityMatrix(size_t dim) {
@@ -106,7 +112,7 @@ qmatrix operator *= (qmatrix& m, const qreal& a) {
  */
 
 qmatrix operator / (const qmatrix& m, const qcomp& a) {
-    DEMAND( abs(a) != 0 );
+    DEMAND( std::abs(a) != 0 );
 
     return (1/a) * m;
 }
@@ -195,12 +201,27 @@ qmatrix operator *= (qmatrix& m1, const qmatrix& m2) {
  */
 
 void setSubMatrix(qmatrix &dest, qmatrix sub, size_t r, size_t c) {
-    DEMAND( sub.size() + r <= dest.size() );
-    DEMAND( sub.size() + c <= dest.size() );
+    DEMAND( sub.size() > 0 );
+    DEMAND( sub   .size() + r <= dest.size() );
+    DEMAND( sub[0].size() + c <= dest.size() );
+
+    // this function cheekily supports when 'sub' is non-square,
+    // which is inconsistent with the preconditions of most of
+    // the qmatrix functions, but is needed by setDensityQuregAmps()
 
     for (size_t i=0; i<sub.size(); i++)
-        for (size_t j=0; j<sub.size(); j++)
+        for (size_t j=0; j<sub[i].size(); j++)
             dest[r+i][c+j] = sub[i][j];
+}
+
+void setSubMatrix(qmatrix &dest, qvector sub, size_t flatInd) {
+    DEMAND( sub.size() + flatInd <= dest.size()*dest.size() );
+
+    for (size_t i=0; i<sub.size(); i++) {
+        size_t r = (i + flatInd) / dest.size(); // floors
+        size_t c = (i + flatInd) % dest.size();
+        dest[r][c] = sub[i];
+    }
 }
 
 void setToDebugState(qmatrix &m) {

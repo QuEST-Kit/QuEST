@@ -449,6 +449,9 @@ enum CopyDirection {
 void copyArrayIfGpuCompiled(qcomp* cpuArr, qcomp* gpuArr, qindex numElems, enum CopyDirection direction) {
 #if COMPILE_CUDA
 
+    // must ensure gpu amps are up to date
+    gpu_sync();
+
     auto flag = (direction == TO_HOST)? 
         cudaMemcpyDeviceToHost:
         cudaMemcpyHostToDevice;
@@ -512,6 +515,20 @@ void assertHeapObjectGpuMemIsAllocated(T obj) {
 
     if (! mem_isAllocated(util_getGpuMemPtr(obj)) || ! getQuESTEnv().isGpuAccelerated)
         error_gpuCopyButMatrixNotGpuAccelerated();
+}
+
+
+void gpu_copyArray(qcomp* dest, qcomp* src, qindex dim) {
+#if COMPILE_CUDA
+
+    // ensure src and dest aren't being modified
+    gpu_sync();
+
+    CUDA_CHECK( cudaMemcpy(dest, src, dim * sizeof(qcomp), cudaMemcpyDeviceToDevice) );
+
+#else
+    error_gpuCopyButGpuNotCompiled();
+#endif
 }
 
 
@@ -622,6 +639,9 @@ qindex gpuCacheLen = 0;
 qcomp* gpu_getCacheOfSize(qindex numElemsPerThread, qindex numThreads) {
 #if COMPILE_CUDA
 
+    // do not interfere with existing kernels using the cache
+    gpu_sync();
+
     qindex numNewElems = numElemsPerThread * numThreads;
 
     // return existing cache if it's already sufficiently big
@@ -644,6 +664,9 @@ qcomp* gpu_getCacheOfSize(qindex numElemsPerThread, qindex numThreads) {
 
 void gpu_clearCache() {
 #if COMPILE_CUDA
+
+    // do not interfere with existing kernels using the cache
+    gpu_sync();
 
     // cudaFree on nullptr is fine
     CUDA_CHECK( cudaFree(gpuCache) );

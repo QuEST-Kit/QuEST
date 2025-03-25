@@ -49,6 +49,8 @@ void comm_broadcastAmp(int sendRank, qcomp* sendAmp);
 
 void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps);
 
+void comm_broadcastIntsFromRoot(int* arr, qindex length);
+
 void comm_broadcastUnsignedsFromRoot(unsigned* arr, qindex length);
 
 void comm_combineSubArrays(qcomp* recv, vector<qindex> globalRecvInds, vector<qindex> localSendInds, vector<qindex> numAmpsPerRank);

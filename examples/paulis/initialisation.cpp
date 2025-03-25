@@ -122,7 +122,7 @@ void demo_createInlinePauliStrSum() {
         + 1 - 6E-5i  IIX 
           0          III 
           5.         XXX 
-           .5        ZZZ 
+          .5         ZZZ 
     )");
     reportPauliStrSum(b);
     destroyPauliStrSum(b);
@@ -192,9 +192,9 @@ void demo_createPauliStrSumFromFile() {
             + 5E2-1i     XYZ 
             - 1E-50i     IXY 
             + 1 - 6E-5i  IIX 
-            0          III 
-            5.         IXX
-            .5        ZYX 
+            0            III 
+            5.           IXX
+            .5           ZYX 
         )";
         file.close();
     }

@@ -59,7 +59,7 @@ typedef struct {
     // which is lazily evaluated when a function validates Hermiticity them. The flag is 
     // stored in heap so even copies of structs are mutable, but the pointer is immutable;
     // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
-    int* isHermitian;
+    int* isApproxHermitian;
 
 } PauliStrSum;
 

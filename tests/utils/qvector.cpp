@@ -14,7 +14,15 @@
  */
 
 qvector getZeroVector(size_t dim) {
+    // permit dim = 0
+    
     return qvector(dim, 0);
+}
+
+qvector getConstantVector(size_t dim, qcomp elem) {
+    DEMAND( dim >= 1 );
+    
+    return qvector(dim, elem);
 }
 
 
@@ -59,7 +67,7 @@ qvector operator *= (qvector& v, const qreal& a) {
  */
 
 qvector operator / (const qvector& v, const qcomp& a) {
-    DEMAND( abs(a) != 0 );
+    DEMAND( std::abs(a) != 0 );
 
     return (1/a) * v;
 }
@@ -117,6 +125,13 @@ qvector operator -= (qvector& v1, const qvector& v2) {
 /*
  * SETTERS
  */
+
+void setSubVector(qvector &dest, qvector sub, size_t i) {
+    DEMAND( sub.size() + i <= dest.size() );
+
+    for (size_t j=0; j<sub.size(); j++)
+        dest[j+i] = sub[j];
+}
 
 void setToDebugState(qvector &v) {
     DEMAND( !v.empty() );

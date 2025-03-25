@@ -32,12 +32,15 @@ int getRandomInt(int min, int maxExcl);
 qreal getRandomReal(qreal min, qreal max);
 qreal getRandomPhase();
 qcomp getRandomComplex();
+qcomp getRandomUnitComplex();
 
 listpair getRandomFixedNumCtrlsTargs(int numQubits, int numCtrls, int numTargs);
 listtrio getRandomVariNumCtrlsStatesTargs(int numQubits, int minNumTargs, int maxNumTargsIncl);
 
 qvector getRandomVector(size_t dim);
 qmatrix getRandomMatrix(size_t dim);
+qmatrix getRandomDiagonalMatrix(size_t dim);
+qmatrix getRandomNonSquareMatrix(size_t numRows, size_t numCols);
 
 qvector getRandomStateVector(int numQb);
 qmatrix getRandomDensityMatrix(int numQb);
@@ -48,6 +51,7 @@ void setToRandomState(qmatrix& state);
 
 qmatrix getRandomUnitary(int numQb);
 qmatrix getRandomDiagonalUnitary(int numQb);
+qmatrix getRandomDiagonalHermitian(int numQb);
 vector<qmatrix> getRandomKrausMap(int numQb, int numOps);
 
 PauliStr getRandomPauliStr(int numQubits);
@@ -55,6 +59,7 @@ PauliStr getRandomPauliStr(vector<int> targs);
 PauliStr getRandomDiagPauliStr(int numQubits);
 
 vector<int> getRandomInts(int min, int maxExcl, int len);
+vector<int> getRandomOutcomes(int len);
 vector<int> getRandomSubRange(int start, int endExcl, int numElems);
 vector<qreal> getRandomProbabilities(int numProbs);
 

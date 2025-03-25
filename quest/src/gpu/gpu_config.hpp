@@ -83,6 +83,8 @@ void gpu_finalizeCuQuantum();
 qcomp* gpu_allocArray(qindex numLocalAmps);
 void gpu_deallocArray(qcomp* amps);
 
+void gpu_copyArray(qcomp* dest, qcomp* src, qindex dim);
+
 void gpu_copyCpuToGpu(qcomp* cpuArr, qcomp* gpuArr, qindex numElems);
 void gpu_copyGpuToCpu(qcomp* gpuArr, qcomp* cpuArr, qindex numElems);
 
