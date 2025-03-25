@@ -308,6 +308,18 @@ void util_setSuperoperator(qcomp** superop, qcomp*** matrices, int numMatrices, 
 
 
 /*
+ * STRUCT PROPERTY CACHING
+ */
+
+int* util_allocEpsilonSensitiveHeapFlag();
+
+void util_deallocEpsilonSensitiveHeapFlag(int* ptr);
+
+void util_setEpsilonSensitiveStructFieldsToUnknown();
+
+
+
+/*
  * DISTRIBUTED ELEMENTS INDEXING
  */
 

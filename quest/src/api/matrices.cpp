@@ -102,14 +102,14 @@ void freeHeapMatrix(T matr) {
         gpu_deallocArray(gpuPtr);
 
     // free the teeny tiny heap flags
-    cpu_deallocHeapFlag(matr.isApproxUnitary);
-    cpu_deallocHeapFlag(matr.isApproxHermitian);
+    util_deallocEpsilonSensitiveHeapFlag(matr.isApproxUnitary);
+    util_deallocEpsilonSensitiveHeapFlag(matr.isApproxHermitian);
     cpu_deallocHeapFlag(matr.wasGpuSynced);
 
     // only diagonal matrices (which can be raised to
     // exponents) need their negativity/zeroness checked
     if constexpr (!util_isDenseMatrixType<T>()) {
-        cpu_deallocHeapFlag(matr.isApproxNonZero);
+        util_deallocEpsilonSensitiveHeapFlag(matr.isApproxNonZero);
         cpu_deallocHeapFlag(matr.isStrictlyNonNegative);
     }
 }
@@ -227,9 +227,9 @@ extern "C" CompMatr createCompMatr(int numQubits) {
         .numRows = numRows,
 
         // allocate flags in the heap so that struct copies are mutable
-        .isApproxUnitary    = cpu_allocHeapFlag(), // nullptr if failed
-        .isApproxHermitian  = cpu_allocHeapFlag(), // nullptr if failed
-        .wasGpuSynced = cpu_allocHeapFlag(), // nullptr if failed
+        .isApproxUnitary    = util_allocEpsilonSensitiveHeapFlag(), // nullptr if failed
+        .isApproxHermitian  = util_allocEpsilonSensitiveHeapFlag(), // nullptr if failed
+        .wasGpuSynced = cpu_allocHeapFlag(),                        // nullptr if failed
 
         .cpuElems = cpu_allocAndInitMatrixWrapper(cpuMem, numRows), // nullptr if failed
         .cpuElemsFlat = cpuMem,
@@ -255,10 +255,10 @@ extern "C" DiagMatr createDiagMatr(int numQubits) {
         .numElems = numElems,
 
         // allocate flags in the heap so that struct copies are mutable
-        .isApproxUnitary       = cpu_allocHeapFlag(), // nullptr if failed
-        .isApproxHermitian     = cpu_allocHeapFlag(),
-        .isApproxNonZero       = cpu_allocHeapFlag(),
-        .isStrictlyNonNegative = cpu_allocHeapFlag(),
+        .isApproxUnitary       = util_allocEpsilonSensitiveHeapFlag(), // nullptr if failed
+        .isApproxHermitian     = util_allocEpsilonSensitiveHeapFlag(),
+        .isApproxNonZero       = util_allocEpsilonSensitiveHeapFlag(),
+        .isStrictlyNonNegative = cpu_allocHeapFlag(), // nullptr if failed
         .wasGpuSynced          = cpu_allocHeapFlag(),
 
         // 1D CPU memory
@@ -300,10 +300,10 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
         .numElemsPerNode = numElemsPerNode,
 
         // allocate flags in the heap so that struct copies are mutable
-        .isApproxUnitary       = cpu_allocHeapFlag(), // nullptr if failed
-        .isApproxHermitian     = cpu_allocHeapFlag(),
-        .isApproxNonZero       = cpu_allocHeapFlag(),
-        .isStrictlyNonNegative = cpu_allocHeapFlag(),
+        .isApproxUnitary       = util_allocEpsilonSensitiveHeapFlag(), // nullptr if failed
+        .isApproxHermitian     = util_allocEpsilonSensitiveHeapFlag(),
+        .isApproxNonZero       = util_allocEpsilonSensitiveHeapFlag(),
+        .isStrictlyNonNegative = cpu_allocHeapFlag(), // nullptr if failed
         .wasGpuSynced          = cpu_allocHeapFlag(),
 
         // 1D CPU memory
