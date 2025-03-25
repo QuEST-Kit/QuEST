@@ -401,7 +401,7 @@ extern "C" PauliStrSum createPauliStrSum(PauliStr* strings, qcomp* coeffs, qinde
 
     // otherwise copy given data into new heap structure, and set initial flags
     cpu_copyPauliStrSum(out, strings, coeffs);
-    *(out.isApproxHermitian) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    util_setFlagToUnknown(out.isApproxHermitian);
 
     return out;
 }

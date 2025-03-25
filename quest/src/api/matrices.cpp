@@ -187,14 +187,14 @@ template <class T>
 void setInitialHeapFlags(T matr) {
 
     // set initial propreties of the newly created matrix to unknown
-    *(matr.isApproxUnitary)     = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
-    *(matr.isApproxHermitian)   = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    util_setFlagToUnknown(matr.isApproxUnitary);
+    util_setFlagToUnknown(matr.isApproxHermitian);
 
     // only diagonal matrices (which can be exponentiated)
     // have these additional fields
     if constexpr (!util_isDenseMatrixType<T>()) {
-        *(matr.isApproxNonZero)       = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
-        *(matr.isStrictlyNonNegative) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+        util_setFlagToUnknown(matr.isApproxNonZero);
+        util_setFlagToUnknown(matr.isStrictlyNonNegative);
     }
 
     // indicate that GPU memory has not yet been synchronised
@@ -228,8 +228,9 @@ extern "C" CompMatr createCompMatr(int numQubits) {
 
         // allocate flags in the heap so that struct copies are mutable
         .isApproxUnitary    = util_allocEpsilonSensitiveHeapFlag(), // nullptr if failed
-        .isApproxHermitian  = util_allocEpsilonSensitiveHeapFlag(), // nullptr if failed
-        .wasGpuSynced = cpu_allocHeapFlag(),                        // nullptr if failed
+        .isApproxHermitian  = util_allocEpsilonSensitiveHeapFlag(),
+
+        .wasGpuSynced = cpu_allocHeapFlag(), // nullptr if failed
 
         .cpuElems = cpu_allocAndInitMatrixWrapper(cpuMem, numRows), // nullptr if failed
         .cpuElemsFlat = cpuMem,
@@ -345,14 +346,14 @@ void markMatrixAsSynced(T matr) {
 
     // indicate that we do not know the revised matrix properties;
     // we defer establishing that until validation needs to check them
-    *(matr.isApproxUnitary)     = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
-    *(matr.isApproxHermitian)   = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    util_setFlagToUnknown(matr.isApproxUnitary);
+    util_setFlagToUnknown(matr.isApproxHermitian);
 
     // only diagonal matrices (which can be exponentiated)
     // have these additional fields
     if constexpr (!util_isDenseMatrixType<T>()) {
-        *(matr.isApproxNonZero)       = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
-        *(matr.isStrictlyNonNegative) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+        util_setFlagToUnknown(matr.isApproxNonZero);
+        util_setFlagToUnknown(matr.isStrictlyNonNegative);
     }
 }
 

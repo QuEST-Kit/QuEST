@@ -549,17 +549,26 @@ TEST_CASE( "destroyPauliStrSum", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
-        /// @todo this bizarrely fails in MSVC - no time to debug! 
-        #if !defined(_MSC_VER)
+        /// @todo fails in MSVC for unknown reason
+        #ifndef _MSC_VER
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             PauliStrSum sum;
+
+            // uninitialised sum fields can be coincidentally
+            // valid on some platforms (Github Actions linux
+            // gcc), so we force invalidity
+            sum.numTerms = -1;
+
             REQUIRE_THROWS_WITH( destroyPauliStrSum(sum), 
                 ContainsSubstring("invalid fields") || 
                 ContainsSubstring("heap pointers was unexpectedly NULL") ||
                 ContainsSubstring("It is likely the structure was not created by its proper function")
             );
         }
+        #endif
         #endif
     }
 }

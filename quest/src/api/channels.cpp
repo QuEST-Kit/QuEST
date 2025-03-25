@@ -54,7 +54,7 @@ void freeKrausMap(KrausMap map) {
     cpu_deallocMatrixList(map.matrices, map.numRows, map.numMatrices);
 
     // free teeny-tiny heap flag
-    util_deallocEpsilonSensitiveHeapFlag(map.isCPTP);
+    util_deallocEpsilonSensitiveHeapFlag(map.isApproxCPTP);
 
     // free superoperator (which may include freeing GPU memory)
     freeSuperOp(map.superop);
@@ -88,7 +88,7 @@ bool didAnyLocalAllocsFail(SuperOp op) {
 
 bool didAnyLocalAllocsFail(KrausMap map) {
 
-    if (!mem_isAllocated(map.isCPTP))
+    if (!mem_isAllocated(map.isApproxCPTP))
         return true;
 
     if (!mem_isAllocated(map.matrices, map.numRows, map.numMatrices))
@@ -184,7 +184,7 @@ extern "C" KrausMap createKrausMap(int numQubits, int numOperators) {
         .matrices = cpu_allocMatrixList(numRows, numOperators), // is or contains nullptr if failed
         .superop = allocSuperOp(numQubits), // heap fields are or contain nullptr if failed
 
-        .isCPTP = util_allocEpsilonSensitiveHeapFlag(), // nullptr if failed
+        .isApproxCPTP = util_allocEpsilonSensitiveHeapFlag(), // nullptr if failed
     };
 
     // free memory before throwing validation error to avoid memory leaks
@@ -192,7 +192,7 @@ extern "C" KrausMap createKrausMap(int numQubits, int numOperators) {
     validate_newKrausMapAllocs(out, __func__);
 
     // mark CPTP as unknown; it will be lazily evaluated whene a function asserts CPTP-ness
-    *(out.isCPTP) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    util_setFlagToUnknown(out.isApproxCPTP);
 
     return out;
 }
@@ -240,7 +240,7 @@ extern "C" void syncKrausMap(KrausMap map) {
 
     // indicate that we do not know whether the revised map is
     // is CPTP; we defer establishing that until a CPTP check
-    *(map.isCPTP) = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+    util_setFlagToUnknown(map.isApproxCPTP);
 }
 
 
@@ -299,7 +299,7 @@ void setAndSyncKrausMapElems(KrausMap map, T matrices) {
     for (int n=0; n<map.numMatrices; n++)
         cpu_copyMatrix(map.matrices[n], matrices[n], map.numRows);
 
-    // update the superoperator, including its GPU memory, and its isCPTP flag
+    // update the superoperator, including its GPU memory, and its isApproxCPTP flag
     syncKrausMap(map);
 }
 

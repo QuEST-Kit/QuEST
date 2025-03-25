@@ -598,10 +598,10 @@ namespace report {
 
 
     string INVALID_KRAUS_MAP_IS_CPTP_PTR = 
-        "The 'isCPTP' field of the given KrausMap was a NULL pointer, instead of the expected pointer to persistent heap memory. This suggests the KrausMap was already destroyed and had its fields overwritten by the user.";
+        "The 'isApproxCPTP' field of the given KrausMap was a NULL pointer, instead of the expected pointer to persistent heap memory. This suggests the KrausMap was already destroyed and had its fields overwritten by the user.";
 
     string INVALID_KRAUS_MAP_IS_CPTP_FLAG = 
-        "The 'isCPTP' field of the given Kraus map had invalid value ${BAD_FLAG}, suggesting it was manually modified. Valid values are 0, 1 and ${UNKNOWN_FLAG} (to indicate that unitarity is not yet known, deferring evaluation) although this need never be modified by the user.";
+        "The 'isApproxCPTP' field of the given Kraus map had invalid value ${BAD_FLAG}, suggesting it was manually modified. Valid values are 0, 1 and ${UNKNOWN_FLAG} (to indicate that unitarity is not yet known, deferring evaluation) although this need never be modified by the user.";
 
 
     string INVALID_KRAUS_MAPS_SUPER_OP_CPU_MEM_PTR =
@@ -1122,7 +1122,7 @@ qreal REDUCTION_EPSILON_FACTOR = 100;
  * e.g. checking unitarity/hermiticity/CPTP-ness. This is only
  * consulted when global_isValidationEnabled=true, and can be
  * separately disabled by setting epsilon=0, in which case 
- * permanent properties of structs (like .isCPTP) will not be 
+ * permanent properties of structs (like .isApproxCPTP) will not be 
  * overwritten (so will stay validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
  */
 
@@ -2809,7 +2809,7 @@ void validate_newKrausMapAllocs(KrausMap map, const char* caller) {
         {"${NUM_QUBITS}",   map.numQubits}};
 
     // assert the teeny-tiny heap flag was alloc'd
-    assertAllNodesAgreeThat(mem_isAllocated(map.isCPTP), report::NEW_HEAP_FLAG_ALLOC_FAILED, {{"${NUM_BYTES}", sizeof(*(map.isCPTP))}}, caller);
+    assertAllNodesAgreeThat(mem_isAllocated(map.isApproxCPTP), report::NEW_HEAP_FLAG_ALLOC_FAILED, {{"${NUM_BYTES}", sizeof(*(map.isApproxCPTP))}}, caller);
 
     // assert that the superoperator itself was allocated (along with its own heap fields)
     bool isInKrausMap = true;
@@ -2909,11 +2909,11 @@ void validate_krausMapFields(KrausMap map, const char* caller) {
     // check only outer CPU matrix list is allocated, to avoid expensive enumerating of matrices/rows
     assertThat(mem_isOuterAllocated(map.matrices), report::INVALID_KRAUS_MAP_MATRIX_LIST_MEM_PTR, caller);
 
-    // assert isCPTP heap flag allocated, and that is has a valid value
-    assertThat(mem_isAllocated(map.isCPTP), report::INVALID_HEAP_FLAG_PTR, caller);
+    // assert isApproxCPTP heap flag allocated, and that is has a valid value
+    assertThat(mem_isAllocated(map.isApproxCPTP), report::INVALID_HEAP_FLAG_PTR, caller);
 
     // and that its value is a boolean
-    int flag = *map.isCPTP;
+    int flag = *map.isApproxCPTP;
     bool valid = flag == 0 || flag == 1 || flag == validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
     tokenSubs moreVars = {{"${BAD_FLAG}", flag}, {"${UNKNOWN_FLAG}", validate_STRUCT_PROPERTY_UNKNOWN_FLAG}};
     assertThat(valid, report::INVALID_HEAP_FLAG_VALUE, moreVars, caller);
@@ -2941,15 +2941,12 @@ void validate_krausMapIsCPTP(KrausMap map, const char* caller) {
     validate_krausMapFields(map, caller);
     validate_krausMapIsSynced(map, caller);
 
-    // avoid expensive CPTP check (and do not overwrite .isCPTP) if validation is anyway disabled
+    // avoid expensive CPTP check (and do not overwrite .isApproxCPTP) if validation is anyway disabled
     if (isNumericalValidationDisabled())
         return;
 
-    // evaluate CPTPness if it isn't already known 
-    if (*(map.isCPTP) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        *(map.isCPTP) = util_isCPTP(map, global_validationEpsilon);
-
-    assertThat(*(map.isCPTP), report::KRAUS_MAP_NOT_CPTP, caller);
+    // use existing CPTPness or calculate afresh
+    assertThat(util_isCPTP(map, global_validationEpsilon), report::KRAUS_MAP_NOT_CPTP, caller);
 }
 
 void validate_krausMapMatchesTargets(KrausMap map, int numTargets, const char* caller) {
@@ -3203,11 +3200,8 @@ void validate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller) {
     if (isNumericalValidationDisabled())
         return;
 
-    // ensure hermiticity is known (if not; compute it)
-    if (*(sum.isApproxHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        *(sum.isApproxHermitian) = util_isHermitian(sum, global_validationEpsilon);
-
-    assertThat(*(sum.isApproxHermitian), report::PAULI_STR_SUM_NOT_HERMITIAN, caller);
+    // consult existing Hermiticity or compute it afresh
+    assertThat(util_isHermitian(sum, global_validationEpsilon), report::PAULI_STR_SUM_NOT_HERMITIAN, caller);
 }
 
 void validate_pauliStrSumTargets(PauliStrSum sum, Qureg qureg, const char* caller) {

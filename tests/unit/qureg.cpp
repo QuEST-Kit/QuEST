@@ -593,13 +593,16 @@ TEST_CASE( "destroyQureg", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
-        /// @todo this bizarrely fails in MSVC - no time to debug! 
-        #if !defined(_MSC_VER)
+        /// @todo fails in MSVC for unknown reason
+        #ifndef _MSC_VER
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             Qureg qureg;
             REQUIRE_THROWS_WITH( destroyQureg(qureg), ContainsSubstring("invalid Qureg") );
         }
+        #endif
         #endif
     }
 }
@@ -625,13 +628,16 @@ TEST_CASE( "getQuregAmp", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
-        /// @todo this bizarrely fails in MSVC - no time to debug! 
-        #if !defined(_MSC_VER)
+        /// @todo fails in MSVC for unknown reason
+        #ifndef _MSC_VER
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             Qureg qureg;
             REQUIRE_THROWS_WITH( getQuregAmp(qureg,0), ContainsSubstring("invalid Qureg") );
         }
+        #endif
         #endif
 
         SECTION( "invalid index" ) {
@@ -681,13 +687,16 @@ TEST_CASE( "getDensityQuregAmp", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
-        /// @todo this bizarrely fails in MSVC - no time to debug! 
-        #if !defined(_MSC_VER)
+        /// @todo fails in MSVC for unknown reason
+        #ifndef _MSC_VER
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             Qureg qureg;
             REQUIRE_THROWS_WITH( getDensityQuregAmp(qureg,0,0), ContainsSubstring("invalid Qureg") );
         }
+        #endif
         #endif
 
         SECTION( "invalid indices" ) {
@@ -740,13 +749,16 @@ TEST_CASE( "getQuregAmps", TEST_CATEGORY ) {
 
         Qureg qureg = createQureg(5);
 
-        /// @todo this bizarrely fails in MSVC - no time to debug! 
-        #if !defined(_MSC_VER)
+        /// @todo fails in MSVC for unknown reason
+        #ifndef _MSC_VER
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             Qureg bad;
             REQUIRE_THROWS_WITH( getQuregAmps(nullptr,bad,0,0), ContainsSubstring("invalid Qureg") );
         }
+        #endif
         #endif
 
         SECTION( "indices" ) {
@@ -815,13 +827,16 @@ TEST_CASE( "getDensityQuregAmps", TEST_CATEGORY ) {
 
         Qureg qureg = createDensityQureg(5);
 
-        /// @todo this bizarrely fails in MSVC - no time to debug! 
-        #if !defined(_MSC_VER)
+        /// @todo fails in MSVC for unknown reason
+        #ifndef _MSC_VER
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             Qureg bad;
             REQUIRE_THROWS_WITH( getDensityQuregAmps(nullptr,bad,0,0,0,0), ContainsSubstring("invalid Qureg") );
         }
+        #endif
         #endif
 
         SECTION( "indices" ) {
