@@ -169,6 +169,7 @@ int getMaxNumMessages() {
 
 #else
     error_commButEnvNotDistributed();
+    return -1;
 #endif
 }
 
