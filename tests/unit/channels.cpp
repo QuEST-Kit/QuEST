@@ -153,11 +153,14 @@ TEST_CASE( "destroyKrausMap", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
+        // sanitizer interferes with un-initialised struct values
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             KrausMap m;
             REQUIRE_THROWS_WITH( destroyKrausMap(m), ContainsSubstring("Invalid KrausMap") && ContainsSubstring("not created") );
         }
+        #endif
     }
 }
 
@@ -196,13 +199,16 @@ TEST_CASE( "syncKrausMap", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
-        /// @todo this bizarrely fails in MSVC - no time to debug! 
-        #if !defined(_MSC_VER)
+        /// @todo fails in MSVC for unknown reason
+        #ifndef _MSC_VER
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             KrausMap m;
             REQUIRE_THROWS_WITH( syncKrausMap(m), ContainsSubstring("Invalid KrausMap") && ContainsSubstring("not created") );
         }
+        #endif
         #endif
     }
 }
@@ -264,6 +270,15 @@ TEST_CASE( "setKrausMap", TEST_CATEGORY ) {
 
         int err = GENERATE( -1, +1 );
 
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
+        SECTION( "not created" ) {
+
+            KrausMap bad;
+            REQUIRE_THROWS_WITH( setKrausMap(bad, getRandomKrausMap(numQubits, numOps)), ContainsSubstring("invalid") );
+        }
+        #endif
+
         SECTION( "inconsistent dimensions" ) {
 
             REQUIRE_THROWS_WITH( setKrausMap(map, getRandomKrausMap(numQubits+err, numOps)), ContainsSubstring("dimension") );
@@ -315,6 +330,15 @@ TEST_CASE( "setInlineKrausMap", TEST_CATEGORY ) {
         KrausMap map = createKrausMap(numQubits, numOps);
 
         int err = GENERATE( -1, +1 );
+
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
+        SECTION( "not created" ) {
+
+            KrausMap bad;
+            REQUIRE_THROWS_WITH( setInlineKrausMap(bad, numQubits, numOps, getRandomKrausMap(numQubits, numOps)), ContainsSubstring("invalid") );
+        }
+        #endif
 
         SECTION( "macro parameters" ) {
 
@@ -509,13 +533,16 @@ TEST_CASE( "syncSuperOp", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
-        /// @todo this bizarrely fails in MSVC - no time to debug! 
-        #if !defined(_MSC_VER)
+        /// @todo fails in MSVC for unknown reason
+        #ifndef _MSC_VER
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             SuperOp m;
             REQUIRE_THROWS_WITH( syncSuperOp(m), ContainsSubstring("invalid fields") );
         }
+        #endif
         #endif
     }
 }
@@ -531,11 +558,14 @@ TEST_CASE( "destroySuperOp", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
+        // sanitizer interferes with un-initialised struct values
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             SuperOp m;
             REQUIRE_THROWS_WITH( destroySuperOp(m), ContainsSubstring("invalid fields") );
         }
+        #endif
     }
 }
 
@@ -590,14 +620,17 @@ TEST_CASE( "setSuperOp", TEST_CATEGORY ) {
 
         SuperOp op = createSuperOp(1);
 
-        /// @todo this bizarrely fails in MSVC - no time to debug! 
-        #if !defined(_MSC_VER)
+        /// @todo fails in MSVC for unknown reason
+        #ifndef _MSC_VER
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             SuperOp bad;
             qcomp** dummy;
             REQUIRE_THROWS_WITH( setSuperOp(bad, dummy), ContainsSubstring("invalid fields") );
         }
+        #endif
         #endif
 
         SECTION( "null pointer" ) {
@@ -647,13 +680,16 @@ TEST_CASE( "setInlineSuperOp", TEST_CATEGORY ) {
 
         SuperOp op = createSuperOp(1);
 
-        /// @todo this bizarrely fails in MSVC - no time to debug! 
-        #if !defined(_MSC_VER)
+        /// @todo fails in MSVC for unknown reason
+        #ifndef _MSC_VER
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             SuperOp bad;
             REQUIRE_THROWS_WITH( setInlineSuperOp(bad, 1, {{}}), ContainsSubstring("invalid fields") );
         }
+        #endif
         #endif
 
         SECTION( "mismatching dimension" ) {

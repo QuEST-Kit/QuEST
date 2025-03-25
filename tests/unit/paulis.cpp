@@ -549,8 +549,10 @@ TEST_CASE( "destroyPauliStrSum", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
-        /// @todo this bizarrely fails in MSVC - no time to debug! 
-        #if !defined(_MSC_VER)
+        /// @todo fails in MSVC for unknown reason
+        #ifndef _MSC_VER
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             PauliStrSum sum;
@@ -566,6 +568,7 @@ TEST_CASE( "destroyPauliStrSum", TEST_CATEGORY ) {
                 ContainsSubstring("It is likely the structure was not created by its proper function")
             );
         }
+        #endif
         #endif
     }
 }

@@ -728,11 +728,14 @@ TEST_CASE( "destroyCompMatr", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             CompMatr m;
             REQUIRE_THROWS_WITH( destroyCompMatr(m), ContainsSubstring("Invalid CompMatr") && ContainsSubstring("not created") );
         }
+        #endif
     }
 }
 
@@ -747,11 +750,14 @@ TEST_CASE( "destroyDiagMatr", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             DiagMatr m;
             REQUIRE_THROWS_WITH( destroyDiagMatr(m), ContainsSubstring("Invalid DiagMatr") && ContainsSubstring("not created") );
         }
+        #endif
     }
 }
 
@@ -766,11 +772,14 @@ TEST_CASE( "destroyFullStateDiagMatr", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             FullStateDiagMatr m;
             REQUIRE_THROWS_WITH( destroyFullStateDiagMatr(m), ContainsSubstring("Invalid FullStateDiagMatr") );
         }
+        #endif
     }
 }
 
@@ -816,11 +825,14 @@ TEST_CASE( "syncCompMatr", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             CompMatr m;
             REQUIRE_THROWS_WITH( syncCompMatr(m), ContainsSubstring("Invalid CompMatr") && ContainsSubstring("not created") );
         }
+        #endif
     }
 }
 
@@ -869,11 +881,14 @@ TEST_CASE( "syncDiagMatr", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             DiagMatr m;
             REQUIRE_THROWS_WITH( syncDiagMatr(m), ContainsSubstring("Invalid DiagMatr") && ContainsSubstring("not created") );
         }
+        #endif
     }
 }
 
@@ -910,11 +925,14 @@ TEST_CASE( "syncFullStateDiagMatr", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             FullStateDiagMatr m;
             REQUIRE_THROWS_WITH( syncFullStateDiagMatr(m), ContainsSubstring("Invalid FullStateDiagMatr") );
         }
+        #endif
     }
 }
 
@@ -969,14 +987,17 @@ TEST_CASE( "setCompMatr", TEST_CATEGORY ) {
 
         CompMatr matr = createCompMatr(1);
 
-        /// @todo this bizarrely fails in MSVC - no time to debug!
-        #if !defined(_MSC_VER)
+        /// @todo fails in MSVC for unknown reason
+        #ifndef _MSC_VER
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             CompMatr bad;
             qcomp** dummy;
             REQUIRE_THROWS_WITH( setCompMatr(bad, dummy), ContainsSubstring("Invalid CompMatr") && ContainsSubstring("not created") );
         }
+        #endif
         #endif
 
         SECTION( "null pointer" ) {
@@ -1044,12 +1065,15 @@ TEST_CASE( "setDiagMatr", TEST_CATEGORY ) {
 
         DiagMatr matr = createDiagMatr(1);
 
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             DiagMatr bad;
             qcomp* dummy;
             REQUIRE_THROWS_WITH( setDiagMatr(bad, dummy), ContainsSubstring("Invalid DiagMatr") && ContainsSubstring("not created") );
         }
+        #endif
 
         SECTION( "null pointer" ) {
 
@@ -1090,13 +1114,16 @@ TEST_CASE( "setInlineCompMatr", TEST_CATEGORY ) {
 
         CompMatr matr = createCompMatr(1);
 
-        /// @todo this bizarrely fails in MSVC - no time to debug! 
-        #if !defined(_MSC_VER)
+        /// @todo fails in MSVC for unknown reason
+        #ifndef _MSC_VER
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             CompMatr bad;
             REQUIRE_THROWS_WITH( setInlineCompMatr(bad, 1, {{1,2},{3,4}}), ContainsSubstring("Invalid CompMatr") && ContainsSubstring("not created") );
         }
+        #endif
         #endif
 
         SECTION( "mismatching dimension" ) {
@@ -1140,13 +1167,16 @@ TEST_CASE( "setInlineDiagMatr", TEST_CATEGORY ) {
 
         DiagMatr matr = createDiagMatr(1);
 
-        /// @todo this bizarrely fails in MSVC - no time to debug! 
-        #if !defined(_MSC_VER)
+        /// @todo fails in MSVC for unknown reason
+        #ifndef _MSC_VER
+        // sanitizer messes with default initialisation
+        #ifndef SANITIZER_IS_ACTIVE
         SECTION( "not created" ) {
 
             DiagMatr bad;
             REQUIRE_THROWS_WITH( setInlineDiagMatr(bad, 1, {1,2}), ContainsSubstring("Invalid DiagMatr") && ContainsSubstring("not created") );
         }
+        #endif
         #endif
 
         SECTION( "mismatching dimension" ) {
