@@ -554,7 +554,11 @@ TEST_CASE( "destroyPauliStrSum", TEST_CATEGORY ) {
         SECTION( "not created" ) {
 
             PauliStrSum sum;
-            REQUIRE_THROWS_WITH( destroyPauliStrSum(sum), ContainsSubstring("invalid fields") || ContainsSubstring("heap pointers was unexpectedly NULL") );
+            REQUIRE_THROWS_WITH( destroyPauliStrSum(sum), 
+                ContainsSubstring("invalid fields") || 
+                ContainsSubstring("heap pointers was unexpectedly NULL") ||
+                ContainsSubstring("It is likely the structure was not created by its proper function")
+            );
         }
         #endif
     }
