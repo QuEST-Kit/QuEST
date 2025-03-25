@@ -473,21 +473,24 @@ qcomp localiser_statevec_getAmp(Qureg qureg, qindex globalInd) {
     // enumeration and is therefore locally faster; there
     // may be applications where this is desirable (maybe)
 
-    // only one (or all) node contains the target amp
-    qcomp amp = 0;
-    int sender = util_getRankContainingIndex(qureg, globalInd); // root=0 if qureg not distributed
+    // when qureg not distributed (although env may be), every
+    // node returns their identical local amp
+    if (!qureg.isDistributed) {
+        qcomp amp;
+        accel_statevec_getAmps_sub(&amp, qureg, globalInd, 1);
+        return amp;
+    }
 
-    // only node(s) containing the target amp bother to fetch 
-    // it, avoiding superfluous cache costs on other nodes
+    // otherwise one node contains the target amp
+    qcomp amp = 0;
+    int sender = util_getRankContainingIndex(qureg, globalInd);
     if (sender == qureg.rank) {
         qindex localInd = util_getLocalIndexOfGlobalIndex(qureg, globalInd);
         accel_statevec_getAmps_sub(&amp, qureg, localInd, 1);
     }
 
-    // when distributed, sender shares amp to all nodes
-    if (qureg.isDistributed)
-        comm_broadcastAmp(sender, &amp);
-
+    // which it shares with all other nodes
+    comm_broadcastAmp(sender, &amp);
     return amp;
 }
 

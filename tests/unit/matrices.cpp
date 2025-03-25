@@ -677,7 +677,7 @@ TEST_CASE( "createCustomFullStateDiagMatr", TEST_CATEGORY ) {
             for (auto [label, mpi, gpu, omp] : getSupportedDeployments())
                 REQUIRE_THROWS_WITH( createCustomFullStateDiagMatr(numQubits, mpi,gpu,omp), ContainsSubstring("must target one or more qubits") );
 
-            if (getQuESTEnv().numNodes > 1) {
+            if (getQuESTEnv().numNodes > 2) { // 1 node => min=1
                 int minNumQubits = getLog2(getQuESTEnv().numNodes);
                 REQUIRE_THROWS_WITH( createCustomFullStateDiagMatr(minNumQubits-1, 1,0,0), ContainsSubstring("node would contain fewer than one element") );
             }

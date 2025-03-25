@@ -13,6 +13,8 @@
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
+#include "tests/utils/qvector.hpp"
+#include "tests/utils/qmatrix.hpp"
 #include "tests/utils/macros.hpp"
 #include "tests/utils/cache.hpp"
 #include "tests/utils/convert.hpp"
@@ -281,7 +283,7 @@ TEST_CASE( "createForcedQureg", TEST_CATEGORY ) {
             REQUIRE_THROWS_WITH( createForcedQureg(+0), ContainsSubstring("must contain one or more qubits") );
 
             int numNodes = getQuESTEnv().numNodes;
-            if (numNodes > 1) {
+            if (numNodes > 2) { // nodes=2 => min=1
                 int minNumQubits = getLog2(numNodes);
                 REQUIRE_THROWS_WITH( createForcedQureg(minNumQubits-1), ContainsSubstring("each node would contain fewer than one amplitude") );
             }
@@ -374,7 +376,7 @@ TEST_CASE( "createForcedDensityQureg", TEST_CATEGORY ) {
             REQUIRE_THROWS_WITH( createForcedDensityQureg(+0), ContainsSubstring("must contain one or more qubits") );
 
             int numNodes = getQuESTEnv().numNodes;
-            if (numNodes > 1) {
+            if (numNodes > 2) { // nodes=2 => min=1
                 int minNumQubits = getLog2(numNodes);
                 REQUIRE_THROWS_WITH( createForcedDensityQureg(minNumQubits-1), ContainsSubstring("each node would contain fewer than a column") );
             }
@@ -507,7 +509,7 @@ TEST_CASE( "createCustomQureg", TEST_CATEGORY ) {
             REQUIRE_THROWS_WITH( createCustomQureg(+0, 0,0,0,0), ContainsSubstring("must contain one or more qubits") );
 
             int numNodes = getQuESTEnv().numNodes;
-            if (numNodes > 1) {
+            if (numNodes > 2) { // nodes=2 => min=1
                 int minNumQubits = getLog2(numNodes);
                 int useDistrib = 1;
                 REQUIRE_THROWS_WITH( createCustomQureg(minNumQubits-1,0, useDistrib,0,0), ContainsSubstring("each node would contain fewer than one amplitude") );

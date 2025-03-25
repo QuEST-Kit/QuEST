@@ -200,9 +200,9 @@ void demo_createPauliStrSumFromFile() {
             + 5E2-1i     XYZ    \n\
             - 1E-50i     IXY    \n\
             + 1 - 6E-5i  IIX    \n\
-            0          III    \n\
-            5.         IXX    \n\
-            .5        ZYX    \n\
+            0            III    \n\
+            5.           IXX    \n\
+            .5           ZYX    \n\
         ");
         fclose(f);
     }
