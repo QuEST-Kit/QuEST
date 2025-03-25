@@ -729,8 +729,8 @@ bool util_isCPTP(KrausMap map, qreal eps) {
     assert_utilsGivenNonZeroEpsilon(eps);
 
     // use pre-computed CPTP if it exists
-    if (*(map.isCPTP) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        return *(map.isCPTP);
+    if (*(map.isApproxCPTP) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
+        return *(map.isApproxCPTP);
 
     /// @todo
     /// if KrausMap is GPU-accelerated, we should maybe
@@ -738,7 +738,7 @@ bool util_isCPTP(KrausMap map, qreal eps) {
     /// otherwise, if matrix is large, we should potentially
     /// use a multithreaded routine
 
-    *(map.isCPTP) = true;
+    *(map.isApproxCPTP) = 1;
 
     // check whether each element satisfies Identity = sum dagger(m)*m
     for (qindex r=0; r<map.numRows; r++) {
@@ -755,14 +755,14 @@ bool util_isCPTP(KrausMap map, qreal eps) {
             if (distSquared > eps) {
 
                 // by recording the result and returning immediately
-                *(map.isCPTP) = false;
-                return *(map.isCPTP);
+                *(map.isApproxCPTP) = 0;
+                return *(map.isApproxCPTP);
             }
         }
     }
 
     // always true by this point
-    return *(map.isCPTP);
+    return *(map.isApproxCPTP);
 }
 
 // T can be qcomp*** or vector<vector<vector<qcomp>>>
@@ -813,16 +813,27 @@ void util_setSuperoperator(qcomp** superop, qcomp*** matrices, int numMatrices, 
 
 std::list<int*> globalStructFieldPtrs(0);
 
+void util_setFlagToUnknown(int* ptr) {
+
+    *ptr = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+}
+
 int* util_allocEpsilonSensitiveHeapFlag() {
 
     int* ptr = cpu_allocHeapFlag(); // may be nullptr
 
-    // if allocated successfully, record the ptr, so that
-    // we can set it to -1 when user changes epsilon
-    if (mem_isAllocated(ptr))
-        globalStructFieldPtrs.push_back(ptr);
+    // if failed to alloc, do not add to global list;
+    // caller will handle validation/error messaging
+    if (!mem_isAllocated(ptr))
+        return ptr;
 
-    // caller will handle nullptr
+    // caller should set ptr to the default "unknown"
+    // value, but we do so here too just to be safe
+    util_setFlagToUnknown(ptr);
+
+    // store the pointer so that we can reset the
+    // value to "unknown" when epsilon is changed
+    globalStructFieldPtrs.push_back(ptr);
     return ptr;
 }
 
@@ -837,10 +848,10 @@ void util_deallocEpsilonSensitiveHeapFlag(int* ptr) {
     cpu_deallocHeapFlag(ptr);
 }
 
-void util_setEpsilonSensitiveStructFieldsToUnknown() {
+void util_setEpsilonSensitiveHeapFlagsToUnknown() {
 
     for (auto ptr : globalStructFieldPtrs)
-        *ptr = validate_STRUCT_PROPERTY_UNKNOWN_FLAG;
+        util_setFlagToUnknown(ptr);
 }
 
 

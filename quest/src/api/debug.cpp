@@ -90,14 +90,14 @@ void setValidationEpsilon(qreal eps) {
     validate_newEpsilonValue(eps, __func__);
 
     validateconfig_setEpsilon(eps);
-    util_setEpsilonSensitiveStructFieldsToUnknown();
+    util_setEpsilonSensitiveHeapFlagsToUnknown();
 }
 
 void setValidationEpsilonToDefault() {
     validate_envIsInit(__func__);
 
     validateconfig_setEpsilonToDefault();
-    util_setEpsilonSensitiveStructFieldsToUnknown();
+    util_setEpsilonSensitiveHeapFlagsToUnknown();
 }
 
 qreal getValidationEpsilon() {

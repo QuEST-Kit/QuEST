@@ -63,7 +63,7 @@ TEST_CASE( "createKrausMap", TEST_CATEGORY ) {
         REQUIRE( map.superop.numRows == getPow2(2 * numQubits) );
 
         // verify default fields
-        REQUIRE( *(map.isCPTP) == -1 );
+        REQUIRE( *(map.isApproxCPTP) == -1 );
         REQUIRE( *(map.superop.wasGpuSynced) == 0 );
 
         // verify pointers
@@ -172,9 +172,13 @@ TEST_CASE( "syncKrausMap", TEST_CATEGORY ) {
 
         KrausMap map = createKrausMap(numTargs, numMatrs);
         REQUIRE( *(map.superop.wasGpuSynced) == 0 );
+        
+        *(map.isApproxCPTP) = 0;
 
+        // validate the fields are updated
         syncKrausMap(map);
         REQUIRE( *(map.superop.wasGpuSynced) == 1 );
+        REQUIRE( *(map.isApproxCPTP) == -1 );
 
         // validate the superop gets inferred correctly from the kraus map
         auto matrices = getRandomKrausMap(numTargs, numMatrs);

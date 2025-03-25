@@ -102,7 +102,7 @@ typedef struct {
 
     // CPTP-ness is determined at validation; 0 or 1, or -1 to indicate unknown. The flag is 
     // stored in heap so even copies of structs are mutable, but pointer itself is immutable.
-    int* isCPTP;
+    int* isApproxCPTP;
 
 } KrausMap;
 

@@ -396,25 +396,96 @@ TEST_CASE( "setValidationEpsilon", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
-        // prepare non-unitary matrix
-        CompMatr1 m = getCompMatr1({{1,2},{3,4}});
-        Qureg qureg = createQureg(1);
+        SECTION( "affects validation" ) {
 
-        // confirm it throws non-unitary error
-        REQUIRE_THROWS( applyCompMatr1(qureg, 0, m) );
+            Qureg qureg = createQureg(5);
 
-        // confirm setting = 0 disables epsilon errors...
-        setValidationEpsilon(0);
-        REQUIRE_NOTHROW( applyCompMatr1(qureg, 0, m) );
+            SECTION( "unitarity" ) {
 
-        // but does not disable absolute errors
-        REQUIRE_THROWS( applyCompMatr1(qureg, -1, m) );
+                // prepare non-unitary matrix
+                CompMatr1 m = getCompMatr1({{1,2},{3,4}});
+                
+                // confirm it throws non-unitary error
+                REQUIRE_THROWS( applyCompMatr1(qureg, 0, m) );
 
-        // confirm non-zero (forgive all) works
-        setValidationEpsilon(9999); // bigger than dist of m*conj(m) from identity squared
-        REQUIRE_NOTHROW( applyCompMatr1(qureg, 0, m) );
+                // confirm setting = 0 disables epsilon errors...
+                setValidationEpsilon(0);
+                REQUIRE_NOTHROW( applyCompMatr1(qureg, 0, m) );
 
-        destroyQureg(qureg);
+                // but does not disable absolute errors
+                REQUIRE_THROWS( applyCompMatr1(qureg, -1, m) );
+
+                // confirm non-zero (forgive all) works
+                setValidationEpsilon(9999); // bigger than dist of m*conj(m) from identity squared
+                REQUIRE_NOTHROW( applyCompMatr1(qureg, 0, m) );
+            }
+
+            /// @todo
+            /// to be completely rigorous, we should test
+            /// that unitarity, hermiticity, CPTPness and 
+            /// non-zero-ness of all of CompMatr, DiagMatr 
+            /// and FullStateDiagMatr are affected! This
+            /// is quite a chore of course
+
+            destroyQureg(qureg);
+        }
+        
+        SECTION( "affects struct fields" ) {
+
+            SECTION( "CompMatr" ) {
+
+                CompMatr m = createCompMatr(1);
+                *(m.isApproxUnitary)   = 1;
+                *(m.isApproxHermitian) = 1;
+
+                setValidationEpsilon(.1);
+                REQUIRE( *(m.isApproxUnitary)   == -1 );
+                REQUIRE( *(m.isApproxHermitian) == -1 );
+
+                destroyCompMatr(m);
+            }
+
+            SECTION( "DiagMatr" ) {
+
+                DiagMatr m = createDiagMatr(1);
+                *(m.isApproxUnitary)   = 1;
+                *(m.isApproxHermitian) = 0;
+                *(m.isApproxNonZero)   = 1;
+
+                setValidationEpsilon(.1);
+                REQUIRE( *(m.isApproxUnitary)   == -1 );
+                REQUIRE( *(m.isApproxHermitian) == -1 );
+                REQUIRE( *(m.isApproxNonZero)   == -1 );
+
+                destroyDiagMatr(m);
+            }
+
+            SECTION( "FullStateDiagMatr" ) {
+
+                FullStateDiagMatr m = createFullStateDiagMatr(1);
+                *(m.isApproxUnitary)   = 1;
+                *(m.isApproxHermitian) = 0;
+                *(m.isApproxNonZero)   = 1;
+
+                setValidationEpsilon(.1);
+                REQUIRE( *(m.isApproxUnitary)   == -1 );
+                REQUIRE( *(m.isApproxHermitian) == -1 );
+                REQUIRE( *(m.isApproxNonZero)   == -1 );
+
+                destroyFullStateDiagMatr(m);
+            }
+
+            SECTION( "KrausMap" ) {
+
+                KrausMap k = createKrausMap(1, 3);
+                *(k.isApproxCPTP) = 1;
+
+                setValidationEpsilon(.1);
+                REQUIRE( *(k.isApproxCPTP) == -1 );
+
+                destroyKrausMap(k);
+            }
+        }
     }
 
     SECTION( LABEL_VALIDATION ) {
@@ -464,26 +535,88 @@ TEST_CASE( "setValidationEpsilonToDefault", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
-        // confirm always safe to call
-        for (int i=0; i<3; i++)
-            REQUIRE_NOTHROW( setValidationEpsilonToDefault() );
+        SECTION( "always safe to call" ) {
 
-        // prepare non-unitary matrix
-        CompMatr1 m = getCompMatr1({{1,2},{3,4}});
-        Qureg qureg = createQureg(1);
+            for (int i=0; i<3; i++)
+                REQUIRE_NOTHROW( setValidationEpsilonToDefault() );
+        }
 
-        // confirm it throws non-unitary error
-        REQUIRE_THROWS( applyCompMatr1(qureg, 0, m) );
+        SECTION( "affects validation" ) {
 
-        // confirm setting = 0 disables epsilon errors...
-        setValidationEpsilon(0);
-        REQUIRE_NOTHROW( applyCompMatr1(qureg, 0, m) );
+            // prepare non-unitary matrix
+            CompMatr1 m = getCompMatr1({{1,2},{3,4}});
+            Qureg qureg = createQureg(1);
 
-        // which returns when stored to default
-        setValidationEpsilonToDefault();
-        REQUIRE_THROWS( applyCompMatr1(qureg, 0, m) );
+            // confirm it throws non-unitary error
+            REQUIRE_THROWS( applyCompMatr1(qureg, 0, m) );
 
-        destroyQureg(qureg);
+            // confirm setting = 0 disables epsilon errors...
+            setValidationEpsilon(0);
+            REQUIRE_NOTHROW( applyCompMatr1(qureg, 0, m) );
+
+            // which returns when stored to default
+            setValidationEpsilonToDefault();
+            REQUIRE_THROWS( applyCompMatr1(qureg, 0, m) );
+
+            destroyQureg(qureg);
+        }
+
+        SECTION( "affects struct fields" ) {
+
+            SECTION( "CompMatr" ) {
+
+                CompMatr m = createCompMatr(1);
+                *(m.isApproxUnitary)   = 1;
+                *(m.isApproxHermitian) = 1;
+
+                setValidationEpsilonToDefault();
+                REQUIRE( *(m.isApproxUnitary)   == -1 );
+                REQUIRE( *(m.isApproxHermitian) == -1 );
+
+                destroyCompMatr(m);
+            }
+
+            SECTION( "DiagMatr" ) {
+
+                DiagMatr m = createDiagMatr(1);
+                *(m.isApproxUnitary)   = 1;
+                *(m.isApproxHermitian) = 0;
+                *(m.isApproxNonZero)   = 1;
+
+                setValidationEpsilonToDefault();
+                REQUIRE( *(m.isApproxUnitary)   == -1 );
+                REQUIRE( *(m.isApproxHermitian) == -1 );
+                REQUIRE( *(m.isApproxNonZero)   == -1 );
+
+                destroyDiagMatr(m);
+            }
+
+            SECTION( "FullStateDiagMatr" ) {
+
+                FullStateDiagMatr m = createFullStateDiagMatr(1);
+                *(m.isApproxUnitary)   = 1;
+                *(m.isApproxHermitian) = 0;
+                *(m.isApproxNonZero)   = 1;
+
+                setValidationEpsilonToDefault();
+                REQUIRE( *(m.isApproxUnitary)   == -1 );
+                REQUIRE( *(m.isApproxHermitian) == -1 );
+                REQUIRE( *(m.isApproxNonZero)   == -1 );
+
+                destroyFullStateDiagMatr(m);
+            }
+
+            SECTION( "KrausMap" ) {
+
+                KrausMap k = createKrausMap(1, 3);
+                *(k.isApproxCPTP) = 1;
+
+                setValidationEpsilonToDefault();
+                REQUIRE( *(k.isApproxCPTP) == -1 );
+
+                destroyKrausMap(k);
+            }
+        }
     }
 
     SECTION( LABEL_VALIDATION ) {

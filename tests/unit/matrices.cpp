@@ -780,15 +780,36 @@ TEST_CASE( "syncCompMatr", TEST_CATEGORY ) {
     SECTION( LABEL_CORRECTNESS ) {
 
         CompMatr matr = createCompMatr(5);
+
         REQUIRE( *(matr.wasGpuSynced) == 0 );
 
-        syncCompMatr(matr);
-        REQUIRE( *(matr.wasGpuSynced) == 1 );
+        SECTION( "overwrites GPU elements" ) {
 
-        // to test that the GPU memory was actually overwritten,
-        // we would need a custom accessor of GPU memory, requiring
-        // the tests are CUDA-compiled - no thank you mam! It is
-        // certain this function works from the other GPU tests.
+            // to test that the GPU memory was actually overwritten,
+            // we would need a custom accessor of GPU memory, requiring
+            // the tests are CUDA-compiled - no thank you mam! It is
+            // certain this function works from the other GPU tests.
+
+            SUCCEED( );
+        }
+
+        SECTION( "sets was-synced flag" ) {
+
+            *(matr.wasGpuSynced) = 0;
+
+            syncCompMatr(matr);
+            REQUIRE( *(matr.wasGpuSynced) == 1 );
+        }
+
+        SECTION( "clears numerical flags" ) {
+
+            *(matr).isApproxHermitian = 1;
+            *(matr).isApproxUnitary   = 0;
+
+            syncCompMatr(matr);
+            REQUIRE( *(matr.isApproxHermitian) == -1 );
+            REQUIRE( *(matr.isApproxUnitary)   == -1 );
+        }
 
         destroyCompMatr(matr);
     }
@@ -811,13 +832,37 @@ TEST_CASE( "syncDiagMatr", TEST_CATEGORY ) {
         DiagMatr matr = createDiagMatr(5);
         REQUIRE( *(matr.wasGpuSynced) == 0 );
 
-        syncDiagMatr(matr);
-        REQUIRE( *(matr.wasGpuSynced) == 1 );
+        SECTION( "overwrites GPU elements" ) {
 
-        // to test that the GPU memory was actually overwritten,
-        // we would need a custom accessor of GPU memory, requiring
-        // the tests are CUDA-compiled - no thank you mam! It is
-        // certain this function works from the other GPU tests.
+            // to test that the GPU memory was actually overwritten,
+            // we would need a custom accessor of GPU memory, requiring
+            // the tests are CUDA-compiled - no thank you mam! It is
+            // certain this function works from the other GPU tests.
+
+            SUCCEED( );
+        }
+
+        SECTION( "sets was-synced flag" ) {
+
+            *(matr.wasGpuSynced) = 0;
+
+            syncDiagMatr(matr);
+            REQUIRE( *(matr.wasGpuSynced) == 1 );
+        }
+
+        SECTION( "clears numerical flags" ) {
+
+            *(matr).isApproxHermitian = 1;
+            *(matr).isApproxUnitary   = 0;
+            *(matr).isApproxNonZero   = 1;
+            *(matr).isStrictlyNonNegative = 0;
+
+            syncDiagMatr(matr);
+            REQUIRE( *(matr.isApproxHermitian) == -1 );
+            REQUIRE( *(matr.isApproxUnitary)   == -1 );
+            REQUIRE( *(matr.isApproxNonZero)   == -1 );
+            REQUIRE( *(matr.isStrictlyNonNegative) == -1 );
+        }
 
         destroyDiagMatr(matr);
     }
@@ -842,9 +887,18 @@ TEST_CASE( "syncFullStateDiagMatr", TEST_CATEGORY ) {
             DYNAMIC_SECTION( label ) {
 
                 *(matrix.wasGpuSynced) = 0;
+                *(matrix).isApproxHermitian = 1;
+                *(matrix).isApproxUnitary   = 0;
+                *(matrix).isApproxNonZero   = 1;
+                *(matrix).isStrictlyNonNegative = 0;
 
                 syncFullStateDiagMatr(matrix);
-                REQUIRE( *(matrix.wasGpuSynced) == 1 );
+                REQUIRE( *(matrix.wasGpuSynced)      == 1 );
+                
+                REQUIRE( *(matrix.isApproxHermitian) == -1 );
+                REQUIRE( *(matrix.isApproxUnitary)   == -1 );
+                REQUIRE( *(matrix.isApproxNonZero)   == -1 );
+                REQUIRE( *(matrix.isStrictlyNonNegative) == -1 );
 
                 // to test that the GPU memory was actually overwritten,
                 // we would need a custom accessor of GPU memory, requiring

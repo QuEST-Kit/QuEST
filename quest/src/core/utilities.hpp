@@ -315,7 +315,9 @@ int* util_allocEpsilonSensitiveHeapFlag();
 
 void util_deallocEpsilonSensitiveHeapFlag(int* ptr);
 
-void util_setEpsilonSensitiveStructFieldsToUnknown();
+void util_setEpsilonSensitiveHeapFlagsToUnknown();
+
+void util_setFlagToUnknown(int* ptr);
 
 
 
