@@ -10,15 +10,13 @@
 name: test (free, serial)
 
 
-# DEBUG:
-# temporarily changing to dev branch
 on:
   push:
     branches:
-      - test-all-the-things
+      - v4
   pull_request:
     branches:
-      - test-all-the-things
+      - v4
 
 
 jobs:
