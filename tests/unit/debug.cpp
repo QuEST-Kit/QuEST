@@ -53,12 +53,15 @@ TEST_CASE( "setMaxNumReportedSigFigs", TEST_CATEGORY ) {
         qcomp scalar = getQcomp(0.12345, 0.12345);
 
         vector<std::string> refs = {
-            "0.1+0.1i\n",
-            "0.12+0.12i\n",
-            "0.123+0.123i\n",
-            "0.1235+0.1235i\n", // rounded
-            "0.12345+0.12345i\n"
+            "0.1+0.1i",
+            "0.12+0.12i",
+            "0.123+0.123i",
+            "0.1235+0.1235i", // rounded
+            "0.12345+0.12345i"
         };
+
+        // disable auto \n after lines
+        setNumReportedNewlines(0);
 
         for (size_t numSigFigs=1; numSigFigs<=refs.size(); numSigFigs++) {
 
@@ -67,15 +70,14 @@ TEST_CASE( "setMaxNumReportedSigFigs", TEST_CATEGORY ) {
             // redirect stdout to buffer
             std::stringstream buffer;
             std::streambuf * old = std::cout.rdbuf(buffer.rdbuf());
-
             reportScalar("", scalar);
-
-            // restore stdout
             std::cout.rdbuf(old);
+            std::string out = buffer.str();
+
             std::string ref = refs[numSigFigs-1];
 
             CAPTURE( numSigFigs, ref );
-            REQUIRE( buffer.str() == ref );
+            REQUIRE( out == ref );
         }
     }
 
@@ -91,6 +93,48 @@ TEST_CASE( "setMaxNumReportedSigFigs", TEST_CATEGORY ) {
 
     // restore to QuEST default for future tests
     setMaxNumReportedSigFigs(5);
+}
+
+
+TEST_CASE( "setNumReportedNewlines", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        for (int numNewlines=0; numNewlines<3; numNewlines++) {
+
+            setNumReportedNewlines(numNewlines);
+
+            // redirect stdout to buffer
+            std::stringstream buffer;
+            std::streambuf * old = std::cout.rdbuf(buffer.rdbuf());
+            reportStr("x");
+            std::cout.rdbuf(old);
+            std::string out = buffer.str();
+
+            std::string ref = "x" + std::string(numNewlines, '\n');
+            
+            CAPTURE( numNewlines, ref );
+            REQUIRE( out == ref );
+        }
+    }
+
+    SECTION( LABEL_VALIDATION ) {
+
+        SECTION( "number" ) {
+
+            REQUIRE_THROWS_WITH( setNumReportedNewlines(-1), ContainsSubstring("Cannot generally be less than zero") );
+        }
+
+        SECTION( "multine number" ) {
+
+            setNumReportedNewlines(0);
+
+            REQUIRE_THROWS_WITH( reportQuESTEnv(), ContainsSubstring("zero") && ContainsSubstring("not permitted when calling multi-line") );
+        }
+    }
+
+    // restore to QuEST default for future tests
+    setNumReportedNewlines(2);
 }
 
 
@@ -704,3 +748,4 @@ TEST_CASE( "getGpuCacheSize", TEST_CATEGORY ) {
 void setMaxNumReportedItems(qindex numRows, qindex numCols);
 
 void getEnvironmentString(char str[200]);
+

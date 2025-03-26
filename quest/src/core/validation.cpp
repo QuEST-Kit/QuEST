@@ -129,7 +129,7 @@ namespace report {
         "Invalid number of random seeds (${NUM_SEEDS}). Must specify one or more. In distributed settings, only the root node needs to pass a valid number of seeds (other node arguments are ignored).";
     
     string INVALID_NUM_REPORTED_NEWLINES =
-        "Invalid number of trailing newlines (${NUM_NEWLINES}). Cannot generaly be less than zero, and must not be zero when calling multi-line reporting functions like reportQureg().";
+        "Invalid number of trailing newlines (${NUM_NEWLINES}). Cannot generally be less than zero, and must not be zero when calling multi-line reporting functions like reportQureg().";
 
     string INSUFFICIENT_NUM_REPORTED_NEWLINES =
         "The number of trailing newlines (set by setNumReportedNewlines()) is zero which is not permitted when calling multi-line reporters.";
