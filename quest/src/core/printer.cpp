@@ -136,21 +136,6 @@ int printer_getNumTrailingNewlines() {
     return global_numTrailingNewlines;
 }
 
-void print_newlines() {
-    assert_printerGivenNonNegativeNumNewlines();
-
-    // K. I. S. S.
-    for (int i=0; i<global_numTrailingNewlines; i++)
-        cout << endl;
-}
-
-void print_oneFewerNewlines() {
-    assert_printerGivenPositiveNumNewlines();
-
-    for (int i=0; i<global_numTrailingNewlines - 1; i++)
-        cout << endl;
-}
-
 
 
 /*
@@ -391,6 +376,25 @@ void print(string str) {
 
 void print(qcomp num) {
     print(toStr(num));
+}
+
+
+
+/*
+ * NEWLINE PRINTING
+ */
+
+
+void print_newlines() {
+    assert_printerGivenNonNegativeNumNewlines();
+
+    print(string(global_numTrailingNewlines, '\n'));
+}
+
+void print_oneFewerNewlines() {
+    assert_printerGivenPositiveNumNewlines();
+
+    print(string(global_numTrailingNewlines - 1, '\n'));
 }
 
 
