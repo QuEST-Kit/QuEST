@@ -30,8 +30,9 @@
 
 #if !defined(DISABLE_DEPRECATION_WARNINGS) || DISABLE_DEPRECATION_WARNINGS == 0
 
-    #warning \
-"Deprecated functions have been included in compilation. The QuEST v3 API will be attemptedly \
+    // #warning command is always recognised (deprecated API is not MSVC-compatible)
+    #warning "\
+Deprecated functions have been included in compilation. The QuEST v3 API will be attemptedly \
 automatically substituted for the v4 API, although some uses of the old API will still fail to \
 compile. For example, access to v3 struct fields (e.g. 'ComplexMatrixN.real[0][0]') must be \
 manually replaced with v4 struct fields (e.g. 'CompMatr.cpuElems[0][0]'), though new v4 functions \

@@ -51,6 +51,8 @@
     #define INLINE inline __attribute__((always_inline))
 
 #else
+
+    // #warning command safe in non-MSVC compiler
     #warning "Could not ascertain compiler type in order to choose the correct inline attribute. Assuming GNU and proceeding..."
     #define INLINE inline __attribute__((always_inline))
 
