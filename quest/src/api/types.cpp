@@ -14,10 +14,33 @@
 using std::string;
 
 
-void reportScalar(string label, string num) {
+
+/*
+ * STRINGS
+ */
+
+void reportStr(std::string str) {
     validate_envIsInit(__func__);
 
-    print(label + (label.empty()? "" : ": ") + num);
+    print(str);
+    print_newlines();
+}
+
+extern "C" void reportStr(const char* str) {
+    reportStr(string(str));
+}
+
+
+
+/*
+ * SCALARS
+ */
+
+void reportScalar(string label, string numstr) {
+    validate_envIsInit(__func__);
+
+    // harmlessly re-validates
+    reportStr(label + (label.empty()? "" : ": ") + numstr);
 }
 
 void reportScalar(string      label, qcomp num) { reportScalar(label,         printer_toStr(num)); }

@@ -274,6 +274,12 @@ static inline qcomp getQcomp(qreal re, qreal im) {
 
     #include <string>
 
+
+    extern "C" void reportStr(const char* str);
+
+    void reportStr(std::string str);
+
+
     extern "C" void reportScalar(const char* label, qcomp num);
 
     void reportScalar(const char* label, qreal num);
@@ -282,6 +288,9 @@ static inline qcomp getQcomp(qreal re, qreal im) {
 
 #else
 
+    void reportStr(const char* str);
+
+    
     void reportScalar      (const char* label, qcomp num);
     void _reportScalar_real(const char* label, qreal num);
 
