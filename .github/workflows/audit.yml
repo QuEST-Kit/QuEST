@@ -98,7 +98,9 @@ jobs:
         run: cmake --build ${{ env.build_dir }} --parallel
   
       - name: Install valgrind
-        run: sudo apt install -y valgrind
+        run: >
+          sudo apt-get update;
+          sudo apt install -y valgrind
 
       # make valgrind fail CI if detecting issue when running unit tests in a randomised order
       # TODO:

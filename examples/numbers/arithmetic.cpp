@@ -16,8 +16,8 @@ int main() {
     // use 1_i instead of 1i to make the complex literal precision agnostic
     qcomp x = 1.2 + 3.4_i;
 
-    // C with non-same-prec C
-    x *= 1.5i - 2i - x + 3.5*x / 10.5_i;
+    // C with non-same-prec C (does not change x to keep consistency with arithemtic.c)
+    qcomp y = 1.5i - 2i - x + 3.5*x / 10.5_i;
 
     // C + R
     x = x + (int) 3;
@@ -103,7 +103,7 @@ int main() {
     x /= (double) 2;
     x /= (long double) 2;
 
-    reportQcomp(x);
+    reportScalar("x", x);
     
     finalizeQuESTEnv();
     return 0;

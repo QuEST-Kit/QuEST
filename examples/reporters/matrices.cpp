@@ -13,6 +13,7 @@
 #include <iostream>
 
 
+
 void rootPrint(qindex num) {
 
     if (getQuESTEnv().rank != 0)

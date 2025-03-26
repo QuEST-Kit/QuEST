@@ -483,14 +483,18 @@ extern "C" void destroyPauliStrSum(PauliStrSum sum) {
 
 extern "C" void reportPauliStr(PauliStr str) {
 
-    // avoid printing leftmost superfluous I operators
-    int numPaulis = 1 + paulis_getIndOfLefmostNonIdentityPauli(str);
-    print_elems(str, numPaulis);
+    // no header, so no indentation
+    string indent = "";
+    print_elemsWithoutNewline(str, indent);
+
+    // print all user-set newlines (including none)
+    print_newlines();
 }
 
 
 extern "C" void reportPauliStrSum(PauliStrSum sum) {
     validate_pauliStrSumFields(sum, __func__);
+    validate_numReportedNewlinesAboveZero(__func__);
 
     // calculate memory usage
     qindex numStrBytes   = sum.numTerms * sizeof *sum.strings;
@@ -503,4 +507,7 @@ extern "C" void reportPauliStrSum(PauliStrSum sum) {
 
     print_header(sum, numTotalBytes);
     print_elems(sum);
+    
+    // exclude mandatory newline above
+    print_oneFewerNewlines();
 }

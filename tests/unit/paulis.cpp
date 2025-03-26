@@ -369,7 +369,7 @@ TEST_CASE( "createInlinePauliStrSum", TEST_CATEGORY ) {
             CAPTURE( strs[i], coeffs[i] );
 
             PauliStrSum sum = createInlinePauliStrSum(strs[i]);
-            REQUIRE( sum.coeffs[0] == coeffs[i] );
+            REQUIRE_AGREE( sum.coeffs[0], coeffs[i] ); // should be strict
             destroyPauliStrSum(sum);
         }
         
@@ -386,7 +386,7 @@ TEST_CASE( "createInlinePauliStrSum", TEST_CATEGORY ) {
 
             REQUIRE( sum.numTerms == 6 );
             REQUIRE( sum.strings[3].lowPaulis == 0ULL );
-            REQUIRE( sum.coeffs[5] == qcomp(.5,0) );
+            REQUIRE_AGREE( sum.coeffs[5], qcomp(.5,0) ); // should be strict
 
             destroyPauliStrSum(sum);
         }

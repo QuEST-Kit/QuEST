@@ -807,3 +807,19 @@ void error_printerFailedToAllocTempMemory() {
 
     raiseInternalError("A printer utility attempted and failed to allocate temporary memory, which likely results from the attemptedly printed object being too large.");
 }
+
+void assert_printerGivenNonNegativeNumNewlines() {
+
+    int min = 0;
+
+    if (printer_getNumTrailingNewlines() < min)
+        raiseInternalError("A printer utility attempted to print a negative number of newlines, informed by the user-set number of trailing newlines, which should have been caught by prior validation.");
+}
+
+void assert_printerGivenPositiveNumNewlines() {
+
+    int min = 1;
+
+    if (printer_getNumTrailingNewlines() < min)
+        raiseInternalError("A printer utility attempted to print one fewer than the user-set number of trailing newlines; but that number was zero! This violates prior validation.");
+}

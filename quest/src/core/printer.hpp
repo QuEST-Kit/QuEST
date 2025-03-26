@@ -36,6 +36,10 @@ void printer_setMaxNumPrintedScalars(qindex numRows, qindex numCols);
 
 void printer_setMaxNumPrintedSigFig(int numSigFigs);
 
+void printer_setNumTrailingNewlines(int numNewlines);
+
+int printer_getNumTrailingNewlines();
+
 
 
 /*
@@ -116,9 +120,19 @@ static string defaultTableIndent = "  ";
 
 
 /*
+ * TRAILING NEWLINE PRINTING
+ */
+
+void print_newlines();
+void print_oneFewerNewlines();
+
+
+
+/*
  * PRIMITIVE PRINTING
  */
 
+// never prints any newlines (except within supplied str)
 void print(const char* str);
 void print(string str);
 void print(qcomp num);
@@ -129,6 +143,10 @@ void print(qcomp num);
  * STRUCT HEADER PRINTING
  */
 
+// always prints "label:\n"
+void print_label(string label);
+
+// always prints a single trailing newline
 void print_header(CompMatr1 m,  size_t numBytes);
 void print_header(CompMatr2 m,  size_t numBytes);
 void print_header(CompMatr  m,  size_t numBytes);
@@ -148,18 +166,24 @@ void print_header(Qureg qureg, size_t numBytesPerNode);
  * STRUCT ELEMENT PRINTING
  */
 
-void print_elems(CompMatr1 matr, string indent=defaultMatrIndent);
-void print_elems(CompMatr2 matr, string indent=defaultMatrIndent);
-void print_elems(CompMatr  matr, string indent=defaultMatrIndent);
-void print_elems(DiagMatr1 matr, string indent=defaultMatrIndent);
-void print_elems(DiagMatr2 matr, string indent=defaultMatrIndent);
-void print_elems(DiagMatr  matr, string indent=defaultMatrIndent);
-void print_elems(KrausMap map,   string indent=defaultMatrIndent);
-void print_elems(SuperOp op,     string indent=defaultMatrIndent);
-void print_elems(Qureg qureg,    string indent=defaultMatrIndent);
-void print_elems(PauliStrSum sum, string indent=defaultMatrIndent);
-void print_elems(PauliStr str, int numQubits);
-void print_elems(FullStateDiagMatr qureg, string indent=defaultMatrIndent);
+// always prints a SINGLE trailing newline, so never supports run-on
+// of multiple matrices/multi-line prints; caller must ergo validate
+// that user's num-newlines > 0 (else we violatd it) and add lines
+// if necessary. Note the default indentation is almost never overriden
+void print_elems(CompMatr1,         string indent=defaultMatrIndent);
+void print_elems(CompMatr2,         string indent=defaultMatrIndent);
+void print_elems(CompMatr ,         string indent=defaultMatrIndent);
+void print_elems(DiagMatr1,         string indent=defaultMatrIndent);
+void print_elems(DiagMatr2,         string indent=defaultMatrIndent);
+void print_elems(DiagMatr,          string indent=defaultMatrIndent);
+void print_elems(KrausMap,          string indent=defaultMatrIndent);
+void print_elems(SuperOp,           string indent=defaultMatrIndent);
+void print_elems(Qureg,             string indent=defaultMatrIndent);
+void print_elems(PauliStrSum,       string indent=defaultMatrIndent);
+void print_elems(FullStateDiagMatr, string indent=defaultMatrIndent);
+
+// always prints NO trailing newlines
+void print_elemsWithoutNewline(PauliStr, string indent="");
 
 
 

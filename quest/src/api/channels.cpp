@@ -444,6 +444,7 @@ extern "C" {
 
 extern "C" void reportSuperOp(SuperOp op) {
     validate_superOpFields(op, __func__);
+    validate_numReportedNewlinesAboveZero(__func__); // because trailing newline mandatory
 
     // demand that SuperOp is GPU-synced, since the
     // to-be-printed GPU elems will overwrite CPU
@@ -455,11 +456,15 @@ extern "C" void reportSuperOp(SuperOp op) {
 
     print_header(op, elemMem + structMem);
     print_elems(op);
+
+    // exclude mandatory newline above
+    print_oneFewerNewlines();
 }
 
 
 extern "C" void reportKrausMap(KrausMap map) {
     validate_krausMapFields(map, __func__);
+    validate_numReportedNewlinesAboveZero(__func__); // because trailing newline mandatory
 
     // pedantically demand that the map's SuperOP is GPU-synced,
     // even though only the CPU Kraus operators are printed
@@ -476,4 +481,7 @@ extern "C" void reportKrausMap(KrausMap map) {
     size_t totalMem = krausMem + superMem + strucMem;
     print_header(map, totalMem);
     print_elems(map);
+
+    // exclude mandatory newline above
+    print_oneFewerNewlines();
 }

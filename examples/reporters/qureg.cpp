@@ -14,31 +14,13 @@
 
 
 /*
- * distributed printing
- */
-
-
-void rootPrint(std::string mode) {
-
-    if (getQuESTEnv().rank != 0)
-        return;
-    
-    std::cout 
-        << std::endl << std::endl 
-        << "[" << mode << "]" 
-        << std::endl << std::endl;
-}
-
-
-
-/*
  * Qureg deployments
  */
 
 
 void demo_serial() {
 
-    rootPrint("serial");
+    reportStr("\n[serial]");
 
     int numQubits = 10;
     int isDensMatr = 0;
@@ -59,7 +41,7 @@ void demo_serial() {
 
 void demo_multithreaded() {
 
-    rootPrint("multithreaded");
+    reportStr("\n[multithreaded]");
 
     int numQubits = 10;
     int isDensMatr = 0;
@@ -80,7 +62,7 @@ void demo_multithreaded() {
 
 void demo_gpuAccelerated() {
 
-    rootPrint("GPU-accelerated");
+    reportStr("\n[GPU-accelerated]");
 
     int numQubits = 10;
     int isDensMatr = 0;
@@ -101,7 +83,7 @@ void demo_gpuAccelerated() {
 
 void demo_distributed() {
 
-    rootPrint("distributed");
+    reportStr("\n[distributed]");
 
     int numQubits = 10;
     int isDensMatr = 0;
@@ -122,14 +104,14 @@ void demo_distributed() {
 
 void demo_auto() {
 
-    rootPrint("auto (statevector)");
+    reportStr("\n[auto (statevector)]");
     
     Qureg pure = createQureg(10);
     reportQuregParams(pure);
     reportQureg(pure);
     destroyQureg(pure);
 
-    rootPrint("auto (density matrix)");
+    reportStr("\n[auto (density matrix)]");
 
     Qureg mixed = createDensityQureg(10);
     reportQuregParams(mixed);
@@ -140,7 +122,7 @@ void demo_auto() {
 
 void demo_all() {
 
-    rootPrint("all");
+    reportStr("\n[all]");
 
     int numQubits = 10;
     int isDensMatr = 0;

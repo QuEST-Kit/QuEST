@@ -64,6 +64,9 @@ const int SET_SPACE_BETWEEN_KET_AND_RANK = 2;
 const char TABLE_SPACE_CHAR = '.';
 const char MATRIX_SPACE_CHAR = ' ';
 
+// should not contain newline
+const string LABEL_SUFFIX = ":";
+
 const string VDOTS_CHAR = "⋮";   // unicode too wide for char literal
 const string DDOTS_CHAR = "⋱";
 const string HDOTS_CHAR = "…";
@@ -116,6 +119,21 @@ int global_maxNumPrintedSigFigs = 5;
 void printer_setMaxNumPrintedSigFig(int numSigFigs) {
 
     global_maxNumPrintedSigFigs = numSigFigs;
+}
+
+
+// user configuration of trailing newlines after reporters
+
+int global_numTrailingNewlines = 2;
+
+void printer_setNumTrailingNewlines(int numNewlines) {
+
+    global_numTrailingNewlines = numNewlines;
+}
+
+int printer_getNumTrailingNewlines() {
+
+    return global_numTrailingNewlines;
 }
 
 
@@ -344,8 +362,12 @@ template <class T> string toStr(T num) {
 
 
 void print(const char* str) {
-    if (comm_isRootNode())
-        cout << str << endl;
+
+    if (!comm_isRootNode())
+        return;
+
+    // never prints a trailing newline
+    cout << str;
 }
 
 void print(string str) {
@@ -354,6 +376,25 @@ void print(string str) {
 
 void print(qcomp num) {
     print(toStr(num));
+}
+
+
+
+/*
+ * NEWLINE PRINTING
+ */
+
+
+void print_newlines() {
+    assert_printerGivenNonNegativeNumNewlines();
+
+    print(string(global_numTrailingNewlines, '\n'));
+}
+
+void print_oneFewerNewlines() {
+    assert_printerGivenPositiveNumNewlines();
+
+    print(string(global_numTrailingNewlines - 1, '\n'));
 }
 
 
@@ -1181,6 +1222,7 @@ void print_elems(Qureg qureg, string indent) {
 
 // we'll make use of these internal functions from paulis.cpp
 extern int paulis_getPauliAt(PauliStr str, int ind);
+extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
 extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr* strings, qindex numStrings);
 
 
@@ -1197,13 +1239,17 @@ string getPauliStrAsString(PauliStr str, int maxNumQubits) {
 }
 
 
-void print_elems(PauliStr str, int numQubits) {
+void print_elemsWithoutNewline(PauliStr str, string indent) {
 
     // only root node ever prints
     if (!comm_isRootNode())
         return;
 
-    cout << getPauliStrAsString(str, numQubits) << endl;
+    int numPaulis = 1 + paulis_getIndOfLefmostNonIdentityPauli(str);
+    cout << indent << getPauliStrAsString(str, numPaulis);
+
+    // beware that NO trailing newlines are printed so subsequent
+    // calls (without calling print_newlines()) will run-on
 }
 
 
@@ -1250,6 +1296,13 @@ void print_elems(PauliStrSum sum, string indent) {
  */
 
 
+void print_label(string label) {
+
+    // always contains trailing newline (platform agnostic)
+    print(label + LABEL_SUFFIX + "\n");
+}
+
+
 void printHeader(string name, vector<string> notes) {
 
     // only root node prints
@@ -1265,7 +1318,6 @@ void printHeader(string name, vector<string> notes) {
     cout << notes.back() << HEADER_CLOSE_BRACKET;
     cout << endl;
 }
-
 
 
 template <class T>
