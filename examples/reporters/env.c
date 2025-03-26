@@ -15,20 +15,6 @@
 
 
 /*
- * distributed printing
- */
-
-
-void rootPrint(const char* mode) {
-
-    // cannot call this before initialising QuEST
-    if (getQuESTEnv().rank == 0)
-        printf("[%s]\n\n", mode);
-}
-
-
-
-/*
  * environment deployments
  */
 
@@ -41,7 +27,7 @@ void demo_serial() {
 
     initCustomQuESTEnv(useDistrib, useGpuAccel, useMultithread);
 
-    rootPrint("serial");
+    reportStr("serial");
     reportQuESTEnv();
 }
 
@@ -54,7 +40,7 @@ void demo_multithreaded() {
 
     initCustomQuESTEnv(useDistrib, useGpuAccel, useMultithread);
 
-    rootPrint("multithreaded");
+    reportStr("multithreaded");
     reportQuESTEnv();
 }
 
@@ -67,7 +53,7 @@ void demo_gpuAccelerated() {
 
     initCustomQuESTEnv(useDistrib, useGpuAccel, useMultithread);
 
-    rootPrint("GPU-accelerated");
+    reportStr("GPU-accelerated");
     reportQuESTEnv();
 }
 
@@ -80,7 +66,7 @@ void demo_distributed() {
 
     initCustomQuESTEnv(useDistrib, useGpuAccel, useMultithread);
 
-    rootPrint("distributed");
+    reportStr("distributed");
     reportQuESTEnv();
 }
 
@@ -93,7 +79,7 @@ void demo_all() {
 
     initCustomQuESTEnv(useDistrib, useGpuAccel, useMultithread);
 
-    rootPrint("all");
+    reportStr("all");
     reportQuESTEnv();
 }
 
@@ -102,7 +88,7 @@ void demo_auto() {
 
     initQuESTEnv();
 
-    rootPrint("auto");
+    reportStr("auto");
     reportQuESTEnv();
 }
 
