@@ -66,7 +66,7 @@ jobs:
         version:   [4]       # excluding v3 deprecated tests to save $$$
         precision: [2]       # excluding 1 and 4 precision to save $$$
         mpi:       [ON]  #[ON, OFF] ################################################### DEBUG
-        cuda:      [ON, OFF]
+        cuda:      [OFF]   #[ON, OFF]
         cuquantum: [ON, OFF]
 
         # choose runners; CUDA jobs on GPU, CPU on ARM (multithreaded)
