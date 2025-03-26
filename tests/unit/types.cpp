@@ -92,5 +92,7 @@ TEST_CASE( "complex arithmetic", TEST_CATEGORY ) {
  * UNTESTED FUNCTIONS
  */
 
-
-void reportQcomp(qcomp num);
+void reportScalar(const char* label, qcomp num);
+void reportScalar(const char* label, qreal num);
+void reportScalar(std::string label, qcomp num);
+void reportScalar(std::string label, qreal num);

@@ -262,19 +262,36 @@ static inline qcomp getQcomp(qreal re, qreal im) {
 
 
 /*
- * CONVENIENCE FUNCTIONS
+ * REPORTERS
  */
 
-// enable invocation by both C and C++ binaries
-#ifdef __cplusplus
-extern "C" {
-#endif
+// both C and C++ declare "reportScalar" accepting
+// char array and a qcomp; but each language then
+// separately defines convenience overloads for
+// C++ strings and using C11 generics to overload
 
-    void reportQcomp(qcomp num);
-
-// end de-mangler
 #ifdef __cplusplus
-}
+
+    #include <string>
+
+    extern "C" void reportScalar(const char* label, qcomp num);
+
+    void reportScalar(const char* label, qreal num);
+    void reportScalar(std::string label, qcomp num);
+    void reportScalar(std::string label, qreal num);
+
+#else
+
+    void reportScalar      (const char* label, qcomp num);
+    void _reportScalar_real(const char* label, qreal num);
+
+    #define reportScalar(label, num) \
+        _Generic((num), \
+            qcomp   : reportScalar,       \
+            qreal   : _reportScalar_real, \
+            default : _reportScalar_real  \
+        )(label, num)
+
 #endif
 
 

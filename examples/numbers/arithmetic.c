@@ -102,7 +102,7 @@ int main() {
     x /= (double) 2;
     x /= (long double) 2;
 
-    reportQcomp(x);
+    reportScalar("x", x);
 #endif
 
     finalizeQuESTEnv();

@@ -68,7 +68,7 @@ TEST_CASE( "setMaxNumReportedSigFigs", TEST_CATEGORY ) {
             std::stringstream buffer;
             std::streambuf * old = std::cout.rdbuf(buffer.rdbuf());
 
-            reportQcomp(scalar);
+            reportScalar("", scalar);
 
             // restore stdout
             std::cout.rdbuf(old);
