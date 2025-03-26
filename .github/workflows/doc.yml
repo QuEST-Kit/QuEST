@@ -12,10 +12,12 @@ permissions:
   id-token: write
 
 
+# DEBUG
+# temporarily re-triggered to v4-doc from master
 on:
   push:
     branches:
-      - master
+      - v4-doc
   workflow_dispatch:
 
 
