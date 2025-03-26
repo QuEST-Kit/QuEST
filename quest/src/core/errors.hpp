@@ -335,6 +335,10 @@ void error_randomiserGivenNonNormalisedProbList();
 
 void error_printerFailedToAllocTempMemory();
 
+void assert_printerGivenNonNegativeNumNewlines();
+
+void assert_printerGivenPositiveNumNewlines();
+
 
 
 #endif // ERRORS_HPP

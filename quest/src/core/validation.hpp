@@ -91,6 +91,10 @@ void validate_newMaxNumReportedScalars(qindex numRows, qindex numCols, const cha
 
 void validate_newMaxNumReportedSigFigs(int numSigFigs, const char* caller);
 
+void validate_newNumReportedNewlines(int numNewlines, const char* caller);
+
+void validate_numReportedNewlinesAboveZero(const char* caller);
+
 
 
 /*

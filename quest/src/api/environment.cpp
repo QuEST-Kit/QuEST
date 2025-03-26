@@ -451,10 +451,11 @@ void syncQuESTEnv() {
 
 void reportQuESTEnv() {
     validate_envIsInit(__func__);
+    validate_numReportedNewlinesAboveZero(__func__); // because trailing newline mandatory
 
     /// @todo add function to write this output to file (useful for HPC debugging)
 
-    print("QuEST execution environment:");
+    print_label("QuEST execution environment");
 
     bool statevec = false;
     bool densmatr = true;
@@ -472,6 +473,9 @@ void reportQuESTEnv() {
     printQuregSizeLimits(densmatr);
     printQuregAutoDeployments(statevec);
     printQuregAutoDeployments(densmatr);
+
+    // exclude mandatory newline above
+    print_oneFewerNewlines();
 }
 
 

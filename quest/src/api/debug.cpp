@@ -132,7 +132,15 @@ void setMaxNumReportedSigFigs(int numSigFigs) {
     validate_newMaxNumReportedSigFigs(numSigFigs, __func__);
 
     printer_setMaxNumPrintedSigFig(numSigFigs);
-} 
+}
+
+
+void setNumReportedNewlines(int numNewlines) {
+    validate_envIsInit(__func__);
+    validate_newNumReportedNewlines(numNewlines, __func__);
+
+    printer_setNumTrailingNewlines(numNewlines);
+}
 
 
 

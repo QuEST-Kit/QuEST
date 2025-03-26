@@ -350,20 +350,25 @@ void destroyQureg(Qureg qureg) {
 
 void reportQuregParams(Qureg qureg) {
     validate_quregFields(qureg, __func__);
+    validate_numReportedNewlinesAboveZero(__func__); // because trailing newline mandatory
 
     /// @todo add function to write this output to file (useful for HPC debugging)
 
     // printer routines will consult env rank to avoid duplicate printing
-    print("Qureg:");
+    print_label("Qureg");
     printDeploymentInfo(qureg);
     printDimensionInfo(qureg);
     printDistributionInfo(qureg);
     printMemoryInfo(qureg);
+
+    // exclude mandatory newline above
+    print_oneFewerNewlines();
 }
 
 
 void reportQureg(Qureg qureg) {
     validate_quregFields(qureg, __func__);
+    validate_numReportedNewlinesAboveZero(__func__); // because trailing newline mandatory
 
     // account all local CPU memory (including buffer), neglecting GPU memory
     // because it occupies distinct memory spaces, confusing accounting
@@ -376,6 +381,9 @@ void reportQureg(Qureg qureg) {
 
     print_header(qureg, localMem);
     print_elems(qureg);
+
+    // exclude mandatory newline above
+    print_oneFewerNewlines();
 }
 
 

@@ -750,6 +750,7 @@ extern "C" void setFullStateDiagMatrFromMultiDimLists(FullStateDiagMatr out, voi
 template<class T> 
 void validateAndPrintMatrix(T matr, const char* caller) {
     validate_matrixFields(matr, caller);
+    validate_numReportedNewlinesAboveZero(__func__); // because trailing newline mandatory
 
     // syncable matrices must be synced before reporting (though only CPU elems are printed)
     if constexpr (util_isHeapMatrixType<T>())
@@ -771,6 +772,9 @@ void validateAndPrintMatrix(T matr, const char* caller) {
     size_t numBytesPerNode = elemMem + structMem;
     print_header(matr, numBytesPerNode);
     print_elems(matr);
+
+    // exclude mandatory newline above
+    print_oneFewerNewlines();
 }
 
 

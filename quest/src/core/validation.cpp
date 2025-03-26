@@ -127,6 +127,12 @@ namespace report {
 
     string INVALID_NUM_RANDOM_SEEDS =
         "Invalid number of random seeds (${NUM_SEEDS}). Must specify one or more. In distributed settings, only the root node needs to pass a valid number of seeds (other node arguments are ignored).";
+    
+    string INVALID_NUM_REPORTED_NEWLINES =
+        "Invalid number of trailing newlines (${NUM_NEWLINES}). Cannot generaly be less than zero, and must not be zero when calling multi-line reporting functions like reportQureg().";
+
+    string INSUFFICIENT_NUM_REPORTED_NEWLINES =
+        "The number of trailing newlines (set by setNumReportedNewlines()) is zero which is not permitted when calling multi-line reporters.";
 
 
     /*
@@ -1042,11 +1048,11 @@ extern "C" {
 // default C/C++ compatible error response is to simply exit in fail state
 void default_invalidQuESTInputError(const char* msg, const char* func) {
 
-    // safe to call even before MPI has been setup
+    // safe to call even before MPI has been setup, and ignores user-set trailing newlines
     print(string("")
         + "QuEST encountered a validation error during function " 
         + "'" + func + "':\n" + msg + "\n"
-        + "Exiting...");
+        + "Exiting...\n");
 
     // force a synch because otherwise non-main nodes may exit before print, and MPI
     // will then attempt to instantly abort all nodes, losing the error message.
@@ -1403,6 +1409,16 @@ void validate_newMaxNumReportedScalars(qindex numRows, qindex numCols, const cha
 void validate_newMaxNumReportedSigFigs(int numSigFigs, const char* caller) {
 
     assertThat(numSigFigs >= 1, report::INVALID_NUM_REPORTED_SIG_FIGS, {{"${NUM_SIG_FIGS}", numSigFigs}}, caller);
+}
+
+void validate_newNumReportedNewlines(int numNewlines, const char* caller) {
+
+    assertThat(numNewlines >= 0, report::INVALID_NUM_REPORTED_NEWLINES, {{"${NUM_NEWLINES}", numNewlines}}, caller);
+}
+
+void validate_numReportedNewlinesAboveZero(const char* caller) {
+
+    assertThat(printer_getNumTrailingNewlines() > 0, report::INSUFFICIENT_NUM_REPORTED_NEWLINES, caller);
 }
 
 
