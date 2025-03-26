@@ -51,7 +51,9 @@ qreal getValidationEpsilon();
  * REPORTING
  */
 
+/// @nottested
 void setMaxNumReportedItems(qindex numRows, qindex numCols);
+
 void setMaxNumReportedSigFigs(int numSigFigs);
 void setNumReportedNewlines(int numNewlines);
 
@@ -68,6 +70,7 @@ void clearGpuCache();
  * ENVIRONMENT
  */
 
+/// @nottested
 void getEnvironmentString(char str[200]);
 
 

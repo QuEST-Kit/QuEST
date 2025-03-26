@@ -230,6 +230,8 @@ TAB_SIZE               = 4
 # newlines.
 
 ALIASES                =
+ALIASES += "nottested=@warning This function has not yet been unit tested and may contain bugs. Please use with caution!"
+ALIASES += "notvalidated=@note This function's input validation has not yet been tested, so erroneous usage may produce unexpected output. Please use with caution!"
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For
@@ -1869,7 +1871,10 @@ PERLMOD_MAKEVAR_PREFIX =
 # C-preprocessor directives found in the sources and include files.
 # The default value is: YES.
 
-ENABLE_PREPROCESSING   = YES
+# enabling pre-processing means only one of our #ifdef __cplusplus branches
+# are evaluated, so that the doc excludes C++ overloads; this is much worse
+# than some ill-formatted macros being missing from the doc! So keep NO
+ENABLE_PREPROCESSING   = NO
 
 # If the MACRO_EXPANSION tag is set to YES doxygen will expand all macro names
 # in the source code. If set to NO only conditional compilation will be

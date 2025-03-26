@@ -516,6 +516,7 @@ extern "C" {
 
     void setDiagMatr(DiagMatr out, qcomp* in);
 
+    /// @nottested
     void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qcomp* in, qindex numElems);
 
 #ifdef __cplusplus
@@ -547,6 +548,7 @@ extern "C" {
 
     void setDiagMatr(DiagMatr out, std::vector<qcomp> in);
 
+    /// @nottested
     void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, std::vector<qcomp> in);
 
 
@@ -626,6 +628,7 @@ extern "C" {
 
     void setInlineDiagMatr(DiagMatr matr, int numQb, std::vector<qcomp> in);
 
+    /// @nottested
     void setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, std::vector<qcomp> in);
 
 #elif !defined(_MSC_VER)
@@ -676,6 +679,7 @@ extern "C" {
     #define setInlineDiagMatr(matr, numQb, ...) \
         _setInlineDiagMatr((matr), (numQb), (qcomp[1<<(numQb)]) __VA_ARGS__)
 
+    /// @nottested
     #define setInlineFullStateDiagMatr(matr, startInd, numElems, ...) \
         _setInlineFullStateDiagMatr((matr), (startInd), (numElems), (qcomp[(numElems)]) __VA_ARGS__)
 
@@ -796,17 +800,24 @@ extern "C" {
 extern "C" {
 #endif
 
+    /// @nottested
     void setDiagMatrFromMultiVarFunc(DiagMatr out, qcomp (*func)(qindex*), int* numQubitsPerVar, int numVars, int areSigned);
 
+    /// @nottested
     void setDiagMatrFromMultiDimLists(DiagMatr out, void* lists, int* numQubitsPerDim, int numDims);
 
 
+    /// @nottested
     FullStateDiagMatr createFullStateDiagMatrFromPauliStrSum(PauliStrSum in);
 
+
+    /// @nottested
     void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, PauliStrSum in);
 
+    /// @nottested
     void setFullStateDiagMatrFromMultiVarFunc(FullStateDiagMatr out, qcomp (*func)(qindex*), int* numQubitsPerVar, int numVars, int areSigned);
 
+    /// @nottested
     void setFullStateDiagMatrFromMultiDimLists(FullStateDiagMatr out, void* lists, int* numQubitsPerDim, int numDims);
 
 #ifdef __cplusplus
@@ -825,20 +836,27 @@ extern "C" {
 extern "C" {
 #endif
 
+    /// @nottested
     void reportCompMatr1(CompMatr1 matrix);
 
+    /// @nottested
     void reportCompMatr2(CompMatr2 matrix);
 
+    /// @nottested
     void reportCompMatr(CompMatr matrix);
 
 
+    /// @nottested
     void reportDiagMatr1(DiagMatr1 matrix);
 
+    /// @nottested
     void reportDiagMatr2(DiagMatr2 matrix);
 
+    /// @nottested
     void reportDiagMatr(DiagMatr matrix);
 
 
+    /// @nottested
     void reportFullStateDiagMatr(FullStateDiagMatr matr);
 
 #ifdef __cplusplus

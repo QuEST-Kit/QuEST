@@ -185,8 +185,10 @@ extern "C" {
 extern "C" {
 #endif
 
+    /// @nottested
     void reportPauliStr(PauliStr str);
 
+    /// @nottested
     void reportPauliStrSum(PauliStrSum str);
 
 // end de-mangler

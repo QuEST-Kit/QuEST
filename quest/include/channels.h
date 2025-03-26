@@ -137,6 +137,7 @@ extern "C" {
 
     void destroyKrausMap(KrausMap map);
 
+    /// @nottested
     void reportKrausMap(KrausMap map);
 
 
@@ -146,6 +147,7 @@ extern "C" {
 
     void destroySuperOp(SuperOp op);
 
+    /// @nottested
     void reportSuperOp(SuperOp op);
 
 #ifdef __cplusplus

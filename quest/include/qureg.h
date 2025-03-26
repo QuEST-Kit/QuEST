@@ -66,13 +66,19 @@ Qureg createCloneQureg(Qureg qureg);
 
 void destroyQureg(Qureg qureg);
 
+/// @nottested
 void reportQuregParams(Qureg qureg);
+/// @nottested
 void reportQureg(Qureg qureg);
 
-void syncQuregToGpu  (Qureg qureg);
+/// @nottested
+void syncQuregToGpu(Qureg qureg);
+/// @nottested
 void syncQuregFromGpu(Qureg qureg);
 
-void syncSubQuregToGpu  (Qureg qureg, qindex localStartInd, qindex numLocalAmps);
+/// @nottested
+void syncSubQuregToGpu(Qureg qureg, qindex localStartInd, qindex numLocalAmps);
+/// @nottested
 void syncSubQuregFromGpu(Qureg qureg, qindex localStartInd, qindex numLocalAmps);
 
 void getQuregAmps(qcomp* outAmps, Qureg qureg, qindex startInd, qindex numAmps);
@@ -100,13 +106,9 @@ void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex s
  * the user's C binary.
  */
 
-#ifdef __cplusplus
-
 qcomp getQuregAmp(Qureg qureg, qindex index);
 
 qcomp getDensityQuregAmp(Qureg qureg, qindex row, qindex column);
-
-#endif // __cplusplus
 
 
 

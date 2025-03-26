@@ -52,6 +52,7 @@ void finalizeQuESTEnv();
 
 void syncQuESTEnv();
 
+/// @nottested
 void reportQuESTEnv();
 
 int isQuESTEnvInit();
