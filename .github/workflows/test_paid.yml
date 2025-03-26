@@ -18,15 +18,26 @@
 name: test (paid, accelerated)
 
 
-# @todo
-# this workflow can only be run on the 'default' 
-# branch (i.e. master) when manually triggered by 
-# github actions, so as not to incur unexpected
-# costs. I want for this to be automatically 
-# enqueued but not run in a PR, requiring manual
-# approval - but I don't yet know how to do it!
+# # @todo
+# # this workflow can only be run on the 'default' 
+# # branch (i.e. master) when manually triggered by 
+# # github actions, so as not to incur unexpected
+# # costs. I want for this to be automatically 
+# # enqueued but not run in a PR, requiring manual
+# # approval - but I don't yet know how to do it!
+# on:
+#   workflow_dispatch:
+
+
+# DEBUG
+# releasing only MPI job for MPICH-patch test
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - mpich-patch
+  pull_request:
+    branches:
+      - mpich-patch
 
 
 jobs:
@@ -54,7 +65,7 @@ jobs:
       matrix:
         version:   [4]       # excluding v3 deprecated tests to save $$$
         precision: [2]       # excluding 1 and 4 precision to save $$$
-        mpi:       [ON, OFF]
+        mpi:       [ON]  #[ON, OFF] ################################################### DEBUG
         cuda:      [ON, OFF]
         cuquantum: [ON, OFF]
 
