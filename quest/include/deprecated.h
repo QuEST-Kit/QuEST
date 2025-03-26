@@ -31,14 +31,14 @@
 #if !defined(DISABLE_DEPRECATION_WARNINGS) || DISABLE_DEPRECATION_WARNINGS == 0
 
     #warning \
-        "Deprecated functions have been included in compilation. The QuEST v3 API will be attemptedly \
-        automatically substituted for the v4 API, although some uses of the old API will still fail to \
-        compile. For example, access to v3 struct fields (e.g. 'ComplexMatrixN.real[0][0]') must be \
-        manually replaced with v4 struct fields (e.g. 'CompMatr.cpuElems[0][0]'), though new v4 functions \
-        make struct field access mostly redundant (e.g. via 'setCompMatr()'). Even when successfully \
-        compiling, use of the deprecated v3 functions is dangerous; these are not unit-tested, and the \
-        auto-porting to v4 may introduce new bugs. As such, you should only use this facility to help \
-        refactor your code to v4, and should absolutely not continue to use the old v3 API for simulation."
+"Deprecated functions have been included in compilation. The QuEST v3 API will be attemptedly \
+automatically substituted for the v4 API, although some uses of the old API will still fail to \
+compile. For example, access to v3 struct fields (e.g. 'ComplexMatrixN.real[0][0]') must be \
+manually replaced with v4 struct fields (e.g. 'CompMatr.cpuElems[0][0]'), though new v4 functions \
+make struct field access mostly redundant (e.g. via 'setCompMatr()'). Even when successfully \
+compiling, use of the deprecated v3 functions is dangerous; these are not unit-tested, and the \
+auto-porting to v4 may introduce new bugs. As such, you should only use this facility to help \
+refactor your code to v4, and should absolutely not continue to use the old v3 API for simulation."
 
 #endif
 

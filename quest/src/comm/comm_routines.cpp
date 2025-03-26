@@ -101,45 +101,28 @@ qindex MAX_MESSAGE_LENGTH = powerOf2(28);
 
 #if COMPILE_MPI
 
-    // declare MPI type for qreal
-    #if   (FLOAT_PRECISION == 1)
-        #define MPI_QREAL MPI_FLOAT
-    #elif (FLOAT_PRECISION == 2)
-        #define MPI_QREAL MPI_DOUBLE
-    #elif (FLOAT_PRECISION == 4)
-        #define MPI_QREAL MPI_LONG_DOUBLE
+    #ifdef MPICH
+    #if MPI_VERSION < 4
+    #warning "\
+Using MPICH versions earlier than 4.0 can may result in errors. \
+Please run the unit tests in distributed mode to verify correctness."
+    #endif
     #endif
 
-    /// @todo:
-    /// below is failing on ARCHER2 MPICH (depsite working on
-    /// other MPICH versions) because it defines the unsupported
-    /// preprocessors to be MPI_DATATYPE_NULL, as per:
-    /// https://trac.macports.org/ticket/71266. So below, we are
-    /// choosing to e.g. set MPI_QCOMP = MPI_CXX_DOUBLE_COMPLEX =
-    /// MPI_DATATYPE_NULL, which then fails at runtime. In lieu
-    /// of determining which MPICH versions do this, we presently
-    /// simply avoid the CXX macros altogether on MPICH.
-
-    // declare MPI type for qcomp, falling back to C types
-    // when the C++ type does not exist, as is the case for 
-    // MS MPI and other compilers at quad precision
-    #if   (FLOAT_PRECISION == 1) && defined(MPI_CXX_FLOAT_COMPLEX) && !defined(MPICH)
-        #define MPI_QCOMP MPI_CXX_FLOAT_COMPLEX
-    #elif (FLOAT_PRECISION == 1)
+    // declare MPI types for qreal and qcomp. We always use the 
+    // C macros, even when the deprecated CXX equivalents are 
+    // available, to maintain compatibility with modern MPICH
+    #if   (FLOAT_PRECISION == 1)
+        #define MPI_QREAL MPI_FLOAT
         #define MPI_QCOMP MPI_C_FLOAT_COMPLEX
-
-    #elif (FLOAT_PRECISION == 2) && defined(MPI_CXX_DOUBLE_COMPLEX) && !defined(MPICH)
-        #define MPI_QCOMP MPI_CXX_DOUBLE_COMPLEX
     #elif (FLOAT_PRECISION == 2)
+        #define MPI_QREAL MPI_DOUBLE
         #define MPI_QCOMP MPI_C_DOUBLE_COMPLEX
-
-    #elif (FLOAT_PRECISION == 4) && defined(MPI_CXX_LONG_DOUBLE_COMPLEX) && !defined(MPICH)
-        #define MPI_QCOMP MPI_CXX_LONG_DOUBLE_COMPLEX
     #elif (FLOAT_PRECISION == 4)
+        #define MPI_QREAL MPI_LONG_DOUBLE
         #define MPI_QCOMP MPI_C_LONG_DOUBLE_COMPLEX
-
     #else
-        #error "Something went horribly wrong in inferring the MPI type"
+        #error "Something went horribly wrong in inferring the MPI types"
     #endif
 
 #endif
