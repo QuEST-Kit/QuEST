@@ -155,6 +155,7 @@ int printer_getNumTrailingNewlines() {
 // fall-back to dangerous compiler-specific check (we know MSVC doesn't mangle)
 #elif ! defined _MSC_VER
 
+    // #warning command safe in non-MSVC compiler
     #warning "Attempting to include compiler-specific library <cxxabi.h>"
 
     #include <cxxabi.h>

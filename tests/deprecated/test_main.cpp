@@ -27,7 +27,7 @@
 #include <stdexcept>
 
 
-/** Redefinition of QuEST_validation's invalidQuESTInputError function, called when a 
+/* Redefinition of QuEST_validation's invalidQuESTInputError function, called when a 
  * user passes an incorrect parameter (e.g. a negative qubit index). This is 
  * redefined here to, in lieu of printing and exiting, throw a C++ exception
  * which can be caught (and hence unit tested for) by Catch2

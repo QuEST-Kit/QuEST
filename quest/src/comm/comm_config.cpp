@@ -34,6 +34,7 @@
     #ifdef OPEN_MPI
         #include <mpi-ext.h>
 
+        // #warning command is always recognised (OpenMPI is not Windows compatible)
         #ifndef MPIX_CUDA_AWARE_SUPPORT
             #warning "Could not ascertain whether MPI is CUDA-aware, so we will assume it is not. This means inter-GPU communication will be slowly routed through the CPU/RAM."
         #elif !MPIX_CUDA_AWARE_SUPPORT
@@ -42,6 +43,8 @@
     #endif
 
     /// @todo check whether MPICH is CUDA-aware
+    /// beware MSVC cannot parse #warning, and
+    /// Intel MPI would crash (but not MSMPI?)
 
 #endif
 
