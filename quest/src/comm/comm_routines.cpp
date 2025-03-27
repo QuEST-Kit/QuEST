@@ -104,9 +104,11 @@ qindex MAX_MESSAGE_LENGTH = powerOf2(28);
     // warn about strange behaviour on MPICH v3.X
     #ifdef MPICH
     #if MPI_VERSION < 4
-        // accursed Windows users get no warning (MSVC doesn't support #warning)
+        // accursed Windows users get no warning (MSVC and ICC doesn't support #warning)
         #ifndef _MSC_VER 
+        #ifndef __INTEL_COMPILER
         #warning "Using MPICH versions earlier than 4.0 may result in errors. Please run the distributed unit tests."
+        #endif
         #endif
     #endif
     #endif

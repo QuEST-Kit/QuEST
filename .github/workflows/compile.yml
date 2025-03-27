@@ -19,10 +19,10 @@ name: compile
 on:
   push:
     branches:
-      - v4
+      - intelmpi-patch
   pull_request:
     branches:
-      - v4
+      - intelmpi-patch
 
 
 jobs:
