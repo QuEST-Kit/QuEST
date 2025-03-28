@@ -15,7 +15,7 @@
 
   <!-- banner -->
   <a href="https://quest.qtechtheory.org">
-    <img src="utils/docs/banner.png?raw=true" alt="The QuEST logo" width=400>
+    <img src="utils/docs/logos/banner.png?raw=true" alt="The QuEST logo" width=400>
   </a>
 
   <!-- TODO: restore CI 'compilation/test pass' badge! -->
