@@ -6,7 +6,14 @@
   @author Tyson Jones
 -->
 
-<!-- TODO: update all paths to be absolute (rather than relative) as per above ->
+
+
+<!-- TODO: 
+ update all instances of
+ v4-doc
+ within this README to
+ master/main/active branc
+ -->
 
 
 
@@ -15,7 +22,7 @@
 
   <!-- banner -->
   <a href="https://quest.qtechtheory.org">
-    <img src="utils/docs/logos/banner.png?raw=true" alt="The QuEST logo" width=400>
+    <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4-doc/utils/docs/logos/banner.png" alt="The QuEST logo" width=400>
   </a>
 
   <!-- TODO: restore CI 'compilation/test pass' badge! -->
@@ -67,12 +74,12 @@ In particular, QuEST `v4` was made possible through the support of the UK Nation
 
 <div align="center">
 
-  <img src="utils/docs/logos/nqcc.png" alt="NQCC" height=30> &nbsp;
-  <img src="utils/docs/logos/amd.png" alt="AMD" height=25> &nbsp;
-  <img src="utils/docs/logos/nvidia.png" alt="NVIDIA" height=25> &nbsp;
-  <img src="utils/docs/logos/qmt.png" alt="Quantum Motion" height=25> &nbsp;
-  <img src="utils/docs/logos/edinburgh.png" alt="University of Edinburgh" height=25> &nbsp;
-  <img src="utils/docs/logos/oxford.png" alt="University of Oxford" height=28> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4-doc/utils/docs/logos/nqcc.png" alt="NQCC" height=30> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4-doc/utils/docs/logos/amd.png" alt="AMD" height=25> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4-doc/utils/docs/logos/nvidia.png" alt="NVIDIA" height=25> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4-doc/utils/docs/logos/qmt.png" alt="Quantum Motion" height=25> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4-doc/utils/docs/logos/edinburgh.png" alt="University of Edinburgh" height=25> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4-doc/utils/docs/logos/oxford.png" alt="University of Oxford" height=28> &nbsp;
 
 </div>
 
