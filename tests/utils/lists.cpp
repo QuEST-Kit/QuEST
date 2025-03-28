@@ -110,6 +110,7 @@ vector<int> getComplement(vector<int> listA, vector<int> listB) {
  */
 
 
+/// @private
 class SublistGenerator final : public IGenerator<vector<int>> {
     
     // list of all possible (unique) elements
@@ -195,6 +196,7 @@ GeneratorWrapper<vector<int>> sublists(GeneratorWrapper<int>&& gen, int sublen) 
  */
 
 
+/// @private
 class DisjointSublistsGenerator : public IGenerator<listpair> {
 
     // list of all possible (unique) elements

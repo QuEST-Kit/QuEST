@@ -58,6 +58,7 @@
  * recast QuEST errors into exceptions which Catch can intercept
  */
 
+/// @private 
 extern "C" void invalidQuESTInputError(const char* errMsg, const char* errFunc) {
 
     throw std::runtime_error(std::string(errFunc) + ": " + std::string(errMsg));
@@ -68,6 +69,7 @@ extern "C" void invalidQuESTInputError(const char* errMsg, const char* errFunc) 
  * report QuEST env when tests start
  */
 
+/// @private 
 class startListener : public Catch::EventListenerBase {
 public:
     using Catch::EventListenerBase::EventListenerBase;
@@ -117,7 +119,7 @@ int main(int argc, char* argv[]) {
 
     // disable Catch2 output on non-root nodes
     if (getQuESTEnv().rank != 0)
-        std::cout.rdbuf(NULL);
+        std::cout.rdbuf(nullptr);
 
     // launch Catch2, triggering above event listener
     int result = Catch::Session().run( argc, argv );
