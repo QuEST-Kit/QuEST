@@ -43,7 +43,9 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = "QuEST"
+# this is displayed under the search box in the left navbar, as the top most
+# collapsible section. It looks better long, rather than concise (i.e. QuEST).
+PROJECT_NAME           = "The Quantum Exact Simulation Toolkit"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
@@ -55,14 +57,16 @@ PROJECT_NUMBER         = "v4.0.0"
 # for a project that appears at the top of each page and should give viewer a
 # quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = "The Quantum Exact Simulation Toolkit"
+# this is not displayed anywhere in the QuEST doc due to custom header/CSS so
+# is kept empty here for clairty
+PROJECT_BRIEF          = 
 
 # With the PROJECT_LOGO tag one can specify an logo or icon that is included in
 # the documentation. The maximum height of the logo should not exceed 55 pixels
 # and the maximum width should not exceed 200 pixels. Doxygen will copy the logo
 # to the output directory.
 
-PROJECT_LOGO           = utils/docs/logo.png
+PROJECT_LOGO           = utils/docs/navbar.png
 
 # With the PROJECT_ICON tag one can specify an icon that is included in the tabs
 # when the HTML document is shown. Doxygen will copy the logo to the output
@@ -1003,7 +1007,10 @@ WARN_LOGFILE           =
 
 # note we include both the include/ headers and corresponding src/api files,
 # so that doxygen can find the definitions when INLINE_SOURCES = YES
-INPUT                  = README.md \
+# note too that we currently exclude the /docs and /examples folders, which
+# override the automatic expansions of the README.md sections into separate
+# pages under
+INPUT                  = . \
                          ./quest/include ./quest/src/api \
                          ./tests ./tests/utils ./tests/unit ./tests/integration ./tests/deprecated
 
@@ -1382,7 +1389,8 @@ HTML_STYLESHEET        =
 
 HTML_EXTRA_STYLESHEET  = utils/docs/layout/doxygen-awesome.css \
                          utils/docs/layout/doxygen-awesome-sidebar-only.css \
-                         utils/docs/layout/doxygen-awesome-sidebar-only-darkmode-toggle.css
+                         utils/docs/layout/doxygen-awesome-sidebar-only-darkmode-toggle.css \
+                         utils/docs/layout/doxygen-awesome-quest.css
 
 # The HTML_EXTRA_FILES tag can be used to specify one or more extra images or
 # other source files which should be copied to the HTML output directory. Note
@@ -1773,7 +1781,8 @@ SHOW_ENUM_VALUES       = NO
 # Minimum value: 0, maximum value: 1500, default value: 250.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-TREEVIEW_WIDTH         = 250
+# should match --side-nav-fixed-width as overriden in doxygen-awesome-quest.css
+TREEVIEW_WIDTH         = 330
 
 # When the EXT_LINKS_IN_WINDOW option is set to YES doxygen will open links to
 # external symbols imported via tag files in a separate window.

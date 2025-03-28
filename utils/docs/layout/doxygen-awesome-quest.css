@@ -1,0 +1,46 @@
+/*
+ * custom CSS, overriding Doxygen Awesome's
+ * default styling for the QuEST project.
+ * @author Tyson Jones
+ */
+
+
+/* set the colour and width of the left navbar */
+html {
+    --side-nav-background: #fffdf1;
+    --side-nav-fixed-width: 330px;
+
+    /* this must be large enough to fit logo below */
+    --top-height: 240px;
+}
+
+/* set size and padding of logo atop navbar */
+#projectlogo img {
+    width: 180px;
+    height: 158px;
+    max-height: none !important;
+    padding-top: 12px;
+}
+
+/* center the QuEST logo atop the navbar */
+#titlearea table {
+    width: 100%;
+}
+
+/* hide text atop navbar (so only logo remains) */
+#projectalign {
+    display: none;
+}
+
+/* hide the strange lil button at bottom of navbar 
+ * (I have no idea what it does hehe) */
+#nav-sync {
+    display: none;
+}
+
+/* remove big empty space at page tops */
+@media screen and (min-width: 767px) {
+    #doc-content {
+        padding-top: calc(var(--top-height) - 247px);
+    }
+}
