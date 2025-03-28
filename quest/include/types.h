@@ -87,6 +87,7 @@ typedef INDEX_TYPE qindex;
  * code, to avoid C & C++ qcomp interoperability issues.
  */
 
+/// @notdoced
 static inline qcomp getQcomp(qreal re, qreal im) {
 
     #if defined(__cplusplus)
@@ -283,33 +284,44 @@ static inline qcomp getQcomp(qreal re, qreal im) {
     #include <string>
 
 
+    /// @notdoced
     /// @nottested
     extern "C" void reportStr(const char* str);
 
+    /// @notdoced
     /// @nottested
     void reportStr(std::string str);
 
+    /// @notdoced
     /// @nottested
     extern "C" void reportScalar(const char* label, qcomp num);
 
+    /// @notdoced
     /// @nottested
     void reportScalar(const char* label, qreal num);
+
+    /// @notdoced
     /// @nottested
     void reportScalar(std::string label, qcomp num);
+
+    /// @notdoced
     /// @nottested
     void reportScalar(std::string label, qreal num);
 
 #else
 
+    /// @notdoced
     /// @nottested
     void reportStr(const char* str);
 
+    /// @notdoced
     /// @nottested
     void reportScalar      (const char* label, qcomp num);
 
     /// @private
     void _reportScalar_real(const char* label, qreal num);
 
+    /// @notdoced
     /// @nottested
     #define reportScalar(label, num) \
         _Generic((num), \

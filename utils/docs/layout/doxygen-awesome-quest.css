@@ -44,3 +44,16 @@ html {
         padding-top: calc(var(--top-height) - 247px);
     }
 }
+
+/* undoing doxygen-awesome's re-colouring of warning (
+ * which made it an innocuous yellow, like attention),
+ * restoring its scarier red colouring! */
+dl.warning {
+    background: #f8d1cc;
+    border-left: 8px solid #b61825;
+    color: #75070f
+}
+
+dl.warning dt {
+    color: #75070f;
+}

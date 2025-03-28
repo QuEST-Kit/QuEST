@@ -23,30 +23,39 @@ extern "C" {
 #endif
 
 
+/// @notdoced
 /// @notvalidated
 void mixDephasing(Qureg qureg, int qubit, qreal prob);
 
+/// @notdoced
 /// @notvalidated
 void mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob);
 
+/// @notdoced
 /// @notvalidated
 void mixDepolarising(Qureg qureg, int qubit, qreal prob);
 
+/// @notdoced
 /// @notvalidated
 void mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal prob);
 
+/// @notdoced
 /// @notvalidated
 void mixDamping(Qureg qureg, int qubit, qreal prob);
 
+/// @notdoced
 /// @notvalidated
 void mixPaulis(Qureg qureg, int qubit, qreal probX, qreal probY, qreal probZ);
 
+/// @notdoced
 /// @notvalidated
 void mixQureg(Qureg qureg, Qureg other, qreal prob);
 
+/// @notdoced
 /// @notvalidated
 void mixKrausMap(Qureg qureg, int* qubits, int numQubits, KrausMap map);
 
+/// @notdoced
 /// @notvalidated
 void mixSuperOp(Qureg qureg, int* targets, int numTargets, SuperOp superop);
 

@@ -29,6 +29,7 @@ extern "C" {
  * local copy of this struct with getQuESTEnv().
  */
 
+/// @notdoced
 typedef struct {
 
     // deployment mode
@@ -43,20 +44,26 @@ typedef struct {
 } QuESTEnv;
 
 
-
+/// @notdoced
 void initQuESTEnv();
 
+/// @notdoced
 void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread);
 
+/// @notdoced
 void finalizeQuESTEnv();
 
+/// @notdoced
 void syncQuESTEnv();
 
+/// @notdoced
 /// @nottested
 void reportQuESTEnv();
 
+/// @notdoced
 int isQuESTEnvInit();
 
+/// @notdoced
 QuESTEnv getQuESTEnv();
 
 

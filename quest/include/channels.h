@@ -61,6 +61,7 @@
  */
 
 
+/// @notdoced
 typedef struct {
 
     int numQubits;
@@ -87,6 +88,7 @@ typedef struct {
 } SuperOp;
 
 
+/// @notdoced
 typedef struct {
 
     int numQubits;
@@ -131,22 +133,30 @@ typedef struct {
 extern "C" {
 #endif
 
+    /// @notdoced
     KrausMap createKrausMap(int numQubits, int numOperators);
 
+    /// @notdoced
     void syncKrausMap(KrausMap map);
 
+    /// @notdoced
     void destroyKrausMap(KrausMap map);
 
+    /// @notdoced
     /// @nottested
     void reportKrausMap(KrausMap map);
 
 
+    /// @notdoced
     SuperOp createSuperOp(int numQubits);
 
+    /// @notdoced
     void syncSuperOp(SuperOp op);
 
+    /// @notdoced
     void destroySuperOp(SuperOp op);
 
+    /// @notdoced
     /// @nottested
     void reportSuperOp(SuperOp op);
 
@@ -171,8 +181,10 @@ extern "C" {
 extern "C" {
 #endif
 
+    /// @notdoced
     void setKrausMap(KrausMap map, qcomp*** matrices);
 
+    /// @notdoced
     void setSuperOp(SuperOp op, qcomp** matrix);
 
 #ifdef __cplusplus
@@ -202,8 +214,10 @@ extern "C" {
 
     // C++ overloads to accept vectors, which also enables vector initialiser literals
 
+    /// @notdoced
     void setKrausMap(KrausMap map, std::vector<std::vector<std::vector<qcomp>>> matrices);
 
+    /// @notdoced
     void setSuperOp(SuperOp op, std::vector<std::vector<qcomp>> matrix);
     
 
@@ -259,12 +273,14 @@ extern "C" {
     // C then overloads setKrausMap() to call the above VLA when given arrays, using C11 Generics.
     // See the doc of getCompMatr1() in matrices.h for an explanation of Generic, and its nuances.
 
+    /// @notdoced
     #define setKrausMap(map, ...) \
         _Generic((__VA_ARGS__), \
             qcomp*** : setKrausMap, \
             default  : _setKrausMapFromArr \
         )((map), (__VA_ARGS__))
 
+    /// @notdoced
     #define setSuperOp(op, ...) \
         _Generic((__VA_ARGS__), \
             qcomp** : setSuperOp, \
@@ -300,8 +316,10 @@ extern "C" {
     // and 'numOps' are superfluous, but needed for consistency with the C API, so we additionally
     // validate that they match the struct dimensions (which requires validating the structs).
 
+    /// @notdoced
     void setInlineKrausMap(KrausMap map, int numQb, int numOps, std::vector<std::vector<std::vector<qcomp>>> matrices);
 
+    /// @notdoced
     void setInlineSuperOp(SuperOp op, int numQb, std::vector<std::vector<qcomp>> matrix);
 
 #elif !defined(_MSC_VER)
@@ -335,9 +353,11 @@ extern "C" {
     }
 
 
+    /// @notdoced
     #define setInlineKrausMap(map, numQb, numOps, ...) \
         _setInlineKrausMap((map), (numQb), (numOps), (qcomp[(numOps)][1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
+    /// @notdoced
     #define setInlineSuperOp(matr, numQb, ...) \
         _setInlineSuperOp((matr), (numQb), (qcomp[1<<(2*(numQb))][1<<(2*(numQb))]) __VA_ARGS__)
 
@@ -363,8 +383,10 @@ extern "C" {
 
     // C++ accepts vector initialiser lists
 
+    /// @notdoced
     KrausMap createInlineKrausMap(int numQubits, int numOperators, std::vector<std::vector<std::vector<qcomp>>> matrices);
 
+    /// @notdoced
     SuperOp createInlineSuperOp(int numQubits, std::vector<std::vector<qcomp>> matrix);
 
 #elif !defined(_MSC_VER)
@@ -400,9 +422,11 @@ extern "C" {
     }
 
 
+    /// @notdoced
     #define createInlineKrausMap(numQb, numOps, ...) \
         _createInlineKrausMap((numQb), (numOps), (qcomp[(numOps)][1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
+    /// @notdoced
     #define createInlineSuperOp(numQb, ...) \
         _createInlineSuperOp((numQb), (qcomp[1<<(2*(numQb))][1<<(2*(numQb))]) __VA_ARGS__)
 

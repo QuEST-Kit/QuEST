@@ -26,10 +26,16 @@ extern "C" {
  * SEEDING
  */
 
+/// @notdoced
 void setSeeds(unsigned* seeds, int numSeeds);
+
+/// @notdoced
 void setSeedsToDefault();
 
+/// @notdoced
 void getSeeds(unsigned* seeds);
+
+/// @notdoced
 int getNumSeeds();
 
 
@@ -37,13 +43,22 @@ int getNumSeeds();
  * VALIDATION
  */
 
+/// @notdoced
 void invalidQuESTInputError(const char* msg, const char* func);
 
+/// @notdoced
 void setValidationOn();
+
+/// @notdoced
 void setValidationOff();
 
+/// @notdoced
 void setValidationEpsilonToDefault();
+
+/// @notdoced
 void setValidationEpsilon(qreal eps);
+
+/// @notdoced
 qreal getValidationEpsilon();
 
 
@@ -51,10 +66,14 @@ qreal getValidationEpsilon();
  * REPORTING
  */
 
+/// @notdoced
 /// @nottested
 void setMaxNumReportedItems(qindex numRows, qindex numCols);
 
+/// @notdoced
 void setMaxNumReportedSigFigs(int numSigFigs);
+
+/// @notdoced
 void setNumReportedNewlines(int numNewlines);
 
 
@@ -62,7 +81,10 @@ void setNumReportedNewlines(int numNewlines);
  * CACHING
  */
 
+/// @notdoced
 qindex getGpuCacheSize();
+
+/// @notdoced
 void clearGpuCache();
 
 
@@ -70,6 +92,7 @@ void clearGpuCache();
  * ENVIRONMENT
  */
 
+/// @notdoced
 /// @nottested
 void getEnvironmentString(char str[200]);
 
