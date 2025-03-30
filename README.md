@@ -6,7 +6,14 @@
   @author Tyson Jones
 -->
 
-<!-- TODO: update all paths to be absolute (rather than relative) as per above ->
+
+
+<!-- TODO: 
+ update all instances of
+ /v4/
+ within this README to
+ master/main/active branc
+ -->
 
 
 
@@ -15,7 +22,7 @@
 
   <!-- banner -->
   <a href="https://quest.qtechtheory.org">
-    <img src="utils/docs/banner.png?raw=true" alt="The QuEST logo" width=400>
+    <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4/utils/docs/logos/banner.png" alt="The QuEST logo" width=400>
   </a>
 
   <!-- TODO: restore CI 'compilation/test pass' badge! -->
@@ -67,12 +74,12 @@ In particular, QuEST `v4` was made possible through the support of the UK Nation
 
 <div align="center">
 
-  <img src="utils/docs/logos/nqcc.png" alt="NQCC" height=30> &nbsp;
-  <img src="utils/docs/logos/amd.png" alt="AMD" height=25> &nbsp;
-  <img src="utils/docs/logos/nvidia.png" alt="NVIDIA" height=25> &nbsp;
-  <img src="utils/docs/logos/qmt.png" alt="Quantum Motion" height=25> &nbsp;
-  <img src="utils/docs/logos/edinburgh.png" alt="University of Edinburgh" height=25> &nbsp;
-  <img src="utils/docs/logos/oxford.png" alt="University of Oxford" height=28> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4/utils/docs/logos/nqcc.png" alt="NQCC" height=30> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4/utils/docs/logos/amd.png" alt="AMD" height=25> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4/utils/docs/logos/nvidia.png" alt="NVIDIA" height=25> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4/utils/docs/logos/qmt.png" alt="Quantum Motion" height=25> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4/utils/docs/logos/edinburgh.png" alt="University of Edinburgh" height=25> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4/utils/docs/logos/oxford.png" alt="University of Oxford" height=28> &nbsp;
 
 </div>
 
@@ -92,7 +99,10 @@ To learn more:
 ---------------------------------
 
 
-## :tada:&nbsp; Introduction
+<!-- BEWARE that we use two non-breaking spaces after each emoji in
+     a section title, to add spacing between emoji and text -->
+
+## 🎉  Introduction
 
 QuEST has a simple interface which is agnostic to whether it's running on CPUs, GPUs or a networked supercomputer.
 ```C++
@@ -145,26 +155,33 @@ qreal expec2 = calcExpecFullStateDiagMatr(qureg, fullmatr);
 
 ---------------------------------
 
-## :white_check_mark:&nbsp; Features 
+## ✅  Features 
+
+<!-- BEWARE that a bug in Doxygen v1.13.2 (github.com/doxygen/doxygen/issues/11515)
+     means we cannot immediately follow a non-breaking space (inserted below after
+     each emoji to effect spacing) with markdown syntax like **. Instead, we insert
+     one final regular/non-breaking space before ** which isn't rendered, and which
+     works around the bug -->
+
 QuEST supports:  
-- :ballot_box_with_check: &nbsp; **density matrices** for precise simulation of noisy quantum computers  
-- :ballot_box_with_check: &nbsp; **general unitaries** with any number of control, control-states, and target qubits  
-- :ballot_box_with_check: &nbsp; **general decoherence channels** of any dimension  
-- :ballot_box_with_check: &nbsp; **general observables** in the Pauli or diagonal-Z bases  
-- :ballot_box_with_check: &nbsp; **many *many* operators**, including Pauli gadgets, trotterised time evolutions, and projectors
-- :ballot_box_with_check: &nbsp; **many tools to analyse** quantum states, such as calculations of probability, fidelity, expectation value, distances and partial traces
-- :ballot_box_with_check: &nbsp; **variable precision** through `qreal` and `qcomp` numerical types which can use single, double or quad precision  
-- :ballot_box_with_check: &nbsp; **direct access to amplitudes** for rapid custom modification of the quantum state 
-- :ballot_box_with_check: &nbsp; **native compilation** on MacOS, Linux and Windows, through Clang, GNU, Intel, and MSVC compilers
-- :ballot_box_with_check: &nbsp; **hybridisation** of multithreading, GPU-acceleration, distribution and GPU-distribution
-- :ballot_box_with_check: &nbsp; **optimisation** using NVLink'd GPUs, cuQuantum, and CUDA-aware MPI
-- :ballot_box_with_check: &nbsp; **automatic deployment** of a `Qureg` to the optimal hardware at runtime
-- :ballot_box_with_check: &nbsp; **hardware probing** to determine how many qubits can be simulated at runtime
-- :ballot_box_with_check: &nbsp; **bespoke algorithms** to optimally simulate a wide variety of esoteric operations
+- ☑️   **density matrices** for precise simulation of noisy quantum computers  
+- ☑️   **general unitaries** with any number of control, control-states, and target qubits  
+- ☑️   **general decoherence channels** of any dimension  
+- ☑️   **general observables** in the Pauli or diagonal-Z bases  
+- ☑️   **many *many* operators**, including Pauli gadgets, trotterised time evolutions, and projectors
+- ☑️   **many tools to analyse** quantum states, such as calculations of probability, fidelity, expectation value, distances and partial traces
+- ☑️   **variable precision** through `qreal` and `qcomp` numerical types which can use single, double or quad precision  
+- ☑️   **direct access to amplitudes** for rapid custom modification of the quantum state 
+- ☑️   **native compilation** on MacOS, Linux and Windows, through Clang, GNU, Intel, and MSVC compilers
+- ☑️   **hybridisation** of multithreading, GPU-acceleration, distribution and GPU-distribution
+- ☑️   **optimisation** using NVLink'd GPUs, cuQuantum, and CUDA-aware MPI
+- ☑️   **automatic deployment** of a `Qureg` to the optimal hardware at runtime
+- ☑️   **hardware probing** to determine how many qubits can be simulated at runtime
+- ☑️   **bespoke algorithms** to optimally simulate a wide variety of esoteric operations
 
 ---------------------------------
 
-## :book:&nbsp; Documentation
+## 📖  Documentation
 
 > [!IMPORTANT]
 > QuEST v4's documentation is still under construction!
@@ -229,7 +246,7 @@ Contributers to QuEST should also check out the:
 
 ---------------------------------
 
-## :rocket:&nbsp; Getting started 
+## 🚀  Getting started 
 
 To rocket right in, download QuEST with [git](https://git-scm.com/) at the terminal
 ```bash
@@ -256,7 +273,7 @@ See the [docs](docs/) for enabling acceleration and running the unit tests.
 
 ---------------------------------
 
-## :heart:&nbsp; Acknowledgements
+## ❤  Acknowledgements
 
 We sincerely thank the following external contributors to QuEST.
 
@@ -275,7 +292,7 @@ We sincerely thank the following external contributors to QuEST.
 
 ---------------------------------
 
-## :newspaper:&nbsp; Related projects
+## 📰  Related projects
 
 - [QuESTlink](https://questlink.qtechtheory.org)   <br>
   a Mathematica package enabling symbolic circuit manipulation, analytic simulation, visualisation and high performance simulation with remote accelerated hardware.

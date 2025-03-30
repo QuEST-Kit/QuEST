@@ -8,7 +8,7 @@
  * 
  * @author Tyson Jones
  * 
- * @defgroup api API
+ * @defgroup api 📋 API
  */
 
 #ifndef QUEST_H

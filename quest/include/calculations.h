@@ -25,35 +25,63 @@ extern "C" {
 #endif
 
 
+/// @notdoced
+/// @notvalidated
 qreal calcExpecPauliStr(Qureg qureg, PauliStr str);
 
+/// @notdoced
+/// @notvalidated
 qreal calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum);
 
+/// @notdoced
+/// @notvalidated
 qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
 
+/// @notdoced
+/// @notvalidated
 qreal calcExpecFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matr, qreal exponent);
 
 
+/// @notdoced
+/// @notvalidated
 qreal calcTotalProb(Qureg qureg);
 
+/// @notdoced
+/// @notvalidated
 qreal calcProbOfBasisState(Qureg qureg, qindex index);
 
+/// @notdoced
+/// @notvalidated
 qreal calcProbOfQubitOutcome(Qureg qureg, int qubit, int outcome);
 
+/// @notdoced
+/// @notvalidated
 qreal calcProbOfMultiQubitOutcome(Qureg qureg, int* qubits, int* outcomes, int numQubits);
 
+/// @notdoced
+/// @notvalidated
 void  calcProbsOfAllMultiQubitOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
 
 
+/// @notdoced
+/// @notvalidated
 qreal calcPurity(Qureg qureg);
 
+/// @notdoced
+/// @notvalidated
 qreal calcFidelity(Qureg qureg, Qureg other);
 
+/// @notdoced
+/// @notvalidated
 qreal calcDistance(Qureg qureg1, Qureg qureg2);
 
 
+/// @notdoced
+/// @notvalidated
 Qureg calcPartialTrace(Qureg qureg, int* traceOutQubits, int numTraceQubits);
 
+/// @notdoced
+/// @notvalidated
 Qureg calcReducedDensityMatrix(Qureg qureg, int* retainQubits, int numRetainQubits);
 
 
@@ -75,20 +103,24 @@ Qureg calcReducedDensityMatrix(Qureg qureg, int* retainQubits, int numRetainQubi
  * below functions have a C-compatible wrapper defined in
  * wrappers.h which passes/receives the primitives by pointer;
  * a qcomp ptr can be safely passed from the C++ source binary
- * the user's C binary.
+ * the user's C binary. 
  */
 
-#ifdef __cplusplus
-
+/// @notdoced
+/// @notvalidated
 qcomp calcInnerProduct(Qureg qureg1, Qureg qureg2);
 
+/// @notdoced
+/// @notvalidated
 qcomp calcExpecNonHermitianPauliStrSum(Qureg qureg, PauliStrSum sum); 
 
+/// @notdoced
+/// @notvalidated
 qcomp calcExpecNonHermitianFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
 
+/// @notdoced
+/// @notvalidated
 qcomp calcExpecNonHermitianFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
-
-#endif
 
 
 #endif // CALCULATIONS_H

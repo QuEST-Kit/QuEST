@@ -35,6 +35,8 @@
 #include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 
+/// @cond EXCLUDE_FROM_DOXYGEN
+
 // these definitions are only exposed to C, 
 // since they duplicate existing C++ functions
 #ifndef __cplusplus
@@ -103,5 +105,7 @@ qcomp getDensityQuregAmp(Qureg qureg, qindex row, qindex column) {
 
 
 #endif // !__cplusplus
+
+/// @endcond // EXCLUDE_FROM_DOXYGEN
 
 #endif // WRAPPERS_H

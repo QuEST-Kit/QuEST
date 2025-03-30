@@ -1553,6 +1553,7 @@ void deleteFilesWithPrefixSynch(char* prefix) {
     syncQuESTEnv();
 }
 
+/// @private
 class SubListGenerator : public Catch::Generators::IGenerator<int*> {
     int* list;
     int* sublist;
@@ -1680,6 +1681,7 @@ Catch::Generators::GeneratorWrapper<int*> sublists(
             Catch::Detail::make_unique<SubListGenerator>(std::move(gen), numSamps, exclude, 0));
 }
 
+/// @private
 template <typename T>
 class SequenceGenerator : public Catch::Generators::IGenerator<T*> {
     T* digits;

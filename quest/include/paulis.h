@@ -35,6 +35,7 @@
  */
 
 
+/// @notdoced
 typedef struct {
 
     // represent Pauli strings as base-4 numerals, split into their
@@ -46,6 +47,7 @@ typedef struct {
 } PauliStr;
 
 
+/// @notdoced
 typedef struct {
 
     qindex numTerms;
@@ -73,21 +75,33 @@ typedef struct {
 #ifdef __cplusplus
 
     // C++ users can access the base C method
+
+    /// @notdoced
     extern "C" PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis);
 
     // and get a direct overload to accept integers
+
+    /// @notdoced
     PauliStr getPauliStr(int* paulis, int* indices, int numPaulis);
 
     // They also get overloads to accept natural C++ string types (like literals)
+
+    /// @notdoced
     PauliStr getPauliStr(std::string paulis, int* indices, int numPaulis);
 
     // and additional overloads to use vectors for brevity
+
+    /// @notdoced
     PauliStr getPauliStr(std::string paulis, std::vector<int> indices);
 
     // and an overload assuming indices={n,...,2,1,0}, used internally by parsers
+
+    /// @notdoced
     PauliStr getPauliStr(std::string paulis);
 
     // inline macro (included for consistency with C) calls the string & vector overload
+
+    /// @notdoced
     #define getInlinePauliStr(str, ...) \
         getPauliStr(str, __VA_ARGS__)
 
@@ -98,12 +112,15 @@ typedef struct {
 #else
 
     // C supports passing a char array or string literal with a specified number of Paulis
+
+    /// @notdoced
     PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis);
 
     // or an overload accepting ints, achieved using a C11 _Generic
     /// @private
     PauliStr _getPauliStrFromInts(int* paulis, int* indices, int numPaulis);
 
+    /// @notdoced
     #define getPauliStr(paulis, ...) \
         _Generic((paulis), \
             int*    : _getPauliStrFromInts, \
@@ -114,6 +131,8 @@ typedef struct {
     // literals without the C99 inline temporary array syntax; we further give the array
     // an explici size (instead of just (int[])) to gaurantee it contains at leasts as 
     // many elements as claimed, avoiding seg-faults if the user provides too few indices 
+
+    /// @notdoced
     #define getInlinePauliStr(str, ...) \
         getPauliStr((str), (int[sizeof(str)-1]) __VA_ARGS__, sizeof(str)-1)
 
@@ -131,11 +150,16 @@ typedef struct {
 extern "C" {
 #endif
 
+    /// @notdoced
     PauliStrSum createPauliStrSum(PauliStr* strings, qcomp* coeffs, qindex numTerms);
 
+    /// @notdoced
     PauliStrSum createInlinePauliStrSum(const char* str);
 
+    /// @notdoced
     PauliStrSum createPauliStrSumFromFile(const char* fn);
+
+    /// @notdoced
     PauliStrSum createPauliStrSumFromReversedFile(const char* fn);
 
 #ifdef __cplusplus
@@ -146,11 +170,16 @@ extern "C" {
 // C++ users get additional overloads
 #ifdef __cplusplus
 
+    /// @notdoced
     PauliStrSum createPauliStrSum(std::vector<PauliStr> strings, std::vector<qcomp> coeffs);
 
+    /// @notdoced
     PauliStrSum createInlinePauliStrSum(std::string str);
 
+    /// @notdoced
     PauliStrSum createPauliStrSumFromFile(std::string fn);
+
+    /// @notdoced
     PauliStrSum createPauliStrSumFromReversedFile(std::string fn);
 
 #endif
@@ -167,6 +196,7 @@ extern "C" {
 extern "C" {
 #endif
 
+    /// @notdoced
     void destroyPauliStrSum(PauliStrSum sum);
 
 // end de-mangler
@@ -185,8 +215,12 @@ extern "C" {
 extern "C" {
 #endif
 
+    /// @notdoced
+    /// @nottested
     void reportPauliStr(PauliStr str);
 
+    /// @notdoced
+    /// @nottested
     void reportPauliStrSum(PauliStrSum str);
 
 // end de-mangler

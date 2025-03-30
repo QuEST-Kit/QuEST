@@ -26,42 +26,79 @@ extern "C" {
 
 
 
+/// @notdoced
+/// @notvalidated
 void initBlankState(Qureg qureg);
 
+/// @notdoced
+/// @notvalidated
 void initZeroState(Qureg qureg);
 
+/// @notdoced
+/// @notvalidated
 void initPlusState(Qureg qureg);
 
+/// @notdoced
+/// @notvalidated
+/// @nottested
 void initPureState(Qureg qureg, Qureg pure);
 
+/// @notdoced
+/// @notvalidated
 void initClassicalState(Qureg qureg, qindex stateInd);
 
+/// @notdoced
+/// @notvalidated
 void initDebugState(Qureg qureg);
 
+/// @notdoced
+/// @notvalidated
 void initArbitraryPureState(Qureg qureg, qcomp* amps);
 
+/// @notdoced
+/// @notvalidated
 void initRandomPureState(Qureg qureg);
 
+/// @notdoced
+/// @notvalidated
 void initRandomMixedState(Qureg qureg, qindex numPureStates);
 
 
 
+/// @notdoced
+/// @notvalidated
 void setQuregAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps);
 
+/// @notdoced
+/// @notvalidated
 void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qcomp** amps, qindex numRows, qindex numCols);
 
+/// @notdoced
+/// @notvalidated
 void setDensityQuregFlatAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps);
 
+/// @notdoced
+/// @nottested
 void setQuregToClone(Qureg targetQureg, Qureg copyQureg);
 
+/// @notdoced
+/// @nottested
 void setQuregToSuperposition(qcomp facOut, Qureg out, qcomp fac1, Qureg qureg1, qcomp fac2, Qureg qureg2);
 
+/// @notdoced
+/// @notvalidated
 qreal setQuregToRenormalized(Qureg qureg);
 
+/// @notdoced
+/// @notvalidated
 void setQuregToPauliStrSum(Qureg qureg, PauliStrSum sum);
 
+/// @notdoced
+/// @nottested
 void setQuregToPartialTrace(Qureg out, Qureg in, int* traceOutQubits, int numTraceQubits);
 
+/// @notdoced
+/// @nottested
 void setQuregToReducedDensityMatrix(Qureg out, Qureg in, int* retainQubits, int numRetainQubits);
 
 

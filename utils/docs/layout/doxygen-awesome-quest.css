@@ -1,0 +1,100 @@
+/*
+ * custom CSS, overriding Doxygen Awesome's
+ * default styling for the QuEST project.
+ * @author Tyson Jones
+ */
+
+
+html {
+
+    /* light-mode highlighted section text color */
+    --primary-color: #d85b0a;
+
+    /* light-mode colour of the left navbar... */
+    --side-nav-background: #fffdf1;
+
+    /* navbar width, which must match TREE_WIDTH in Doxyfile */
+    --side-nav-fixed-width: 330px;
+
+    /* this defers the placement of the search bar,
+     * and must be large enough to fit the logo and
+     * the injected version number beneath it */
+    --top-height: 260px;
+}
+
+
+/* dark-mode highlighted section text color */
+html.dark-mode {
+    color-scheme: dark;
+    --primary-color: #ffaf36;
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not(.light-mode) {
+        --primary-color: #ffaf36;
+    }
+}
+
+
+/* set size and padding of logo atop navbar */
+#projectlogo img {
+    width: 180px;
+    height: 158px;
+    max-height: none !important;
+    padding-top: 12px;
+}
+
+
+/* center the QuEST logo atop the navbar */
+#titlearea table {
+    width: 100%;
+}
+
+/* hide text atop navbar (so only logo remains) */
+#projectalign {
+    display: none;
+}
+
+
+/* hide the strange lil button at bottom of navbar 
+ * (I have no idea what it does hehe) */
+#nav-sync {
+    display: none;
+}
+
+
+/* remove big empty space at page tops */
+@media screen and (min-width: 767px) {
+    #doc-content {
+        padding-top: calc(var(--top-height) - 247px);
+    }
+}
+
+
+/* undoing doxygen-awesome's re-colouring of warning (
+ * which made it an innocuous yellow, like attention),
+ * restoring its scarier red colouring! */
+dl.warning {
+    background: #f8d1cc;
+    border-left: 8px solid #b61825;
+    color: #75070f
+}
+
+dl.warning dt {
+    color: #75070f;
+}
+
+
+/* set the version number (below logo on navbar) style */
+@font-face {
+    font-family: "Computer Modern";
+    src: url('http://mirrors.ctan.org/fonts/cm-unicode/fonts/otf/cmunsx.otf');
+    font-weight: bold;
+}
+
+#projectversion {
+    color: #d85b0a;
+    font-weight: bold;
+    font-family: "Computer Modern Serif", serif;
+    text-align: center;
+}
