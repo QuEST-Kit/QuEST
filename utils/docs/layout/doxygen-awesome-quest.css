@@ -83,3 +83,18 @@ dl.warning {
 dl.warning dt {
     color: #75070f;
 }
+
+
+/* set the version number (below logo on navbar) style */
+@font-face {
+    font-family: "Computer Modern";
+    src: url('http://mirrors.ctan.org/fonts/cm-unicode/fonts/otf/cmunsx.otf');
+    font-weight: bold;
+}
+
+#projectversion {
+    color: #d85b0a;
+    font-weight: bold;
+    font-family: "Computer Modern Serif", serif;
+    text-align: center;
+}
