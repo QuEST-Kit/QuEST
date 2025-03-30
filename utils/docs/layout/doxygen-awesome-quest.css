@@ -5,14 +5,36 @@
  */
 
 
-/* set the colour and width of the left navbar */
 html {
+
+    /* light-mode highlighted section text color */
+    --primary-color: #d85b0a;
+
+    /* light-mode colour of the left navbar... */
     --side-nav-background: #fffdf1;
+
+    /* navbar width, which must match TREE_WIDTH in Doxyfile */
     --side-nav-fixed-width: 330px;
 
-    /* this must be large enough to fit logo below */
-    --top-height: 240px;
+    /* this defers the placement of the search bar,
+     * and must be large enough to fit the logo and
+     * the injected version number beneath it */
+    --top-height: 260px;
 }
+
+
+/* dark-mode highlighted section text color */
+html.dark-mode {
+    color-scheme: dark;
+    --primary-color: #ffaf36;
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not(.light-mode) {
+        --primary-color: #ffaf36;
+    }
+}
+
 
 /* set size and padding of logo atop navbar */
 #projectlogo img {
@@ -21,6 +43,7 @@ html {
     max-height: none !important;
     padding-top: 12px;
 }
+
 
 /* center the QuEST logo atop the navbar */
 #titlearea table {
@@ -32,11 +55,13 @@ html {
     display: none;
 }
 
+
 /* hide the strange lil button at bottom of navbar 
  * (I have no idea what it does hehe) */
 #nav-sync {
     display: none;
 }
+
 
 /* remove big empty space at page tops */
 @media screen and (min-width: 767px) {
@@ -44,6 +69,7 @@ html {
         padding-top: calc(var(--top-height) - 247px);
     }
 }
+
 
 /* undoing doxygen-awesome's re-colouring of warning (
  * which made it an innocuous yellow, like attention),
