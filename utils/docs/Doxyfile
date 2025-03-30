@@ -58,7 +58,7 @@ PROJECT_NUMBER         = "v4.0.0"
 # quick idea about the purpose of the project. Keep the description short.
 
 # this is not displayed anywhere in the QuEST doc due to custom header/CSS so
-# is kept empty here for clairty
+# is kept empty here for clarity
 PROJECT_BRIEF          = 
 
 # With the PROJECT_LOGO tag one can specify an logo or icon that is included in
