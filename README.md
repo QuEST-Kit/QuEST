@@ -99,6 +99,9 @@ To learn more:
 ---------------------------------
 
 
+<!-- BEWARE that we use two non-breaking spaces after each emoji in
+     a section title, to add spacing between emoji and text -->
+
 ## 🎉  Introduction
 
 QuEST has a simple interface which is agnostic to whether it's running on CPUs, GPUs or a networked supercomputer.
@@ -153,21 +156,28 @@ qreal expec2 = calcExpecFullStateDiagMatr(qureg, fullmatr);
 ---------------------------------
 
 ## ✅  Features 
+
+<!-- BEWARE that a bug in Doxygen v1.13.2 (github.com/doxygen/doxygen/issues/11515)
+     means we cannot immediately follow a non-breaking space (inserted below after
+     each emoji to effect spacing) with markdown syntax like **. Instead, we insert
+     one final regular/non-breaking space before ** which isn't rendered, and which
+     works around the bug -->
+
 QuEST supports:  
-- ☑️  **density matrices** for precise simulation of noisy quantum computers  
-- ☑️  **general unitaries** with any number of control, control-states, and target qubits  
-- ☑️  **general decoherence channels** of any dimension  
-- ☑️  **general observables** in the Pauli or diagonal-Z bases  
-- ☑️  **many *many* operators**, including Pauli gadgets, trotterised time evolutions, and projectors
-- ☑️  **many tools to analyse** quantum states, such as calculations of probability, fidelity, expectation value, distances and partial traces
-- ☑️  **variable precision** through `qreal` and `qcomp` numerical types which can use single, double or quad precision  
-- ☑️  **direct access to amplitudes** for rapid custom modification of the quantum state 
-- ☑️  **native compilation** on MacOS, Linux and Windows, through Clang, GNU, Intel, and MSVC compilers
-- ☑️  **hybridisation** of multithreading, GPU-acceleration, distribution and GPU-distribution
-- ☑️  **optimisation** using NVLink'd GPUs, cuQuantum, and CUDA-aware MPI
-- ☑️  **automatic deployment** of a `Qureg` to the optimal hardware at runtime
-- ☑️  **hardware probing** to determine how many qubits can be simulated at runtime
-- ☑️  **bespoke algorithms** to optimally simulate a wide variety of esoteric operations
+- ☑️   **density matrices** for precise simulation of noisy quantum computers  
+- ☑️   **general unitaries** with any number of control, control-states, and target qubits  
+- ☑️   **general decoherence channels** of any dimension  
+- ☑️   **general observables** in the Pauli or diagonal-Z bases  
+- ☑️   **many *many* operators**, including Pauli gadgets, trotterised time evolutions, and projectors
+- ☑️   **many tools to analyse** quantum states, such as calculations of probability, fidelity, expectation value, distances and partial traces
+- ☑️   **variable precision** through `qreal` and `qcomp` numerical types which can use single, double or quad precision  
+- ☑️   **direct access to amplitudes** for rapid custom modification of the quantum state 
+- ☑️   **native compilation** on MacOS, Linux and Windows, through Clang, GNU, Intel, and MSVC compilers
+- ☑️   **hybridisation** of multithreading, GPU-acceleration, distribution and GPU-distribution
+- ☑️   **optimisation** using NVLink'd GPUs, cuQuantum, and CUDA-aware MPI
+- ☑️   **automatic deployment** of a `Qureg` to the optimal hardware at runtime
+- ☑️   **hardware probing** to determine how many qubits can be simulated at runtime
+- ☑️   **bespoke algorithms** to optimally simulate a wide variety of esoteric operations
 
 ---------------------------------
 
