@@ -63,10 +63,7 @@ void setRandomTestStateSeeds() {
 
 
 
-    
 
-    // seed rand()
-    srand(seed);
 
     // seed RNG
     RNG.seed(seed);
@@ -79,11 +76,11 @@ void setRandomTestStateSeeds() {
  */
 
 
-qreal getRandomReal(qreal min, qreal maxIncl) {
-    DEMAND( min <= maxIncl );
+qreal getRandomReal(qreal min, qreal maxExcl) {
+    DEMAND( min < maxExcl );
 
-    qreal r = rand() / static_cast<qreal>(RAND_MAX);
-    return min + r * (maxIncl - min);
+    std::uniform_real_distribution<qreal> dist(min,maxExcl);
+    return dist(RNG);
 }
 
 
@@ -100,7 +97,8 @@ int getRandomInt(int min, int maxExcl) {
     if (min == maxExcl)
         return min;
 
-    return (int) round(getRandomReal(min, maxExcl-1));
+    qreal r = std::floor(getRandomReal(min, maxExcl));
+    return static_cast<int>(r);
 }
 
 

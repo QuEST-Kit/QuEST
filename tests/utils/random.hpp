@@ -29,7 +29,7 @@ using std::tuple;
 void setRandomTestStateSeeds();
 
 int getRandomInt(int min, int maxExcl);
-qreal getRandomReal(qreal min, qreal max);
+qreal getRandomReal(qreal min, qreal maxExcl);
 qreal getRandomPhase();
 qcomp getRandomComplex();
 qcomp getRandomUnitComplex();
