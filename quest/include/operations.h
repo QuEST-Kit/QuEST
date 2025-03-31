@@ -32,24 +32,24 @@ extern "C" {
  */
 
 
-/** Multiplies a general one-qubit dense \p matrix upon the specified \p target 
- * qubit of \p qureg.
+/** Multiplies a general one-qubit dense @p matrix upon the specified @p target 
+ * qubit of @p qureg.
  *  
  * @formulae
- * Let \f$ \hat{M} = \f$ @p matrix and \f$ t = \f$ @p target, and notate 
- * \f$\hat{M}_t\f$ as per applyCompMatr1(). Unlike applyCompMatr1() however,
+ * Let @f$ \hat{M} = @f$ @p matrix and @f$ t = @f$ @p target, and notate 
+ * @f$\hat{M}_t@f$ as per applyCompMatr1(). Unlike applyCompMatr1() however,
  * this function only ever left-multiplies @p matrix upon @p qureg, regardless
  * of whether it is a statevector or density matrix.
  * 
  * Explicitly,
- * - When @p qureg is a statevector \f$ \svpsi \f$, this function effects
- *   \f[ 
+ * - When @p qureg is a statevector @f$ \svpsi @f$, this function effects
+ *   @f[ 
         \svpsi \rightarrow \hat{M}_t \, \svpsi.
- *   \f]
- * - When @p qureg is a density matrix \f$\dmrho\f$, this function effects
- *   \f[ 
+ *   @f]
+ * - When @p qureg is a density matrix @f$\dmrho@f$, this function effects
+ *   @f[ 
         \dmrho \rightarrow \hat{M}_t \, \dmrho.
- *   \f]
+ *   @f]
  *
  * There are no additional constraints like unitarity.
  *
@@ -84,8 +84,8 @@ void multiplyCompMatr1(Qureg qureg, int target, CompMatr1 matr);
 
 
 
-/** Applies a general one-qubit dense unitary \p matrix to the specified \p target 
- * qubit of \p qureg.
+/** Applies a general one-qubit dense unitary @p matrix to the specified @p target 
+ * qubit of @p qureg.
  * 
  * @diagram
  * @dot
@@ -103,29 +103,29 @@ digraph {
  * @enddot
  * 
  * @formulae
- * Let \f$ \hat{U} = \f$ @p matrix, \f$ t = \f$ @p target, and let \f$\hat{U}_t\f$
- * notate operating \f$\hat{U}\f$ upon the \f$ t \f$-th qubit among\f$ N \f$, i.e.
- * \f[ 
+ * Let @f$ \hat{U} = @f$ @p matrix, @f$ t = @f$ @p target, and let @f$\hat{U}_t@f$
+ * notate operating @f$\hat{U}@f$ upon the @f$ t @f$-th qubit among@f$ N @f$, i.e.
+ * @f[ 
         \hat{U}_t \equiv \id^{N-t} \otimes \hat{U} \otimes \id^{t-1}.
- * \f]
+ * @f]
  * Then,
- * - When @p qureg is a statevector \f$ \svpsi \f$, this function effects
- *   \f[ 
+ * - When @p qureg is a statevector @f$ \svpsi @f$, this function effects
+ *   @f[ 
         \svpsi \rightarrow \hat{U}_t \, \svpsi.
- *   \f]
- * - When @p qureg is a density matrix \f$\dmrho\f$, this function effects
- *   \f[ 
+ *   @f]
+ * - When @p qureg is a density matrix @f$\dmrho@f$, this function effects
+ *   @f[ 
         \dmrho \rightarrow \hat{U}_t \, \dmrho \, {\hat{U}_t}^\dagger.
- *   \f]
+ *   @f]
  *
  * @constraints
- * - Unitarity of \f$ \hat{U} = \f$ @p matrix requires that 
- *   \f$ \hat{U} \hat{U}^\dagger = \id \f$. Validation will check that @p matrix is
+ * - Unitarity of @f$ \hat{U} = @f$ @p matrix requires that 
+ *   @f$ \hat{U} \hat{U}^\dagger = \id @f$. Validation will check that @p matrix is
  *   approximately unitarity via
- *   \f[ 
+ *   @f[ 
         \max\limits_{ij} \Big|\left(\hat{U} \hat{U}^\dagger - \id\right)_{ij}\Big|^2 \le \valeps
- *   \f]
- *   where the validation epsilon \f$ \valeps \f$ can be adjusted with setValidationEpsilon().
+ *   @f]
+ *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setValidationEpsilon().
  * 
  * @myexample
  * ```

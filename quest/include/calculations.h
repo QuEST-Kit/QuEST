@@ -29,16 +29,16 @@ extern "C" {
  * state @p qureg without modifying it. 
  * 
  * @formulae
- * Let \f$ \pstr = \f$ @p str.
- * - When @p qureg is a statevector \f$\svpsi\f$, this function returns
- *   \f[ 
+ * Let @f$ \pstr = @f$ @p str.
+ * - When @p qureg is a statevector @f$\svpsi@f$, this function returns
+ *   @f[ 
     \brapsi \pstr \svpsi \in \mathbb{R}.
- *   \f]
- * - When @p qureg is a density matrix \f$\dmrho\f$, this function returns the real component of
- *   \f[ 
+ *   @f]
+ * - When @p qureg is a density matrix @f$\dmrho@f$, this function returns the real component of
+ *   @f[ 
     \tr{ \pstr \dmrho }
- *   \f]
- *   which is exact when \f$\dmrho\f$ is physical (specifically Hermitian).
+ *   @f]
+ *   which is exact when @f$\dmrho@f$ is physical (specifically Hermitian).
  * 
  * @constraints
  * - The returned value is always real, even when @p qureg is an unnormalised density matrix, in
@@ -48,7 +48,7 @@ extern "C" {
  * @equivalence
  * - When @p str is general, this function is equivalent to calling calcExpecPauliStrSum() with a 
  *   PauliStrSum composed of only a single PauliStr term and a unity coefficient.
- * - When @p str \f$ = \id^\otimes \f$, the output is equivalent to that of calcTotalProb().
+ * - When @p str @f$ = \id^\otimes @f$, the output is equivalent to that of calcTotalProb().
  * 
  * @myexample
  * ```
@@ -79,24 +79,24 @@ qreal calcExpecPauliStr(Qureg qureg, PauliStr str);
  * Pauli strings - under the given state @p qureg, without modifying it. 
  * 
  * @formulae
- * Let \f$ \hat{H} = \f$ @p sum.
- * - When @p qureg is a statevector \f$\svpsi\f$, this function returns
- *   \f[ 
+ * Let @f$ \hat{H} = @f$ @p sum.
+ * - When @p qureg is a statevector @f$\svpsi@f$, this function returns
+ *   @f[ 
     \brapsi \hat{H} \svpsi \in \mathbb{R}.
- *   \f]
- * - When @p qureg is a density matrix \f$\dmrho\f$, this function returns the real component of
- *   \f[ 
+ *   @f]
+ * - When @p qureg is a density matrix @f$\dmrho@f$, this function returns the real component of
+ *   @f[ 
      \tr{ \hat{H} \dmrho }
- *   \f]
- *   which is the exact expectation value when \f$\dmrho\f$ is physical (specifically Hermitian).
+ *   @f]
+ *   which is the exact expectation value when @f$\dmrho@f$ is physical (specifically Hermitian).
  * 
  * @constraints
  * - Hermiticity of @p sum requires that every coefficient within is real. 
  *   Validation will check @p sum is _approximately_ Hermitian, i.e. that
- *   \f[ 
+ *   @f[ 
      |\im{c}| \le \valeps
- *   \f]
- *   for all \f$c \in \f$ `sum.coeffs`. Adjust \f$\valeps\f$ using setValidationEpsilon().
+ *   @f]
+ *   for all @f$c \in @f$ `sum.coeffs`. Adjust @f$\valeps@f$ using setValidationEpsilon().
  * - The returned value is always real, and the imaginary component is neglected even when 
  *   Hermiticity validation is relaxed and/or @p qureg is an unnormalised density matrix. 
  *   The full complex value can be obtained using calcExpecNonHermitianPauliStrSum().
@@ -105,7 +105,7 @@ qreal calcExpecPauliStr(Qureg qureg, PauliStr str);
  * - This function is mathematically equivalent to (albeit faster than) calling calcExpecPauliStr() upon
  *   each constituent @p PauliStr within @p sum, weighting each by its corresponding coefficient, and
  *   summing the outputs.
- * - When @p sum contains only \f$\pauliz\f$ and \f$\id\f$ operators, its corresponding operator matrix
+ * - When @p sum contains only @f$\pauliz@f$ and @f$\id@f$ operators, its corresponding operator matrix
  *   is diagonal, and could be instead effected with calcExpecFullStateDiagMatr(). This may be faster when
  *   @p sum contains very-many terms and operates upon all qubits of the register.
  * 
