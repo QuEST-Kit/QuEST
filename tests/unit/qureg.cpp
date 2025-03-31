@@ -689,7 +689,7 @@ TEST_CASE( "getDensityQuregAmp", TEST_CATEGORY ) {
 
             // DEBUG
             ofstream myfile;
-            myfile.open ("out_seed_" + to_string(getQuESTEnv().rank) + ".txt");
+            myfile.open ("out_rowcol_" + to_string(getQuESTEnv().rank) + ".txt");
             myfile << "row = " << row << ", col = " << col << endl;
             myfile.close();
             syncQuESTEnv();
