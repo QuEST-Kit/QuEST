@@ -56,9 +56,10 @@ void setRandomTestStateSeeds() {
 
     // DEBUG
     ofstream myfile;
-    myfile.open ("out_" + to_string(getQuESTEnv().rank));
+    myfile.open ("out_seed_" + to_string(getQuESTEnv().rank) + ".txt");
     myfile << "seed = " << seed << endl;
     myfile.close();
+    syncQuESTEnv();
 
 
 

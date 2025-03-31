@@ -663,6 +663,13 @@ TEST_CASE( "getQuregAmp", TEST_CATEGORY ) {
 }
 
 
+// DEBUG
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+
 TEST_CASE( "getDensityQuregAmp", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
@@ -679,6 +686,13 @@ TEST_CASE( "getDensityQuregAmp", TEST_CATEGORY ) {
 
             GENERATE( range(0,100) );
             CAPTURE( row, col );
+
+            // DEBUG
+            ofstream myfile;
+            myfile.open ("out_seed_" + to_string(getQuESTEnv().rank) + ".txt");
+            myfile << "row = " << row << ", col = " << col << endl;
+            myfile.close();
+            syncQuESTEnv();
 
             // not necessarily identical when qureg is GPU-accelerated
             REQUIRE_AGREE( getDensityQuregAmp(qureg, row, col), ref[row][col] );
