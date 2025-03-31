@@ -52,6 +52,7 @@
 #include "quest/include/quest.h"
 #include "tests/utils/cache.hpp"
 #include "tests/utils/macros.hpp"
+#include "tests/utils/random.hpp"
 
 
 /*
@@ -113,7 +114,14 @@ CATCH_REGISTER_LISTENER(startListener)
 
 int main(int argc, char* argv[]) {
 
+    // prepare QuEST before anything else, since many
+    // testing utility functions repurpose QuEST ones
     initQuESTEnv();
+
+    // ensure RNG consensus among all nodes
+    setRandomTestStateSeeds();
+
+    // prepare persistent Quregs
     createCachedQuregs();
     createCachedFullStateDiagMatrs();
 

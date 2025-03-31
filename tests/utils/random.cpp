@@ -1,6 +1,10 @@
 /** @file
  * Testing utilities which generate random objects
  * independently of QuEST's internal generators. 
+ * It is important that this file uses only its
+ * internal RNG, and not C-library functions like
+ * rand(), so that it cannot be interfered with by
+ * external files calling e.g. srand().
  *
  * @author Tyson Jones
  */
@@ -32,19 +36,17 @@ static std::mt19937 RNG;
 
 
 void setRandomTestStateSeeds() {
+    DEMAND( isQuESTEnvInit() );
 
     // generate a random seed from hardware rng
     std::random_device cspnrg;
     unsigned seed = cspnrg();
     
-    // seed QuEST, using only the root node's seed
+    // seed QuEST, which uses only the root node's seed
     setSeeds(&seed, 1);
 
-    // broadcat root node seed to all nodes
+    // broadcast root node seed to all nodes
     getSeeds(&seed);
-
-    // seed rand()
-    srand(seed);
 
     // seed RNG
     RNG.seed(seed);
@@ -57,11 +59,12 @@ void setRandomTestStateSeeds() {
  */
 
 
-qreal getRandomReal(qreal min, qreal maxIncl) {
-    DEMAND( min <= maxIncl );
+qreal getRandomReal(qreal min, qreal maxExcl) {
+    DEMAND( min < maxExcl );
 
-    qreal r = rand() / static_cast<qreal>(RAND_MAX);
-    return min + r * (maxIncl - min);
+    // advance RNG on every node, identically
+    std::uniform_real_distribution<qreal> dist(min,maxExcl);
+    return dist(RNG);
 }
 
 
@@ -78,7 +81,8 @@ int getRandomInt(int min, int maxExcl) {
     if (min == maxExcl)
         return min;
 
-    return (int) round(getRandomReal(min, maxExcl-1));
+    qreal r = std::floor(getRandomReal(min, maxExcl));
+    return static_cast<int>(r);
 }
 
 
@@ -126,7 +130,7 @@ vector<int> getRandomSubRange(int start, int endExcl, int numElems) {
     DEMAND( numElems >= 1 );
     DEMAND( numElems <= endExcl - start );
 
-    // shuffle entire range
+    // shuffle entire range (advances RNG on every node, identically)
     vector<int> range = getRange(start, endExcl);
     std::shuffle(range.begin(), range.end(), RNG);
     
