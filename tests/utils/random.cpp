@@ -1,6 +1,10 @@
 /** @file
  * Testing utilities which generate random objects
  * independently of QuEST's internal generators. 
+ * It is important that this file uses only its
+ * internal RNG, and not C-library functions like
+ * rand(), so that it cannot be interfered with by
+ * external files calling e.g. srand().
  *
  * @author Tyson Jones
  */
