@@ -101,16 +101,6 @@ qindex MAX_MESSAGE_LENGTH = powerOf2(28);
 
 #if COMPILE_MPI
 
-    // warn about strange behaviour on MPICH v3.X
-    #ifdef MPICH
-    #if MPI_VERSION < 4
-        // accursed Windows users get no warning (MSVC doesn't support #warning)
-        #ifndef _MSC_VER 
-        #warning "Using MPICH versions earlier than 4.0 may result in errors. Please run the distributed unit tests."
-        #endif
-    #endif
-    #endif
-
     // declare MPI types for qreal and qcomp. We always use the 
     // C macros, even when the deprecated CXX equivalents are 
     // available, to maintain compatibility with modern MPICH
