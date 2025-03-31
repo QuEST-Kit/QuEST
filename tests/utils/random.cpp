@@ -31,6 +31,14 @@ using std::tuple;
 static std::mt19937 RNG;
 
 
+
+// DEBUG
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+
 void setRandomTestStateSeeds() {
     DEMAND( isQuESTEnvInit() );
 
@@ -43,6 +51,18 @@ void setRandomTestStateSeeds() {
 
     // broadcast root node seed to all nodes
     getSeeds(&seed);
+
+
+
+    // DEBUG
+    ofstream myfile;
+    myfile.open ("out_" + to_string(getQuESTEnv().rank));
+    myfile << "seed = " << seed << endl;
+    myfile.close();
+
+
+
+    
 
     // seed rand()
     srand(seed);
