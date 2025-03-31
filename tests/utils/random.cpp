@@ -32,15 +32,16 @@ static std::mt19937 RNG;
 
 
 void setRandomTestStateSeeds() {
+    DEMAND( isQuESTEnvInit() );
 
     // generate a random seed from hardware rng
     std::random_device cspnrg;
     unsigned seed = cspnrg();
     
-    // seed QuEST, using only the root node's seed
+    // seed QuEST, which uses only the root node's seed
     setSeeds(&seed, 1);
 
-    // broadcat root node seed to all nodes
+    // broadcast root node seed to all nodes
     getSeeds(&seed);
 
     // seed rand()
