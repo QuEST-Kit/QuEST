@@ -31,13 +31,136 @@ extern "C" {
  * CompMatr1
  */
 
-/// @notdoced
-/// @notvalidated
+
+/** Multiplies a general one-qubit dense \p matrix upon the specified \p target 
+ * qubit of \p qureg.
+ *  
+ * @formulae
+ * Let \f$ \hat{M} = \f$ @p matrix and \f$ t = \f$ @p target, and notate 
+ * \f$\hat{M}_t\f$ as per applyCompMatr1(). Unlike applyCompMatr1() however,
+ * this function only ever left-multiplies @p matrix upon @p qureg, regardless
+ * of whether it is a statevector or density matrix.
+ * 
+ * Explicitly,
+ * - When @p qureg is a statevector \f$ \svpsi \f$, this function effects
+ *   \f[ 
+        \svpsi \rightarrow \hat{M}_t \, \svpsi.
+ *   \f]
+ * - When @p qureg is a density matrix \f$\dmrho\f$, this function effects
+ *   \f[ 
+        \dmrho \rightarrow \hat{M}_t \, \dmrho.
+ *   \f]
+ *
+ * There are no additional constraints like unitarity.
+ *
+ * @myexample
+ * ```
+    Qureg qureg = createDensityQureg(5);
+
+    CompMatr1 matrix = getInlineCompMatr1({
+        {0.1, 0.2},
+        {0.3i, 0.4i}
+    });
+
+    multiplyCompMatr1(qureg, 2, matrix); 
+ * ```
+ *
+ * @param[in,out] qureg  the state to modify.
+ * @param[in]     sum    the index of the target qubit.
+ * @param[in]     matrix the Z-basis matrix to multiply.
+ * @throws invalidQuESTInputError()
+ * - if @p qureg or @p matrix are uninitialised.
+ * - if @p target is an invalid qubit index.
+ * @notvalidated
+ * @see
+ * - getCompMatr1()
+ * - getInlineCompMatr1()
+ * - applyCompMatr1()
+ * - applyQubitProjector()
+ * - multiplyCompMatr()
+ * @author Tyson Jones
+ */
 void multiplyCompMatr1(Qureg qureg, int target, CompMatr1 matr);
 
-/// @notdoced
-/// @notvalidated
-void applyCompMatr1(Qureg qureg, int target, CompMatr1 matr);
+
+
+/** Applies a general one-qubit dense unitary \p matrix to the specified \p target 
+ * qubit of \p qureg.
+ * 
+ * @diagram
+ * @dot
+digraph {
+  rankdir=LR;
+  node [fontsize=10, fontname="Menlo"];
+  edge [dir=none];
+
+  wireL [shape=plaintext, label="target"];
+  wireR [shape=plaintext, label=""];
+  gate  [shape=box,    label="matrix"];
+
+  wireL -> gate -> wireR
+}
+ * @enddot
+ * 
+ * @formulae
+ * Let \f$ \hat{U} = \f$ @p matrix, \f$ t = \f$ @p target, and let \f$\hat{U}_t\f$
+ * notate operating \f$\hat{U}\f$ upon the \f$ t \f$-th qubit among\f$ N \f$, i.e.
+ * \f[ 
+        \hat{U}_t \equiv \id^{N-t} \otimes \hat{U} \otimes \id^{t-1}.
+ * \f]
+ * Then,
+ * - When @p qureg is a statevector \f$ \svpsi \f$, this function effects
+ *   \f[ 
+        \svpsi \rightarrow \hat{U}_t \, \svpsi.
+ *   \f]
+ * - When @p qureg is a density matrix \f$\dmrho\f$, this function effects
+ *   \f[ 
+        \dmrho \rightarrow \hat{U}_t \, \dmrho \, {\hat{U}_t}^\dagger.
+ *   \f]
+ *
+ * @constraints
+ * - Unitarity of \f$ \hat{U} = \f$ @p matrix requires that 
+ *   \f$ \hat{U} \hat{U}^\dagger = \id \f$. Validation will check that @p matrix is
+ *   approximately unitarity via
+ *   \f[ 
+        \max\limits_{ij} \Big|\left(\hat{U} \hat{U}^\dagger - \id\right)_{ij}\Big|^2 \le \valeps
+ *   \f]
+ *   where the validation epsilon \f$ \valeps \f$ can be adjusted with setValidationEpsilon().
+ * 
+ * @myexample
+ * ```
+    Qureg qureg = createQureg(5);
+
+    CompMatr1 matrix = getInlineCompMatr1({
+        {-1i/sqrt(2), 1i/sqrt(2)},
+        {(1i-1)/2,    (1i-1)/2}
+    });
+
+    applyCompMatr1(qureg, 2, matrix); 
+ * ```
+ *
+ * @param[in,out] qureg  the state to modify.
+ * @param[in]     sum    the index of the target qubit.
+ * @param[in]     matrix the Z-basis unitary matrix to effect.
+ * @throws invalidQuESTInputError()
+ * - if @p qureg or @p matrix are uninitialised.
+ * - if @p matrix is not approximately unitary.
+ * - if @p target is an invalid qubit index.
+ * @notvalidated
+ * @see
+ * - getCompMatr1()
+ * - getInlineCompMatr1()
+ * - multiplyCompMatr1()
+ * - applyControlledCompMatr1()
+ * - applyCompMatr2()
+ * - applyCompMatr()
+ * @author Tyson Jones
+ */
+void applyCompMatr1(Qureg qureg, int target, CompMatr1 matrix);
+
+
+
+
 
 /// @notdoced
 /// @notvalidated
