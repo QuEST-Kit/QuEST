@@ -27,8 +27,10 @@ extern "C" {
 
 
 
-/*
- * CompMatr1
+/** 
+ * @defgroup op_compmatr1 CompMatr1
+ * @brief Functions for applying general one-qubit dense matrices, as CompMatr1.
+ * @{
  */
 
 
@@ -81,7 +83,6 @@ extern "C" {
  * @author Tyson Jones
  */
 void multiplyCompMatr1(Qureg qureg, int target, CompMatr1 matr);
-
 
 
 /** Applies a general one-qubit dense unitary @p matrix to the specified @p target 
@@ -193,6 +194,7 @@ digraph {
  */
 void applyControlledCompMatr1(Qureg qureg, int control, int target, CompMatr1 matrix);
 
+
 /** Applies a multiply-controlled one-qubit dense unitary @p matrix to the specified 
  * @p target qubit of @p qureg.
  * 
@@ -234,6 +236,7 @@ digraph {
  * @notvalidated
  */
 void applyMultiControlledCompMatr1(Qureg qureg, int* controls, int numControls, int target, CompMatr1 matrix);
+
 
 /** Applies an arbitrarily-controlled one-qubit dense unitary @p matrix to the specified 
  * @p target qubit of @p qureg, conditioned upon the @p controls being in the given @p states.
@@ -278,14 +281,21 @@ digraph {
 void applyMultiStateControlledCompMatr1(Qureg qureg, int* controls, int* states, int numControls, int target, CompMatr1 matrix);
 
 
+/** @} */
 
-/*
- * CompMatr2
+
+
+/** 
+ * @defgroup op_compmatr2 CompMatr2
+ * @brief Functions for applying general two-qubit dense matrices, as CompMatr2.
+ * @{
  */
+
 
 /// @notdoced
 /// @notvalidated
 void multiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matr);
+
 
 /** Applies a general two-qubit dense unitary @p matrix to qubits @p target1 and
  * @p target2 (treated as increasing significance) of @p qureg.
@@ -315,6 +325,7 @@ digraph {
  * @notvalidated
  */
 void applyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix);
+
 
 /** Applies a singly-controlled two-qubit dense unitary @p matrix to qubits 
  * @p target1 and @p target2 (treated as increasing significance) of @p qureg.
@@ -350,6 +361,7 @@ digraph {
  * @notvalidated
  */
 void applyControlledCompMatr2(Qureg qureg, int control, int target1, int target2, CompMatr2 matr);
+
 
 /** Applies a multiply-controlled two-qubit dense unitary @p matrix to qubits 
  * @p target1 and @p target2 (treated as increasing significance) of @p qureg.
@@ -391,6 +403,7 @@ digraph {
  * @notvalidated
  */
 void applyMultiControlledCompMatr2(Qureg qureg, int* controls, int numControls, int target1, int target2, CompMatr2 matr);
+
 
 /** Applies an arbitrarily-controlled two-qubit dense unitary @p matrix to qubits 
  * @p target1 and @p target2 (treated as increasing significance) of @p qureg,
@@ -435,36 +448,52 @@ digraph {
 void applyMultiStateControlledCompMatr2(Qureg qureg, int* controls, int* states, int numControls, int target1, int target2, CompMatr2 matr);
 
 
+/** @} */
 
-/*
- * CompMatr
+
+
+/** 
+ * @defgroup op_compmatr CompMatr
+ * @brief Functions for applying general many-target dense matrices, as CompMatr.
+ * @{
  */
+
 
 /// @notdoced
 /// @notvalidated
 void multiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matr);
 
+
 /// @notdoced
 /// @notvalidated
 void applyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matr);
+
 
 /// @notdoced
 /// @notvalidated
 void applyControlledCompMatr(Qureg qureg, int control, int* targets, int numTargets, CompMatr matr);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledCompMatr(Qureg qureg, int* controls, int numControls, int* targets, int numTargets, CompMatr matr);
+
 
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledCompMatr(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets, CompMatr matr);
 
 
+/** @} */
 
-/*
- * DiagMatr1
+
+
+/** 
+ * @defgroup op_diagmatr1 DiagMatr1
+ * @brief Functions for applying general one-qubit diagonal matrices, as DiagMatr1.
+ * @{
  */
+
 
 /// @notdoced
 /// @notvalidated
@@ -487,10 +516,16 @@ void applyMultiControlledDiagMatr1(Qureg qureg, int* controls, int numControls, 
 void applyMultiStateControlledDiagMatr1(Qureg qureg, int* controls, int* states, int numControls, int target, DiagMatr1 matr);
 
 
+/** @} */
 
-/*
- * DiagMatr2
+
+
+/** 
+ * @defgroup op_diagmatr2 DiagMatr2
+ * @brief Functions for applying general two-qubit diagonal matrices, as DiagMatr2.
+ * @{
  */
+
 
 /// @notdoced
 /// @notvalidated
@@ -513,155 +548,184 @@ void applyMultiControlledDiagMatr2(Qureg qureg, int* controls, int numControls, 
 void applyMultiStateControlledDiagMatr2(Qureg qureg, int* controls, int* states, int numControls, int target1, int target2, DiagMatr2 matr);
 
 
+/** @} */
 
-/*
- * DiagMatr
+
+
+/** 
+ * @defgroup op_diagmatr DiagMatr
+ * @brief Functions for applying general many-qubit diagonal matrices, as DiagMatr.
+ * @{
  */
+
 
 /// @notdoced
 /// @notvalidated
 void multiplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix);
 
+
 /// @notdoced
 /// @notvalidated
 void applyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix);
+
 
 /// @notdoced
 /// @notvalidated
 void applyControlledDiagMatr(Qureg, int control, int* targets, int numTargets, DiagMatr matrix);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledDiagMatr(Qureg, int* controls, int numControls, int* targets, int numTargets, DiagMatr matrix);
+
 
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledDiagMatr(Qureg, int* controls, int* states, int numControls, int* targets, int numTargets, DiagMatr matrix);
 
 
-
-/*
- * DiagMatrPower
- */
-
 /// @notdoced
 /// @notvalidated
 void multiplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
+
 
 /// @notdoced
 /// @notvalidated
 void applyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
 
+
 /// @notdoced
 /// @notvalidated
 void applyControlledDiagMatrPower(Qureg qureg, int control, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledDiagMatrPower(Qureg qureg, int* controls, int numControls, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
+
 
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
 
 
+/** @} */
 
-/*
- * FullStateDiagMatr
+
+
+/** 
+ * @defgroup op_fullstatediagmatr FullStateDiagMatr
+ * @brief Functions for applying general all-qubit diagonal matrices, as FullStateDiagMatr.
+ * @{
  */
+
 
 /// @notdoced
 /// @notvalidated
 void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
 
+
 /// @notdoced
 /// @notvalidated
 void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
 
+
 /// @notdoced
 /// @notvalidated
 void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
+
 
 /// @notdoced
 /// @notvalidated
 void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
 
 
+/** @} */
 
-/*
- * S gate
+
+
+/** 
+ * @defgroup op_fixed Fixed
+ * @brief Functions for applying the one-qubit S, T and Hadamard gates.
+ * @{
  */
+
 
 /// @notdoced
 /// @notvalidated
 void applyS(Qureg qureg, int target);
 
+
 /// @notdoced
 /// @notvalidated
 void applyControlledS(Qureg qureg, int control, int target);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledS(Qureg qureg, int* controls, int numControls, int target);
+
 
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledS(Qureg qureg, int* controls, int* states, int numControls, int target);
 
 
-
-/*
- * T gate
- */
-
 /// @notdoced
 /// @notvalidated
 void applyT(Qureg qureg, int target);
+
 
 /// @notdoced
 /// @notvalidated
 void applyControlledT(Qureg qureg, int control, int target);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledT(Qureg qureg, int* controls, int numControls, int target);
+
 
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledT(Qureg qureg, int* controls, int* states, int numControls, int target);
 
 
-
-/*
- * Hadamard 
- */
-
 /// @notdoced
 /// @notvalidated
 void applyHadamard(Qureg qureg, int target);
+
 
 /// @notdoced
 /// @notvalidated
 void applyControlledHadamard(Qureg qureg, int control, int target);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledHadamard(Qureg qureg, int* controls, int numControls, int target);
+
 
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledHadamard(Qureg qureg, int* controls, int* states, int numControls, int target);
 
 
+/** @} */
 
 
-/*
- * swaps
+
+/** 
+ * @defgroup op_swap Swap
+ * @brief Functions for applying the two-qubit SWAP and related gates.
+ * @{
  */
+
 
 /// @notdoced
 /// @notvalidated
 void multiplySwap(Qureg qureg, int qubit1, int qubit2);
+
 
 /** Applies a SWAP gate between @p qubit1 and @p qubit2 of @p qureg.
  * 
@@ -695,269 +759,336 @@ digraph {
  */
 void applySwap(Qureg qureg, int qubit1, int qubit2);
 
+
 /// @notdoced
 /// @notvalidated
 void applyControlledSwap(Qureg qureg, int control, int qubit1, int qubit2);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledSwap(Qureg qureg, int* controls, int numControls, int qubit1, int qubit2);
+
 
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledSwap(Qureg qureg, int* controls, int* states, int numControls, int qubit1, int qubit2);
 
 
-
-/*
- * sqrt-swap
- */
-
 /// @notdoced
 /// @notvalidated
 void applySqrtSwap(Qureg qureg, int qubit1, int qubit2);
+
 
 /// @notdoced
 /// @notvalidated
 void applyControlledSqrtSwap(Qureg qureg, int control, int qubit1, int qubit2);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledSqrtSwap(Qureg qureg, int* controls, int numControls, int qubit1, int qubit2);
+
 
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledSqrtSwap(Qureg qureg, int* controls, int* states, int numControls, int qubit1, int qubit2);
 
 
+/** @} */
 
-/*
- * individual Paulis
+
+
+/** 
+ * @defgroup op_pauli Pauli
+ * @brief Functions for applying the individual one-qubit Pauli operators.
+ * @{
  */
+
 
 /// @notdoced
 /// @notvalidated
 void multiplyPauliX(Qureg qureg, int target);
+
+
 /// @notdoced
 /// @notvalidated
 void multiplyPauliY(Qureg qureg, int target);
+
+
 /// @notdoced
 /// @notvalidated
 void multiplyPauliZ(Qureg qureg, int target);
 
+
 /// @notdoced
 /// @notvalidated
 void applyPauliX(Qureg qureg, int target);
+
+
 /// @notdoced
 /// @notvalidated
 void applyPauliY(Qureg qureg, int target);
+
+
 /// @notdoced
 /// @notvalidated
 void applyPauliZ(Qureg qureg, int target);
 
+
 /// @notdoced
 /// @notvalidated
 void applyControlledPauliX(Qureg qureg, int control, int target);
+
+
 /// @notdoced
 /// @notvalidated
 void applyControlledPauliY(Qureg qureg, int control, int target);
+
+
 /// @notdoced
 /// @notvalidated
 void applyControlledPauliZ(Qureg qureg, int control, int target);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledPauliX(Qureg qureg, int* controls, int numControls, int target);
+
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledPauliY(Qureg qureg, int* controls, int numControls, int target);
+
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledPauliZ(Qureg qureg, int* controls, int numControls, int target);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledPauliX(Qureg qureg, int* controls, int* states, int numControls, int target);
+
+
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledPauliY(Qureg qureg, int* controls, int* states, int numControls, int target);
+
+
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledPauliZ(Qureg qureg, int* controls, int* states, int numControls, int target);
 
 
+/** @} */
 
-/*
- * Pauli strings
+
+
+/** 
+ * @defgroup op_paulistr PauliStr
+ * @brief Functions for applying a tensor product of Pauli operators, as a PauliStr
+ * @{
  */
+
 
 /// @notdoced
 /// @notvalidated
 void multiplyPauliStr(Qureg qureg, PauliStr str);
 
+
 /// @notdoced
 /// @notvalidated
 void applyPauliStr(Qureg qureg, PauliStr str);
+
 
 /// @notdoced
 /// @notvalidated
 void applyControlledPauliStr(Qureg qureg, int control, PauliStr str);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledPauliStr(Qureg qureg, int* controls, int numControls, PauliStr str);
+
 
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, int numControls, PauliStr str);
 
 
+/** @} */
 
-/*
- * Pauli string sums
+
+
+/** 
+ * @defgroup op_rotation Rotations
+ * @brief Functions for applying one-qubit rotations around Pauli and arbitrary axis.
+ * @{
  */
 
-/// @notdoced
-/// @notvalidated
-void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
-
-/// @nottested
-void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
-
-
-
-/*
- * individual axis rotations
- */
-
-// don't think users will ever want to left-multiply only
 
 /// @notdoced
 /// @notvalidated
 void applyRotateX(Qureg qureg, int target, qreal angle);
+
+
 /// @notdoced
 /// @notvalidated
 void applyRotateY(Qureg qureg, int target, qreal angle);
+
+
 /// @notdoced
 /// @notvalidated
 void applyRotateZ(Qureg qureg, int target, qreal angle);
 
+
 /// @notdoced
 /// @notvalidated
 void applyControlledRotateX(Qureg qureg, int control, int target, qreal angle);
+
+
 /// @notdoced
 /// @notvalidated
 void applyControlledRotateY(Qureg qureg, int control, int target, qreal angle);
+
+
 /// @notdoced
 /// @notvalidated
 void applyControlledRotateZ(Qureg qureg, int control, int target, qreal angle);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledRotateX(Qureg qureg, int* controls, int numControls, int target, qreal angle);
+
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledRotateY(Qureg qureg, int* controls, int numControls, int target, qreal angle);
+
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledRotateZ(Qureg qureg, int* controls, int numControls, int target, qreal angle);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledRotateX(Qureg qureg, int* controls, int* states, int numControls, int target, qreal angle);
+
+
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledRotateY(Qureg qureg, int* controls, int* states, int numControls, int target, qreal angle);
+
+
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledRotateZ(Qureg qureg, int* controls, int* states, int numControls, int target, qreal angle);
 
 
-
-/*
- * arbitrary axis rotation
- */
-
 /// @notdoced
 /// @notvalidated
 void applyRotateAroundAxis(Qureg qureg, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ);
+
 
 /// @notdoced
 /// @notvalidated
 void applyControlledRotateAroundAxis(Qureg qureg, int ctrl, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledRotateAroundAxis(Qureg qureg, int* ctrls, int numCtrls, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ);
+
 
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledRotateAroundAxis(Qureg qureg, int* ctrls, int* states, int numCtrls, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ);
 
 
+/** @} */
 
-/*
- * Pauli gadgets
+
+
+/** 
+ * @defgroup op_pauligadget Pauli gadgets
+ * @brief Functions for applying many-qubit rotations around arbitrary PauliStr.
+ * @{
  */
+
 
 /// @notdoced
 /// @notvalidated
 void multiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
 
+
 /// @notdoced
 /// @notvalidated
 void applyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
+
 
 /// @notdoced
 /// @notvalidated
 void applyControlledPauliGadget(Qureg qureg, int control, PauliStr str, qreal angle);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledPauliGadget(Qureg qureg, int* controls, int numControls, PauliStr str, qreal angle);
+
 
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStr str, qreal angle);
 
 
+/** @} */
 
-/*
- * phase gadgets
+
+
+/** 
+ * @defgroup op_phasegadget Phase gates
+ * @brief Functions for applying many-qubit rotations around Pauli Z axis, and phase flips and shifts.
+ * @{
  */
+
 
 /// @notdoced
 /// @notvalidated
 void multiplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle);
 
+
 /// @notdoced
 /// @notvalidated
 void applyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle);
+
 
 /// @notdoced
 /// @notvalidated
 void applyControlledPhaseGadget(Qureg qureg, int control, int* targets, int numTargets, qreal angle);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledPhaseGadget(Qureg qureg, int* controls, int numControls, int* targets, int numTargets, qreal angle);
+
 
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledPhaseGadget(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets, qreal angle);
 
 
-
-/*
- * phase shifts and flips
- */
-
 /// @notdoced
 /// @notvalidated
 void applyPhaseFlip (Qureg qureg, int target);
+
+
 /// @notdoced
 /// @notvalidated
 void applyPhaseShift(Qureg qureg, int target, qreal angle);
+
 
 /** Applies a two-qubit phase flip upon @p qubit1 and @p qubit2 of @p qureg.
  * 
@@ -987,6 +1118,7 @@ digraph {
  * @notvalidated
  */
 void applyTwoQubitPhaseFlip( Qureg qureg, int target1, int target2);
+
 
 /** Applies a two-qubit phase flip upon @p qubit1 and @p qubit2 of @p qureg.
  * 
@@ -1019,90 +1151,158 @@ digraph {
  */
 void applyTwoQubitPhaseShift(Qureg qureg, int target1, int target2, qreal angle);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiQubitPhaseFlip (Qureg qureg, int* targets, int numTargets);
+
+
 /// @notdoced
 /// @notvalidated
 void applyMultiQubitPhaseShift(Qureg qureg, int* targets, int numTargets, qreal angle);
 
 
+/** @} */
 
-/*
- * many-qubit CNOTs (aliases for X)
+
+
+/** 
+ * @defgroup op_paulistrsum PauliStrSum
+ * @brief Functions for applying, exponentiating or Trotterising a weigthed sum of Pauli tensors.
+ * @{
  */
+
+
+/// @notdoced
+/// @notvalidated
+void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
+
+
+/// @notdoced
+/// @nottested
+void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
+
+
+/** @} */
+
+
+
+/** 
+ * @defgroup op_nots Many-not gates
+ * @brief Functions for effecting many-qubit NOT gates
+ * @{
+ */
+
 
 /// @notdoced
 /// @notvalidated
 void multiplyMultiQubitNot(Qureg qureg, int* targets, int numTargets);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiQubitNot(Qureg, int* targets, int numTargets);
+
 
 /// @notdoced
 /// @notvalidated
 void applyControlledMultiQubitNot(Qureg, int control, int* targets, int numTargets);
 
+
 /// @notdoced
 /// @notvalidated
 void applyMultiControlledMultiQubitNot(Qureg, int* controls, int numControls, int* targets, int numTargets);
+
 
 /// @notdoced
 /// @notvalidated
 void applyMultiStateControlledMultiQubitNot(Qureg, int* controls, int* states, int numControls, int* targets, int numTargets);
 
 
+/** @} */
 
-/*
- * measurement
+
+
+/** 
+ * @defgroup op_measurement Measurements
+ * @brief Functions for effecting destructive measurements.
+ * @{
  */
+
 
 /// @notdoced
 /// @notvalidated
 int applyQubitMeasurement(Qureg qureg, int target);
 
+
 /// @notdoced
 /// @notvalidated
 int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability);
+
 
 /// @notdoced
 /// @notvalidated
 qreal applyForcedQubitMeasurement(Qureg qureg, int target, int outcome);
 
-/// @notdoced
-/// @notvalidated
-void applyQubitProjector(Qureg qureg, int target, int outcome);
 
 /// @notdoced
 /// @notvalidated
 qindex applyMultiQubitMeasurement(Qureg qureg, int* qubits, int numQubits);
 
+
 /// @notdoced
 /// @notvalidated
 qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQubits, qreal* probability);
 
+
 /// @notdoced
 /// @notvalidated
 qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, int numQubits);
+
+
+/** @} */
+
+
+
+/** 
+ * @defgroup op_projectors Projectors
+ * @brief Functions for effecting projectors which break the state normalisation.
+ * @{
+ */
+
+
+/// @notdoced
+/// @notvalidated
+void applyQubitProjector(Qureg qureg, int target, int outcome);
+
 
 /// @notdoced
 /// @notvalidated
 void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits);
 
 
+/** @} */
 
-/*
- * QFT
+
+
+/** 
+ * @defgroup op_qft QFT
+ * @brief Functions for applying the Quantum Fourier Transform.
+ * @{
  */
+
 
 /// @notdoced
 /// @notvalidated
 void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets);
 
+
 /// @notdoced
 /// @notvalidated
 void applyFullQuantumFourierTransform(Qureg qureg);
+
+
+/** @} */
 
 
 

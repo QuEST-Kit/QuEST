@@ -298,6 +298,7 @@ ALIASES                =
 ALIASES += "nottested=@warning This function has not yet been unit tested and may contain bugs. Please use with caution!"
 ALIASES += "notvalidated=@attention This function's input validation has not yet been tested, so erroneous usage may produce unexpected output. Please use with caution!"
 ALIASES += "notdoced=@note Documentation for this function or struct is under construction!"
+ALIASES += "cpponly=@remark This function is only available in C++."
 ALIASES += "myexample=@b Example<br>"
 ALIASES += "equivalence=@b Equivalences<br>"
 ALIASES += "constraints=@b Constraints<br>"
@@ -2616,7 +2617,7 @@ DOT_FONTPATH           =
 # Possible values are: NO, YES, TEXT, GRAPH and BUILTIN.
 # The default value is: YES.
 
-CLASS_GRAPH            = YES
+CLASS_GRAPH            = NO
 
 # If the COLLABORATION_GRAPH tag is set to YES then doxygen will generate a
 # graph for each documented class showing the direct and indirect implementation
@@ -2628,7 +2629,7 @@ CLASS_GRAPH            = YES
 # The default value is: YES.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-COLLABORATION_GRAPH    = YES
+COLLABORATION_GRAPH    = NO
 
 # If the GROUP_GRAPHS tag is set to YES then Doxygen will generate a graph for
 # groups, showing the direct groups dependencies. Explicit enabling a group
@@ -2639,7 +2640,7 @@ COLLABORATION_GRAPH    = YES
 # The default value is: YES.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-GROUP_GRAPHS           = YES
+GROUP_GRAPHS           = NO
 
 # If the UML_LOOK tag is set to YES doxygen will generate inheritance and
 # collaboration diagrams in a style similar to the OMG's Unified Modeling

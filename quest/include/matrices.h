@@ -32,6 +32,13 @@
 
 
 
+/** 
+ * @defgroup matrices_structs Structs
+ * @brief Data structures for representing operator matrices.
+ * @{
+ */
+
+
 /*
  * DENSE MATRIX STRUCTS
  *
@@ -107,7 +114,6 @@ typedef struct {
 } CompMatr;
 
 
-
 /*
  * DIAGONAL MATRIX STRUCTS
  *
@@ -169,7 +175,6 @@ typedef struct {
 } DiagMatr;
 
 
-
 /*
  * DISTRIBUTED MATRIX STRUCTS
  */
@@ -212,6 +217,41 @@ typedef struct {
     qcomp* gpuElems;
 
 } FullStateDiagMatr;
+
+
+/** @} */
+
+
+
+// we define the remaining doc groups in advance, since their signatures are
+// more naturally grouped in an implementation-specific way below. Note the
+// above structs were not doc'd this way (which would be more consistent)
+// because it inexplicably causes Doxygen to duplicate their section at the
+// top-level under Matrices (rather than under Structs). Bizarre! The order
+// of declaration below will match the order shown in the html doc.
+/** 
+ * @defgroup matrices_getters Getters
+ * @brief Functions for obtaining fixed-size matrices.
+ * 
+ * @defgroup matrices_create Constructors
+ * @brief Functions for creating variable-size matrices.
+ * 
+ * @defgroup matrices_destroy Destructors
+ * @brief Functions for destroying existing matrices.
+ * 
+ * @defgroup matrices_reporters Reporters
+ * @brief Functions for printing matrices.
+ * 
+ * @defgroup matrices_setters Setters
+ * @brief Functions for overwriting the elements of matrices.
+ * 
+ * @defgroup matrices_sync Synchronisation
+ * @brief Functions for overwriting a matrix's GPU (VRAM) memory with its CPU (RAM) contents.
+ * @details These functions are only necessary when the user wishes to manually modify the
+ *          elements of a matrix (in lieu of using the @ref matrices_setters "Setters"), to
+ *          thereafter synchronise the changes to the GPU copy of the channel. These functions 
+ *          have no effect when running without GPU-acceleration, but remain legal and harmless 
+ *          to call (to achieve platform agnosticism).
 
 
 
@@ -258,6 +298,7 @@ extern void _validateNewElemsPtrNotNull(qcomp* ptr, const char* caller);
 #endif
 
 
+/// @ingroup matrices_getters
 /// @notdoced
 static inline CompMatr1 getCompMatr1(qcomp** in) {
     _validateNewNestedElemsPtrNotNull(in, 1, __func__);
@@ -272,6 +313,8 @@ static inline CompMatr1 getCompMatr1(qcomp** in) {
     return out;
 }
 
+
+/// @ingroup matrices_getters
 /// @notdoced
 static inline CompMatr2 getCompMatr2(qcomp** in) {
     _validateNewNestedElemsPtrNotNull(in, 2, __func__);
@@ -289,6 +332,7 @@ static inline CompMatr2 getCompMatr2(qcomp** in) {
 }
 
 
+/// @ingroup matrices_getters
 /// @notdoced
 static inline DiagMatr1 getDiagMatr1(qcomp* in) {
     _validateNewElemsPtrNotNull(in, __func__);
@@ -301,6 +345,8 @@ static inline DiagMatr1 getDiagMatr1(qcomp* in) {
     return out;
 }
 
+
+/// @ingroup matrices_getters
 /// @notdoced
 static inline DiagMatr2 getDiagMatr2(qcomp* in) {
     _validateNewElemsPtrNotNull(in, __func__);
@@ -354,30 +400,44 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
 
 #ifdef __cplusplus
 
-    // C++ defines overloads which merely wrap _getCompMatr1FromArr()
+    // C++ defines overloads which merely wrap _getCompMatr1FromArr(), for fixed-size arrays.
+    // C++ also defines additional std::vector overloads (for convenience, and for inline initialisation).
+    // these are defined in matrices.cpp because they invoke validation (checking vector sizes)
 
+
+    /// @ingroup matrices_getters
     /// @notdoced
     static inline CompMatr1 getCompMatr1(qcomp in[2][2]) { return _getCompMatr1FromArr(in); }
 
+
+    /// @ingroup matrices_getters
     /// @notdoced
     static inline CompMatr2 getCompMatr2(qcomp in[4][4]) { return _getCompMatr2FromArr(in); }
 
 
-    // C++ also defines additional std::vector overloads (for convenience, and for inline initialisation).
-    // these are defined in matrices.cpp because they invoke validation (checking vector sizes)
-
+    /// @ingroup matrices_getters
     /// @notdoced
+    /// @cpponly
     CompMatr1 getCompMatr1(std::vector<std::vector<qcomp>> in);
 
+
+    /// @ingroup matrices_getters
     /// @notdoced
+    /// @cpponly
     CompMatr2 getCompMatr2(std::vector<std::vector<qcomp>> in);
 
 
+    /// @ingroup matrices_getters
     /// @notdoced
+    /// @cpponly
     DiagMatr1 getDiagMatr1(std::vector<qcomp> in);
 
+
+    /// @ingroup matrices_getters
     /// @notdoced
+    /// @cpponly
     DiagMatr2 getDiagMatr2(std::vector<qcomp> in);
+
 
 #else
 
@@ -409,6 +469,8 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
     //   _Pragma() in the RHS which is evaluated at compile-time (NOT pre-procesing),
     //   e.g. default: _Pragma("GCC error \"arg not allowed\"").
     
+
+    /// @ingroup matrices_getters
     /// @notdoced
     #define getCompMatr1(...) \
         _Generic((__VA_ARGS__), \
@@ -416,6 +478,8 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
             default : _getCompMatr1FromArr \
         )((__VA_ARGS__))
 
+
+    /// @ingroup matrices_getters
     /// @notdoced
     #define getCompMatr2(...) \
         _Generic((__VA_ARGS__), \
@@ -444,52 +508,66 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
 
     // C++ merely invokes the std::vector initialiser overload
 
+
+    /// @ingroup matrices_getters
     /// @notdoced
     #define getInlineCompMatr1(...) \
         getCompMatr1(__VA_ARGS__)
 
+
+    /// @ingroup matrices_getters
     /// @notdoced
     #define getInlineCompMatr2(...) \
         getCompMatr2(__VA_ARGS__)
 
 
+    /// @ingroup matrices_getters
     /// @notdoced
     #define getInlineDiagMatr1(...) \
         getDiagMatr1(__VA_ARGS__)
 
+
+    /// @ingroup matrices_getters
     /// @notdoced
     #define getInlineDiagMatr2(...) \
         getDiagMatr2(__VA_ARGS__)
 
 #else
 
-    // C adds compound literal syntax to make a temporary array
+    // C adds compound literal syntax to make a temporary array. Helpfully, 
+    // explicitly specifying the DiagMatr dimension enables defaulting-to-zero
 
+
+    /// @ingroup matrices_getters
     /// @notdoced
     #define getInlineCompMatr1(...) \
         _getCompMatr1FromArr((qcomp[2][2]) __VA_ARGS__)
 
+
+    /// @ingroup matrices_getters
     /// @notdoced
     #define getInlineCompMatr2(...) \
         _getCompMatr2FromArr((qcomp[4][4]) __VA_ARGS__)
 
 
-    // explicitly specifying the DiagMatr elems dimension enables defaulting-to-zero
-
+    /// @ingroup matrices_getters
     /// @notdoced
     #define getInlineDiagMatr1(...) \
         getDiagMatr1((qcomp[2]) __VA_ARGS__)
 
+
+    /// @ingroup matrices_getters
     /// @notdoced
     #define getInlineDiagMatr2(...) \
         getDiagMatr2((qcomp[4]) __VA_ARGS__)
+
 
 #endif
 
 
 
 /*
- * VARIABLE-SIZE MATRIX CONSTRUCTORS
+ * VARIABLE-SIZE MATRIX CONSTRUCTORS, DESTRUCTORS, SYNC
  */
 
 
@@ -498,37 +576,56 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
 extern "C" {
 #endif
 
+
+    /// @ingroup matrices_create
     /// @notdoced
     CompMatr createCompMatr(int numQubits);
 
+
+    /// @ingroup matrices_create
     /// @notdoced
     DiagMatr createDiagMatr(int numQubits);
 
+
+    /// @ingroup matrices_create
     /// @notdoced
     FullStateDiagMatr createFullStateDiagMatr(int numQubits);
 
+
+    /// @ingroup matrices_create
     /// @notdoced
     FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel, int useMultithread);
 
 
+    /// @ingroup matrices_destroy
     /// @notdoced
     void destroyCompMatr(CompMatr matrix);
 
+
+    /// @ingroup matrices_destroy
     /// @notdoced
     void destroyDiagMatr(DiagMatr matrix);
 
+
+    /// @ingroup matrices_destroy
     /// @notdoced
     void destroyFullStateDiagMatr(FullStateDiagMatr matrix);
 
 
+    /// @ingroup matrices_sync
     /// @notdoced
     void syncCompMatr(CompMatr matr);
 
+
+    /// @ingroup matrices_sync
     /// @notdoced
     void syncDiagMatr(DiagMatr matr);
 
+
+    /// @ingroup matrices_sync
     /// @notdoced
     void syncFullStateDiagMatr(FullStateDiagMatr matr);
+
 
 #ifdef __cplusplus
 }
@@ -553,15 +650,22 @@ extern "C" {
 extern "C" {
 #endif
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
     void setCompMatr(CompMatr matr, qcomp** vals);
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
     void setDiagMatr(DiagMatr out, qcomp* in);
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
     /// @nottested
     void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qcomp* in, qindex numElems);
+
 
 #ifdef __cplusplus
 }
@@ -588,14 +692,23 @@ extern "C" {
 
     // C++ defines vector overloads, permitting inline initialisation
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
+    /// @cpponly
     void setCompMatr(CompMatr out, std::vector<std::vector<qcomp>> in);
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
+    /// @cpponly
     void setDiagMatr(DiagMatr out, std::vector<qcomp> in);
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
     /// @nottested
+    /// @cpponly
     void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, std::vector<qcomp> in);
 
 
@@ -634,6 +747,8 @@ extern "C" {
     // C then overloads setCompMatr() to call the above VLA when given arrays, using C11 Generics.
     // See the doc of getCompMatr1() above for an explanation of Generic, and its nuances
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
     #define setCompMatr(matr, ...) \
         _Generic((__VA_ARGS__), \
@@ -672,15 +787,22 @@ extern "C" {
     // are superfluous, but needed for consistency with the C API, so we additionally
     // validate that they match the struct dimensions (which requires validating the structs).
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
     void setInlineCompMatr(CompMatr matr, int numQb, std::vector<std::vector<qcomp>> in);
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
     void setInlineDiagMatr(DiagMatr matr, int numQb, std::vector<qcomp> in);
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
     /// @nottested
     void setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, std::vector<qcomp> in);
+
 
 #elif !defined(_MSC_VER)
 
@@ -724,14 +846,20 @@ extern "C" {
     // happily, macro arg 'numQb' must be a compile-time constant, so there is no risk of
     // unexpectedly re-evaluating user expressions due to its repetition in the macro
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
     #define setInlineCompMatr(matr, numQb, ...) \
         _setInlineCompMatr((matr), (numQb), (qcomp[1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
     #define setInlineDiagMatr(matr, numQb, ...) \
         _setInlineDiagMatr((matr), (numQb), (qcomp[1<<(numQb)]) __VA_ARGS__)
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
     /// @nottested
     #define setInlineFullStateDiagMatr(matr, startInd, numElems, ...) \
@@ -757,6 +885,8 @@ extern "C" {
     /// @private
     extern void _validateParamsToSetInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems);
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
     #define setInlineDiagMatr(matr, numQb, ...) \
         do { \
@@ -764,6 +894,8 @@ extern "C" {
             setDiagMatr((matr), (numQb), (qcomp[1<<(numQb)]) __VA_ARGS__); \
         } while (0)
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
     #define setInlineFullStateDiagMatr(matr, startInd, numElems, ...) \
         do { \
@@ -794,11 +926,16 @@ extern "C" {
 
     // C++ accepts vector initialiser lists
 
+
+    /// @ingroup matrices_create
     /// @notdoced
     CompMatr createInlineCompMatr(int numQb, std::vector<std::vector<qcomp>> elems);
 
+
+    /// @ingroup matrices_create
     /// @notdoced
     DiagMatr createInlineDiagMatr(int numQb, std::vector<qcomp> elems);
+
 
 #elif !defined(_MSC_VER)
 
@@ -833,10 +970,13 @@ extern "C" {
     }
 
 
+    /// @ingroup matrices_create
     /// @notdoced
     #define createInlineCompMatr(numQb, ...) \
         _createInlineCompMatr((numQb), (qcomp[1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
+    
+    /// @ingroup matrices_create
     /// @notdoced
     #define createInlineDiagMatr(numQb, ...) \
         _createInlineDiagMatr((numQb), (qcomp[1<<(numQb)]) __VA_ARGS__)
@@ -860,31 +1000,42 @@ extern "C" {
 extern "C" {
 #endif
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
     /// @nottested
     void setDiagMatrFromMultiVarFunc(DiagMatr out, qcomp (*func)(qindex*), int* numQubitsPerVar, int numVars, int areSigned);
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
     /// @nottested
     void setDiagMatrFromMultiDimLists(DiagMatr out, void* lists, int* numQubitsPerDim, int numDims);
 
 
+    /// @ingroup matrices_create
     /// @notdoced
     /// @nottested
     FullStateDiagMatr createFullStateDiagMatrFromPauliStrSum(PauliStrSum in);
 
 
+    /// @ingroup matrices_setters
     /// @notdoced
     /// @nottested
     void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, PauliStrSum in);
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
     /// @nottested
     void setFullStateDiagMatrFromMultiVarFunc(FullStateDiagMatr out, qcomp (*func)(qindex*), int* numQubitsPerVar, int numVars, int areSigned);
 
+
+    /// @ingroup matrices_setters
     /// @notdoced
     /// @nottested
     void setFullStateDiagMatrFromMultiDimLists(FullStateDiagMatr out, void* lists, int* numQubitsPerDim, int numDims);
+
 
 #ifdef __cplusplus
 }
@@ -902,35 +1053,48 @@ extern "C" {
 extern "C" {
 #endif
 
+
+    /// @ingroup matrices_reporters
     /// @notdoced
     /// @nottested
     void reportCompMatr1(CompMatr1 matrix);
 
+
+    /// @ingroup matrices_reporters
     /// @notdoced
     /// @nottested
     void reportCompMatr2(CompMatr2 matrix);
 
+
+    /// @ingroup matrices_reporters
     /// @notdoced
     /// @nottested
     void reportCompMatr(CompMatr matrix);
 
 
+    /// @ingroup matrices_reporters
     /// @notdoced
     /// @nottested
     void reportDiagMatr1(DiagMatr1 matrix);
 
+
+    /// @ingroup matrices_reporters
     /// @notdoced
     /// @nottested
     void reportDiagMatr2(DiagMatr2 matrix);
 
+
+    /// @ingroup matrices_reporters
     /// @notdoced
     /// @nottested
     void reportDiagMatr(DiagMatr matrix);
 
 
+    /// @ingroup matrices_reporters
     /// @notdoced
     /// @nottested
     void reportFullStateDiagMatr(FullStateDiagMatr matr);
+
 
 #ifdef __cplusplus
 }

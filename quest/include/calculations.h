@@ -19,10 +19,27 @@
 #include "quest/include/matrices.h"
 
 
+
+/*
+ * These signatures are divided into two partitions; those which are
+ * natively C and C++ compatible (first partition) and those which are
+ * only exposed to C++ (second partition) because they return 'qcomp' 
+ * which cannot cross the C++-to-C ABI. The first partition defines the
+ * doc groups, and the second partition functions are added into them.
+ */
+
 // enable invocation by both C and C++ binaries
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+
+/** 
+ * @defgroup calc_expec Expectation values
+ * @brief Functions for calculating expected values of Hermitian observables.
+ * @{
+ */
 
 
 /** Calculates the expectation value of the given Pauli string observable @p str under the given 
@@ -137,39 +154,79 @@ qreal calcExpecPauliStr(Qureg qureg, PauliStr str);
  */
 qreal calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum);
 
+
 /// @notdoced
 /// @notvalidated
 qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
+
 
 /// @notdoced
 /// @notvalidated
 qreal calcExpecFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matr, qreal exponent);
 
 
-/// @notdoced
-/// @notvalidated
-qreal calcTotalProb(Qureg qureg);
+/** @} */
+
+
+
+/** 
+ * @defgroup calc_prob Probabilities
+ * @brief Functions for non-destructively calculating the probabilities of measurement outcomes.
+ * @{
+ */
+
 
 /// @notdoced
 /// @notvalidated
 qreal calcProbOfBasisState(Qureg qureg, qindex index);
 
+
 /// @notdoced
 /// @notvalidated
 qreal calcProbOfQubitOutcome(Qureg qureg, int qubit, int outcome);
 
+
 /// @notdoced
 /// @notvalidated
 qreal calcProbOfMultiQubitOutcome(Qureg qureg, int* qubits, int* outcomes, int numQubits);
+
 
 /// @notdoced
 /// @notvalidated
 void  calcProbsOfAllMultiQubitOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
 
 
+/** @} */
+
+
+
+/** 
+ * @defgroup calc_properties Properties
+ * @brief Functions for calculating single-state properties like normalisation and purity.
+ * @{
+ */
+
+
+/// @notdoced
+/// @notvalidated
+qreal calcTotalProb(Qureg qureg);
+
+
 /// @notdoced
 /// @notvalidated
 qreal calcPurity(Qureg qureg);
+
+
+/** @} */
+
+
+
+/** 
+ * @defgroup calc_comparisons Comparisons
+ * @brief Functions for comparing multiple quantum states.
+ * @{
+ */
+
 
 /// @notdoced
 /// @notvalidated
@@ -180,13 +237,28 @@ qreal calcFidelity(Qureg qureg, Qureg other);
 qreal calcDistance(Qureg qureg1, Qureg qureg2);
 
 
+/** @} */
+
+
+
+/** 
+ * @defgroup calc_partialtrace Partial trace
+ * @brief Functions for calculating reduced density matrices, creating a new output Qureg.
+ * @{
+ */
+
+
 /// @notdoced
 /// @notvalidated
 Qureg calcPartialTrace(Qureg qureg, int* traceOutQubits, int numTraceQubits);
 
+
 /// @notdoced
 /// @notvalidated
 Qureg calcReducedDensityMatrix(Qureg qureg, int* retainQubits, int numRetainQubits);
+
+
+/** @} */
 
 
 // end de-mangler
@@ -207,24 +279,34 @@ Qureg calcReducedDensityMatrix(Qureg qureg, int* retainQubits, int numRetainQubi
  * below functions have a C-compatible wrapper defined in
  * wrappers.h which passes/receives the primitives by pointer;
  * a qcomp ptr can be safely passed from the C++ source binary
- * the user's C binary. 
+ * the user's C binary. We manually add these functions to the
+ * Doxygen doc groups defined above
  */
 
+
+/// @ingroup calc_comparisons
 /// @notdoced
 /// @notvalidated
 qcomp calcInnerProduct(Qureg qureg1, Qureg qureg2);
 
+
+/// @ingroup calc_expec
 /// @notdoced
 /// @notvalidated
 qcomp calcExpecNonHermitianPauliStrSum(Qureg qureg, PauliStrSum sum); 
 
+
+/// @ingroup calc_expec
 /// @notdoced
 /// @notvalidated
 qcomp calcExpecNonHermitianFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
 
+
+/// @ingroup calc_expec
 /// @notdoced
 /// @notvalidated
 qcomp calcExpecNonHermitianFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
+
 
 
 #endif // CALCULATIONS_H
