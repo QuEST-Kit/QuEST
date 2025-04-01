@@ -66,7 +66,7 @@ extern "C" {
  * ```
  *
  * @param[in,out] qureg  the state to modify.
- * @param[in]     sum    the index of the target qubit.
+ * @param[in]     target the index of the target qubit.
  * @param[in]     matrix the Z-basis matrix to multiply.
  * @throws invalidQuESTInputError()
  * - if @p qureg or @p matrix are uninitialised.
@@ -140,7 +140,7 @@ digraph {
  * ```
  *
  * @param[in,out] qureg  the state to modify.
- * @param[in]     sum    the index of the target qubit.
+ * @param[in]     target the index of the target qubit.
  * @param[in]     matrix the Z-basis unitary matrix to effect.
  * @throws invalidQuESTInputError()
  * - if @p qureg or @p matrix are uninitialised.
@@ -159,20 +159,123 @@ digraph {
 void applyCompMatr1(Qureg qureg, int target, CompMatr1 matrix);
 
 
+/** Applies a singly-controlled one-qubit dense unitary @p matrix to the specified 
+ * @p target qubit of @p qureg.
+ * 
+ * @diagram
+ * @dot
+digraph {
+  rankdir=LR;
+  node [fontsize=10, fontname="Menlo"];
+  edge [dir=none];
 
+  topWireL [shape=plaintext, label="control"];
+  topWireR [shape=plaintext, label=""];
+  ctrl  [shape=circle, label="", width=.12, style=filled, fillcolor=black];
 
+  topWireL -> ctrl -> topWireR;
 
-/// @notdoced
-/// @notvalidated
-void applyControlledCompMatr1(Qureg qureg, int control, int target, CompMatr1 matr);
+  botWireL [shape=plaintext, label="target"];
+  botWireR [shape=plaintext, label=""];
+  gate  [shape=box,    label="matrix"];
 
-/// @notdoced
-/// @notvalidated
-void applyMultiControlledCompMatr1(Qureg qureg, int* controls, int numControls, int target, CompMatr1 matr);
+  botWireL -> gate -> botWireR;
+  ctrl -> gate;
 
-/// @notdoced
-/// @notvalidated
-void applyMultiStateControlledCompMatr1(Qureg qureg, int* controls, int* states, int numControls, int target, CompMatr1 matr);
+  {rank=same; topWireL; botWireL};
+  {rank=same; ctrl;     gate};
+  {rank=same; topWireR; botWireR};
+}
+ * @enddot
+ *
+ * @notdoced
+ * @notvalidated
+ */
+void applyControlledCompMatr1(Qureg qureg, int control, int target, CompMatr1 matrix);
+
+/** Applies a multiply-controlled one-qubit dense unitary @p matrix to the specified 
+ * @p target qubit of @p qureg.
+ * 
+ * @diagram
+ * @dot
+digraph {
+  rankdir=LR;
+  node [fontsize=10, fontname="Menlo"];
+  edge [dir=none];
+
+  trailingCtrl [shape=plaintext, label="..."];
+
+  topWireL [shape=plaintext, label="controls[1]"];
+  topWireR [shape=plaintext, label=""];
+  topCtrl  [shape=circle, label="", width=.12, style=filled, fillcolor=black];
+
+  topWireL -> topCtrl -> topWireR;
+
+  midWireL [shape=plaintext, label="controls[0]"];
+  midWireR [shape=plaintext, label=""];
+  midCtrl  [shape=circle, label="", width=.12, style=filled, fillcolor=black];
+
+  midWireL -> midCtrl -> midWireR;
+
+  botWireL [shape=plaintext, label="target"];
+  botWireR [shape=plaintext, label=""];
+  gate  [shape=box,    label="matrix"];
+
+  botWireL -> gate -> botWireR;
+  trailingCtrl -> topCtrl -> midCtrl -> gate;
+
+  {rank=same; topWireL; midWireL; botWireL};
+  {rank=same; trailingCtrl; topCtrl; midCtrl; gate};
+  {rank=same; topWireR; midWireR; botWireR};
+}
+ * @enddot
+ *
+ * @notdoced
+ * @notvalidated
+ */
+void applyMultiControlledCompMatr1(Qureg qureg, int* controls, int numControls, int target, CompMatr1 matrix);
+
+/** Applies an arbitrarily-controlled one-qubit dense unitary @p matrix to the specified 
+ * @p target qubit of @p qureg, conditioned upon the @p controls being in the given @p states.
+ * 
+ * @diagram
+ * @dot
+digraph {
+  rankdir=LR;
+  node [fontsize=10, fontname="Menlo"];
+  edge [dir=none];
+
+  trailingCtrl [shape=plaintext, label="..."];
+
+  topWireL [shape=plaintext, label="controls[1]"];
+  topWireR [shape=plaintext, label=""];
+  topCtrl  [shape=circle, label="", width=.12, style=filled, fillcolor=black];
+
+  topWireL -> topCtrl -> topWireR;
+
+  midWireL [shape=plaintext, label="controls[0]"];
+  midWireR [shape=plaintext, label=""];
+  midCtrl  [shape=circle, label="", width=.12, style=filled, fillcolor=white];
+
+  midWireL -> midCtrl -> midWireR;
+
+  botWireL [shape=plaintext, label="target"];
+  botWireR [shape=plaintext, label=""];
+  gate  [shape=box,    label="matrix"];
+
+  botWireL -> gate -> botWireR;
+  trailingCtrl -> topCtrl -> midCtrl -> gate;
+
+  {rank=same; topWireL; midWireL; botWireL};
+  {rank=same; trailingCtrl; topCtrl; midCtrl; gate};
+  {rank=same; topWireR; midWireR; botWireR};
+}
+ * @enddot
+ *
+ * @notdoced
+ * @notvalidated
+ */
+void applyMultiStateControlledCompMatr1(Qureg qureg, int* controls, int* states, int numControls, int target, CompMatr1 matrix);
 
 
 
@@ -184,20 +287,151 @@ void applyMultiStateControlledCompMatr1(Qureg qureg, int* controls, int* states,
 /// @notvalidated
 void multiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matr);
 
-/// @notdoced
-/// @notvalidated
-void applyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matr);
+/** Applies a general two-qubit dense unitary @p matrix to qubits @p target1 and
+ * @p target2 (treated as increasing significance) of @p qureg.
+ * 
+ * @diagram
+ * @dot
+digraph {
+  layout=neato;
+  rankdir=LR;
+  node [fontsize=10, fontname="Menlo"];
+  edge [dir=none];
 
-/// @notdoced
-/// @notvalidated
+  topWireL [shape=plaintext, pos="0,0!", label="target2"];
+  topWireR [shape=plaintext, pos="2.5,0!", label=""];
+
+  botWireL [shape=plaintext, pos="0,.5!", label="target1"];
+  botWireR [shape=plaintext, pos="2.5,.5!", label=""];
+
+  gate  [shape=rectangle, label="matrix", style=filled, fillcolor=white, height=1, pos="1.25,.25!"];
+
+  topWireL -> topWireR;
+  botWireL -> botWireR;
+}
+ * @enddot
+ *
+ * @notdoced
+ * @notvalidated
+ */
+void applyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix);
+
+/** Applies a singly-controlled two-qubit dense unitary @p matrix to qubits 
+ * @p target1 and @p target2 (treated as increasing significance) of @p qureg.
+ * 
+ * @diagram
+ * @dot
+digraph {
+  layout=neato;
+  rankdir=LR;
+  node [fontsize=10, fontname="Menlo"];
+  edge [dir=none];
+
+  topWireL [shape=plaintext, pos="0,1!", label="control"];
+  topWireR [shape=plaintext, pos="2.5,1!", label=""];
+
+  midWireL [shape=plaintext, pos="0,0.5!", label="target2"];
+  midWireR [shape=plaintext, pos="2.5,0.5!", label=""];
+
+  botWireL [shape=plaintext, pos="0,0!", label="target1"];
+  botWireR [shape=plaintext, pos="2.5,0!", label=""];
+
+  gate [shape=rectangle, label="matrix", style=filled, fillcolor=white, height=1, pos="1.25,0.25!"];
+  ctrl [shape=circle, label="", width=.12, style=filled, fillcolor=black, pos="1.25,1!"];
+
+  topWireL -> ctrl -> topWireR;
+  midWireL -> midWireR;
+  botWireL -> botWireR;
+  ctrl -> gate;
+}
+ * @enddot
+ *
+ * @notdoced
+ * @notvalidated
+ */
 void applyControlledCompMatr2(Qureg qureg, int control, int target1, int target2, CompMatr2 matr);
 
-/// @notdoced
-/// @notvalidated
+/** Applies a multiply-controlled two-qubit dense unitary @p matrix to qubits 
+ * @p target1 and @p target2 (treated as increasing significance) of @p qureg.
+ * 
+ * @diagram
+ * @dot
+digraph {
+  layout=neato;
+  rankdir=LR;
+  node [fontsize=10, fontname="Menlo"];
+  edge [dir=none];
+
+  tippytopWireL [shape=plaintext, pos="0,1.5!", label="controls[1]"];
+  tippytopWireR [shape=plaintext, pos="2.5,1.5!", label=""];
+
+  topWireL [shape=plaintext, pos="0,1!", label="controls[0]"];
+  topWireR [shape=plaintext, pos="2.5,1!", label=""];
+
+  midWireL [shape=plaintext, pos="0,0.5!", label="target2"];
+  midWireR [shape=plaintext, pos="2.5,0.5!", label=""];
+
+  botWireL [shape=plaintext, pos="0,0!", label="target1"];
+  botWireR [shape=plaintext, pos="2.5,0!", label=""];
+
+  gate [shape=rectangle, label="matrix", style=filled, fillcolor=white, height=1, pos="1.25,0.25!"];
+  ctrl1 [shape=circle, label="", width=.12, style=filled, fillcolor=black, pos="1.25,1!"];
+  ctrl2 [shape=circle, label="", width=.12, style=filled, fillcolor=black, pos="1.25,1.5!"];
+  trailingCtrl [shape=plaintext, label="...", pos="1.25,2!"];
+
+  tippytopWireL -> ctrl2 -> tippytopWireR;
+  topWireL -> ctrl1 -> topWireR;
+  midWireL -> midWireR;
+  botWireL -> botWireR;
+  trailingCtrl -> ctrl2 -> ctrl1 -> gate;
+}
+ * @enddot
+ *
+ * @notdoced
+ * @notvalidated
+ */
 void applyMultiControlledCompMatr2(Qureg qureg, int* controls, int numControls, int target1, int target2, CompMatr2 matr);
 
-/// @notdoced
-/// @notvalidated
+/** Applies an arbitrarily-controlled two-qubit dense unitary @p matrix to qubits 
+ * @p target1 and @p target2 (treated as increasing significance) of @p qureg,
+ * conditioned upon the @p controls being in the given @p states.
+ * 
+ * @diagram
+ * @dot
+digraph {
+  layout=neato;
+  rankdir=LR;
+  node [fontsize=10, fontname="Menlo"];
+  edge [dir=none];
+
+  tippytopWireL [shape=plaintext, pos="0,1.5!", label="controls[1]"];
+  tippytopWireR [shape=plaintext, pos="2.5,1.5!", label=""];
+
+  topWireL [shape=plaintext, pos="0,1!", label="controls[0]"];
+  topWireR [shape=plaintext, pos="2.5,1!", label=""];
+
+  midWireL [shape=plaintext, pos="0,0.5!", label="target2"];
+  midWireR [shape=plaintext, pos="2.5,0.5!", label=""];
+
+  botWireL [shape=plaintext, pos="0,0!", label="target1"];
+  botWireR [shape=plaintext, pos="2.5,0!", label=""];
+
+  gate [shape=rectangle, label="matrix", style=filled, fillcolor=white, height=1, pos="1.25,0.25!"];
+  ctrl1 [shape=circle, label="", width=.12, style=filled, fillcolor=white, pos="1.25,1!"];
+  ctrl2 [shape=circle, label="", width=.12, style=filled, fillcolor=black, pos="1.25,1.5!"];
+  trailingCtrl [shape=plaintext, label="...", pos="1.25,2!"];
+
+  tippytopWireL -> ctrl2 -> tippytopWireR;
+  topWireL -> ctrl1 -> topWireR;
+  midWireL -> midWireR;
+  botWireL -> botWireR;
+  trailingCtrl -> ctrl2 -> ctrl1 -> gate;
+}
+ * @enddot
+ *
+ * @notdoced
+ * @notvalidated
+ */
 void applyMultiStateControlledCompMatr2(Qureg qureg, int* controls, int* states, int numControls, int target1, int target2, CompMatr2 matr);
 
 
@@ -420,6 +654,7 @@ void applyMultiStateControlledHadamard(Qureg qureg, int* controls, int* states, 
 
 
 
+
 /*
  * swaps
  */
@@ -428,8 +663,36 @@ void applyMultiStateControlledHadamard(Qureg qureg, int* controls, int* states, 
 /// @notvalidated
 void multiplySwap(Qureg qureg, int qubit1, int qubit2);
 
-/// @notdoced
-/// @notvalidated
+/** Applies a SWAP gate between @p qubit1 and @p qubit2 of @p qureg.
+ * 
+ * @diagram
+ * @dot
+digraph {
+  rankdir=LR;
+  layout=neato;
+  node [fontsize=10, fontname="Menlo"];
+  edge [dir=none];
+
+  topWireL [shape=plaintext, label="qubit2", pos="0,.5!"];
+  topWireM [shape=point, label="", width=0, pos=".75,.5!"];
+  topWireR [shape=plaintext, label="", pos="1.5,.5!"];
+
+  botWireL [shape=plaintext, label="qubit1", pos="0,0!"];
+  botWireM [shape=point, label="", width=0, pos=".75,0!"];
+  botWireR [shape=plaintext, label="", pos="1.5,0!"];
+
+  topWireL -> topWireR;
+  botWireL -> botWireR;
+  botWireM -> topWireM;
+
+  topX [shape=plaintext, label="✕", pos=".75,.5!", fontsize=15];
+  botX [shape=plaintext, label="✕", pos=".75,0!",  fontsize=15];
+}
+ * @enddot
+ *
+ * @notdoced
+ * @notvalidated
+ */
 void applySwap(Qureg qureg, int qubit1, int qubit2);
 
 /// @notdoced
@@ -696,11 +959,64 @@ void applyPhaseFlip (Qureg qureg, int target);
 /// @notvalidated
 void applyPhaseShift(Qureg qureg, int target, qreal angle);
 
-/// @notdoced
-/// @notvalidated
+/** Applies a two-qubit phase flip upon @p qubit1 and @p qubit2 of @p qureg.
+ * 
+ * @diagram
+ * @dot
+digraph {
+  rankdir=LR;
+  layout=neato;
+  node [fontsize=10, fontname="Menlo"];
+  edge [dir=none];
+
+  topWireL [shape=plaintext, label="target1", pos="0,.5!"];
+  topWireM [shape=point, label="", width=.1, pos=".75,.5!"]
+  topWireR [shape=plaintext, label="", pos="1.5,.5!"];
+
+  botWireL [shape=plaintext, label="target2", pos="0,0!"];
+  botWireM [shape=point, label="", width=.1, pos=".75,0!"];
+  botWireR [shape=plaintext, label="", pos="1.5,0!"];
+
+  topWireL -> topWireR;
+  botWireL -> botWireR;
+  botWireM -> topWireM;
+}
+ * @enddot
+ *
+ * @notdoced
+ * @notvalidated
+ */
 void applyTwoQubitPhaseFlip( Qureg qureg, int target1, int target2);
-/// @notdoced
-/// @notvalidated
+
+/** Applies a two-qubit phase flip upon @p qubit1 and @p qubit2 of @p qureg.
+ * 
+ * @diagram
+ * @dot
+digraph {
+  rankdir=LR;
+  layout=neato;
+  node [fontsize=10, fontname="Menlo"];
+  edge [dir=none];
+
+  topWireL [shape=plaintext, label="target1", pos="0,.5!"];
+  topWireM [shape=point, label="", width=.1, pos=".75,.5!"]
+  topWireR [shape=plaintext, label="", pos="1.5,.5!"];
+
+  botWireL [shape=plaintext, label="target2", pos="0,0!"];
+  botWireM [shape=point, label="", width=.1, pos=".75,0!"];
+  botWireR [shape=plaintext, label="", pos="1.5,0!"];
+
+  topWireL -> topWireR;
+  botWireL -> botWireR;
+  botWireM -> topWireM;
+
+  angle [shape=plaintext, label="θ", pos=".85,-.2!"];
+}
+ * @enddot
+ *
+ * @notdoced
+ * @notvalidated
+ */
 void applyTwoQubitPhaseShift(Qureg qureg, int target1, int target2, qreal angle);
 
 /// @notdoced
