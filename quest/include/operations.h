@@ -82,7 +82,7 @@ extern "C" {
  * - multiplyCompMatr()
  * @author Tyson Jones
  */
-void multiplyCompMatr1(Qureg qureg, int target, CompMatr1 matr);
+void multiplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix);
 
 
 /** Applies a general one-qubit dense unitary @p matrix to the specified @p target 

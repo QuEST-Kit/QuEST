@@ -252,6 +252,7 @@ typedef struct {
  *          thereafter synchronise the changes to the GPU copy of the channel. These functions 
  *          have no effect when running without GPU-acceleration, but remain legal and harmless 
  *          to call (to achieve platform agnosticism).
+ */
 
 
 

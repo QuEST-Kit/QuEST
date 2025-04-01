@@ -299,11 +299,11 @@ ALIASES += "nottested=@warning This function has not yet been unit tested and ma
 ALIASES += "notvalidated=@attention This function's input validation has not yet been tested, so erroneous usage may produce unexpected output. Please use with caution!"
 ALIASES += "notdoced=@note Documentation for this function or struct is under construction!"
 ALIASES += "cpponly=@remark This function is only available in C++."
-ALIASES += "myexample=@b Example<br>"
-ALIASES += "equivalence=@b Equivalences<br>"
-ALIASES += "constraints=@b Constraints<br>"
-ALIASES += "formulae=@b Formulae<br>"
-ALIASES += "diagram=@b Diagram<br>"
+ALIASES += "myexample=@par Example"
+ALIASES += "equivalence=@par Equivalences"
+ALIASES += "constraints=@par Constraints"
+ALIASES += "formulae=@par Formulae"
+ALIASES += "diagram=@par Diagram"
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For
