@@ -63,6 +63,16 @@
 
 
 
+// ensure C++ macro is valid (API headers use #ifdef, not #if)
+
+#ifdef __cplusplus
+#if !__cplusplus
+#error "Preprocessor __cplusplus was 0 and should instead be undefined"
+#endif
+#endif
+
+
+
 // define optional-macro defaults (mostly to list them)
 
 #ifndef PERMIT_NODES_TO_SHARE_GPU
