@@ -82,7 +82,11 @@ int getRandomInt(int min, int maxExcl) {
         return min;
 
     qreal r = std::floor(getRandomReal(min, maxExcl));
-    return static_cast<int>(r);
+    int out = static_cast<int>(r);
+
+    DEMAND( out >= min );
+    DEMAND( out < maxExcl );
+    return out;
 }
 
 

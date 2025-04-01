@@ -1383,6 +1383,11 @@ TEST_CASE( "applyForcedMultiQubitMeasurement", TEST_CATEGORY ) {
 
         qmatrix projector = getProjector(targets, outcomes, numQubits);
 
+        // this test may randomly request a measurement outcome which
+        // is illegally unlikely, triggering validation; we merely
+        // disable such validation and hope divergences don't break the test!
+        setValidationEpsilon(0);
+
         auto testFunc = [&](Qureg qureg, auto& ref) {
 
             // overwrite caller's setting of initDebugState, since
@@ -1404,6 +1409,8 @@ TEST_CASE( "applyForcedMultiQubitMeasurement", TEST_CATEGORY ) {
         CAPTURE( targets, outcomes );
         SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
+
+        setValidationEpsilonToDefault();
     }
 
     /// @todo input validation
