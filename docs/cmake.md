@@ -2,6 +2,7 @@
   Instructions for compiling QuEST with CMake
 
   @author Oliver Thomson Brown
+  @author Tyson Jones (test variables)
 -->
 
 
@@ -20,9 +21,14 @@ cd build
 make
 ```
 
+> [!NOTE]
 > Windows or MSVC users should additionally supply `--config Release` during compilation to enable optimisations.
 
-## QuEST CMake variables
+
+
+------------------------
+
+## QuEST variables
 
 | Variable | (Default) Values | Notes |
 | -------- | ---------------- | ----- |
@@ -30,16 +36,31 @@ make
 | `VERBOSE_LIB_NAME` | (`OFF`), `ON` | When turned on `LIB_NAME` will be modified according to the other configuration options chosen. For example compiling QuEST with multithreading, distribution, and double precision with `VERBOSE_LIB_NAME` turned on creates `libQuEST-fp2+mt+mpi.so`. |
 | `FLOAT_PRECISION` | (`2`), `1`, `4` | Determines which floating-point precision QuEST will use: double, single, or quad. *Note: Quad precision is not supported when also compiling for GPU.* |
 | `BUILD_EXAMPLES` | (`OFF`), `ON` | Determines whether the example programs will be built alongside QuEST. Note that `min_example` is always built. |
-| `ENABLE_TESTING` | (`ON`), `OFF` | Determines whether Catch2 tests will be built alongisde QuEST. If built, tests can be run from the build directory with `make test`. |
-| `DOWNLOAD_CATCH2` | (`ON`), `OFF` | By default, if you don't have Catch2 installed (or CMake doesn't find it) it will be downloaded from Git and built for you. If you don't want that to happen, for example because you _do_ have Catch2 installed, set this to `OFF`. |
 | `ENABLE_MULTITHREADING` | (`ON`), OFF | Determines whether QuEST will be built with support for parallelisation with OpenMP. |
 | `ENABLE_DISTRIBUTION` | (`OFF`), ON | Determines whether QuEST will be built with support for parallelisation with MPI. |
 | `ENABLE_CUDA` | (`OFF`), `ON` | Determines whether QuEST will be built with support for NVIDIA GPU acceleration. If turned on, `CMAKE_CUDA_ARCHITECTURES` should probably also be set. |
 | `ENABLE_CUQUANTUM` | (`OFF`), `ON` | Determines whether QuEST will make use of the NVIDIA CuQuantum library. Cannot be turned on if `ENABLE_CUDA` is off. |
 | `ENABLE_HIP` | (`OFF`), `ON` | Determines whether QuEST will be built with support for AMD GPU acceleration. If turned on, `CMAKE_HIP_ARCHITECTURES` should probably also be set. |
-| `ENABLE_DEPRECATED_API` | (`OFF`), `ON` | Determines whether QuEST will be built with support for the deprecated (v3) API. *Note: will generate compiler warnings, and not supported by GCC.` |
+| `ENABLE_DEPRECATED_API` | (`OFF`), `ON` | Determines whether QuEST will be built with support for the deprecated (v3) API. ***Note**: this will generate compiler warnings and is not supported by MSVC.* |
 | `USER_SOURCE` | (Undefined), String | The source file for a user program which will be compiled alongside QuEST. `OUTPUT_EXE` *must* also be defined. |
 | `OUTPUT_EXE` | (Undefined), String | The name of the executable which will be created from the provided `USER_SOURCE`. `USER_SOURCE` *must* also be defined. |
+
+
+--------------------------
+
+## Test variables
+
+| Variable | (Default) Values | Notes |
+| -------- | ---------------- | ----- |
+| `ENABLE_TESTING` | (`OFF`), `ON` | Determines whether to additionally build QuEST's unit and integration tests. If built, tests can be run from the `build` directory with `make test`, or `ctest`, or manually launched with `./tests/tests` which enables distribution (i.e. `mpirun -np 8 ./tests/tests`) |
+| `ENABLE_DEPRECATED_API` | (`OFF`), `ON` | As described above. When enabled alongside testing, the `v3 deprecated` unit tests will additionally be compiled and can be run from within `build` via `cd tests/deprecated; ctest`, or manually launched with `./tests/deprecated/dep_tests` (enabling distribution, as above).
+| `DOWNLOAD_CATCH2` | (`ON`), `OFF` | QuEST's tests require Catch2. By default, if you don't have Catch2 installed (or CMake doesn't find it) it will be downloaded from Github and built for you. If you don't want that to happen, for example because you _do_ have Catch2 installed, set this to `OFF`. |
+| `TEST_MAX_NUM_QUBIT_PERMUTATIONS` | (`0`), Integer | Determines the maximum number of control and target qubit permutations with which to test each API function. Set to `0` to test all permutations, or to a positive integer (e.g. `50`) to accelerate the unit tests. |
+| `TEST_MAX_NUM_SUPEROP_TARGETS` | (`4`), Integer | Determines the maximum number of superoperator targets in the unit tests (for functions `mixKrausMap` and `mixSuperOp`). Set to `0` to impose no maximum (which is extraordinarily slow), or a positive integer (e.g. `3`) to accelerate the unit tests. |
+| `TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS` | (`10`), Integer | Determines the number of times (minimum of `1`) to repeat the randomised unit tests of functions which accept multiple distinctly-deployed `Qureg`s. Set to a small, positive integer to accelerate mixed-deployment unit tests. |
+| `TEST_ALL_DEPLOYMENTS` | (`ON`), `OFF` | Determines whether unit tests will be repeatedly run using all possible combinations of available `Qureg` deployments (i.e. `OpenMP` and/or `CUDA` and/or `MPI`), else only once using all available deployments simultaneously. Set to `OFF` to accelerate unit tests. |
+
+---------------------------
 
 ## Standard CMake variables
 
