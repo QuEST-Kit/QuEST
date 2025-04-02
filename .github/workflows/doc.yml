@@ -12,11 +12,19 @@ permissions:
   id-token: write
 
 
+# DEBUG
+# temporarily re-triggering doc from dev branch
 on:
   push:
     branches:
-      - master
+      - more-docs
   workflow_dispatch:
+
+# on:
+#   push:
+#     branches:
+#       - master
+#   workflow_dispatch:
 
 
 # prevent concurrent generation
