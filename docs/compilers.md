@@ -7,7 +7,17 @@
 
 # Compilers
 
-QuEST separates compilation of the **_frontend_**, **_backend_** and the **_tests_** which have progressively stricter compiler requirements.
+QuEST separates compilation of the **_frontend_**, **_backend_** and the **_tests_**, which have progressively stricter compiler requirements.
+This page details the specialised compilers necessary to enable specific features hardware accelerators, and lists such compilers which are
+known to be compatible with QuEST.
+
+
+> **See also**:
+> - [`compile.md`](compile.md) for a guide to compiling QuEST.
+> - [`cmake.md`](cmake.md) for the full list of passable compiler variables.
+> - [`qtechtheory.org`](https://quest.qtechtheory.org/download/) for help downloading the compilers listed on this page.
+
+
 
 ## Frontend
 
