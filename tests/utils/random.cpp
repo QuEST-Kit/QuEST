@@ -17,6 +17,7 @@
 #include "random.hpp"
 #include "quest/include/quest.h"
 
+#include <cmath>
 #include <vector>
 #include <tuple>
 #include <random>
@@ -65,6 +66,12 @@ qreal getRandomReal(qreal min, qreal maxExcl) {
     // advance RNG on every node, identically
     std::uniform_real_distribution<qreal> dist(min,maxExcl);
     qreal out = dist(RNG);
+
+    // note despite the doc asserting maxExcl is exclusive, 
+    // uniform_real_distribution() can indeed return it! In that
+    // case, we substract machine-eps for caller integrity
+    if (out >= maxExcl)
+        out = std::nextafter(maxExcl, min);
 
     DEMAND( out >= min );
     DEMAND( out < maxExcl );
