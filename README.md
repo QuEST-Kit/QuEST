@@ -87,7 +87,7 @@ To learn more:
 
 - visit the [website](https://quest.qtechtheory.org/)
 - see some [examples](/examples/)
-- view the [documentation](#book-documentation)
+- view the [documentation](#documentation)
 - browse the [API](https://quest-kit.github.io/QuEST/group__api.html)
 - read the [whitepaper](https://www.nature.com/articles/s41598-019-47174-9), which featured in Scientific Report's [Top 100 in Physics](https://www.nature.com/collections/ecehgdfcba/) :trophy:
 
