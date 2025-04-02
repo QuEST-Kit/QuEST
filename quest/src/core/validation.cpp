@@ -1044,9 +1044,8 @@ namespace report {
 /*
  * INVALID INPUT RESPONSE BEHAVIOUR
  */
-extern "C" {
-// default C/C++ compatible error response is to simply exit in fail state
-void default_invalidQuESTInputError(const char* msg, const char* func) {
+
+void default_inputErrorHandler(const char* func, const char* msg) {
 
     // safe to call even before MPI has been setup, and ignores user-set trailing newlines
     print(string("")
@@ -1062,26 +1061,16 @@ void default_invalidQuESTInputError(const char* msg, const char* func) {
     if (comm_isInit())
         comm_end();
 
+    // simply exit, interrupting any other process (potentially leaking)
     exit(EXIT_FAILURE);
 }
 
-// enable default error response to be user-overriden as a weak symbol (even in C, and on Windows)
+void (*global_inputErrorHandler)(const char*, const char*) = default_inputErrorHandler;
 
-    // Always declare invalidQuESTInputError so the compiler sees it:
-    void invalidQuESTInputError(const char* msg, const char* func);
+void validateconfig_setErrorHandler(void (*callback)(const char*, const char*)) {
 
-    #ifndef _WIN32
-        #pragma weak invalidQuESTInputError
-        void invalidQuESTInputError(const char* msg, const char* func) {
-            default_invalidQuESTInputError(msg, func);
-        }
-    #elif defined(_WIN64)
-        #pragma comment(linker, "/alternatename:invalidQuESTInputError=default_invalidQuESTInputError")   
-    #else
-        #pragma comment(linker, "/alternatename:_invalidQuESTInputError=_default_invalidQuESTInputError")
-    #endif
-
-} // end C++ de-mangler
+    global_inputErrorHandler = callback;
+}
 
 
 
@@ -1217,8 +1206,9 @@ void assertThat(bool valid, string msg, const char* func) {
     // uniform between nodes (assuming user's do not hack in rank-specific
     // arguments to the API!)
 
+    // invoke the potentially user-overriden error function
     if (!valid)
-        invalidQuESTInputError(msg.c_str(), func);
+        global_inputErrorHandler(func, msg.c_str());
 }
 void assertThat(bool valid, string msg, tokenSubs vars, const char* func) {
 

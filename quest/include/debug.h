@@ -44,7 +44,7 @@ int getNumSeeds();
  */
 
 /// @notdoced
-void invalidQuESTInputError(const char* msg, const char* func);
+void setInputErrorHandler(void (*callback)(const char* func, const char* msg));
 
 /// @notdoced
 void setValidationOn();
