@@ -6,6 +6,7 @@
  * 
  * @author Tyson Jones
  * @author Jakub Adamski (sped-up large comm by asynch messages)
+ * @author Oliver Brown (patched max-message inference, consulted on AR and MPICH support)
  * @author Ania (Anna) Brown (developed QuEST v1 logic)
  */
 
