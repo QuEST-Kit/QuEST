@@ -64,7 +64,11 @@ qreal getRandomReal(qreal min, qreal maxExcl) {
 
     // advance RNG on every node, identically
     std::uniform_real_distribution<qreal> dist(min,maxExcl);
-    return dist(RNG);
+    qreal out = dist(RNG);
+
+    DEMAND( out >= min );
+    DEMAND( out < maxExcl );
+    return out
 }
 
 
@@ -77,7 +81,10 @@ qreal getRandomPhase() {
 
 
 int getRandomInt(int min, int maxExcl) {
+    DEMAND( maxExcl >= min );
 
+    // permit this out of convenience
+    // for some test generators
     if (min == maxExcl)
         return min;
 
