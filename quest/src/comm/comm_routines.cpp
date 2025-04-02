@@ -6,6 +6,7 @@
  * 
  * @author Tyson Jones
  * @author Jakub Adamski (sped-up large comm by asynch messages)
+ * @author Oliver Brown (patched max-message inference, consulted on AR and MPICH support)
  * @author Ania (Anna) Brown (developed QuEST v1 logic)
  */
 
@@ -26,6 +27,7 @@
 
 #include <vector>
 #include <array>
+#include <algorithm>
 
 using std::vector;
 
@@ -132,15 +134,24 @@ int getMaxNumMessages() {
     // the max supported tag value constrains the total number of messages 
     // we can send in a round of communication, since we uniquely tag
     // each message in a round such that we do not rely upon message-order 
-    // gaurantees and ergo can safely support UCX adaptive routing (AR)
-    int maxNumMsgs, isAttribSet;
+    // gaurantees and ergo can safely support UCX adaptive routing (AR).
+    // The MPI standard necessitates the max tag is always at least...
+    int minTagUpperBound = 32767;
 
-    MPI_Comm_get_attr(MPI_COMM_WORLD, MPI_TAG_UB, &maxNumMsgs, &isAttribSet);
+    // but we pedantically consult MPI in case we ever need to send MORE (smaller?)
+    // messages. Beware the max is obtained via a void pointer and might be unset...
+    void* tagUpperBoundPtr;
+    int isAttribSet;
+    MPI_Comm_get_attr(MPI_COMM_WORLD, MPI_TAG_UB, &tagUpperBoundPtr, &isAttribSet);
 
+    // if something went wrong with obtaining the tag bound, return the safe minimum
     if (!isAttribSet)
-        error_commTagUpperBoundNotSet();
+        return minTagUpperBound;
 
-    return maxNumMsgs;
+    // otherwise return whichever is bigger of the found bound and the minimum
+    // (which is really just hiding an error; it should ALWAYS be that UB>=min)
+    int tagUpperBound = *(int*) tagUpperBoundPtr;
+    return std::max({minTagUpperBound, tagUpperBound});
 
 #else
     error_commButEnvNotDistributed();
