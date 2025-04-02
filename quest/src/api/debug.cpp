@@ -64,6 +64,11 @@ void getSeeds(unsigned* seeds) {
  * VALIDATION
  */
 
+void setInputErrorHandler(void (*callback)(const char*, const char*)) {
+    validate_envIsInit(__func__);
+
+    validateconfig_setErrorHandler(callback);
+}
 
 void setValidationOn() {
     validate_envIsInit(__func__);

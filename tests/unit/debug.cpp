@@ -46,6 +46,22 @@ using std::vector;
  */
 
 
+TEST_CASE( "setInputErrorHandler", TEST_CATEGORY ) {
+
+    /// @todo
+    /// We can test this by saving the current handler,
+    /// overwriting it to local handlers of our choosing
+    /// and verifying e.g. their error messages are detected,
+    /// then restoring the original handler. Alas, this
+    /// requires exposing the handler in main, else adding
+    /// a quest function for obtaining the user-set handler.
+    /// Both are annoying - I forego them presently! This
+    /// function has anyway been manually tested via examples.
+    
+    SUCCEED( );
+}
+
+
 TEST_CASE( "setMaxNumReportedSigFigs", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
@@ -365,21 +381,6 @@ TEST_CASE( "getNumSeeds", TEST_CATEGORY ) {
 
     // re-randomise seeds for remaining tests
     setSeedsToDefault();
-}
-
-
-TEST_CASE( "invalidQuESTInputError", TEST_CATEGORY ) {
-
-    SECTION( LABEL_CORRECTNESS ) {
-
-        REQUIRE_THROWS_WITH( invalidQuESTInputError("msg", "func"), ContainsSubstring("msg") && ContainsSubstring("func") );
-    }
-
-    SECTION( LABEL_VALIDATION ) {
-
-        // has no validation
-        SUCCEED( );
-    }
 }
 
 

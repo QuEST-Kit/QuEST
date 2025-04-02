@@ -27,15 +27,16 @@
 #include <stdexcept>
 
 
-/* Redefinition of QuEST_validation's invalidQuESTInputError function, called when a 
- * user passes an incorrect parameter (e.g. a negative qubit index). This is 
- * redefined here to, in lieu of printing and exiting, throw a C++ exception
- * which can be caught (and hence unit tested for) by Catch2
+
+/*
+ * recast QuEST errors into exceptions which Catch2 can intercept
  */
- extern "C" void invalidQuESTInputError(const char* errMsg, const char* errFunc) {
-  
-    throw std::runtime_error(errMsg);
- }
+
+/// @private 
+extern "C" void validationErrorHandler(const char* errFunc, const char* errMsg) {
+
+  throw std::runtime_error(std::string(errFunc) + ": " + std::string(errMsg));
+}
 
 
 /** Explicit declaration of main to create (destroy) the QuESTEnv before (after)
@@ -44,6 +45,7 @@
 int main(int argc, char* argv[]) {
 
   initQuESTEnv();
+  setInputErrorHandler(validationErrorHandler);
   setRandomTestStateSeeds();
 
   int result = Catch::Session().run( argc, argv );

@@ -56,11 +56,11 @@
 
 
 /*
- * recast QuEST errors into exceptions which Catch can intercept
+ * recast QuEST errors into exceptions which Catch2 can intercept
  */
 
 /// @private 
-extern "C" void invalidQuESTInputError(const char* errMsg, const char* errFunc) {
+extern "C" void validationErrorHandler(const char* errFunc, const char* errMsg) {
 
     throw std::runtime_error(std::string(errFunc) + ": " + std::string(errMsg));
 }
@@ -117,6 +117,7 @@ int main(int argc, char* argv[]) {
     // prepare QuEST before anything else, since many
     // testing utility functions repurpose QuEST ones
     initQuESTEnv();
+    setInputErrorHandler(validationErrorHandler);
 
     // ensure RNG consensus among all nodes
     setRandomTestStateSeeds();

@@ -32,6 +32,14 @@ const int validate_STRUCT_PROPERTY_UNKNOWN_FLAG = -1;
 
 
 /*
+ * VALIDATION ERROR HANDLER
+ */
+
+void validateconfig_setErrorHandler(void (*callback)(const char* func, const char* msg));
+
+
+
+/*
  * VALIDATION TOGGLE
  */
 

@@ -309,7 +309,7 @@ TEST_CASE( "mixSuperOp", TEST_CATEGORY ) {
 
         int numTargs = GENERATE_COPY( range(1,maxNumTargs+1) );
         auto targs = GENERATE_TARGS( numQubits, numTargs );
-        auto matrices = getRandomKrausMap(numTargs, getRandomInt(1,5));
+        auto matrices = getRandomKrausMap(numTargs, getRandomInt(1,4+1));
 
         SuperOp superOp = createSuperOp(numTargs);
         setSuperOp(superOp, getSuperOperator(matrices));
