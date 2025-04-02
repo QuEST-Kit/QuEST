@@ -68,7 +68,7 @@ qreal getRandomReal(qreal min, qreal maxExcl) {
 
     DEMAND( out >= min );
     DEMAND( out < maxExcl );
-    return out
+    return out;
 }
 
 
