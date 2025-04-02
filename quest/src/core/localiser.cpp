@@ -2101,6 +2101,12 @@ qcomp localiser_statevec_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
             // contribute coeff * prefix-coeff * suffix-sum
             qcomp termFactor = paulis_getPrefixPaulisElem(qureg, prefixY, prefixZ);
             qcomp termValue = termFactor * termFunc(qureg, suffixX, suffixY, suffixZ);
+
+            /// @todo
+            /// use Kahan summation to improve (for free) the accuracy of totalValue
+            /// here! This sum is always serial, so we should always use it! It is
+            /// acceptable to grow a list and pass it to a utility function, since we
+            /// always assume the number of terms in the PauliStrSum is tractable!
             totalValue += coeff * termValue;
         }
     }
