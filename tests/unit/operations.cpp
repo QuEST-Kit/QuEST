@@ -29,6 +29,7 @@
 #include <tuple>
 
 using std::tuple;
+using Catch::Matchers::ContainsSubstring;
 
 
 
@@ -381,23 +382,35 @@ void invokeApiOperation(auto operation, Qureg qureg, vector<int> ctrls, vector<i
 
 /*
  * prepare an API matrix (e.g. CompMatr1), as per
- * the given template parameters, with random
- * elements. This is used for testing API functions
- * which accept matrices.
+ * the given template parameters. Depending on the
+ * elemsFlag, the elements can be initialised to
+ * zero (0), the identity matrix (1), or randomly (2).
+ * This is used for testing API functions which accept 
+ * matrices, in a function-agnostic way.
  */
 
 template <NumQubitsFlag Targs, ArgsFlag Args>
-auto getRandomApiMatrix(int numTargs) {
+auto getRandomOrIdentityApiMatrix(int numTargs, int elemsFlag) {
 
     DEMAND(
         Args == diagmatr ||
         Args == diagpower ||
         Args == compmatr );
-    
-    qmatrix qm = (Args == compmatr)?
-        getRandomUnitary(numTargs) : 
-        getRandomDiagonalUnitary(numTargs);
+    DEMAND( 
+        elemsFlag == 0 ||
+        elemsFlag == 1 ||
+        elemsFlag == 2 );
 
+    qmatrix qm;
+    if (elemsFlag == 0)
+        qm = getZeroMatrix(getPow2(numTargs));
+    if (elemsFlag == 1)
+        qm = getIdentityMatrix(getPow2(numTargs));
+    if (elemsFlag == 2)
+        qm = (Args == compmatr)?
+            getRandomUnitary(numTargs) : 
+            getRandomDiagonalUnitary(numTargs);
+        
     if constexpr (Args == compmatr && Targs == one) 
         return getCompMatr1(qm);
 
@@ -425,6 +438,10 @@ auto getRandomApiMatrix(int numTargs) {
         return dm;
     }
 }
+
+template <NumQubitsFlag Targs, ArgsFlag Args> auto getZeroApiMatrix    (int numTargs) { return getRandomOrIdentityApiMatrix<Targs,Args>(numTargs, 0); }
+template <NumQubitsFlag Targs, ArgsFlag Args> auto getIdentityApiMatrix(int numTargs) { return getRandomOrIdentityApiMatrix<Targs,Args>(numTargs, 1); }
+template <NumQubitsFlag Targs, ArgsFlag Args> auto getRandomApiMatrix  (int numTargs) { return getRandomOrIdentityApiMatrix<Targs,Args>(numTargs, 2); }
 
 
 /*
@@ -648,7 +665,7 @@ void CAPTURE_RELEVANT( vector<int> ctrls, vector<int> states, vector<int> targs,
 
 
 /*
- * perform a unit test on an API operation. The
+ * test the correctness of an API operation. The
  * template parameters are compile-time clues
  * about what inputs to prepare and pass to the
  * operation, and how its reference matrix (arg
@@ -656,79 +673,438 @@ void CAPTURE_RELEVANT( vector<int> ctrls, vector<int> states, vector<int> targs,
  */
 
 template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, ArgsFlag Args>
+void testOperationCorrectness(auto operation, auto matrixRefGen, bool multiplyOnly) {
+
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
+
+    // try all possible number of ctrls and targs
+    int numTargs = GENERATE_NUM_TARGS<Ctrls,Targs,Args>(numQubits);
+    int numCtrls = GENERATE_NUM_CTRLS<Ctrls>(numQubits - numTargs);
+    
+    // either try all possible ctrls and targs, or randomise them
+    auto ctrlsAndTargs = GENERATE_CTRLS_AND_TARGS( numQubits, numCtrls, numTargs );
+    vector<int> ctrls = std::get<0>(ctrlsAndTargs);
+    vector<int> targs = std::get<1>(ctrlsAndTargs);
+
+    // randomise control states (if operation accepts them)
+    vector<int> states = getRandomOutcomes(numCtrls * (Ctrls == anystates));
+
+    // randomise remaining operation parameters
+    auto primaryArgs = tuple{ ctrls, states, targs };
+    auto furtherArgs = getRandomRemainingArgs<Targs,Args>(targs); // may allocate heap memory
+
+    // obtain the reference matrix for this operation 
+    qmatrix matrixRef = getReferenceMatrix<Targs,Args>(matrixRefGen, targs, furtherArgs);
+
+    // PauliStr arg replaces target qubit list in API operations
+    constexpr NumQubitsFlag RevTargs = (Args==paulistr||Args==pauligad)? zero : Targs;
+
+    // disabling unitary-check validation for compmatr, since it's hard to
+    // generate numerically-precise random unitaries upon many qubits, or
+    // upon few qubits are single-precision. So we disable completely until
+    // we re-implement 'input validation' checks which force us to fix thresholds
+    (Args == compmatr)?
+        setValidationEpsilon(0):
+        setValidationEpsilonToDefault();
+
+    // prepare test function which will receive both statevectors and density matrices
+    auto testFunc = [&](Qureg qureg, auto& stateRef) -> void { 
+        
+        // invoke API operation, passing all args (unpacking variadic)
+        auto apiFunc = [](auto&&... args) { return invokeApiOperation<Ctrls,RevTargs>(args...); };
+        auto allArgs = std::tuple_cat(tuple{operation, qureg}, primaryArgs, furtherArgs);
+        std::apply(apiFunc, allArgs);
+
+        // update reference state
+        (multiplyOnly)?
+            multiplyReferenceOperator(stateRef, ctrls, states, targs, matrixRef):
+            applyReferenceOperator(stateRef, ctrls, states, targs, matrixRef);
+    };
+
+    // report operation's input parameters if any subsequent test fails
+    CAPTURE_RELEVANT<Ctrls,Targs,Args>( ctrls, states, targs, furtherArgs );
+
+    // test API operation on all available deployment combinations (e.g. OMP, MPI, MPI+GPU, etc)
+    SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
+    SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
+
+    // free any heap-alloated API matrices and restore epsilon
+    freeRemainingArgs<Targs,Args>(furtherArgs);
+    setValidationEpsilonToDefault();
+}
+
+
+/*
+ * test the input valdiation of an API operation. 
+ * The template parameters are compile-time clues
+ * about what inputs are accepted by the operation
+ */
+
+template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, ArgsFlag Args>
+auto getFixedCtrlsStatesTargs(int numQubits) {
+
+    // default each to empty
+    vector<int> targs, ctrls, states;
+
+    // assign when non-empty
+    if constexpr (Targs == one) targs = {0};
+    if constexpr (Targs == two) targs = {0,1};
+    if constexpr (Targs == any) targs = {0,1,2};
+    if constexpr (Ctrls == one)       ctrls = {3};
+    if constexpr (Ctrls == any)       ctrls = {3,4};
+    if constexpr (Ctrls == anystates) ctrls = {3,4};
+    if constexpr (Ctrls == anystates) states = {0,0};
+
+    DEMAND( numQubits >= targs.size() + ctrls.size() );
+
+    return tuple{ ctrls, states, targs };
+}
+
+template <NumQubitsFlag Targs, ArgsFlag Args>
+auto getFixedRemainingArgs(vector<int> targs) {
+
+    // getPauliStr uses gives length-3 hardcoded string
+    if constexpr (Args == paulistr || Args == pauligad)
+        DEMAND( targs.size() == 3 );
+
+    if constexpr (Args == none)      return tuple{ };
+    if constexpr (Args == scalar)    return tuple{ 0 }; // angle
+    if constexpr (Args == axisrots)  return tuple{ 0, 1,1,1 }; // (angle,x,y,z)
+    if constexpr (Args == compmatr)  return tuple{ getIdentityApiMatrix<Targs,Args>(targs.size()) }; // id
+    if constexpr (Args == diagmatr)  return tuple{ getIdentityApiMatrix<Targs,Args>(targs.size()) }; // id
+    if constexpr (Args == diagpower) return tuple{ getIdentityApiMatrix<Targs,Args>(targs.size()), qcomp(1,0) }; // (id, exponent)
+    if constexpr (Args == paulistr)  return tuple{ getPauliStr("XXX", targs) };    // XXX
+    if constexpr (Args == pauligad)  return tuple{ getPauliStr("XXX", targs), 0 }; // (XXX, angle)
+}
+
+template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, ArgsFlag Args>
+void testOperationValidation(auto operation, bool multiplyOnly) {
+
+    // use any cached Qureg
+    Qureg qureg = getCachedStatevecs().begin()->second;
+
+    // in lieu of preparing random inputs like testOperationCorrectness()
+    // above, we instead obtain simple, fixed, compatible inputs
+    auto [ctrls,states,targs] = getFixedCtrlsStatesTargs<Ctrls,Targs,Args>(qureg.numQubits);
+    auto furtherArgs = getFixedRemainingArgs<Targs,Args>(targs);
+
+    // calling apiFunc() will pass the above args with their call-time values
+    auto apiFunc = [&]() {
+        constexpr NumQubitsFlag RevTargs = (Args==paulistr||Args==pauligad)? zero : Targs;
+        auto func = [](auto&&... allArgs) { return invokeApiOperation<Ctrls,RevTargs>(allArgs...); };
+        std::apply(func, std::tuple_cat(tuple{operation, qureg, ctrls, states, targs}, furtherArgs));
+    };
+
+    // convenience vars
+    int numQubits = qureg.numQubits;
+    int numTargs = (int) targs.size();
+    int numCtrls = (int) ctrls.size();
+
+    /// @todo
+    /// below, we return from intendedly skipped SECTIONS which
+    /// appears to work (does not corrupt test statistics, and
+    /// does not attribute skipped tests to having passed the
+    /// section) but is an undocumented Catch2 trick. Check safe!
+
+    SECTION( "qureg uninitialised" ) {
+
+        // spoof uninitialised value
+        qureg.numQubits = -123;
+        REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("invalid Qureg") );
+    }
+
+    SECTION( "invalid target" ) {
+
+        // not applicable (PauliStr already made from targs)
+        if (Args == paulistr || Args == pauligad)
+            return;
+
+        // sabotage a target
+        int ind = GENERATE_COPY( range(0,numTargs) );
+        int val = GENERATE_COPY( -1, numQubits );
+        targs[ind] = val;
+
+        REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("Invalid target qubit") );
+    }
+
+    SECTION( "invalid non-Identity Pauli index" ) {
+
+        if (Args != paulistr && Args != pauligad)
+            return;
+
+        PauliStr badStr = getPauliStr("X", {numQubits + 1});
+        if constexpr (Args == paulistr) furtherArgs = tuple{ badStr };
+        if constexpr (Args == pauligad) furtherArgs = tuple{ badStr, 1 };
+
+        REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("highest-index non-identity Pauli operator") && ContainsSubstring("exceeds the maximum target") );
+    }
+
+    SECTION( "invalid control" ) {
+
+        if (numCtrls == 0)
+            return;
+
+        // sabotage a ctrl
+        int ind = GENERATE_COPY( range(0,numCtrls) );
+        int val = GENERATE_COPY( -1, numQubits );
+        ctrls[ind] = val;
+
+        REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("Invalid control qubit") );
+    }
+
+    SECTION( "control and target collision" ) {
+
+        if (numCtrls == 0)
+            return;
+
+        // sabotage a ctrl
+        int targInd = GENERATE_COPY( range(0,numTargs) );
+        int ctrlInd = GENERATE_COPY( range(0,numCtrls) );
+        ctrls[ctrlInd] = targs[targInd];
+
+        if (Args==paulistr||Args==pauligad)
+            REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("control qubit overlaps a non-identity Pauli operator") );
+        else
+            REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("qubit appeared among both the control and target qubits") );
+    }
+
+    SECTION( "control states" ) {
+
+        if (states.empty())
+            return;
+
+        int ind = GENERATE_COPY( range(0,numCtrls) );
+        int val = GENERATE( -1, 2 );
+        states[ind] = val;
+
+        REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("invalid control-state") );
+    }
+
+    SECTION( "repetition in controls" ) {
+
+        if (numCtrls < 2)
+            return;
+
+        int ind = GENERATE_COPY( range(1,numCtrls) );
+        ctrls[ind] = ctrls[0];
+
+        REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("control qubits contained duplicates") );
+    }
+
+    SECTION( "repetition in targets" ) {
+
+        // not applicable to Pauli functions (getPauliStr would throw)
+        if (Args==paulistr||Args==pauligad)
+            return;
+
+        if (numTargs < 2)
+            return;
+
+        int ind = GENERATE_COPY( range(1,numTargs) );
+        targs[ind] = targs[0];
+
+        REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("target qubits contained duplicates") );
+    }
+
+    SECTION( "number of targets" ) {
+
+        // not applicable to Pauli functions (getPauliStr would run fine,
+        // and the runtime error would be about the non-identity index)
+        if (Args == paulistr || Args == pauligad)
+            return;
+
+        if (Targs != any)
+            return;
+        
+        // too few (cannot test less than 0)
+        targs = {};
+        REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("Must specify one or more targets") );
+
+        // too many; exceeds Qureg
+        targs = getRange(qureg.numQubits+1);
+        REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("number of target qubits") && ContainsSubstring("exceeds the number of qubits in the Qureg") );
+
+        // note numTargs + numCtrls > numQubits is caught by
+        // invalid index or overlapping (ctrls,targs) validation
+    }
+
+    SECTION( "mismatching matrix size" ) {
+
+        // only relevant to variable-sized matrices
+        if (Targs != any)
+            return;
+        if (!(Args == compmatr || Args == diagmatr || Args == diagpower))
+            return;
+        
+        DEMAND( numTargs > 1 );
+        DEMAND( numCtrls + numTargs < numQubits ); 
+
+        targs.push_back(numQubits - 1);
+        REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("matrix has an inconsistent size") );
+
+        targs.pop_back();
+        targs.pop_back();
+        REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("matrix has an inconsistent size") );
+    }
+
+    SECTION( "matrix unitarity" ) {
+
+        // only relevant to matrix functions...
+        if (Args != compmatr && Args != diagmatr && Args != diagpower)
+            return;
+
+        // which enforce unitarity
+        if (multiplyOnly)
+            return;
+
+        if constexpr (Args == compmatr || Args == diagmatr)
+            furtherArgs = tuple{ getZeroApiMatrix<Targs,Args>(targs.size()) };
+        if constexpr (Args == diagpower)
+            furtherArgs = tuple{ getZeroApiMatrix<Targs,Args>(targs.size()), 1 };
+    
+        REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("unitary") );
+    }
+
+    SECTION( "matrix uninitialised" ) {
+
+        // sabotage matrix struct field
+        if constexpr (Args == compmatr || Args == diagmatr || Args == diagpower)
+            std::get<0>(furtherArgs).numQubits = -1;
+        else
+            return;
+
+        REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("Invalid") );
+
+        // must correct field so that subsequent destructor doesn't whine!
+        if constexpr (Args == compmatr || Args == diagmatr || Args == diagpower)
+            std::get<0>(furtherArgs).numQubits = numTargs;
+    }
+
+    SECTION( "matrix unsynced" ) {
+
+        if (!getQuESTEnv().isGpuAccelerated)
+            return;
+
+        // only relevant to variable-size matrix functions
+        if constexpr (Targs == any && (Args == compmatr || Args == diagmatr || Args == diagpower))
+            std::get<0>(furtherArgs).wasGpuSynced = 0;
+        else
+            return; // avoid empty test
+
+        REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("sync") );
+    }
+
+    SECTION( "targeted amps fit in node" ) {
+
+        // can only be validated when environment AND qureg
+        // are distributed (over more than 1 node, of course)
+        if (qureg.numNodes < 2)
+            return;
+
+        // can only be validated if forced ctrl qubits permit 
+        // enough remaining targets
+        int minNumCtrls = (Ctrls == one)? 1 : 0;
+        int minNumTargs = numQubits - qureg.logNumNodes + 1;
+        int maxNumTargs = numQubits - minNumCtrls;
+        if (minNumTargs > maxNumTargs)
+            return;
+
+        // only relevant to >=2-targ dense matrices, and further
+        // only testable with any-targ variable-size matrices, since
+        // 4x4 matrices might always be permissable by Qureg distribution
+        if constexpr (Args == compmatr && Targs == any) {
+
+            // free existing matrix to avoid leak
+            destroyCompMatr(std::get<0>(furtherArgs));
+
+            // try all illegally sized matrices
+            int numNewTargs = GENERATE_COPY( range(minNumTargs, maxNumTargs+1) );
+            targs = getRange(numNewTargs);
+
+            // ensure no overlap with ctrls; just get rid of them, EXCEPT when the API
+            // function expects explicitly one ctrl which we must always supply
+            ctrls = vector<int>(minNumCtrls, numQubits - 1); // {} or {last}
+            states = {};
+
+            // create the new illegaly-sized matrix, which will be destroyed at test-case end
+            CompMatr matr = getIdentityApiMatrix<Targs,Args>(numNewTargs);
+            furtherArgs = tuple{ matr };
+
+            CAPTURE( minNumCtrls, numNewTargs, numQubits - minNumCtrls, ctrls, targs );
+            REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("cannot simultaneously store") && ContainsSubstring("remote amplitudes") );
+
+        } else {
+            return; // avoid empty test
+        }
+    }
+
+    SECTION( "non-unitary exponent" ) {
+
+        // not relevant for functions which do not assert unitarity
+        if (multiplyOnly)
+            return;
+
+        if constexpr (Args == diagpower)
+            furtherArgs = tuple{ std::get<0>(furtherArgs), qcomp(1,1) };
+        else
+            return; // avoid empty test
+
+        REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("exponent was not approximately real") );
+    }
+
+    SECTION( "diverging exponent" ) {
+
+        // when being applied as a unitary, abs(elem)=1 so there's no
+        // possibility of divergence (we'd merely trigger isUnitary)
+        if (!multiplyOnly)
+            return;
+
+        if constexpr (Args == diagpower)
+            furtherArgs = tuple{ getZeroApiMatrix<Targs,Args>(numTargs), qcomp(-1,0) };
+        else
+            return; // avoid empty test
+
+        REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("divergences") );
+    }
+
+    SECTION( "zero axis rotation" ) {
+
+        if constexpr (Args == axisrots) {
+            furtherArgs = tuple{ 0, 0, 0, 0 }; // (angle,x,y,z)
+        } else
+            return; // avoid empty test
+
+            REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("zero vector") );
+    }
+
+    freeRemainingArgs<Targs,Args>(furtherArgs);
+}
+
+
+/*
+ * fully test an API operation, on compatible
+ * inputs as indicated by the template flags
+ */
+
+template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, ArgsFlag Args>
 void testOperation(auto operation, auto matrixRefGen, bool multiplyOnly) {
 
     assertNumQubitsFlagsAreValid(Ctrls, Targs);
 
-    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
-
-    SECTION( LABEL_CORRECTNESS ) {
-
-        // try all possible number of ctrls and targs
-        int numTargs = GENERATE_NUM_TARGS<Ctrls,Targs,Args>(numQubits);
-        int numCtrls = GENERATE_NUM_CTRLS<Ctrls>(numQubits - numTargs);
-        
-        // either try all possible ctrls and targs, or randomise them
-        auto ctrlsAndTargs = GENERATE_CTRLS_AND_TARGS( numQubits, numCtrls, numTargs );
-        vector<int> ctrls = std::get<0>(ctrlsAndTargs);
-        vector<int> targs = std::get<1>(ctrlsAndTargs);
-
-        // randomise control states (if operation accepts them)
-        vector<int> states = getRandomOutcomes(numCtrls * (Ctrls == anystates));
-
-        // randomise remaining operation parameters
-        auto primaryArgs = tuple{ ctrls, states, targs };
-        auto furtherArgs = getRandomRemainingArgs<Targs,Args>(targs); // may allocate heap memory
-
-        // obtain the reference matrix for this operation 
-        qmatrix matrixRef = getReferenceMatrix<Targs,Args>(matrixRefGen, targs, furtherArgs);
-
-        // PauliStr arg replaces target qubit list in API operations
-        constexpr NumQubitsFlag RevTargs = (Args==paulistr||Args==pauligad)? zero : Targs;
-
-        // disabling unitary-check validation for compmatr, since it's hard to
-        // generate numerically-precise random unitaries upon many qubits, or
-        // upon few qubits are single-precision. So we disable completely until
-        // we re-implement 'input validation' checks which force us to fix thresholds
-        (Args == compmatr)?
-            setValidationEpsilon(0):
-            setValidationEpsilonToDefault();
-
-        // prepare test function which will receive both statevectors and density matrices
-        auto testFunc = [&](Qureg qureg, auto& stateRef) -> void { 
-            
-            // invoke API operation, passing all args (unpacking variadic)
-            auto apiFunc = [](auto&&... args) { return invokeApiOperation<Ctrls,RevTargs>(args...); };
-            auto allArgs = std::tuple_cat(tuple{operation, qureg}, primaryArgs, furtherArgs);
-            std::apply(apiFunc, allArgs);
-
-            // update reference state
-            (multiplyOnly)?
-                multiplyReferenceOperator(stateRef, ctrls, states, targs, matrixRef):
-                applyReferenceOperator(stateRef, ctrls, states, targs, matrixRef);
-        };
-
-        // report operation's input parameters if any subsequent test fails
-        CAPTURE_RELEVANT<Ctrls,Targs,Args>( ctrls, states, targs, furtherArgs );
-
-        // test API operation on all available deployment combinations (e.g. OMP, MPI, MPI+GPU, etc)
-        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
-        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
-
-        // free any heap-alloated API matrices and restore epsilon
-        freeRemainingArgs<Targs,Args>(furtherArgs);
-        setValidationEpsilonToDefault();
+    SECTION( LABEL_CORRECTNESS ) { 
+        testOperationCorrectness<Ctrls,Targs,Args>(operation, matrixRefGen, multiplyOnly); 
     }
 
-    // @todo
-    // input validation!
+    SECTION( LABEL_VALIDATION ) { 
+        testOperationValidation<Ctrls,Targs,Args>(operation, multiplyOnly); 
+    }
 }
 
 template <NumQubitsFlag Ctrls, NumQubitsFlag Targs, ArgsFlag Args>
 void testOperation(auto operation, auto matrixRefGen) {
 
-    // default multiplyOnly=false
-    testOperation<Ctrls,Targs,Args>(operation, matrixRefGen, false);
+    bool multiplyOnly = false;
+    testOperation<Ctrls,Targs,Args>(operation, matrixRefGen, multiplyOnly);
 }
 
 
@@ -1007,6 +1383,11 @@ TEST_CASE( "applyForcedMultiQubitMeasurement", TEST_CATEGORY ) {
 
         qmatrix projector = getProjector(targets, outcomes, numQubits);
 
+        // this test may randomly request a measurement outcome which
+        // is illegally unlikely, triggering validation; we merely
+        // disable such validation and hope divergences don't break the test!
+        setValidationEpsilon(0);
+
         auto testFunc = [&](Qureg qureg, auto& ref) {
 
             // overwrite caller's setting of initDebugState, since
@@ -1028,6 +1409,8 @@ TEST_CASE( "applyForcedMultiQubitMeasurement", TEST_CATEGORY ) {
         CAPTURE( targets, outcomes );
         SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
+
+        setValidationEpsilonToDefault();
     }
 
     /// @todo input validation

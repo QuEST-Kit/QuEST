@@ -2272,7 +2272,9 @@ void assertMatrixIsSynced(T matr, string errMsg, const char* caller) {
     if (!mem_isAllocated(util_getGpuMemPtr(matr)))
         return;
 
-    // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though
+    // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though.
+    // note we check this whenever the matrix has GPU memory, even if it is being applied upon a Qureg which is
+    // NOT GPU-accelerated and ergo the GPU memory is not consulted. It's best to build the habit in the user!
     assertThat(*(matr.wasGpuSynced) == 1, errMsg, caller);
 }
 void validate_matrixIsSynced(CompMatr matr, const char* caller) { assertMatrixIsSynced(matr, report::COMP_MATR_NOT_SYNCED_TO_GPU, caller);}
