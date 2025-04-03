@@ -17,6 +17,9 @@ known to be compatible with QuEST.
 > - [`cmake.md`](cmake.md) for the full list of passable compiler variables.
 > - [`qtechtheory.org`](https://quest.qtechtheory.org/download/) for help downloading the compilers listed on this page.
 
+> [!TIP]
+> QuEST's [Github Actions](https://github.com/QuEST-Kit/QuEST/actions/workflows/compile.yml) regularly test QuEST compilation using a broad combination of compilers; presently `108` combinations! This can provide a clue as to which modern compiler versions are supported, and be a concrete example of _how_ to compile in a sanitised, virtual setting. Check out the [`compile.yml`](/.github/workflows/compile.yml) workflow.
+
 
 
 ## Frontend
@@ -45,7 +48,8 @@ Enabling distribution requires compiling `comm/` with an [MPI](https://en.wikipe
 - [openmpi](https://www-lb.open-mpi.org/software/ompi/v4.0/) 4
 - [openmpi](https://www.open-mpi.org/software/ompi/v5.0/) 5
 - [mpich](https://www.mpich.org/) 4
-- [msmpi](https://learn.microsoft.com/en-us/message-passing-interface/microsoft-mpi) 2
+- [msmpi](https://learn.microsoft.com/en-us/message-passing-interface/microsoft-mpi) 10
+- [impi](https://www.intel.com/content/www/us/en/developer/tools/oneapi/mpi-library.html) 3
 
 when wrapping all previously mentioned compilers.
 

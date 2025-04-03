@@ -239,7 +239,7 @@ The compiled executable is launched like any other, via
 ./myexec
 ```
 
-Using _multiple_ available GPUs, regardless of whether they are local or distributed, is done through additionally enabling [distribution](#distributed-gpu-acceleration).
+Using _multiple_ available GPUs, regardless of whether they are local or distributed, is done through additionally enabling [distribution](#multi-gpu).
 
 
 ### Monitoring utilisation
@@ -312,7 +312,7 @@ However, it _does_ mean codes which seeks to benchmark QuEST must be careful to 
 > distribution enabled, as detailed in [`compile.md`](compile.md#distribution). 
 
 > [!IMPORTANT]
-> Simultaneously using distribution _and_ GPU-acceleration introduces additional considerations detailed in the [proceeding section](#distributed-gpu-acceleration).
+> Simultaneously using distribution _and_ GPU-acceleration introduces additional considerations detailed in the [proceeding section](#multi-gpu).
 
 
 ### Launching
@@ -363,7 +363,7 @@ It is ergo always prudent to explicitly call [`syncQuESTEnv()`](https://quest-ki
 ---------------------
 
 
-## Distributed GPU-acceleration
+## Multi-GPU
 
 
 > TODO:

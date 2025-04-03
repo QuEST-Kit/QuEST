@@ -26,13 +26,16 @@ Compiling is configured with variables supplied by the [`-D` flag](https://cmake
 - [GPU-acceleration](#gpu-acceleration)
 - [cuQuantum](#cuquantum)
 - [Distribution](#distribution)
-- [GPUDirect](#gpudirect)
+- [Multi-GPU](#multi-gpu)
 
 > **See also**:
 > - [`cmake.md`](cmake.md) for the full list of passable compiler variables.
 > - [`compilers.md`](compilers.md) for a list of compatible and necessary compilers.
 > - [`qtechtheory.org`](https://quest.qtechtheory.org/download/) for help downloading the necessary compilers.
 > - [`run.md`](run.md) for a guide to executing the compiled application.
+
+> [!TIP]
+> QuEST's [Github Actions](https://github.com/QuEST-Kit/QuEST/actions/workflows/compile.yml) regularly test QuEST compilation using a broad combination of deployment settings; presently `108` combinations! The [`compile.yml`](/.github/workflows/compile.yml) workflow can serve as a concrete example of how to compile QuEST in a sanitised, virtual setting.
 
 
 ## Basic
@@ -257,7 +260,7 @@ and run as explained in [`run.md`](run.md#v3).
 
 Multithreading allows multiple cores of a CPU, or even multiple connected CPUs, to cooperatively perform and ergo accelerate QuEST's expensive functions. Practically all modern computers have the capacity for, and benefit from, multithreading. Note it requires that the CPUs have shared memory (such as through [NUMA](https://learn.microsoft.com/en-us/windows/win32/procthread/numa-support)) and so ergo live in the same machine. CPUs on _different_ machines, connected via a network, can be parallelised over using [distribution](#distribution).
 
-QuEST uses [OpenMP](https://www.openmp.org/) to perform multithreading, so accelerating QuEST over multiple CPUs or cores requires a compiler integrated with OpenMP. This is true of almost all major compilers.
+QuEST uses [OpenMP](https://www.openmp.org/) to perform multithreading, so accelerating QuEST over multiple CPUs or cores requires a compiler integrated with OpenMP. This is true of almost all major compilers - see a list of tested compilers in [`compilers.md`](compilers.md#cpu).
 
 > [!IMPORTANT]  
 > Using [`Clang`](https://clang.llvm.org/) on MacOS requires use of the `libomp` library, obtainable via [Homebrew](https://brew.sh/):
@@ -279,7 +282,7 @@ cmake --build .
 ```
 This is in fact the default behaviour!
 
-The number of threads over which to parallelise QuEST's execution is chosen through setting environment variables, like [`OMP_NUM_THREADS`](https://www.openmp.org/spec-html/5.0/openmpse50.html), immediately before execution. See [`run.md`](run.md#multithreading) for more information.
+The number of threads over which to parallelise QuEST's execution is chosen through setting environment variables, like [`OMP_NUM_THREADS`](https://www.openmp.org/spec-html/5.0/openmpse50.html), immediately before execution. See [`run.md`](run.md#multithreading) for a general guide on multithreaded deployment.
 
 
 
@@ -293,11 +296,39 @@ QuEST supports parallelisation using both NVIDIA GPUs (using CUDA) and AMD GPUs 
 ### NVIDIA
 
 > TODO!
-> - CUDA and nvidia-smi and drivers eh
-> - CUDA GPU
-> - min CC
-> - ENABLE_CUDA
-> - CMAKE_CUDA_ARCHITECTURES
+> - CUDA-compatible GPGPU
+> - nvcc compiler
+> - nvidia-smi
+> - minimum compute-capability
+
+Check the CUDA compiler is installed correctly via
+```bash
+nvcc --version
+```
+
+To compile your QuEST application with CUDA-acceleration, specify both
+```bash
+# configure
+cmake .. -D ENABLE_CUDA=ON -D CMAKE_CUDA_ARCHITECTURES=$CC
+```
+where `$CC` is your GPU's [compute capability](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compute-capabilities) (excluding the full-stop) which you can look up [here](https://developer.nvidia.com/cuda-gpus). 
+For example, compiling for the [NVIDIA A100](https://www.nvidia.com/en-us/data-center/a100/) looks like:
+```bash
+# configure
+cmake .. -D ENABLE_CUDA=ON -D CMAKE_CUDA_ARCHITECTURES=80
+```
+
+> [!CAUTION]
+> Setting the wrong compute capability will cause silently erroneous results. Always run the [unit tests](run.md#tests) after compiling for the first time to confirm it was set correctly.
+
+Building then proceeds as normal, e.g.
+```bash
+# build
+cmake --build . --parallel
+```
+
+See [`run.md`](run.md#gpu-acceleration) for information on 
+
 
 ### AMD
 
@@ -306,21 +337,94 @@ QuEST supports parallelisation using both NVIDIA GPUs (using CUDA) and AMD GPUs 
 > - ENABLE_HIP
 > - CMAKE_HIP_ARCHITECTURES
 
+
+To compile your QuEST application with HIP-acceleration, specify both
+```bash
+# configure
+cmake .. -D ENABLE_HIP=ON -D CMAKE_HIP_ARCHITECTURES=$TN
+```
+where `$TN` is your AMD GPU's [LLVM target name](https://rocm.docs.amd.com/en/latest/reference/gpu-arch-specs.html#glossary). You can look this up [here](https://rocm.docs.amd.com/en/latest/reference/gpu-arch-specs.html), or find the names of all of your local GPUs by running the [ROCM agent enumerator](https://rocm.docs.amd.com/projects/rocminfo/en/latest/how-to/use-rocm-agent-enumerator.html) command, i.e.
+```bash
+rocm_agent_enumerator -name
+```
+For example, compiling for the [AMD Instinct MI210 accelerator](https://www.amd.com/en/products/accelerators/instinct/mi200/mi210.html) looks like:
+```bash
+# configure
+cmake .. -D ENABLE_HIP=ON -D CMAKE_HIP_ARCHITECTURES=gfx90a
+```
+
+> [!CAUTION]
+> Setting the wrong LLVM target name can cause silently erroneous results. Always run the [unit tests](run.md#tests) after compiling for the first time to confirm it was set correctly.
+
+
+Building then proceeds as normal, e.g.
+```bash
+# build
+cmake --build . --parallel
+```
+
+The compiled executable can be run like any other, though the GPU behaviour can be prior configured with environment variables. See [`run.md`](run.md#gpu-acceleration) for a general guide on GPU-accelerated deployment.
+
+
 ## cuQuantum
 
-> TODO!
-> - OS requirement
-> - CC requirement
-> - downloading/installing
-> - resolving path (curoot?)
+When compiling for NVIDIA GPUs, you can choose to optionally enable [_cuQuantum_](https://docs.nvidia.com/cuda/cuquantum/latest/index.html). This will replace some of QuEST's custom GPU functions with [_cuStateVec_](https://docs.nvidia.com/cuda/cuquantum/latest/custatevec/index.html) routines which are likely to use tailored optimisations for your particular GPU and ergo run faster.
+
+
+> [!IMPORTANT]
+> cuStateVec is presently only supported on Linux, with CUDA `11` or `12`, and modern GPUs with a compute capability equal or above `7.0` (`Volta`, `Turing`, `Ampere`, `Ada`, `Hopper`, `Blackwell`). Check the updated requirements [here](https://docs.nvidia.com/cuda/cuquantum/latest/custatevec/index.html).
+
+Using the cuQuantum backend requires separately downloading cuStateVec, as detailed [here](https://docs.nvidia.com/cuda/cuquantum/latest/getting-started/index.html). Note it is _not_ necessary to download _cuTensorNet_ and _cuDensityMatrix_ which are not used. We recommend downloading...
+- on a personal computer, via the [NVIDIA developer site](https://developer.nvidia.com/cuQuantum-downloads).
+- on a remote machine, via `wget` as detailed [here](https://docs.nvidia.com/cuda/cuquantum/latest/getting-started/index.html#using-archive).
+
+
+After download and installation, and before compiling, you must set the `CUQUANTUM_ROOT` environment variable to the cuQuantum download location:
+```bash
+export CUQUANTUM_ROOT=/path/to/cuquantum-folder
+```
+
+Compilation is then simple; we specify `ENABLE_CUQUANTUM` in addition to the above GPU CMake variables. 
+For example
+```bash
+# configure
+cmake .. -D ENABLE_CUDA=ON -D CMAKE_CUDA_ARCHITECTURES=80 -D ENABLE_CUQUANTUM=ON
+
+# build
+cmake --build . --parallel
+```
+
+No other changes are necessary, nor does cuQuantum affect [hybridising](#multi-gpu) GPU acceleration and distribution. Launching the executable is the same as in the above section. See [`run.md`](run.md#gpu-acceleration).
+
+
 
 ## Distribution
 
-> TODO!
-> - compiling
+Because statevectors grow exponentially with the number of simulated qubits, it is easy to run out of memory. In such settings, we may seek to use _distribution_ whereby multiple cooperating machines on a network each store a tractable partition of the state. Distribution can also be useful to speed up our simulations, when the benefit of additional parallelisation outweighs the inter-machine communication penalties.
 
 
-## GPUDirect
+Enabling distribution requires compiling QuEST with an MPI compiler, such as those listed in [`compilers.md`](compilers.md#comm). Test your compiler is working via
+```bash
+mpicxx --version
+```
+> This command may differ on Intel MPI compilers; try `mpiicpc`.
+
+
+Compiling QuEST's distributed backend is as simple as
+
+```bash
+# configure
+cmake .. -D ENABLE_DISTRIBUTION=ON
+
+# build
+cmake --build . --parallel
+```
+
+Note that distributed executables are launched in a distinct way to the other deployment mods, as explained in [`run.md`](run.md#distribution),
+
+
+
+## Multi-GPU
 
 > TODO!
 > - CUDA-aware MPI
