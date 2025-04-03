@@ -18,8 +18,9 @@ Compiling is configured with variables supplied by the [`-D` flag](https://cmake
 
 **TOC**:
 - [Basic](#basic)
-- [Optimisation](#optimisation)
+- [Optimising](#optimising)
 - [Linking](#linking)
+- [Configuring](#configuring)
 - [Examples](#examples)
 - [Tests](#tests)
 - [Multithreading](#multithreading)
@@ -82,7 +83,7 @@ QuEST execution environment:
 How _boring_! We must pass additional arguments in order to link QuEST to our own code; build other examples; run the unit tests; enable compiler optimisations; enable hardware acceleration; and integrate additional libraries and backends.
 
 
-## Optimisation
+## Optimising
 
 QuEST's source code is careful to enable a myriad of optimisations such as [inlining](https://en.wikipedia.org/wiki/Inline_expansion), [loop unrolling](https://en.wikipedia.org/wiki/Loop_unrolling), [auto-vectorisation](https://en.wikipedia.org/wiki/Automatic_vectorization) and [cache optimisations](https://en.wikipedia.org/wiki/Cache_replacement_policies). To utilise them fully, we must instruct our compilers to enable them; like we might do with the [`-O3`](https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html) flag when invoking a compiler like `gcc` directly.
 
@@ -123,6 +124,7 @@ Read more about CMake generator configurations [here](https://cmake.org/cmake/he
 
 > [!WARNING]
 > The above tip does _not_ apply to _re-building_, for which the `--config Release` _must_ be re-specified (on Windows)
+
 
 
 ## Linking
@@ -192,6 +194,59 @@ and the executable can thereafter be run (from within `build`) via
 ./myexec
 ```
 
+You can pass compiler and linker flags needed by your source files through the [`CMAKE_C_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS.html), [`CMAKE_CXX_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS.html) and [`CMAKE_EXE_LINKER_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_EXE_LINKER_FLAGS.html) CMake flags as detailed in the [below section](#flags). Note however that if your configuration becomes complicated or your source code requires different `C`/`C++` standards than the QuEST source, you should consider separately compiling QuEST then linking it
+to your project as a library!
+
+
+
+## Configuring
+
+### Precision
+
+QuEST's numerical precision can be configured at compile-time, informing what _type_, and ergo how many _bytes_, are used to represent each `qreal` (a floating-point real number) and `qcomp` (a complex amplitude). This affects the memory used by each `Qureg`, but also the user-facing `qreal` and `qcomp` types, as detailed below. Reducing the precision accelerates QuEST at the cost of worsened numerical accuracy. 
+
+Precision is set at configure-time using the `FLOAT_PRECISION` [cmake variable](cmake.md), taking on the values `1`, `2` (default) or `4`.
+For example
+```bash
+# configure
+cmake .. -D FLOAT_PRECISION=1
+```
+
+The values inform types:
+
+| Value | Precision | `qreal` | size      | `C` (`gcc`) `qcomp` | `C` (`msvc`) `qcomp` | `C++` `qcomp` | size |
+|-------|-----------|---------|-----------|---------------------|----------------------|---------------|------|
+| `1`   | Single    | `float` | `4` bytes | `float _Complex`    | `_Fcomplex`  | `std::complex<float>` | `8` bytes |
+| `2`   | Double    | `double` | `8` bytes | `double _Complex` | `_Dcomplex` | `std::complex<double>` | `16` bytes |
+| `4`   | Quadruple*      | `long double` | `<= 16` bytes | `long double _Complex` | `_Lcomplex` | `std::complex<long double>` | `<= 32` bytes |
+
+> [!WARNING]
+> While the size of `float` and `double` are fixed by [IEEE 754 format](https://www.intel.com/content/www/us/en/docs/programmable/683242/current/ieee-754-format.html), the size of the `long double` is platform and compiler dependent, and not necessarily a genuine [quadruple-precision float](https://en.wikipedia.org/wiki/Quadruple-precision_floating-point_format). For example, the size of `long double` in Clang can be set to `64`, `80` or `128` bits at [compile-time](https://clang.llvm.org/docs/ClangCommandLineReference.html#long-double-options). Never hardcode the size; always use [`sizeof`](https://en.wikipedia.org/wiki/Sizeof)!
+
+
+
+> [!NOTE]
+> When enabling [GPU-acceleration](#gpu-acceleration), the precision _must_ be set to `1` or `2` since GPUs do not support quad precision.
+
+
+### Compilers
+
+If multiple compilers are installed, you can choose which to use to compile your `C` and `C++` sources (the latter including the QuEST source) with respective configure-time commands:
+```bash
+# configure
+cmake .. -D CMAKE_C_COMPILER=gcc -D CMAKE_CXX_COMPILER=g++
+```
+replacing `gcc` and `g++` with e.g. [`clang`](https://clang.llvm.org/), [`cl`](https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options?view=msvc-170), [`icc`](https://www.intel.com/content/www/us/en/docs/mpi-library/developer-reference-linux/2021-8/compiler-commands.html), [`ibm-clang`](https://www.ibm.com/docs/en/open-xl-c-cpp-zos/1.1.0?topic=compiler-command-line-syntax), or aliases for specific versions like `gcc-8.5`.
+
+These compilers will also be used as the _host compilers_ (around which bespoke compilers _wrap_) when enabling GPU-acceleration or distribution.
+
+> [!IMPORTANT]
+> It is _not_ correct to specify GPU and MPI compilers, like `nvcc` or `mpicc`, via the above flags. See the respective [GPU](#gpu-acceleration) and [MPI](#distribution) sections.
+
+
+### Flags
+
+
 
 Additional flags needed by your files can be passed to the `C` and `C++` compilers, and the linker (respectively), at _configuration time_ via
 - [`CMAKE_C_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS.html)
@@ -208,6 +263,10 @@ Such flags are listed in [`cmake.md`](cmake.md).
 However, if your configuration is any more complicated or your source code requires different `C`/`C++` 
 standards than the QuEST source, you should consider separately compiling QuEST then linking it
 to your source code as a library!
+
+
+QuEST itself accepts a variety of its preprocessors (mostly related to testing) to be overriden by compiler flags, passed through custom CMake variables, as detailed in [`cmake.md`](cmake.md).
+
 
 
 ## Examples
