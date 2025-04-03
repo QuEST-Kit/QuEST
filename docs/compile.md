@@ -21,10 +21,17 @@ Compiling is configured with variables supplied by the [`-D` flag](https://cmake
 - [Optimising](#optimising)
 - [Linking](#linking)
 - [Configuring](#configuring)
+   * [Precision](#precision)
+   * [Compilers](#compilers)
+   * [Flags](#flags)
 - [Examples](#examples)
 - [Tests](#tests)
+   * [v4](#v4)
+   * [v3](#v3)
 - [Multithreading](#multithreading)
 - [GPU-acceleration](#gpu-acceleration)
+   * [NVIDIA](#nvidia)
+   * [AMD](#amd)
 - [cuQuantum](#cuquantum)
 - [Distribution](#distribution)
 - [Multi-GPU](#multi-gpu)
@@ -38,6 +45,8 @@ Compiling is configured with variables supplied by the [`-D` flag](https://cmake
 > [!TIP]
 > QuEST's [Github Actions](https://github.com/QuEST-Kit/QuEST/actions/workflows/compile.yml) regularly test QuEST compilation using a broad combination of deployment settings; presently `108` combinations! The [`compile.yml`](/.github/workflows/compile.yml) workflow can serve as a concrete example of how to compile QuEST in a sanitised, virtual setting.
 
+
+------------------
 
 ## Basic
 
@@ -83,6 +92,9 @@ QuEST execution environment:
 How _boring_! We must pass additional arguments in order to link QuEST to our own code; build other examples; run the unit tests; enable compiler optimisations; enable hardware acceleration; and integrate additional libraries and backends.
 
 
+------------------
+
+
 ## Optimising
 
 QuEST's source code is careful to enable a myriad of optimisations such as [inlining](https://en.wikipedia.org/wiki/Inline_expansion), [loop unrolling](https://en.wikipedia.org/wiki/Loop_unrolling), [auto-vectorisation](https://en.wikipedia.org/wiki/Automatic_vectorization) and [cache optimisations](https://en.wikipedia.org/wiki/Cache_replacement_policies). To utilise them fully, we must instruct our compilers to enable them; like we might do with the [`-O3`](https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html) flag when invoking a compiler like `gcc` directly.
@@ -126,6 +138,8 @@ Read more about CMake generator configurations [here](https://cmake.org/cmake/he
 > The above tip does _not_ apply to _re-building_, for which the `--config Release` _must_ be re-specified (on Windows)
 
 
+
+------------------
 
 ## Linking
 
@@ -199,6 +213,10 @@ to your project as a library!
 
 
 
+
+------------------
+
+
 ## Configuring
 
 ### Precision
@@ -269,6 +287,8 @@ QuEST itself accepts a variety of its preprocessors (mostly related to testing) 
 
 
 
+------------------
+
 ## Examples
 
 To compile all of QuEST's [`examples/`](/examples/), use
@@ -285,6 +305,8 @@ The executables will be saved in the (current) `build` directory, in a sub-direc
 ```
 as elaborated upon in [`run.md`](run.md#tests).
 
+
+------------------
 
 ## Tests
 
@@ -315,6 +337,8 @@ and run as explained in [`run.md`](run.md#v3).
 
 
 
+------------------
+
 ## Multithreading
 
 Multithreading allows multiple cores of a CPU, or even multiple connected CPUs, to cooperatively perform and ergo accelerate QuEST's expensive functions. Practically all modern computers have the capacity for, and benefit from, multithreading. Note it requires that the CPUs have shared memory (such as through [NUMA](https://learn.microsoft.com/en-us/windows/win32/procthread/numa-support)) and so ergo live in the same machine. CPUs on _different_ machines, connected via a network, can be parallelised over using [distribution](#distribution).
@@ -343,6 +367,9 @@ This is in fact the default behaviour!
 
 The number of threads over which to parallelise QuEST's execution is chosen through setting environment variables, like [`OMP_NUM_THREADS`](https://www.openmp.org/spec-html/5.0/openmpse50.html), immediately before execution. See [`run.md`](run.md#multithreading) for a general guide on multithreaded deployment.
 
+
+
+------------------
 
 
 ## GPU-acceleration
@@ -425,6 +452,9 @@ cmake --build . --parallel
 The compiled executable can be run like any other, though the GPU behaviour can be prior configured with environment variables. See [`run.md`](run.md#gpu-acceleration) for a general guide on GPU-accelerated deployment.
 
 
+
+------------------
+
 ## cuQuantum
 
 When compiling for NVIDIA GPUs, you can choose to optionally enable [_cuQuantum_](https://docs.nvidia.com/cuda/cuquantum/latest/index.html). This will replace some of QuEST's custom GPU functions with [_cuStateVec_](https://docs.nvidia.com/cuda/cuquantum/latest/custatevec/index.html) routines which are likely to use tailored optimisations for your particular GPU and ergo run faster.
@@ -457,6 +487,8 @@ No other changes are necessary, nor does cuQuantum affect [hybridising](#multi-g
 
 
 
+------------------
+
 ## Distribution
 
 Because statevectors grow exponentially with the number of simulated qubits, it is easy to run out of memory. In such settings, we may seek to use _distribution_ whereby multiple cooperating machines on a network each store a tractable partition of the state. Distribution can also be useful to speed up our simulations, when the benefit of additional parallelisation outweighs the inter-machine communication penalties.
@@ -482,6 +514,8 @@ cmake --build . --parallel
 Note that distributed executables are launched in a distinct way to the other deployment mods, as explained in [`run.md`](run.md#distribution),
 
 
+
+------------------
 
 ## Multi-GPU
 
