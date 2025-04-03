@@ -421,7 +421,7 @@ void finalizeQuESTEnv() {
     // free the memory of existing Quregs
 
     if (globalEnvPtr->isGpuAccelerated)
-        gpu_clearCache();
+        gpu_clearCache(); // syncs first
 
     if (globalEnvPtr->isGpuAccelerated && gpu_isCuQuantumCompiled())
         gpu_finalizeCuQuantum();
@@ -443,7 +443,9 @@ void finalizeQuESTEnv() {
 void syncQuESTEnv() {
     validate_envIsInit(__func__);
 
-    // user can safely call sync even when not distributed
+    if (globalEnvPtr->isGpuAccelerated)
+        gpu_sync();
+
     if (globalEnvPtr->isDistributed)
         comm_sync();
 }
