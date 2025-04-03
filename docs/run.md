@@ -8,8 +8,30 @@
 
 Running your [compiled](compile.md) QuEST application can be as straightforward as running any other executable, though some additional steps are needed to make use of hardware acceleration. This page how to launch your own QuEST applications on different platforms, how to run the examples and unit tests, how to make use of multithreading, GPU-acceleration, distribution and supercomputer job schedulers, and monitor the hardware utilisation.
 
+**TOC**:
+- [Examples](#examples)
+- [Tests](#tests)
+   * [v4](#v4)
+   * [v3](#v3)
+- [Multithreading](#multithreading)
+   * [Choosing threads](#choosing-threads)
+   * [Monitoring utilisation](#monitoring-utilisation)
+   * [Improving performance](#improving-performance)
+- [GPU-acceleration](#gpu-acceleration)
+   * [Launching](#launching)
+   * [Monitoring](#monitoring)
+   * [Configuring](#configuring)
+   * [Benchmarking](#benchmarking)
+- [Distribution](#distribution)
+   * [Launching](#launching-1)
+   * [Configuring](#configuring-1)
+   * [Benchmarking](#benchmarking-1)
+- [Multi-GPU](#multi-gpu)
+- [Supercomputers](#supercomputer-job-schedulers)
+
 > [!NOTE]
 > This page assumes you are working in a `build` directory into which all executables have been compiled.
+
 
 
 ---------------------
@@ -280,7 +302,7 @@ The compiled executable is launched like any other, via
 Using _multiple_ available GPUs, regardless of whether they are local or distributed, is done through additionally enabling [distribution](#multi-gpu).
 
 
-### Monitoring utilisation
+### Monitoring
 
 
 To runtime check whether GPU-acceleration was compiled and is being actively utilised, call [`reportQuESTEnv()`](https://quest-kit.github.io/QuEST/group__environment.html#ga08bf98478c4bf21b0759fa7cd4a97496).
@@ -415,7 +437,7 @@ It is ergo always prudent to explicitly call [`syncQuESTEnv()`](https://quest-ki
 
 ---------------------
 
-## Supercomputer job schedulers
+## Supercomputers
 
 > TODO:
 > - slurm examples
