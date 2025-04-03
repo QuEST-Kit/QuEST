@@ -255,6 +255,8 @@ and run as explained in [`run.md`](run.md#v3).
 
 ## Multithreading
 
+Multithreading allows multiple cores of a CPU, or even multiple connected CPUs, to cooperatively perform and ergo accelerate QuEST's expensive functions. Practically all modern computers have the capacity for, and benefit from, multithreading. Note it requires that the CPUs have shared memory (such as through [NUMA](https://learn.microsoft.com/en-us/windows/win32/procthread/numa-support)) and so ergo live in the same machine. CPUs on _different_ machines, connected via a network, can be parallelised over using [distribution](#distribution).
+
 QuEST uses [OpenMP](https://www.openmp.org/) to perform multithreading, so accelerating QuEST over multiple CPUs or cores requires a compiler integrated with OpenMP. This is true of almost all major compilers.
 
 > [!IMPORTANT]  
@@ -277,13 +279,15 @@ cmake --build .
 ```
 This is in fact the default behaviour!
 
-The number of threads over which to parallelise QuEST's execution is chosen throguh setting environment variables, like [`OMP_NUM_THREADS`](https://www.openmp.org/spec-html/5.0/openmpse50.html), immediately before execution. See [`run.md`](run.md#multithreading) for more information.
+The number of threads over which to parallelise QuEST's execution is chosen through setting environment variables, like [`OMP_NUM_THREADS`](https://www.openmp.org/spec-html/5.0/openmpse50.html), immediately before execution. See [`run.md`](run.md#multithreading) for more information.
 
 
 
 ## GPU-acceleration
 
-QuEST supports both NVIDIA GPUs (using CUDA) and AMD GPUs (using HIP). Using either requires obtaining a specialised compiler and passing some GPU-specific compiler flags.
+QuEST's core functions perform simple mathematical transformations on very large arrays, and are ergo well suited to parallelisation using general purpose GPUs. This involves creating persistent memory in the GPU VRAM which mirrors the ordinary CPU memory in RAM, and dispatching the transformations to the GPU, updating the GPU memory. The greater number of cores and massive internal memory bandwidth of the GPU can make this extraordinarily faster than using multithreading. 
+
+QuEST supports parallelisation using both NVIDIA GPUs (using CUDA) and AMD GPUs (using HIP). Using either requires obtaining a specialised compiler and passing some GPU-specific compiler flags.
 
 
 ### NVIDIA

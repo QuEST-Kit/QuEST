@@ -35,7 +35,7 @@ examples/
 where `file.c` and `file.cpp` respectively demonstrate QuEST's `C11` and `C++14` interfaces.
 These files are [compiled](compile.md#examples) into executables of the same name, respectively prefixed with `c_` or `cpp_`, and saved in subdirectories of `build` which mimic the structure of `examples/`. E.g.
 ```
-build /
+build/
     examples/
         krausmaps/
             c_initialisation
@@ -139,7 +139,7 @@ ctest
 
 ### Choosing threads
 
-The number of [threads](https://www.openmp.org/spec-html/5.0/openmpsu1.html) to use is decided immediately before launching the compiled executable, using the [`OMP_NUM_THREADS`](https://www.openmp.org/spec-html/5.0/openmpse50.html) environment variable.
+The number of [threads](https://www.openmp.org/spec-html/5.0/openmpsu1.html) to use is decided before launching the compiled executable, using the [`OMP_NUM_THREADS`](https://www.openmp.org/spec-html/5.0/openmpse50.html) environment variable.
 
 ```bash
 OMP_NUM_THREADS=32 ./myexec
@@ -149,7 +149,7 @@ export OMP_NUM_THREADS=32
 ./myexec
 ```
 
-It is prudent to choose as many threads as your CPU(s) have total hardware threads or cores. One can view this, and verify the number of available threads at runtime by calling [`reportQuESTEnv()`](https://quest-kit.github.io/QuEST/group__environment.html#ga08bf98478c4bf21b0759fa7cd4a97496) which outputs a subsection such as
+It is prudent to choose as many threads as your CPU(s) have total hardware threads or cores, which need not be a power of `2`. One can view this, and verify the number of available threads at runtime, by calling [`reportQuESTEnv()`](https://quest-kit.github.io/QuEST/group__environment.html#ga08bf98478c4bf21b0759fa7cd4a97496) which outputs a subsection such as
 ```
   [cpu]
     numCpuCores.......10 per machine
@@ -159,7 +159,7 @@ It is prudent to choose as many threads as your CPU(s) have total hardware threa
 <!-- the doxygen-doc hyperlink above includes a hash of the function name which should be unchanging! -->
 
 > [!NOTE]
-> When running [distributed](#distribution), variable `OMP_NUM_THREADS` specifies the number of threads _per node_ and so should usually be the total number of hardware threads (or cores) _per machine_.
+> When running [distributed](#distribution), variable `OMP_NUM_THREADS` specifies the number of threads _per node_ and so should ordinarily be the number of hardware threads (or cores) **_per machine_**.
 
 
 ### Monitoring utilisation
@@ -172,15 +172,15 @@ The availability of multithreaded deployment can also be checked at runtime usin
   [deployment]
     isOmpEnabled............1
 ```
-where `Omp` signifies OpenMP and `1` indicates it is respectively compiled and runtime enabled.
+where `Omp` signifies OpenMP and the two `1` respectively indicate it has been compiled and runtime enabled.
 
 Like all programs, the CPU utilisation of a running QuEST program can be viewed using
 
 | OS    | Program | Method |
 | -------- | ------- | ---- |
-| Linux  | [`HTOP`](https://htop.dev/) | Run `htop` in terminal  |
-| MacOS |  [Activity Monitor](https://support.apple.com/en-gb/guide/activity-monitor/welcome/mac) | Place on dock > right click icon > `Monitors` > `Show CPU usage` [see [here](https://stackoverflow.com/questions/50260592/getting-each-of-the-cpu-cores-usage-via-terminal-in-macos)] |
-| Windows  |  [Task Manager](https://learn.microsoft.com/en-us/shows/inside/task-manager) |`Performance` > `CPU` > right click graph > `Change graph to` > `Logical processors` [see [here](https://superuser.com/questions/1398696/how-to-see-usage-of-each-core-in-windows-10)] |
+| Linux  | [HTOP](https://htop.dev/) | Run `htop` in terminal  |
+| MacOS |  [Activity Monitor](https://support.apple.com/en-gb/guide/activity-monitor/welcome/mac) | Place on dock > right click icon > `Monitors` > `Show CPU usage` (see [here](https://stackoverflow.com/questions/50260592/getting-each-of-the-cpu-cores-usage-via-terminal-in-macos)) |
+| Windows  |  [Task Manager](https://learn.microsoft.com/en-us/shows/inside/task-manager) |`Performance` > `CPU` > right click graph > `Change graph to` > `Logical processors` (see [here](https://superuser.com/questions/1398696/how-to-see-usage-of-each-core-in-windows-10)) |
 
 
 Note however that QuEST will not leverage multithreading at runtime when either:
@@ -192,7 +192,7 @@ Usage of multithreading can be (inadvisably) forced using [`createForcedQureg()`
 
 ### Improving performance
 
-Performance may be improved by setting other [OpenMP variables](https://www.openmp.org/spec-html/5.0/openmpch6.html). Keep in mind that for large `Qureg`s, QuEST's runtime is dominated by the costs of modifying large memory structures during long, uninterrupted loops: namely the updating of statevector amplitudes. For example
+Performance may be improved by setting other [OpenMP variables](https://www.openmp.org/spec-html/5.0/openmpch6.html). Keep in mind that for large `Qureg`, QuEST's runtime is dominated by the costs of modifying large memory structures during long, uninterrupted loops: namely the updating of statevector amplitudes. Some sensible settings include
 
 - [`OMP_DYNAMIC`](https://www.openmp.org/spec-html/5.0/openmpse51.html) `=false` to disable the costly runtime migration of threads between cores.
 - [`OMP_PROC_BIND`](https://www.openmp.org/spec-html/5.0/openmpse52.html) `=spread` to (attemptedly) give threads their own caches (see [here](https://developer.arm.com/documentation/102580/0100/Control-the-placement-of-OpenMP-threads)).
@@ -219,6 +219,10 @@ and never specifies [`schedule`](https://rookiehpc.org/openmp/docs/schedule/inde
 
 
 
+> [!TIP]
+> Sometimes the memory bandwidth between different sockets of a machine is poor, and it is substantially better to exchange memory in bulk between their NUMA nodes, rather than through repeated random access. In such settings, it can be worthwhile to hybridise multithreading and distribution, even upon a single machine, partitioning same-socket threads into their own MPI node. This forces inter-socket communication to happen in-batch, via message-passing, at the expense of using _double_ total memory (to store buffers). See the [distributed](#distribution) section.
+
+
 
 ---------------------
 
@@ -226,7 +230,9 @@ and never specifies [`schedule`](https://rookiehpc.org/openmp/docs/schedule/inde
 ## GPU-acceleration
 
 > [!NOTE]
-> Using GPU-acceleration requires first compiling QuEST with `CUDA` or `HIP` enabled (to utilise NVIDIA and AMD GPUs respectively), as detailed in [`compile.md`](compile.md#gpu-acceleration).
+> Using GPU-acceleration requires first compiling QuEST with `CUDA` or `HIP` enabled (to utilise NVIDIA and AMD GPUs respectively) as detailed in [`compile.md`](compile.md#gpu-acceleration).
+
+### Launching
 
 The compiled executable is launched like any other, via
 ```bash
@@ -287,6 +293,13 @@ There are a plethora of [environment variables](https://askubuntu.com/questions/
 
 
 
+### Benchmarking
+
+Beware that the CPU dispatches tasks to the GPU _asynchronously_. Control flow returns immediately to the CPU, which will proceed to other duties (like dispatching the next several quantum operation's worth of instructions to the GPU) while the GPU undergoes independent computation (goes _brrrrr_).
+This has no consequence to the user who uses only the QuEST API, which will automatically synchronise the CPU and GPU when necessary (like inside functions [`calcTotalProb()`](https://quest-kit.github.io/QuEST/group__calc__properties.html#gab082910d33473ec29e1d5852943de468)).
+
+However, it _does_ mean codes which seeks to benchmark QuEST must be careful to _wait for the GPU to be ready_ before beginning the stopwatch, and _wait for the GPU to finish_ before stopping the stopwatch. This can be done with the [`syncQuESTEnv()`](https://quest-kit.github.io/QuEST/group__environment.html#gaaa19c3112f1ecd80e3296df5c0ed058d), which incidentally also ensures nodes are synchronised when distributed.
+
 
 ---------------------
 
@@ -294,15 +307,57 @@ There are a plethora of [environment variables](https://askubuntu.com/questions/
 ## Distribution
 
 
+> [!NOTE]
+> Distributing QuEST over multiple machines requires first compiling with 
+> distribution enabled, as detailed in [`compile.md`](compile.md#distribution). 
+
+> [!IMPORTANT]
+> Simultaneously using distribution _and_ GPU-acceleration introduces additional considerations detailed in the [proceeding section](#distributed-gpu-acceleration).
+
+
+### Launching
+
+A distributed QuEST executable called `myexec` can be launched and distributed over (e.g.) `32` nodes using [`mpirun`](https://www.open-mpi.org/doc/v4.1/man1/mpirun.1.php) with the 
+```bash
+mpirun -np 32 ./myexec
+```
+or on some platforms (such as with Intel and Microsoft MPI):
+```bash
+mpiexec -n 32 myexec.exe
+```
+
+Some supercomputing facilities however may require custom or additional commands, like [SLURM](https://slurm.schedmd.com/documentation.html)'s [`srun`](https://slurm.schedmd.com/srun.html) command. See an excellent guide [here](https://docs.lumi-supercomputer.eu/runjobs/scheduled-jobs/distribution-binding/#distribution).
+```bash
+srun --nodes=8 --ntasks-per-node=4 --distribution=block:block
+```
+
+
+> [!IMPORTANT]
+> QuEST can only be distributed with a _power of `2`_ number of nodes, i.e. `1`, `2`, `4`, `8`, `16`, ...
+
+
+It is sometimes convenient (mostly for testing) to deploy QuEST across more nodes than there are available machines and sockets, inducing a gratuitous slowdown. Some MPI compilers like [OpenMPI](https://www.open-mpi.org/) forbid this by default, requiring additional commands to permit [oversubscription](https://docs.open-mpi.org/en/main/launching-apps/scheduling.html).
+```bash
+mpirun -np 1024 --oversubscribe ./mytests
+```
+
+
+### Configuring
+
 
 > TODO:
-> - launching
-> - power-of-2 nodes
-> - memory move implications
-> - distributing over sockets trick
-> - oversubscribing
-> - env vars
+> - detail environment variables
 
+
+### Benchmarking
+
+QuEST strives to reduce inter-node communication when performing distributed simulation, which can otherwise dominate runtime. Between these rare communications, nodes work in complete independence and are likely to desynchronise, especially when performing operations with non-uniform loads. In fact, many-controlled quantum gates are skipped by non-participating nodes which would otherwise wait idly!
+
+Nodes will only synchronise when forced by the user (with [`syncQuESTEnv()`](https://quest-kit.github.io/QuEST/group__environment.html#gaaa19c3112f1ecd80e3296df5c0ed058d)), or when awaiting necessary communication (due to functions like [`calcTotalProb()`](https://quest-kit.github.io/QuEST/group__calc__properties.html#gab082910d33473ec29e1d5852943de468)). Furthermore, `Qureg` created with [`createQureg()`](https://quest-kit.github.io/QuEST/group__qureg__create.html#gab3a231fba4fd34ed95a330c91fcb03b3) will automatically disable distribution (and be harmlessly cloned upon every node) when they are too small to outweigh the performance overheads.
+
+This can make monitoring difficult; CPU loads on different nodes can correspond to different stages of execution, and memory loads may fail to distinguish whether a large `Qureg` is distributed or a small `Qureg` is duplicated! Further, a node reaching the end of the program and terminating does not indicate the simulation has finished - other desynchronised nodes may still be working.
+
+It is ergo always prudent to explicitly call [`syncQuESTEnv()`](https://quest-kit.github.io/QuEST/group__environment.html#gaaa19c3112f1ecd80e3296df5c0ed058d) immediately before starting and ending a performance timer. This way, the recorded runtime should reflect that of the slowest node (and ergo, the full calculation) rather than that of the node which happened to have its timer output logged.
 
 
 ---------------------
@@ -312,9 +367,12 @@ There are a plethora of [environment variables](https://askubuntu.com/questions/
 
 
 > TODO:
-> - env vars etc
-> - ucx
-> - controlling local vs distributed gpus with device visibility etc
+> - explain usecases (multi local GPU, multi remote GPU, hybrid)
+> - explain GPUDirect
+> - explain CUDA-aware MPI
+> - explain UCX
+> - detail environment variables
+> - detail controlling local vs distributed gpus with device visibility
 
 
 ---------------------
@@ -323,7 +381,4 @@ There are a plethora of [environment variables](https://askubuntu.com/questions/
 
 > TODO:
 > - slurm examples
-
-
-
 
