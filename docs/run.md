@@ -78,7 +78,27 @@ QuEST's unit and integration tests are compiled into executable `tests` within t
 ```bash
 ./tests/tests
 ```
-This binary accepts all of the [Catch2 CLI arguments](https://github.com/catchorg/Catch2/blob/devel/docs/command-line.md), for example to run specific tests
+which should, after some time, output something like
+```
+QuEST execution environment:
+  precision:       2
+  multithreaded:   1
+  distributed:     1
+  GPU-accelerated: 1
+  cuQuantum:       1
+  num nodes:       16
+  num qubits:      6
+  num qubit perms: 10
+
+Tested Qureg deployments:
+  GPU + MPI
+
+Randomness seeded to: 144665856
+===============================================================================
+All tests passed (74214 assertions in 240 test cases)
+```
+
+This `tests` binary accepts all of the [Catch2 CLI arguments](https://github.com/catchorg/Catch2/blob/devel/docs/command-line.md), for example to run specific tests
 ```bash
 ./tests/tests applyHadamard
 ```
@@ -103,7 +123,25 @@ ctest
 ```bash
 make test
 ```
-which will log each passing test alive, but alas cannot be deployed with distribution.
+which will log each passing test live, outputting something like
+```
+Test project /build
+        Start   1: calcExpecPauliStr
+  1/240 Test   #1: calcExpecPauliStr .............................   Passed   14.03 sec
+        Start   2: calcExpecPauliStrSum
+  2/240 Test   #2: calcExpecPauliStrSum ..........................   Passed   10.06 sec
+        Start   3: calcExpecNonHermitianPauliStrSum
+  3/240 Test   #3: calcExpecNonHermitianPauliStrSum ..............   Passed   10.34 sec
+        Start   4: calcProbOfBasisState
+  4/240 Test   #4: calcProbOfBasisState ..........................   Passed    0.33 sec
+        Start   5: calcProbOfQubitOutcome
+  5/240 Test   #5: calcProbOfQubitOutcome ........................   Passed    0.12 sec
+        Start   6: calcProbOfMultiQubitOutcome
+  6/240 Test   #6: calcProbOfMultiQubitOutcome ...................   Passed   15.07 sec
+        Start   7: calcProbsOfAllMultiQubitOutcomes
+...
+```
+Alas tests launched in this way cannot be deployed with distribution.
 
 
 ### v3
