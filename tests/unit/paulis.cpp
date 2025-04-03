@@ -561,6 +561,7 @@ TEST_CASE( "destroyPauliStrSum", TEST_CATEGORY ) {
             // valid on some platforms (Github Actions linux
             // gcc), so we force invalidity
             sum.numTerms = -1;
+            sum.isApproxHermitian = nullptr; // else seg-faults if field accessed
 
             REQUIRE_THROWS_WITH( destroyPauliStrSum(sum), 
                 ContainsSubstring("invalid fields") || 
