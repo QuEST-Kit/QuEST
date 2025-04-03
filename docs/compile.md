@@ -11,10 +11,7 @@
     use-cases before progressively more visually complicated examples
 -->
 
-
-
-
-# Compiling
+# Compile
 
 QuEST can be compiled with [CMake](https://cmake.org/) to make a standalone executable, or an exported library, or a library installed on the system. 
 Compiling is configured with variables supplied by the [`-D` flag](https://cmake.org/cmake/help/latest/command/add_definitions.html) to the [CMake CLI](https://cmake.org/cmake/help/latest/guide/user-interaction/index.html#command-line-cmake-tool). This page details _how_ to compile QuEST for varying purposes and hardwares.
@@ -35,6 +32,7 @@ Compiling is configured with variables supplied by the [`-D` flag](https://cmake
 > - [`cmake.md`](cmake.md) for the full list of passable compiler variables.
 > - [`compilers.md`](compilers.md) for a list of compatible and necessary compilers.
 > - [`qtechtheory.org`](https://quest.qtechtheory.org/download/) for help downloading the necessary compilers.
+> - [`run.md`](run.md) for a guide to executing the compiled application.
 
 
 ## Basic
@@ -171,7 +169,7 @@ int main() {
 #include <stdio.h>
 
 void myfunc() {
-    printf("hello world!\n");
+    printf("hello quworld!\n");
 }
 ```
 simply separate them by `;` in `USER_SOURCE`, wrapped in `"`:
@@ -203,8 +201,9 @@ For example,
 cmake .. -D CMAKE_C_FLAGS="-D MYMACRO=5" -D CMAKE_EXE_LINKER_FLAGS="-lm"
 ```
 
+Such flags are listed in [`cmake.md`](cmake.md).
 However, if your configuration is any more complicated or your source code requires different `C`/`C++` 
-standards than the QuEST source code, you should consider separately compiling QuEST then linking it
+standards than the QuEST source, you should consider separately compiling QuEST then linking it
 to your source code as a library!
 
 
@@ -222,6 +221,7 @@ The executables will be saved in the (current) `build` directory, in a sub-direc
 ```bash
 ./examples/matrices/cpp_initialisation
 ```
+as elaborated upon in [`run.md`](run.md#tests).
 
 
 ## Tests
@@ -237,27 +237,7 @@ cmake .. -D ENABLE_TESTING=ON
 # build
 cmake --build .
 ```
-This will compile an executable which can be run directly (from within the `build` folder) via
-```bash
-./tests/tests
-```
-which accepts all of the [Catch2 CLI arguments](https://github.com/catchorg/Catch2/blob/devel/docs/command-line.md)
-```bash
-./tests/tests applyHadamard
-```
-and which can be distributed (when compiled for such):
-```bash
-mpirun -np 8 ./tests/tests applyHadamard
-```
-
-Alternatively, the tests can be run through [CTest](https://cmake.org/cmake/help/book/mastering-cmake/chapter/Testing%20With%20CMake%20and%20CTest.html) via either
-```bash
-ctest
-```
-```bash
-make test
-```
-which will log each passing test alive, but alas cannot be deployed with distribution.
+This will compile an executable `tests` in subdirectory `build/tests/`, which can be run as explained in [`run.md`](run.md#tests).
 
 ### v3
 
@@ -269,20 +249,8 @@ cmake .. -D ENABLE_TESTING=ON -D ENABLE_DEPRECATED_API=ON
 # build
 cmake --build .
 ```
-and run directly as a [Catch2 process](https://github.com/catchorg/Catch2/blob/devel/docs/command-line.md) as
-```bash
-./tests/deprecated/dep_tests
-```
-or run through [CTest](https://cmake.org/cmake/help/book/mastering-cmake/chapter/Testing%20With%20CMake%20and%20CTest.html) via
-```bash
-cd tests/deprecated
-ctest
-```
+and run as explained in [`run.md`](run.md#v3).
 
-> [!CAUTION]
-> The deprecated unit tests are non-comprehensive and the deprecated API should not be relied upon, for it may introduce
-> undetectable corner-case bugs. Please only use the deprecated API and tests for assistance porting your application
-> from QuEST v3 to v4.
 
 
 ## Multithreading
@@ -299,7 +267,7 @@ QuEST uses [OpenMP](https://www.openmp.org/) to perform multithreading, so accel
 > export OpenMP_ROOT=$(brew --prefix)/opt/libomp
 > ```
 
-Compiling with multithreading is as simple as enabling it during configuration
+To compile with multithreading, simply enable it during configuration:
 ```bash
 # configure
 cmake .. -D ENABLE_MULTITHREADING=ON
@@ -307,29 +275,9 @@ cmake .. -D ENABLE_MULTITHREADING=ON
 # build
 cmake --build .
 ```
-which is in fact enabled by default!
+This is in fact the default behaviour!
 
-The number of threads over which to parallelise QuEST's execution can be chosen _before launching_ the compiled executable via the [`OMP_NUM_THREADS`](https://www.openmp.org/spec-html/5.0/openmpse50.html) environment variable, e.g. either
-```bash
-OMP_NUM_THREADS=16 ./myexec
-```
-```bash
-export OMP_NUM_THREADS=32
-./myexec
-```
-
-<!-- the doxygen-doc hyperlink below includes a hash of the function name which should be unchanging! -->
-One can verify the number of utilised threads by compiling and running a file which calls [`reportQuESTEnv()`](https://quest-kit.github.io/QuEST/group__environment.html#ga08bf98478c4bf21b0759fa7cd4a97496), which outputs a subsection such as
-```
-  [cpu]
-    numCpuCores.......10 per machine
-    numOmpProcs.......10 per machine
-    numOmpThrds.......32 per node
-```
-
-
-> TODO:
-> - binding sockets
+The number of threads over which to parallelise QuEST's execution is chosen throguh setting environment variables, like [`OMP_NUM_THREADS`](https://www.openmp.org/spec-html/5.0/openmpse50.html), immediately before execution. See [`run.md`](run.md#multithreading) for more information.
 
 
 
@@ -366,10 +314,7 @@ QuEST supports both NVIDIA GPUs (using CUDA) and AMD GPUs (using HIP). Using eit
 
 > TODO!
 > - compiling
-> - launching
-> - power-of-2 nodes
-> - distributing over sockets
-> - oversubscribing
+
 
 ## GPUDirect
 

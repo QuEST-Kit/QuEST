@@ -188,8 +188,9 @@ QuEST supports:
 
 Visit the [docs](docs/) to:
   - [see what's new in v4](docs/version4.md)
-  - [compile with cmake](docs/cmake.md)
+  - [compile with cmake](docs/compile.md)
   - [find compatible compilers](docs/compilers.md)
+  - [launch your simulations](docs/run.md)
   - [view some examples](examples/)
 
 The [API](https://quest-kit.github.io/QuEST/group__api.html) documentation is divided into the following groups:
