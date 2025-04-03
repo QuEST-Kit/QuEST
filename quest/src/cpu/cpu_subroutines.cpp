@@ -130,7 +130,7 @@ void cpu_fullstatediagmatr_setElemsFromMultiDimLists(FullStateDiagMatr out, void
     int rank = out.isDistributed? comm_getRank() : 0;
 
     // create an explicit parallel region to avoid re-initialisation of vectors every iteration
-    #pragma omp parallel
+    #pragma omp parallel if(out.isMultithreaded)
     {
         // create a private cache for every thread
         vector<qindex> listInds(numDims);
@@ -163,7 +163,7 @@ void cpu_fullstatediagmatr_setElemsFromMultiVarFunc(FullStateDiagMatr out, qcomp
     int rank = out.isDistributed? comm_getRank() : 0;
 
     // create an explicit parallel region to avoid re-initialisation of vectors every iteration
-    #pragma omp parallel
+    #pragma omp parallel if(out.isMultithreaded)
     {
         // create a private cache for every thread
         vector<qindex> varValues(numVars);
