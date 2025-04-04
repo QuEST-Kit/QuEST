@@ -457,18 +457,40 @@ For convenience however, we offer some example [SLURM](https://slurm.schedmd.com
 
 ### SLURM
 
+4 machines each with 8 CPUs:
 ```bash
 #SBATCH --nodes=4
 #SBATCH --ntasks-per-node=1
-
-## 4 machines each with 8 CPUs
+#SBATCH --cpus-per-task=8
 OMP_NUM_THREADS=8 mpirun ./myexec
 ```
 
-> TODO
+1 machine with 4 local GPUs:
+```bash
+#SBATCH --nodes=1
+#SBATCH --tasks-per-node=4
+#SBATCH --gres=gpu:4
+#SBATCH --distribution=block:block
+#SBATCH --hint=nomultithread
+srun ./myexec
+```
+
+1024 machines with 16 local GPUs (divides `Qureg` between 16384 partitions):
+```bash
+#SBATCH --nodes=1024
+#SBATCH --tasks-per-node=16
+#SBATCH --gres=gpu:16
+#SBATCH --distribution=block:block
+#SBATCH --hint=nomultithread
+srun ./myexec
+```
 
 
 
 ### PBS
 
-> TODO
+4 machines each with 8 CPUs:
+```bash
+#PBS -l select=4:ncpus=8
+OMP_NUM_THREADS=8 aprun -n 4 -d 8 -cc numa_node ./myexec
+```
