@@ -40,7 +40,7 @@
 <!-- intro -->
 
 > [!NOTE]
-> QuEST `v4` has been released which re-designed QuEST from the ground up. Read about the exciting new features [here](/docs/version4.md).
+> QuEST `v4` has been released which re-designed QuEST from the ground up. Read about the exciting new features [here](/docs/v4.md).
 
 The **Quantum Exact Simulation Toolkit** (QuEST) is a high-performance simulator of quantum statevectors and density matrices.
 It hybridises **multithreading**, **GPU acceleration** and **distribution** to run lightning fast on laptops, desktops and 
@@ -87,7 +87,7 @@ To learn more:
 
 - visit the [website](https://quest.qtechtheory.org/)
 - see some [examples](/examples/)
-- view the [documentation](#book-documentation)
+- view the [documentation](#documentation)
 - browse the [API](https://quest-kit.github.io/QuEST/group__api.html)
 - read the [whitepaper](https://www.nature.com/articles/s41598-019-47174-9), which featured in Scientific Report's [Top 100 in Physics](https://www.nature.com/collections/ecehgdfcba/) :trophy:
 
@@ -187,9 +187,10 @@ QuEST supports:
 > QuEST v4's documentation is still under construction!
 
 Visit the [docs](docs/) to:
-  - [see what's new in v4](docs/version4.md)
-  - [compile with cmake](docs/cmake.md)
+  - [see what's new in v4](docs/v4.md)
+  - [compile with cmake](docs/compile.md)
   - [find compatible compilers](docs/compilers.md)
+  - [launch your simulations](docs/run.md)
   - [view some examples](examples/)
 
 The [API](https://quest-kit.github.io/QuEST/group__api.html) documentation is divided into the following groups:

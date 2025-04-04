@@ -7,7 +7,32 @@
 
 # Compilers
 
-QuEST separates compilation of the **_frontend_**, **_backend_** and the **_tests_** which have progressively stricter compiler requirements.
+QuEST separates compilation of the **_frontend_**, **_backend_** and the **_tests_**, which have progressively stricter compiler requirements.
+This page details the specialised compilers necessary to enable specific features hardware accelerators, and lists such compilers which are
+known to be compatible with QuEST.
+
+**TOC**:
+- [Frontend](#frontend)
+- [Backend](#backend)
+   * [comm](#comm)
+   * [cpu](#cpu)
+   * [gpu](#gpu)
+   * [comm + gpu](#comm-gpu)
+   * [gpu + cuquantum](#gpu-cuquantum)
+- [Tests](#tests)
+
+> **See also**:
+> - [`compile.md`](compile.md) for a guide to compiling QuEST.
+> - [`cmake.md`](cmake.md) for the full list of passable compiler variables.
+> - [`qtechtheory.org`](https://quest.qtechtheory.org/download/) for help downloading the compilers listed on this page.
+
+> [!TIP]
+> QuEST's [Github Actions](https://github.com/QuEST-Kit/QuEST/actions/workflows/compile.yml) regularly test QuEST compilation using a broad combination of compilers; presently `108` combinations! This can provide a clue as to which modern compiler versions are supported, and be a concrete example of _how_ to compile in a sanitised, virtual setting. Check out the [`compile.yml`](/.github/workflows/compile.yml) workflow.
+
+
+
+---------------
+
 
 ## Frontend
 
@@ -22,6 +47,8 @@ User code can be written in either `C11` or `C++14`, and has so far been tested 
 > The standards are imposed by the QuEST header's use of `C11` [generics](https://en.cppreference.com/w/c/language/generic) and `C++14` complex arithmetic overloads. Each can be relaxed to enable compatibility with `C99` and `C++11` by simple modifications to the headers - ask us for help! 
 
 
+---------------
+
 ## Backend
 
 [![Languages](https://img.shields.io/badge/C++-17-ff69b4.svg)](https://en.cppreference.com/w/cpp/17)
@@ -35,7 +62,8 @@ Enabling distribution requires compiling `comm/` with an [MPI](https://en.wikipe
 - [openmpi](https://www-lb.open-mpi.org/software/ompi/v4.0/) 4
 - [openmpi](https://www.open-mpi.org/software/ompi/v5.0/) 5
 - [mpich](https://www.mpich.org/) 4
-- [msmpi](https://learn.microsoft.com/en-us/message-passing-interface/microsoft-mpi) 2
+- [msmpi](https://learn.microsoft.com/en-us/message-passing-interface/microsoft-mpi) 10
+- [impi](https://www.intel.com/content/www/us/en/developer/tools/oneapi/mpi-library.html) 3
 
 when wrapping all previously mentioned compilers.
 
@@ -66,6 +94,8 @@ Enabling [cuQuantum](https://developer.nvidia.com/cuquantum-sdk) on NVIDIA GPUs 
 - [cuda](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html) 11
 - [cuda](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html) 12
 
+
+---------------
 
 ## Tests
 

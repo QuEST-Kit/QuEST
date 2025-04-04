@@ -14,11 +14,28 @@
 
 #include "quest/include/types.h"
 
+
+
+/*
+ * These signatures are divided into two partitions; those which are
+ * natively C and C++ compatible (first partition) and those which are
+ * only exposed to C++ (second partition) because they return 'qcomp' 
+ * which cannot cross the C++-to-C ABI. The first partition defines the
+ * doc groups, and the second partition functions are added into them.
+ */
+
 // enable invocation by both C and C++ binaries
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+
+
+/** 
+ * @defgroup qureg_structs Structs
+ * @brief Data structures for representing quantum registers.
+ * @{
+ */
 
 
 /// @notdoced
@@ -55,66 +72,133 @@ typedef struct {
 
 } Qureg;
 
+/** @} */
+
+
+
+/** 
+ * @defgroup qureg_create Constructors
+ * @brief Functions for creating statevectors and density matrices.
+ * @{
+ */
 
 
 /// @notdoced
 Qureg createQureg(int numQubits);
 
+
 /// @notdoced
 Qureg createDensityQureg(int numQubits);
+
 
 /// @notdoced
 Qureg createForcedQureg(int numQubits);
 
+
 /// @notdoced
 Qureg createForcedDensityQureg(int numQubits);
+
 
 /// @notdoced
 Qureg createCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread);
 
+
 /// @notdoced
 Qureg createCloneQureg(Qureg qureg);
 
+
+/** @} */
+
+
+
+/** 
+ * @defgroup qureg_destroy Destructors
+ * @brief Functions for destroying existing Qureg.
+ * @{
+ */
 
 
 /// @notdoced
 void destroyQureg(Qureg qureg);
 
 
+/** @} */
+
+
+
+/** 
+ * @defgroup qureg_report Reporters
+ * @brief Functions for printing Qureg states or reporting their configuration.
+ * @{
+ */
+
 
 /// @notdoced
 /// @nottested
 void reportQuregParams(Qureg qureg);
+
 
 /// @notdoced
 /// @nottested
 void reportQureg(Qureg qureg);
 
 
+/** @} */
+
+
+
+/** 
+ * @defgroup qureg_sync Synchronisation
+ * @brief Functions for copying memory between a Qureg's CPU (RAM) and GPU (VRAM) memory. 
+ * @details These functions are only necessary when the user wishes to manually probe or
+ *          modify the Qureg amplitudes (rather than use functions like getQuregAmps() and
+ *          setQuregAmps()), to ensure that the CPU and GPU copies of the Qureg are identical.
+ *          These functions have no effect when running without GPU-acceleration, but remain 
+ *          legal and harmless to call, to achieve platform agnosticism.
+ * @{
+ */
+
 
 /// @notdoced
 /// @nottested
 void syncQuregToGpu(Qureg qureg);
 
+
 /// @notdoced
 /// @nottested
 void syncQuregFromGpu(Qureg qureg);
 
+
 /// @notdoced
 /// @nottested
 void syncSubQuregToGpu(Qureg qureg, qindex localStartInd, qindex numLocalAmps);
+
 
 /// @notdoced
 /// @nottested
 void syncSubQuregFromGpu(Qureg qureg, qindex localStartInd, qindex numLocalAmps);
 
 
+/** @} */
+
+
+
+/** 
+ * @defgroup qureg_get Getters
+ * @brief Functions for obtaining amplitudes from statevectors or density matrices.
+ * @{
+ */
+
 
 /// @notdoced
 void getQuregAmps(qcomp* outAmps, Qureg qureg, qindex startInd, qindex numAmps);
 
+
 /// @notdoced
 void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);
+
+
+/** @} */
 
 
 // end de-mangler
@@ -135,14 +219,26 @@ void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex s
  * below functions have a C-compatible wrapper defined in
  * wrappers.h which passes/receives the primitives by pointer;
  * a qcomp ptr can be safely passed from the C++ source binary
- * the user's C binary.
+ * the user's C binary. These functions use the existing doxygen
+ * doc groups defined above
  */
 
+
+/// @ingroup qureg_get
 /// @notdoced
 qcomp getQuregAmp(Qureg qureg, qindex index);
 
+
+/// @ingroup qureg_get
 /// @notdoced
 qcomp getDensityQuregAmp(Qureg qureg, qindex row, qindex column);
+
+
+
+/** 
+ * @defgroup qureg_setters Setters
+ * @brief See @ref init_amps "Amplitude initialisations".
+ */
 
 
 

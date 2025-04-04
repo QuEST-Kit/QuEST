@@ -56,8 +56,10 @@
 
 
 
-/*
- * STRUCTS
+/** 
+ * @defgroup channels_structs Structs
+ * @brief Data structures for representing decoherence channels.
+ * @{
  */
 
 
@@ -122,6 +124,39 @@ typedef struct {
 // superoperator calculation THREE times!
 
 
+/** @} */
+
+
+
+// we define the remaining doc groups in advance, since their signatures are
+// more naturally grouped in an implementation-specific way below. Note the
+// above structs were not doc'd this way (which would be more consistent)
+// because it inexplicably causes Doxygen to duplicate their section at the
+// top-level under Channels (rather than under Structs). Bizarre! The order
+// of declaration below will match the order shown in the html doc.
+/** 
+ * @defgroup channels_create Constructors
+ * @brief Functions for creating channel data structures.
+ * 
+ * @defgroup channels_destroy Destructors
+ * @brief Functions for destroying existing channel data structures.
+ * 
+ * @defgroup channels_reporters Reporters
+ * @brief Functions for printing channels.
+ * 
+ * @defgroup channels_setters Setters
+ * @brief Functions for overwriting the elements of channels.
+ * 
+ * @defgroup channels_sync Synchronisation
+ * @brief Functions for overwriting a channel's GPU (VRAM) memory with its CPU (RAM) contents.
+ * @details These functions are only necessary when the user wishes to manually modify the
+ *          elements of a channel (in lieu of using the @ref channels_setters "Setters"), to
+ *          thereafter synchronise the changes to the GPU copy of the channel. These functions 
+ *          have no effect when running without GPU-acceleration, but remain legal and harmless 
+ *          to call (to achieve platform agnosticism).
+ */
+
+
 
 /*
  * BASIC FUNCTIONS
@@ -133,32 +168,48 @@ typedef struct {
 extern "C" {
 #endif
 
+
+    /// @ingroup channels_create
     /// @notdoced
     KrausMap createKrausMap(int numQubits, int numOperators);
 
+
+    /// @ingroup channels_sync
     /// @notdoced
     void syncKrausMap(KrausMap map);
 
+
+    /// @ingroup channels_destroy
     /// @notdoced
     void destroyKrausMap(KrausMap map);
 
+
+    /// @ingroup channels_reporters
     /// @notdoced
     /// @nottested
     void reportKrausMap(KrausMap map);
 
 
+    /// @ingroup channels_create
     /// @notdoced
     SuperOp createSuperOp(int numQubits);
 
+
+    /// @ingroup channels_sync
     /// @notdoced
     void syncSuperOp(SuperOp op);
 
+
+    /// @ingroup channels_destroy
     /// @notdoced
     void destroySuperOp(SuperOp op);
 
+
+    /// @ingroup channels_reporters
     /// @notdoced
     /// @nottested
     void reportSuperOp(SuperOp op);
+
 
 #ifdef __cplusplus
 }
@@ -181,11 +232,16 @@ extern "C" {
 extern "C" {
 #endif
 
+
+    /// @ingroup channels_setters
     /// @notdoced
     void setKrausMap(KrausMap map, qcomp*** matrices);
 
+
+    /// @ingroup channels_setters
     /// @notdoced
     void setSuperOp(SuperOp op, qcomp** matrix);
+
 
 #ifdef __cplusplus
 }
@@ -214,10 +270,16 @@ extern "C" {
 
     // C++ overloads to accept vectors, which also enables vector initialiser literals
 
+
+    /// @ingroup channels_setters
     /// @notdoced
+    /// @cpponly
     void setKrausMap(KrausMap map, std::vector<std::vector<std::vector<qcomp>>> matrices);
 
+
+    /// @ingroup channels_setters
     /// @notdoced
+    /// @cpponly
     void setSuperOp(SuperOp op, std::vector<std::vector<qcomp>> matrix);
     
 
@@ -273,6 +335,7 @@ extern "C" {
     // C then overloads setKrausMap() to call the above VLA when given arrays, using C11 Generics.
     // See the doc of getCompMatr1() in matrices.h for an explanation of Generic, and its nuances.
 
+    /// @ingroup channels_setters
     /// @notdoced
     #define setKrausMap(map, ...) \
         _Generic((__VA_ARGS__), \
@@ -280,6 +343,7 @@ extern "C" {
             default  : _setKrausMapFromArr \
         )((map), (__VA_ARGS__))
 
+    /// @ingroup channels_setters
     /// @notdoced
     #define setSuperOp(op, ...) \
         _Generic((__VA_ARGS__), \
@@ -316,11 +380,16 @@ extern "C" {
     // and 'numOps' are superfluous, but needed for consistency with the C API, so we additionally
     // validate that they match the struct dimensions (which requires validating the structs).
 
+
+    /// @ingroup channels_setters
     /// @notdoced
     void setInlineKrausMap(KrausMap map, int numQb, int numOps, std::vector<std::vector<std::vector<qcomp>>> matrices);
 
+
+    /// @ingroup channels_setters
     /// @notdoced
     void setInlineSuperOp(SuperOp op, int numQb, std::vector<std::vector<qcomp>> matrix);
+
 
 #elif !defined(_MSC_VER)
 
@@ -353,10 +422,13 @@ extern "C" {
     }
 
 
+    /// @ingroup channels_setters
     /// @notdoced
     #define setInlineKrausMap(map, numQb, numOps, ...) \
         _setInlineKrausMap((map), (numQb), (numOps), (qcomp[(numOps)][1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
+
+    /// @ingroup channels_setters
     /// @notdoced
     #define setInlineSuperOp(matr, numQb, ...) \
         _setInlineSuperOp((matr), (numQb), (qcomp[1<<(2*(numQb))][1<<(2*(numQb))]) __VA_ARGS__)
@@ -383,11 +455,16 @@ extern "C" {
 
     // C++ accepts vector initialiser lists
 
+
+    /// @ingroup channels_create
     /// @notdoced
     KrausMap createInlineKrausMap(int numQubits, int numOperators, std::vector<std::vector<std::vector<qcomp>>> matrices);
 
+
+    /// @ingroup channels_create
     /// @notdoced
     SuperOp createInlineSuperOp(int numQubits, std::vector<std::vector<qcomp>> matrix);
+
 
 #elif !defined(_MSC_VER)
 
@@ -422,10 +499,13 @@ extern "C" {
     }
 
 
+    /// @ingroup channels_create
     /// @notdoced
     #define createInlineKrausMap(numQb, numOps, ...) \
         _createInlineKrausMap((numQb), (numOps), (qcomp[(numOps)][1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
+
+    /// @ingroup channels_create
     /// @notdoced
     #define createInlineSuperOp(numQb, ...) \
         _createInlineSuperOp((numQb), (qcomp[1<<(2*(numQb))][1<<(2*(numQb))]) __VA_ARGS__)
