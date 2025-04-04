@@ -386,7 +386,7 @@ or on some platforms (such as with Intel and Microsoft MPI):
 mpiexec -n 32 myexec.exe
 ```
 
-Some supercomputing facilities however may require custom or additional commands, like [SLURM](https://slurm.schedmd.com/documentation.html)'s [`srun`](https://slurm.schedmd.com/srun.html) command. See an excellent guide [here](https://docs.lumi-supercomputer.eu/runjobs/scheduled-jobs/distribution-binding/#distribution).
+Some supercomputing facilities however may require custom or additional commands, like [SLURM](https://slurm.schedmd.com/documentation.html)'s [`srun`](https://slurm.schedmd.com/srun.html) command. See an excellent guide [here](https://docs.lumi-supercomputer.eu/runjobs/scheduled-jobs/distribution-binding/#distribution), and the job submission guide [below](#supercomputers).
 ```bash
 srun --nodes=8 --ntasks-per-node=4 --distribution=block:block
 ```
@@ -394,6 +394,14 @@ srun --nodes=8 --ntasks-per-node=4 --distribution=block:block
 
 > [!IMPORTANT]
 > QuEST can only be distributed with a _power of `2`_ number of nodes, i.e. `1`, `2`, `4`, `8`, `16`, ...
+
+> [!NOTE]
+> When [multithreading](#multithreading) is also enabled, the environment variable `OMP_NUM_THREADS` 
+> will determine how many threads are used by _each node_ (i.e. each MPI process). Ergo optimally
+> deploying to `8` machines, each with `64` CPUs (a total of `512` CPUs), might resemble:
+> ```bash
+> OMP_NUM_THREADS=64 mpirun -np 8 ./myexec
+> ```
 
 
 It is sometimes convenient (mostly for testing) to deploy QuEST across more nodes than there are available machines and sockets, inducing a gratuitous slowdown. Some MPI compilers like [OpenMPI](https://www.open-mpi.org/) forbid this by default, requiring additional commands to permit [oversubscription](https://docs.open-mpi.org/en/main/launching-apps/scheduling.html).
@@ -439,6 +447,28 @@ It is ergo always prudent to explicitly call [`syncQuESTEnv()`](https://quest-ki
 
 ## Supercomputers
 
-> TODO:
-> - slurm examples
+A QuEST executable is launched like any other in supercomputing settings, including when distributed.
+For convenience however, we offer some example [SLURM](https://slurm.schedmd.com) and [PBS](https://www.openpbs.org/) job submission scripts to deploy QuEST in various configurations. These examples assume QuEST and the user source have already been compiled, as guided in [`compile.md`](compile.md).
 
+
+> [!NOTE]
+> These submission scripts are only illustrative. It is likely the necessary configuration and commands on
+> your own supercomputing facility differs!
+
+### SLURM
+
+```bash
+#SBATCH --nodes=4
+#SBATCH --ntasks-per-node=1
+
+## 4 machines each with 8 CPUs
+OMP_NUM_THREADS=8 mpirun ./myexec
+```
+
+> TODO
+
+
+
+### PBS
+
+> TODO
