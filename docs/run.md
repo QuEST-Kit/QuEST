@@ -27,7 +27,9 @@ Running your [compiled](compile.md) QuEST application can be as straightforward 
    * [Configuring](#configuring-1)
    * [Benchmarking](#benchmarking-1)
 - [Multi-GPU](#multi-gpu)
-- [Supercomputers](#supercomputer-job-schedulers)
+- [Supercomputers](#supercomputers)
+   * [SLURM](#slurm)
+   * [PBS](#pbs)
 
 > [!NOTE]
 > This page assumes you are working in a `build` directory into which all executables have been compiled.
