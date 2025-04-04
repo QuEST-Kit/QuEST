@@ -557,6 +557,11 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
                         elem = std::conj(elem);
 
                     qureg.cpuAmps[i] += elem * cache[j];
+
+                    /// @todo
+                    /// qureg.cpuAmps[i] is being serially updated by only this thread,
+                    /// so is a candidate for Kahan summation for improved numerical
+                    /// stability. Explore whether this is time-free and worthwhile!
                 }
             }
         }

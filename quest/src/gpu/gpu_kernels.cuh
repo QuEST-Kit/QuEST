@@ -406,6 +406,11 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
                     elem.y *= -1;
 
                 amps[i] = amps[i] + (elem * globalCache[j]);
+
+                /// @todo
+                /// qureg.cpuAmps[i] is being serially updated by only this thread,
+                /// so is a candidate for Kahan summation for improved numerical
+                /// stability. Explore whether this is time-free and worthwhile!
             }
         }
     }
