@@ -19,7 +19,15 @@
 
 #include <algorithm>
 #include <cmath>
+#include <vector>
 
+using std::vector;
+
+
+
+/*
+ * C AND C++ AGNOSTIC FUNCTIONS
+ */
 
 // enable invocation by both C and C++ binaries
 extern "C" {
@@ -244,5 +252,47 @@ void setQuregToReducedDensityMatrix(Qureg out, Qureg in, int* retainQubits, int 
 }
 
 
-
 } // end de-mangler
+
+
+
+/*
+ * C++ OVERLOADS
+ */
+
+
+void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, std::vector<std::vector<qcomp>> amps) {
+
+    // C++-specific validation
+    validate_matrixRowsAllSameSize(amps, __func__);
+
+    // we must pass nested pointers to the C function, so alloc a vector
+    // of pointers of amps. We defensively check the temp vector allocates fine
+    vector<qcomp*> ptrs;
+    size_t len = amps.size();
+    auto callback = [&]() { validate_tempAllocSucceeded(false, len, sizeof(qcomp*), __func__); };
+    util_tryAllocVector(ptrs, len, callback);
+
+    // then set the pointers
+    for (size_t i=0; i<len; i++)
+        ptrs[i] = amps[i].data();
+
+    // C function performs main validation
+    setDensityQuregAmps(qureg, startRow, startCol, ptrs.data(), len, (len>0)? len : 0); // avoid seg-fault
+}
+
+void setQuregAmps(Qureg qureg, qindex startInd, std::vector<qcomp> amps) {
+    setQuregAmps(qureg, startInd, amps.data(), amps.size());
+}
+
+void setDensityQuregFlatAmps(Qureg qureg, qindex startInd, std::vector<qcomp> amps) {
+    setDensityQuregFlatAmps(qureg, startInd, amps.data(), amps.size());
+}
+
+void setQuregToPartialTrace(Qureg out, Qureg in, std::vector<int> traceOutQubits) {
+    setQuregToPartialTrace(out, in, traceOutQubits.data(), traceOutQubits.size());
+}
+
+void setQuregToReducedDensityMatrix(Qureg out, Qureg in, vector<int> retainQubits) {
+    setQuregToReducedDensityMatrix(out, in, retainQubits.data(), retainQubits.size());
+}
