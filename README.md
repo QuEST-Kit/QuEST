@@ -186,7 +186,7 @@ QuEST supports:
 > [!IMPORTANT]
 > QuEST v4's documentation is still under construction!
 
-Visit the [docs](docs/) to:
+Visit the [docs](docs/README.md) to:
   - [see what's new in v4](docs/v4.md)
   - [compile with cmake](docs/compile.md)
   - [find compatible compilers](docs/compilers.md)
@@ -270,7 +270,7 @@ then run it with
 ./min_example
 ```
 
-See the [docs](docs/) for enabling acceleration and running the unit tests.
+See the [docs](docs/README.md) for enabling acceleration and running the unit tests.
 
 ---------------------------------
 
