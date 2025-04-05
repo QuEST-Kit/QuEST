@@ -7,6 +7,7 @@ The gpu_launch.sh wrapper script is required to set the correct binding of GPU t
 
 ```
 #!/bin/bash
+# 📖  Documentation
 
 # Compute the raw process ID for binding to GPU and NIC
 lrank=$((SLURM_PROCID % SLURM_NTASKS_PER_NODE))

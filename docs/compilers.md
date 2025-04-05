@@ -5,7 +5,7 @@
   @author Tyson Jones
 -->
 
-# Compilers
+# 🔧  Compilers
 
 QuEST separates compilation of the **_frontend_**, **_backend_** and the **_tests_**, which have progressively stricter compiler requirements.
 This page details the specialised compilers necessary to enable specific features hardware accelerators, and lists such compilers which are

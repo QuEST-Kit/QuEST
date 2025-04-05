@@ -4,7 +4,7 @@
   @author Tyson Jones
 -->
 
-# Architecture
+# 🏗️  Architecture
 
 All user-visible API signatures are contained in `include/`, divided into semantic submodules (like `calculations.h` and `qureg.h`), but all exposed by `quest.h`. They are all strictly `C` _and_ `C++` compatible, hence their `.h` file extension.
 

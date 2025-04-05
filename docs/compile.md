@@ -11,7 +11,7 @@
     use-cases before progressively more visually complicated examples
 -->
 
-# Compile
+# 🛠️  Compile
 
 QuEST can be compiled with [CMake](https://cmake.org/) to make a standalone executable, or an exported library, or a library installed on the system. 
 Compiling is configured with variables supplied by the [`-D` flag](https://cmake.org/cmake/help/latest/command/add_definitions.html) to the [CMake CLI](https://cmake.org/cmake/help/latest/guide/user-interaction/index.html#command-line-cmake-tool). This page details _how_ to compile QuEST for varying purposes and hardwares.

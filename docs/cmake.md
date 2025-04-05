@@ -6,7 +6,7 @@
 -->
 
 
-# CMake Configuration Options in QuEST
+# ⚙️  CMake
 
 Version 4 of QuEST includes reworked CMake to support library builds, CMake export, and installation. Here we detail useful variables to configure the compilation of QuEST. If using a Unix-like operating system any of these variables can be set using the `-D` flag when invoking CMake, for example:
 
