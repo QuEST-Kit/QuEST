@@ -261,7 +261,7 @@ void setQuregToReducedDensityMatrix(Qureg out, Qureg in, int* retainQubits, int 
  */
 
 
-void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, std::vector<std::vector<qcomp>> amps) {
+void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, vector<vector<qcomp>> amps) {
 
     // C++-specific validation
     validate_matrixRowsAllSameSize(amps, __func__);
@@ -281,15 +281,15 @@ void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, std::vec
     setDensityQuregAmps(qureg, startRow, startCol, ptrs.data(), len, (len>0)? len : 0); // avoid seg-fault
 }
 
-void setQuregAmps(Qureg qureg, qindex startInd, std::vector<qcomp> amps) {
+void setQuregAmps(Qureg qureg, qindex startInd, vector<qcomp> amps) {
     setQuregAmps(qureg, startInd, amps.data(), amps.size());
 }
 
-void setDensityQuregFlatAmps(Qureg qureg, qindex startInd, std::vector<qcomp> amps) {
+void setDensityQuregFlatAmps(Qureg qureg, qindex startInd, vector<qcomp> amps) {
     setDensityQuregFlatAmps(qureg, startInd, amps.data(), amps.size());
 }
 
-void setQuregToPartialTrace(Qureg out, Qureg in, std::vector<int> traceOutQubits) {
+void setQuregToPartialTrace(Qureg out, Qureg in, vector<int> traceOutQubits) {
     setQuregToPartialTrace(out, in, traceOutQubits.data(), traceOutQubits.size());
 }
 

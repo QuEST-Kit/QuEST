@@ -39,7 +39,7 @@ void setSeeds(unsigned* seeds, int numSeeds) {
     validate_randomSeeds(seeds, numSeeds, __func__);
 
     // consults only root-node seeds
-    rand_setSeeds(std::vector<unsigned>(seeds, seeds+numSeeds));
+    rand_setSeeds(vector<unsigned>(seeds, seeds+numSeeds));
 }
 
 void setSeedsToDefault() {
@@ -190,11 +190,11 @@ void clearGpuCache() {
  */
 
 
-void setSeeds(std::vector<unsigned> seeds) {
+void setSeeds(vector<unsigned> seeds) {
     setSeeds(seeds.data(), seeds.size());
 }
 
-std::vector<unsigned> getSeeds() {
+vector<unsigned> getSeeds() {
     validate_envIsInit(__func__);
 
     // allocate temp vector, and pedantically validate successful
