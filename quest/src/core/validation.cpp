@@ -1037,6 +1037,15 @@ namespace report {
 
     string CANNOT_READ_FILE = 
         "Could not load and read the given file. Make sure the file exists and is readable as plaintext.";
+
+
+    /*
+     * TEMPORARY ALLOCATIONS
+     */
+
+    string TEMP_ALLOC_FAILED =
+        "A temporary allocation of ${NUM_ELEMS} elements (each of ${NUM_BYTES_PER_ELEM} bytes) failed, possibly because of insufficient memory.";
+
 }
 
 
@@ -4031,4 +4040,20 @@ void validate_canReadFile(string fn, const char* caller) {
 
     /// @todo embed filename into error message when tokenSubs is updated to permit strings
     assertThat(parser_canReadFile(fn), report::CANNOT_READ_FILE, caller);
+}
+
+
+
+/*
+ * TEMPORARY ALLOCATIONS
+ */
+
+void validate_tempAllocSucceeded(bool succeeded, qindex numElems, qindex numBytesPerElem, const char* caller) {
+
+    // avoid showing total bytes in case it overflows
+    tokenSubs vars = {
+        {"${NUM_ELEMS}", numElems},
+        {"${NUM_BYTES_PER_ELEM}", numBytesPerElem}};
+
+    assertThat(succeeded, report::TEMP_ALLOC_FAILED, vars, caller);
 }
