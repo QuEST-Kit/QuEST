@@ -67,4 +67,4 @@ void mixSuperOp(Qureg qureg, int* targets, int numTargets, SuperOp superop);
 
 #endif // DECOHERENCE_H
 
-/** @} (end doxygen defgroup) */
+/** @} */ // (end file-wide doxygen defgroup)

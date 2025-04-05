@@ -161,4 +161,4 @@ void getEnvironmentString(char str[200]);
 
 #endif // DEBUG_H
 
-/** @} (end doxygen defgroup) */
+/** @} */ // (end file-wide doxygen defgroup)

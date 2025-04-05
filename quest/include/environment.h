@@ -75,4 +75,4 @@ QuESTEnv getQuESTEnv();
 
 #endif // ENVIRONMENT_H
 
-/** @} (end doxygen defgroup) */
+/** @} */ // (end file-wide doxygen defgroup)

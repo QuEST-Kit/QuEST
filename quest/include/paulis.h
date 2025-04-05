@@ -305,4 +305,4 @@ extern "C" {
 
 #endif // PAULIS_H
 
-/** @} (end doxygen defgroup) */
+/** @} */ // (end file-wide doxygen defgroup)

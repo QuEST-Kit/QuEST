@@ -1200,4 +1200,4 @@ void applyFullQuantumFourierTransform(Qureg qureg);
 
 #endif // OPERATIONS_H
 
-/** @} (end doxygen defgroup) */
+/** @} */ // (end file-wide doxygen defgroup)

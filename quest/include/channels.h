@@ -521,4 +521,4 @@ extern "C" {
 
 #endif // CHANNELS_H
 
-/** @} (end doxygen defgroup) */
+/** @} */ // (end file-wide doxygen defgroup)

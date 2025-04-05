@@ -244,4 +244,4 @@ qcomp getDensityQuregAmp(Qureg qureg, qindex row, qindex column);
 
 #endif // QUREG_H
 
-/** @} (end doxygen defgroup) */
+/** @} */ // (end file-wide doxygen defgroup)

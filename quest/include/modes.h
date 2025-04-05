@@ -107,4 +107,4 @@ namespace modeflag {
 
 #endif // MODES_H
 
-/** @} (end doxygen defgroup) */
+/** @} */ // (end file-wide doxygen defgroup)

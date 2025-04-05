@@ -146,4 +146,4 @@ void setQuregToReducedDensityMatrix(Qureg out, Qureg in, int* retainQubits, int 
 
 #endif // INITIALISATIONS_H
 
-/** @} (end doxygen defgroup) */
+/** @} */ // (end file-wide doxygen defgroup)
