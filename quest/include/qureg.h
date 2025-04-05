@@ -17,11 +17,18 @@
 
 
 /*
- * These signatures are divided into two partitions; those which are
- * natively C and C++ compatible (first partition) and those which are
+ * These signatures are divided into three partitions; those which are
+ * natively C and C++ compatible (first partition), then those which are
  * only exposed to C++ (second partition) because they return 'qcomp' 
- * which cannot cross the C++-to-C ABI. The first partition defines the
- * doc groups, and the second partition functions are added into them.
+ * which cannot cross the C++-to-C ABI, then C++only convenience functions.
+ * The first partition defines the doc groups, and the latter partition 
+ * functions are added into them.
+ */
+
+
+
+/*
+ * C and C++ AGNOSTIC FUNCTIONS
  */
 
 // enable invocation by both C and C++ binaries
@@ -234,6 +241,43 @@ qcomp getQuregAmp(Qureg qureg, qindex index);
 qcomp getDensityQuregAmp(Qureg qureg, qindex row, qindex column);
 
 
+
+/*
+ * C++ OVERLOADS
+ *
+ * which are only accessible to C++ binaries, and accept
+ * arguments more natural to C++ (e.g. std::vector). We
+ * manually add these to their respective Doxygen doc groups.
+ */
+
+#ifdef __cplusplus
+
+#include <vector>
+
+
+/// @ingroup qureg_get
+/// @nottested
+/// @notvalidated
+/// @notdoced
+/// @cpponly
+std::vector<qcomp> getQuregAmps(Qureg qureg, qindex startInd, qindex numAmps);
+
+
+/// @ingroup qureg_get
+/// @nottested
+/// @notvalidated
+/// @notdoced
+/// @cpponly
+std::vector<std::vector<qcomp>> getDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);
+
+
+#endif // __cplusplus
+
+
+
+/*
+ * ORPHAN DOC GROUP
+ */
 
 /** 
  * @defgroup qureg_setters Setters
