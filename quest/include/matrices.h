@@ -32,6 +32,13 @@
 
 
 
+/*
+ * unlike some other headers, we here intermix the C and C++-only
+ * signatures, grouping them semantically & by their doc groups
+ */
+
+
+
 /** 
  * @defgroup matrices_structs Structs
  * @brief Data structures for representing operator matrices.

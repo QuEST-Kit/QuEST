@@ -156,10 +156,10 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
 
 void printPrecisionInfo() {
 
-    // TODO
-    // - report MPI qcomp type?
-    // - report CUDA qcomp type?
-    // - report CUDA kernel qcomp type?
+    /// @todo
+    /// - report MPI qcomp type?
+    /// - report CUDA qcomp type?
+    /// - report CUDA kernel qcomp type?
 
     print_table(
         "precision", {
@@ -210,8 +210,8 @@ void printCpuInfo() {
         ram = printer_getMemoryWithUnitStr(mem_tryGetLocalRamCapacityInBytes()) + pm; 
     } catch(mem::COULD_NOT_QUERY_RAM e){};
 
-    // TODO
-    // - CPU info e.g. speeds/caches?
+    /// @todo
+    /// - CPU info e.g. speeds/caches?
 
     print_table(
         "cpu", {
@@ -228,9 +228,9 @@ void printGpuInfo() {
 
     using namespace printer_substrings;
 
-    // TODO below:
-    // - GPU compute capability
-    // - GPU #SVMs etc
+    /// @todo below:
+    /// - GPU compute capability
+    /// - GPU #SVMs etc
 
     // must not query any GPU facilities unless confirmed compiled and available
     bool isComp = gpu_isGpuCompiled();
