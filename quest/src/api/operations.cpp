@@ -63,16 +63,10 @@ void validateAndApplyAnyCtrlAnyTargUnitaryMatrix(Qureg qureg, int* ctrls, int* s
 
 
 /*
- * API
- */
-
-// enable invocation by both C and C++ binaries
-extern "C" {
-
-
-/*
  * CompMatr1
  */
+
+extern "C" {
 
 void multiplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix) {
     validate_quregFields(qureg, __func__);
@@ -103,11 +97,26 @@ void applyMultiStateControlledCompMatr1(Qureg qureg, int* controls, int* states,
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matrix, __func__);
 }
 
+} // end de-mangler
+
+void applyMultiControlledCompMatr1(Qureg qureg, vector<int> controls, int target, CompMatr1 matrix) {
+
+    applyMultiControlledCompMatr1(qureg, controls.data(), controls.size(), target, matrix);
+}
+
+void applyMultiStateControlledCompMatr1(Qureg qureg, vector<int> controls, vector<int> states, int target, CompMatr1 matrix) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledCompMatr1(qureg, controls.data(), states.data(), controls.size(), target, matrix);
+}
+
 
 
 /*
  * CompMatr2
  */
+
+extern "C" {
 
 void multiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix) {
     validate_quregFields(qureg, __func__);
@@ -143,11 +152,26 @@ void applyMultiStateControlledCompMatr2(Qureg qureg, int* controls, int* states,
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, targs, 2, matrix, __func__);
 }
 
+} // end de-mangler
+
+void applyMultiControlledCompMatr2(Qureg qureg, vector<int> controls, int target1, int target2, CompMatr2 matr) {
+
+    applyMultiControlledCompMatr2(qureg, controls.data(), controls.size(), target1, target2, matr);
+}
+
+void applyMultiStateControlledCompMatr2(Qureg qureg, vector<int> controls, vector<int> states, int numControls, int target1, int target2, CompMatr2 matr) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledCompMatr2(qureg, controls.data(), states.data(), controls.size(), target1, target2, matr);
+}
+
 
 
 /*
  * CompMatr
  */
+
+extern "C" {
 
 void multiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix) {
     validate_quregFields(qureg, __func__);
@@ -179,11 +203,41 @@ void applyMultiStateControlledCompMatr(Qureg qureg, int* controls, int* states, 
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, targets, numTargets, matrix, __func__);
 }
 
+} // end de-mangler
+
+void multiplyCompMatr(Qureg qureg, vector<int> targets, CompMatr matr) {
+
+    multiplyCompMatr(qureg, targets.data(), targets.size(), matr);
+}
+
+void applyCompMatr(Qureg qureg, vector<int> targets, CompMatr matr) {
+
+    applyCompMatr(qureg, targets.data(), targets.size(), matr);
+}
+
+void applyControlledCompMatr(Qureg qureg, int control, vector<int> targets, CompMatr matr) {
+
+    applyControlledCompMatr(qureg, control, targets.data(), targets.size(), matr);
+}
+
+void applyMultiControlledCompMatr(Qureg qureg, vector<int> controls, vector<int> targets, CompMatr matr) {
+
+    applyMultiControlledCompMatr(qureg, controls.data(), controls.size(), targets.data(), targets.size(), matr);
+}
+
+void applyMultiStateControlledCompMatr(Qureg qureg, vector<int> controls, vector<int> states, vector<int> targets, CompMatr matr) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledCompMatr(qureg, controls.data(), states.data(), controls.size(), targets.data(), targets.size(), matr);
+}
+
 
 
 /*
  * DiagMatr1
  */
+
+extern "C" {
 
 void multiplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matrix) {
     validate_quregFields(qureg, __func__);
@@ -214,11 +268,26 @@ void applyMultiStateControlledDiagMatr1(Qureg qureg, int* controls, int* states,
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matrix, __func__);
 }
 
+} // end de-mangler
+
+void applyMultiControlledDiagMatr1(Qureg qureg, vector<int> controls, int target, DiagMatr1 matr) {
+
+    applyMultiControlledDiagMatr1(qureg, controls.data(), controls.size(), target, matr);
+}
+
+void applyMultiStateControlledDiagMatr1(Qureg qureg, vector<int> controls, vector<int> states, int target, DiagMatr1 matr) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledDiagMatr1(qureg, controls.data(), states.data(), controls.size(), target, matr);
+}
+
 
 
 /*
  * DiagMatr2
  */
+
+extern "C" {
 
 void multiplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matrix) {
     validate_quregFields(qureg, __func__);
@@ -253,11 +322,26 @@ void applyMultiStateControlledDiagMatr2(Qureg qureg, int* controls, int* states,
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, targs, 2, matrix, __func__);
 }
 
+} // end de-mangler
+
+void applyMultiControlledDiagMatr2(Qureg qureg, vector<int> controls, int target1, int target2, DiagMatr2 matr) {
+
+    applyMultiControlledDiagMatr2(qureg, controls.data(), controls.size(), target1, target2, matr);
+}
+
+void applyMultiStateControlledDiagMatr2(Qureg qureg, vector<int> controls, vector<int> states, int target1, int target2, DiagMatr2 matr) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledDiagMatr2(qureg, controls.data(), states.data(), controls.size(), target1, target2, matr);
+}
+
 
 
 /*
  * DiagMatr
  */
+
+extern "C" {
 
 void multiplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix) {
     validate_quregFields(qureg, __func__);
@@ -289,6 +373,34 @@ void applyMultiStateControlledDiagMatr(Qureg qureg, int* controls, int* states, 
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, targets, numTargets, matrix, __func__);
 }
 
+} // end de-mangler
+
+void multiplyDiagMatr(Qureg qureg, vector<int> targets, DiagMatr matrix) {
+
+    multiplyDiagMatr(qureg, targets.data(), targets.size(), matrix);
+}
+
+void applyDiagMatr(Qureg qureg, vector<int> targets, DiagMatr matrix) {
+
+    applyDiagMatr(qureg, targets.data(), targets.size(), matrix);
+}
+
+void applyControlledDiagMatr(Qureg qureg, int control, vector<int> targets, DiagMatr matrix) {
+
+    applyControlledDiagMatr(qureg, control, targets.data(), targets.size(), matrix);
+}
+
+void applyMultiControlledDiagMatr(Qureg qureg, vector<int> controls, vector<int> targets, DiagMatr matrix) {
+
+    applyMultiControlledDiagMatr(qureg, controls.data(), controls.size(), targets.data(), targets.size(), matrix);
+}
+
+void applyMultiStateControlledDiagMatr(Qureg qureg, vector<int> controls, vector<int> states, vector<int> targets, DiagMatr matrix) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+    
+    applyMultiStateControlledDiagMatr(qureg, controls.data(), states.data(), controls.size(), targets.data(), targets.size(), matrix);
+}
+
 
 
 /*
@@ -297,6 +409,8 @@ void applyMultiStateControlledDiagMatr(Qureg qureg, int* controls, int* states, 
  * which still (except for multiply) assert unitarity,
  * even though a non-real exponent is possible
  */
+
+extern "C" {
 
 void multiplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent) {
     validate_quregFields(qureg, __func__);
@@ -383,11 +497,41 @@ void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* sta
     localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, ctrlVec, stateVec, targVec, matrix, exponent, conj);
 }
 
+} // end de-mangler
+
+void multiplyDiagMatrPower(Qureg qureg, vector<int> targets, DiagMatr matrix, qcomp exponent) {
+
+    multiplyDiagMatrPower(qureg, targets.data(), targets.size(), matrix, exponent);
+}
+
+void applyDiagMatrPower(Qureg qureg, vector<int> targets, DiagMatr matrix, qcomp exponent) {
+
+    applyDiagMatrPower(qureg, targets.data(), targets.size(), matrix, exponent);
+}
+
+void applyControlledDiagMatrPower(Qureg qureg, int control, vector<int> targets, DiagMatr matrix, qcomp exponent) {
+
+    applyControlledDiagMatrPower(qureg, control, targets.data(), targets.size(), matrix, exponent);
+}
+
+void applyMultiControlledDiagMatrPower(Qureg qureg, vector<int> controls, vector<int> targets, DiagMatr matrix, qcomp exponent) {
+
+    applyMultiControlledDiagMatrPower(qureg, controls.data(), controls.size(), targets.data(), targets.size(), matrix, exponent);
+}
+
+void applyMultiStateControlledDiagMatrPower(Qureg qureg, vector<int> controls, vector<int> states, vector<int> targets, DiagMatr matrix, qcomp exponent) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledDiagMatrPower(qureg, controls.data(), states.data(), controls.size(), targets.data(), targets.size(), matrix, exponent);
+}
+
 
 
 /*
  * FullStateDiagMatr (and power)
  */
+
+extern "C" {
 
 void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
     validate_quregFields(qureg, __func__);
@@ -432,11 +576,15 @@ void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp ex
         localiser_statevec_allTargDiagMatr(qureg, matrix, exponent);
 }
 
+} // end de-mangler
+
 
 
 /*
  * S gate
  */
+
+extern "C" {
 
 void applyS(Qureg qureg, int target) {
     validate_quregFields(qureg, __func__);
@@ -468,11 +616,26 @@ void applyMultiStateControlledS(Qureg qureg, int* controls, int* states, int num
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
 }
 
+} // end de-mangler
+
+void applyMultiControlledS(Qureg qureg, vector<int> controls, int target) {
+
+    applyMultiControlledS(qureg, controls.data(), controls.size(), target);
+}
+
+void applyMultiStateControlledS(Qureg qureg, vector<int> controls, vector<int> states, int target) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledS(qureg, controls.data(), states.data(), controls.size(), target);
+}
+
 
 
 /*
  * T gate
  */
+
+extern "C" {
 
 void applyT(Qureg qureg, int target) {
     validate_quregFields(qureg, __func__);
@@ -504,11 +667,26 @@ void applyMultiStateControlledT(Qureg qureg, int* controls, int* states, int num
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
 }
 
+} // end de-mangler
+
+void applyMultiControlledT(Qureg qureg, vector<int> controls, int target) {
+
+    applyMultiControlledT(qureg, controls.data(), controls.size(), target);
+}
+
+void applyMultiStateControlledT(Qureg qureg, vector<int> controls, vector<int> states, int target) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledT(qureg, controls.data(), states.data(), controls.size(), target);
+}
+
 
 
 /*
  * Hadamard 
  */
+
+extern "C" {
 
 void applyHadamard(Qureg qureg, int target) {
     validate_quregFields(qureg, __func__);
@@ -544,11 +722,26 @@ void applyMultiStateControlledHadamard(Qureg qureg, int* controls, int* states, 
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
 }
 
+} // end de-mangler
+
+void applyMultiControlledHadamard(Qureg qureg, vector<int> controls, int target) {
+
+    applyMultiControlledHadamard(qureg, controls.data(), controls.size(), target);
+}
+
+void applyMultiStateControlledHadamard(Qureg qureg, vector<int> controls, vector<int> states, int target) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledHadamard(qureg, controls.data(), states.data(), controls.size(), target);
+}
+
 
 
 /*
  * swap
  */
+
+extern "C" {
 
 void multiplySwap(Qureg qureg, int qubit1, int qubit2) {
     validate_quregFields(qureg, __func__);
@@ -599,11 +792,26 @@ void applyMultiStateControlledSwap(Qureg qureg, int* controls, int* states, int 
     localiser_statevec_anyCtrlSwap(qureg, ctrlVec, stateVec, qubit1, qubit2);
 }
 
+} // end de-mangler
+
+void applyMultiControlledSwap(Qureg qureg, vector<int> controls, int qubit1, int qubit2) {
+
+    applyMultiControlledSwap(qureg, controls.data(), controls.size(), qubit1, qubit2);
+}
+
+void applyMultiStateControlledSwap(Qureg qureg, vector<int> controls, vector<int> states, int qubit1, int qubit2) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledSwap(qureg, controls.data(), states.data(), controls.size(), qubit1, qubit2);
+}
+
 
 
 /*
  * sqrt swap
  */
+
+extern "C" {
 
 void applySqrtSwap(Qureg qureg, int target1, int target2) {
     validate_quregFields(qureg, __func__);
@@ -651,6 +859,19 @@ void applyMultiStateControlledSqrtSwap(Qureg qureg, int* controls, int* states, 
     applyMultiStateControlledCompMatr2(qureg, controls, states, numControls, target1, target2, matr);
 }
 
+} // end de-mangler
+
+void applyMultiControlledSqrtSwap(Qureg qureg, vector<int> controls, int qubit1, int qubit2) {
+
+    applyMultiControlledSqrtSwap(qureg, controls.data(), controls.size(), qubit1, qubit2);
+}
+
+void applyMultiStateControlledSqrtSwap(Qureg qureg, vector<int> controls, vector<int> states, int qubit1, int qubit2) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledSqrtSwap(qureg, controls.data(), states.data(), controls.size(), qubit1, qubit2);
+}
+
 
 
 /*
@@ -659,6 +880,8 @@ void applyMultiStateControlledSqrtSwap(Qureg qureg, int* controls, int* states, 
  * where Y and Z are most efficiently effected as DiagMatr1,
  * but where X is best effected as a 1-qubit PauliStr.
  */
+
+extern "C" {
 
 void applyPauliX(Qureg qureg, int target) {
     validate_quregFields(qureg, __func__);
@@ -760,11 +983,48 @@ void applyMultiStateControlledPauliZ(Qureg qureg, int* controls, int* states, in
     applyMultiStateControlledDiagMatr1(qureg, controls, states, numControls, target, matr);
 }
 
+} // end de-mangler
+
+void applyMultiControlledPauliX(Qureg qureg, vector<int> controls, int target) {
+
+    applyMultiControlledPauliX(qureg, controls.data(), controls.size(), target);
+}
+
+void applyMultiControlledPauliY(Qureg qureg, vector<int> controls, int target) {
+
+    applyMultiControlledPauliY(qureg, controls.data(), controls.size(), target);
+}
+
+void applyMultiControlledPauliZ(Qureg qureg, vector<int> controls, int target) {
+
+    applyMultiControlledPauliZ(qureg, controls.data(), controls.size(), target);
+}
+
+void applyMultiStateControlledPauliX(Qureg qureg, vector<int> controls, vector<int> states, int target) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledPauliX(qureg, controls.data(), states.data(), controls.size(), target);
+}
+
+void applyMultiStateControlledPauliY(Qureg qureg, vector<int> controls, vector<int> states, int target) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledPauliY(qureg, controls.data(), states.data(), controls.size(), target);
+}
+
+void applyMultiStateControlledPauliZ(Qureg qureg, vector<int> controls, vector<int> states, int target) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledPauliZ(qureg, controls.data(), states.data(), controls.size(), target);
+}
+
 
 
 /*
  * Pauli strings
  */
+
+extern "C" {
 
 void multiplyPauliStr(Qureg qureg, PauliStr str) {
     validate_quregFields(qureg, __func__);
@@ -827,11 +1087,26 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
     }
 }
 
+} // end de-mangler
+
+void applyMultiControlledPauliStr(Qureg qureg, vector<int> controls, PauliStr str) {
+
+    applyMultiControlledPauliStr(qureg, controls.data(), controls.size(), str);
+}
+
+void applyMultiStateControlledPauliStr(Qureg qureg, vector<int> controls, vector<int> states, PauliStr str) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledPauliStr(qureg, controls.data(), states.data(), controls.size(), str);
+}
+
 
 
 /*
  * Pauli string sums
  */
+
+extern "C" {
 
 void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace) {
     validate_quregFields(qureg, __func__);
@@ -909,11 +1184,15 @@ void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle
         applyHigherOrderTrotter(qureg, sum, angle/reps, order);
 }
 
+} // end de-mangler
+
 
 
 /*
  * individual axis rotations
  */
+
+extern "C" {
 
 // don't think users will ever want to left-multiply only
 
@@ -1016,11 +1295,48 @@ void applyMultiStateControlledRotateZ(Qureg qureg, int* controls, int* states, i
     applyMultiStateControlledPauliGadget(qureg, controls, states, numControls, getPauliStr("Z", {target}), angle);
 }
 
+} // end de-mangler
+
+void applyMultiControlledRotateX(Qureg qureg, vector<int> controls, int target, qreal angle) {
+
+    applyMultiControlledRotateX(qureg, controls.data(), controls.size(), target, angle);
+}
+
+void applyMultiControlledRotateY(Qureg qureg, vector<int> controls, int target, qreal angle) {
+
+    applyMultiControlledRotateY(qureg, controls.data(), controls.size(), target, angle);
+}
+
+void applyMultiControlledRotateZ(Qureg qureg, vector<int> controls, int target, qreal angle) {
+
+    applyMultiControlledRotateZ(qureg, controls.data(), controls.size(), target, angle);
+}
+
+void applyMultiStateControlledRotateX(Qureg qureg, vector<int> controls, vector<int> states, int target, qreal angle) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledRotateX(qureg, controls.data(), states.data(), controls.size(), target, angle);
+}
+
+void applyMultiStateControlledRotateY(Qureg qureg, vector<int> controls, vector<int> states, int target, qreal angle) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledRotateY(qureg, controls.data(), states.data(), controls.size(), target, angle);
+}
+
+void applyMultiStateControlledRotateZ(Qureg qureg, vector<int> controls, vector<int> states, int target, qreal angle) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledRotateZ(qureg, controls.data(), states.data(), controls.size(), target, angle);
+}
+
 
 
 /*
  * arbitrary axis rotation
  */
+
+extern "C" {
 
 void applyRotateAroundAxis(Qureg qureg, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ) {
     validate_quregFields(qureg, __func__);
@@ -1068,11 +1384,26 @@ void applyMultiStateControlledRotateAroundAxis(Qureg qureg, int* ctrls, int* sta
     applyMultiStateControlledCompMatr1(qureg, ctrls, states, numCtrls, targ, matr);
 }
 
+} // end de-mangler
+
+void applyMultiControlledRotateAroundAxis(Qureg qureg, vector<int> ctrls, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ) {
+
+    applyMultiControlledRotateAroundAxis(qureg, ctrls.data(), ctrls.size(), targ, angle, axisX, axisY, axisZ);
+}
+
+void applyMultiStateControlledRotateAroundAxis(Qureg qureg, vector<int> ctrls, vector<int> states, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ) {
+    validate_controlsMatchStates(ctrls.size(), states.size(), __func__);
+
+    applyMultiStateControlledRotateAroundAxis(qureg, ctrls.data(), states.data(), ctrls.size(), targ, angle, axisX, axisY, axisZ);
+}
+
 
 
 /*
  * Pauli gadgets
  */
+
+extern "C" {
 
 void multiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
     validate_quregFields(qureg, __func__);
@@ -1129,11 +1460,26 @@ void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* state
     localiser_statevec_anyCtrlPauliGadget(qureg, ctrlVec, stateVec, str, phase);
 }
 
+} // end de-mangler
+
+void applyMultiControlledPauliGadget(Qureg qureg, vector<int> controls, PauliStr str, qreal angle) {
+
+    applyMultiControlledPauliGadget(qureg, controls.data(), controls.size(), str, angle);
+}
+
+void applyMultiStateControlledPauliGadget(Qureg qureg, vector<int> controls, vector<int> states, PauliStr str, qreal angle) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledPauliGadget(qureg, controls.data(), states.data(), controls.size(), str, angle);
+}
+
 
 
 /*
  * phase gadgets
  */
+
+extern "C" {
 
 void multiplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle) {
     validate_quregFields(qureg, __func__);
@@ -1187,11 +1533,41 @@ void applyMultiStateControlledPhaseGadget(Qureg qureg, int* controls, int* state
     localiser_statevec_anyCtrlPhaseGadget(qureg, ctrlVec, stateVec, targVec, phase);
 }
 
+} // end de-mangler
+
+void multiplyPhaseGadget(Qureg qureg, vector<int> targets, qreal angle) {
+
+    multiplyPhaseGadget(qureg, targets.data(), targets.size(), angle);
+}
+
+void applyPhaseGadget(Qureg qureg, vector<int> targets, qreal angle) {
+
+    applyPhaseGadget(qureg, targets.data(), targets.size(), angle);
+}
+
+void applyControlledPhaseGadget(Qureg qureg, int control, vector<int> targets, qreal angle) {
+
+    applyControlledPhaseGadget(qureg, control, targets.data(), targets.size(), angle);
+}
+
+void applyMultiControlledPhaseGadget(Qureg qureg, vector<int> controls, vector<int> targets, qreal angle) {
+
+    applyMultiControlledPhaseGadget(qureg, controls.data(), controls.size(), targets.data(), targets.size(), angle);
+}
+
+void applyMultiStateControlledPhaseGadget(Qureg qureg, vector<int> controls, vector<int> states, vector<int> targets, qreal angle) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledPhaseGadget(qureg, controls.data(), states.data(), controls.size(), targets.data(), targets.size(), angle);
+}
+
 
 
 /*
  * phase shift
  */
+
+extern "C" {
 
 void applyPhaseShift(Qureg qureg, int target, qreal angle) {
     validate_quregFields(qureg, __func__);
@@ -1221,11 +1597,20 @@ void applyMultiQubitPhaseShift(Qureg qureg, int* targets, int numTargets, qreal 
     applyMultiStateControlledDiagMatr1(qureg, &targets[1], nullptr, numTargets-1, targets[0], matr);
 }
 
+} // end de-mangler
+
+void applyMultiQubitPhaseShift(Qureg qureg, vector<int> targets, qreal angle) {
+
+    applyMultiQubitPhaseShift(qureg, targets.data(), targets.size(), angle);
+}
+
 
 
 /*
  * phase flips
  */
+
+extern "C" {
 
 void applyPhaseFlip(Qureg qureg, int target) {
     validate_quregFields(qureg, __func__);
@@ -1255,11 +1640,20 @@ void applyMultiQubitPhaseFlip(Qureg qureg, int* targets, int numTargets) {
     applyMultiStateControlledDiagMatr1(qureg, &targets[1], nullptr, numTargets-1, targets[0], matr);
 }
 
+} // end de-mangler
+
+void applyMultiQubitPhaseFlip(Qureg qureg, vector<int> targets) {
+
+    applyMultiQubitPhaseFlip(qureg, targets.data(), targets.size());
+}
+
 
 
 /*
  * many-qubit CNOTs
  */
+
+extern "C" {
 
 void multiplyMultiQubitNot(Qureg qureg, int* targets, int numTargets) {
     validate_quregFields(qureg, __func__);
@@ -1305,11 +1699,83 @@ void applyMultiStateControlledMultiQubitNot(Qureg qureg, int* controls, int* sta
     applyMultiStateControlledPauliStr(qureg, controls, states, numControls, str);
 }
 
+} // end de-mangler
+
+void multiplyMultiQubitNot(Qureg qureg, vector<int> targets) {
+
+    multiplyMultiQubitNot(qureg, targets.data(), targets.size());
+}
+
+void applyMultiQubitNot(Qureg qureg, vector<int> targets) {
+
+    applyMultiQubitNot(qureg, targets.data(), targets.size());
+}
+
+void applyControlledMultiQubitNot(Qureg qureg, int control, vector<int> targets) {
+
+    applyControlledMultiQubitNot(qureg, control, targets.data(), targets.size());
+}
+
+void applyMultiControlledMultiQubitNot(Qureg qureg, vector<int> controls, vector<int> targets) {
+
+    applyMultiControlledMultiQubitNot(qureg, controls.data(), controls.size(), targets.data(), targets.size());
+}
+
+void applyMultiStateControlledMultiQubitNot(Qureg qureg, vector<int> controls, vector<int> states, vector<int> targets) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledMultiQubitNot(qureg, controls.data(), states.data(), controls.size(), targets.data(), targets.size());
+}
+
+
+
+/*
+ * projectors
+ */
+
+extern "C" {
+
+void applyQubitProjector(Qureg qureg, int target, int outcome) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, target, __func__);
+    validate_measurementOutcomeIsValid(outcome, __func__); 
+    
+    // we permit the outcome to be negligibly likely, leaving state = null
+    qreal prob = 1;
+    (qureg.isDensityMatrix)?
+        localiser_densmatr_multiQubitProjector(qureg, {target}, {outcome}, prob):
+        localiser_statevec_multiQubitProjector(qureg, {target}, {outcome}, prob);
+}
+
+void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, qubits, numQubits, __func__);
+    validate_measurementOutcomesAreValid(outcomes, numQubits, __func__);
+
+    qreal prob = 1;
+    auto qubitVec = util_getVector(qubits, numQubits);
+    auto outcomeVec = util_getVector(outcomes, numQubits);
+
+    (qureg.isDensityMatrix)?
+        localiser_densmatr_multiQubitProjector(qureg, qubitVec, outcomeVec, prob):
+        localiser_statevec_multiQubitProjector(qureg, qubitVec, outcomeVec, prob);
+}
+
+} // end de-mangler
+
+void applyMultiQubitProjector(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+    validate_measurementOutcomesMatchTargets(qubits.size(), outcomes.size(), __func__);
+
+    applyMultiQubitProjector(qureg, qubits.data(), outcomes.data(), outcomes.size());
+}
+
 
 
 /*
  * measurement
  */
+
+extern "C" {
 
 int applyQubitMeasurement(Qureg qureg, int target) {
     validate_quregFields(qureg, __func__);
@@ -1363,18 +1829,6 @@ qreal applyForcedQubitMeasurement(Qureg qureg, int target, int outcome) {
     return prob;
 }
 
-void applyQubitProjector(Qureg qureg, int target, int outcome) {
-    validate_quregFields(qureg, __func__);
-    validate_target(qureg, target, __func__);
-    validate_measurementOutcomeIsValid(outcome, __func__); 
-    
-    // we permit the outcome to be negligibly likely, leaving state = null
-    qreal prob = 1;
-    (qureg.isDensityMatrix)?
-        localiser_densmatr_multiQubitProjector(qureg, {target}, {outcome}, prob):
-        localiser_statevec_multiQubitProjector(qureg, {target}, {outcome}, prob);
-}
-
 qindex applyMultiQubitMeasurement(Qureg qureg, int* qubits, int numQubits) {
     validate_quregFields(qureg, __func__);
     validate_targets(qureg, qubits, numQubits, __func__);
@@ -1389,9 +1843,15 @@ qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQub
     validate_quregFields(qureg, __func__);
     validate_targets(qureg, qubits, numQubits, __func__);
 
-    // find the probability of all possible outcomes
+    // find the probability of all possible outcomes...
     qindex numProbs = powerOf2(numQubits);
-    vector<qreal> probs(numProbs);
+
+    // by allocating a temp vector, and validating successful (since exponentially big!)
+    vector<qreal> probs;
+    auto callback = [&]() { validate_tempAllocSucceeded(false, numProbs, sizeof(qreal), __func__); };
+    util_tryAllocVector(probs, numProbs, callback);
+
+    // populate probs
     calcProbsOfAllMultiQubitOutcomes(probs.data(), qureg, qubits, numQubits); // harmlessly re-validates
 
     // we cannot meaningfully sample these probs if not normalised
@@ -1434,18 +1894,17 @@ qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, 
     return prob;
 }
 
-void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits) {
-    validate_quregFields(qureg, __func__);
-    validate_targets(qureg, qubits, numQubits, __func__);
-    validate_measurementOutcomesAreValid(outcomes, numQubits, __func__);
+} // end de-mangler
 
-    qreal prob = 1;
-    auto qubitVec = util_getVector(qubits, numQubits);
-    auto outcomeVec = util_getVector(outcomes, numQubits);
+qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, vector<int> qubits, qreal* probability) {
 
-    (qureg.isDensityMatrix)?
-        localiser_densmatr_multiQubitProjector(qureg, qubitVec, outcomeVec, prob):
-        localiser_statevec_multiQubitProjector(qureg, qubitVec, outcomeVec, prob);
+    return applyMultiQubitMeasurementAndGetProb(qureg, qubits.data(), qubits.size(), probability);
+}
+
+qreal applyForcedMultiQubitMeasurement(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+    validate_measurementOutcomesMatchTargets(qubits.size(), outcomes.size(), __func__);
+
+    return applyForcedMultiQubitMeasurement(qureg, qubits.data(), outcomes.data(), outcomes.size());
 }
 
 
@@ -1453,6 +1912,8 @@ void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQu
 /*
  * QFT
  */
+
+extern "C" {
 
 void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets) {
     validate_quregFields(qureg, __func__);
@@ -1478,6 +1939,7 @@ void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets) {
 void applyFullQuantumFourierTransform(Qureg qureg) {
     validate_quregFields(qureg, __func__);
 
+    // tiny; no need to validate alloc
     vector<int> targets(qureg.numQubits);
     for (size_t i=0; i<targets.size(); i++)
         targets[i] = i;
@@ -1485,6 +1947,9 @@ void applyFullQuantumFourierTransform(Qureg qureg) {
     applyQuantumFourierTransform(qureg, targets.data(), targets.size());
 }
 
-
-
 } // end de-mangler
+
+void applyQuantumFourierTransform(Qureg qureg, vector<int> targets) {
+
+    applyQuantumFourierTransform(qureg, targets.data(), targets.size());
+}
