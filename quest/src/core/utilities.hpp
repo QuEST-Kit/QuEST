@@ -391,7 +391,7 @@ void util_tryAllocVector(vector<unsigned> &vec, qindex size, std::function<void(
 
 // cuQuantum needs a vector<double> overload, which we additionally define when qreal!=double. Gross!
 #if FLOAT_PRECISION != 2
-void util_tryAllocVector(vector<double> &vec, qindex size, std::function<void()> errFunc);
+    void util_tryAllocVector(vector<double> &vec, qindex size, std::function<void()> errFunc);
 #endif
 
 void util_tryAllocMatrix(vector<vector<qcomp>> &vec, qindex numRows, qindex numCols, std::function<void()> errFunc);

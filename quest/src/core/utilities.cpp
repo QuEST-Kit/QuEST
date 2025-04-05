@@ -1032,7 +1032,7 @@ void util_tryAllocVector(vector<unsigned> &vec, qindex size, std::function<void(
 
 // cuQuantum needs a vector<double> overload, which we additionally define when qreal!=double. Gross!
 #if FLOAT_PRECISION != 2
-    void util_tryAllocVector(vector<double> &vec, qindex size, void (*errFunc)()) { tryAllocVector(vec, size, errFunc); }
+    void util_tryAllocVector(vector<double> &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
 #endif
 
 

@@ -25,6 +25,7 @@
 #endif
 
 
+
 /*
  * unlike some other headers, we here intermix the C and C++-only
  * signatures, grouping them semantically & by their doc groups
@@ -1947,7 +1948,6 @@ void applyQuantumFourierTransform(Qureg qureg, std::vector<int> targets);
 
 
 #endif // __cplusplus
-
 
 /** @} */
 
