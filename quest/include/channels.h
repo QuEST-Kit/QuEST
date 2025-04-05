@@ -383,11 +383,13 @@ extern "C" {
 
     /// @ingroup channels_setters
     /// @notdoced
+    /// @cpponly
     void setInlineKrausMap(KrausMap map, int numQb, int numOps, std::vector<std::vector<std::vector<qcomp>>> matrices);
 
 
     /// @ingroup channels_setters
     /// @notdoced
+    /// @cpponly
     void setInlineSuperOp(SuperOp op, int numQb, std::vector<std::vector<qcomp>> matrix);
 
 
@@ -458,11 +460,13 @@ extern "C" {
 
     /// @ingroup channels_create
     /// @notdoced
+    /// @cpponly
     KrausMap createInlineKrausMap(int numQubits, int numOperators, std::vector<std::vector<std::vector<qcomp>>> matrices);
 
 
     /// @ingroup channels_create
     /// @notdoced
+    /// @cpponly
     SuperOp createInlineSuperOp(int numQubits, std::vector<std::vector<qcomp>> matrix);
 
 

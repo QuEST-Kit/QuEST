@@ -791,17 +791,20 @@ extern "C" {
 
     /// @ingroup matrices_setters
     /// @notdoced
+    /// @cpponly
     void setInlineCompMatr(CompMatr matr, int numQb, std::vector<std::vector<qcomp>> in);
 
 
     /// @ingroup matrices_setters
     /// @notdoced
+    /// @cpponly
     void setInlineDiagMatr(DiagMatr matr, int numQb, std::vector<qcomp> in);
 
 
     /// @ingroup matrices_setters
     /// @notdoced
     /// @nottested
+    /// @cpponly
     void setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, std::vector<qcomp> in);
 
 
@@ -930,11 +933,13 @@ extern "C" {
 
     /// @ingroup matrices_create
     /// @notdoced
+    /// @cpponly
     CompMatr createInlineCompMatr(int numQb, std::vector<std::vector<qcomp>> elems);
 
 
     /// @ingroup matrices_create
     /// @notdoced
+    /// @cpponly
     DiagMatr createInlineDiagMatr(int numQb, std::vector<qcomp> elems);
 
 
