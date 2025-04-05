@@ -40,7 +40,7 @@ Compiling is configured with variables supplied by the [`-D` flag](https://cmake
 > - [`cmake.md`](cmake.md) for the full list of passable compiler variables.
 > - [`compilers.md`](compilers.md) for a list of compatible and necessary compilers.
 > - [`qtechtheory.org`](https://quest.qtechtheory.org/download/) for help downloading the necessary compilers.
-> - [`run.md`](run.md) for a guide to executing the compiled application.
+> - [`launch.md`](launch.md) for a guide to executing the compiled application.
 
 > [!TIP]
 > QuEST's [Github Actions](https://github.com/QuEST-Kit/QuEST/actions/workflows/compile.yml) regularly test QuEST compilation using a broad combination of deployment settings; presently `108` combinations! The [`compile.yml`](/.github/workflows/compile.yml) workflow can serve as a concrete example of how to compile QuEST in a sanitised, virtual setting.
@@ -303,7 +303,7 @@ The executables will be saved in the (current) `build` directory, in a sub-direc
 ```bash
 ./examples/matrices/cpp_initialisation
 ```
-as elaborated upon in [`run.md`](run.md#tests).
+as elaborated upon in [`launch.md`](launch.md#tests).
 
 
 ------------------
@@ -321,7 +321,7 @@ cmake .. -D ENABLE_TESTING=ON
 # build
 cmake --build .
 ```
-This will compile an executable `tests` in subdirectory `build/tests/`, which can be run as explained in [`run.md`](run.md#tests).
+This will compile an executable `tests` in subdirectory `build/tests/`, which can be run as explained in [`launch.md`](launch.md#tests).
 
 ### v3
 
@@ -333,7 +333,7 @@ cmake .. -D ENABLE_TESTING=ON -D ENABLE_DEPRECATED_API=ON
 # build
 cmake --build .
 ```
-and run as explained in [`run.md`](run.md#v3).
+and run as explained in [`launch.md`](launch.md#v3).
 
 
 
@@ -365,7 +365,7 @@ cmake --build .
 ```
 This is in fact the default behaviour!
 
-The number of threads over which to parallelise QuEST's execution is chosen through setting environment variables, like [`OMP_NUM_THREADS`](https://www.openmp.org/spec-html/5.0/openmpse50.html), immediately before execution. See [`run.md`](run.md#multithreading) for a general guide on multithreaded deployment.
+The number of threads over which to parallelise QuEST's execution is chosen through setting environment variables, like [`OMP_NUM_THREADS`](https://www.openmp.org/spec-html/5.0/openmpse50.html), immediately before execution. See [`launch.md`](launch.md#multithreading) for a general guide on multithreaded deployment.
 
 
 
@@ -405,7 +405,7 @@ cmake .. -D ENABLE_CUDA=ON -D CMAKE_CUDA_ARCHITECTURES=80
 ```
 
 > [!CAUTION]
-> Setting the wrong compute capability will cause silently erroneous results. Always run the [unit tests](run.md#tests) after compiling for the first time to confirm it was set correctly.
+> Setting the wrong compute capability will cause silently erroneous results. Always run the [unit tests](launch.md#tests) after compiling for the first time to confirm it was set correctly.
 
 Building then proceeds as normal, e.g.
 ```bash
@@ -413,7 +413,7 @@ Building then proceeds as normal, e.g.
 cmake --build . --parallel
 ```
 
-See [`run.md`](run.md#gpu-acceleration) for information on 
+See [`launch.md`](launch.md#gpu-acceleration) for information on 
 
 
 ### AMD
@@ -440,7 +440,7 @@ cmake .. -D ENABLE_HIP=ON -D CMAKE_HIP_ARCHITECTURES=gfx90a
 ```
 
 > [!CAUTION]
-> Setting the wrong LLVM target name can cause silently erroneous results. Always run the [unit tests](run.md#tests) after compiling for the first time to confirm it was set correctly.
+> Setting the wrong LLVM target name can cause silently erroneous results. Always run the [unit tests](launch.md#tests) after compiling for the first time to confirm it was set correctly.
 
 
 Building then proceeds as normal, e.g.
@@ -449,7 +449,7 @@ Building then proceeds as normal, e.g.
 cmake --build . --parallel
 ```
 
-The compiled executable can be run like any other, though the GPU behaviour can be prior configured with environment variables. See [`run.md`](run.md#gpu-acceleration) for a general guide on GPU-accelerated deployment.
+The compiled executable can be run like any other, though the GPU behaviour can be prior configured with environment variables. See [`launch.md`](launch.md#gpu-acceleration) for a general guide on GPU-accelerated deployment.
 
 
 
@@ -483,7 +483,7 @@ cmake .. -D ENABLE_CUDA=ON -D CMAKE_CUDA_ARCHITECTURES=80 -D ENABLE_CUQUANTUM=ON
 cmake --build . --parallel
 ```
 
-No other changes are necessary, nor does cuQuantum affect [hybridising](#multi-gpu) GPU acceleration and distribution. Launching the executable is the same as in the above section. See [`run.md`](run.md#gpu-acceleration).
+No other changes are necessary, nor does cuQuantum affect [hybridising](#multi-gpu) GPU acceleration and distribution. Launching the executable is the same as in the above section. See [`launch.md`](launch.md#gpu-acceleration).
 
 
 
@@ -511,7 +511,7 @@ cmake .. -D ENABLE_DISTRIBUTION=ON
 cmake --build . --parallel
 ```
 
-Note that distributed executables are launched in a distinct way to the other deployment mods, as explained in [`run.md`](run.md#distribution),
+Note that distributed executables are launched in a distinct way to the other deployment mods, as explained in [`launch.md`](launch.md#distribution),
 
 
 

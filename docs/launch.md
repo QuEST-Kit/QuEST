@@ -4,9 +4,9 @@
   @author Tyson Jones
 -->
 
-# Run
+# 🚀  Launching
 
-Running your [compiled](compile.md) QuEST application can be as straightforward as running any other executable, though some additional steps are needed to make use of hardware acceleration. This page how to launch your own QuEST applications on different platforms, how to run the examples and unit tests, how to make use of multithreading, GPU-acceleration, distribution and supercomputer job schedulers, and monitor the hardware utilisation.
+Launching your [compiled](compile.md) QuEST application can be as straightforward as running any other executable, though some additional steps are needed to make use of hardware acceleration. This page how to launch your own QuEST applications on different platforms, how to run the examples and unit tests, how to make use of multithreading, GPU-acceleration, distribution and supercomputer job schedulers, and monitor the hardware utilisation.
 
 **TOC**:
 - [Examples](#examples)
@@ -443,6 +443,18 @@ It is ergo always prudent to explicitly call [`syncQuESTEnv()`](https://quest-ki
 > - explain UCX
 > - detail environment variables
 > - detail controlling local vs distributed gpus with device visibility
+
+
+
+> helpful ARCHER2 snippet:
+> ```bash
+> # Compute the raw process ID for binding to GPU and NIC
+> lrank=$((SLURM_PROCID % SLURM_NTASKS_PER_NODE))
+> 
+> # Bind the process to the correct GPU and NIC
+> export CUDA_VISIBLE_DEVICES=${lrank}
+> export UCX_NET_DEVICES=mlx5_${lrank}:1
+> ```
 
 
 ---------------------

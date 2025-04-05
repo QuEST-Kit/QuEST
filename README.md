@@ -190,7 +190,7 @@ Visit the [docs](docs/) to:
   - [see what's new in v4](docs/v4.md)
   - [compile with cmake](docs/compile.md)
   - [find compatible compilers](docs/compilers.md)
-  - [launch your simulations](docs/run.md)
+  - [launch your simulations](docs/launch.md)
   - [view some examples](examples/)
 
 The [API](https://quest-kit.github.io/QuEST/group__api.html) documentation is divided into the following groups:
