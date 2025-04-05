@@ -15,6 +15,10 @@
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/errors.hpp"
+
+#include <vector>
+using std::vector;
 
 
 
@@ -37,7 +41,8 @@ extern Qureg validateAndCreateCustomQureg(
  * for more info. We here define a C++-only signature (with
  * name-mangling), and a C-friendly wrapper which passes by
  * pointer; the C-friendly interface in wrappers.h which itself
- * wrap this.
+ * wrap this. This excludes additional convenience C++-only 
+ * overloads defined at the bottom of this file.
  */
 
 
@@ -399,3 +404,45 @@ Qureg calcReducedDensityMatrix(Qureg qureg, int* retainQubits, int numRetainQubi
 
 
 } // end de-name mangler
+
+
+
+/*
+ * C++ OVERLOADS
+ *
+ * which are only ever accessible to C++ binaries, and 
+ * accept arguments more natural to C++ (e.g. std::vector).
+ */
+
+
+qreal calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+
+    // C interface discards individual sizes, so we validate
+    validate_measurementOutcomesMatchTargets(qubits.size(), outcomes.size(), __func__);
+
+    // but C function performs all other validation
+    return calcProbOfMultiQubitOutcome(qureg, qubits.data(), outcomes.data(), qubits.size());
+}
+
+
+vector<qreal> calcProbsOfAllMultiQubitOutcomes(Qureg qureg, vector<int> qubits) {
+
+    // allocate temp vector, and validate successful (since it's exponentially large!)
+    vector<qreal> out;
+    qindex numOut = powerOf2(qubits.size());
+    auto callback = [&]() { validate_tempAllocSucceeded(false, numOut, sizeof(qreal), __func__); };
+    util_tryAllocVector(out, numOut, callback);
+
+    calcProbsOfAllMultiQubitOutcomes(out.data(), qureg, qubits.data(), qubits.size());
+    return out;
+}
+
+Qureg calcPartialTrace(Qureg qureg, vector<int> traceOutQubits) {
+    return calcPartialTrace(qureg, traceOutQubits.data(), traceOutQubits.size());
+}
+
+
+Qureg calcReducedDensityMatrix(Qureg qureg, vector<int> retainQubits) {
+    return calcReducedDensityMatrix(qureg, retainQubits.data(), retainQubits.size());
+}
+
