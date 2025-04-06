@@ -102,7 +102,7 @@ To learn more:
 ## 🎉  Introduction
 
 QuEST has a simple interface which is agnostic to whether it's running on CPUs, GPUs or a networked supercomputer.
-```C++
+```cpp
 Qureg qureg = createQureg(30);
 initRandomPureState(qureg);
 
@@ -116,7 +116,7 @@ qreal prob  = calcProbOfQubitOutcome(qureg, 0, outcome);
 qreal expec = calcExpecPauliStr(qureg, getPauliStr("XYZ"));
 ```
 Yet, it is flexible
-```C++
+```cpp
 mixDepolarising(qureg, targ, prob);
 mixKrausMap(qureg, targs, ntargs, krausmap);
 
@@ -130,7 +130,7 @@ multiplyCompMatr1(qureg, targ, getInlineCompMatr1( {{1,2i},{3i,4}} ));
 multiplyDiagMatrPower(qureg, targs, ntargs, diagmatr, exponent);
 ```
 and extremely powerful
-```C++
+```cpp
 setFullStateDiagMatrFromMultiVarFunc(fullmatr, myfunc, ntargsPerVar, nvars);
 applyFullStateDiagMatrPower(qureg, fullmatr, exponent);
 
@@ -183,15 +183,7 @@ QuEST supports:
 > [!IMPORTANT]
 > QuEST v4's documentation is still under construction!
 
-Visit the [docs](docs/README.md) to:
-  - [see what's new in v4](docs/v4.md)
-  - [follow the tutorial](docs/tutorial.md)
-  - [compile with cmake](docs/compile.md)
-  - [find compatible compilers](docs/compilers.md)
-  - [launch your simulations](docs/launch.md)
-  - [view some examples](examples/)
-
-The [API](https://quest-kit.github.io/QuEST/group__api.html) documentation is divided into the following groups:
+Visit the [docs](docs/README.md) for guides and tutorials, or the [API](https://quest-kit.github.io/QuEST/group__api.html) which is divided into:
   - [calculations](https://quest-kit.github.io/QuEST/group__calculations.html)
   - [channels](https://quest-kit.github.io/QuEST/group__channels.html)
   - [debug](https://quest-kit.github.io/QuEST/group__debug.html)
@@ -238,11 +230,6 @@ You can also browse QuEST's extensive [tests](https://quest-kit.github.io/QuEST/
   - [deprecated tests](https://quest-kit.github.io/QuEST/group__deprecatedtests.html)
   - [deprecated test utilities](https://quest-kit.github.io/QuEST/group__deprecatedutils.html)
 -->
-
-Contributers to QuEST should also check out the:
-  - [contribution guide](docs/contributing.md)
-  - [software architecture](docs/architecture.md)
-  - [style guide](docs/styleguide.md)
 
 ---------------------------------
 

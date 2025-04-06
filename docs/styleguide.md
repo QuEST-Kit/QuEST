@@ -16,27 +16,27 @@ Some encouraged conventions include:
   - constants which use `CAPITALS_AND_UNDERSCORES`
   - related function prefixes, like `prefix_someFunction()`
 - favour clarity over concision, for example
-  ```C++
+  ```cpp
   qcomp elem = state[ind][ind];
   qreal prob = std::real(elem);
   return prob;
   ```
   over
-  ```C++
+  ```cpp
   return std::real(state[ind][ind]);
   ```
 - never ever do:
-  ```C++
+  ```cpp
   using namespace std;
   ```
   but _do_ shorten common containers like `vector`:
-  ```C++
+  ```cpp
   using std::vector;
 
   vector<int> mylist;
   ```
 - whitespace is free; use it wherever it can improve clarity, like to separate subroutines.
-  ```C++
+  ```cpp
   // i000 = nth local index where all suffix bits are 0
   qindex i000 = insertThreeZeroBits(n, braQb1, ketQb2, ketQb1);
   qindex i0b0 = setBit(i000, ketQb2, braBit2);
@@ -54,7 +54,7 @@ Some encouraged conventions include:
   ```
 - use `auto` where it improves readability, discretionarily. Obviously it is better than massive, unimportant types of objects or heavily templated collections, but sometimes knowing the precise type of a primitive is helpful
 - It is permissable to avoid superfluous braces around single-line branches:
-  ```C++
+  ```cpp
   if (cond)
       return x;
   ```

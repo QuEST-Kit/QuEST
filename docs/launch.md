@@ -265,11 +265,11 @@ Performance may be improved by setting other [OpenMP variables](https://www.open
 
 
 OpenMP experts may further benefit from knowing that QuEST's multithreaded source code, confined to [`cpu_subroutines.cpp`](/quest/src/cpu/cpu_subroutines.cpp), is almost exclusively code similar to
-```C++
+```cpp
 #pragma omp parallel for if(qureg.isMultithreaded)
 for (qindex n=0; n<numIts; n++)
 ```
-```C++
+```cpp
 #pragma omp parallel for reduction(+:val)
 for (qindex n=0; n<numIts; n++)
     val += 

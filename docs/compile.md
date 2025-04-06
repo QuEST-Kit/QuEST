@@ -169,7 +169,7 @@ where
 - `myexec` is the output executable name, which will be saved in `build`.
 
 To compile multiple dependent files, such as
-```C++
+```cpp
 /* myfile.cpp */
 
 #include "quest.h"
@@ -183,7 +183,7 @@ int main() {
     return 0;
 }
 ```
-```C++
+```cpp
 /* otherfile.cpp */
 
 #include <stdio.h>

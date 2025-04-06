@@ -15,7 +15,7 @@ The subdirectories are:
 - [`deprecated`](deprecated/) containing `v3`'s tests and utilities, only used when explicitly [activated](/docs/compile.md#v3).
 
 The tests use [Catch2](https://github.com/catchorg/Catch2) and are generally structured as
-```C++
+```cpp
 TEST_CASE( "someApiFunc", "[funcs]" ) {
 
     PREPARE_TEST(...)
