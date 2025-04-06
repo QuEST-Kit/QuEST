@@ -8,7 +8,7 @@
 
 
 Don't agonise about style - write your code as you see fit and we can address major issues in review/PR.
-Some encouraged convetions include:
+Some encouraged conventions include:
 
 - use `camelCase` for everything except:
   - constants which use `CAPITALS_AND_UNDERSCORES`
