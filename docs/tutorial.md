@@ -228,7 +228,7 @@ Qureg (10 qubit statevector, 1024 qcomps, 16.1 KiB):
 
 Behind the scenes, the function `createQureg` did something clever; it consulted the compiled deployments and available hardware to decide whether to distribute `qureg`, or dedicate it persistent GPU memory, and marked whether or not to multithread its subsequent modification. It attempts to choose _optimally_, avoiding gratuitous parallelisation if the overheads outweigh the benefits, or if the hardware devices have insufficient memory.
 
-We call this **_auto-deployment_**, and the chosen configuration can be [previewed](https://quest-kit.github.io/QuEST/group__qureg__report.html#ga97d96af7c7ea7b31e32cbe3b25377e09) via
+We call this _auto-deployment_, and the chosen configuration can be [previewed](https://quest-kit.github.io/QuEST/group__qureg__report.html#ga97d96af7c7ea7b31e32cbe3b25377e09) via
 ```cpp
 reportQuregParams(qureg);
 ```
@@ -529,7 +529,7 @@ Notice the `exponent` is a `qcomp` and ergo permitted to be a complex number. Un
 #### validation
 
 
-Our example above initialised `CompMatr` to a diagonal because it is tricky to generate random non-diagonal **_unitary_** matrices - and QuEST checks for unitarity!
+Our example above initialised `CompMatr` to a diagonal because it is tricky to generate random non-diagonal _unitary_ matrices - and QuEST checks for unitarity!
 ```cpp
 // m * dagger(m) != identity
 CompMatr1 m = getCompMatr1({{.1,.2},{.3,.4}});
@@ -739,7 +739,7 @@ destroyKrausMap(map);
 
 ## 9. Finalise QuEST
 
-The **_final_** [step](https://quest-kit.github.io/QuEST/group__environment.html#ga428faad4d68abab20f662273fff27e39) of our program should be to call
+The _final_ [step](https://quest-kit.github.io/QuEST/group__environment.html#ga428faad4d68abab20f662273fff27e39) of our program should be to call
 ```cpp
 finalizeQuESTEnv();
 ```

@@ -107,7 +107,7 @@ On most platforms (with the exception of Windows), this is automatic with the co
 cmake .. -D CMAKE_BUILD_TYPE=Release
 ```
 
-When compiling on **Windows** however (using [Visual Studio](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#visual-studio-generators)), or otherwise using a "[_multi-config generator_](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#other-generators)", we must always supply the build type at **_build time_** via [`config`](https://cmake.org/cmake/help/latest/manual/cmake.1.html#cmdoption-cmake-build-config):
+When compiling on **Windows** however (using [Visual Studio](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#visual-studio-generators)), or otherwise using a "[_multi-config generator_](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#other-generators)", we must always supply the build type at _build time_ via [`config`](https://cmake.org/cmake/help/latest/manual/cmake.1.html#cmdoption-cmake-build-config):
 ```bash
 # build
 cmake --build . --config Release

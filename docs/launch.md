@@ -222,7 +222,7 @@ It is prudent to choose as many threads as your CPU(s) have total hardware threa
 <!-- the doxygen-doc hyperlink above includes a hash of the function name which should be unchanging! -->
 
 > [!NOTE]
-> When running [distributed](#distribution), variable `OMP_NUM_THREADS` specifies the number of threads _per node_ and so should ordinarily be the number of hardware threads (or cores) **_per machine_**.
+> When running [distributed](#distribution), variable `OMP_NUM_THREADS` specifies the number of threads _per node_ and so should ordinarily be the number of hardware threads (or cores) _per machine_.
 
 
 ### Monitoring utilisation
