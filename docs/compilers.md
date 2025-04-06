@@ -11,15 +11,15 @@ QuEST separates compilation of the **_frontend_**, **_backend_** and the **_test
 This page details the specialised compilers necessary to enable specific features hardware accelerators, and lists such compilers which are
 known to be compatible with QuEST.
 
-**TOC**:
-- [Frontend](#frontend)
-- [Backend](#backend)
-   * [comm](#comm)
-   * [cpu](#cpu)
-   * [gpu](#gpu)
-   * [comm + gpu](#comm-gpu)
-   * [gpu + cuquantum](#gpu-cuquantum)
-- [Tests](#tests)
+> **TOC**:
+> - [Frontend](#frontend)
+> - [Backend](#backend)
+>    * [comm](#comm)
+>    * [cpu](#cpu)
+>    * [gpu](#gpu)
+>    * [comm + gpu](#comm-gpu)
+>    * [gpu + cuquantum](#gpu-cuquantum)
+> - [Tests](#tests)
 
 > **See also**:
 > - [`compile.md`](compile.md) for a guide to compiling QuEST.

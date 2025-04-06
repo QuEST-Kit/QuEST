@@ -17,7 +17,7 @@ QuEST is included into a `C` or `C++` project via
 ```
 
 > [!TIP]
-> Some of QuEST's deprecated `v3` API can be accessed by specifying `ENABLE_DEPRECATED_API` when [compiling](/docs/compile.md), or defining it before import, i.e. 
+> Some of QuEST's deprecated `v3` API can be accessed by specifying `ENABLE_DEPRECATED_API` when [compiling](/docs/compile.md#v3), or defining it before import, i.e. 
 > ```C++
 > #define ENABLE_DEPRECATED_API 1
 > #include "quest.h"
