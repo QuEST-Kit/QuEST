@@ -979,7 +979,7 @@ void applyMultiStateControlledPhaseGadget(Qureg qureg, int* controls, int* state
 
 
 /// @notdoced
-void applyPhaseFlip (Qureg qureg, int target);
+void applyPhaseFlip(Qureg qureg, int target);
 
 
 /// @notdoced
@@ -1047,7 +1047,7 @@ void applyTwoQubitPhaseShift(Qureg qureg, int target1, int target2, qreal angle)
 
 
 /// @notdoced
-void applyMultiQubitPhaseFlip (Qureg qureg, int* targets, int numTargets);
+void applyMultiQubitPhaseFlip(Qureg qureg, int* targets, int numTargets);
 
 
 /// @notdoced
