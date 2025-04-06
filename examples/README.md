@@ -190,19 +190,21 @@ void myErrorHandler(const char *func, const char *msg) {
 
 setInputErrorHandler(myErrorHandler);
 ```
-`C++` users may prefer to throw an exception which can be caught, safely permitting execution to continue. In such cases, the erroneous function will _never_ corrupt any passed inputs like `Qureg` nor matrices, nor cause leaks.
-```C++
-#include <stdexcept>
-#include <string>
 
-void myErrorHandlerA(const char* errFunc, const char* errMsg) {
-    std::string func(errFunc);
-    std::string msg(errMsg);
-    throw std::runtime_error(func + ": " + msg);
-}
-
-setInputErrorHandler(myErrorHandler);
-```
+> [!TIP]
+> `C++` users may prefer to throw an exception which can be caught, safely permitting execution to continue. In such cases, the erroneous function will _never_ corrupt any passed inputs like `Qureg` nor matrices, nor cause leaks.
+> ```C++
+> #include <stdexcept>
+> #include <string>
+> 
+> void myErrorHandlerA(const char* errFunc, const char* errMsg) {
+>     std::string func(errFunc);
+>     std::string msg(errMsg);
+>     throw std::runtime_error(func + ": " + msg);
+> }
+> 
+> setInputErrorHandler(myErrorHandler);
+> ```
 
 ## 3. Create a `Qureg`
 
@@ -297,7 +299,7 @@ In lieu of a statevector, we could create a [density matrix](https://quest-kit.g
 ```C++
 Qureg qureg = createDensityQureg(10);
 ```
-which is also auto-deployed. Note this contains _square_ as many amplitudes as the equal-dimensin statevector, and ergo requires _square_ as much memory.
+which is also auto-deployed. Note this contains _square_ as many amplitudes as the equal-dimension statevector and ergo requires _square_ as much memory.
 ```C++
 reportQureg(qureg);
 reportQuregParams(qureg);
