@@ -18,24 +18,24 @@ QuEST can be compiled with [CMake](https://cmake.org/) to make a standalone exec
 Compiling is configured with variables supplied by the [`-D` flag](https://cmake.org/cmake/help/latest/command/add_definitions.html) to the [CMake CLI](https://cmake.org/cmake/help/latest/guide/user-interaction/index.html#command-line-cmake-tool). This page details _how_ to compile QuEST for varying purposes and hardwares.
 
 > **TOC**:
-> - [Basic](#basic)
-> - [Optimising](#optimising)
-> - [Linking](#linking)
-> - [Configuring](#configuring)
->    * [Precision](#precision)
->    * [Compilers](#compilers)
->    * [Flags](#flags)
-> - [Examples](#examples)
-> - [Tests](#tests)
->    * [v4](#v4)
->    * [v3](#v3)
-> - [Multithreading](#multithreading)
-> - [GPU-acceleration](#gpu-acceleration)
->    * [NVIDIA](#nvidia)
->    * [AMD](#amd)
-> - [cuQuantum](#cuquantum)
-> - [Distribution](#distribution)
-> - [Multi-GPU](#multi-gpu)
+> - <a href="#compile_basic">Basic</a>
+> - <a href="#compile_optimising">Optimising</a>
+> - <a href="#compile_linking">Linking</a>
+> - <a href="#compile_configuring">Configuring</a>
+>    * <a href="#compile_precision">Precision</a>
+>    * <a href="#compile_compilers">Compilers</a>
+>    * <a href="#compile_flags">Flags</a>
+> - <a href="#compile_examples">Examples</a>
+> - <a href="#compile_tests">Tests</a>
+>    * <a href="#compile_v4">v4</a>
+>    * <a href="#compile_v3">v3</a>
+> - <a href="#compile_multithreading">Multithreading</a>
+> - <a href="#compile_gpu-acceleration">GPU-acceleration</a>
+>    * <a href="#compile_nvidia">NVIDIA</a>
+>    * <a href="#compile_amd">AMD</a>
+> - <a href="#compile_cuquantum">cuQuantum</a>
+> - <a href="#compile_distribution">Distribution</a>
+> - <a href="#compile_multi-gpu">Multi-GPU</a>
 
 > **See also**:
 > - [`cmake.md`](cmake.md) for the full list of passable compiler variables.
@@ -51,7 +51,7 @@ Compiling is configured with variables supplied by the [`-D` flag](https://cmake
 
 
 <!-- permit doxygen to reference section -->
-<a id="basic"></a>
+<a id="compile_basic"></a>
 
 ## Basic
 
@@ -102,7 +102,7 @@ How _boring_! We must pass additional arguments in order to link QuEST to our ow
 
 
 <!-- permit doxygen to reference section -->
-<a id="optimising"></a>
+<a id="compile_optimising"></a>
 
 ## Optimising
 
@@ -152,7 +152,7 @@ Read more about CMake generator configurations [here](https://cmake.org/cmake/he
 
 
 <!-- permit doxygen to reference section -->
-<a id="linking"></a>
+<a id="compile_linking"></a>
 
 ## Linking
 
@@ -231,13 +231,13 @@ to your project as a library!
 
 
 <!-- permit doxygen to reference section -->
-<a id="configuring"></a>
+<a id="compile_configuring"></a>
 
 ## Configuring
 
 
 <!-- permit doxygen to reference section -->
-<a id="precision"></a>
+<a id="compile_precision"></a>
 
 ### Precision
 
@@ -268,7 +268,7 @@ The values inform types:
 
 
 <!-- permit doxygen to reference section -->
-<a id="compilers"></a>
+<a id="compile_compilers"></a>
 
 ### Compilers
 
@@ -286,7 +286,7 @@ These compilers will also be used as the _host compilers_ (around which bespoke 
 
 
 <!-- permit doxygen to reference section -->
-<a id="flags"></a>
+<a id="compile_flags"></a>
 
 ### Flags
 
@@ -317,7 +317,7 @@ QuEST itself accepts a variety of its preprocessors (mostly related to testing) 
 
 
 <!-- permit doxygen to reference section -->
-<a id="examples"></a>
+<a id="compile_examples"></a>
 
 ## Examples
 
@@ -340,13 +340,13 @@ as elaborated upon in [`launch.md`](launch.md#tests).
 
 
 <!-- permit doxygen to reference section -->
-<a id="tests"></a>
+<a id="compile_tests"></a>
 
 ## Tests
 
 
 <!-- permit doxygen to reference section -->
-<a id="v4"></a>
+<a id="compile_v4"></a>
 
 ### v4
 
@@ -363,7 +363,7 @@ This will compile an executable `tests` in subdirectory `build/tests/`, which ca
 
 
 <!-- permit doxygen to reference section -->
-<a id="v3"></a>
+<a id="compile_v3"></a>
 
 ### v3
 
@@ -383,7 +383,7 @@ and run as explained in [`launch.md`](launch.md#v3).
 
 
 <!-- permit doxygen to reference section -->
-<a id="multithreading"></a>
+<a id="compile_multithreading"></a>
 
 ## Multithreading
 
@@ -419,7 +419,7 @@ The number of threads over which to parallelise QuEST's execution is chosen thro
 
 
 <!-- permit doxygen to reference section -->
-<a id="gpu-acceleration"></a>
+<a id="compile_gpu-acceleration"></a>
 
 ## GPU-acceleration
 
@@ -430,7 +430,7 @@ QuEST supports parallelisation using both NVIDIA GPUs (using CUDA) and AMD GPUs 
 
 
 <!-- permit doxygen to reference section -->
-<a id="nvidia"></a>
+<a id="compile_nvidia"></a>
 
 ### NVIDIA
 
@@ -470,7 +470,7 @@ See [`launch.md`](launch.md#gpu-acceleration) for information on
 
 
 <!-- permit doxygen to reference section -->
-<a id="amd"></a>
+<a id="compile_amd"></a>
 
 ### AMD
 
@@ -512,7 +512,7 @@ The compiled executable can be run like any other, though the GPU behaviour can 
 ------------------
 
 <!-- permit doxygen to reference section -->
-<a id="cuquantum"></a>
+<a id="compile_cuquantum"></a>
 
 ## cuQuantum
 
@@ -550,7 +550,7 @@ No other changes are necessary, nor does cuQuantum affect [hybridising](#multi-g
 
 
 <!-- permit doxygen to reference section -->
-<a id="distribution"></a>
+<a id="compile_distribution"></a>
 
 ## Distribution
 
@@ -582,7 +582,7 @@ Note that distributed executables are launched in a distinct way to the other de
 
 
 <!-- permit doxygen to reference section -->
-<a id="multi-gpu"></a>
+<a id="compile_multi-gpu"></a>
 
 ## Multi-GPU
 
