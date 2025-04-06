@@ -15,7 +15,7 @@ permissions:
 on:
   push:
     branches:
-      - master
+      - v4
   workflow_dispatch:
 
 

@@ -26,7 +26,16 @@ name: test (paid, accelerated)
 # enqueued but not run in a PR, requiring manual
 # approval - but I don't yet know how to do it!
 on:
+  push:
+    branches:
+      - v4
+  pull_request:
+    branches:
+      - v4
   workflow_dispatch:
+
+# beware! above is running paid CI whenever v4
+# is PR'd to!!
 
 
 jobs:
