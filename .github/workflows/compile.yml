@@ -19,10 +19,10 @@ name: compile
 on:
   push:
     branches:
-      - v4
+      - main
   pull_request:
     branches:
-      - v4
+      - main
 
 
 jobs:
@@ -155,7 +155,7 @@ jobs:
 
       # download QuEST
       - name: Get QuEST
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
 
       # obtain OMP for Clang multithreading
       - name: Setup libomp 

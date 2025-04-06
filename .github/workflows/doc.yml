@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: Obtain copy of repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
 
       - name: Install Graphviz (for circuit diagrams)
         uses: tlylt/install-graphviz@v1

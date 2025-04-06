@@ -5,13 +5,12 @@
 # - 16c/min for each ARM runner (OMP, MPI)
 # - 7c/min for each GPU runner (CUDA, cuQuantum)
 # where [setup, compile, run] take approximately
-# - omp: 40s, 70s,  145s  = 4m30s  = $0.68
-# - mpi: 85s, 124s, 1050s = 21m    = $3.36
-# - gpu: 30s, 150s, 490s  = 11m15s = $0.78
-# - cuq: 57s, 125s, 490s  = 11m    = $0.78
-# - mix: 51s, 150s, 550s  = 12m30s = $0.88
-# Ergo execution of this workflow costs ~$6.50.
-# Each bug costs me a Le Pointu lavender coffee!
+# - omp: 40s, 110s, 160s  = 5m10s  = $0.83
+# - mpi: 85s, 180s, 1570s = 30m    = $4.80
+# - gpu: 30s, 180s, 760s  = 16m20s = $1.14
+# - cuq: 57s, 160s, 770s  = 16m50s = $1.18
+# - mix: 51s, 180s, 548s  = 13m    = $0.91
+# Ergo execution of this workflow costs ~ $9.
 # 
 # @author Tyson Jones
 
@@ -96,7 +95,7 @@ jobs:
     # perform the job
     steps:
       - name: Get QuEST
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
 
       - name: Setup CMake
         run: sudo apt-get install -y cmake
@@ -217,7 +216,7 @@ jobs:
     # perform the job
     steps:
       - name: Get QuEST
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
 
       - name: Setup CMake
         run: sudo apt-get install -y cmake

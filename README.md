@@ -7,22 +7,12 @@
 -->
 
 
-
-<!-- TODO: 
- update all instances of
- /v4/
- within this README to
- master/main/active branc
- -->
-
-
-
 <!-- banner and top badges (centered) -->
 <div align="center">
 
   <!-- banner -->
   <a href="https://quest.qtechtheory.org">
-    <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4/utils/docs/logos/banner.png" alt="The QuEST logo" width=400>
+    <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/main/utils/docs/logos/banner.png" alt="The QuEST logo" width=400>
   </a>
 
   <!-- TODO: restore CI 'compilation/test pass' badge! -->
@@ -74,12 +64,12 @@ In particular, QuEST `v4` was made possible through the support of the UK Nation
 
 <div align="center">
 
-  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4/utils/docs/logos/nqcc.png" alt="NQCC" height=30> &nbsp;
-  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4/utils/docs/logos/amd.png" alt="AMD" height=25> &nbsp;
-  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4/utils/docs/logos/nvidia.png" alt="NVIDIA" height=25> &nbsp;
-  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4/utils/docs/logos/qmt.png" alt="Quantum Motion" height=25> &nbsp;
-  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4/utils/docs/logos/edinburgh.png" alt="University of Edinburgh" height=25> &nbsp;
-  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/v4/utils/docs/logos/oxford.png" alt="University of Oxford" height=28> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/main/utils/docs/logos/nqcc.png" alt="NQCC" height=30> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/main/utils/docs/logos/amd.png" alt="AMD" height=25> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/main/utils/docs/logos/nvidia.png" alt="NVIDIA" height=25> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/main/utils/docs/logos/qmt.png" alt="Quantum Motion" height=25> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/main/utils/docs/logos/edinburgh.png" alt="University of Edinburgh" height=25> &nbsp;
+  <img src="https://raw.githubusercontent.com/QuEST-Kit/QuEST/refs/heads/main/utils/docs/logos/oxford.png" alt="University of Oxford" height=28> &nbsp;
 
 </div>
 
@@ -265,7 +255,7 @@ See the [docs](docs/README.md) for enabling acceleration and running the unit te
 
 ## ❤  Acknowledgements
 
-We sincerely thank the following external contributors to QuEST.
+In addition to QuEST's [authors](AUTHORS.txt), we sincerely thank the following external contributors to QuEST.
 
 - [Jakub Adamski](https://github.com/jjacobx) for optimising distributed communication of max-size messages.
 - [Bruno Villasenor Alvarez](https://github.com/bvillasen) of [AMD](https://www.amd.com/en.html) for porting the v3 GPU backend to [HIP](https://github.com/ROCm-Developer-Tools/HIP), for compatibility with AMD GPUs.
@@ -287,8 +277,14 @@ We sincerely thank the following external contributors to QuEST.
 - [QuESTlink](https://questlink.qtechtheory.org)   <br>
   a Mathematica package enabling symbolic circuit manipulation, analytic simulation, visualisation and high performance simulation with remote accelerated hardware.
   
-- [pyQuEST](https://github.com/rrmeister/pyQuEST/tree/master)   <br>
-  a python interface to QuEST, based on Cython, developed within the [QTechTheory](https://qtechtheory.org) group. Please note, pyQuEST is currently in the alpha stage.
+- [pyQuEST](https://github.com/rrmeister/pyQuEST)   <br>
+  a python interface to QuEST, based on Cython, developed by [Richard Meister](https://github.com/rrmeister) within the [QTechTheory](https://qtechtheory.org) group.
+
+- [QuEST.jl](https://github.com/ediparquantum/QuEST.jl) <br>
+  a Julia interface to QuEST, developed by [Jonathan Miller](https://github.com/fieldofnodes).
+
+- [qoqo-quest](https://github.com/HQSquantumsimulations/qoqo-quest) <br>
+  a Rust interface to QuEST, developed by [HQS Quantum Simulations](https://quantumsimulations.de/).
    
 - [PyQuEST-cffi](https://github.com/HQSquantumsimulations/PyQuEST-cffi)   <br>
-  a python interface to QuEST based on cffi developed by HQS Quantum Simulations. Please note, PyQuEST-cffi is currently in the alpha stage and not an official QuEST project.
+  a python interface to QuEST developed by [HQS Quantum Simulations](https://quantumsimulations.de/). 
