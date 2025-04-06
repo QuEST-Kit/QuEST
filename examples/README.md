@@ -22,7 +22,7 @@ QuEST is included into a `C` or `C++` project via
 > #define ENABLE_DEPRECATED_API 1
 > #include "quest.h"
 > ```
-> We recommend migrating to the latest `v4` API however, demonstrated below.
+> We recommend migrating to the latest `v4` API however as will be showcased below.
 
 Simulation typically proceeds as:
 1. [Initialise](https://quest-kit.github.io/QuEST/group__environment.html#gab89cfc1bf94265f4503d504b02cf54d4) the QuEST [environment](https://quest-kit.github.io/QuEST/group__environment.html), preparing available GPUs and networks.
@@ -36,6 +36,25 @@ Simulation typically proceeds as:
 8. [Finalise](https://quest-kit.github.io/QuEST/group__environment.html#ga428faad4d68abab20f662273fff27e39) the QuEST environment.
 
 Of course, the procedure is limited only by the programmers imagination `¯\_(ツ)_/¯` Let's see an example of these steps below.
+
+
+> **TOC**:
+> - [1. Initialise the environment](#1-initialise-the-environment)
+> - [2. Configure the environment](#2-configure-the-environment)
+> - [3. Create a `Qureg`](#3-create-a--qureg-)
+> - [4. Prepare an initial state](#4-prepare-an-initial-state)
+> - [5. Apply operators](#5-apply-operators)
+>   * [controls](#controls)
+>   * [paulis](#paulis)
+>   * [matrices](#matrices)
+>   * [circuits](#circuits)
+>   * [measurements](#measurements)
+>   * [decoherence](#decoherence)
+> - [6. Perform calculations](#6-perform-calculations)
+> - [7. Report the results](#7-report-the-results)
+> - [8. Cleanup](#8-cleanup)
+> - [9. Finalise QuEST](#9-finalise-quest)
+
 
 
 ## 1. Initialise the environment
@@ -366,4 +385,373 @@ Qureg (5 qubit density matrix, 32x32 qcomps, 16.1 KiB):
 
 ## 5. Apply operators
 
-> TODO
+QuEST supports an extensive set of [operators](https://quest-kit.github.io/QuEST/group__operations.html) to effect upon a `Qureg`. 
+```C++
+int target = 2;
+applyHadamard(qureg, target);
+
+qreal angle = 3.14 / 5;
+int targets[]  = {4,5,6};
+applyPhaseGadget(qureg, targets, 3, angle);
+```
+
+> [!IMPORTANT]  
+> Notice the type of `angle` is [`qreal`](https://quest-kit.github.io/QuEST/group__types.html#ga2d479c159621c76ca6f96abe66f2e69e) rather than the expected `double`. This is a precision agnostic alias for a floating-point, real scalar which allows you to recompile QuEST with a varying [precision](/docs/compile.md#precision) with no modifications to your code. 
+
+### controls
+
+All unitary operations accept any number of control qubits
+```C++
+int controls[] = {0,1,2,3,7,8,9};
+applyMultiControlledSqrtSwap(qureg, controls, 7, targets[0], targets[1]);
+```
+and even _control states_ which specify the bits (`0` or `1`) that the respective controls must be in to effect the non-identity operation.
+```C++
+int states[] = {0,0,0,1,1,1,0};
+applyMultiStateControlledRotateX(qureg, controls, states, 7, target, angle);
+```
+
+> [!TIP]
+> `C` users can pass inline list arguments using [compound literals](https://en.cppreference.com/w/c/language/compound_literal)
+> ```C
+> applyMultiControlledMultiQubitNot(qureg, (int[]) {0,1,2}, 3, (int[]) {4,5}, 2);
+> ```
+> while `C++` users can pass [vector](https://en.cppreference.com/w/cpp/container/vector) literals or [initializer lists](https://en.cppreference.com/w/cpp/utility/initializer_list), alleviating the need to specify the list lengths.
+> ```C++
+> applyMultiControlledMultiQubitNot(qureg, {0,1,2}, {4,5});
+> ```
+
+### paulis
+
+Some operators accept [`PauliStr`](https://quest-kit.github.io/QuEST/structPauliStr.html) which can be [constructed](https://quest-kit.github.io/QuEST/group__paulis__create.html) all sorts of ways - even inline!
+```C++
+applyPauliGadget(qureg, getPauliStr("XYZ"), angle);
+```
+
+> [!TIP]
+> Using _one_ QuEST function is _always_ faster than using an equivalent sequence. So
+> ```C++
+> applyPauliStr(qureg, getPauliStr("YYYYYYY"));
+> ```
+> is _much_ faster than
+> ```C++
+> for (int i=0; i<7; i++)
+>     applyPauliY(qureg, i);
+> ```
+
+### matrices
+
+#### `CompMatr1`
+
+Don't see your operation in the API? You can specify it as a general [matrix](https://quest-kit.github.io/QuEST/group__matrices.html).
+```C++
+qcomp x = 1i/sqrt(2);
+CompMatr1 matrix = getInlineCompMatr({{-x,x},{-x,-x}});
+applyCompMatr1(qureg, target, matrix);
+```
+
+> [!IMPORTANT]  
+> The type [`qcomp`](https://quest-kit.github.io/QuEST/group__types.html#ga4971f489e74bb185b9b2672c14301983) above is a precision agnostic complex scalar, and has beautiful arithmetic overloads!
+> ```C++
+> qcomp x = 1.5 + 3.14i;
+> qcomp *= 1E3i - 1E-5i;
+> ```
+> Beware that in `C++`, `1i` is a _double precision_ literal, so `C++` users should instead
+> use the custom precision-agnostic literal `1_i`.
+> ```C++
+> qcomp x = 1.5 + 3.14_i;
+> ```
+
+#### `CompMatr`
+
+Want a bigger matrix? No problem - they can be [any size](https://quest-kit.github.io/QuEST/group__matrices__create.html#ga634309472d1edf400174680af0685b89), with many ways to [initialise](https://quest-kit.github.io/QuEST/group__matrices__setters.html) them.
+```C++
+CompMatr bigmatrix = createCompMatr(8);
+setCompMatr(bigmatrix, {{1,2,3,...}});
+applyCompMatr(qureg, ..., bigmatrix);
+```
+Matrix elements can be manually modified, though this requires we [synchronise](https://quest-kit.github.io/QuEST/group__matrices__sync.html) them with GPU memory once finished.
+```C++
+qindex dim = bigmatrix.numRows;
+
+// initialise random diagonal unitary
+for (qindex r=0; r<dim; r++)
+    for (qindex c=0; c<dim; c++)
+        bigmatrix.cpuElems[r][c] = exp(rand() * 1i) * (r==c);
+
+// update the GPU copy 
+syncCompMatr(bigmatrix);
+```
+
+> [!IMPORTANT]  
+> The created `CompMatr` is a [heap object](https://craftofcoding.wordpress.com/2015/12/07/memory-in-c-the-stack-the-heap-and-static/) and must be [destroyed](https://quest-kit.github.io/QuEST/group__matrices__destroy.html) when we are finished with it, to free up its memory and avoid leaks.
+> ```C++
+> destroyCompMatr(bigmatrix);
+> ```
+> This is true of any QuEST structure returned by a `create*()` function. It is _not_ true of functions prefixed with `get*()` with are always [stack variables](https://craftofcoding.wordpress.com/2015/12/07/memory-in-c-the-stack-the-heap-and-static/), hence why functions like `getCompMatr1()` can be called inline!
+
+
+#### `FullStateDiagMatr`
+
+Above, we initialised [`CompMatr`](https://quest-kit.github.io/QuEST/structCompMatr.html) to a diagonal unitary. This is incredibly wasteful; only `256` of its `65536` elements are non-zero! We should instead use [`DiagMatr`](https://quest-kit.github.io/QuEST/structDiagMatr.html) or [`FullStateDiagMatr`](https://quest-kit.github.io/QuEST/structFullStateDiagMatr.html). The latter is even distributed (if chosen by the autodeployer), permitting it to be as large as a `Qureg` itself!
+```C++
+FullStateDiagMatr fullmatrix = createFullStateDiagMatr(qureg.numQubits);
+```
+and can be [initialised](https://quest-kit.github.io/QuEST/group__matrices__setters.html) in many ways, including from all-`Z` pauli sums!
+```C++
+PauliStrSum sum = createInlinePauliStrSum(R"(
+    1   II
+    1i  ZI
+    1i  IZ
+    -1  ZZ
+)");
+
+setFullStateDiagMatrFromPauliStrSum(fullmatrix, sum);
+```
+> [!IMPORTANT]  
+> The argument to `createInlinePauliStrSum` is a multiline string for which the syntax differs between `C` and `C++`; we used the latter above. See examples [`initialisation.c`](/examples/paulis/initialisation.c) and [`initialisation.cpp`](/paulis/matrices/initialisation.cpp) for clarity.
+
+> [!CAUTION]
+> Beware that in distributed settings, because `fullmatrix` _may_ be distributed, we should must exercise extreme caution when modifying its `fullmatrix.cpuElems` directly. 
+
+
+A `FullStateDiagMatr` acts upon all qubits of a qureg
+```C++
+applyFullStateDiagMatr(qureg, fullmatrix);
+```
+and can be raised to an arbitrary power, helpful for example in simulating [quantum spectral methods](https://www.science.org/doi/10.1126/sciadv.abo7484).
+```C++
+qcomp exponent = 3.5;
+applyFullStateDiagMatrPower(qureg, fullmatrix, exponent);
+```
+
+Notice the `exponent` is a `qcomp` and ergo permitted to be a complex number. Unitarity requires `exponent` is strictly real, but we can always relax the unitarity validation...
+
+
+#### validation
+
+
+Our example above initialised `CompMatr` to a diagonal because it is tricky to generate random non-diagonal **_unitary_** matrices - and QuEST checks for unitarity!
+```C++
+// m * dagger(m) != identity
+CompMatr1 m = getCompMatr1({{.1,.2},{.3,.4}});
+applyCompMatr1(qureg, 0, m);
+```
+```
+QuEST encountered a validation error during function 'applyCompMatr1':
+The given matrix was not (approximately) unitary.
+Exiting...
+```
+If we're satisfied our matrix _is_ sufficiently approximately unitary, we can [adjust](https://quest-kit.github.io/QuEST/group__debug__validation.html#gae395568df6def76045ec1881fcb4e6d1) or [disable](https://quest-kit.github.io/QuEST/group__debug__validation.html#ga5999824df0785ea88fb2d5b5582f2b46) the validation.
+```C++
+// max(norm(m * dagger(m) - identity)) = 0.9025
+setValidationEpsilon(0.903);
+applyCompMatr1(qureg, 0, m);
+```
+
+
+### circuits
+
+QuEST includes a few convenience functions for effecting [QFT](https://quest-kit.github.io/QuEST/group__op__qft.html) and [Trotter](https://quest-kit.github.io/QuEST/group__op__paulistrsum.html) circuits.
+
+```C++
+applyQuantumFourierTransform(qureg, targets, 3);
+
+qreal time = .3;
+int order = 4;
+int reps = 10;
+applyTrotterizedPauliStrSumGadget(qureg, sum, time, order, reps);
+```
+
+
+
+### measurements
+
+We can also effect a wide range of non-unitary operations, such as destructive [measurements](https://quest-kit.github.io/QuEST/group__op__measurement.html)
+```C++
+int outcome1 = applyQubitMeasurement(qureg, 0);
+
+qreal prob;
+qindex outcome2 = applyMultiQubitMeasurementAndGetProb(qureg, targets, 3, &prob);
+```
+and conveniently [report](https://quest-kit.github.io/QuEST/group__types.html#ga2be8a4433585a8d737c02128b4754a03) their outcome.
+```C++
+reportScalar("one qubit outcome", outcome1);
+reportScalar("three qubit outcome", outcome2);
+```
+
+> [!IMPORTANT]  
+> Notice the type of `outcome2` is a [`qindex`](https://quest-kit.github.io/QuEST/group__types.html#ga6017090d3ed4063ee7233e20c213424b) rather than an `int`. This is a larger type which can store much larger numbers without overflow - up to `2^63` - and is always used by the API for many-qubit indices.
+
+Should we wish to leave the state unnormalised, we can instead use [projectors](https://quest-kit.github.io/QuEST/group__op__projectors.html).
+
+### decoherence
+
+Density matrices created with [`createDensityQureg()`](https://quest-kit.github.io/QuEST/group__qureg__create.html#ga1470424b0836ae18b5baab210aedf5d9) can undergo [decoherence](https://quest-kit.github.io/QuEST/group__decoherence.html) channels.
+
+```C++
+qreal prob = 0.1;
+mixDamping(rho, target, prob);
+mixDephasing(rho, target, prob);
+mixTwoQubitDepolarising(rho, targets[0], targets[1], prob);
+```
+which we can specify as inhomogeneous Pauli channels
+```C++
+// passing probabilities of X, Y, Z errors respectively
+mixPaulis(Qureg qureg, target, .05, .10, .15);
+```
+or completely generally as [Kraus maps](https://quest-kit.github.io/QuEST/group__channels.html) and [superoperators](https://quest-kit.github.io/QuEST/group__channels.html)!
+```C++
+int numTargets = 1;
+int numOperators = 4;
+
+qreal p = 0.1;
+qreal l = 0.3;
+
+// generalised amplitude damping
+KrausMap map = createInlineKrausMap(numTargets, numOperators, {
+    {
+        {sqrt(p), 0},
+        {0, sqrt(p*(1-l))}
+    }, {
+        {0, sqrt(p*l)}, 
+        {0, 0}
+    }, {
+        {sqrt((1-p)*(1-l)), 0},
+        {0, sqrt(1-p)}
+    }, {
+        {0, 0},
+        {sqrt((1-p)*l), 0}
+    }
+});
+
+int victims[] = {2};
+mixKrausMap(rho, victims, 1, map);
+```
+We can even directy mix density matrices together
+```C++
+mixQureg(rho1, rho2, prob);
+```
+
+Sometimes we wish to left-multiply general operators upon density matrices without also right-multiplying their adjoint - i.e. our operators should _not_ be effected as unitaries. We can do this with the `multiply*()` functions.
+```C++
+multiplyDiagMatrPower(rho, fullmatrix, 0.5);
+```
+
+
+## 6. Perform calculations
+
+After so much modification to our state, we will find that its amplitudes have differed substantially. But it's impractical to observe the exponentially-many amplitudes with [`reportQureg()`](https://quest-kit.github.io/QuEST/group__qureg__report.html#ga2a9df2538e537332b1aef8596ce337b2). We can instead give QuEST the [questions](https://quest-kit.github.io/QuEST/group__calculations.html) we wish to answer about the resulting state.
+
+For example, we can find the [probability](https://quest-kit.github.io/QuEST/group__calc__prob.html) of measurement outcomes _without_ modifying the state.
+```C++
+int outcome = 1;
+qreal prob1 = calcProbOfQubitOutcome(qureg, target, outcome);
+
+int qubits[]   = {2,3,4};
+int outcomes[] = {0,1,1};
+qreal prob2 = calcProbOfMultiQubitOutcome(qureg, qubits, outcomes, 3);
+```
+We can obtain _all_ outcome probabilities in one swoop:
+```C++
+qreal probs[8];
+calcProbsOfAllMultiQubitOutcomes(probs, qureg, qubits, 3);
+```
+
+> [!TIP]
+> `C++` users can also obtain the result as a natural `std::vector<qreal>`.
+> ```C++
+> auto probs = calcProbsOfAllMultiQubitOutcomes(qureg, {2,3,4});
+> ```
+
+It is similarly trivial to find [expectation values](https://quest-kit.github.io/QuEST/group__calc__expec.html)
+```C++
+qreal expec1 = calcExpecPauliStr(qureg, getPauliStr("XYZIII"));
+qreal expec2 = calcExpecPauliStrSum(qureg, sum);
+qreal expec3 = calcExpecFullStateDiagMatr(qureg, fullmatrix);
+```
+or [distance measures](https://quest-kit.github.io/QuEST/group__calc__comparisons.html) between states, including between statevectors and density matrices.
+```C++
+qreal pur = calcPurity(rho);
+qreal fid = calcFidelity(rho, psi);
+qreal dist = calcDistance(rho, psi);
+```
+
+We can even find reduced density matrices resulting from [partially tracing](https://quest-kit.github.io/QuEST/group__calc__partialtrace.html) out qubits.
+```C++
+Qureg reduced = calcPartialTrace(qureg, targets, 3);
+
+reportScalar("entanglement", calcPurity(reduced));
+```
+
+## 7. Report the results
+
+We've seen above that [scalars](https://quest-kit.github.io/QuEST/group__types.html) can be reported, handling the pretty formatting of real and complex numbers, controlled by settings like [`setMaxNumReportedSigFigs()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga15d46e5d813f70b587762814964e1994). But we can also report every data structure in the QuEST API, such as Pauli strings
+```C++
+reportPauliStr(
+    getInlinePauliStr("XXYYZZ", {5,50, 10,60, 30,40})
+);
+```
+```
+YIIIIIIIIIXIIIIIIIIIZIIIIIIIIIZIIIIIIIIIIIIIIIIIIIYIIIIXIIIII
+```
+and their weighted sums
+```C++
+reportPauliStrSum(sum);
+```
+```
+PauliStrSum (4 terms, 160 bytes):
+    1   II
+    i   ZI
+    i   IZ
+    -1  ZZ
+```
+All outputs are affected by the [reporter settings](https://quest-kit.github.io/QuEST/group__debug__reporting.html).
+```C++
+setMaxNumReportedItems(4,4);
+setMaxNumReportedSigFigs(1);
+reportCompMatr(bigmatrix);
+```
+```
+CompMatr (8 qubits, 256x256 qcomps, 1 MiB):
+    0.9-0.5i  0         …  0          0
+    0         0.8-0.6i  …  0          0
+        ⋮
+    0         0         …  -0.5-0.9i  0
+    0         0         …  0          0.4+0.9i
+```
+
+
+
+> [!NOTE]  
+> Facilities for automatically logging to file are coming soon!
+
+
+## 8. Cleanup
+
+While not strictly necessary before the program ends, it is a good habit to destroy data structures as soon as you are finished with them, freeing their memory.
+
+```C++
+destroyQureg(qureg);
+destroyCompMatr(bigmatrix);
+destroyFullStateDiagMatr(fullmatrix);
+destroyPauliStrSum(sum);
+destroyKrausMap(map);
+```
+
+## 9. Finalise QuEST
+
+The **_final_** [step](https://quest-kit.github.io/QuEST/group__environment.html#ga428faad4d68abab20f662273fff27e39) of our program should be to call
+```C++
+finalizeQuESTEnv();
+```
+which ensures everything is synchronised, frees accelerator resources, and finalises MPI.
+This is important because it ensures:
+-  _everything is done_, and that distributed nodes that are still working (e.g. haven't yet logged to their own file) are not interrupted by early termination of another node.
+- the MPI process ends gracefully, and doesn't spew out messy errors!
+- our GPU processes are killed quickly, freeing resources for other processes.
+
+> [!CAUTION]
+> After calling `finalizeQuESTEnv()`, MPI will close and each if being accessed directly by the user, will enter an undefined state. Subsequent calls to MPI routines may return gibberish, and distributed machines will have lost their ability to communicate. It is recommended to call `finalizeQuESTEnv()` immediately before exiting.
+
+You are now a QuEST expert 🎉 though there are _many_ more functions in the [API](https://quest-kit.github.io/QuEST/group__api.html) not covered here. Go forth and simulate!
