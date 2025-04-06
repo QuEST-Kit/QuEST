@@ -145,8 +145,6 @@ static inline qcomp getQcomp(qreal re, qreal im) {
 // C11 arithmetic is already defined in complex header, and beautifully
 // permits mixing of parameterised types and precisions
 
-/// @cond EXCLUDE_FROM_DOXYGEN
-
 #ifdef __cplusplus
 
     // <complex> defines overloads between complex and same-precision floats,
@@ -164,14 +162,23 @@ static inline qcomp getQcomp(qreal re, qreal im) {
     // no doubt break somebody's build/integration, users can disable this
     // attempt at precision-agnostic arithmetic via DEFINE_ARITHMETIC_OVERLOADS=0
 
-    /// @neverdoced
-    /// @fn DEFINE_ARITHMETIC_OVERLOADS
-
     #ifndef DEFINE_ARITHMETIC_OVERLOADS
     #define DEFINE_ARITHMETIC_OVERLOADS 1
     #endif
 
+    // spoofing above macro as const to doc
+    #if 0
+
+        /// @notdoced
+        /// @macrodoc
+        const int DEFINE_ARITHMETIC_OVERLOADS = 1;
+
+    #endif
+
+
     #if DEFINE_ARITHMETIC_OVERLOADS
+
+    /// @cond EXCLUDE_FROM_DOXYGEN
 
     // shortcuts for below overload definitions
     #define COMP_TO_QCOMP(a) \
@@ -265,11 +272,11 @@ static inline qcomp getQcomp(qreal re, qreal im) {
     #undef DEFINE_ARITHMETIC_BETWEEN_COMPLEX_AND_COMPLEX
     #undef DEFINE_SINGLE_DIRECTION_ARITHMETIC_BETWEEN_COMPLEX_AND_COMPLEX
 
+    /// @endcond // EXCLUDE_FROM_DOXYGEN
+
     #endif // DEFINE_ARITHMETIC_OVERLOADS
 
 #endif
-
-/// @endcond // EXCLUDE_FROM_DOXYGEN
 
 
 
@@ -294,6 +301,7 @@ static inline qcomp getQcomp(qreal re, qreal im) {
 
     /// @notdoced
     /// @nottested
+    /// @cpponly
     void reportStr(std::string str);
 
 
@@ -309,11 +317,13 @@ static inline qcomp getQcomp(qreal re, qreal im) {
 
     /// @notdoced
     /// @nottested
+    /// @cpponly
     void reportScalar(std::string label, qcomp num);
 
 
     /// @notdoced
     /// @nottested
+    /// @cpponly
     void reportScalar(std::string label, qreal num);
 
 #else
@@ -325,13 +335,14 @@ static inline qcomp getQcomp(qreal re, qreal im) {
 
     /// @notdoced
     /// @nottested
-    void reportScalar      (const char* label, qcomp num);
+    void reportScalar(const char* label, qcomp num);
 
 
     /// @private
     void _reportScalar_real(const char* label, qreal num);
 
 
+    // no need to be doc'd since signatures identical to C++ above
     /// @neverdoced
     #define reportScalar(label, num) \
         _Generic((num), \

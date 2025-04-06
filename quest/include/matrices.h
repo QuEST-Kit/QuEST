@@ -486,6 +486,10 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
             default : _getCompMatr2FromArr \
         )((__VA_ARGS__))
 
+
+    // note the above macros do not need explicit, separate doxygen
+    // doc because the C++ overloads above it have identical signatures
+
 #endif
 
 
@@ -507,21 +511,17 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
 
     // C++ merely invokes the std::vector initialiser overload
 
-
     /// @neverdoced
     #define getInlineCompMatr1(...) \
         getCompMatr1(__VA_ARGS__)
-
 
     /// @neverdoced
     #define getInlineCompMatr2(...) \
         getCompMatr2(__VA_ARGS__)
 
-
     /// @neverdoced
     #define getInlineDiagMatr1(...) \
         getDiagMatr1(__VA_ARGS__)
-
 
     /// @neverdoced
     #define getInlineDiagMatr2(...) \
@@ -532,26 +532,46 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
     // C adds compound literal syntax to make a temporary array. Helpfully, 
     // explicitly specifying the DiagMatr dimension enables defaulting-to-zero
 
-
     /// @neverdoced
     #define getInlineCompMatr1(...) \
         _getCompMatr1FromArr((qcomp[2][2]) __VA_ARGS__)
-
 
     /// @neverdoced
     #define getInlineCompMatr2(...) \
         _getCompMatr2FromArr((qcomp[4][4]) __VA_ARGS__)
 
-
     /// @neverdoced
     #define getInlineDiagMatr1(...) \
         getDiagMatr1((qcomp[2]) __VA_ARGS__)
-
 
     /// @neverdoced
     #define getInlineDiagMatr2(...) \
         getDiagMatr2((qcomp[4]) __VA_ARGS__)
 
+#endif
+
+// spoofing above macros as functions to doc
+#if 0
+
+    /// @ingroup matrices_getters
+    /// @notdoced
+    /// @macrodoc
+    CompMatr1 getInlineCompMatr1({{ matrix }});
+
+    /// @ingroup matrices_getters
+    /// @notdoced
+    /// @macrodoc
+    CompMatr2 getInlineCompMatr2({{ matrix }});
+
+    /// @ingroup matrices_getters
+    /// @notdoced
+    /// @macrodoc
+    DiagMatr1 getInlineDiagMatr1({ list });
+
+    /// @ingroup matrices_getters
+    /// @notdoced
+    /// @macrodoc
+    DiagMatr2 getInlineDiagMatr2({ list });
 
 #endif
 
@@ -746,6 +766,17 @@ extern "C" {
             default : _setCompMatrFromArr \
         )((matr), (__VA_ARGS__))
 
+    // spoofing above macro as functions to doc
+    #if 0
+
+        /// @ingroup matrices_setters
+        /// @notdoced
+        /// @macrodoc
+        /// @conly
+        void setCompMatr(CompMatr matr, qcomp arr[matr.numRows][matr.numRows]);
+
+    #endif
+
 
     // no need to define bespoke overload for diagonal matrices, because 1D arrays decay to pointers
 
@@ -780,17 +811,20 @@ extern "C" {
 
     /// @ingroup matrices_setters
     /// @notdoced
+    /// @cpponly
     void setInlineCompMatr(CompMatr matr, int numQb, std::vector<std::vector<qcomp>> in);
 
 
     /// @ingroup matrices_setters
     /// @notdoced
+    /// @cpponly
     void setInlineDiagMatr(DiagMatr matr, int numQb, std::vector<qcomp> in);
 
 
     /// @ingroup matrices_setters
     /// @notdoced
     /// @nottested
+    /// @cpponly
     void setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, std::vector<qcomp> in);
 
 
@@ -841,19 +875,34 @@ extern "C" {
     #define setInlineCompMatr(matr, numQb, ...) \
         _setInlineCompMatr((matr), (numQb), (qcomp[1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
-
     /// @neverdoced
     #define setInlineDiagMatr(matr, numQb, ...) \
         _setInlineDiagMatr((matr), (numQb), (qcomp[1<<(numQb)]) __VA_ARGS__)
-
 
     /// @neverdoced
     #define setInlineFullStateDiagMatr(matr, startInd, numElems, ...) \
         _setInlineFullStateDiagMatr((matr), (startInd), (numElems), (qcomp[(numElems)]) __VA_ARGS__)
 
+    // spoofing above macros as functions to doc
+    #if 0
 
-        // TODO:
-        // beware above is not tested!!! Must note this in new doc
+        /// @ingroup matrices_setters
+        /// @notdoced
+        /// @macrodoc
+        void setInlineCompMatr(CompMatr matr, int numQb, {{ matrix }});
+
+        /// @ingroup matrices_setters
+        /// @notdoced
+        /// @macrodoc
+        void setInlineDiagMatr(DiagMatr matr, int numQb, { list });
+
+        /// @ingroup matrices_setters
+        /// @nottested
+        /// @notdoced
+        /// @macrodoc
+        void setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, { list });
+
+    #endif
 
 
 #else
@@ -892,6 +941,9 @@ extern "C" {
             setFullStateDiagMatr((matr), (startInd), (elems), (numElems)); \
         } while (0)
 
+    
+    // the above macros are documented in the previous #if branch
+
 #endif
 
 
@@ -918,11 +970,13 @@ extern "C" {
 
     /// @ingroup matrices_create
     /// @notdoced
+    /// @cpponly
     CompMatr createInlineCompMatr(int numQb, std::vector<std::vector<qcomp>> elems);
 
 
     /// @ingroup matrices_create
     /// @notdoced
+    /// @cpponly
     DiagMatr createInlineDiagMatr(int numQb, std::vector<qcomp> elems);
 
 
@@ -963,10 +1017,24 @@ extern "C" {
     #define createInlineCompMatr(numQb, ...) \
         _createInlineCompMatr((numQb), (qcomp[1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
-    
     /// @neverdoced
     #define createInlineDiagMatr(numQb, ...) \
         _createInlineDiagMatr((numQb), (qcomp[1<<(numQb)]) __VA_ARGS__)
+
+    // spoofing above macros as functions to doc
+    #if 0
+
+        /// @ingroup matrices_create
+        /// @notdoced
+        /// @macrodoc
+        CompMatr createInlineCompMatr(int numQb, {{ matrix }});
+
+        /// @ingroup matrices_create
+        /// @notdoced
+        /// @macrodoc
+        DiagMatr createInlineDiagMatr(int numQb, { list });
+
+    #endif
 
 #else
 
@@ -986,6 +1054,11 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+    /// @todo
+    /// add std::vector<int> overloads for C++ users for the
+    /// below functions (missed during original overload work)
 
 
     /// @ingroup matrices_setters

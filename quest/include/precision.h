@@ -30,9 +30,19 @@
 // benefit in shrinking the type size and facing the associated precision risks. Similarly,
 // there is little benefit in making it larger since a 'long long int' can represent 62 qubits,
 // which is already well beyond simulability, requiring 64 EiB total at double precision.
+// Still, we use a #define, rather than a typedef, so that the value can be compile-time overridden.
 
 /// @neverdoced
 #define INDEX_TYPE long long int
+
+// spoofing above macro as const to doc
+#if 0
+
+    /// @notdoced
+    /// @macrodoc
+    typedef long long int INDEX_TYPE;
+
+#endif
 
 
 
@@ -51,17 +61,20 @@
 /// @neverdoced
 #define PAULI_MASK_TYPE long long unsigned int
 
+// spoofing above macro as typedef to doc
+#if 0
+
+    /// @notdoced
+    /// @macrodoc
+    typedef long long unsigned int PAULI_MASK_TYPE;
+
+#endif
+
 
 
 /*
  * RE-CONFIGURABLE FLOATING-POINT PRECISION
  */
-
-/// @neverdoced
-/// @fn FLOAT_PRECISION
-
-/// @neverdoced
-/// @fn FLOAT_TYPE
 
 // assume double precision as default
 #ifndef FLOAT_PRECISION
@@ -80,6 +93,19 @@
     #define FLOAT_TYPE double
 #elif FLOAT_PRECISION == 4
     #define FLOAT_TYPE long double
+#endif
+
+// spoofing above macros as typedefs and consts to doc
+#if 0
+
+    /// @notdoced
+    /// @macrodoc
+    const int FLOAT_PRECISION = 2;
+
+    /// @notdoced
+    /// @macrodoc
+    typedef double int FLOAT_TYPE;
+
 #endif
 
 
@@ -102,9 +128,6 @@
  * compiler using argument -D), and runtime overridable using setValidationEpsilon()
  */
 
-/// @neverdoced
-/// @fn DEFAULT_VALIDATION_EPSILON
-
 #ifndef DEFAULT_VALIDATION_EPSILON
 
     #if FLOAT_PRECISION == 1
@@ -120,14 +143,20 @@
 
 #endif
 
+// spoofing above macros as typedefs and consts to doc
+#if 0
+
+    /// @notdoced
+    /// @macrodoc
+    const qreal DEFAULT_VALIDATION_EPSILON = 1E-12;
+
+#endif
+
 
 
 /*
  * PRECISION-AGNOSTIC CONVENIENCE MACROS
  */
-
-/// @neverdoced
-/// @fn QREAL_FORMAT_SPECIFIER
 
 #if FLOAT_PRECISION == 1
     #define QREAL_FORMAT_SPECIFIER "%.8g"
@@ -138,6 +167,15 @@
 #elif FLOAT_PRECISION == 4
     #define QREAL_FORMAT_SPECIFIER "%.17Lg"
     
+#endif
+
+// spoofing above macros as typedefs and consts to doc
+#if 0
+
+    /// @notdoced
+    /// @macrodoc
+    const char* QREAL_FORMAT_SPECIFIER = "%.14g";
+
 #endif
 
 

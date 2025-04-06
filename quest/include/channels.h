@@ -349,6 +349,24 @@ extern "C" {
             default : _setSuperOpFromArr \
         )((op), (__VA_ARGS__))
 
+    // spoofing macros as functions
+    #if 0
+
+        /// @ingroup channels_setters
+        /// @notdoced
+        /// @conly
+        /// @macrodoc
+        void setKrausMap(KrausMap map, qcomp matrices[map.numMatrices][map.numRows][map.numRows]);
+
+        /// @ingroup channels_setters
+        /// @notdoced
+        /// @conly
+        /// @macrodoc
+        void setSuperOp(SuperOp op, qcomp matrix[op.numRows][op.numRows]);
+
+    #endif
+
+
 #else
 
     // MSVC's C11 does not support C99 VLAs, so there is no way to support _setKrausMapFromArr(),
@@ -429,6 +447,21 @@ extern "C" {
     #define setInlineSuperOp(matr, numQb, ...) \
         _setInlineSuperOp((matr), (numQb), (qcomp[1<<(2*(numQb))][1<<(2*(numQb))]) __VA_ARGS__)
 
+    // spoofing macros as functions
+    #if 0
+
+        /// @ingroup channels_setters
+        /// @notdoced
+        /// @macrodoc
+        void setInlineKrausMap(KrausMap map, int numQb, int numOps, {{{ matrices }}});
+
+        /// @ingroup channels_setters
+        /// @notdoced
+        /// @macrodoc
+        void setInlineSuperOp(SuperOp op, int numQb, {{ matrix }});
+
+    #endif
+
 #else
 
     // MSVC's C11 does not support C99 VLA, so the inner *FromArr() functions have not
@@ -499,10 +532,24 @@ extern "C" {
     #define createInlineKrausMap(numQb, numOps, ...) \
         _createInlineKrausMap((numQb), (numOps), (qcomp[(numOps)][1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
-
     /// @neverdoced
     #define createInlineSuperOp(numQb, ...) \
         _createInlineSuperOp((numQb), (qcomp[1<<(2*(numQb))][1<<(2*(numQb))]) __VA_ARGS__)
+
+    // spoofing macros as functions
+    #if 0
+
+        /// @ingroup channels_create
+        /// @notdoced
+        /// @macrodoc
+        KrausMap createInlineKrausMap(int numQb, int numOps, {{{ matrices }}});
+
+        /// @ingroup channels_create
+        /// @notdoced
+        /// @macrodoc
+        SuperOp createInlineSuperOp(int numQb, {{ matrix }});
+
+    #endif
 
 #else
 
