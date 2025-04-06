@@ -12,15 +12,23 @@ QuEST separates compilation of the _frontend_, _backend_ and the _tests_, which 
 This page details the specialised compilers necessary to enable specific features hardware accelerators, and lists such compilers which are
 known to be compatible with QuEST.
 
+
+<!-- 
+    we are using explicit <a>, rather than markdown links,
+    for Doxygen compatibility. It cannot handle [](#sec)
+    links, and its <a> anchors are not scoped to files, so
+    we here prefix each name with the filename. Grr!
+-->
+
 > **TOC**:
-> - [Frontend](#frontend)
-> - [Backend](#backend)
->    * [comm](#comm)
->    * [cpu](#cpu)
->    * [gpu](#gpu)
->    * [comm + gpu](#comm-gpu)
->    * [gpu + cuquantum](#gpu-cuquantum)
-> - [Tests](#tests)
+> - <a href="#compilers_frontend">Frontend</a>
+> - <a href="#compilers_backend">Backend</a>
+>    * <a href="#compilers_comm">Comm</a>
+>    * <a href="#compilers_cpu">cpu</a>
+>    * <a href="#compilers_gpu">gpu</a>
+>    * <a href="#compilers_comm-gpu">comm + gpu</a>
+>    * <a href="#compilers_gpu-cuquantum">gpu + cuquantum</a>
+> - <a href="#compilers_tests">Tests</a>
 
 > **See also**:
 > - [`compile.md`](compile.md) for a guide to compiling QuEST.
@@ -36,7 +44,7 @@ known to be compatible with QuEST.
 
 
 <!-- permit doxygen to reference section -->
-<a id="frontend"></a>
+<a id="compilers_frontend"></a>
 
 ## Frontend
 
@@ -55,7 +63,7 @@ User code can be written in either `C11` or `C++14`, and has so far been tested 
 
 
 <!-- permit doxygen to reference section -->
-<a id="backend"></a>
+<a id="compilers_backend"></a>
 
 ## Backend
 
@@ -65,7 +73,7 @@ The backend is divided into subdirectories [`api/`](/quest/src/api), [`core/`](/
 
 
 <!-- permit doxygen to reference section -->
-<a id="comm"></a>
+<a id="compilers_comm"></a>
 
 ### comm
 
@@ -80,7 +88,7 @@ when wrapping all previously mentioned compilers.
 
 
 <!-- permit doxygen to reference section -->
-<a id="cpu"></a>
+<a id="compilers_cpu"></a>
 
 ### cpu
 
@@ -92,7 +100,7 @@ have been explicitly tested, as used by the aforementioned compilers.
 
 
 <!-- permit doxygen to reference section -->
-<a id="gpu"></a>
+<a id="compilers_gpu"></a>
 
 ### gpu
 
@@ -102,7 +110,7 @@ Enabling acceleration on NVIDIA or AMD GPUs requires compiling `gpu/` with a [CU
 
 
 <!-- permit doxygen to reference section -->
-<a id="comm-gpu"></a>
+<a id="compilers_comm-gpu"></a>
 
 ### comm + gpu
 
@@ -112,7 +120,7 @@ Simultaneously emabling both distribution _and_ GPU-acceleration is possible wit
 
 
 <!-- permit doxygen to reference section -->
-<a id="gpu-cuquantum"></a>
+<a id="compilers_gpu-cuquantum"></a>
 
 ### gpu + cuquantum
 
@@ -125,7 +133,7 @@ Enabling [cuQuantum](https://developer.nvidia.com/cuquantum-sdk) on NVIDIA GPUs 
 
 
 <!-- permit doxygen to reference section -->
-<a id="tests"></a>
+<a id="compilers_tests"></a>
 
 ## Tests
 

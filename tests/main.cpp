@@ -3,7 +3,7 @@
  *
  * @author Tyson Jones
  * 
- * @defgroup tests 🔧 Tests
+ * @defgroup tests 🧪 Tests
  * 
  * @defgroup testutils Utilities
  * @ingroup tests

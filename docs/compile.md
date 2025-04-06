@@ -17,6 +17,14 @@
 QuEST can be compiled with [CMake](https://cmake.org/) to make a standalone executable, or an exported library, or a library installed on the system. 
 Compiling is configured with variables supplied by the [`-D` flag](https://cmake.org/cmake/help/latest/command/add_definitions.html) to the [CMake CLI](https://cmake.org/cmake/help/latest/guide/user-interaction/index.html#command-line-cmake-tool). This page details _how_ to compile QuEST for varying purposes and hardwares.
 
+
+<!-- 
+    we are using explicit <a>, rather than markdown links,
+    for Doxygen compatibility. It cannot handle [](#sec)
+    links, and its <a> anchors are not scoped to files, so
+    we here prefix each name with the filename. Grr!
+-->
+
 > **TOC**:
 > - <a href="#compile_basic">Basic</a>
 > - <a href="#compile_optimising">Optimising</a>
@@ -221,11 +229,8 @@ and the executable can thereafter be run (from within `build`) via
 ./myexec
 ```
 
-You can pass compiler and linker flags needed by your source files through the [`CMAKE_C_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS.html), [`CMAKE_CXX_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS.html) and [`CMAKE_EXE_LINKER_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_EXE_LINKER_FLAGS.html) CMake flags as detailed in the [below section](#flags). Note however that if your configuration becomes complicated or your source code requires different `C`/`C++` standards than the QuEST source, you should consider separately compiling QuEST then linking it
+You can pass compiler and linker flags needed by your source files through the [`CMAKE_C_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS.html), [`CMAKE_CXX_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS.html) and [`CMAKE_EXE_LINKER_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_EXE_LINKER_FLAGS.html) CMake flags as detailed in the <a href="#compile_flags">below section</a>. Note however that if your configuration becomes complicated or your source code requires different `C`/`C++` standards than the QuEST source, you should consider separately compiling QuEST then linking it
 to your project as a library!
-
-
-
 
 ------------------
 
@@ -264,8 +269,7 @@ The values inform types:
 
 
 > [!NOTE]
-> When enabling [GPU-acceleration](#gpu-acceleration), the precision _must_ be set to `1` or `2` since GPUs do not support quad precision.
-
+> When enabling <a href="#compile_gpu-acceleration">GPU-acceleration</a>, the precision _must_ be set to `1` or `2` since GPUs do not support quad precision.
 
 <!-- permit doxygen to reference section -->
 <a id="compile_compilers"></a>
@@ -282,7 +286,9 @@ replacing `gcc` and `g++` with e.g. [`clang`](https://clang.llvm.org/), [`cl`](h
 These compilers will also be used as the _host compilers_ (around which bespoke compilers _wrap_) when enabling GPU-acceleration or distribution.
 
 > [!IMPORTANT]
-> It is _not_ correct to specify GPU and MPI compilers, like `nvcc` or `mpicc`, via the above flags. See the respective [GPU](#gpu-acceleration) and [MPI](#distribution) sections.
+> It is _not_ correct to specify GPU and MPI compilers, like `nvcc` or `mpicc`, via the above flags. See the respective <a href="#compile_gpu-acceleration">GPU</a> and <a href="#compile_distribution">MPI</a> sections.
+
+
 
 
 <!-- permit doxygen to reference section -->
@@ -334,6 +340,8 @@ The executables will be saved in the (current) `build` directory, in a sub-direc
 ./examples/matrices/cpp_initialisation
 ```
 as elaborated upon in [`launch.md`](launch.md#tests).
+<!-- @todo the above link fails in Doxygen; it's too stupid to recognise the section ref -->
+
 
 
 ------------------
@@ -360,6 +368,8 @@ cmake .. -D ENABLE_TESTING=ON
 cmake --build .
 ```
 This will compile an executable `tests` in subdirectory `build/tests/`, which can be run as explained in [`launch.md`](launch.md#tests).
+<!-- @todo the above link fails in Doxygen; it's too stupid to recognise the section ref -->
+
 
 
 <!-- permit doxygen to reference section -->
@@ -376,6 +386,7 @@ cmake .. -D ENABLE_TESTING=ON -D ENABLE_DEPRECATED_API=ON
 cmake --build .
 ```
 and run as explained in [`launch.md`](launch.md#v3).
+<!-- @todo the above link fails in Doxygen; it's too stupid to recognise the section ref -->
 
 
 
@@ -387,9 +398,11 @@ and run as explained in [`launch.md`](launch.md#v3).
 
 ## Multithreading
 
-Multithreading allows multiple cores of a CPU, or even multiple connected CPUs, to cooperatively perform and ergo accelerate QuEST's expensive functions. Practically all modern computers have the capacity for, and benefit from, multithreading. Note it requires that the CPUs have shared memory (such as through [NUMA](https://learn.microsoft.com/en-us/windows/win32/procthread/numa-support)) and so ergo live in the same machine. CPUs on _different_ machines, connected via a network, can be parallelised over using [distribution](#distribution).
+Multithreading allows multiple cores of a CPU, or even multiple connected CPUs, to cooperatively perform and ergo accelerate QuEST's expensive functions. Practically all modern computers have the capacity for, and benefit from, multithreading. Note it requires that the CPUs have shared memory (such as through [NUMA](https://learn.microsoft.com/en-us/windows/win32/procthread/numa-support)) and so ergo live in the same machine. CPUs on _different_ machines, connected via a network, can be parallelised over using <a href="#compile_distribution">distribution</a>.
 
 QuEST uses [OpenMP](https://www.openmp.org/) to perform multithreading, so accelerating QuEST over multiple CPUs or cores requires a compiler integrated with OpenMP. This is true of almost all major compilers - see a list of tested compilers in [`compilers.md`](compilers.md#cpu).
+<!-- @todo the above link fails in Doxygen; it's too stupid to recognise the section ref -->
+
 
 > [!IMPORTANT]  
 > Using [`Clang`](https://clang.llvm.org/) on MacOS requires use of the `libomp` library, obtainable via [Homebrew](https://brew.sh/):
@@ -412,6 +425,7 @@ cmake --build .
 This is in fact the default behaviour!
 
 The number of threads over which to parallelise QuEST's execution is chosen through setting environment variables, like [`OMP_NUM_THREADS`](https://www.openmp.org/spec-html/5.0/openmpse50.html), immediately before execution. See [`launch.md`](launch.md#multithreading) for a general guide on multithreaded deployment.
+<!-- @todo the above link fails in Doxygen; it's too stupid to recognise the section ref -->
 
 
 
@@ -457,8 +471,11 @@ For example, compiling for the [NVIDIA A100](https://www.nvidia.com/en-us/data-c
 cmake .. -D ENABLE_CUDA=ON -D CMAKE_CUDA_ARCHITECTURES=80
 ```
 
+
+<!-- the below link fails in Doxygen - it's too stupid to recognise the section ref -->
 > [!CAUTION]
 > Setting the wrong compute capability will cause silently erroneous results. Always run the [unit tests](launch.md#tests) after compiling for the first time to confirm it was set correctly.
+
 
 Building then proceeds as normal, e.g.
 ```bash
@@ -466,7 +483,10 @@ Building then proceeds as normal, e.g.
 cmake --build . --parallel
 ```
 
-See [`launch.md`](launch.md#gpu-acceleration) for information on 
+<!-- @todo the below link fails in Doxygen; it's too stupid to recognise the section ref -->
+The compiled executable can be run like any other, though the GPU behaviour can be prior configured with environment variables. See [`launch.md`](launch.md#gpu-acceleration) for a general guide on GPU-accelerated deployment.
+
+
 
 
 <!-- permit doxygen to reference section -->
@@ -495,6 +515,8 @@ For example, compiling for the [AMD Instinct MI210 accelerator](https://www.amd.
 cmake .. -D ENABLE_HIP=ON -D CMAKE_HIP_ARCHITECTURES=gfx90a
 ```
 
+
+<!-- @todo the below link fails in Doxygen; it's too stupid to recognise the section ref -->
 > [!CAUTION]
 > Setting the wrong LLVM target name can cause silently erroneous results. Always run the [unit tests](launch.md#tests) after compiling for the first time to confirm it was set correctly.
 
@@ -505,6 +527,7 @@ Building then proceeds as normal, e.g.
 cmake --build . --parallel
 ```
 
+<!-- @todo the below link fails in Doxygen; it's too stupid to recognise the section ref -->
 The compiled executable can be run like any other, though the GPU behaviour can be prior configured with environment variables. See [`launch.md`](launch.md#gpu-acceleration) for a general guide on GPU-accelerated deployment.
 
 
@@ -542,7 +565,9 @@ cmake .. -D ENABLE_CUDA=ON -D CMAKE_CUDA_ARCHITECTURES=80 -D ENABLE_CUQUANTUM=ON
 cmake --build . --parallel
 ```
 
-No other changes are necessary, nor does cuQuantum affect [hybridising](#multi-gpu) GPU acceleration and distribution. Launching the executable is the same as in the above section. See [`launch.md`](launch.md#gpu-acceleration).
+<!-- @todo the below link fails in Doxygen; it's too stupid to recognise the section ref -->
+No other changes are necessary, nor does cuQuantum affect <a href="#compile_multi-gpu">hybridising</a> GPU acceleration and distribution. Launching the executable is the same as in the above section. See [`launch.md`](launch.md#gpu-acceleration).
+
 
 
 
@@ -557,6 +582,7 @@ No other changes are necessary, nor does cuQuantum affect [hybridising](#multi-g
 Because statevectors grow exponentially with the number of simulated qubits, it is easy to run out of memory. In such settings, we may seek to use _distribution_ whereby multiple cooperating machines on a network each store a tractable partition of the state. Distribution can also be useful to speed up our simulations, when the benefit of additional parallelisation outweighs the inter-machine communication penalties.
 
 
+<!-- @todo the below link fails in Doxygen; it's too stupid to recognise the section ref -->
 Enabling distribution requires compiling QuEST with an MPI compiler, such as those listed in [`compilers.md`](compilers.md#comm). Test your compiler is working via
 ```bash
 mpicxx --version
@@ -574,6 +600,7 @@ cmake .. -D ENABLE_DISTRIBUTION=ON
 cmake --build . --parallel
 ```
 
+<!-- @todo the below link fails in Doxygen; it's too stupid to recognise the section ref -->
 Note that distributed executables are launched in a distinct way to the other deployment mods, as explained in [`launch.md`](launch.md#distribution),
 
 

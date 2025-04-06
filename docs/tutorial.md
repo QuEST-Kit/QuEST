@@ -12,6 +12,7 @@ QuEST is included into a `C` or `C++` project via
 #include "quest.h"
 ```
 
+<!-- @todo the below link fails in Doxygen; it's too stupid to recognise the section ref -->
 > [!TIP]
 > Some of QuEST's deprecated `v3` API can be accessed by specifying `ENABLE_DEPRECATED_API` when [compiling](/docs/compile.md#v3), or defining it before import, i.e. 
 > ```cpp
@@ -34,28 +35,36 @@ Simulation typically proceeds as:
 Of course, the procedure is limited only by the programmers imagination `¯\_(ツ)_/¯` Let's see an example of these steps below.
 
 
+<!-- 
+    we are using explicit <a>, rather than markdown links,
+    for Doxygen compatibility. It cannot handle [](#sec)
+    links, and its <a> anchors are not scoped to files, so
+    we here prefix each name with the filename. Grr!
+-->
+
 > **TOC**:
-> - [Initialise the environment](#initialise-the-environment)
-> - [Configure the environment](#configure-the-environment)
-> - [Create a `Qureg`](#create-a-qureg)
-> - [Prepare an initial state](#prepare-an-initial-state)
-> - [Apply operators](#apply-operators)
->   * [controls](#controls)
->   * [paulis](#paulis)
->   * [matrices](#matrices)
->   * [circuits](#circuits)
->   * [measurements](#measurements)
->   * [decoherence](#decoherence)
-> - [Perform calculations](#perform-calculations)
-> - [Report the results](#report-the-results)
-> - [Cleanup](#cleanup)
-> - [Finalise QuEST](#finalise-quest)
+> - <a href="#tutorial_initialise-the-environment">Initialise the environment</a>
+> - <a href="#tutorial_configure-the-environment">Configure the environment</a>
+> - <a href="#tutorial_create-a-qureg">Create a `Qureg`</a>
+> - <a href="#tutorial_prepare-an-initial-state">Prepare an initial state</a>
+> - <a href="#tutorial_apply-operators">Apply operators</a>
+>   * <a href="#tutorial_controls">controls</a>
+>   * <a href="#tutorial_paulis">paulis</a>
+>   * <a href="#tutorial_matrices">matrices</a>
+>   * <a href="#tutorial_circuits">circuits</a>
+>   * <a href="#tutorial_measurements">measurements</a>
+>   * <a href="#tutorial_decoherence">decoherence</a>
+> - <a href="#tutorial_perform-calculations">Perform calculations</a>
+> - <a href="#tutorial_report-the-results">Report the results</a>
+> - <a href="#tutorial_cleanup">Cleanup</a>
+> - <a href="#tutorial_finalise-quest">Finalise QuEST</a>
+
 
 
 --------------------------------------------
 
 <!-- permit doxygen to reference section -->
-<a id="initialise-the-environment"></a>
+<a id="tutorial_initialise-the-environment"></a>
 
 ## Initialise the environment
 
@@ -157,7 +166,7 @@ if (env.isGpuAccelerated)
 --------------------------------------------
 
 <!-- permit doxygen to reference section -->
-<a id="configure-the-environment"></a>
+<a id="tutorial_configure-the-environment"></a>
 
 ## Configure the environment
 
@@ -219,7 +228,7 @@ setInputErrorHandler(myErrorHandler);
 --------------------------------------------
 
 <!-- permit doxygen to reference section -->
-<a id="create-a-qureg"></a>
+<a id="tutorial_create-a-qureg"></a>
 
 ## Create a Qureg
 
@@ -358,7 +367,7 @@ A density matrix `Qureg` can model classical uncertainty as results from [decohe
 --------------------------------------------
 
 <!-- permit doxygen to reference section -->
-<a id="prepare-an-initial-state"></a>
+<a id="tutorial_prepare-an-initial-state"></a>
 
 ## Prepare an initial state
 
@@ -413,7 +422,7 @@ Qureg (5 qubit density matrix, 32x32 qcomps, 16.1 KiB):
 --------------------------------------------
 
 <!-- permit doxygen to reference section -->
-<a id="apply-operators"></a>
+<a id="tutorial_apply-operators"></a>
 
 ## Apply operators
 
@@ -430,10 +439,11 @@ applyPhaseGadget(qureg, targets, 3, angle);
 
 > [!IMPORTANT]  
 > Notice the type of `angle` is [`qreal`](https://quest-kit.github.io/QuEST/group__types.html#ga2d479c159621c76ca6f96abe66f2e69e) rather than the expected `double`. This is a precision agnostic alias for a floating-point, real scalar which allows you to recompile QuEST with a varying [precision](/docs/compile.md#precision) with no modifications to your code. 
+<!-- @todo the above link fails in Doxygen; it's too stupid to recognise the section ref -->
 
 
 <!-- permit doxygen to reference section -->
-<a id="controls"></a>
+<a id="tutorial_controls"></a>
 
 ### controls
 
@@ -461,7 +471,7 @@ applyMultiStateControlledRotateX(qureg, controls, states, 7, target, angle);
 
 
 <!-- permit doxygen to reference section -->
-<a id="paulis"></a>
+<a id="tutorial_paulis"></a>
 
 ### paulis
 
@@ -484,7 +494,7 @@ applyPauliGadget(qureg, getPauliStr("XYZ"), angle);
 
 
 <!-- permit doxygen to reference section -->
-<a id="matrices"></a>
+<a id="tutorial_matrices"></a>
 
 ### matrices
 
@@ -608,7 +618,7 @@ applyCompMatr1(qureg, 0, m);
 
 
 <!-- permit doxygen to reference section -->
-<a id="circuits"></a>
+<a id="tutorial_circuits"></a>
 
 ### circuits
 
@@ -626,7 +636,7 @@ applyTrotterizedPauliStrSumGadget(qureg, sum, time, order, reps);
 
 
 <!-- permit doxygen to reference section -->
-<a id="measurements"></a>
+<a id="tutorial_measurements"></a>
 
 ### measurements
 
@@ -652,7 +662,7 @@ Should we wish to leave the state unnormalised, we can instead use [projectors](
 
 
 <!-- permit doxygen to reference section -->
-<a id="decoherence"></a>
+<a id="tutorial_decoherence"></a>
 
 ### decoherence
 
@@ -714,7 +724,7 @@ multiplyDiagMatrPower(rho, fullmatrix, 0.5);
 --------------------------------------------
 
 <!-- permit doxygen to reference section -->
-<a id="perform-calculations"></a>
+<a id="tutorial_perform-calculations"></a>
 
 ## Perform calculations
 
@@ -767,7 +777,7 @@ reportScalar("entanglement", calcPurity(reduced));
 --------------------------------------------
 
 <!-- permit doxygen to reference section -->
-<a id="report-the-results"></a>
+<a id="tutorial_report-the-results"></a>
 
 ## Report the results
 
@@ -817,7 +827,7 @@ CompMatr (8 qubits, 256x256 qcomps, 1 MiB):
 --------------------------------------------
 
 <!-- permit doxygen to reference section -->
-<a id="cleanup"></a>
+<a id="tutorial_cleanup"></a>
 
 ## Cleanup
 
@@ -837,7 +847,7 @@ destroyKrausMap(map);
 --------------------------------------------
 
 <!-- permit doxygen to reference section -->
-<a id="finalise-quest"></a>
+<a id="tutorial_finalise-quest"></a>
 
 ## Finalise QuEST
 

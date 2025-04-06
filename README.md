@@ -40,7 +40,7 @@
 <!-- intro -->
 
 > [!NOTE]
-> QuEST `v4` has been released which re-designed QuEST from the ground up. Read about the exciting new features [here](/docs/v4.md).
+> QuEST `v4` has been released which re-designed QuEST from the ground up. Read about the exciting new features [here](docs/v4.md).
 
 The **Quantum Exact Simulation Toolkit** (QuEST) is a high-performance simulator of quantum statevectors and density matrices.
 It hybridises **multithreading**, **GPU acceleration** and **distribution** to run lightning fast on laptops, desktops and 
@@ -83,15 +83,15 @@ In particular, QuEST `v4` was made possible through the support of the UK Nation
 
 </div>
 
+
+<!-- <a> used below for doxygen compatibility -->
+
 To learn more:
-- view the [documentation](#documentation)
+- view the <a href="#main_documentation">documentation</a>
 - visit the [website](https://quest.qtechtheory.org/)
 - read the [whitepaper](https://www.nature.com/articles/s41598-019-47174-9), which featured in Scientific Report's [Top 100 in Physics](https://www.nature.com/collections/ecehgdfcba/) :trophy:
 
-<div align="center">
 
-
-</div>
 
 ---------------------------------
 
@@ -177,6 +177,9 @@ QuEST supports:
 - ☑️   **bespoke algorithms** to optimally simulate a wide variety of esoteric operations
 
 ---------------------------------
+
+<!-- permit doxygen to reference section -->
+<a id="main_documentation"></a>
 
 ## 📖  Documentation
 
