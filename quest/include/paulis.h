@@ -108,9 +108,23 @@ typedef struct {
  */
 
 
+// base method is C and C++ compatible
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    /// @ingroup paulis_create
+    /// @notdoced
+    PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis);
+
+#ifdef __cplusplus
+}
+#endif
+
+
 #ifdef __cplusplus
 
-    // C++ users can access the base C method, along with direct overloads 
+    // C++ users can access the above C method, along with direct overloads 
     // to accept integers (in lieu of chars), natural C++ string types
     // (like literals), and C++ vector types for brevity. Furthermore, C++
     // gets an overload which accepts only a string (no additional args)
@@ -118,11 +132,6 @@ typedef struct {
     // note that C++ does NOT get an overload where the pauli codes (integers) are
     // passed as a vector; this is because integer literal initialiser lists like
     // {0,3,1} are valid std::string instances, causing overload ambiguity. Blegh!
-
-
-    /// @ingroup paulis_create
-    /// @notdoced
-    extern "C" PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis);
 
 
     /// @ingroup paulis_create
@@ -148,8 +157,9 @@ typedef struct {
     PauliStr getPauliStr(std::string paulis);
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
+    // never needs to be doc'd
+    /// @private
+    /// @neverdoced
     #define getInlinePauliStr(str, ...) \
         getPauliStr(str, __VA_ARGS__)
 
@@ -165,17 +175,12 @@ typedef struct {
 
 
     /// @ingroup paulis_create
-    /// @notdoced
-    PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis);
-
-
-    /// @ingroup paulis_create
     /// @private
     PauliStr _getPauliStrFromInts(int* paulis, int* indices, int numPaulis);
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
+    // documented above (identical signatures to C)
+    /// @neverdoced
     #define getPauliStr(paulis, ...) \
         _Generic((paulis), \
             int*    : _getPauliStrFromInts, \
@@ -183,10 +188,20 @@ typedef struct {
         )(paulis, __VA_ARGS__) 
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
+    // documented below
+    /// @neverdoced
     #define getInlinePauliStr(str, ...) \
         getPauliStr((str), (int[sizeof(str)-1]) __VA_ARGS__, sizeof(str)-1)
+
+    // spoofing above macro as function to doc
+    #if 0
+
+        /// @ingroup paulis_create
+        /// @notdoced
+        /// @macrodoc
+        PauliStr getInlinePauliStr(const char* paulis, { list });
+
+    #endif
 
 
 #endif
@@ -256,6 +271,7 @@ extern "C" {
     /// @cpponly
     PauliStrSum createPauliStrSumFromReversedFile(std::string fn);
 
+
 #endif
 
 
@@ -274,6 +290,7 @@ extern "C" {
     /// @ingroup paulis_destroy
     /// @notdoced
     void destroyPauliStrSum(PauliStrSum sum);
+
 
 // end de-mangler
 #ifdef __cplusplus

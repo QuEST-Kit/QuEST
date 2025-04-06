@@ -47,6 +47,23 @@
 #define TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS 10
 #endif
 
+// spoofing above macros as consts to doc
+#if 0
+
+    /// @macrodoc
+    const int TEST_MAX_NUM_QUBIT_PERMUTATIONS = 0;
+
+    /// @macrodoc
+    const int TEST_MAX_NUM_SUPEROP_TARGETS = 4;
+
+    /// @macrodoc
+    const int TEST_ALL_DEPLOYMENTS = 1;
+
+    /// @macrodoc
+    const int TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS = 10;
+
+#endif
+
 
 /*
  * preconditions to the internal unit testing functions are checked using 

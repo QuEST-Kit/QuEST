@@ -342,21 +342,37 @@ extern "C" {
     // C then overloads setKrausMap() to call the above VLA when given arrays, using C11 Generics.
     // See the doc of getCompMatr1() in matrices.h for an explanation of Generic, and its nuances.
 
-    /// @ingroup channels_setters
-    /// @notdoced
+    /// @neverdoced
     #define setKrausMap(map, ...) \
         _Generic((__VA_ARGS__), \
             qcomp*** : setKrausMap, \
             default  : _setKrausMapFromArr \
         )((map), (__VA_ARGS__))
 
-    /// @ingroup channels_setters
-    /// @notdoced
+    /// @neverdoced
     #define setSuperOp(op, ...) \
         _Generic((__VA_ARGS__), \
             qcomp** : setSuperOp, \
             default : _setSuperOpFromArr \
         )((op), (__VA_ARGS__))
+
+    // spoofing macros as functions
+    #if 0
+
+        /// @ingroup channels_setters
+        /// @notdoced
+        /// @conly
+        /// @macrodoc
+        void setKrausMap(KrausMap map, qcomp matrices[map.numMatrices][map.numRows][map.numRows]);
+
+        /// @ingroup channels_setters
+        /// @notdoced
+        /// @conly
+        /// @macrodoc
+        void setSuperOp(SuperOp op, qcomp matrix[op.numRows][op.numRows]);
+
+    #endif
+
 
 #else
 
@@ -431,16 +447,29 @@ extern "C" {
     }
 
 
-    /// @ingroup channels_setters
-    /// @notdoced
+    /// @neverdoced
     #define setInlineKrausMap(map, numQb, numOps, ...) \
         _setInlineKrausMap((map), (numQb), (numOps), (qcomp[(numOps)][1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
 
-    /// @ingroup channels_setters
-    /// @notdoced
+    /// @neverdoced
     #define setInlineSuperOp(matr, numQb, ...) \
         _setInlineSuperOp((matr), (numQb), (qcomp[1<<(2*(numQb))][1<<(2*(numQb))]) __VA_ARGS__)
+
+    // spoofing macros as functions
+    #if 0
+
+        /// @ingroup channels_setters
+        /// @notdoced
+        /// @macrodoc
+        void setInlineKrausMap(KrausMap map, int numQb, int numOps, {{{ matrices }}});
+
+        /// @ingroup channels_setters
+        /// @notdoced
+        /// @macrodoc
+        void setInlineSuperOp(SuperOp op, int numQb, {{ matrix }});
+
+    #endif
 
 #else
 
@@ -510,16 +539,28 @@ extern "C" {
     }
 
 
-    /// @ingroup channels_create
-    /// @notdoced
+    /// @neverdoced
     #define createInlineKrausMap(numQb, numOps, ...) \
         _createInlineKrausMap((numQb), (numOps), (qcomp[(numOps)][1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
-
-    /// @ingroup channels_create
-    /// @notdoced
+    /// @neverdoced
     #define createInlineSuperOp(numQb, ...) \
         _createInlineSuperOp((numQb), (qcomp[1<<(2*(numQb))][1<<(2*(numQb))]) __VA_ARGS__)
+
+    // spoofing macros as functions
+    #if 0
+
+        /// @ingroup channels_create
+        /// @notdoced
+        /// @macrodoc
+        KrausMap createInlineKrausMap(int numQb, int numOps, {{{ matrices }}});
+
+        /// @ingroup channels_create
+        /// @notdoced
+        /// @macrodoc
+        SuperOp createInlineSuperOp(int numQb, {{ matrix }});
+
+    #endif
 
 #else
 

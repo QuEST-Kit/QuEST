@@ -89,6 +89,27 @@
 
 // further macros are defined in precision.h
 
+// spoofing above macro as consts to doc
+#if 0
+
+
+    /// @notdoced
+    /// @macrodoc
+    const int PERMIT_NODES_TO_SHARE_GPU = 0;
+
+
+    /// @notdoced
+    /// @macrodoc
+    const int INCLUDE_DEPRECATED_FUNCTIONS = 0;
+
+
+    /// @notdoced
+    /// @macrodoc
+    const int DISABLE_DEPRECATION_WARNINGS = 0;
+
+
+#endif
+
 
 
 // user flags for choosing automatic deployment; only accessible by C++ 

@@ -30,7 +30,19 @@
 // benefit in shrinking the type size and facing the associated precision risks. Similarly,
 // there is little benefit in making it larger since a 'long long int' can represent 62 qubits,
 // which is already well beyond simulability, requiring 64 EiB total at double precision.
+// Still, we use a #define, rather than a typedef, so that the value can be compile-time overridden.
+
+/// @neverdoced
 #define INDEX_TYPE long long int
+
+// spoofing above macro as const to doc
+#if 0
+
+    /// @notdoced
+    /// @macrodoc
+    typedef long long int INDEX_TYPE;
+
+#endif
 
 
 
@@ -45,7 +57,18 @@
 // base-4 numeral encoding the Pauli string. A single 64-bit 'long long unsigned' can ergo
 // specify only 32 qubits, whereas two can specify more qubits (64) than we can simulate.
 // This type is defined purely to avoid littering the source with explicit typing.
+
+/// @neverdoced
 #define PAULI_MASK_TYPE long long unsigned int
+
+// spoofing above macro as typedef to doc
+#if 0
+
+    /// @notdoced
+    /// @macrodoc
+    typedef long long unsigned int PAULI_MASK_TYPE;
+
+#endif
 
 
 
@@ -61,7 +84,7 @@
 // validate precision is 1 (float), 2 (double) or 4 (long double)
 #if ! (FLOAT_PRECISION == 1 || FLOAT_PRECISION == 2 || FLOAT_PRECISION == 4)
     #error "FLOAT_PRECISION must be 1 (float), 2 (double) or 4 (long double)"
-#endif 
+#endif
 
 // infer floating-point type from precision
 #if FLOAT_PRECISION == 1
@@ -70,6 +93,19 @@
     #define FLOAT_TYPE double
 #elif FLOAT_PRECISION == 4
     #define FLOAT_TYPE long double
+#endif
+
+// spoofing above macros as typedefs and consts to doc
+#if 0
+
+    /// @notdoced
+    /// @macrodoc
+    const int FLOAT_PRECISION = 2;
+
+    /// @notdoced
+    /// @macrodoc
+    typedef double int FLOAT_TYPE;
+
 #endif
 
 
@@ -107,6 +143,15 @@
 
 #endif
 
+// spoofing above macros as typedefs and consts to doc
+#if 0
+
+    /// @notdoced
+    /// @macrodoc
+    const qreal DEFAULT_VALIDATION_EPSILON = 1E-12;
+
+#endif
+
 
 
 /*
@@ -122,6 +167,15 @@
 #elif FLOAT_PRECISION == 4
     #define QREAL_FORMAT_SPECIFIER "%.17Lg"
     
+#endif
+
+// spoofing above macros as typedefs and consts to doc
+#if 0
+
+    /// @notdoced
+    /// @macrodoc
+    const char* QREAL_FORMAT_SPECIFIER = "%.14g";
+
 #endif
 
 

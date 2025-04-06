@@ -40,7 +40,7 @@
 <!-- intro -->
 
 > [!NOTE]
-> QuEST `v4` has been released which re-designed QuEST from the ground up. Read about the exciting new features [here](/docs/v4.md).
+> QuEST `v4` has been released which re-designed QuEST from the ground up. Read about the exciting new features [here](docs/v4.md).
 
 The **Quantum Exact Simulation Toolkit** (QuEST) is a high-performance simulator of quantum statevectors and density matrices.
 It hybridises **multithreading**, **GPU acceleration** and **distribution** to run lightning fast on laptops, desktops and 
@@ -83,18 +83,15 @@ In particular, QuEST `v4` was made possible through the support of the UK Nation
 
 </div>
 
-To learn more:
 
+<!-- <a> used below for doxygen compatibility -->
+
+To learn more:
+- view the <a href="#main_documentation">documentation</a>
 - visit the [website](https://quest.qtechtheory.org/)
-- see some [examples](/examples/)
-- view the [documentation](#documentation)
-- browse the [API](https://quest-kit.github.io/QuEST/group__api.html)
 - read the [whitepaper](https://www.nature.com/articles/s41598-019-47174-9), which featured in Scientific Report's [Top 100 in Physics](https://www.nature.com/collections/ecehgdfcba/) :trophy:
 
-<div align="center">
 
-
-</div>
 
 ---------------------------------
 
@@ -105,7 +102,7 @@ To learn more:
 ## 🎉  Introduction
 
 QuEST has a simple interface which is agnostic to whether it's running on CPUs, GPUs or a networked supercomputer.
-```C++
+```cpp
 Qureg qureg = createQureg(30);
 initRandomPureState(qureg);
 
@@ -119,7 +116,7 @@ qreal prob  = calcProbOfQubitOutcome(qureg, 0, outcome);
 qreal expec = calcExpecPauliStr(qureg, getPauliStr("XYZ"));
 ```
 Yet, it is flexible
-```C++
+```cpp
 mixDepolarising(qureg, targ, prob);
 mixKrausMap(qureg, targs, ntargs, krausmap);
 
@@ -133,7 +130,7 @@ multiplyCompMatr1(qureg, targ, getInlineCompMatr1( {{1,2i},{3i,4}} ));
 multiplyDiagMatrPower(qureg, targs, ntargs, diagmatr, exponent);
 ```
 and extremely powerful
-```C++
+```cpp
 setFullStateDiagMatrFromMultiVarFunc(fullmatr, myfunc, ntargsPerVar, nvars);
 applyFullStateDiagMatrPower(qureg, fullmatr, exponent);
 
@@ -181,19 +178,15 @@ QuEST supports:
 
 ---------------------------------
 
+<!-- permit doxygen to reference section -->
+<a id="main_documentation"></a>
+
 ## 📖  Documentation
 
 > [!IMPORTANT]
 > QuEST v4's documentation is still under construction!
 
-Visit the [docs](docs/) to:
-  - [see what's new in v4](docs/v4.md)
-  - [compile with cmake](docs/compile.md)
-  - [find compatible compilers](docs/compilers.md)
-  - [launch your simulations](docs/run.md)
-  - [view some examples](examples/)
-
-The [API](https://quest-kit.github.io/QuEST/group__api.html) documentation is divided into the following groups:
+Visit the [docs](docs/README.md) for guides and tutorials, or the [API](https://quest-kit.github.io/QuEST/group__api.html) which is divided into:
   - [calculations](https://quest-kit.github.io/QuEST/group__calculations.html)
   - [channels](https://quest-kit.github.io/QuEST/group__channels.html)
   - [debug](https://quest-kit.github.io/QuEST/group__debug.html)
@@ -241,10 +234,6 @@ You can also browse QuEST's extensive [tests](https://quest-kit.github.io/QuEST/
   - [deprecated test utilities](https://quest-kit.github.io/QuEST/group__deprecatedutils.html)
 -->
 
-Contributers to QuEST should also check out the:
-  - [software architecture](docs/architecture.md)
-  - [style guide](docs/styleguide.md)
-
 ---------------------------------
 
 ## 🚀  Getting started 
@@ -270,7 +259,7 @@ then run it with
 ./min_example
 ```
 
-See the [docs](docs/) for enabling acceleration and running the unit tests.
+See the [docs](docs/README.md) for enabling acceleration and running the unit tests.
 
 ---------------------------------
 
