@@ -1,10 +1,11 @@
+# 🚀  Launching
+
 <!--
   Instructions for running QuEST with different parallelisations
+  (this comment must be under the title for valid doxygen rendering)
 
   @author Tyson Jones
 -->
-
-# 🚀  Launching
 
 Launching your [compiled](compile.md) QuEST application can be as straightforward as running any other executable, though some additional steps are needed to make use of hardware acceleration. This page how to launch your own QuEST applications on different platforms, how to run the examples and unit tests, how to make use of multithreading, GPU-acceleration, distribution and supercomputer job schedulers, and monitor the hardware utilisation.
 

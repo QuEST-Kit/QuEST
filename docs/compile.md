@@ -1,5 +1,8 @@
+# 🛠️  Compile
+
 <!--
   Instructions for compiling QuEST with CMake
+  (this comment must be under the title for valid doxygen rendering)
 
   @author Tyson Jones
 
@@ -10,8 +13,6 @@
   - we will demonstrate the simplest and visually clear (and likely sub-optimal) 
     use-cases before progressively more visually complicated examples
 -->
-
-# 🛠️  Compile
 
 QuEST can be compiled with [CMake](https://cmake.org/) to make a standalone executable, or an exported library, or a library installed on the system. 
 Compiling is configured with variables supplied by the [`-D` flag](https://cmake.org/cmake/help/latest/command/add_definitions.html) to the [CMake CLI](https://cmake.org/cmake/help/latest/guide/user-interaction/index.html#command-line-cmake-tool). This page details _how_ to compile QuEST for varying purposes and hardwares.
@@ -191,7 +192,7 @@ void myfunc() {
     printf("hello quworld!\n");
 }
 ```
-simply separate them by `;` in `USER_SOURCE`, wrapped in `"`:
+simply separate them by `;` in `USER_SOURCE`, wrapped in quotations:
 ```bash
 # configure
 cmake .. -D USER_SOURCE="myfile.cpp;otherfile.cpp" -D OUTPUT_EXE=myexec

@@ -1,10 +1,12 @@
+# 🎨  Style guide
+
 <!--
   A style guide for QuEST contributors
+  (this comment must be under the title for valid doxygen rendering)
   
   @author Tyson Jones
 -->
 
-# 🎨  Style guide
 
 
 Don't agonise about style - write your code as you see fit and we can address major issues in review/PR.

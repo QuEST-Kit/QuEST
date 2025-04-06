@@ -1016,13 +1016,31 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 # note we include both the include/ headers and corresponding src/api files,
-# so that doxygen can find the definitions when INLINE_SOURCES = YES
-# note too that we currently exclude the /docs and /examples folders, which
-# override the automatic expansions of the README.md sections into separate
-# pages under
+# so that doxygen can find the definitions when INLINE_SOURCES = YES.
+# we also explicitly list each file (rather than just the directory) where we
+# want to decide the ordering of the generated doxygen pages, and THEN include
+# the entire directory (in case new files are later added therein).
+# @todo /examples/ are being ignored below for some reason!
 INPUT                  = . \
-                         ./quest/include ./quest/src/api \
-                         ./tests ./tests/utils ./tests/unit ./tests/integration ./tests/deprecated
+                         ./docs/v4.md \
+                         ./docs/tutorial.md \
+                         ./docs/compile.md \
+                         ./docs/compilers.md \
+                         ./docs/cmake.md \
+                         ./docs/launch.md \
+                         ./docs/contributing.md \
+                         ./docs/architecture.md \
+                         ./docs/styleguide.md \
+                         ./docs \
+                         ./examples/README.md \
+                         ./examples \
+                         ./quest/include \
+                         ./quest/src/api \
+                         ./tests \
+                         ./tests/utils \
+                         ./tests/unit \
+                         ./tests/integration \
+                         ./tests/deprecated
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses

@@ -1,12 +1,12 @@
+# ⚙️  CMake
+
 <!--
   Instructions for compiling QuEST with CMake
+  (this comment must be under the title for valid doxygen rendering)
 
   @author Oliver Thomson Brown
   @author Tyson Jones (test variables)
 -->
-
-
-# ⚙️  CMake
 
 Version 4 of QuEST includes reworked CMake to support library builds, CMake export, and installation. Here we detail useful variables to configure the compilation of QuEST. If using a Unix-like operating system any of these variables can be set using the `-D` flag when invoking CMake, for example:
 

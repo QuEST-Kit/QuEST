@@ -1,11 +1,12 @@
+# 🔧  Compilers
+
 <!--
   A summary of necessary compilers to use QuEST's
   various backend parallelisation deployments
+  (this comment must be under the title for valid doxygen rendering)
   
   @author Tyson Jones
 -->
-
-# 🔧  Compilers
 
 QuEST separates compilation of the **_frontend_**, **_backend_** and the **_tests_**, which have progressively stricter compiler requirements.
 This page details the specialised compilers necessary to enable specific features hardware accelerators, and lists such compilers which are

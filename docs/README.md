@@ -1,11 +1,11 @@
+# 📖  Documentation
+
 <!--
   Doc overview
+  (this comment must be under the title for valid doxygen rendering)
 
   @author Tyson Jones
 -->
-
-
-# 📖  Documentation
 
 <!-- @todo remove this when doc done -->
 > [!IMPORTANT]  
