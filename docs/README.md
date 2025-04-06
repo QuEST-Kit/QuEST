@@ -22,7 +22,7 @@ To get started with QuEST, check out
 - 🛠️  [`compile.md`](compile.md) for instructions on compiling.
 - ⚙️  [`cmake.md`](cmake.md) for a list of compiler variables.
 - 🚀  [`launch.md`](launch.md) to learn how to run QuEST on laptops to supercomputers.
-- 🎓  [`tutorial.md`](/examples/README.md#tutorial) for an introductory tutorial.
+- 🎓  [`tutorial.md`](tutorial.md) for an introductory tutorial.
 - 📋  [API](https://quest-kit.github.io/QuEST/group__api.html) for the documentation of each function.
 
 Interested in contributing? Then check out:

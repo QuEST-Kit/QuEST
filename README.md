@@ -185,7 +185,7 @@ QuEST supports:
 
 Visit the [docs](docs/README.md) to:
   - [see what's new in v4](docs/v4.md)
-  - [follow the tutorial](/examples/README.md#tutorial)
+  - [follow the tutorial](docs/tutorial.md)
   - [compile with cmake](docs/compile.md)
   - [find compatible compilers](docs/compilers.md)
   - [launch your simulations](docs/launch.md)
