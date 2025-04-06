@@ -49,6 +49,10 @@ Compiling is configured with variables supplied by the [`-D` flag](https://cmake
 
 ------------------
 
+
+<!-- permit doxygen to reference section -->
+<a id="basic"></a>
+
 ## Basic
 
 Compilation is a two-step process which can generate lots of temporary files and so should be performed in a `build/` folder to avoid clutter. From the `QuEST/` root, run (in terminal):
@@ -96,6 +100,10 @@ How _boring_! We must pass additional arguments in order to link QuEST to our ow
 ------------------
 
 
+
+<!-- permit doxygen to reference section -->
+<a id="optimising"></a>
+
 ## Optimising
 
 QuEST's source code is careful to enable a myriad of optimisations such as [inlining](https://en.wikipedia.org/wiki/Inline_expansion), [loop unrolling](https://en.wikipedia.org/wiki/Loop_unrolling), [auto-vectorisation](https://en.wikipedia.org/wiki/Automatic_vectorization) and [cache optimisations](https://en.wikipedia.org/wiki/Cache_replacement_policies). To utilise them fully, we must instruct our compilers to enable them; like we might do with the [`-O3`](https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html) flag when invoking a compiler like `gcc` directly.
@@ -142,10 +150,14 @@ Read more about CMake generator configurations [here](https://cmake.org/cmake/he
 
 ------------------
 
+
+<!-- permit doxygen to reference section -->
+<a id="linking"></a>
+
 ## Linking
 
 QuEST can be pre-compiled and later linked to other binaries, _or_ compiled directly alongside the user's source code. 
-We focus on the latter use-case, common among scientists when writing simulation scripts. Users seeking to integrate QuEST into larger stacks are likely already familiar with linking libraries through CMake and should check out [`cmake.md`](/docs/cmake.md) directly.
+We focus on the latter use-case, common among scientists when writing simulation scripts. Users seeking to integrate QuEST into larger stacks are likely already familiar with linking libraries through CMake and should check out [`cmake.md`](cmake.md) directly.
 
 To compile a `C` or `C++` file such as
 ```C
@@ -218,7 +230,14 @@ to your project as a library!
 ------------------
 
 
+<!-- permit doxygen to reference section -->
+<a id="configuring"></a>
+
 ## Configuring
+
+
+<!-- permit doxygen to reference section -->
+<a id="precision"></a>
 
 ### Precision
 
@@ -248,6 +267,9 @@ The values inform types:
 > When enabling [GPU-acceleration](#gpu-acceleration), the precision _must_ be set to `1` or `2` since GPUs do not support quad precision.
 
 
+<!-- permit doxygen to reference section -->
+<a id="compilers"></a>
+
 ### Compilers
 
 If multiple compilers are installed, you can choose which to use to compile your `C` and `C++` sources (the latter including the QuEST source) with respective configure-time commands:
@@ -262,6 +284,9 @@ These compilers will also be used as the _host compilers_ (around which bespoke 
 > [!IMPORTANT]
 > It is _not_ correct to specify GPU and MPI compilers, like `nvcc` or `mpicc`, via the above flags. See the respective [GPU](#gpu-acceleration) and [MPI](#distribution) sections.
 
+
+<!-- permit doxygen to reference section -->
+<a id="flags"></a>
 
 ### Flags
 
@@ -290,6 +315,10 @@ QuEST itself accepts a variety of its preprocessors (mostly related to testing) 
 
 ------------------
 
+
+<!-- permit doxygen to reference section -->
+<a id="examples"></a>
+
 ## Examples
 
 To compile all of QuEST's [`examples/`](/examples/), use
@@ -309,7 +338,15 @@ as elaborated upon in [`launch.md`](launch.md#tests).
 
 ------------------
 
+
+<!-- permit doxygen to reference section -->
+<a id="tests"></a>
+
 ## Tests
+
+
+<!-- permit doxygen to reference section -->
+<a id="v4"></a>
 
 ### v4
 
@@ -323,6 +360,10 @@ cmake .. -D ENABLE_TESTING=ON
 cmake --build .
 ```
 This will compile an executable `tests` in subdirectory `build/tests/`, which can be run as explained in [`launch.md`](launch.md#tests).
+
+
+<!-- permit doxygen to reference section -->
+<a id="v3"></a>
 
 ### v3
 
@@ -339,6 +380,10 @@ and run as explained in [`launch.md`](launch.md#v3).
 
 
 ------------------
+
+
+<!-- permit doxygen to reference section -->
+<a id="multithreading"></a>
 
 ## Multithreading
 
@@ -373,12 +418,19 @@ The number of threads over which to parallelise QuEST's execution is chosen thro
 ------------------
 
 
+<!-- permit doxygen to reference section -->
+<a id="gpu-acceleration"></a>
+
 ## GPU-acceleration
 
 QuEST's core functions perform simple mathematical transformations on very large arrays, and are ergo well suited to parallelisation using general purpose GPUs. This involves creating persistent memory in the GPU VRAM which mirrors the ordinary CPU memory in RAM, and dispatching the transformations to the GPU, updating the GPU memory. The greater number of cores and massive internal memory bandwidth of the GPU can make this extraordinarily faster than using multithreading. 
 
 QuEST supports parallelisation using both NVIDIA GPUs (using CUDA) and AMD GPUs (using HIP). Using either requires obtaining a specialised compiler and passing some GPU-specific compiler flags.
 
+
+
+<!-- permit doxygen to reference section -->
+<a id="nvidia"></a>
 
 ### NVIDIA
 
@@ -416,6 +468,9 @@ cmake --build . --parallel
 
 See [`launch.md`](launch.md#gpu-acceleration) for information on 
 
+
+<!-- permit doxygen to reference section -->
+<a id="amd"></a>
 
 ### AMD
 
@@ -456,6 +511,9 @@ The compiled executable can be run like any other, though the GPU behaviour can 
 
 ------------------
 
+<!-- permit doxygen to reference section -->
+<a id="cuquantum"></a>
+
 ## cuQuantum
 
 When compiling for NVIDIA GPUs, you can choose to optionally enable [_cuQuantum_](https://docs.nvidia.com/cuda/cuquantum/latest/index.html). This will replace some of QuEST's custom GPU functions with [_cuStateVec_](https://docs.nvidia.com/cuda/cuquantum/latest/custatevec/index.html) routines which are likely to use tailored optimisations for your particular GPU and ergo run faster.
@@ -490,6 +548,10 @@ No other changes are necessary, nor does cuQuantum affect [hybridising](#multi-g
 
 ------------------
 
+
+<!-- permit doxygen to reference section -->
+<a id="distribution"></a>
+
 ## Distribution
 
 Because statevectors grow exponentially with the number of simulated qubits, it is easy to run out of memory. In such settings, we may seek to use _distribution_ whereby multiple cooperating machines on a network each store a tractable partition of the state. Distribution can also be useful to speed up our simulations, when the benefit of additional parallelisation outweighs the inter-machine communication penalties.
@@ -517,6 +579,10 @@ Note that distributed executables are launched in a distinct way to the other de
 
 
 ------------------
+
+
+<!-- permit doxygen to reference section -->
+<a id="multi-gpu"></a>
 
 ## Multi-GPU
 

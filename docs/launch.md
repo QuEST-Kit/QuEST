@@ -40,6 +40,9 @@ Launching your [compiled](compile.md) QuEST application can be as straightforwar
 ---------------------
 
 
+<!-- permit doxygen to reference section -->
+<a id="examples"></a>
+
 ## Examples
 
 > See [`compile.md`](compile.md#examples) for instructions on compiling the examples.
@@ -93,9 +96,17 @@ Must pass single cmd-line argument:
 
 ---------------------
 
+
+<!-- permit doxygen to reference section -->
+<a id="tests"></a>
+
 ## Tests
 
 > See [`compile.md`](compile.md#tests) for instructions on compiling the `v4` and `v3` unit tests.
+
+
+<!-- permit doxygen to reference section -->
+<a id="v4"></a>
 
 ### v4
 
@@ -169,6 +180,10 @@ Test project /build
 Alas tests launched in this way cannot be deployed with distribution.
 
 
+
+<!-- permit doxygen to reference section -->
+<a id="v3"></a>
+
 ### v3
 
 The deprecated tests, when [compiled](compile.md#v3), can be run from the `build` directory via
@@ -194,11 +209,19 @@ ctest
 
 ---------------------
 
+
+<!-- permit doxygen to reference section -->
+<a id="multithreading"></a>
+
 ## Multithreading
 
 > [!NOTE]
 > Parallelising QuEST over multiple cores and CPUs requires first compiling with 
 > multithreading enabled, as detailed in [`compile.md`](compile.md#multithreading). 
+
+
+<!-- permit doxygen to reference section -->
+<a id="choosing-threads"></a>
 
 ### Choosing threads
 
@@ -224,6 +247,10 @@ It is prudent to choose as many threads as your CPU(s) have total hardware threa
 > [!NOTE]
 > When running [distributed](#distribution), variable `OMP_NUM_THREADS` specifies the number of threads _per node_ and so should ordinarily be the number of hardware threads (or cores) _per machine_.
 
+
+
+<!-- permit doxygen to reference section -->
+<a id="monitoring-utilisation"></a>
 
 ### Monitoring utilisation
 
@@ -252,6 +279,10 @@ Note however that QuEST will not leverage multithreading at runtime when either:
 
 Usage of multithreading can be (inadvisably) forced using [`createForcedQureg()`](https://quest-kit.github.io/QuEST/group__qureg__create.html#ga619bbba1cbc2f7f9bbf3d3b86b3f02be) or [`createCustomQureg()`](https://quest-kit.github.io/QuEST/group__qureg__create.html#ga849971f43e246d103da1731d0901f2e6).
 
+
+
+<!-- permit doxygen to reference section -->
+<a id="improving-performance"></a>
 
 ### Improving performance
 
@@ -290,10 +321,18 @@ and never specifies [`schedule`](https://rookiehpc.org/openmp/docs/schedule/inde
 ---------------------
 
 
+<!-- permit doxygen to reference section -->
+<a id="gpu-acceleration"></a>
+
 ## GPU-acceleration
 
 > [!NOTE]
 > Using GPU-acceleration requires first compiling QuEST with `CUDA` or `HIP` enabled (to utilise NVIDIA and AMD GPUs respectively) as detailed in [`compile.md`](compile.md#gpu-acceleration).
+
+
+
+<!-- permit doxygen to reference section -->
+<a id="launching"></a>
 
 ### Launching
 
@@ -304,6 +343,10 @@ The compiled executable is launched like any other, via
 
 Using _multiple_ available GPUs, regardless of whether they are local or distributed, is done through additionally enabling [distribution](#multi-gpu).
 
+
+
+<!-- permit doxygen to reference section -->
+<a id="monitoring"></a>
 
 ### Monitoring
 
@@ -345,6 +388,10 @@ Note however that GPU-acceleration might not be leveraged at runtime when either
 Usage of GPU-acceleration can be (inadvisably) forced using [`createForcedQureg()`](https://quest-kit.github.io/QuEST/group__qureg__create.html#ga619bbba1cbc2f7f9bbf3d3b86b3f02be) or [`createCustomQureg()`](https://quest-kit.github.io/QuEST/group__qureg__create.html#ga849971f43e246d103da1731d0901f2e6).
 
 
+
+<!-- permit doxygen to reference section -->
+<a id="configuring"></a>
+
 ### Configuring
 
 There are a plethora of [environment variables](https://askubuntu.com/questions/58814/how-do-i-add-environment-variables) which be used to control the execution on [NVIDIA](https://docs.nvidia.com/cuda/cuda-c-programming-guide/#env-vars) and [AMD](https://rocm.docs.amd.com/projects/HIP/en/docs-develop/reference/env_variables.html) GPUs. We highlight only some below.
@@ -355,6 +402,9 @@ There are a plethora of [environment variables](https://askubuntu.com/questions/
   - In multi-GPU mode, this informs which local GPUs are used.
 
 
+
+<!-- permit doxygen to reference section -->
+<a id="benchmarking"></a>
 
 ### Benchmarking
 
@@ -367,6 +417,10 @@ However, it _does_ mean codes which seeks to benchmark QuEST must be careful to 
 ---------------------
 
 
+
+<!-- permit doxygen to reference section -->
+<a id="distribution"></a>
+
 ## Distribution
 
 
@@ -377,6 +431,10 @@ However, it _does_ mean codes which seeks to benchmark QuEST must be careful to 
 > [!IMPORTANT]
 > Simultaneously using distribution _and_ GPU-acceleration introduces additional considerations detailed in the [proceeding section](#multi-gpu).
 
+
+
+<!-- permit doxygen to reference section -->
+<a id="launching-1"></a>
 
 ### Launching
 
@@ -413,12 +471,18 @@ mpirun -np 1024 --oversubscribe ./mytests
 ```
 
 
+<!-- permit doxygen to reference section -->
+<a id="configuring-1"></a>
+
 ### Configuring
 
 
 > TODO:
 > - detail environment variables
 
+
+<!-- permit doxygen to reference section -->
+<a id="benchmarking-1"></a>
 
 ### Benchmarking
 
@@ -433,6 +497,9 @@ It is ergo always prudent to explicitly call [`syncQuESTEnv()`](https://quest-ki
 
 ---------------------
 
+
+<!-- permit doxygen to reference section -->
+<a id="multi-gpu"></a>
 
 ## Multi-GPU
 
@@ -460,6 +527,10 @@ It is ergo always prudent to explicitly call [`syncQuESTEnv()`](https://quest-ki
 
 ---------------------
 
+
+<!-- permit doxygen to reference section -->
+<a id="supercomputers"></a>
+
 ## Supercomputers
 
 A QuEST executable is launched like any other in supercomputing settings, including when distributed.
@@ -469,6 +540,11 @@ For convenience however, we offer some example [SLURM](https://slurm.schedmd.com
 > [!NOTE]
 > These submission scripts are only illustrative. It is likely the necessary configuration and commands on
 > your own supercomputing facility differs!
+
+
+
+<!-- permit doxygen to reference section -->
+<a id="slurm"></a>
 
 ### SLURM
 
@@ -501,6 +577,9 @@ srun ./myexec
 ```
 
 
+
+<!-- permit doxygen to reference section -->
+<a id="pbs"></a>
 
 ### PBS
 

@@ -29,31 +29,36 @@ Simulation typically proceeds as:
 6. Perform [calculations](https://quest-kit.github.io/QuEST/group__calculations.html), potentially using [Pauli](https://quest-kit.github.io/QuEST/group__paulis.html) observables.
 7. [Report](https://quest-kit.github.io/QuEST/group__types.html) or log the results to file.
 8. Destroy any heap-allocated [`Qureg`](https://quest-kit.github.io/QuEST/group__qureg__destroy.html) or [matrices](https://quest-kit.github.io/QuEST/group__matrices__destroy.html).
-8. [Finalise](https://quest-kit.github.io/QuEST/group__environment.html#ga428faad4d68abab20f662273fff27e39) the QuEST environment.
+9. [Finalise](https://quest-kit.github.io/QuEST/group__environment.html#ga428faad4d68abab20f662273fff27e39) the QuEST environment.
 
 Of course, the procedure is limited only by the programmers imagination `¯\_(ツ)_/¯` Let's see an example of these steps below.
 
 
 > **TOC**:
-> - [1. Initialise the environment](#1-initialise-the-environment)
-> - [2. Configure the environment](#2-configure-the-environment)
-> - [3. Create a `Qureg`](#3-create-a--qureg-)
-> - [4. Prepare an initial state](#4-prepare-an-initial-state)
-> - [5. Apply operators](#5-apply-operators)
+> - [Initialise the environment](#initialise-the-environment)
+> - [Configure the environment](#configure-the-environment)
+> - [Create a `Qureg`](#create-a-qureg)
+> - [Prepare an initial state](#prepare-an-initial-state)
+> - [Apply operators](#apply-operators)
 >   * [controls](#controls)
 >   * [paulis](#paulis)
 >   * [matrices](#matrices)
 >   * [circuits](#circuits)
 >   * [measurements](#measurements)
 >   * [decoherence](#decoherence)
-> - [6. Perform calculations](#6-perform-calculations)
-> - [7. Report the results](#7-report-the-results)
-> - [8. Cleanup](#8-cleanup)
-> - [9. Finalise QuEST](#9-finalise-quest)
+> - [Perform calculations](#perform-calculations)
+> - [Report the results](#report-the-results)
+> - [Cleanup](#cleanup)
+> - [Finalise QuEST](#finalise-quest)
 
 
+--------------------------------------------
 
-## 1. Initialise the environment
+<!-- permit doxygen to reference section -->
+<a id="initialise-the-environment"></a>
+
+## Initialise the environment
+
 
 Before calling any other QuEST functions, we must [_initialise_](https://quest-kit.github.io/QuEST/group__environment.html#gab89cfc1bf94265f4503d504b02cf54d4) the QuEST [_environment_](https://quest-kit.github.io/QuEST/group__environment.html).
 ```cpp
@@ -144,11 +149,18 @@ We can also [obtain](https://quest-kit.github.io/QuEST/group__environment.html#g
 QuESTEnv env = getQuESTEnv();
 
 if (env.isGpuAccelerated)
-   printf("vroom vroom");
+    printf("vroom vroom");
 ```
 
 
-## 2. Configure the environment
+
+--------------------------------------------
+
+<!-- permit doxygen to reference section -->
+<a id="configure-the-environment"></a>
+
+## Configure the environment
+
 
 Configuring the environment is ordinarily not necessary, but convenient in certain applications.
 
@@ -192,17 +204,25 @@ setInputErrorHandler(myErrorHandler);
 > ```cpp
 > #include <stdexcept>
 > #include <string>
-> 
 > void myErrorHandlerA(const char* errFunc, const char* errMsg) {
 >     std::string func(errFunc);
 >     std::string msg(errMsg);
 >     throw std::runtime_error(func + ": " + msg);
 > }
-> 
 > setInputErrorHandler(myErrorHandler);
 > ```
+<!-- newlines removed above because doxygen renders them as <br> text, how stupid! -->
 
-## 3. Create a `Qureg`
+
+
+
+--------------------------------------------
+
+<!-- permit doxygen to reference section -->
+<a id="create-a-qureg"></a>
+
+## Create a Qureg
+
 
 To [create](https://quest-kit.github.io/QuEST/group__qureg__create.html) a statevector of `10` qubits, we call
 ```cpp
@@ -333,7 +353,15 @@ Qureg:
 A density matrix `Qureg` can model classical uncertainty as results from [decoherence](https://quest-kit.github.io/QuEST/group__decoherence.html), and proves useful when simulating quantum operations on a noisy quantum computer.
 
 
-## 4. Prepare an initial state
+
+
+--------------------------------------------
+
+<!-- permit doxygen to reference section -->
+<a id="prepare-an-initial-state"></a>
+
+## Prepare an initial state
+
 
 In lieu of manually [modifying](https://quest-kit.github.io/QuEST/group__init__amps.html) the state amplitudes, QuEST includes functions to prepare a `Qureg` in some common [initial states](https://quest-kit.github.io/QuEST/group__init__states.html)
 
@@ -381,7 +409,14 @@ Qureg (5 qubit density matrix, 32x32 qcomps, 16.1 KiB):
 > The number of printed significant figures above results from our earlier calling of [`setMaxNumReportedSigFigs()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga15d46e5d813f70b587762814964e1994).
 
 
-## 5. Apply operators
+
+--------------------------------------------
+
+<!-- permit doxygen to reference section -->
+<a id="apply-operators"></a>
+
+## Apply operators
+
 
 QuEST supports an extensive set of [operators](https://quest-kit.github.io/QuEST/group__operations.html) to effect upon a `Qureg`. 
 ```cpp
@@ -396,7 +431,12 @@ applyPhaseGadget(qureg, targets, 3, angle);
 > [!IMPORTANT]  
 > Notice the type of `angle` is [`qreal`](https://quest-kit.github.io/QuEST/group__types.html#ga2d479c159621c76ca6f96abe66f2e69e) rather than the expected `double`. This is a precision agnostic alias for a floating-point, real scalar which allows you to recompile QuEST with a varying [precision](/docs/compile.md#precision) with no modifications to your code. 
 
+
+<!-- permit doxygen to reference section -->
+<a id="controls"></a>
+
 ### controls
+
 
 All unitary operations accept any number of control qubits
 ```cpp
@@ -419,7 +459,12 @@ applyMultiStateControlledRotateX(qureg, controls, states, 7, target, angle);
 > applyMultiControlledMultiQubitNot(qureg, {0,1,2}, {4,5});
 > ```
 
+
+<!-- permit doxygen to reference section -->
+<a id="paulis"></a>
+
 ### paulis
+
 
 Some operators accept [`PauliStr`](https://quest-kit.github.io/QuEST/structPauliStr.html) which can be [constructed](https://quest-kit.github.io/QuEST/group__paulis__create.html) all sorts of ways - even inline!
 ```cpp
@@ -437,7 +482,14 @@ applyPauliGadget(qureg, getPauliStr("XYZ"), angle);
 >     applyPauliY(qureg, i);
 > ```
 
+
+<!-- permit doxygen to reference section -->
+<a id="matrices"></a>
+
 ### matrices
+
+
+<!-- giving no hyperlink -->
 
 #### `CompMatr1`
 
@@ -459,6 +511,9 @@ applyCompMatr1(qureg, target, matrix);
 > ```cpp
 > qcomp x = 1.5 + 3.14_i;
 > ```
+
+
+<!-- giving no hyperlink -->
 
 #### `CompMatr`
 
@@ -488,6 +543,8 @@ syncCompMatr(bigmatrix);
 > ```
 > This is true of any QuEST structure returned by a `create*()` function. It is _not_ true of functions prefixed with `get*()` with are always [stack variables](https://craftofcoding.wordpress.com/2015/12/07/memory-in-c-the-stack-the-heap-and-static/), hence why functions like `getCompMatr1()` can be called inline!
 
+
+<!-- giving no hyperlink -->
 
 #### `FullStateDiagMatr`
 
@@ -526,6 +583,8 @@ applyFullStateDiagMatrPower(qureg, fullmatrix, exponent);
 Notice the `exponent` is a `qcomp` and ergo permitted to be a complex number. Unitarity requires `exponent` is strictly real, but we can always relax the unitarity validation...
 
 
+<!-- giving no hyperlink -->
+
 #### validation
 
 
@@ -548,7 +607,11 @@ applyCompMatr1(qureg, 0, m);
 ```
 
 
+<!-- permit doxygen to reference section -->
+<a id="circuits"></a>
+
 ### circuits
+
 
 QuEST includes a few convenience functions for effecting [QFT](https://quest-kit.github.io/QuEST/group__op__qft.html) and [Trotter](https://quest-kit.github.io/QuEST/group__op__paulistrsum.html) circuits.
 
@@ -562,8 +625,11 @@ applyTrotterizedPauliStrSumGadget(qureg, sum, time, order, reps);
 ```
 
 
+<!-- permit doxygen to reference section -->
+<a id="measurements"></a>
 
 ### measurements
+
 
 We can also effect a wide range of non-unitary operations, such as destructive [measurements](https://quest-kit.github.io/QuEST/group__op__measurement.html)
 ```cpp
@@ -583,7 +649,13 @@ reportScalar("three qubit outcome", outcome2);
 
 Should we wish to leave the state unnormalised, we can instead use [projectors](https://quest-kit.github.io/QuEST/group__op__projectors.html).
 
+
+
+<!-- permit doxygen to reference section -->
+<a id="decoherence"></a>
+
 ### decoherence
+
 
 Density matrices created with [`createDensityQureg()`](https://quest-kit.github.io/QuEST/group__qureg__create.html#ga1470424b0836ae18b5baab210aedf5d9) can undergo [decoherence](https://quest-kit.github.io/QuEST/group__decoherence.html) channels.
 
@@ -637,7 +709,15 @@ multiplyDiagMatrPower(rho, fullmatrix, 0.5);
 ```
 
 
-## 6. Perform calculations
+
+
+--------------------------------------------
+
+<!-- permit doxygen to reference section -->
+<a id="perform-calculations"></a>
+
+## Perform calculations
+
 
 After so much modification to our state, we will find that its amplitudes have differed substantially. But it's impractical to observe the exponentially-many amplitudes with [`reportQureg()`](https://quest-kit.github.io/QuEST/group__qureg__report.html#ga2a9df2538e537332b1aef8596ce337b2). We can instead give QuEST the [questions](https://quest-kit.github.io/QuEST/group__calculations.html) we wish to answer about the resulting state.
 
@@ -682,7 +762,15 @@ Qureg reduced = calcPartialTrace(qureg, targets, 3);
 reportScalar("entanglement", calcPurity(reduced));
 ```
 
-## 7. Report the results
+
+
+--------------------------------------------
+
+<!-- permit doxygen to reference section -->
+<a id="report-the-results"></a>
+
+## Report the results
+
 
 We've seen above that [scalars](https://quest-kit.github.io/QuEST/group__types.html) can be reported, handling the pretty formatting of real and complex numbers, controlled by settings like [`setMaxNumReportedSigFigs()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga15d46e5d813f70b587762814964e1994). But we can also report every data structure in the QuEST API, such as Pauli strings
 ```cpp
@@ -725,7 +813,14 @@ CompMatr (8 qubits, 256x256 qcomps, 1 MiB):
 > Facilities for automatically logging to file are coming soon!
 
 
-## 8. Cleanup
+
+--------------------------------------------
+
+<!-- permit doxygen to reference section -->
+<a id="cleanup"></a>
+
+## Cleanup
+
 
 While not strictly necessary before the program ends, it is a good habit to destroy data structures as soon as you are finished with them, freeing their memory.
 
@@ -737,7 +832,15 @@ destroyPauliStrSum(sum);
 destroyKrausMap(map);
 ```
 
-## 9. Finalise QuEST
+
+
+--------------------------------------------
+
+<!-- permit doxygen to reference section -->
+<a id="finalise-quest"></a>
+
+## Finalise QuEST
+
 
 The _final_ [step](https://quest-kit.github.io/QuEST/group__environment.html#ga428faad4d68abab20f662273fff27e39) of our program should be to call
 ```cpp
