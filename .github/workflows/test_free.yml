@@ -13,10 +13,10 @@ name: test (free, serial)
 on:
   push:
     branches:
-      - v4
+      - main
   pull_request:
     branches:
-      - v4
+      - main
 
 
 jobs:
@@ -59,7 +59,7 @@ jobs:
     # perform the job
     steps:
       - name: Get QuEST
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
 
       # compile serial unit tests, optionally include deprecated test
       - name: Configure CMake

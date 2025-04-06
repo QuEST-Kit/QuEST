@@ -96,7 +96,7 @@ jobs:
     # perform the job
     steps:
       - name: Get QuEST
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
 
       - name: Setup CMake
         run: sudo apt-get install -y cmake
@@ -217,7 +217,7 @@ jobs:
     # perform the job
     steps:
       - name: Get QuEST
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
 
       - name: Setup CMake
         run: sudo apt-get install -y cmake

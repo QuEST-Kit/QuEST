@@ -13,10 +13,10 @@ name: audit
 on:
   push:
     branches:
-      - v4
+      - main
   pull_request:
     branches:
-      - v4
+      - main
 
 
 jobs:
@@ -41,7 +41,7 @@ jobs:
     # perform the job
     steps:
       - name: Get QuEST
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
 
       # compile QuEST using clang address sanitiser, foregoing all parallelisations
       - name: Configure CMake to use sanitiser
@@ -84,7 +84,7 @@ jobs:
     # perform the job
     steps:
       - name: Get QuEST
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
 
       # compile QuEST like normal albeit without parallelisations
       - name: Configure CMake
@@ -130,7 +130,7 @@ jobs:
     # perform the job
     steps:
       - name: Get QuEST
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
 
       # work in a build directory to reduce verbosity below
       - run: > 
