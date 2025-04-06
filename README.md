@@ -84,11 +84,8 @@ In particular, QuEST `v4` was made possible through the support of the UK Nation
 </div>
 
 To learn more:
-
-- visit the [website](https://quest.qtechtheory.org/)
-- see some [examples](/examples/)
 - view the [documentation](#documentation)
-- browse the [API](https://quest-kit.github.io/QuEST/group__api.html)
+- visit the [website](https://quest.qtechtheory.org/)
 - read the [whitepaper](https://www.nature.com/articles/s41598-019-47174-9), which featured in Scientific Report's [Top 100 in Physics](https://www.nature.com/collections/ecehgdfcba/) :trophy:
 
 <div align="center">
@@ -188,6 +185,7 @@ QuEST supports:
 
 Visit the [docs](docs/README.md) to:
   - [see what's new in v4](docs/v4.md)
+  - [follow the tutorial](/examples/README.md#tutorial)
   - [compile with cmake](docs/compile.md)
   - [find compatible compilers](docs/compilers.md)
   - [launch your simulations](docs/launch.md)
@@ -242,6 +240,7 @@ You can also browse QuEST's extensive [tests](https://quest-kit.github.io/QuEST/
 -->
 
 Contributers to QuEST should also check out the:
+  - [contribution guide](docs/contributing.md)
   - [software architecture](docs/architecture.md)
   - [style guide](docs/styleguide.md)
 
