@@ -30,6 +30,8 @@
 // benefit in shrinking the type size and facing the associated precision risks. Similarly,
 // there is little benefit in making it larger since a 'long long int' can represent 62 qubits,
 // which is already well beyond simulability, requiring 64 EiB total at double precision.
+
+/// @neverdoced
 #define INDEX_TYPE long long int
 
 
@@ -45,6 +47,8 @@
 // base-4 numeral encoding the Pauli string. A single 64-bit 'long long unsigned' can ergo
 // specify only 32 qubits, whereas two can specify more qubits (64) than we can simulate.
 // This type is defined purely to avoid littering the source with explicit typing.
+
+/// @neverdoced
 #define PAULI_MASK_TYPE long long unsigned int
 
 
@@ -52,6 +56,12 @@
 /*
  * RE-CONFIGURABLE FLOATING-POINT PRECISION
  */
+
+/// @neverdoced
+/// @fn FLOAT_PRECISION
+
+/// @neverdoced
+/// @fn FLOAT_TYPE
 
 // assume double precision as default
 #ifndef FLOAT_PRECISION
@@ -61,7 +71,7 @@
 // validate precision is 1 (float), 2 (double) or 4 (long double)
 #if ! (FLOAT_PRECISION == 1 || FLOAT_PRECISION == 2 || FLOAT_PRECISION == 4)
     #error "FLOAT_PRECISION must be 1 (float), 2 (double) or 4 (long double)"
-#endif 
+#endif
 
 // infer floating-point type from precision
 #if FLOAT_PRECISION == 1
@@ -92,6 +102,9 @@
  * compiler using argument -D), and runtime overridable using setValidationEpsilon()
  */
 
+/// @neverdoced
+/// @fn DEFAULT_VALIDATION_EPSILON
+
 #ifndef DEFAULT_VALIDATION_EPSILON
 
     #if FLOAT_PRECISION == 1
@@ -112,6 +125,9 @@
 /*
  * PRECISION-AGNOSTIC CONVENIENCE MACROS
  */
+
+/// @neverdoced
+/// @fn QREAL_FORMAT_SPECIFIER
 
 #if FLOAT_PRECISION == 1
     #define QREAL_FORMAT_SPECIFIER "%.8g"

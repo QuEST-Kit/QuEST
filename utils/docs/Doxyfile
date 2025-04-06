@@ -299,6 +299,7 @@ ALIASES += "nottested=@warning This function has not yet been unit tested and ma
 ALIASES += "notvalidated=@attention This function's input validation has not yet been tested, so erroneous usage may produce unexpected output. Please use with caution!"
 ALIASES += "notdoced=@note Documentation for this function or struct is under construction!"
 ALIASES += "cpponly=@remark This function is only available in C++."
+ALIASES += "neverdoced=@warning This entity is a macro, undocumented directly due to a Doxygen limitation. If you see this doc rendered, contact the devs!"
 ALIASES += "myexample=@par Example"
 ALIASES += "equivalence=@par Equivalences"
 ALIASES += "constraints=@par Constraints"

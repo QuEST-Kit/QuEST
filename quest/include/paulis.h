@@ -141,8 +141,7 @@ typedef struct {
     PauliStr getPauliStr(std::string paulis);
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
+    /// @neverdoced
     #define getInlinePauliStr(str, ...) \
         getPauliStr(str, __VA_ARGS__)
 
@@ -167,8 +166,7 @@ typedef struct {
     PauliStr _getPauliStrFromInts(int* paulis, int* indices, int numPaulis);
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
+    /// @neverdoced
     #define getPauliStr(paulis, ...) \
         _Generic((paulis), \
             int*    : _getPauliStrFromInts, \
@@ -176,8 +174,7 @@ typedef struct {
         )(paulis, __VA_ARGS__) 
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
+    /// @neverdoced
     #define getInlinePauliStr(str, ...) \
         getPauliStr((str), (int[sizeof(str)-1]) __VA_ARGS__, sizeof(str)-1)
 

@@ -471,8 +471,7 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
     //   e.g. default: _Pragma("GCC error \"arg not allowed\"").
     
 
-    /// @ingroup matrices_getters
-    /// @notdoced
+    /// @neverdoced
     #define getCompMatr1(...) \
         _Generic((__VA_ARGS__), \
             qcomp** : getCompMatr1, \
@@ -480,8 +479,7 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
         )((__VA_ARGS__))
 
 
-    /// @ingroup matrices_getters
-    /// @notdoced
+    /// @neverdoced
     #define getCompMatr2(...) \
         _Generic((__VA_ARGS__), \
             qcomp** : getCompMatr2, \
@@ -510,26 +508,22 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
     // C++ merely invokes the std::vector initialiser overload
 
 
-    /// @ingroup matrices_getters
-    /// @notdoced
+    /// @neverdoced
     #define getInlineCompMatr1(...) \
         getCompMatr1(__VA_ARGS__)
 
 
-    /// @ingroup matrices_getters
-    /// @notdoced
+    /// @neverdoced
     #define getInlineCompMatr2(...) \
         getCompMatr2(__VA_ARGS__)
 
 
-    /// @ingroup matrices_getters
-    /// @notdoced
+    /// @neverdoced
     #define getInlineDiagMatr1(...) \
         getDiagMatr1(__VA_ARGS__)
 
 
-    /// @ingroup matrices_getters
-    /// @notdoced
+    /// @neverdoced
     #define getInlineDiagMatr2(...) \
         getDiagMatr2(__VA_ARGS__)
 
@@ -539,26 +533,22 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
     // explicitly specifying the DiagMatr dimension enables defaulting-to-zero
 
 
-    /// @ingroup matrices_getters
-    /// @notdoced
+    /// @neverdoced
     #define getInlineCompMatr1(...) \
         _getCompMatr1FromArr((qcomp[2][2]) __VA_ARGS__)
 
 
-    /// @ingroup matrices_getters
-    /// @notdoced
+    /// @neverdoced
     #define getInlineCompMatr2(...) \
         _getCompMatr2FromArr((qcomp[4][4]) __VA_ARGS__)
 
 
-    /// @ingroup matrices_getters
-    /// @notdoced
+    /// @neverdoced
     #define getInlineDiagMatr1(...) \
         getDiagMatr1((qcomp[2]) __VA_ARGS__)
 
 
-    /// @ingroup matrices_getters
-    /// @notdoced
+    /// @neverdoced
     #define getInlineDiagMatr2(...) \
         getDiagMatr2((qcomp[4]) __VA_ARGS__)
 
@@ -749,8 +739,7 @@ extern "C" {
     // See the doc of getCompMatr1() above for an explanation of Generic, and its nuances
 
 
-    /// @ingroup matrices_setters
-    /// @notdoced
+    /// @neverdoced
     #define setCompMatr(matr, ...) \
         _Generic((__VA_ARGS__), \
             qcomp** : setCompMatr, \
@@ -848,23 +837,24 @@ extern "C" {
     // unexpectedly re-evaluating user expressions due to its repetition in the macro
 
 
-    /// @ingroup matrices_setters
-    /// @notdoced
+    /// @neverdoced
     #define setInlineCompMatr(matr, numQb, ...) \
         _setInlineCompMatr((matr), (numQb), (qcomp[1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
 
-    /// @ingroup matrices_setters
-    /// @notdoced
+    /// @neverdoced
     #define setInlineDiagMatr(matr, numQb, ...) \
         _setInlineDiagMatr((matr), (numQb), (qcomp[1<<(numQb)]) __VA_ARGS__)
 
 
-    /// @ingroup matrices_setters
-    /// @notdoced
-    /// @nottested
+    /// @neverdoced
     #define setInlineFullStateDiagMatr(matr, startInd, numElems, ...) \
         _setInlineFullStateDiagMatr((matr), (startInd), (numElems), (qcomp[(numElems)]) __VA_ARGS__)
+
+
+        // TODO:
+        // beware above is not tested!!! Must note this in new doc
+
 
 #else
 
@@ -887,8 +877,7 @@ extern "C" {
     extern void _validateParamsToSetInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems);
 
 
-    /// @ingroup matrices_setters
-    /// @notdoced
+    /// @neverdoced
     #define setInlineDiagMatr(matr, numQb, ...) \
         do { \
             _validateParamsToSetInlineDiagMatr((matr), (numQb)); \
@@ -896,8 +885,7 @@ extern "C" {
         } while (0)
 
 
-    /// @ingroup matrices_setters
-    /// @notdoced
+    /// @neverdoced
     #define setInlineFullStateDiagMatr(matr, startInd, numElems, ...) \
         do { \
             _validateParamsToSetInlineFullStateDiagMatr((matr), (startInd), (numElems)); \
@@ -971,14 +959,12 @@ extern "C" {
     }
 
 
-    /// @ingroup matrices_create
-    /// @notdoced
+    /// @neverdoced
     #define createInlineCompMatr(numQb, ...) \
         _createInlineCompMatr((numQb), (qcomp[1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
     
-    /// @ingroup matrices_create
-    /// @notdoced
+    /// @neverdoced
     #define createInlineDiagMatr(numQb, ...) \
         _createInlineDiagMatr((numQb), (qcomp[1<<(numQb)]) __VA_ARGS__)
 

@@ -335,16 +335,14 @@ extern "C" {
     // C then overloads setKrausMap() to call the above VLA when given arrays, using C11 Generics.
     // See the doc of getCompMatr1() in matrices.h for an explanation of Generic, and its nuances.
 
-    /// @ingroup channels_setters
-    /// @notdoced
+    /// @neverdoced
     #define setKrausMap(map, ...) \
         _Generic((__VA_ARGS__), \
             qcomp*** : setKrausMap, \
             default  : _setKrausMapFromArr \
         )((map), (__VA_ARGS__))
 
-    /// @ingroup channels_setters
-    /// @notdoced
+    /// @neverdoced
     #define setSuperOp(op, ...) \
         _Generic((__VA_ARGS__), \
             qcomp** : setSuperOp, \
@@ -422,14 +420,12 @@ extern "C" {
     }
 
 
-    /// @ingroup channels_setters
-    /// @notdoced
+    /// @neverdoced
     #define setInlineKrausMap(map, numQb, numOps, ...) \
         _setInlineKrausMap((map), (numQb), (numOps), (qcomp[(numOps)][1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
 
-    /// @ingroup channels_setters
-    /// @notdoced
+    /// @neverdoced
     #define setInlineSuperOp(matr, numQb, ...) \
         _setInlineSuperOp((matr), (numQb), (qcomp[1<<(2*(numQb))][1<<(2*(numQb))]) __VA_ARGS__)
 
@@ -499,14 +495,12 @@ extern "C" {
     }
 
 
-    /// @ingroup channels_create
-    /// @notdoced
+    /// @neverdoced
     #define createInlineKrausMap(numQb, numOps, ...) \
         _createInlineKrausMap((numQb), (numOps), (qcomp[(numOps)][1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
 
-    /// @ingroup channels_create
-    /// @notdoced
+    /// @neverdoced
     #define createInlineSuperOp(numQb, ...) \
         _createInlineSuperOp((numQb), (qcomp[1<<(2*(numQb))][1<<(2*(numQb))]) __VA_ARGS__)
 

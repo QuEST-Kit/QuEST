@@ -164,6 +164,9 @@ static inline qcomp getQcomp(qreal re, qreal im) {
     // no doubt break somebody's build/integration, users can disable this
     // attempt at precision-agnostic arithmetic via DEFINE_ARITHMETIC_OVERLOADS=0
 
+    /// @neverdoced
+    /// @fn DEFINE_ARITHMETIC_OVERLOADS
+
     #ifndef DEFINE_ARITHMETIC_OVERLOADS
     #define DEFINE_ARITHMETIC_OVERLOADS 1
     #endif
@@ -288,21 +291,26 @@ static inline qcomp getQcomp(qreal re, qreal im) {
     /// @nottested
     extern "C" void reportStr(const char* str);
 
+
     /// @notdoced
     /// @nottested
     void reportStr(std::string str);
+
 
     /// @notdoced
     /// @nottested
     extern "C" void reportScalar(const char* label, qcomp num);
 
+
     /// @notdoced
     /// @nottested
     void reportScalar(const char* label, qreal num);
 
+
     /// @notdoced
     /// @nottested
     void reportScalar(std::string label, qcomp num);
+
 
     /// @notdoced
     /// @nottested
@@ -314,15 +322,17 @@ static inline qcomp getQcomp(qreal re, qreal im) {
     /// @nottested
     void reportStr(const char* str);
 
+
     /// @notdoced
     /// @nottested
     void reportScalar      (const char* label, qcomp num);
 
+
     /// @private
     void _reportScalar_real(const char* label, qreal num);
 
-    /// @notdoced
-    /// @nottested
+
+    /// @neverdoced
     #define reportScalar(label, num) \
         _Generic((num), \
             qcomp   : reportScalar,       \
