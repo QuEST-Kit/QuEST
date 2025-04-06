@@ -17,9 +17,16 @@
 #include <vector>
 #include <limits>
 
+using std::vector;
+
+
+
+/*
+ * C AND C++ AGNOSTIC FUNCTIONS
+ */
+
 // enable invocation by both C and C++ binaries
 extern "C" {
-
 
 
 /*
@@ -32,7 +39,7 @@ void setSeeds(unsigned* seeds, int numSeeds) {
     validate_randomSeeds(seeds, numSeeds, __func__);
 
     // consults only root-node seeds
-    rand_setSeeds(std::vector<unsigned>(seeds, seeds+numSeeds));
+    rand_setSeeds(vector<unsigned>(seeds, seeds+numSeeds));
 }
 
 void setSeedsToDefault() {
@@ -174,5 +181,28 @@ void clearGpuCache() {
 }
 
 
-
 } // end de-name mangler
+
+
+
+/*
+ * C++ OVERLOADS
+ */
+
+
+void setSeeds(vector<unsigned> seeds) {
+    setSeeds(seeds.data(), seeds.size());
+}
+
+vector<unsigned> getSeeds() {
+    validate_envIsInit(__func__);
+
+    // allocate temp vector, and pedantically validate successful
+    vector<unsigned> out;
+    int numSeeds = getNumSeeds();
+    auto callback = [&]() { validate_tempAllocSucceeded(false, numSeeds, sizeof(unsigned), __func__); };
+    util_tryAllocVector(out, numSeeds, callback);
+
+    getSeeds(out.data());
+    return out;
+}

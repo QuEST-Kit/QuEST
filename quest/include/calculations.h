@@ -21,11 +21,18 @@
 
 
 /*
- * These signatures are divided into two partitions; those which are
- * natively C and C++ compatible (first partition) and those which are
+ * These signatures are divided into three partitions; those which are
+ * natively C and C++ compatible (first partition), then those which are
  * only exposed to C++ (second partition) because they return 'qcomp' 
- * which cannot cross the C++-to-C ABI. The first partition defines the
- * doc groups, and the second partition functions are added into them.
+ * which cannot cross the C++-to-C ABI, and then finally the C++-only
+ * convenience overloads. The first partition defines the doc groups, and 
+ * the latter partition functions are added into them.
+ */
+
+
+
+/*
+ * C AND C++ AGNOSTIC FUNCTIONS
  */
 
 // enable invocation by both C and C++ binaries
@@ -193,7 +200,7 @@ qreal calcProbOfMultiQubitOutcome(Qureg qureg, int* qubits, int* outcomes, int n
 
 /// @notdoced
 /// @notvalidated
-void  calcProbsOfAllMultiQubitOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
+void calcProbsOfAllMultiQubitOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
 
 
 /** @} */
@@ -279,8 +286,8 @@ Qureg calcReducedDensityMatrix(Qureg qureg, int* retainQubits, int numRetainQubi
  * below functions have a C-compatible wrapper defined in
  * wrappers.h which passes/receives the primitives by pointer;
  * a qcomp ptr can be safely passed from the C++ source binary
- * the user's C binary. We manually add these functions to the
- * Doxygen doc groups defined above
+ * the user's C binary. We manually add these functions to their
+ * respective Doxygen doc groups defined above
  */
 
 
@@ -309,6 +316,54 @@ qcomp calcExpecNonHermitianFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr
 
 
 
+/*
+ * C++ OVERLOADS
+ *
+ * which are only accessible to C++ binaries, and accept
+ * arguments more natural to C++ (e.g. std::vector). We
+ * manually add these to their respective Doxygen doc groups.
+ */
+
+#ifdef __cplusplus
+
+#include <vector>
+
+
+/// @ingroup calc_prob
+/// @nottested
+/// @notdoced
+/// @notvalidated
+/// @cpponly
+qreal calcProbOfMultiQubitOutcome(Qureg qureg, std::vector<int> qubits, std::vector<int> outcomes);
+
+
+/// @ingroup calc_prob
+/// @nottested
+/// @notdoced
+/// @notvalidated
+/// @cpponly
+std::vector<qreal> calcProbsOfAllMultiQubitOutcomes(Qureg qureg, std::vector<int> qubits);
+
+
+/// @ingroup calc_partialtrace
+/// @nottested
+/// @notdoced
+/// @notvalidated
+/// @cpponly
+Qureg calcPartialTrace(Qureg qureg, std::vector<int> traceOutQubits);
+
+
+/// @ingroup calc_partialtrace
+/// @nottested
+/// @notdoced
+/// @notvalidated
+/// @cpponly
+Qureg calcReducedDensityMatrix(Qureg qureg, std::vector<int> retainQubits);
+
+
+#endif // __cplusplus
+
+
 #endif // CALCULATIONS_H
 
-/** @} (end doxygen defgroup) */
+/** @} */ // (end file-wide doxygen defgroup)

@@ -56,6 +56,13 @@
 
 
 
+/*
+ * unlike some other headers, we here intermix the C and C++-only
+ * signatures, grouping them semantically & by their doc groups
+ */
+
+
+
 /** 
  * @defgroup channels_structs Structs
  * @brief Data structures for representing decoherence channels.
@@ -383,11 +390,13 @@ extern "C" {
 
     /// @ingroup channels_setters
     /// @notdoced
+    /// @cpponly
     void setInlineKrausMap(KrausMap map, int numQb, int numOps, std::vector<std::vector<std::vector<qcomp>>> matrices);
 
 
     /// @ingroup channels_setters
     /// @notdoced
+    /// @cpponly
     void setInlineSuperOp(SuperOp op, int numQb, std::vector<std::vector<qcomp>> matrix);
 
 
@@ -458,11 +467,13 @@ extern "C" {
 
     /// @ingroup channels_create
     /// @notdoced
+    /// @cpponly
     KrausMap createInlineKrausMap(int numQubits, int numOperators, std::vector<std::vector<std::vector<qcomp>>> matrices);
 
 
     /// @ingroup channels_create
     /// @notdoced
+    /// @cpponly
     SuperOp createInlineSuperOp(int numQubits, std::vector<std::vector<qcomp>> matrix);
 
 
@@ -521,4 +532,4 @@ extern "C" {
 
 #endif // CHANNELS_H
 
-/** @} (end doxygen defgroup) */
+/** @} */ // (end file-wide doxygen defgroup)

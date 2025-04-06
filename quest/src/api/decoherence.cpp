@@ -15,9 +15,17 @@
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/utilities.hpp"
 
+#include <vector>
+using std::vector;
+
+
+
+/*
+ * C AND C++ AGNOSTIC FUNCTIONS
+ */
+
 // enable invocation by both C and C++ binaries
 extern "C" {
-
 
 
 void mixDephasing(Qureg qureg, int qubit, qreal prob) {
@@ -147,3 +155,25 @@ void mixSuperOp(Qureg qureg, int* targets, int numTargets, SuperOp superop) {
 
 
 } // end de-mangler
+
+
+
+/*
+ * C++ OVERLOADS
+ *
+ * which are only accessible to C++ binaries, and accept
+ * arguments more natural to C++ (e.g. std::vector). We
+ * manually add these to their respective Doxygen doc groups.
+ */
+
+#ifdef __cplusplus
+
+void mixKrausMap(Qureg qureg, vector<int> targets, KrausMap map) {
+    mixKrausMap(qureg, targets.data(), targets.size(), map);
+}
+
+void mixSuperOp(Qureg qureg, vector<int> targets, SuperOp superop) {
+    mixSuperOp(qureg, targets.data(), targets.size(), superop);
+}
+
+#endif // __cplusplus

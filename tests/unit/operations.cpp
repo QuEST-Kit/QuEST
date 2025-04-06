@@ -1,5 +1,13 @@
 /** @file
- * Unit tests of the operations module.
+ * Unit tests of the operations module. Beware that because the 
+ * operation functions have so much interface and test-semantic 
+ * overlap (e.g. the logic of control qubits, of control-states,
+ * of density matrix variants), this file has opted to make 
+ * extensive use of generics and metaprogramming, to avoid the
+ * code duplication of defining each function an independent test.
+ * This may have been a mistake, and the file now full of spaghetti
+ * comprised of advanced, misused C++ facilities. View at your own
+ * peril!
  *
  * @author Tyson Jones
  * 
@@ -1118,11 +1126,124 @@ void testOperation(auto operation, auto matrixRefGen) {
  * formats) of the operation, against which it will be compared.
  */
 
-#define TEST_ANY_CTRL_OPERATION( namesuffix, numtargs, argtype, matrixgen ) \
-    TEST_CASE( "apply" #namesuffix,                     TEST_CATEGORY ) { testOperation<zero,     numtargs,argtype>( apply ## namesuffix,                     matrixgen); } \
-    TEST_CASE( "applyControlled" #namesuffix,           TEST_CATEGORY ) { testOperation<one,      numtargs,argtype>( applyControlled ## namesuffix,           matrixgen); } \
-    TEST_CASE( "applyMultiControlled" #namesuffix,      TEST_CATEGORY ) { testOperation<any,      numtargs,argtype>( applyMultiControlled ## namesuffix,      matrixgen); } \
-    TEST_CASE( "applyMultiStateControlled" #namesuffix, TEST_CATEGORY ) { testOperation<anystates,numtargs,argtype>( applyMultiStateControlled ## namesuffix, matrixgen); } 
+// when every API operation had NO overloads, it was sufficient to
+// call the below simple macro. Alas, since C++ overloads have been
+// added, the below passing of a function (e.g. applyControlledHadamard)
+// is ambigious, not specifying whether it is the int* or vector<int>
+// version. We now have to explicit cast the function to its specific
+// C-compatible version. Alas, to your imminent horror, this is.. erm...
+
+// #define TEST_ALL_CTRL_OPERATIONS( namesuffix, numtargs, argtype, matrixgen ) \
+//     TEST_CASE( "apply" #namesuffix,                     TEST_CATEGORY ) { testOperation<zero,     numtargs,argtype>( apply ## namesuffix,                     matrixgen); } \
+//     TEST_CASE( "applyControlled" #namesuffix,           TEST_CATEGORY ) { testOperation<one,      numtargs,argtype>( applyControlled ## namesuffix,           matrixgen); } \
+//     TEST_CASE( "applyMultiControlled" #namesuffix,      TEST_CATEGORY ) { testOperation<any,      numtargs,argtype>( applyMultiControlled ## namesuffix,      matrixgen); } \
+//     TEST_CASE( "applyMultiStateControlled" #namesuffix, TEST_CATEGORY ) { testOperation<anystates,numtargs,argtype>( applyMultiStateControlled ## namesuffix, matrixgen); } 
+
+
+/*
+ * define macros to pre-processor-time generate the API function
+ * signatures to give to static_cast to disambiguate the function
+ * from its C++ overloads, as per the above comment. The absolute
+ * macro nightmare below results from not being able to propagate
+ * templates to static_cast<...> which is not actually templated!
+ * May God forgive me for the misdeeds commited here below.
+ */
+
+// produces the control qubit arguments of a function signature,
+// with a trailing comma (since ctrls always preceed more arguments)
+#define GET_FUNC_CTRL_SUB_SIG( numctrls ) GET_FUNC_CTRL_SUB_SIG_##numctrls
+#define GET_FUNC_CTRL_SUB_SIG_zero
+#define GET_FUNC_CTRL_SUB_SIG_one       int,
+#define GET_FUNC_CTRL_SUB_SIG_any       int*,int,
+#define GET_FUNC_CTRL_SUB_SIG_anystates int*,int*,int,
+
+// produces the target qubit arguments of a function signature, complicated
+// by paulistr and pauligad functions not ever passign explicit targ lists.
+// trailing comma attached only when targs exist, and final args exist.
+// beware, macros must never have spaces between the name and open-paranthesis!
+#define GET_FUNC_TARG_SUB_SIG( numtargs, argtype )  GET_FUNC_TARG_SUB_SIG_##argtype( numtargs )
+#define GET_FUNC_TARG_SUB_SIG_none(      numtargs ) GET_FUNC_TARG_SUB_SIG_##numtargs
+#define GET_FUNC_TARG_SUB_SIG_scalar(    numtargs ) GET_FUNC_TARG_SUB_SIG_##numtargs ,
+#define GET_FUNC_TARG_SUB_SIG_axisrots(  numtargs ) GET_FUNC_TARG_SUB_SIG_##numtargs ,
+#define GET_FUNC_TARG_SUB_SIG_compmatr(  numtargs ) GET_FUNC_TARG_SUB_SIG_##numtargs ,
+#define GET_FUNC_TARG_SUB_SIG_diagmatr(  numtargs ) GET_FUNC_TARG_SUB_SIG_##numtargs ,
+#define GET_FUNC_TARG_SUB_SIG_diagpower( numtargs ) GET_FUNC_TARG_SUB_SIG_##numtargs ,
+#define GET_FUNC_TARG_SUB_SIG_paulistr(  numtargs )
+#define GET_FUNC_TARG_SUB_SIG_pauligad(  numtargs )
+#define GET_FUNC_TARG_SUB_SIG_one  int
+#define GET_FUNC_TARG_SUB_SIG_two  int,int
+#define GET_FUNC_TARG_SUB_SIG_any  int*,int
+
+// produces the final arguments of a function signature (no trailing comma).
+#define GET_FUNC_ARGS_SUB_SIG( numtargs, argtype ) GET_FUNC_ARGS_SUB_SIG_##numtargs##_##argtype
+#define GET_FUNC_ARGS_SUB_SIG_one_none
+#define GET_FUNC_ARGS_SUB_SIG_two_none
+#define GET_FUNC_ARGS_SUB_SIG_any_none
+#define GET_FUNC_ARGS_SUB_SIG_one_scalar qreal
+#define GET_FUNC_ARGS_SUB_SIG_two_scalar qreal
+#define GET_FUNC_ARGS_SUB_SIG_any_scalar qreal
+#define GET_FUNC_ARGS_SUB_SIG_one_compmatr CompMatr1
+#define GET_FUNC_ARGS_SUB_SIG_two_compmatr CompMatr2
+#define GET_FUNC_ARGS_SUB_SIG_any_compmatr CompMatr
+#define GET_FUNC_ARGS_SUB_SIG_one_diagmatr DiagMatr1
+#define GET_FUNC_ARGS_SUB_SIG_two_diagmatr DiagMatr2
+#define GET_FUNC_ARGS_SUB_SIG_any_diagmatr DiagMatr
+#define GET_FUNC_ARGS_SUB_SIG_one_diagpower DiagMatr1,qcomp
+#define GET_FUNC_ARGS_SUB_SIG_two_diagpower DiagMatr2,qcomp
+#define GET_FUNC_ARGS_SUB_SIG_any_diagpower DiagMatr, qcomp
+#define GET_FUNC_ARGS_SUB_SIG_one_axisrots qreal,qreal,qreal,qreal
+#define GET_FUNC_ARGS_SUB_SIG_any_paulistr PauliStr
+#define GET_FUNC_ARGS_SUB_SIG_any_pauligad PauliStr,qreal
+
+// produces the control-qubit-related prefix of a function name
+#define GET_FUNC_NAME_PREFIX( numctrls ) GET_FUNC_NAME_PREFIX_##numctrls
+#define GET_FUNC_NAME_PREFIX_zero      apply
+#define GET_FUNC_NAME_PREFIX_one       applyControlled
+#define GET_FUNC_NAME_PREFIX_any       applyMultiControlled
+#define GET_FUNC_NAME_PREFIX_anystates applyMultiStateControlled
+
+// produces a function name from the control qubits and the suffix, e.g. (any,T) -> applyMultiControlledT
+#define GET_FUNC_NAME(numctrls, suffix) GET_FUNC_NAME_INNER(GET_FUNC_NAME_PREFIX(numctrls), suffix)
+#define GET_FUNC_NAME_INNER(A, B)       GET_FUNC_NAME_INNER_INNER(A, B)
+#define GET_FUNC_NAME_INNER_INNER(A, B) A##B
+
+// converts the output of GET_FUNC_NAME() to a string, e.g. (any,T) -> "applyMultiControlledT"
+#define GET_FUNC_NAME_STR(numctrls, suffix) GET_FUNC_NAME_STR_INNER( GET_FUNC_NAME(numctrls,suffix) )
+#define GET_FUNC_NAME_STR_INNER(expr)       GET_FUNC_NAME_STR_INNER_INNER(expr)
+#define GET_FUNC_NAME_STR_INNER_INNER(symbol) #symbol
+
+// produces the signature of a function, e.g. (any,one,diagmatr) -> void(*)(Qureg, int*,int, int,DiagMatr1),
+// which is the signature of applyMultiControlled(Qureg qureg, int* ctrls, int numCtrls, int targ, DiagMatr1 m);
+// NOTE:
+// THIS CURRENT EXCLUDES PAULISTR AND PAULIGAD argtype
+#define GET_FUNC_SIG( numctrls, numtargs, argtype ) \
+    void(*) (                                       \
+        Qureg,                                      \
+        GET_FUNC_CTRL_SUB_SIG( numctrls )           \
+        GET_FUNC_TARG_SUB_SIG( numtargs, argtype )  \
+        GET_FUNC_ARGS_SUB_SIG( numtargs, argtype )  \
+    )
+
+// produces a function name, casted to its explicit C-argument form, disambiguated from its C++ overload.
+// e.g. (DiagMatrPower, zero, any, diagpower) -> static_cast<void(*)(Qureg,int*,int,DiagMatr,qcomp)>(applyDiagMatrPower)>
+#define GET_CASTED_FUNC( namesuffix, numctrls, numtargs, argtype ) \
+    static_cast< GET_FUNC_SIG(numctrls, numtargs, argtype) > (     \
+        GET_FUNC_NAME(numctrls, namesuffix) )
+
+// defines a Catch2 test-case for the implied function
+#define TEST_CASE_OPERATION( namesuffix, numctrls, numtargs, argtype, matrixgen ) \
+    TEST_CASE( GET_FUNC_NAME_STR(numctrls, namesuffix), TEST_CATEGORY ) {         \
+        testOperation<numctrls, numtargs, argtype>(                               \
+            GET_CASTED_FUNC(namesuffix, numctrls, numtargs, argtype),             \
+            matrixgen);                                                           \
+    }
+ 
+// automate the testing of a function for all its controlled variants
+#define TEST_ALL_CTRL_OPERATIONS( namesuffix, numtargs, argtype, matrixgen ) \
+    TEST_CASE_OPERATION( namesuffix, zero,      numtargs, argtype, matrixgen ) \
+    TEST_CASE_OPERATION( namesuffix, one,       numtargs, argtype, matrixgen ) \
+    TEST_CASE_OPERATION( namesuffix, any,       numtargs, argtype, matrixgen ) \
+    TEST_CASE_OPERATION( namesuffix, anystates, numtargs, argtype, matrixgen )
 
 
 
@@ -1133,59 +1254,98 @@ void testOperation(auto operation, auto matrixRefGen) {
  * @{
  */
 
-TEST_ANY_CTRL_OPERATION( PauliStr,    any, paulistr, nullptr );
-TEST_ANY_CTRL_OPERATION( PauliGadget, any, pauligad, nullptr );
-TEST_ANY_CTRL_OPERATION( CompMatr1, one, compmatr, nullptr );
-TEST_ANY_CTRL_OPERATION( CompMatr2, two, compmatr, nullptr );
-TEST_ANY_CTRL_OPERATION( CompMatr,  any, compmatr, nullptr );
-TEST_ANY_CTRL_OPERATION( DiagMatr1, one, diagmatr, nullptr );
-TEST_ANY_CTRL_OPERATION( DiagMatr2, two, diagmatr, nullptr );
-TEST_ANY_CTRL_OPERATION( DiagMatr,  any, diagmatr, nullptr );
-TEST_ANY_CTRL_OPERATION( DiagMatrPower, any, diagpower, nullptr );
 
-TEST_ANY_CTRL_OPERATION( Hadamard, one, none, FixedMatrices::H );
-TEST_ANY_CTRL_OPERATION( PauliX,   one, none, FixedMatrices::X );
-TEST_ANY_CTRL_OPERATION( PauliY,   one, none, FixedMatrices::Y );
-TEST_ANY_CTRL_OPERATION( PauliZ,   one, none, FixedMatrices::Z );
-TEST_ANY_CTRL_OPERATION( T,        one, none, FixedMatrices::T );
-TEST_ANY_CTRL_OPERATION( S,        one, none, FixedMatrices::S );
-TEST_ANY_CTRL_OPERATION( Swap,     two, none, FixedMatrices::SWAP );
-TEST_ANY_CTRL_OPERATION( SqrtSwap, two, none, FixedMatrices::sqrtSWAP );
+/*
+ * controlled operations
+ */
 
-TEST_ANY_CTRL_OPERATION( RotateX, one, scalar, ParameterisedMatrices::Rx );
-TEST_ANY_CTRL_OPERATION( RotateY, one, scalar, ParameterisedMatrices::Ry );
-TEST_ANY_CTRL_OPERATION( RotateZ, one, scalar, ParameterisedMatrices::Rz );
+TEST_ALL_CTRL_OPERATIONS( PauliStr,    any, paulistr, nullptr );
+TEST_ALL_CTRL_OPERATIONS( PauliGadget, any, pauligad, nullptr );
+TEST_ALL_CTRL_OPERATIONS( CompMatr1, one, compmatr, nullptr );
+TEST_ALL_CTRL_OPERATIONS( CompMatr2, two, compmatr, nullptr );
+TEST_ALL_CTRL_OPERATIONS( CompMatr,  any, compmatr, nullptr );
+TEST_ALL_CTRL_OPERATIONS( DiagMatr1, one, diagmatr, nullptr );
+TEST_ALL_CTRL_OPERATIONS( DiagMatr2, two, diagmatr, nullptr );
+TEST_ALL_CTRL_OPERATIONS( DiagMatr,  any, diagmatr, nullptr );
+TEST_ALL_CTRL_OPERATIONS( DiagMatrPower, any, diagpower, nullptr );
+TEST_ALL_CTRL_OPERATIONS( Hadamard, one, none, FixedMatrices::H );
+TEST_ALL_CTRL_OPERATIONS( PauliX,   one, none, FixedMatrices::X );
+TEST_ALL_CTRL_OPERATIONS( PauliY,   one, none, FixedMatrices::Y );
+TEST_ALL_CTRL_OPERATIONS( PauliZ,   one, none, FixedMatrices::Z );
+TEST_ALL_CTRL_OPERATIONS( T,        one, none, FixedMatrices::T );
+TEST_ALL_CTRL_OPERATIONS( S,        one, none, FixedMatrices::S );
+TEST_ALL_CTRL_OPERATIONS( Swap,     two, none, FixedMatrices::SWAP );
+TEST_ALL_CTRL_OPERATIONS( SqrtSwap, two, none, FixedMatrices::sqrtSWAP );
+TEST_ALL_CTRL_OPERATIONS( RotateX, one, scalar, ParameterisedMatrices::Rx );
+TEST_ALL_CTRL_OPERATIONS( RotateY, one, scalar, ParameterisedMatrices::Ry );
+TEST_ALL_CTRL_OPERATIONS( RotateZ, one, scalar, ParameterisedMatrices::Rz );
+TEST_ALL_CTRL_OPERATIONS( RotateAroundAxis, one, axisrots, nullptr );
+TEST_ALL_CTRL_OPERATIONS( MultiQubitNot, any, none, VariableSizeMatrices::X );
+TEST_ALL_CTRL_OPERATIONS( PhaseGadget, any, scalar, VariableSizeParameterisedMatrices::Z );
 
-TEST_ANY_CTRL_OPERATION( RotateAroundAxis, one, axisrots, nullptr );
 
-TEST_ANY_CTRL_OPERATION( MultiQubitNot, any, none, VariableSizeMatrices::X );
+/*
+ * non-controlled operations with no C++ overloads
+ */
 
-TEST_ANY_CTRL_OPERATION( PhaseGadget, any, scalar, VariableSizeParameterisedMatrices::Z );
+TEST_CASE( "multiplyPauliStr",        TEST_CATEGORY ) { testOperation<zero,any,paulistr>(multiplyPauliStr,    nullptr, true); }
+TEST_CASE( "multiplyPauliGadget",     TEST_CATEGORY ) { testOperation<zero,any,pauligad>(multiplyPauliGadget, nullptr, true); }
+TEST_CASE( "multiplyCompMatr1",       TEST_CATEGORY ) { testOperation<zero,one,compmatr>(multiplyCompMatr1,   nullptr, true); }
+TEST_CASE( "multiplyCompMatr2",       TEST_CATEGORY ) { testOperation<zero,two,compmatr>(multiplyCompMatr2,   nullptr, true); }
+TEST_CASE( "multiplyDiagMatr1",       TEST_CATEGORY ) { testOperation<zero,one,diagmatr>(multiplyDiagMatr1,   nullptr, true); }
+TEST_CASE( "multiplyDiagMatr2",       TEST_CATEGORY ) { testOperation<zero,two,diagmatr>(multiplyDiagMatr2,   nullptr, true); }
+TEST_CASE( "applyPhaseFlip",          TEST_CATEGORY ) { testOperation<zero,one,none>  (applyPhaseFlip,          VariableSizeMatrices::PF(1)); }
+TEST_CASE( "applyTwoQubitPhaseFlip",  TEST_CATEGORY ) { testOperation<zero,two,none>  (applyTwoQubitPhaseFlip,  VariableSizeMatrices::PF(2)); }
+TEST_CASE( "applyPhaseShift",         TEST_CATEGORY ) { testOperation<zero,one,scalar>(applyPhaseShift,         ParameterisedMatrices::PS); }
+TEST_CASE( "applyTwoQubitPhaseShift", TEST_CATEGORY ) { testOperation<zero,two,scalar>(applyTwoQubitPhaseShift, ParameterisedMatrices::PS2); }
 
-TEST_CASE( "multiplyPauliStr",     TEST_CATEGORY ) { testOperation<zero,any,paulistr>(multiplyPauliStr,    nullptr, true); }
-TEST_CASE( "multiplyPauliGadget",  TEST_CATEGORY ) { testOperation<zero,any,pauligad>(multiplyPauliGadget, nullptr, true); }
 
-TEST_CASE( "multiplyCompMatr1", TEST_CATEGORY ) { testOperation<zero,one,compmatr>(multiplyCompMatr1, nullptr, true); }
-TEST_CASE( "multiplyCompMatr2", TEST_CATEGORY ) { testOperation<zero,two,compmatr>(multiplyCompMatr2, nullptr, true); }
-TEST_CASE( "multiplyCompMatr",  TEST_CATEGORY ) { testOperation<zero,any,compmatr>(multiplyCompMatr,  nullptr, true); }
+/*
+ * non-controlled operations which have a C++ overload
+ * (because they accept qubit lists which become vector),
+ * and so which require explicit casting to resolve the
+ * compiler ambiguity
+ */
 
-TEST_CASE( "multiplyDiagMatr1", TEST_CATEGORY ) { testOperation<zero,one,diagmatr>(multiplyDiagMatr1, nullptr, true); }
-TEST_CASE( "multiplyDiagMatr2", TEST_CATEGORY ) { testOperation<zero,two,diagmatr>(multiplyDiagMatr2, nullptr, true); }
-TEST_CASE( "multiplyDiagMatr",  TEST_CATEGORY ) { testOperation<zero,any,diagmatr>(multiplyDiagMatr,  nullptr, true); }
+TEST_CASE( "multiplyCompMatr",  TEST_CATEGORY ) { 
+    auto func = static_cast<void(*)(Qureg, int*, int, CompMatr)>(multiplyCompMatr);
+    testOperation<zero,any,compmatr>(func, nullptr, true); 
+}
 
-TEST_CASE( "multiplyDiagMatrPower",  TEST_CATEGORY ) { testOperation<zero,any,diagpower>(multiplyDiagMatrPower, nullptr, true); }
+TEST_CASE( "multiplyDiagMatr",  TEST_CATEGORY ) {
+    auto func = static_cast<void(*)(Qureg, int*, int, DiagMatr)>(multiplyDiagMatr);
+    testOperation<zero,any,diagmatr>(func, nullptr, true);
+}
 
-TEST_CASE( "multiplyMultiQubitNot", TEST_CATEGORY ) { testOperation<zero,any,none>(multiplyMultiQubitNot, VariableSizeMatrices::X, true); }
-TEST_CASE( "multiplyPhaseGadget",   TEST_CATEGORY ) { testOperation<zero,any,scalar>(multiplyPhaseGadget, VariableSizeParameterisedMatrices::Z, true); }
+TEST_CASE( "multiplyDiagMatrPower",  TEST_CATEGORY ) {
+    auto func = static_cast<void(*)(Qureg, int*, int, DiagMatr, qcomp)>(multiplyDiagMatrPower);
+    testOperation<zero,any,diagpower>(func, nullptr, true);
+}
 
-TEST_CASE( "applyPhaseFlip",           TEST_CATEGORY ) { testOperation<zero,one,none>(applyPhaseFlip,           VariableSizeMatrices::PF(1)); }
-TEST_CASE( "applyTwoQubitPhaseFlip",   TEST_CATEGORY ) { testOperation<zero,two,none>(applyTwoQubitPhaseFlip,   VariableSizeMatrices::PF(2)); }
-TEST_CASE( "applyMultiQubitPhaseFlip", TEST_CATEGORY ) { testOperation<zero,any,none>(applyMultiQubitPhaseFlip, VariableSizeMatrices::PF); }
+TEST_CASE( "multiplyMultiQubitNot",  TEST_CATEGORY ) {
+    auto func = static_cast<void(*)(Qureg, int*, int)>(multiplyMultiQubitNot);
+    testOperation<zero,any,none>(func, VariableSizeMatrices::X, true);
+}
 
-TEST_CASE( "applyPhaseShift",           TEST_CATEGORY ) { testOperation<zero,one,scalar>(applyPhaseShift,           ParameterisedMatrices::PS); }
-TEST_CASE( "applyTwoQubitPhaseShift",   TEST_CATEGORY ) { testOperation<zero,two,scalar>(applyTwoQubitPhaseShift,   ParameterisedMatrices::PS2); }
-TEST_CASE( "applyMultiQubitPhaseShift", TEST_CATEGORY ) { testOperation<zero,any,scalar>(applyMultiQubitPhaseShift, VariableSizeParameterisedMatrices::PS); }
+TEST_CASE( "multiplyPhaseGadget",  TEST_CATEGORY ) {
+    auto func = static_cast<void(*)(Qureg, int*, int, qreal)>(multiplyPhaseGadget);
+    testOperation<zero,any,scalar>(func, VariableSizeParameterisedMatrices::Z, true);
+}
 
+TEST_CASE( "applyMultiQubitPhaseFlip",  TEST_CATEGORY ) {
+    auto func = static_cast<void(*)(Qureg, int*, int)>(applyMultiQubitPhaseFlip);
+    testOperation<zero,any,none>(func, VariableSizeMatrices::PF);
+}
+
+TEST_CASE( "applyMultiQubitPhaseShift",  TEST_CATEGORY ) {
+    auto func = static_cast<void(*)(Qureg, int*, int, qreal)>(applyMultiQubitPhaseShift);
+    testOperation<zero,any,scalar>(func, VariableSizeParameterisedMatrices::PS);
+}
+
+
+/*
+ * operations which need custom logic
+ */
 
 TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY ) {
 

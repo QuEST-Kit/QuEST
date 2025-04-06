@@ -25,6 +25,13 @@
 
 
 /*
+ * unlike some other headers, we here intermix the C and C++-only
+ * signatures, grouping them semantically & by their doc groups
+ */
+
+
+
+/*
  * PAULI STRUCTS
  *
  * which are visible to both C and C++, and don't require demangling.
@@ -305,4 +312,4 @@ extern "C" {
 
 #endif // PAULIS_H
 
-/** @} (end doxygen defgroup) */
+/** @} */ // (end file-wide doxygen defgroup)

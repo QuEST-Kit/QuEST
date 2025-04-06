@@ -20,6 +20,7 @@
 #include "quest/include/environment.h"
 
 #include <type_traits>
+#include <functional>
 #include <string>
 #include <vector>
 #include <array>
@@ -383,16 +384,17 @@ qreal util_getMaxProbOfTwoQubitDepolarising();
  * TEMPORARY MEMORY ALLOCATION
  */
 
-void util_tryAllocVector(vector<qreal > &vec, qindex size, void (*errFunc)());
-void util_tryAllocVector(vector<qcomp > &vec, qindex size, void (*errFunc)());
-void util_tryAllocVector(vector<qcomp*> &vec, qindex size, void (*errFunc)());
+void util_tryAllocVector(vector<qreal>    &vec, qindex size, std::function<void()> errFunc);
+void util_tryAllocVector(vector<qcomp>    &vec, qindex size, std::function<void()> errFunc);
+void util_tryAllocVector(vector<qcomp*>   &vec, qindex size, std::function<void()> errFunc);
+void util_tryAllocVector(vector<unsigned> &vec, qindex size, std::function<void()> errFunc);
 
 // cuQuantum needs a vector<double> overload, which we additionally define when qreal!=double. Gross!
 #if FLOAT_PRECISION != 2
-void util_tryAllocVector(vector<double> &vec, qindex size, void (*errFunc)());
+    void util_tryAllocVector(vector<double> &vec, qindex size, std::function<void()> errFunc);
 #endif
 
-void util_tryAllocMatrix(vector<vector<qcomp>> &vec, qindex numRows, qindex numCols, void (*errFunc)());
+void util_tryAllocMatrix(vector<vector<qcomp>> &vec, qindex numRows, qindex numCols, std::function<void()> errFunc);
 
 
 

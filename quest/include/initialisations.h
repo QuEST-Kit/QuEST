@@ -19,6 +19,12 @@
 #include "quest/include/qureg.h"
 #include "quest/include/paulis.h"
 
+
+
+/*
+ * C AND C++ AGNOSTIC FUNCTIONS
+ */
+
 // enable invocation by both C and C++ binaries
 #ifdef __cplusplus
 extern "C" {
@@ -144,6 +150,65 @@ void setQuregToReducedDensityMatrix(Qureg out, Qureg in, int* retainQubits, int 
 }
 #endif
 
+
+
+/*
+ * C++ OVERLOADS
+ *
+ * which are only accessible to C++ binaries, and accept
+ * arguments more natural to C++ (e.g. std::vector). We 
+ * manually add these to their respective Doxygen doc groups.
+ */
+
+#ifdef __cplusplus
+
+#include <vector>
+
+
+/// @ingroup init_amps
+/// @nottested
+/// @notdoced
+/// @notvalidated
+/// @cpponly
+void setQuregAmps(Qureg qureg, qindex startInd, std::vector<qcomp> amps);
+
+
+/// @ingroup init_amps
+/// @nottested
+/// @notdoced
+/// @notvalidated
+/// @cpponly
+void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, std::vector<std::vector<qcomp>> amps);
+
+
+/// @ingroup init_amps
+/// @nottested
+/// @notdoced
+/// @notvalidated
+/// @cpponly
+void setDensityQuregFlatAmps(Qureg qureg, qindex startInd, std::vector<qcomp> amps);
+
+
+/// @ingroup init_amps
+/// @nottested
+/// @notdoced
+/// @notvalidated
+/// @cpponly
+void setQuregToPartialTrace(Qureg out, Qureg in, std::vector<int> traceOutQubits);
+
+
+/// @ingroup init_amps
+/// @nottested
+/// @notdoced
+/// @notvalidated
+/// @cpponly
+void setQuregToReducedDensityMatrix(Qureg out, Qureg in, std::vector<int> retainQubits);
+
+
+#endif // __cplusplus
+
+
+
 #endif // INITIALISATIONS_H
 
-/** @} (end doxygen defgroup) */
+/** @} */ // (end file-wide doxygen defgroup)

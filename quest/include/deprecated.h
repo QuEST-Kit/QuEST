@@ -114,12 +114,12 @@ refactor your code to v4, and should absolutely not continue to use the old v3 A
  */
 
 
-// TODO: 
-// we use placeholder message(...) below which only issues a warning,
-// and does not kill compilation; there alas seems to be no cross-platform
-// method of aborting compilation with a _Pragma (and aborting during
-// preprocessing via #error is too soon). We currently work around this by
-// referring to an undefined symbol. Ew!
+/// @todo: 
+/// we use placeholder message(...) below which only issues a warning,
+/// and does not kill compilation; there alas seems to be no cross-platform
+/// method of aborting compilation with a _Pragma (and aborting during
+/// preprocessing via #error is too soon). We currently work around this by
+/// referring to an undefined symbol. Ew!
 
 
 #define _FORCE_COMPILATION_TO_FAIL() \

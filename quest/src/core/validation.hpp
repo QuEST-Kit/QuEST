@@ -159,6 +159,8 @@ void validate_declaredNumElemsMatchesVectorLength(qindex numElems, qindex vecLen
 void validate_multiVarFuncQubits(int numMatrQubits, int* numQubitsPerVar, int numVars, const char* caller);
 void validate_funcVarSignedFlag(int areSigned, const char* caller);
 
+void validate_matrixRowsAllSameSize(vector<vector<qcomp>> matrix, const char* caller);
+
 
 
 /*
@@ -363,6 +365,7 @@ void validate_targets(Qureg qureg, int* targets, int numTargets, const char* cal
 
 void validate_controls(Qureg qureg, int* ctrls, int numCtrls, const char* caller);
 void validate_controlStates(int* states, int numCtrls, const char* caller);
+void validate_controlsMatchStates(int numCtrls, int numStates, const char* caller); // C++ only
 
 void validate_controlAndTarget(Qureg qureg, int ctrl, int targ, const char* caller);
 void validate_controlsAndTarget(Qureg qureg, int* ctrls, int numCtrls, int targ, const char* caller);
@@ -390,6 +393,8 @@ void validate_measurementOutcomesProbNotZero(int* outcomes, int numQubits, qreal
 void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const char* caller);
 
 void validate_measurementProbsAreNormalised(vector<qreal> probs, const char* caller);
+
+void validate_measurementOutcomesMatchTargets(int numQubits, int numOutcomes, const char* caller); // C++ interface
 
 
 
@@ -487,6 +492,14 @@ void validate_quregCanBeSetToReducedDensMatr(Qureg out, Qureg in, int numTraceQu
  */
 
 void validate_canReadFile(string fn, const char* caller);
+
+
+
+/*
+ * TEMPORARY ALLOCATIONS
+ */
+
+void validate_tempAllocSucceeded(bool succeeded, qindex numElems, qindex numBytesPerElem, const char* caller);
 
 
 

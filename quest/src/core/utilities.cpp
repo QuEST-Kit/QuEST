@@ -23,6 +23,7 @@
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 
+#include <functional>
 #include <algorithm>
 #include <complex>
 #include <cmath>
@@ -1006,7 +1007,7 @@ qreal util_getMaxProbOfTwoQubitDepolarising() {
  */
 
 template <typename T>
-void tryAllocVector(vector<T> &vec, qindex size, void (*errFunc)()) {
+void tryAllocVector(vector<T> &vec, qindex size, std::function<void()> errFunc) {
 
     // this function resizes the vector, not only reserving it,
     // such that vec.size() will subsequently return 'size'
@@ -1024,17 +1025,18 @@ void tryAllocVector(vector<T> &vec, qindex size, void (*errFunc)()) {
     }
 }
 
-void util_tryAllocVector(vector<qreal > &vec, qindex size, void (*errFunc)()) { tryAllocVector(vec, size, errFunc); }
-void util_tryAllocVector(vector<qcomp > &vec, qindex size, void (*errFunc)()) { tryAllocVector(vec, size, errFunc); }
-void util_tryAllocVector(vector<qcomp*> &vec, qindex size, void (*errFunc)()) { tryAllocVector(vec, size, errFunc); }
+void util_tryAllocVector(vector<qreal>    &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
+void util_tryAllocVector(vector<qcomp>    &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
+void util_tryAllocVector(vector<qcomp*>   &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
+void util_tryAllocVector(vector<unsigned> &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
 
 // cuQuantum needs a vector<double> overload, which we additionally define when qreal!=double. Gross!
 #if FLOAT_PRECISION != 2
-    void util_tryAllocVector(vector<double> &vec, qindex size, void (*errFunc)()) { tryAllocVector(vec, size, errFunc); }
+    void util_tryAllocVector(vector<double> &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
 #endif
 
 
-void util_tryAllocMatrix(vector<vector<qcomp>> &matr, qindex numRows, qindex numCols, void (*errFunc)()) {
+void util_tryAllocMatrix(vector<vector<qcomp>> &matr, qindex numRows, qindex numCols, std::function<void()> errFunc) {
 
     // this function resizes the matrix, not only reserving it,
     // such that matr.size() will subsequently return 'numRows'

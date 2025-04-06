@@ -336,4 +336,4 @@ static inline qcomp getQcomp(qreal re, qreal im) {
 
 #endif // TYPES_H
 
-/** @} (end doxygen defgroup) */
+/** @} */ // (end file-wide doxygen defgroup)

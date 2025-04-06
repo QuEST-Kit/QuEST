@@ -22,8 +22,10 @@
 #include "quest/src/gpu/gpu_config.hpp"
 
 #include <string>
+#include <vector>
 
 using std::string;
+using std::vector;
 
 
 
@@ -261,7 +263,7 @@ void printMemoryInfo(Qureg qureg) {
 
 
 /*
- * PUBLIC FUNCTIONS
+ * PUBLIC C & C++ AGNOSTIC FUNCTIONS
  */
 
 // enable invocation by both C and C++ binaries
@@ -467,7 +469,6 @@ void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex s
 
 
 
-
 /*
  * C++ ONLY FUNCTIONS
  *
@@ -505,4 +506,46 @@ qcomp getDensityQuregAmp(Qureg qureg, qindex row, qindex column) {
 extern "C" void _wrap_getDensityQuregAmp(qcomp* out, Qureg qureg, qindex row, qindex column) {
 
     *out = getDensityQuregAmp(qureg, row, column);
+}
+
+
+
+/*
+ * C++ OVERLOADS
+ */
+
+
+vector<qcomp> getQuregAmps(Qureg qureg, qindex startInd, qindex numAmps) {
+
+    // allocate the output vector, and validate successful
+    vector<qcomp> out;
+    auto callback = [&]() { validate_tempAllocSucceeded(false, numAmps, sizeof(qcomp), __func__); };
+    util_tryAllocVector(out, numAmps, callback);
+
+    // performs main validation
+    getQuregAmps(out.data(), qureg, startInd, numAmps);
+    return out;
+}
+
+
+vector<vector<qcomp>> getDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
+
+    // allocate the output matrix, and validate successful
+    vector<vector<qcomp>> out;
+    qindex numElems = numRows * numCols; // never overflows (else Qureg alloc would fail)
+    auto callback1 = [&]() { validate_tempAllocSucceeded(false, numElems, sizeof(qcomp), __func__); };
+    util_tryAllocMatrix(out, numRows, numCols, callback1);
+
+    // we must pass nested pointers to core C function, requiring another temp array, also validated
+    vector<qcomp*> ptrs;
+    auto callback2 = [&]() { validate_tempAllocSucceeded(false, numRows, sizeof(qcomp*), __func__); };
+    util_tryAllocVector(ptrs, numRows, callback2);
+
+    // embed out pointers
+    for (qindex i=0; i<numRows; i++)
+        ptrs[i] = out[i].data();
+
+    // modify out through its ptrs
+    getDensityQuregAmps(ptrs.data(), qureg, startRow, startCol, numRows, numCols);
+    return out;
 }

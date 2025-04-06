@@ -16,6 +16,12 @@
 
 #include "quest/include/types.h"
 
+
+
+/*
+ * C AND C++ AGNOSTIC FUNCTIONS
+ */
+
 // enable invocation by both C and C++ binaries
 #ifdef __cplusplus
 extern "C" {
@@ -159,6 +165,39 @@ void getEnvironmentString(char str[200]);
 }
 #endif
 
+
+
+/*
+ * C++ OVERLOADS
+ *
+ * which are only accessible to C++ binaries, and accept
+ * arguments more natural to C++ (e.g. std::vector). We
+ * manually add these to their respective Doxygen doc groups.
+ */
+
+#ifdef __cplusplus
+
+#include <vector>
+
+
+/// @ingroup debug_seed
+/// @nottested
+/// @notdoced
+/// @cpponly
+void setSeeds(std::vector<unsigned> seeds);
+
+
+/// @ingroup debug_seed
+/// @nottested
+/// @notdoced
+/// @cpponly
+std::vector<unsigned> getSeeds();
+
+
+#endif // __cplusplus
+
+
+
 #endif // DEBUG_H
 
-/** @} (end doxygen defgroup) */
+/** @} */ // (end file-wide doxygen defgroup)

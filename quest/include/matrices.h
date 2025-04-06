@@ -32,6 +32,13 @@
 
 
 
+/*
+ * unlike some other headers, we here intermix the C and C++-only
+ * signatures, grouping them semantically & by their doc groups
+ */
+
+
+
 /** 
  * @defgroup matrices_structs Structs
  * @brief Data structures for representing operator matrices.
@@ -791,17 +798,20 @@ extern "C" {
 
     /// @ingroup matrices_setters
     /// @notdoced
+    /// @cpponly
     void setInlineCompMatr(CompMatr matr, int numQb, std::vector<std::vector<qcomp>> in);
 
 
     /// @ingroup matrices_setters
     /// @notdoced
+    /// @cpponly
     void setInlineDiagMatr(DiagMatr matr, int numQb, std::vector<qcomp> in);
 
 
     /// @ingroup matrices_setters
     /// @notdoced
     /// @nottested
+    /// @cpponly
     void setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, std::vector<qcomp> in);
 
 
@@ -930,11 +940,13 @@ extern "C" {
 
     /// @ingroup matrices_create
     /// @notdoced
+    /// @cpponly
     CompMatr createInlineCompMatr(int numQb, std::vector<std::vector<qcomp>> elems);
 
 
     /// @ingroup matrices_create
     /// @notdoced
+    /// @cpponly
     DiagMatr createInlineDiagMatr(int numQb, std::vector<qcomp> elems);
 
 
@@ -1105,4 +1117,4 @@ extern "C" {
 
 #endif // MATRICES_H
 
-/** @} (end doxygen defgroup) */
+/** @} */ // (end file-wide doxygen defgroup)

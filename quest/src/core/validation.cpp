@@ -371,6 +371,10 @@ namespace report {
         "Invalid value for the 'areSigned' flag (${ARE_SIGNED}), which must instead be 1 or 0 to indicate whether or not to interpret the variable sub-register basis states as signed integers (encoded with two's complement).";
 
 
+    string NESTED_VECTOR_MATRIX_HAS_INCONSISTENT_NUM_COLUMNS =
+        "The given matrix (a nested list of vectors) had an inconsistent number of columns. The first row had ${FIRST_LEN} columns, while the row at index ${OUTLIER_IND} had ${OUTLIER_LEN} columns.";
+
+
     /*
      * EXISTING MATRIX
      */
@@ -813,6 +817,9 @@ namespace report {
     string INVALID_CONTROL_STATE =
         "The control qubit at index ${INDEX} has an invalid control-state of ${STATE}. Valid states are 0 and 1.";
 
+    string DIFFERENT_NUM_CTRLS_AND_STATES =
+        "A differing number of control qubits (${NUM_CTRLS}) and control states (${NUM_STATES}) was given.";
+
 
     /*
     * MEASUREMENT PARAMETERS
@@ -835,6 +842,9 @@ namespace report {
 
     string GPU_CANNOT_FIT_TEMP_MEASUREMENT_OUTCOME_PROBS =
         "The GPU has less available memory (${MEM_AVAIL} bytes) than that needed (${MEM_NEEDED} bytes) to temporarily store the ${NUM_OUTCOMES} outcome probabilities of the specified ${NUM_QUBITS} qubits.";
+
+    string MEASUREMENT_OUTCOMES_MISMATCH_NUM_TARGETS =
+        "The given number of measurement outcomes (${NUM_OUTCOMES}) is inconsistent with the given number of qubits (${NUM_QUBITS}).";
 
 
     /*
@@ -1037,6 +1047,15 @@ namespace report {
 
     string CANNOT_READ_FILE = 
         "Could not load and read the given file. Make sure the file exists and is readable as plaintext.";
+
+
+    /*
+     * TEMPORARY ALLOCATIONS
+     */
+
+    string TEMP_ALLOC_FAILED =
+        "A temporary allocation of ${NUM_ELEMS} elements (each of ${NUM_BYTES_PER_ELEM} bytes) failed, possibly because of insufficient memory.";
+
 }
 
 
@@ -2142,6 +2161,30 @@ void validate_multiVarFuncQubits(int numMatrQubits, int* numQubitsPerVar, int nu
 void validate_funcVarSignedFlag(int areSigned, const char* caller) {
 
     assertThat(areSigned == 0 || areSigned == 1, report::MULTI_VAR_FUNC_INVALID_ARE_SIGNED_FLAG, {{"${ARE_SIGNED}", areSigned}}, caller);
+}
+
+void validate_matrixRowsAllSameSize(vector<vector<qcomp>> matrix, const char* caller) {
+
+    if (matrix.empty())
+        return;
+
+    size_t dim = matrix[0].size();
+
+    size_t row=0;
+    bool allSame = true;
+    for (row=0; row<matrix.size() && allSame; row++)
+        allSame = (matrix[row].size() == dim);
+
+    // extremely lazily avoiding seg-fault from premature matrix[row==end])
+    if (allSame)
+        return;
+
+    tokenSubs vars = {
+        {"{FIRST_LEN}",    dim},
+        {"${OUTLIER_IND}", row},
+        {"${OUTLIER_LEN}", matrix[row].size()}};
+
+    assertThat(allSame, report::NESTED_VECTOR_MATRIX_HAS_INCONSISTENT_NUM_COLUMNS, vars, caller);
 }
 
 
@@ -3501,6 +3544,16 @@ void validate_controlStates(int* states, int numCtrls, const char* caller) {
         assertThat(states[n] == 0 || states[n] == 1, report::INVALID_CONTROL_STATE, {{"${INDEX}", n}, {"${STATE}", states[n]}}, caller);
 }
 
+void validate_controlsMatchStates(int numCtrls, int numStates, const char* caller) {
+
+    // only invocable by the C++ interface
+    tokenSubs vars = {
+        {"${NUM_CTRLS}",  numCtrls},
+        {"${NUM_STATES}", numStates}};
+
+    assertThat(numCtrls == numStates, report::DIFFERENT_NUM_CTRLS_AND_STATES, vars, caller);
+}
+
 
 
 /*
@@ -3573,6 +3626,16 @@ void validate_measurementProbsAreNormalised(vector<qreal> probs, const char* cal
     qreal total = util_getSum(probs);
     qreal dist = std::abs(total - 1);
     assertThat(dist <= global_validationEpsilon, report::OUTCOME_PROBS_DO_NOT_SUM_TO_ONE, caller);
+}
+
+void validate_measurementOutcomesMatchTargets(int numQubits, int numOutcomes, const char* caller) {
+
+    // invoked only by the C++ user interface
+    tokenSubs vars = {
+        {"${NUM_QUBITS}",    numQubits},
+        {"${NUM_OUTCOMES}",  numOutcomes}};
+
+    assertThat(numQubits == numOutcomes, report::MEASUREMENT_OUTCOMES_MISMATCH_NUM_TARGETS, caller);
 }
 
 
@@ -4031,4 +4094,20 @@ void validate_canReadFile(string fn, const char* caller) {
 
     /// @todo embed filename into error message when tokenSubs is updated to permit strings
     assertThat(parser_canReadFile(fn), report::CANNOT_READ_FILE, caller);
+}
+
+
+
+/*
+ * TEMPORARY ALLOCATIONS
+ */
+
+void validate_tempAllocSucceeded(bool succeeded, qindex numElems, qindex numBytesPerElem, const char* caller) {
+
+    // avoid showing total bytes in case it overflows
+    tokenSubs vars = {
+        {"${NUM_ELEMS}", numElems},
+        {"${NUM_BYTES_PER_ELEM}", numBytesPerElem}};
+
+    assertThat(succeeded, report::TEMP_ALLOC_FAILED, vars, caller);
 }
