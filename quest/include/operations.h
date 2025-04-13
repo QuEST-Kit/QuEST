@@ -81,7 +81,7 @@ extern "C" {
  * @param[in,out] qureg  the state to modify.
  * @param[in]     target the index of the target qubit.
  * @param[in]     matrix the Z-basis matrix to multiply.
- * @throws invalidQuESTInputError()
+ * @throws @validationerror
  * - if @p qureg or @p matrix are uninitialised.
  * - if @p target is an invalid qubit index.
  * @see
@@ -153,7 +153,7 @@ digraph {
  * @param[in,out] qureg  the state to modify.
  * @param[in]     target the index of the target qubit.
  * @param[in]     matrix the Z-basis unitary matrix to effect.
- * @throws invalidQuESTInputError()
+ * @throws @validationerror
  * - if @p qureg or @p matrix are uninitialised.
  * - if @p matrix is not approximately unitary.
  * - if @p target is an invalid qubit index.

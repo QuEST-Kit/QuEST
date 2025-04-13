@@ -89,7 +89,7 @@ extern "C" {
  * @param[in] qureg the reference state.
  * @param[in] str   the observable operator.
  * @returns The real component of the expectation value.
- * @throws invalidQuESTInputError()
+ * @throws @validationerror
  * - if @p qureg is uninitialised.
  * - if @p str contains a (non-identity) Pauli upon a higher-index qubit than exists in @p qureg.
  * - if the output (with unreturned imaginary component) is not approximately real.
@@ -145,10 +145,11 @@ qreal calcExpecPauliStr(Qureg qureg, PauliStr str);
     qreal expec = calcExpecPauliStrSum(qureg, sum);
     reportScalar("expec", expec);  
  * ```
+ *
  * @param[in] qureg the reference state.
  * @param[in] sum   the observable operator.
  * @returns The real component of the expectation value.
- * @throws invalidQuESTInputError()
+ * @throws @validationerror
  * - if @p qureg or @p sum are uninitialised.
  * - if any PauliStr in @p sum targets a higher-index qubit than exists in @p qureg.
  * - if @p sum is not approximately Hermitian.
