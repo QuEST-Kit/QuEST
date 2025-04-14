@@ -296,7 +296,7 @@ TAB_SIZE               = 4
 
 ALIASES                =
 ALIASES += "nottested=@warning This function has not yet been unit tested and may contain bugs. Please use with caution!"
-ALIASES += "notvalidated=@attention This function's input validation has not yet been tested, so erroneous usage may produce unexpected output. Please use with caution!"
+ALIASES += "notvalidated=@attention This function's input validation has not yet been unit tested, so erroneous usage may produce unexpected output. Please use with caution!"
 ALIASES += "notdoced=@note Documentation for this function or struct is under construction!"
 ALIASES += "cpponly=@remark This function is only available in C++."
 ALIASES += "conly=@remark This function is only available in C."
