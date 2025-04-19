@@ -59,6 +59,14 @@ Launching your [compiled](compile.md) QuEST application can be as straightforwar
 > See [`compile.md`](compile.md#examples) for instructions on compiling the examples.
 <!-- @todo the above link fails in Doxygen; it's too stupid to recognise the section ref -->
 
+
+
+> TODO:
+> update below
+> - moved isolated function examples to /isolated/ (and renamed)
+> - new tutorials
+
+
 The example source codes are located in [`examples/`](/examples/) and are divided into subdirectories, e.g.
 ```
 examples/

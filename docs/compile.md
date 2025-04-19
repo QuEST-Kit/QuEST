@@ -337,9 +337,9 @@ cmake --build .
 ```
 The executables will be saved in the (current) `build` directory, in a sub-directory structure mimicking the [`examples/`](/examples/) folder. They can be run by e.g.
 ```bash
-./examples/matrices/cpp_initialisation
+./examples/isolated/initialising_paulis_c
 ```
-as elaborated upon in [`launch.md`](launch.md#tests).
+as elaborated upon in [`launch.md`](launch.md#examples).
 <!-- @todo the above link fails in Doxygen; it's too stupid to recognise the section ref -->
 
 
