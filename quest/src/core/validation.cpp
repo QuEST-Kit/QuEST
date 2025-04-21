@@ -1066,8 +1066,11 @@ namespace report {
 
 void default_inputErrorHandler(const char* func, const char* msg) {
 
-    // safe to call even before MPI has been setup, and ignores user-set trailing newlines
-    print(string("")
+    // safe to call even before MPI has been setup, and ignores user-set trailing newlines.
+    // It begins with \n to interrupt half-printed lines (when trailing newlines are set to
+    // 0 via setNumReportedNewlines(0)), for visual clarity. Note that user's overriding
+    // functions might not think to print an initial newline but oh well!
+    print(string("\n")
         + "QuEST encountered a validation error during function " 
         + "'" + func + "':\n" + msg + "\n"
         + "Exiting...\n");
