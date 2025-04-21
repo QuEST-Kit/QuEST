@@ -63,6 +63,7 @@ const int SET_SPACE_BETWEEN_KET_AND_RANK = 2;
 // must be kept as single char; use numbers above to change spacing
 const char TABLE_SPACE_CHAR = '.';
 const char MATRIX_SPACE_CHAR = ' ';
+const char PAULI_SPACE_CHAR = ' ';
 
 // should not contain newline
 const string LABEL_SUFFIX = ":";
@@ -134,6 +135,32 @@ void printer_setNumTrailingNewlines(int numNewlines) {
 int printer_getNumTrailingNewlines() {
 
     return global_numTrailingNewlines;
+}
+
+
+// user specified characters to represent Pauli operators
+
+string global_pauliChars = "IXYZ";
+
+void printer_setPauliChars(string newChars) {
+
+    global_pauliChars = newChars;
+}
+
+
+// user specified Pauli string format
+
+int global_pauliStrFormatFlag = 0;
+
+void printer_setPauliStrFormat(int flag) {
+
+    /// @todo
+    /// this could be changed to an enum, even though the
+    /// API will likely always receive an int (for C and
+    /// C++ agnosticism and simplicity - I hate polluting
+    /// an API with custom types and constants!).
+
+    global_pauliStrFormatFlag = flag;
 }
 
 
@@ -1227,16 +1254,75 @@ extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
 extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr* strings, qindex numStrings);
 
 
-string getPauliStrAsString(PauliStr str, int maxNumQubits) {
+string getPauliStrAsAllQubitsString(PauliStr str, int numPaulis) {
 
-    string labels = "IXYZ";
+    // avoid repeated allocations in below string concatenation
+    string out = "";
+    out.reserve(numPaulis);
 
     // ugly but adequate - like me (call me)
-    string out = "";
-    for (int i=maxNumQubits-1; i>=0; i--)
-        out += labels[paulis_getPauliAt(str, i)];
+    for (int i=numPaulis-1; i>=0; i--) {
+        int code = paulis_getPauliAt(str, i); // 0123
+        out += global_pauliChars[code];       // IXYZ unless user-overriden
+    }
     
     return out;
+}
+
+
+string getPauliStrAsIndexString(PauliStr str, int numPaulis) {
+
+    string out = "";
+
+    // prematurely optimise (hehe) by avoiding repeated allocations
+    // induced by below string concatenation, since we can bound the
+    // string length; each Pauli is 1 char, each index is max 2 digits
+    // (<64) and each inter-Pauli space is 1 char, so <=4 chars per Pauli.
+    int maxLen = numPaulis * 4; // <= 256 always
+    out.reserve(maxLen);
+
+    for (int i=0; i<numPaulis; i++) {
+        int code = paulis_getPauliAt(str, i);
+
+        // don't report identities
+        if (code == 0)
+            continue;
+
+        // e.g. X12 
+        out += global_pauliChars[code] + toStr(i) + PAULI_SPACE_CHAR;
+    }
+
+    // out includes a trailing PAULI_SPACE_CHAR which is fine,
+    // since nothing else is ever post-printed on the same line
+    return out;
+}
+
+
+string getPauliStrAsString(PauliStr str, int numPauliChars=0) {
+
+    // numPauliChars (only used by all-qubits reporting format)
+    // allows the caller to pad the printed PauliStr with left I,
+    // useful when reporting a truncated PauliStrSum to ensure
+    // the top and bottom partitions are aligned and equal width.
+    // When not passed, it defaults to minimum padding
+    if (numPauliChars == 0)
+        numPauliChars = 1 + paulis_getIndOfLefmostNonIdentityPauli(str);
+
+    /// @todo
+    /// to be absolutely pedantic/defensively-designed, we should
+    /// assert numPauliChars >= 1+paulis_getIndOfLefmostNonIdentityPauli
+    /// to ensure a bug never occludes a PauliStr. Very low priority!
+
+    switch(global_pauliStrFormatFlag) {
+        case 0: return getPauliStrAsAllQubitsString(str, numPauliChars);
+        case 1: return getPauliStrAsIndexString(str, numPauliChars);
+    }
+
+    /// @todo
+    /// to be defensively-designed, we should throw a runtime error
+    /// here because global_pauliStrFormatFlag was mutilated. This is
+    /// a very low priority; so we just return a suspicious string!
+    return "(PauliStr stringifying failed - please alert the QuEST devs)";
 }
 
 
@@ -1246,8 +1332,7 @@ void print_elemsWithoutNewline(PauliStr str, string indent) {
     if (!comm_isRootNode())
         return;
 
-    int numPaulis = 1 + paulis_getIndOfLefmostNonIdentityPauli(str);
-    cout << indent << getPauliStrAsString(str, numPaulis);
+    cout << indent << getPauliStrAsString(str);
 
     // beware that NO trailing newlines are printed so subsequent
     // calls (without calling print_newlines()) will run-on

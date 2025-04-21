@@ -750,3 +750,6 @@ void setMaxNumReportedItems(qindex numRows, qindex numCols);
 
 void getEnvironmentString(char str[200]);
 
+void setReportedPauliChars(const char* paulis);
+
+void setReportedPauliStrStyle(int style);
