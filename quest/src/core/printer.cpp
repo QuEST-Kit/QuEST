@@ -339,6 +339,14 @@ template string printer_toStr<double>(complex<double> num);
 template string printer_toStr<long double>(complex<long double> num);
 
 
+// explicit qreal overload so that real sig-figs can be changed
+string printer_toStr(qreal num) {
+
+    // uses user-set significant figures
+    return floatToStr(num);
+}
+
+
 // alias as toStr() just for internal brevity
 // (this seems backward; ordinarily we would define toStr() as
 // the templated inner-function and define concretely-typed public
