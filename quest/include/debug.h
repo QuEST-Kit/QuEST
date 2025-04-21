@@ -113,7 +113,11 @@ qreal getValidationEpsilon();
 void setMaxNumReportedItems(qindex numRows, qindex numCols);
 
 
-/// @notdoced
+/** @notdoced
+ * > This function does not affect the significant figures in printed memory sizes
+ * > (e.g. `5.32 KiB`) which is always shown with three significant figures 
+ * > (or four when in bytes, e.g. `1023 bytes`).
+ */
 void setMaxNumReportedSigFigs(int numSigFigs);
 
 
