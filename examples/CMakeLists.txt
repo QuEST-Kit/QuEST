@@ -58,3 +58,4 @@ endfunction()
 # all subdirecs below will invoke add_all_local_examples()
 
 add_subdirectory(isolated)
+add_subdirectory(extended)
