@@ -80,7 +80,7 @@ PauliStrSum createMyObservable(int numQubits) {
     for (int i=0; i<numQubits; i++) {
         char pauli = "XYZ"[i%3];
         strings[i] = getPauliStr(&pauli, &i, 1);
-        coeffs[i] = i%4 + 1;
+        coeffs[i] = getQcomp(i%4 + 1,0);
     }
 
     // must be freed by caller
