@@ -19,7 +19,7 @@ name: test (paid, accelerated)
 
 # @todo
 # this workflow can only be run on the 'default' 
-# branch (i.e. master) when manually triggered by 
+# branch (i.e. main) when manually triggered by 
 # github actions, so as not to incur unexpected
 # costs. I want for this to be automatically 
 # enqueued but not run in a PR, requiring manual

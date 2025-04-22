@@ -339,6 +339,14 @@ template string printer_toStr<double>(complex<double> num);
 template string printer_toStr<long double>(complex<long double> num);
 
 
+// explicit qreal overload so that real sig-figs can be changed
+string printer_toStr(qreal num) {
+
+    // uses user-set significant figures
+    return floatToStr(num);
+}
+
+
 // alias as toStr() just for internal brevity
 // (this seems backward; ordinarily we would define toStr() as
 // the templated inner-function and define concretely-typed public
@@ -776,11 +784,12 @@ MatrixQuadrantInds getTruncatedMatrixQuadrantInds(qindex numRows, qindex numCols
 
     MatrixQuadrantInds inds;
 
-    // according to the user-set truncations
-    qindex maxNumLeftCols  = global_maxNumPrintedCols / 2; // floors
-    qindex maxNumRightCols = global_maxNumPrintedCols - maxNumLeftCols;
-    qindex maxNumUpperRows = global_maxNumPrintedRows / 2; // floors
-    qindex maxNumLowerRows = global_maxNumPrintedRows - maxNumUpperRows;
+    // find maximum size of matrix quadrants according to user-truncatins.
+    // Choose right & lower first so that When num=odd, extra left & upper elem is shown
+    qindex maxNumRightCols  = global_maxNumPrintedCols / 2; // floors
+    qindex maxNumLeftCols = global_maxNumPrintedCols - maxNumRightCols;
+    qindex maxNumLowerRows = global_maxNumPrintedRows / 2; // floors
+    qindex maxNumUpperRows = global_maxNumPrintedRows - maxNumLowerRows;
 
     // may be ignored (and will unimportantly underflow when not truncating)
     inds.rightStartCol = numCols - maxNumRightCols;

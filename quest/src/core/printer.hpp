@@ -21,6 +21,8 @@
 #include <sstream>
 #include <type_traits>
 
+// beware that files including this header receive all these
+// namespace items; a worthwhile evil to keep this readable
 using std::tuple;
 using std::string;
 using std::vector;
@@ -70,11 +72,17 @@ template<typename T>
 string printer_toStr(T expr) {
 
     // write to buffer (rather than use to_string()) so that floating-point numbers
-    // are automatically converted to scientific notation when necessary
+    // are automatically converted to scientific notation when necessary. Beware
+    // that the user configured significant figures are not reflected here.
+
     std::ostringstream buffer;
     buffer << expr;
     return buffer.str();
 }
+
+// explicit qreal version of above, affected by user-set significant figures
+string printer_toStr(qreal num);
+
 
 
 /*
