@@ -103,6 +103,10 @@ void validate_newNumReportedNewlines(int numNewlines, const char* caller);
 
 void validate_numReportedNewlinesAboveZero(const char* caller);
 
+void validate_numPauliChars(const char* paulis, const char* caller);
+
+void validate_reportedPauliStrStyleFlag(int flag, const char* caller);
+
 
 
 /*

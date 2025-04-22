@@ -42,6 +42,10 @@ void printer_setNumTrailingNewlines(int numNewlines);
 
 int printer_getNumTrailingNewlines();
 
+void printer_setPauliChars(string newChars);
+
+void printer_setPauliStrFormat(int flag);
+
 
 
 /*

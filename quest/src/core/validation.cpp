@@ -134,6 +134,12 @@ namespace report {
     string INSUFFICIENT_NUM_REPORTED_NEWLINES =
         "The number of trailing newlines (set by setNumReportedNewlines()) is zero which is not permitted when calling multi-line reporters.";
 
+    string INVALID_NUM_NEW_PAULI_CHARS =
+        "Given an invalid number of Pauli characters. Must specify precisely four to respectively replace IXYZ.";
+
+    string INVALID_REPORTED_PAULI_STR_STYLE_FLAG =
+        "Given an unrecognised style flag (${FLAG}). Legal flags are 0 and 1.";
+
 
     /*
      * QUREG CREATION
@@ -1431,6 +1437,21 @@ void validate_newNumReportedNewlines(int numNewlines, const char* caller) {
 void validate_numReportedNewlinesAboveZero(const char* caller) {
 
     assertThat(printer_getNumTrailingNewlines() > 0, report::INSUFFICIENT_NUM_REPORTED_NEWLINES, caller);
+}
+
+void validate_numPauliChars(const char* paulis, const char* caller) {
+
+    // check position of terminal char, else default to numChars=5 (illegal)
+    int numChars = 0;
+    for (int i=0; i<5 && paulis[i] != '\0'; i++)
+        numChars++;
+    
+    assertThat(numChars==4, report::INVALID_NUM_NEW_PAULI_CHARS, caller);
+}
+
+void validate_reportedPauliStrStyleFlag(int flag, const char* caller) {
+
+    assertThat(flag==0 || flag==1, report::INVALID_REPORTED_PAULI_STR_STYLE_FLAG, {{"${FLAG}",flag}}, caller);
 }
 
 

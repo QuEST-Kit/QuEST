@@ -121,6 +121,38 @@ void setMaxNumReportedSigFigs(int numSigFigs);
 void setNumReportedNewlines(int numNewlines);
 
 
+/** 
+ * @notdoced
+ * @nottested
+ * @myexample
+ * ```
+   PauliStr str = getInlinePauliStr("XYZ", {0,10,20});
+   reportPauliStr(str);
+
+   setReportedPauliChars(".xyz");
+   reportPauliStr(str);
+ * ```
+ */
+void setReportedPauliChars(const char* paulis);
+
+
+/** 
+ * @notdoced
+ * @nottested
+ * @myexample
+ * ```
+   PauliStr str = getInlinePauliStr("XYZ", {0,10,20});
+
+   setReportedPauliStrStyle(0);
+   reportPauliStr(str);
+
+   setReportedPauliStrStyle(1);
+   reportPauliStr(str);
+ * ```
+ */
+void setReportedPauliStrStyle(int style);
+
+
 /** @} */
 
 
