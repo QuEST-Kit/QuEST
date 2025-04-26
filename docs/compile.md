@@ -189,6 +189,11 @@ where
 - `myfile.c` is your `C` source file (or `myfile.cpp` if using `C++`).
 - `myexec` is the output executable name, which will be saved in `build`.
 
+
+> [!IMPORTANT]
+> `USER_SOURCE` can be any relative or absolute path to a file, but `OUTPUT_EXE` must be strictly a filename and cannot contain subdirectories. See <a href="#compile_location">Location</a> to change the output directory.
+
+
 To compile multiple dependent files, such as
 ```cpp
 /* myfile.cpp */
