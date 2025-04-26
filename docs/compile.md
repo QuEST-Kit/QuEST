@@ -86,7 +86,7 @@ cmake --build .
 > cmake --build . --parallel
 > ```
 
-With no additional arguments, these commands compile [`min_example.cpp`](/examples/tutorials/min_example.cpp) into an executable `min_example` in the `build` folder which can be run via
+With no additional arguments, these commands compile [`min_example.c`](/examples/tutorials/min_example.c) into an executable `min_example` in the `build` folder which can be run via
 ```bash
 ./min_example
 ```
