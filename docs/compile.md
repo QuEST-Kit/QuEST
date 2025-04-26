@@ -397,6 +397,14 @@ Unless overridden with [`CMAKE_RUNTIME_OUTPUT_DIRECTORY`](https://cmake.org/cmak
 as elaborated upon in [`launch.md`](launch.md#examples).
 <!-- @todo the above link fails in Doxygen; it's too stupid to recognise the section ref -->
 
+> [!NOTE]  
+> <!-- @todo the below link fails in Doxygen; it's too stupid to recognise the section ref -->
+> As [above](compile.md#compile_optimising), Windows users should specify additional build parameter `--config Release` which will cause the executables to be contained in an additional final `\Release\` subdirectory. Executables are also suffixed with `.exe`, e.g.
+> ```
+> \examples\isolated\Release\initialising_paulis_c.exe
+> ```
+
+
 
 
 ------------------
