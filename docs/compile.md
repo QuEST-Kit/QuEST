@@ -30,6 +30,7 @@ Compiling is configured with variables supplied by the [`-D` flag](https://cmake
 > - <a href="#compile_optimising">Optimising</a>
 > - <a href="#compile_linking">Linking</a>
 > - <a href="#compile_configuring">Configuring</a>
+>    * <a href="#compile_location">Location</a>
 >    * <a href="#compile_precision">Precision</a>
 >    * <a href="#compile_compilers">Compilers</a>
 >    * <a href="#compile_flags">Flags</a>
@@ -241,6 +242,60 @@ to your project as a library!
 ## Configuring
 
 
+
+<!-- permit doxygen to reference section -->
+<a id="compile_location"></a>
+
+### Location
+
+The location of your compiled executable(s) can be changed (from the default `build`) using [`CMAKE_RUNTIME_OUTPUT_DIRECTORY`](https://cmake.org/cmake/help/latest/variable/CMAKE_RUNTIME_OUTPUT_DIRECTORY.html).
+For example
+```bash
+# configure
+cmake .. -D CMAKE_RUNTIME_OUTPUT_DIRECTORY=/full/path/to/output/dir/
+```
+
+This applies to _all_ built executables, including your own custom files, the examples, and the unit tests. All executables will be at the top-level of the specified directory, and will _not_ be contained with subdirectories like `/examples/`.
+
+> [!TIP]
+> Paths containing spaces can be individually escaped, or the path surrounded with quotations, i.e.
+> ```bash
+> cmake .. -D CMAKE_RUNTIME_OUTPUT_DIRECTORY="/full/path/to/output/dir/"
+> ```
+> Beware that syntax like `~` will not be expanded inside quotation marks, but one can safely use alternative methods like
+> ```bash
+> "$HOME/path/from/home/to/output/dir/"
+> "../../path/from/two/layers/above/to/output/dir/"
+> ```
+
+> [!NOTE]
+> Building will fail if the linker has insufficient permissions to make a new directory, for example with message:
+> ```bash
+> ld: open() failed, errno=2
+> ```
+> This is remedied by ensuring the output directory already exists. 
+> ```bash
+> # make directory
+> export OUT_DIR=/full/path/to/output/dir/
+> mkdir $OUT_DIR
+>
+> # configure
+> cmake .. -D CMAKE_RUNTIME_OUTPUT_DIRECTORY=$OUT_DIR
+>
+> # build
+> cmake --build .
+> ```
+
+> [!IMPORTANT]
+> Configuration will fail if any two executables have the same output name since they will not be separated into subdirectories and will collide. We do not gaurantee that all test and example filenames will remain unique in the future, such that use of `CMAKE_RUNTIME_OUTPUT_DIRECTORY` may become invalid except when also specifying
+> ```
+> -D ENABLE_TESTING=OFF -D BUILD_EXAMPLES=OFF
+> ```
+
+
+
+
+
 <!-- permit doxygen to reference section -->
 <a id="compile_precision"></a>
 
@@ -335,7 +390,7 @@ cmake .. -D BUILD_EXAMPLES=ON
 # build
 cmake --build .
 ```
-The executables will be saved in the (current) `build` directory, in a sub-directory structure mimicking the [`examples/`](/examples/) folder. They can be run by e.g.
+Unless overridden with [`CMAKE_RUNTIME_OUTPUT_DIRECTORY`](https://cmake.org/cmake/help/latest/variable/CMAKE_RUNTIME_OUTPUT_DIRECTORY.html), the executables will be saved in the `build` directory, in a sub-directory structure mimicking that of the [`examples/`](/examples/) folder. They can be run by e.g.
 ```bash
 ./examples/isolated/initialising_paulis_c
 ```
