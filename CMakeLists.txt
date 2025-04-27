@@ -428,7 +428,7 @@ add_subdirectory(quest)
 ## Examples
 
 add_executable(min_example
-  examples/tutorials/min_example.cpp
+  examples/tutorials/min_example.c
 )
 target_link_libraries(min_example PRIVATE QuEST::QuEST)
 

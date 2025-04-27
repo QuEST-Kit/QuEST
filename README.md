@@ -239,7 +239,7 @@ mkdir build
 cd build
 ```
 
-Compile the [minimum example](/examples/tutorials/min_example.cpp) using [cmake](https://cmake.org/):
+Compile the [minimum example](/examples/tutorials/min_example.c) using [cmake](https://cmake.org/):
 ```bash
 cmake .. 
 make
