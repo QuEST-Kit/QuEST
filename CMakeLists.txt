@@ -446,7 +446,7 @@ if (BUILD_EXAMPLES)
 endif()
 
 ## RATH
-
+set(BUILD_RPATH_USE_ORIGIN ON)
 if(APPLE)
   set(_RPATH_ORIGIN "@loader_path")
 else()
