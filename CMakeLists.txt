@@ -253,8 +253,12 @@ target_include_directories(QuEST
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/quest/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:../quest/include>
-  $<INSTALL_INTERFACE:..>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/quest/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+set_target_properties(QuEST PROPERTIES
+        VERSION     ${PROJECT_VERSION}
+        SOVERSION   ${PROJECT_VERSION_MAJOR}
 )
 
 # Add required C and C++ standards
@@ -436,15 +440,34 @@ install(TARGETS min_example
   RUNTIME
   DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
-set_target_properties(min_example
-  PROPERTIES 
-    INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
-)
 
 if (BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
+## RATH
+
+if(APPLE)
+  set(_RPATH_ORIGIN "@loader_path")
+else()
+  set(_RPATH_ORIGIN "$ORIGIN")
+endif()
+
+set(_INSTALL_RPATH  "${_RPATH_ORIGIN}/../${CMAKE_INSTALL_LIBDIR}")
+set(_BUILD_RPATH    "${_RPATH_ORIGIN};$<TARGET_FILE_DIR:QuEST>")
+
+# A tiny helper function so you can call it for every target
+function(setup_quest_rpath tgt)
+  set_target_properties(${tgt} PROPERTIES
+          BUILD_RPATH   "${_BUILD_RPATH}"
+          INSTALL_RPATH "${_INSTALL_RPATH}"
+          # keeps RPATH from being stripped when installing
+          INSTALL_RPATH_USE_LINK_PATH TRUE
+  )
+endfunction()
+
+setup_quest_rpath(QuEST)
+setup_quest_rpath(min_example)
 ## User Source
 
 if (USER_SOURCE AND NOT OUTPUT_EXE)
@@ -459,8 +482,9 @@ if (USER_SOURCE AND OUTPUT_EXE)
   add_executable(${OUTPUT_EXE} ${USER_SOURCE})
   target_link_libraries(${OUTPUT_EXE} PUBLIC QuEST)
   install(TARGETS ${OUTPUT_EXE} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-  set_target_properties(${OUTPUT_EXE} PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
+  setup_quest_rpath(${OUTPUT_EXE})
 endif()
+
 
 ## Tests
 
