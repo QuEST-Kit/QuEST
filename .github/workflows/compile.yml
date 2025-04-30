@@ -231,13 +231,14 @@ jobs:
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --config Release --parallel
 
-      # attempt to run the compiled executable, testing e.g. DLL location
-      # (location of execs differ on )
+      # attempt to run the compiled executable, testing for link-time errors,
+      # logging stdout and stderr to file (to verify the executable actually ran)
       - name: Run
         if: ${{ matrix.os == 'windows-latest' }}
         shell: bash
         run: |
-          ./${{ env.build_dir }}/examples/isolated/Release/complex_arithmetic_c.exe
+          ./${{ env.build_dir }}/examples/isolated/Release/complex_arithmetic_c.exe > log.txt 2>&1
+          cat log.txt
       - name: Run
         if: ${{ matrix.os != 'windows-latest' }}
         run: |
