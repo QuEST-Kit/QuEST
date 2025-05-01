@@ -7,7 +7,9 @@
 # compilers (like libomp, CUDA, ROCm). Compilation
 # includes the v4 unit and integration tests, the
 # deprecated v3 tests (when possible), and all the
-# example programs. No compiled execs are run however.
+# example programs. One example executable is then
+# run (both C and C++ versions) to ensure the build
+# was successful and does not cause link-time errors.
 # Note that ARM compilation is not yet tested here,
 # but in fact Linux ARM is used by a paid test runner.
 #
@@ -144,6 +146,8 @@ jobs:
       cuda_arch: 70
       hip_arch: gfx801
       rocm_path: /opt/rocm/bin
+      example_dir: build/examples/isolated
+      example_fn_pref: reporting_quregs
 
     # perform the job
     steps:
@@ -232,3 +236,16 @@ jobs:
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --config Release --parallel
+
+      # attempt to run the compiled executable, testing for link-time errors,
+      # logging stdout and stderr to file (to verify the executable actually ran)
+      - name: Run (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          ./${{ env.example_dir }}/Release/${{ env.example_fn_pref }}_c.exe
+          ./${{ env.example_dir }}/Release/${{ env.example_fn_pref }}_cpp.exe
+      - name: Run (non-Windows)
+        if: ${{ matrix.os != 'windows-latest' }}
+        run: |
+          ./${{ env.example_dir }}/${{ env.example_fn_pref }}_c
+          ./${{ env.example_dir }}/${{ env.example_fn_pref }}_cpp
