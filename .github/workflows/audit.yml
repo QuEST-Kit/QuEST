@@ -186,3 +186,8 @@ jobs:
           coverage-files: ./${{ env.tracefile }}
           minimum-coverage: ${{ env.min_coverage }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+        # temporarily DISABLING above reporting of LCOV results in
+        # PR since they're not yet representative and will only
+        # confuse incoming unitaryHACK contributors
+        if: false
