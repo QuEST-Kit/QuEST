@@ -7,7 +7,9 @@
 # compilers (like libomp, CUDA, ROCm). Compilation
 # includes the v4 unit and integration tests, the
 # deprecated v3 tests (when possible), and all the
-# example programs. No compiled execs are run however.
+# example programs. One example executable is then
+# run (both C and C++ versions) to ensure the build
+# was successful and does not cause link-time errors.
 # Note that ARM compilation is not yet tested here,
 # but in fact Linux ARM is used by a paid test runner.
 #
