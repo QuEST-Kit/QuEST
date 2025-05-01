@@ -142,7 +142,8 @@ jobs:
       cuda_arch: 70
       hip_arch: gfx801
       rocm_path: /opt/rocm/bin
-      run_fn_pref: ./build/examples/isolated/reporting_quregs
+      example_dir: build/examples/isolated
+      example_fn_pref: reporting_quregs
 
     # perform the job
     steps:
@@ -237,10 +238,10 @@ jobs:
       - name: Run (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
-          ${{ env.run_fn_pref }}_c.exe
-          ${{ env.run_fn_pref }}_cpp.exe
+          ./${{ env.example_dir }}/Release/${{ env.example_fn_pref }}_c.exe
+          ./${{ env.example_dir }}/Release/${{ env.example_fn_pref }}_cpp.exe
       - name: Run (non-Windows)
         if: ${{ matrix.os != 'windows-latest' }}
         run: |
-          ${{ env.run_fn_pref }}_c
-          ${{ env.run_fn_pref }}_cpp
+          ./${{ env.example_dir }}/${{ env.example_fn_pref }}_c
+          ./${{ env.example_dir }}/${{ env.example_fn_pref }}_cpp
