@@ -142,6 +142,7 @@ jobs:
       cuda_arch: 70
       hip_arch: gfx801
       rocm_path: /opt/rocm/bin
+      run_fn_pref: ./build/examples/isolated/reporting_quregs
 
     # perform the job
     steps:
@@ -235,8 +236,11 @@ jobs:
       # logging stdout and stderr to file (to verify the executable actually ran)
       - name: Run (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
-        shell: cmd
-        run: .\${{ env.build_dir }}\examples\isolated\Release\complex_arithmetic_c.exe
+        run: |
+          ${{ env.run_fn_pref }}_c.exe
+          ${{ env.run_fn_pref }}_cpp.exe
       - name: Run (non-Windows)
         if: ${{ matrix.os != 'windows-latest' }}
-        run: ./${{ env.build_dir }}/examples/isolated/complex_arithmetic_c
+        run: |
+          ${{ env.run_fn_pref }}_c
+          ${{ env.run_fn_pref }}_cpp
