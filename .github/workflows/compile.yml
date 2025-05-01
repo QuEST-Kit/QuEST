@@ -233,13 +233,10 @@ jobs:
 
       # attempt to run the compiled executable, testing for link-time errors,
       # logging stdout and stderr to file (to verify the executable actually ran)
-      - name: Run
+      - name: Run (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
-        shell: bash
-        run: |
-          ./${{ env.build_dir }}/examples/isolated/Release/complex_arithmetic_c.exe > log.txt 2>&1
-          cat log.txt
-      - name: Run
+        shell: cmd
+        run: .\${{ env.build_dir }}\examples\isolated\Release\complex_arithmetic_c.exe
+      - name: Run (non-Windows)
         if: ${{ matrix.os != 'windows-latest' }}
-        run: |
-          ./${{ env.build_dir }}/examples/isolated/complex_arithmetic_c
+        run: ./${{ env.build_dir }}/examples/isolated/complex_arithmetic_c
