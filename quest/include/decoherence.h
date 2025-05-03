@@ -278,9 +278,9 @@ void mixDamping(Qureg qureg, int target, qreal prob);
  * - mixKrausMap() with (scaled) @f$\hat{\id}@f$, @f$\hat{X}@f$, @f$\hat{Y}@f$ and @f$\hat{Z}@f$ Kraus operators.
  *   ```
     qreal a = sqrt(1-probX-probY-probZ);
-    qreal b = sqrt(probX/3);
-    qreal c = sqrt(probY/3);
-    qreal d = sqrt(probZ/3);
+    qreal b = sqrt(probX);
+    qreal c = sqrt(probY);
+    qreal d = sqrt(probZ);
 
     KrausMap map = createInlineKrausMap(1, 4, {
         {{a,0},{0, a}}, // a * I
