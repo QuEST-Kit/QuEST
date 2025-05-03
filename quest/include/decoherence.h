@@ -95,8 +95,8 @@ void mixDephasing(Qureg qureg, int target, qreal prob);
  * 
  * @equivalences
  * This function is equivalent to (but much faster than):
- * - mixKrausMap() with @f$c_1\,\hat{\id}\otimes\hat{\id}@f$, @f$c_2\,\hat{\id}\otimes\hat{Z}@f$, 
- *   @f$c_2\,\hat{Z}\otimes\hat{\id}@f$ and @f$c_2\,\hat{Z}\otimes\hat{Z}@f$ Kraus operators.
+ * - mixKrausMap() with (scaled) @f$\hat{\id}\otimes\hat{\id}@f$, @f$\hat{\id}\otimes\hat{Z}@f$, 
+ *   @f$\hat{Z}\otimes\hat{\id}@f$ and @f$\hat{Z}\otimes\hat{Z}@f$ Kraus operators.
  *   ```
     qreal a = sqrt(1-prob);
     qreal b = sqrt(prob/3);
