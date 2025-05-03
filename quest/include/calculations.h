@@ -69,7 +69,7 @@ extern "C" {
  *   which case the imaginary component of the above expression is neglected.
  *   The full complex value can be obtained using calcExpecNonHermitianPauliStrSum().
  * 
- * @equivalence
+ * @equivalences
  * - When @p str is general, this function is equivalent to calling calcExpecPauliStrSum() with a 
  *   PauliStrSum composed of only a single PauliStr term and a unity coefficient.
  * - When @p str @f$ = \id^\otimes @f$, the output is equivalent to that of calcTotalProb().
@@ -125,7 +125,7 @@ qreal calcExpecPauliStr(Qureg qureg, PauliStr str);
  *   Hermiticity validation is relaxed and/or @p qureg is an unnormalised density matrix. 
  *   The full complex value can be obtained using calcExpecNonHermitianPauliStrSum().
  * 
- * @equivalence
+ * @equivalences
  * - This function is mathematically equivalent to (albeit faster than) calling calcExpecPauliStr() upon
  *   each constituent @p PauliStr within @p sum, weighting each by its corresponding coefficient, and
  *   summing the outputs.

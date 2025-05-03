@@ -111,7 +111,7 @@ typedef struct {
  * use of GPU-acceleration requires persistent device memory and distribution necessitates
  * allocating communication buffers. See createCustomQureg() for more information.
  * 
- * @equivalence
+ * @equivalences
  * - This function is equivalent to calling createCustomQureg(), passing @c isDensMatr=0 and @c -1
  *   for all deployments to automate them.
  *   ```
@@ -166,7 +166,7 @@ Qureg createQureg(int numQubits);
  * use of GPU-acceleration requires persistent device memory and distribution necessitates
  * allocating communication buffers. See createCustomQureg() for more information.
  * 
- * @equivalence
+ * @equivalences
  * - This function is equivalent to calling createCustomQureg(), passing @c isDensMatr=1 and @c -1
  *   for all deployments to automate them.
  *   ```
@@ -197,7 +197,7 @@ Qureg createDensityQureg(int numQubits);
 
 /** @notdoced
  * 
- * @equivalence
+ * @equivalences
  * - This function is equivalent to calling createCustomQureg(), passing @c isDensMatr=0 and all
  *   deployments enabled by the QuEST environment.
  *   ```
@@ -214,7 +214,7 @@ Qureg createForcedQureg(int numQubits);
 
 /** @notdoced
  * 
- * @equivalence
+ * @equivalences
  * - This function is equivalent to calling createCustomQureg(), passing @c isDensMatr=1 and all
  *   deployments enabled by the QuEST environment.
  *   ```
