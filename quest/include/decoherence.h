@@ -36,7 +36,11 @@ extern "C" {
  * 
  * This function effects
  * @f[ 
-        \dmrho \rightarrow (1 - p) \, \dmrho + p \, \hat{Z}_t \,\dmrho\, \hat{Z}_t.
+        \dmrho 
+            \;\rightarrow\;
+        (1 - p) \, \dmrho 
+            \,+\, 
+        p \, \hat{Z}_t \,\dmrho\, \hat{Z}_t.
  * @f]
  * 
  * @equivalences
@@ -76,9 +80,15 @@ void mixDephasing(Qureg qureg, int target, qreal prob);
  * 
  * This function effects
  * @f[ 
-        \dmrho \rightarrow (1 - p) \, \dmrho + \frac{1}{3} p  \left(
-            \hat{Z}_{t_1} \dmrho \hat{Z}_{t_1} +
-            \hat{Z}_{t_1} \dmrho \hat{Z}_{t_1} +
+        \dmrho 
+            \;\rightarrow\;
+            (1 - p) \, \dmrho 
+                \,+\,
+            \frac{p}{3} \left(
+            \hat{Z}_{t_1} \dmrho \hat{Z}_{t_1}
+                \,+\,
+            \hat{Z}_{t_1} \dmrho \hat{Z}_{t_1}
+                \,+\,
             \hat{Z}_{t_1}  \hat{Z}_{t_2} \dmrho \hat{Z}_{t_1} \hat{Z}_{t_2}
         \right).
  * @f]
@@ -114,9 +124,10 @@ void mixTwoQubitDephasing(Qureg qureg, int target1, int target2, qreal prob);
  * 
  * This function effects
  * @f[ 
-        \dmrho \rightarrow (1 - p) \, \dmrho + \frac{1}{3} p \left( 
-            \hat{X}_t \dmrho \hat{X}_t +
-            \hat{Y}_t \dmrho \hat{Y}_t +
+        \dmrho \;\rightarrow\; 
+            (1 - p) \, \dmrho \,+\, \frac{p}{3} \left( 
+            \hat{X}_t \dmrho \hat{X}_t \,+\,
+            \hat{Y}_t \dmrho \hat{Y}_t \,+\,
             \hat{Z}_t \dmrho \hat{Z}_t
         \right).
  * @f]
@@ -216,7 +227,8 @@ void mixTwoQubitDepolarising(Qureg qureg, int target1, int target2, qreal prob);
  * This function effects
  * @f[ 
         \dmrho \; \rightarrow \; 
-        \hat{K}_t^{(1)} \dmrho \, {\hat{K}_t^{(2)}}^\dagger +
+        \hat{K}_t^{(1)} \dmrho \, {\hat{K}_t^{(2)}}^\dagger 
+            \,+\,
         \hat{K}_t^{(2)} \dmrho \, {\hat{K}_t^{(2)}}^\dagger
  * @f]
  * where @f$ \hat{K}^{(1)} @f$ and @f$ \hat{K}^{(2)} @f$ are one-qubit Kraus operators
@@ -251,11 +263,14 @@ void mixDamping(Qureg qureg, int target, qreal prob);
  * 
  * This function effects
  * @f[ 
-        \dmrho \rightarrow (1 - p) \, \dmrho + p \left( 
-            p_x \, \hat{X}_t \dmrho \hat{X}_t +
-            p_y \, \hat{Y}_t \dmrho \hat{Y}_t +
-            p_z \, \hat{Z}_t \dmrho \hat{Z}_t
-        \right).
+        \dmrho \;\rightarrow\;
+             (1 - p) \, \dmrho 
+             \,+\,
+            p_x \, \hat{X}_t \dmrho \hat{X}_t
+             \,+\,
+            p_y \, \hat{Y}_t \dmrho \hat{Y}_t
+             \,+\,
+            p_z \, \hat{Z}_t \dmrho \hat{Z}_t.
  * @f]
  * 
  * @equivalences
@@ -290,7 +305,8 @@ void mixPaulis(Qureg qureg, int target, qreal probX, qreal probY, qreal probZ);
  * This function effects
  * @f[ 
         \dmrho_1 \;\rightarrow \;
-            (1 - p) \, \dmrho_1 +
+            (1 - p) \, \dmrho_1 
+                \,+\,
             p \, \dmrho_2.
  * @f]
  * 
