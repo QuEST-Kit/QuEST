@@ -18,6 +18,13 @@ using std::vector;
 
 
 /*
+ * PR DEMOS
+ */
+
+qcomp gpu_statevec_calcAmpSum(Qureg qureg);
+
+
+/*
  * GETTERS
  */
 
