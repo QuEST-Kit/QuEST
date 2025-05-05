@@ -41,6 +41,34 @@ using std::vector;
 
 
 /*
+ * PR DEMOS
+ */
+
+
+qcomp cpu_statevec_calcAmpSum(Qureg qureg) {
+
+    // we brazenly perform this all-state reduction without
+    // a single thought to finite precision effects - arrest me! 
+
+    // separately reduce real and imag components to make MSVC happy
+    qreal outRe = 0;
+    qreal outIm = 0;
+
+    // every local amplitude contributes to the sum
+    qindex numIts = qureg.numAmpsPerNode;
+
+    #pragma omp parallel for reduction(+:outRe,outIm) if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+        outRe += std::real(qureg.cpuAmps[n]);
+        outIm += std::imag(qureg.cpuAmps[n]);
+    }
+
+    return qcomp(outRe, outIm);
+}
+
+
+
+/*
  * GETTERS
  */
 
