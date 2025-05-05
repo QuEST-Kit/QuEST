@@ -342,6 +342,44 @@ Qureg calcReducedDensityMatrix(Qureg qureg, int* retainQubits, int numRetainQubi
  */
 
 
+/** @ingroup example_prs
+ * 
+ * Calculates the sum of every amplitude in the state.
+ * 
+ * @formulae
+ * Let @f$ n @f$ qubits be the number of qubits in @p qureg.
+ * 
+ * - When @p qureg is a statevector @f$ \svpsi @f$, this function returns
+ *   @f[ 
+    \sum\limits_i^{2^n} \langle i \svpsi \in \mathbb{C}.
+ *   @f]
+ * - When @p qureg is a density matrix @f$ \dmrho @f$, this function returns
+ *   @f[ 
+    \sum\limits_i^{2^n} \sum\limits_j^{2^n} \bra{i} \dmrho \ket{j} \in \mathbb{C}.
+ *   @f]
+ *
+ * @myexample
+ * ```
+    Qureg qureg = createQureg(4);
+    initRandomPureState(qureg);
+
+    qcomp ampSum = calcAmpSum(qureg);
+    reportScalar("ampSum", ampSum);  
+ * ```
+ * 
+ * @see
+ * - calcRealAmpSum()
+
+ * @param[in] qureg the state with the processed amplitudes.
+ * @returns The the sum of all contained amplitudes.
+ * @throws @validationerror
+ * - if @p qureg is uninitialised.
+ * - if @p qureg contains an odd number of qubits.
+ * @author Tyson Jones
+ */
+qcomp calcAmpSum(Qureg qureg);
+
+
 /// @ingroup calc_comparisons
 /// @notdoced
 /// @notvalidated

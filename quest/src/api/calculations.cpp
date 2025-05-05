@@ -46,6 +46,17 @@ extern Qureg validateAndCreateCustomQureg(
  */
 
 
+qcomp calcAmpSum(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
+
+    return localiser_statevec_calcAmpSum(qureg);
+}
+extern "C" void _wrap_calcAmpSum(Qureg qureg, qcomp* out) {
+
+    *out = calcAmpSum(qureg);
+}
+
+
 qcomp calcInnerProduct(Qureg quregA, Qureg quregB) {
     validate_quregFields(quregA, __func__);
     validate_quregFields(quregB, __func__);

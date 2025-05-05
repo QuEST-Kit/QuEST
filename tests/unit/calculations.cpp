@@ -197,6 +197,30 @@ TEST_CASE( "calcRealAmpSum", TEST_CATEGORY ) {
 
 
 
+TEST_CASE( "calcAmpSum", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        TEST_ALL_QUREGS(
+            qureg, calcAmpSum(qureg),
+            refer, getTotal(refer)
+        );
+    }
+
+    SECTION( LABEL_VALIDATION ) {
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg qureg;
+            qureg.numQubits = -123;
+
+            REQUIRE_THROWS_WITH( calcRealAmpSum(qureg), ContainsSubstring("invalid Qureg") );
+        }
+    }
+}
+
+
+
 TEST_CASE( "calcExpecPauliStr", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
