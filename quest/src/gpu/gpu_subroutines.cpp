@@ -76,8 +76,12 @@ qcomp gpu_statevec_calcAmpSum(Qureg qureg) {
 
     // there is no cuQuantum function for this facility,
     // nor is there a need to implement a custom kernel;
-    // we leverage an exting Thrust faclity
-    return thrust_statevec_calcAmpSum(qureg);
+    // we will leverage an exting Thrust facility
+    cu_qcomp out =  thrust_statevec_calcAmpSum(qureg);
+
+    // the GPU backend uses a CUDA-equivalent of 'qcomp'
+    // which we must cast back and forth between (ew!)
+    return toQcomp(out);
 
 #else
     error_gpuSimButGpuNotCompiled();

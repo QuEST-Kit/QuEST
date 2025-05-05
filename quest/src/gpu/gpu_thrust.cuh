@@ -640,16 +640,16 @@ struct functor_setRandomStateVecAmp : public thrust::unary_function<qindex,cu_qc
  */
 
 
-qcomp thrust_statevec_calcAmpSum(Qureg qureg) {
+cu_qcomp thrust_statevec_calcAmpSum(Qureg qureg) {
 
     // beware that we must explicitly instantiate a 
     // qcomp type here, rather than pass reduce() a
     // literal, which would cause a silent bug (grr)
-    qcomp init = 0;
+    cu_qcomp init = 0;
 
-    qcomp out = thrust::reduce(
+    cu_qcomp out = thrust::reduce(
         getStartPtr(qureg), getEndPtr(qureg), 
-        init, thrust::plus<qcomp>());
+        init, thrust::plus<cu_qcomp>());
 
     return out;
 }
