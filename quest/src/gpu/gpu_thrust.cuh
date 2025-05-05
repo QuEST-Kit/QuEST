@@ -645,7 +645,7 @@ cu_qcomp thrust_statevec_calcAmpSum(Qureg qureg) {
     // beware that we must explicitly instantiate a 
     // qcomp type here, rather than pass reduce() a
     // literal, which would cause a silent bug (grr)
-    cu_qcomp init = 0;
+    cu_qcomp init = getCuQcomp(0, 0);
 
     cu_qcomp out = thrust::reduce(
         getStartPtr(qureg), getEndPtr(qureg), 
