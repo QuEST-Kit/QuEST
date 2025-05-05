@@ -64,6 +64,14 @@ qreal validateconfig_getEpsilon();
 
 
 /*
+ * NONSENSE VALIDATION FOR DEMO PR
+ */
+
+void validate_quregHasEvenNumQubits(Qureg qureg, const char* caller);
+
+
+
+/*
  * ENVIRONMENT CREATION
  */
 

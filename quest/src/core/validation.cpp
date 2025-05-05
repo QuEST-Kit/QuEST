@@ -58,6 +58,14 @@ namespace report {
 
 
     /*
+     * NONSENSE VALIDATION FOR DEMO PR
+     */
+
+    string QUREG_HAS_ODD_NUM_QUBITS =
+        "The given Qureg contained ${NUM_QUBITS} qubits, but must contain an even number.";
+
+
+    /*
      *  ENVIRONMENT CREATION
      */
 
@@ -1302,6 +1310,21 @@ bool isIndexListUnique(int* list, int len) {
             mask |= 1ULL << list[i];
 
     return true;
+}
+
+
+
+/*
+ * NONSENSE VALIDATION FOR DEMO PR
+ */
+
+void validate_quregHasEvenNumQubits(Qureg qureg, const char* caller) {
+
+    tokenSubs vars = {
+        {"${NUM_QUBITS}", qureg.numQubits}
+    };
+
+    assertThat(qureg.numQubits % 2 == 0, report::QUREG_HAS_ODD_NUM_QUBITS, vars, caller);
 }
 
 

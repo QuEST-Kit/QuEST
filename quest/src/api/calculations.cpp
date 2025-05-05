@@ -126,6 +126,22 @@ extern "C" {
 
 
 /*
+ * PR DEMOS
+ */
+
+
+qreal calcRealAmpSum(Qureg qureg) {
+    validate_quregFields(qureg, __func__);
+    validate_quregHasEvenNumQubits(qureg, __func__);
+
+    /// @todo
+    /// implement and call new backend function
+    return -1;
+}
+
+
+
+/*
  * EXPECTED VALUES
  */
 

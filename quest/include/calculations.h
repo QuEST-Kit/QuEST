@@ -43,6 +43,57 @@ extern "C" {
 
 
 /** 
+ * @defgroup example_prs Example PR functions
+ * @brief Nonsensical functions to demonstrate good PRs.
+ * @{
+ */
+
+
+/** Calculates the real component of the sum of every amplitude in the state,
+ * but only for states which contain an even number of qubits (for no reason :3 ).
+ * 
+ * @formulae
+ * Let @f$ n @f$ qubits be the number of qubits in @p qureg, assumed even.
+ * 
+ * - When @p qureg is a statevector @f$ \svpsi @f$, this function returns
+ *   @f[ 
+    \text{Re}\left( \sum\limits_i^{2^n} \langle i \svpsi \right) \in \mathbb{R}.
+ *   @f]
+ * - When @p qureg is a density matrix @f$ \dmrho @f$, this function returns
+ *   @f[ 
+    \text{Re}\left( \sum\limits_i^{2^n} \sum\limits_j^{2^n} \bra{i} \dmrho \ket{j} \right) \in \mathbb{R}.
+ *   @f]
+ * 
+ * @constraints
+ * - The number of qubits in the register must be even.
+ * 
+ * @myexample
+ * ```
+    Qureg qureg = createQureg(4);
+    initRandomPureState(qureg);
+
+    qreal reAmpSum = calcRealAmpSum(qureg);
+    reportScalar("reAmpSum", reAmpSum);  
+ * ```
+ * 
+ * @see
+ * - calcTotalProb()
+
+ * @param[in] qureg the state with the processed amplitudes.
+ * @returns The real component of the sum of all contained amplitudes.
+ * @throws @validationerror
+ * - if @p qureg is uninitialised.
+ * - if @p qureg contains an odd number of qubits.
+ * @author Tyson Jones
+ */
+qreal calcRealAmpSum(Qureg qureg);
+
+
+/** @} */
+
+
+
+/** 
  * @defgroup calc_expec Expectation values
  * @brief Functions for calculating expected values of Hermitian observables.
  * @{
