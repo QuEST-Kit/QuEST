@@ -12,8 +12,8 @@
  * @author Tyson Jones
  */
 
-#include "quest/include/modes.h"
-#include "quest/include/types.h"
+#include "quest/modes.h"
+#include "quest/types.h"
 
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/core/errors.hpp"

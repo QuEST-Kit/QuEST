@@ -14,11 +14,11 @@
  * @author Ania (Anna) Brown (developed QuEST v1 logic)
  */
 
-#include "quest/include/modes.h"
-#include "quest/include/types.h"
-#include "quest/include/qureg.h"
-#include "quest/include/paulis.h"
-#include "quest/include/matrices.h"
+#include "quest/modes.h"
+#include "quest/types.h"
+#include "quest/qureg.h"
+#include "quest/paulis.h"
+#include "quest/matrices.h"
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/inliner.hpp"

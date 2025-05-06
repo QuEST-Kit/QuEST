@@ -8,9 +8,9 @@
  * @author Tyson Jones
  */
 
-#include "quest/include/matrices.h"
-#include "quest/include/environment.h"
-#include "quest/include/types.h"
+#include "quest/matrices.h"
+#include "quest/environment.h"
+#include "quest/types.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/autodeployer.hpp"

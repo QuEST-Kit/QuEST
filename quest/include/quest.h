@@ -32,30 +32,30 @@
 
 // include version first so it is accessible to 
 // debuggers in case a subsequent include fails
-#include "quest/include/version.h"
+#include "quest/version.h"
 
 // include before API headers since it validates
 // preprocessor configuration, and affirms macro
 // preconditions assumed by subsequent header
-#include "quest/include/modes.h"
+#include "quest/modes.h"
 
-#include "quest/include/precision.h"
-#include "quest/include/types.h"
-#include "quest/include/calculations.h"
-#include "quest/include/debug.h"
-#include "quest/include/decoherence.h"
-#include "quest/include/environment.h"
-#include "quest/include/initialisations.h"
-#include "quest/include/channels.h"
-#include "quest/include/operations.h"
-#include "quest/include/paulis.h"
-#include "quest/include/qureg.h"
-#include "quest/include/matrices.h"
-#include "quest/include/wrappers.h"
+#include "quest/precision.h"
+#include "quest/types.h"
+#include "quest/calculations.h"
+#include "quest/debug.h"
+#include "quest/decoherence.h"
+#include "quest/environment.h"
+#include "quest/initialisations.h"
+#include "quest/channels.h"
+#include "quest/operations.h"
+#include "quest/paulis.h"
+#include "quest/qureg.h"
+#include "quest/matrices.h"
+#include "quest/wrappers.h"
 
 
 #if INCLUDE_DEPRECATED_FUNCTIONS
-    #include "quest/include/deprecated.h"
+    #include "quest/deprecated.h"
 #endif
 
 

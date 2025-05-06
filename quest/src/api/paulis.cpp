@@ -5,8 +5,8 @@
  * @author Tyson Jones
  */
 
-#include "quest/include/precision.h"
-#include "quest/include/paulis.h"
+#include "quest/precision.h"
+#include "quest/paulis.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/printer.hpp"

@@ -22,8 +22,8 @@
 #ifndef MATRICES_H
 #define MATRICES_H
 
-#include "quest/include/types.h"
-#include "quest/include/paulis.h"
+#include "quest/types.h"
+#include "quest/paulis.h"
 
 // C++ gets vector initialiser overloads, whereas C gets a macro
 #ifdef __cplusplus

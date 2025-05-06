@@ -10,8 +10,8 @@
  * @author Tyson Jones
  */
 
-#include "quest/include/types.h"
-#include "quest/include/paulis.h"
+#include "quest/types.h"
+#include "quest/paulis.h"
 
 #include "quest/src/core/parser.hpp"
 #include "quest/src/core/errors.hpp"

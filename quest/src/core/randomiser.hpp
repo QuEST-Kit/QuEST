@@ -9,7 +9,7 @@
 #ifndef RANDOMISER_HPP
 #define RANDOMISER_HPP
 
-#include "quest/include/types.h"
+#include "quest/types.h"
 
 #include <vector>
 #include <random>

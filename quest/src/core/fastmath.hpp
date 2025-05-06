@@ -9,9 +9,9 @@
 #ifndef FASTMATH_HPP
 #define FASTMATH_HPP
 
-#include "quest/include/precision.h"
-#include "quest/include/types.h"
-#include "quest/include/paulis.h"
+#include "quest/precision.h"
+#include "quest/types.h"
+#include "quest/paulis.h"
 
 #include "quest/src/core/inliner.hpp"
 #include "quest/src/core/bitwise.hpp"

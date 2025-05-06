@@ -9,7 +9,7 @@
 #ifndef CONSTANTS_HPP
 #define CONSTANTS_HPP
 
-#include "quest/include/types.h"
+#include "quest/types.h"
 
 
 inline constexpr qreal const_PI = 3.14159265358979323846;

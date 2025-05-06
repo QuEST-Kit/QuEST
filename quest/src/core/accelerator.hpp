@@ -21,8 +21,8 @@
 #ifndef ACCELERATOR_HPP
 #define ACCELERATOR_HPP
 
-#include "quest/include/qureg.h"
-#include "quest/include/matrices.h"
+#include "quest/qureg.h"
+#include "quest/matrices.h"
 
 #include <vector>
 

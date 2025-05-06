@@ -14,7 +14,7 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#include "quest/include/types.h"
+#include "quest/types.h"
 
 
 

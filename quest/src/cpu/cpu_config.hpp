@@ -8,8 +8,8 @@
 #ifndef CPU_CONFIG_HPP
 #define CPU_CONFIG_HPP
 
-#include "quest/include/types.h"
-#include "quest/include/paulis.h"
+#include "quest/types.h"
+#include "quest/paulis.h"
 
 #include <vector>
 

@@ -4,7 +4,7 @@
  * @author Tyson Jones
  */
 
-#include "quest/include/modes.h"
+#include "quest/modes.h"
 
 
 int modeflag::USE_AUTO = -1;

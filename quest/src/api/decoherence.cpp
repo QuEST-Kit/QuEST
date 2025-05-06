@@ -7,9 +7,9 @@
  * @author Nicolas Vogt (prototyped v3 mixDamping)
  */
 
-#include "quest/include/types.h"
-#include "quest/include/qureg.h"
-#include "quest/include/channels.h"
+#include "quest/types.h"
+#include "quest/qureg.h"
+#include "quest/channels.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/localiser.hpp"

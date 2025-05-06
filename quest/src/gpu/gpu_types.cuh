@@ -14,9 +14,9 @@
 #ifndef GPU_TYPES_HPP
 #define GPU_TYPES_HPP
 
-#include "quest/include/modes.h"
-#include "quest/include/types.h"
-#include "quest/include/precision.h"
+#include "quest/modes.h"
+#include "quest/types.h"
+#include "quest/precision.h"
 
 #include "quest/src/core/inliner.hpp"
 

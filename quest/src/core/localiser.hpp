@@ -13,10 +13,10 @@
 #ifndef LOCALISER_HPP
 #define LOCALISER_HPP
 
-#include "quest/include/qureg.h"
-#include "quest/include/paulis.h"
-#include "quest/include/matrices.h"
-#include "quest/include/channels.h"
+#include "quest/qureg.h"
+#include "quest/paulis.h"
+#include "quest/matrices.h"
+#include "quest/channels.h"
 
 #include <vector>
 

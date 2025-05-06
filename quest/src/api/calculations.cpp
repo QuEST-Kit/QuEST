@@ -6,10 +6,10 @@
  * @author Balint Koczor (prototyped v3 calcHilbertSchmidtDistance and calcDensityInnerProduct)
  */
 
-#include "quest/include/types.h"
-#include "quest/include/qureg.h"
-#include "quest/include/paulis.h"
-#include "quest/include/calculations.h"
+#include "quest/types.h"
+#include "quest/qureg.h"
+#include "quest/paulis.h"
+#include "quest/calculations.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/utilities.hpp"

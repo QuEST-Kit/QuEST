@@ -10,9 +10,9 @@
 #ifndef ERRORS_HPP
 #define ERRORS_HPP
 
-#include "quest/include/types.h"
-#include "quest/include/qureg.h"
-#include "quest/include/matrices.h"
+#include "quest/types.h"
+#include "quest/qureg.h"
+#include "quest/matrices.h"
 
 #include <string>
 

@@ -18,8 +18,8 @@
 #ifndef GPU_KERNELS_HPP
 #define GPU_KERNELS_HPP
 
-#include "quest/include/modes.h"
-#include "quest/include/types.h"
+#include "quest/modes.h"
+#include "quest/types.h"
 
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/gpu/gpu_types.cuh"

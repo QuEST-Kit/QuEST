@@ -12,8 +12,8 @@
 #ifndef COMM_INDICES_HPP
 #define COMM_INDICES_HPP
 
-#include "quest/include/types.h"
-#include "quest/include/qureg.h"
+#include "quest/types.h"
+#include "quest/qureg.h"
 
 #include <utility>
 

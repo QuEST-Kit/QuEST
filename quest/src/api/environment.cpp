@@ -5,9 +5,9 @@
  * @author Tyson Jones 
  */
 
-#include "quest/include/environment.h"
-#include "quest/include/precision.h"
-#include "quest/include/modes.h"
+#include "quest/environment.h"
+#include "quest/precision.h"
+#include "quest/modes.h"
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/memory.hpp"

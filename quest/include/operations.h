@@ -15,10 +15,10 @@
 #ifndef OPERATIONS_H
 #define OPERATIONS_H
 
-#include "quest/include/qureg.h"
-#include "quest/include/paulis.h"
-#include "quest/include/matrices.h"
-#include "quest/include/channels.h"
+#include "quest/qureg.h"
+#include "quest/paulis.h"
+#include "quest/matrices.h"
+#include "quest/channels.h"
 
 #ifdef __cplusplus
     #include <vector>

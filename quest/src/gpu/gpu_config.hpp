@@ -12,10 +12,10 @@
 #ifndef GPU_CONFIG_HPP
 #define GPU_CONFIG_HPP
 
-#include "quest/include/types.h"
-#include "quest/include/qureg.h"
-#include "quest/include/matrices.h"
-#include "quest/include/channels.h"
+#include "quest/types.h"
+#include "quest/qureg.h"
+#include "quest/matrices.h"
+#include "quest/channels.h"
 
 
 

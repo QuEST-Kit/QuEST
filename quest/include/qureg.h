@@ -12,7 +12,7 @@
 #ifndef QUREG_H
 #define QUREG_H
 
-#include "quest/include/types.h"
+#include "quest/types.h"
 
 
 

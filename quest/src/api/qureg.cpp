@@ -5,9 +5,9 @@
  * @author Tyson Jones
  */
 
-#include "quest/include/qureg.h"
-#include "quest/include/environment.h"
-#include "quest/include/initialisations.h"
+#include "quest/qureg.h"
+#include "quest/environment.h"
+#include "quest/initialisations.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/autodeployer.hpp"

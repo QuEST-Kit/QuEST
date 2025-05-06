@@ -7,9 +7,9 @@
  * @author Tyson Jones
  */
 
-#include "quest/include/qureg.h"
-#include "quest/include/calculations.h"
-#include "quest/include/initialisations.h"
+#include "quest/qureg.h"
+#include "quest/calculations.h"
+#include "quest/initialisations.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/localiser.hpp"

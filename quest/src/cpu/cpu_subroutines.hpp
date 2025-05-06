@@ -8,10 +8,10 @@
 #ifndef CPU_SUBROUTINES_HPP
 #define CPU_SUBROUTINES_HPP
 
-#include "quest/include/types.h"
-#include "quest/include/qureg.h"
-#include "quest/include/paulis.h"
-#include "quest/include/matrices.h"
+#include "quest/types.h"
+#include "quest/qureg.h"
+#include "quest/paulis.h"
+#include "quest/matrices.h"
 
 #include "quest/src/core/utilities.hpp"
 

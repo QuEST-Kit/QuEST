@@ -12,12 +12,12 @@
 #ifndef UTILITIES_HPP
 #define UTILITIES_HPP
 
-#include "quest/include/types.h"
-#include "quest/include/qureg.h"
-#include "quest/include/paulis.h"
-#include "quest/include/matrices.h"
-#include "quest/include/channels.h"
-#include "quest/include/environment.h"
+#include "quest/types.h"
+#include "quest/qureg.h"
+#include "quest/paulis.h"
+#include "quest/matrices.h"
+#include "quest/channels.h"
+#include "quest/environment.h"
 
 #include <type_traits>
 #include <functional>

@@ -7,7 +7,7 @@
  * @author Balint Koczor (patched v3 MSVC seeding)
  */
 
-#include "quest/include/types.h"
+#include "quest/types.h"
 
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/errors.hpp"

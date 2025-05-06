@@ -7,8 +7,8 @@
  * @author Tyson Jones
  */
 
-#include "quest/include/channels.h"
-#include "quest/include/types.h"
+#include "quest/channels.h"
+#include "quest/types.h"
 
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"

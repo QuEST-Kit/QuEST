@@ -7,7 +7,7 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
-#include "quest/include/paulis.h"
+#include "quest/paulis.h"
 
 #include <string>
 

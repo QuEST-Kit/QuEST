@@ -12,8 +12,8 @@
  * @author Tyson Jones
  */
 
-#include "quest/include/types.h"
-#include "quest/include/paulis.h"
+#include "quest/types.h"
+#include "quest/paulis.h"
 
 #include "quest/src/core/memory.hpp"
 #include "quest/src/core/bitwise.hpp"

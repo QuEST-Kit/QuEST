@@ -6,7 +6,7 @@
  * @author Tyson Jones
  */
 
-#include "quest/include/types.h"
+#include "quest/types.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/printer.hpp"

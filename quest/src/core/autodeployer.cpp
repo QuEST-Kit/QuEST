@@ -8,8 +8,8 @@
  * @author Richard Meister (aided in design)
  */
 
-#include "quest/include/modes.h"
-#include "quest/include/environment.h"
+#include "quest/modes.h"
+#include "quest/environment.h"
 
 #include "quest/src/core/memory.hpp"
 #include "quest/src/core/autodeployer.hpp"

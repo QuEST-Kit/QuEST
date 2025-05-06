@@ -5,9 +5,9 @@
  * @author Tyson Jones
  */
 
-#include "quest/include/modes.h"
-#include "quest/include/types.h"
-#include "quest/include/paulis.h"
+#include "quest/modes.h"
+#include "quest/types.h"
+#include "quest/paulis.h"
 
 #include "quest/src/core/errors.hpp"
 

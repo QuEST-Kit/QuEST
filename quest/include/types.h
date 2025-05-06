@@ -19,8 +19,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include "quest/include/modes.h"
-#include "quest/include/precision.h"
+#include "quest/modes.h"
+#include "quest/precision.h"
 
 
 

@@ -13,8 +13,8 @@
 #ifndef PAULIS_H
 #define PAULIS_H
 
-#include "quest/include/precision.h"
-#include "quest/include/types.h"
+#include "quest/precision.h"
+#include "quest/types.h"
 
 // C++ gets string and vector initialiser overloads
 #ifdef __cplusplus

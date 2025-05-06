@@ -15,7 +15,7 @@
 #include "linalg.hpp"
 #include "lists.hpp"
 #include "random.hpp"
-#include "quest/include/quest.h"
+#include "quest.h"
 
 #include <cmath>
 #include <vector>

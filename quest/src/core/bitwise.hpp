@@ -13,7 +13,7 @@
   #include <intrin.h>
 #endif
 
-#include "quest/include/types.h"
+#include "quest/types.h"
 
 #include "quest/src/core/inliner.hpp"
 
