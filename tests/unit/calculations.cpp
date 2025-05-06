@@ -30,9 +30,8 @@
 #include <algorithm>
 #include <type_traits>
 
-using std::vector;
-using namespace Catch::Matchers;
 using Catch::Matchers::ContainsSubstring;
+using std::vector;
 
 
 
