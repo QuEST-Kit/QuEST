@@ -11,6 +11,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include "tests/utils/qvector.hpp"
@@ -31,6 +32,7 @@
 
 using std::vector;
 using namespace Catch::Matchers;
+using Catch::Matchers::ContainsSubstring;
 
 
 
@@ -153,6 +155,71 @@ void TEST_ON_CACHED_QUREG_AND_MATRIX(quregCache quregs, matrixCache matrices, au
  * @ingroup unitcalcs
  * @{
  */
+
+
+
+TEST_CASE( "calcRealAmpSum", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        // The boilerplate for testing a function differs
+        // greatly depending on what the function does;
+        // this function is trivial so has a simple test,
+        // re-using the existing TEST_ALL_QUREGS() macro.
+        // This macro invokes the below RHS expressions
+        // passing substitutions of the LHS expressions
+        // with Quregs (statevector or density matrix)
+        // and reference objects (qvector or qmatrix), for
+        // every possible deployment (i.e. multithreading,
+        // GPU-acceleration, distribution, hybrids, etc).
+
+        TEST_ALL_QUREGS(
+            qureg, calcRealAmpSum(qureg),
+            refer, std::real(getTotal(refer))
+        );
+    }
+
+    SECTION( LABEL_VALIDATION ) {
+
+        SECTION( "qureg uninitialised" ) {
+
+            // prepare an un-initialised qureg
+            Qureg qureg;
+
+            // manually mangle the fields for validation
+            // to detect, since the default values are
+            // undefined behaviour and might not trigger
+            // (e.g. compiler could re-use a valid Qureg)
+            qureg.numQubits = -123;
+
+            REQUIRE_THROWS_WITH( calcRealAmpSum(qureg), ContainsSubstring("invalid Qureg") );
+        }
+    }
+}
+
+
+
+TEST_CASE( "calcAmpSum", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        TEST_ALL_QUREGS(
+            qureg, calcAmpSum(qureg),
+            refer, getTotal(refer)
+        );
+    }
+
+    SECTION( LABEL_VALIDATION ) {
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg qureg;
+            qureg.numQubits = -123;
+
+            REQUIRE_THROWS_WITH( calcRealAmpSum(qureg), ContainsSubstring("invalid Qureg") );
+        }
+    }
+}
 
 
 

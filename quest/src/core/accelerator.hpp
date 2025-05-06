@@ -148,6 +148,13 @@ using std::vector;
 
 
 /*
+ * PR DEMOS
+ */
+
+qcomp accel_statevec_calcAmpSum(Qureg qureg);
+
+
+/*
  * GETTERS 
  */
 
