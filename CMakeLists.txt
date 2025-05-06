@@ -525,7 +525,7 @@ set(QuEST_INSTALL_CONFIGDIR "${CMAKE_INSTALL_LIBDIR}/cmake/QuEST")
 
 # Write QuESTConfigVersion.cmake
 write_basic_package_version_file(
-        "${CMAKE_CURRENT_BINARY_DIR}/QuESTConfigVersion.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}ConfigVersion.cmake"
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY AnyNewerVersion
 )
@@ -533,14 +533,14 @@ write_basic_package_version_file(
 # Configure QuESTConfig.cmake (from template)
 configure_package_config_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QuESTConfig.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/QuESTConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
         INSTALL_DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
 )
 
 # Install them
 install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/QuESTConfig.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/QuESTConfigVersion.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}ConfigVersion.cmake"
         DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
 )
 
@@ -554,7 +554,7 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/quest/include/"
 )
 
 install(EXPORT QuESTTargets
-        FILE QuESTTargets.cmake
+        FILE "${LIB_NAME}Targets.cmake"
         NAMESPACE QuEST::
         DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
 )
