@@ -343,6 +343,24 @@ bool util_areAnyVectorElemsWithinNode(int rank, qindex numElemsPerNode, qindex s
 util_VectorIndexRange util_getLocalIndRangeOfVectorElemsWithinNode(int rank, qindex numElemsPerNode, qindex elemStartInd, qindex numInds);
 
 
+// Generic function to split a workload fairly, with granularity >= block_size
+static inline
+std::pair<qindex, qindex>
+util_distribute(const qindex work, const qindex block, const int id, const int n) {
+    // ASSUME(work % block == 0);
+    const qindex blocks = work / block;
+
+    qindex spread = blocks / n;
+    qindex extra = blocks % n;
+
+    qindex prev_extra = (id * extra) / n;
+    qindex prev_shift = (id * extra) % n;
+    qindex here_extra = (prev_shift + extra) >= n;
+
+    qindex pos = id * spread + prev_extra;
+    return std::make_pair(pos * block, (pos + spread + here_extra) * block);
+}
+
 
 /*
  * GATE PARAMETERS
