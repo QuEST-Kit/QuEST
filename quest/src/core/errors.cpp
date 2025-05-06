@@ -94,6 +94,18 @@ void error_allocOfQuESTEnvFailed() {
 }
 
 
+void error_gettingPageSizeFailed() {
+
+    raiseInternalError("Failed to get the page size.");
+}
+
+
+void error_gettingNumaNodesFailed() {
+
+    raiseInternalError("Failed to get the numa node count");
+}
+
+
 
 /*
  * MEMORY ERRORS

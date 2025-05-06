@@ -46,6 +46,9 @@ int cpu_getCurrentNumThreads();
 qcomp* cpu_allocArray(qindex length);
 void cpu_deallocArray(qcomp* arr);
 
+qcomp* cpu_allocNumaArray(qindex length);
+void cpu_deallocNumaArray(qcomp* arr, qindex length);
+
 qcomp** cpu_allocAndInitMatrixWrapper(qcomp* arr, qindex dim);
 void cpu_deallocMatrixWrapper(qcomp** wrapper);
 

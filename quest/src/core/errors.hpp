@@ -42,6 +42,9 @@ void error_validationListUniquenessCheckExceededMaskSize();
 
 void error_allocOfQuESTEnvFailed();
 
+void error_gettingPageSizeFailed();
+
+void error_gettingNumaNodesFailed();
 
 
 /*

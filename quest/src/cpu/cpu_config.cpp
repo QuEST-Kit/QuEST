@@ -14,6 +14,7 @@
 #include <vector>
 #include <cstring>
 #include <cstdlib>
+#include <cstdint>
 
 using std::vector;
 
@@ -34,6 +35,12 @@ using std::vector;
     #include <omp.h>
 #endif
 
+#if NUMA_AWARE
+    #include <sys/mman.h>
+    #include <unistd.h>
+    #include <numaif.h>
+    #include <numa.h>
+#endif // NUMA_AWARE
 
 
 /*
@@ -105,23 +112,69 @@ int cpu_getCurrentNumThreads() {
  * MEMORY ALLOCATION
  */
 
+#if NUMA_AWARE
+unsigned long getPageSize() {
+    static unsigned long page_size = 0;
+    if (!page_size) {
+        page_size = sysconf(_SC_PAGESIZE);
+        if (page_size == ~0UL) {
+            error_gettingPageSizeFailed();
+        }
+    }
+    return page_size;
+}
+
+unsigned long getNumaNodes() {
+    static int n_nodes = 0;
+    if (!n_nodes) {
+        n_nodes = numa_num_configured_nodes();
+        if (n_nodes < 1) {
+            error_gettingNumaNodesFailed();
+        }
+    }
+    return n_nodes;
+}
+#endif
 
 qcomp* cpu_allocArray(qindex length) {
-
-    /// @todo
-    /// here, we calloc the entire array in a serial setting, rather than one malloc 
-    /// followed by threads subsequently memset'ing their own partitions. The latter
-    /// approach would distribute the array pages across NUMA nodes, accelerating 
-    /// their subsequent access by the same threads (via NUMA's first-touch policy).
-    /// We have so far foregone this optimisation since a thread's memory-access pattern
-    /// in many of the QuEST functions is non-trivial, and likely to be inconsistent 
-    /// with the memset pattern. As such, I expect the benefit is totally occluded
-    /// and only introduces potential new bugs - but this should be tested and confirmed!
-
-    // we call calloc over malloc in order to fail immediately if mem isn't available;
-    // caller must handle nullptr result
-
     return (qcomp*) calloc(length, sizeof(qcomp));
+}
+
+
+qcomp* cpu_allocNumaArray(qindex length) {
+#if !NUMA_AWARE
+    return cpu_allocArray(length);
+#else
+    unsigned long page_size = getPageSize();
+    int n_nodes = getNumaNodes();
+
+    qindex size = length * sizeof(qcomp);
+    int pages = (size + page_size - 1) / page_size;
+    void *addr = mmap(NULL, pages * page_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (n_nodes == 1) {
+        return reinterpret_cast<qcomp*>(addr);
+    }
+
+    // distribution strategy: floor_pages per node, distribute remain_pages as spread out as possible
+    int floor_pages = pages / n_nodes;
+    int spread_pages = pages % n_nodes;
+
+    uintptr_t pos = (uintptr_t)addr;
+    for (int node = 0, shift = n_nodes; node < n_nodes; ++node) {
+        shift -= spread_pages;
+        int node_pages = floor_pages + (shift <= 0);
+
+        unsigned long node_mask = 1UL << node;
+        mbind((void*)pos, node_pages * page_size, MPOL_BIND, &node_mask, sizeof(node_mask) * 8, 0);
+
+        pos += node_pages * page_size;
+        if (shift <= 0) {
+            shift += n_nodes;
+        }
+    }
+
+    return reinterpret_cast<qcomp*>(addr);
+#endif // NUMA_AWARE
 }
 
 
@@ -129,6 +182,23 @@ void cpu_deallocArray(qcomp* arr) {
 
     // arr can safely be nullptr
     free(arr);
+}
+
+
+void cpu_deallocNumaArray(qcomp* arr, qindex length) {
+    if (arr == nullptr) {
+        return;
+    }
+
+#if !NUMA_AWARE
+    return cpu_deallocArray(arr);
+#else
+    unsigned long page_size = getPageSize();
+    qindex size = length * sizeof(qcomp);
+    int pages = (size + page_size - 1) / page_size;
+
+    munmap(arr, pages * page_size);
+#endif // NUMA_AWARE
 }
 
 

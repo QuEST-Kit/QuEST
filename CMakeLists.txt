@@ -323,6 +323,21 @@ if (ENABLE_MULTITHREADING)
     OpenMP::OpenMP_C
   )
 
+  # Find NUMA - location of NUMA headers
+  if (WIN32)
+    compile_option(NUMA_AWARE 0)
+    message(WARNING "Building on Windows, QuEST will not be aware of numa locality")
+  else()
+    include(FindPkgConfig)
+    pkg_search_module(NUMA numa IMPORTED_TARGET GLOBAL)
+    compile_option(NUMA_AWARE ${NUMA_FOUND})
+    if (${NUMA_FOUND})
+      target_link_libraries(QuEST PRIVATE PkgConfig::NUMA)
+    else()
+      message(WARNING "libnuma not found, QuEST will not be aware of numa locality")
+    endif()
+  endif()
+
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+mt")
   endif()
