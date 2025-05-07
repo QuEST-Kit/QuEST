@@ -49,7 +49,7 @@
 #include <iostream>
 #include <string>
 
-#include "quest/include/quest.h"
+#include "quest.h"
 #include "tests/utils/cache.hpp"
 #include "tests/utils/macros.hpp"
 #include "tests/utils/random.hpp"

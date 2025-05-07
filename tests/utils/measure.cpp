@@ -6,7 +6,7 @@
  * @author Tyson Jones
  */
 
-#include "quest/include/quest.h"
+#include "quest.h"
 
 #include "qvector.hpp"
 #include "qmatrix.hpp"
