@@ -7,6 +7,7 @@
  * deprecated v3 API, before including this header.
  * 
  * @author Tyson Jones
+ * @author Luc Jaulmes (patching CMake install)
  * 
  * @defgroup api 📋 API
  */
@@ -30,6 +31,7 @@
 #define QUEST_H
 
 
+// bind compile settings to installed exec
 #if !@MULTI_LIB_HEADERS@
 #cmakedefine FLOAT_PRECISION @FLOAT_PRECISION@
 #cmakedefine01 COMPILE_MPI

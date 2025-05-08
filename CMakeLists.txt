@@ -1,6 +1,7 @@
 # @author Oliver Thomson Brown
 # @author Erich Essmann (patches including MSVC support)
 # @author Tyson Jones (patches including clang multithreading)
+# @author Luc Jaulmes (patching install)
 #
 # Contributions to previous builds from:
 #  - Ania Brown

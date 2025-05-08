@@ -44,6 +44,8 @@ Dr Ian Bush [consultant]
     HPC
 
 External contributors:
+Luc Jaulmes
+    patched v4's install process using CMake
 Jakub Adamski
     optimised distributed communication by sending max-size messages asynchronously
 Bruno Villasenor Alvarez on behalf of AMD
