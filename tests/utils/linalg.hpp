@@ -29,6 +29,9 @@ qindex setBitAt(qindex num, int ind, int bit);
 qindex setBitsAt(qindex num, vector<int> inds, qindex bits);
 qindex getPow2(int);
 
+qcomp getTotal(qvector);
+qcomp getTotal(qmatrix);
+
 qreal getSum(vector<qreal> vec);
 qcomp getSum(qvector);
 qvector getNormalised(qvector);
