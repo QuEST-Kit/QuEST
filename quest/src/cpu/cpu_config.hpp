@@ -23,7 +23,7 @@ using std::vector;
 
 bool cpu_isOpenmpCompiled();
 
-int cpu_getCurrentNumThreads();
+int cpu_getAvailableNumThreads();
 
 int cpu_getNumOpenmpProcessors();
 
@@ -34,6 +34,8 @@ int cpu_getNumOpenmpProcessors();
  */
 
 int cpu_getOpenmpThreadInd();
+
+int cpu_getCurrentNumThreads();
 
 
 

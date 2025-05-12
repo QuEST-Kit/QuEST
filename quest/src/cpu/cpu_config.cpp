@@ -46,11 +46,12 @@ bool cpu_isOpenmpCompiled() {
 }
 
 
-int cpu_getCurrentNumThreads() {
+int cpu_getAvailableNumThreads() {
 #if COMPILE_OPENMP
     int n = -1;
 
     #pragma omp parallel shared(n)
+    #pragma omp single
     n = omp_get_num_threads();
 
     return n;
@@ -86,6 +87,15 @@ int cpu_getOpenmpThreadInd() {
     return omp_get_thread_num();
 #else
     return 0;
+#endif
+}
+
+
+int cpu_getCurrentNumThreads() {
+#if COMPILE_OPENMP
+    return omp_get_num_threads();
+#else
+    return 1;
 #endif
 }
 

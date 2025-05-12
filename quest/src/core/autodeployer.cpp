@@ -36,7 +36,7 @@ void autodep_chooseQuESTEnvDeployment(int &useDistrib, int &useGpuAccel, int &us
 
     // and we require more than 1 thread available at QuESTEnv creation
     if (useMultithread == modeflag::USE_AUTO)
-        useMultithread = (cpu_isOpenmpCompiled())? (cpu_getCurrentNumThreads() > 1) : 0;
+        useMultithread = (cpu_isOpenmpCompiled())? (cpu_getAvailableNumThreads() > 1) : 0;
 }
 
 
