@@ -47,7 +47,12 @@ typedef struct {
 /// @notyetdoced
 void initQuESTEnv();
 
-/// @notyetdoced
+/** @notyetdoced
+ * 
+ * @see
+ * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_environments.c) and
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_environments.cpp) examples
+ */
 void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread);
 
 /// @notyetdoced
@@ -56,8 +61,13 @@ void finalizeQuESTEnv();
 /// @notyetdoced
 void syncQuESTEnv();
 
-/// @notyetdoced
-/// @notyettested
+/** @notyetdoced
+ * @notyettested
+ * 
+ * @see
+ * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_environments.c) and
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_environments.cpp) examples
+ */
 void reportQuESTEnv();
 
 /// @notyetdoced

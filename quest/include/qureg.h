@@ -410,13 +410,23 @@ void destroyQureg(Qureg qureg);
  */
 
 
-/// @notyetdoced
-/// @notyettested
+/** @notyetdoced
+ * @notyettested
+ * 
+ * @see
+ * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_quregs.c) and
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_quregs.cpp) examples
+ */
 void reportQuregParams(Qureg qureg);
 
 
-/// @notyetdoced
-/// @notyettested
+/** @notyetdoced
+ * @notyettested
+ * 
+ * @see
+ * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_quregs.c) and
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_quregs.cpp) examples
+ */
 void reportQureg(Qureg qureg);
 
 
