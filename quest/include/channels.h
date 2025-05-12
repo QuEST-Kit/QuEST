@@ -176,13 +176,28 @@ extern "C" {
 #endif
 
 
-    /// @ingroup channels_create
-    /// @notyetdoced
+    /** @ingroup channels_create
+     * @notyetdoced
+     * 
+     * @see
+     * - createInlineKrausMap
+     * - createSuperOp()
+     * - setKrausMap()
+     * - setInlineKrausMap
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.c) or 
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.cpp) examples
+     */
     KrausMap createKrausMap(int numQubits, int numOperators);
 
 
-    /// @ingroup channels_sync
-    /// @notyetdoced
+    /** @ingroup channels_sync
+     * @notyetdoced
+     * 
+     * @see
+     * - setKrausMap()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.c) or 
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.cpp) examples
+     */
     void syncKrausMap(KrausMap map);
 
 
@@ -197,13 +212,28 @@ extern "C" {
     void reportKrausMap(KrausMap map);
 
 
-    /// @ingroup channels_create
-    /// @notyetdoced
+    /** @ingroup channels_create
+     * @notyetdoced
+     * 
+     * @see
+     * - createInlineSuperOp()
+     * - createKrausMap()
+     * - setSuperOp()
+     * - setInlineSuperOp()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.c) or 
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.cpp) examples
+     */
     SuperOp createSuperOp(int numQubits);
 
 
-    /// @ingroup channels_sync
-    /// @notyetdoced
+    /** @ingroup channels_sync
+     * @notyetdoced
+     * 
+     * @see
+     * - setSuperOp()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.c) or 
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.cpp) examples
+     */
     void syncSuperOp(SuperOp op);
 
 
@@ -240,13 +270,27 @@ extern "C" {
 #endif
 
 
-    /// @ingroup channels_setters
-    /// @notyetdoced
+    /** @ingroup channels_setters
+     * @notyetdoced
+     * 
+     * @see
+     * - setInlineKrausMap()
+     * - syncKrausMap()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.c) or 
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.cpp) examples
+     */
     void setKrausMap(KrausMap map, qcomp*** matrices);
 
 
-    /// @ingroup channels_setters
-    /// @notyetdoced
+    /** @ingroup channels_setters
+     * @notyetdoced
+     * 
+     * @see
+     * - setInlineSuperOp()
+     * - syncSuperOp()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.c) or 
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.cpp) examples
+     */
     void setSuperOp(SuperOp op, qcomp** matrix);
 
 
@@ -278,15 +322,25 @@ extern "C" {
     // C++ overloads to accept vectors, which also enables vector initialiser literals
 
 
-    /// @ingroup channels_setters
-    /// @notyetdoced
-    /// @cpponly
+    /** @ingroup channels_setters
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - setInlineKrausMap()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.cpp) examples
+     */
     void setKrausMap(KrausMap map, std::vector<std::vector<std::vector<qcomp>>> matrices);
 
 
-    /// @ingroup channels_setters
-    /// @notyetdoced
-    /// @cpponly
+    /** @ingroup channels_setters
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - setInlineSuperOp()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.cpp) examples
+     */
     void setSuperOp(SuperOp op, std::vector<std::vector<qcomp>> matrix);
     
 
@@ -359,17 +413,30 @@ extern "C" {
     // spoofing macros as functions
     #if 0
 
-        /// @ingroup channels_setters
-        /// @notyetdoced
-        /// @conly
-        /// @macrodoc
+
+        /** @ingroup channels_setters
+         * @notyetdoced
+         * @conly
+         * @macrodoc
+         * 
+         * @see
+         * - setInlineKrausMap()
+         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.c) examples
+         */
         void setKrausMap(KrausMap map, qcomp matrices[map.numMatrices][map.numRows][map.numRows]);
 
-        /// @ingroup channels_setters
-        /// @notyetdoced
-        /// @conly
-        /// @macrodoc
+
+        /** @ingroup channels_setters
+         * @notyetdoced
+         * @conly
+         * @macrodoc
+         * 
+         * @see
+         * - setInlineSuperOp()
+         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.c) examples
+         */
         void setSuperOp(SuperOp op, qcomp matrix[op.numRows][op.numRows]);
+
 
     #endif
 
@@ -404,15 +471,27 @@ extern "C" {
     // validate that they match the struct dimensions (which requires validating the structs).
 
 
-    /// @ingroup channels_setters
-    /// @notyetdoced
-    /// @cpponly
+    /** @ingroup channels_setters
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - setKrausMap()
+     * - syncKrausMap()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.cpp) examples
+     */
     void setInlineKrausMap(KrausMap map, int numQb, int numOps, std::vector<std::vector<std::vector<qcomp>>> matrices);
 
 
-    /// @ingroup channels_setters
-    /// @notyetdoced
-    /// @cpponly
+    /** @ingroup channels_setters
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - setSuperOp()
+     * - syncSuperOp()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.cpp) examples
+     */
     void setInlineSuperOp(SuperOp op, int numQb, std::vector<std::vector<qcomp>> matrix);
 
 
@@ -451,7 +530,6 @@ extern "C" {
     #define setInlineKrausMap(map, numQb, numOps, ...) \
         _setInlineKrausMap((map), (numQb), (numOps), (qcomp[(numOps)][1<<(numQb)][1<<(numQb)]) __VA_ARGS__)
 
-
     /// @neverdoced
     #define setInlineSuperOp(matr, numQb, ...) \
         _setInlineSuperOp((matr), (numQb), (qcomp[1<<(2*(numQb))][1<<(2*(numQb))]) __VA_ARGS__)
@@ -459,15 +537,30 @@ extern "C" {
     // spoofing macros as functions
     #if 0
 
-        /// @ingroup channels_setters
-        /// @notyetdoced
-        /// @macrodoc
+
+        /** @ingroup channels_setters
+         * @notyetdoced
+         * @macrodoc
+         * 
+         * @see
+         * - setKrausMap()
+         * - syncKrausMap()
+         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.c) examples
+         */
         void setInlineKrausMap(KrausMap map, int numQb, int numOps, {{{ matrices }}});
 
-        /// @ingroup channels_setters
-        /// @notyetdoced
-        /// @macrodoc
+
+        /** @ingroup channels_setters
+         * @notyetdoced
+         * @macrodoc
+         * 
+         * @see
+         * - setSuperOp()
+         * - syncSuperOp()
+         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.c) examples
+         */
         void setInlineSuperOp(SuperOp op, int numQb, {{ matrix }});
+
 
     #endif
 
@@ -494,15 +587,29 @@ extern "C" {
     // C++ accepts vector initialiser lists
 
 
-    /// @ingroup channels_create
-    /// @notyetdoced
-    /// @cpponly
+    /** @ingroup channels_create
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - createKrausMap()
+     * - setKrausMap()
+     * - syncKrausMap()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.cpp) examples
+     */
     KrausMap createInlineKrausMap(int numQubits, int numOperators, std::vector<std::vector<std::vector<qcomp>>> matrices);
 
 
-    /// @ingroup channels_create
-    /// @notyetdoced
-    /// @cpponly
+    /** @ingroup channels_create
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - createSuperOp()
+     * - setSuperOp()
+     * - syncSuperOp()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.cpp) examples
+     */
     SuperOp createInlineSuperOp(int numQubits, std::vector<std::vector<qcomp>> matrix);
 
 
@@ -550,15 +657,32 @@ extern "C" {
     // spoofing macros as functions
     #if 0
 
-        /// @ingroup channels_create
-        /// @notyetdoced
-        /// @macrodoc
+
+        /** @ingroup channels_create
+         * @notyetdoced
+         * @macrodoc
+         * 
+         * @see
+         * - createKrausMap()
+         * - setKrausMap()
+         * - syncKrausMap()
+         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.c) examples
+         */
         KrausMap createInlineKrausMap(int numQb, int numOps, {{{ matrices }}});
 
-        /// @ingroup channels_create
-        /// @notyetdoced
-        /// @macrodoc
+
+        /** @ingroup channels_create
+         * @notyetdoced
+         * @macrodoc
+         * 
+         * @see
+         * - createSuperOp()
+         * - setSuperOp()
+         * - syncSuperOp()
+         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.c) examples
+         */
         SuperOp createInlineSuperOp(int numQb, {{ matrix }});
+
 
     #endif
 
