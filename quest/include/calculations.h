@@ -93,7 +93,7 @@ extern "C" {
  * - if @p qureg is uninitialised.
  * - if @p str contains a (non-identity) Pauli upon a higher-index qubit than exists in @p qureg.
  * - if the output (with unreturned imaginary component) is not approximately real.
- * @notvalidated
+ * @notyetvalidated
  * @author Tyson Jones
  */
 qreal calcExpecPauliStr(Qureg qureg, PauliStr str);
@@ -154,7 +154,7 @@ qreal calcExpecPauliStr(Qureg qureg, PauliStr str);
  * - if any PauliStr in @p sum targets a higher-index qubit than exists in @p qureg.
  * - if @p sum is not approximately Hermitian.
  * - if the output (with unreturned imaginary component) is not approximately real.
-* @notvalidated
+* @notyetvalidated
  * @see
  * - calcExpecNonHermitianPauliStrSum()
  * - calcExpecFullStateDiagMatr()
@@ -163,13 +163,13 @@ qreal calcExpecPauliStr(Qureg qureg, PauliStr str);
 qreal calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum);
 
 
-/// @notdoced
-/// @notvalidated
+/// @notyetdoced
+/// @notyetvalidated
 qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
 
 
-/// @notdoced
-/// @notvalidated
+/// @notyetdoced
+/// @notyetvalidated
 qreal calcExpecFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matr, qreal exponent);
 
 
@@ -184,23 +184,23 @@ qreal calcExpecFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matr, qreal
  */
 
 
-/// @notdoced
-/// @notvalidated
+/// @notyetdoced
+/// @notyetvalidated
 qreal calcProbOfBasisState(Qureg qureg, qindex index);
 
 
-/// @notdoced
-/// @notvalidated
+/// @notyetdoced
+/// @notyetvalidated
 qreal calcProbOfQubitOutcome(Qureg qureg, int qubit, int outcome);
 
 
-/// @notdoced
-/// @notvalidated
+/// @notyetdoced
+/// @notyetvalidated
 qreal calcProbOfMultiQubitOutcome(Qureg qureg, int* qubits, int* outcomes, int numQubits);
 
 
-/// @notdoced
-/// @notvalidated
+/// @notyetdoced
+/// @notyetvalidated
 void calcProbsOfAllMultiQubitOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
 
 
@@ -215,13 +215,13 @@ void calcProbsOfAllMultiQubitOutcomes(qreal* outcomeProbs, Qureg qureg, int* qub
  */
 
 
-/// @notdoced
-/// @notvalidated
+/// @notyetdoced
+/// @notyetvalidated
 qreal calcTotalProb(Qureg qureg);
 
 
-/// @notdoced
-/// @notvalidated
+/// @notyetdoced
+/// @notyetvalidated
 qreal calcPurity(Qureg qureg);
 
 
@@ -236,12 +236,12 @@ qreal calcPurity(Qureg qureg);
  */
 
 
-/// @notdoced
-/// @notvalidated
+/// @notyetdoced
+/// @notyetvalidated
 qreal calcFidelity(Qureg qureg, Qureg other);
 
-/// @notdoced
-/// @notvalidated
+/// @notyetdoced
+/// @notyetvalidated
 qreal calcDistance(Qureg qureg1, Qureg qureg2);
 
 
@@ -256,13 +256,13 @@ qreal calcDistance(Qureg qureg1, Qureg qureg2);
  */
 
 
-/// @notdoced
-/// @notvalidated
+/// @notyetdoced
+/// @notyetvalidated
 Qureg calcPartialTrace(Qureg qureg, int* traceOutQubits, int numTraceQubits);
 
 
-/// @notdoced
-/// @notvalidated
+/// @notyetdoced
+/// @notyetvalidated
 Qureg calcReducedDensityMatrix(Qureg qureg, int* retainQubits, int numRetainQubits);
 
 
@@ -293,26 +293,26 @@ Qureg calcReducedDensityMatrix(Qureg qureg, int* retainQubits, int numRetainQubi
 
 
 /// @ingroup calc_comparisons
-/// @notdoced
-/// @notvalidated
+/// @notyetdoced
+/// @notyetvalidated
 qcomp calcInnerProduct(Qureg qureg1, Qureg qureg2);
 
 
 /// @ingroup calc_expec
-/// @notdoced
-/// @notvalidated
+/// @notyetdoced
+/// @notyetvalidated
 qcomp calcExpecNonHermitianPauliStrSum(Qureg qureg, PauliStrSum sum); 
 
 
 /// @ingroup calc_expec
-/// @notdoced
-/// @notvalidated
+/// @notyetdoced
+/// @notyetvalidated
 qcomp calcExpecNonHermitianFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
 
 
 /// @ingroup calc_expec
-/// @notdoced
-/// @notvalidated
+/// @notyetdoced
+/// @notyetvalidated
 qcomp calcExpecNonHermitianFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
 
 
@@ -331,33 +331,33 @@ qcomp calcExpecNonHermitianFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr
 
 
 /// @ingroup calc_prob
-/// @nottested
-/// @notdoced
-/// @notvalidated
+/// @notyettested
+/// @notyetdoced
+/// @notyetvalidated
 /// @cpponly
 qreal calcProbOfMultiQubitOutcome(Qureg qureg, std::vector<int> qubits, std::vector<int> outcomes);
 
 
 /// @ingroup calc_prob
-/// @nottested
-/// @notdoced
-/// @notvalidated
+/// @notyettested
+/// @notyetdoced
+/// @notyetvalidated
 /// @cpponly
 std::vector<qreal> calcProbsOfAllMultiQubitOutcomes(Qureg qureg, std::vector<int> qubits);
 
 
 /// @ingroup calc_partialtrace
-/// @nottested
-/// @notdoced
-/// @notvalidated
+/// @notyettested
+/// @notyetdoced
+/// @notyetvalidated
 /// @cpponly
 Qureg calcPartialTrace(Qureg qureg, std::vector<int> traceOutQubits);
 
 
 /// @ingroup calc_partialtrace
-/// @nottested
-/// @notdoced
-/// @notvalidated
+/// @notyettested
+/// @notyetdoced
+/// @notyetvalidated
 /// @cpponly
 Qureg calcReducedDensityMatrix(Qureg qureg, std::vector<int> retainQubits);
 

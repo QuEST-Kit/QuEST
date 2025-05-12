@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 
-/** @notdoced
+/** @notyetdoced
  * 
  * @formulae
  * Let @f$ \dmrho = @f$ @p qureg, @f$ p = @f$ @p prob and @f$ t = @f$ @p target. 
@@ -68,12 +68,12 @@ extern "C" {
     mixQureg(qureg, other, prob);
  *   ```
  *
- * @notvalidated
+ * @notyetvalidated
  */
 void mixDephasing(Qureg qureg, int target, qreal prob);
 
 
-/** @notdoced
+/** @notyetdoced
  * 
  * @formulae
  * Let @f$ \dmrho = @f$ @p qureg, @f$ p = @f$ @p prob, @f$ t_1 = @f$ @p target1 and @f$ t_2 = @f$ @p target2.
@@ -112,12 +112,12 @@ void mixDephasing(Qureg qureg, int target, qreal prob);
     mixKrausMap(qureg, targets, 2, map);
  *   ```
  *
- * @notvalidated
+ * @notyetvalidated
  */
 void mixTwoQubitDephasing(Qureg qureg, int target1, int target2, qreal prob);
 
 
-/** @notdoced
+/** @notyetdoced
  * 
  * @formulae
  * Let @f$ \dmrho = @f$ @p qureg, @f$ p = @f$ @p prob and @f$ t = @f$ @p target. 
@@ -153,12 +153,12 @@ void mixTwoQubitDephasing(Qureg qureg, int target1, int target2, qreal prob);
     mixKrausMap(qureg, &target, 1, map);
  *   ```
  *
- * @notvalidated
+ * @notyetvalidated
  */
 void mixDepolarising(Qureg qureg, int target, qreal prob);
 
 
-/** @notdoced
+/** @notyetdoced
  * 
  * @formulae
  * Let @f$ \dmrho = @f$ @p qureg, @f$ p = @f$ @p prob, @f$ t_1 = @f$ @p target1 and @f$ t_2 = @f$ @p target2.
@@ -214,12 +214,12 @@ void mixDepolarising(Qureg qureg, int target, qreal prob);
  *   of two Pauli matrices, all scaled by @f$ (p/15)^{1/2} @f$, _except_ for
  *   @f$ \hat{\id} \otimes \hat{\id} @f$ which is scaled by @f$ (1-16p/15)^{1/2} @f$.
  *
- * @notvalidated
+ * @notyetvalidated
  */
 void mixTwoQubitDepolarising(Qureg qureg, int target1, int target2, qreal prob);
 
 
-/** @notdoced
+/** @notyetdoced
  * 
  * @formulae
  * Let @f$ \dmrho = @f$ @p qureg, @f$ p = @f$ @p prob and @f$ t = @f$ @p target.
@@ -250,12 +250,12 @@ void mixTwoQubitDepolarising(Qureg qureg, int target1, int target2, qreal prob);
     mixKrausMap(qureg, &target, 1, map);
  *   ```
  *
- * @notvalidated
+ * @notyetvalidated
  */
 void mixDamping(Qureg qureg, int target, qreal prob);
 
 
-/** @notdoced
+/** @notyetdoced
  * 
  * @formulae
  * Let @f$ \dmrho = @f$ @p qureg, @f$ t = @f$ @p target, and
@@ -292,12 +292,12 @@ void mixDamping(Qureg qureg, int target, qreal prob);
     mixKrausMap(qureg, &target, 1, map);
  *   ```
  *
- * @notvalidated
+ * @notyetvalidated
  */
 void mixPaulis(Qureg qureg, int target, qreal probX, qreal probY, qreal probZ);
 
 
-/** @notdoced
+/** @notyetdoced
  * 
  * @formulae
  * Let @f$ \dmrho_1 = @f$ @p qureg, @f$ \dmrho_2 = @f$ @p other and @f$ p = @f$ @p prob.
@@ -310,12 +310,12 @@ void mixPaulis(Qureg qureg, int target, qreal probX, qreal probY, qreal probZ);
             p \, \dmrho_2.
  * @f]
  * 
- * @notvalidated
+ * @notyetvalidated
  */
 void mixQureg(Qureg qureg, Qureg other, qreal prob);
 
 
-/** @notdoced
+/** @notyetdoced
  * 
  * @formulae
  * Let @f$ \dmrho = @f$ @p qureg, @f$ \vec{t} = @f$ @p targets and @f$ \hat{K}^{(i)} @f$
@@ -328,13 +328,13 @@ void mixQureg(Qureg qureg, Qureg other, qreal prob);
         \hat{K}_{\vec{t}}^{(i)} \dmrho \, {\hat{K}_{\vec{t}}^{(i)}}^\dagger
  * @f]
  *
- * @notvalidated
+ * @notyetvalidated
  */
 void mixKrausMap(Qureg qureg, int* targets, int numTargets, KrausMap map);
 
 
-/// @notdoced
-/// @notvalidated
+/// @notyetdoced
+/// @notyetvalidated
 void mixSuperOp(Qureg qureg, int* targets, int numTargets, SuperOp superop);
 
 
@@ -357,15 +357,15 @@ void mixSuperOp(Qureg qureg, int* targets, int numTargets, SuperOp superop);
 
 #include <vector>
 
-/// @nottested
-/// @notdoced
-/// @notvalidated
+/// @notyettested
+/// @notyetdoced
+/// @notyetvalidated
 /// @cpponly
 void mixKrausMap(Qureg qureg, std::vector<int> targets, KrausMap map);
 
-/// @nottested
-/// @notdoced
-/// @notvalidated
+/// @notyettested
+/// @notyetdoced
+/// @notyetvalidated
 /// @cpponly
 void mixSuperOp(Qureg qureg, std::vector<int> targets, SuperOp superop);
 

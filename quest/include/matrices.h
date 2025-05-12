@@ -60,7 +60,7 @@
  */
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     int numQubits;
@@ -71,7 +71,7 @@ typedef struct {
 } CompMatr1;
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     int numQubits;
@@ -82,7 +82,7 @@ typedef struct {
 } CompMatr2;
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     // beware that CompMatr instances are sometimes 'spoofed' inside localiser.cpp,
@@ -128,7 +128,7 @@ typedef struct {
  */
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     int numQubits;
@@ -139,7 +139,7 @@ typedef struct {
 } DiagMatr1;
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     int numQubits;
@@ -150,7 +150,7 @@ typedef struct {
 } DiagMatr2;
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     int numQubits;
@@ -187,7 +187,7 @@ typedef struct {
  */
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     int numQubits;
@@ -307,7 +307,7 @@ extern void _validateNewElemsPtrNotNull(qcomp* ptr, const char* caller);
 
 
 /// @ingroup matrices_getters
-/// @notdoced
+/// @notyetdoced
 static inline CompMatr1 getCompMatr1(qcomp** in) {
     _validateNewNestedElemsPtrNotNull(in, 1, __func__);
 
@@ -323,7 +323,7 @@ static inline CompMatr1 getCompMatr1(qcomp** in) {
 
 
 /// @ingroup matrices_getters
-/// @notdoced
+/// @notyetdoced
 static inline CompMatr2 getCompMatr2(qcomp** in) {
     _validateNewNestedElemsPtrNotNull(in, 2, __func__);
 
@@ -341,7 +341,7 @@ static inline CompMatr2 getCompMatr2(qcomp** in) {
 
 
 /// @ingroup matrices_getters
-/// @notdoced
+/// @notyetdoced
 static inline DiagMatr1 getDiagMatr1(qcomp* in) {
     _validateNewElemsPtrNotNull(in, __func__);
 
@@ -355,7 +355,7 @@ static inline DiagMatr1 getDiagMatr1(qcomp* in) {
 
 
 /// @ingroup matrices_getters
-/// @notdoced
+/// @notyetdoced
 static inline DiagMatr2 getDiagMatr2(qcomp* in) {
     _validateNewElemsPtrNotNull(in, __func__);
 
@@ -414,35 +414,35 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
 
 
     /// @ingroup matrices_getters
-    /// @notdoced
+    /// @notyetdoced
     static inline CompMatr1 getCompMatr1(qcomp in[2][2]) { return _getCompMatr1FromArr(in); }
 
 
     /// @ingroup matrices_getters
-    /// @notdoced
+    /// @notyetdoced
     static inline CompMatr2 getCompMatr2(qcomp in[4][4]) { return _getCompMatr2FromArr(in); }
 
 
     /// @ingroup matrices_getters
-    /// @notdoced
+    /// @notyetdoced
     /// @cpponly
     CompMatr1 getCompMatr1(std::vector<std::vector<qcomp>> in);
 
 
     /// @ingroup matrices_getters
-    /// @notdoced
+    /// @notyetdoced
     /// @cpponly
     CompMatr2 getCompMatr2(std::vector<std::vector<qcomp>> in);
 
 
     /// @ingroup matrices_getters
-    /// @notdoced
+    /// @notyetdoced
     /// @cpponly
     DiagMatr1 getDiagMatr1(std::vector<qcomp> in);
 
 
     /// @ingroup matrices_getters
-    /// @notdoced
+    /// @notyetdoced
     /// @cpponly
     DiagMatr2 getDiagMatr2(std::vector<qcomp> in);
 
@@ -561,22 +561,22 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
 #if 0
 
     /// @ingroup matrices_getters
-    /// @notdoced
+    /// @notyetdoced
     /// @macrodoc
     CompMatr1 getInlineCompMatr1({{ matrix }});
 
     /// @ingroup matrices_getters
-    /// @notdoced
+    /// @notyetdoced
     /// @macrodoc
     CompMatr2 getInlineCompMatr2({{ matrix }});
 
     /// @ingroup matrices_getters
-    /// @notdoced
+    /// @notyetdoced
     /// @macrodoc
     DiagMatr1 getInlineDiagMatr1({ list });
 
     /// @ingroup matrices_getters
-    /// @notdoced
+    /// @notyetdoced
     /// @macrodoc
     DiagMatr2 getInlineDiagMatr2({ list });
 
@@ -596,52 +596,52 @@ extern "C" {
 
 
     /// @ingroup matrices_create
-    /// @notdoced
+    /// @notyetdoced
     CompMatr createCompMatr(int numQubits);
 
 
     /// @ingroup matrices_create
-    /// @notdoced
+    /// @notyetdoced
     DiagMatr createDiagMatr(int numQubits);
 
 
     /// @ingroup matrices_create
-    /// @notdoced
+    /// @notyetdoced
     FullStateDiagMatr createFullStateDiagMatr(int numQubits);
 
 
     /// @ingroup matrices_create
-    /// @notdoced
+    /// @notyetdoced
     FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel, int useMultithread);
 
 
     /// @ingroup matrices_destroy
-    /// @notdoced
+    /// @notyetdoced
     void destroyCompMatr(CompMatr matrix);
 
 
     /// @ingroup matrices_destroy
-    /// @notdoced
+    /// @notyetdoced
     void destroyDiagMatr(DiagMatr matrix);
 
 
     /// @ingroup matrices_destroy
-    /// @notdoced
+    /// @notyetdoced
     void destroyFullStateDiagMatr(FullStateDiagMatr matrix);
 
 
     /// @ingroup matrices_sync
-    /// @notdoced
+    /// @notyetdoced
     void syncCompMatr(CompMatr matr);
 
 
     /// @ingroup matrices_sync
-    /// @notdoced
+    /// @notyetdoced
     void syncDiagMatr(DiagMatr matr);
 
 
     /// @ingroup matrices_sync
-    /// @notdoced
+    /// @notyetdoced
     void syncFullStateDiagMatr(FullStateDiagMatr matr);
 
 
@@ -670,18 +670,18 @@ extern "C" {
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
+    /// @notyetdoced
     void setCompMatr(CompMatr matr, qcomp** vals);
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
+    /// @notyetdoced
     void setDiagMatr(DiagMatr out, qcomp* in);
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qcomp* in, qindex numElems);
 
 
@@ -712,20 +712,20 @@ extern "C" {
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
+    /// @notyetdoced
     /// @cpponly
     void setCompMatr(CompMatr out, std::vector<std::vector<qcomp>> in);
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
+    /// @notyetdoced
     /// @cpponly
     void setDiagMatr(DiagMatr out, std::vector<qcomp> in);
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     /// @cpponly
     void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, std::vector<qcomp> in);
 
@@ -777,7 +777,7 @@ extern "C" {
     #if 0
 
         /// @ingroup matrices_setters
-        /// @notdoced
+        /// @notyetdoced
         /// @macrodoc
         /// @conly
         void setCompMatr(CompMatr matr, qcomp arr[matr.numRows][matr.numRows]);
@@ -817,20 +817,20 @@ extern "C" {
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
+    /// @notyetdoced
     /// @cpponly
     void setInlineCompMatr(CompMatr matr, int numQb, std::vector<std::vector<qcomp>> in);
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
+    /// @notyetdoced
     /// @cpponly
     void setInlineDiagMatr(DiagMatr matr, int numQb, std::vector<qcomp> in);
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     /// @cpponly
     void setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, std::vector<qcomp> in);
 
@@ -894,18 +894,18 @@ extern "C" {
     #if 0
 
         /// @ingroup matrices_setters
-        /// @notdoced
+        /// @notyetdoced
         /// @macrodoc
         void setInlineCompMatr(CompMatr matr, int numQb, {{ matrix }});
 
         /// @ingroup matrices_setters
-        /// @notdoced
+        /// @notyetdoced
         /// @macrodoc
         void setInlineDiagMatr(DiagMatr matr, int numQb, { list });
 
         /// @ingroup matrices_setters
-        /// @nottested
-        /// @notdoced
+        /// @notyettested
+        /// @notyetdoced
         /// @macrodoc
         void setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, { list });
 
@@ -976,13 +976,13 @@ extern "C" {
 
 
     /// @ingroup matrices_create
-    /// @notdoced
+    /// @notyetdoced
     /// @cpponly
     CompMatr createInlineCompMatr(int numQb, std::vector<std::vector<qcomp>> elems);
 
 
     /// @ingroup matrices_create
-    /// @notdoced
+    /// @notyetdoced
     /// @cpponly
     DiagMatr createInlineDiagMatr(int numQb, std::vector<qcomp> elems);
 
@@ -1032,12 +1032,12 @@ extern "C" {
     #if 0
 
         /// @ingroup matrices_create
-        /// @notdoced
+        /// @notyetdoced
         /// @macrodoc
         CompMatr createInlineCompMatr(int numQb, {{ matrix }});
 
         /// @ingroup matrices_create
-        /// @notdoced
+        /// @notyetdoced
         /// @macrodoc
         DiagMatr createInlineDiagMatr(int numQb, { list });
 
@@ -1069,38 +1069,38 @@ extern "C" {
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void setDiagMatrFromMultiVarFunc(DiagMatr out, qcomp (*func)(qindex*), int* numQubitsPerVar, int numVars, int areSigned);
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void setDiagMatrFromMultiDimLists(DiagMatr out, void* lists, int* numQubitsPerDim, int numDims);
 
 
     /// @ingroup matrices_create
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     FullStateDiagMatr createFullStateDiagMatrFromPauliStrSum(PauliStrSum in);
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, PauliStrSum in);
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void setFullStateDiagMatrFromMultiVarFunc(FullStateDiagMatr out, qcomp (*func)(qindex*), int* numQubitsPerVar, int numVars, int areSigned);
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void setFullStateDiagMatrFromMultiDimLists(FullStateDiagMatr out, void* lists, int* numQubitsPerDim, int numDims);
 
 
@@ -1122,44 +1122,44 @@ extern "C" {
 
 
     /// @ingroup matrices_reporters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void reportCompMatr1(CompMatr1 matrix);
 
 
     /// @ingroup matrices_reporters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void reportCompMatr2(CompMatr2 matrix);
 
 
     /// @ingroup matrices_reporters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void reportCompMatr(CompMatr matrix);
 
 
     /// @ingroup matrices_reporters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void reportDiagMatr1(DiagMatr1 matrix);
 
 
     /// @ingroup matrices_reporters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void reportDiagMatr2(DiagMatr2 matrix);
 
 
     /// @ingroup matrices_reporters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void reportDiagMatr(DiagMatr matrix);
 
 
     /// @ingroup matrices_reporters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void reportFullStateDiagMatr(FullStateDiagMatr matr);
 
 

@@ -42,19 +42,19 @@ extern "C" {
  */
 
 
-/// @notdoced
+/// @notyetdoced
 void setSeeds(unsigned* seeds, int numSeeds);
 
 
-/// @notdoced
+/// @notyetdoced
 void setSeedsToDefault();
 
 
-/// @notdoced
+/// @notyetdoced
 void getSeeds(unsigned* seeds);
 
 
-/// @notdoced
+/// @notyetdoced
 int getNumSeeds();
 
 
@@ -73,27 +73,27 @@ int getNumSeeds();
  */
 
 
-/// @notdoced
+/// @notyetdoced
 void setInputErrorHandler(void (*callback)(const char* func, const char* msg));
 
 
-/// @notdoced
+/// @notyetdoced
 void setValidationOn();
 
 
-/// @notdoced
+/// @notyetdoced
 void setValidationOff();
 
 
-/// @notdoced
+/// @notyetdoced
 void setValidationEpsilonToDefault();
 
 
-/// @notdoced
+/// @notyetdoced
 void setValidationEpsilon(qreal eps);
 
 
-/// @notdoced
+/// @notyetdoced
 qreal getValidationEpsilon();
 
 
@@ -108,12 +108,12 @@ qreal getValidationEpsilon();
  */
 
 
-/// @notdoced
-/// @nottested
+/// @notyetdoced
+/// @notyettested
 void setMaxNumReportedItems(qindex numRows, qindex numCols);
 
 
-/** @notdoced
+/** @notyetdoced
  * > This function does not affect the significant figures in printed memory sizes
  * > (e.g. `5.32 KiB`) which is always shown with three significant figures 
  * > (or four when in bytes, e.g. `1023 bytes`).
@@ -121,7 +121,7 @@ void setMaxNumReportedItems(qindex numRows, qindex numCols);
 void setMaxNumReportedSigFigs(int numSigFigs);
 
 
-/// @notdoced
+/// @notyetdoced
 void setNumReportedNewlines(int numNewlines);
 
 
@@ -136,11 +136,11 @@ void setNumReportedNewlines(int numNewlines);
  */
 
 
-/// @notdoced
+/// @notyetdoced
 qindex getGpuCacheSize();
 
 
-/// @notdoced
+/// @notyetdoced
 void clearGpuCache();
 
 
@@ -155,8 +155,8 @@ void clearGpuCache();
  */
 
 
-/// @notdoced
-/// @nottested
+/// @notyetdoced
+/// @notyettested
 void getEnvironmentString(char str[200]);
 
 
@@ -185,15 +185,15 @@ void getEnvironmentString(char str[200]);
 
 
 /// @ingroup debug_seed
-/// @nottested
-/// @notdoced
+/// @notyettested
+/// @notyetdoced
 /// @cpponly
 void setSeeds(std::vector<unsigned> seeds);
 
 
 /// @ingroup debug_seed
-/// @nottested
-/// @notdoced
+/// @notyettested
+/// @notyetdoced
 /// @cpponly
 std::vector<unsigned> getSeeds();
 

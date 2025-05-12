@@ -45,7 +45,7 @@ extern "C" {
  */
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     // deployment configuration
@@ -130,7 +130,7 @@ typedef struct {
  * - if the total Qureg memory would overflow the @c size_t type.
  * - if the system contains insufficient RAM (or VRAM) to store the Qureg in any deployment.
  * - if any memory allocation unexpectedly fails.
- * @notvalidated
+ * @notyetvalidated
  * @see
  * - createDensityQureg() to create a density matrix which can additionally undergo decoherence.
  * - createForcedQureg() to create a statevector which is forced to make use of all available deployments.
@@ -185,7 +185,7 @@ Qureg createQureg(int numQubits);
  * - if the total Qureg memory would overflow the @c size_t type.
  * - if the system contains insufficient RAM (or VRAM) to store the Qureg in any deployment.
  * - if any memory allocation unexpectedly fails.
- * @notvalidated
+ * @notyetvalidated
  * @see
  * - createQureg() to create a quadratically-smaller statevector Qureg which cannot undergo decoherence.
  * - createForcedDensityQureg() to create a density matrix which is forced to make use of all available deployments.
@@ -195,7 +195,7 @@ Qureg createQureg(int numQubits);
 Qureg createDensityQureg(int numQubits);
 
 
-/** @notdoced
+/** @notyetdoced
  * 
  * @equivalences
  * - This function is equivalent to calling createCustomQureg(), passing @c isDensMatr=0 and all
@@ -212,7 +212,7 @@ Qureg createDensityQureg(int numQubits);
 Qureg createForcedQureg(int numQubits);
 
 
-/** @notdoced
+/** @notyetdoced
  * 
  * @equivalences
  * - This function is equivalent to calling createCustomQureg(), passing @c isDensMatr=1 and all
@@ -371,7 +371,7 @@ Qureg createForcedDensityQureg(int numQubits);
  * - if the total Qureg memory would overflow the @c size_t type.
  * - if the system contains insufficient RAM (or VRAM) to store the Qureg.
  * - if any memory allocation unexpectedly fails.
- * @notvalidated
+ * @notyetvalidated
  * @see
  * - createQureg() to automate deployments (equivalent to passing @c -1).
  * - createForcedQureg() to use all available deployments.
@@ -380,7 +380,7 @@ Qureg createForcedDensityQureg(int numQubits);
 Qureg createCustomQureg(int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread);
 
 
-/// @notdoced
+/// @notyetdoced
 Qureg createCloneQureg(Qureg qureg);
 
 
@@ -395,7 +395,7 @@ Qureg createCloneQureg(Qureg qureg);
  */
 
 
-/// @notdoced
+/// @notyetdoced
 void destroyQureg(Qureg qureg);
 
 
@@ -410,13 +410,13 @@ void destroyQureg(Qureg qureg);
  */
 
 
-/// @notdoced
-/// @nottested
+/// @notyetdoced
+/// @notyettested
 void reportQuregParams(Qureg qureg);
 
 
-/// @notdoced
-/// @nottested
+/// @notyetdoced
+/// @notyettested
 void reportQureg(Qureg qureg);
 
 
@@ -436,23 +436,23 @@ void reportQureg(Qureg qureg);
  */
 
 
-/// @notdoced
-/// @nottested
+/// @notyetdoced
+/// @notyettested
 void syncQuregToGpu(Qureg qureg);
 
 
-/// @notdoced
-/// @nottested
+/// @notyetdoced
+/// @notyettested
 void syncQuregFromGpu(Qureg qureg);
 
 
-/// @notdoced
-/// @nottested
+/// @notyetdoced
+/// @notyettested
 void syncSubQuregToGpu(Qureg qureg, qindex localStartInd, qindex numLocalAmps);
 
 
-/// @notdoced
-/// @nottested
+/// @notyetdoced
+/// @notyettested
 void syncSubQuregFromGpu(Qureg qureg, qindex localStartInd, qindex numLocalAmps);
 
 
@@ -467,11 +467,11 @@ void syncSubQuregFromGpu(Qureg qureg, qindex localStartInd, qindex numLocalAmps)
  */
 
 
-/// @notdoced
+/// @notyetdoced
 void getQuregAmps(qcomp* outAmps, Qureg qureg, qindex startInd, qindex numAmps);
 
 
-/// @notdoced
+/// @notyetdoced
 void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);
 
 
@@ -502,12 +502,12 @@ void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex s
 
 
 /// @ingroup qureg_get
-/// @notdoced
+/// @notyetdoced
 qcomp getQuregAmp(Qureg qureg, qindex index);
 
 
 /// @ingroup qureg_get
-/// @notdoced
+/// @notyetdoced
 qcomp getDensityQuregAmp(Qureg qureg, qindex row, qindex column);
 
 
@@ -526,17 +526,17 @@ qcomp getDensityQuregAmp(Qureg qureg, qindex row, qindex column);
 
 
 /// @ingroup qureg_get
-/// @nottested
-/// @notvalidated
-/// @notdoced
+/// @notyettested
+/// @notyetvalidated
+/// @notyetdoced
 /// @cpponly
 std::vector<qcomp> getQuregAmps(Qureg qureg, qindex startInd, qindex numAmps);
 
 
 /// @ingroup qureg_get
-/// @nottested
-/// @notvalidated
-/// @notdoced
+/// @notyettested
+/// @notyetvalidated
+/// @notyetdoced
 /// @cpponly
 std::vector<std::vector<qcomp>> getDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);
 

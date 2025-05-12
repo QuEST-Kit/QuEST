@@ -70,7 +70,7 @@
  */
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     int numQubits;
@@ -97,7 +97,7 @@ typedef struct {
 } SuperOp;
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     int numQubits;
@@ -177,44 +177,44 @@ extern "C" {
 
 
     /// @ingroup channels_create
-    /// @notdoced
+    /// @notyetdoced
     KrausMap createKrausMap(int numQubits, int numOperators);
 
 
     /// @ingroup channels_sync
-    /// @notdoced
+    /// @notyetdoced
     void syncKrausMap(KrausMap map);
 
 
     /// @ingroup channels_destroy
-    /// @notdoced
+    /// @notyetdoced
     void destroyKrausMap(KrausMap map);
 
 
     /// @ingroup channels_reporters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void reportKrausMap(KrausMap map);
 
 
     /// @ingroup channels_create
-    /// @notdoced
+    /// @notyetdoced
     SuperOp createSuperOp(int numQubits);
 
 
     /// @ingroup channels_sync
-    /// @notdoced
+    /// @notyetdoced
     void syncSuperOp(SuperOp op);
 
 
     /// @ingroup channels_destroy
-    /// @notdoced
+    /// @notyetdoced
     void destroySuperOp(SuperOp op);
 
 
     /// @ingroup channels_reporters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void reportSuperOp(SuperOp op);
 
 
@@ -241,12 +241,12 @@ extern "C" {
 
 
     /// @ingroup channels_setters
-    /// @notdoced
+    /// @notyetdoced
     void setKrausMap(KrausMap map, qcomp*** matrices);
 
 
     /// @ingroup channels_setters
-    /// @notdoced
+    /// @notyetdoced
     void setSuperOp(SuperOp op, qcomp** matrix);
 
 
@@ -279,13 +279,13 @@ extern "C" {
 
 
     /// @ingroup channels_setters
-    /// @notdoced
+    /// @notyetdoced
     /// @cpponly
     void setKrausMap(KrausMap map, std::vector<std::vector<std::vector<qcomp>>> matrices);
 
 
     /// @ingroup channels_setters
-    /// @notdoced
+    /// @notyetdoced
     /// @cpponly
     void setSuperOp(SuperOp op, std::vector<std::vector<qcomp>> matrix);
     
@@ -360,13 +360,13 @@ extern "C" {
     #if 0
 
         /// @ingroup channels_setters
-        /// @notdoced
+        /// @notyetdoced
         /// @conly
         /// @macrodoc
         void setKrausMap(KrausMap map, qcomp matrices[map.numMatrices][map.numRows][map.numRows]);
 
         /// @ingroup channels_setters
-        /// @notdoced
+        /// @notyetdoced
         /// @conly
         /// @macrodoc
         void setSuperOp(SuperOp op, qcomp matrix[op.numRows][op.numRows]);
@@ -405,13 +405,13 @@ extern "C" {
 
 
     /// @ingroup channels_setters
-    /// @notdoced
+    /// @notyetdoced
     /// @cpponly
     void setInlineKrausMap(KrausMap map, int numQb, int numOps, std::vector<std::vector<std::vector<qcomp>>> matrices);
 
 
     /// @ingroup channels_setters
-    /// @notdoced
+    /// @notyetdoced
     /// @cpponly
     void setInlineSuperOp(SuperOp op, int numQb, std::vector<std::vector<qcomp>> matrix);
 
@@ -460,12 +460,12 @@ extern "C" {
     #if 0
 
         /// @ingroup channels_setters
-        /// @notdoced
+        /// @notyetdoced
         /// @macrodoc
         void setInlineKrausMap(KrausMap map, int numQb, int numOps, {{{ matrices }}});
 
         /// @ingroup channels_setters
-        /// @notdoced
+        /// @notyetdoced
         /// @macrodoc
         void setInlineSuperOp(SuperOp op, int numQb, {{ matrix }});
 
@@ -495,13 +495,13 @@ extern "C" {
 
 
     /// @ingroup channels_create
-    /// @notdoced
+    /// @notyetdoced
     /// @cpponly
     KrausMap createInlineKrausMap(int numQubits, int numOperators, std::vector<std::vector<std::vector<qcomp>>> matrices);
 
 
     /// @ingroup channels_create
-    /// @notdoced
+    /// @notyetdoced
     /// @cpponly
     SuperOp createInlineSuperOp(int numQubits, std::vector<std::vector<qcomp>> matrix);
 
@@ -551,12 +551,12 @@ extern "C" {
     #if 0
 
         /// @ingroup channels_create
-        /// @notdoced
+        /// @notyetdoced
         /// @macrodoc
         KrausMap createInlineKrausMap(int numQb, int numOps, {{{ matrices }}});
 
         /// @ingroup channels_create
-        /// @notdoced
+        /// @notyetdoced
         /// @macrodoc
         SuperOp createInlineSuperOp(int numQb, {{ matrix }});
 
