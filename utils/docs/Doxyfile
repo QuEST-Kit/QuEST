@@ -299,7 +299,6 @@ ALIASES += "notyettested=@warning This function has not yet been unit tested and
 ALIASES += "notyetvalidated=@attention This function's input validation has not yet been unit tested, so erroneous usage may produce unexpected output. Please use with caution!"
 ALIASES += "notyetdoced=@note Documentation for this function or struct is under construction!"
 ALIASES += "cpponly=@remark This function is only available in C++."
-ALIASES += "cppvectoroverload=@remark This function is merely a C++-only overload which accepts a vector(s) in lieu of a pointer(s) and length parameter. All other attributed are unchanged."
 ALIASES += "conly=@remark This function is only available in C."
 ALIASES += "macrodoc=@note This entity is actually a macro."
 ALIASES += "neverdoced=@warning This entity is a macro, undocumented directly due to a Doxygen limitation. If you see this doc rendered, contact the devs!"
@@ -309,6 +308,13 @@ ALIASES += "constraints=@par Constraints"
 ALIASES += "formulae=@par Formulae"
 ALIASES += "diagram=@par Diagram"
 ALIASES += "validationerror=error"
+
+# We are temporarily hiding the @cppvectoroverload functions since they differ
+# trivially from the language-agnostic functions (ptr,len vs vector) yet clutter
+# the API documentation
+## ALIASES += "cppvectoroverload=@remark This function is merely a C++-only overload which accepts a vector(s) in lieu of a pointer(s) and length parameter. All other attributed are unchanged."
+ALIASES += "cppvectoroverload=@private"
+
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For
