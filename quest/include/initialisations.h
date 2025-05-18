@@ -116,8 +116,25 @@ void setDensityQuregFlatAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex n
 void setQuregToClone(Qureg targetQureg, Qureg copyQureg);
 
 
-/// @notyetdoced
-/// @notyettested
+/** @notyetdoced
+ * @notyettested
+ * 
+ * @formulae
+ * 
+ * Let @f$ f_{\text{out}} = @f$ @p facOut, @f$ f_1 = @f$ @p fac1 and @f$ f_2 = @f$ @p fac2.
+ * Similarly, let @f$ \psi_{\text{out}} = @f$ @p out, @f$ \psi_{1} = @f$ @p qureg1 and @f$ \psi_{2} = @f$ @p qureg2.
+ * 
+ * This function modifies only @p facOut to become
+ * @f[
+     |\psi_{\text{out}}\rangle \; \rightarrow \;
+        f_{\text{out}} |\psi_{\text{out}}\rangle \, + \,
+        f_1 |\psi_1\rangle \, + \,
+        f_2 |\psi_2\rangle.
+ * @f]
+ *
+ * All factors are unconstrained and are permitted to be zero, and the same @p Qureg can be duplicated among
+ * all arguments.
+ */
 void setQuregToSuperposition(qcomp facOut, Qureg out, qcomp fac1, Qureg qureg1, qcomp fac2, Qureg qureg2);
 
 

@@ -1319,15 +1319,114 @@ extern "C" {
 #endif
 
 
-/// @notyetdoced
+/** @notyetdoced
+ * 
+ * @formulae
+ * 
+ * Let @f$ \theta = @f$ @p angle.
+ * This function effects unitary
+ * @f[
+      \hat{R}_{x}(\theta) 
+        = 
+        \exp \left(
+          - \iu \frac{\theta}{2} 
+            \hat{\sigma}_x
+        \right)
+ * @f]
+ * upon the @p target qubit, where @f$ \hat{\sigma}_x @f$ is the Pauli X matrix.
+ *
+ * @equivalences
+ * - This function is entirely equivalent to calling applyPauliGadget() with a single-site PauliStr.
+ *   ```
+     applyPauliGadget(qureg, getInlinePauliStr("X", {target}), angle);
+ *   ```
+ * - This function is faster than, but otherwise equivalent to, invoking applyRotateAroundAxis()
+ *   with an axis vector equal to the X-axis.
+ *   ```
+     applyRotateAroundAxis(qureg, target, qreal angle, 1,0,0);
+ *   ```
+ * - This function is faster than, but otherwise equivalent to, effecting @f$ \hat{R}_{x}(\theta) @f$ as a CompMatr1.
+ *   ```
+     qcomp c = cos(angle/2);
+     qcomp s = sin(angle/2) * (-1.i);
+     CompMatr1 matr = getInlineCompMatr1({{c, s}, {s, c}});
+     applyCompMatr1(qureg, target, matr);
+ *   ```
+ */
 void applyRotateX(Qureg qureg, int target, qreal angle);
 
 
-/// @notyetdoced
+/** @notyetdoced
+ * 
+ * @formulae
+ * 
+ * Let @f$ \theta = @f$ @p angle.
+ * This function effects unitary
+ * @f[
+      \hat{R}_{y}(\theta) 
+        = 
+        \exp \left(
+          - \iu \frac{\theta}{2} 
+            \hat{\sigma}_y
+        \right)
+ * @f]
+ * upon the @p target qubit, where @f$ \hat{\sigma}_y @f$ is the Pauli Y matrix.
+ *
+ * @equivalences
+ * - This function is entirely equivalent to calling applyPauliGadget() with a single-site PauliStr.
+ *   ```
+     applyPauliGadget(qureg, getInlinePauliStr("Y", {target}), angle);
+ *   ```
+ * - This function is faster than, but otherwise equivalent to, invoking applyRotateAroundAxis()
+ *   with an axis vector equal to the Y-axis.
+ *   ```
+     applyRotateAroundAxis(qureg, target, qreal angle, 0,1,0);
+ *   ```
+ * - This function is faster than, but otherwise equivalent to, effecting @f$ \hat{R}_{y}(\theta) @f$ as a CompMatr1.
+ *   ```
+     qcomp c = cos(angle/2);
+     qcomp s = sin(angle/2);
+     CompMatr1 matr = getInlineCompMatr1({{c, -s}, {s, c}});
+     applyCompMatr1(qureg, target, matr);
+ *   ```
+ */
 void applyRotateY(Qureg qureg, int target, qreal angle);
 
 
-/// @notyetdoced
+/** @notyetdoced
+ * 
+ * @formulae
+ * 
+ * Let @f$ \theta = @f$ @p angle.
+ * This function effects unitary
+ * @f[
+      \hat{R}_{z}(\theta) 
+        = 
+        \exp \left(
+          - \iu \frac{\theta}{2} 
+            \hat{\sigma}_z
+        \right)
+ * @f]
+ * upon the @p target qubit, where @f$ \hat{\sigma}_z @f$ is the Pauli Z matrix.
+ *
+ * @equivalences
+ * - This function is entirely equivalent to calling applyPauliGadget() with a single-site PauliStr.
+ *   ```
+     applyPauliGadget(qureg, getInlinePauliStr("Z", {target}), angle);
+ *   ```
+ * - This function is faster than, but otherwise equivalent to, invoking applyRotateAroundAxis()
+ *   with an axis vector equal to the Z-axis.
+ *   ```
+     applyRotateAroundAxis(qureg, target, qreal angle, 0,0,1);
+ *   ```
+ * - This function is faster than, but otherwise equivalent to, effecting @f$ \hat{R}_{z}(\theta) @f$ as a DiagMatr1.
+ *   ```
+     qcomp a = cexp(- angle / 2 * 1.i);
+     qcomp b = cexp(  angle / 2 * 1.i);
+     DiagMatr1 matr = getInlineDiagMatr1({a, b});
+     applyDiagMatr1(qureg, target, matr);
+ *   ```
+ */
 void applyRotateZ(Qureg qureg, int target, qreal angle);
 
 
@@ -1367,8 +1466,62 @@ void applyMultiStateControlledRotateY(Qureg qureg, int* controls, int* states, i
 void applyMultiStateControlledRotateZ(Qureg qureg, int* controls, int* states, int numControls, int target, qreal angle);
 
 
-/// @notyetdoced
-void applyRotateAroundAxis(Qureg qureg, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ);
+/** @notyetdoced
+ *
+ * @formulae
+ * 
+ * Let @f$ \theta = @f$ @p angle and  @f$ \vec{n} = ( @f$ @p axisX, @p axisY, @p axisZ @f$ ) @f$,
+ * with corresponding unit vector @f$ \bar{n} @f$. 
+ * Further, let @f$ \vec{\sigma} = (\hat{\sigma}_x, \hat{\sigma}_y, \hat{\sigma}_z) @f$ denote a vector of the Pauli matrices.
+ * 
+ * This function effects unitary
+ * @f[
+      \hat{R}_{\bar{n}}(\theta) 
+        = 
+        \exp \left(
+          - \iu \frac{\theta}{2} 
+            \bar{n} \cdot \vec{\sigma}
+        \right)
+ * @f]
+ * upon the target qubit. Explicitly,
+ * @f[
+      \hat{R}_{\bar{n}}(\theta) 
+        \equiv 
+        \begin{pmatrix}
+        \cos\left( \frac{\theta}{2} \right) - \iu \, \bar{n}_z \sin\left( \frac{\theta}{2} \right)
+          &
+        - \, (\bar{n}_y + \bar{n}_x \, \iu ) \sin\left( \frac{\theta}{2} \right)
+          \\
+        (\bar{n}_y - \bar{n}_x \, \iu ) \sin\left( \frac{\theta}{2} \right)
+          &
+        \cos\left( \frac{\theta}{2} \right) + \iu \, \bar{n}_z \sin\left( \frac{\theta}{2} \right)
+        \end{pmatrix}
+ * @f]
+ * where 
+ * @f[
+      \bar{n}_i 
+        = 
+      \frac{\vec{n}_i}{\| \vec{n} \|_2}
+        =
+      \frac{\vec{n}_i}{ \sqrt{ {\vec{n}_x}^2 + {\vec{n}_y}^2 + {\vec{n}_z}^2 } }.
+ * @f]
+ *
+ * @equivalences
+ * - Assuming @f$ \| \vec{n} \|_2 \ne 0 @f$, this function is agnostic to the normalisation
+ *   of the axis vector.
+ *   ```
+     applyRotateAroundAxis(qureg, target, angle, x,  y,  z);
+     applyRotateAroundAxis(qureg, target, angle, 5*x,5*y,5*z); // equivalent
+ *   ```
+ * - This function is entirely equivalent to preparing @f$ \hat{R}_{\bar{n}}(\theta) @f$
+ *   as a CompMatr1 and effecting it upon the state via applyCompMatr1().
+ * - This function is both more accurate and efficient than equivalently instantiating a 
+ *   three-term PauliStrSum @f$ \hat{H} = \bar{n} \cdot \vec{\sigma}@f$ and effecting
+ *   @f$ \exp \left(\iu \alpha \hat{H} \right) @f$ via applyTrotterizedPauliStrSumGadget() 
+ *   with @f$ \alpha = - \theta/2 @f$ and very many repetitions.
+ *
+ */
+void applyRotateAroundAxis(Qureg qureg, int target, qreal angle, qreal axisX, qreal axisY, qreal axisZ);
 
 
 /// @notyetdoced
@@ -1469,7 +1622,61 @@ extern "C" {
 void multiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
 
 
-/// @notyetdoced
+/** @notyetdoced
+ * 
+ * @formulae
+ * Let @f$ \hat{\sigma} = @f$ @p str and @f$ \theta = @f$ @p angle. 
+ * 
+ * This function effects unitary
+ * @f[
+      R_{\hat{\sigma}}(\theta) = \exp \left( - \iu \, \frac{\theta}{2} \, \hat{\sigma} \right),
+ * @f]
+ * which affects only the qubits for which @f$ \hat{\sigma} @f$ is not the identity
+ * Pauli. As such, this effects a multi-qubit rotation around an arbitrary Pauli string.
+ * 
+ * @equivalences
+ * - Because @f$ R_{\hat{\sigma}}(\theta) @f$ satisfies
+ *   @f[
+        R_{\hat{\sigma}}(\theta) \equiv 
+          \cos\left( \frac{\theta}{2} \right) \, \id 
+          - \iu  \sin\left( \frac{\theta}{2} \right) \, \hat{\sigma},
+ *   @f]
+ *   this function is equivalent to (but much faster than) effecting @f$ \hat{\sigma} @f$
+ *   upon a clone which is subsequently superposed.
+ *   ```
+     // prepare |temp> = str |qureg>
+     Qureg temp = createCloneQureg(qureg);
+     applyPauliStr(temp, str);
+
+     // set |qureg> = cos(theta/2) |qureg> - i sin(theta/2) str |qureg>
+     setQuregToSuperposition(cos(theta/2), qureg, - 1.0i * sin(theta/2), temp, 0, temp);
+ *   ```
+ * - When @p str contains only @f$ \hat{Z} @f$ or @f$ \id @f$ Paulis, this function will
+ *   automatically invoke applyPhaseGadget() which leverages an optimised implementation.
+ * - When @p str contains only @f$ \id @f$ Paulis, this function merely effects a change
+ *   of global phase upon statevectors of @f$ -\theta/2 @f$, leaving density matrices
+ *   unchanged.
+ *   ```
+     qcomp factor = cexp(- theta / 2 * 1.i);
+     setQuregToSuperposition(factor, qureg, 0,qureg,0,qureg);
+ *   ```
+ *
+ * @myexample
+ * ```
+    Qureg qureg = createQureg(10);
+    qreal theta = 3.14;
+    
+    // verbosely
+    int numPaulis = 4;
+    char* paulis = "XYIZ";
+    int targets[] = {0,1,5,7};
+    PauliStr str = getPauliStr(paulis, targets, numPaulis);
+    applyPauliGadget(qureg, str, angle);
+
+    // concisely
+    applyPauliGadget(qureg, getInlinePauliStr("XYZ",{0,1,7}), theta);
+ * ```
+ */
 void applyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
 
 
@@ -1529,7 +1736,23 @@ extern "C" {
 void multiplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle);
 
 
-/// @notyetdoced
+/** @notyetdoced
+ * 
+ * @formulae
+ * 
+ * Let @f$ \vec{t} = @f$ @p targets and @f$ \theta = @f$ @p angle.
+ * 
+ * This function effects diagonal unitary
+ * @f[
+      R_{\hat{Z}}(\theta) = \exp \left( - \iu \, \frac{\theta}{2} \, \bigotimes_{t \,\in\, \vec{t}} \hat{Z}_t \right).
+ * @f]
+ *
+ * @equivalences
+ * - This function is equivalent to calling applyPauliGadget() with a PauliStr containing only @f$ \hat{Z} @f$ and @f$ \id @f$.
+ *   This latter function will actually automatically invoke applyPhaseGadget() which has an optimised implementation.
+ * - This function is equivalent to, albeit much faster than, preparing a DiagMatr with @f$ \pm 1 @f$ elements (depending upon
+ *   the parity of the targeted set bits) and effecting it with applyDiagMatr().
+ */
 void applyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle);
 
 
@@ -1545,15 +1768,52 @@ void applyMultiControlledPhaseGadget(Qureg qureg, int* controls, int numControls
 void applyMultiStateControlledPhaseGadget(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets, qreal angle);
 
 
-/// @notyetdoced
+/** @notyetdoced
+ * 
+ * This function is a mere alias of applyPauliZ(), meaningfully differing only for many targets.
+ */
 void applyPhaseFlip(Qureg qureg, int target);
 
 
-/// @notyetdoced
+/** @notyetdoced
+ * 
+ * @formulae
+ * 
+ * Let @f$ \theta = @f$ @p angle. This function effects diagonal unitary
+ * 
+ * @f[
+      \hat{U}(\theta) = \begin{pmatrix} 1 & 0 \\ 0 & e^{\iu \theta} \end{pmatrix}
+ * @f]
+ * upon the @p target qubit.
+ * 
+ * @equivalences
+ * - This function is equivalent to, albeit much faster than, a Z-axis rotation with
+ *   an adjustment to the global phase (which is redundant upon density matrices).
+ *   @f[
+ *      \hat{U}(\theta) \equiv \hat{R}_z(\theta) \cdot e^{\iu \frac{\theta}{2}} \hat{\id}
+ *   @f]
+ *   ```
+     applyRotateZ(qureg, target, angle);
+     applyPauliGadget(qureg, getPauliStr("I"), angle); // global phase
+ *   ```
+ */
 void applyPhaseShift(Qureg qureg, int target, qreal angle);
 
 
-/** Applies a two-qubit phase flip upon @p qubit1 and @p qubit2 of @p qureg.
+/** @notyetdoced
+ * 
+ * Applies a two-qubit phase flip upon qubits @p target1 and @p target2 of @p qureg.
+ * 
+ * @formulae
+ * 
+ * This function flips the sign of all computational basis states for which
+ * the targeted qubits are in state @f$ \ket{1}\ket{1} @f$. This is equivalent
+ * to the diagonal unitary
+ * 
+ * @f[
+      \hat{U}(\theta) = \begin{pmatrix} 1 \\ & 1 \\ & & 1 \\ & & & -1 \end{pmatrix},
+ * @f]
+ * effected upon the target qubits.
  * 
  * @diagram
  * @dot
@@ -1577,12 +1837,41 @@ digraph {
 }
  * @enddot
  *
- * @notyetdoced
+ * @equivalences
+ * - The target qubits are interchangeable, ergo
+ *   ```
+     applyTwoQubitPhaseFlip(qureg, target1, target2);
+     applyTwoQubitPhaseFlip(qureg, target2, target1); // equivalent
+ *   ```
+ * - This function is entirely equivalent to a controlled Pauli-Z unitary (or a hypothetical
+ *   controlled variant of applyPhaseFlip()) with either target qubit substituted for the control qubit.
+ *   ```
+     applyControlledPauliZ(qureg, target1, target2);
+ *   ```
+ * - This function is faster and more accurate than, but otherwise equivalent to, a two-qubit phase shift
+ *   with angle @f$ = \pi @f$.
+ *   ```
+     applyTwoQubitPhaseShift(qureg, target1, target2, 3.141592653); // approx equiv
+ *   ```
  */
-void applyTwoQubitPhaseFlip( Qureg qureg, int target1, int target2);
+void applyTwoQubitPhaseFlip(Qureg qureg, int target1, int target2);
 
 
-/** Applies a two-qubit phase flip upon @p qubit1 and @p qubit2 of @p qureg.
+/** @notyetdoced
+ * 
+ * Applies a two-qubit phase shift upon qubits @p target1 and @p target2 of @p qureg.
+ * 
+ * @formulae
+ * 
+ * Let @f$ \theta = @f$ @p angle.
+ * This function multiplies factor @f$ e^{\iu \theta} @f$ upon all computational basis states 
+ * for which the targeted qubits are in state @f$ \ket{1}\ket{1} @f$. This is equivalent
+ * to the diagonal unitary
+ * 
+ * @f[
+      \hat{U}(\theta) = \begin{pmatrix} 1 \\ & 1 \\ & & 1 \\ & & & e^{\iu \theta} \end{pmatrix},
+ * @f]
+ * effected upon the target qubits.
  * 
  * @diagram
  * @dot
@@ -1608,16 +1897,91 @@ digraph {
 }
  * @enddot
  *
- * @notyetdoced
+ * @equivalences
+ * - The target qubits are interchangeable, ergo
+ *   ```
+     applyTwoQubitPhaseShift(qureg, target1, target2, angle);
+     applyTwoQubitPhaseShift(qureg, target2, target1, angle); // equivalent
+ *   ```
+ * - This function is equivalent to a controlled variant of applyPhaseShift(), treating
+ *   either target qubit as the control qubit.
+ * - This function generalises applyTwoQubitPhaseFlip() to arbitrary changes in phase.
  */
 void applyTwoQubitPhaseShift(Qureg qureg, int target1, int target2, qreal angle);
 
 
-/// @notyetdoced
+/** @notyetdoced
+ * 
+ * @formulae
+ * 
+ * This function flips the sign of all computational basis states for which
+ * the targeted qubits are all in state @f$ \ket{1} @f$. This is equivalent
+ * to the diagonal unitary
+ * @f[
+      \hat{U}(\theta) = \begin{pmatrix} 1 \\  & \ddots \\ & & 1 \\ & & & -1 \end{pmatrix},
+ * @f]
+ * effected upon the target qubits.
+ * 
+ * @equivalences
+ * - The ordering of @p targets has no affect on the effected operation.
+ * - This function is entirely equivalent to a multi-controlled Pauli-Z unitary (or a hypothetical
+ *   many-controlled variant of applyPhaseFlip()) with all but one arbitrary target qubit becoming
+ *   control qubits.
+ *   ```
+     applyMultiControlledPauliZ(qureg, targets, numTargets-1, targets[0]);
+ *   ```
+ * - This function is faster and more accurate than, but otherwise equivalent to, a multi-qubit phase shift
+ *   with angle @f$ = \pi @f$.
+ *   ```
+     applyMultiQubitPhaseShift(qureg, targets, numTargets, 3.141592653); // approx equiv
+ *   ```
+ */
 void applyMultiQubitPhaseFlip(Qureg qureg, int* targets, int numTargets);
 
 
-/// @notyetdoced
+/** @notyetdoced
+ *
+ * @formulae
+ * 
+ * Let @f$ \theta = @f$ @p angle.
+ * This function multiplies factor @f$ e^{\iu \theta} @f$ upon all computational basis states 
+ * for which all targeted qubits are in state @f$ \ket{1} @f$. This is equivalent
+ * to the diagonal unitary
+ * @f[
+      \hat{U}(\theta) = \begin{pmatrix} 1 \\  & \ddots \\ & & 1 \\ & & & e^{\iu \theta} \end{pmatrix},
+ * @f]
+ * effected upon the target qubits.
+ * 
+ * @diagram
+ * @dot
+digraph {
+  rankdir=LR;
+  layout=neato;
+  node [fontsize=10, fontname="Menlo"];
+  edge [dir=none];
+
+  topWireL [shape=plaintext, label="target1", pos="0,.5!"];
+  topWireM [shape=point, label="", width=.1, pos=".75,.5!"]
+  topWireR [shape=plaintext, label="", pos="1.5,.5!"];
+
+  botWireL [shape=plaintext, label="target2", pos="0,0!"];
+  botWireM [shape=point, label="", width=.1, pos=".75,0!"];
+  botWireR [shape=plaintext, label="", pos="1.5,0!"];
+
+  topWireL -> topWireR;
+  botWireL -> botWireR;
+  botWireM -> topWireM;
+
+  angle [shape=plaintext, label="θ", pos=".85,-.2!"];
+}
+ * @enddot
+ *
+ * @equivalences
+ * - The ordering of @p targets has no affect on the effected operation.
+ * - This function is equivalent to a multi-controlled variant of applyPhaseShift(), treating all
+ *   but one arbitrary target qubit as control qubits.
+ * - This function generalises applyMultiQubitPhaseFlip() to arbitrary changes in phase.
+ */
 void applyMultiQubitPhaseShift(Qureg qureg, int* targets, int numTargets, qreal angle);
 
 
@@ -1701,8 +2065,57 @@ extern "C" {
 void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
 
 
-/// @notyetdoced
-/// @notyettested
+/** @notyetdoced
+ * @notyettested
+ * 
+ * @formulae 
+ * 
+ * Let @f$ \hat{H} = @f$ @p sum and @f$ \theta = @f$ @p angle. This function approximates the action of
+ * @f[
+      \exp \left(\iu \, \theta \, \hat{H} \right)
+ * @f]
+ * via a Trotter-Suzuki decomposition of the specified @p order and number of repetitions (@p reps).
+ * 
+ * 
+ * To be precise, let @f$ r = @f$ @p reps and assume @p sum is composed of
+ * @f$ T @f$-many terms of the form
+ * @f[
+      \hat{H} = \sum\limits_j^T c_j \, \hat{\sigma}_j
+ * @f]
+ * where @f$ c_j @f$ is the (necessarily real) coefficient of the @f$ j @f$-th PauliStr @f$ \hat{\sigma}_j @f$.
+ * 
+ * - When @p order=1, this function performs first-order Trotterisation, whereby
+ *   @f[
+       \exp(\iu \, \theta \, \hat{H} )
+          \approx 
+        \prod\limits^{r} 
+        \prod\limits_{j=1}^{T} 
+        \exp \left( \iu \, \frac{\theta \, c_j}{r} \, \hat\sigma_j \right).
+ *   @f]
+ * - When @p order=2, this function performs the lowest order "symmetrized" Suzuki decomposition, whereby 
+ *   @f[
+       \exp(\iu \, \theta \, \hat{H} )
+          \approx 
+        \prod\limits^{r} \left[
+             \prod\limits_{j=1}^{T} \exp \left( \iu \frac{\theta \, c_j}{2 \, r}  \hat\sigma_j \right)
+              \prod\limits_{j=T}^{1} \exp \left( \iu \frac{\theta \, c_j}{2 \, r}  \hat\sigma_j \right)
+         \right].
+ *   @f]
+ * - Greater, even values of @p order (denoted by symbol @f$ n @f$) invoke higher-order symmetrized decompositions 
+ *   @f$ S[\theta,n,r] @f$. Letting @f$ p = \left( 4 - 4^{1/(n-1)} \right)^{-1} @f$, these satisfy
+ *   @f{align*}
+        S[\theta, n, 1] &= 
+            \left( \prod\limits^2 S[p \, \theta, n-2, 1] \right)
+            S[ (1-4p)\,\theta, n-2, 1]
+            \left( \prod\limits^2 S[p \, \theta, n-2, 1] \right),
+        \\
+        S[\theta, n, r] &= 
+            \prod\limits^{r} S\left[\frac{\theta}{r}, n, 1\right].
+ *   @f}
+ * 
+ * > These formulations are taken from 'Finding Exponential Product Formulas
+ * > of Higher Orders', Naomichi Hatano and Masuo Suzuki (2005) (<a href="https://arxiv.org/abs/math-ph/0506007">arXiv</a>).
+ */
 void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
 
 

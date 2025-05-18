@@ -76,8 +76,10 @@ extern "C" {
  * 
  * @myexample
  * ```
-    Qureg qureg = createQureg(4);
-    PauliStr str = getPauliStr("XYZ");
+    Qureg qureg = createQureg(10);
+    initRandomPureState(qureg);
+
+    PauliStr str = getInlinePauliStr("XYZ", {0,2,3});
 
     qreal expec = calcExpecPauliStr(qureg, str);
     reportScalar("expec", expec);  
