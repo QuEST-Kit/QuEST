@@ -307,7 +307,7 @@ void applyMultiStateControlledCompMatr1(Qureg qureg, int* controls, int* states,
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledCompMatr1()
 void applyMultiControlledCompMatr1(Qureg qureg, std::vector<int> controls, int target, CompMatr1 matrix);
 
@@ -315,7 +315,7 @@ void applyMultiControlledCompMatr1(Qureg qureg, std::vector<int> controls, int t
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledCompMatr1(Qureg qureg, std::vector<int> controls, std::vector<int> states, int target, CompMatr1 matrix);
 
@@ -516,7 +516,7 @@ void applyMultiStateControlledCompMatr2(Qureg qureg, int* controls, int* states,
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledCompMatr2()
 void applyMultiControlledCompMatr2(Qureg qureg, std::vector<int> controls, int target1, int target2, CompMatr2 matr);
 
@@ -524,7 +524,7 @@ void applyMultiControlledCompMatr2(Qureg qureg, std::vector<int> controls, int t
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledCompMatr2()
 void applyMultiStateControlledCompMatr2(Qureg qureg, std::vector<int> controls, std::vector<int> states, int numControls, int target1, int target2, CompMatr2 matr);
 
@@ -606,7 +606,7 @@ void applyMultiStateControlledCompMatr(Qureg qureg, int* controls, int* states, 
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see multiplyCompMatr()
 void multiplyCompMatr(Qureg qureg, std::vector<int> targets, CompMatr matr);
 
@@ -614,7 +614,7 @@ void multiplyCompMatr(Qureg qureg, std::vector<int> targets, CompMatr matr);
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyCompMatr()
 void applyCompMatr(Qureg qureg, std::vector<int> targets, CompMatr matr);
 
@@ -622,7 +622,7 @@ void applyCompMatr(Qureg qureg, std::vector<int> targets, CompMatr matr);
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyControlledCompMatr()
 void applyControlledCompMatr(Qureg qureg, int control, std::vector<int> targets, CompMatr matr);
 
@@ -630,7 +630,7 @@ void applyControlledCompMatr(Qureg qureg, int control, std::vector<int> targets,
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledCompMatr()
 void applyMultiControlledCompMatr(Qureg qureg, std::vector<int> controls, std::vector<int> targets, CompMatr matr);
 
@@ -638,7 +638,7 @@ void applyMultiControlledCompMatr(Qureg qureg, std::vector<int> controls, std::v
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledCompMatr()
 void applyMultiStateControlledCompMatr(Qureg qureg, std::vector<int> controls, std::vector<int> states, std::vector<int> targets, CompMatr matr);
 
@@ -697,7 +697,7 @@ void applyMultiStateControlledDiagMatr1(Qureg qureg, int* controls, int* states,
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledDiagMatr1()
 void applyMultiControlledDiagMatr1(Qureg qureg, std::vector<int> controls, int target, DiagMatr1 matr);
 
@@ -705,7 +705,7 @@ void applyMultiControlledDiagMatr1(Qureg qureg, std::vector<int> controls, int t
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledDiagMatr1()
 void applyMultiStateControlledDiagMatr1(Qureg qureg, std::vector<int> controls, std::vector<int> states, int target, DiagMatr1 matr);
 
@@ -764,7 +764,7 @@ void applyMultiStateControlledDiagMatr2(Qureg qureg, int* controls, int* states,
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledDiagMatr2()
 void applyMultiControlledDiagMatr2(Qureg qureg, std::vector<int> controls, int target1, int target2, DiagMatr2 matr);
 
@@ -772,7 +772,7 @@ void applyMultiControlledDiagMatr2(Qureg qureg, std::vector<int> controls, int t
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledDiagMatr2()
 void applyMultiStateControlledDiagMatr2(Qureg qureg, std::vector<int> controls, std::vector<int> states, int target1, int target2, DiagMatr2 matr);
 
@@ -868,7 +868,7 @@ void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* sta
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see multiplyDiagMatr()
 void multiplyDiagMatr(Qureg qureg, std::vector<int> targets, DiagMatr matrix);
 
@@ -876,7 +876,7 @@ void multiplyDiagMatr(Qureg qureg, std::vector<int> targets, DiagMatr matrix);
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyDiagMatr()
 void applyDiagMatr(Qureg qureg, std::vector<int> targets, DiagMatr matrix);
 
@@ -884,7 +884,7 @@ void applyDiagMatr(Qureg qureg, std::vector<int> targets, DiagMatr matrix);
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyControlledDiagMatr()
 void applyControlledDiagMatr(Qureg qureg, int control, std::vector<int> targets, DiagMatr matrix);
 
@@ -892,7 +892,7 @@ void applyControlledDiagMatr(Qureg qureg, int control, std::vector<int> targets,
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledDiagMatr()
 void applyMultiControlledDiagMatr(Qureg qureg, std::vector<int> controls, std::vector<int> targets, DiagMatr matrix);
 
@@ -900,7 +900,7 @@ void applyMultiControlledDiagMatr(Qureg qureg, std::vector<int> controls, std::v
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledDiagMatr()
 void applyMultiStateControlledDiagMatr(Qureg qureg, std::vector<int> controls, std::vector<int> states, std::vector<int> targets, DiagMatr matrix);
 
@@ -908,7 +908,7 @@ void applyMultiStateControlledDiagMatr(Qureg qureg, std::vector<int> controls, s
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see multiplyDiagMatrPower()
 void multiplyDiagMatrPower(Qureg qureg, std::vector<int> targets, DiagMatr matrix, qcomp exponent);
 
@@ -916,7 +916,7 @@ void multiplyDiagMatrPower(Qureg qureg, std::vector<int> targets, DiagMatr matri
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyDiagMatrPower()
 void applyDiagMatrPower(Qureg qureg, std::vector<int> targets, DiagMatr matrix, qcomp exponent);
 
@@ -924,7 +924,7 @@ void applyDiagMatrPower(Qureg qureg, std::vector<int> targets, DiagMatr matrix, 
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyControlledDiagMatrPower()
 void applyControlledDiagMatrPower(Qureg qureg, int control, std::vector<int> targets, DiagMatr matrix, qcomp exponent);
 
@@ -932,7 +932,7 @@ void applyControlledDiagMatrPower(Qureg qureg, int control, std::vector<int> tar
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledDiagMatrPower()
 void applyMultiControlledDiagMatrPower(Qureg qureg, std::vector<int> controls, std::vector<int> targets, DiagMatr matrix, qcomp exponent);
 
@@ -940,7 +940,7 @@ void applyMultiControlledDiagMatrPower(Qureg qureg, std::vector<int> controls, s
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledDiagMatrPower()
 void applyMultiStateControlledDiagMatrPower(Qureg qureg, std::vector<int> controls, std::vector<int> states, std::vector<int> targets, DiagMatr matrix, qcomp exponent);
 
@@ -1074,7 +1074,7 @@ void applyMultiStateControlledHadamard(Qureg qureg, int* controls, int* states, 
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledS()
 void applyMultiControlledS(Qureg qureg, std::vector<int> controls, int target);
 
@@ -1082,7 +1082,7 @@ void applyMultiControlledS(Qureg qureg, std::vector<int> controls, int target);
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledS()
 void applyMultiStateControlledS(Qureg qureg, std::vector<int> controls, std::vector<int> states, int target);
 
@@ -1090,7 +1090,7 @@ void applyMultiStateControlledS(Qureg qureg, std::vector<int> controls, std::vec
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledT()
 void applyMultiControlledT(Qureg qureg, std::vector<int> controls, int target);
 
@@ -1098,7 +1098,7 @@ void applyMultiControlledT(Qureg qureg, std::vector<int> controls, int target);
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledT()
 void applyMultiStateControlledT(Qureg qureg, std::vector<int> controls, std::vector<int> states, int target);
 
@@ -1106,7 +1106,7 @@ void applyMultiStateControlledT(Qureg qureg, std::vector<int> controls, std::vec
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledHadamard()
 void applyMultiControlledHadamard(Qureg qureg, std::vector<int> controls, int target);
 
@@ -1114,7 +1114,7 @@ void applyMultiControlledHadamard(Qureg qureg, std::vector<int> controls, int ta
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledHadamard()
 void applyMultiStateControlledHadamard(Qureg qureg, std::vector<int> controls, std::vector<int> states, int target);
 
@@ -1215,7 +1215,7 @@ void applyMultiStateControlledSqrtSwap(Qureg qureg, int* controls, int* states, 
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledSwap()
 void applyMultiControlledSwap(Qureg qureg, std::vector<int> controls, int qubit1, int qubit2);
 
@@ -1223,7 +1223,7 @@ void applyMultiControlledSwap(Qureg qureg, std::vector<int> controls, int qubit1
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledSwap()
 void applyMultiStateControlledSwap(Qureg qureg, std::vector<int> controls, std::vector<int> states, int qubit1, int qubit2);
 
@@ -1231,7 +1231,7 @@ void applyMultiStateControlledSwap(Qureg qureg, std::vector<int> controls, std::
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledSqrtSwap()
 void applyMultiControlledSqrtSwap(Qureg qureg, std::vector<int> controls, int qubit1, int qubit2);
 
@@ -1239,7 +1239,7 @@ void applyMultiControlledSqrtSwap(Qureg qureg, std::vector<int> controls, int qu
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledSqrtSwap()
 void applyMultiStateControlledSqrtSwap(Qureg qureg, std::vector<int> controls, std::vector<int> states, int numControls, int qubit1, int qubit2);
 
@@ -1339,7 +1339,7 @@ void applyMultiStateControlledPauliZ(Qureg qureg, int* controls, int* states, in
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledPauliX()
 void applyMultiControlledPauliX(Qureg qureg, std::vector<int> controls, int target);
 
@@ -1347,7 +1347,7 @@ void applyMultiControlledPauliX(Qureg qureg, std::vector<int> controls, int targ
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledPauliY()
 void applyMultiControlledPauliY(Qureg qureg, std::vector<int> controls, int target);
 
@@ -1355,7 +1355,7 @@ void applyMultiControlledPauliY(Qureg qureg, std::vector<int> controls, int targ
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledPauliZ()
 void applyMultiControlledPauliZ(Qureg qureg, std::vector<int> controls, int target);
 
@@ -1363,7 +1363,7 @@ void applyMultiControlledPauliZ(Qureg qureg, std::vector<int> controls, int targ
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledPauliX()
 void applyMultiStateControlledPauliX(Qureg qureg, std::vector<int> controls, std::vector<int> states, int target);
 
@@ -1371,7 +1371,7 @@ void applyMultiStateControlledPauliX(Qureg qureg, std::vector<int> controls, std
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledPauliY()
 void applyMultiStateControlledPauliY(Qureg qureg, std::vector<int> controls, std::vector<int> states, int target);
 
@@ -1379,7 +1379,7 @@ void applyMultiStateControlledPauliY(Qureg qureg, std::vector<int> controls, std
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledPauliZ()
 void applyMultiStateControlledPauliZ(Qureg qureg, std::vector<int> controls, std::vector<int> states, int target);
 
@@ -1435,7 +1435,7 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledPauliStr()
 void applyMultiControlledPauliStr(Qureg qureg, std::vector<int> controls, PauliStr str);
 
@@ -1443,7 +1443,7 @@ void applyMultiControlledPauliStr(Qureg qureg, std::vector<int> controls, PauliS
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledPauliStr()
 void applyMultiStateControlledPauliStr(Qureg qureg, std::vector<int> controls, std::vector<int> states, PauliStr str);
 
@@ -1709,7 +1709,7 @@ void applyMultiStateControlledRotateAroundAxis(Qureg qureg, int* ctrls, int* sta
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledRotateX()
 void applyMultiControlledRotateX(Qureg qureg, std::vector<int> controls, int target, qreal angle);
 
@@ -1717,7 +1717,7 @@ void applyMultiControlledRotateX(Qureg qureg, std::vector<int> controls, int tar
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledRotateY()
 void applyMultiControlledRotateY(Qureg qureg, std::vector<int> controls, int target, qreal angle);
 
@@ -1725,7 +1725,7 @@ void applyMultiControlledRotateY(Qureg qureg, std::vector<int> controls, int tar
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledRotateZ()
 void applyMultiControlledRotateZ(Qureg qureg, std::vector<int> controls, int target, qreal angle);
 
@@ -1733,7 +1733,7 @@ void applyMultiControlledRotateZ(Qureg qureg, std::vector<int> controls, int tar
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledRotateX()
 void applyMultiStateControlledRotateX(Qureg qureg, std::vector<int> controls, std::vector<int> states, int target, qreal angle);
 
@@ -1741,7 +1741,7 @@ void applyMultiStateControlledRotateX(Qureg qureg, std::vector<int> controls, st
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledRotateY()
 void applyMultiStateControlledRotateY(Qureg qureg, std::vector<int> controls, std::vector<int> states, int target, qreal angle);
 
@@ -1749,7 +1749,7 @@ void applyMultiStateControlledRotateY(Qureg qureg, std::vector<int> controls, st
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledRotateZ()
 void applyMultiStateControlledRotateZ(Qureg qureg, std::vector<int> controls, std::vector<int> states, int target, qreal angle);
 
@@ -1757,7 +1757,7 @@ void applyMultiStateControlledRotateZ(Qureg qureg, std::vector<int> controls, st
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledRotateAroundAxis()
 void applyMultiControlledRotateAroundAxis(Qureg qureg, std::vector<int> ctrls, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ);
 
@@ -1765,7 +1765,7 @@ void applyMultiControlledRotateAroundAxis(Qureg qureg, std::vector<int> ctrls, i
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledRotateAroundAxis()
 void applyMultiStateControlledRotateAroundAxis(Qureg qureg, std::vector<int> ctrls, std::vector<int> states, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ);
 
@@ -1880,7 +1880,7 @@ void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* state
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledPauliGadget()
 void applyMultiControlledPauliGadget(Qureg qureg, std::vector<int> controls, PauliStr str, qreal angle);
 
@@ -1888,7 +1888,7 @@ void applyMultiControlledPauliGadget(Qureg qureg, std::vector<int> controls, Pau
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledPauliGadget()
 void applyMultiStateControlledPauliGadget(Qureg qureg, std::vector<int> controls, std::vector<int> states, PauliStr str, qreal angle);
 
@@ -2185,7 +2185,7 @@ void applyMultiQubitPhaseShift(Qureg qureg, int* targets, int numTargets, qreal 
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see multiplyPhaseGadget()
 void multiplyPhaseGadget(Qureg qureg, std::vector<int> targets, qreal angle);
 
@@ -2193,7 +2193,7 @@ void multiplyPhaseGadget(Qureg qureg, std::vector<int> targets, qreal angle);
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyPhaseGadget()
 void applyPhaseGadget(Qureg qureg, std::vector<int> targets, qreal angle);
 
@@ -2201,7 +2201,7 @@ void applyPhaseGadget(Qureg qureg, std::vector<int> targets, qreal angle);
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyControlledPhaseGadget()
 void applyControlledPhaseGadget(Qureg qureg, int control, std::vector<int> targets, qreal angle);
 
@@ -2209,7 +2209,7 @@ void applyControlledPhaseGadget(Qureg qureg, int control, std::vector<int> targe
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledPhaseGadget()
 void applyMultiControlledPhaseGadget(Qureg qureg, std::vector<int> controls, std::vector<int> targets, qreal angle);
 
@@ -2217,7 +2217,7 @@ void applyMultiControlledPhaseGadget(Qureg qureg, std::vector<int> controls, std
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledPhaseGadget()
 void applyMultiStateControlledPhaseGadget(Qureg qureg, std::vector<int> controls, std::vector<int> states, std::vector<int> targets, qreal angle);
 
@@ -2225,7 +2225,7 @@ void applyMultiStateControlledPhaseGadget(Qureg qureg, std::vector<int> controls
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiQubitPhaseFlip()
 void applyMultiQubitPhaseFlip(Qureg qureg, std::vector<int> targets);
 
@@ -2233,7 +2233,7 @@ void applyMultiQubitPhaseFlip(Qureg qureg, std::vector<int> targets);
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiQubitPhaseShift()
 void applyMultiQubitPhaseShift(Qureg qureg, std::vector<int> targets, qreal angle);
 
@@ -2372,7 +2372,7 @@ void applyMultiStateControlledMultiQubitNot(Qureg qureg, int* controls, int* sta
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see multiplyMultiQubitNot()
 void multiplyMultiQubitNot(Qureg qureg, std::vector<int> targets);
 
@@ -2380,7 +2380,7 @@ void multiplyMultiQubitNot(Qureg qureg, std::vector<int> targets);
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiQubitNot()
 void applyMultiQubitNot(Qureg qureg, std::vector<int> targets);
 
@@ -2388,7 +2388,7 @@ void applyMultiQubitNot(Qureg qureg, std::vector<int> targets);
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyControlledMultiQubitNot()
 void applyControlledMultiQubitNot(Qureg qureg, int control, std::vector<int> targets);
 
@@ -2396,7 +2396,7 @@ void applyControlledMultiQubitNot(Qureg qureg, int control, std::vector<int> tar
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiControlledMultiQubitNot()
 void applyMultiControlledMultiQubitNot(Qureg qureg, std::vector<int> controls, std::vector<int> targets);
 
@@ -2404,7 +2404,7 @@ void applyMultiControlledMultiQubitNot(Qureg qureg, std::vector<int> controls, s
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiStateControlledMultiQubitNot()
 void applyMultiStateControlledMultiQubitNot(Qureg qureg, std::vector<int> controls, std::vector<int> states, std::vector<int> targets);
 
@@ -2468,7 +2468,7 @@ qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, 
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiQubitMeasurementAndGetProb()
 qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, std::vector<int> qubits, qreal* probability);
 
@@ -2476,7 +2476,7 @@ qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, std::vector<int> qubits
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyForcedMultiQubitMeasurement()
 qreal applyForcedMultiQubitMeasurement(Qureg qureg, std::vector<int> qubits, std::vector<int> outcomes);
 
@@ -2520,7 +2520,7 @@ void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQu
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyMultiQubitProjector()
 void applyMultiQubitProjector(Qureg qureg, std::vector<int> qubits, std::vector<int> outcomes);
 
@@ -2564,7 +2564,7 @@ void applyFullQuantumFourierTransform(Qureg qureg);
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see applyQuantumFourierTransform()
 void applyQuantumFourierTransform(Qureg qureg, std::vector<int> targets);
 

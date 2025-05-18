@@ -192,7 +192,7 @@ void getEnvironmentString(char str[200]);
 /// @ingroup debug_seed
 /// @notyettested
 /// @notyetdoced
-/// @cpponly
+/// @cppvectoroverload
 /// @see setSeeds()
 void setSeeds(std::vector<unsigned> seeds);
 
