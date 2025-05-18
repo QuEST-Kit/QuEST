@@ -187,6 +187,7 @@ void setQuregToReducedDensityMatrix(Qureg out, Qureg in, int* retainQubits, int 
 /// @notyetdoced
 /// @notyetvalidated
 /// @cpponly
+/// @see setQuregAmps()
 void setQuregAmps(Qureg qureg, qindex startInd, std::vector<qcomp> amps);
 
 
@@ -195,6 +196,7 @@ void setQuregAmps(Qureg qureg, qindex startInd, std::vector<qcomp> amps);
 /// @notyetdoced
 /// @notyetvalidated
 /// @cpponly
+/// @see setDensityQuregAmps()
 void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, std::vector<std::vector<qcomp>> amps);
 
 
@@ -203,6 +205,7 @@ void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, std::vec
 /// @notyetdoced
 /// @notyetvalidated
 /// @cpponly
+/// @see setDensityQuregFlatAmps()
 void setDensityQuregFlatAmps(Qureg qureg, qindex startInd, std::vector<qcomp> amps);
 
 
@@ -211,6 +214,7 @@ void setDensityQuregFlatAmps(Qureg qureg, qindex startInd, std::vector<qcomp> am
 /// @notyetdoced
 /// @notyetvalidated
 /// @cpponly
+/// @see setQuregToPartialTrace()
 void setQuregToPartialTrace(Qureg out, Qureg in, std::vector<int> traceOutQubits);
 
 
@@ -219,6 +223,7 @@ void setQuregToPartialTrace(Qureg out, Qureg in, std::vector<int> traceOutQubits
 /// @notyetdoced
 /// @notyetvalidated
 /// @cpponly
+/// @see setQuregToReducedDensityMatrix()
 void setQuregToReducedDensityMatrix(Qureg out, Qureg in, std::vector<int> retainQubits);
 
 

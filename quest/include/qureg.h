@@ -540,6 +540,7 @@ qcomp getDensityQuregAmp(Qureg qureg, qindex row, qindex column);
 /// @notyetvalidated
 /// @notyetdoced
 /// @cpponly
+/// @see getQuregAmps()
 std::vector<qcomp> getQuregAmps(Qureg qureg, qindex startInd, qindex numAmps);
 
 
@@ -548,6 +549,7 @@ std::vector<qcomp> getQuregAmps(Qureg qureg, qindex startInd, qindex numAmps);
 /// @notyetvalidated
 /// @notyetdoced
 /// @cpponly
+/// @see getDensityQuregAmps()
 std::vector<std::vector<qcomp>> getDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols);
 
 

@@ -302,6 +302,7 @@ static inline qcomp getQcomp(qreal re, qreal im) {
     /// @notyetdoced
     /// @notyettested
     /// @cpponly
+    /// @see reportStr()
     void reportStr(std::string str);
 
 
@@ -318,6 +319,7 @@ static inline qcomp getQcomp(qreal re, qreal im) {
     /// @notyetdoced
     /// @notyettested
     /// @cpponly
+    /// @see reportScalar()
     void reportScalar(std::string label, qcomp num);
 
 

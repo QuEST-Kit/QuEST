@@ -193,6 +193,7 @@ void getEnvironmentString(char str[200]);
 /// @notyettested
 /// @notyetdoced
 /// @cpponly
+/// @see setSeeds()
 void setSeeds(std::vector<unsigned> seeds);
 
 
@@ -200,6 +201,7 @@ void setSeeds(std::vector<unsigned> seeds);
 /// @notyettested
 /// @notyetdoced
 /// @cpponly
+/// @see getSeeds()
 std::vector<unsigned> getSeeds();
 
 

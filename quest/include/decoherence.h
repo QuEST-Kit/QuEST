@@ -361,12 +361,14 @@ void mixSuperOp(Qureg qureg, int* targets, int numTargets, SuperOp superop);
 /// @notyetdoced
 /// @notyetvalidated
 /// @cpponly
+/// @see mixKrausMap()
 void mixKrausMap(Qureg qureg, std::vector<int> targets, KrausMap map);
 
 /// @notyettested
 /// @notyetdoced
 /// @notyetvalidated
 /// @cpponly
+/// @see mixSuperOp()
 void mixSuperOp(Qureg qureg, std::vector<int> targets, SuperOp superop);
 
 #endif // __cplusplus

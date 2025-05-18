@@ -337,6 +337,7 @@ qcomp calcExpecNonHermitianFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr
 /// @notyetdoced
 /// @notyetvalidated
 /// @cpponly
+/// @see calcProbOfMultiQubitOutcome()
 qreal calcProbOfMultiQubitOutcome(Qureg qureg, std::vector<int> qubits, std::vector<int> outcomes);
 
 
@@ -345,6 +346,7 @@ qreal calcProbOfMultiQubitOutcome(Qureg qureg, std::vector<int> qubits, std::vec
 /// @notyetdoced
 /// @notyetvalidated
 /// @cpponly
+/// @see calcProbsOfAllMultiQubitOutcomes()
 std::vector<qreal> calcProbsOfAllMultiQubitOutcomes(Qureg qureg, std::vector<int> qubits);
 
 
@@ -353,6 +355,7 @@ std::vector<qreal> calcProbsOfAllMultiQubitOutcomes(Qureg qureg, std::vector<int
 /// @notyetdoced
 /// @notyetvalidated
 /// @cpponly
+/// @see calcPartialTrace()
 Qureg calcPartialTrace(Qureg qureg, std::vector<int> traceOutQubits);
 
 
@@ -361,6 +364,7 @@ Qureg calcPartialTrace(Qureg qureg, std::vector<int> traceOutQubits);
 /// @notyetdoced
 /// @notyetvalidated
 /// @cpponly
+/// @see calcReducedDensityMatrix()
 Qureg calcReducedDensityMatrix(Qureg qureg, std::vector<int> retainQubits);
 
 

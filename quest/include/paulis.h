@@ -156,6 +156,7 @@ extern "C" {
      * @cpponly
      * 
      * @see
+     * - getPauliStr()
      * - reportPauliStr()
      * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
      */
@@ -310,6 +311,7 @@ extern "C" {
      * @cpponly
      * 
      * @see
+     * - createPauliStrSum()
      * - reportPauliStrSum()
      * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
      */
@@ -321,6 +323,7 @@ extern "C" {
      * @cpponly
      * 
      * @see
+     * - createInlinePauliStrSum()
      * - reportPauliStrSum()
      * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
      */
@@ -332,6 +335,7 @@ extern "C" {
      * @cpponly
      * 
      * @see
+     * - createPauliStrSumFromFile()
      * - reportPauliStrSum()
      * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
      */
@@ -343,6 +347,7 @@ extern "C" {
      * @cpponly
      * 
      * @see
+     * - createPauliStrSumFromReversedFile()
      * - reportPauliStrSum()
      * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
      */
