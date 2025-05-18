@@ -1352,6 +1352,7 @@ extern "C" {
      CompMatr1 matr = getInlineCompMatr1({{c, s}, {s, c}});
      applyCompMatr1(qureg, target, matr);
  *   ```
+ * - Passing @p angle=0 is equivalent to effecting the identity, leaving the state unchanged.
  */
 void applyRotateX(Qureg qureg, int target, qreal angle);
 
@@ -1389,6 +1390,7 @@ void applyRotateX(Qureg qureg, int target, qreal angle);
      CompMatr1 matr = getInlineCompMatr1({{c, -s}, {s, c}});
      applyCompMatr1(qureg, target, matr);
  *   ```
+ * - Passing @p angle=0 is equivalent to effecting the identity, leaving the state unchanged.
  */
 void applyRotateY(Qureg qureg, int target, qreal angle);
 
@@ -1426,6 +1428,7 @@ void applyRotateY(Qureg qureg, int target, qreal angle);
      DiagMatr1 matr = getInlineDiagMatr1({a, b});
      applyDiagMatr1(qureg, target, matr);
  *   ```
+ * - Passing @p angle=0 is equivalent to effecting the identity, leaving the state unchanged.
  */
 void applyRotateZ(Qureg qureg, int target, qreal angle);
 
@@ -1519,7 +1522,7 @@ void applyMultiStateControlledRotateZ(Qureg qureg, int* controls, int* states, i
  *   three-term PauliStrSum @f$ \hat{H} = \bar{n} \cdot \vec{\sigma}@f$ and effecting
  *   @f$ \exp \left(\iu \alpha \hat{H} \right) @f$ via applyTrotterizedPauliStrSumGadget() 
  *   with @f$ \alpha = - \theta/2 @f$ and very many repetitions.
- *
+ * - Passing @p angle=0 is equivalent to effecting the identity, leaving the state unchanged.
  */
 void applyRotateAroundAxis(Qureg qureg, int target, qreal angle, qreal axisX, qreal axisY, qreal axisZ);
 
@@ -1676,6 +1679,7 @@ void multiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
     // concisely
     applyPauliGadget(qureg, getInlinePauliStr("XYZ",{0,1,7}), theta);
  * ```
+ * - Passing @p angle=0 is equivalent to effecting the identity, leaving the state unchanged.
  */
 void applyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
 
@@ -1752,6 +1756,7 @@ void multiplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle)
  *   This latter function will actually automatically invoke applyPhaseGadget() which has an optimised implementation.
  * - This function is equivalent to, albeit much faster than, preparing a DiagMatr with @f$ \pm 1 @f$ elements (depending upon
  *   the parity of the targeted set bits) and effecting it with applyDiagMatr().
+ * - Passing @p angle=0 is equivalent to effecting the identity, leaving the state unchanged.
  */
 void applyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle);
 
@@ -1796,6 +1801,7 @@ void applyPhaseFlip(Qureg qureg, int target);
      applyRotateZ(qureg, target, angle);
      applyPauliGadget(qureg, getPauliStr("I"), angle); // global phase
  *   ```
+ * - Passing @p angle=0 is equivalent to effecting the identity, leaving the state unchanged.
  */
 void applyPhaseShift(Qureg qureg, int target, qreal angle);
 
@@ -1906,6 +1912,7 @@ digraph {
  * - This function is equivalent to a controlled variant of applyPhaseShift(), treating
  *   either target qubit as the control qubit.
  * - This function generalises applyTwoQubitPhaseFlip() to arbitrary changes in phase.
+ * - Passing @p angle=0 is equivalent to effecting the identity, leaving the state unchanged.
  */
 void applyTwoQubitPhaseShift(Qureg qureg, int target1, int target2, qreal angle);
 
@@ -1981,6 +1988,7 @@ digraph {
  * - This function is equivalent to a multi-controlled variant of applyPhaseShift(), treating all
  *   but one arbitrary target qubit as control qubits.
  * - This function generalises applyMultiQubitPhaseFlip() to arbitrary changes in phase.
+ * - Passing @p angle=0 is equivalent to effecting the identity, leaving the state unchanged.
  */
 void applyMultiQubitPhaseShift(Qureg qureg, int* targets, int numTargets, qreal angle);
 
