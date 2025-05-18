@@ -169,7 +169,9 @@ digraph {
 void applyCompMatr1(Qureg qureg, int target, CompMatr1 matrix);
 
 
-/** Applies a singly-controlled one-qubit dense unitary @p matrix to the specified 
+/** @notyetdoced
+ * 
+ * Applies a singly-controlled one-qubit dense unitary @p matrix to the specified 
  * @p target qubit of @p qureg.
  * 
  * @diagram
@@ -198,12 +200,15 @@ digraph {
 }
  * @enddot
  *
- * @notyetdoced
+ * @see
+ * - applyCompMatr1()
  */
 void applyControlledCompMatr1(Qureg qureg, int control, int target, CompMatr1 matrix);
 
 
-/** Applies a multiply-controlled one-qubit dense unitary @p matrix to the specified 
+/** @notyetdoced
+ * 
+ * Applies a multiply-controlled one-qubit dense unitary @p matrix to the specified 
  * @p target qubit of @p qureg.
  * 
  * @diagram
@@ -240,12 +245,15 @@ digraph {
 }
  * @enddot
  *
- * @notyetdoced
+ * @see
+ * - applyCompMatr1()
  */
 void applyMultiControlledCompMatr1(Qureg qureg, int* controls, int numControls, int target, CompMatr1 matrix);
 
 
-/** Applies an arbitrarily-controlled one-qubit dense unitary @p matrix to the specified 
+/** @notyetdoced
+ * 
+ * Applies an arbitrarily-controlled one-qubit dense unitary @p matrix to the specified 
  * @p target qubit of @p qureg, conditioned upon the @p controls being in the given @p states.
  * 
  * @diagram
@@ -282,7 +290,8 @@ digraph {
 }
  * @enddot
  *
- * @notyetdoced
+ * @see
+ * - applyCompMatr1()
  */
 void applyMultiStateControlledCompMatr1(Qureg qureg, int* controls, int* states, int numControls, int target, CompMatr1 matrix);
 
@@ -336,7 +345,9 @@ extern "C" {
 void multiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matr);
 
 
-/** Applies a general two-qubit dense unitary @p matrix to qubits @p target1 and
+/** @notyetdoced
+ * 
+ * Applies a general two-qubit dense unitary @p matrix to qubits @p target1 and
  * @p target2 (treated as increasing significance) of @p qureg.
  * 
  * @diagram
@@ -360,12 +371,15 @@ digraph {
 }
  * @enddot
  *
- * @notyetdoced
+ * @see
+ * - applyCompMatr1()
  */
 void applyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix);
 
 
-/** Applies a singly-controlled two-qubit dense unitary @p matrix to qubits 
+/** @notyetdoced
+ * 
+ * Applies a singly-controlled two-qubit dense unitary @p matrix to qubits 
  * @p target1 and @p target2 (treated as increasing significance) of @p qureg.
  * 
  * @diagram
@@ -395,12 +409,15 @@ digraph {
 }
  * @enddot
  *
- * @notyetdoced
+ * @see 
+ * - applyCompMatr2()
  */
 void applyControlledCompMatr2(Qureg qureg, int control, int target1, int target2, CompMatr2 matr);
 
 
-/** Applies a multiply-controlled two-qubit dense unitary @p matrix to qubits 
+/** @notyetdoced
+ * 
+ * Applies a multiply-controlled two-qubit dense unitary @p matrix to qubits 
  * @p target1 and @p target2 (treated as increasing significance) of @p qureg.
  * 
  * @diagram
@@ -436,12 +453,15 @@ digraph {
 }
  * @enddot
  *
- * @notyetdoced
+ * @see
+ * - applyCompMatr2()
  */
 void applyMultiControlledCompMatr2(Qureg qureg, int* controls, int numControls, int target1, int target2, CompMatr2 matr);
 
 
-/** Applies an arbitrarily-controlled two-qubit dense unitary @p matrix to qubits 
+/** @notyetdoced
+ * 
+ * Applies an arbitrarily-controlled two-qubit dense unitary @p matrix to qubits 
  * @p target1 and @p target2 (treated as increasing significance) of @p qureg,
  * conditioned upon the @p controls being in the given @p states.
  * 
@@ -478,7 +498,9 @@ digraph {
 }
  * @enddot
  *
- * @notyetdoced
+ * @see
+ * - applyCompMatr2()
+ * - applyMultiStateControlledCompMatr1()
  */
 void applyMultiStateControlledCompMatr2(Qureg qureg, int* controls, int* states, int numControls, int target1, int target2, CompMatr2 matr);
 
@@ -534,19 +556,42 @@ extern "C" {
 void multiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix);
 
 
-/// @notyetdoced
+/** @notyetdoced
+ * 
+ * @formulae
+ * 
+ * Let @f$ M = @f$ @p matrix.
+ * The qubits within @p targets are treated to be ordered least to most significant with respect
+ * to @f$ M @f$. That is, if @f$ M @f$ was hypothetically separable single-qubit matrices
+ * @f[
+      M \equiv A \otimes B \otimes C \otimes \dots 
+ * @f]
+ * then this function would effect
+ * @f[
+      \hat{M}_{\text{targets}} \equiv A_{\text{targets}[0]} B_{\text{targets}[1]} C_{\text{targets}[2]} \dots
+ * @f]
+ *
+ * @see
+ * - applyCompMatr1()
+ */
 void applyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matr);
 
 
 /// @notyetdoced
+/// @see
+/// - applyControlledCompMatr1()
 void applyControlledCompMatr(Qureg qureg, int control, int* targets, int numTargets, CompMatr matr);
 
 
 /// @notyetdoced
+/// @see
+/// - applyMultiControlledCompMatr1()
 void applyMultiControlledCompMatr(Qureg qureg, int* controls, int numControls, int* targets, int numTargets, CompMatr matr);
 
 
 /// @notyetdoced
+/// @see
+/// - applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledCompMatr(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets, CompMatr matr);
 
 
@@ -570,6 +615,7 @@ void multiplyCompMatr(Qureg qureg, std::vector<int> targets, CompMatr matr);
 /// @notyetvalidated
 /// @notyetdoced
 /// @cpponly
+/// @see applyCompMatr()
 void applyCompMatr(Qureg qureg, std::vector<int> targets, CompMatr matr);
 
 
@@ -621,18 +667,22 @@ void multiplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matr);
 
 
 /// @notyetdoced
+/// @see applyCompMatr1()
 void applyDiagMatr1(Qureg qureg, int target, DiagMatr1 matr);
 
 
 /// @notyetdoced
+/// @see applyControlledCompMatr1()
 void applyControlledDiagMatr1(Qureg qureg, int control, int target, DiagMatr1 matr);
 
 
 /// @notyetdoced
+/// @see applyMultiControlledCompMatr1()
 void applyMultiControlledDiagMatr1(Qureg qureg, int* controls, int numControls, int target, DiagMatr1 matr);
 
 
 /// @notyetdoced
+/// @see applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledDiagMatr1(Qureg qureg, int* controls, int* states, int numControls, int target, DiagMatr1 matr);
 
 
@@ -684,18 +734,22 @@ void multiplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matr);
 
 
 /// @notyetdoced
+/// @see applyCompMatr1()
 void applyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matr);
 
 
 /// @notyetdoced
+/// @see applyControlledCompMatr1()
 void applyControlledDiagMatr2(Qureg qureg, int control, int target1, int target2, DiagMatr2 matr);
 
 
 /// @notyetdoced
+/// @see applyMultiControlledCompMatr1()
 void applyMultiControlledDiagMatr2(Qureg qureg, int* controls, int numControls, int target1, int target2, DiagMatr2 matr);
 
 
 /// @notyetdoced
+/// @see applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledDiagMatr2(Qureg qureg, int* controls, int* states, int numControls, int target1, int target2, DiagMatr2 matr);
 
 
@@ -747,18 +801,22 @@ void multiplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix
 
 
 /// @notyetdoced
+/// @see applyCompMatr1()
 void applyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix);
 
 
 /// @notyetdoced
+/// @see applyControlledCompMatr1()
 void applyControlledDiagMatr(Qureg qureg, int control, int* targets, int numTargets, DiagMatr matrix);
 
 
 /// @notyetdoced
+/// @see applyMultiControlledCompMatr1()
 void applyMultiControlledDiagMatr(Qureg qureg, int* controls, int numControls, int* targets, int numTargets, DiagMatr matrix);
 
 
 /// @notyetdoced
+/// @see applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledDiagMatr(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets, DiagMatr matrix);
 
 
@@ -769,19 +827,33 @@ void applyMultiStateControlledDiagMatr(Qureg qureg, int* controls, int* states, 
 void multiplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
 
 
-/// @notyetdoced
+/** @notyetdoced
+ *
+ * @formulae
+ * 
+ * This function is equivalent to applyDiagMatr() except that @p matrix is raised to the given @p exponent.
+ */
 void applyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
 
 
 /// @notyetdoced
+/// @see
+/// - applyDiagMatrPower()
+/// - applyControlledCompMatr1()
 void applyControlledDiagMatrPower(Qureg qureg, int control, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
 
 
 /// @notyetdoced
+/// @see
+/// - applyDiagMatrPower()
+/// - applyMultiControlledCompMatr1()
 void applyMultiControlledDiagMatrPower(Qureg qureg, int* controls, int numControls, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
 
 
 /// @notyetdoced
+/// @see
+/// - applyDiagMatrPower()
+/// - applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
 
 
@@ -913,6 +985,8 @@ void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
 
 /// @notyetdoced
 /// @notyetvalidated
+/// @see
+/// - applyDiagMatrPower
 void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
 
 
@@ -951,6 +1025,7 @@ void applyMultiControlledS(Qureg qureg, int* controls, int numControls, int targ
 
 
 /// @notyetdoced
+/// @see applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledS(Qureg qureg, int* controls, int* states, int numControls, int target);
 
 
@@ -967,6 +1042,7 @@ void applyMultiControlledT(Qureg qureg, int* controls, int numControls, int targ
 
 
 /// @notyetdoced
+/// @see applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledT(Qureg qureg, int* controls, int* states, int numControls, int target);
 
 
@@ -983,6 +1059,7 @@ void applyMultiControlledHadamard(Qureg qureg, int* controls, int numControls, i
 
 
 /// @notyetdoced
+/// @see applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledHadamard(Qureg qureg, int* controls, int* states, int numControls, int target);
 
 
@@ -1106,6 +1183,7 @@ void applyMultiControlledSwap(Qureg qureg, int* controls, int numControls, int q
 
 
 /// @notyetdoced
+/// @see applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledSwap(Qureg qureg, int* controls, int* states, int numControls, int qubit1, int qubit2);
 
 
@@ -1122,6 +1200,7 @@ void applyMultiControlledSqrtSwap(Qureg qureg, int* controls, int numControls, i
 
 
 /// @notyetdoced
+/// @see applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledSqrtSwap(Qureg qureg, int* controls, int* states, int numControls, int qubit1, int qubit2);
 
 
@@ -1235,14 +1314,17 @@ void applyMultiControlledPauliZ(Qureg qureg, int* controls, int numControls, int
 
 
 /// @notyetdoced
+/// @see applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledPauliX(Qureg qureg, int* controls, int* states, int numControls, int target);
 
 
 /// @notyetdoced
+/// @see applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledPauliY(Qureg qureg, int* controls, int* states, int numControls, int target);
 
 
 /// @notyetdoced
+/// @see applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledPauliZ(Qureg qureg, int* controls, int* states, int numControls, int target);
 
 
@@ -1338,6 +1420,7 @@ void applyMultiControlledPauliStr(Qureg qureg, int* controls, int numControls, P
 
 
 /// @notyetdoced
+/// @see applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, int numControls, PauliStr str);
 
 
@@ -1522,14 +1605,23 @@ void applyMultiControlledRotateZ(Qureg qureg, int* controls, int numControls, in
 
 
 /// @notyetdoced
+/// @see 
+/// - applyRotateX()
+/// - applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledRotateX(Qureg qureg, int* controls, int* states, int numControls, int target, qreal angle);
 
 
 /// @notyetdoced
+/// @see 
+/// - applyRotateY()
+/// - applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledRotateY(Qureg qureg, int* controls, int* states, int numControls, int target, qreal angle);
 
 
 /// @notyetdoced
+/// @see 
+/// - applyRotateZ()
+/// - applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledRotateZ(Qureg qureg, int* controls, int* states, int numControls, int target, qreal angle);
 
 
@@ -1600,6 +1692,9 @@ void applyMultiControlledRotateAroundAxis(Qureg qureg, int* ctrls, int numCtrls,
 
 
 /// @notyetdoced
+/// @see 
+/// - applyRotateAroundAxis()
+/// - applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledRotateAroundAxis(Qureg qureg, int* ctrls, int* states, int numCtrls, int targ, qreal angle, qreal axisX, qreal axisY, qreal axisZ);
 
 
@@ -1768,6 +1863,9 @@ void applyMultiControlledPauliGadget(Qureg qureg, int* controls, int numControls
 
 
 /// @notyetdoced
+/// @see
+/// - applyPauliGadget()
+/// - applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStr str, qreal angle);
 
 
@@ -1850,6 +1948,9 @@ void applyMultiControlledPhaseGadget(Qureg qureg, int* controls, int numControls
 
 
 /// @notyetdoced
+/// @see
+/// - applyPhaseGadget()
+/// - applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledPhaseGadget(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets, qreal angle);
 
 
@@ -2255,6 +2356,8 @@ void applyMultiControlledMultiQubitNot(Qureg qureg, int* controls, int numContro
 
 
 /// @notyetdoced
+/// @see
+/// - applyMultiStateControlledCompMatr1()
 void applyMultiStateControlledMultiQubitNot(Qureg qureg, int* controls, int* states, int numControls, int* targets, int numTargets);
 
 
