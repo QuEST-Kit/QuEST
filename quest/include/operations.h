@@ -330,6 +330,9 @@ extern "C" {
 
 
 /// @notyetdoced
+/// @see
+/// - applyCompMatr2()
+/// - multiplyCompMatr1()
 void multiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matr);
 
 
@@ -522,8 +525,13 @@ extern "C" {
 #endif
 
 
-/// @notyetdoced
-void multiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matr);
+/** @notyetdoced
+ * 
+ * @see
+ * - applyCompMatr()
+ * - multiplyCompMatr1()
+ */
+void multiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix);
 
 
 /// @notyetdoced
@@ -608,6 +616,7 @@ extern "C" {
 
 
 /// @notyetdoced
+/// @see multiplyCompMatr1()
 void multiplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matr);
 
 
@@ -670,6 +679,7 @@ extern "C" {
 
 
 /// @notyetdoced
+/// @see multiplyCompMatr1()
 void multiplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matr);
 
 
@@ -732,6 +742,7 @@ extern "C" {
 
 
 /// @notyetdoced
+/// @see multiplyCompMatr1()
 void multiplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix);
 
 
@@ -752,6 +763,9 @@ void applyMultiStateControlledDiagMatr(Qureg qureg, int* controls, int* states, 
 
 
 /// @notyetdoced
+/// @see
+/// - multiplyCompMatr1()
+/// - applyDiagMatrPower()
 void multiplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
 
 
@@ -879,11 +893,16 @@ extern "C" {
 
 /// @notyetdoced
 /// @notyetvalidated
+/// @see
+/// - multiplyCompMatr1
 void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
 
 
 /// @notyetdoced
 /// @notyetvalidated
+/// @see
+/// - multiplyCompMatr1
+/// - applyDiagMatrPower
 void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
 
 
@@ -1042,6 +1061,7 @@ extern "C" {
 
 
 /// @notyetdoced
+/// @see multiplyCompMatr1()
 void multiplySwap(Qureg qureg, int qubit1, int qubit2);
 
 
@@ -1164,14 +1184,17 @@ extern "C" {
 
 
 /// @notyetdoced
+/// @see multiplyCompMatr1()
 void multiplyPauliX(Qureg qureg, int target);
 
 
 /// @notyetdoced
+/// @see multiplyCompMatr1()
 void multiplyPauliY(Qureg qureg, int target);
 
 
 /// @notyetdoced
+/// @see multiplyCompMatr1()
 void multiplyPauliZ(Qureg qureg, int target);
 
 
@@ -1298,6 +1321,7 @@ extern "C" {
 
 
 /// @notyetdoced
+/// @see multiplyCompMatr1()
 void multiplyPauliStr(Qureg qureg, PauliStr str);
 
 
@@ -1670,6 +1694,9 @@ extern "C" {
 
 
 /// @notyetdoced
+/// @see 
+/// - multiplyCompMatr1()
+/// - applyPauliGadget()
 void multiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
 
 
@@ -1787,6 +1814,9 @@ extern "C" {
 
 
 /// @notyetdoced
+/// @see 
+/// - multiplyCompMatr1()
+/// - applyPhaseGadget
 void multiplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle);
 
 
@@ -2127,6 +2157,7 @@ extern "C" {
 
 /// @notyetdoced
 /// @notyetvalidated
+/// @see multiplyCompMatr1()
 void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
 
 
@@ -2207,6 +2238,7 @@ extern "C" {
 
 
 /// @notyetdoced
+/// @see multiplyCompMatr1()
 void multiplyMultiQubitNot(Qureg qureg, int* targets, int numTargets);
 
 
