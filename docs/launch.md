@@ -573,7 +573,7 @@ For convenience however, we offer some example [SLURM](https://slurm.schedmd.com
 #SBATCH --nodes=4
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
-OMP_NUM_THREADS=8 mpirun ./myexec
+OMP_NUM_THREADS=8 srun ./myexec
 ```
 
 1 machine with 4 local GPUs:
