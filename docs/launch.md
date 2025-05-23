@@ -59,41 +59,57 @@ Launching your [compiled](compile.md) QuEST application can be as straightforwar
 > See [`compile.md`](compile.md#examples) for instructions on compiling the examples.
 <!-- @todo the above link fails in Doxygen; it's too stupid to recognise the section ref -->
 
-The example source codes are located in [`examples/`](/examples/) and are divided into subdirectories, e.g.
+
+The example source codes are located in [`examples/`](/examples/) with structure
 ```
 examples/
-    krausmaps/
-        initialisation.c
-        initialisation.cpp
-    reporters/
-        env.c
-        env.cpp
-        matrices.c
-        matrices.cpp
-    ...
+    isolated/
+        complex_arithmetic.c
+        complex_arithmetic.cpp
+        ...
+    extended/
+        dynamics.c
+        dynamics.cpp
+        ...
+    tutorials/
+        min_example.c
+        ...
 ```
-where `file.c` and `file.cpp` respectively demonstrate QuEST's `C11` and `C++14` interfaces.
-These files are [compiled](compile.md#examples) into executables of the same name, respectively prefixed with `c_` or `cpp_`, and saved in subdirectories of `build` which mimic the structure of `examples/`. E.g.
+where `file.c` and `file.cpp` respectively demo QuEST's `C11` and `C++14` interfaces. Files are divided between subdirectories:
+ - `isolated/` which contains demos of _one_ function or task, typically showcasing all the different syntaxes and interfaces available.
+ - `extended/` which contains longer, standalone examples performing common tasks and algorithms in quantum computing. 
+ - `tutorials/` which contains guides with step-by-step explanations.
+
+
+These files are [compiled](compile.md#examples) into executables of the same name, respectively suffixed with `_c` or `_cpp`, and (by default) are saved in subdirectories of `build` which mimic the structure of `examples/`. E.g.
+<!-- @todo the above link fails in Doxygen; it's too stupid to recognise the section ref -->
 ```
 build/
     examples/
-        krausmaps/
-            c_initialisation
-            cpp_initialisation
-        reporters/
-            c_env
-            cpp_env
-            c_matrices
-            cpp_matrices
-    ...
+        isolated/
+            complex_arithmetic_c
+            complex_arithmetic_cpp
+            ...
+        extended/
+            dynamics_c
+            dynamics_cpp
+            ...
+        tutorials/
+            min_example_c
 ```
+
+> [!NOTE]  
+> <!-- @todo the below link fails in Doxygen; it's too stupid to recognise the section ref -->
+> On Windows, the executables are located in `\Release\` subdirectories, assuming the parameter 
+> `--config Release` was specified during compilation (see [compiled](compile.md#compile_optimising)).
+
 Most of these executables can be run directly from within `build`, e.g.
 ```bash
-./examples/reporters/cpp_paulis
+./examples/extended/dynamics_c
 ```
 while others require command-line arguments:
 ```bash
-./examples/reporters/c_env
+./examples/extended/reporting_environments_cpp
 
 # output
 Must pass single cmd-line argument:
@@ -104,6 +120,12 @@ Must pass single cmd-line argument:
   5 = all
   6 = auto
 ```
+
+> [!NOTE]  
+> On Windows, the executables are `.exe` files and can be run with e.g.
+> ```
+> \examples\isolated\Release\initialising_paulis_c.exe
+> ```
 
 
 ---------------------
@@ -573,7 +595,7 @@ For convenience however, we offer some example [SLURM](https://slurm.schedmd.com
 #SBATCH --nodes=4
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
-OMP_NUM_THREADS=8 mpirun ./myexec
+OMP_NUM_THREADS=8 srun ./myexec
 ```
 
 1 machine with 4 local GPUs:

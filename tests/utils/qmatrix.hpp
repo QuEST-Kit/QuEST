@@ -13,7 +13,7 @@
 #ifndef QMATRIX_HPP
 #define QMATRIX_HPP
 
-#include "quest/include/quest.h"
+#include "quest.h"
 #include "qvector.hpp"
 
 #include <vector>

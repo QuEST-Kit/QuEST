@@ -7,7 +7,6 @@
 */
 
 #include "quest.h"
-#include <iostream>
 
 int main(void) {
 
@@ -21,10 +20,8 @@ int main(void) {
     reportQureg(qureg);
 
     qreal prob = calcTotalProb(qureg);
+    reportScalar("Total probability", prob);
     
-    if (getQuESTEnv().rank == 0)
-        std::cout << "Total probability: " << prob << std::endl;
-
     destroyQureg(qureg);
     finalizeQuESTEnv();
 

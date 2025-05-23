@@ -13,7 +13,7 @@
 
 #include <catch2/generators/catch_generators_adapters.hpp>
 
-#include "quest/include/quest.h"
+#include "quest.h"
 
 #include <vector>
 #include <tuple>

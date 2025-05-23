@@ -18,7 +18,7 @@
 #ifndef DEPRECATED_H
 #define DEPRECATED_H
 
-#include "quest/include/quest.h"
+#include "quest.h"
 
 #include "stdlib.h"
 

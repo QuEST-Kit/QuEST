@@ -327,7 +327,8 @@ PauliStr getPauliStr(int* paulis, int* indices, int numPaulis) {
     // validation ensures never causes stack overflow
     char pauliChars[MAX_NUM_PAULIS_PER_STR + 1]; // +1 for null-terminal
 
-    // made a char array from the pauli codes
+    // make a char array from the pauli codes, using an arbitrary 
+    // choice of the Pauli characters accepted by the API (like IXYZ)
     for (int i=0; i<numPaulis; i++)
         pauliChars[i] = "IXYZ"[paulis[i]];
 

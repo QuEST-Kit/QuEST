@@ -12,7 +12,7 @@
 #include "macros.hpp"
 #include "lists.hpp"
 
-#include "quest/include/quest.h"
+#include "quest.h"
 
 #include <type_traits>
 using std::is_same_v;

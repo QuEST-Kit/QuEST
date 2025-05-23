@@ -11,7 +11,7 @@
 
 #define INCLUDE_DEPRECATED_FUNCTIONS 1
 #define DISABLE_DEPRECATION_WARNINGS 1
-#include "quest/include/quest.h"
+#include "quest.h"
 
 #include "test_utilities.hpp"
 

@@ -17,7 +17,7 @@
 #include "macros.hpp"
 #include "linalg.hpp"
 #include "lists.hpp"
-#include "quest/include/quest.h"
+#include "quest.h"
 
 #include <vector>
 using std::vector;

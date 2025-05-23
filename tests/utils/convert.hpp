@@ -13,7 +13,7 @@
 #ifndef CONVERT_HPP
 #define CONVERT_HPP
 
-#include "quest/include/quest.h"
+#include "quest.h"
 #include "qvector.hpp"
 #include "qmatrix.hpp"
 

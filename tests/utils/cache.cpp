@@ -5,7 +5,7 @@
  * @author Tyson Jones
  */
 
-#include "quest/include/quest.h"
+#include "quest.h"
 
 #include "macros.hpp"
 #include "qvector.hpp"

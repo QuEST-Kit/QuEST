@@ -87,7 +87,7 @@ typedef INDEX_TYPE qindex;
  * code, to avoid C & C++ qcomp interoperability issues.
  */
 
-/// @notdoced
+/// @notyetdoced
 static inline qcomp getQcomp(qreal re, qreal im) {
 
     #if defined(__cplusplus)
@@ -169,7 +169,7 @@ static inline qcomp getQcomp(qreal re, qreal im) {
     // spoofing above macro as const to doc
     #if 0
 
-        /// @notdoced
+        /// @notyetdoced
         /// @macrodoc
         const int DEFINE_ARITHMETIC_OVERLOADS = 1;
 
@@ -294,47 +294,49 @@ static inline qcomp getQcomp(qreal re, qreal im) {
     #include <string>
 
 
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     extern "C" void reportStr(const char* str);
 
 
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     /// @cpponly
+    /// @see reportStr()
     void reportStr(std::string str);
 
 
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     extern "C" void reportScalar(const char* label, qcomp num);
 
 
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void reportScalar(const char* label, qreal num);
 
 
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     /// @cpponly
+    /// @see reportScalar()
     void reportScalar(std::string label, qcomp num);
 
 
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     /// @cpponly
     void reportScalar(std::string label, qreal num);
 
 #else
 
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void reportStr(const char* str);
 
 
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void reportScalar(const char* label, qcomp num);
 
 

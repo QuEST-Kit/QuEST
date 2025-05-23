@@ -381,42 +381,42 @@ void assert_bufferPackerGivenIncreasingQubits(int qubit1, int qubit2, int qubit3
 void assert_mixedQuregIsDensityMatrix(Qureg qureg) {
 
     if (!qureg.isDensityMatrix)
-        raiseInternalError("An internal function invoked by mixQuregs() received a statevector where a density matrix was expected.");
+        raiseInternalError("An internal function invoked by mixQureg() received a statevector where a density matrix was expected.");
 }
 
 void assert_mixedQuregIsStatevector(Qureg qureg) {
 
     if (qureg.isDensityMatrix)
-        raiseInternalError("An internal function invoked by mixQuregs() received a density matrix where a statevector was expected.");
+        raiseInternalError("An internal function invoked by mixQureg() received a density matrix where a statevector was expected.");
 }
 
 void assert_mixedQuregIsDistributed(Qureg qureg) {
 
     if (!qureg.isDistributed)
-        raiseInternalError("An internal function invoked by mixQuregs() received a non-distributed Qureg where a distributed one was expected.");
+        raiseInternalError("An internal function invoked by mixQureg() received a non-distributed Qureg where a distributed one was expected.");
 }
 
 void assert_mixedQuregIsLocal(Qureg qureg) {
 
     if (qureg.isDistributed)
-        raiseInternalError("An internal function invoked by mixQuregs() received a distributed Qureg where a non-distributed one was expected.");
+        raiseInternalError("An internal function invoked by mixQureg() received a distributed Qureg where a non-distributed one was expected.");
 }
 
 void assert_mixedQuregsAreBothOrNeitherDistributed(Qureg a, Qureg b) {
 
     if (a.isDistributed != b.isDistributed)
-        raiseInternalError("An internal function invoked by mixQuregs() received density-matrix Quregs of inconsistent distribution.");
+        raiseInternalError("An internal function invoked by mixQureg() received density-matrix Quregs of inconsistent distribution.");
 }
 
 void assert_mixQuregTempGpuAllocSucceeded(qcomp* gpuPtr) {
 
     if (!mem_isAllocated(gpuPtr))
-        raiseInternalError("An internal function invoked by mixQuregs() attempted to allocate temporary GPU memory but failed.");
+        raiseInternalError("An internal function invoked by mixQureg() attempted to allocate temporary GPU memory but failed.");
 }
 
 void error_mixQuregsAreLocalDensMatrAndDistribStatevec() {
 
-    raiseInternalError("An internal function invoked by mixQuregs() received a non-distributed density matrix and a distributed statevector, which is an illegal combination.");
+    raiseInternalError("An internal function invoked by mixQureg() received a non-distributed density matrix and a distributed statevector, which is an illegal combination.");
 }
 
 void assert_fullStateDiagMatrIsLocal(FullStateDiagMatr matr) {

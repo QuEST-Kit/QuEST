@@ -1,6 +1,7 @@
 # @author Oliver Thomson Brown
 # @author Erich Essmann (patches including MSVC support)
 # @author Tyson Jones (patches including clang multithreading)
+# @author Luc Jaulmes (patching install)
 #
 # Contributions to previous builds from:
 #  - Ania Brown
@@ -66,6 +67,22 @@ message(STATUS "Library will be named lib${LIB_NAME}. Set LIB_NAME to modify.")
 
 option(VERBOSE_LIB_NAME "Modify library name based on compilation configuration. Turned OFF by default." OFF)
 message(STATUS "Verbose library naming is turned ${VERBOSE_LIB_NAME}. Set VERBOSE_LIB_NAME to modify.")
+
+if (VERBOSE_LIB_NAME)
+  # Same headers will be used for several verbosely-named libraries
+  set(MULTI_LIB_HEADERS 1)
+  function(compile_option VAR VALUE)
+    target_compile_definitions(QuEST PUBLIC ${VAR}=${VALUE})
+  endfunction()
+else()
+  # Headers will be used for a single library with a single valid configuration
+  set(MULTI_LIB_HEADERS 0)
+  function(compile_option VAR VALUE)
+    target_compile_definitions(QuEST PRIVATE ${VAR}=${VALUE})
+    set(${VAR} ${VALUE})
+  endfunction()
+endif()
+
 
 # Precision
 set(FLOAT_PRECISION 2 
@@ -250,11 +267,15 @@ add_library(QuEST::QuEST ALIAS QuEST)
 
 # Set include directories
 target_include_directories(QuEST
-  PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/quest/include>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:../quest/include>
-  $<INSTALL_INTERFACE:..>
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/quest/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+set_target_properties(QuEST PROPERTIES
+        VERSION     ${PROJECT_VERSION}
+        SOVERSION   ${PROJECT_VERSION_MAJOR}
 )
 
 # Add required C and C++ standards
@@ -279,7 +300,7 @@ target_compile_options(QuEST
 
 
 # Set user options
-target_compile_definitions(QuEST PUBLIC FLOAT_PRECISION=${FLOAT_PRECISION})
+compile_option(FLOAT_PRECISION ${FLOAT_PRECISION})
 
 if (ENABLE_MULTITHREADING)
 
@@ -295,7 +316,7 @@ if (ENABLE_MULTITHREADING)
     message(FATAL_ERROR ${ErrorMsg})
   endif()
 
-  target_compile_definitions(QuEST PUBLIC COMPILE_OPENMP=1)
+  compile_option(COMPILE_OPENMP 1)
   target_link_libraries(QuEST
     PRIVATE
     OpenMP::OpenMP_CXX
@@ -313,14 +334,14 @@ else()
     target_compile_options(QuEST PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-Wno-unknown-pragmas>)
   endif()
   
-  target_compile_definitions(QuEST PUBLIC COMPILE_OPENMP=0)
+  compile_option(COMPILE_OPENMP 0)
 endif()
 
 if (ENABLE_DISTRIBUTION)
   find_package(MPI REQUIRED
     COMPONENTS CXX
   )
-  target_compile_definitions(QuEST PUBLIC COMPILE_MPI=1)
+  compile_option(COMPILE_MPI 1)
   target_link_libraries(QuEST
     PRIVATE
     MPI::MPI_CXX
@@ -329,7 +350,7 @@ if (ENABLE_DISTRIBUTION)
     string(CONCAT LIB_NAME ${LIB_NAME} "+mpi")
   endif()
 else()
-  target_compile_definitions(QuEST PUBLIC COMPILE_MPI=0)
+  compile_option(COMPILE_MPI 0)
 endif()
 
 if (ENABLE_CUDA)
@@ -353,14 +374,14 @@ endif()
 
 if (ENABLE_CUQUANTUM)
   find_package(CUQUANTUM REQUIRED)
-  target_compile_definitions(QuEST PUBLIC COMPILE_CUQUANTUM=1)
+  compile_option(COMPILE_CUQUANTUM 1)
   target_link_libraries(QuEST PRIVATE CUQUANTUM::cuStateVec)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+cuquantum")
   endif()
 else()
-  target_compile_definitions(QuEST PUBLIC COMPILE_CUQUANTUM=0)
+  compile_option(COMPILE_CUQUANTUM 0)
 endif()
 
 if (ENABLE_HIP)
@@ -380,7 +401,7 @@ if (ENABLE_HIP)
   find_package(HIP REQUIRED)
   message(STATUS "Found HIP: " ${HIP_VERSION})
 
-  target_compile_definitions(QuEST PUBLIC COMPILE_CUQUANTUM=0)
+  compile_option(COMPILE_CUQUANTUM 0)
   target_link_libraries(QuEST PRIVATE hip::host)
 
   if (VERBOSE_LIB_NAME)
@@ -389,9 +410,9 @@ if (ENABLE_HIP)
 endif()
 
 if (ENABLE_CUDA OR ENABLE_HIP)
-  target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=1)
+  compile_option(COMPILE_CUDA 1)
 else()
-  target_compile_definitions(QuEST PUBLIC COMPILE_CUDA=0)
+  compile_option(COMPILE_CUDA 0)
 endif()
 
 if (ENABLE_DEPRECATED_API)
@@ -428,7 +449,7 @@ add_subdirectory(quest)
 ## Examples
 
 add_executable(min_example
-  examples/tutorials/min_example.cpp
+  examples/tutorials/min_example.c
 )
 target_link_libraries(min_example PRIVATE QuEST::QuEST)
 
@@ -436,15 +457,34 @@ install(TARGETS min_example
   RUNTIME
   DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
-set_target_properties(min_example
-  PROPERTIES 
-    INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
-)
 
 if (BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
+## RATH
+set(BUILD_RPATH_USE_ORIGIN ON)
+if(APPLE)
+  set(_RPATH_ORIGIN "@loader_path")
+else()
+  set(_RPATH_ORIGIN "$ORIGIN")
+endif()
+
+set(_INSTALL_RPATH  "${_RPATH_ORIGIN}/../${CMAKE_INSTALL_LIBDIR}")
+set(_BUILD_RPATH    "${_RPATH_ORIGIN};$<TARGET_FILE_DIR:QuEST>")
+
+# A tiny helper function so you can call it for every target
+function(setup_quest_rpath tgt)
+  set_target_properties(${tgt} PROPERTIES
+          BUILD_RPATH   "${_BUILD_RPATH}"
+          INSTALL_RPATH "${_INSTALL_RPATH}"
+          # keeps RPATH from being stripped when installing
+          INSTALL_RPATH_USE_LINK_PATH TRUE
+  )
+endfunction()
+
+setup_quest_rpath(QuEST)
+setup_quest_rpath(min_example)
 ## User Source
 
 if (USER_SOURCE AND NOT OUTPUT_EXE)
@@ -459,8 +499,9 @@ if (USER_SOURCE AND OUTPUT_EXE)
   add_executable(${OUTPUT_EXE} ${USER_SOURCE})
   target_link_libraries(${OUTPUT_EXE} PUBLIC QuEST)
   install(TARGETS ${OUTPUT_EXE} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-  set_target_properties(${OUTPUT_EXE} PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
+  setup_quest_rpath(${OUTPUT_EXE})
 endif()
+
 
 ## Tests
 
@@ -509,7 +550,7 @@ set(QuEST_INSTALL_CONFIGDIR "${CMAKE_INSTALL_LIBDIR}/cmake/QuEST")
 
 # Write QuESTConfigVersion.cmake
 write_basic_package_version_file(
-        "${CMAKE_CURRENT_BINARY_DIR}/QuESTConfigVersion.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}ConfigVersion.cmake"
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY AnyNewerVersion
 )
@@ -517,19 +558,28 @@ write_basic_package_version_file(
 # Configure QuESTConfig.cmake (from template)
 configure_package_config_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QuESTConfig.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/QuESTConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
         INSTALL_DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
 )
 
 # Install them
 install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/QuESTConfig.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/QuESTConfigVersion.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}ConfigVersion.cmake"
         DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
 )
 
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/quest.h"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/quest/include"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/quest"
+        FILES_MATCHING PATTERN "*.h"
+)
+
 install(EXPORT QuESTTargets
-        FILE QuESTTargets.cmake
+        FILE "${LIB_NAME}Targets.cmake"
         NAMESPACE QuEST::
         DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
 )

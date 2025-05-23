@@ -30,6 +30,7 @@ Compiling is configured with variables supplied by the [`-D` flag](https://cmake
 > - <a href="#compile_optimising">Optimising</a>
 > - <a href="#compile_linking">Linking</a>
 > - <a href="#compile_configuring">Configuring</a>
+>    * <a href="#compile_location">Location</a>
 >    * <a href="#compile_precision">Precision</a>
 >    * <a href="#compile_compilers">Compilers</a>
 >    * <a href="#compile_flags">Flags</a>
@@ -86,7 +87,7 @@ cmake --build .
 > cmake --build . --parallel
 > ```
 
-With no additional arguments, these commands compile [`min_example.cpp`](/examples/tutorials/min_example.cpp) into an executable `min_example` in the `build` folder which can be run via
+With no additional arguments, these commands compile [`min_example.c`](/examples/tutorials/min_example.c) into an executable `min_example` in the `build` folder which can be run via
 ```bash
 ./min_example
 ```
@@ -188,6 +189,11 @@ where
 - `myfile.c` is your `C` source file (or `myfile.cpp` if using `C++`).
 - `myexec` is the output executable name, which will be saved in `build`.
 
+
+> [!IMPORTANT]
+> `USER_SOURCE` can be any relative or absolute path to a file, but `OUTPUT_EXE` must be strictly a filename and cannot contain subdirectories. See <a href="#compile_location">Location</a> to change the output directory.
+
+
 To compile multiple dependent files, such as
 ```cpp
 /* myfile.cpp */
@@ -239,6 +245,60 @@ to your project as a library!
 <a id="compile_configuring"></a>
 
 ## Configuring
+
+
+
+<!-- permit doxygen to reference section -->
+<a id="compile_location"></a>
+
+### Location
+
+The location of your compiled executable(s) can be changed (from the default `build`) using [`CMAKE_RUNTIME_OUTPUT_DIRECTORY`](https://cmake.org/cmake/help/latest/variable/CMAKE_RUNTIME_OUTPUT_DIRECTORY.html).
+For example
+```bash
+# configure
+cmake .. -D CMAKE_RUNTIME_OUTPUT_DIRECTORY=/full/path/to/output/dir/
+```
+
+This applies to _all_ built executables, including your own custom files, the examples, and the unit tests. All executables will be at the top-level of the specified directory, and will _not_ be contained with subdirectories like `/examples/`.
+
+> [!TIP]
+> Paths containing spaces can be individually escaped, or the path surrounded with quotations, i.e.
+> ```bash
+> cmake .. -D CMAKE_RUNTIME_OUTPUT_DIRECTORY="/full/path/to/output/dir/"
+> ```
+> Beware that syntax like `~` will not be expanded inside quotation marks, but one can safely use alternative methods like
+> ```bash
+> "$HOME/path/from/home/to/output/dir/"
+> "../../path/from/two/layers/above/to/output/dir/"
+> ```
+
+> [!NOTE]
+> Building will fail if the linker has insufficient permissions to make a new directory, for example with message:
+> ```bash
+> ld: open() failed, errno=2
+> ```
+> This is remedied by ensuring the output directory already exists. 
+> ```bash
+> # make directory
+> export OUT_DIR=/full/path/to/output/dir/
+> mkdir $OUT_DIR
+>
+> # configure
+> cmake .. -D CMAKE_RUNTIME_OUTPUT_DIRECTORY=$OUT_DIR
+>
+> # build
+> cmake --build .
+> ```
+
+> [!IMPORTANT]
+> Configuration will fail if any two executables have the same output name since they will not be separated into subdirectories and will collide. We do not gaurantee that all test and example filenames will remain unique in the future, such that use of `CMAKE_RUNTIME_OUTPUT_DIRECTORY` may become invalid except when also specifying
+> ```
+> -D ENABLE_TESTING=OFF -D BUILD_EXAMPLES=OFF
+> ```
+
+
+
 
 
 <!-- permit doxygen to reference section -->
@@ -335,12 +395,20 @@ cmake .. -D BUILD_EXAMPLES=ON
 # build
 cmake --build .
 ```
-The executables will be saved in the (current) `build` directory, in a sub-directory structure mimicking the [`examples/`](/examples/) folder. They can be run by e.g.
+Unless overridden with [`CMAKE_RUNTIME_OUTPUT_DIRECTORY`](https://cmake.org/cmake/help/latest/variable/CMAKE_RUNTIME_OUTPUT_DIRECTORY.html), the executables will be saved in the `build` directory, in a sub-directory structure mimicking that of the [`examples/`](/examples/) folder. They can be run by e.g.
 ```bash
-./examples/matrices/cpp_initialisation
+./examples/isolated/initialising_paulis_c
 ```
-as elaborated upon in [`launch.md`](launch.md#tests).
+as elaborated upon in [`launch.md`](launch.md#examples).
 <!-- @todo the above link fails in Doxygen; it's too stupid to recognise the section ref -->
+
+> [!NOTE]  
+> <!-- @todo the below link fails in Doxygen; it's too stupid to recognise the section ref -->
+> As [above](compile.md#compile_optimising), Windows users should specify additional build parameter `--config Release` which will cause the executables to be contained in an additional final `\Release\` subdirectory. Executables are also suffixed with `.exe`, e.g.
+> ```
+> \examples\isolated\Release\initialising_paulis_c.exe
+> ```
+
 
 
 

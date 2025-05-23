@@ -7,6 +7,10 @@
   @author Tyson Jones
 -->
 
+> [!TIP]
+> See [PR #615](https://github.com/QuEST-Kit/QuEST/pull/615) for an illustration of integrating 
+> new functions into the QuEST software architecture.
+
 All user-visible API signatures are contained in `include/`, divided into semantic submodules (like `calculations.h` and `qureg.h`), but all exposed by `quest.h`. They are all strictly `C` _and_ `C++` compatible, hence their `.h` file extension.
 
 The source code within `src/` is divided between five subdirectories, listed below in order of increasing control flow depth. All code is parsed strictly by `C++`, hence all files have `.cpp` and `.hpp` extensions.

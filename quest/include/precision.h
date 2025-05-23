@@ -38,7 +38,7 @@
 // spoofing above macro as const to doc
 #if 0
 
-    /// @notdoced
+    /// @notyetdoced
     /// @macrodoc
     typedef long long int INDEX_TYPE;
 
@@ -64,7 +64,7 @@
 // spoofing above macro as typedef to doc
 #if 0
 
-    /// @notdoced
+    /// @notyetdoced
     /// @macrodoc
     typedef long long unsigned int PAULI_MASK_TYPE;
 
@@ -98,11 +98,11 @@
 // spoofing above macros as typedefs and consts to doc
 #if 0
 
-    /// @notdoced
+    /// @notyetdoced
     /// @macrodoc
     const int FLOAT_PRECISION = 2;
 
-    /// @notdoced
+    /// @notyetdoced
     /// @macrodoc
     typedef double int FLOAT_TYPE;
 
@@ -146,7 +146,7 @@
 // spoofing above macros as typedefs and consts to doc
 #if 0
 
-    /// @notdoced
+    /// @notyetdoced
     /// @macrodoc
     const qreal DEFAULT_VALIDATION_EPSILON = 1E-12;
 
@@ -172,7 +172,7 @@
 // spoofing above macros as typedefs and consts to doc
 #if 0
 
-    /// @notdoced
+    /// @notyetdoced
     /// @macrodoc
     const char* QREAL_FORMAT_SPECIFIER = "%.14g";
 

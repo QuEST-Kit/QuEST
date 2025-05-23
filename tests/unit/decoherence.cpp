@@ -7,9 +7,10 @@
  * @ingroup unittests
  */
 
-#include "quest/include/quest.h"
+#include "quest.h"
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
 #include "tests/utils/qvector.hpp"
@@ -26,6 +27,7 @@
 #include <vector>
 #include <algorithm>
 
+using Catch::Matchers::ContainsSubstring;
 using std::vector;
 
 
