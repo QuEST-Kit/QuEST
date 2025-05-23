@@ -2108,6 +2108,10 @@ qcomp localiser_statevec_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
             /// acceptable to grow a list and pass it to a utility function, since we
             /// always assume the number of terms in the PauliStrSum is tractable!
             totalValue += coeff * termValue;
+
+            // prefixX wasn't used since it only informs pair-ranks which are not 
+            // consulted here (due to being embarrassingly parallel); we suppress warning
+            (void) prefixX;
         }
     }
     

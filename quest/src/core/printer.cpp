@@ -1530,9 +1530,14 @@ void print_table(string title, vector<tuple<string, string>> rows, string indent
 
     // find max-width of left column
     size_t maxWidth = 0;
-    for (auto const& [key, value] : rows)
+    for (auto const& [key, value] : rows) {
         if (key.length() > maxWidth)
             maxWidth = key.length();
+
+        // pedantically suppressing unused-variable warning
+        // (while still mirroring below enumeration for clarity)
+        (void) value;
+    }
 
     // print table title (indented)
     cout << indent << getTableTitleStr(title) << endl;
