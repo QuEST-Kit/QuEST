@@ -104,9 +104,10 @@ INLINE qindex insertBit(qindex number, int bitIndex, int bitValue) {
 }
 
 
-INLINE qindex setBit(qindex number, int bitIndex, unsigned long long int bitValue) {
+INLINE qindex setBit(qindex number, int bitIndex, int bitValue) {
     
-    qindex bitInPlace = bitValue   << bitIndex;
+    // beware that shifting the raw int would overflow
+    qindex bitInPlace = ((qindex) bitValue)   << bitIndex;
     qindex oneInPlace = QINDEX_ONE << bitIndex;
     return (number & ~oneInPlace) | bitInPlace;
 }
