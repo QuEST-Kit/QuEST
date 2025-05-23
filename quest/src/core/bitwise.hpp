@@ -4,6 +4,7 @@
  * 
  * @author Tyson Jones
  * @author Erich Essmann (improved OS agnosticism)
+ * @author James Richings (patched setBit)
  */
 
 #ifndef BITWISE_HPP
@@ -106,7 +107,8 @@ INLINE qindex insertBit(qindex number, int bitIndex, int bitValue) {
 
 INLINE qindex setBit(qindex number, int bitIndex, int bitValue) {
     
-    qindex bitInPlace = bitValue   << bitIndex;
+    // beware that shifting the raw int would overflow (#623)
+    qindex bitInPlace = ((qindex) bitValue) << bitIndex;
     qindex oneInPlace = QINDEX_ONE << bitIndex;
     return (number & ~oneInPlace) | bitInPlace;
 }
