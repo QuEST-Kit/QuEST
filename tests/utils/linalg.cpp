@@ -108,6 +108,37 @@ int getNumPermutations(int n, int k) {
 
 
 /*
+ * NONSENSE PR OPERATIONS
+ */
+
+
+qcomp getTotal(qvector in) {
+
+    qcomp out = 0;
+
+    // no compensated summation
+    for (auto& elem : in)
+        out += elem;
+
+    return out;
+}
+
+
+qcomp getTotal(qmatrix in) {
+
+    qcomp out = 0;
+
+    // no compensated summation
+    for (auto& row : in)
+        for (auto& elem : row)
+            out += elem;
+
+    return out;
+}
+
+
+
+/*
  * VECTOR OPERATIONS
  */
 

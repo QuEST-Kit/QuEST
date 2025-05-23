@@ -42,6 +42,15 @@
 #ifndef __cplusplus
 
 
+extern void _wrap_calcAmpSum(Qureg qureg, qcomp* out);
+
+qcomp calcAmpSum(Qureg qureg) {
+
+    qcomp out;
+    _wrap_calcAmpSum(qureg, &out);
+    return out;
+}
+
 
 extern void _wrap_calcInnerProduct(Qureg bra, Qureg ket, qcomp* out);
 
