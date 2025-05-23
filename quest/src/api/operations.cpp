@@ -29,6 +29,7 @@ using std::vector;
  * PRVIATE UTILITIES
  */
 
+extern bool paulis_isIdentity(PauliStr str);
 extern bool paulis_hasOddNumY(PauliStr str);
 extern PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift);
 extern PauliStr paulis_getKetAndBraPauliStr(PauliStr str, Qureg qureg);
@@ -1450,11 +1451,10 @@ void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* state
     validate_controlsAndPauliStrTargets(qureg, controls, numControls, str, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    /// @todo
-    /// CRUCIAL NOTE:
-    /// exp(theta I..I) might be algorithmically ok (I'm not sure), but it WILL NOT
-    /// effect a global phase change of theta (I think). Should validate against this
-    /// sitaution just in case, or make the doc extremely explicit
+    // str=I is permitted, in which case this function effects a global phase which
+    // does not at all change a density matrix (the dagger operation undoes it)
+    if (paulis_isIdentity(str) && qureg.isDensityMatrix)
+        return;
 
     qreal phase = util_getPhaseFromGateAngle(angle);
     auto ctrlVec = util_getVector(controls, numControls);
