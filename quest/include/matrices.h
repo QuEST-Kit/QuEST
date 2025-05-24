@@ -9,6 +9,10 @@
  * definitions, for safety. Some intendedly private functions are necessarily
  * exposed here to the user, and are prefixed with an underscore.
  * 
+ * Note too that designated initialisers are generally avoided, since while
+ * C99/C11 compatible, they are not explicitly supported by C++14 (only from
+ * C++20) except through compiler extensions
+ * 
  * @author Tyson Jones
  * @author Richard Meister (aided in design)
  * @author Erich Essmann (aided in design, patched on MSVC)
@@ -321,13 +325,14 @@ extern void _validateNewElemsPtrNotNull(qcomp* ptr, const char* caller);
 static inline CompMatr1 getCompMatr1(qcomp** in) {
     _validateNewNestedElemsPtrNotNull(in, 1, __func__);
 
-    CompMatr1 out = {
-        .numQubits = 1,
-        .numRows = 2,
-        .elems = {
-            {in[0][0], in[0][1]}, 
-            {in[1][0], in[1][1]}}
-    };
+    CompMatr1 out;
+
+    out.numQubits = 1;
+    out.numRows = 2;
+    for (int r=0; r<2; r++)
+        for (int c=0; c<2; c++)
+            out.elems[r][c] = in[r][c];
+
     return out;
 }
 
@@ -346,15 +351,14 @@ static inline CompMatr1 getCompMatr1(qcomp** in) {
 static inline CompMatr2 getCompMatr2(qcomp** in) {
     _validateNewNestedElemsPtrNotNull(in, 2, __func__);
 
-    CompMatr2 out = {
-        .numQubits = 2,
-        .numRows = 4,
-        .elems = {
-            {in[0][0], in[0][1], in[0][2], in[0][3]},
-            {in[1][0], in[1][1], in[1][2], in[1][3]},
-            {in[2][0], in[2][1], in[2][2], in[2][3]},
-            {in[3][0], in[3][1], in[3][2], in[3][3]}}
-    };
+    CompMatr2 out;
+
+    out.numQubits = 2;
+    out.numRows = 4;
+    for (int r=0; r<4; r++)
+        for (int c=0; c<4; c++)
+            out.elems[r][c] = in[r][c];
+    
     return out;
 }
 
@@ -374,11 +378,13 @@ static inline CompMatr2 getCompMatr2(qcomp** in) {
 static inline DiagMatr1 getDiagMatr1(qcomp* in) {
     _validateNewElemsPtrNotNull(in, __func__);
 
-    DiagMatr1 out = {
-        .numQubits = 1,
-        .numElems = 2,
-        .elems = {in[0], in[1]}
-    };
+    DiagMatr1 out;
+
+    out.numQubits = 1;
+    out.numElems = 2;
+    for (int i=0; i<2; i++)
+        out.elems[i] = in[i];
+
     return out;
 }
 
@@ -397,11 +403,13 @@ static inline DiagMatr1 getDiagMatr1(qcomp* in) {
 static inline DiagMatr2 getDiagMatr2(qcomp* in) {
     _validateNewElemsPtrNotNull(in, __func__);
 
-    DiagMatr2 out = {
-        .numQubits = 2,
-        .numElems = 4,
-        .elems = {in[0], in[1], in[2], in[3]}
-    };
+    DiagMatr2 out;
+    
+    out.numQubits = 2;
+    out.numElems = 4;
+    for (int i=0; i<4; i++)
+        out.elems[i] = in[i];
+
     return out;
 }
 
