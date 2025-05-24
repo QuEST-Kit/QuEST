@@ -1109,33 +1109,6 @@ void print_elems(CompMatr2 obj, string indent) { printDenseSquareMatrix(obj, ind
 void print_elems(CompMatr  obj, string indent) { printDenseSquareMatrix(obj, indent); }
 void print_elems(SuperOp   obj, string indent) { printDenseSquareMatrix(obj, indent); }
 
-
-CompMatr getSpoofedCompMatrFromKrausOperator(KrausMap map, int operatorInd) {
-
-    // this function and return syntax is necessary (rather than populating
-    // CompMatr directly in print_elems(KrausMap) below) because C++17 does
-    // not define designated initialisers, and some older compilers (such as
-    // ARCHER2's default g++ (SUSE Linux 7.5.0) do not support it as an
-    // extension. Returning a braced initialiser list is fine however (or so
-    // confirms some quick tests on ARCHER2 and godbolt).
-
-    return {
-        .numQubits = map.numQubits,
-        .numRows = map.numRows,
-
-        // heap fields are not created since not consulted
-        .isApproxUnitary = nullptr, 
-        .isApproxHermitian = nullptr,
-        .wasGpuSynced = nullptr, 
-
-        // only 2D CPU elems is
-        .cpuElems = map.matrices[operatorInd],
-        .cpuElemsFlat = nullptr, // not consulted
-        .gpuElemsFlat = nullptr // printer checks GPU-alloc via non-null
-    };
-}
-
-
 void print_elems(KrausMap map, string indent) {
 
     if (!comm_isRootNode())
@@ -1145,7 +1118,18 @@ void print_elems(KrausMap map, string indent) {
     for (qindex i=0; i<map.numMatrices; i++) {
 
         // via wrapping its 2D memory in a spoofed CompMatr and re-using print_elems(CompMatr)
-        CompMatr spoof = getSpoofedCompMatrFromKrausOperator(map, i);
+        CompMatr spoof;
+        spoof.numQubits = map.numQubits;
+        spoof.numRows   = map.numRows;
+
+        // heap fields are not created since not consulted
+        spoof.isApproxUnitary   = nullptr;
+        spoof.isApproxHermitian = nullptr;
+        spoof.wasGpuSynced      = nullptr;
+
+        spoof.cpuElems = map.matrices[i];
+        spoof.cpuElemsFlat = nullptr; // not consulted
+        spoof.gpuElemsFlat = nullptr; // consulted; printer checks GPU-alloc via non-null
 
         cout << indent << getKrausOperatorIndStr(i) << endl; // single indent
         print_elems(spoof, indent + indent); // double indent

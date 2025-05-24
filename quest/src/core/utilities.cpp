@@ -894,19 +894,12 @@ util_VectorIndexRange util_getLocalIndRangeOfVectorElemsWithinNode(int rank, qin
     // global indices of user's targeted elements which are contained within node
     qindex globalRangeStartInd = std::max(elemStartInd, nodeStartInd);
     qindex globalRangeEndInd   = std::min(elemEndInd,   nodeEndInd);
-    qindex numLocalElems       = globalRangeEndInd - globalRangeStartInd;
 
-    // local indices of user's targeted elements to overwrite
-    qindex localRangeStartInd = globalRangeStartInd % numElemsPerNode;
-    
-    // local indices of user's passed elements that correspond to above
-    qindex localOffsetInd = globalRangeStartInd - elemStartInd;
-    
-    return {
-        .localDistribStartInd = localRangeStartInd,
-        .localDuplicStartInd = localOffsetInd,
-        .numElems = numLocalElems
-    };
+    util_VectorIndexRange out;
+    out.numElems = globalRangeEndInd - globalRangeStartInd;           // number of local elems in range
+    out.localDistribStartInd = globalRangeStartInd % numElemsPerNode; // local inds of user's targeted elems to overwrite
+    out.localDuplicStartInd  = globalRangeStartInd - elemStartInd;    // local inds of user's passed elems that correspond to above
+    return out;
 }
 
 
@@ -938,46 +931,62 @@ qreal util_getTwoQubitDephasingTerm(qreal prob) {
 
 util_Scalars util_getOneQubitDepolarisingFactors(qreal prob) {
 
+    util_Scalars out;
+
     // effected where braQubit == ketQubit
-    qreal facAA = 1 - (2 * prob / 3);
-    qreal facBB = 2 * prob / 3;
+    out.c1 = 1 - (2 * prob / 3); // AA
+    out.c2 = 2 * prob / 3;       // BB
 
     // effected where braQubit != ketQubit
-    qreal facAB  = 1 - (4 * prob / 3);
+    out.c3 = 1 - (4 * prob / 3); // AB
 
-    return {.c1=facAA, .c2=facBB, .c3=facAB, .c4=0}; // c4 ignored
+    // not used
+    out.c4 = 0;
+
+    return out;
 }
 
 util_Scalars util_getTwoQubitDepolarisingFactors(qreal prob) {
 
-    return {
-        .c1 = 1 - (4 * prob / 5), 
-        .c2 = 4 * prob / 15, 
-        .c3 = - (16 * prob / 15), 
-        .c4 = 0 // ignored
-    };
+    util_Scalars out;
+
+    out.c1 = 1 - (4 * prob / 5);
+    out.c2 = 4 * prob / 15;
+    out.c3 = - (16 * prob / 15);
+
+    out.c4 = 0; // not used
+
+    return out;
 }
 
 util_Scalars util_getOneQubitPauliChannelFactors(qreal pI, qreal pX, qreal pY, qreal pZ) {
 
+    util_Scalars out;
+
     // effected where braQubit == ketQubit
-    qreal facAA = pI + pZ;
-    qreal facBB = pX + pY;
+    out.c1 = pI + pZ; // AA
+    out.c2 = pX + pY; // BB
 
     // effected where braQubit != ketQubit
-    qreal facAB = pI - pZ;
-    qreal facBA = pX - pY;
+    out.c3 = pI - pZ; // AB
+    out.c4 = pX - pY; // BA
 
-    return {.c1=facAA, .c2=facBB, .c3=facAB, .c4=facBA};
+    return out;
 }
 
 util_Scalars util_getOneQubitDampingFactors(qreal prob) {
 
-    // we assume 0 < prob < 1 (true even of the inverse channel), so c1 is always real
-    qreal c1 = std::sqrt(1 - prob);
-    qreal c2 = 1 - prob;
+    util_Scalars out;
 
-    return {.c1=c1, .c2=c2, .c3=0, .c4=0}; //c3 and c4 ignored
+    // we assume 0 < prob < 1 (true even of the inverse channel), so c1 is always real
+    out.c1 = std::sqrt(1 - prob);
+    out.c2 = 1 - prob;
+
+    // not used
+    out.c3 = 0;
+    out.c4 = 0;
+
+    return out;
 }
 
 qreal util_getMaxProbOfOneQubitDephasing() {
