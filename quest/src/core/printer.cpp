@@ -1114,21 +1114,24 @@ void print_elems(KrausMap map, string indent) {
     if (!comm_isRootNode())
         return;
 
-    // we ignore the superoperator, and instead print every CPU-only Kraus map in-turn
+    // we ignore the superoperator, and instead print every CPU-only Kraus map in-turn...
     for (qindex i=0; i<map.numMatrices; i++) {
 
-        cout << indent << getKrausOperatorIndStr(i) << endl; // single indent
+        // via wrapping its 2D memory in a spoofed CompMatr and re-using print_elems(CompMatr)
+        CompMatr spoof;
+        spoof.numQubits = map.numQubits;
+        spoof.numRows   = map.numRows;
 
-        // by spoofing each as a CompMatr
-        CompMatr spoof = {
-            .numQubits = map.numQubits,
-            .numRows = map.numRows,
-            .isApproxUnitary = nullptr, 
-            .isApproxHermitian = nullptr,
-            .wasGpuSynced = nullptr, 
-            .cpuElems = map.matrices[i],
-            .gpuElemsFlat = nullptr // printer checks GPU-alloc via non-null
-        };
+        // heap fields are not created since not consulted
+        spoof.isApproxUnitary   = nullptr;
+        spoof.isApproxHermitian = nullptr;
+        spoof.wasGpuSynced      = nullptr;
+
+        spoof.cpuElems = map.matrices[i];
+        spoof.cpuElemsFlat = nullptr; // not consulted
+        spoof.gpuElemsFlat = nullptr; // consulted; printer checks GPU-alloc via non-null
+
+        cout << indent << getKrausOperatorIndStr(i) << endl; // single indent
         print_elems(spoof, indent + indent); // double indent
     }
 }
@@ -1511,9 +1514,14 @@ void print_table(string title, vector<tuple<string, string>> rows, string indent
 
     // find max-width of left column
     size_t maxWidth = 0;
-    for (auto const& [key, value] : rows)
+    for (auto const& [key, value] : rows) {
         if (key.length() > maxWidth)
             maxWidth = key.length();
+
+        // pedantically suppressing unused-variable warning
+        // (while still mirroring below enumeration for clarity)
+        (void) value;
+    }
 
     // print table title (indented)
     cout << indent << getTableTitleStr(title) << endl;

@@ -278,11 +278,18 @@ set_target_properties(QuEST PROPERTIES
         SOVERSION   ${PROJECT_VERSION_MAJOR}
 )
 
-# Add required C and C++ standards
+# Add required C and C++ standards.
+# Note the QuEST interface(s) require only C11 and C++14, 
+# while the source code is entirely C++ and requires C++17,
+# and the tests further require C++20 (handled in tests/).
+# Yet, we here specify C++17 for the source, and C11 as only
+# applies to the C interface when users specify USER_SOURCE,
+# to attemptedly minimise user confusion. Users wishing to
+# link QuEST with C++14 should separate compilation.
 target_compile_features(QuEST
   PUBLIC
   c_std_11
-  cxx_std_20
+  cxx_std_17
 )
 
 # Turn on all compiler warnings

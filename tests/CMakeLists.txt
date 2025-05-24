@@ -5,6 +5,7 @@ add_executable(tests
   main.cpp
 )
 target_link_libraries(tests PRIVATE QuEST::QuEST Catch2::Catch2)
+target_compile_features(tests PUBLIC cxx_std_20)
 
 add_subdirectory(unit)
 add_subdirectory(utils)
