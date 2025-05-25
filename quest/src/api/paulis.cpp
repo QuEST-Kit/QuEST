@@ -246,10 +246,11 @@ PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift) {
     // and add them to highPaulis; we don't have to force lose upper bits of high paulis
     PAULI_MASK_TYPE upperBits = concatenateBits(str.highPaulis, lostBits, bitShift);
 
-    return {
-        .lowPaulis = lowerBits,
-        .highPaulis = upperBits
-    };
+    // return a new stack PauliStr instance (avoiding C++20 initialiser)
+    PauliStr out;
+    out.lowPaulis = lowerBits;
+    out.highPaulis = upperBits;
+    return out;
 }
 
 
@@ -257,10 +258,11 @@ PauliStr paulis_getKetAndBraPauliStr(PauliStr str, Qureg qureg) {
 
     PauliStr shifted = paulis_getShiftedPauliStr(str, qureg.numQubits);
     
-    return {
-        .lowPaulis  = str.lowPaulis  | shifted.lowPaulis,
-        .highPaulis = str.highPaulis | shifted.highPaulis
-    };
+    // return a new stack PauliStr instance (avoiding C++20 initialiser)
+    PauliStr out;
+    out.lowPaulis  = str.lowPaulis  | shifted.lowPaulis;
+    out.highPaulis = str.highPaulis | shifted.highPaulis;
+    return out;
 }
 
 
@@ -313,11 +315,11 @@ extern "C" PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis)
             highPaulis |= pauli << (2*(indices[i] - MAX_NUM_PAULIS_PER_MASK));
     }
 
-    // return a new stack PauliStr instance, returning by copy
-    return {
-        .lowPaulis = lowPaulis,
-        .highPaulis = highPaulis
-    };
+    // return a new stack PauliStr instance (avoiding C++20 initialiser)
+    PauliStr out;
+    out.lowPaulis = lowPaulis;
+    out.highPaulis = highPaulis;
+    return out;
 }
 
 
@@ -388,13 +390,12 @@ extern "C" PauliStrSum createPauliStrSum(PauliStr* strings, qcomp* coeffs, qinde
     // note we do not require nor impose the strings to be unique
     validate_newPauliStrSumParams(numTerms, __func__);
 
-    // create struct
-    PauliStrSum out = {
-        .numTerms = numTerms,
-        .strings = cpu_allocPauliStrings(numTerms),                // nullptr if failed
-        .coeffs  = cpu_allocArray(numTerms),                       // nullptr if failed
-        .isApproxHermitian = util_allocEpsilonSensitiveHeapFlag(), // nullptr if failed
-    };
+    // prepare output PauliStrSum (avoiding C++20 designated initialiser)
+    PauliStrSum out;
+    out.numTerms = numTerms;
+    out.strings = cpu_allocPauliStrings(numTerms);                // nullptr if failed
+    out.coeffs  = cpu_allocArray(numTerms);                       // nullptr if failed
+    out.isApproxHermitian = util_allocEpsilonSensitiveHeapFlag(); // nullptr if failed
 
     // if either alloc failed, clear both before validation to avoid leak
     freeAllMemoryIfAnyAllocsFailed(out);
