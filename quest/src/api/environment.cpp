@@ -130,21 +130,14 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     if (globalEnvPtr == nullptr)
         error_allocOfQuESTEnvFailed();
 
-    /// @todo the below memcpy is naughty (QuESTEnv has no trivial copy-assignment) and causes compiler warning. Fix!
+    // bind deployment info to global instance
+    globalEnvPtr->isMultithreaded  = useMultithread;
+    globalEnvPtr->isGpuAccelerated = useGpuAccel;
+    globalEnvPtr->isDistributed    = useDistrib;
 
-    // initialise it to a local env
-    QuESTEnv env = {
-
-        // bind deployment info
-        .isMultithreaded  = useMultithread,
-        .isGpuAccelerated = useGpuAccel,
-        .isDistributed    = useDistrib,
-
-        // set distributed info
-        .rank     = (useDistrib)? comm_getRank()     : 0,
-        .numNodes = (useDistrib)? comm_getNumNodes() : 1,
-    };
-    memcpy(globalEnvPtr, &env, sizeof(QuESTEnv));
+    // bind distributed info
+    globalEnvPtr->rank     = (useDistrib)? comm_getRank()     : 0;
+    globalEnvPtr->numNodes = (useDistrib)? comm_getNumNodes() : 1;
 }
 
 
