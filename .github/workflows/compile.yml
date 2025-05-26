@@ -242,13 +242,7 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         working-directory: ${{ env.isolated_examples_dir }}/Release/
         shell: cmd
-        run: |
-          for %fn in ("*.exe") do (
-            echo.
-            echo [[[ %~fn ]]]
-            echo.
-            call "%~fn"
-          )
+        run: for %fn in ("*.exe") do echo. & echo [[[ %~fn ]]] & echo. & call "%~fn"
       - name: Run isolated examples (Unix)
         if: ${{ matrix.os != 'windows-latest' }}
         working-directory: ${{ env.isolated_examples_dir }}
