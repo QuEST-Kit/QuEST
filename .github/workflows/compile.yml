@@ -236,19 +236,24 @@ jobs:
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --config Release --parallel
 
-      # run all compiled isolated examples to test for link-time errors
-      - name: Run (Windows)
+      # run all compiled isolated examples to test for link-time errors,
+      # continuing if any fail (since some deliberately fail)
+      - name: Run isolated examples (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
-        run: |
-          for %fn in (*_c.exe) do call "%fn"
-          for %fn in (*_cpp.exe) do call "%fn"
         working-directory: ${{ env.isolated_examples_dir }}/Release/
-      - name: Run (non-Windows)
+        shell: cmd
+        run: |
+          for %%fn in ("*.exe") do (
+            echo.
+            echo [[[ %%~fn ]]]
+            echo.
+            call "%%~fn"
+          )
+      - name: Run isolated examples (Unix)
         if: ${{ matrix.os != 'windows-latest' }}
+        working-directory: ${{ env.isolated_examples_dir }}
         run: |
           for fn in *_c *_cpp; do
-              echo "\n[[[ $fn ]]]\n"
-              ./$fn
+              printf "\n[[[ $fn ]]]\n"
+              ./$fn || true
           done
-        working-directory: ${{ env.isolated_examples_dir }}
-
