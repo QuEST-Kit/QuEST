@@ -1454,7 +1454,7 @@ void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* state
     // a non-controlled str=I effects a global phase change (of -angle/2) which does not 
     // at all change a density matrix; the subsequent dagger operation would undo it,
     // which we avoid to preserve numerical accuracy
-    if (paulis_isIdentity(str) && qureg.isDensityMatrix && numControls == 0)
+    if (paulis_isIdentity(str) && numControls == 0 && qureg.isDensityMatrix)
         return;
 
     // when numControls >= 1, all amps satisfying the control condition undergo a phase 
