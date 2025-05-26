@@ -241,13 +241,18 @@ jobs:
       - name: Run isolated examples (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
         working-directory: ${{ env.isolated_examples_dir }}/Release/
-        shell: cmd
-        run: for %fn in ("*.exe") do echo. & echo [[[ %fn ]]] & echo. & call "%fn"
+        shell: pwsh
+        run: |
+          Get-ChildItem -Filter '*.exe' -File |
+          ForEach-Object {
+            Write-Host "`n[[[ $($_.Name) ]]]`n"
+            & $_.FullName
+          }
       - name: Run isolated examples (Unix)
         if: ${{ matrix.os != 'windows-latest' }}
         working-directory: ${{ env.isolated_examples_dir }}
         run: |
           for fn in *_c *_cpp; do
-              printf "\n[[[ $fn ]]]\n"
-              ./$fn || true
+            printf "\n[[[ $fn ]]]\n"
+            ./$fn || true
           done
