@@ -1451,10 +1451,15 @@ void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* state
     validate_controlsAndPauliStrTargets(qureg, controls, numControls, str, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    // str=I is permitted, in which case this function effects a global phase which
-    // does not at all change a density matrix (the dagger operation undoes it)
-    if (paulis_isIdentity(str) && qureg.isDensityMatrix)
+    // a non-controlled str=I effects a global phase change (of -angle/2) which does not 
+    // at all change a density matrix; the subsequent dagger operation would undo it,
+    // which we avoid to preserve numerical accuracy
+    if (paulis_isIdentity(str) && qureg.isDensityMatrix && numControls == 0)
         return;
+
+    // when numControls >= 1, all amps satisfying the control condition undergo a phase 
+    // change of -angle/2, as if all non-control-qubits were targeted by exp(-angle/2)I,
+    // which is sufficiently efficient using the existing gadget backend function
 
     qreal phase = util_getPhaseFromGateAngle(angle);
     auto ctrlVec = util_getVector(controls, numControls);
