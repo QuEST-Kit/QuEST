@@ -95,6 +95,14 @@ void freeAllMemoryIfAnyAllocsFailed(PauliStrSum sum) {
  */
 
 
+bool paulis_isIdentity(PauliStr str) {
+
+    return 
+        (str.lowPaulis  == 0) && 
+        (str.highPaulis == 0);
+}
+
+
 int paulis_getPauliAt(PauliStr str, int ind) {
 
     return (ind < MAX_NUM_PAULIS_PER_MASK)?
