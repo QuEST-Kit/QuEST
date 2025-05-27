@@ -1,3 +1,12 @@
+/** @file
+ * An example of using QuEST (primarily function
+ * applyTrotterizedPauliStrSumGadget()) to perform
+ * dynamical simulation via Trotterisation of the
+ * unitary-time evolution operator.
+ * 
+ * @author Tyson Jones
+*/
+
 #include "quest.h"
 #include <stdio.h>
 #include <stdlib.h>
