@@ -59,3 +59,4 @@ endfunction()
 
 add_subdirectory(isolated)
 add_subdirectory(extended)
+add_subdirectory(automated)

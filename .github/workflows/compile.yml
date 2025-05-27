@@ -2,16 +2,21 @@
 # code with (attemptedly) all possible configurations
 # of operating system, precision, multithreading,
 # distribution, GPU-acceleration (via CUDA or HIP),
-# and cuQuantum (else custom kernels). Currently,
-# this wastefully downlaods and installs all needed
-# compilers (like libomp, CUDA, ROCm). Compilation
+# and cuQuantum (else custom kernels). Compilation
 # includes the v4 unit and integration tests, the
 # deprecated v3 tests (when possible), and all the
-# example programs. One example executable is then
-# run (both C and C++ versions) to ensure the build
-# was successful and does not cause link-time errors.
-# Note that ARM compilation is not yet tested here,
-# but in fact Linux ARM is used by a paid test runner.
+# example programs. All 'isolated' example executables
+# are then run (both C and C++ versions) to ensure the 
+# build was successful and does not cause link-time 
+# errors. Then, all 'automated' examples are run which
+# permits contributors to demo or test their changes 
+# across all operation systems and compilers.
+# 
+# Note:
+# - This workflow currently wastefully re-downloads and 
+#   installs all needed compilers (like libomp, CUDA, ROCm)
+# - ARM compilation is not tested here, though it is used
+#   by the paid multithreaded CI tests.
 #
 # @author Tyson Jones
 
@@ -142,12 +147,12 @@ jobs:
 
     # constants
     env:
-      build_dir: "build"
       cuda_arch: 70
       hip_arch: gfx801
       rocm_path: /opt/rocm/bin
-      example_dir: build/examples/isolated
-      example_fn_pref: reporting_quregs
+      build_dir: build
+      isolated_dir: build/examples/isolated
+      automated_dir: build/examples/automated
 
     # perform the job
     steps:
@@ -237,15 +242,43 @@ jobs:
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --config Release --parallel
 
-      # attempt to run the compiled executable, testing for link-time errors,
-      # logging stdout and stderr to file (to verify the executable actually ran)
-      - name: Run (Windows)
+      # run all compiled isolated examples to test for link-time errors,
+      # continuing if any fail (since some deliberately fail)
+      - name: Run isolated examples (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
+        working-directory: ${{ env.isolated_dir }}/Release/
+        shell: pwsh
         run: |
-          ./${{ env.example_dir }}/Release/${{ env.example_fn_pref }}_c.exe
-          ./${{ env.example_dir }}/Release/${{ env.example_fn_pref }}_cpp.exe
-      - name: Run (non-Windows)
+          Get-ChildItem -Filter '*.exe' -File |
+          ForEach-Object {
+            Write-Host "`r`n[[[ $($_.Name) ]]]`r`n"
+            & $_.FullName
+          }
+      - name: Run isolated examples (Unix)
         if: ${{ matrix.os != 'windows-latest' }}
+        working-directory: ${{ env.isolated_dir }}
         run: |
-          ./${{ env.example_dir }}/${{ env.example_fn_pref }}_c
-          ./${{ env.example_dir }}/${{ env.example_fn_pref }}_cpp
+          for fn in *_c *_cpp; do
+            printf "\n[[[ $fn ]]]\n"
+            ./$fn || true
+          done
+
+      # run all compiled 'automated' examples
+      - name: Run automated examples (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        working-directory: ${{ env.automated_dir }}/Release/
+        shell: pwsh
+        run: |
+          Get-ChildItem -Filter '*.exe' -File |
+          ForEach-Object {
+            Write-Host "`r`n[[[ $($_.Name) ]]]`r`n"
+            & $_.FullName
+          }
+      - name: Run automated examples (Unix)
+        if: ${{ matrix.os != 'windows-latest' }}
+        working-directory: ${{ env.automated_dir }}
+        run: |
+          for fn in *_c *_cpp; do
+            printf "\n[[[ $fn ]]]\n"
+            ./$fn || true
+          done

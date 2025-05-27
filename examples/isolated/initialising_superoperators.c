@@ -104,6 +104,7 @@ void demo_setSuperOp() {
     destroySuperOp(c);
 
     // array of pointers
+    n = 2;
     qcomp* ptrArr[1 << (2*2)];
     d = 1 << (2*2);
     for (int i=0; i<d; i++)
