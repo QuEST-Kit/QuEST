@@ -32,6 +32,7 @@
 #include <complex>
 #include <algorithm>
 #include <unordered_map>
+#include <functional>
 
 using std::vector;
 using std::tuple;
@@ -2049,78 +2050,113 @@ qcomp localiser_densmatr_calcExpecPauliStr(Qureg qureg, PauliStr str) {
 }
 
 
+// Helper: compute a suffix key for a Pauli string (I<->Z, X<->Y in suffix qubits)
+static PAULI_MASK_TYPE paulis_getSuffixKeyOfSameMixedAmpsGroup(PauliStr str, Qureg qureg) {
+    // Get suffix X, Y, Z indices
+    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
+    auto [_, suffixX] = util_getPrefixAndSuffixQubits(targsX, qureg);
+    auto [__, suffixY] = util_getPrefixAndSuffixQubits(targsY, qureg);
+    auto [___, suffixZ] = util_getPrefixAndSuffixQubits(targsZ, qureg);
+    // Build a key: 0 for I/Z, 1 for X/Y, for each suffix qubit (lowest index = lowest bit)
+    PAULI_MASK_TYPE key = 0;
+    for (int i = 0; i < qureg.numQubits; i++) {
+        bool isSuffix = false;
+        int pauli = 0; // 0=I, 1=X, 2=Y, 3=Z
+        // Check if i is in suffixX, suffixY, or suffixZ
+        if (std::find(suffixX.begin(), suffixX.end(), i) != suffixX.end()) {
+            isSuffix = true; pauli = 1;
+        } else if (std::find(suffixY.begin(), suffixY.end(), i) != suffixY.end()) {
+            isSuffix = true; pauli = 2;
+        } else if (std::find(suffixZ.begin(), suffixZ.end(), i) != suffixZ.end()) {
+            isSuffix = true; pauli = 3;
+        }
+        if (isSuffix) {
+            // 0 for I/Z, 1 for X/Y
+            int bit = (pauli == 1 || pauli == 2) ? 1 : 0;
+            key |= (bit << i);
+        }
+    }
+    return key;
+}
+
+// New: process a group of Pauli strings with identical suffix pattern in a single pass
+static qcomp statevec_calcExpecPauliStrSuffixGroup(Qureg qureg, const std::vector<std::tuple<PauliStr, qcomp>>& subgroup, int pairRank, std::function<qcomp(Qureg, std::vector<int>, std::vector<int>, std::vector<int>)> termFunc) {
+    // All strings in subgroup have the same suffix X/Y/Z pattern
+    // Precompute suffix indices for the first string
+    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(std::get<0>(subgroup[0]), qureg);
+    auto [_, suffixX] = util_getPrefixAndSuffixQubits(targsX, qureg);
+    auto [__, suffixY] = util_getPrefixAndSuffixQubits(targsY, qureg);
+    auto [___, suffixZ] = util_getPrefixAndSuffixQubits(targsZ, qureg);
+    // For each amplitude pair, accumulate contributions from all strings in subgroup
+    qcomp total = 0;
+    qindex numIts = qureg.numAmpsPerNode;
+    qindex maskXY = util_getBitMask(util_getConcatenated(suffixX, suffixY));
+    qindex maskYZ = util_getBitMask(util_getConcatenated(suffixY, suffixZ));
+    // Precompute per-string factors (coeff * prefix-coeff)
+    std::vector<qcomp> factors(subgroup.size());
+    for (size_t s = 0; s < subgroup.size(); ++s) {
+        auto& [str, coeff] = subgroup[s];
+        auto [tX, tY, tZ] = paulis_getSeparateInds(str, qureg);
+        auto [prefixY, _sy] = util_getPrefixAndSuffixQubits(tY, qureg);
+        auto [prefixZ, _sz] = util_getPrefixAndSuffixQubits(tZ, qureg);
+        factors[s] = coeff * paulis_getPrefixPaulisElem(qureg, prefixY, prefixZ);
+    }
+    // Main loop: for each local amp, accumulate all subgroup terms
+    #pragma omp parallel for reduction(+:total) if(qureg.isMultithreaded)
+    for (qindex n = 0; n < numIts; n++) {
+        qindex j = flipBits(n, maskXY);
+        int sign = fast_getPlusOrMinusMaskedBitParity(j, maskYZ);
+        qcomp ampA = std::conj(qureg.cpuAmps[n]);
+        qcomp ampB = (pairRank == qureg.rank) ? qureg.cpuAmps[j] : qureg.cpuCommBuffer[j];
+        // For each string in subgroup, accumulate its contribution
+        qcomp subtotal = 0;
+        for (size_t s = 0; s < subgroup.size(); ++s) {
+            auto& [str, _] = subgroup[s];
+            auto [tX, tY, tZ] = paulis_getSeparateInds(str, qureg);
+            // All have same suffix, so only Y count matters for i^numY
+            int numY = tY.size();
+            qcomp fac = factors[s] * util_getPowerOfI(numY);
+            subtotal += fac * sign * ampA * ampB;
+        }
+        total += subtotal;
+    }
+    return total;
+}
+
 qcomp localiser_statevec_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
     assert_localiserGivenStateVec(qureg);
-
-    // this function does not process each PauliStr within sum independently; instead, we
-    // leverage that strings differing only by I <-> Z and X <-> Y in the prefix qubits
-    // have identical communication patterns, and so can all be processed after one round 
-    // of amps exchange. 
-    
-    /// @todo 
-    /// We can optimise further in a similar spirit to above by grouping identically-
-    /// communicating strings into those which differ only by suffix I <-> Z and X <-> Y,
-    /// which have identical amplitude-mixing patterns, to avoid repeated enumeration of 
-    /// all amplitudes and reduce the associated memory-movement / caching costs.
-    /// (This is facilitated "for free" by cuStateVec in GPU settings, although we do not
-    /// wish to here differentiate localiser logic based on CPU vs GPU deployment)
-
-    qcomp totalValue = 0;
-
+    // Group by prefix (communication pattern)
     using Key = PAULI_MASK_TYPE;
     using Term = tuple<PauliStr,qcomp>;
-    std::unordered_map<Key, vector<Term>> groups;
-
-    // group sum's terms into those with identical communication patterns
+    std::unordered_map<Key, vector<Term>> prefixGroups;
     for (int i=0; i<sum.numTerms; i++) {
         Term term = tuple{sum.strings[i], sum.coeffs[i]};
         Key totalKey = paulis_getKeyOfSameMixedAmpsGroup(sum.strings[i]);
         Key prefixKey = getBitsLeftOfIndex(totalKey, qureg.logNumAmpsPerNode - 1); // 0 if !qureg.isDistributed
-
-        groups[prefixKey].push_back(term);
+        prefixGroups[prefixKey].push_back(term);
     }
-
-    // process each group in-turn
-    for (auto& [key, terms] : groups) {
-
-        // perform communication once per-group, if necessary
+    qcomp totalValue = 0;
+    // For each prefix group (communication pattern)
+    for (auto& [key, terms] : prefixGroups) {
         int pairRank = flipBits(qureg.rank, key);
         if (pairRank != qureg.rank)
             comm_exchangeAmpsToBuffers(qureg, pairRank);
-
-        // determine backend function to invoke upon all terms in group (likely _subB)
         auto termFunc = (pairRank == qureg.rank)?
             getStateVecExpecAllSuffixPauliStr :
             accel_statevec_calcExpecPauliStr_subB;
-
-        // for each term within the current group...
+        // Further group by suffix (amplitude-mixing pattern)
+        std::unordered_map<Key, vector<Term>> suffixGroups;
         for (auto& [str, coeff] : terms) {
-            auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
-            auto [prefixX, suffixX] = util_getPrefixAndSuffixQubits(targsX, qureg);
-            auto [prefixY, suffixY] = util_getPrefixAndSuffixQubits(targsY, qureg);
-            auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targsZ, qureg);
-            
-            // contribute coeff * prefix-coeff * suffix-sum
-            qcomp termFactor = paulis_getPrefixPaulisElem(qureg, prefixY, prefixZ);
-            qcomp termValue = termFactor * termFunc(qureg, suffixX, suffixY, suffixZ);
-
-            /// @todo
-            /// use Kahan summation to improve (for free) the accuracy of totalValue
-            /// here! This sum is always serial, so we should always use it! It is
-            /// acceptable to grow a list and pass it to a utility function, since we
-            /// always assume the number of terms in the PauliStrSum is tractable!
-            totalValue += coeff * termValue;
-
-            // prefixX wasn't used since it only informs pair-ranks which are not 
-            // consulted here (due to being embarrassingly parallel); we suppress warning
-            (void) prefixX;
+            Key suffixKey = paulis_getSuffixKeyOfSameMixedAmpsGroup(str, qureg);
+            suffixGroups[suffixKey].emplace_back(str, coeff);
+        }
+        // For each suffix group, process all strings in a single pass
+        for (auto& [suffixKey, subgroup] : suffixGroups) {
+            totalValue += statevec_calcExpecPauliStrSuffixGroup(qureg, subgroup, pairRank, termFunc);
         }
     }
-    
-    // combine contributions from each node
     if (qureg.isDistributed)
         comm_reduceAmp(&totalValue);
-
     return totalValue;
 }
 
