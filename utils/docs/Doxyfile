@@ -51,7 +51,7 @@ PROJECT_NAME           = "The Quantum Exact Simulation Toolkit"
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER         = "v4.0.0"
+PROJECT_NUMBER         = "v4.1.0"
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
@@ -373,8 +373,9 @@ OPTIMIZE_OUTPUT_SLICE  = NO
 #
 # Note see also the list of default file extension mappings.
 
-# all source code (even headers) is C++, but example.c code is C
-EXTENSION_MAPPING      = h=C++ hpp=C++ cpp=C++ cu=C++ cuh=C++ c=C
+# all source code (even headers) is C++, but example.c code is C.
+# in=C is necessary to parse quest.h.in (a CMake configured header)
+EXTENSION_MAPPING      = h=C++ hpp=C++ cpp=C++ cu=C++ cuh=C++ c=C in=C
 
 # If the MARKDOWN_SUPPORT tag is enabled then doxygen pre-processes all comments
 # according to the Markdown format, which allows for more readable
@@ -1088,7 +1089,7 @@ INPUT_FILE_ENCODING    =
 # be provided as Doxygen C comment), *.py, *.pyw, *.f90, *.f95, *.f03, *.f08,
 # *.f18, *.f, *.for, *.vhd, *.vhdl, *.ucf, *.qsf and *.ice.
 
-FILE_PATTERNS          = *.c *.cpp *.cu *.cuh *.h *.hpp *.md *.sh
+FILE_PATTERNS          = *.c *.cpp *.cu *.cuh *.h *.h.in *.hpp *.md *.sh
 
 # The RECURSIVE tag can be used to specify whether or not subdirectories should
 # be searched for input files as well.
