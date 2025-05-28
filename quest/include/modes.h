@@ -93,17 +93,17 @@
 #if 0
 
 
-    /// @notdoced
+    /// @notyetdoced
     /// @macrodoc
     const int PERMIT_NODES_TO_SHARE_GPU = 0;
 
 
-    /// @notdoced
+    /// @notyetdoced
     /// @macrodoc
     const int INCLUDE_DEPRECATED_FUNCTIONS = 0;
 
 
-    /// @notdoced
+    /// @notyetdoced
     /// @macrodoc
     const int DISABLE_DEPRECATION_WARNINGS = 0;
 

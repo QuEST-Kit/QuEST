@@ -49,7 +49,7 @@
  */
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     // represent Pauli strings as base-4 numerals, split into their
@@ -61,7 +61,7 @@ typedef struct {
 } PauliStr;
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     qindex numTerms;
@@ -113,8 +113,14 @@ typedef struct {
 extern "C" {
 #endif
 
-    /// @ingroup paulis_create
-    /// @notdoced
+    /** @ingroup paulis_create
+     * @notyetdoced
+     * 
+     * @see
+     * - reportPauliStr()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.c) or 
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
+     */
     PauliStr getPauliStr(const char* paulis, int* indices, int numPaulis);
 
 #ifdef __cplusplus
@@ -134,26 +140,48 @@ extern "C" {
     // {0,3,1} are valid std::string instances, causing overload ambiguity. Blegh!
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
+    /** @ingroup paulis_create
+     * @notyetdoced
+     * 
+     * @see
+     * - reportPauliStr()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.c) or 
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
+     */
     PauliStr getPauliStr(int* paulis, int* indices, int numPaulis);
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
-    /// @cpponly
+    /** @ingroup paulis_create
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - getPauliStr()
+     * - reportPauliStr()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
+     */
     PauliStr getPauliStr(std::string paulis, int* indices, int numPaulis);
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
-    /// @cpponly
+    /** @ingroup paulis_create
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - reportPauliStr()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
+     */
     PauliStr getPauliStr(std::string paulis, std::vector<int> indices);
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
-    /// @cpponly
+    /** @ingroup paulis_create
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - reportPauliStr()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
+     */
     PauliStr getPauliStr(std::string paulis);
 
 
@@ -196,9 +224,15 @@ extern "C" {
     // spoofing above macro as function to doc
     #if 0
 
-        /// @ingroup paulis_create
-        /// @notdoced
-        /// @macrodoc
+        /** @ingroup paulis_create
+         * @notyetdoced
+         * @macrodoc
+         * 
+         * @see
+         * - reportPauliStr()
+         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.c) and
+         *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp)examples
+         */
         PauliStr getInlinePauliStr(const char* paulis, { list });
 
     #endif
@@ -219,23 +253,47 @@ extern "C" {
 #endif
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
+    /** @ingroup paulis_create
+     * @notyetdoced
+     * 
+     * @see
+     * - reportPauliStrSum()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.c) or 
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
+     */
     PauliStrSum createPauliStrSum(PauliStr* strings, qcomp* coeffs, qindex numTerms);
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
+    /** @ingroup paulis_create
+     * @notyetdoced
+     * 
+     * @see
+     * - reportPauliStrSum()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.c) or 
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
+     */
     PauliStrSum createInlinePauliStrSum(const char* str);
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
+    /** @ingroup paulis_create
+     * @notyetdoced
+     * 
+     * @see
+     * - reportPauliStrSum()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.c) or 
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
+     */
     PauliStrSum createPauliStrSumFromFile(const char* fn);
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
+    /** @ingroup paulis_create
+     * @notyetdoced
+     * 
+     * @see
+     * - reportPauliStrSum()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.c) or 
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
+     */
     PauliStrSum createPauliStrSumFromReversedFile(const char* fn);
 
 
@@ -248,27 +306,51 @@ extern "C" {
 #ifdef __cplusplus
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
-    /// @cpponly
+    /** @ingroup paulis_create
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - createPauliStrSum()
+     * - reportPauliStrSum()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
+     */
     PauliStrSum createPauliStrSum(std::vector<PauliStr> strings, std::vector<qcomp> coeffs);
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
-    /// @cpponly
+    /** @ingroup paulis_create
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - createInlinePauliStrSum()
+     * - reportPauliStrSum()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
+     */
     PauliStrSum createInlinePauliStrSum(std::string str);
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
-    /// @cpponly
+    /** @ingroup paulis_create
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - createPauliStrSumFromFile()
+     * - reportPauliStrSum()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
+     */
     PauliStrSum createPauliStrSumFromFile(std::string fn);
 
 
-    /// @ingroup paulis_create
-    /// @notdoced
-    /// @cpponly
+    /** @ingroup paulis_create
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - createPauliStrSumFromReversedFile()
+     * - reportPauliStrSum()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_paulis.cpp) examples
+     */
     PauliStrSum createPauliStrSumFromReversedFile(std::string fn);
 
 
@@ -288,7 +370,7 @@ extern "C" {
 
 
     /// @ingroup paulis_destroy
-    /// @notdoced
+    /// @notyetdoced
     void destroyPauliStrSum(PauliStrSum sum);
 
 
@@ -309,14 +391,25 @@ extern "C" {
 #endif
 
 
-    /// @ingroup paulis_reporters
-    /// @notdoced
-    /// @nottested
+    /** @ingroup paulis_reporters
+     * @notyetdoced
+     * @notyettested
+     * 
+     * @see
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_paulis.c) or 
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_paulis.cpp) examples
+     */
     void reportPauliStr(PauliStr str);
 
-    /// @ingroup paulis_reporters
-    /// @notdoced
-    /// @nottested
+
+    /** @ingroup paulis_reporters
+     * @notyetdoced
+     * @notyettested
+     * 
+     * @see
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_paulis.c) or 
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_paulis.cpp) examples
+     */
     void reportPauliStrSum(PauliStrSum str);
 
 

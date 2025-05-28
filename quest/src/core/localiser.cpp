@@ -1646,21 +1646,23 @@ void localiser_densmatr_oneQubitDamping(Qureg qureg, int qubit, qreal prob) {
 
 CompMatr getSpoofedCompMatrFromSuperOp(SuperOp op) {
 
-     CompMatr out = {
-        // superoperator acts on twice as many qubits
-        .numQubits = 2 * op.numQubits,
-        .numRows = op.numRows,
+    // prepare output CompMatr (avoiding C++20 designated initialiser)
+    CompMatr out;
+    
+    // superoperator acts on twice as many qubits
+    out.numQubits = 2 * op.numQubits;
+    out.numRows   = op.numRows;
 
-        // heap fields are not consulted
-        .isApproxUnitary = nullptr,
-        .isApproxHermitian = nullptr,
-        .wasGpuSynced = nullptr,
+    // heap fields are not consulted
+    out.isApproxUnitary   = nullptr;
+    out.isApproxHermitian = nullptr;
+    out.wasGpuSynced      = nullptr;
 
-        // copy pointers (noting cpuElems is 2D/nested)
-        .cpuElems = op.cpuElems,
-        .cpuElemsFlat = op.cpuElemsFlat,
-        .gpuElemsFlat = op.gpuElemsFlat
-    };
+    // copy pointers (noting cpuElems is 2D/nested)
+    out.cpuElems     = op.cpuElems;
+    out.cpuElemsFlat = op.cpuElemsFlat;
+    out.gpuElemsFlat = op.gpuElemsFlat;
+
     return out;
 }
 
@@ -2108,6 +2110,10 @@ qcomp localiser_statevec_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
             /// acceptable to grow a list and pass it to a utility function, since we
             /// always assume the number of terms in the PauliStrSum is tractable!
             totalValue += coeff * termValue;
+
+            // prefixX wasn't used since it only informs pair-ranks which are not 
+            // consulted here (due to being embarrassingly parallel); we suppress warning
+            (void) prefixX;
         }
     }
     

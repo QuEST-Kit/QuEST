@@ -63,6 +63,7 @@ const int SET_SPACE_BETWEEN_KET_AND_RANK = 2;
 // must be kept as single char; use numbers above to change spacing
 const char TABLE_SPACE_CHAR = '.';
 const char MATRIX_SPACE_CHAR = ' ';
+const char PAULI_SPACE_CHAR = ' ';
 
 // should not contain newline
 const string LABEL_SUFFIX = ":";
@@ -134,6 +135,32 @@ void printer_setNumTrailingNewlines(int numNewlines) {
 int printer_getNumTrailingNewlines() {
 
     return global_numTrailingNewlines;
+}
+
+
+// user specified characters to represent Pauli operators
+
+string global_pauliChars = "IXYZ";
+
+void printer_setPauliChars(string newChars) {
+
+    global_pauliChars = newChars;
+}
+
+
+// user specified Pauli string format
+
+int global_pauliStrFormatFlag = 0;
+
+void printer_setPauliStrFormat(int flag) {
+
+    /// @todo
+    /// this could be changed to an enum, even though the
+    /// API will likely always receive an int (for C and
+    /// C++ agnosticism and simplicity - I hate polluting
+    /// an API with custom types and constants!).
+
+    global_pauliStrFormatFlag = flag;
 }
 
 
@@ -337,6 +364,14 @@ template string printer_toStr<long long unsigned>(complex<long long unsigned> nu
 template string printer_toStr<float>(complex<float> num);
 template string printer_toStr<double>(complex<double> num);
 template string printer_toStr<long double>(complex<long double> num);
+
+
+// explicit qreal overload so that real sig-figs can be changed
+string printer_toStr(qreal num) {
+
+    // uses user-set significant figures
+    return floatToStr(num);
+}
 
 
 // alias as toStr() just for internal brevity
@@ -776,11 +811,12 @@ MatrixQuadrantInds getTruncatedMatrixQuadrantInds(qindex numRows, qindex numCols
 
     MatrixQuadrantInds inds;
 
-    // according to the user-set truncations
-    qindex maxNumLeftCols  = global_maxNumPrintedCols / 2; // floors
-    qindex maxNumRightCols = global_maxNumPrintedCols - maxNumLeftCols;
-    qindex maxNumUpperRows = global_maxNumPrintedRows / 2; // floors
-    qindex maxNumLowerRows = global_maxNumPrintedRows - maxNumUpperRows;
+    // find maximum size of matrix quadrants according to user-truncatins.
+    // Choose right & lower first so that When num=odd, extra left & upper elem is shown
+    qindex maxNumRightCols  = global_maxNumPrintedCols / 2; // floors
+    qindex maxNumLeftCols = global_maxNumPrintedCols - maxNumRightCols;
+    qindex maxNumLowerRows = global_maxNumPrintedRows / 2; // floors
+    qindex maxNumUpperRows = global_maxNumPrintedRows - maxNumLowerRows;
 
     // may be ignored (and will unimportantly underflow when not truncating)
     inds.rightStartCol = numCols - maxNumRightCols;
@@ -1078,21 +1114,24 @@ void print_elems(KrausMap map, string indent) {
     if (!comm_isRootNode())
         return;
 
-    // we ignore the superoperator, and instead print every CPU-only Kraus map in-turn
+    // we ignore the superoperator, and instead print every CPU-only Kraus map in-turn...
     for (qindex i=0; i<map.numMatrices; i++) {
 
-        cout << indent << getKrausOperatorIndStr(i) << endl; // single indent
+        // via wrapping its 2D memory in a spoofed CompMatr and re-using print_elems(CompMatr)
+        CompMatr spoof;
+        spoof.numQubits = map.numQubits;
+        spoof.numRows   = map.numRows;
 
-        // by spoofing each as a CompMatr
-        CompMatr spoof = {
-            .numQubits = map.numQubits,
-            .numRows = map.numRows,
-            .isApproxUnitary = nullptr, 
-            .isApproxHermitian = nullptr,
-            .wasGpuSynced = nullptr, 
-            .cpuElems = map.matrices[i],
-            .gpuElemsFlat = nullptr // printer checks GPU-alloc via non-null
-        };
+        // heap fields are not created since not consulted
+        spoof.isApproxUnitary   = nullptr;
+        spoof.isApproxHermitian = nullptr;
+        spoof.wasGpuSynced      = nullptr;
+
+        spoof.cpuElems = map.matrices[i];
+        spoof.cpuElemsFlat = nullptr; // not consulted
+        spoof.gpuElemsFlat = nullptr; // consulted; printer checks GPU-alloc via non-null
+
+        cout << indent << getKrausOperatorIndStr(i) << endl; // single indent
         print_elems(spoof, indent + indent); // double indent
     }
 }
@@ -1227,16 +1266,75 @@ extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
 extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr* strings, qindex numStrings);
 
 
-string getPauliStrAsString(PauliStr str, int maxNumQubits) {
+string getPauliStrAsAllQubitsString(PauliStr str, int numPaulis) {
 
-    string labels = "IXYZ";
+    // avoid repeated allocations in below string concatenation
+    string out = "";
+    out.reserve(numPaulis);
 
     // ugly but adequate - like me (call me)
-    string out = "";
-    for (int i=maxNumQubits-1; i>=0; i--)
-        out += labels[paulis_getPauliAt(str, i)];
+    for (int i=numPaulis-1; i>=0; i--) {
+        int code = paulis_getPauliAt(str, i); // 0123
+        out += global_pauliChars[code];       // IXYZ unless user-overriden
+    }
     
     return out;
+}
+
+
+string getPauliStrAsIndexString(PauliStr str, int numPaulis) {
+
+    string out = "";
+
+    // prematurely optimise (hehe) by avoiding repeated allocations
+    // induced by below string concatenation, since we can bound the
+    // string length; each Pauli is 1 char, each index is max 2 digits
+    // (<64) and each inter-Pauli space is 1 char, so <=4 chars per Pauli.
+    int maxLen = numPaulis * 4; // <= 256 always
+    out.reserve(maxLen);
+
+    for (int i=0; i<numPaulis; i++) {
+        int code = paulis_getPauliAt(str, i);
+
+        // don't report identities
+        if (code == 0)
+            continue;
+
+        // e.g. X12 
+        out += global_pauliChars[code] + toStr(i) + PAULI_SPACE_CHAR;
+    }
+
+    // out includes a trailing PAULI_SPACE_CHAR which is fine,
+    // since nothing else is ever post-printed on the same line
+    return out;
+}
+
+
+string getPauliStrAsString(PauliStr str, int numPauliChars=0) {
+
+    // numPauliChars (only used by all-qubits reporting format)
+    // allows the caller to pad the printed PauliStr with left I,
+    // useful when reporting a truncated PauliStrSum to ensure
+    // the top and bottom partitions are aligned and equal width.
+    // When not passed, it defaults to minimum padding
+    if (numPauliChars == 0)
+        numPauliChars = 1 + paulis_getIndOfLefmostNonIdentityPauli(str);
+
+    /// @todo
+    /// to be absolutely pedantic/defensively-designed, we should
+    /// assert numPauliChars >= 1+paulis_getIndOfLefmostNonIdentityPauli
+    /// to ensure a bug never occludes a PauliStr. Very low priority!
+
+    switch(global_pauliStrFormatFlag) {
+        case 0: return getPauliStrAsAllQubitsString(str, numPauliChars);
+        case 1: return getPauliStrAsIndexString(str, numPauliChars);
+    }
+
+    /// @todo
+    /// to be defensively-designed, we should throw a runtime error
+    /// here because global_pauliStrFormatFlag was mutilated. This is
+    /// a very low priority; so we just return a suspicious string!
+    return "(PauliStr stringifying failed - please alert the QuEST devs)";
 }
 
 
@@ -1246,8 +1344,7 @@ void print_elemsWithoutNewline(PauliStr str, string indent) {
     if (!comm_isRootNode())
         return;
 
-    int numPaulis = 1 + paulis_getIndOfLefmostNonIdentityPauli(str);
-    cout << indent << getPauliStrAsString(str, numPaulis);
+    cout << indent << getPauliStrAsString(str);
 
     // beware that NO trailing newlines are printed so subsequent
     // calls (without calling print_newlines()) will run-on
@@ -1417,9 +1514,14 @@ void print_table(string title, vector<tuple<string, string>> rows, string indent
 
     // find max-width of left column
     size_t maxWidth = 0;
-    for (auto const& [key, value] : rows)
+    for (auto const& [key, value] : rows) {
         if (key.length() > maxWidth)
             maxWidth = key.length();
+
+        // pedantically suppressing unused-variable warning
+        // (while still mirroring below enumeration for clarity)
+        (void) value;
+    }
 
     // print table title (indented)
     cout << indent << getTableTitleStr(title) << endl;

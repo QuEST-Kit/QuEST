@@ -131,26 +131,30 @@ SuperOp allocSuperOp(int numQubits) {
     qindex numRows = powerOf2(2 * numQubits);
     qindex numElems = numRows * numRows;
 
+    // attempt top allocate 1D memory
     qcomp* cpuMem = cpu_allocArray(numElems); // nullptr if failed
     qcomp* gpuMem = nullptr;
     if (getQuESTEnv().isGpuAccelerated)
         gpuMem = gpu_allocArray(numElems); // nullptr if failed
 
-    SuperOp out = {
-        .numQubits = numQubits,
-        .numRows = numRows,
+    // prepare output SuperOp (avoiding C++20 designated initialiser)
+    SuperOp out;
+    out.numQubits = numQubits;
+    out.numRows = numRows;
 
-        .cpuElems = cpu_allocAndInitMatrixWrapper(cpuMem, numRows), // nullptr if failed
-        .cpuElemsFlat = cpuMem,
-        .gpuElemsFlat = gpuMem,
+    // attemptedly allocate 2D alias for 1D CPU memory
+    out.cpuElems = cpu_allocAndInitMatrixWrapper(cpuMem, numRows); // nullptr if failed
+    out.cpuElemsFlat = cpuMem;
+    out.gpuElemsFlat = gpuMem;
 
-        .wasGpuSynced = cpu_allocHeapFlag() // nullptr if failed
-    };
+    // attemptedly allocate (un-initialised) flags in the heap so that struct copies are mutable
+    out.wasGpuSynced = cpu_allocHeapFlag(); // nullptr if failed
 
     // if heap flag allocated, mark it as unsynced (caller will handle if allocation failed)
     if (mem_isAllocated(out.wasGpuSynced))
         *(out.wasGpuSynced) = 0;
 
+    // caller will handle if any above allocations failed
     return out;
 }
 
@@ -176,16 +180,14 @@ extern "C" KrausMap createKrausMap(int numQubits, int numOperators) {
     // validation ensures this never overflows
     qindex numRows = powerOf2(numQubits);
 
-    KrausMap out = {
-        .numQubits = numQubits,
-        .numMatrices = numOperators,
-        .numRows = numRows,
-
-        .matrices = cpu_allocMatrixList(numRows, numOperators), // is or contains nullptr if failed
-        .superop = allocSuperOp(numQubits), // heap fields are or contain nullptr if failed
-
-        .isApproxCPTP = util_allocEpsilonSensitiveHeapFlag(), // nullptr if failed
-    };
+    // attempt to allocate output KrausMap fields (avoiding C++20 designated initialiser)
+    KrausMap out;
+    out.numQubits = numQubits,
+    out.numMatrices = numOperators,
+    out.numRows = numRows,
+    out.matrices = cpu_allocMatrixList(numRows, numOperators); // is or contains nullptr if failed
+    out.superop = allocSuperOp(numQubits); // heap fields are or contain nullptr if failed
+    out.isApproxCPTP = util_allocEpsilonSensitiveHeapFlag(); // nullptr if failed
 
     // free memory before throwing validation error to avoid memory leaks
     freeAllMemoryIfAnyAllocsFailed(out); // sets out.matrices=nullptr if failed

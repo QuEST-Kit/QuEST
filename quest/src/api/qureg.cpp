@@ -45,38 +45,41 @@ Qureg qureg_populateNonHeapFields(int numQubits, int isDensMatr, int useDistrib,
         (2*numQubits - logNumNodes) :
         (  numQubits - logNumNodes);
 
-    return {
-        // bind deployment info
-        .isMultithreaded  = useMultithread,
-        .isGpuAccelerated = useGpuAccel,
-        .isDistributed    = useDistrib,
+    // prepare output Qureg (avoiding C++20 designated initialiser)
+    Qureg out;
 
-        // optionally bind distributed info, noting that in distributed environments,
-        // the non-distributed quregs are duplicated on each node and each believe
-        // they are the root node, with no other nodes existing; this is essential so
-        // that these quregs can agnostically use distributed routines which consult
-        // the rank, but it will interfere with naive root-only printing logic
-        .rank        = (useDistrib)? env.rank : 0,
-        .numNodes    = (useDistrib)? env.numNodes : 1,
-        .logNumNodes = (useDistrib)? logBase2(env.numNodes) : 0, // duplicated for clarity
+    // bind deployment info
+    out.isMultithreaded  = useMultithread;
+    out.isGpuAccelerated = useGpuAccel;
+    out.isDistributed    = useDistrib;
 
-        // set dimensions
-        .isDensityMatrix = isDensMatr,
-        .numQubits  = numQubits,
-        .numAmps    = (isDensMatr)? powerOf2(2*numQubits) : powerOf2(numQubits),
-        .logNumAmps = (isDensMatr)?          2*numQubits  :          numQubits,
+    // optionally bind distributed info, noting that in distributed environments,
+    // the non-distributed quregs are duplicated on each node and each believe
+    // they are the root node, with no other nodes existing; this is essential so
+    // that these quregs can agnostically use distributed routines which consult
+    // the rank, but it will interfere with naive root-only printing logic
+    out.rank        = (useDistrib)? env.rank : 0;
+    out.numNodes    = (useDistrib)? env.numNodes : 1;
+    out.logNumNodes = (useDistrib)? logBase2(env.numNodes) : 0; // duplicated for clarity
 
-        // set dimensions per node (even if not distributed)
-        .numAmpsPerNode = powerOf2(logNumAmpsPerNode),
-        .logNumAmpsPerNode = logNumAmpsPerNode,
-        .logNumColsPerNode = (isDensMatr)? numQubits - logNumNodes : 0, // used only by density matrices
+    // bind dimensions
+    out.isDensityMatrix = isDensMatr;
+    out.numQubits  = numQubits;
+    out.numAmps    = (isDensMatr)? powerOf2(2*numQubits) : powerOf2(numQubits);
+    out.logNumAmps = (isDensMatr)?          2*numQubits  :          numQubits;
 
-        // caller will allocate heap memory as necessary
-        .cpuAmps       = nullptr,
-        .gpuAmps       = nullptr,
-        .cpuCommBuffer = nullptr,
-        .gpuCommBuffer = nullptr
-    };
+    // bind dimensions per node (even if not distributed)
+    out.numAmpsPerNode = powerOf2(logNumAmpsPerNode);
+    out.logNumAmpsPerNode = logNumAmpsPerNode;
+    out.logNumColsPerNode = (isDensMatr)? numQubits - logNumNodes : 0; // used only by density matrices
+
+    // caller will allocate heap memory as necessary
+    out.cpuAmps       = nullptr;
+    out.gpuAmps       = nullptr;
+    out.cpuCommBuffer = nullptr;
+    out.gpuCommBuffer = nullptr;
+
+    return out;
 }
 
 

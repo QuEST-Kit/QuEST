@@ -2,14 +2,21 @@
 # code with (attemptedly) all possible configurations
 # of operating system, precision, multithreading,
 # distribution, GPU-acceleration (via CUDA or HIP),
-# and cuQuantum (else custom kernels). Currently,
-# this wastefully downlaods and installs all needed
-# compilers (like libomp, CUDA, ROCm). Compilation
+# and cuQuantum (else custom kernels). Compilation
 # includes the v4 unit and integration tests, the
 # deprecated v3 tests (when possible), and all the
-# example programs. No compiled execs are run however.
-# Note that ARM compilation is not yet tested here,
-# but in fact Linux ARM is used by a paid test runner.
+# example programs. All 'isolated' example executables
+# are then run (both C and C++ versions) to ensure the 
+# build was successful and does not cause link-time 
+# errors. Then, all 'automated' examples are run which
+# permits contributors to demo or test their changes 
+# across all operation systems and compilers.
+# 
+# Note:
+# - This workflow currently wastefully re-downloads and 
+#   installs all needed compilers (like libomp, CUDA, ROCm)
+# - ARM compilation is not tested here, though it is used
+#   by the paid multithreaded CI tests.
 #
 # @author Tyson Jones
 
@@ -20,9 +27,11 @@ on:
   push:
     branches:
       - main
+      - devel
   pull_request:
     branches:
       - main
+      - devel
 
 
 jobs:
@@ -51,7 +60,7 @@ jobs:
 
       # compile QuEST with all combinations of below flags
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
         precision: [1, 2, 4]
         omp:       [ON, OFF]
         mpi:       [ON, OFF]
@@ -138,10 +147,12 @@ jobs:
 
     # constants
     env:
-      build_dir: "build"
       cuda_arch: 70
       hip_arch: gfx801
       rocm_path: /opt/rocm/bin
+      build_dir: build
+      isolated_dir: build/examples/isolated
+      automated_dir: build/examples/automated
 
     # perform the job
     steps:
@@ -230,3 +241,44 @@ jobs:
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --config Release --parallel
+
+      # run all compiled isolated examples to test for link-time errors,
+      # continuing if any fail (since some deliberately fail)
+      - name: Run isolated examples (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        working-directory: ${{ env.isolated_dir }}/Release/
+        shell: pwsh
+        run: |
+          Get-ChildItem -Filter '*.exe' -File |
+          ForEach-Object {
+            Write-Host "`r`n[[[ $($_.Name) ]]]`r`n"
+            & $_.FullName
+          }
+      - name: Run isolated examples (Unix)
+        if: ${{ matrix.os != 'windows-latest' }}
+        working-directory: ${{ env.isolated_dir }}
+        run: |
+          for fn in *_c *_cpp; do
+            printf "\n[[[ $fn ]]]\n"
+            ./$fn || true
+          done
+
+      # run all compiled 'automated' examples
+      - name: Run automated examples (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        working-directory: ${{ env.automated_dir }}/Release/
+        shell: pwsh
+        run: |
+          Get-ChildItem -Filter '*.exe' -File |
+          ForEach-Object {
+            Write-Host "`r`n[[[ $($_.Name) ]]]`r`n"
+            & $_.FullName
+          }
+      - name: Run automated examples (Unix)
+        if: ${{ matrix.os != 'windows-latest' }}
+        working-directory: ${{ env.automated_dir }}
+        run: |
+          for fn in *_c *_cpp; do
+            printf "\n[[[ $fn ]]]\n"
+            ./$fn || true
+          done

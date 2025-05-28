@@ -29,7 +29,7 @@ extern "C" {
  * local copy of this struct with getQuESTEnv().
  */
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     // deployment mode
@@ -44,26 +44,36 @@ typedef struct {
 } QuESTEnv;
 
 
-/// @notdoced
+/// @notyetdoced
 void initQuESTEnv();
 
-/// @notdoced
+/** @notyetdoced
+ * 
+ * @see
+ * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_environments.c) and
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_environments.cpp) examples
+ */
 void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread);
 
-/// @notdoced
+/// @notyetdoced
 void finalizeQuESTEnv();
 
-/// @notdoced
+/// @notyetdoced
 void syncQuESTEnv();
 
-/// @notdoced
-/// @nottested
+/** @notyetdoced
+ * @notyettested
+ * 
+ * @see
+ * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_environments.c) and
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_environments.cpp) examples
+ */
 void reportQuESTEnv();
 
-/// @notdoced
+/// @notyetdoced
 int isQuESTEnvInit();
 
-/// @notdoced
+/// @notyetdoced
 QuESTEnv getQuESTEnv();
 
 

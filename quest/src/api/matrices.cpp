@@ -216,26 +216,26 @@ extern "C" CompMatr createCompMatr(int numQubits) {
     qindex numRows = powerOf2(numQubits);
     qindex numElems = numRows * numRows;
 
+    // attempt to allocate 1D memory
     qcomp* cpuMem = cpu_allocArray(numElems); // nullptr if failed
     qcomp* gpuMem = nullptr;
     if (getQuESTEnv().isGpuAccelerated)
         gpuMem = gpu_allocArray(numElems); // nullptr if failed
 
-    // initialise all CompMatr fields inline because most are const
-    CompMatr out = {
-        .numQubits = numQubits,
-        .numRows = numRows,
+    // prepare output CompMatr (avoiding C++20 designated initialiser)
+    CompMatr out;
+    out.numQubits = numQubits;
+    out.numRows = numRows;
 
-        // allocate flags in the heap so that struct copies are mutable
-        .isApproxUnitary    = util_allocEpsilonSensitiveHeapFlag(), // nullptr if failed
-        .isApproxHermitian  = util_allocEpsilonSensitiveHeapFlag(),
+    // attemptedly allocate (un-initialised) flags in the heap so that struct copies are mutable
+    out.isApproxUnitary    = util_allocEpsilonSensitiveHeapFlag(); // nullptr if failed
+    out.isApproxHermitian  = util_allocEpsilonSensitiveHeapFlag();
+    out.wasGpuSynced = cpu_allocHeapFlag(); // nullptr if failed
 
-        .wasGpuSynced = cpu_allocHeapFlag(), // nullptr if failed
-
-        .cpuElems = cpu_allocAndInitMatrixWrapper(cpuMem, numRows), // nullptr if failed
-        .cpuElemsFlat = cpuMem,
-        .gpuElemsFlat = gpuMem
-    };
+    // attemptedly allocate 2D alias for 1D CPU memory
+    out.cpuElems = cpu_allocAndInitMatrixWrapper(cpuMem, numRows); // nullptr if failed
+    out.cpuElemsFlat = cpuMem;
+    out.gpuElemsFlat = gpuMem;
 
     validateMatrixAllocs(out, __func__);
     setInitialHeapFlags(out);
@@ -250,24 +250,21 @@ extern "C" DiagMatr createDiagMatr(int numQubits) {
     // validation ensures this never overflows
     qindex numElems = powerOf2(numQubits);
 
-    // initialise all CompMatr fields inline because most are const
-    DiagMatr out = {
-        .numQubits = numQubits,
-        .numElems = numElems,
+    // prepare output DiagMatr (avoiding C++20 designated initialiser)
+    DiagMatr out;
+    out.numQubits = numQubits,
+    out.numElems = numElems,
 
-        // allocate flags in the heap so that struct copies are mutable
-        .isApproxUnitary       = util_allocEpsilonSensitiveHeapFlag(), // nullptr if failed
-        .isApproxHermitian     = util_allocEpsilonSensitiveHeapFlag(),
-        .isApproxNonZero       = util_allocEpsilonSensitiveHeapFlag(),
-        .isStrictlyNonNegative = cpu_allocHeapFlag(), // nullptr if failed
-        .wasGpuSynced          = cpu_allocHeapFlag(),
+    // attempt to allocate (uninitialised) flags in the heap so that struct copies are mutable
+    out.isApproxUnitary       = util_allocEpsilonSensitiveHeapFlag(); // nullptr if failed
+    out.isApproxHermitian     = util_allocEpsilonSensitiveHeapFlag();
+    out.isApproxNonZero       = util_allocEpsilonSensitiveHeapFlag();
+    out.isStrictlyNonNegative = cpu_allocHeapFlag(); // nullptr if failed
+    out.wasGpuSynced          = cpu_allocHeapFlag();
 
-        // 1D CPU memory
-        .cpuElems = cpu_allocArray(numElems), // nullptr if failed
-
-        // 1D GPU memory
-        .gpuElems = (getQuESTEnv().isGpuAccelerated)? gpu_allocArray(numElems) : nullptr // nullptr if failed or not needed
-    };
+    // attempt to allocate 1D memory (nullptr if failed or not allocated)
+    out.cpuElems = cpu_allocArray(numElems);
+    out.gpuElems = (getQuESTEnv().isGpuAccelerated)? gpu_allocArray(numElems) : nullptr;
 
     validateMatrixAllocs(out, __func__);
     setInitialHeapFlags(out);
@@ -289,30 +286,27 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
     qindex numElems = powerOf2(numQubits);
     qindex numElemsPerNode = numElems / (useDistrib? env.numNodes : 1); // divides evenly
 
-    FullStateDiagMatr out = {
+    // prepare output FullStateDiagMatr (avoiding C++20 designated initialiser)
+    FullStateDiagMatr out;
+    out.numQubits = numQubits;
+    out.numElems = numElems;
 
-        .numQubits = numQubits,
-        .numElems = numElems,
+    // bind deployments, disabling distribution if using a single MPI node
+    out.isGpuAccelerated = useGpuAccel;
+    out.isMultithreaded = useMultithread;
+    out.isDistributed = useDistrib && (env.numNodes > 1);
+    out.numElemsPerNode = numElemsPerNode;
 
-        // data deployment configuration; disable distrib if deployed to 1 node
-        .isGpuAccelerated = useGpuAccel,
-        .isMultithreaded = useMultithread,
-        .isDistributed = useDistrib && (env.numNodes > 1),
-        .numElemsPerNode = numElemsPerNode,
+    // allocate (unitialised) flags in the heap so that struct copies are mutable
+    out.isApproxUnitary       = util_allocEpsilonSensitiveHeapFlag(); // nullptr if failed
+    out.isApproxHermitian     = util_allocEpsilonSensitiveHeapFlag();
+    out.isApproxNonZero       = util_allocEpsilonSensitiveHeapFlag();
+    out.isStrictlyNonNegative = cpu_allocHeapFlag(); // nullptr if failed
+    out.wasGpuSynced          = cpu_allocHeapFlag();
 
-        // allocate flags in the heap so that struct copies are mutable
-        .isApproxUnitary       = util_allocEpsilonSensitiveHeapFlag(), // nullptr if failed
-        .isApproxHermitian     = util_allocEpsilonSensitiveHeapFlag(),
-        .isApproxNonZero       = util_allocEpsilonSensitiveHeapFlag(),
-        .isStrictlyNonNegative = cpu_allocHeapFlag(), // nullptr if failed
-        .wasGpuSynced          = cpu_allocHeapFlag(),
-
-        // 1D CPU memory
-        .cpuElems = cpu_allocArray(numElemsPerNode), // nullptr if failed
-
-        // 1D GPU memory
-        .gpuElems = (useGpuAccel)? gpu_allocArray(numElemsPerNode) : nullptr, // nullptr if failed or not needed
-    };
+    // allocate 1D memory (nullptr if failed or not allocated)
+    out.cpuElems = cpu_allocArray(numElemsPerNode);
+    out.gpuElems = (useGpuAccel)? gpu_allocArray(numElemsPerNode) : nullptr;
 
     validateMatrixAllocs(out, __func__);
     setInitialHeapFlags(out);

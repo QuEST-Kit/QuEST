@@ -29,6 +29,7 @@ using std::vector;
  * PRVIATE UTILITIES
  */
 
+extern bool paulis_isIdentity(PauliStr str);
 extern bool paulis_hasOddNumY(PauliStr str);
 extern PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift);
 extern PauliStr paulis_getKetAndBraPauliStr(PauliStr str, Qureg qureg);
@@ -1135,8 +1136,8 @@ void applyFirstOrderTrotter(Qureg qureg, PauliStrSum sum, qreal angle, bool reve
 
     for (qindex i=0; i<sum.numTerms; i++) {
         int j = reverse? sum.numTerms - i - 1 : i;
-        qreal arg = 2 * angle * std::real(sum.coeffs[j]);  // 2 undoes Gadget convention
-        applyPauliGadget(qureg, sum.strings[j], arg); // re-validates, grr
+        qreal arg = 2 * angle * std::real(sum.coeffs[j]); // 2 undoes Gadget convention
+        applyPauliGadget(qureg, sum.strings[j], arg); // caller disabled valiation therein
     }
 }
 
@@ -1172,16 +1173,27 @@ void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle
     validate_pauliStrSumIsHermitian(sum, __func__);
     validate_trotterParams(qureg, order, reps, __func__);
 
-    /// @todo
-    /// the accuracy of Trotterisation is greatly improved by randomisation
-    /// or (even sub-optimal) grouping into commuting terms. Should we 
-    /// implement these here or into another function?
-
+    // exp(i angle sum) = identity when angle=0
     if (angle == 0)
         return;
 
+    // record validation state then disable to avoid repeated
+    // re-validations in each invoked applyPauliGadget() below
+    bool wasValidationEnabled = validateconfig_isEnabled();
+    validateconfig_disable();
+
+    // perform sequence of applyPauliGadget()
     for (int r=0; r<reps; r++)
         applyHigherOrderTrotter(qureg, sum, angle/reps, order);
+
+    // potentially restore validation
+    if (wasValidationEnabled)
+        validateconfig_enable();
+
+    /// @todo
+    /// the accuracy of Trotterisation is greatly improved by randomisation
+    /// or (even sub-optimal) grouping into commuting terms. Should we 
+    /// implement these above or into another function?
 }
 
 } // end de-mangler
@@ -1439,11 +1451,15 @@ void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* state
     validate_controlsAndPauliStrTargets(qureg, controls, numControls, str, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    /// @todo
-    /// CRUCIAL NOTE:
-    /// exp(theta I..I) might be algorithmically ok (I'm not sure), but it WILL NOT
-    /// effect a global phase change of theta (I think). Should validate against this
-    /// sitaution just in case, or make the doc extremely explicit
+    // a non-controlled str=I effects a global phase change (of -angle/2) which does not 
+    // at all change a density matrix; the subsequent dagger operation would undo it,
+    // which we avoid to preserve numerical accuracy
+    if (paulis_isIdentity(str) && numControls == 0 && qureg.isDensityMatrix)
+        return;
+
+    // when numControls >= 1, all amps satisfying the control condition undergo a phase 
+    // change of -angle/2, as if all non-control-qubits were targeted by exp(-angle/2)I,
+    // which is sufficiently efficient using the existing gadget backend function
 
     qreal phase = util_getPhaseFromGateAngle(angle);
     auto ctrlVec = util_getVector(controls, numControls);

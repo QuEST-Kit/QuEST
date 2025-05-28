@@ -9,6 +9,10 @@
  * definitions, for safety. Some intendedly private functions are necessarily
  * exposed here to the user, and are prefixed with an underscore.
  * 
+ * Note too that designated initialisers are generally avoided, since while
+ * C99/C11 compatible, they are not explicitly supported by C++14 (only from
+ * C++20) except through compiler extensions
+ * 
  * @author Tyson Jones
  * @author Richard Meister (aided in design)
  * @author Erich Essmann (aided in design, patched on MSVC)
@@ -60,7 +64,7 @@
  */
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     int numQubits;
@@ -71,7 +75,7 @@ typedef struct {
 } CompMatr1;
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     int numQubits;
@@ -82,7 +86,7 @@ typedef struct {
 } CompMatr2;
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     // beware that CompMatr instances are sometimes 'spoofed' inside localiser.cpp,
@@ -128,7 +132,7 @@ typedef struct {
  */
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     int numQubits;
@@ -139,7 +143,7 @@ typedef struct {
 } DiagMatr1;
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     int numQubits;
@@ -150,7 +154,7 @@ typedef struct {
 } DiagMatr2;
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     int numQubits;
@@ -187,7 +191,7 @@ typedef struct {
  */
 
 
-/// @notdoced
+/// @notyetdoced
 typedef struct {
 
     int numQubits;
@@ -306,64 +310,106 @@ extern void _validateNewElemsPtrNotNull(qcomp* ptr, const char* caller);
 #endif
 
 
-/// @ingroup matrices_getters
-/// @notdoced
+/** @ingroup matrices_getters
+ * @notyetdoced
+ * 
+ * @see
+ * - reportCompMatr1()
+ * - getInlineCompMatr2()
+ * - getDiagMatr1()
+ * - getCompMatr2()
+ * - createCompMatr()
+ * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) and
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+ */
 static inline CompMatr1 getCompMatr1(qcomp** in) {
     _validateNewNestedElemsPtrNotNull(in, 1, __func__);
 
-    CompMatr1 out = {
-        .numQubits = 1,
-        .numRows = 2,
-        .elems = {
-            {in[0][0], in[0][1]}, 
-            {in[1][0], in[1][1]}}
-    };
+    CompMatr1 out;
+
+    out.numQubits = 1;
+    out.numRows = 2;
+    for (int r=0; r<2; r++)
+        for (int c=0; c<2; c++)
+            out.elems[r][c] = in[r][c];
+
     return out;
 }
 
 
-/// @ingroup matrices_getters
-/// @notdoced
+/** @ingroup matrices_getters
+ * @notyetdoced
+ * 
+ * @see
+ * - reportCompMatr2()
+ * - getInlineCompMatr2()
+ * - getDiagMatr2()
+ * - createCompMatr()
+ * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) and
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+ */
 static inline CompMatr2 getCompMatr2(qcomp** in) {
     _validateNewNestedElemsPtrNotNull(in, 2, __func__);
 
-    CompMatr2 out = {
-        .numQubits = 2,
-        .numRows = 4,
-        .elems = {
-            {in[0][0], in[0][1], in[0][2], in[0][3]},
-            {in[1][0], in[1][1], in[1][2], in[1][3]},
-            {in[2][0], in[2][1], in[2][2], in[2][3]},
-            {in[3][0], in[3][1], in[3][2], in[3][3]}}
-    };
+    CompMatr2 out;
+
+    out.numQubits = 2;
+    out.numRows = 4;
+    for (int r=0; r<4; r++)
+        for (int c=0; c<4; c++)
+            out.elems[r][c] = in[r][c];
+    
     return out;
 }
 
 
-/// @ingroup matrices_getters
-/// @notdoced
+/** @ingroup matrices_getters
+ * @notyetdoced
+ * 
+ * @see
+ * - reportDiagMatr1()
+ * - getInlineDiagMatr1()
+ * - getCompMatr1()
+ * - getDiagMatr2()
+ * - createDiagMatr()
+ * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) and
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+ */
 static inline DiagMatr1 getDiagMatr1(qcomp* in) {
     _validateNewElemsPtrNotNull(in, __func__);
 
-    DiagMatr1 out = {
-        .numQubits = 1,
-        .numElems = 2,
-        .elems = {in[0], in[1]}
-    };
+    DiagMatr1 out;
+
+    out.numQubits = 1;
+    out.numElems = 2;
+    for (int i=0; i<2; i++)
+        out.elems[i] = in[i];
+
     return out;
 }
 
 
-/// @ingroup matrices_getters
-/// @notdoced
+/** @ingroup matrices_getters
+ * @notyetdoced
+ * 
+ * @see
+ * - reportDiagMatr2()
+ * - getInlineDiagMatr2()
+ * - getCompMatr2()
+ * - createDiagMatr()
+ * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) and
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+ */
 static inline DiagMatr2 getDiagMatr2(qcomp* in) {
     _validateNewElemsPtrNotNull(in, __func__);
 
-    DiagMatr2 out = {
-        .numQubits = 2,
-        .numElems = 4,
-        .elems = {in[0], in[1], in[2], in[3]}
-    };
+    DiagMatr2 out;
+    
+    out.numQubits = 2;
+    out.numElems = 4;
+    for (int i=0; i<4; i++)
+        out.elems[i] = in[i];
+
     return out;
 }
 
@@ -414,36 +460,70 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
 
 
     /// @ingroup matrices_getters
-    /// @notdoced
+    /// @notyetdoced
     static inline CompMatr1 getCompMatr1(qcomp in[2][2]) { return _getCompMatr1FromArr(in); }
 
 
     /// @ingroup matrices_getters
-    /// @notdoced
+    /// @notyetdoced
     static inline CompMatr2 getCompMatr2(qcomp in[4][4]) { return _getCompMatr2FromArr(in); }
 
 
-    /// @ingroup matrices_getters
-    /// @notdoced
-    /// @cpponly
+    /** @ingroup matrices_getters
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - reportCompMatr1()
+     * - getInlineCompMatr1()
+     * - getDiagMatr1()
+     * - getCompMatr2()
+     * - createCompMatr()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     CompMatr1 getCompMatr1(std::vector<std::vector<qcomp>> in);
 
 
-    /// @ingroup matrices_getters
-    /// @notdoced
-    /// @cpponly
+    /** @ingroup matrices_getters
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - reportCompMatr2()
+     * - getInlineCompMatr2()
+     * - getDiagMatr2()
+     * - createCompMatr()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     CompMatr2 getCompMatr2(std::vector<std::vector<qcomp>> in);
 
 
-    /// @ingroup matrices_getters
-    /// @notdoced
-    /// @cpponly
+    /** @ingroup matrices_getters
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - reportDiagMatr1()
+     * - getInlineDiagMatr1()
+     * - getCompMatr1()
+     * - getDiagMatr2()
+     * - createDiagMatr()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     DiagMatr1 getDiagMatr1(std::vector<qcomp> in);
 
 
-    /// @ingroup matrices_getters
-    /// @notdoced
-    /// @cpponly
+    /** @ingroup matrices_getters
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - reportDiagMatr2()
+     * - getInlineDiagMatr2()
+     * - getCompMatr2()
+     * - createDiagMatr()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     DiagMatr2 getDiagMatr2(std::vector<qcomp> in);
 
 
@@ -560,24 +640,58 @@ static inline CompMatr2 _getCompMatr2FromArr(qcomp in[4][4]) {
 // spoofing above macros as functions to doc
 #if 0
 
-    /// @ingroup matrices_getters
-    /// @notdoced
-    /// @macrodoc
+    /** @ingroup matrices_getters
+     * @notyetdoced
+     * @macrodoc
+     * 
+     * @see 
+     * - reportCompMatr1()
+     * - getInlineDiagMatr1()
+     * - getInlineCompMatr2()
+     * - createCompMatr()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) and
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     CompMatr1 getInlineCompMatr1({{ matrix }});
 
-    /// @ingroup matrices_getters
-    /// @notdoced
-    /// @macrodoc
+    /** @ingroup matrices_getters
+     * @notyetdoced
+     * @macrodoc
+     * 
+     * @see 
+     * - reportCompMatr2()
+     * - getInlineDiagMatr2()
+     * - createCompMatr()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) and
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     CompMatr2 getInlineCompMatr2({{ matrix }});
 
-    /// @ingroup matrices_getters
-    /// @notdoced
-    /// @macrodoc
+    /** @ingroup matrices_getters
+     * @notyetdoced
+     * @macrodoc
+     * 
+     * @see 
+     * - reportDiagMatr1()
+     * - getInlineCompMatr1()
+     * - getInlineDiagMatr2()
+     * - createDiagMatr()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) and
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     DiagMatr1 getInlineDiagMatr1({ list });
 
-    /// @ingroup matrices_getters
-    /// @notdoced
-    /// @macrodoc
+    /** @ingroup matrices_getters
+     * @notyetdoced
+     * @macrodoc
+     * 
+     * @see 
+     * - reportDiagMatr2()
+     * - getInlineCompMatr2()
+     * - createDiagMatr()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) and
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     DiagMatr2 getInlineDiagMatr2({ list });
 
 #endif
@@ -595,53 +709,93 @@ extern "C" {
 #endif
 
 
-    /// @ingroup matrices_create
-    /// @notdoced
+    /** @ingroup matrices_create
+     * @notyetdoced
+     * 
+     * @see
+     * - setCompMatr()
+     * - syncCompMatr()
+     * - createInlineCompMatr()
+     * - createDiagMatr()
+     * - getCompMatr1()
+     * - getCompMatr2()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) and
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     CompMatr createCompMatr(int numQubits);
 
 
-    /// @ingroup matrices_create
-    /// @notdoced
+    /** @ingroup matrices_create
+     * @notyetdoced
+     * 
+     * @see
+     * - setDiagMatr()
+     * - syncDiagMatr()
+     * - createInlineDiagMatr()
+     * - createCompMatr()
+     * - getDiagMatr1()
+     * - getDiagMatr2()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) and
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     DiagMatr createDiagMatr(int numQubits);
 
 
-    /// @ingroup matrices_create
-    /// @notdoced
+    /** @ingroup matrices_create
+     * @notyetdoced
+     * 
+     * @see
+     * - createCustomFullStateDiagMatr()
+     * - setFullStateDiagMatr()
+     * - syncFullStateDiagMatr()
+     * - createDiagMatr()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) and
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     FullStateDiagMatr createFullStateDiagMatr(int numQubits);
 
 
-    /// @ingroup matrices_create
-    /// @notdoced
+    /** @ingroup matrices_create
+     * @notyetdoced
+     * 
+     * @see
+     * - createFullStateDiagMatr()
+     * - setFullStateDiagMatr()
+     * - syncFullStateDiagMatr()
+     * - createDiagMatr()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) and
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     FullStateDiagMatr createCustomFullStateDiagMatr(int numQubits, int useDistrib, int useGpuAccel, int useMultithread);
 
 
     /// @ingroup matrices_destroy
-    /// @notdoced
+    /// @notyetdoced
     void destroyCompMatr(CompMatr matrix);
 
 
     /// @ingroup matrices_destroy
-    /// @notdoced
+    /// @notyetdoced
     void destroyDiagMatr(DiagMatr matrix);
 
 
     /// @ingroup matrices_destroy
-    /// @notdoced
+    /// @notyetdoced
     void destroyFullStateDiagMatr(FullStateDiagMatr matrix);
 
 
     /// @ingroup matrices_sync
-    /// @notdoced
+    /// @notyetdoced
     void syncCompMatr(CompMatr matr);
 
 
     /// @ingroup matrices_sync
-    /// @notdoced
+    /// @notyetdoced
     void syncDiagMatr(DiagMatr matr);
 
 
     /// @ingroup matrices_sync
-    /// @notdoced
+    /// @notyetdoced
     void syncFullStateDiagMatr(FullStateDiagMatr matr);
 
 
@@ -669,19 +823,40 @@ extern "C" {
 #endif
 
 
-    /// @ingroup matrices_setters
-    /// @notdoced
+    /** @ingroup matrices_setters
+     * @notyetdoced
+     * 
+     * @see
+     * - setInlineCompMatr()
+     * - reportCompMatr()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) and
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     void setCompMatr(CompMatr matr, qcomp** vals);
 
 
-    /// @ingroup matrices_setters
-    /// @notdoced
+    /** @ingroup matrices_setters
+     * @notyetdoced
+     * 
+     * @see
+     * - setInlineDiagMatr()
+     * - reportDiagMatr()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) and
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     void setDiagMatr(DiagMatr out, qcomp* in);
 
 
-    /// @ingroup matrices_setters
-    /// @notdoced
-    /// @nottested
+    /** @ingroup matrices_setters
+     * @notyetdoced
+     * @notyettested
+     * 
+     * @see
+     * - setInlineFullStateDiagMatr()
+     * - reportFullStateDiagMatr()
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) and
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, qcomp* in, qindex numElems);
 
 
@@ -711,22 +886,40 @@ extern "C" {
     // C++ defines vector overloads, permitting inline initialisation
 
 
-    /// @ingroup matrices_setters
-    /// @notdoced
-    /// @cpponly
+    /** @ingroup matrices_setters
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - setInlineCompMatr()
+     * - reportCompMatr()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     void setCompMatr(CompMatr out, std::vector<std::vector<qcomp>> in);
 
 
-    /// @ingroup matrices_setters
-    /// @notdoced
-    /// @cpponly
+    /** @ingroup matrices_setters
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - setInlineDiagMatr()
+     * - reportDiagMatr()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     void setDiagMatr(DiagMatr out, std::vector<qcomp> in);
 
 
-    /// @ingroup matrices_setters
-    /// @notdoced
-    /// @nottested
-    /// @cpponly
+    /** @ingroup matrices_setters
+     * @notyetdoced
+     * @notyettested
+     * @cpponly
+     * 
+     * @see
+     * - setInlineFullStateDiagMatr()
+     * - reportFullStateDiagMatr()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     void setFullStateDiagMatr(FullStateDiagMatr out, qindex startInd, std::vector<qcomp> in);
 
 
@@ -776,10 +969,16 @@ extern "C" {
     // spoofing above macro as functions to doc
     #if 0
 
-        /// @ingroup matrices_setters
-        /// @notdoced
-        /// @macrodoc
-        /// @conly
+        /** @ingroup matrices_setters
+         * @notyetdoced
+         * @macrodoc
+         * @conly
+         * 
+         * @see
+         * - setInlineCompMatr()
+         * - reportCompMatr()
+         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) examples
+         */
         void setCompMatr(CompMatr matr, qcomp arr[matr.numRows][matr.numRows]);
 
     #endif
@@ -816,22 +1015,39 @@ extern "C" {
     // validate that they match the struct dimensions (which requires validating the structs).
 
 
-    /// @ingroup matrices_setters
-    /// @notdoced
-    /// @cpponly
+    /** @ingroup matrices_setters
+     * @notyetdoced
+     * @cpponly
+     *
+     * @see
+     * - reportCompMatr()
+     * - createInlineCompMatr()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     void setInlineCompMatr(CompMatr matr, int numQb, std::vector<std::vector<qcomp>> in);
 
 
-    /// @ingroup matrices_setters
-    /// @notdoced
-    /// @cpponly
+    /** @ingroup matrices_setters
+     * @notyetdoced
+     * @cpponly
+     *
+     * @see
+     * - reportDiagMatr()
+     * - createInlineDiagMatr()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     void setInlineDiagMatr(DiagMatr matr, int numQb, std::vector<qcomp> in);
 
 
-    /// @ingroup matrices_setters
-    /// @notdoced
-    /// @nottested
-    /// @cpponly
+    /** @ingroup matrices_setters
+     * @notyetdoced
+     * @notyettested
+     * @cpponly
+     *
+     * @see
+     * - reportFullStateDiagMatr()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     void setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, std::vector<qcomp> in);
 
 
@@ -893,21 +1109,42 @@ extern "C" {
     // spoofing above macros as functions to doc
     #if 0
 
-        /// @ingroup matrices_setters
-        /// @notdoced
-        /// @macrodoc
+
+        /** @ingroup matrices_setters
+         * @notyetdoced
+         * @macrodoc
+         * 
+         * @see
+         * - reportCompMatr()
+         * - createInlineCompMatr()
+         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) examples
+         */
         void setInlineCompMatr(CompMatr matr, int numQb, {{ matrix }});
 
-        /// @ingroup matrices_setters
-        /// @notdoced
-        /// @macrodoc
+
+        /** @ingroup matrices_setters
+         * @notyetdoced
+         * @macrodoc
+         * 
+         * @see
+         * - reportDiagMatr()
+         * - createInlineDiagMatr()
+         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) examples
+         */
         void setInlineDiagMatr(DiagMatr matr, int numQb, { list });
 
-        /// @ingroup matrices_setters
-        /// @nottested
-        /// @notdoced
-        /// @macrodoc
+
+        /** @ingroup matrices_setters
+         * @notyettested
+         * @notyetdoced
+         * @macrodoc
+         * 
+         * @see
+         * - reportFullStateDiagMatr()
+         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) examples
+         */
         void setInlineFullStateDiagMatr(FullStateDiagMatr matr, qindex startInd, qindex numElems, { list });
+
 
     #endif
 
@@ -975,15 +1212,25 @@ extern "C" {
     // C++ accepts vector initialiser lists
 
 
-    /// @ingroup matrices_create
-    /// @notdoced
-    /// @cpponly
+    /** @ingroup matrices_create
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - reportCompMatr()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     CompMatr createInlineCompMatr(int numQb, std::vector<std::vector<qcomp>> elems);
 
 
-    /// @ingroup matrices_create
-    /// @notdoced
-    /// @cpponly
+    /** @ingroup matrices_create
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - reportDiagMatr()
+     * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
+     */
     DiagMatr createInlineDiagMatr(int numQb, std::vector<qcomp> elems);
 
 
@@ -1031,15 +1278,28 @@ extern "C" {
     // spoofing above macros as functions to doc
     #if 0
 
-        /// @ingroup matrices_create
-        /// @notdoced
-        /// @macrodoc
+
+        /** @ingroup matrices_create
+         * @notyetdoced
+         * @macrodoc
+         * 
+         * @see
+         * - reportCompMatr()
+         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) examples
+         */
         CompMatr createInlineCompMatr(int numQb, {{ matrix }});
 
-        /// @ingroup matrices_create
-        /// @notdoced
-        /// @macrodoc
+
+        /** @ingroup matrices_create
+         * @notyetdoced
+         * @macrodoc
+         * 
+         * @see
+         * - reportDiagMatr()
+         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) examples
+         */
         DiagMatr createInlineDiagMatr(int numQb, { list });
+
 
     #endif
 
@@ -1069,38 +1329,38 @@ extern "C" {
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void setDiagMatrFromMultiVarFunc(DiagMatr out, qcomp (*func)(qindex*), int* numQubitsPerVar, int numVars, int areSigned);
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void setDiagMatrFromMultiDimLists(DiagMatr out, void* lists, int* numQubitsPerDim, int numDims);
 
 
     /// @ingroup matrices_create
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     FullStateDiagMatr createFullStateDiagMatrFromPauliStrSum(PauliStrSum in);
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, PauliStrSum in);
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void setFullStateDiagMatrFromMultiVarFunc(FullStateDiagMatr out, qcomp (*func)(qindex*), int* numQubitsPerVar, int numVars, int areSigned);
 
 
     /// @ingroup matrices_setters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void setFullStateDiagMatrFromMultiDimLists(FullStateDiagMatr out, void* lists, int* numQubitsPerDim, int numDims);
 
 
@@ -1121,45 +1381,75 @@ extern "C" {
 #endif
 
 
-    /// @ingroup matrices_reporters
-    /// @notdoced
-    /// @nottested
+    /** @ingroup matrices_reporters
+     * @notyetdoced
+     * @notyettested
+     * 
+     * @see
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_matrices.c) and
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_matrices.cpp) examples
+     */
     void reportCompMatr1(CompMatr1 matrix);
 
 
-    /// @ingroup matrices_reporters
-    /// @notdoced
-    /// @nottested
+    /** @ingroup matrices_reporters
+     * @notyetdoced
+     * @notyettested
+     * 
+     * @see
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_matrices.c) and
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_matrices.cpp) examples
+     */
     void reportCompMatr2(CompMatr2 matrix);
 
 
-    /// @ingroup matrices_reporters
-    /// @notdoced
-    /// @nottested
+    /** @ingroup matrices_reporters
+     * @notyetdoced
+     * @notyettested
+     * 
+     * @see
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_matrices.c) and
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_matrices.cpp) examples
+     */
     void reportCompMatr(CompMatr matrix);
 
 
-    /// @ingroup matrices_reporters
-    /// @notdoced
-    /// @nottested
+    /** @ingroup matrices_reporters
+     * @notyetdoced
+     * @notyettested
+     * 
+     * @see
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_matrices.c) and
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_matrices.cpp) examples
+     */
     void reportDiagMatr1(DiagMatr1 matrix);
 
 
-    /// @ingroup matrices_reporters
-    /// @notdoced
-    /// @nottested
+    /** @ingroup matrices_reporters
+     * @notyetdoced
+     * @notyettested
+     * 
+     * @see
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_matrices.c) and
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_matrices.cpp) examples
+     */
     void reportDiagMatr2(DiagMatr2 matrix);
 
 
     /// @ingroup matrices_reporters
-    /// @notdoced
-    /// @nottested
+    /// @notyetdoced
+    /// @notyettested
     void reportDiagMatr(DiagMatr matrix);
 
 
-    /// @ingroup matrices_reporters
-    /// @notdoced
-    /// @nottested
+    /** @ingroup matrices_reporters
+     * @notyetdoced
+     * @notyettested
+     * 
+     * @see
+     * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_matrices.c) and
+     *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_matrices.cpp) examples
+     */
     void reportFullStateDiagMatr(FullStateDiagMatr matr);
 
 

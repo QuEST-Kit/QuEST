@@ -155,6 +155,22 @@ void setNumReportedNewlines(int numNewlines) {
 }
 
 
+void setReportedPauliChars(const char* paulis) {
+    validate_envIsInit(__func__);
+    validate_numPauliChars(paulis, __func__);
+
+    printer_setPauliChars(paulis);
+}
+
+
+void setReportedPauliStrStyle(int flag) {
+    validate_envIsInit(__func__);
+    validate_reportedPauliStrStyleFlag(flag, __func__);
+
+    printer_setPauliStrFormat(flag);
+}
+
+
 
 /*
  * GPU CACHE
