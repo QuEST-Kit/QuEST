@@ -131,8 +131,8 @@ void setNumReportedNewlines(int numNewlines);
 
 
 /** 
- * @notdoced
- * @nottested
+ * @notyetdoced
+ * @notyettested
  * @myexample
  * ```
    PauliStr str = getInlinePauliStr("XYZ", {0,10,20});
@@ -146,8 +146,8 @@ void setReportedPauliChars(const char* paulis);
 
 
 /** 
- * @notdoced
- * @nottested
+ * @notyetdoced
+ * @notyettested
  * @myexample
  * ```
    PauliStr str = getInlinePauliStr("XYZ", {0,10,20});
