@@ -5,7 +5,7 @@ int main() {
 
     Qureg qureg = createQureg(3);
     PauliStr str = getInlinePauliStr("XYZ", {0,1,2});
-    qcomp angle = .4 + .8i;
+    qcomp angle = getQcomp(.4, .8);
 
     initPlusState(qureg);
     applyNonUnitaryPauliGadget(qureg, str, angle);
