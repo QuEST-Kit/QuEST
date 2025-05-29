@@ -1339,7 +1339,7 @@ void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vecto
 }
 
 
-void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qreal phase) {
+void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qcomp phase) { // qreal phase) {
 
     bool isGadget = true;
     anyCtrlZTensorOrGadget(qureg, ctrls, ctrlStates, targs, isGadget, phase);
