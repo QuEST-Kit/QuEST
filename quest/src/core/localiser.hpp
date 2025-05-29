@@ -24,6 +24,13 @@ using std::vector;
 
 
 /*
+ * PR DEMOS
+ */
+
+qcomp localiser_statevec_calcAmpSum(Qureg qureg);
+
+
+/*
  * GETTERS
  */
 

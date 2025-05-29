@@ -462,6 +462,27 @@ void exchangeAmpsToBuffersWhereQubitsAreInStates(Qureg qureg, int pairRank, vect
 
 
 /*
+ * PR DEMOS
+ */
+
+
+qcomp localiser_statevec_calcAmpSum(Qureg qureg) {
+
+    // each node computes the sum of its local amps
+    // in an embarrassingly parallel fashion
+    qcomp out =  accel_statevec_calcAmpSum(qureg);
+
+    // node partial sums are combined, and every
+    // node receives a copy of the full sum (consensus)
+    if (qureg.isDistributed)
+        comm_reduceAmp(&out);
+
+    return out;
+}
+
+
+
+/*
  * GETTERS
  */
 

@@ -183,6 +183,20 @@ using std::min;
 
 
 /*
+ * PR DEMOS
+ */
+
+
+qcomp accel_statevec_calcAmpSum(Qureg qureg) {
+
+    return (qureg.isGpuAccelerated)?
+        gpu_statevec_calcAmpSum(qureg):
+        cpu_statevec_calcAmpSum(qureg);
+}
+
+
+
+/*
  * GETTERS 
  */
 
