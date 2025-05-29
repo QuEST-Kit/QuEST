@@ -1432,6 +1432,22 @@ void applyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
     applyMultiStateControlledPauliGadget(qureg, nullptr, nullptr, 0, str, angle);
 }
 
+void applyNonUnitaryPauliGadget(Qureg qureg, PauliStr str, qcomp angle) {
+    validate_quregFields(qureg, __func__);
+    validate_pauliStrTargets(qureg, str, __func__);
+
+    qcomp phase = util_getPhaseFromGateAngle(angle);
+    localiser_statevec_anyCtrlPauliGadget(qureg, {}, {}, str, phase);
+
+    if (!qureg.isDensityMatrix)
+        return;
+
+    // conj(e^i(a)XZ) = e^(-i conj(a)XZ) but conj(Y)=-Y, so odd-Y undoes phase negation
+    phase = std::conj(phase) * (paulis_hasOddNumY(str) ? 1 : -1);
+    str = paulis_getShiftedPauliStr(str, qureg.numQubits);
+    localiser_statevec_anyCtrlPauliGadget(qureg, {}, {}, str, phase);
+}
+
 void applyControlledPauliGadget(Qureg qureg, int control, PauliStr str, qreal angle) {
     validate_quregFields(qureg, __func__);
     validate_controlAndPauliStrTargets(qureg, control, str, __func__);

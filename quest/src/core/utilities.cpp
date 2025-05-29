@@ -913,7 +913,10 @@ qreal util_getPhaseFromGateAngle(qreal angle) {
     return - angle / 2;
 }
 
+qcomp util_getPhaseFromGateAngle(qcomp angle) {
 
+    return -angle / qcomp(2.0, 0.0);
+}
 
 /*
  * DECOHERENCE FACTORS
