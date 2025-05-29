@@ -3,7 +3,7 @@
  * which are not performance critical (i.e. not used
  * in hot loops). These include qubit and state index
  * logic, matrix algebra, and channel parameters.
- * 
+ *
  * @author Tyson Jones
  */
 
@@ -59,7 +59,7 @@ int util_getPrefixBraInd(int ketQubit, Qureg qureg) {
         error_utilsGetPrefixBraIndGivenNonDensMatr();
     if (ketQubit < qureg.logNumColsPerNode)
         error_utilsGetPrefixBraIndGivenSuffixQubit();
-    
+
     // equivalent to util_getPrefixInd of util_getBraQubit
     return ketQubit - qureg.logNumColsPerNode;
 }
@@ -74,7 +74,7 @@ bool util_areAllQubitsInSuffix(vector<int> qubits, Qureg qureg) {
     for (int q : qubits)
         if (!util_isQubitInSuffix(q, qureg))
             return false;
-        
+
     return true;
 }
 
@@ -87,7 +87,7 @@ bool util_isBraQubitInSuffix(int ketQubit, Qureg qureg) {
 
 vector<int> getPrefixOrSuffixQubits(vector<int> qubits, Qureg qureg, bool getSuffix) {
 
-    // note that when the qureg is local/duplicated, 
+    // note that when the qureg is local/duplicated,
     // all qubits will be suffix, none will be prefix
 
     vector<int> subQubits(0);
@@ -102,7 +102,7 @@ vector<int> getPrefixOrSuffixQubits(vector<int> qubits, Qureg qureg, bool getSuf
 
 std::array<vector<int>,2> util_getPrefixAndSuffixQubits(vector<int> qubits, Qureg qureg) {
     return {
-        getPrefixOrSuffixQubits(qubits, qureg, false), 
+        getPrefixOrSuffixQubits(qubits, qureg, false),
         getPrefixOrSuffixQubits(qubits, qureg, true)
     };
 }
@@ -115,7 +115,7 @@ int util_getRankBitOfQubit(int ketQubit, Qureg qureg) {
 }
 
 int util_getRankBitOfBraQubit(int ketQubit, Qureg qureg) {
-    
+
     int rankInd = util_getPrefixBraInd(ketQubit, qureg);
     int rankBit = getBit(qureg.rank, rankInd);
     return rankBit;
@@ -165,7 +165,7 @@ vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg) {
 }
 
 vector<int> util_getNonTargetedQubits(int* targets, int numTargets, int numQubits) {
-    
+
     qindex mask = getBitMask(targets, numTargets);
 
     vector<int> nonTargets;
@@ -347,7 +347,7 @@ qreal util_getSum(vector<qreal> list) {
 
     qreal sum = 0;
     qreal y, t, c=0;
-    
+
     // complex Kahan summation
     for (auto& x : list) {
         y = x - c;
@@ -612,7 +612,7 @@ bool getWhetherNonZero(qcomp* diags, qindex dim, qreal eps) {
         // function was supposed to detect and prevent! Fixing
         // this thoroughly would necessitate creating another
         // matrix field, separating when .absIsApproxNonZero and
-        // .realIsApproxNonZero. But this is revolting and we 
+        // .realIsApproxNonZero. But this is revolting and we
         // simply accept the above strange scenario as a
         // non-validated dge-case.
     }
@@ -668,7 +668,7 @@ bool getWhetherRealsAreStrictlyNonNegative(qcomp* diags, qindex dim) {
     // validation epsilon. For example, sometimes it needs to
     // be computed even when numerical validation is disabled,
     // and does not need recomputing with the epsilon changes.
-    
+
     // check every real component is strictly >= 0
     for (qindex i=0; i<dim; i++)
         if (std::real(diags[i]) < 0)
@@ -767,7 +767,7 @@ bool util_isCPTP(KrausMap map, qreal eps) {
 }
 
 // T can be qcomp*** or vector<vector<vector<qcomp>>>
-template <typename T> 
+template <typename T>
 void setSuperoperator(qcomp** superop, T matrices, int numMatrices, qindex logMatrixDim) {
 
     /// @todo
@@ -787,7 +787,7 @@ void setSuperoperator(qcomp** superop, T matrices, int numMatrices, qindex logMa
     // add each matrix's contribution to the superoperator
     for (int n=0; n<numMatrices; n++) {
         auto matrix = matrices[n];
-        
+
         // superop += conj(matrix) (tensor) matrix
         for (qindex i=0; i<matrixDim; i++)
             for (qindex j=0; j<matrixDim; j++)
@@ -913,6 +913,10 @@ qreal util_getPhaseFromGateAngle(qreal angle) {
     return - angle / 2;
 }
 
+qcomp util_getPhaseFromGateAngle(qcomp angle) {
+
+    return -angle / qcomp(2.0, 0.0);
+}
 
 
 /*
@@ -1027,7 +1031,7 @@ void tryAllocVector(vector<T> &vec, qindex size, std::function<void()> errFunc) 
     try {
         vec.resize(size);
 
-    } catch (std::bad_alloc &e) { 
+    } catch (std::bad_alloc &e) {
         errFunc();
     } catch (std::length_error &e) {
         errFunc();
@@ -1062,7 +1066,7 @@ void util_tryAllocMatrix(vector<vector<qcomp>> &matr, qindex numRows, qindex num
         for (qindex r=0; r<numRows; r++)
             matr[r].resize(numCols);
 
-    } catch (std::bad_alloc &e) { 
+    } catch (std::bad_alloc &e) {
         errFunc();
     } catch (std::length_error &e) {
         errFunc();

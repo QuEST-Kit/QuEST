@@ -2,11 +2,11 @@
  * Internal functions which localize the data needed for simulation.
  * That is, they determine whether performing a simulation requires
  * Querg amplitudes from other distributed nodes and if so, invoke
- * the necessary communication, before finally calling the 
+ * the necessary communication, before finally calling the
  * embarrassingly parallel subroutines in accelerator.cpp. This is
  * done agnostically of whether amplitudes of the Qureg are being
  * stored in RAM (CPU) or VRAM (GPU).
- * 
+ *
  * @author Tyson Jones
  */
 
@@ -118,9 +118,13 @@ void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg qureg, vector<int> ctrls, ve
 
 void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qcomp globalFactor=1);
 
-void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qreal phase);
+void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qcomp phase);
 
-void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qreal phase);
+void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qcomp phase);
+
+// void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qreal phase);
+
+// void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qreal phase);
 
 
 /*
@@ -198,7 +202,7 @@ qcomp localiser_densmatr_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMa
 
 
 /*
- * PROJECTORS 
+ * PROJECTORS
  */
 
 void localiser_statevec_multiQubitProjector(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob);

@@ -3,7 +3,7 @@
  * unitaries, projectors, channels, Hermitians, and
  * arbitrary matrices) upon Quregs, which can be
  * statevectors or density matrices.
- * 
+ *
  * @author Tyson Jones
  */
 
@@ -398,7 +398,7 @@ void applyMultiControlledDiagMatr(Qureg qureg, vector<int> controls, vector<int>
 
 void applyMultiStateControlledDiagMatr(Qureg qureg, vector<int> controls, vector<int> states, vector<int> targets, DiagMatr matrix) {
     validate_controlsMatchStates(controls.size(), states.size(), __func__);
-    
+
     applyMultiStateControlledDiagMatr(qureg, controls.data(), states.data(), controls.size(), targets.data(), targets.size(), matrix);
 }
 
@@ -470,7 +470,7 @@ void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* sta
     validate_controlsAndTargets(qureg, controls, numControls, targets, numTargets, __func__);
     validate_controlStates(states, numControls, __func__); // can be nullptr, ignoring numControls
     validate_matrixDimMatchesTargets(matrix, numTargets, __func__);
-    validate_matrixIsUnitary(matrix, __func__); 
+    validate_matrixIsUnitary(matrix, __func__);
     validate_matrixExpIsNonDiverging(matrix, exponent, __func__);
     validate_unitaryExponentIsReal(exponent, __func__);
 
@@ -684,7 +684,7 @@ void applyMultiStateControlledT(Qureg qureg, vector<int> controls, vector<int> s
 
 
 /*
- * Hadamard 
+ * Hadamard
  */
 
 extern "C" {
@@ -717,7 +717,7 @@ void applyMultiStateControlledHadamard(Qureg qureg, int* controls, int* states, 
 
     qcomp a = 1/std::sqrt(2);
     CompMatr1 matr = getCompMatr1({
-        {a, a}, 
+        {a, a},
         {a,-a}});
 
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
@@ -1067,13 +1067,13 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
     auto ctrlVec = util_getVector(controls, numControls);
     auto stateVec = util_getVector(states, numControls); // empty if states==nullptr
 
-    // when there are no control qubits, we can merge the density matrix's 
-    // operation sinto a single tensor, i.e. +- (shift(str) (x) str), to 
+    // when there are no control qubits, we can merge the density matrix's
+    // operation sinto a single tensor, i.e. +- (shift(str) (x) str), to
     // avoid superfluous re-enumeration of the state
     if (qureg.isDensityMatrix && numControls == 0) {
         factor = paulis_hasOddNumY(str)? -1 : 1;
         ctrlVec = util_getConcatenated(ctrlVec, util_getBraQubits(ctrlVec, qureg));
-        stateVec = util_getConcatenated(stateVec, stateVec); 
+        stateVec = util_getConcatenated(stateVec, stateVec);
         str = paulis_getKetAndBraPauliStr(str, qureg);
     }
 
@@ -1147,11 +1147,11 @@ void applyHigherOrderTrotter(Qureg qureg, PauliStrSum sum, qreal angle, int orde
 
     if (order == 1) {
         applyFirstOrderTrotter(qureg, sum, angle, false);
-    
+
     } else if (order == 2) {
         applyFirstOrderTrotter(qureg, sum, angle/2, false);
         applyFirstOrderTrotter(qureg, sum, angle/2, true);
-    
+
     } else {
         qreal p = 1. / (4 - std::pow(4, 1./(order-1)));
         qreal a = p * angle;
@@ -1192,7 +1192,7 @@ void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle
 
     /// @todo
     /// the accuracy of Trotterisation is greatly improved by randomisation
-    /// or (even sub-optimal) grouping into commuting terms. Should we 
+    /// or (even sub-optimal) grouping into commuting terms. Should we
     /// implement these above or into another function?
 }
 
@@ -1428,21 +1428,37 @@ void multiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
 void applyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
     validate_quregFields(qureg, __func__);
     validate_pauliStrTargets(qureg, str, __func__);
-    
+
     applyMultiStateControlledPauliGadget(qureg, nullptr, nullptr, 0, str, angle);
+}
+
+void applyNonUnitaryPauliGadget(Qureg qureg, PauliStr str, qcomp angle) {
+    validate_quregFields(qureg, __func__);
+    validate_pauliStrTargets(qureg, str, __func__);
+
+    qcomp phase = util_getPhaseFromGateAngle(angle);
+    localiser_statevec_anyCtrlPauliGadget(qureg, {}, {}, str, phase);
+
+    if (!qureg.isDensityMatrix)
+        return;
+
+    // conj(e^i(a)XZ) = e^(-i conj(a)XZ) but conj(Y)=-Y, so odd-Y undoes phase negation
+    phase = std::conj(phase) * (paulis_hasOddNumY(str) ? 1 : -1);
+    str = paulis_getShiftedPauliStr(str, qureg.numQubits);
+    localiser_statevec_anyCtrlPauliGadget(qureg, {}, {}, str, phase);
 }
 
 void applyControlledPauliGadget(Qureg qureg, int control, PauliStr str, qreal angle) {
     validate_quregFields(qureg, __func__);
     validate_controlAndPauliStrTargets(qureg, control, str, __func__);
-    
+
     applyMultiStateControlledPauliGadget(qureg, &control, nullptr, 1, str, angle);
 }
 
 void applyMultiControlledPauliGadget(Qureg qureg, int* controls, int numControls, PauliStr str, qreal angle) {
     validate_quregFields(qureg, __func__);
     validate_controlsAndPauliStrTargets(qureg, controls, numControls, str, __func__);
-    
+
     applyMultiStateControlledPauliGadget(qureg, controls, nullptr, numControls, str, angle);
 }
 
@@ -1451,13 +1467,13 @@ void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* state
     validate_controlsAndPauliStrTargets(qureg, controls, numControls, str, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    // a non-controlled str=I effects a global phase change (of -angle/2) which does not 
+    // a non-controlled str=I effects a global phase change (of -angle/2) which does not
     // at all change a density matrix; the subsequent dagger operation would undo it,
     // which we avoid to preserve numerical accuracy
     if (paulis_isIdentity(str) && numControls == 0 && qureg.isDensityMatrix)
         return;
 
-    // when numControls >= 1, all amps satisfying the control condition undergo a phase 
+    // when numControls >= 1, all amps satisfying the control condition undergo a phase
     // change of -angle/2, as if all non-control-qubits were targeted by exp(-angle/2)I,
     // which is sufficiently efficient using the existing gadget backend function
 
@@ -1754,8 +1770,8 @@ extern "C" {
 void applyQubitProjector(Qureg qureg, int target, int outcome) {
     validate_quregFields(qureg, __func__);
     validate_target(qureg, target, __func__);
-    validate_measurementOutcomeIsValid(outcome, __func__); 
-    
+    validate_measurementOutcomeIsValid(outcome, __func__);
+
     // we permit the outcome to be negligibly likely, leaving state = null
     qreal prob = 1;
     (qureg.isDensityMatrix)?

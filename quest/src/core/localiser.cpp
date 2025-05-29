@@ -2,12 +2,12 @@
  * Internal functions which localize the data needed for simulation.
  * That is, they determine whether performing a simulation requires
  * Qureg amplitudes from other distributed nodes and if so, invoke
- * the necessary communication, before finally calling the 
+ * the necessary communication, before finally calling the
  * embarrassingly parallel subroutines in accelerator.cpp. This is
  * done agnostically of whether amplitudes of the Qureg are being
  * stored in RAM (CPU) or VRAM (GPU). The bespoke per-operator logic
  * herein is what makes QuEST v4 truly unique among simulators!
- * 
+ *
  * @author Tyson Jones
  */
 
@@ -297,10 +297,10 @@ FullStateDiagMatr getSpoofedDistributedMatrFromDistributedQureg(FullStateDiagMat
     spoof.numElemsPerNode = local.numElems / distrib.numNodes; // divides evenly
 
     // offset pointers to local's existing memory, avoiding de-referencing nullptr (illegal)
-    qindex offset = (distrib.isDensityMatrix)? 
+    qindex offset = (distrib.isDensityMatrix)?
         util_getGlobalColumnOfFirstLocalAmp(distrib):
         util_getGlobalIndexOfFirstLocalAmp(distrib);
-    
+
     spoof.cpuElems = &local.cpuElems[offset];
     spoof.gpuElems = (local.isGpuAccelerated)? &local.gpuElems[offset] : local.gpuElems;
 
@@ -315,7 +315,7 @@ Qureg getSpoofedBufferlessQuregFromFullStateDiagMatr(FullStateDiagMatr matr) {
     // enables re-use of backend statevec functions for processing matrices.
     bool isDensMatr = false;
     Qureg qureg = qureg_populateNonHeapFields(
-        matr.numQubits, isDensMatr, 
+        matr.numQubits, isDensMatr,
         matr.isDistributed, matr.isGpuAccelerated, matr.isMultithreaded);
 
     // bind matr's existing CPU and GPU memory to Qureg
@@ -337,7 +337,7 @@ Qureg getSpoofedSerialStateVecFromDensMatrAndAmps(Qureg denseQureg, qcomp* amps)
     int useGpuAccel = 0;
     int useMultithread = 0;
     Qureg spoof = qureg_populateNonHeapFields(
-        denseQureg.numQubits, isDensMatr, 
+        denseQureg.numQubits, isDensMatr,
         useDistrib, useGpuAccel, useMultithread);
 
     // bind the external memory
@@ -362,9 +362,9 @@ auto getSpoofedQuregAndMatrWithMatchingDistributions(Qureg qureg, FullStateDiagM
     if (!qureg.isDistributed && matr.isDistributed) {
 
         Qureg quregSpoof = qureg_populateNonHeapFields(
-            qureg.numQubits, qureg.isDensityMatrix, 
+            qureg.numQubits, qureg.isDensityMatrix,
             matr.isDistributed,     // becomes distributed
-            qureg.isGpuAccelerated, 
+            qureg.isGpuAccelerated,
             matr.isMultithreaded);  // consults matr's multithreading (appropriate for reduced size)
 
         quregSpoof = getSpoofedDistributedBufferlessQuregFromLocalQureg(qureg, quregSpoof);
@@ -395,7 +395,7 @@ Qureg getSpoofedLocalStateVecFromDistributedDensMatrBuffers(Qureg densmatr) {
 Qureg createSpoofedLocalStateVecFromDensMatr(Qureg densmatr, bool &memWasAlloc) {
     assert_localiserGivenDensMatr(densmatr);
 
-    // this function spoofs a non-distributed statevector Qureg with the 
+    // this function spoofs a non-distributed statevector Qureg with the
     // same number of qubits as the given densmatr. It uses densmatr's
     // mutlithread and GPU status, and if they exist, re-uses densmatr's
     // CPU and GPU communication buffers for its main memory. If densmatr
@@ -496,7 +496,7 @@ qcomp localiser_statevec_getAmp(Qureg qureg, qindex globalInd) {
 
 
 void localiser_statevec_getAmps(qcomp* outAmps, Qureg qureg, qindex globalStartInd, qindex globalNumAmps) {
-    
+
     // we do not assert state-vec, since the density matrix routine re-uses this function
 
     // when not distributed, all nodes merely perform direct local overwrite and finish
@@ -540,7 +540,7 @@ void localiser_densmatr_getAmps(qcomp** outAmps, Qureg qureg, qindex startRow, q
     assert_localiserGivenDensMatr(qureg);
 
     /// @todo improve the performance!
-    /// this function simply serially invokes localiser_statevec_getAmps() upon 
+    /// this function simply serially invokes localiser_statevec_getAmps() upon
     /// every indicated column, for simplicity, and since we believe this function
     /// will only ever be called upon tractably small sub-matrices. After all, the
     /// user is likely to serially process outAmps themselves. Our method incurs the
@@ -590,7 +590,7 @@ void localiser_fullstatediagmatr_getElems(qcomp* outElems, FullStateDiagMatr mat
 
 void localiser_statevec_setAmps(qcomp* inAmps, Qureg qureg, qindex globalStartInd, qindex globalNumAmps) {
 
-    // we do not assert Qureg is a state-vector, since the 
+    // we do not assert Qureg is a state-vector, since the
     // density matrix routine leverages this function
 
     // always embarrassingly parallel, since inAmps is duplicated on every node;
@@ -618,8 +618,8 @@ void localiser_densmatr_setAmps(qcomp** inAmps, Qureg qureg, qindex startRow, qi
     /// column-wise, rather than row-wise), passing each to the above
     /// statevec routine. It is ergo similar to the naive method used by
     /// localiser_densmatr_getAmps(), though is embarrassingly parallel.
-    /// This func allocates temporary memory as large as numRows*numCols 
-    /// (which could be an entire Qureg's worth), and serially computes 
+    /// This func allocates temporary memory as large as numRows*numCols
+    /// (which could be an entire Qureg's worth), and serially computes
     /// the transpose (which can be as bad as serial iteration of the
     /// whole qureg). This is grossly inefficient, and worse than merely
     /// parallel-overwriting CPU memory then copying to GPU.
@@ -650,7 +650,7 @@ void localiser_densmatr_setAmpsToPauliStrSum(Qureg qureg, PauliStrSum sum) {
 
 void localiser_fullstatediagmatr_setElems(FullStateDiagMatr matr, qindex startInd, qcomp* in, qindex numElems) {
 
-    // modification of a FullStateDiagMatr is identical to that of a 
+    // modification of a FullStateDiagMatr is identical to that of a
     // statevector Qureg, so we spoof an identically-deployed Qureg
     Qureg spoof = getSpoofedBufferlessQuregFromFullStateDiagMatr(matr);
 
@@ -670,7 +670,7 @@ void localiser_fullstatediagmatr_setElems(FullStateDiagMatr matr, qindex startIn
 
 void localiser_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStrSum in) {
 
-    // always embarrassingly parallel. Note that accelerator will 
+    // always embarrassingly parallel. Note that accelerator will
     // safely keep CPU and GPU memory of FullStateDiagMatr consistent
     accel_fullstatediagmatr_setElemsToPauliStrSum(out, in);
 }
@@ -781,12 +781,12 @@ void localiser_densmatr_initUniformlyRandomPureStateAmps(Qureg qureg) {
     bool wasMemAlloc = false;
     Qureg pure = createSpoofedLocalStateVecFromDensMatr(qureg, wasMemAlloc); // overwrites wasMemAlloc
 
-    // initialise the spoofed pure Qureg to a normalised, uniformly random 
-    // statevector; this is calling the same API function which invoked THIS 
+    // initialise the spoofed pure Qureg to a normalised, uniformly random
+    // statevector; this is calling the same API function which invoked THIS
     // very function, but instead passing a statevector
     initRandomPureState(pure); // harmlessly re-valdates
 
-    // then, we simply initialise the density matrix in this pure state. 
+    // then, we simply initialise the density matrix in this pure state.
     // Note that initPureState() calls mixDensityMatrixWithStatevector()
     // which writes to qureg's communication buffer only when the pure
     // qureg is distributed; we safely avoid that scenario, which would
@@ -939,7 +939,7 @@ void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, vector<int> ctrls, vect
 
 
 void anyCtrlOneTargDenseMatrOnPrefix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
-  
+
     int pairRank = util_getRankWithQubitFlipped(targ, qureg);
     exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank, ctrls, ctrlStates);
 
@@ -964,7 +964,7 @@ void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, 
     // retain only suffix control qubits as relevant to communication and local amp modification
     removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
 
-    if (conj) 
+    if (conj)
         matr = util_getConj(matr);
 
     // perform embarrassingly parallel routine or communication-inducing swaps
@@ -978,7 +978,7 @@ void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, 
 /*
  * TWO-TARGET & ANY-TARGET DENSE MATRIX
  *
- * which are intermixed, despite each having their own local backend 
+ * which are intermixed, despite each having their own local backend
  * implementations, because they use identical communication logic
  */
 
@@ -1013,7 +1013,7 @@ void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ct
     auto [newCtrls, newTargs] = getCtrlsAndTargsSwappedToMinSuffix(qureg, ctrls, targs);
 
     // only unmoved ctrls can be applied to the swaps, to accelerate them
-    auto [unmovedCtrls, unmovedCtrlStates] = getNonSwappedCtrlsAndStates(ctrls, ctrlStates, newCtrls); 
+    auto [unmovedCtrls, unmovedCtrlStates] = getNonSwappedCtrlsAndStates(ctrls, ctrlStates, newCtrls);
 
     /// @todo
     /// above, we track which control qubits are un-targeted by the SWAPs; such controls can be
@@ -1052,23 +1052,23 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
 
-    // despite our use of compile-time templating, the bespoke one-targ routines are still faster 
+    // despite our use of compile-time templating, the bespoke one-targ routines are still faster
     // than this any-targ routine when given a single target, because they can leverage a bespoke
     // communication pattern (rather than swapping qubits into suffix), and pass the matrix elems
     // to GPU kernels via arguments rather than global memory, which is faster for threads to read.
-    // Callers may however still choose this function (rather than the one-qubit specific one) for 
-    // its convenient generality, so we divert to the one-targ routine when possible, copying the 
+    // Callers may however still choose this function (rather than the one-qubit specific one) for
+    // its convenient generality, so we divert to the one-targ routine when possible, copying the
     // heap CPU matrix (assumed consistent with GPU memory) into stack memory
     if (targs.size() == 1)
         localiser_statevec_anyCtrlOneTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], getCompMatr1(matr.cpuElems), conj);
-    
+
     // similarly, bespoke two-targ routines are preferable although they offer no communication
     // benefit because they call the same any-targ localiser, but still accelerate GPU memory access.
-    // this function call is the same as below, but we explicitly pass a CompMatr2 type in lieu of 
+    // this function call is the same as below, but we explicitly pass a CompMatr2 type in lieu of
     // CompMatr, which avoids having to copy the CompMatr dynamic memory into accelerator backends
     else if (targs.size() == 2)
         localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], targs[1], getCompMatr2(matr.cpuElems), conj);
-    
+
     // call the any-targ routine when given 3 or more targs, which may still invoke bespoke,
     // fixed-targ instances of backend templated functions depending the number of targs
     else
@@ -1156,7 +1156,7 @@ void localiser_statevec_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qco
     // embarrassingly parallel when both distributed or both local
     if (quregDist == matrDist)
         accel_statevec_allTargDiagMatr_sub(qureg, matr, exponent);
-    
+
     // embarrasingly parallel when only qureg is distributed (all nodes have all needed matr elems)
     if (quregDist && !matrDist) {
         auto copy = getSpoofedDistributedMatrFromDistributedQureg(matr, qureg);
@@ -1175,20 +1175,20 @@ void localiser_densmatr_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qco
     // bound settings (e.g. 8 qubit Quregs). So we here use an O(1) bespoke method.
 
     // since Qureg is quadratically bigger than matr, it is likely they have different
-    // distributions (matr is probably local). Because every column of qureg is 
+    // distributions (matr is probably local). Because every column of qureg is
     // dot-multiplied with the full matr, every node requires all matr elements
     bool quregDist = qureg.isDistributed;
     bool matrDist = matr.isDistributed;
 
     // cannot distribute only matr; qureg has no buffer space to receive a broadcast.
-    // in theory, we could allocate temporary buffer space which would only be 
+    // in theory, we could allocate temporary buffer space which would only be
     // quadratically smaller than qureg; but this is a ludicrous scenario to support.
     if (!quregDist && matrDist) {
         error_localiserGivenDistribMatrixAndLocalQureg();
         return;
     }
 
-    // when the matrix is not distributed, we call the same routine despite whether qureg 
+    // when the matrix is not distributed, we call the same routine despite whether qureg
     // is distributed or not; that merely changes how many qureg columns get updated
     if (!matrDist) {
         accel_densmatr_allTargDiagMatr_subA(qureg, matr, exponent, multiplyOnly);
@@ -1200,14 +1200,14 @@ void localiser_densmatr_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qco
 
     // matr elems are inside qureg buffer, but we still pass matr struct along to
     // accelerator, because it is going to perform mischief to re-use subA().
-    accel_densmatr_allTargDiagMatr_subB(qureg, matr, exponent, multiplyOnly); 
+    accel_densmatr_allTargDiagMatr_subB(qureg, matr, exponent, multiplyOnly);
 }
 
 
 
 /*
- * ANY-TARGET ANY-TYPE MATRIX 
- * 
+ * ANY-TARGET ANY-TYPE MATRIX
+ *
  * This is merely a convenient gateway for callers to automatically
  * dispatch to the above specific functions, based on matrix type
  */
@@ -1244,7 +1244,7 @@ extern int paulis_getPrefixZSign(Qureg qureg, vector<int> prefixZ) ;
 extern qcomp paulis_getPrefixPaulisElem(Qureg qureg, vector<int> prefixY, vector<int> prefixZ);
 
 
-void anyCtrlZTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, bool isGadget, qreal phase) {
+void anyCtrlZTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, bool isGadget, qcomp phase) { // qreal phase) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
 
@@ -1258,7 +1258,7 @@ void anyCtrlZTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStat
     // prefixZ merely applies a node-wide factor to fac0 and fac1
     auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targs, qureg);
     int sign = paulis_getPrefixZSign(qureg, prefixZ);
-    
+
     // tensor multiplies +-1, gadget multiplies exp(+- i phase)
     qcomp fac0 = (isGadget)? std::exp(+ phase * sign * 1_i) : +1 * sign;
     qcomp fac1 = (isGadget)? std::exp(- phase * sign * 1_i) : -1 * sign;
@@ -1292,7 +1292,7 @@ void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrl
     auto [prefixY, suffixY] = util_getPrefixAndSuffixQubits(targsY, qureg);
     auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targsZ, qureg);
 
-    // scale pair amp's coefficient by node-wide coeff 
+    // scale pair amp's coefficient by node-wide coeff
     pairAmpFac *= paulis_getPrefixPaulisElem(qureg, prefixY, prefixZ); // 1 when embarrassingly parallel
 
     // embarrassingly parallel when there is only Z's in prefix
@@ -1342,11 +1342,17 @@ void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vecto
 void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qreal phase) {
 
     bool isGadget = true;
-    anyCtrlZTensorOrGadget(qureg, ctrls, ctrlStates, targs, isGadget, phase); 
+    anyCtrlZTensorOrGadget(qureg, ctrls, ctrlStates, targs, isGadget, phase);
+}
+
+void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qcomp phase) { // qreal phase) {
+
+    bool isGadget = true;
+    anyCtrlZTensorOrGadget(qureg, ctrls, ctrlStates, targs, isGadget, phase);
 }
 
 
-void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qreal phase) {
+void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qcomp phase) { // qreal phase) {
 
     // when str=IZ, we must use the above bespoke algorithm
     if (!paulis_containsXOrY(str)) {
@@ -1404,7 +1410,7 @@ void mixDensityMatrixWithStatevector(qreal outProb, Qureg out, qreal inProb, Qur
         accel_densmatr_mixQureg_subC(outProb, out, inProb);
     }
 
-    // only 'out' being distributed means simulation is embarrasingly parallel, 
+    // only 'out' being distributed means simulation is embarrasingly parallel,
     // because the full 'in' is already known on every node
     if (outDist && !inDist)
         accel_densmatr_mixQureg_subD(outProb, out, inProb, in);
@@ -1584,7 +1590,7 @@ void localiser_densmatr_oneQubitPauliChannel(Qureg qureg, int qubit, qreal probX
 }
 
 
-// twoQubitPauliChannel() is regrettably too difficult; the communication model cannot be 
+// twoQubitPauliChannel() is regrettably too difficult; the communication model cannot be
 // simplified the way it was in twoQubitDepolarising() which leveraged the uniform
 // coefficients. It is not clear whether arbitrary coefficients, which cause many more
 // amplitudes to mix, can ever be performed in a sequence of pairwise communication
@@ -1648,7 +1654,7 @@ CompMatr getSpoofedCompMatrFromSuperOp(SuperOp op) {
 
     // prepare output CompMatr (avoiding C++20 designated initialiser)
     CompMatr out;
-    
+
     // superoperator acts on twice as many qubits
     out.numQubits = 2 * op.numQubits;
     out.numRows   = op.numRows;
@@ -1680,7 +1686,7 @@ void localiser_densmatr_superoperator(Qureg qureg, SuperOp op, vector<int> ketTa
 
 
 void localiser_densmatr_krausMap(Qureg qureg, KrausMap map, vector<int> ketTargs) {
-    
+
     // Kraus map is simulated through its existing superoperator
     localiser_densmatr_superoperator(qureg, map.superop, ketTargs);
 }
@@ -1698,7 +1704,7 @@ auto getNonTracedQubitOrder(Qureg qureg, vector<int> originalTargs, vector<int> 
     vector<int> allQubits(2*qureg.numQubits);
     for (size_t q=0; q<allQubits.size(); q++)
         allQubits[q] = q;
-    
+
     // determine the ordering of all the Qureg's qubits after swaps
     for (size_t i=0; i<originalTargs.size(); i++) {
         int qb1 = originalTargs[i];
@@ -1734,7 +1740,7 @@ auto getNonTracedQubitOrder(Qureg qureg, vector<int> originalTargs, vector<int> 
 
 void reorderReducedQureg(Qureg inQureg, Qureg outQureg, vector<int> allTargs, vector<int> suffixTargs) {
 
-    /// @todo 
+    /// @todo
     /// this function performs a sequence of SWAPs which are NOT necessarily upon disjoint qubits,
     /// and ergo do not commute. We still however may be able to effect this more efficiently in
     /// a single communicating operation rather than this sequence of SWAP gates, and might still
@@ -1754,7 +1760,7 @@ void reorderReducedQureg(Qureg inQureg, Qureg outQureg, vector<int> allTargs, ve
         int pair = 0;
         while (remainingQubits[pair] != qubit)
             pair++;
-        
+
         // and swap it directly to its required position, triggering any communication scenario (I think)
         localiser_statevec_anyCtrlSwap(outQureg, {}, {}, qubit, pair);
         std::swap(remainingQubits[qubit], remainingQubits[pair]);
@@ -1798,8 +1804,8 @@ void localiser_densmatr_partialTrace(Qureg inQureg, Qureg outQureg, vector<int> 
     // this function requires inQureg and outQureg are both or neither distributed;
     // it does not support the (potentially reasonable) situation when only inQureg
     // is distributed because outQureg it is too small, like results from tracing
-    // out many qubits. Alas we cannot easily support this scenario, and such a 
-    // scenario anyway our parallelisation scheme which approaches serial as the 
+    // out many qubits. Alas we cannot easily support this scenario, and such a
+    // scenario anyway our parallelisation scheme which approaches serial as the
     // outQureg shrinks in size. Alas!
 
     // sorted targets needed by subsequent bitwise insertions; we pedantically use
@@ -1819,7 +1825,7 @@ void localiser_densmatr_partialTrace(Qureg inQureg, Qureg outQureg, vector<int> 
 
 
 qreal localiser_statevec_calcTotalProb(Qureg qureg) {
-    
+
     // not restricted to statevecs; density matrices use
     // a different routine for calcTotalProb, but they use
     // this routine for calcHilbertSchmidtDistance
@@ -1837,7 +1843,7 @@ qreal localiser_densmatr_calcTotalProb(Qureg qureg) {
     assert_localiserGivenDensMatr(qureg);
 
     qreal prob = accel_densmatr_calcTotalProb_sub(qureg);
-    
+
     if (qureg.isDistributed)
         comm_reduceReal(&prob);
 
@@ -1911,12 +1917,12 @@ void localiser_statevec_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg 
     /// In principle, we can remedy this by only passing the suffix qubits
     /// to all backends, which then simplify their routines (as if non-
     /// distributed), and write to temporarily wrong outProbs locations. We
-    /// could then use the excluded prefix qubits here to adjust the location 
+    /// could then use the excluded prefix qubits here to adjust the location
     /// of 'outProbs' before the global reduction. This is a small nuisance
     /// since 'qubits' are arbitrarily ordered and ergo the re-locating will
-    /// not necessarily be as simple as shifting. Some illustrative mockup 
-    /// code is below. We defer this optimisation for now, passing all qubits 
-    /// to the backend, and avoiding cuQuantum whenever any qubit lies within 
+    /// not necessarily be as simple as shifting. Some illustrative mockup
+    /// code is below. We defer this optimisation for now, passing all qubits
+    /// to the backend, and avoiding cuQuantum whenever any qubit lies within
     /// the prefix state. Optimise this!
 
     // auto [prefixQubits, suffixQubits] = util_getPrefixAndSuffixQubits(qubits, qureg);
@@ -1987,11 +1993,11 @@ qcomp getDensMatrExpecPauliStrTermOfOnlyThisNode(Qureg qureg, PauliStr str) {
     // optimised scenario when str = I
     if (targsX.empty() && targsY.empty() && targsZ.empty())
         return accel_densmatr_calcTotalProb_sub(qureg);
-    
+
     // optimised scenario when str = Z
     if (targsX.empty() && targsY.empty())
         return accel_densmatr_calcExpecAnyTargZ_sub(qureg, targsZ);
-    
+
     // generic XYZ
     return accel_densmatr_calcExpecPauliStr_sub(qureg, targsX, targsY, targsZ);
 }
@@ -2054,13 +2060,13 @@ qcomp localiser_statevec_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
 
     // this function does not process each PauliStr within sum independently; instead, we
     // leverage that strings differing only by I <-> Z and X <-> Y in the prefix qubits
-    // have identical communication patterns, and so can all be processed after one round 
-    // of amps exchange. 
-    
-    /// @todo 
+    // have identical communication patterns, and so can all be processed after one round
+    // of amps exchange.
+
+    /// @todo
     /// We can optimise further in a similar spirit to above by grouping identically-
     /// communicating strings into those which differ only by suffix I <-> Z and X <-> Y,
-    /// which have identical amplitude-mixing patterns, to avoid repeated enumeration of 
+    /// which have identical amplitude-mixing patterns, to avoid repeated enumeration of
     /// all amplitudes and reduce the associated memory-movement / caching costs.
     /// (This is facilitated "for free" by cuStateVec in GPU settings, although we do not
     /// wish to here differentiate localiser logic based on CPU vs GPU deployment)
@@ -2099,7 +2105,7 @@ qcomp localiser_statevec_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
             auto [prefixX, suffixX] = util_getPrefixAndSuffixQubits(targsX, qureg);
             auto [prefixY, suffixY] = util_getPrefixAndSuffixQubits(targsY, qureg);
             auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targsZ, qureg);
-            
+
             // contribute coeff * prefix-coeff * suffix-sum
             qcomp termFactor = paulis_getPrefixPaulisElem(qureg, prefixY, prefixZ);
             qcomp termValue = termFactor * termFunc(qureg, suffixX, suffixY, suffixZ);
@@ -2111,12 +2117,12 @@ qcomp localiser_statevec_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
             /// always assume the number of terms in the PauliStrSum is tractable!
             totalValue += coeff * termValue;
 
-            // prefixX wasn't used since it only informs pair-ranks which are not 
+            // prefixX wasn't used since it only informs pair-ranks which are not
             // consulted here (due to being embarrassingly parallel); we suppress warning
             (void) prefixX;
         }
     }
-    
+
     // combine contributions from each node
     if (qureg.isDistributed)
         comm_reduceAmp(&totalValue);
@@ -2130,7 +2136,7 @@ qcomp localiser_densmatr_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
 
     // TOOD:
     // we can optimise this method by grouping sum's terms into strings which
-    // involve differ only by I <-> Z and X <-> Y, which have identical 
+    // involve differ only by I <-> Z and X <-> Y, which have identical
     // enumeration patterns and which can significantly reduce superfluous
     // re-enumeration of the amps, reducing memroy-movement/caching costs.
     // Explore this!
@@ -2150,7 +2156,7 @@ qcomp localiser_densmatr_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
 
 qcomp localiser_statevec_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool useRealPow) {
 
-    // since this method does not modify qureg, we force qureg & matr distributions to 
+    // since this method does not modify qureg, we force qureg & matr distributions to
     // agree by merely spoofing the non-distributed object to be distributed;
     // we use new vars in defensive design, in case args ever become references
     auto [quregSpoof, matrSpoof] = getSpoofedQuregAndMatrWithMatchingDistributions(qureg, matr);
@@ -2168,7 +2174,7 @@ qcomp localiser_statevec_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMa
 
 qcomp localiser_densmatr_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool useRealPow) {
 
-    // since this method does not modify qureg, we force qureg & matr distributions to 
+    // since this method does not modify qureg, we force qureg & matr distributions to
     // agree by merely spoofing the non-distributed object to be distributed;
     // we use new vars in defensive design, in case args ever become references
     auto [quregSpoof, matrSpoof] = getSpoofedQuregAndMatrWithMatchingDistributions(qureg, matr);
@@ -2227,7 +2233,7 @@ qcomp localiser_densmatr_calcFidelityWithPureState(Qureg rho, Qureg psi, bool co
 
     // each node will first compute their local fidelity contribution
     qcomp fid = 0;
-    
+
     // rho and psi may have different distributions, though we
     // ultimately require psi to be duplicated on every node
     bool rhoDist = rho.isDistributed;
@@ -2270,7 +2276,7 @@ qreal localiser_densmatr_calcHilbertSchmidtDistance(Qureg quregA, Qureg quregB) 
     if (quregA.isDistributed == quregB.isDistributed) {
         dist = accel_densmatr_calcHilbertSchmidtDistance_sub(quregA, quregB);
 
-    // otherwise, we simply spoof a distributed qureg from the local 
+    // otherwise, we simply spoof a distributed qureg from the local
     // one, offsetting its amp pointers, modifying copies in defensive design
     } else {
         Qureg copyA = (quregA.isDistributed)? quregA : getSpoofedDistributedBufferlessQuregFromLocalQureg(quregA, quregB);
@@ -2288,7 +2294,7 @@ qreal localiser_densmatr_calcHilbertSchmidtDistance(Qureg quregA, Qureg quregB) 
 
 
 /*
- * PROJECTORS 
+ * PROJECTORS
  */
 
 

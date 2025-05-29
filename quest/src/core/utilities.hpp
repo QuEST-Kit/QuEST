@@ -5,7 +5,7 @@
  * logic, matrix algebra, and channel parameters. This
  * header also defines several compile-time type-trait
  * functions needed for internal generic functions.
- * 
+ *
  * @author Tyson Jones
  */
 
@@ -194,7 +194,7 @@ bool util_isGpuAcceleratedMatrix(T matr) {
 
 template<class T>
 std::string util_getMatrixTypeName() {
-    
+
     if constexpr (is_same_v<T, CompMatr1>) return "CompMatr1";
     if constexpr (is_same_v<T, CompMatr2>) return "CompMatr2";
     if constexpr (is_same_v<T, CompMatr >) return "CompMatr" ;
@@ -215,7 +215,7 @@ std::string util_getMatrixTypeName() {
 
 template<class T>
 qindex util_getMatrixDim(T matr) {
-    
+
     if constexpr (util_isDenseMatrixType<T>())
         return matr.numRows;
     else
@@ -350,6 +350,7 @@ util_VectorIndexRange util_getLocalIndRangeOfVectorElemsWithinNode(int rank, qin
 
 qreal util_getPhaseFromGateAngle(qreal angle);
 
+qcomp util_getPhaseFromGateAngle(qcomp angle);
 
 
 /*
