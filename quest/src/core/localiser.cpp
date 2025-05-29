@@ -1340,8 +1340,10 @@ void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vecto
 
 
 void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qcomp phase) { // qreal phase) {
+void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qcomp phase) { // qreal phase) {
 
     bool isGadget = true;
+    anyCtrlZTensorOrGadget(qureg, ctrls, ctrlStates, targs, isGadget, phase);
     anyCtrlZTensorOrGadget(qureg, ctrls, ctrlStates, targs, isGadget, phase);
 }
 
@@ -1352,6 +1354,7 @@ void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vecto
 }
 
 
+void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qcomp phase) { // qreal phase) {
 void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qcomp phase) { // qreal phase) {
 
     // when str=IZ, we must use the above bespoke algorithm
