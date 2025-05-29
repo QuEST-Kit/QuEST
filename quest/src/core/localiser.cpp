@@ -1244,8 +1244,7 @@ extern int paulis_getPrefixZSign(Qureg qureg, vector<int> prefixZ) ;
 extern qcomp paulis_getPrefixPaulisElem(Qureg qureg, vector<int> prefixY, vector<int> prefixZ);
 
 
-void anyCtrlZTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, bool isGadget, qreal phase) {
-    assertValidCtrlStates(ctrls, ctrlStates);
+void anyCtrlZTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, bool isGadget, qcomp phase) { // qreal phase) {    assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
 
     // node has nothing to do if all local amps violate control condition
@@ -1339,14 +1338,14 @@ void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vecto
 }
 
 
-void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qreal phase) {
+void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qcomp phase) { // qreal phase) {
 
     bool isGadget = true;
-    anyCtrlZTensorOrGadget(qureg, ctrls, ctrlStates, targs, isGadget, phase); 
+    anyCtrlZTensorOrGadget(qureg, ctrls, ctrlStates, targs, isGadget, phase);
 }
 
 
-void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qreal phase) {
+void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qcomp phase) { // qreal phase) {
 
     // when str=IZ, we must use the above bespoke algorithm
     if (!paulis_containsXOrY(str)) {
