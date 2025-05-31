@@ -28,6 +28,7 @@
     #include <sys/types.h>
     #include <sys/sysctl.h>
 #elif defined(_WIN32)
+    #define NOMINMAX
     #include <windows.h>
 #endif
 
