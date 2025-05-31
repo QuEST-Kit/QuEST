@@ -196,11 +196,37 @@ qindex mem_getMaxNumKrausMapMatricesBeforeLocalMemSizeofOverflow(int numQubits) 
 
 
 qindex mem_tryGetLocalRamCapacityInBytes() {
-
-    /// @todo attempt to find total Ram
-
-    // if we're unable to find total RAM, throw an exception
-    // (which the caller should catch and gracefully continue)
+    // Linux: parse /proc/meminfo
+    #if defined(__linux__)
+    FILE* meminfo = fopen("/proc/meminfo", "r");
+    if (meminfo) {
+        char line[256];
+        while (fgets(line, sizeof(line), meminfo)) {
+            if (sscanf(line, "MemTotal: %lu kB", &mem_total_kb) == 1) {
+                fclose(meminfo);
+                return (qindex)mem_total_kb * 1024;
+            }
+        }
+        fclose(meminfo);
+    }
+    // macOS: use sysctl
+    #elif defined(__APPLE__)
+    #include <sys/types.h>
+    #include <sys/sysctl.h>
+    int mib[2] = {CTL_HW, HW_MEMSIZE};
+    int64_t memsize = 0;
+    size_t len = sizeof(memsize);
+    if (sysctl(mib, 2, &memsize, &len, NULL, 0) == 0 && memsize > 0)
+        return (qindex)memsize;
+    // Windows: use GlobalMemoryStatusEx
+    #elif defined(_WIN32)
+    #include <windows.h>
+    MEMORYSTATUSEX statex;
+    statex.dwLength = sizeof(statex);
+    if (GlobalMemoryStatusEx(&statex))
+        return (qindex)statex.ullTotalPhys;
+    #endif
+    // fallback: throw exception
     throw (mem::COULD_NOT_QUERY_RAM) false;
 }
 
