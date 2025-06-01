@@ -1853,6 +1853,7 @@ void multiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
  */
 void applyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
 
+void applyNonUnitaryPauliGadget(Qureg qureg, PauliStr str, qcomp angle);
 
 /// @notyetdoced
 void applyControlledPauliGadget(Qureg qureg, int control, PauliStr str, qreal angle);
