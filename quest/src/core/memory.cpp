@@ -21,6 +21,17 @@
 
 #include <cstdlib>
 
+// Platform-specific includes for RAM querying
+#if defined(__linux__)
+    #include <sys/sysinfo.h>
+#elif defined(__APPLE__)
+    #include <sys/types.h>
+    #include <sys/sysctl.h>
+#elif defined(_WIN32)
+    #define NOMINMAX
+    #include <windows.h>
+#endif
+
 
 
 /*
@@ -196,11 +207,23 @@ qindex mem_getMaxNumKrausMapMatricesBeforeLocalMemSizeofOverflow(int numQubits) 
 
 
 qindex mem_tryGetLocalRamCapacityInBytes() {
-
-    /// @todo attempt to find total Ram
-
-    // if we're unable to find total RAM, throw an exception
-    // (which the caller should catch and gracefully continue)
+    #if defined(__linux__)
+        struct sysinfo info;
+        if (sysinfo(&info) == 0)
+            return (qindex) info.totalram * info.mem_unit;
+    #elif defined(__APPLE__)
+        int mib[2] = {CTL_HW, HW_MEMSIZE};
+        int64_t memsize = 0;
+        size_t len = sizeof(memsize);
+        if (sysctl(mib, 2, &memsize, &len, NULL, 0) == 0 && memsize > 0)
+            return (qindex) memsize;
+    #elif defined(_WIN32)
+        MEMORYSTATUSEX statex;
+        statex.dwLength = sizeof(statex);
+        if (GlobalMemoryStatusEx(&statex))
+            return (qindex) statex.ullTotalPhys;
+    #endif
+    // fallback: throw exception
     throw (mem::COULD_NOT_QUERY_RAM) false;
 }
 
