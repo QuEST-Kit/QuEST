@@ -49,7 +49,7 @@ qmatrix getConjugate(qmatrix);
 qmatrix getConjugateTranspose(qmatrix);
 qmatrix getPowerOfDiagonalMatrix(qmatrix diag, qcomp power);
 qmatrix getExponentialOfDiagonalMatrix(qmatrix);
-qmatrix getExponentialOfPauliMatrix(qreal arg, qmatrix pauli);
+qmatrix getExponentialOfPauliMatrix(qcomp arg, qmatrix pauli);
 qmatrix getExponentialOfNormalisedPauliVector(qreal arg, qreal x, qreal y, qreal z);
 qmatrix getOrthonormalisedRows(qmatrix);
 qmatrix getOrthonormalisedRows(qmatrix);
