@@ -44,6 +44,8 @@ Dr Ian Bush [consultant]
     HPC
 
 External contributors:
+Mai Đức Khang
+    implemented RAM probe (for unitaryHACK issue #600)
 James Richings
     patched overflow in bitwise.hpp logic
 Luc Jaulmes
