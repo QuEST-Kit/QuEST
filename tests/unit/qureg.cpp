@@ -125,7 +125,11 @@ TEST_CASE( "createQureg", TEST_CATEGORY ) {
             // GPU-accel or distributed) and whether memory-probers realised there was insufficient memory in
             // advance or whether it proceeded to malloc() which subsequently failed
             #ifndef SANITIZER_IS_ACTIVE
-            REQUIRE_THROWS_WITH( createQureg(50), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") || ContainsSubstring("available GPU memory") );
+            REQUIRE_THROWS_WITH( createQureg(50), 
+                ContainsSubstring("failed") || 
+                ContainsSubstring("insufficient available memory") || 
+                ContainsSubstring("available GPU memory") ||
+                ContainsSubstring("RAM") );
             #endif
         }
     }
@@ -210,7 +214,11 @@ TEST_CASE( "createDensityQureg", TEST_CATEGORY ) {
             // GPU-accel or distributed) and whether memory-probers realised there was insufficient memory in
             // advance or whether it proceeded to malloc() which subsequently failed
             #ifndef SANITIZER_IS_ACTIVE
-            REQUIRE_THROWS_WITH( createDensityQureg(25), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") || ContainsSubstring("available GPU memory") );
+            REQUIRE_THROWS_WITH( createDensityQureg(25), 
+                ContainsSubstring("failed") || 
+                ContainsSubstring("insufficient available memory") || 
+                ContainsSubstring("available GPU memory") ||
+                ContainsSubstring("RAM") );
             #endif
         }
     }
@@ -302,7 +310,11 @@ TEST_CASE( "createForcedQureg", TEST_CATEGORY ) {
             // GPU-accel or distributed) and whether memory-probers realised there was insufficient memory in
             // advance or whether it proceeded to malloc() which subsequently failed
             #ifndef SANITIZER_IS_ACTIVE
-            REQUIRE_THROWS_WITH( createForcedQureg(50), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") || ContainsSubstring("available GPU memory") );
+            REQUIRE_THROWS_WITH( createForcedQureg(50), 
+                ContainsSubstring("failed") || 
+                ContainsSubstring("insufficient available memory") || 
+                ContainsSubstring("available GPU memory") ||
+                ContainsSubstring("RAM") );
             #endif
         }
     }
@@ -395,7 +407,11 @@ TEST_CASE( "createForcedDensityQureg", TEST_CATEGORY ) {
             // GPU-accel or distributed) and whether memory-probers realised there was insufficient memory in
             // advance or whether it proceeded to malloc() which subsequently failed
             #ifndef SANITIZER_IS_ACTIVE
-            REQUIRE_THROWS_WITH( createForcedDensityQureg(25), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") || ContainsSubstring("available GPU memory") );
+            REQUIRE_THROWS_WITH( createForcedDensityQureg(25), 
+                ContainsSubstring("failed") || 
+                ContainsSubstring("insufficient available memory") || 
+                ContainsSubstring("available GPU memory") ||
+                ContainsSubstring("RAM") );
             #endif
         }
     }
@@ -531,8 +547,16 @@ TEST_CASE( "createCustomQureg", TEST_CATEGORY ) {
             // GPU-accel or distributed) and whether memory-probers realised there was insufficient memory in
             // advance or whether it proceeded to malloc() which subsequently failed
             #ifndef SANITIZER_IS_ACTIVE
-            REQUIRE_THROWS_WITH( createCustomQureg(50, 0, 0,0,0), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") || ContainsSubstring("available GPU memory") );
-            REQUIRE_THROWS_WITH( createCustomQureg(25, 1, 0,0,0), ContainsSubstring("failed") || ContainsSubstring("insufficient available memory") || ContainsSubstring("available GPU memory") );
+            REQUIRE_THROWS_WITH( createCustomQureg(50, 0, 0,0,0), 
+                ContainsSubstring("failed") || 
+                ContainsSubstring("insufficient available memory") || 
+                ContainsSubstring("available GPU memory") ||
+                ContainsSubstring("RAM") );
+            REQUIRE_THROWS_WITH( createCustomQureg(25, 1, 0,0,0), 
+                ContainsSubstring("failed") || 
+                ContainsSubstring("insufficient available memory") || 
+                ContainsSubstring("available GPU memory") ||
+                ContainsSubstring("RAM") );
             #endif
         }
     }
