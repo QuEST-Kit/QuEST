@@ -257,6 +257,7 @@ See the [docs](docs/README.md) for enabling acceleration and running the unit te
 
 In addition to QuEST's [authors](AUTHORS.txt), we sincerely thank the following external contributors to QuEST.
 
+- [Diogo Pratas Maia](https://github.com/diogomaia00) for implementing non-unitary Pauli gadgets (unitaryHACK 2025 [#594](https://github.com/QuEST-Kit/QuEST/issues/594)).
 - [James Richings](https://github.com/JPRichings) for patching a v4 overflow bug.
 - [Luc Jaulmes](https://github.com/lucjaulmes) for patching v4's CMake installation.
 - [Jakub Adamski](https://github.com/jjacobx) for optimising distributed communication of max-size messages.

@@ -5,6 +5,7 @@
  * instead exposed in decoherence.h
  * 
  * @author Tyson Jones
+ * @author Diogo Pratas Maia (non-unitary Pauli gadget)
  * 
  * @defgroup operations Operations
  * @ingroup api
