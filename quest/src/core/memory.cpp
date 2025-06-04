@@ -10,6 +10,7 @@
  * allocators in gpu_config.cpp, and use NUMA strategies.
  * 
  * @author Tyson Jones
+ * @author Mai Đức Khang (CPU memory query)
  */
 
 #include "quest/include/types.h"

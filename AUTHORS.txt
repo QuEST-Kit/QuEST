@@ -44,6 +44,8 @@ Dr Ian Bush [consultant]
     HPC
 
 External contributors:
+Diogo Pratas Maia
+    added non-unitary Pauli gadget (for unitaryHACK issue #594)
 Mai Đức Khang
     implemented RAM probe (for unitaryHACK issue #600)
 James Richings

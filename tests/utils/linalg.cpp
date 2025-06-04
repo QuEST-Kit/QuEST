@@ -345,7 +345,7 @@ qmatrix getExponentialOfDiagonalMatrix(qmatrix m) {
 }
 
 
-qmatrix getExponentialOfPauliMatrix(qreal arg, qmatrix m) {
+qmatrix getExponentialOfPauliMatrix(qcomp arg, qmatrix m) {
     
     // exp(-i arg/2 m) where m = prod(paulis)
     qmatrix id = getIdentityMatrix(m.size());

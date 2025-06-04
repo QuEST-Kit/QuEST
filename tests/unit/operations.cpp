@@ -1920,6 +1920,35 @@ TEST_CASE( "multiplyPauliStrSum", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
 }
 
 
+TEST_CASE( "applyNonUnitaryPauliGadget", TEST_CATEGORY ) {
+
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        // prepare a random Pauli string and angle
+        int numTargs = GENERATE_COPY( range(1, numQubits+1) );
+        auto targs = GENERATE_TARGS( numQubits, numTargs );
+        PauliStr str = getRandomPauliStr(targs);
+        qcomp angle = getRandomComplex();
+
+        // prepare the corresponding reference matrix exp(-i angle pauli)
+        auto matrRef = getExponentialOfPauliMatrix(angle, getMatrix(str, numQubits));
+
+        auto testFunc = [&](Qureg qureg, auto& stateRef) {
+            applyNonUnitaryPauliGadget(qureg, str, angle);
+            applyReferenceOperator(stateRef, matrRef);
+        };
+
+        CAPTURE( targs, angle );
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
+    }
+
+    /// @todo input validation
+}
+
+
 /** @} (end defgroup) */
 
 
