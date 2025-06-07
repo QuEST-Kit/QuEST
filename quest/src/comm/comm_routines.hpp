@@ -7,6 +7,9 @@
  * @author Tyson Jones
  */
 
+// Fused multi-SWAP: move all amplitudes to their final locations in a single communication step
+// targsA: current qubit indices, targsB: desired qubit indices (same size)
+void comm_fusedMultiSwapBetweenPrefixAndSuffix(Qureg qureg, const std::vector<int>& targsA, const std::vector<int>& targsB);
 #ifndef COMM_ROUTINES_HPP
 #define COMM_ROUTINES_HPP
 

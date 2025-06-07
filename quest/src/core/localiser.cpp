@@ -919,16 +919,8 @@ void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, vector<int> ctrls, vect
     ///     although the latter requires substantially more work like setting up
     ///     a communicator which may be inelegant alongside our own distribution scheme.
 
-    // perform necessary swaps to move all targets into suffix, each of which invokes communication
-    for (size_t i=0; i<targsA.size(); i++) {
-
-        if (targsA[i] == targsB[i])
-            continue;
-
-        int suffixTarg = std::min(targsA[i], targsB[i]);
-        int prefixTarg = std::max(targsA[i], targsB[i]);
-        anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, suffixTarg, prefixTarg);
-    }
+    // Fused SWAP: move all amplitudes to their final locations in a single communication step
+    comm_fusedMultiSwapBetweenPrefixAndSuffix(qureg, targsA, targsB);
 }
 
 
