@@ -1136,8 +1136,8 @@ void applyFirstOrderTrotter(Qureg qureg, PauliStrSum sum, qcomp angle, bool reve
 
     for (qindex i=0; i<sum.numTerms; i++) {
         int j = reverse? sum.numTerms - i - 1 : i;
-        qreal arg = 2 * angle * std::real(sum.coeffs[j]); // 2 undoes Gadget convention
-        applyPauliGadget(qureg, sum.strings[j], arg); // caller disabled valiation therein
+        qcomp arg = - 2 * angle * sum.coeffs[j]; // -2 undoes Gadget convention
+
         applyNonUnitaryPauliGadget(qureg, sum.strings[j], arg); // caller disabled valiation therein
     }
 }
