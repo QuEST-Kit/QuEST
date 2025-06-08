@@ -1130,7 +1130,7 @@ void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace) {
     // workspace -> qureg, and qureg -> sum * qureg
 }
 
-void applyFirstOrderTrotter(Qureg qureg, PauliStrSum sum, qreal angle, bool reverse) {
+void applyFirstOrderTrotter(Qureg qureg, PauliStrSum sum, qcomp angle, bool reverse) {
 
     // (internal, invoked by applyTrotterizedPauliStrSumGadget)
 
@@ -1138,10 +1138,11 @@ void applyFirstOrderTrotter(Qureg qureg, PauliStrSum sum, qreal angle, bool reve
         int j = reverse? sum.numTerms - i - 1 : i;
         qreal arg = 2 * angle * std::real(sum.coeffs[j]); // 2 undoes Gadget convention
         applyPauliGadget(qureg, sum.strings[j], arg); // caller disabled valiation therein
+        applyNonUnitaryPauliGadget(qureg, sum.strings[j], arg); // caller disabled valiation therein
     }
 }
 
-void applyHigherOrderTrotter(Qureg qureg, PauliStrSum sum, qreal angle, int order) {
+void applyHigherOrderTrotter(Qureg qureg, PauliStrSum sum, qcomp angle, int order) {
 
     // (internal, invoked by applyTrotterizedPauliStrSumGadget)
 
@@ -1154,8 +1155,8 @@ void applyHigherOrderTrotter(Qureg qureg, PauliStrSum sum, qreal angle, int orde
     
     } else {
         qreal p = 1. / (4 - std::pow(4, 1./(order-1)));
-        qreal a = p * angle;
-        qreal b = (1-4*p) * angle;
+        qcomp a = p * angle;
+        qcomp b = (1-4*p) * angle;
 
         int lower = order - 2;
         applyFirstOrderTrotter(qureg, sum, a, lower);
@@ -1166,15 +1167,15 @@ void applyHigherOrderTrotter(Qureg qureg, PauliStrSum sum, qreal angle, int orde
     }
 }
 
-void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps) {
+void applyNonUnitaryTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps) {
     validate_quregFields(qureg, __func__);
     validate_pauliStrSumFields(sum, __func__);
     validate_pauliStrSumTargets(sum, qureg, __func__);
-    validate_pauliStrSumIsHermitian(sum, __func__);
     validate_trotterParams(qureg, order, reps, __func__);
+    // sum is permitted to be non-Hermitian
 
     // exp(i angle sum) = identity when angle=0
-    if (angle == 0)
+    if (angle == qcomp(0,0))
         return;
 
     // record validation state then disable to avoid repeated
@@ -1194,6 +1195,20 @@ void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle
     /// the accuracy of Trotterisation is greatly improved by randomisation
     /// or (even sub-optimal) grouping into commuting terms. Should we 
     /// implement these above or into another function?
+}
+
+void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps) {
+
+    // validate inputs here despite re-validation below so that func name is correct in error message
+    validate_quregFields(qureg, __func__);
+    validate_pauliStrSumFields(sum, __func__);
+    validate_pauliStrSumTargets(sum, qureg, __func__);
+    validate_trotterParams(qureg, order, reps, __func__);
+
+    // crucially, require that sum coefficients are real
+    validate_pauliStrSumIsHermitian(sum, __func__);
+
+    applyNonUnitaryTrotterizedPauliStrSumGadget(qureg, sum, angle, order, reps);
 }
 
 } // end de-mangler

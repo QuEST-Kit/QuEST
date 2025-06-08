@@ -200,7 +200,7 @@ void TEST_ON_CACHED_QUREG_AND_MATRIX(quregCache quregs, matrixCache matrices, au
  * - applyDiagMatrPower:    diagpower
  * - applyCompMatr:         compmatr
  * - applyPauliStr:         paulistr
- * - applyPauliGadgt:       pauligad
+ * - applyPauliGadget:      pauligad
 */
 
 enum ArgsFlag { none, scalar, axisrots, diagmatr, diagpower, compmatr, paulistr, pauligad };
@@ -1959,3 +1959,5 @@ TEST_CASE( "applyNonUnitaryPauliGadget", TEST_CATEGORY ) {
  */
 
 void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
+
+void applyNonUnitaryTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps);

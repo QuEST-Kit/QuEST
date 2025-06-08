@@ -1834,6 +1834,7 @@ void multiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
      qcomp factor = cexp(- theta / 2 * 1.i);
      setQuregToSuperposition(factor, qureg, 0,qureg,0,qureg);
  *   ```
+ * - Passing @p angle=0 is equivalent to effecting the identity, leaving the state unchanged.
  *
  * @myexample
  * ```
@@ -1850,12 +1851,19 @@ void multiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
     // concisely
     applyPauliGadget(qureg, getInlinePauliStr("XYZ",{0,1,7}), theta);
  * ```
- * - Passing @p angle=0 is equivalent to effecting the identity, leaving the state unchanged.
+ *
+ * @see
+ *  - applyNonUnitaryPauliGadget()
  */
 void applyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
 
-/// @notyetdoced
+
+/** @notyetdoced
+ * 
+ * This function generalises applyPauliGadget() to accept a complex angle.
+ */
 void applyNonUnitaryPauliGadget(Qureg qureg, PauliStr str, qcomp angle);
+
 
 /// @notyetdoced
 void applyControlledPauliGadget(Qureg qureg, int control, PauliStr str, qreal angle);
@@ -2315,8 +2323,20 @@ void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
  * 
  * > These formulations are taken from 'Finding Exponential Product Formulas
  * > of Higher Orders', Naomichi Hatano and Masuo Suzuki (2005) (<a href="https://arxiv.org/abs/math-ph/0506007">arXiv</a>).
+ * 
+ * @see
+ *  - applyNonUnitaryTrotterizedPauliStrSumGadget()
  */
 void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
+
+
+/** @notyetdoced
+ * @notyettested
+ * 
+ * A generalisation of applyTrotterizedPauliStrSumGadget() which accepts a complex angle,
+ * permitting (for example) simulation of imaginary-time evolution
+ */
+void applyNonUnitaryTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps);
 
 
 // end de-mangler
