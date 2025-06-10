@@ -1,5 +1,9 @@
 
 // Prepare sendIndices and sendBuffers for fused multi-SWAP, parallelized with OpenMP
+#include <vector>
+#include <omp.h>
+#include "quest/include/qureg.h"
+#include "quest/include/types.h"
 void cpu_statevec_prepareFusedMultiSwapBuffers(
     Qureg qureg,
     const std::vector<int>& bitMap,
