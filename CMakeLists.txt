@@ -305,6 +305,11 @@ target_compile_options(QuEST
   $<$<COMPILE_LANGUAGE:C>:${WARNING_FLAG}>
 )
 
+# Enable C++ exception handling semantics for MSVC (fixes CI warning/error C4530)
+if(MSVC)
+    target_compile_options(QuEST PRIVATE /EHsc)
+endif()
+
 
 # Set user options
 compile_option(FLOAT_PRECISION ${FLOAT_PRECISION})
