@@ -1,3 +1,54 @@
+
+// Prepare sendIndices and sendBuffers for fused multi-SWAP, parallelized with OpenMP
+void cpu_statevec_prepareFusedMultiSwapBuffers(
+    Qureg qureg,
+    const std::vector<int>& bitMap,
+    std::vector<std::vector<qindex>>& sendIndices,
+    std::vector<std::vector<qcomp>>& sendBuffers
+){
+    int numNodes = qureg.numNodes;
+    int rank = qureg.rank;
+    qindex numAmpsPerNode = qureg.numAmpsPerNode;
+    qindex numQubits = qureg.numQubits;
+
+    // Thread-local buffers to avoid contention
+    int maxThreads = 1;
+#ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp single
+        maxThreads = omp_get_num_threads();
+    }
+#endif
+    std::vector<std::vector<std::vector<qindex>>> threadSendIndices(maxThreads, std::vector<std::vector<qindex>>(numNodes));
+    std::vector<std::vector<std::vector<qcomp>>> threadSendBuffers(maxThreads, std::vector<std::vector<qcomp>>(numNodes));
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex localIdx = 0; localIdx < numAmpsPerNode; ++localIdx) {
+        int tid = 0;
+#ifdef _OPENMP
+        tid = omp_get_thread_num();
+#endif
+        qindex globalIdx = ((qindex)rank << qureg.logNumAmpsPerNode) | localIdx;
+        qindex permutedIdx = 0;
+        for (int b = 0; b < numQubits; ++b) {
+            if (globalIdx & (1ULL << b))
+                permutedIdx |= (1ULL << bitMap[b]);
+        }
+        int destRank = (int)(permutedIdx >> qureg.logNumAmpsPerNode);
+        qindex destLocalIdx = permutedIdx & ((1ULL << qureg.logNumAmpsPerNode) - 1ULL);
+        threadSendIndices[tid][destRank].push_back(destLocalIdx);
+        threadSendBuffers[tid][destRank].push_back(qureg.cpuAmps[localIdx]);
+    }
+
+    // Merge thread-local buffers into output
+    for (int r = 0; r < numNodes; ++r) {
+        for (int t = 0; t < maxThreads; ++t) {
+            sendIndices[r].insert(sendIndices[r].end(), threadSendIndices[t][r].begin(), threadSendIndices[t][r].end());
+            sendBuffers[r].insert(sendBuffers[r].end(), threadSendBuffers[t][r].begin(), threadSendBuffers[t][r].end());
+        }
+    }
+}
 /** @file
  * CPU OpenMP-accelerated definitions of the main backend simulation routines,
  * as mirrored by gpu_subroutines.cpp, and called by accelerator.cpp. 

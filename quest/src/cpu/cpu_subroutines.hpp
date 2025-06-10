@@ -1,3 +1,11 @@
+
+// Prepare sendIndices and sendBuffers for fused multi-SWAP, parallelized with OpenMP
+void cpu_statevec_prepareFusedMultiSwapBuffers(
+    Qureg qureg,
+    const std::vector<int>& bitMap,
+    std::vector<std::vector<qindex>>& sendIndices,
+    std::vector<std::vector<qcomp>>& sendBuffers
+);
 /** @file
  * CPU OpenMP-accelerated signatures of the main backend simulation routines,
  * as mirrored by gpu_subroutines.cpp, and called by accelerator.cpp. 

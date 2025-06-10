@@ -40,29 +40,11 @@ void comm_fusedMultiSwapBetweenPrefixAndSuffix(Qureg qureg, const std::vector<in
         if (bitMap[i] == -1) bitMap[i] = i;
     }
 
-    // Prepare send buffers for each rank
+
+    // Prepare send buffers for each rank using OpenMP (in cpu_subroutines)
     std::vector<std::vector<qindex>> sendIndices(numNodes);
     std::vector<std::vector<qcomp>> sendBuffers(numNodes);
-
-    // For each local amplitude, determine its global index, permuted index, and destination rank/local
-    for (qindex localIdx = 0; localIdx < numAmpsPerNode; ++localIdx) {
-        // Compute global index for this amplitude on this rank
-        qindex globalIdx = ((qindex)rank << qureg.logNumAmpsPerNode) | localIdx;
-
-        // Permute bits according to bitMap
-        qindex permutedIdx = 0;
-        for (int b = 0; b < numQubits; ++b) {
-            if (globalIdx & (1ULL << b))
-                permutedIdx |= (1ULL << bitMap[b]);
-        }
-
-        // Determine destination rank and local index
-        int destRank = (int)(permutedIdx >> qureg.logNumAmpsPerNode);
-        qindex destLocalIdx = permutedIdx & ((1ULL << qureg.logNumAmpsPerNode) - 1ULL);
-
-        sendIndices[destRank].push_back(destLocalIdx);
-        sendBuffers[destRank].push_back(qureg.cpuAmps[localIdx]);
-    }
+    cpu_statevec_prepareFusedMultiSwapBuffers(qureg, bitMap, sendIndices, sendBuffers);
 
     // Prepare receive buffer for all incoming amplitudes
     std::vector<qindex> recvCounts(numNodes, 0);
