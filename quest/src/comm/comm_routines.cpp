@@ -10,6 +10,25 @@
  * @author Ania (Anna) Brown (developed QuEST v1 logic)
  */
 
+// filepath: /workspaces/QuEST/quest/src/comm/comm_routines.cpp
+/** @file
+ * Functions for communicating and exchanging amplitudes between compute
+ * nodes, when running in distributed mode, using the C MPI standard.
+ * Calling these functions when COMPILE_MPI=0, or when the passed Quregs
+ * are not distributed, will throw a runtime internal error. 
+ * 
+ * @author Tyson Jones
+ * @author Jakub Adamski (sped-up large comm by asynch messages)
+ * @author Oliver Brown (patched max-message inference, consulted on AR and MPICH support)
+ * @author Ania (Anna) Brown (developed QuEST v1 logic)
+ */
+
+#include <vector>
+#include "quest/include/qureg.h"
+#include "quest/include/types.h"
+#include "quest/src/cpu/cpu_subroutines.hpp"
+#include "quest/src/core/errors.hpp"
+
 // Fused multi-SWAP: move all amplitudes to their final locations in a single communication step
 // targsA: current qubit indices, targsB: desired qubit indices (same size)
 void comm_fusedMultiSwapBetweenPrefixAndSuffix(Qureg qureg, const std::vector<int>& targsA, const std::vector<int>& targsB) {
