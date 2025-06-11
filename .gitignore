@@ -1,0 +1,3 @@
+# Ignore build artifacts
+build/
+build_mt_dist/
