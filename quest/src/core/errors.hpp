@@ -1,3 +1,6 @@
+
+// Not yet implemented error
+void error_notYetImplemented(const char* feature);
 /** @file
  * Defensively designed functions for checking internal preconditions, 
  * and raising internal errors. These primarily check that that

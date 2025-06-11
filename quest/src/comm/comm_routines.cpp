@@ -23,6 +23,11 @@
  * @author Ania (Anna) Brown (developed QuEST v1 logic)
  */
 
+
+#if COMPILE_MPI
+#include <mpi.h>
+#endif
+
 #include <vector>
 #include "quest/include/qureg.h"
 #include "quest/include/types.h"
@@ -73,6 +78,19 @@ void comm_fusedMultiSwapBetweenPrefixAndSuffix(Qureg qureg, const std::vector<in
     std::vector<int> sendCounts(numNodes), recvCountsInt(numNodes);
     for (int r = 0; r < numNodes; ++r) sendCounts[r] = (int)sendBuffers[r].size();
 
+
+#if COMPILE_MPI
+    // Define MPI_QCOMP before use (mimic macro logic from below)
+    #if   (FLOAT_PRECISION == 1)
+        #define MPI_QCOMP MPI_C_FLOAT_COMPLEX
+    #elif (FLOAT_PRECISION == 2)
+        #define MPI_QCOMP MPI_C_DOUBLE_COMPLEX
+    #elif (FLOAT_PRECISION == 4)
+        #define MPI_QCOMP MPI_C_LONG_DOUBLE_COMPLEX
+    #else
+        #error "Something went horribly wrong in inferring the MPI types"
+    #endif
+#endif
     // All-to-all exchange of counts
     MPI_Alltoall(sendCounts.data(), 1, MPI_INT, recvCountsInt.data(), 1, MPI_INT, MPI_COMM_WORLD);
 

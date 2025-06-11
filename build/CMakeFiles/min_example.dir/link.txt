@@ -1,0 +1,1 @@
+/usr/bin/cc -O3 -DNDEBUG CMakeFiles/min_example.dir/examples/tutorials/min_example.c.o -o min_example  -Wl,-rpath,"\$ORIGIN:/workspaces/QuEST/build:" libQuEST.so.4.1.0 

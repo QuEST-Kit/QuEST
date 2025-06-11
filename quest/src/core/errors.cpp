@@ -1,3 +1,10 @@
+
+
+#include <string>
+void raiseInternalError(std::string errorMsg); // forward declaration
+void error_notYetImplemented(const char* feature) {
+    raiseInternalError(std::string("Feature not yet implemented: ") + feature);
+}
 /** @file
  * Defensively designed functions for checking internal preconditions 
  * and raising internal errors. These primarily check that that
