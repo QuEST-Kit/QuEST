@@ -79,7 +79,7 @@ else()
   set(MULTI_LIB_HEADERS 0)
   function(compile_option VAR VALUE)
     target_compile_definitions(QuEST PRIVATE ${VAR}=${VALUE})
-    set(${VAR} ${VALUE})
+    set(${VAR} ${VALUE} PARENT_SCOPE)
   endfunction()
 endif()
 
