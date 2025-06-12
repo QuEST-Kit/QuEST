@@ -349,7 +349,6 @@ util_VectorIndexRange util_getLocalIndRangeOfVectorElemsWithinNode(int rank, qin
  */
 
 qreal util_getPhaseFromGateAngle(qreal angle);
-
 qcomp util_getPhaseFromGateAngle(qcomp angle);
 
 
