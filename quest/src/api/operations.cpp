@@ -1140,8 +1140,8 @@ void internal_applyFirstOrderTrotterRepetition(
         qcomp coeff = sum.coeffs[j];
         PauliStr str = sum.strings[j];
 
-        // effect |psi> -> exp(i angle * sum)|psi> by undoing gadget pre-factor
-        qcomp arg = angle * coeff / util_getPhaseFromGateAngle(1);
+        // effect |psi> -> exp(i angle * sum)|psi>
+        qcomp arg = angle * coeff;
         localiser_statevec_anyCtrlPauliGadget(qureg, ketCtrls, states, str, arg);
 
         if (!qureg.isDensityMatrix)
