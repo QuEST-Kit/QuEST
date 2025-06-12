@@ -1188,9 +1188,9 @@ void internal_applyAllTrotterRepetitions(
         return;
 
     // prepare control-qubit lists once for all invoked gadgets below
-    auto ketCtrlsVec = util_getVector(controls, numControls); // may be empty
-    auto braCtrlsVec = util_getBraQubits(ketCtrlsVec, qureg); // used only by densmatr 
-    auto statesVec = util_getVector(states, numControls); // empty if states==nullptr
+    auto ketCtrlsVec = util_getVector(controls, numControls);
+    auto braCtrlsVec = (qureg.isDensityMatrix)? util_getBraQubits(ketCtrlsVec, qureg) : vector<int>{};
+    auto statesVec = util_getVector(states, numControls);
 
     qcomp arg = angle / reps;
 
