@@ -2387,6 +2387,30 @@ void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
 void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
 
 
+/// @notyetdoced
+/// @notyettested
+/// @see
+///  - applyTrotterizedPauliStrSumGadget()
+///  - applyControlledCompMatr1()
+void applyControlledTrotterizedPauliStrSumGadget(Qureg qureg, int control, PauliStrSum sum, qreal angle, int order, int reps);
+
+
+/// @notyetdoced
+/// @notyettested
+/// @see
+///  - applyTrotterizedPauliStrSumGadget()
+///  - applyMultiControlledCompMatr1()
+void applyMultiControlledTrotterizedPauliStrSumGadget(Qureg qureg, int* controls, int numControls, PauliStrSum sum, qreal angle, int order, int reps);
+
+
+/// @notyetdoced
+/// @notyettested
+/// @see
+///  - applyTrotterizedPauliStrSumGadget()
+///  - applyMultiStateControlledCompMatr1()
+void applyMultiStateControlledTrotterizedPauliStrSumGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStrSum sum, qreal angle, int order, int reps);
+
+
 /** @notyettested
  * 
  * A generalisation of applyTrotterizedPauliStrSumGadget() which accepts a complex angle and permits

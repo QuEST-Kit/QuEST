@@ -207,7 +207,7 @@ qcomp paulis_getPrefixPaulisElem(Qureg qureg, vector<int> prefixY, vector<int> p
 }
 
 
-vector<int> paulis_getInds(PauliStr str) {
+vector<int> paulis_getTargetInds(PauliStr str) {
 
     int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
 
@@ -215,16 +215,33 @@ vector<int> paulis_getInds(PauliStr str) {
     inds.reserve(maxInd+1);
 
     for (int i=0; i<=maxInd; i++)
-        if (paulis_getPauliAt(str, i) != 0)
+        if (paulis_getPauliAt(str, i) != 0) // Id
             inds.push_back(i);
 
     return inds;
 }
 
 
+qindex paulis_getTargetBitMask(PauliStr str) {
+    
+    /// @todo 
+    /// would compile-time MAX_NUM_PAULIS_PER_STR bound be faster here,
+    /// since this function is invoked upon every PauliStrSum element?
+    int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
+
+    qindex mask = 0;
+
+    for (int i=0; i<=maxInd; i++)
+        if (paulis_getPauliAt(str, i) != 0) // Id
+            mask = flipBit(mask, i);
+
+    return mask;
+}
+
+
 array<vector<int>,3> paulis_getSeparateInds(PauliStr str, Qureg qureg) {
 
-    vector<int> iXYZ = paulis_getInds(str);
+    vector<int> iXYZ = paulis_getTargetInds(str);
     vector<int> iX, iY, iZ;
 
     vector<int>* ptrs[] = {&iX, &iY, &iZ};
@@ -292,6 +309,18 @@ PAULI_MASK_TYPE paulis_getKeyOfSameMixedAmpsGroup(PauliStr str) {
     }
 
     return key;
+}
+
+
+qindex paulis_getTargetBitMask(PauliStrSum sum) {
+
+    qindex mask = 0;
+
+    // mask has 1 where any str has a != Id
+    for (int t=0; t<sum.numTerms; t++)
+        mask |= paulis_getTargetBitMask(sum.strings[t]);
+
+    return mask;
 }
 
 

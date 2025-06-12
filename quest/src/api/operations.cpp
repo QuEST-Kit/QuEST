@@ -1130,29 +1130,40 @@ void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace) {
     // workspace -> qureg, and qureg -> sum * qureg
 }
 
-void applyFirstOrderTrotter(Qureg qureg, PauliStrSum sum, qcomp angle, bool reverse) {
-
-    // (internal, invoked by applyTrotterizedPauliStrSumGadget)
-
+void internal_applyFirstOrderTrotterRepetition(
+    Qureg qureg, vector<int>& ketCtrls, vector<int>& braCtrls,
+    vector<int>& states, PauliStrSum sum, qcomp angle, bool reverse
+) {
+    // apply each sum term as a gadget, in forward or reverse order
     for (qindex i=0; i<sum.numTerms; i++) {
         int j = reverse? sum.numTerms - i - 1 : i;
+        qcomp coeff = sum.coeffs[j];
+        PauliStr str = sum.strings[j];
 
-        // effect exp(i angle * sum) by undoing gadget pre-factor
-        qcomp arg = angle * sum.coeffs[j] / util_getPhaseFromGateAngle(1);
-        applyNonUnitaryPauliGadget(qureg, sum.strings[j], arg); // caller disabled valiation therein
+        // effect |psi> -> exp(i angle * sum)|psi> by undoing gadget pre-factor
+        qcomp arg = angle * coeff / util_getPhaseFromGateAngle(1);
+        localiser_statevec_anyCtrlPauliGadget(qureg, ketCtrls, states, str, arg);
+
+        if (!qureg.isDensityMatrix)
+            continue;
+
+        // effect rho -> rho dagger(i angle * sum)
+        arg *= paulis_hasOddNumY(str) ? 1 : -1;
+        str = paulis_getShiftedPauliStr(str, qureg.numQubits);
+        localiser_statevec_anyCtrlPauliGadget(qureg, braCtrls, states, str, arg);
     }
 }
 
-void applyHigherOrderTrotter(Qureg qureg, PauliStrSum sum, qcomp angle, int order) {
-
-    // (internal, invoked by applyTrotterizedPauliStrSumGadget)
-
+void internal_applyHigherOrderTrotterRepetition(
+    Qureg qureg, vector<int>& ketCtrls, vector<int>& braCtrls,
+    vector<int>& states, PauliStrSum sum, qcomp angle, int order
+) {
     if (order == 1) {
-        applyFirstOrderTrotter(qureg, sum, angle, false);
+        internal_applyFirstOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, angle, false);
     
     } else if (order == 2) {
-        applyFirstOrderTrotter(qureg, sum, angle/2, false);
-        applyFirstOrderTrotter(qureg, sum, angle/2, true);
+        internal_applyFirstOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, angle/2, false);
+        internal_applyFirstOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, angle/2, true);
     
     } else {
         qreal p = 1. / (4 - std::pow(4, 1./(order-1)));
@@ -1160,12 +1171,38 @@ void applyHigherOrderTrotter(Qureg qureg, PauliStrSum sum, qcomp angle, int orde
         qcomp b = (1-4*p) * angle;
 
         int lower = order - 2;
-        applyFirstOrderTrotter(qureg, sum, a, lower);
-        applyFirstOrderTrotter(qureg, sum, a, lower);
-        applyFirstOrderTrotter(qureg, sum, b, lower);
-        applyFirstOrderTrotter(qureg, sum, a, lower);
-        applyFirstOrderTrotter(qureg, sum, a, lower);
+        internal_applyFirstOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, a, lower);
+        internal_applyFirstOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, a, lower);
+        internal_applyFirstOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, b, lower);
+        internal_applyFirstOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, a, lower);
+        internal_applyFirstOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, a, lower);
     }
+}
+
+void internal_applyAllTrotterRepetitions(
+    Qureg qureg, int* controls, int* states, int numControls, 
+    PauliStrSum sum, qcomp angle, int order, int reps
+) {
+    // exp(i angle sum) = identity when angle=0
+    if (angle == qcomp(0,0))
+        return;
+
+    // prepare control-qubit lists once for all invoked gadgets below
+    auto ketCtrlsVec = util_getVector(controls, numControls); // may be empty
+    auto braCtrlsVec = util_getBraQubits(ketCtrlsVec, qureg); // used only by densmatr 
+    auto statesVec = util_getVector(states, numControls); // empty if states==nullptr
+
+    qcomp arg = angle / reps;
+
+    // perform carefully-ordered sequence of gadgets
+    for (int r=0; r<reps; r++)
+        internal_applyHigherOrderTrotterRepetition(
+            qureg, ketCtrlsVec, braCtrlsVec, statesVec, sum, arg, order);
+
+    /// @todo
+    /// the accuracy of Trotterisation is greatly improved by randomisation
+    /// or (even sub-optimal) grouping into commuting terms. Should we 
+    /// implement these above or into another function?
 }
 
 void applyNonUnitaryTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps) {
@@ -1175,41 +1212,48 @@ void applyNonUnitaryTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, q
     validate_trotterParams(qureg, order, reps, __func__);
     // sum is permitted to be non-Hermitian
 
-    // exp(i angle sum) = identity when angle=0
-    if (angle == qcomp(0,0))
-        return;
-
-    // record validation state then disable to avoid repeated
-    // re-validations in each invoked applyPauliGadget() below
-    bool wasValidationEnabled = validateconfig_isEnabled();
-    validateconfig_disable();
-
-    // perform sequence of applyPauliGadget()
-    for (int r=0; r<reps; r++)
-        applyHigherOrderTrotter(qureg, sum, angle/reps, order);
-
-    // potentially restore validation
-    if (wasValidationEnabled)
-        validateconfig_enable();
-
-    /// @todo
-    /// the accuracy of Trotterisation is greatly improved by randomisation
-    /// or (even sub-optimal) grouping into commuting terms. Should we 
-    /// implement these above or into another function?
+    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, sum, angle, order, reps);
 }
 
 void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps) {
-
-    // validate inputs here despite re-validation below so that func name is correct in error message
     validate_quregFields(qureg, __func__);
     validate_pauliStrSumFields(sum, __func__);
     validate_pauliStrSumTargets(sum, qureg, __func__);
     validate_trotterParams(qureg, order, reps, __func__);
-
-    // crucially, require that sum coefficients are real
     validate_pauliStrSumIsHermitian(sum, __func__);
 
-    applyNonUnitaryTrotterizedPauliStrSumGadget(qureg, sum, angle, order, reps);
+    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, sum, angle, order, reps);
+}
+
+void applyControlledTrotterizedPauliStrSumGadget(Qureg qureg, int control, PauliStrSum sum, qreal angle, int order, int reps) {
+    validate_quregFields(qureg, __func__);
+    validate_pauliStrSumFields(sum, __func__);
+    validate_controlAndPauliStrSumTargets(qureg, control, sum, __func__);
+    validate_trotterParams(qureg, order, reps, __func__);
+    validate_pauliStrSumIsHermitian(sum, __func__);
+
+    internal_applyAllTrotterRepetitions(qureg, &control, nullptr, 1, sum, angle, order, reps);
+}
+
+void applyMultiControlledTrotterizedPauliStrSumGadget(Qureg qureg, int* controls, int numControls, PauliStrSum sum, qreal angle, int order, int reps) {
+    validate_quregFields(qureg, __func__);
+    validate_pauliStrSumFields(sum, __func__);
+    validate_controlsAndPauliStrSumTargets(qureg, controls, numControls, sum, __func__);
+    validate_trotterParams(qureg, order, reps, __func__);
+    validate_pauliStrSumIsHermitian(sum, __func__);
+
+    internal_applyAllTrotterRepetitions(qureg, controls, nullptr, numControls, sum, angle, order, reps);
+}
+
+void applyMultiStateControlledTrotterizedPauliStrSumGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStrSum sum, qreal angle, int order, int reps) {
+    validate_quregFields(qureg, __func__);
+    validate_pauliStrSumFields(sum, __func__);
+    validate_controlsAndPauliStrSumTargets(qureg, controls, numControls, sum, __func__);
+    validate_controlStates(states, numControls, __func__); // permits states==nullptr
+    validate_trotterParams(qureg, order, reps, __func__);
+    validate_pauliStrSumIsHermitian(sum, __func__);
+
+    internal_applyAllTrotterRepetitions(qureg, controls, states, numControls, sum, angle, order, reps);
 }
 
 } // end de-mangler
