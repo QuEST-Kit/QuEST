@@ -2516,6 +2516,26 @@ void applyNonUnitaryTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, q
 }
 #endif
 
+#ifdef __cplusplus
+
+
+/// @notyettested
+/// @notyetvalidated
+/// @notyetdoced
+/// @cppvectoroverload
+/// @see applyMultiControlledTrotterizedPauliStrSumGadget()
+void applyMultiControlledTrotterizedPauliStrSumGadget(Qureg qureg, std::vector<int> controls, PauliStrSum sum, qreal angle, int order, int reps);
+
+
+/// @notyettested
+/// @notyetvalidated
+/// @notyetdoced
+/// @cppvectoroverload
+/// @see applyMultiStateControlledTrotterizedPauliStrSumGadget()
+void applyMultiStateControlledTrotterizedPauliStrSumGadget(Qureg qureg, std::vector<int> controls, std::vector<int> states, PauliStrSum sum, qreal angle, int order, int reps);
+
+
+#endif // __cplusplus
 
 /** @} */
 

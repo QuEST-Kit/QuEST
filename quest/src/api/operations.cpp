@@ -1258,6 +1258,17 @@ void applyMultiStateControlledTrotterizedPauliStrSumGadget(Qureg qureg, int* con
 
 } // end de-mangler
 
+void applyMultiControlledTrotterizedPauliStrSumGadget(Qureg qureg, vector<int> controls, PauliStrSum sum, qreal angle, int order, int reps) {
+
+    applyMultiControlledTrotterizedPauliStrSumGadget(qureg, controls.data(), controls.size(), sum, angle, order, reps);
+}
+
+void applyMultiStateControlledTrotterizedPauliStrSumGadget(Qureg qureg, vector<int> controls, vector<int> states, PauliStrSum sum, qreal angle, int order, int reps) {
+    validate_controlsMatchStates(controls.size(), states.size(), __func__);
+
+    applyMultiStateControlledTrotterizedPauliStrSumGadget(qureg, controls.data(), states.data(), controls.size(), sum, angle, order, reps);
+}
+
 
 
 /*
