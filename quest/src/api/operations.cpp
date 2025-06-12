@@ -1136,8 +1136,9 @@ void applyFirstOrderTrotter(Qureg qureg, PauliStrSum sum, qcomp angle, bool reve
 
     for (qindex i=0; i<sum.numTerms; i++) {
         int j = reverse? sum.numTerms - i - 1 : i;
-        qcomp arg = - 2 * angle * sum.coeffs[j]; // -2 undoes Gadget convention
 
+        // effect exp(i angle * sum) by undoing gadget pre-factor
+        qcomp arg = angle * sum.coeffs[j] / util_getPhaseFromGateAngle(1);
         applyNonUnitaryPauliGadget(qureg, sum.strings[j], arg); // caller disabled valiation therein
     }
 }
