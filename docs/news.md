@@ -47,7 +47,8 @@
 
 #### v4.2
 
-  - imaginary-time evolution
+  - multi-controlled Trotter circuits
+  - non-unitary Trotter circuits (permitting e.g. imaginary-time evolution)
 
 #### [v4.0](https://github.com/QuEST-Kit/QuEST/releases/tag/v4.0.0)
 
