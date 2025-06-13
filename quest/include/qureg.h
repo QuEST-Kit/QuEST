@@ -329,7 +329,7 @@ Qureg createForcedDensityQureg(int numQubits);
  * </center>
  * 
  * @constraints
- * - Cannot use any deployment which has not been prior enabled during compilation, or disabled by createCustomQuESTEnv().
+ * - Cannot use any deployment which has not been prior enabled during compilation, or disabled by initCustomQuESTEnv().
  * - Cannot distribute @f$ N @f$ qubits over more than @f$ 2^N @f$ nodes (regardless of @p isDensMatr).
  * - Cannot distribute when the executable was not launched using MPI (e.g. via @c mpirun).
  * - Cannot GPU-accelerate when a GPU is not available at runtime, or has insufficient memory.

@@ -32,10 +32,13 @@ extern "C" {
 /// @notyetdoced
 typedef struct {
 
-    // deployment mode
+    // deployment modes which can be runtime disabled
     int isMultithreaded;
     int isGpuAccelerated;
     int isDistributed;
+
+    // deployment modes which cannot be directly changed after compilation
+    int isCuQuantumEnabled;
 
     // distributed configuration
     int rank;

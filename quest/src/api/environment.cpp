@@ -114,8 +114,9 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     /// should we warn here if each machine contains
     /// more GPUs than deployed MPI-processes (some GPUs idle)?
 
-    // use cuQuantum if compiled
-    if (useGpuAccel && gpu_isCuQuantumCompiled()) {
+    // cuQuantum is always used in GPU-accelerated envs when available
+    bool useCuQuantum = useGpuAccel && gpu_isCuQuantumCompiled();
+    if (useCuQuantum) {
         validate_gpuIsCuQuantumCompatible(caller); // assesses above bound GPU
         gpu_initCuQuantum();
     }
@@ -131,9 +132,10 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
         error_allocOfQuESTEnvFailed();
 
     // bind deployment info to global instance
-    globalEnvPtr->isMultithreaded  = useMultithread;
-    globalEnvPtr->isGpuAccelerated = useGpuAccel;
-    globalEnvPtr->isDistributed    = useDistrib;
+    globalEnvPtr->isMultithreaded    = useMultithread;
+    globalEnvPtr->isGpuAccelerated   = useGpuAccel;
+    globalEnvPtr->isDistributed      = useDistrib;
+    globalEnvPtr->isCuQuantumEnabled = useCuQuantum;
 
     // bind distributed info
     globalEnvPtr->rank     = (useDistrib)? comm_getRank()     : 0;
@@ -174,7 +176,7 @@ void printCompilationInfo() {
 
     print_table(
         "compilation", {
-        {"isMpiCompiled",      comm_isMpiCompiled()},
+        {"isMpiCompiled",       comm_isMpiCompiled()},
         {"isGpuCompiled",       gpu_isGpuCompiled()},
         {"isOmpCompiled",       cpu_isOpenmpCompiled()},
         {"isCuQuantumCompiled", gpu_isCuQuantumCompiled()},
@@ -186,9 +188,10 @@ void printDeploymentInfo() {
 
     print_table(
         "deployment", {
-        {"isMpiEnabled", globalEnvPtr->isDistributed},
-        {"isGpuEnabled", globalEnvPtr->isGpuAccelerated},
-        {"isOmpEnabled", globalEnvPtr->isMultithreaded},
+        {"isMpiEnabled",       globalEnvPtr->isDistributed},
+        {"isGpuEnabled",       globalEnvPtr->isGpuAccelerated},
+        {"isOmpEnabled",       globalEnvPtr->isMultithreaded},
+        {"isCuQuantumEnabled", globalEnvPtr->isCuQuantumEnabled},
     });
 }
 
