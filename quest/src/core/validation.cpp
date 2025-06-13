@@ -739,6 +739,10 @@ namespace report {
     string PAULI_STR_SUM_EXCEEDS_MATR_NUM_QUBITS =
         "The given PauliStrSum includes non-identity upon a qubit of index ${MAX_IND} and so is only compatible with FullStateDiagMatr containing at least ${NUM_PSS_QUBITS}. It cannot initialise the given ${NUM_MATR_QUBITS}-qubit FullStateDiagMatr.";
 
+    
+    string PAULI_STR_SUM_OVERLAPS_CONTROLS =
+        "A control qubit overlaps a non-identity Pauli operator in the given PauliStrSum.";
+
 
     /*
      * BASIS STATE INDICES
@@ -3250,7 +3254,10 @@ void validate_parsedStringIsNotEmpty(bool stringIsNotEmpty, const char* caller) 
  */
 
 extern bool paulis_containsXOrY(PauliStrSum sum);
+extern qindex paulis_getTargetBitMask(PauliStrSum sum);
 extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum);
+
+bool areQubitsDisjoint(qindex qubitsMaskA, int* qubitsB, int numQubitsB);
 
 void validate_pauliStrSumFields(PauliStrSum sum, const char* caller) {
 
@@ -3290,6 +3297,22 @@ void validate_pauliStrSumTargets(PauliStrSum sum, Qureg qureg, const char* calle
         {"${NUM_PSS_QUBITS}", minNumQb}};
 
     assertThat(qureg.numQubits >= minNumQb, report::PAULI_STR_SUM_EXCEEDS_QUREG_NUM_QUBITS, vars, caller);
+}
+
+void validate_controlsAndPauliStrSumTargets(Qureg qureg, int* ctrls, int numCtrls, PauliStrSum sum, const char* caller) {
+
+    // validate targets and controls in isolation
+    validate_pauliStrSumTargets(sum, qureg, caller);
+    validate_controls(qureg, ctrls, numCtrls, caller);
+
+    // validate that they do not overlap (i.e. sum has only I at ctrls, never X Y Z)
+    qindex targetMask = paulis_getTargetBitMask(sum);
+    assertThat(areQubitsDisjoint(targetMask, ctrls, numCtrls), report::PAULI_STR_SUM_OVERLAPS_CONTROLS, caller);
+}
+
+void validate_controlAndPauliStrSumTargets(Qureg qureg, int ctrl, PauliStrSum sum, const char* caller) {
+
+    validate_controlsAndPauliStrSumTargets(qureg, &ctrl, 1, sum, caller);
 }
 
 void validate_pauliStrSumCanInitMatrix(FullStateDiagMatr matr, PauliStrSum sum, const char* caller) {
@@ -3445,9 +3468,12 @@ void validate_localAmpIndices(Qureg qureg, qindex localStartInd, qindex numInds,
 
 bool areQubitsUnique(int* qubits, int numQubits) {
 
-    // assumes all elemtns of qubits are < 64
+    // assumes all elements of qubits are < 64
     qindex mask = 0;
 
+    // avoids calling getBitMask() so as to avoid
+    // gratuitous, full enumeration of qubits when
+    // numQubits is ridiculously long
     for (int n=0; n<numQubits; n++)
         if (getBit(mask, qubits[n]))
             return false;
@@ -3457,16 +3483,20 @@ bool areQubitsUnique(int* qubits, int numQubits) {
     return true;
 }
 
-bool areQubitsDisjoint(int* qubitsA, int numQubitsA, int* qubitsB, int numQubitsB) {
-
-    // assumes all elemtns of qubits are < 64
-    qindex maskA = getBitMask(qubitsA, numQubitsA);
+bool areQubitsDisjoint(qindex qubitsMaskA, int* qubitsB, int numQubitsB) {
 
     for (int n=0; n<numQubitsB; n++)
-        if (getBit(maskA, qubitsB[n]))
+        if (getBit(qubitsMaskA, qubitsB[n]))
             return false;
     
     return true;
+}
+
+bool areQubitsDisjoint(int* qubitsA, int numQubitsA, int* qubitsB, int numQubitsB) {
+
+    return areQubitsDisjoint(
+        getBitMask(qubitsA, numQubitsA), 
+        qubitsB, numQubitsB);
 }
 
 void assertValidQubit(Qureg qureg, int qubitInd, string msg, const char* caller) {

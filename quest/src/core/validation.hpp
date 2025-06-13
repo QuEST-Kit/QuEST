@@ -342,6 +342,10 @@ void validate_pauliStrSumIsHermitian(PauliStrSum sum, const char* caller);
 
 void validate_pauliStrSumTargets(PauliStrSum sum, Qureg qureg, const char* caller);
 
+void validate_controlAndPauliStrSumTargets(Qureg qureg, int ctrl, PauliStrSum sum, const char* caller);
+
+void validate_controlsAndPauliStrSumTargets(Qureg qureg, int* ctrls, int numCtrls, PauliStrSum sum, const char* caller);
+
 void validate_pauliStrSumCanInitMatrix(FullStateDiagMatr matr, PauliStrSum sum, const char* caller);
 
 

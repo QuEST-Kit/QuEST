@@ -1238,7 +1238,7 @@ template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, vector<int>, vecto
 
 
 extern bool paulis_containsXOrY(PauliStr str);
-extern vector<int> paulis_getInds(PauliStr str);
+extern vector<int> paulis_getTargetInds(PauliStr str);
 extern std::array<vector<int>,3> paulis_getSeparateInds(PauliStr str, Qureg qureg);
 extern int paulis_getPrefixZSign(Qureg qureg, vector<int> prefixZ) ;
 extern qcomp paulis_getPrefixPaulisElem(Qureg qureg, vector<int> prefixY, vector<int> prefixZ);
@@ -1334,7 +1334,7 @@ void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vecto
 
         bool isGadget = false;
         qreal phase = 0; // ignored
-        anyCtrlZTensorOrGadget(qureg, ctrls, ctrlStates, paulis_getInds(str), isGadget, phase);
+        anyCtrlZTensorOrGadget(qureg, ctrls, ctrlStates, paulis_getTargetInds(str), isGadget, phase);
     }
 }
 
@@ -1350,7 +1350,7 @@ void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vecto
 
     // when str=IZ, we must use the above bespoke algorithm
     if (!paulis_containsXOrY(str)) {
-        localiser_statevec_anyCtrlPhaseGadget(qureg, ctrls, ctrlStates, paulis_getInds(str), phase);
+        localiser_statevec_anyCtrlPhaseGadget(qureg, ctrls, ctrlStates, paulis_getTargetInds(str), phase);
         return;
     }
 

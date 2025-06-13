@@ -2387,6 +2387,30 @@ void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
 void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
 
 
+/// @notyetdoced
+/// @notyettested
+/// @see
+///  - applyTrotterizedPauliStrSumGadget()
+///  - applyControlledCompMatr1()
+void applyControlledTrotterizedPauliStrSumGadget(Qureg qureg, int control, PauliStrSum sum, qreal angle, int order, int reps);
+
+
+/// @notyetdoced
+/// @notyettested
+/// @see
+///  - applyTrotterizedPauliStrSumGadget()
+///  - applyMultiControlledCompMatr1()
+void applyMultiControlledTrotterizedPauliStrSumGadget(Qureg qureg, int* controls, int numControls, PauliStrSum sum, qreal angle, int order, int reps);
+
+
+/// @notyetdoced
+/// @notyettested
+/// @see
+///  - applyTrotterizedPauliStrSumGadget()
+///  - applyMultiStateControlledCompMatr1()
+void applyMultiStateControlledTrotterizedPauliStrSumGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStrSum sum, qreal angle, int order, int reps);
+
+
 /** @notyettested
  * 
  * A generalisation of applyTrotterizedPauliStrSumGadget() which accepts a complex angle and permits
@@ -2492,6 +2516,26 @@ void applyNonUnitaryTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, q
 }
 #endif
 
+#ifdef __cplusplus
+
+
+/// @notyettested
+/// @notyetvalidated
+/// @notyetdoced
+/// @cppvectoroverload
+/// @see applyMultiControlledTrotterizedPauliStrSumGadget()
+void applyMultiControlledTrotterizedPauliStrSumGadget(Qureg qureg, std::vector<int> controls, PauliStrSum sum, qreal angle, int order, int reps);
+
+
+/// @notyettested
+/// @notyetvalidated
+/// @notyetdoced
+/// @cppvectoroverload
+/// @see applyMultiStateControlledTrotterizedPauliStrSumGadget()
+void applyMultiStateControlledTrotterizedPauliStrSumGadget(Qureg qureg, std::vector<int> controls, std::vector<int> states, PauliStrSum sum, qreal angle, int order, int reps);
+
+
+#endif // __cplusplus
 
 /** @} */
 
