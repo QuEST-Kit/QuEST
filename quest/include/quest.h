@@ -31,19 +31,11 @@
 #define QUEST_H
 
 
-// bind compile settings to installed exec
-#if !@MULTI_LIB_HEADERS@
-#cmakedefine FLOAT_PRECISION @FLOAT_PRECISION@
-#cmakedefine01 COMPILE_MPI
-#cmakedefine01 COMPILE_OPENMP
-#cmakedefine01 COMPILE_CUDA
-#cmakedefine01 COMPILE_CUQUANTUM
-#endif
-
-
 // include version first so it is accessible to 
 // debuggers in case a subsequent include fails
 #include "quest/include/version.h"
+
+#include "quest/include/config.h"
 
 // include before API headers since it validates
 // preprocessor configuration, and affirms macro
