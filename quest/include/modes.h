@@ -15,27 +15,8 @@
 
 
 
-// ensure all mode flags are defined
-
-#ifndef COMPILE_MPI
-    #error "Compiler must define COMPILE_MPI"
-#endif
-
-#ifndef COMPILE_OPENMP
-    #error "Compiler must define COMPILE_OPENMP"
-#endif
-
-#ifndef COMPILE_CUDA
-    #error "Compiler must define COMPILE_CUDA"
-#endif
-
-#ifndef COMPILE_CUQUANTUM
-    #error "Compiler must define COMPILE_CUQUANTUM"
-#endif
-
-
-
 // ensure all mode flags are valid values
+// undefined allowed as undefined == 0 in C/C++ standards
 
 #if ! (COMPILE_MPI == 0 || COMPILE_MPI == 1)
     #error "Macro COMPILE_MPI must have value 0 or 1"
