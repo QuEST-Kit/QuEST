@@ -79,7 +79,7 @@ else()
   set(MULTI_LIB_HEADERS 0)
   function(compile_option VAR VALUE)
     target_compile_definitions(QuEST PRIVATE ${VAR}=${VALUE})
-    set(${VAR} ${VALUE})
+    set(${VAR} ${VALUE} PARENT_SCOPE)
   endfunction()
 endif()
 
@@ -576,13 +576,18 @@ install(FILES
         DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
 )
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/quest.h"
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/quest/include/quest.h"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/quest/include/config.h"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/quest/include"
 )
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/quest/include"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/quest"
         FILES_MATCHING PATTERN "*.h"
+        PATTERN "quest.h" EXCLUDE
 )
 
 install(EXPORT QuESTTargets

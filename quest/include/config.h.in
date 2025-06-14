@@ -1,0 +1,22 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// be warned, the below is sensitive to whitespace after the slash
+#if !defined(FLOAT_PRECISION)\
+    || !defined(COMPILE_MPI)\
+    || !defined(COMPILE_OPENMP)\
+    || !defined(COMPILE_CUDA)\
+    || !defined(COMPILE_CUQUANTUM)
+
+// bind compile settings to installed exec
+#if !@MULTI_LIB_HEADERS@
+#cmakedefine FLOAT_PRECISION @FLOAT_PRECISION@
+#cmakedefine01 COMPILE_MPI
+#cmakedefine01 COMPILE_OPENMP
+#cmakedefine01 COMPILE_CUDA
+#cmakedefine01 COMPILE_CUQUANTUM
+#endif
+
+#endif
+
+#endif
