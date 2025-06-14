@@ -124,6 +124,9 @@
      * permitting sharing of a single GPU, as is often useful for debugging or unit testing 
      * (for example, testing multi-GPU execution when only a single GPU is available).
      * 
+     * @warning
+     * Permitting GPU sharing may cause unintended behaviour when additionally using cuQuantum.
+     * 
      * @par Values
      *  - forbid sharing: @p 0, @p '0', @p '', @p , (unspecified)
      *  - permit sharing: @p 1, @p '1'
