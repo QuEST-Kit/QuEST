@@ -76,6 +76,12 @@ using std::vector;
  * 
  * - look into UCX CUDA multi-rail:
  *   https://docs.nvidia.com/networking/display/hpcxv215/unified+communication+-+x+framework+library#src-119764120_UnifiedCommunicationXFrameworkLibrary-Multi-RailMulti-Rail 
+ * 
+ * - by default, we validate to prevent sharing a GPU between multiple MPI processes since it is
+ *   easy to do unintentionally yet is rarely necessary (outside of unit testing) and can severely 
+ *   degrade performance. If we motivated a strong non-testing use-case for this however, we could
+ *   improve performance through use of CUDA's Multi-Process Service (MPS) which will prevent
+ *   serialisation of memcpy to distinct memory partitions and improve kernel scheduling.  
  */
 
 

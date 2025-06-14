@@ -301,6 +301,7 @@ ALIASES += "notyetdoced=@note Documentation for this function or struct is under
 ALIASES += "cpponly=@remark This function is only available in C++."
 ALIASES += "conly=@remark This function is only available in C."
 ALIASES += "macrodoc=@note This entity is actually a macro."
+ALIASES += "envvardoc=@note This entity is actually an environment variable."
 ALIASES += "neverdoced=@warning This entity is a macro, undocumented directly due to a Doxygen limitation. If you see this doc rendered, contact the devs!"
 ALIASES += "myexample=@par Example"
 ALIASES += "equivalences=@par Equivalences"

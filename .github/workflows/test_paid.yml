@@ -257,11 +257,14 @@ jobs:
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
           -DTEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}
           -DTEST_NUM_MIXED_DEPLOYMENT_REPETITIONS=${{ env.test_repetitions }}
-          -DPERMIT_NODES_TO_SHARE_GPU=${{ env.mpi_share_gpu }}
           -DCMAKE_CXX_FLAGS=${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' && '-fno-lto' || '' }}
 
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --parallel
+
+      # permit use of single GPU by multiple MPI processes (detriments performance)
+      - name: Set env-var to permit GPU sharing
+        run: echo "PERMIT_NODES_TO_SHARE_GPU=${{ env.mpi_share_gpu }}" >> $GITHUB_ENV
 
       # cannot use ctests when distributed, grr!
       - name: Run GPU + distributed v4 mixed tests (4 nodes sharing 1 GPU)

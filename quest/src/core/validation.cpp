@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <iostream>
 #include <cstdlib>
+#include <cstring>
 #include <string>
 #include <vector>
 #include <map>
@@ -1066,6 +1067,19 @@ namespace report {
     string TEMP_ALLOC_FAILED =
         "A temporary allocation of ${NUM_ELEMS} elements (each of ${NUM_BYTES_PER_ELEM} bytes) failed, possibly because of insufficient memory.";
 
+
+    /*
+     * ENVIRONMENT VARIABLES
+     */
+
+    string COMPULSORY_ENV_VAR_WAS_NOT_SPECIFIED_OR_EMPTY =
+        "A compulsory (but alas here unspecified) environment variable was not set, or was set to an empty string.";
+
+    string INVALID_BOOLEAN_ENVIRONMENT_VARIABLE =
+        "A boolean environment variable (alas here unspecified) was given a value other than '0' or '1'.";
+
+    string INVALID_PERMIT_NODES_TO_SHARE_GPU_ENV_VAR =
+        "The optional, boolean PERMIT_NODES_TO_SHARE_GPU environment variable was specified to a value other than '', '0' or '1'.";
 }
 
 
@@ -1364,13 +1378,8 @@ void validate_newEnvDistributedBetweenPower2Nodes(const char* caller) {
 
 void validate_newEnvNodesEachHaveUniqueGpu(const char* caller) {
 
-    // this validation can be disabled for debugging/dev purposes
-    // (caller should explicitly check this preprocessor too for clarity)
-    if (PERMIT_NODES_TO_SHARE_GPU)
-        return;
-
-    bool uniqueGpus = ! gpu_areAnyNodesBoundToSameGpu();
-    assertAllNodesAgreeThat(uniqueGpus, report::MULTIPLE_NODES_BOUND_TO_SAME_GPU, caller);
+    bool sharedGpus = gpu_areAnyNodesBoundToSameGpu();
+    assertAllNodesAgreeThat(!sharedGpus, report::MULTIPLE_NODES_BOUND_TO_SAME_GPU, caller);
 }
 
 void validate_gpuIsCuQuantumCompatible(const char* caller) {
@@ -4164,4 +4173,29 @@ void validate_tempAllocSucceeded(bool succeeded, qindex numElems, qindex numByte
         {"${NUM_BYTES_PER_ELEM}", numBytesPerElem}};
 
     assertThat(succeeded, report::TEMP_ALLOC_FAILED, vars, caller);
+}
+
+
+
+/*
+ * ENVIRONMENT VARIABLES
+ */
+
+void validate_envVarIsBoolean(string varName, const char* varStr, const char* caller) {
+
+    // empty non-compulsory environment vars never reach this validation function
+    assertThat(!parser_isStrEmpty(varStr), report::COMPULSORY_ENV_VAR_WAS_NOT_SPECIFIED_OR_EMPTY, caller);
+
+    // value must be a single 0 or 1 character (below expr works even when str has no terminal)
+    bool isValid = (varStr[0] == '0' || varStr[0] == '1') && (varStr[1] == '\0');
+
+    /// @todo include 'varName' in printed vars once tokenSubs can support strings 
+    // hackily ensure "PERMIT_NODES_TO_SHARE_GPU" is featured in the error message as
+    // the only currently supported environment variable and is important to specify
+    string errMsg = (varName == "PERMIT_NODES_TO_SHARE_GPU")?
+        report::INVALID_PERMIT_NODES_TO_SHARE_GPU_ENV_VAR :
+        report::INVALID_BOOLEAN_ENVIRONMENT_VARIABLE;
+
+    /// @todo include 'varStr' in printed vars once tokenSubs can support strings
+    assertThat(isValid, errMsg, caller);
 }
