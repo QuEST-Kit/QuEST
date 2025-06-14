@@ -133,9 +133,10 @@ TEST_CASE( "getQuESTEnv", TEST_CATEGORY ) {
 
         QuESTEnv env = getQuESTEnv();
 
-        REQUIRE( (env.isMultithreaded  == 0 || env.isMultithreaded  == 1) );
-        REQUIRE( (env.isGpuAccelerated == 0 || env.isGpuAccelerated == 1) );
-        REQUIRE( (env.isDistributed    == 0 || env.isDistributed    == 1) );
+        REQUIRE( (env.isMultithreaded    == 0 || env.isMultithreaded    == 1) );
+        REQUIRE( (env.isGpuAccelerated   == 0 || env.isGpuAccelerated   == 1) );
+        REQUIRE( (env.isDistributed      == 0 || env.isDistributed      == 1) );
+        REQUIRE( (env.isCuQuantumEnabled == 0 || env.isCuQuantumEnabled == 1) );
         
         REQUIRE( env.rank     >= 0 );
         REQUIRE( env.numNodes >= 0 );
