@@ -75,10 +75,6 @@
 
 // define optional-macro defaults (mostly to list them)
 
-#ifndef PERMIT_NODES_TO_SHARE_GPU
-#define PERMIT_NODES_TO_SHARE_GPU 0
-#endif
-
 #ifndef INCLUDE_DEPRECATED_FUNCTIONS
 #define INCLUDE_DEPRECATED_FUNCTIONS 0
 #endif
@@ -95,17 +91,46 @@
 
     /// @notyetdoced
     /// @macrodoc
-    const int PERMIT_NODES_TO_SHARE_GPU = 0;
-
-
-    /// @notyetdoced
-    /// @macrodoc
     const int INCLUDE_DEPRECATED_FUNCTIONS = 0;
 
 
     /// @notyetdoced
     /// @macrodoc
     const int DISABLE_DEPRECATION_WARNINGS = 0;
+
+
+#endif
+
+
+
+// document environment variables
+
+// spoof env-vars as consts to doc (hackily and hopefully temporarily)
+#if 0
+
+
+    /** @envvardoc
+     * 
+     * Specifies whether to permit multiple MPI processes to deploy to the same GPU.
+     * 
+     * @attention 
+     * This environment variable has no effect when either (or both) of distribution or 
+     * GPU-acceleration are disabled.
+     * 
+     * In multi-GPU execution, which combines distribution with GPU-acceleration, it is 
+     * prudent to assign each GPU to at most one MPI process in order to avoid superfluous 
+     * slowdown. Hence by default, initQuESTEnv() will forbid assigning multiple MPI processes 
+     * to the same GPU. This environment variable can be set to `1` to disable this validation, 
+     * permitting sharing of a single GPU, as is often useful for debugging or unit testing 
+     * (for example, testing multi-GPU execution when only a single GPU is available).
+     * 
+     * @par Values
+     *  - forbid sharing: @p 0, @p '0', @p '', @p , (unspecified)
+     *  - permit sharing: @p 1, @p '1'
+     * 
+     * @author Tyson Jones
+     */
+    const int PERMIT_NODES_TO_SHARE_GPU = 0;
 
 
 #endif

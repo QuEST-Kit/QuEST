@@ -11,6 +11,7 @@
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/memory.hpp"
+#include "quest/src/core/parser.hpp"
 #include "quest/src/core/printer.hpp"
 #include "quest/src/core/autodeployer.hpp"
 #include "quest/src/core/validation.hpp"
@@ -102,12 +103,18 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     if (useGpuAccel)
         gpu_bindLocalGPUsToNodes();
 
-    // each MPI process must use a unique GPU. This is critical when
-    // initializing cuQuantum, so we don't re-init cuStateVec on any
-    // paticular GPU (causing runtime error), but still ensures we 
-    // keep good performance in our custom backend GPU code; there is
-    // no reason to use multi-nodes-per-GPU except for dev/debugging.
-    if (useGpuAccel && useDistrib && ! PERMIT_NODES_TO_SHARE_GPU)
+    // consult environment variable to decide whether to allow GPU sharing 
+    // (default 'no'=0) which informs whether below validation is triggered
+    bool permitGpuSharing = parser_validateAndParseOptionalBoolEnvVar(
+        "PERMIT_NODES_TO_SHARE_GPU", false, caller);
+
+    // each MPI process should ordinarily use a unique GPU. This is 
+    // critical when initializing cuQuantum so that we don't re-init 
+    // cuStateVec on any paticular GPU (which can apparently cause a
+    // so-far-unwitnessed runtime error), but is otherwise essential
+    // for good performance. GPU sharing is useful for unit testing
+    // however permitting a single GPU to test CUDA+MPI deployment
+    if (useGpuAccel && useDistrib && ! permitGpuSharing)
         validate_newEnvNodesEachHaveUniqueGpu(caller);
 
     /// @todo
@@ -132,10 +139,11 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
         error_allocOfQuESTEnvFailed();
 
     // bind deployment info to global instance
-    globalEnvPtr->isMultithreaded    = useMultithread;
-    globalEnvPtr->isGpuAccelerated   = useGpuAccel;
-    globalEnvPtr->isDistributed      = useDistrib;
-    globalEnvPtr->isCuQuantumEnabled = useCuQuantum;
+    globalEnvPtr->isMultithreaded     = useMultithread;
+    globalEnvPtr->isGpuAccelerated    = useGpuAccel;
+    globalEnvPtr->isDistributed       = useDistrib;
+    globalEnvPtr->isCuQuantumEnabled  = useCuQuantum;
+    globalEnvPtr->isGpuSharingEnabled = permitGpuSharing;
 
     // bind distributed info
     globalEnvPtr->rank     = (useDistrib)? comm_getRank()     : 0;
@@ -188,10 +196,11 @@ void printDeploymentInfo() {
 
     print_table(
         "deployment", {
-        {"isMpiEnabled",       globalEnvPtr->isDistributed},
-        {"isGpuEnabled",       globalEnvPtr->isGpuAccelerated},
-        {"isOmpEnabled",       globalEnvPtr->isMultithreaded},
-        {"isCuQuantumEnabled", globalEnvPtr->isCuQuantumEnabled},
+        {"isMpiEnabled",        globalEnvPtr->isDistributed},
+        {"isGpuEnabled",        globalEnvPtr->isGpuAccelerated},
+        {"isOmpEnabled",        globalEnvPtr->isMultithreaded},
+        {"isCuQuantumEnabled",  globalEnvPtr->isCuQuantumEnabled},
+        {"isGpuSharingEnabled", globalEnvPtr->isGpuSharingEnabled},
     });
 }
 

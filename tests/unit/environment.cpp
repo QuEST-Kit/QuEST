@@ -54,6 +54,13 @@ TEST_CASE( "initQuESTEnv", TEST_CATEGORY ) {
     SECTION( LABEL_VALIDATION ) {
 
         REQUIRE_THROWS_WITH( initQuESTEnv(), ContainsSubstring( "already been initialised") );
+
+        // cannot automatically check other validations, such as:
+        // - has env been previously initialised then finalised?
+        // - is env distributed over power-of-2 nodes?
+        // - are environment-variables valid?
+        // - is max 1 MPI process bound to each GPU?
+        // - is GPU compatible with cuQuantum (if enabled)?
     }
 }
 
@@ -133,10 +140,11 @@ TEST_CASE( "getQuESTEnv", TEST_CATEGORY ) {
 
         QuESTEnv env = getQuESTEnv();
 
-        REQUIRE( (env.isMultithreaded    == 0 || env.isMultithreaded    == 1) );
-        REQUIRE( (env.isGpuAccelerated   == 0 || env.isGpuAccelerated   == 1) );
-        REQUIRE( (env.isDistributed      == 0 || env.isDistributed      == 1) );
-        REQUIRE( (env.isCuQuantumEnabled == 0 || env.isCuQuantumEnabled == 1) );
+        REQUIRE( (env.isMultithreaded     == 0 || env.isMultithreaded     == 1) );
+        REQUIRE( (env.isGpuAccelerated    == 0 || env.isGpuAccelerated    == 1) );
+        REQUIRE( (env.isDistributed       == 0 || env.isDistributed       == 1) );
+        REQUIRE( (env.isCuQuantumEnabled  == 0 || env.isCuQuantumEnabled  == 1) );
+        REQUIRE( (env.isGpuSharingEnabled == 0 || env.isGpuSharingEnabled == 1) );
         
         REQUIRE( env.rank     >= 0 );
         REQUIRE( env.numNodes >= 0 );

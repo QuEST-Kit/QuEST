@@ -22,6 +22,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <cstdlib>
 #include <stdexcept>
 #include <algorithm>
 
@@ -442,4 +443,31 @@ string parser_loadFile(string fn) {
     stringstream buffer;
     buffer << file.rdbuf();
     return buffer.str();
+}
+
+
+
+/*
+ * ENVIRONMENT VARIABLES
+ */
+
+
+bool parser_isStrEmpty(const char* str) {
+
+    // str can be unallocated or empty, but not e.g. whitespace
+    return (str == nullptr) || (str[0] == '\0');
+}
+
+
+bool parser_validateAndParseOptionalBoolEnvVar(string varName, bool defaultVal, const char* caller) {
+
+    const char* varStr = std::getenv(varName.c_str());
+
+    // permit specifying no or empty environment variable (triggering default)
+    if (parser_isStrEmpty(varStr))
+        return defaultVal;
+
+    // otherwise it must be precisely 0 or 1 without whitespace
+    validate_envVarIsBoolean(varName, varStr, caller);
+    return (varStr[0] == '0')? 0 : 1;
 }

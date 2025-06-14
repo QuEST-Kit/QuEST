@@ -488,7 +488,6 @@ void validate_densMatrExpecDiagMatrValueIsReal(qcomp value, qcomp exponent, cons
  * PARTIAL TRACE
  */
 
-
 void validate_quregCanBeReduced(Qureg qureg, int numTraceQubits, const char* caller);
 
 void validate_quregCanBeSetToReducedDensMatr(Qureg out, Qureg in, int numTraceQubits, const char* caller);
@@ -508,6 +507,14 @@ void validate_canReadFile(string fn, const char* caller);
  */
 
 void validate_tempAllocSucceeded(bool succeeded, qindex numElems, qindex numBytesPerElem, const char* caller);
+
+
+
+/*
+ * ENVIRONMENT VARIABLES
+ */
+
+void validate_envVarIsBoolean(std::string varName, const char* varStr, const char* caller);
 
 
 

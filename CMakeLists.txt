@@ -231,15 +231,6 @@ if ((ENABLE_CUDA OR ENABLE_HIP) AND FLOAT_PRECISION STREQUAL 4)
   message(FATAL_ERROR "Quad precision is not supported on GPU. Please disable GPU acceleration or lower precision.")
 endif()
 
-option(
-  PERMIT_NODES_TO_SHARE_GPU
-  "Whether to permit multiple distributed nodes to share a single GPU at the detriment of performance. Turned OFF by default."
-  OFF
-)
-if (ENABLE_DISTRIBUTION AND (ENABLE_CUDA OR ENABLE_HIP))
-  message(STATUS "Permitting nodes to share GPUs is turned ${PERMIT_NODES_TO_SHARE_GPU}. Set PERMIT_NODES_TO_SHARE_GPU to modify.")
-endif()
-
 # Deprecated API
 option(
   ENABLE_DEPRECATED_API
@@ -318,7 +309,7 @@ if (ENABLE_MULTITHREADING)
   if (NOT OpenMP_FOUND)
     set(ErrorMsg "Could not find OpenMP, necessary for enabling multithreading.")
     if (APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-      string(APPEND ErrorMsg " Try first calling `brew install libomp` then `export OpenMP_ROOT=$(brew --prefix)/opt/libomp`")
+      string(APPEND ErrorMsg " Try first calling \n\tbrew install libomp\nthen\n\texport OpenMP_ROOT=$(brew --prefix)/opt/libomp")
     endif()
     message(FATAL_ERROR ${ErrorMsg})
   endif()
@@ -431,14 +422,6 @@ if (ENABLE_DEPRECATED_API)
 
 else()
   target_compile_definitions(QuEST PRIVATE INCLUDE_DEPRECATED_FUNCTIONS=0)
-endif()
-
-
-if (ENABLE_DISTRIBUTION AND (ENABLE_CUDA OR ENABLE_HIP))
-  target_compile_definitions(
-    QuEST PRIVATE 
-    PERMIT_NODES_TO_SHARE_GPU=$<IF:$<BOOL:${PERMIT_NODES_TO_SHARE_GPU}>,1,0>
-  )
 endif()
 
 

@@ -42,5 +42,13 @@ bool parser_canReadFile(string fn);
 string parser_loadFile(string fn);
 
 
+/*
+ * ENVIRONMENT VARIABLES
+ */
+
+bool parser_isStrEmpty(const char* str);
+
+bool parser_validateAndParseOptionalBoolEnvVar(string varName, bool defaultVal, const char* caller);
+
 
 #endif // PARSER_HPP
