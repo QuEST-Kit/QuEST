@@ -10,6 +10,7 @@
  * @author Tyson Jones
  */
 
+#include "quest/include/precision.h"
 #include "quest/include/types.h"
 #include "quest/include/paulis.h"
 
@@ -22,11 +23,9 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-#include <cstdlib>
 #include <stdexcept>
 #include <algorithm>
 
-using std::stold;
 using std::regex;
 using std::vector;
 using std::string;
@@ -83,9 +82,9 @@ namespace patterns {
     string num = group(comp) + "|" + group(imag) + "|" + group(real);
 
     // no capturing because 'num' pollutes captured groups, and pauli syntax overlaps real integers
-    string pauli  = "[" + parser_RECOGNISED_PAULI_CHARS + "]";
+    string pauli = "[" + parser_RECOGNISED_PAULI_CHARS + "]";
     string paulis = group(optSpace + pauli + optSpace) + "+";
-    string line   = "^" + group(num) + space + optSpace + paulis + "$";
+    string weightedPaulis = "^" + group(num) + space + optSpace + paulis + "$";
 }
 
 
@@ -96,8 +95,8 @@ namespace regexes {
     regex imag(patterns::imag);
     regex comp(patterns::comp);
     regex num(patterns::num);
-    regex line(patterns::line);
     regex paulis(patterns::paulis);
+    regex weightedPaulis(patterns::weightedPaulis);
 }
 
 
@@ -174,6 +173,165 @@ int getNumPaulisInLine(string line) {
 
 
 /*
+ * REAL NUMBER PARSING
+ */
+
+
+qreal precisionAgnosticStringToFloat(string str) {
+
+    // remove whitespace which stold() et al cannot handle after the sign.
+    // beware this means that e.g. "1 0" (invalid number) would become "10"
+    // (valid) so this function cannot be used for duck-typing, though that
+    // is anyway the case since stold() et al permit "10abc"
+    removeWhiteSpace(str);
+
+    // below throws exception when the (prefix) of str cannot be/fit into a qreal
+    if (FLOAT_PRECISION == 1) return static_cast<qreal>(std::stof (str));
+    if (FLOAT_PRECISION == 2) return static_cast<qreal>(std::stod (str));
+    if (FLOAT_PRECISION == 4) return static_cast<qreal>(std::stold(str));
+
+    // unreachable
+    return -1;
+}
+
+
+bool parser_isAnySizedReal(string str) {
+
+    // we assume that all strings which match the regex can be parsed by
+    // precisionAgnosticStringToFloat() above (once whitespace is removed)
+    // EXCEPT strings which contain a number too large to store in the qreal 
+    // type (as is separately checked below). Note it is insufficient to merely 
+    // duck-type using stold() et al because such functions permit non-numerical 
+    // characters to follow the contained number (grr!)
+    smatch match;
+    return regex_match(str, match, regexes::real);
+}
+
+
+bool parser_isValidReal(string str) {
+
+    // reject str if it doesn't match regex
+    if (!parser_isAnySizedReal(str))
+        return false;
+
+    // check number is in-range of qreal via duck-typing
+    try {
+        precisionAgnosticStringToFloat(str);
+    } catch (const out_of_range&) {
+        return false;
+
+    // error if our regex permitted an unparsable string
+    } catch (const invalid_argument&) {
+        error_attemptedToParseRealFromInvalidString();
+    }
+
+    return true;
+}
+
+
+qreal parser_parseReal(string str) {
+
+    try {
+        return precisionAgnosticStringToFloat(str);
+    } catch (const invalid_argument&) {
+        error_attemptedToParseRealFromInvalidString();
+    } catch (const out_of_range&) {
+        error_attemptedToParseOutOfRangeReal();
+    }
+
+    // unreachable
+    return -1;
+}
+
+
+
+/*
+ * COMPLEX NUMBER PARSING
+ */
+
+
+bool parser_isAnySizedComplex(string str) {
+
+    // we assume that all strings which match the regex can be parsed to
+    // a qcomp (once whitespace is removed) EXCEPT strings which contain a 
+    // number too large to store in the qcomp type (as is separately checked 
+    // below). Note it is insufficient to merely duck-type each component using
+    // using stold() et al because such functions permit non-numerical chars to 
+    // follow the contained number (grr!)
+    smatch match;
+
+    // must match real, imaginary or complex number regex
+    if (regex_match(str, match, regexes::real)) return true;
+    if (regex_match(str, match, regexes::imag)) return true;
+    if (regex_match(str, match, regexes::comp)) return true;
+
+    return false;
+}
+
+
+bool parser_isValidComplex(string str) {
+
+    // reject str if it doesn't match complex regex
+    if (!parser_isAnySizedComplex(str))
+        return false;
+
+    // we've so far gauranteed str has a valid form, but we must now check 
+    // each included complex component (which we enumerate) is in range of a qreal
+    sregex_iterator it(str.begin(), str.end(), regexes::real);
+    sregex_iterator end;
+
+    // valid coeffs contain 1 or 2 reals, never 0, which regex should have caught
+    if (it == end)
+        error_attemptedToParseComplexFromInvalidString();
+
+    // for each of the 1 or 2 components...
+    for (; it != end; it++) {
+
+        // check component is in-range of qreal via duck-typing
+        try {
+            precisionAgnosticStringToFloat(it->str(0));
+        } catch (const out_of_range&) {
+            return false;
+
+        // error if our regex permitted an unparsable component
+        } catch (const invalid_argument&) {
+            error_attemptedToParseComplexFromInvalidString();
+        }
+    }
+
+    // report that each/all detected components of str can form a valid qcomp
+    return true;
+}
+
+
+qcomp parser_parseComplex(string str) {
+
+    if (!parser_isValidComplex(str))
+        error_attemptedToParseComplexFromInvalidString();
+
+    // we are gauranteed to fully match real, imag or comp after prior validation
+    smatch match;
+
+    // extract and parse components and their signs (excluding imaginary symbol)
+    if (regex_match(str, match, regexes::real))
+        return qcomp(parser_parseReal(match.str(1)), 0);
+
+    if (regex_match(str, match, regexes::imag))
+        return qcomp(0, parser_parseReal(match.str(1)));
+
+    if (regex_match(str, match, regexes::comp))
+        return qcomp(
+            parser_parseReal(match.str(1)),
+            parser_parseReal(match.str(2)));
+    
+    // should be unreachable
+    error_attemptedToParseComplexFromInvalidString();
+    return qcomp(0,0); 
+}
+
+
+
+/*
  * VALIDATION
  *
  * which checks user-given strings are correctly formatted, which are
@@ -189,15 +347,14 @@ bool isInterpretablePauliStrSumLine(string line) {
     // notation) followed by 1 or more space characters, then one or
     // more pauli codes/chars. It does NOT determine whether the coeff
     // can actually be instantiated as a qcomp
-    return regex_match(line, regexes::line);
+    return regex_match(line, regexes::weightedPaulis);
 }
 
 
 bool isCoeffValidInPauliStrSumLine(string line) {
 
     // it is gauranteed that line is interpretable and contains a regex-matching
-    // coefficient, but we must additionally verify it is within range of stold,
-    // and isn't unexpectedly incompatible with stold in a way uncaptured by regex.
+    // coefficient, but we must additionally verify it is within range of qreal.
     // So we duck type each of the 1 or 2 matches with the real regex (i.e. one or 
     // both of the real and imaginary components of a complex coeff).
 
@@ -216,16 +373,16 @@ bool isCoeffValidInPauliStrSumLine(string line) {
     // enumerate all matches of 'real' regex in line
     for (; it != end; it++) {
 
-        // removed whitespace (stold cannot handle space between sign and number)
+        // remove whitespace (stold cannot handle space between sign and number)
         string match = it->str(0);
         removeWhiteSpace(match);
 
-        // return false if stold cannot parse the real as a long double
+        // return false if number cannot become a qreal
         try {
-            stold(match);
-        } catch (const invalid_argument&) {
-            return false;
+            precisionAgnosticStringToFloat(match);
         } catch (const out_of_range&) {
+            return false;
+        } catch (const invalid_argument&) { // should be impossible (indicates bad regex)
             return false;
         }
     }
@@ -300,52 +457,6 @@ int parser_getPauliIntFromChar(char ch) {
  */
 
 
-qreal parseReal(string real) {
-    
-    // attempt to parse at max precision (long double) then cast down if necessary
-    try {
-        return static_cast<qreal>(stold(real));
-
-    // should be impossible if regex and validation works correctly
-    } catch (const invalid_argument&) {
-        error_attemptedToParseRealFromInvalidString();
-
-    // should be prior caught by validation
-    } catch (const out_of_range&) {
-        error_attemptedToParseOutOfRangeReal();
-    }
-
-    // unreachable
-    return -1;
-}
-
-
-qcomp parseCoeff(string coeff) {
-
-    // remove all superfluous spaces in coeff so stold is happy (it cannot tolerate spaces after +-)
-    removeWhiteSpace(coeff);
-
-    // we are gauranteed to fully match real, imag or comp after prior validation
-    smatch match;
-
-    // extract and parse components and their signs (excluding imaginary symbol)
-    if (regex_match(coeff, match, regexes::real))
-        return qcomp(parseReal(match.str(1)), 0);
-
-    if (regex_match(coeff, match, regexes::imag))
-        return qcomp(0, parseReal(match.str(1)));
-
-    if (regex_match(coeff, match, regexes::comp))
-        return qcomp(
-            parseReal(match.str(1)),
-            parseReal(match.str(2)));
-    
-    // should be unreachable
-    error_attemptedToParseComplexFromInvalidString();
-    return qcomp(0,0); 
-}
-
-
 PauliStr parsePaulis(string paulis, bool rightIsLeastSignificant) {
 
     // remove whitespace to make string compatible with getPauliStr()
@@ -364,14 +475,14 @@ PauliStr parsePaulis(string paulis, bool rightIsLeastSignificant) {
 }
 
 
-void parseLine(string line, qcomp &coeff, PauliStr &pauli, bool rightIsLeastSignificant) {
+void parseWeightedPaulis(string line, qcomp &coeff, PauliStr &pauli, bool rightIsLeastSignificant) {
 
     // separate line into substrings
     string coeffStr, pauliStr;
     separateStringIntoCoeffAndPaulis(line, coeffStr, pauliStr);
 
     // parse each, overwriting calller primitives
-    coeff = parseCoeff(coeffStr);
+    coeff = parser_parseComplex(coeffStr);
     pauli = parsePaulis(pauliStr, rightIsLeastSignificant);
 }
 
@@ -403,7 +514,7 @@ PauliStrSum parser_validateAndParsePauliStrSum(string lines, bool rightIsLeastSi
 
         qcomp coeff;
         PauliStr string;
-        parseLine(line, coeff, string, rightIsLeastSignificant); // validates
+        parseWeightedPaulis(line, coeff, string, rightIsLeastSignificant); // validates
 
         coeffs.push_back(coeff);
         strings.push_back(string);
@@ -443,31 +554,4 @@ string parser_loadFile(string fn) {
     stringstream buffer;
     buffer << file.rdbuf();
     return buffer.str();
-}
-
-
-
-/*
- * ENVIRONMENT VARIABLES
- */
-
-
-bool parser_isStrEmpty(const char* str) {
-
-    // str can be unallocated or empty, but not e.g. whitespace
-    return (str == nullptr) || (str[0] == '\0');
-}
-
-
-bool parser_validateAndParseOptionalBoolEnvVar(string varName, bool defaultVal, const char* caller) {
-
-    const char* varStr = std::getenv(varName.c_str());
-
-    // permit specifying no or empty environment variable (triggering default)
-    if (parser_isStrEmpty(varStr))
-        return defaultVal;
-
-    // otherwise it must be precisely 0 or 1 without whitespace
-    validate_envVarIsBoolean(varName, varStr, caller);
-    return (varStr[0] == '0')? 0 : 1;
 }

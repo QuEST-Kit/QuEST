@@ -7,11 +7,27 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
+#include "quest/include/types.h"
 #include "quest/include/paulis.h"
 
 #include <string>
 
 using std::string;
+
+
+
+/*
+ * PARSING NUMBERS
+ */
+
+bool parser_isAnySizedReal(string str);
+bool parser_isAnySizedComplex(string str);
+
+bool parser_isValidReal(string str);
+bool parser_isValidComplex(string str);
+
+qreal parser_parseReal(string str);
+qcomp parser_parseComplex(string str);
 
 
 
@@ -41,14 +57,6 @@ bool parser_canReadFile(string fn);
 
 string parser_loadFile(string fn);
 
-
-/*
- * ENVIRONMENT VARIABLES
- */
-
-bool parser_isStrEmpty(const char* str);
-
-bool parser_validateAndParseOptionalBoolEnvVar(string varName, bool defaultVal, const char* caller);
 
 
 #endif // PARSER_HPP
