@@ -13,6 +13,7 @@
 #include "quest/src/core/memory.hpp"
 #include "quest/src/core/parser.hpp"
 #include "quest/src/core/printer.hpp"
+#include "quest/src/core/envvars.hpp"
 #include "quest/src/core/autodeployer.hpp"
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/randomiser.hpp"
@@ -76,6 +77,9 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     // this leads to undefined behaviour in distributed mode, as per the MPI
     validate_envNeverInit(globalEnvPtr != nullptr, hasEnvBeenFinalized, caller);
 
+    envvars_validateAndLoadEnvVars(caller);
+    validateconfig_setEpsilonToDefault();
+
     // ensure the chosen deployment is compiled and supported by hardware.
     // note that these error messages will be printed by every node because
     // validation occurs before comm_init() below, so all processes spawned
@@ -104,9 +108,8 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
         gpu_bindLocalGPUsToNodes();
 
     // consult environment variable to decide whether to allow GPU sharing 
-    // (default 'no'=0) which informs whether below validation is triggered
-    bool permitGpuSharing = parser_validateAndParseOptionalBoolEnvVar(
-        "PERMIT_NODES_TO_SHARE_GPU", false, caller);
+    // (default = false) which informs whether below validation is triggered
+    bool permitGpuSharing = envvars_getWhetherGpuSharingIsPermitted();
 
     // each MPI process should ordinarily use a unique GPU. This is 
     // critical when initializing cuQuantum so that we don't re-init 

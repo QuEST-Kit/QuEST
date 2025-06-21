@@ -23,6 +23,7 @@
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/parser.hpp"
 #include "quest/src/core/printer.hpp"
+#include "quest/src/core/envvars.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
@@ -1072,14 +1073,17 @@ namespace report {
      * ENVIRONMENT VARIABLES
      */
 
-    string COMPULSORY_ENV_VAR_WAS_NOT_SPECIFIED_OR_EMPTY =
-        "A compulsory (but alas here unspecified) environment variable was not set, or was set to an empty string.";
-
-    string INVALID_BOOLEAN_ENVIRONMENT_VARIABLE =
-        "A boolean environment variable (alas here unspecified) was given a value other than '0' or '1'.";
-
     string INVALID_PERMIT_NODES_TO_SHARE_GPU_ENV_VAR =
-        "The optional, boolean PERMIT_NODES_TO_SHARE_GPU environment variable was specified to a value other than '', '0' or '1'.";
+        "The optional, boolean '" + envvar_names::PERMIT_NODES_TO_SHARE_GPU + "' environment variable was specified to an invalid value. The variable can be unspecified, or set to '', '0' or '1'.";
+
+    string DEFAULT_EPSILON_ENV_VAR_NOT_A_REAL =
+        "The optional '" + envvar_names::DEFAULT_VALIDATION_EPSILON + "' environment variable was not a recognisable real number.";
+
+    string DEFAULT_EPSILON_ENV_VAR_EXCEEDS_QREAL_RANGE = 
+        "The optional '" + envvar_names::DEFAULT_VALIDATION_EPSILON + "' environment variable was larger (in magnitude) than the maximum value which can be stored in a qreal.";
+
+    string DEFAULT_EPSILON_ENV_VAR_IS_NEGATIVE =
+        "The optional '" + envvar_names::DEFAULT_VALIDATION_EPSILON + "' environment variable was negative. The value must be zero or positive.";
 }
 
 
@@ -1167,13 +1171,16 @@ qreal REDUCTION_EPSILON_FACTOR = 100;
  * overwritten (so will stay validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
  */
 
-static qreal global_validationEpsilon = DEFAULT_VALIDATION_EPSILON;
+// the default epsilon is not known until runtime since the macro
+// UNSPECIFIED_DEFAULT_VALIDATION_EPSILON may be overriden by the
+// DEFAULT_VALIDATION_EPSILON environment variable
+static qreal global_validationEpsilon = -1; // must be overriden
 
 void validateconfig_setEpsilon(qreal eps) {
     global_validationEpsilon = eps;
 }
 void validateconfig_setEpsilonToDefault() {
-    global_validationEpsilon = DEFAULT_VALIDATION_EPSILON;
+    global_validationEpsilon = envvars_getDefaultValidationEpsilon();
 }
 qreal validateconfig_getEpsilon() {
     return global_validationEpsilon;
@@ -4181,21 +4188,19 @@ void validate_tempAllocSucceeded(bool succeeded, qindex numElems, qindex numByte
  * ENVIRONMENT VARIABLES
  */
 
-void validate_envVarIsBoolean(string varName, const char* varStr, const char* caller) {
+void validate_envVarPermitNodesToShareGpu(string varValue, const char* caller) {
 
-    // empty non-compulsory environment vars never reach this validation function
-    assertThat(!parser_isStrEmpty(varStr), report::COMPULSORY_ENV_VAR_WAS_NOT_SPECIFIED_OR_EMPTY, caller);
+    // though caller should gaurantee varValue contains at least one character, 
+    // we'll still check to avoid a segfault if this gaurantee is broken
+    bool isValid = (varValue.size() == 1) && (varValue[0] == '0' || varValue[0] == '1');
+    assertThat(isValid, report::INVALID_PERMIT_NODES_TO_SHARE_GPU_ENV_VAR, caller);
+}
 
-    // value must be a single 0 or 1 character (below expr works even when str has no terminal)
-    bool isValid = (varStr[0] == '0' || varStr[0] == '1') && (varStr[1] == '\0');
+void validate_envVarDefaultValidationEpsilon(string varValue, const char* caller) {
 
-    /// @todo include 'varName' in printed vars once tokenSubs can support strings 
-    // hackily ensure "PERMIT_NODES_TO_SHARE_GPU" is featured in the error message as
-    // the only currently supported environment variable and is important to specify
-    string errMsg = (varName == "PERMIT_NODES_TO_SHARE_GPU")?
-        report::INVALID_PERMIT_NODES_TO_SHARE_GPU_ENV_VAR :
-        report::INVALID_BOOLEAN_ENVIRONMENT_VARIABLE;
+    assertThat(parser_isAnySizedReal(varValue), report::DEFAULT_EPSILON_ENV_VAR_NOT_A_REAL, caller);
+    assertThat(parser_isValidReal(varValue), report::DEFAULT_EPSILON_ENV_VAR_EXCEEDS_QREAL_RANGE, caller);
 
-    /// @todo include 'varStr' in printed vars once tokenSubs can support strings
-    assertThat(isValid, errMsg, caller);
+    qreal eps = parser_parseReal(varValue);
+    assertThat(eps >= 0, report::DEFAULT_EPSILON_ENV_VAR_IS_NEGATIVE, caller);
 }

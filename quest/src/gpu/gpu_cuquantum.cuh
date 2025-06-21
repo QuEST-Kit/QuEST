@@ -134,9 +134,10 @@ int deallocMemInPool(void* ctx, void* ptr, size_t size, cudaStream_t stream) {
 void gpu_initCuQuantum() {
 
     // the cuStateVec docs say custatevecCreate() should be called
-    // once per physical GPU, though oversubscribing MPI processes
-    // while setting PERMIT_NODES_TO_SHARE_GPU=1 worked fine in our
-    // testing - we will treat it as tolerable but undefined behaviour
+    // once per physical GPU, though assigning multiple MPI processes
+    // to each GPU with each calling custatevecCreate() below worked
+    // fine in our testing. We here tolerate oversubscription, letting
+    // prior validation prevent it (disabled by an environment variable)
 
     // create new stream and cuQuantum handle, binding to global config
     CUDA_CHECK( custatevecCreate(&config.handle) );

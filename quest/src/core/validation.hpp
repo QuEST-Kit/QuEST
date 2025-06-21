@@ -514,7 +514,9 @@ void validate_tempAllocSucceeded(bool succeeded, qindex numElems, qindex numByte
  * ENVIRONMENT VARIABLES
  */
 
-void validate_envVarIsBoolean(std::string varName, const char* varStr, const char* caller);
+void validate_envVarPermitNodesToShareGpu(string varValue, const char* caller);
+
+void validate_envVarDefaultValidationEpsilon(string varValue, const char* caller);
 
 
 

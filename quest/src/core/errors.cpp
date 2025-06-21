@@ -818,3 +818,19 @@ void assert_printerGivenPositiveNumNewlines() {
     if (printer_getNumTrailingNewlines() < min)
         raiseInternalError("A printer utility attempted to print one fewer than the user-set number of trailing newlines; but that number was zero! This violates prior validation.");
 }
+
+
+
+/*
+ * ENVIRONMENT VARIABLE ERRORS
+ */
+
+void error_envVarsNotYetLoaded() {
+
+    raiseInternalError("An environment variable was queried but all environment variables have not yet been loaded.");
+}
+
+void error_envVarsAlreadyLoaded() {
+
+    raiseInternalError("All environment variables were already loaded and validated yet re-loading was attempted.");
+}

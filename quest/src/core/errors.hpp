@@ -339,4 +339,14 @@ void assert_printerGivenPositiveNumNewlines();
 
 
 
+/*
+ * ENVIRONMENT VARIABLE ERRORS
+ */
+
+void error_envVarsNotYetLoaded();
+
+void error_envVarsAlreadyLoaded();
+
+
+
 #endif // ERRORS_HPP

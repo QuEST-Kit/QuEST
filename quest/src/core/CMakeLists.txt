@@ -4,6 +4,7 @@ target_sources(QuEST
   PRIVATE
   accelerator.cpp
   autodeployer.cpp
+  envvars.cpp
   errors.cpp
   localiser.cpp
   memory.cpp

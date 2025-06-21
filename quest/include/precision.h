@@ -121,34 +121,19 @@
 
 
 /*
- * RE-CONFIGURABLE DEFAULT VALIDATION PRECISION
+ * DEFAULT VALIDATION PRECISION
  *
- * which is compile-time overridable by pre-defining DEFAULT_VALIDATION_EPSILON (e.g. 
- * in user code before importing QuEST, or passed as a preprocessor constant by the
- * compiler using argument -D), and runtime overridable using setValidationEpsilon()
+ * which is pre-run-time overridable by specifying the corresponding environment variable.
  */
 
-#ifndef DEFAULT_VALIDATION_EPSILON
+#if FLOAT_PRECISION == 1
+    #define UNSPECIFIED_DEFAULT_VALIDATION_EPSILON 1E-5
 
-    #if FLOAT_PRECISION == 1
-        #define DEFAULT_VALIDATION_EPSILON 1E-5
+#elif FLOAT_PRECISION == 2
+    #define UNSPECIFIED_DEFAULT_VALIDATION_EPSILON 1E-12
 
-    #elif FLOAT_PRECISION == 2
-        #define DEFAULT_VALIDATION_EPSILON 1E-12
-
-    #elif FLOAT_PRECISION == 4
-        #define DEFAULT_VALIDATION_EPSILON 1E-13
-
-    #endif
-
-#endif
-
-// spoofing above macros as typedefs and consts to doc
-#if 0
-
-    /// @notyetdoced
-    /// @macrodoc
-    const qreal DEFAULT_VALIDATION_EPSILON = 1E-12;
+#elif FLOAT_PRECISION == 4
+    #define UNSPECIFIED_DEFAULT_VALIDATION_EPSILON 1E-13
 
 #endif
 
