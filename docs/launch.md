@@ -22,6 +22,7 @@ Launching your [compiled](compile.md) QuEST application can be as straightforwar
 > - <a href="#launch_tests">Tests</a>
 >    * <a href="#launch_v4">v4</a>
 >    * <a href="#launch_v3">v3</a>
+> - <a href="#launch_configuring">Configuring</a>
 > - <a href="#launch_multithreading">Multithreading</a>
 >    * <a href="#launch_choosing-threads">Choosing threads</a>
 >    * <a href="#launch_monitoring-utilisation">Monitoring utilisation</a>
@@ -29,11 +30,11 @@ Launching your [compiled](compile.md) QuEST application can be as straightforwar
 > - <a href="#launch_gpu-acceleration">GPU-acceleration</a>
 >    * <a href="#launch_launching">Launching</a>
 >    * <a href="#launch_monitoring">Monitoring</a>
->    * <a href="#launch_configuring">Configuring</a>
+>    * <a href="#launch_configuring-1">Configuring</a>
 >    * <a href="#launch_benchmarking">Benchmarking</a>
 > - <a href="#launch_distribution">Distribution</a>
 >    * <a href="#launch_launching-1">Launching</a>
->    * <a href="#launch_configuring-1">Configuring</a>
+>    * <a href="#launch_configuring-2">Configuring</a>
 >    * <a href="#launch_benchmarking-1">Benchmarking</a>
 > - <a href="#launch_multi-gpu">Multi-GPU</a>
 > - <a href="#launch_supercomputers">Supercomputers</a>
@@ -245,6 +246,21 @@ ctest
 
 ---------------------
 
+<!-- permit doxygen to reference section -->
+<a id="launch_configuring"></a>
+
+## Configuring
+
+QuEST execution can be configured prior to runtime using the below [environment variables](https://en.wikipedia.org/wiki/Environment_variable).
+
+- [`PERMIT_NODES_TO_SHARE_GPU`](https://quest-kit.github.io/QuEST/group__modes.html#ga7e12922138caa68ddaa6221e40f62dda)
+- [`DEFAULT_VALIDATION_EPSILON`](https://quest-kit.github.io/QuEST/group__modes.html#ga55810d6f3d23de810cd9b12a2bbb8cc2)
+
+
+
+
+---------------------
+
 
 <!-- permit doxygen to reference section -->
 <a id="launch_multithreading"></a>
@@ -429,7 +445,7 @@ Usage of GPU-acceleration can be (inadvisably) forced using [`createForcedQureg(
 
 
 <!-- permit doxygen to reference section -->
-<a id="launch_configuring"></a>
+<a id="launch_configuring-1"></a>
 
 ### Configuring
 
@@ -514,7 +530,7 @@ mpirun -np 1024 --oversubscribe ./mytests
 
 
 <!-- permit doxygen to reference section -->
-<a id="launch_configuring-1"></a>
+<a id="launch_configuring-2"></a>
 
 ### Configuring
 
