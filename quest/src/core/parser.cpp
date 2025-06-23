@@ -202,7 +202,7 @@ bool parser_isAnySizedReal(string str) {
     // EXCEPT strings which contain a number too large to store in the qreal 
     // type (as is separately checked below). Note it is insufficient to merely 
     // duck-type using stold() et al because such functions permit non-numerical 
-    // characters to follow the contained number (grr!)
+    // characters to follow the contained number which are silently removed (grr!)
     smatch match;
     return regex_match(str, match, regexes::real);
 }
@@ -351,7 +351,7 @@ bool isInterpretablePauliStrSumLine(string line) {
 }
 
 
-bool isCoeffValidInPauliStrSumLine(string line) {
+bool isPauliStrSumCoeffWithinQcompRange(string line) {
 
     // it is gauranteed that line is interpretable and contains a regex-matching
     // coefficient, but we must additionally verify it is within range of qreal.
@@ -414,8 +414,8 @@ void assertStringIsValidPauliStrSum(string lines, const char* caller) {
         validate_parsedPauliStrSumLineIsInterpretable(validLine, line, lineIndex, caller);
 
         // assert the coeff is parsable (e.g. doesn't exceed valid number range)
-        bool validCoeff = isCoeffValidInPauliStrSumLine(line);
-        validate_parsedPauliStrSumCoeffIsValid(validCoeff, line, lineIndex, caller);
+        bool validCoeff = isPauliStrSumCoeffWithinQcompRange(line);
+        validate_parsedPauliStrSumCoeffWithinQcompRange(validCoeff, line, lineIndex, caller);
 
         // assert the line has a consistent number of Paulis as previous
         int numLinePaulis = getNumPaulisInLine(line);

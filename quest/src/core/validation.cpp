@@ -710,8 +710,8 @@ namespace report {
     string PARSED_PAULI_STR_SUM_INCONSISTENT_NUM_PAULIS_IN_LINE =
         "Line ${LINE_NUMBER} specified ${NUM_LINE_PAULIS} Pauli operators which is inconsistent with the number of Paulis of the previous lines (${NUM_PAULIS}).";
 
-    string PARSED_PAULI_STR_SUM_COEFF_IS_INVALID =
-        "The coefficient of line ${LINE_NUMBER} could not be converted to a qcomp, possibly due to it exceeding the valid numerical range.";
+    string PARSED_PAULI_STR_SUM_COEFF_EXCEEDS_QCOMP_RANGE =
+        "The coefficient of line ${LINE_NUMBER} is a valid floating-point number but exceeds the range which can be stored in a qcomp. Consider increasing FLOAT_PRECISION.";
 
     string PARSED_STRING_IS_EMPTY =
         "The given string was empty (contained only whitespace characters) and could not be parsed.";
@@ -1173,7 +1173,9 @@ qreal REDUCTION_EPSILON_FACTOR = 100;
 
 // the default epsilon is not known until runtime since the macro
 // UNSPECIFIED_DEFAULT_VALIDATION_EPSILON may be overriden by the
-// DEFAULT_VALIDATION_EPSILON environment variable
+// DEFAULT_VALIDATION_EPSILON environment variable. We do not read
+// the env-var immediately since it may malformed; we must wait for
+// initQuESTEnv() to validate and potentially throw an error
 static qreal global_validationEpsilon = -1; // must be overriden
 
 void validateconfig_setEpsilon(qreal eps) {
@@ -3250,12 +3252,12 @@ void validate_parsedPauliStrSumLineHasConsistentNumPaulis(int numPaulis, int num
     assertThat(numPaulis == numLinePaulis, report::PARSED_PAULI_STR_SUM_INCONSISTENT_NUM_PAULIS_IN_LINE, vars, caller);
 }
 
-void validate_parsedPauliStrSumCoeffIsValid(bool isCoeffValid, string line, qindex lineIndex, const char* caller) {
+void validate_parsedPauliStrSumCoeffWithinQcompRange(bool isCoeffValid, string line, qindex lineIndex, const char* caller) {
 
     /// @todo we cannot yet report 'line' because tokenSubs so far only accepts integers :(
 
     tokenSubs vars = {{"${LINE_NUMBER}", lineIndex + 1}}; // lines begin at 1
-    assertThat(isCoeffValid, report::PARSED_PAULI_STR_SUM_COEFF_IS_INVALID, vars, caller);
+    assertThat(isCoeffValid, report::PARSED_PAULI_STR_SUM_COEFF_EXCEEDS_QCOMP_RANGE, vars, caller);
 }
 
 void validate_parsedStringIsNotEmpty(bool stringIsNotEmpty, const char* caller) {
