@@ -6,6 +6,9 @@
  * @author Tyson Jones
  */
 
+#ifndef ENVVARS_HPP
+#define ENVVARS_HPP
+
 #include <string>
 
 
@@ -29,3 +32,6 @@ void envvars_validateAndLoadEnvVars(const char* caller);
 bool envvars_getWhetherGpuSharingIsPermitted();
 
 qreal envvars_getDefaultValidationEpsilon();
+
+
+#endif // ENVVARS_HPP

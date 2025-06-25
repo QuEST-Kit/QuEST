@@ -127,7 +127,7 @@
      * @warning
      * Permitting GPU sharing may cause unintended behaviour when additionally using cuQuantum.
      * 
-     * @par Values
+     * @envvarvalues
      *  - forbid sharing: @p 0, @p '0', @p '', @p , (unspecified)
      *  - permit sharing: @p 1, @p '1'
      * 
@@ -146,7 +146,7 @@
      * unless overriden at runtime via setValidationEpsilon(), in which case it can be
      * restored to that specified by this environment variable using setValidationEpsilonToDefault().
      * 
-     * @par Values
+     * @envvarvalues
      *  - setting @p DEFAULT_VALIDATION_EPSILON=0 disables numerical validation, as if the value
      *    were instead infinity.
      *  - setting @p DEFAULT_VALIDATION_EPSILON='' is equivalent to _not_ specifying the variable,
