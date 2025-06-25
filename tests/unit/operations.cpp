@@ -22,6 +22,7 @@
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
+#include "tests/utils/config.hpp"
 #include "tests/utils/cache.hpp"
 #include "tests/utils/qvector.hpp"
 #include "tests/utils/qmatrix.hpp"
@@ -1738,7 +1739,7 @@ TEST_CASE( "multiplyFullStateDiagMatr", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
         qmatrix refMatr = getRandomDiagonalMatrix(getPow2(numQubits));
         auto apiFunc = multiplyFullStateDiagMatr;
 
-        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+        GENERATE( range(0, getNumTestedMixedDeploymentRepetitions()) );
 
         SECTION( LABEL_STATEVEC ) {
 
@@ -1776,7 +1777,7 @@ TEST_CASE( "multiplyFullStateDiagMatrPower", TEST_CATEGORY LABEL_MIXED_DEPLOY_TA
 
         CAPTURE( exponent );
         
-        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+        GENERATE( range(0, getNumTestedMixedDeploymentRepetitions()) );
 
         SECTION( LABEL_STATEVEC ) {
 
@@ -1814,7 +1815,7 @@ TEST_CASE( "applyFullStateDiagMatr", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
         qmatrix refMatr = getRandomDiagonalUnitary(numQubits);
         auto apiFunc = applyFullStateDiagMatr;
 
-        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+        GENERATE( range(0, getNumTestedMixedDeploymentRepetitions()) );
 
         SECTION( LABEL_STATEVEC ) {
 
@@ -1858,7 +1859,7 @@ TEST_CASE( "applyFullStateDiagMatrPower", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG )
 
         CAPTURE( exponent );
 
-        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+        GENERATE( range(0, getNumTestedMixedDeploymentRepetitions()) );
 
         if (!testRealExp)
             setValidationEpsilon(0);

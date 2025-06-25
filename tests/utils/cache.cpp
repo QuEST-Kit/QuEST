@@ -12,6 +12,7 @@
 #include "qmatrix.hpp"
 #include "macros.hpp"
 #include "linalg.hpp"
+#include "config.hpp"
 #include "cache.hpp"
 
 #include <unordered_map>
@@ -68,7 +69,7 @@ deployInfo getSupportedDeployments() {
     bool gpu = env.isGpuAccelerated;
 
     // return only the "most-accelerated" deployment, unless all are desired
-    bool one = ! TEST_ALL_DEPLOYMENTS;
+    bool one = ! getWhetherToTestAllDeployments();
 
     // add only those supported to the output list, in order of preference.
     // flag order is (MPI, GPU, OMP), matching createCustomQureg

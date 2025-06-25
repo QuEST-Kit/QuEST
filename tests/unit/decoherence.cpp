@@ -15,6 +15,7 @@
 
 #include "tests/utils/qvector.hpp"
 #include "tests/utils/qmatrix.hpp"
+#include "tests/utils/config.hpp"
 #include "tests/utils/cache.hpp"
 #include "tests/utils/compare.hpp"
 #include "tests/utils/convert.hpp"
@@ -276,7 +277,7 @@ TEST_CASE( "mixKrausMap", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
-        int maxFlag = TEST_MAX_NUM_SUPEROP_TARGETS;
+        int maxFlag = getMaxNumTestedSuperoperatorTargets();
         int numQubits = getNumCachedQubits();
         int maxNumTargs = (maxFlag != 0 && numQubits > maxFlag)?
             maxFlag : numQubits;
@@ -305,7 +306,7 @@ TEST_CASE( "mixSuperOp", TEST_CATEGORY ) {
     SECTION( LABEL_CORRECTNESS ) {
 
         int numQubits = getNumCachedQubits();
-        int maxFlag = TEST_MAX_NUM_SUPEROP_TARGETS;
+        int maxFlag = getMaxNumTestedSuperoperatorTargets();
         int maxNumTargs = (maxFlag != 0 && numQubits > maxFlag)?
             maxFlag : numQubits;
 
@@ -336,7 +337,7 @@ TEST_CASE( "mixQureg", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
 
         CAPTURE( prob );
         
-        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+        GENERATE( range(0, getNumTestedMixedDeploymentRepetitions()) );
 
         SECTION( LABEL_DENSMATR LABEL_DELIMITER LABEL_STATEVEC ) { 
 

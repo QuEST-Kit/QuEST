@@ -4,6 +4,7 @@ target_sources(tests
   PUBLIC
   cache.cpp
   compare.cpp
+  config.cpp
   convert.cpp
   evolve.cpp
   linalg.cpp

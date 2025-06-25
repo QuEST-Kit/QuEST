@@ -55,10 +55,8 @@ make
 | `ENABLE_TESTING` | (`OFF`), `ON` | Determines whether to additionally build QuEST's unit and integration tests. If built, tests can be run from the `build` directory with `make test`, or `ctest`, or manually launched with `./tests/tests` which enables distribution (i.e. `mpirun -np 8 ./tests/tests`) |
 | `ENABLE_DEPRECATED_API` | (`OFF`), `ON` | As described above. When enabled alongside testing, the `v3 deprecated` unit tests will additionally be compiled and can be run from within `build` via `cd tests/deprecated; ctest`, or manually launched with `./tests/deprecated/dep_tests` (enabling distribution, as above).
 | `DOWNLOAD_CATCH2` | (`ON`), `OFF` | QuEST's tests require Catch2. By default, if you don't have Catch2 installed (or CMake doesn't find it) it will be downloaded from Github and built for you. If you don't want that to happen, for example because you _do_ have Catch2 installed, set this to `OFF`. |
-| `TEST_MAX_NUM_QUBIT_PERMUTATIONS` | (`0`), Integer | Determines the maximum number of control and target qubit permutations with which to test each API function. Set to `0` to test all permutations, or to a positive integer (e.g. `50`) to accelerate the unit tests. |
-| `TEST_MAX_NUM_SUPEROP_TARGETS` | (`4`), Integer | Determines the maximum number of superoperator targets in the unit tests (for functions `mixKrausMap` and `mixSuperOp`). Set to `0` to impose no maximum (which is extraordinarily slow), or a positive integer (e.g. `3`) to accelerate the unit tests. |
-| `TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS` | (`10`), Integer | Determines the number of times (minimum of `1`) to repeat the randomised unit tests of functions which accept multiple distinctly-deployed `Qureg`s. Set to a small, positive integer to accelerate mixed-deployment unit tests. |
-| `TEST_ALL_DEPLOYMENTS` | (`ON`), `OFF` | Determines whether unit tests will be repeatedly run using all possible combinations of available `Qureg` deployments (i.e. `OpenMP` and/or `CUDA` and/or `MPI`), else only once using all available deployments simultaneously. Set to `OFF` to accelerate unit tests. |
+
+> As of `v4.2`, macros which configure the unit tests such as `TEST_MAX_NUM_QUBIT_PERMUTATIONS` have become environment variables specified before launch. See [`launch.md`](launch.md)
 
 ---------------------------
 

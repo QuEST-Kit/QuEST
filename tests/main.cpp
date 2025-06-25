@@ -50,6 +50,7 @@
 #include <string>
 
 #include "quest.h"
+#include "tests/utils/config.hpp"
 #include "tests/utils/cache.hpp"
 #include "tests/utils/macros.hpp"
 #include "tests/utils/random.hpp"
@@ -95,8 +96,14 @@ public:
         std::cout << "  GPU-sharing ok:  " << env.isGpuSharingEnabled << std::endl;
         std::cout << "  cuQuantum:       " << env.isCuQuantumEnabled  << std::endl;
         std::cout << "  num nodes:       " << env.numNodes            << std::endl;
-        std::cout << "  num qubits:      " << getNumCachedQubits()    << std::endl;
-        std::cout << "  num qubit perms: " << TEST_MAX_NUM_QUBIT_PERMUTATIONS << std::endl;
+        std::cout << std::endl;
+
+        std::cout << "Testing configuration:" << std::endl;
+        std::cout << "  test all deployments:  " << getWhetherToTestAllDeployments()         << std::endl;
+        std::cout << "  num qubits in qureg:   " << getNumCachedQubits()                     << std::endl;
+        std::cout << "  max num qubit perms:   " << getMaxNumTestedQubitPermutations()       << std::endl;
+        std::cout << "  max num superop targs: " << getMaxNumTestedSuperoperatorTargets()    << std::endl;
+        std::cout << "  num mixed-deploy reps: " << getNumTestedMixedDeploymentRepetitions() << std::endl;
         std::cout << std::endl;
 
         std::cout << "Tested Qureg deployments:" << std::endl;

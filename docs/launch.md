@@ -216,6 +216,20 @@ Test project /build
 Alas tests launched in this way cannot be deployed with distribution.
 
 
+#### Environment variables
+
+The `v4` unit tests make use of the below, optional environment variables to control their rigour and runtime.
+
+
+| Environment variable  | Default | Description |
+| -------- | ------- | ------- |
+| `TEST_MAX_NUM_QUBIT_PERMUTATIONS`  | `0` | The maximum number of control and target qubit permutations under which to unit test each function. Set to `0` (default) to test all permutations, or to a positive integer (e.g. `50`) to accelerate the unit tests. See more info [here](https://quest-kit.github.io/QuEST/group__testutilsconfig.html#gac5adcc10bd26c56f20344f5ae3d9ba41) |
+| `TEST_MAX_NUM_SUPEROP_TARGETS` | `4` | The maximum number of superoperator targets for which to unit test functions `mixKrausMap()` and `mixSuperOp()`. These are computationally equivalent to simulating unitaries with double the number of targets upon a density matrix. Set to `0` to test all sizes which is likely prohibitively slow, or to a positive integer (e.g. the default of `4`) to accelerate the unit tests. |
+| `NUM_MIXED_DEPLOYMENT_REPETITIONS` | `10` | The number of times (minimum of `1`) to repeat each random mixed-deployment unit test for each deployment combination. |
+| `TEST_ALL_DEPLOYMENTS` | `1` | Whether unit tests will be run using all possible deployment combinations (i.e. OpenMP, CUDA, MPI) in-turn (`=1`), or only once using all available deployments simultaneously (`=0`). |
+
+
+
 
 <!-- permit doxygen to reference section -->
 <a id="launch_v3"></a>
@@ -256,7 +270,7 @@ QuEST execution can be configured prior to runtime using the below [environment 
 - [`PERMIT_NODES_TO_SHARE_GPU`](https://quest-kit.github.io/QuEST/group__modes.html#ga7e12922138caa68ddaa6221e40f62dda)
 - [`DEFAULT_VALIDATION_EPSILON`](https://quest-kit.github.io/QuEST/group__modes.html#ga55810d6f3d23de810cd9b12a2bbb8cc2)
 
-
+Note the unit tests in the preceding section accept additional environment variables.
 
 
 ---------------------

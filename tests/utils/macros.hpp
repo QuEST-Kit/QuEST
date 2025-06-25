@@ -14,57 +14,6 @@
 #include <catch2/catch_test_macros.hpp>
 
 
-/**
- * macros which affect the speed and rigour of the unit tests, useful
- * for accelerating tests on particular platforms (e.g. paid github runners).
- * The default values are those which perform the most rigorous tests at
- * the slowest speed, so adjusting these macros accelerates tests. 
- *
- * @todo
- * These are clunky preprocessors (invoking full recompilation when changed),
- * rather than runtime arguments, because of the nuisance of passing such
- * args to cmake. It can be done however using environment variables; see
- * https://stackoverflow.com/questions/28812533/
- */
-
-// 0 = perform all, and a sensible value to accelerate tests is 50
-#ifndef TEST_MAX_NUM_QUBIT_PERMUTATIONS
-#define TEST_MAX_NUM_QUBIT_PERMUTATIONS 0
-#endif
-
-// 0 = perform all (very slow), while 4 limits to superops = 8-qubit matrices
-#ifndef TEST_MAX_NUM_SUPEROP_TARGETS
-#define TEST_MAX_NUM_SUPEROP_TARGETS 4
-#endif
-
-// 0 = use all available deployments at once, 1 = try all combinations in-turn
-#ifndef TEST_ALL_DEPLOYMENTS
-#define TEST_ALL_DEPLOYMENTS 1
-#endif
-
-// number of times to repeat each "[mixed]" test (minimum 1)
-#ifndef TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS
-#define TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS 10
-#endif
-
-// spoofing above macros as consts to doc
-#if 0
-
-    /// @macrodoc
-    const int TEST_MAX_NUM_QUBIT_PERMUTATIONS = 0;
-
-    /// @macrodoc
-    const int TEST_MAX_NUM_SUPEROP_TARGETS = 4;
-
-    /// @macrodoc
-    const int TEST_ALL_DEPLOYMENTS = 1;
-
-    /// @macrodoc
-    const int TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS = 10;
-
-#endif
-
-
 /*
  * preconditions to the internal unit testing functions are checked using 
  * DEMAND rather than Catch2's REQUIRE, so that they are not counted in the 

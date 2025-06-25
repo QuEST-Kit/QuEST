@@ -10,6 +10,7 @@
 
 #include "quest.h"
 
+#include "config.hpp"
 #include "lists.hpp"
 #include "macros.hpp"
 #include "random.hpp"
@@ -264,7 +265,7 @@ listpair GENERATE_CTRLS_AND_TARGS(int numQubits, int numCtrls, int numTargs) {
 
     // impose a limit on the number of {ctrls,targs} to generate (max-int if none set)
     int numPerms = getNumPermutations(numQubits, numCtrls + numTargs);
-    int maxPerms = TEST_MAX_NUM_QUBIT_PERMUTATIONS;
+    int maxPerms = getMaxNumTestedQubitPermutations();
     if (maxPerms == 0)
         maxPerms = std::numeric_limits<int>::max();
 

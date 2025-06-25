@@ -23,6 +23,7 @@
 #include "tests/utils/lists.hpp"
 #include "tests/utils/macros.hpp"
 #include "tests/utils/random.hpp"
+#include "tests/utils/config.hpp"
 #include "tests/utils/cache.hpp"
 #include "tests/utils/measure.hpp"
 
@@ -412,7 +413,7 @@ TEST_CASE( "calcInnerProduct", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
         qmatrix refDM = getRefDensmatr();
         auto apiFunc = calcInnerProduct;
 
-        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+        GENERATE( range(0, getNumTestedMixedDeploymentRepetitions()) );
 
         SECTION( LABEL_STATEVEC LABEL_DELIMITER LABEL_STATEVEC ) {
 
@@ -461,7 +462,7 @@ TEST_CASE( "calcFidelity", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
         qmatrix refDM = getRefDensmatr();
         auto apiFunc = calcFidelity;
 
-        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+        GENERATE( range(0, getNumTestedMixedDeploymentRepetitions()) );
 
         SECTION( LABEL_STATEVEC LABEL_DELIMITER LABEL_STATEVEC ) {
 
@@ -503,7 +504,7 @@ TEST_CASE( "calcDistance", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) {
         qmatrix refDM = getRefDensmatr();
         auto apiFunc = calcDistance;
 
-        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+        GENERATE( range(0, getNumTestedMixedDeploymentRepetitions()) );
 
         SECTION( LABEL_STATEVEC LABEL_DELIMITER LABEL_STATEVEC ) {
 
@@ -550,7 +551,7 @@ TEST_CASE( "calcExpecFullStateDiagMatr", TEST_CATEGORY LABEL_MIXED_DEPLOY_TAG ) 
         qmatrix refMatr = getRandomDiagonalHermitian(getNumCachedQubits());
         auto apiFunc = calcExpecFullStateDiagMatr;
 
-        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+        GENERATE( range(0, getNumTestedMixedDeploymentRepetitions()) );
 
         SECTION( LABEL_STATEVEC ) {
 
@@ -579,7 +580,7 @@ TEST_CASE( "calcExpecNonHermitianFullStateDiagMatr", TEST_CATEGORY LABEL_MIXED_D
         qmatrix refMatr = getRandomDiagonalMatrix(getPow2(getNumCachedQubits()));
         auto apiFunc = calcExpecNonHermitianFullStateDiagMatr;
 
-        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+        GENERATE( range(0, getNumTestedMixedDeploymentRepetitions()) );
 
         SECTION( LABEL_STATEVEC ) {
 
@@ -635,7 +636,7 @@ TEST_CASE( "calcExpecFullStateDiagMatrPower", TEST_CATEGORY LABEL_MIXED_DEPLOY_T
 
         CAPTURE( exponent );
 
-        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+        GENERATE( range(0, getNumTestedMixedDeploymentRepetitions()) );
 
         SECTION( LABEL_STATEVEC ) {
 
@@ -676,7 +677,7 @@ TEST_CASE( "calcExpecNonHermitianFullStateDiagMatrPower", TEST_CATEGORY LABEL_MI
 
         CAPTURE( exponent );
 
-        GENERATE( range(0, TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS) );
+        GENERATE( range(0, getNumTestedMixedDeploymentRepetitions()) );
 
         SECTION( LABEL_STATEVEC ) {
 
