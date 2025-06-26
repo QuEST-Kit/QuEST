@@ -90,7 +90,7 @@ jobs:
 
       # tests will be non-comprehensive/faster to save $$$
       num_qubit_perms: 10
-      test_all_deploys: OFF
+      test_all_deploys: 0
 
     # perform the job
     steps:
@@ -138,6 +138,12 @@ jobs:
 
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --parallel
+
+      # specifying only env-vars with non-default values
+      - name: Configure tests with environment variables
+        run: | 
+          echo "TEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}" >> $GITHUB_ENV
+          echo "TEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}" >> $GITHUB_ENV
 
       # cannot use ctests when distributed, grr!
       - name: Run multithreaded + distributed v4 tests (16 nodes, 4 threads eeach)
@@ -206,11 +212,11 @@ jobs:
       # which will be shared between 4 MPI processes
       # (no --oversubscribe flag necessary on MPICH)
       num_mpi_nodes: 4
-      mpi_share_gpu: ON
+      mpi_share_gpu: 1
 
       # we will test all combinations of deployments
       # (e.g. CPU + MPI vs GPU), repeated 5 times each
-      test_all_deploys: ON
+      test_all_deploys: 1
       test_repetitions: 5
 
     # perform the job
@@ -255,16 +261,17 @@ jobs:
           -DENABLE_CUDA=${{ matrix.cuda }}
           -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
-          -DTEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}
-          -DTEST_NUM_MIXED_DEPLOYMENT_REPETITIONS=${{ env.test_repetitions }}
           -DCMAKE_CXX_FLAGS=${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' && '-fno-lto' || '' }}
 
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --parallel
 
-      # permit use of single GPU by multiple MPI processes (detriments performance)
-      - name: Set env-var to permit GPU sharing
-        run: echo "PERMIT_NODES_TO_SHARE_GPU=${{ env.mpi_share_gpu }}" >> $GITHUB_ENV
+      # specify only env-vars with non-default values
+      - name: Configure tests with environment variables
+        run: | 
+          echo "TEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}" >> $GITHUB_ENV
+          echo "TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS=${{ env.test_repetitions }}" >> $GITHUB_ENV
+          echo "PERMIT_NODES_TO_SHARE_GPU=${{ env.mpi_share_gpu }}" >> $GITHUB_ENV
 
       # cannot use ctests when distributed, grr!
       - name: Run GPU + distributed v4 mixed tests (4 nodes sharing 1 GPU)

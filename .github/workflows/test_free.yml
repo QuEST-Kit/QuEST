@@ -54,10 +54,6 @@ jobs:
       build_dir: "build"
       depr_dir: "build/tests/deprecated"
 
-      # run all slow, rigorous tests (because runner is free)
-      num_qubit_perms: 0
-      test_all_deploys: ON
-
     # perform the job
     steps:
       - name: Get QuEST
@@ -71,14 +67,13 @@ jobs:
           -DENABLE_MULTITHREADING=OFF
           -DENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
           -DFLOAT_PRECISION=${{ matrix.precision }}
-          -DTEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}
-          -DTEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}
 
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --config Release --parallel
 
-      # run v4 unit tests in random order, excluding the integration tests
+      # run v4 unit tests in random order, excluding the integration tests,
+      # using the default environment variables (e.g. test all permutations)
       # TODO:
       # ctest currently doesn't know of our Catch2 tags, so we
       # are manually excluding each integration test by name
