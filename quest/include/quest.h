@@ -7,7 +7,6 @@
  * deprecated v3 API, before including this header.
  * 
  * @author Tyson Jones
- * @author Luc Jaulmes (patching CMake install)
  * 
  * @defgroup api 📋 API
  */

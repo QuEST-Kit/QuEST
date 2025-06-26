@@ -38,6 +38,7 @@
  * both compilation of QuEST without installation AND manual 
  * compilation (i.e. without cmake) remain possible.
  * 
+ * @author Luc Jaulmes
  * @author Oliver Brown
  * @author Tyson Jones (validation & doc)
  */
