@@ -27,12 +27,18 @@
  * SPECIFYING ENV-VARS 
  */
 
-// spoofing as macros to doc
+// spoofing as macros to doc; beware that the values below
+// merely duplicate but do not change the default values
+// which are hardcoded in config.cpp
 #if 0
+
+    /// @envvardoc
+    const int TEST_NUM_QUBITS_IN_QUREG = 6;
 
     /** @envvardoc
      * 
-     * Specifies the maximum number of control and target qubit permutations under which to unit test each relevant API function.
+     * Specifies the maximum number of control and target qubit permutations for which to unit test each relevant 
+     * API function.
      * 
      * Many QuEST functions accept a varying number of target qubits (like applyCompMatr()) and/or control qubits
      * (like applyMultiControlledCompMatr()). The unit tests will run these functions, passing every possible number
@@ -46,15 +52,15 @@
      * `4`  targets and `3` controls in a Qureg containing `10` qubits.
      * 
      * When this environment variable is set to a non-zero value, the unit tests will forego testing every permutation
-     * and instead perform only the number tested, randomising the involved qubits. This can significantly speed up the
+     * and instead perform only the number specified, randomising the involved qubits. This can significantly speed up the
      * tests though risks missing esoteric edge-cases. The runtime of the tests are approximately linearly proportional
      * to the specified number of permutations. When the specified non-zero value exceeds the number of unique 
-     * permutations, the tests will return to deterministically evaluating each once.
+     * permutations, the tests will revert to deterministically evaluating each once.
      * 
      * @envvarvalues
      * 
-     * - set to `0` (default) to systematically test all permutations
-     * - set to a positive integer (e.g. `50`) to test (at most) that many random permutations and accelerate the tests
+     * - set to `0` (default) to systematically test all permutations.
+     * - set to a positive integer (e.g. `50`) to test (at most) that many random permutations and accelerate the tests.
      * 
      * @author Tyson Jones
      */
@@ -76,6 +82,7 @@
  * ACCESSING ENV-VARS 
  */
 
+int getNumQubitsInUnitTestedQuregs();
 int getMaxNumTestedQubitPermutations();
 int getMaxNumTestedSuperoperatorTargets();
 int getNumTestedMixedDeploymentRepetitions();

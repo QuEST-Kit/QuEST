@@ -31,7 +31,7 @@ int getIntEnvVarValueOrDefault(string name, int defaultValue) {
 
     // overwrite default only when passed variable is interpretable
     try {
-        intValue = std::stoi(name);
+        intValue = std::stoi(strValue);
     } 
     catch (const std::out_of_range&) { } 
     catch (const std::invalid_argument&) { }
@@ -44,6 +44,12 @@ int getIntEnvVarValueOrDefault(string name, int defaultValue) {
  *
  * which each call std::getenv only once
  */
+
+int getNumQubitsInUnitTestedQuregs() {
+
+    static int value = getIntEnvVarValueOrDefault("TEST_NUM_QUBITS_IN_QUREG", 6);
+    return value;
+}
 
 int getMaxNumTestedQubitPermutations() {
 
