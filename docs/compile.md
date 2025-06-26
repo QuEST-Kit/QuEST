@@ -29,6 +29,7 @@ Compiling is configured with variables supplied by the [`-D` flag](https://cmake
 > - <a href="#compile_basic">Basic</a>
 > - <a href="#compile_optimising">Optimising</a>
 > - <a href="#compile_linking">Linking</a>
+> - <a href="#compile_installing">Installing</a>
 > - <a href="#compile_configuring">Configuring</a>
 >    * <a href="#compile_location">Location</a>
 >    * <a href="#compile_precision">Precision</a>
@@ -235,8 +236,39 @@ and the executable can thereafter be run (from within `build`) via
 ./myexec
 ```
 
-You can pass compiler and linker flags needed by your source files through the [`CMAKE_C_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS.html), [`CMAKE_CXX_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS.html) and [`CMAKE_EXE_LINKER_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_EXE_LINKER_FLAGS.html) CMake flags as detailed in the <a href="#compile_flags">below section</a>. Note however that if your configuration becomes complicated or your source code requires different `C`/`C++` standards than the QuEST source, you should consider separately compiling QuEST then linking it
+You can pass compiler and linker flags needed by your source files through the [`CMAKE_C_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS.html), [`CMAKE_CXX_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS.html) and [`CMAKE_EXE_LINKER_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_EXE_LINKER_FLAGS.html) CMake flags as detailed in the <a href="#compile_flags">below section</a>. Note however that if your configuration becomes complicated or your source code requires different `C`/`C++` standards than the QuEST source, you should consider separately compiling and potentially installing QuEST then linking it
 to your project as a library!
+
+
+------------------
+
+
+<!-- permit doxygen to reference section -->
+<a id="compile_installing"></a>
+
+## Installing
+
+
+> TODO!
+
+
+### Preprocessors
+
+When compiling QuEST for installation, all the variables and macros detailed in the proceeding section can be specified.
+To later access the specified values during compilation of an executable _using_ QuEST, include:
+```C++
+#include "quest.h"
+#include "quest_config.h"
+```
+The latter will define the below preprocessors as saved by CMake during compilation.
+- [`FLOAT_PRECISION`](https://quest-kit.github.io/QuEST/group__precision.html#ga924ddc4b02996976cfdf425549ebec20)
+- `COMPILE_MPI` (informed by `ENABLE_DISTRIBUTION`)
+- `COMPILE_OPENMP` (informed by `ENABLE_MULTITHREADING`)
+- `COMPILE_CUDA` (informed by either `ENABLE_CUDA` or `ENABLE_HIP`)
+- `COMPILE_HIP` (informed only by `ENABLE_HIP`)
+- `COMPILE_CUQUANTUM` (informed by `ENABLE_CUQUANTUM`)
+
+
 
 ------------------
 

@@ -376,7 +376,7 @@ OPTIMIZE_OUTPUT_SLICE  = NO
 # Note see also the list of default file extension mappings.
 
 # all source code (even headers) is C++, but example.c code is C.
-# in=C is necessary to parse quest.h.in (a CMake configured header)
+# in=C is necessary to parse quest_config.h.in (a CMake configured header)
 EXTENSION_MAPPING      = h=C++ hpp=C++ cpp=C++ cu=C++ cuh=C++ c=C in=C
 
 # If the MARKDOWN_SUPPORT tag is enabled then doxygen pre-processes all comments

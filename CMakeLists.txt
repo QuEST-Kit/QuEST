@@ -348,10 +348,23 @@ if (ENABLE_HIP)
   endif()
 endif()
 
+# COMPILE_CUDA=1 whenever ENABLE_CUDA=1 OR ENABLE_HIP=1,
+# since HIP sneakily overrides the CUDA API and so too
+# requires that the CUDA-calling code is compiled. In
+# this way, COMPILE_CUDA can be thought of as COMPILE_GPU
 if (ENABLE_CUDA OR ENABLE_HIP)
   compile_option(COMPILE_CUDA 1)
 else()
   compile_option(COMPILE_CUDA 0)
+endif()
+
+# we also define COMPILE_HIP only for quest_config.h to
+# log it; the macro is never used internally, and the GPU
+# code differentiates CUDA vs HIP using __NVCC__ vs __HIP__
+if (ENABLE_HIP)
+  compile_option(COMPILE_HIP 1)
+else()
+  compile_option(COMPILE_HIP 0)
 endif()
 
 if (ENABLE_DEPRECATED_API)
@@ -504,7 +517,7 @@ install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/quest/include/quest.h"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/quest/include/config.h"
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/quest/include/quest_config.h"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/quest/include"
 )
 

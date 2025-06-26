@@ -35,8 +35,6 @@
 // debuggers in case a subsequent include fails
 #include "quest/include/version.h"
 
-#include "quest/include/config.h"
-
 // include before API headers since it validates
 // preprocessor configuration, and affirms macro
 // preconditions assumed by subsequent header

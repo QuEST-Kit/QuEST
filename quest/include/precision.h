@@ -1,6 +1,12 @@
 /** @file
- * User-overridable numerical precision of
- * both the QuEST API and backends
+ * User-overridable numerical precision of both the QuEST API and backends.
+ * 
+ * Note this file includes some validation of macro values (e.g. that when
+ * COMPILE_CUDA=1, FLOAT_PRECISION < 4), checked when the QuEST source is
+ * compiled. When QuEST is installed, these checks "appear" redundantly
+ * repeated by the user's code which indirectly includes this header; but
+ * the macros should no longer be defined by then and so are treated as 
+ * having a value of zero by the compiler, which passes all validation.
  * 
  * @author Tyson Jones
  * @author Milos Prokop (patched trig overloads in v3)

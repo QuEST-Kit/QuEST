@@ -1,6 +1,9 @@
 /** @file
- * Compile-time checks that all expected
- * preprocessor macros are defined and valid 
+ * Compile-time checks that all expected preprocessor macros 
+ * are defined and valid. The checks are only 'really' performed
+ * when the QuEST source is being compiled. After installation,
+ * the macros herein are undefined (unless the user strangely
+ * defines them) which automatically passes the validation
  * 
  * @author Tyson Jones
  * 
@@ -15,8 +18,8 @@
 
 
 
-// ensure all mode flags are valid values
-// undefined allowed as undefined == 0 in C/C++ standards
+// ensure all optionally-defined mode flags have valid values
+// (undefined allowed as undefined == 0 in C/C++ standards)
 
 #if ! (COMPILE_MPI == 0 || COMPILE_MPI == 1)
     #error "Macro COMPILE_MPI must have value 0 or 1"

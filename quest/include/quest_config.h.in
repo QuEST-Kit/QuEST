@@ -1,0 +1,82 @@
+/** @file
+ * An optional user-facing header which exposes the
+ * compile-time macros which configured QuEST's
+ * installation. The actual header file is produced 
+ * by CMake from this config-file, so cannot be
+ * accessed by manual compilation.
+ * 
+ * In detail, the below user-specified CMake variables...
+ * 
+ * - ENABLE_DISTRIBUTION
+ * - ENABLE_MULTITHREADING
+ * - ENABLE_CUDA
+ * - ENABLE_CUQUANTUM
+ * - FLOAT_PRECISION
+ * 
+ * respectively inform the below preprocessors which are 
+ * needed to compile and optionally install QuEST:
+ * 
+ * - COMPILE_MPI
+ * - COMPILE_OPENMP
+ * - COMPILE_CUDA
+ * - COMPILE_CUQUANTUM
+ * - FLOAT_PRECISION (yes, the same name)
+ * 
+ * (additionally, COMPILE_HIP is used for book-keeping and
+ *  is never consulted by the QuEST source)
+ * 
+ * After the QuEST source is compiled, these preprocessors
+ * are discarded such that the compiled configuration of an
+ * installed QuEST library can only be known at runtime via
+ * functions like reportQuESTEnv(). This optional header 
+ * exposes the source-compile-time values (as saved by CMake)
+ * so that users can know the configuration when compiling
+ * their own code which interfaces with an installed QuEST 
+ * library. This is useful when e.g. integrating QuEST with
+ * external tools with compile-time variables informed by
+ * QuEST's. This header is not included in quest.h so that
+ * both compilation of QuEST without installation AND manual 
+ * compilation (i.e. without cmake) remain possible.
+ * 
+ * @author Oliver Brown
+ * @author Tyson Jones (validation & doc)
+ */
+
+#ifndef QUEST_CONFIG_H
+#define QUEST_CONFIG_H
+
+
+// the saved preprocessors exposed by this header must not
+// be prior defined, else the user might unwittingly override
+// them and misconstrue QuEST's installed configuration
+
+#if defined(FLOAT_PRECISION)   || \
+    defined(COMPILE_MPI)       || \
+    defined(COMPILE_OPENMP)    || \
+    defined(COMPILE_CUDA)      || \
+    defined(COMPILE_CUQUANTUM) || \
+    defined(COMPILE_HIP)
+
+    #error \
+        "Header 'quest_config.h' was included but one or more macros exposed therein was already defined. "\
+        "Only include this header to learn (at compile-time) the configuration of an installed QuEST library."
+
+#endif 
+
+
+// bind compile settings to installed exec
+
+#if !@MULTI_LIB_HEADERS@
+
+    #cmakedefine FLOAT_PRECISION @FLOAT_PRECISION@
+
+    #cmakedefine01 COMPILE_MPI
+    #cmakedefine01 COMPILE_OPENMP
+    #cmakedefine01 COMPILE_CUDA
+    #cmakedefine01 COMPILE_CUQUANTUM
+    #cmakedefine01 COMPILE_HIP
+
+#endif
+
+
+#endif // QUEST_CONFIG_H

@@ -31,7 +31,7 @@ Interested in contributing? Then check out:
 - 🏗️  [`architecture.md`](architecture.md) to understand the code structure.
 - 🎨  [`styleguide.md`](styleguide.md) for some tips on writing neat code.
 
-Want to learn how what's under the hood? Read the
+Want to learn what's under the hood? Read the
 - 🏆  [whitepaper](https://www.nature.com/articles/s41598-019-47174-9) which featured in Scientific Report's [Top 100 in Physics](https://www.nature.com/collections/ecehgdfcba/)
 - 📝  [preprint](https://arxiv.org/abs/2311.01512) which derives `v4`'s optimised algorithms.
 - 🧪  [tests](/tests) which compare QuEST's outputs to non-optimised calculations.
