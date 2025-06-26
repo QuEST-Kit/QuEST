@@ -78,6 +78,11 @@ void multiplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix) {
     localiser_statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, target, matrix, conj);
 }
 
+void postMultiplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix) {
+
+    // TODO
+}
+
 void applyCompMatr1(Qureg qureg, int target, CompMatr1 matrix) {
 
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, nullptr, nullptr, 0, &target, 1, matrix, __func__);
@@ -127,6 +132,11 @@ void multiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix) 
 
     bool conj = false;
     localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, {}, {}, target1, target2, matrix, conj);
+}
+
+void postMultiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix) {
+
+    // TODO
 }
 
 void applyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix) {
@@ -184,6 +194,11 @@ void multiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix
     localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, {}, {}, util_getVector(targets, numTargets), matrix, conj);
 }
 
+void postMultiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix) {
+
+    // TODO
+}
+
 void applyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix) {
 
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, nullptr, nullptr, 0, targets, numTargets, matrix, __func__);
@@ -209,6 +224,11 @@ void applyMultiStateControlledCompMatr(Qureg qureg, int* controls, int* states, 
 void multiplyCompMatr(Qureg qureg, vector<int> targets, CompMatr matr) {
 
     multiplyCompMatr(qureg, targets.data(), targets.size(), matr);
+}
+
+void postMultiplyCompMatr(Qureg qureg, vector<int> targets, CompMatr matr) {
+
+    postMultiplyCompMatr(qureg, targets.data(), targets.size(), matr);
 }
 
 void applyCompMatr(Qureg qureg, vector<int> targets, CompMatr matr) {
@@ -247,6 +267,11 @@ void multiplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matrix) {
 
     bool conj = false;
     localiser_statevec_anyCtrlOneTargDiagMatr(qureg, {}, {}, target, matrix, conj);
+}
+
+void postMultiplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matrix) {
+
+    // TODO
 }
 
 void applyDiagMatr1(Qureg qureg, int target, DiagMatr1 matrix) {
@@ -297,6 +322,11 @@ void multiplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matrix) 
 
     bool conj = false;
     localiser_statevec_anyCtrlTwoTargDiagMatr(qureg, {}, {}, target1, target2, matrix, conj);
+}
+
+void postMultiplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matrix) {
+
+    // TODO
 }
 
 void applyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matrix) {
@@ -354,6 +384,11 @@ void multiplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix
     localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, {}, {}, util_getVector(targets, numTargets), matrix, exponent, conj);
 }
 
+void postMultiplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix) {
+
+    // TODO
+}
+
 void applyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix) {
 
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, nullptr, nullptr, 0, targets, numTargets, matrix, __func__);
@@ -379,6 +414,11 @@ void applyMultiStateControlledDiagMatr(Qureg qureg, int* controls, int* states, 
 void multiplyDiagMatr(Qureg qureg, vector<int> targets, DiagMatr matrix) {
 
     multiplyDiagMatr(qureg, targets.data(), targets.size(), matrix);
+}
+
+void postMultiplyDiagMatr(Qureg qureg, vector<int> targets, DiagMatr matrix) {
+
+    postMultiplyDiagMatr(qureg, targets.data(), targets.size(), matrix);
 }
 
 void applyDiagMatr(Qureg qureg, vector<int> targets, DiagMatr matrix) {
@@ -421,6 +461,11 @@ void multiplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr m
 
     bool conj = false;
     localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, {}, {}, util_getVector(targets, numTargets), matrix, exponent, conj);
+}
+
+void postMultiplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent) {
+
+    // TODO
 }
 
 void applyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent)  {
@@ -505,6 +550,11 @@ void multiplyDiagMatrPower(Qureg qureg, vector<int> targets, DiagMatr matrix, qc
     multiplyDiagMatrPower(qureg, targets.data(), targets.size(), matrix, exponent);
 }
 
+void postMultiplyDiagMatrPower(Qureg qureg, vector<int> targets, DiagMatr matrix, qcomp exponent) {
+
+    postMultiplyDiagMatrPower(qureg, targets.data(), targets.size(), matrix, exponent);
+}
+
 void applyDiagMatrPower(Qureg qureg, vector<int> targets, DiagMatr matrix, qcomp exponent) {
 
     applyDiagMatrPower(qureg, targets.data(), targets.size(), matrix, exponent);
@@ -552,6 +602,16 @@ void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp
     (qureg.isDensityMatrix)?
         localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply):
         localiser_statevec_allTargDiagMatr(qureg, matrix, exponent);
+}
+
+void postMultiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
+
+    // TODO
+}
+
+void postMultiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent) {
+
+    // TODO
 }
 
 void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
@@ -751,6 +811,11 @@ void multiplySwap(Qureg qureg, int qubit1, int qubit2) {
     localiser_statevec_anyCtrlSwap(qureg, {}, {}, qubit1, qubit2);
 }
 
+void postMultiplySwap(Qureg qureg, int qubit1, int qubit2) {
+
+    // TODO
+}
+
 void applySwap(Qureg qureg, int qubit1, int qubit2) {
     validate_quregFields(qureg, __func__);
     validate_twoTargets(qureg, qubit1, qubit2, __func__);
@@ -883,6 +948,36 @@ void applyMultiStateControlledSqrtSwap(Qureg qureg, vector<int> controls, vector
  */
 
 extern "C" {
+
+void multiplyPauliX(Qureg qureg, int target) {
+
+    // TODO
+}
+
+void multiplyPauliY(Qureg qureg, int target) {
+
+    // TODO
+}
+
+void multiplyPauliZ(Qureg qureg, int target) {
+
+    // TODO
+}
+
+void postMultiplyPauliX(Qureg qureg, int target) {
+
+    // TODO
+}
+
+void postMultiplyPauliY(Qureg qureg, int target) {
+
+    // TODO
+}
+
+void postMultiplyPauliZ(Qureg qureg, int target) {
+
+    // TODO
+}
 
 void applyPauliX(Qureg qureg, int target) {
     validate_quregFields(qureg, __func__);
@@ -1034,6 +1129,11 @@ void multiplyPauliStr(Qureg qureg, PauliStr str) {
     localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str);
 }
 
+void postMultiplyPauliStr(Qureg qureg, PauliStr str) {
+
+    // TODO
+}
+
 void applyPauliStr(Qureg qureg, PauliStr str) {
     validate_quregFields(qureg, __func__);
     validate_pauliStrTargets(qureg, str, __func__);
@@ -1128,6 +1228,11 @@ void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace) {
     }
 
     // workspace -> qureg, and qureg -> sum * qureg
+}
+
+void postMultiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace) {
+
+    // TODO
 }
 
 void internal_applyFirstOrderTrotterRepetition(
@@ -1496,6 +1601,11 @@ void multiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
     localiser_statevec_anyCtrlPauliGadget(qureg, {}, {}, str, phase);
 }
 
+void postMultiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
+
+    // TODO
+}
+
 void applyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
     validate_quregFields(qureg, __func__);
     validate_pauliStrTargets(qureg, str, __func__);
@@ -1592,6 +1702,11 @@ void multiplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle)
     localiser_statevec_anyCtrlPhaseGadget(qureg, {}, {}, util_getVector(targets,numTargets), phase);
 }
 
+void postMultiplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle) {
+
+    // TODO
+}
+
 void applyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle) {
     validate_quregFields(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
@@ -1641,6 +1756,11 @@ void applyMultiStateControlledPhaseGadget(Qureg qureg, int* controls, int* state
 void multiplyPhaseGadget(Qureg qureg, vector<int> targets, qreal angle) {
 
     multiplyPhaseGadget(qureg, targets.data(), targets.size(), angle);
+}
+
+void postMultiplyPhaseGadget(Qureg qureg, vector<int> targets, qreal angle) {
+
+    postMultiplyPhaseGadget(qureg, targets.data(), targets.size(), angle);
 }
 
 void applyPhaseGadget(Qureg qureg, vector<int> targets, qreal angle) {
@@ -1766,6 +1886,11 @@ void multiplyMultiQubitNot(Qureg qureg, int* targets, int numTargets) {
     multiplyPauliStr(qureg, getPauliStr(std::string(numTargets, 'X'), targets, numTargets));
 }
 
+void postMultiplyMultiQubitNot(Qureg qureg, int* targets, int numTargets) {
+
+    // TODO
+}
+
 void applyMultiQubitNot(Qureg qureg, int* targets, int numTargets) {
     validate_quregFields(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
@@ -1807,6 +1932,11 @@ void applyMultiStateControlledMultiQubitNot(Qureg qureg, int* controls, int* sta
 void multiplyMultiQubitNot(Qureg qureg, vector<int> targets) {
 
     multiplyMultiQubitNot(qureg, targets.data(), targets.size());
+}
+
+void postMultiplyMultiQubitNot(Qureg qureg, vector<int> targets) {
+
+    postMultiplyMultiQubitNot(qureg, targets.data(), targets.size());
 }
 
 void applyMultiQubitNot(Qureg qureg, vector<int> targets) {
