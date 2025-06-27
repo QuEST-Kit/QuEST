@@ -1959,6 +1959,35 @@ TEST_CASE( "applyNonUnitaryPauliGadget", TEST_CATEGORY ) {
  * UNTESTED FUNCTIONS
  */
 
+void multiplyPauliX(Qureg qureg, int target);
+void multiplyPauliY(Qureg qureg, int target);
+void multiplyPauliZ(Qureg qureg, int target);
+
+void postMultiplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix);
+void postMultiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix);
+void postMultiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix);
+
+void postMultiplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matrix);
+void postMultiplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matrix);
+void postMultiplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix);
+void postMultiplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
+
+void postMultiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
+void postMultiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
+void postMultiplySwap(Qureg qureg, int qubit1, int qubit2);
+
+void postMultiplyPauliX(Qureg qureg, int target);
+void postMultiplyPauliY(Qureg qureg, int target);
+void postMultiplyPauliZ(Qureg qureg, int target);
+
+void postMultiplyMultiQubitNot(Qureg qureg, int* targets, int numTargets);
+
+void postMultiplyPauliStr(Qureg qureg, PauliStr str);
+void postMultiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
+void postMultiplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle);
+
+void postMultiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
+
 void applyNonUnitaryTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps);
 
 void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);

@@ -1384,7 +1384,7 @@ void postMultiplyPauliY(Qureg qureg, int target);
 /// @notyetdoced
 /// @notyettested
 /// @see postMultiplyCompMatr1()
-void postMultiplyPauliZz(Qureg qureg, int target);
+void postMultiplyPauliZ(Qureg qureg, int target);
 
 
 /// @notyetdoced
