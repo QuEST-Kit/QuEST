@@ -704,6 +704,13 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 INSTANTIATE_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevec_anyCtrlAnyTargDiagMatr_sub, (Qureg, vector<int>, vector<int>, vector<int>, DiagMatr, qcomp) )
 
 
+/// @todo
+/// there is currently no density matrix version of anyCtrlAnyTargDiagMatr_sub();
+/// instead, operations.cpp invokes the statevector version twice as it does for
+/// dense matrices. This re-enumeration of the state however can be avoided since
+/// the matrix is diagonal, as done below for cpu_densmatr_allTargDiagMatr_sub()
+
+
 
 /*
  * ALL-TARGS DIAGONAL MATRIX
@@ -737,28 +744,46 @@ void cpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 }
 
 
-template <bool HasPower, bool MultiplyOnly>
+template <bool HasPower, bool MultiplyLeft, bool MultiplyRight, bool ConjRight>
 void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
+
+    // unlike other functions, this function handles all scenarios of...
+    // - matr -> matr qureg conj(matr)
+    // - matr -> matr qureg
+    // - matr ->      qureg matr
+    // and all of the above where matr is raised to a power. This is an
+    // optimisation permitted by diagonality of matr, avoiding superfluous
+    // re-enumeration of the state otherwise invoked by operations.cpp
 
     assert_exponentMatchesTemplateParam(exponent, HasPower);
 
-    // every iteration modifies one qureg amp, using one matr element
+    // every iteration modifies one qureg amp, using one or two matr elements
     qindex numIts = qureg.numAmpsPerNode;
 
     #pragma omp parallel for if(qureg.isMultithreaded||matr.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-        // i = global row of nth local index
-        qindex i = fast_getQuregGlobalRowFromFlatIndex(n, matr.numElems);
-        qcomp fac = matr.cpuElems[i];
+        // the nth local amplitude will be multiplied by fac
+        qcomp fac = 1;
 
-        // compile-time decide if applying power to avoid in-loop branching...
-        // (beware that complex pow() is numerically unstable; see below)
-        if constexpr (HasPower)
-            fac = std::pow(fac, exponent);
+        // update fac to effect rho -> (matr * rho) or (matr^exponent * rho)
+        if constexpr (MultiplyLeft) {
 
-        // and whether we should also right-apply matr to qureg
-        if constexpr (!MultiplyOnly) {
+            // i = global row of nth local amp
+            qindex i = fast_getQuregGlobalRowFromFlatIndex(n, matr.numElems);
+            qcomp term = matr.cpuElems[i];
+
+            // compile-time decide if applying power to avoid in-loop branching...
+            // (beware that complex pow() is numerically unstable as detailed below)
+            if constexpr (HasPower)
+                term = std::pow(term, exponent);
+
+            fac = term;
+        }
+
+        // update fac to additional include rho -> (rho * matr) or 
+        // (rho * conj(matr)), or the same exponentiated
+        if constexpr (MultiplyRight) {
 
             // m = global index corresponding to n
             qindex m = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
@@ -767,16 +792,18 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
             qindex j = fast_getQuregGlobalColFromFlatIndex(m, matr.numElems);
             qcomp term = matr.cpuElems[j];
 
-            // right-apply matrix elem may also need to be exponentiated.
             // beware that pow(qcomp,qcomp) below gives notable error over pow(qreal,qreal) 
             // (by producing an unexpected non-zero imaginary component) when the base is real 
             // and negative, and the exponent is an integer. We tolerate this heightened error
             // because we have no reason to think matr is real (it's not constrained Hermitian).
-            if constexpr(HasPower)
+            if constexpr (HasPower)
                 term = std::pow(term, exponent);
 
-            // conj after pow
-            fac *= std::conj(term);
+            // conj strictly after pow, to effect conj(matr^exponent)
+            if constexpr (ConjRight)
+                term = std::conj(term);
+
+            fac *= term;
         }
 
         qureg.cpuAmps[n] *= fac;
@@ -787,10 +814,12 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 template void cpu_statevec_allTargDiagMatr_sub<true> (Qureg, FullStateDiagMatr, qcomp);
 template void cpu_statevec_allTargDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
 
-template void cpu_densmatr_allTargDiagMatr_sub<true, true>  (Qureg, FullStateDiagMatr, qcomp);
-template void cpu_densmatr_allTargDiagMatr_sub<true, false> (Qureg, FullStateDiagMatr, qcomp);
-template void cpu_densmatr_allTargDiagMatr_sub<false, true> (Qureg, FullStateDiagMatr, qcomp);
-template void cpu_densmatr_allTargDiagMatr_sub<false, false>(Qureg, FullStateDiagMatr, qcomp);
+template void cpu_densmatr_allTargDiagMatr_sub<false, true,  true,  true>  (Qureg, FullStateDiagMatr, qcomp); // matr qureg conj(matr)
+template void cpu_densmatr_allTargDiagMatr_sub<false, true,  false, false> (Qureg, FullStateDiagMatr, qcomp); // matr qureg
+template void cpu_densmatr_allTargDiagMatr_sub<false, false, true,  false> (Qureg, FullStateDiagMatr, qcomp); //      qureg matr
+template void cpu_densmatr_allTargDiagMatr_sub<true,  true,  true,  true>  (Qureg, FullStateDiagMatr, qcomp); // matr^P qureg conj(matr^P)
+template void cpu_densmatr_allTargDiagMatr_sub<true,  true,  false, false> (Qureg, FullStateDiagMatr, qcomp); // matr^P qureg
+template void cpu_densmatr_allTargDiagMatr_sub<true,  false, true,  false> (Qureg, FullStateDiagMatr, qcomp); //      qureg matr^P
 
 
 

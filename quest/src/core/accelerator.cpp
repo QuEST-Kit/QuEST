@@ -63,6 +63,12 @@ using std::min;
         ((b2)? funcname<false,true> : funcname<false,false>))
 
 
+#define GET_CPU_OR_GPU_FOUR_BOOL_FUNC_OPTIMISED_FOR_FIRST_BOOL( isgpu, funcsuffix, value, fixed1,fixed2,fixed3 ) \
+    ((isgpu)? \
+        ((value)? gpu_##funcsuffix<true, fixed1,fixed2,fixed3> : gpu_##funcsuffix<false, fixed1,fixed2,fixed3> ) : \
+        ((value)? cpu_##funcsuffix<true, fixed1,fixed2,fixed3> : cpu_##funcsuffix<false, fixed1,fixed2,fixed3> ))
+
+
 #if (MAX_OPTIMISED_NUM_CTRLS != 5) || (MAX_OPTIMISED_NUM_TARGS != 5)
     #error "The number of optimised, templated QuEST functions was inconsistent between accelerator's source and header."
 #endif
@@ -414,7 +420,30 @@ void accel_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qco
 }
 
 
-void accel_densmatr_allTargDiagMatr_subA(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool multiplyOnly) {
+auto getDenseMatrAllTargDiagMatrFunc(bool isGpu, qcomp exponent, bool multiplyLeft, bool multiplyRight, bool conjRight) {
+
+    // this helper function exists, dissimilar from the function-agnostic macros used
+    // by other functions, because densmatr_allTargDiagMatr_sub() does not accept every
+    // possible combination of its boolean template parameters 
+    assert_fullStateDiagMatrTemplateParamsAreValid(multiplyLeft, multiplyRight, conjRight);
+
+    bool hasPower = exponent != qcomp(1, 0);
+
+    if (multiplyLeft && multiplyRight && conjRight)
+        return GET_CPU_OR_GPU_FOUR_BOOL_FUNC_OPTIMISED_FOR_FIRST_BOOL( isGpu, densmatr_allTargDiagMatr_sub, hasPower, true,true,true );
+
+    if (multiplyLeft && ! multiplyRight && ! conjRight)
+        return GET_CPU_OR_GPU_FOUR_BOOL_FUNC_OPTIMISED_FOR_FIRST_BOOL( isGpu, densmatr_allTargDiagMatr_sub, hasPower, true,false,false );
+
+    if (! multiplyLeft && multiplyRight && ! conjRight)
+        return GET_CPU_OR_GPU_FOUR_BOOL_FUNC_OPTIMISED_FOR_FIRST_BOOL( isGpu, densmatr_allTargDiagMatr_sub, hasPower, false,true,false );
+
+    // unreachable
+    return (void (*)(Qureg, FullStateDiagMatr, qcomp)) nullptr;
+}
+
+
+void accel_densmatr_allTargDiagMatr_subA(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool multiplyLeft, bool multiplyRight, bool conjRight) {
 
     // matr is always local, qureg can be local or distributed...
     assert_fullStateDiagMatrIsLocal(matr);
@@ -423,9 +452,9 @@ void accel_densmatr_allTargDiagMatr_subA(Qureg qureg, FullStateDiagMatr matr, qc
     bool quregGPU = qureg.isGpuAccelerated;
     bool matrGPU = matr.isGpuAccelerated;
 
-    bool hasPower = exponent != qcomp(1, 0);
-    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( cpu_densmatr_allTargDiagMatr_sub, hasPower, multiplyOnly );
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( gpu_densmatr_allTargDiagMatr_sub, hasPower, multiplyOnly );
+    // which determines which function is called
+    auto gpuFunc = getDenseMatrAllTargDiagMatrFunc(true,  exponent, multiplyLeft, multiplyRight, conjRight);
+    auto cpuFunc = getDenseMatrAllTargDiagMatrFunc(false, exponent, multiplyLeft, multiplyRight, conjRight);
 
     // when deployments match, we trivially call the common backend
     if ( quregGPU &&  matrGPU) gpuFunc(qureg, matr, exponent);
@@ -475,7 +504,7 @@ void accel_densmatr_allTargDiagMatr_subA(Qureg qureg, FullStateDiagMatr matr, qc
 }
 
 
-void accel_densmatr_allTargDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool multiplyOnly) {
+void accel_densmatr_allTargDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool multiplyLeft, bool multiplyRight, bool conjRight) {
 
     assert_fullStateDiagMatrIsDistributed(matr);
     assert_acceleratorQuregIsDistributed(qureg);
@@ -500,7 +529,7 @@ void accel_densmatr_allTargDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qc
     temp.cpuElems = qureg.cpuCommBuffer;
     temp.gpuElems = qureg.gpuCommBuffer;
 
-    accel_densmatr_allTargDiagMatr_subA(qureg, temp, exponent, multiplyOnly);
+    accel_densmatr_allTargDiagMatr_subA(qureg, temp, exponent, multiplyLeft, multiplyRight, conjRight);
 }
 
 

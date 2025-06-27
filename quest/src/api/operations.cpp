@@ -59,6 +59,12 @@ void validateAndApplyAnyCtrlAnyTargUnitaryMatrix(Qureg qureg, int* ctrls, int* s
     ctrlVec = util_getBraQubits(ctrlVec, qureg);
     targVec = util_getBraQubits(targVec, qureg);
     localiser_statevec_anyCtrlAnyTargAnyMatr(qureg, ctrlVec, stateVec, targVec, matr, conj);
+
+    /// @todo
+    /// the above logic always performs two in-turn operations upon density matrices, 
+    /// though when matr is diagonal (DiagMatr*), they can be trivially combined into 
+    /// a single operation which enumerates the state only once. We perform this
+    /// optimisation for FullStateDiagMatr elsewhere. Consider optimising here too!
 }
 
 
@@ -648,20 +654,37 @@ void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp
     validate_matrixAndQuregAreCompatible(matrix, qureg, false, __func__); // matrix can be non-unitary
     validate_matrixExpIsNonDiverging(matrix, exponent, __func__);
 
-    bool onlyMultiply = true;
+    // rho -> matrix^exponent rho
+    bool leftMultiply = true;
+    bool rightMultiply = false;
+    bool rightConj = false;
+
     (qureg.isDensityMatrix)?
-        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply):
+        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, leftMultiply, rightMultiply, rightConj):
         localiser_statevec_allTargDiagMatr(qureg, matrix, exponent);
 }
 
 void postMultiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_matrixFields(matrix, __func__);
+    validate_matrixAndQuregAreCompatible(matrix, qureg, false, __func__); // matrix can be non-unitary
 
-    // TODO
+    postMultiplyFullStateDiagMatrPower(qureg, matrix, 1); // harmlessly re-validates
 }
 
 void postMultiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_matrixFields(matrix, __func__);
+    validate_matrixAndQuregAreCompatible(matrix, qureg, false, __func__); // matrix can be non-unitary
+    validate_matrixExpIsNonDiverging(matrix, exponent, __func__);
 
-    // TODO
+    // rho -> rho matrix^exponent
+    bool leftMultiply = false;
+    bool rightMultiply = true;
+    bool rightConj = false;
+    localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, leftMultiply, rightMultiply, rightConj);
 }
 
 void applyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
@@ -681,9 +704,13 @@ void applyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp ex
     validate_unitaryExponentIsReal(exponent, __func__);
     validate_matrixExpIsNonDiverging(matrix, exponent, __func__);
 
-    bool onlyMultiply = false;
+    // rho -> matrix^exponent rho conj(matrix^exponent)
+    bool leftMultiply = true;
+    bool rightMultiply = true;
+    bool rightConj = true;
+
     (qureg.isDensityMatrix)?
-        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, onlyMultiply):
+        localiser_densmatr_allTargDiagMatr(qureg, matrix, exponent, leftMultiply, rightMultiply, rightConj):
         localiser_statevec_allTargDiagMatr(qureg, matrix, exponent);
 }
 

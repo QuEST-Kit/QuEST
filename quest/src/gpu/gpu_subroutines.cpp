@@ -736,23 +736,21 @@ void gpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 }
 
 
-template <bool HasPower, bool MultiplyOnly>
+template <bool HasPower, bool MultiplyLeft, bool MultiplyRight, bool ConjRight>
 void gpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
 
     assert_exponentMatchesTemplateParam(exponent, HasPower);
-
-    // in theory, we could use cuQuantum when HasPower=MultiplyOnly=true,
-    // treating FullStateDiagMatr like an N/2-qubit DiagMatr upon a SV,
-    // but this scenario is not worth the code complication
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode;
     qindex numBlocks = getNumBlocks(numThreads);
 
-    kernel_densmatr_allTargDiagMatr_sub <HasPower, MultiplyOnly> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
-        toCuQcomps(util_getGpuMemPtr(matr)), matr.numElems, toCuQcomp(exponent)
+    kernel_densmatr_allTargDiagMatr_sub 
+        <HasPower, MultiplyLeft, MultiplyRight, ConjRight> 
+        <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+            toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
+            toCuQcomps(util_getGpuMemPtr(matr)), matr.numElems, toCuQcomp(exponent)
     );
 
 #else
@@ -764,10 +762,12 @@ void gpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 template void gpu_statevec_allTargDiagMatr_sub<true >(Qureg, FullStateDiagMatr, qcomp);
 template void gpu_statevec_allTargDiagMatr_sub<false>(Qureg, FullStateDiagMatr, qcomp);
 
-template void gpu_densmatr_allTargDiagMatr_sub<true, true>  (Qureg, FullStateDiagMatr, qcomp);
-template void gpu_densmatr_allTargDiagMatr_sub<true, false> (Qureg, FullStateDiagMatr, qcomp);
-template void gpu_densmatr_allTargDiagMatr_sub<false, true> (Qureg, FullStateDiagMatr, qcomp);
-template void gpu_densmatr_allTargDiagMatr_sub<false, false>(Qureg, FullStateDiagMatr, qcomp);
+template void gpu_densmatr_allTargDiagMatr_sub<false, true,  true,  true>  (Qureg, FullStateDiagMatr, qcomp); // matr qureg conj(matr)
+template void gpu_densmatr_allTargDiagMatr_sub<false, true,  false, false> (Qureg, FullStateDiagMatr, qcomp); // matr qureg
+template void gpu_densmatr_allTargDiagMatr_sub<false, false, true,  false> (Qureg, FullStateDiagMatr, qcomp); //      qureg matr
+template void gpu_densmatr_allTargDiagMatr_sub<true,  true,  true,  true>  (Qureg, FullStateDiagMatr, qcomp); // matr^P qureg conj(matr^P)
+template void gpu_densmatr_allTargDiagMatr_sub<true,  true,  false, false> (Qureg, FullStateDiagMatr, qcomp); // matr^P qureg
+template void gpu_densmatr_allTargDiagMatr_sub<true,  false, true,  false> (Qureg, FullStateDiagMatr, qcomp); //      qureg matr^P
 
 
 

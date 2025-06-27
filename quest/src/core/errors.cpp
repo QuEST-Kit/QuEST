@@ -431,6 +431,18 @@ void assert_fullStateDiagMatrIsDistributed(FullStateDiagMatr matr) {
         raiseInternalError("An accelerator function received a non-distributed FullStateDiagMatr where a distributed one was expected.");
 }
 
+void assert_fullStateDiagMatrTemplateParamsAreValid(bool multiplyLeft, bool multiplyRight, bool conjRight) {
+
+    bool valid = (
+        (  multiplyLeft &&   multiplyRight &&   conjRight) || // matr qureg conj(matr)
+        (  multiplyLeft && ! multiplyRight && ! conjRight) || // matr qureg
+        (! multiplyLeft &&   multiplyRight &&   conjRight)    //      qureg matr
+    );
+
+    if (!valid)
+        raiseInternalError("The accelerator function accel_densmatr_allTargDiagMatr_subA() recieved an invalid combination of template parameters.");
+}
+
 void assert_acceleratorQuregIsDistributed(Qureg qureg) {
 
     if (!qureg.isDistributed)

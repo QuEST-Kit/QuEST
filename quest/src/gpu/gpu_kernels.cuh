@@ -553,34 +553,38 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
  */
 
 
-template <bool HasPower, bool MultiplyOnly>
+template <bool HasPower, bool MultiplyLeft, bool MultiplyRight, bool ConjRight> 
 __global__ void kernel_densmatr_allTargDiagMatr_sub(
     cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
     cu_qcomp* elems, qindex numElems, cu_qcomp exponent
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // i = global row of nth local index
-    qindex i = n % numElems;
-    cu_qcomp fac = elems[i];
+    cu_qcomp fac = 1;
 
-    if constexpr (HasPower)
-        fac = getCompPower(fac, exponent);
+    if constexpr (MultiplyLeft) {
 
-    if constexpr (!MultiplyOnly) {
+        qindex i = fast_getQuregGlobalRowFromFlatIndex(n, matr.numElems);
+        cu_qcomp term = elems[i];
 
-        // m = global index corresponding to n
-        qindex m = concatenateBits(rank, n, logNumAmpsPerNode);
-
-        // j = global column corresponding to n
-        qindex j = m / numElems;
-        cu_qcomp term = elems[j];
-
-        if constexpr(HasPower)
+        if constexpr (HasPower)
             term = getCompPower(term, exponent);
 
-        // conj after pow
-        term.y *= -1;
+        fac = term;
+    }
+
+    if constexpr (MultiplyRight) {
+
+        qindex m = concatenateBits(rank, n, logNumAmpsPerNode);
+        qindex j = fast_getQuregGlobalColFromFlatIndex(m, numElems);
+        cu_qcomp term = elems[j];
+
+        if constexpr (HasPower)
+            term = getCompPower(term, exponent);
+
+        if constexpr (ConjRight)
+            term.y *= -1;
+
         fac = fac * term;
     }
 
