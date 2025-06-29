@@ -1070,9 +1070,10 @@ void postMultiplyPauliY(Qureg qureg, int target) {
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_target(qureg, target, __func__);
 
+    qcomp factor = -1; // undo transpose
     PauliStr str = getPauliStr("Y", {target});
     str = paulis_getShiftedPauliStr(str, qureg.numQubits);
-    localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str);
+    localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str, factor);
 }
 
 void postMultiplyPauliZ(Qureg qureg, int target) {
@@ -1240,8 +1241,9 @@ void postMultiplyPauliStr(Qureg qureg, PauliStr str) {
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_pauliStrTargets(qureg, str, __func__);
 
+    qcomp factor = paulis_hasOddNumY(str)? -1 : 1; // undo transpose
     str = paulis_getShiftedPauliStr(str, qureg.numQubits);
-    localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str);
+    localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str, factor);
 }
 
 void applyPauliStr(Qureg qureg, PauliStr str) {
@@ -1737,7 +1739,8 @@ void postMultiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_pauliStrTargets(qureg, str, __func__);
 
-    qreal phase = util_getPhaseFromGateAngle(angle);
+    qreal factor = paulis_hasOddNumY(str)? -1 : 1;
+    qreal phase = factor * util_getPhaseFromGateAngle(angle);
     str = paulis_getShiftedPauliStr(str, qureg.numQubits);
     localiser_statevec_anyCtrlPauliGadget(qureg, {}, {}, str, phase);
 }
