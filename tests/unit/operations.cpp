@@ -1289,6 +1289,9 @@ TEST_ALL_CTRL_OPERATIONS( PhaseGadget, any, scalar, VariableSizeParameterisedMat
  * non-controlled operations with no C++ overloads
  */
 
+TEST_CASE( "multiplyPauliX",          TEST_CATEGORY ) { testOperation<zero,one,none>(multiplyPauliX, FixedMatrices::X, true); }
+TEST_CASE( "multiplyPauliY",          TEST_CATEGORY ) { testOperation<zero,one,none>(multiplyPauliY, FixedMatrices::Y, true); }
+TEST_CASE( "multiplyPauliZ",          TEST_CATEGORY ) { testOperation<zero,one,none>(multiplyPauliZ, FixedMatrices::Z, true); }
 TEST_CASE( "multiplyPauliStr",        TEST_CATEGORY ) { testOperation<zero,any,paulistr>(multiplyPauliStr,    nullptr, true); }
 TEST_CASE( "multiplyPauliGadget",     TEST_CATEGORY ) { testOperation<zero,any,pauligad>(multiplyPauliGadget, nullptr, true); }
 TEST_CASE( "multiplyCompMatr1",       TEST_CATEGORY ) { testOperation<zero,one,compmatr>(multiplyCompMatr1,   nullptr, true); }
@@ -1958,10 +1961,6 @@ TEST_CASE( "applyNonUnitaryPauliGadget", TEST_CATEGORY ) {
  * @todo
  * UNTESTED FUNCTIONS
  */
-
-void multiplyPauliX(Qureg qureg, int target);
-void multiplyPauliY(Qureg qureg, int target);
-void multiplyPauliZ(Qureg qureg, int target);
 
 void postMultiplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix);
 void postMultiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix);
