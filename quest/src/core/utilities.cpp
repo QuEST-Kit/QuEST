@@ -409,6 +409,34 @@ void util_setConj(DiagMatr matrix) {
 }
 
 
+/*
+ * MATRIX TRANSPOSITION
+ */
+
+// type T can be qcomp*[2] or qcomp*[4]
+template <typename T>
+void setDenseElemsTranspose(T elems, qindex dim) {
+    for (qindex i=0; i<dim; i++) {
+        for (qindex j=0; j<i; j++) {
+            qcomp temp = elems[i][j];
+            elems[i][j] = elems[j][i];
+            elems[j][i] = temp;
+        }
+    }
+}
+
+CompMatr1 util_getTranspose(CompMatr1 matrix) {
+    CompMatr1 conj = matrix;
+    setDenseElemsTranspose(conj.elems, matrix.numRows);
+    return conj;
+}
+CompMatr2 util_getTranspose(CompMatr2 matrix) {
+    CompMatr2 conj = matrix;
+    setDenseElemsTranspose(conj.elems, matrix.numRows);
+    return conj;
+}
+
+
 
 /*
  * MATRIX UNITARITY

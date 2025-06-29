@@ -229,6 +229,8 @@ void error_gpuUnexpectedlyInaccessible();
 
 void error_gpuDeadCopyMatrixFunctionCalled();
 
+void error_gpuDenseMatrixConjugatedAndTransposed();
+
 void assert_gpuIsAccessible();
 
 void assert_gpuHasBeenBound(bool isBound);

@@ -615,6 +615,11 @@ void error_gpuDeadCopyMatrixFunctionCalled() {
     raiseInternalError("The internal GPU function copyMatrixIfGpuCompiled() was called, though is intended as dead-code - matrices needing copying to GPU should be stored as flat row-wise lists.");
 }
 
+void error_gpuDenseMatrixConjugatedAndTransposed() {
+
+    raiseInternalError("The GPU + cuQuantum implementation of anyCtrlAnyTargDenseMatr() assumes that at most one of template arguments ApplyConj and ApplyTransp is true, though this was violated.");
+}
+
 void assert_quregIsGpuAccelerated(Qureg qureg) {
 
     if (!qureg.isGpuAccelerated)

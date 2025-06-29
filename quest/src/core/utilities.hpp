@@ -258,6 +258,15 @@ void util_setConj(DiagMatr matrix);
 
 
 /*
+ * MATRIX TRANSPOSITION
+ */
+
+CompMatr1 util_getTranspose(CompMatr1 matrix);
+CompMatr2 util_getTranspose(CompMatr2 matrix);
+
+
+
+/*
  * MATRIX PROPERTIES
  */
 

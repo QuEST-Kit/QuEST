@@ -953,7 +953,7 @@ void anyCtrlOneTargDenseMatrOnPrefix(Qureg qureg, vector<int> ctrls, vector<int>
 }
 
 
-void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr, bool conj) {
+void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr, bool conj, bool transp) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
 
@@ -964,8 +964,11 @@ void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, 
     // retain only suffix control qubits as relevant to communication and local amp modification
     removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
 
+    // only one of conj or transp will be true (but logic is correct if both were true)
     if (conj) 
         matr = util_getConj(matr);
+    if (transp)
+        matr = util_getTranspose(matr);
 
     // perform embarrassingly parallel routine or communication-inducing swaps
     doesGateRequireComm(qureg, targ)?
@@ -983,18 +986,21 @@ void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, 
  */
 
 
-void anyCtrlTwoOrAnyTargDenseMatrOnSuffix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr2 matr, bool conj) {
-    if (conj) matr = util_getConj(matr);
+void anyCtrlTwoOrAnyTargDenseMatrOnSuffix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr2 matr, bool conj, bool transp) {
+    if (conj) 
+        matr = util_getConj(matr);
+    if (transp)
+        matr = util_getTranspose(matr);
     accel_statevec_anyCtrlTwoTargDenseMatr_sub(qureg, ctrls, ctrlStates, targs[0], targs[1], matr);
 }
-void anyCtrlTwoOrAnyTargDenseMatrOnSuffix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr  matr, bool conj) {
-    accel_statevec_anyCtrlAnyTargDenseMatr_sub(qureg, ctrls, ctrlStates, targs, matr, conj);
+void anyCtrlTwoOrAnyTargDenseMatrOnSuffix(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr  matr, bool conj, bool transp) {
+    accel_statevec_anyCtrlAnyTargDenseMatr_sub(qureg, ctrls, ctrlStates, targs, matr, conj, transp);
 }
 
 
 // T can be CompMatr2 or CompMatr
 template <typename T>
-void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, T matr, bool conj) {
+void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, T matr, bool conj, bool transp) {
 
     // node has nothing to do if all local amps violate control condition
     if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
@@ -1005,7 +1011,7 @@ void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ct
 
         // using only the suffix ctrls
         removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
-        anyCtrlTwoOrAnyTargDenseMatrOnSuffix(qureg, ctrls, ctrlStates, targs, matr, conj);
+        anyCtrlTwoOrAnyTargDenseMatrOnSuffix(qureg, ctrls, ctrlStates, targs, matr, conj, transp);
         return;
     }
 
@@ -1032,7 +1038,7 @@ void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ct
 
         // perform embarrassingly parallel simulation using only the new suffix ctrls
         removePrefixQubitsAndStates(qureg, newCtrls, ctrlStates);
-        anyCtrlTwoOrAnyTargDenseMatrOnSuffix(qureg, newCtrls, ctrlStates, newTargs, matr, conj);
+        anyCtrlTwoOrAnyTargDenseMatrOnSuffix(qureg, newCtrls, ctrlStates, newTargs, matr, conj, transp);
     }
 
     // undo swaps, again invoking communication
@@ -1040,15 +1046,15 @@ void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ct
 }
 
 
-void localiser_statevec_anyCtrlTwoTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, CompMatr2 matr, bool conj) {
+void localiser_statevec_anyCtrlTwoTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, CompMatr2 matr, bool conj, bool transp) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
 
-    anyCtrlTwoOrAnyTargDenseMatr(qureg, ctrls, ctrlStates, {targ1,targ2}, matr, conj);
+    anyCtrlTwoOrAnyTargDenseMatr(qureg, ctrls, ctrlStates, {targ1,targ2}, matr, conj, transp);
 }
 
 
-void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr, bool conj) {
+void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr, bool conj, bool transp) {
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
 
@@ -1060,19 +1066,19 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, 
     // its convenient generality, so we divert to the one-targ routine when possible, copying the 
     // heap CPU matrix (assumed consistent with GPU memory) into stack memory
     if (targs.size() == 1)
-        localiser_statevec_anyCtrlOneTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], getCompMatr1(matr.cpuElems), conj);
+        localiser_statevec_anyCtrlOneTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], getCompMatr1(matr.cpuElems), conj, transp);
     
     // similarly, bespoke two-targ routines are preferable although they offer no communication
     // benefit because they call the same any-targ localiser, but still accelerate GPU memory access.
     // this function call is the same as below, but we explicitly pass a CompMatr2 type in lieu of 
     // CompMatr, which avoids having to copy the CompMatr dynamic memory into accelerator backends
     else if (targs.size() == 2)
-        localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], targs[1], getCompMatr2(matr.cpuElems), conj);
+        localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], targs[1], getCompMatr2(matr.cpuElems), conj, transp);
     
     // call the any-targ routine when given 3 or more targs, which may still invoke bespoke,
     // fixed-targ instances of backend templated functions depending the number of targs
     else
-        anyCtrlTwoOrAnyTargDenseMatr(qureg, ctrls, ctrlStates, targs, matr, conj);
+        anyCtrlTwoOrAnyTargDenseMatr(qureg, ctrls, ctrlStates, targs, matr, conj, transp);
 }
 
 
@@ -1215,12 +1221,17 @@ void localiser_densmatr_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qco
 
 template <class T>
 void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, T matr, bool conj) {
-    if constexpr (util_isDiagMatr <T>()) localiser_statevec_anyCtrlAnyTargDiagMatr(qureg,  ctrls, ctrlStates, targs, matr, 1, conj); // exponent=1
-    if constexpr (util_isDiagMatr1<T>()) localiser_statevec_anyCtrlOneTargDiagMatr(qureg,  ctrls, ctrlStates, targs[0], matr, conj);
+
+    // this function is never invoked by operations whch require transposing matr
+    bool transp = false;
+    qcomp expo = 1;
+
+    if constexpr (util_isDiagMatr <T>()) localiser_statevec_anyCtrlAnyTargDiagMatr(qureg,  ctrls, ctrlStates, targs,        matr, expo, conj);
+    if constexpr (util_isDiagMatr1<T>()) localiser_statevec_anyCtrlOneTargDiagMatr(qureg,  ctrls, ctrlStates, targs[0],           matr, conj);
     if constexpr (util_isDiagMatr2<T>()) localiser_statevec_anyCtrlTwoTargDiagMatr(qureg,  ctrls, ctrlStates, targs[0], targs[1], matr, conj);
-    if constexpr (util_isCompMatr <T>()) localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, ctrls, ctrlStates, targs, matr, conj);
-    if constexpr (util_isCompMatr1<T>()) localiser_statevec_anyCtrlOneTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], matr, conj);
-    if constexpr (util_isCompMatr2<T>()) localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], targs[1], matr, conj);
+    if constexpr (util_isCompMatr <T>()) localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, ctrls, ctrlStates, targs,              matr, conj, transp);
+    if constexpr (util_isCompMatr1<T>()) localiser_statevec_anyCtrlOneTargDenseMatr(qureg, ctrls, ctrlStates, targs[0],           matr, conj, transp);
+    if constexpr (util_isCompMatr2<T>()) localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], targs[1], matr, conj, transp);
 }
 
 template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, vector<int>, vector<int>, vector<int>, DiagMatr,  bool);
@@ -1670,12 +1681,13 @@ CompMatr getSpoofedCompMatrFromSuperOp(SuperOp op) {
 void localiser_densmatr_superoperator(Qureg qureg, SuperOp op, vector<int> ketTargs) {
     assert_localiserGivenDensMatr(qureg);
 
-    // effect the superoperator as a (non-conjugated) dense matrix on the ket + bra qubits
+    // effect the superoperator as a dense matrix on the ket + bra qubits
     bool conj = false;
+    bool transp = false;
     auto braTargs = util_getBraQubits(ketTargs, qureg);
     auto allTargs = util_getConcatenated(ketTargs, braTargs);
     CompMatr matr = getSpoofedCompMatrFromSuperOp(op);
-    localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, {}, {}, allTargs, matr, conj);
+    localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, {}, {}, allTargs, matr, conj, transp);
 }
 
 

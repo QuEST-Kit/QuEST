@@ -293,7 +293,7 @@ __forceinline__ __device__ qindex getThreadsNthGlobalArrInd(qindex n, qindex thr
 }
 
 
-template <int NumCtrls, int NumTargs, bool ApplyConj>
+template <int NumCtrls, int NumTargs, bool ApplyConj, bool ApplyTransp>
 __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
     cu_qcomp* amps, qindex numThreads,
     int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int* targs,
@@ -341,8 +341,12 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
         #pragma unroll
         for (qindex l=0; l<numTargAmps; l++) {
 
-            // h = flat index of matrix's (k,l)-th element
-            qindex h = fast_getMatrixFlatIndex(k, l, numTargAmps);
+            // // h = flat index of matrix's (k,l)-th or (l,k)-th element
+            qindex h;
+            if constexpr (ApplyTransp)
+                h = fast_getMatrixFlatIndex(l, k, numTargAmps);
+            else
+                h = fast_getMatrixFlatIndex(k, l, numTargAmps);
 
             // optionally conjugate matrix elem
             cu_qcomp elem = flatMatrElems[h];

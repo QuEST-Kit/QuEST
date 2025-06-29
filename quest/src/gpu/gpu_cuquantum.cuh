@@ -197,13 +197,10 @@ void cuquantum_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<
  */
 
 
-void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, cu_qcomp* flatMatrElems) {
+void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, cu_qcomp* flatMatrElems, bool applyAdj) {
 
     // this funciton is called 'subA' instead of just 'sub', because it is also called in 
     // the one-target case whereby it is strictly the embarrassingly parallel _subA scenario
-
-    // do not adjoint matrix
-    int adj = 0;
 
     // use automatic workspace management
     void* work = nullptr;
@@ -212,7 +209,7 @@ void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> 
     CUDA_CHECK( custatevecApplyMatrix(
         config.handle, 
         toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode, 
-        flatMatrElems, CUQUANTUM_QCOMP, CUSTATEVEC_MATRIX_LAYOUT_ROW, adj, 
+        flatMatrElems, CUQUANTUM_QCOMP, CUSTATEVEC_MATRIX_LAYOUT_ROW, applyAdj, 
         targs.data(), targs.size(),
         ctrls.data(), ctrlStates.data(), ctrls.size(), 
         CUSTATEVEC_COMPUTE_DEFAULT,

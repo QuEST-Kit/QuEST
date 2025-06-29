@@ -81,7 +81,8 @@ void multiplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix) {
     validate_matrixFields(matrix, __func__); // matrix can be non-unitary
 
     bool conj = false;
-    localiser_statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, target, matrix, conj);
+    bool transp = false;
+    localiser_statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, target, matrix, conj, transp);
 }
 
 void postMultiplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix) {
@@ -90,9 +91,11 @@ void postMultiplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix) {
     validate_target(qureg, target, __func__);
     validate_matrixFields(matrix, __func__); // matrix can be non-unitary
     
+    // rho matrix ~ transpose(rho) (x) I ||rho>>
     bool conj = false;
+    bool transp = true;
     int qubit = util_getBraQubit(target, qureg);
-    localiser_statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, qubit, matrix, conj);
+    localiser_statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, qubit, matrix, conj, transp);
 }
 
 void applyCompMatr1(Qureg qureg, int target, CompMatr1 matrix) {
@@ -143,7 +146,8 @@ void multiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix) 
     validate_mixedAmpsFitInNode(qureg, 2, __func__);
 
     bool conj = false;
-    localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, {}, {}, target1, target2, matrix, conj);
+    bool transp = false;
+    localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, {}, {}, target1, target2, matrix, conj, transp);
 }
 
 void postMultiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix) {
@@ -153,10 +157,12 @@ void postMultiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matr
     validate_matrixFields(matrix, __func__); // matrix can be non-unitary
     validate_mixedAmpsFitInNode(qureg, 2, __func__);
 
+    // rho matrix ~ transpose(rho) (x) I ||rho>>
     bool conj = false;
+    bool transp = true;
     int qubit1 = util_getBraQubit(target1, qureg);
     int qubit2 = util_getBraQubit(target2, qureg);
-    localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, {}, {}, qubit1, qubit2, matrix, conj);
+    localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, {}, {}, qubit1, qubit2, matrix, conj, transp);
 }
 
 void applyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix) {
@@ -211,7 +217,8 @@ void multiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix
     validate_mixedAmpsFitInNode(qureg, numTargets, __func__);
 
     bool conj = false;
-    localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, {}, {}, util_getVector(targets, numTargets), matrix, conj);
+    bool transp = false;
+    localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, {}, {}, util_getVector(targets, numTargets), matrix, conj, transp);
 }
 
 void postMultiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix) {
@@ -221,9 +228,11 @@ void postMultiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr ma
     validate_matrixDimMatchesTargets(matrix, numTargets, __func__); // also validates fields and is-sync, but not unitarity
     validate_mixedAmpsFitInNode(qureg, numTargets, __func__);
 
+    // rho matrix ~ transpose(rho) (x) I ||rho>>
     bool conj = false;
+    bool transp = true;
     auto qubits = util_getBraQubits(util_getVector(targets, numTargets), qureg);
-    localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, {}, {}, qubits, matrix, conj);
+    localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, {}, {}, qubits, matrix, conj, transp);
 }
 
 void applyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix) {

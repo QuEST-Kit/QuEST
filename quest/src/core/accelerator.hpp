@@ -101,22 +101,22 @@ using std::vector;
     template returntype funcname <-1,numtargs, conj>  args;
 
 
-#define INSTANTIATE_EXPONENTIABLE_CONJUGABLE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(returntype, funcname, args) \
-    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, true,  true,  args) \
-    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, true,  false, args) \
-    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, false, true,  args) \
-    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, false, false, args)
+#define INSTANTIATE_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(returntype, funcname, args) \
+    private_TWO_BOOL_INSTANTIATE_outer(returntype, funcname, true,  true,  args) \
+    private_TWO_BOOL_INSTANTIATE_outer(returntype, funcname, true,  false, args) \
+    private_TWO_BOOL_INSTANTIATE_outer(returntype, funcname, false, true,  args) \
+    private_TWO_BOOL_INSTANTIATE_outer(returntype, funcname, false, false, args)
 
-#define private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_outer(returntype, funcname, conj, haspower, args) \
-    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 0, conj, haspower, args) \
-    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 1, conj, haspower, args) \
-    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 2, conj, haspower, args) \
-    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 3, conj, haspower, args) \
-    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 4, conj, haspower, args) \
-    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, 5, conj, haspower, args) \
-    private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname,-1, conj, haspower, args)
+#define private_TWO_BOOL_INSTANTIATE_outer(returntype, funcname, conj, haspower, args) \
+    private_TWO_BOOL_INSTANTIATE_inner(returntype, funcname, 0, conj, haspower, args) \
+    private_TWO_BOOL_INSTANTIATE_inner(returntype, funcname, 1, conj, haspower, args) \
+    private_TWO_BOOL_INSTANTIATE_inner(returntype, funcname, 2, conj, haspower, args) \
+    private_TWO_BOOL_INSTANTIATE_inner(returntype, funcname, 3, conj, haspower, args) \
+    private_TWO_BOOL_INSTANTIATE_inner(returntype, funcname, 4, conj, haspower, args) \
+    private_TWO_BOOL_INSTANTIATE_inner(returntype, funcname, 5, conj, haspower, args) \
+    private_TWO_BOOL_INSTANTIATE_inner(returntype, funcname,-1, conj, haspower, args)
 
-#define private_EXPONENTIABLE_CONJUGABLE_INSTANTIATE_inner(returntype, funcname, numtargs, conj, haspower, args) \
+#define private_TWO_BOOL_INSTANTIATE_inner(returntype, funcname, numtargs, conj, haspower, args) \
     template returntype funcname <0, numtargs, conj, haspower>  args; \
     template returntype funcname <1, numtargs, conj, haspower>  args; \
     template returntype funcname <2, numtargs, conj, haspower>  args; \
@@ -194,7 +194,7 @@ void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls,
 
 void accel_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, CompMatr2 matr);
 
-void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr, bool conj);
+void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr, bool conj, bool transp);
 
 
 /*
