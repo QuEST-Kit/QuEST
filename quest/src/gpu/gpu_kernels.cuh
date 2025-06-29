@@ -560,11 +560,11 @@ __global__ void kernel_densmatr_allTargDiagMatr_sub(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    cu_qcomp fac = 1;
+    cu_qcomp fac = getCuQcomp(1, 0);
 
     if constexpr (MultiplyLeft) {
 
-        qindex i = fast_getQuregGlobalRowFromFlatIndex(n, matr.numElems);
+        qindex i = fast_getQuregGlobalRowFromFlatIndex(n, numElems);
         cu_qcomp term = elems[i];
 
         if constexpr (HasPower)

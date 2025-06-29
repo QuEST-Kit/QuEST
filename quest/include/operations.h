@@ -89,6 +89,7 @@ extern "C" {
  * - getCompMatr1()
  * - getInlineCompMatr1()
  * - applyCompMatr1()
+ * - postMultiplyCompMatr1()
  * - applyQubitProjector()
  * - multiplyCompMatr()
  * @author Tyson Jones
@@ -96,9 +97,54 @@ extern "C" {
 void multiplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix);
 
 
-/// @notyetdoced
-/// @notyettested
-/// @notyetvalidated
+/** @notyettested
+ * 
+ * Multiplies a general one-qubit dense @p matrix upon the specified @p target 
+ * qubit of the density matrix @p qureg, from the right-hand side.
+ *  
+ * @formulae
+ * Let @f$ \dmrho = @f$ @p qureg, @f$ \hat{M} = @f$ @p matrix and @f$ t = @f$ @p target, 
+ * and notate @f$\hat{M}_t@f$ as per applyCompMatr1(). Unlike applyCompMatr1() however,
+ * this function only ever right-multiplies @p matrix upon @p qureg.
+ * 
+ * Explicitly
+ *   @f[ 
+        \dmrho \rightarrow \dmrho \, \hat{M}_t
+ *   @f]
+ * where @f$ \hat{M} @f$ is not conjugated nor transposed, and there are no additional 
+ * constraints like unitarity.
+ * 
+ * In general, this function will break the normalisation of @p qureg and result in a
+ * non-physical state, and is useful for preparing sub-expressions of formulae like
+ * the Linbladian.
+ *
+ * @myexample
+ * ```
+    Qureg qureg = createDensityQureg(5);
+
+    CompMatr1 matrix = getInlineCompMatr1({
+        {0.1, 0.2},
+        {0.3i, 0.4i}
+    });
+
+    postMultiplyCompMatr1(qureg, 2, matrix); 
+ * ```
+ *
+ * @param[in,out] qureg  the state to modify.
+ * @param[in]     target the index of the target qubit.
+ * @param[in]     matrix the Z-basis matrix to post-multiply.
+ * @throws @validationerror
+ * - if @p qureg or @p matrix are uninitialised.
+ * - if @p qureg is not a density matrix.
+ * - if @p target is an invalid qubit index.
+ * @see
+ * - getCompMatr1()
+ * - getInlineCompMatr1()
+ * - applyCompMatr1()
+ * - multiplyCompMatr1()
+ * - multiplyCompMatr()
+ * @author Tyson Jones
+ */
 void postMultiplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix);
 
 
@@ -168,6 +214,7 @@ digraph {
  * - getCompMatr1()
  * - getInlineCompMatr1()
  * - multiplyCompMatr1()
+ * - postMultiplyCompMatr1()
  * - applyControlledCompMatr1()
  * - applyCompMatr2()
  * - applyCompMatr()
