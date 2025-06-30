@@ -180,6 +180,13 @@ void multiplyReferenceOperator(qmatrix& state, qmatrix matrix) {
     state = matrix * state;
 }
 
+void postMultiplyReferenceOperator(qmatrix& state, qmatrix matrix) {
+    DEMAND( state.size() == matrix.size() );
+
+    // we right-multiply upon density matrices only
+    state = state * matrix;
+}
+
 
 // overloads with ctrls, states and targs (given sub-operator)
 
@@ -206,6 +213,12 @@ void multiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> ct
     multiplyReferenceOperator(state, left);
 }
 
+void postMultiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qmatrix matrix) {
+    
+    qmatrix left = getFullStateOperator(ctrls, ctrlStates, targs, matrix, getLog2(state.size()));
+    postMultiplyReferenceOperator(state, left);
+}
+
 
 // overloads with only ctrls and targs
 
@@ -224,6 +237,10 @@ void multiplyReferenceOperator(qvector& state, vector<int> ctrls, vector<int> ta
 void multiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
     
     multiplyReferenceOperator(state, ctrls, {}, targs, matrix);
+}
+void postMultiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
+    
+    postMultiplyReferenceOperator(state, ctrls, {}, targs, matrix);
 }
 
 
@@ -244,6 +261,10 @@ void multiplyReferenceOperator(qvector& state, vector<int> targs, qmatrix matrix
 void multiplyReferenceOperator(qmatrix& state, vector<int> targs, qmatrix matrix) {
 
     multiplyReferenceOperator(state, {}, {}, targs, matrix);
+}
+void postMultiplyReferenceOperator(qmatrix& state, vector<int> targs, qmatrix matrix) {
+
+    postMultiplyReferenceOperator(state, {}, {}, targs, matrix);
 }
 
 

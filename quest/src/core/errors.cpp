@@ -436,7 +436,7 @@ void assert_fullStateDiagMatrTemplateParamsAreValid(bool multiplyLeft, bool mult
     bool valid = (
         (  multiplyLeft &&   multiplyRight &&   conjRight) || // matr qureg conj(matr)
         (  multiplyLeft && ! multiplyRight && ! conjRight) || // matr qureg
-        (! multiplyLeft &&   multiplyRight &&   conjRight)    //      qureg matr
+        (! multiplyLeft &&   multiplyRight && ! conjRight)    //      qureg matr
     );
 
     if (!valid)

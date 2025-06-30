@@ -1365,13 +1365,12 @@ void postMultiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace) {
 
     // post-multiply each term in-turn, mixing into output qureg, then undo using idempotency
     for (qindex i=0; i<sum.numTerms; i++) {
-        
-        PauliStr str =  paulis_getShiftedPauliStr(sum.strings[i], qureg.numQubits); 
+        PauliStr str =  paulis_getShiftedPauliStr(sum.strings[i], qureg.numQubits);
+        qcomp factor = paulis_hasOddNumY(str)? -1 : 1; // undoes transpose
 
-        localiser_statevec_anyCtrlPauliTensor(workspace, {}, {}, str);
+        localiser_statevec_anyCtrlPauliTensor(workspace, {}, {}, str, factor);
         localiser_statevec_setQuregToSuperposition(1, qureg, sum.coeffs[i], workspace, 0, workspace);
-        localiser_statevec_anyCtrlPauliTensor(workspace, {}, {}, str);
-
+        localiser_statevec_anyCtrlPauliTensor(workspace, {}, {}, str, factor);
     }
 
     // workspace -> qureg, and qureg -> sum * qureg
