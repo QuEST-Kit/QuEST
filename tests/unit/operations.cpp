@@ -1357,12 +1357,12 @@ TEST_CASE( "postMultiplyDiagMatr2",       TEST_CATEGORY ) { testOperation<zero,t
 
 TEST_CASE( "applyMultiQubitPhaseFlip",  TEST_CATEGORY ) {
     auto func = static_cast<void(*)(Qureg, int*, int)>(applyMultiQubitPhaseFlip);
-    testOperation<zero,any,none,multiply>(func, VariableSizeMatrices::PF);
+    testOperation<zero,any,none,apply>(func, VariableSizeMatrices::PF);
 }
 
 TEST_CASE( "applyMultiQubitPhaseShift",  TEST_CATEGORY ) {
     auto func = static_cast<void(*)(Qureg, int*, int, qreal)>(applyMultiQubitPhaseShift);
-    testOperation<zero,any,scalar,multiply>(func, VariableSizeParameterisedMatrices::PS);
+    testOperation<zero,any,scalar,apply>(func, VariableSizeParameterisedMatrices::PS);
 }
 
 
