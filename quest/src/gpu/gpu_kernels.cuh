@@ -341,7 +341,7 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
         #pragma unroll
         for (qindex l=0; l<numTargAmps; l++) {
 
-            // // h = flat index of matrix's (k,l)-th or (l,k)-th element
+            // h = flat index of matrix's (k,l)-th or (l,k)-th element
             qindex h;
             if constexpr (ApplyTransp)
                 h = fast_getMatrixFlatIndex(l, k, numTargAmps);
@@ -360,7 +360,7 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
 }
 
 
-template <int NumCtrls, bool ApplyConj>
+template <int NumCtrls, bool ApplyConj, bool ApplyTransp>
 __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
     cu_qcomp* globalCache,
     cu_qcomp* amps, qindex numThreads, qindex numBatchesPerThread,
@@ -402,10 +402,16 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
         
             for (qindex l=0; l<numTargAmps; l++) {
                 qindex j = getThreadsNthGlobalArrInd(l, t, numThreads);
-                qindex h = fast_getMatrixFlatIndex(k, l, numTargAmps);
 
-                // optionally conjugate matrix elem
+                // // h = flat index of matrix's (k,l)-th or (l,k)-th element
+                qindex h;
+                if constexpr (ApplyTransp)
+                    h = fast_getMatrixFlatIndex(l, k, numTargAmps);
+                else
+                    h = fast_getMatrixFlatIndex(k, l, numTargAmps);
+
                 cu_qcomp elem = flatMatrElems[h];
+
                 if constexpr (ApplyConj)
                     elem.y *= -1;
 
