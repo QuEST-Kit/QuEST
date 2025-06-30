@@ -1031,6 +1031,9 @@ void testOperationValidation(auto operation) {
 
     SECTION( "targeted amps fit in node" ) {
 
+        // simplest to trigger validation using a statevector
+        qureg = getCachedStatevecs().begin()->second;
+
         // can only be validated when environment AND qureg
         // are distributed (over more than 1 node, of course)
         if (qureg.numNodes < 2)
