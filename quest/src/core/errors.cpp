@@ -5,6 +5,7 @@
  * deployment is consistent with the compiled deployment modes.
  * 
  * @author Tyson Jones
+ * @author Luc Jaulmes (NUMA & pagesize errors)
  */
 
 #include "quest/include/types.h"
@@ -94,18 +95,6 @@ void error_allocOfQuESTEnvFailed() {
 }
 
 
-void error_gettingPageSizeFailed() {
-
-    raiseInternalError("Failed to get the page size.");
-}
-
-
-void error_gettingNumaNodesFailed() {
-
-    raiseInternalError("Failed to get the numa node count");
-}
-
-
 
 /*
  * MEMORY ERRORS
@@ -114,6 +103,41 @@ void error_gettingNumaNodesFailed() {
 void error_memSizeQueriedButWouldOverflow() {
 
     raiseInternalError("Attempted to obtain memory necessary to allocate a distributed object's single-node partition but it overflowed size_t despite prior validation.");
+}
+
+void error_gettingPageSizeFailed() {
+
+    raiseInternalError("Failed to get the page size.");
+}
+
+void error_pageSizeNotAPowerOf2() {
+
+    raiseInternalError("The discovered page size was not a power of 2. Get Dr Denning on the phone.");
+}
+
+void error_pageSizeNotAMultipleOfQcomp() {
+
+    raiseInternalError("The page size was indivisible by the number of bytes in a qcomp.");
+}
+
+void error_gettingNumNumaNodesFailed() {
+
+    raiseInternalError("Failed to get the NUMA node count");
+}
+
+void error_numaAllocOrDeallocAttemptedOnWindows() {
+
+    raiseInternalError("NUMA-aware memory allocation or deallocation was attempted on Windows though this is not yet implemented, indicating a potential build issue.");
+}
+
+void error_numaBindingFailed() {
+
+    raiseInternalError("The binding of memory pages to NUMA nodes (with mbind) unexpectedly failed, despite prior reservation (with mmap) succeeding.");
+}
+
+void error_numaUnmappingFailed() {
+
+    raiseInternalError("NUMA-aware memory deallocation unexpectedly failed.");
 }
 
 

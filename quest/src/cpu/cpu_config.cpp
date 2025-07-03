@@ -12,6 +12,7 @@
 
 #include "quest/src/core/memory.hpp"
 #include "quest/src/core/errors.hpp"
+#include "quest/src/core/bitwise.hpp"
 
 #include <vector>
 #include <cstring>
@@ -157,6 +158,19 @@ long cpu_getPageSize() {
     pageSize = sysconf(_SC_PAGESIZE);
 #endif
 
+    // rigorously check the found pagesize is valid
+    // and consistent with preconditions assumed by
+    // callers, to avoid extremely funky bugs on
+    // esoteric future systems
+
+    if (pageSize <= 0)
+        error_gettingPageSizeFailed();
+
+    if (!isPowerOf2(pageSize))
+        error_pageSizeNotAPowerOf2();
+
+    if (pageSize % sizeof(qcomp) != 0)
+        error_pageSizeNotAMultipleOfQcomp();
 
     return pageSize;
 }
@@ -194,6 +208,10 @@ qcomp* cpu_allocNumaArray(qindex length) {
     // allocate memory, potentially more than arraySize (depending on page divisibility)
     void *rawAddr = mmap(NULL, numBytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     
+    // indicate memory alloc failure to caller (no NUMA-specific validation error message)
+    if (rawAddr == MAP_FAILED)
+        return nullptr;
+
     // if there is only a single NUMA node, then all memory access will occur within it
     qcomp* outAddr = reinterpret_cast<qcomp*>(rawAddr);
     if (numNodes == 1)
@@ -218,6 +236,11 @@ qcomp* cpu_allocNumaArray(qindex length) {
         unsigned long nodeMask = 1UL << node;
         void* nodeAddr = reinterpret_cast<void*>(offsetAddr);
         long success = mbind(nodeAddr, numBytesInNode, MPOL_BIND, &nodeMask, numNodes, 0);
+
+        // treat bind failure as internal error (even though it can result from insufficient kernel mem),
+        // rather than permitting silent fallback to non-NUMA awareness which might be astonishingly slow
+        if (success == -1)
+            error_numaBindingFailed();
 
         // prepare next node's address
         offsetAddr += numPagesInNode * pageSize;
@@ -260,6 +283,9 @@ void cpu_deallocNumaArray(qcomp* arr, qindex length) {
     qindex numPages = getNumPagesToContainArray(pageSize, arraySize);
     qindex numBytes = numPages * pageSize; // gauranteed no overflow
     int success = munmap(arr, numBytes);
+
+    if (success == -1)
+        error_numaUnmappingFailed();
 #endif
 }
 

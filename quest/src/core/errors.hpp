@@ -5,6 +5,7 @@
  * deployment is consistent with the compiled deployment modes.
  * 
  * @author Tyson Jones
+ * @author Luc Jaulmes (NUMA & pagesize errors)
  */
 
 #ifndef ERRORS_HPP
@@ -42,9 +43,7 @@ void error_validationListUniquenessCheckExceededMaskSize();
 
 void error_allocOfQuESTEnvFailed();
 
-void error_gettingPageSizeFailed();
 
-void error_gettingNumaNodesFailed();
 
 
 /*
@@ -52,6 +51,20 @@ void error_gettingNumaNodesFailed();
  */
 
 void error_memSizeQueriedButWouldOverflow();
+
+void error_gettingPageSizeFailed();
+
+void error_pageSizeNotAPowerOf2();
+
+void error_pageSizeNotAMultipleOfQcomp();
+
+void error_gettingNumNumaNodesFailed();
+
+void error_numaAllocOrDeallocAttemptedOnWindows();
+
+void error_numaBindingFailed();
+
+void error_numaUnmappingFailed();
 
 
 
