@@ -133,6 +133,14 @@ int cpu_getCurrentNumThreads() {
  * MEMORY ALLOCATION
  */
 
+
+qindex getNumPagesToContainArray(long pageLen, qindex arrLen) {
+
+    // round up to the nearest page
+    return static_cast<qindex>(std::ceil(arrLen / (qreal) pageLen));
+}
+
+
 long cpu_getPageSize() {
 
     // avoid repeated queries to this fixed value
@@ -160,39 +168,65 @@ qcomp* cpu_allocArray(qindex length) {
 
 
 qcomp* cpu_allocNumaArray(qindex length) {
-#if !NUMA_AWARE
+#if ! NUMA_AWARE
     return cpu_allocArray(length);
+
+#elif defined(_WIN32)
+    error_numaAllocOrDeallocAttemptedOnWindows();
+
 #else
-    unsigned long page_size = cpu_getPageSize();
-    int n_nodes = cpu_getNumaNodes();
+    // we will divide array's memory into pages
+    long pageSize = cpu_getPageSize();
+    qindex arraySize = length * sizeof(qcomp); // gauranteed no overflow
 
-    qindex size = length * sizeof(qcomp);
-    int pages = (size + page_size - 1) / page_size;
-    void *addr = mmap(NULL, pages * page_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    if (n_nodes == 1) {
-        return reinterpret_cast<qcomp*>(addr);
+    // if entire array fits within a single page, alloc like normal
+    if (arraySize <= pageSize)
+        return cpu_allocArray(length);
+
+    // otherwise we will bind pages across NUMA nodes
+    static int numNodes = numa_num_configured_nodes();
+    if (numNodes < 1)
+        error_gettingNumNumaNodesFailed();
+
+    qindex numPages = getNumPagesToContainArray(pageSize, arraySize);
+    qindex numBytes = numPages * pageSize; // prior validation gaurantees no overflow
+    
+    // allocate memory, potentially more than arraySize (depending on page divisibility)
+    void *rawAddr = mmap(NULL, numBytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    
+    // if there is only a single NUMA node, then all memory access will occur within it
+    qcomp* outAddr = reinterpret_cast<qcomp*>(rawAddr);
+    if (numNodes == 1)
+        return outAddr;
+
+    // otherwise, we bind continguous pages to NUMA nodes, distributing the pages 
+    // attemptedly uniformly and spreading remaining pages maximally apart
+    qindex baseNumPagesPerNode = numPages / numNodes; // floors
+    qindex remainingNumPagesTotal = numPages % numNodes;
+
+    // use integer type for safe address arithmetic below
+    uintptr_t offsetAddr = reinterpret_cast<uintptr_t>(rawAddr);
+
+    for (int node=0, shift=numNodes; node < numNodes; ++node) {
+
+        // decide number of pages to bind to NUMA node
+        shift -= remainingNumPagesTotal;
+        qindex numPagesInNode = baseNumPagesPerNode + (shift <= 0);
+        qindex numBytesInNode = numPagesInNode * pageSize; // validation prevents overflow
+
+        // bind those pages from the offset address to the node (identified by mask)
+        unsigned long nodeMask = 1UL << node;
+        void* nodeAddr = reinterpret_cast<void*>(offsetAddr);
+        long success = mbind(nodeAddr, numBytesInNode, MPOL_BIND, &nodeMask, numNodes, 0);
+
+        // prepare next node's address
+        offsetAddr += numPagesInNode * pageSize;
+        if (shift <= 0)
+            shift += numNodes;
     }
 
-    // distribution strategy: floor_pages per node, distribute remain_pages as spread out as possible
-    int floor_pages = pages / n_nodes;
-    int spread_pages = pages % n_nodes;
-
-    uintptr_t pos = (uintptr_t)addr;
-    for (int node = 0, shift = n_nodes; node < n_nodes; ++node) {
-        shift -= spread_pages;
-        int node_pages = floor_pages + (shift <= 0);
-
-        unsigned long node_mask = 1UL << node;
-        mbind((void*)pos, node_pages * page_size, MPOL_BIND, &node_mask, sizeof(node_mask) * 8, 0);
-
-        pos += node_pages * page_size;
-        if (shift <= 0) {
-            shift += n_nodes;
-        }
-    }
-
-    return reinterpret_cast<qcomp*>(addr);
-#endif // NUMA_AWARE
+    return outAddr;
+#endif
 }
 
 
@@ -204,19 +238,29 @@ void cpu_deallocArray(qcomp* arr) {
 
 
 void cpu_deallocNumaArray(qcomp* arr, qindex length) {
-    if (arr == nullptr) {
+
+    // musn't pass nullptr to munmap() below
+    if (arr == nullptr)
         return;
-    }
 
-#if !NUMA_AWARE
-    return cpu_deallocArray(arr);
+#if ! NUMA_AWARE
+    cpu_deallocArray(arr);
+
+#elif defined(_WIN32)
+    error_numaAllocOrDeallocAttemptedOnWindows();
+
 #else
-    unsigned long page_size = cpu_getPageSize();
-    qindex size = length * sizeof(qcomp);
-    int pages = (size + page_size - 1) / page_size;
+    qindex arrSize = length * sizeof(qcomp);
+    unsigned long pageSize = cpu_getPageSize();
 
-    munmap(arr, pages * page_size);
-#endif // NUMA_AWARE
+    // sub-page arrays were allocated with calloc()
+    if (arrSize <= pageSize)
+        return cpu_deallocArray(length);
+
+    qindex numPages = getNumPagesToContainArray(pageSize, arraySize);
+    qindex numBytes = numPages * pageSize; // gauranteed no overflow
+    int success = munmap(arr, numBytes);
+#endif
 }
 
 
