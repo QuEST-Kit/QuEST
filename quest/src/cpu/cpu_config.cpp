@@ -278,9 +278,9 @@ void cpu_deallocNumaArray(qcomp* arr, qindex length) {
 
     // sub-page arrays were allocated with calloc()
     if (arrSize <= pageSize)
-        return cpu_deallocArray(length);
+        return cpu_deallocArray(arr);
 
-    qindex numPages = getNumPagesToContainArray(pageSize, arraySize);
+    qindex numPages = getNumPagesToContainArray(pageSize, arrSize);
     qindex numBytes = numPages * pageSize; // gauranteed no overflow
     int success = munmap(arr, numBytes);
 
