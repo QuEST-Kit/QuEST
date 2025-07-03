@@ -65,7 +65,7 @@ PauliStr* cpu_allocPauliStrings(qindex numStrings);
 void cpu_deallocPauliStrings(PauliStr* strings);
 
 
-unsigned long cpu_getPageSize();
+long cpu_getPageSize();
 
 
 /*

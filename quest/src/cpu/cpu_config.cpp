@@ -274,7 +274,7 @@ void cpu_deallocNumaArray(qcomp* arr, qindex length) {
 
 #else
     qindex arrSize = length * sizeof(qcomp);
-    unsigned long pageSize = cpu_getPageSize();
+    long pageSize = cpu_getPageSize();
 
     // sub-page arrays were allocated with calloc()
     if (arrSize <= pageSize)
