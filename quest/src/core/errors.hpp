@@ -45,7 +45,6 @@ void error_allocOfQuESTEnvFailed();
 
 
 
-
 /*
  * MEMORY ERRORS
  */
