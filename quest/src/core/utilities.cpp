@@ -5,6 +5,7 @@
  * logic, matrix algebra, and channel parameters.
  * 
  * @author Tyson Jones
+ * @author Luc Jaulmes (distributing ranges over blocks)
  */
 
 #include "quest/include/types.h"
@@ -25,6 +26,7 @@
 
 #include <functional>
 #include <algorithm>
+#include <utility>
 #include <complex>
 #include <cmath>
 #include <vector>
@@ -902,24 +904,42 @@ util_VectorIndexRange util_getLocalIndRangeOfVectorElemsWithinNode(int rank, qin
     return out;
 }
 
+std::pair<qindex, qindex> util_getBlockMultipleSubRange(
+    qindex rangeLen, qindex blockLen, int idSubRange, int numSubRanges
+) {
+    // divides a range into whole blocks (and a single leftover sub-block) and
+    // attempts to uniformly distribute the blocks across the specified number of
+    // sub-ranges. When the blocks do not divide evenly between sub-ranges, the
+    // leftover blocks are spread apart across sub-ranges. When the range does not 
+    // divide evenly into blocks, the overflow is given to the final sub-range.
 
-std::pair<qindex, qindex>
-util_distribute(const qindex work, const qindex block, const int id, const int n) {
-    const qindex blocks = work / block;
-    // really should not happen except when work < block as work is power of 2 and block should be too.
-    const qindex last = work % block;
+    qindex numFullBlocks = rangeLen / blockLen; // floors
+    qindex subBlockLen = rangeLen % blockLen;
 
-    qindex spread = blocks / n;
-    qindex extra = blocks % n;
+    qindex baseNumBlocksPerSubRange = numFullBlocks / numSubRanges;
+    qindex numExtraBlocks = numFullBlocks % numSubRanges;
 
-    qindex prev_extra = (id * extra) / n;
-    qindex prev_shift = (id * extra) % n;
-    qindex here_extra = (prev_shift + extra) >= n;
+    // determine how many extra blocks this subrange should contain
+    qindex prevExtra = (idSubRange * numExtraBlocks) / numSubRanges;
+    qindex prevShift = (idSubRange * numExtraBlocks) % numSubRanges;
+    bool hereExtra = (prevShift + numExtraBlocks) >= numSubRanges;
 
-    qindex pos = id * spread + prev_extra;
-    qindex end = pos + spread + here_extra;
-    return std::make_pair(pos * block, end * block + (id == n - 1 ? last : 0));
+    // allocate blocks to this sub-range
+    qindex startBlockInd = idSubRange * baseNumBlocksPerSubRange + prevExtra;
+    qindex endBlockInd = startBlockInd + baseNumBlocksPerSubRange + hereExtra;
+
+    // find this sub-range indices within [0, rangeLen)
+    qindex startInd = startBlockInd * blockLen;
+    qindex endInd = endBlockInd * blockLen; // exclusive
+
+    // arbitrarily allocate the leftover sub-block to the final sub-range
+    if (idSubRange == numSubRanges - 1)
+        endInd += subBlockLen;
+
+    return std::make_pair(startInd, endInd);
 }
+
+
 
 /*
  * GATE PARAMETERS

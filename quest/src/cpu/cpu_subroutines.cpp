@@ -9,6 +9,7 @@
  * 
  * @author Tyson Jones
  * @author Oliver Brown (OpenMP 'if' clauses)
+ * @author Luc Jaulmes (optimised initUniformState)
  * @author Richard Meister (helped patch on LLVM)
  * @author Kshitij Chhabra (patched v3 clauses with gcc9)
  * @author Ania (Anna) Brown (developed QuEST v1 logic)
@@ -2355,12 +2356,18 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_multiQubitProjector
 
 void cpu_statevec_initUniformState_sub(Qureg qureg, qcomp amp) {
 
-    // faster on average (though perhaps not for large quregs)
-    // than a custom multithreaded loop
+    // approx-uniformly distribute modified memory pages across threads,
+    // in the hope that each std::fill() will touch only memory within 
+    // the thread's corresponding NUMA node, for best performance 
+
+    int numAmpsPerPage = cpu_getPageSize() / sizeof(qcomp); // divides evenly
+
     #pragma omp parallel if(qureg.isMultithreaded)
     {
-        const auto [start, end] = util_distribute(qureg.numAmpsPerNode, cpu_getPageSize() / sizeof(qcomp),
-                cpu_getOpenmpThreadInd(), cpu_getCurrentNumThreads());
+        const auto [start, end] = util_getBlockMultipleSubRange(
+            qureg.numAmpsPerNode, numAmpsPerPage,
+            cpu_getOpenmpThreadInd(), cpu_getCurrentNumThreads());
+
         std::fill(qureg.cpuAmps + start, qureg.cpuAmps + end, amp);
     }
 }
