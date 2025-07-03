@@ -3,6 +3,7 @@
  * configuration, and allocating and copying RAM data.
  * 
  * @author Tyson Jones
+ * @author Luc Jaulmes (NUMA awareness)
  */
 
 #include "quest/include/modes.h"
@@ -32,16 +33,35 @@ using std::vector;
 #endif
 
 
+/// @todo
+/// Windows provides a NUMA API we could access in theory, although we 
+/// forego the hassle for now - who is running QuEST on big multi-core 
+/// Windows? This validation protects against enabling NUMA awareness
+/// on Windows but silently recieving no benefit due to no NUMA API calls
+
+#if NUMA_AWARE && defined(_WIN32)
+    #error "NUMA awareness is not currently supported on non-POSIX systems like Windows."
+#endif
+
+
 #if COMPILE_OPENMP
     #include <omp.h>
 #endif
 
-#if NUMA_AWARE
+#if NUMA_AWARE && ! defined(_WIN32)
     #include <sys/mman.h>
-    #include <unistd.h>
     #include <numaif.h>
     #include <numa.h>
-#endif // NUMA_AWARE
+#endif
+
+#if defined(_WIN32)
+    #define NOMINMAX
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
+#else
+    #include <unistd.h>
+#endif
+
 
 
 /*
@@ -113,33 +133,26 @@ int cpu_getCurrentNumThreads() {
  * MEMORY ALLOCATION
  */
 
-unsigned long cpu_getPageSize() {
-#if NUMA_AWARE
-    static unsigned long page_size = 0;
-    if (!page_size) {
-        page_size = sysconf(_SC_PAGESIZE);
-        if (page_size == ~0UL) {
-            error_gettingPageSizeFailed();
-        }
-    }
-    return page_size;
+long cpu_getPageSize() {
+
+    // avoid repeated queries to this fixed value
+    static long pageSize = 0;
+    if (pageSize > 0)
+        return pageSize;
+
+    // obtain pageSize for the first time
+#if defined(_WIN32)
+    SYSTEM_INFO sysInfo;
+    GetSystemInfo(&sysInfo);
+    pageSize = sysInfo.dwPageSize;
 #else
-    return FALLBACK_PAGE_SIZE;
+    pageSize = sysconf(_SC_PAGESIZE);
 #endif
+
+
+    return pageSize;
 }
 
-#if NUMA_AWARE
-unsigned long cpu_getNumaNodes() {
-    static int n_nodes = 0;
-    if (!n_nodes) {
-        n_nodes = numa_num_configured_nodes();
-        if (n_nodes < 1) {
-            error_gettingNumaNodesFailed();
-        }
-    }
-    return n_nodes;
-}
-#endif
 
 qcomp* cpu_allocArray(qindex length) {
     return (qcomp*) calloc(length, sizeof(qcomp));
