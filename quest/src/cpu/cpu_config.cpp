@@ -234,8 +234,9 @@ qcomp* cpu_allocNumaArray(qindex length) {
 
         // bind those pages from the offset address to the node (identified by mask)
         unsigned long nodeMask = 1UL << node;
+        unsigned long numBitsInMask = 8 * nodeMask;
         void* nodeAddr = reinterpret_cast<void*>(offsetAddr);
-        long success = mbind(nodeAddr, numBytesInNode, MPOL_BIND, &nodeMask, numNodes, 0);
+        long success = mbind(nodeAddr, numBytesInNode, MPOL_BIND, &nodeMask, numBitsInMask, 0);
 
         // treat bind failure as internal error (even though it can result from insufficient kernel mem),
         // rather than permitting silent fallback to non-NUMA awareness which might be astonishingly slow
