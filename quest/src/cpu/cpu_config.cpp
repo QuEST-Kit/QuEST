@@ -234,7 +234,7 @@ qcomp* cpu_allocNumaArray(qindex length) {
 
         // bind those pages from the offset address to the node (identified by mask)
         unsigned long nodeMask = 1UL << node;
-        unsigned long numBitsInMask = 8 * nodeMask;
+        unsigned long numBitsInMask = 8 * sizeof(nodeMask);
         void* nodeAddr = reinterpret_cast<void*>(offsetAddr);
         long success = mbind(nodeAddr, numBytesInNode, MPOL_BIND, &nodeMask, numBitsInMask, 0);
 
