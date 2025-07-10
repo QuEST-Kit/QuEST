@@ -266,6 +266,8 @@ void assert_applyFullStateDiagMatrTempGpuAllocSucceeded(qcomp* gpuPtr);
 
 void error_cudaCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line);
 
+void error_cudaEncounteredIrrecoverableError();
+
 
 
 /*

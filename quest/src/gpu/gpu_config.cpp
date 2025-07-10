@@ -46,13 +46,15 @@
 /*
  * CUDA ERROR HANDLING
  *
- * which is only defined when CUDA-compiling, since it is invoked only a macro (defined
- * in gpu_config.hpp) which wraps CUDA API calls
+ * which are only defined when CUDA-compiling, since only ever invoked
+ * when encountering issues through use of the CUDA API
  */
 
 #if COMPILE_CUDA
 
 void assertCudaCallSucceeded(int result, const char* call, const char* caller, const char* file, int line) {
+
+    // this function is only invoked by the CUDA_CHECK macro defined in gpu_config.hpp header
 
     // result (int) is actually type cudaError_t but we cannot use this CUDA-defined type
     // in gpu_config.hpp (since it's included by non-CUDA-compiled files), and we wish to keep
@@ -61,6 +63,23 @@ void assertCudaCallSucceeded(int result, const char* call, const char* caller, c
 
     if (result != cudaSuccess)
         error_cudaCallFailed(cudaGetErrorString(code), call, caller, file, line);
+}
+
+void clearPossibleCudaError() {
+
+    // clear "non-sticky" errors so that future CUDA API use is not corrupted
+    cudaError_t initialCode = cudaGetLastError();
+
+    // nothing to do if no error had occurred
+    if (initialCode == cudaSuccess)
+        return;
+
+    // sync and re-check if error code is erroneously unchanged, which 
+    // indicates that CUDA encountered an irrecoverable "sticky" error
+    cudaDeviceSynchronize();
+    cudaError_t finalCode = cudaGetLastError();
+    if (initialCode == finalCode)
+        error_cudaEncounteredIrrecoverableError();
 }
 
 #endif
@@ -153,6 +172,12 @@ int gpu_getNumberOfLocalGpus() {
     // is called but no devices exist, which we handle
     int num;
     auto status = cudaGetDeviceCount(&num);
+
+    // pedantically ensure failure of the above call
+    // does not corrupt the CUDA API state
+    clearPossibleCudaError();
+
+    // treat query failure as indication of no local GPUs
     return (status == cudaSuccess)? num : 0;
 
 #else
@@ -177,8 +202,10 @@ bool gpu_isGpuAvailable() {
         auto status = cudaGetDeviceProperties(&props, deviceInd);
 
         // if the query failed, device is anyway unusable
-        if (status != cudaSuccess) 
+        if (status != cudaSuccess) {
+            clearPossibleCudaError();
             continue;
+        }
 
         // if the device is a real GPU, it's 'major' compute capability is != 9999 (meaning emulation)
         if (props.major != 9999)
@@ -405,9 +432,16 @@ qcomp* gpu_allocArray(qindex length) {
     qcomp* ptr;
     cudaError_t errCode = cudaMalloc(&ptr, numBytes);
 
-    // intercept memory-alloc error and merely return nullptr pointer (to be handled by validation)
-    if (errCode == cudaErrorMemoryAllocation)
+    // intercept memory-alloc error (handled by caller's validation)
+    if (errCode == cudaErrorMemoryAllocation) {
+
+        // malloc failure can break CUDA API state, so recover it in
+        // case execution is continuing (e.g. by unit tests)
+        clearPossibleCudaError();
+
+        // indicate alloc failure
         return nullptr;
+    }
 
     // pass all other unexpected errors to internal error handling
     CUDA_CHECK(errCode);

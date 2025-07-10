@@ -698,6 +698,11 @@ void error_cudaCallFailed(const char* msg, const char* func, const char* caller,
     raiseInternalError(err);
 }
 
+void error_cudaEncounteredIrrecoverableError() {
+
+    raiseInternalError("The CUDA API encountered an irrecoverable \"sticky\" error which was attemptedly cleared as if it were non-sticky.");
+}
+
 
 
 /*
