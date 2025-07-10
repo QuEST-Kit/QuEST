@@ -227,9 +227,7 @@ digraph {
 void applyCompMatr1(Qureg qureg, int target, CompMatr1 matrix);
 
 
-/** @notyetdoced
- * 
- * Applies a singly-controlled one-qubit dense unitary @p matrix to the specified 
+/** Applies a singly-controlled one-qubit dense unitary @p matrix to the specified 
  * @p target qubit of @p qureg.
  * 
  * @diagram
@@ -258,8 +256,84 @@ digraph {
 }
  * @enddot
  *
+ * @formulae
+ * 
+ * Let @f$ \hat{U} = @f$ @p matrix, @f$ t = @f$ @p target, @f$ c = @f$ @p control,
+ * and let @f$\hat{O}_q@f$ denote an operator upon the @f$q@f$-th qubit.
+ * This function effects operator
+ * @f[
+    C_c[\hat{U}_t] = \ketbra{0}{0}_c \otimes \id_t + \ketbra{1}{1}_c \otimes \hat{U}_t,
+ * @f]
+ * where @f$\hat{U}@f$ is effected upon basis states for which qubit @f$c@f$ has value `1`.
+ * For illustration, when @p control=0 and @p target=1, this function would effect
+ * @f[
+    C_1[\hat{U}_0] \equiv 
+    \begin{pmatrix} 
+      1 \\ & 1 \\ & & u_{00} & u_{10} \\ & & u_{10} & u_{11}
+    \end{pmatrix}.
+ * @f]
+ *
+ * This operation can be performed upon statevectors and density matrices.
+ *
+ * - When @p qureg is a statevector @f$ \svpsi @f$, this function effects
+ *   @f[ 
+        \svpsi \rightarrow C_c[\hat{U}_t] \, \svpsi.
+ *   @f]
+ * - When @p qureg is a density matrix @f$\dmrho@f$, this function effects
+ *   @f[ 
+        \dmrho \rightarrow C_c[\hat{U}_t] \, \dmrho \, {C_c[\hat{U}_t]}^\dagger.
+ *   @f]
+ *
+ * @constraints
+ * 
+ * - Unitarity of @f$ \hat{U} = @f$ @p matrix requires that 
+ *   @f$ \hat{U} \hat{U}^\dagger = \id @f$. Validation will check that @p matrix is
+ *   approximately unitarity via
+ *   @f[ 
+        \max\limits_{ij} \Big|\left(\hat{U} \hat{U}^\dagger - \id\right)_{ij}\Big|^2 \le \valeps
+ *   @f]
+ *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setValidationEpsilon().
+ *
+ * @equivalences
+ * 
+ * - This function is faster than, but mathematically equivalent to, initialising a two-qubit
+ *   matrix (CompMatr2) to the @f$C_1[\hat{U}_0]@f$ matrix above, and calling applyCompMatr2():
+ *   ```
+     CompMatr2 m = getInlineCompMatr2({
+         {1,0,0,0}, 
+         {0,1,0,0}, 
+         {0,0,u00,u01}, 
+         {0,0,u10,u11}});
+     
+     applyCompMatr2(qureg, target, control);
+ *   ```
+ *
+ * @myexample
+ * ```
+    Qureg qureg = createQureg(5);
+
+    CompMatr1 matrix = getInlineCompMatr1({
+        {-1i/sqrt(2), 1i/sqrt(2)},
+        {(1i-1)/2,    (1i-1)/2}
+    });
+
+    // C_0[U_2]
+    applyControlledCompMatr1(qureg, 0, 2, matrix); 
+ * ```
+
+ * @param[in,out] qureg   the state to modify.
+ * @param[in]     control the index of the control qubit.
+ * @param[in]     target  the index of the target qubit.
+ * @param[in]     matrix  the Z-basis unitary matrix to effect.
+ * @throws @validationerror
+ * - if @p qureg or @p matrix are uninitialised.
+ * - if @p matrix is not approximately unitary.
+ * - if @p control or @p target are an invalid qubit index.
+ * - if @p control and @p target overlap.
  * @see
- * - applyCompMatr1()
+ * - applyMultiControlledCompMatr1()
+ * - applyMultiStateControlledCompMatr1()
+ * @author Tyson Jones
  */
 void applyControlledCompMatr1(Qureg qureg, int control, int target, CompMatr1 matrix);
 
@@ -302,6 +376,18 @@ digraph {
   {rank=same; topWireR; midWireR; botWireR};
 }
  * @enddot
+ *
+ * @formulae
+ * 
+ * @f[
+    C_{\vec{c}}[\hat{U}_t]
+ * @f]
+ *
+ * Precisely, let @f$n = 2^{|\vec{c}|}-1@f$. Then
+ * @f[
+    C_{\vec{c}}[\hat{U}_t] = \sum\limits_{i=0}^{n-1} \ketbra{i}{i} \otimes \hat{\id}
+      + \ketbra{n}{n} \otimes \hat{U}_t
+ * @f]
  *
  * @see
  * - applyCompMatr1()
