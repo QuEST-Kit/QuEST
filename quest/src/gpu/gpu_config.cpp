@@ -76,7 +76,8 @@ void clearPossibleCudaError() {
 
     // sync and re-check if error code is erroneously unchanged, which 
     // indicates that CUDA encountered an irrecoverable "sticky" error
-    cudaDeviceSynchronize();
+    CUDA_CHECK( cudaDeviceSynchronize() );
+
     cudaError_t finalCode = cudaGetLastError();
     if (initialCode == finalCode)
         error_cudaEncounteredIrrecoverableError();
@@ -173,11 +174,14 @@ int gpu_getNumberOfLocalGpus() {
     int num;
     auto status = cudaGetDeviceCount(&num);
 
-    // pedantically ensure failure of the above call
-    // does not corrupt the CUDA API state
-    clearPossibleCudaError();
-
-    // treat query failure as indication of no local GPUs
+    // treat query failure as indication of no local GPUs,
+    // and do not call clearPossibleCudaError() to check
+    // for internal errors. Beware this hides possible 
+    // "sticky" (irrecoverable) errors such as 'insufficient 
+    // CUDA driver version', but it's necessary since
+    // compiling GPU-enabled unit tests triggers code execution 
+    // which throws the aforementioned error when a GPU
+    // is not actually present, undesirably breaking compilation.
     return (status == cudaSuccess)? num : 0;
 
 #else
