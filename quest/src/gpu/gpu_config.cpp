@@ -67,6 +67,14 @@ void assertCudaCallSucceeded(int result, const char* call, const char* caller, c
 
 void clearPossibleCudaError() {
 
+    // beware that in addition to clearing anticipated CUDA errors (like
+    // cudaMalloc failing), this function will check that the CUDA API is
+    // generally working (i.e. has not encountered an irrecoverable error),
+    // including whether e.g. the CUDA drivers match the runtime version. It
+    // should ergo never be called in settings where GPU is compiled but not
+    // runtime activated, since such settings see CUDA be in an acceptably
+    // broken state - calling this function would throw an internal error
+
     // clear "non-sticky" errors so that future CUDA API use is not corrupted
     cudaError_t initialCode = cudaGetLastError();
 
@@ -174,14 +182,11 @@ int gpu_getNumberOfLocalGpus() {
     int num;
     auto status = cudaGetDeviceCount(&num);
 
-    // treat query failure as indication of no local GPUs,
-    // and do not call clearPossibleCudaError() to check
-    // for internal errors. Beware this hides possible 
-    // "sticky" (irrecoverable) errors such as 'insufficient 
-    // CUDA driver version', but it's necessary since
-    // compiling GPU-enabled unit tests triggers code execution 
-    // which throws the aforementioned error when a GPU
-    // is not actually present, undesirably breaking compilation.
+    // treat query failure as indication of no local GPUs
+    // so do not call clearPossibleCudaError(). This is
+    // necessary because cudaGetDeviceCount() can report
+    // driver version errors when QuEST is GPU-compiled
+    // on a platform without a GPU, which we tolerate
     return (status == cudaSuccess)? num : 0;
 
 #else
@@ -205,11 +210,13 @@ bool gpu_isGpuAvailable() {
         struct cudaDeviceProp props;
         auto status = cudaGetDeviceProperties(&props, deviceInd);
 
-        // if the query failed, device is anyway unusable
-        if (status != cudaSuccess) {
-            clearPossibleCudaError();
+        // if the query failed, device is anyway unusable; we do not
+        // clear the error with clearPossibleCudaError() since this
+        // can trigger an internal error when QuEST is GPU-compiled
+        // but no valid GPU exists (hence no valid driver), like
+        // occurs on cluster submission nodes
+        if (status != cudaSuccess)
             continue;
-        }
 
         // if the device is a real GPU, it's 'major' compute capability is != 9999 (meaning emulation)
         if (props.major != 9999)
