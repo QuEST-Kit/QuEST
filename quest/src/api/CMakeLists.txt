@@ -11,5 +11,6 @@ target_sources(QuEST
   operations.cpp
   paulis.cpp
   qureg.cpp
+  trotterisation.cpp
   types.cpp
 )
