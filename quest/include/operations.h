@@ -116,7 +116,7 @@ void multiplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix);
  * 
  * In general, this function will break the normalisation of @p qureg and result in a
  * non-physical state, and is useful for preparing sub-expressions of formulae like
- * the Linbladian.
+ * the Lindbladian.
  *
  * @myexample
  * ```

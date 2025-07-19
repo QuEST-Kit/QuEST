@@ -173,3 +173,32 @@ void applyMultiStateControlledTrotterizedPauliStrSumGadget(Qureg qureg, vector<i
 
     applyMultiStateControlledTrotterizedPauliStrSumGadget(qureg, controls.data(), states.data(), controls.size(), sum, angle, order, reps);
 }
+
+
+
+/*
+ * CLOSED TIME EVOLUTION
+ */
+
+void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamiltonian, qreal time, int order, int reps) {
+    validate_quregFields(qureg, __func__);
+    validate_pauliStrSumFields(hamiltonian, __func__);
+    validate_pauliStrSumTargets(hamiltonian, qureg, __func__);
+    validate_pauliStrSumIsHermitian(hamiltonian, __func__);
+    validate_trotterParams(qureg, order, reps, __func__);
+
+    // exp(-i t H) = exp(x i H) | x=-t
+    qreal angle = - time;
+    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, hamiltonian, angle, order, reps);
+}
+
+void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamiltonian, qreal tau, int order, int reps) {
+    validate_quregFields(qureg, __func__);
+    validate_pauliStrSumFields(hamiltonian, __func__);
+    validate_pauliStrSumTargets(hamiltonian, qureg, __func__);
+    validate_trotterParams(qureg, order, reps, __func__);
+
+    // exp(-tau H) = exp(x i H) | x=tau*i
+    qcomp angle = qcomp(0, tau);
+    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, hamiltonian, angle, order, reps);
+}

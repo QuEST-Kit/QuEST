@@ -304,6 +304,40 @@ void applyMultiStateControlledTrotterizedPauliStrSumGadget(Qureg qureg, std::vec
 
 
 
+
+/** 
+ * @defgroup trotter_timeevol Time evolution
+ * @brief Functions for approximate dynamical simulation.
+ * @{
+ */
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+/// @notyettested
+/// @notyetvalidated
+/// @notyetdoced
+void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamiltonian, qreal time, int order, int reps);
+
+
+/// @notyettested
+/// @notyetvalidated
+/// @notyetdoced
+void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamiltonian, qreal tau, int order, int reps);
+
+
+// end de-mangler
+#ifdef __cplusplus
+}
+#endif
+
+/** @} */
+
+
+
 #endif // TROTTERISATION_H
 
 /** @} */ // (end file-wide doxygen defgroup)
