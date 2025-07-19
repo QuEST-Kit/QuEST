@@ -50,6 +50,7 @@
 #include "quest/include/environment.h"
 #include "quest/include/initialisations.h"
 #include "quest/include/channels.h"
+#include "quest/include/multiplication.h"
 #include "quest/include/operations.h"
 #include "quest/include/paulis.h"
 #include "quest/include/qureg.h"
