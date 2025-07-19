@@ -379,14 +379,20 @@ digraph {
  *
  * @formulae
  * 
+ * Let @f$ \vec{c} = @f$ @p controls, @f$ t = @f$ @p target, and @f$ \hat{U} = @f$ @p matrix.
+ * This functions effects operator
+ * 
  * @f[
     C_{\vec{c}}[\hat{U}_t]
  * @f]
  *
+ * which is equivalent to applying @f$ \hat{U}_t @f$ upon only the computational basis states for which 
+ * all control qubits are in the @f$ \ket{1} @f$ state.
+ *
  * Precisely, let @f$n = 2^{|\vec{c}|}-1@f$. Then
  * @f[
-    C_{\vec{c}}[\hat{U}_t] = \sum\limits_{i=0}^{n-1} \ketbra{i}{i} \otimes \hat{\id}
-      + \ketbra{n}{n} \otimes \hat{U}_t
+    C_{\vec{c}}[\hat{U}_t] = \sum\limits_{i=0}^{n-1} \ketbra{i}{i}_{\vec{c}} \otimes \hat{\id}_t
+      + \ketbra{n}{n}_{\vec{c}} \otimes \hat{U}_t
  * @f]
  *
  * @see
