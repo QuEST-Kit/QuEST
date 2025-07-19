@@ -9,6 +9,7 @@ target_sources(tests
   environment.cpp
   initialisations.cpp
   matrices.cpp
+  multiplication.cpp
   operations.cpp
   paulis.cpp
   qureg.cpp
