@@ -730,11 +730,11 @@ void postMultiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr ma
  * The qubits within @p targets are treated to be ordered least to most significant with respect
  * to @f$ M @f$. That is, if @f$ M @f$ was hypothetically separable single-qubit matrices
  * @f[
-      M \equiv A \otimes B \otimes C \otimes \dots 
+      M \equiv \dots \otimes C \otimes B \otimes A
  * @f]
  * then this function would effect
  * @f[
-      \hat{M}_{\text{targets}} \equiv A_{\text{targets}[0]} B_{\text{targets}[1]} C_{\text{targets}[2]} \dots
+      \hat{M}_{\text{targets}} \equiv A_{\text{targets}[0]} \cdot B_{\text{targets}[1]} \cdot C_{\text{targets}[2]} \cdot \dots
  * @f]
  *
  * @see
