@@ -356,7 +356,7 @@ Qureg:
     globalTotal.......16 MiB
 ```
 
-> The spacing between the outputs of those two consecutive QuEST functions was determined by our earlier call to [`setMaxNumReportedSigFigs()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga29413703d609254244d6b13c663e6e06).
+> The spacing between the outputs of those two consecutive QuEST functions was determined by our earlier call to [`setNumReportedNewlines()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga29413703d609254244d6b13c663e6e06).
 
 
 A density matrix `Qureg` can model classical uncertainty as results from [decoherence](https://quest-kit.github.io/QuEST/group__decoherence.html), and proves useful when simulating quantum operations on a noisy quantum computer.
@@ -437,7 +437,7 @@ int targets[]  = {4,5,6};
 applyPhaseGadget(qureg, targets, 3, angle);
 ```
 
-> [!IMPORTANT]  
+> [!NOTE]  
 > Notice the type of `angle` is [`qreal`](https://quest-kit.github.io/QuEST/group__types.html#ga2d479c159621c76ca6f96abe66f2e69e) rather than the expected `double`. This is a precision agnostic alias for a floating-point, real scalar which allows you to recompile QuEST with a varying [precision](/docs/compile.md#precision) with no modifications to your code. 
 <!-- @todo the above link fails in Doxygen; it's too stupid to recognise the section ref -->
 
@@ -514,7 +514,7 @@ applyCompMatr1(qureg, target, matrix);
 > The type [`qcomp`](https://quest-kit.github.io/QuEST/group__types.html#ga4971f489e74bb185b9b2672c14301983) above is a precision agnostic complex scalar, and has beautiful arithmetic overloads!
 > ```cpp
 > qcomp x = 1.5 + 3.14i;
-> qcomp *= 1E3i - 1E-5i;
+> x *= 1E3i - 1E-5i;
 > ```
 > Beware that in `C++`, `1i` is a _double precision_ literal, so `C++` users should instead
 > use the custom precision-agnostic literal `1_i`.
@@ -574,7 +574,7 @@ PauliStrSum sum = createInlinePauliStrSum(R"(
 setFullStateDiagMatrFromPauliStrSum(fullmatrix, sum);
 ```
 > [!IMPORTANT]  
-> The argument to `createInlinePauliStrSum` is a multiline string for which the syntax differs between `C` and `C++`; we used the latter above. See examples [`initialisation.c`](/examples/paulis/initialisation.c) and [`initialisation.cpp`](/paulis/matrices/initialisation.cpp) for clarity.
+> The argument to `createInlinePauliStrSum` is a multiline string for which the syntax differs between `C` and `C++`; we used the latter above. See examples [`initialising_paulis.c`](/examples/isolated/initialising_paulis.c) and [`initialising_paulis.cpp`](/examples/isolated/initialising_paulis.cpp) for clarity.
 
 > [!CAUTION]
 > Beware that in distributed settings, because `fullmatrix` _may_ be distributed, we should must exercise extreme caution when modifying its `fullmatrix.cpuElems` directly. 
@@ -863,6 +863,6 @@ This is important because it ensures:
 - our GPU processes are killed quickly, freeing resources for other processes.
 
 > [!CAUTION]
-> After calling `finalizeQuESTEnv()`, MPI will close and each if being accessed directly by the user, will enter an undefined state. Subsequent calls to MPI routines may return gibberish, and distributed machines will have lost their ability to communicate. It is recommended to call `finalizeQuESTEnv()` immediately before exiting.
+> After calling `finalizeQuESTEnv()`, MPI will close and if being accessed directly by the user, will enter an undefined state. Subsequent calls to MPI routines may return gibberish, and distributed machines will lose their ability to communicate. It is recommended to call `finalizeQuESTEnv()` immediately before exiting.
 
 You are now a QuEST expert 🎉 though there are _many_ more functions in the [API](https://quest-kit.github.io/QuEST/group__api.html) not covered here. Go forth and simulate!
