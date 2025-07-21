@@ -96,9 +96,7 @@ extern "C" {
 void multiplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix);
 
 
-/** @notyettested
- * 
- * Multiplies a general one-qubit dense @p matrix upon the specified @p target 
+/** Multiplies a general one-qubit dense @p matrix upon the specified @p target 
  * qubit of the density matrix @p qureg, from the right-hand side.
  *  
  * @formulae
@@ -177,10 +175,8 @@ void multiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matr);
 
 
 /// @notyetdoced
-/// @notyettested
-/// @notyetvalidated
 /// @see
-/// - postMultiplyCompMatr1
+/// - postMultiplyCompMatr1()
 void postMultiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix);
 
 
@@ -217,10 +213,8 @@ void multiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix
 
 
 /// @notyetdoced
-/// @notyettested
-/// @notyetvalidated
 /// @see
-/// - postMultiplyCompMatr1
+/// - postMultiplyCompMatr1()
 void postMultiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix);
 
 
@@ -272,9 +266,8 @@ extern "C" {
 void multiplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matr);
 
 
-/// @notyettested
-/// @notyetvalidated
 /// @notyetdoced
+/// @see postMultiplyCompMatr1()
 void postMultiplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matrix);
 
 
@@ -305,9 +298,8 @@ extern "C" {
 void multiplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matr);
 
 
-/// @notyettested
-/// @notyetvalidated
 /// @notyetdoced
+/// @see postMultiplyCompMatr1()
 void postMultiplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matrix);
 
 
@@ -338,9 +330,8 @@ extern "C" {
 void multiplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix);
 
 
-/// @notyettested
-/// @notyetvalidated
 /// @notyetdoced
+/// @see postMultiplyCompMatr1()
 void postMultiplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix);
 
 
@@ -351,9 +342,10 @@ void postMultiplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr ma
 void multiplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
 
 
-/// @notyettested
-/// @notyetvalidated
 /// @notyetdoced
+/// @see 
+/// - postMultiplyCompMatr1()
+/// - applyDiagMatrPower()
 void postMultiplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
 
 
@@ -419,27 +411,31 @@ extern "C" {
 /// @notyetdoced
 /// @notyetvalidated
 /// @see
-/// - multiplyCompMatr1
+/// - multiplyCompMatr1()
 void multiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
 
 
 /// @notyetdoced
-/// @notyettested
 /// @notyetvalidated
+/// @see
+/// - postMultiplyCompMatr1()
+/// - applyFullStateDiagMatr()
 void postMultiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
 
 
 /// @notyetdoced
 /// @notyetvalidated
 /// @see
-/// - multiplyCompMatr1
-/// - applyDiagMatrPower
+/// - multiplyCompMatr1()
+/// - applyFullStateDiagMatr()
 void multiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
 
 
 /// @notyetdoced
-/// @notyettested
 /// @notyetvalidated
+/// @see
+/// - postMultiplyCompMatr1()
+/// - applyFullStateDiagMatr()
 void postMultiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
 
 
@@ -466,13 +462,16 @@ extern "C" {
 
 
 /// @notyetdoced
-/// @see multiplyCompMatr1()
+/// @see 
+/// - multiplyCompMatr1()
+/// - applySwap()
 void multiplySwap(Qureg qureg, int qubit1, int qubit2);
 
 
 /// @notyetdoced
-/// @notyettested
-/// @notyetvalidated
+/// @see 
+/// - multiplyCompMatr1()
+/// - applySwap()
 void postMultiplySwap(Qureg qureg, int qubit1, int qubit2);
 
 
@@ -499,38 +498,44 @@ extern "C" {
 
 
 /// @notyetdoced
-/// @notyettested
-/// @see multiplyCompMatr1()
+/// @see 
+/// - multiplyCompMatr1()
+/// - applyPauliX()
 void multiplyPauliX(Qureg qureg, int target);
 
 
 /// @notyetdoced
-/// @notyettested
-/// @see multiplyCompMatr1()
+/// @see 
+/// - multiplyCompMatr1()
+/// - applyPauliY()
 void multiplyPauliY(Qureg qureg, int target);
 
 
 /// @notyetdoced
-/// @notyettested
-/// @see multiplyCompMatr1()
+/// @see 
+/// - multiplyCompMatr1()
+/// - applyPauliZ()
 void multiplyPauliZ(Qureg qureg, int target);
 
 
 /// @notyetdoced
-/// @notyettested
-/// @see postMultiplyCompMatr1()
+/// @see 
+/// - postMultiplyCompMatr1()
+/// - applyPauliX()
 void postMultiplyPauliX(Qureg qureg, int target);
 
 
 /// @notyetdoced
-/// @notyettested
-/// @see postMultiplyCompMatr1()
+/// @see 
+/// - postMultiplyCompMatr1()
+/// - applyPauliY()
 void postMultiplyPauliY(Qureg qureg, int target);
 
 
 /// @notyetdoced
-/// @notyettested
-/// @see postMultiplyCompMatr1()
+/// @see 
+/// - postMultiplyCompMatr1()
+/// - applyPauliZ()
 void postMultiplyPauliZ(Qureg qureg, int target);
 
 
@@ -557,13 +562,16 @@ extern "C" {
 
 
 /// @notyetdoced
-/// @see multiplyCompMatr1()
+/// @see 
+/// - multiplyCompMatr1()
+/// - applyPauliStr()
 void multiplyPauliStr(Qureg qureg, PauliStr str);
 
 
 /// @notyetdoced
-/// @notyettested
-/// @notyetvalidated
+/// @see 
+/// - postMultiplyCompMatr1()
+/// - applyPauliStr()
 void postMultiplyPauliStr(Qureg qureg, PauliStr str);
 
 
@@ -597,8 +605,9 @@ void multiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
 
 
 /// @notyetdoced
-/// @notyettested
-/// @notyetvalidated
+/// @see 
+/// - postMultiplyCompMatr1()
+/// - applyPauliGadget()
 void postMultiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
 
 
@@ -627,13 +636,14 @@ extern "C" {
 /// @notyetdoced
 /// @see 
 /// - multiplyCompMatr1()
-/// - applyPhaseGadget
+/// - applyPhaseGadget()
 void multiplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle);
 
 
 /// @notyetdoced
-/// @notyettested
-/// @notyetvalidated
+/// @see
+/// - postMultiplyCompMatr1()
+/// - applyPhaseGadget()
 void postMultiplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle);
 
 
@@ -681,13 +691,17 @@ extern "C" {
 
 
 /// @notyetdoced
-/// @see multiplyCompMatr1()
+/// @see 
+/// - multiplyCompMatr1()
+/// - applyMultiQubitNot()
 void multiplyMultiQubitNot(Qureg qureg, int* targets, int numTargets);
 
 
 /// @notyetdoced
-/// @notyettested
 /// @notyetvalidated
+/// @see
+/// - postMultiplyCompMatr1()
+/// - applyMultiQubitNot()
 void postMultiplyMultiQubitNot(Qureg qureg, int* targets, int numTargets);
 
 
@@ -699,7 +713,6 @@ void postMultiplyMultiQubitNot(Qureg qureg, int* targets, int numTargets);
 #ifdef __cplusplus
 
 
-/// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
@@ -707,7 +720,6 @@ void postMultiplyMultiQubitNot(Qureg qureg, int* targets, int numTargets);
 void multiplyMultiQubitNot(Qureg qureg, std::vector<int> targets);
 
 
-/// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
@@ -737,7 +749,7 @@ extern "C" {
 /// @notyetvalidated
 /// @see
 /// - multiplyCompMatr1()
-/// - applyQubitProjector
+/// - applyQubitProjector()
 void multiplyQubitProjector(Qureg qureg, int qubit, int outcome);
 
 
@@ -745,7 +757,7 @@ void multiplyQubitProjector(Qureg qureg, int qubit, int outcome);
 /// @notyetvalidated
 /// @see
 /// - multiplyCompMatr1()
-/// - applyMultiQubitProjector
+/// - applyMultiQubitProjector()
 void multiplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits);
 
 
@@ -753,7 +765,7 @@ void multiplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int nu
 /// @notyetvalidated
 /// @see
 /// - postMultiplyCompMatr1()
-/// - applyQubitProjector
+/// - applyQubitProjector()
 void postMultiplyQubitProjector(Qureg qureg, int qubit, int outcome);
 
 
@@ -761,7 +773,7 @@ void postMultiplyQubitProjector(Qureg qureg, int qubit, int outcome);
 /// @notyetvalidated
 /// @see
 /// - postMultiplyCompMatr1()
-/// - applyMultiQubitProjector
+/// - applyMultiQubitProjector()
 void postMultiplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits);
 
 
@@ -792,8 +804,8 @@ void multiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
 
 
 /// @notyetdoced
-/// @notyettested
 /// @notyetvalidated
+/// @see multiplyCompMatr1()
 void postMultiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
 
 
