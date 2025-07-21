@@ -722,6 +722,57 @@ void postMultiplyMultiQubitNot(Qureg qureg, std::vector<int> targets);
 
 
 /** 
+ * @defgroup mult_projectors Projectors
+ * @brief Functions for pre- or post-multiplying projectors upon density matrices.
+ * @{
+ */
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+/// @notyetdoced
+/// @notyetvalidated
+/// @see
+/// - multiplyCompMatr1()
+/// - applyQubitProjector
+void multiplyQubitProjector(Qureg qureg, int qubit, int outcome);
+
+
+/// @notyetdoced
+/// @notyetvalidated
+/// @see
+/// - multiplyCompMatr1()
+/// - applyMultiQubitProjector
+void multiplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits);
+
+
+/// @notyetdoced
+/// @notyetvalidated
+/// @see
+/// - postMultiplyCompMatr1()
+/// - applyQubitProjector
+void postMultiplyQubitProjector(Qureg qureg, int qubit, int outcome);
+
+
+/// @notyetdoced
+/// @notyetvalidated
+/// @see
+/// - postMultiplyCompMatr1()
+/// - applyMultiQubitProjector
+void postMultiplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits);
+
+
+// end de-mangler
+#ifdef __cplusplus
+}
+#endif
+
+
+
+/** 
  * @defgroup mult_paulistrsum PauliStrSum
  * @brief Functions for pre- or post-multiplying weighted sums of Pauli 
  *        tensors upon a density matrix.

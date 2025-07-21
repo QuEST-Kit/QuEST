@@ -2088,6 +2088,108 @@ TEST_CASE( "postMultiplyFullStateDiagMatrPower", TEST_CATEGORY_MULT LABEL_MIXED_
 }
 
 
+TEST_CASE( "multiplyQubitProjector", TEST_CATEGORY_OPS ) {
+
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        GENERATE( range(0,10) );
+        int target = GENERATE_COPY( range(0,numQubits) );
+        int outcome = GENERATE( 0, 1 );
+
+        qmatrix projector = getProjector(outcome);
+
+        auto testFunc = [&](Qureg qureg, auto& ref) {
+            multiplyQubitProjector(qureg, target, outcome);
+            multiplyReferenceOperator(ref, {target}, projector);
+        };
+
+        CAPTURE( target, outcome );
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "postMultiplyQubitProjector", TEST_CATEGORY_OPS ) {
+
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        GENERATE( range(0,10) );
+        int target = GENERATE_COPY( range(0,numQubits) );
+        int outcome = GENERATE( 0, 1 );
+
+        qmatrix projector = getProjector(outcome);
+
+        auto testFunc = [&](Qureg qureg, auto& ref) {
+            postMultiplyQubitProjector(qureg, target, outcome);
+            postMultiplyReferenceOperator(ref, {target}, projector);
+        };
+
+        CAPTURE( target, outcome );
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "multiplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
+
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        int numTargs = GENERATE_COPY( range(1,numQubits+1) );
+        auto targets = GENERATE_TARGS( numQubits, numTargs );
+        auto outcomes = getRandomOutcomes(numTargs);
+
+        qmatrix projector = getProjector(targets, outcomes, numQubits);
+
+        auto testFunc = [&](Qureg qureg, auto& ref) {
+            multiplyMultiQubitProjector(qureg, targets.data(), outcomes.data(), numTargs);
+            multiplyReferenceOperator(ref, projector);
+        };
+
+        CAPTURE( targets, outcomes );
+        SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
+    }
+
+    /// @todo input validation
+}
+
+
+TEST_CASE( "postMultiplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
+
+    PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        int numTargs = GENERATE_COPY( range(1,numQubits+1) );
+        auto targets = GENERATE_TARGS( numQubits, numTargs );
+        auto outcomes = getRandomOutcomes(numTargs);
+
+        qmatrix projector = getProjector(targets, outcomes, numQubits);
+
+        auto testFunc = [&](Qureg qureg, auto& ref) {
+            postMultiplyMultiQubitProjector(qureg, targets.data(), outcomes.data(), numTargs);
+            postMultiplyReferenceOperator(ref, projector);
+        };
+
+        CAPTURE( targets, outcomes );
+        SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
+    }
+
+    /// @todo input validation
+}
+
+
 TEST_CASE( "multiplyPauliStrSum", TEST_CATEGORY_MULT LABEL_MIXED_DEPLOY_TAG ) {
 
     PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );

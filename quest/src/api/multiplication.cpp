@@ -570,6 +570,70 @@ void postMultiplyMultiQubitNot(Qureg qureg, vector<int> targets) {
 
 
 /*
+ * projectors
+ */
+
+extern "C" {
+
+void multiplyQubitProjector(Qureg qureg, int qubit, int outcome) {
+    validate_quregFields(qureg, __func__);
+    validate_target(qureg, qubit, __func__);
+    validate_measurementOutcomeIsValid(outcome, __func__); 
+
+    qreal prob = 1;
+    localiser_statevec_multiQubitProjector(qureg, {qubit}, {outcome}, prob);
+}
+
+void multiplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits) {
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, qubits, numQubits, __func__);
+    validate_measurementOutcomesAreValid(outcomes, numQubits, __func__);
+
+    qreal prob = 1;
+    auto qubitVec = util_getVector(qubits, numQubits);
+    auto outcomeVec = util_getVector(outcomes, numQubits);
+    localiser_statevec_multiQubitProjector(qureg, qubitVec, outcomeVec, prob);
+}
+
+void postMultiplyQubitProjector(Qureg qureg, int qubit, int outcome) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_target(qureg, qubit, __func__);
+    validate_measurementOutcomeIsValid(outcome, __func__); 
+    
+    qreal prob = 1;
+    localiser_statevec_multiQubitProjector(qureg, {util_getBraQubit(qubit,qureg)}, {outcome}, prob);
+}
+
+void postMultiplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits) {
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_targets(qureg, qubits, numQubits, __func__);
+    validate_measurementOutcomesAreValid(outcomes, numQubits, __func__);
+
+    qreal prob = 1;
+    auto qubitVec = util_getBraQubits(util_getVector(qubits, numQubits), qureg);
+    auto outcomeVec = util_getVector(outcomes, numQubits);
+    localiser_statevec_multiQubitProjector(qureg, qubitVec, outcomeVec, prob);
+}
+
+} // end de-mangler
+
+void multiplyMultiQubitProjector(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+    validate_measurementOutcomesMatchTargets(qubits.size(), outcomes.size(), __func__);
+
+    multiplyMultiQubitProjector(qureg, qubits.data(), outcomes.data(), outcomes.size());
+}
+
+void postMultiplyMultiQubitProjector(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+    validate_measurementOutcomesMatchTargets(qubits.size(), outcomes.size(), __func__);
+
+    postMultiplyMultiQubitProjector(qureg, qubits.data(), outcomes.data(), outcomes.size());
+}
+
+
+
+/*
  * Pauli string sums
  */
 

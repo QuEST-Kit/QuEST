@@ -2345,6 +2345,10 @@ void cpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 template <int NumQubits>
 void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
 
+    // this function is merely an optimisation to avoid calling the above
+    // cpu_statevec_multiQubitProjector_sub() twice upon a density matrix;
+    // pre- and post-multiply projector versions DO just call above.
+
     // qubits are unconstrained, and can include prefix qubits
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 

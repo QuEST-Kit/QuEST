@@ -2305,7 +2305,6 @@ qreal localiser_densmatr_calcHilbertSchmidtDistance(Qureg quregA, Qureg quregB) 
 
 
 void localiser_statevec_multiQubitProjector(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
-    assert_localiserGivenStateVec(qureg);
 
     // this routine is always embarrassingly parallel; however, we handle the
     // prefix-qubits here so that the backend can receive only the suffix qubits

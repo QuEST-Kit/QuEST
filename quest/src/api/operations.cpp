@@ -1534,8 +1534,9 @@ void applyQubitProjector(Qureg qureg, int target, int outcome) {
     validate_target(qureg, target, __func__);
     validate_measurementOutcomeIsValid(outcome, __func__); 
     
-    // we permit the outcome to be negligibly likely, leaving state = null
     qreal prob = 1;
+
+    // density matrix has an optimised func in lieu of calling the statevector func twice
     (qureg.isDensityMatrix)?
         localiser_densmatr_multiQubitProjector(qureg, {target}, {outcome}, prob):
         localiser_statevec_multiQubitProjector(qureg, {target}, {outcome}, prob);
@@ -1550,6 +1551,7 @@ void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQu
     auto qubitVec = util_getVector(qubits, numQubits);
     auto outcomeVec = util_getVector(outcomes, numQubits);
 
+    // density matrix has an optimised func in lieu of calling the statevector func twice
     (qureg.isDensityMatrix)?
         localiser_densmatr_multiQubitProjector(qureg, qubitVec, outcomeVec, prob):
         localiser_statevec_multiQubitProjector(qureg, qubitVec, outcomeVec, prob);
