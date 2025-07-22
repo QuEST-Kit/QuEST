@@ -116,7 +116,7 @@ digraph {
  * - getCompMatr1()
  * - getInlineCompMatr1()
  * - preapplyCompMatr1()
- * - postMultiplyCompMatr1()
+ * - postapplyCompMatr1()
  * - applyControlledCompMatr1()
  * - applyCompMatr2()
  * - applyCompMatr()
@@ -323,7 +323,7 @@ digraph {
  * @see
  * - applyCompMatr1()
  * - preapplyCompMatr2()
- * - postMultiplyCompMatr2()
+ * - postapplyCompMatr2()
  */
 void applyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix);
 
@@ -516,7 +516,7 @@ extern "C" {
  * @see
  * - applyCompMatr1()
  * - preapplyCompMatr()
- * - postMultiplyCompMatr()
+ * - postapplyCompMatr()
  */
 void applyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matr);
 
@@ -601,7 +601,7 @@ extern "C" {
  * @see 
  * - applyCompMatr1()
  * - preapplyCompMatr2()
- * - postMultiplyCompMatr2()
+ * - postapplyCompMatr2()
  */
 void applyDiagMatr1(Qureg qureg, int target, DiagMatr1 matr);
 

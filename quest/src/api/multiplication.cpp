@@ -37,7 +37,7 @@ void preapplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix) {
     localiser_statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, target, matrix, conj, transp);
 }
 
-void postMultiplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix) {
+void postapplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_target(qureg, target, __func__);
@@ -71,7 +71,7 @@ void preapplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix) 
     localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, {}, {}, target1, target2, matrix, conj, transp);
 }
 
-void postMultiplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix) {
+void postapplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_twoTargets(qureg, target1, target2, __func__);
@@ -107,7 +107,7 @@ void preapplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix
     localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, {}, {}, util_getVector(targets, numTargets), matrix, conj, transp);
 }
 
-void postMultiplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix) {
+void postapplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
@@ -128,9 +128,9 @@ void preapplyCompMatr(Qureg qureg, vector<int> targets, CompMatr matr) {
     preapplyCompMatr(qureg, targets.data(), targets.size(), matr);
 }
 
-void postMultiplyCompMatr(Qureg qureg, vector<int> targets, CompMatr matr) {
+void postapplyCompMatr(Qureg qureg, vector<int> targets, CompMatr matr) {
 
-    postMultiplyCompMatr(qureg, targets.data(), targets.size(), matr);
+    postapplyCompMatr(qureg, targets.data(), targets.size(), matr);
 }
 
 
@@ -150,7 +150,7 @@ void preapplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matrix) {
     localiser_statevec_anyCtrlOneTargDiagMatr(qureg, {}, {}, target, matrix, conj);
 }
 
-void postMultiplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matrix) {
+void postapplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matrix) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_target(qureg, target, __func__);
@@ -180,7 +180,7 @@ void preapplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matrix) 
     localiser_statevec_anyCtrlTwoTargDiagMatr(qureg, {}, {}, target1, target2, matrix, conj);
 }
 
-void postMultiplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matrix) {
+void postapplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matrix) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_twoTargets(qureg, target1, target2, __func__);
@@ -213,7 +213,7 @@ void preapplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix
     localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, {}, {}, qubits, matrix, exponent, conj);
 }
 
-void postMultiplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix) {
+void postapplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
@@ -232,9 +232,9 @@ void preapplyDiagMatr(Qureg qureg, vector<int> targets, DiagMatr matrix) {
     preapplyDiagMatr(qureg, targets.data(), targets.size(), matrix);
 }
 
-void postMultiplyDiagMatr(Qureg qureg, vector<int> targets, DiagMatr matrix) {
+void postapplyDiagMatr(Qureg qureg, vector<int> targets, DiagMatr matrix) {
 
-    postMultiplyDiagMatr(qureg, targets.data(), targets.size(), matrix);
+    postapplyDiagMatr(qureg, targets.data(), targets.size(), matrix);
 }
 
 
@@ -256,7 +256,7 @@ void preapplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr m
     localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, {}, {}, qubits, matrix, exponent, conj);
 }
 
-void postMultiplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent) {
+void postapplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
@@ -275,9 +275,9 @@ void preapplyDiagMatrPower(Qureg qureg, vector<int> targets, DiagMatr matrix, qc
     preapplyDiagMatrPower(qureg, targets.data(), targets.size(), matrix, exponent);
 }
 
-void postMultiplyDiagMatrPower(Qureg qureg, vector<int> targets, DiagMatr matrix, qcomp exponent) {
+void postapplyDiagMatrPower(Qureg qureg, vector<int> targets, DiagMatr matrix, qcomp exponent) {
 
-    postMultiplyDiagMatrPower(qureg, targets.data(), targets.size(), matrix, exponent);
+    postapplyDiagMatrPower(qureg, targets.data(), targets.size(), matrix, exponent);
 }
 
 
@@ -312,16 +312,16 @@ void preapplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp
         localiser_statevec_allTargDiagMatr(qureg, matrix, exponent);
 }
 
-void postMultiplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
+void postapplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_matrixFields(matrix, __func__);
     validate_matrixAndQuregAreCompatible(matrix, qureg, false, __func__); // matrix can be non-unitary
 
-    postMultiplyFullStateDiagMatrPower(qureg, matrix, 1); // harmlessly re-validates
+    postapplyFullStateDiagMatrPower(qureg, matrix, 1); // harmlessly re-validates
 }
 
-void postMultiplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent) {
+void postapplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_matrixFields(matrix, __func__);
@@ -352,7 +352,7 @@ void preapplySwap(Qureg qureg, int qubit1, int qubit2) {
     localiser_statevec_anyCtrlSwap(qureg, {}, {}, qubit1, qubit2);
 }
 
-void postMultiplySwap(Qureg qureg, int qubit1, int qubit2) {
+void postapplySwap(Qureg qureg, int qubit1, int qubit2) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_twoTargets(qureg, qubit1, qubit2, __func__);
@@ -398,7 +398,7 @@ void preapplyPauliZ(Qureg qureg, int target) {
     localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str);
 }
 
-void postMultiplyPauliX(Qureg qureg, int target) {
+void postapplyPauliX(Qureg qureg, int target) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_target(qureg, target, __func__);
@@ -408,7 +408,7 @@ void postMultiplyPauliX(Qureg qureg, int target) {
     localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str);
 }
 
-void postMultiplyPauliY(Qureg qureg, int target) {
+void postapplyPauliY(Qureg qureg, int target) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_target(qureg, target, __func__);
@@ -419,7 +419,7 @@ void postMultiplyPauliY(Qureg qureg, int target) {
     localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str, factor);
 }
 
-void postMultiplyPauliZ(Qureg qureg, int target) {
+void postapplyPauliZ(Qureg qureg, int target) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_target(qureg, target, __func__);
@@ -448,7 +448,7 @@ void preapplyPauliStr(Qureg qureg, PauliStr str) {
     localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str);
 }
 
-void postMultiplyPauliStr(Qureg qureg, PauliStr str) {
+void postapplyPauliStr(Qureg qureg, PauliStr str) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_pauliStrTargets(qureg, str, __func__);
@@ -476,7 +476,7 @@ void preapplyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
     localiser_statevec_anyCtrlPauliGadget(qureg, {}, {}, str, phase);
 }
 
-void postMultiplyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
+void postapplyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_pauliStrTargets(qureg, str, __func__);
@@ -506,7 +506,7 @@ void preapplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle)
     localiser_statevec_anyCtrlPhaseGadget(qureg, {}, {}, qubits, phase);
 }
 
-void postMultiplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle) {
+void postapplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
@@ -523,9 +523,9 @@ void preapplyPhaseGadget(Qureg qureg, vector<int> targets, qreal angle) {
     preapplyPhaseGadget(qureg, targets.data(), targets.size(), angle);
 }
 
-void postMultiplyPhaseGadget(Qureg qureg, vector<int> targets, qreal angle) {
+void postapplyPhaseGadget(Qureg qureg, vector<int> targets, qreal angle) {
 
-    postMultiplyPhaseGadget(qureg, targets.data(), targets.size(), angle);
+    postapplyPhaseGadget(qureg, targets.data(), targets.size(), angle);
 }
 
 
@@ -545,14 +545,14 @@ void preapplyMultiQubitNot(Qureg qureg, int* targets, int numTargets) {
     preapplyPauliStr(qureg, str);
 }
 
-void postMultiplyMultiQubitNot(Qureg qureg, int* targets, int numTargets) {
+void postapplyMultiQubitNot(Qureg qureg, int* targets, int numTargets) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
 
     // harmlessly re-validates
     PauliStr str = getPauliStr(std::string(numTargets, 'X'), targets, numTargets);
-    postMultiplyPauliStr(qureg, str);
+    postapplyPauliStr(qureg, str);
 }
 
 } // end de-mangler
@@ -562,9 +562,9 @@ void preapplyMultiQubitNot(Qureg qureg, vector<int> targets) {
     preapplyMultiQubitNot(qureg, targets.data(), targets.size());
 }
 
-void postMultiplyMultiQubitNot(Qureg qureg, vector<int> targets) {
+void postapplyMultiQubitNot(Qureg qureg, vector<int> targets) {
 
-    postMultiplyMultiQubitNot(qureg, targets.data(), targets.size());
+    postapplyMultiQubitNot(qureg, targets.data(), targets.size());
 }
 
 
@@ -595,7 +595,7 @@ void preapplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int nu
     localiser_statevec_multiQubitProjector(qureg, qubitVec, outcomeVec, prob);
 }
 
-void postMultiplyQubitProjector(Qureg qureg, int qubit, int outcome) {
+void postapplyQubitProjector(Qureg qureg, int qubit, int outcome) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_target(qureg, qubit, __func__);
@@ -605,7 +605,7 @@ void postMultiplyQubitProjector(Qureg qureg, int qubit, int outcome) {
     localiser_statevec_multiQubitProjector(qureg, {util_getBraQubit(qubit,qureg)}, {outcome}, prob);
 }
 
-void postMultiplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits) {
+void postapplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_targets(qureg, qubits, numQubits, __func__);
@@ -625,10 +625,10 @@ void preapplyMultiQubitProjector(Qureg qureg, vector<int> qubits, vector<int> ou
     preapplyMultiQubitProjector(qureg, qubits.data(), outcomes.data(), outcomes.size());
 }
 
-void postMultiplyMultiQubitProjector(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+void postapplyMultiQubitProjector(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
     validate_measurementOutcomesMatchTargets(qubits.size(), outcomes.size(), __func__);
 
-    postMultiplyMultiQubitProjector(qureg, qubits.data(), outcomes.data(), outcomes.size());
+    postapplyMultiQubitProjector(qureg, qubits.data(), outcomes.data(), outcomes.size());
 }
 
 
@@ -660,7 +660,7 @@ void preapplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace) {
     // workspace -> qureg, and qureg -> sum * qureg
 }
 
-void postMultiplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace) {
+void postapplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace) {
     validate_quregFields(qureg, __func__);
     validate_quregFields(workspace, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
