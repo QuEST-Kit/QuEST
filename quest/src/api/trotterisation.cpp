@@ -37,7 +37,7 @@ void internal_applyFirstOrderTrotterRepetition(
         qcomp coeff = sum.coeffs[j];
         PauliStr str = sum.strings[j];
 
-        // effect |psi> -> exp(i angle * sum)|psi>
+        // effect |psi> -> exp(i angle * coeff * term)|psi>
         qcomp arg = angle * coeff;
         localiser_statevec_anyCtrlPauliGadget(qureg, ketCtrls, states, str, arg);
 
@@ -49,8 +49,10 @@ void internal_applyFirstOrderTrotterRepetition(
         if (!postmultiply)
             continue;
 
-        // effect rho -> rho dagger(i angle * sum)
-        arg *= paulis_hasOddNumY(str) ? 1 : -1;
+        // effect rho -> rho exp(i angle * coeff * term)^dagger via linearised
+        //    ||rho>> -> conj(exp(i angle * coeff * term)) (x) I ||rho>>
+        //             = exp(+- i conj(angle) conj(coeff) term) (x) I ||rho>>
+        arg = std::conj(arg) * (paulis_hasOddNumY(str) ? 1 : -1);
         str = paulis_getShiftedPauliStr(str, qureg.numQubits);
         localiser_statevec_anyCtrlPauliGadget(qureg, braCtrls, states, str, arg);
     }
