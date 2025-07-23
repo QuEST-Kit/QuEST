@@ -207,6 +207,7 @@ void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qrea
     validate_quregFields(qureg, __func__);
     validate_pauliStrSumFields(hamil, __func__);
     validate_pauliStrSumTargets(hamil, qureg, __func__);
+    validate_pauliStrSumIsHermitian(hamil, __func__);
     validate_trotterParams(qureg, order, reps, __func__);
 
     // exp(-tau H) = exp(x i H) | x=tau*i
