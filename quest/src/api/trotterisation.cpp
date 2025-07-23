@@ -229,6 +229,11 @@ extern PauliStr paulis_getKetAndBraPauliStr(PauliStr str, Qureg qureg);
 
 extern "C" {
 
+/// @todo
+/// we will not expose the below function; instead, we will trivially generalise it
+/// to where each jump operator is a PauliStrSum, hackily empowering (sub-optimal)
+/// projectors including off-diagonal, which is much more useful
+
 void applyTrotterizedPauliNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStr* jumps, int numJumps, qreal time, int order, int reps) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
