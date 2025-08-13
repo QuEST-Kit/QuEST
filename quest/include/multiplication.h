@@ -88,7 +88,7 @@ extern "C" {
  * - getCompMatr1()
  * - getInlineCompMatr1()
  * - applyCompMatr1()
- * - postapplyCompMatr1()
+ * - rightapplyCompMatr1()
  * - applyQubitProjector()
  * - leftapplyCompMatr()
  * @author Tyson Jones
@@ -124,7 +124,7 @@ void leftapplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix);
         {0.3i, 0.4i}
     });
 
-    postapplyCompMatr1(qureg, 2, matrix); 
+    rightapplyCompMatr1(qureg, 2, matrix); 
  * ```
  *
  * @param[in,out] qureg  the state to modify.
@@ -142,7 +142,7 @@ void leftapplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix);
  * - leftapplyCompMatr()
  * @author Tyson Jones
  */
-void postapplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix);
+void rightapplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix);
 
 
 // end de-mangler
@@ -176,8 +176,8 @@ void leftapplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matr);
 
 /// @notyetdoced
 /// @see
-/// - postapplyCompMatr1()
-void postapplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix);
+/// - rightapplyCompMatr1()
+void rightapplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix);
 
 
 // end de-mangler
@@ -214,8 +214,8 @@ void leftapplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matri
 
 /// @notyetdoced
 /// @see
-/// - postapplyCompMatr1()
-void postapplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix);
+/// - rightapplyCompMatr1()
+void rightapplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix);
 
 
 // end de-mangler
@@ -238,8 +238,8 @@ void leftapplyCompMatr(Qureg qureg, std::vector<int> targets, CompMatr matr);
 /// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
-/// @see postapplyCompMatr()
-void postapplyCompMatr(Qureg qureg, std::vector<int> targets, CompMatr matr);
+/// @see rightapplyCompMatr()
+void rightapplyCompMatr(Qureg qureg, std::vector<int> targets, CompMatr matr);
 
 
 #endif 
@@ -267,8 +267,8 @@ void leftapplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matr);
 
 
 /// @notyetdoced
-/// @see postapplyCompMatr1()
-void postapplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matrix);
+/// @see rightapplyCompMatr1()
+void rightapplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matrix);
 
 
 // end de-mangler
@@ -299,8 +299,8 @@ void leftapplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matr);
 
 
 /// @notyetdoced
-/// @see postapplyCompMatr1()
-void postapplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matrix);
+/// @see rightapplyCompMatr1()
+void rightapplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matrix);
 
 
 // end de-mangler
@@ -331,8 +331,8 @@ void leftapplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matri
 
 
 /// @notyetdoced
-/// @see postapplyCompMatr1()
-void postapplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix);
+/// @see rightapplyCompMatr1()
+void rightapplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix);
 
 
 /// @notyetdoced
@@ -344,9 +344,9 @@ void leftapplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr 
 
 /// @notyetdoced
 /// @see 
-/// - postapplyCompMatr1()
+/// - rightapplyCompMatr1()
 /// - applyDiagMatrPower()
-void postapplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
+void rightapplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent);
 
 
 // end de-mangler
@@ -369,8 +369,8 @@ void leftapplyDiagMatr(Qureg qureg, std::vector<int> targets, DiagMatr matrix);
 /// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
-/// @see postapplyDiagMatr()
-void postapplyDiagMatr(Qureg qureg, std::vector<int> targets, DiagMatr matrix);
+/// @see rightapplyDiagMatr()
+void rightapplyDiagMatr(Qureg qureg, std::vector<int> targets, DiagMatr matrix);
 
 
 /// @notyettested
@@ -385,8 +385,8 @@ void leftapplyDiagMatrPower(Qureg qureg, std::vector<int> targets, DiagMatr matr
 /// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
-/// @see postapplyDiagMatrPower()
-void postapplyDiagMatrPower(Qureg qureg, std::vector<int> targets, DiagMatr matrix, qcomp exponent);
+/// @see rightapplyDiagMatrPower()
+void rightapplyDiagMatrPower(Qureg qureg, std::vector<int> targets, DiagMatr matrix, qcomp exponent);
 
 
 #endif 
@@ -418,9 +418,9 @@ void leftapplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
 /// @notyetdoced
 /// @notyetvalidated
 /// @see
-/// - postapplyCompMatr1()
+/// - rightapplyCompMatr1()
 /// - applyFullStateDiagMatr()
-void postapplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
+void rightapplyFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix);
 
 
 /// @notyetdoced
@@ -434,9 +434,9 @@ void leftapplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcom
 /// @notyetdoced
 /// @notyetvalidated
 /// @see
-/// - postapplyCompMatr1()
+/// - rightapplyCompMatr1()
 /// - applyFullStateDiagMatr()
-void postapplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
+void rightapplyFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent);
 
 
 // end de-mangler
@@ -472,7 +472,7 @@ void leftapplySwap(Qureg qureg, int qubit1, int qubit2);
 /// @see 
 /// - leftapplyCompMatr1()
 /// - applySwap()
-void postapplySwap(Qureg qureg, int qubit1, int qubit2);
+void rightapplySwap(Qureg qureg, int qubit1, int qubit2);
 
 
 // end de-mangler
@@ -520,23 +520,23 @@ void leftapplyPauliZ(Qureg qureg, int target);
 
 /// @notyetdoced
 /// @see 
-/// - postapplyCompMatr1()
+/// - rightapplyCompMatr1()
 /// - applyPauliX()
-void postapplyPauliX(Qureg qureg, int target);
+void rightapplyPauliX(Qureg qureg, int target);
 
 
 /// @notyetdoced
 /// @see 
-/// - postapplyCompMatr1()
+/// - rightapplyCompMatr1()
 /// - applyPauliY()
-void postapplyPauliY(Qureg qureg, int target);
+void rightapplyPauliY(Qureg qureg, int target);
 
 
 /// @notyetdoced
 /// @see 
-/// - postapplyCompMatr1()
+/// - rightapplyCompMatr1()
 /// - applyPauliZ()
-void postapplyPauliZ(Qureg qureg, int target);
+void rightapplyPauliZ(Qureg qureg, int target);
 
 
 // end de-mangler
@@ -570,9 +570,9 @@ void leftapplyPauliStr(Qureg qureg, PauliStr str);
 
 /// @notyetdoced
 /// @see 
-/// - postapplyCompMatr1()
+/// - rightapplyCompMatr1()
 /// - applyPauliStr()
-void postapplyPauliStr(Qureg qureg, PauliStr str);
+void rightapplyPauliStr(Qureg qureg, PauliStr str);
 
 
 // end de-mangler
@@ -606,9 +606,9 @@ void leftapplyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
 
 /// @notyetdoced
 /// @see 
-/// - postapplyCompMatr1()
+/// - rightapplyCompMatr1()
 /// - applyPauliGadget()
-void postapplyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
+void rightapplyPauliGadget(Qureg qureg, PauliStr str, qreal angle);
 
 
 // end de-mangler
@@ -642,9 +642,9 @@ void leftapplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle
 
 /// @notyetdoced
 /// @see
-/// - postapplyCompMatr1()
+/// - rightapplyCompMatr1()
 /// - applyPhaseGadget()
-void postapplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle);
+void rightapplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle);
 
 
 // end de-mangler
@@ -667,8 +667,8 @@ void leftapplyPhaseGadget(Qureg qureg, std::vector<int> targets, qreal angle);
 /// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
-/// @see postapplyPhaseGadget()
-void postapplyPhaseGadget(Qureg qureg, std::vector<int> targets, qreal angle);
+/// @see rightapplyPhaseGadget()
+void rightapplyPhaseGadget(Qureg qureg, std::vector<int> targets, qreal angle);
 
 
 #endif
@@ -700,9 +700,9 @@ void leftapplyMultiQubitNot(Qureg qureg, int* targets, int numTargets);
 /// @notyetdoced
 /// @notyetvalidated
 /// @see
-/// - postapplyCompMatr1()
+/// - rightapplyCompMatr1()
 /// - applyMultiQubitNot()
-void postapplyMultiQubitNot(Qureg qureg, int* targets, int numTargets);
+void rightapplyMultiQubitNot(Qureg qureg, int* targets, int numTargets);
 
 
 // end de-mangler
@@ -723,8 +723,8 @@ void leftapplyMultiQubitNot(Qureg qureg, std::vector<int> targets);
 /// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
-/// @see postapplyMultiQubitNot()
-void postapplyMultiQubitNot(Qureg qureg, std::vector<int> targets);
+/// @see rightapplyMultiQubitNot()
+void rightapplyMultiQubitNot(Qureg qureg, std::vector<int> targets);
 
 
 #endif
@@ -764,17 +764,17 @@ void leftapplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int n
 /// @notyetdoced
 /// @notyetvalidated
 /// @see
-/// - postapplyCompMatr1()
+/// - rightapplyCompMatr1()
 /// - applyQubitProjector()
-void postapplyQubitProjector(Qureg qureg, int qubit, int outcome);
+void rightapplyQubitProjector(Qureg qureg, int qubit, int outcome);
 
 
 /// @notyetdoced
 /// @notyetvalidated
 /// @see
-/// - postapplyCompMatr1()
+/// - rightapplyCompMatr1()
 /// - applyMultiQubitProjector()
-void postapplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits);
+void rightapplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits);
 
 
 // end de-mangler
@@ -806,7 +806,7 @@ void leftapplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
 /// @notyetdoced
 /// @notyetvalidated
 /// @see leftapplyCompMatr1()
-void postapplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
+void rightapplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace);
 
 
 // end de-mangler
