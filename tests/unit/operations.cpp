@@ -752,8 +752,8 @@ void testOperationCorrectness(auto operation, auto matrixRefGen) {
 
         // update reference state (ctrls & states happen to only ever be used by apply)
         if constexpr (Apply == apply)        applyReferenceOperator(       stateRef, ctrls, states, targs, matrixRef);
-        if constexpr (Apply == multiply)     multiplyReferenceOperator(    stateRef, ctrls, states, targs, matrixRef);
-        if constexpr (Apply == postmultiply) postMultiplyReferenceOperator(stateRef, ctrls, states, targs, matrixRef);
+        if constexpr (Apply == multiply)     leftapplyReferenceOperator(    stateRef, ctrls, states, targs, matrixRef);
+        if constexpr (Apply == postmultiply) rightapplyReferenceOperator(stateRef, ctrls, states, targs, matrixRef);
     };
 
     // report operation's input parameters if any subsequent test fails
@@ -1968,14 +1968,14 @@ TEST_CASE( "leftapplyFullStateDiagMatr", TEST_CATEGORY_MULT LABEL_MIXED_DEPLOY_T
 
         SECTION( LABEL_STATEVEC ) {
 
-            auto refFunc = [&] (qvector& state, qmatrix matr) { multiplyReferenceOperator(state, matr); };
+            auto refFunc = [&] (qvector& state, qmatrix matr) { leftapplyReferenceOperator(state, matr); };
 
             TEST_ON_CACHED_QUREG_AND_MATRIX( cachedSV, cachedMatrs, apiFunc, refSV, refMatr, refFunc);
         }
 
         SECTION( LABEL_DENSMATR ) {
 
-            auto refFunc = [&] (qmatrix& state, qmatrix matr) { multiplyReferenceOperator(state, matr); };
+            auto refFunc = [&] (qmatrix& state, qmatrix matr) { leftapplyReferenceOperator(state, matr); };
 
             TEST_ON_CACHED_QUREG_AND_MATRIX( cachedDM, cachedMatrs, apiFunc, refDM, refMatr, refFunc);
         }
@@ -2000,7 +2000,7 @@ TEST_CASE( "rightapplyFullStateDiagMatr", TEST_CATEGORY_MULT LABEL_MIXED_DEPLOY_
 
         SECTION( LABEL_DENSMATR ) {
 
-            auto refFunc = [&] (qmatrix& state, qmatrix matr) { postMultiplyReferenceOperator(state, matr); };
+            auto refFunc = [&] (qmatrix& state, qmatrix matr) { rightapplyReferenceOperator(state, matr); };
 
             TEST_ON_CACHED_QUREG_AND_MATRIX( cachedDM, cachedMatrs, apiFunc, refDM, refMatr, refFunc);
         }
@@ -2033,7 +2033,7 @@ TEST_CASE( "leftapplyFullStateDiagMatrPower", TEST_CATEGORY_MULT LABEL_MIXED_DEP
 
             auto refFunc = [&] (qvector& state, qmatrix matr) { 
                 matr = getPowerOfDiagonalMatrix(matr, exponent);
-                multiplyReferenceOperator(state, matr);
+                leftapplyReferenceOperator(state, matr);
             };
 
             TEST_ON_CACHED_QUREG_AND_MATRIX( cachedSV, cachedMatrs, apiFunc, refSV, refMatr, refFunc);
@@ -2043,7 +2043,7 @@ TEST_CASE( "leftapplyFullStateDiagMatrPower", TEST_CATEGORY_MULT LABEL_MIXED_DEP
 
             auto refFunc = [&] (qmatrix& state, qmatrix matr) { 
                 matr = getPowerOfDiagonalMatrix(matr, exponent);
-                multiplyReferenceOperator(state, matr);
+                leftapplyReferenceOperator(state, matr);
             };
 
             TEST_ON_CACHED_QUREG_AND_MATRIX( cachedDM, cachedMatrs, apiFunc, refDM, refMatr, refFunc);
@@ -2077,7 +2077,7 @@ TEST_CASE( "rightapplyFullStateDiagMatrPower", TEST_CATEGORY_MULT LABEL_MIXED_DE
 
             auto refFunc = [&] (qmatrix& state, qmatrix matr) { 
                 matr = getPowerOfDiagonalMatrix(matr, exponent);
-                postMultiplyReferenceOperator(state, matr);
+                rightapplyReferenceOperator(state, matr);
             };
 
             TEST_ON_CACHED_QUREG_AND_MATRIX( cachedDM, cachedMatrs, apiFunc, refDM, refMatr, refFunc);
@@ -2102,7 +2102,7 @@ TEST_CASE( "leftapplyQubitProjector", TEST_CATEGORY_OPS ) {
 
         auto testFunc = [&](Qureg qureg, auto& ref) {
             leftapplyQubitProjector(qureg, target, outcome);
-            multiplyReferenceOperator(ref, {target}, projector);
+            leftapplyReferenceOperator(ref, {target}, projector);
         };
 
         CAPTURE( target, outcome );
@@ -2128,7 +2128,7 @@ TEST_CASE( "rightapplyQubitProjector", TEST_CATEGORY_OPS ) {
 
         auto testFunc = [&](Qureg qureg, auto& ref) {
             rightapplyQubitProjector(qureg, target, outcome);
-            postMultiplyReferenceOperator(ref, {target}, projector);
+            rightapplyReferenceOperator(ref, {target}, projector);
         };
 
         CAPTURE( target, outcome );
@@ -2153,7 +2153,7 @@ TEST_CASE( "leftapplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
 
         auto testFunc = [&](Qureg qureg, auto& ref) {
             leftapplyMultiQubitProjector(qureg, targets.data(), outcomes.data(), numTargs);
-            multiplyReferenceOperator(ref, projector);
+            leftapplyReferenceOperator(ref, projector);
         };
 
         CAPTURE( targets, outcomes );
@@ -2179,7 +2179,7 @@ TEST_CASE( "rightapplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
 
         auto testFunc = [&](Qureg qureg, auto& ref) {
             rightapplyMultiQubitProjector(qureg, targets.data(), outcomes.data(), numTargs);
-            postMultiplyReferenceOperator(ref, projector);
+            rightapplyReferenceOperator(ref, projector);
         };
 
         CAPTURE( targets, outcomes );
