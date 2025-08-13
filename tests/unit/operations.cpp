@@ -594,17 +594,17 @@ qmatrix getReferenceMatrix(auto matrixRefGen, vector<int> targs, auto additional
  * Let |psi> be a statevector, rho be a density matrix, 
  * and matr be an operator matrix. The options perform:
  * 
- * apply:    |psi> -> matr |psi>,  rho -> matr rho adj(matr)
- * multiply: |psi> -> matr |psi>,  rho -> matr rho
- * postmultiply:                   rho -> rho matr
+ * apply:     |psi> -> matr |psi>,  rho -> matr rho adj(matr)
+ * leftapply: |psi> -> matr |psi>,  rho -> matr rho
+ * rightapply:                      rho -> rho matr
  * 
  * Note this is necessarily a template parameter (rather
  * than just a runtime parameter) only because the
- * postMultiplyReferenceOperator() function is defined
+ * rightapplyReferenceOperator() function is defined
  * only upon qmatrix (for density matrices)
  */
 
-enum ApplyFlag { apply, multiply, postmultiply };
+enum ApplyFlag { apply, leftapply, rightapply };
 
 
 /*
@@ -752,8 +752,8 @@ void testOperationCorrectness(auto operation, auto matrixRefGen) {
 
         // update reference state (ctrls & states happen to only ever be used by apply)
         if constexpr (Apply == apply)        applyReferenceOperator(       stateRef, ctrls, states, targs, matrixRef);
-        if constexpr (Apply == multiply)     leftapplyReferenceOperator(    stateRef, ctrls, states, targs, matrixRef);
-        if constexpr (Apply == postmultiply) rightapplyReferenceOperator(stateRef, ctrls, states, targs, matrixRef);
+        if constexpr (Apply == leftapply)     leftapplyReferenceOperator(    stateRef, ctrls, states, targs, matrixRef);
+        if constexpr (Apply == rightapply) rightapplyReferenceOperator(stateRef, ctrls, states, targs, matrixRef);
     };
 
     // report operation's input parameters if any subsequent test fails
@@ -761,7 +761,7 @@ void testOperationCorrectness(auto operation, auto matrixRefGen) {
 
     // test API operation on all available deployment combinations (e.g. OMP, MPI, MPI+GPU, etc),
     // though the postMultiply*() functions do not accept statevectors
-    if constexpr (Apply != postmultiply) {
+    if constexpr (Apply != rightapply) {
         SECTION( LABEL_STATEVEC ) { 
             TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); 
         }
@@ -1125,7 +1125,7 @@ void testOperationValidation(auto operation) {
     SECTION( "qureg type" ) {
 
         // only postMultiply*() functions discriminate Qureg
-        if (Apply != postmultiply)
+        if (Apply != rightapply)
             return;
 
         // use any statevector
@@ -1866,27 +1866,27 @@ TEST_CASE( "applyNonUnitaryPauliGadget", TEST_CATEGORY_OPS ) {
  */
 
 
-TEST_CASE( "leftapplySwap",            TEST_CATEGORY_MULT ) { testOperation<zero,two,none,multiply>(leftapplySwap, FixedMatrices::SWAP); }
-TEST_CASE( "leftapplyPauliX",          TEST_CATEGORY_MULT ) { testOperation<zero,one,none,multiply>(leftapplyPauliX, FixedMatrices::X); }
-TEST_CASE( "leftapplyPauliY",          TEST_CATEGORY_MULT ) { testOperation<zero,one,none,multiply>(leftapplyPauliY, FixedMatrices::Y); }
-TEST_CASE( "leftapplyPauliZ",          TEST_CATEGORY_MULT ) { testOperation<zero,one,none,multiply>(leftapplyPauliZ, FixedMatrices::Z); }
-TEST_CASE( "leftapplyPauliStr",        TEST_CATEGORY_MULT ) { testOperation<zero,any,paulistr,multiply>(leftapplyPauliStr,    nullptr); }
-TEST_CASE( "leftapplyPauliGadget",     TEST_CATEGORY_MULT ) { testOperation<zero,any,pauligad,multiply>(leftapplyPauliGadget, nullptr); }
-TEST_CASE( "leftapplyCompMatr1",       TEST_CATEGORY_MULT ) { testOperation<zero,one,compmatr,multiply>(leftapplyCompMatr1,   nullptr); }
-TEST_CASE( "leftapplyCompMatr2",       TEST_CATEGORY_MULT ) { testOperation<zero,two,compmatr,multiply>(leftapplyCompMatr2,   nullptr); }
-TEST_CASE( "leftapplyDiagMatr1",       TEST_CATEGORY_MULT ) { testOperation<zero,one,diagmatr,multiply>(leftapplyDiagMatr1,   nullptr); }
-TEST_CASE( "leftapplyDiagMatr2",       TEST_CATEGORY_MULT ) { testOperation<zero,two,diagmatr,multiply>(leftapplyDiagMatr2,   nullptr); }
+TEST_CASE( "leftapplySwap",            TEST_CATEGORY_MULT ) { testOperation<zero,two,none,leftapply>(leftapplySwap, FixedMatrices::SWAP); }
+TEST_CASE( "leftapplyPauliX",          TEST_CATEGORY_MULT ) { testOperation<zero,one,none,leftapply>(leftapplyPauliX, FixedMatrices::X); }
+TEST_CASE( "leftapplyPauliY",          TEST_CATEGORY_MULT ) { testOperation<zero,one,none,leftapply>(leftapplyPauliY, FixedMatrices::Y); }
+TEST_CASE( "leftapplyPauliZ",          TEST_CATEGORY_MULT ) { testOperation<zero,one,none,leftapply>(leftapplyPauliZ, FixedMatrices::Z); }
+TEST_CASE( "leftapplyPauliStr",        TEST_CATEGORY_MULT ) { testOperation<zero,any,paulistr,leftapply>(leftapplyPauliStr,    nullptr); }
+TEST_CASE( "leftapplyPauliGadget",     TEST_CATEGORY_MULT ) { testOperation<zero,any,pauligad,leftapply>(leftapplyPauliGadget, nullptr); }
+TEST_CASE( "leftapplyCompMatr1",       TEST_CATEGORY_MULT ) { testOperation<zero,one,compmatr,leftapply>(leftapplyCompMatr1,   nullptr); }
+TEST_CASE( "leftapplyCompMatr2",       TEST_CATEGORY_MULT ) { testOperation<zero,two,compmatr,leftapply>(leftapplyCompMatr2,   nullptr); }
+TEST_CASE( "leftapplyDiagMatr1",       TEST_CATEGORY_MULT ) { testOperation<zero,one,diagmatr,leftapply>(leftapplyDiagMatr1,   nullptr); }
+TEST_CASE( "leftapplyDiagMatr2",       TEST_CATEGORY_MULT ) { testOperation<zero,two,diagmatr,leftapply>(leftapplyDiagMatr2,   nullptr); }
 
-TEST_CASE( "rightapplySwap",            TEST_CATEGORY_MULT ) { testOperation<zero,two,none,postmultiply>(rightapplySwap, FixedMatrices::SWAP); }
-TEST_CASE( "rightapplyPauliX",          TEST_CATEGORY_MULT ) { testOperation<zero,one,none,postmultiply>(rightapplyPauliX, FixedMatrices::X); }
-TEST_CASE( "rightapplyPauliY",          TEST_CATEGORY_MULT ) { testOperation<zero,one,none,postmultiply>(rightapplyPauliY, FixedMatrices::Y); }
-TEST_CASE( "rightapplyPauliZ",          TEST_CATEGORY_MULT ) { testOperation<zero,one,none,postmultiply>(rightapplyPauliZ, FixedMatrices::Z); }
-TEST_CASE( "rightapplyPauliStr",        TEST_CATEGORY_MULT ) { testOperation<zero,any,paulistr,postmultiply>(rightapplyPauliStr,    nullptr); }
-TEST_CASE( "rightapplyPauliGadget",     TEST_CATEGORY_MULT ) { testOperation<zero,any,pauligad,postmultiply>(rightapplyPauliGadget, nullptr); }
-TEST_CASE( "rightapplyCompMatr1",       TEST_CATEGORY_MULT ) { testOperation<zero,one,compmatr,postmultiply>(rightapplyCompMatr1,   nullptr); }
-TEST_CASE( "rightapplyCompMatr2",       TEST_CATEGORY_MULT ) { testOperation<zero,two,compmatr,postmultiply>(rightapplyCompMatr2,   nullptr); }
-TEST_CASE( "rightapplyDiagMatr1",       TEST_CATEGORY_MULT ) { testOperation<zero,one,diagmatr,postmultiply>(rightapplyDiagMatr1,   nullptr); }
-TEST_CASE( "rightapplyDiagMatr2",       TEST_CATEGORY_MULT ) { testOperation<zero,two,diagmatr,postmultiply>(rightapplyDiagMatr2,   nullptr); }
+TEST_CASE( "rightapplySwap",            TEST_CATEGORY_MULT ) { testOperation<zero,two,none,rightapply>(rightapplySwap, FixedMatrices::SWAP); }
+TEST_CASE( "rightapplyPauliX",          TEST_CATEGORY_MULT ) { testOperation<zero,one,none,rightapply>(rightapplyPauliX, FixedMatrices::X); }
+TEST_CASE( "rightapplyPauliY",          TEST_CATEGORY_MULT ) { testOperation<zero,one,none,rightapply>(rightapplyPauliY, FixedMatrices::Y); }
+TEST_CASE( "rightapplyPauliZ",          TEST_CATEGORY_MULT ) { testOperation<zero,one,none,rightapply>(rightapplyPauliZ, FixedMatrices::Z); }
+TEST_CASE( "rightapplyPauliStr",        TEST_CATEGORY_MULT ) { testOperation<zero,any,paulistr,rightapply>(rightapplyPauliStr,    nullptr); }
+TEST_CASE( "rightapplyPauliGadget",     TEST_CATEGORY_MULT ) { testOperation<zero,any,pauligad,rightapply>(rightapplyPauliGadget, nullptr); }
+TEST_CASE( "rightapplyCompMatr1",       TEST_CATEGORY_MULT ) { testOperation<zero,one,compmatr,rightapply>(rightapplyCompMatr1,   nullptr); }
+TEST_CASE( "rightapplyCompMatr2",       TEST_CATEGORY_MULT ) { testOperation<zero,two,compmatr,rightapply>(rightapplyCompMatr2,   nullptr); }
+TEST_CASE( "rightapplyDiagMatr1",       TEST_CATEGORY_MULT ) { testOperation<zero,one,diagmatr,rightapply>(rightapplyDiagMatr1,   nullptr); }
+TEST_CASE( "rightapplyDiagMatr2",       TEST_CATEGORY_MULT ) { testOperation<zero,two,diagmatr,rightapply>(rightapplyDiagMatr2,   nullptr); }
 
 
 /*
@@ -1898,53 +1898,53 @@ TEST_CASE( "rightapplyDiagMatr2",       TEST_CATEGORY_MULT ) { testOperation<zer
 
 TEST_CASE( "leftapplyCompMatr",  TEST_CATEGORY_MULT ) { 
     auto func = static_cast<void(*)(Qureg, int*, int, CompMatr)>(leftapplyCompMatr);
-    testOperation<zero,any,compmatr,multiply>(func, nullptr); 
+    testOperation<zero,any,compmatr,leftapply>(func, nullptr); 
 }
 
 TEST_CASE( "leftapplyDiagMatr",  TEST_CATEGORY_MULT ) {
     auto func = static_cast<void(*)(Qureg, int*, int, DiagMatr)>(leftapplyDiagMatr);
-    testOperation<zero,any,diagmatr,multiply>(func, nullptr);
+    testOperation<zero,any,diagmatr,leftapply>(func, nullptr);
 }
 
 TEST_CASE( "leftapplyDiagMatrPower",  TEST_CATEGORY_MULT ) {
     auto func = static_cast<void(*)(Qureg, int*, int, DiagMatr, qcomp)>(leftapplyDiagMatrPower);
-    testOperation<zero,any,diagpower,multiply>(func, nullptr);
+    testOperation<zero,any,diagpower,leftapply>(func, nullptr);
 }
 
 TEST_CASE( "leftapplyMultiQubitNot",  TEST_CATEGORY_MULT ) {
     auto func = static_cast<void(*)(Qureg, int*, int)>(leftapplyMultiQubitNot);
-    testOperation<zero,any,none,multiply>(func, VariableSizeMatrices::X);
+    testOperation<zero,any,none,leftapply>(func, VariableSizeMatrices::X);
 }
 
 TEST_CASE( "leftapplyPhaseGadget",  TEST_CATEGORY_MULT ) {
     auto func = static_cast<void(*)(Qureg, int*, int, qreal)>(leftapplyPhaseGadget);
-    testOperation<zero,any,scalar,multiply>(func, VariableSizeParameterisedMatrices::Z);
+    testOperation<zero,any,scalar,leftapply>(func, VariableSizeParameterisedMatrices::Z);
 }
 
 
 TEST_CASE( "rightapplyCompMatr",  TEST_CATEGORY_MULT ) { 
     auto func = static_cast<void(*)(Qureg, int*, int, CompMatr)>(rightapplyCompMatr);
-    testOperation<zero,any,compmatr,postmultiply>(func, nullptr); 
+    testOperation<zero,any,compmatr,rightapply>(func, nullptr); 
 }
 
 TEST_CASE( "rightapplyDiagMatr",  TEST_CATEGORY_MULT ) {
     auto func = static_cast<void(*)(Qureg, int*, int, DiagMatr)>(rightapplyDiagMatr);
-    testOperation<zero,any,diagmatr,postmultiply>(func, nullptr);
+    testOperation<zero,any,diagmatr,rightapply>(func, nullptr);
 }
 
 TEST_CASE( "rightapplyDiagMatrPower",  TEST_CATEGORY_MULT ) {
     auto func = static_cast<void(*)(Qureg, int*, int, DiagMatr, qcomp)>(rightapplyDiagMatrPower);
-    testOperation<zero,any,diagpower,postmultiply>(func, nullptr);
+    testOperation<zero,any,diagpower,rightapply>(func, nullptr);
 }
 
 TEST_CASE( "rightapplyMultiQubitNot",  TEST_CATEGORY_MULT ) {
     auto func = static_cast<void(*)(Qureg, int*, int)>(rightapplyMultiQubitNot);
-    testOperation<zero,any,none,postmultiply>(func, VariableSizeMatrices::X);
+    testOperation<zero,any,none,rightapply>(func, VariableSizeMatrices::X);
 }
 
 TEST_CASE( "rightapplyPhaseGadget",  TEST_CATEGORY_MULT ) {
     auto func = static_cast<void(*)(Qureg, int*, int, qreal)>(rightapplyPhaseGadget);
-    testOperation<zero,any,scalar,postmultiply>(func, VariableSizeParameterisedMatrices::Z);
+    testOperation<zero,any,scalar,rightapply>(func, VariableSizeParameterisedMatrices::Z);
 }
 
 
