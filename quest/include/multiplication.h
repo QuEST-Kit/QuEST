@@ -7,8 +7,8 @@
  * 
  * @defgroup multiplication Multiplication
  * @ingroup api
- * @brief Functions for directly multiplying operators upon 
- *        density matrices.
+ * @brief Functions for directly pre- or post-multiplying operators 
+ *        upon density matrices.
  * @{
  */
 

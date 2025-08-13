@@ -392,22 +392,22 @@ void accel_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qco
 }
 
 
-auto getDenseMatrAllTargDiagMatrFunc(bool isGpu, qcomp exponent, bool multiplyLeft, bool multiplyRight, bool conjRight) {
+auto getDenseMatrAllTargDiagMatrFunc(bool isGpu, qcomp exponent, bool applyLeft, bool applyRight, bool conjRight) {
 
     // this helper function exists, dissimilar from the function-agnostic macros used
     // by other functions, because densmatr_allTargDiagMatr_sub() does not accept every
     // possible combination of its boolean template parameters 
-    assert_fullStateDiagMatrTemplateParamsAreValid(multiplyLeft, multiplyRight, conjRight);
+    assert_fullStateDiagMatrTemplateParamsAreValid(applyLeft, applyRight, conjRight);
 
     bool hasPower = exponent != qcomp(1, 0);
 
-    if (multiplyLeft && multiplyRight && conjRight)
+    if (applyLeft && applyRight && conjRight)
         return GET_CPU_OR_GPU_FOUR_BOOL_FUNC_OPTIMISED_FOR_FIRST_BOOL( isGpu, densmatr_allTargDiagMatr_sub, hasPower, true,true,true );
 
-    if (multiplyLeft && ! multiplyRight && ! conjRight)
+    if (applyLeft && ! applyRight && ! conjRight)
         return GET_CPU_OR_GPU_FOUR_BOOL_FUNC_OPTIMISED_FOR_FIRST_BOOL( isGpu, densmatr_allTargDiagMatr_sub, hasPower, true,false,false );
 
-    if (! multiplyLeft && multiplyRight && ! conjRight)
+    if (! applyLeft && applyRight && ! conjRight)
         return GET_CPU_OR_GPU_FOUR_BOOL_FUNC_OPTIMISED_FOR_FIRST_BOOL( isGpu, densmatr_allTargDiagMatr_sub, hasPower, false,true,false );
 
     // unreachable
@@ -415,7 +415,7 @@ auto getDenseMatrAllTargDiagMatrFunc(bool isGpu, qcomp exponent, bool multiplyLe
 }
 
 
-void accel_densmatr_allTargDiagMatr_subA(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool multiplyLeft, bool multiplyRight, bool conjRight) {
+void accel_densmatr_allTargDiagMatr_subA(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool applyLeft, bool applyRight, bool conjRight) {
 
     // matr is always local, qureg can be local or distributed...
     assert_fullStateDiagMatrIsLocal(matr);
@@ -425,8 +425,8 @@ void accel_densmatr_allTargDiagMatr_subA(Qureg qureg, FullStateDiagMatr matr, qc
     bool matrGPU = matr.isGpuAccelerated;
 
     // which determines which function is called
-    auto gpuFunc = getDenseMatrAllTargDiagMatrFunc(true,  exponent, multiplyLeft, multiplyRight, conjRight);
-    auto cpuFunc = getDenseMatrAllTargDiagMatrFunc(false, exponent, multiplyLeft, multiplyRight, conjRight);
+    auto gpuFunc = getDenseMatrAllTargDiagMatrFunc(true,  exponent, applyLeft, applyRight, conjRight);
+    auto cpuFunc = getDenseMatrAllTargDiagMatrFunc(false, exponent, applyLeft, applyRight, conjRight);
 
     // when deployments match, we trivially call the common backend
     if ( quregGPU &&  matrGPU) gpuFunc(qureg, matr, exponent);
@@ -476,7 +476,7 @@ void accel_densmatr_allTargDiagMatr_subA(Qureg qureg, FullStateDiagMatr matr, qc
 }
 
 
-void accel_densmatr_allTargDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool multiplyLeft, bool multiplyRight, bool conjRight) {
+void accel_densmatr_allTargDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool applyLeft, bool applyRight, bool conjRight) {
 
     assert_fullStateDiagMatrIsDistributed(matr);
     assert_acceleratorQuregIsDistributed(qureg);
@@ -501,7 +501,7 @@ void accel_densmatr_allTargDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qc
     temp.cpuElems = qureg.cpuCommBuffer;
     temp.gpuElems = qureg.gpuCommBuffer;
 
-    accel_densmatr_allTargDiagMatr_subA(qureg, temp, exponent, multiplyLeft, multiplyRight, conjRight);
+    accel_densmatr_allTargDiagMatr_subA(qureg, temp, exponent, applyLeft, applyRight, conjRight);
 }
 
 

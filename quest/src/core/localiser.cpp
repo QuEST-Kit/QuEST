@@ -1171,7 +1171,7 @@ void localiser_statevec_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qco
 }
 
 
-void localiser_densmatr_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool multiplyLeft, bool multiplyRight, bool conjRight) {
+void localiser_densmatr_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool applyLeft, bool applyRight, bool conjRight) {
     assert_localiserGivenDensMatr(qureg);
 
     // the diagonal matr has quadratically fewer elements than the density-matrix
@@ -1197,7 +1197,7 @@ void localiser_densmatr_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qco
     // when the matrix is not distributed, we call the same routine despite whether qureg 
     // is distributed or not; that merely changes how many qureg columns get updated
     if (!matrDist) {
-        accel_densmatr_allTargDiagMatr_subA(qureg, matr, exponent, multiplyLeft, multiplyRight, conjRight);
+        accel_densmatr_allTargDiagMatr_subA(qureg, matr, exponent, applyLeft, applyRight, conjRight);
         return;
     }
 
@@ -1206,7 +1206,7 @@ void localiser_densmatr_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qco
 
     // matr elems are inside qureg buffer, but we still pass matr struct along to
     // accelerator, because it is going to perform mischief to re-use subA().
-    accel_densmatr_allTargDiagMatr_subB(qureg, matr, exponent, multiplyLeft, multiplyRight, conjRight); 
+    accel_densmatr_allTargDiagMatr_subB(qureg, matr, exponent, applyLeft, applyRight, conjRight); 
 }
 
 

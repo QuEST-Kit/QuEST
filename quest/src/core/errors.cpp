@@ -467,12 +467,12 @@ void assert_fullStateDiagMatrIsDistributed(FullStateDiagMatr matr) {
         raiseInternalError("An accelerator function received a non-distributed FullStateDiagMatr where a distributed one was expected.");
 }
 
-void assert_fullStateDiagMatrTemplateParamsAreValid(bool multiplyLeft, bool multiplyRight, bool conjRight) {
+void assert_fullStateDiagMatrTemplateParamsAreValid(bool applyLeft, bool applyRight, bool conjRight) {
 
     bool valid = (
-        (  multiplyLeft &&   multiplyRight &&   conjRight) || // matr qureg conj(matr)
-        (  multiplyLeft && ! multiplyRight && ! conjRight) || // matr qureg
-        (! multiplyLeft &&   multiplyRight && ! conjRight)    //      qureg matr
+        (  applyLeft &&   applyRight &&   conjRight) || // matr qureg conj(matr)
+        (  applyLeft && ! applyRight && ! conjRight) || // matr qureg
+        (! applyLeft &&   applyRight && ! conjRight)    //      qureg matr
     );
 
     if (!valid)
