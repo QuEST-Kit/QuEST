@@ -161,11 +161,6 @@ void error_commButEnvNotDistributed() {
     raiseInternalError("A function attempted to invoke communication despite QuEST being compiled in non-distributed mode.");
 }
 
-void error_commButQuregNotDistributed() {
-
-    raiseInternalError("A function attempted to invoke communication of a Qureg which was not distributed.");
-}
-
 void error_commOutOfBounds() {
 
     raiseInternalError("A function invoked communication which attempted to exchange amplitudes between arrays at invalid bounds.");
@@ -209,7 +204,7 @@ void assert_commPayloadIsPowerOf2(qindex numAmps) {
 void assert_commQuregIsDistributed(Qureg qureg) {
 
     if (!qureg.isDistributed)
-        error_commButQuregNotDistributed();
+        raiseInternalError("A function attempted to invoke communication of a Qureg which was not distributed.");
 }
 
 void assert_commFullStateDiagMatrIsDistributed(FullStateDiagMatr matr) {

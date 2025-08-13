@@ -77,8 +77,6 @@ void error_commAlreadyInit();
 
 void error_commButEnvNotDistributed();
 
-void error_commButQuregNotDistributed();
-
 void error_commOutOfBounds();
 
 void error_commWithSameRank();
