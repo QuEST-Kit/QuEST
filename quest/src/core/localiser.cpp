@@ -1226,6 +1226,10 @@ void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg qureg, vector<int> ctrls, ve
     bool transp = false;
     qcomp expo = 1;
 
+    // suppress warnings since not used by all compile-time expansions below
+    (void) transp;
+    (void) expo;
+
     if constexpr (util_isDiagMatr <T>()) localiser_statevec_anyCtrlAnyTargDiagMatr(qureg,  ctrls, ctrlStates, targs,        matr, expo, conj);
     if constexpr (util_isDiagMatr1<T>()) localiser_statevec_anyCtrlOneTargDiagMatr(qureg,  ctrls, ctrlStates, targs[0],           matr, conj);
     if constexpr (util_isDiagMatr2<T>()) localiser_statevec_anyCtrlTwoTargDiagMatr(qureg,  ctrls, ctrlStates, targs[0], targs[1], matr, conj);
