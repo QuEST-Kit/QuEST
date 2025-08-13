@@ -459,10 +459,9 @@ string printer_getMemoryWithUnitStr(size_t numBytes) {
         ind++;
     ind--;
 
-    // express numBytes in terms of new unit, forcefully rounding to 3 sig-figs max,
-    // except when the chosen unit is bytes (then we permit all 4 digits)
+    // express numBytes in terms of new unit, forcefully rounding to 4 sig-figs max
     qreal frac = numBytes / static_cast<qreal>(sizes[ind]);
-    return floatToStr(frac, false, (ind==0)? 4 : 3) + " " + units[ind];
+    return floatToStr(frac, false, 4) + " " + units[ind];
 }
 
 
