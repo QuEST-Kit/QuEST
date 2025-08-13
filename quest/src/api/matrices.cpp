@@ -120,14 +120,14 @@ template <class T>
 bool didAnyLocalAllocsFail(T matr) {
 
     // god help us if these single-integer malloc failed
-    if (!mem_isAllocated(matr.isApproxUnitary))     return true;
-    if (!mem_isAllocated(matr.isApproxHermitian))   return true;
-    if (!mem_isAllocated(matr.wasGpuSynced))  return true;
+    if (!mem_isAllocated(matr.isApproxUnitary))   return true;
+    if (!mem_isAllocated(matr.isApproxHermitian)) return true;
+    if (!mem_isAllocated(matr.wasGpuSynced))      return true;
 
     // only diagonal matrices (which can be raised to
     // exponents) have these addtional fields
     if constexpr (!util_isDenseMatrixType<T>()) {
-        if (!mem_isAllocated(matr.isApproxNonZero))     return true;
+        if (!mem_isAllocated(matr.isApproxNonZero))       return true;
         if (!mem_isAllocated(matr.isStrictlyNonNegative)) return true;
     }
 
@@ -279,7 +279,7 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
     // validate parameters before passing them to autodeployer
     validate_newFullStateDiagMatrParams(numQubits, useDistrib, useGpuAccel, useMultithread, caller);
 
-    // overwrite useDistrib and useGpuAccel if they were left as AUTO_FLAG
+    // overwrite all args left as AUTO_FLAG
     autodep_chooseFullStateDiagMatrDeployment(numQubits, useDistrib, useGpuAccel, useMultithread, env);
 
     // validation ensures this never overflows
