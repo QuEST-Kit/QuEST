@@ -370,7 +370,7 @@ typedef enum pauliOpType _NoWarnPauliOpType;
 
 
 #define applyMultiControlledMatrixN(...) \
-    _ERROR_FUNC_REMOVED("applyMultiControlledMatrixN()") // our new preapplyCompMatr doesn't accept controls
+    _ERROR_FUNC_REMOVED("applyMultiControlledMatrixN()") // our new leftapplyCompMatr doesn't accept controls
 
 
 #define syncQuESTSuccess(...) \
@@ -800,8 +800,8 @@ static inline QuESTEnv _createQuESTEnv() {
     createFullStateDiagMatrFromPauliStrSumFile(fn)
 
 #define applyDiagonalOp(...) \
-    _WARN_FUNC_RENAMED("applyDiagonalOp()", "preapplyFullStateDiagMatr()") \
-    preapplyFullStateDiagMatr(__VA_ARGS__)
+    _WARN_FUNC_RENAMED("applyDiagonalOp()", "leftapplyFullStateDiagMatr()") \
+    leftapplyFullStateDiagMatr(__VA_ARGS__)
 
 #define calcExpecDiagonalOp(...) \
     _WARN_FUNC_RENAMED("calcExpecDiagonalOp()", "calcExpecNonHermitianFullStateDiagMatr()") \
@@ -822,8 +822,8 @@ static inline QuESTEnv _createQuESTEnv() {
     applyDiagMatr(__VA_ARGS__)
 
 #define applySubDiagonalOp(...) \
-    _WARN_FUNC_RENAMED("applySubDiagonalOp()", "preapplyDiagMatr()") \
-    preapplyDiagMatr(__VA_ARGS__)
+    _WARN_FUNC_RENAMED("applySubDiagonalOp()", "leftapplyDiagMatr()") \
+    leftapplyDiagMatr(__VA_ARGS__)
 
 static inline void _applyGateSubDiagonalOp(Qureg qureg, int* targets, int numTargets, DiagMatr op) {
     qreal eps = getValidationEpsilon();
@@ -1029,21 +1029,21 @@ static inline qreal _calcExpecPauliSum(Qureg qureg, _NoWarnPauliOpType* allPauli
 static inline void _applyPauliSum(Qureg inQureg, _NoWarnPauliOpType* allPauliCodes, qreal* termCoeffs, int numSumTerms, Qureg outQureg) {
     PauliStrSum sum = _createPauliStrSumFromCodes(inQureg.numQubits, allPauliCodes, termCoeffs, numSumTerms);
     setQuregToClone(outQureg, inQureg); 
-    preapplyPauliStrSum(outQureg, sum, inQureg);
+    leftapplyPauliStrSum(outQureg, sum, inQureg);
     destroyPauliStrSum(sum);
 }
 
 #define applyPauliSum(...) \
-    _WARN_FUNC_RENAMED("applyPauliSum(inQureg, ..., outQureg)", "preapplyPauliStrSum(outQureg, PauliStrSum)") \
+    _WARN_FUNC_RENAMED("applyPauliSum(inQureg, ..., outQureg)", "leftapplyPauliStrSum(outQureg, PauliStrSum)") \
     _applyPauliSum(__VA_ARGS__)
 
 static inline void _applyPauliHamil(Qureg inQureg, PauliStrSum hamil, Qureg outQureg) {
     setQuregToClone(outQureg, inQureg); 
-    preapplyPauliStrSum(outQureg, hamil, inQureg);
+    leftapplyPauliStrSum(outQureg, hamil, inQureg);
 }
 
 #define applyPauliHamil(...) \
-    _WARN_FUNC_RENAMED("applyPauliHamil(inQureg, PauliHamil, outQureg)", "preapplyPauliStrSum(qureg, PauliStrSum, workspace)") \
+    _WARN_FUNC_RENAMED("applyPauliHamil(inQureg, PauliHamil, outQureg)", "leftapplyPauliStrSum(qureg, PauliStrSum, workspace)") \
     _applyPauliHamil(__VA_ARGS__)
 
 
@@ -1109,16 +1109,16 @@ static inline void _applyPauliHamil(Qureg inQureg, PauliStrSum hamil, Qureg outQ
 
 
 #define applyMatrix2(qureg, targ, ...) \
-    _WARN_FUNC_RENAMED("applyMatrix2()", "preapplyCompMatr1()") \
-    preapplyCompMatr1(qureg, targ, _GET_COMP_MATR_1_FROM_COMPLEX_MATRIX_2(__VA_ARGS__))
+    _WARN_FUNC_RENAMED("applyMatrix2()", "leftapplyCompMatr1()") \
+    leftapplyCompMatr1(qureg, targ, _GET_COMP_MATR_1_FROM_COMPLEX_MATRIX_2(__VA_ARGS__))
 
 #define applyMatrix4(qureg, targ1, targ2, ...) \
-    _WARN_FUNC_RENAMED("applyMatrix4()", "preapplyCompMatr2()") \
-    preapplyCompMatr2(qureg, targ1, targ2, _GET_COMP_MATR_2_FROM_COMPLEX_MATRIX_4(__VA_ARGS__))
+    _WARN_FUNC_RENAMED("applyMatrix4()", "leftapplyCompMatr2()") \
+    leftapplyCompMatr2(qureg, targ1, targ2, _GET_COMP_MATR_2_FROM_COMPLEX_MATRIX_4(__VA_ARGS__))
 
 #define applyMatrixN(...) \
-    _WARN_FUNC_RENAMED("applyMatrixN()", "preapplyCompMatr()") \
-    preapplyCompMatr(__VA_ARGS__)
+    _WARN_FUNC_RENAMED("applyMatrixN()", "leftapplyCompMatr()") \
+    leftapplyCompMatr(__VA_ARGS__)
 
 
 
