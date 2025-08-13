@@ -82,7 +82,7 @@ template <int NumCtrls, int NumTargs, bool ApplyConj, bool HasPower> void cpu_st
 
 template <bool HasPower> void cpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
 
-template <bool HasPower, bool MultiplyLeft, bool MultiplyRight, bool ConjRight> void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+template <bool HasPower, bool ApplyLeft, bool ApplyRight, bool ConjRight> void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
 
 
 /*

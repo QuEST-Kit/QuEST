@@ -749,7 +749,7 @@ void gpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 }
 
 
-template <bool HasPower, bool MultiplyLeft, bool MultiplyRight, bool ConjRight>
+template <bool HasPower, bool ApplyLeft, bool ApplyRight, bool ConjRight>
 void gpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
 
     assert_exponentMatchesTemplateParam(exponent, HasPower);
@@ -760,7 +760,7 @@ void gpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
     qindex numBlocks = getNumBlocks(numThreads);
 
     kernel_densmatr_allTargDiagMatr_sub 
-        <HasPower, MultiplyLeft, MultiplyRight, ConjRight> 
+        <HasPower, ApplyLeft, ApplyRight, ConjRight> 
         <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
             toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
             toCuQcomps(util_getGpuMemPtr(matr)), matr.numElems, toCuQcomp(exponent)
