@@ -182,6 +182,13 @@ bool paulis_hasOddNumY(PauliStr str) {
 }
 
 
+int paulis_getSignOfPauliStrConj(PauliStr str) {
+
+    // conj(Y) = -Y, conj(YY) = YY
+    return paulis_hasOddNumY(str)? -1 : 1;
+}
+
+
 int paulis_getPrefixZSign(Qureg qureg, vector<int> prefixZ) {
 
     int sign = 1;

@@ -24,7 +24,7 @@ using std::vector;
  * INTERNAL UTILS
  */
 
-extern bool paulis_hasOddNumY(PauliStr str);
+extern int paulis_getSignOfPauliStrConj(PauliStr str);
 extern PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift);
 
 void internal_applyFirstOrderTrotterRepetition(
@@ -51,8 +51,8 @@ void internal_applyFirstOrderTrotterRepetition(
 
         // effect rho -> rho exp(i angle * coeff * term)^dagger via linearised
         //    ||rho>> -> conj(exp(i angle * coeff * term)) (x) I ||rho>>
-        //             = exp(+- i conj(angle) conj(coeff) term) (x) I ||rho>>
-        arg = std::conj(arg) * (paulis_hasOddNumY(str) ? 1 : -1);
+        //             = exp(- i conj(angle coeff) sign term) (x) I ||rho>>
+        arg = - std::conj(arg) * paulis_getSignOfPauliStrConj(str);
         str = paulis_getShiftedPauliStr(str, qureg.numQubits);
         localiser_statevec_anyCtrlPauliGadget(qureg, braCtrls, states, str, arg);
     }
@@ -279,7 +279,7 @@ void applyTrotterizedPauliNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qre
 
         // term of i conj(H) (x) I
         newStrings.push_back(paulis_getShiftedPauliStr(oldStr, qureg.numQubits));
-        newCoeffs.push_back(1_i * (paulis_hasOddNumY(oldStr) ? -1 : 1) * std::conj(oldCoeff));
+        newCoeffs.push_back(1_i * paulis_getSignOfPauliStrConj(oldStr) * std::conj(oldCoeff));
     }
 
     // collect jump terms
@@ -287,7 +287,7 @@ void applyTrotterizedPauliNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qre
 
         // gamma_k conj(L_k) (x) L_k
         newStrings.push_back(paulis_getKetAndBraPauliStr(jumps[n], qureg));
-        newCoeffs.push_back(damps[n] * (paulis_hasOddNumY(jumps[n]) ? -1 : 1));
+        newCoeffs.push_back(damps[n] * paulis_getSignOfPauliStrConj(jumps[n]));
     }
 
     // spoof a PauliStrSum to avoid superfluous alloc
