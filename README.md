@@ -116,8 +116,8 @@ applyMultiQubitProjector(qureg, targs, outcomes, ntargs);
 applyControlledPauliGadget(qureg, ctrl, paulistr, angle);
 applyMultiStateControlledSwap(qureg, ctrls, states, nctrls, targ1, targ2);
 
-multiplyCompMatr1(qureg, targ, getInlineCompMatr1( {{1,2i},{3i,4}} ));
-multiplyDiagMatrPower(qureg, targs, ntargs, diagmatr, exponent);
+leftapplyCompMatr1(qureg, targ, getInlineCompMatr1( {{1,2i},{3i,4}} ));
+leftapplyDiagMatrPower(qureg, targs, ntargs, diagmatr, exponent);
 ```
 and extremely powerful
 ```cpp

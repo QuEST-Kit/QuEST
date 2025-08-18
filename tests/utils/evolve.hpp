@@ -21,29 +21,29 @@
 using std::vector;
 
 
-void applyReferenceOperator(       qvector& state, vector<int> ctrls, vector<int> states, vector<int> targs, qmatrix matrix);
-void applyReferenceOperator(       qmatrix& state, vector<int> ctrls, vector<int> states, vector<int> targs, qmatrix matrix);
-void multiplyReferenceOperator(    qvector& state, vector<int> ctrls, vector<int> states, vector<int> targs, qmatrix matrix);
-void multiplyReferenceOperator(    qmatrix& state, vector<int> ctrls, vector<int> states, vector<int> targs, qmatrix matrix);
-void postMultiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> states, vector<int> targs, qmatrix matrix);
+void applyReferenceOperator     (qvector& state, vector<int> ctrls, vector<int> states, vector<int> targs, qmatrix matrix);
+void applyReferenceOperator     (qmatrix& state, vector<int> ctrls, vector<int> states, vector<int> targs, qmatrix matrix);
+void leftapplyReferenceOperator (qvector& state, vector<int> ctrls, vector<int> states, vector<int> targs, qmatrix matrix);
+void leftapplyReferenceOperator (qmatrix& state, vector<int> ctrls, vector<int> states, vector<int> targs, qmatrix matrix);
+void rightapplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> states, vector<int> targs, qmatrix matrix);
 
-void applyReferenceOperator(       qvector& state, vector<int> ctrls, vector<int> targs, qmatrix matrix);
-void applyReferenceOperator(       qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix);
-void multiplyReferenceOperator(    qvector& state, vector<int> ctrls, vector<int> targs, qmatrix matrix);
-void multiplyReferenceOperator(    qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix);
-void postMultiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix);
+void applyReferenceOperator     (qvector& state, vector<int> ctrls, vector<int> targs, qmatrix matrix);
+void applyReferenceOperator     (qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix);
+void leftapplyReferenceOperator (qvector& state, vector<int> ctrls, vector<int> targs, qmatrix matrix);
+void leftapplyReferenceOperator (qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix);
+void rightapplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix);
 
-void applyReferenceOperator(       qvector& state, vector<int> targs, qmatrix matrix);
-void applyReferenceOperator(       qmatrix& state, vector<int> targs, qmatrix matrix);
-void multiplyReferenceOperator(    qvector& state, vector<int> targs, qmatrix matrix);
-void multiplyReferenceOperator(    qmatrix& state, vector<int> targs, qmatrix matrix);
-void postMultiplyReferenceOperator(qmatrix& state, vector<int> targs, qmatrix matrix);
+void applyReferenceOperator     (qvector& state, vector<int> targs, qmatrix matrix);
+void applyReferenceOperator     (qmatrix& state, vector<int> targs, qmatrix matrix);
+void leftapplyReferenceOperator (qvector& state, vector<int> targs, qmatrix matrix);
+void leftapplyReferenceOperator (qmatrix& state, vector<int> targs, qmatrix matrix);
+void rightapplyReferenceOperator(qmatrix& state, vector<int> targs, qmatrix matrix);
 
-void applyReferenceOperator(       qvector& state, qmatrix matrix);
-void applyReferenceOperator(       qmatrix& state, qmatrix matrix);
-void multiplyReferenceOperator(    qvector& state, qmatrix matrix);
-void multiplyReferenceOperator(    qmatrix& state, qmatrix matrix);
-void postMultiplyReferenceOperator(qmatrix& state, qmatrix matrix);
+void applyReferenceOperator     (qvector& state, qmatrix matrix);
+void applyReferenceOperator     (qmatrix& state, qmatrix matrix);
+void leftapplyReferenceOperator (qvector& state, qmatrix matrix);
+void leftapplyReferenceOperator (qmatrix& state, qmatrix matrix);
+void rightapplyReferenceOperator(qmatrix& state, qmatrix matrix);
 
 void applyReferenceOperator(qmatrix& state, vector<int> targs, vector<qmatrix> matrices);
 

@@ -750,7 +750,7 @@ void cpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 }
 
 
-template <bool HasPower, bool MultiplyLeft, bool MultiplyRight, bool ConjRight>
+template <bool HasPower, bool ApplyLeft, bool ApplyRight, bool ConjRight>
 void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
 
     // unlike other functions, this function handles all scenarios of...
@@ -773,7 +773,7 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
         qcomp fac = 1;
 
         // update fac to effect rho -> (matr * rho) or (matr^exponent * rho)
-        if constexpr (MultiplyLeft) {
+        if constexpr (ApplyLeft) {
 
             // i = global row of nth local amp
             qindex i = fast_getQuregGlobalRowFromFlatIndex(n, matr.numElems);
@@ -789,7 +789,7 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 
         // update fac to additional include rho -> (rho * matr) or 
         // (rho * conj(matr)), or the same exponentiated
-        if constexpr (MultiplyRight) {
+        if constexpr (ApplyRight) {
 
             // m = global index corresponding to n
             qindex m = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
@@ -2344,6 +2344,10 @@ void cpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 
 template <int NumQubits>
 void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
+
+    // this function is merely an optimisation to avoid calling the above
+    // cpu_statevec_multiQubitProjector_sub() twice upon a density matrix;
+    // pre- and post-multiply projector versions DO just call above.
 
     // qubits are unconstrained, and can include prefix qubits
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
