@@ -1250,7 +1250,7 @@ template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, vector<int>, vecto
 
 extern bool paulis_containsXOrY(PauliStr str);
 extern vector<int> paulis_getTargetInds(PauliStr str);
-extern std::array<vector<int>,3> paulis_getSeparateInds(PauliStr str, Qureg qureg);
+extern std::array<vector<int>,3> paulis_getSeparateInds(PauliStr str);
 extern int paulis_getPrefixZSign(Qureg qureg, vector<int> prefixZ) ;
 extern qcomp paulis_getPrefixPaulisElem(Qureg qureg, vector<int> prefixY, vector<int> prefixZ);
 
@@ -1298,7 +1298,7 @@ void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrl
     // - prefix X,Y determine communication, because they apply bit-not to rank
     // - prefix Y,Z determine node-wide coefficient, because they contain rank-determined !=1 elements
     // - suffix X,Y,Z determine local amp coefficients
-    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
+    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str);
     auto [prefixX, suffixX] = util_getPrefixAndSuffixQubits(targsX, qureg);
     auto [prefixY, suffixY] = util_getPrefixAndSuffixQubits(targsY, qureg);
     auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targsZ, qureg);
@@ -1994,7 +1994,7 @@ qcomp getDensMatrExpecPauliStrTermOfOnlyThisNode(Qureg qureg, PauliStr str) {
     // caller must reduce the returned value between nodes if necessary
 
     // all ket-paulis are in the suffix state
-    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
+    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str);
 
     // optimised scenario when str = I
     if (targsX.empty() && targsY.empty() && targsZ.empty())
@@ -2019,7 +2019,7 @@ qcomp localiser_statevec_calcExpecPauliStr(Qureg qureg, PauliStr str) {
     // - prefix Y,Z determine node-wide coefficient, because they contain rank-determined !=1 elements
     // - suffix X,Y,Z determine local amp coefficients
     // noting that when !qureg.isDistributed, all paulis will be in suffix
-    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
+    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str);
     auto [prefixX, suffixX] = util_getPrefixAndSuffixQubits(targsX, qureg);
     auto [prefixY, suffixY] = util_getPrefixAndSuffixQubits(targsY, qureg);
     auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targsZ, qureg);
@@ -2107,7 +2107,7 @@ qcomp localiser_statevec_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
 
         // for each term within the current group...
         for (auto& [str, coeff] : terms) {
-            auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
+            auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str);
             auto [prefixX, suffixX] = util_getPrefixAndSuffixQubits(targsX, qureg);
             auto [prefixY, suffixY] = util_getPrefixAndSuffixQubits(targsY, qureg);
             auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targsZ, qureg);

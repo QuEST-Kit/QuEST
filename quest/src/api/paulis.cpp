@@ -87,7 +87,7 @@ void freeAllMemoryIfAnyAllocsFailed(PauliStrSum sum) {
 
 
 /*
- * INTERNAL UTILITIES
+ * INTERNAL PauliStr UTILITIES
  *
  * callable by other internal files but which are not exposed in the header
  * because we do not wish to make them visible to users. Ergo other internal
@@ -139,12 +139,6 @@ int paulis_getIndOfLefmostNonIdentityPauli(PauliStr* strings, qindex numStrings)
 }
 
 
-int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum) {
-
-    return paulis_getIndOfLefmostNonIdentityPauli(sum.strings, sum.numTerms);
-}
-
-
 bool paulis_containsXOrY(PauliStr str) {
 
     int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
@@ -155,16 +149,6 @@ bool paulis_containsXOrY(PauliStr str) {
         if (pauli == 1 || pauli == 2)
             return true;
     }
-
-    return false;
-}
-
-
-bool paulis_containsXOrY(PauliStrSum sum) {
-
-    for (qindex i=0; i<sum.numTerms; i++)
-        if (paulis_containsXOrY(sum.strings[i]))
-            return true;
 
     return false;
 }
@@ -246,7 +230,7 @@ qindex paulis_getTargetBitMask(PauliStr str) {
 }
 
 
-array<vector<int>,3> paulis_getSeparateInds(PauliStr str, Qureg qureg) {
+array<vector<int>,3> paulis_getSeparateInds(PauliStr str) {
 
     vector<int> iXYZ = paulis_getTargetInds(str);
     vector<int> iX, iY, iZ;
@@ -286,15 +270,22 @@ PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift) {
 }
 
 
-PauliStr paulis_getKetAndBraPauliStr(PauliStr str, Qureg qureg) {
+PauliStr paulis_getTensorProdOfPauliStr(PauliStr left, PauliStr right, int numQubits) {
 
-    PauliStr shifted = paulis_getShiftedPauliStr(str, qureg.numQubits);
-    
+    // computes left (tensor) right, assuming right is smaller than numQubits
+    PauliStr shifted = paulis_getShiftedPauliStr(left, numQubits);
+
     // return a new stack PauliStr instance (avoiding C++20 initialiser)
     PauliStr out;
-    out.lowPaulis  = str.lowPaulis  | shifted.lowPaulis;
-    out.highPaulis = str.highPaulis | shifted.highPaulis;
+    out.lowPaulis  = right.lowPaulis  | shifted.lowPaulis;
+    out.highPaulis = right.highPaulis | shifted.highPaulis;
     return out;
+}
+
+
+PauliStr paulis_getKetAndBraPauliStr(PauliStr str, Qureg qureg) {
+
+    return paulis_getTensorProdOfPauliStr(str, str, qureg.numQubits);
 }
 
 
@@ -316,6 +307,28 @@ PAULI_MASK_TYPE paulis_getKeyOfSameMixedAmpsGroup(PauliStr str) {
     }
 
     return key;
+}
+
+
+
+/*
+ * INTERNAL PauliStrSum UTILITIES
+ */
+
+
+int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum) {
+
+    return paulis_getIndOfLefmostNonIdentityPauli(sum.strings, sum.numTerms);
+}
+
+
+bool paulis_containsXOrY(PauliStrSum sum) {
+
+    for (qindex i=0; i<sum.numTerms; i++)
+        if (paulis_containsXOrY(sum.strings[i]))
+            return true;
+
+    return false;
 }
 
 
