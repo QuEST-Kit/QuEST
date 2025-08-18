@@ -3853,6 +3853,9 @@ void validate_quregCanBeWorkspace(Qureg qureg, Qureg workspace, const char* call
         (qureg.isDistributed    == workspace.isDistributed   ) &&
         (qureg.isGpuAccelerated == workspace.isGpuAccelerated),
         report::QUREG_IS_INCOMPATIBLE_WITH_WORKSPACE, caller);
+
+    // @todo
+    // check whether any of their memories overlap, which is forbidden
 }
 
 void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller) {
