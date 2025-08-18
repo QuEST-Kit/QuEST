@@ -742,6 +742,31 @@ void error_pauliStrShiftedByIllegalAmount() {
     raiseInternalError("A PauliStr was attemptedly shifted (likely invoked by its application upon a density matrix) by an illegal amount (e.g. negative, or that exceeding the PauliStr bitmask length).");
 }
 
+void error_pauliStrSumHasMoreQubitsThanSpecifiedInTensorProd() {
+
+    raiseInternalError("Attempted to calculate the tensor product of a PauliStrSum with itself, but it contained non-identity Paulis on qubits beyond the number specified.");
+}
+
+void error_pauliStrSumHasMoreQubitsThanSpecifiedInConjShift() {
+
+    raiseInternalError("Attempted to calculate the tensor product of a (conjugated) PauliStrSum with identity, but it contained non-identity Paulis on qubits beyond the number specified in the identity.");
+}
+
+void error_pauliStrSumTensorProdHasIncorrectNumTerms() {
+
+    raiseInternalError("The tensor product of a (conjugated) PauliStrSum with itself was attemptedly written to output PauliStrSum with an incompatible number of terms.");
+}
+
+void error_pauliStrSumProdHasIncorrectNumTerms() {
+
+    raiseInternalError("The product of a (conjugate transposed) PauliStrSum with itself was attemptedly written to an output PauliStrSum with an incompatible number of terms.");
+}
+
+void error_pauliStrSumConjHasIncorrectNumTerms() {
+
+    raiseInternalError("Attempted to calculate the conjugate of a PauliStrSum but the output PauliStrSum had a differing (and ergo invalid) number of terms.");
+}
+
 
 
 /*
@@ -891,4 +916,15 @@ void error_envVarsNotYetLoaded() {
 void error_envVarsAlreadyLoaded() {
 
     raiseInternalError("All environment variables were already loaded and validated yet re-loading was attempted.");
+}
+
+
+
+/*
+ * TROTTERISATION ERRORS
+ */
+
+void error_unexpectedNumLindbladSuperpropTerms() {
+
+    raiseInternalError("A different number of Lindblad superpropagator terms were prepared than expected.");
 }

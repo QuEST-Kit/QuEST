@@ -105,6 +105,10 @@ bool util_isApproxReal(qcomp num, qreal epsilon);
 
 qcomp util_getPowerOfI(size_t exponent);
 
+bool util_willProdOverflow(vector<qindex> terms);
+
+bool util_willSumOverflow(vector<qindex> terms);
+
 
 
 /*
@@ -401,6 +405,7 @@ void util_tryAllocVector(vector<qreal>    &vec, qindex size, std::function<void(
 void util_tryAllocVector(vector<qcomp>    &vec, qindex size, std::function<void()> errFunc);
 void util_tryAllocVector(vector<qcomp*>   &vec, qindex size, std::function<void()> errFunc);
 void util_tryAllocVector(vector<unsigned> &vec, qindex size, std::function<void()> errFunc);
+void util_tryAllocVector(vector<PauliStr> &vec, qindex size, std::function<void()> errFunc);
 
 // cuQuantum needs a vector<double> overload, which we additionally define when qreal!=double. Gross!
 #if FLOAT_PRECISION != 2

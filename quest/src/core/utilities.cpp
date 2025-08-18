@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <utility>
 #include <complex>
+#include <limits>
 #include <cmath>
 #include <vector>
 #include <array>
@@ -337,6 +338,39 @@ qcomp util_getPowerOfI(size_t exponent) {
     // seems silly, but at least it's precision agnostic!
     qcomp values[] = {1, 1_i, -1, -1_i};
     return values[exponent % 4];
+}
+
+bool util_willProdOverflow(vector<qindex> terms) {
+
+    qindex max = std::numeric_limits<qindex>::max();
+    qindex prod = 1;
+
+    for (auto x : terms) {
+
+        // division floors, so prod strictly exceed
+        if (prod > max / x)
+            return true;
+
+        prod *= x;
+    }
+
+    return false;
+}
+
+bool util_willSumOverflow(vector<qindex> terms) {
+
+    qindex max = std::numeric_limits<qindex>::max();
+    qindex sum = 0;
+
+    for (auto x : terms) {
+
+        if (sum >= max - x)
+            return true;
+        
+        sum += x;
+    }
+
+    return false;
 }
 
 
@@ -1107,6 +1141,7 @@ void util_tryAllocVector(vector<qreal>    &vec, qindex size, std::function<void(
 void util_tryAllocVector(vector<qcomp>    &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
 void util_tryAllocVector(vector<qcomp*>   &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
 void util_tryAllocVector(vector<unsigned> &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
+void util_tryAllocVector(vector<PauliStr> &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
 
 // cuQuantum needs a vector<double> overload, which we additionally define when qreal!=double. Gross!
 #if FLOAT_PRECISION != 2

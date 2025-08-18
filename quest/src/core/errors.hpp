@@ -294,6 +294,16 @@ void error_cuQuantumTempCpuAllocFailed();
 
 void error_pauliStrShiftedByIllegalAmount();
 
+void error_pauliStrSumHasMoreQubitsThanSpecifiedInTensorProd();
+
+void error_pauliStrSumHasMoreQubitsThanSpecifiedInConjShift();
+
+void error_pauliStrSumTensorProdHasIncorrectNumTerms();
+
+void error_pauliStrSumProdHasIncorrectNumTerms();
+
+void error_pauliStrSumConjHasIncorrectNumTerms();
+
 
 
 /*
@@ -367,6 +377,14 @@ void assert_printerGivenPositiveNumNewlines();
 void error_envVarsNotYetLoaded();
 
 void error_envVarsAlreadyLoaded();
+
+
+
+/*
+ * TROTTERISATION ERRORS
+ */
+
+void error_unexpectedNumLindbladSuperpropTerms();
 
 
 

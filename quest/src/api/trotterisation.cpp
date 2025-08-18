@@ -13,6 +13,7 @@
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/localiser.hpp"
+#include "quest/src/core/errors.hpp"
 
 #include <vector>
 
@@ -26,6 +27,10 @@ using std::vector;
 
 extern int paulis_getSignOfPauliStrConj(PauliStr str);
 extern PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift);
+extern void paulis_setPauliStrSumToScaledTensorProdOfConjWithSelf(PauliStrSum out, qreal factor, PauliStrSum in, int numQubits);
+extern void paulis_setPauliStrSumToScaledProdOfAdjointWithSelf(PauliStrSum out, qreal factor, PauliStrSum in);
+extern void paulis_setPauliStrSumToShiftedConj(PauliStrSum out, PauliStrSum in, int numQubits);
+extern qindex paulis_getNumTermsInPauliStrSumProdOfAdjointWithSelf(PauliStrSum in);
 
 void internal_applyFirstOrderTrotterRepetition(
     Qureg qureg, vector<int>& ketCtrls, vector<int>& braCtrls,
@@ -107,6 +112,37 @@ void internal_applyAllTrotterRepetitions(
     /// the accuracy of Trotterisation is greatly improved by randomisation
     /// or (even sub-optimal) grouping into commuting terms. Should we 
     /// implement these above or into another function?
+}
+
+qindex internal_getNumTotalSuperPropagatorTerms(PauliStrSum hamil, PauliStrSum* jumps, int numJumps) {
+
+    // this function returns 0 to indicate an overflow, which will never
+    // be confused for the correct non-overflowed output because hamil.numTerms>0
+    int OVERFLOW_FLAG = 0;
+
+    if (util_willProdOverflow({2,hamil.numTerms}))
+        return OVERFLOW_FLAG;
+        
+    // I (x) H + conj(H) (x) I
+    qindex numTerms = 2 * hamil.numTerms;
+
+    for (int i=0; i<numJumps; i++) {
+        qindex n = jumps[i].numTerms;
+
+        if (util_willProdOverflow({n,n,3}))
+            return OVERFLOW_FLAG;
+        if (util_willSumOverflow({numTerms, 3*n*n}))
+            return OVERFLOW_FLAG;
+
+        // conj(J) (x) J has n^2 terms
+        numTerms += n * n;
+
+        // I (x) (adj(J) . J ) + conj(...) (x) I is bounded by 2*n^2 terms
+        numTerms += 2 * paulis_getNumTermsInPauliStrSumProdOfAdjointWithSelf(jumps[i]);
+    }
+
+    // indicate no overflow
+    return OVERFLOW_FLAG;
 }
 
 
@@ -192,6 +228,8 @@ void applyMultiStateControlledTrotterizedPauliStrSumGadget(Qureg qureg, vector<i
  * CLOSED TIME EVOLUTION
  */
 
+extern "C" {
+
 void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal time, int order, int reps) {
     validate_quregFields(qureg, __func__);
     validate_pauliStrSumFields(hamil, __func__);
@@ -218,55 +256,38 @@ void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qrea
     internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, hamil, angle, order, reps, postmultiply);
 }
 
+} // end de-mangler
+
 
 
 /*
  * OPEN TIME EVOLUTION
  */
 
-extern PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift);
-extern PauliStr paulis_getKetAndBraPauliStr(PauliStr str, Qureg qureg);
-
 extern "C" {
 
-/// @todo
-/// we will not expose the below function; instead, we will trivially generalise it
-/// to where each jump operator is a PauliStrSum, hackily empowering (sub-optimal)
-/// projectors including off-diagonal, which is much more useful
-
-void applyTrotterizedPauliNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStr* jumps, int numJumps, qreal time, int order, int reps) {
+void applyTrotterizedPauliNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStrSum* jumps, int numJumps, qreal time, int order, int reps) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_pauliStrSumFields(hamil, __func__);
     validate_pauliStrSumTargets(hamil, qureg, __func__);
     validate_pauliStrSumIsHermitian(hamil, __func__);
     validate_trotterParams(qureg, order, reps, __func__);
+    validate_lindbladJumpOps(jumps, numJumps, qureg, __func__);
+    validate_lindbladDampingRates(damps, numJumps, __func__);
+    
+    qindex numSuperTerms = internal_getNumTotalSuperPropagatorTerms(hamil, jumps, numJumps); // 0 indicates overflow
+    validate_numLindbladSuperPropagatorTerms(numSuperTerms, __func__);
 
-    // TODO: validate numJumps
+    // validate memory allocations for all super-propagator terms
+    vector<PauliStr> superStrings;
+    vector<qcomp> superCoeffs;
+    auto callbackString = [&]() { validate_tempAllocSucceeded(false, numSuperTerms, sizeof(PauliStr), __func__); };
+    auto callbackCoeff  = [&]() { validate_tempAllocSucceeded(false, numSuperTerms, sizeof(qcomp),    __func__); };
+    util_tryAllocVector(superStrings, numSuperTerms, callbackString);
+    util_tryAllocVector(superCoeffs,  numSuperTerms, callbackCoeff);
 
-    // TODO; validate damps (looped); must be non-negative (0 legally disables one)
-
-    for (int n=0; n<numJumps; n++)
-        validate_pauliStrTargets(qureg, jumps[n], __func__);
-
-    // when all jump operators are Paulis, the linblad superop simplifies to:
-    // L = -i (Id (x) H - conj(H) (x) I) + sum_k gamma_k conj(L_k) (x) L_k - (sum_k gamma_k) Id
-    // where the final term commutes with everything and can just be brought out the front of
-    // the Trotter circuit; it becomes just a final scalar factor upon the state.
-    //
-    // So we need merely prepare a new PauliStrSum which contains
-    //   - old hamil times -i
-    //   - conj and shifted hamil times -i
-    //   - gamma_k conj(L_k) (x) L_k = +- gamma_k L_k (x) L_k depending on L_k Y parity
-    // then after effecting that, scale the state
-
-    vector<PauliStr> newStrings;
-    vector<qcomp> newCoeffs;
-
-    // premature optimisation
-    qindex numNewTerms = 2 * hamil.numTerms + numJumps;
-    newStrings.reserve(numNewTerms);
-    newCoeffs.reserve(numNewTerms);
+    qindex superTermInd = 0;
 
     // collect -i[H,rho] terms
     for (qindex n=0; n<hamil.numTerms; n++) {
@@ -274,40 +295,63 @@ void applyTrotterizedPauliNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qre
         qcomp oldCoeff = hamil.coeffs[n];
 
         // term of -i Id (x) H
-        newStrings.push_back(oldStr);
-        newCoeffs.push_back(-1_i * oldCoeff);
+        superStrings[superTermInd] = oldStr;
+        superCoeffs [superTermInd] = -1_i * oldCoeff;
+        superTermInd++;
 
         // term of i conj(H) (x) I
-        newStrings.push_back(paulis_getShiftedPauliStr(oldStr, qureg.numQubits));
-        newCoeffs.push_back(1_i * paulis_getSignOfPauliStrConj(oldStr) * std::conj(oldCoeff));
+        superStrings[superTermInd] = paulis_getShiftedPauliStr(oldStr, qureg.numQubits);
+        superCoeffs [superTermInd] = 1_i * paulis_getSignOfPauliStrConj(oldStr) * std::conj(oldCoeff);
+        superTermInd++;
     }
+
+    // below we bind superStrings/Coeffs to a spoofed PauliStrSum to pass to paulis functions
+    PauliStrSum temp;
+    int flagForDebugSafety = -1;
+    temp.isApproxHermitian = &flagForDebugSafety;
 
     // collect jump terms
     for (int n=0; n<numJumps; n++) {
 
-        // gamma_k conj(L_k) (x) L_k
-        newStrings.push_back(paulis_getKetAndBraPauliStr(jumps[n], qureg));
-        newCoeffs.push_back(damps[n] * paulis_getSignOfPauliStrConj(jumps[n]));
+        // damp  conj(J) (x) J
+        temp.strings = &superStrings[superTermInd];
+        temp.coeffs = &superCoeffs[superTermInd];
+        temp.numTerms = jumps[n].numTerms * jumps[n].numTerms;
+        superTermInd += temp.numTerms;
+        paulis_setPauliStrSumToScaledTensorProdOfConjWithSelf(temp, damps[n], jumps[n], qureg.numQubits);
+
+        // -damp/2  I (x) (adj(J) . J)
+        temp.strings = &superStrings[superTermInd];
+        temp.coeffs = &superCoeffs[superTermInd];
+        temp.numTerms = paulis_getNumTermsInPauliStrSumProdOfAdjointWithSelf(jumps[n]);
+        superTermInd += temp.numTerms;
+        paulis_setPauliStrSumToScaledProdOfAdjointWithSelf(temp, -damps[n]/2, jumps[n]);
+
+        // -damp/2 conj(adj(J) . J) (x) I = conj(above) when damp is real
+        PauliStrSum temp2;
+        temp2.strings = &superStrings[superTermInd];
+        temp2.coeffs = &superCoeffs[superTermInd];
+        temp2.numTerms = temp.numTerms;
+        superTermInd += temp2.numTerms;
+        paulis_setPauliStrSumToShiftedConj(temp2, temp, qureg.numQubits);
     }
 
-    // spoof a PauliStrSum to avoid superfluous alloc
-    PauliStrSum temp; 
-    temp.numTerms = numNewTerms;
-    temp.strings = newStrings.data();
-    temp.coeffs = newCoeffs.data();
-    temp.isApproxHermitian = nullptr; // will not be queried
+    // defensively check we didn't write too few (or too many, though that'd segfault
+    // above) Lindblad terms, in case the above code changes when jump ops are generalised
+    if (superTermInd != numSuperTerms)
+        error_unexpectedNumLindbladSuperpropTerms();
 
-    // effect exp(t S) = exp(x i S) | x=-i*time, premultiplying only
+    // pass superpropagator terms as temporary PauliStrSum
+    PauliStrSum superSum; 
+    superSum.numTerms = numSuperTerms;
+    superSum.strings = superStrings.data();
+    superSum.coeffs = superCoeffs.data();
+    superSum.isApproxHermitian = nullptr; // will not be queried
+
+    // effect exp(t S) = exp(x i S) | x=-i*time, left-multiplying only
     qcomp angle = qcomp(0, -time);
     bool postmultiply = false;
-    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, temp, angle, order, reps, postmultiply);
-
-    // scale by exp(- time sum_k gamma_k)
-    qreal dampSum = 0;
-    for (int n=0; n<numJumps; n++)
-        dampSum += damps[n];
-    qcomp fac = std::exp(- time * dampSum);
-    localiser_statevec_setQuregToSuperposition(fac, qureg, 0, qureg, 0, qureg);
+    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, superSum, angle, order, reps, postmultiply);
 }
 
-}
+} // end de-mangler

@@ -414,7 +414,25 @@ void validate_rotationAxisNotZeroVector(qreal x, qreal y, qreal z, const char* c
 
 void validate_mixedAmpsFitInNode(Qureg qureg, int numTargets, const char* caller);
 
+
+
+/*
+ * TROTTERISATION PARAMETERS
+ */
+
 void validate_trotterParams(Qureg qureg, int order, int reps, const char* caller);
+
+
+
+/*
+ * TIME EVOLUTION PARAMETERS
+ */
+
+void validate_lindbladJumpOps(PauliStrSum* jumps, int numJumps, Qureg qureg, const char* caller);
+
+void validate_lindbladDampingRates(qreal* damps, int numJumps, const char* caller);
+
+void validate_numLindbladSuperPropagatorTerms(qindex numSuperTerms, const char* caller);
 
 
 
