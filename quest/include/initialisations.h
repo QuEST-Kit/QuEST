@@ -113,7 +113,7 @@ void setDensityQuregFlatAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex n
 
 /// @notyetdoced
 /// @notyettested
-void setQuregToClone(Qureg targetQureg, Qureg copyQureg);
+void setQuregToClone(Qureg outQureg, Qureg inQureg);
 
 
 /** @notyetdoced

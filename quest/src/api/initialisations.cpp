@@ -175,17 +175,17 @@ void setDensityQuregFlatAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex n
 }
 
 
-void setQuregToClone(Qureg targetQureg, Qureg copyQureg) {
-    validate_quregFields(targetQureg, __func__);
-    validate_quregFields(copyQureg, __func__);
-    validate_quregsCanBeCloned(targetQureg, copyQureg, __func__);
+void setQuregToClone(Qureg outQureg, Qureg inQureg) {
+    validate_quregFields(outQureg, __func__);
+    validate_quregFields(inQureg, __func__);
+    validate_quregsCanBeCloned(outQureg, inQureg, __func__);
 
     // we invoke mixing/superposing, which involves superfluous
     // floating-point operators but is not expected to cause an
     // appreciable slowdown since simulation is memory-bound
-    (targetQureg.isDensityMatrix)?
-        localiser_densmatr_mixQureg(0, targetQureg, 1, copyQureg):
-        localiser_statevec_setQuregToSuperposition(0, targetQureg, 1, copyQureg, 0, copyQureg);
+    (outQureg.isDensityMatrix)?
+        localiser_densmatr_mixQureg(0, outQureg, 1, inQureg):
+        localiser_statevec_setQuregToSuperposition(0, outQureg, 1, inQureg, 0, inQureg);
 }
 
 
