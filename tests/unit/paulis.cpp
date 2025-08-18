@@ -328,6 +328,12 @@ TEST_CASE( "createPauliStrSum", TEST_CATEGORY ) {
             REQUIRE_THROWS_WITH( createPauliStrSum(nullptr, nullptr, numTerms), ContainsSubstring("number of terms must be a positive integer") );
         }
 
+        SECTION( "exceeds memory" ) {
+
+            // can choose even a number of terms so large that its size (in bytes) overflows
+            REQUIRE_THROWS_WITH( createPauliStrSum(nullptr, nullptr, 1LL << 60), ContainsSubstring("cannot fit in the available RAM") );
+        }
+
         SECTION( "mismatching lengths" ) {
 
             // specific to the C++ interface

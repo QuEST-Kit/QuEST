@@ -693,6 +693,9 @@ namespace report {
     string NEW_PAULI_STR_SUM_DIFFERENT_NUM_STRINGS_AND_COEFFS =
         "Given a different number of Pauli strings (${NUM_STRS}) and coefficients ${NUM_COEFFS}.";
 
+    string NEW_PAULI_STR_SUM_CANNOT_FIT_INTO_CPU_MEM =
+        "A PauliStrSum containing ${NUM_TERMS} terms cannot fit in the available RAM of ${NUM_BYTES} bytes.";
+
     string NEW_PAULI_STR_SUM_STRINGS_ALLOC_FAILED = 
         "Attempted allocation of the PauliStrSum's ${NUM_TERMS}-term array of Pauli strings (${NUM_BYTES} bytes total) unexpectedly failed.";
 
@@ -3190,14 +3193,25 @@ void validate_controlAndPauliStrTargets(Qureg qureg, int ctrl, PauliStr str, con
 
 void validate_newPauliStrSumParams(qindex numTerms, const char* caller) {
 
-    // note we do not bother checking whether RAM has enough memory to contain
-    // the new Pauli sum, because the caller to this function has already
-    // been passed data of the same size (and it's unlikely the user is about
-    // to max RAM), and the memory requirements scale only linearly with the
-    // parameters (e.g. numTerms), unlike the exponential scaling of the memory
-    // of Qureg and CompMatr, for example
-
     assertThat(numTerms > 0, report::NEW_PAULI_STR_SUM_NON_POSITIVE_NUM_STRINGS, {{"${NUM_TERMS}", numTerms}}, caller);
+
+    // attempt to fetch RAM, and simply return if we fail; if we unknowingly
+    // didn't have enough RAM, then alloc validation will trigger later
+    size_t memPerNode = 0;
+    try {
+        memPerNode = mem_tryGetLocalRamCapacityInBytes();
+    } catch(mem::COULD_NOT_QUERY_RAM e) {
+        return;
+    }
+
+    // pedantically check whether the PauliStrSum fits in memory. This seems
+    // ridiculous/pointless because the user is expected to have already prepared
+    // data of an equivalent size (which is passed), but checking means we catch
+    // when the user has passed an erroneous 'numTerms' which is way too large,
+    // avoiding a seg fault
+
+    bool fits = mem_canPauliStrSumFitInMemory(numTerms, memPerNode);
+    assertThat(fits, report::NEW_PAULI_STR_SUM_CANNOT_FIT_INTO_CPU_MEM, {{"${NUM_TERMS}", numTerms}, {"${NUM_BYTES}", memPerNode}}, caller);
 }
 
 void validate_newPauliStrSumMatchingListLens(qindex numStrs, qindex numCoeffs, const char* caller) {

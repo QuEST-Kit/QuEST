@@ -388,6 +388,15 @@ bool mem_canSuperOpFitInMemory(int numQubits, qindex numBytesPerNode) {
 }
 
 
+bool mem_canPauliStrSumFitInMemory(qindex numTerms, qindex numBytesPerNode) {
+
+    // awkwardly arranged to avoid overflow when numTerms is too large
+    size_t numBytesPerTerm = sizeof(PauliStr) + sizeof(qcomp);
+    qindex maxNumTerms = numBytesPerNode / numBytesPerTerm; // floors
+    return numTerms <= maxNumTerms;
+}
+
+
 
 /*
  * MEMORY ALLOCATION SUCCESS
