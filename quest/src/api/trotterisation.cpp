@@ -142,7 +142,7 @@ qindex internal_getNumTotalSuperPropagatorTerms(PauliStrSum hamil, PauliStrSum* 
     }
 
     // indicate no overflow
-    return OVERFLOW_FLAG;
+    return numTerms;
 }
 
 
