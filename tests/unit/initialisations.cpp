@@ -315,9 +315,6 @@ TEST_CASE( "setDensityQuregFlatAmps", TEST_CATEGORY ) {
 
 TEST_CASE( "setDensityQuregAmps", TEST_CATEGORY ) {
 
-    //void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qcomp** amps, qindex numRows, qindex numCols);
-
-
     SECTION( LABEL_CORRECTNESS ) {
 
         int numTotalRowsCols = getPow2(getNumCachedQubits());
