@@ -355,3 +355,4 @@ void applyTrotterizedPauliNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qre
 }
 
 } // end de-mangler
+

@@ -75,7 +75,7 @@ template <int NumCtrls, int NumTargs, bool ApplyConj, bool HasPower> void gpu_st
 
 template <bool HasPower> void gpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
 
-template <bool HasPower, bool MultiplyLeft, bool MultiplyRight, bool ConjRight> void gpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+template <bool HasPower, bool ApplyLeft, bool ApplyRight, bool ConjRight> void gpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
 
 
 /*

@@ -563,7 +563,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
  */
 
 
-template <bool HasPower, bool MultiplyLeft, bool MultiplyRight, bool ConjRight> 
+template <bool HasPower, bool ApplyLeft, bool ApplyRight, bool ConjRight> 
 __global__ void kernel_densmatr_allTargDiagMatr_sub(
     cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
     cu_qcomp* elems, qindex numElems, cu_qcomp exponent
@@ -572,7 +572,7 @@ __global__ void kernel_densmatr_allTargDiagMatr_sub(
 
     cu_qcomp fac = getCuQcomp(1, 0);
 
-    if constexpr (MultiplyLeft) {
+    if constexpr (ApplyLeft) {
 
         qindex i = fast_getQuregGlobalRowFromFlatIndex(n, numElems);
         cu_qcomp term = elems[i];
@@ -583,7 +583,7 @@ __global__ void kernel_densmatr_allTargDiagMatr_sub(
         fac = term;
     }
 
-    if constexpr (MultiplyRight) {
+    if constexpr (ApplyRight) {
 
         qindex m = concatenateBits(rank, n, logNumAmpsPerNode);
         qindex j = fast_getQuregGlobalColFromFlatIndex(m, numElems);
