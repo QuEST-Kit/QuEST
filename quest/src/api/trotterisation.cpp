@@ -34,7 +34,7 @@ extern qindex paulis_getNumTermsInPauliStrSumProdOfAdjointWithSelf(PauliStrSum i
 
 void internal_applyFirstOrderTrotterRepetition(
     Qureg qureg, vector<int>& ketCtrls, vector<int>& braCtrls,
-    vector<int>& states, PauliStrSum sum, qcomp angle, bool postmultiply, bool reverse
+    vector<int>& states, PauliStrSum sum, qcomp angle, bool onlyLeftApply, bool reverse
 ) {
     // apply each sum term as a gadget, in forward or reverse order
     for (qindex i=0; i<sum.numTerms; i++) {
@@ -51,7 +51,7 @@ void internal_applyFirstOrderTrotterRepetition(
             continue;
 
         // Linbladian propagator is only ever pre-multiplied
-        if (!postmultiply)
+        if (onlyLeftApply)
             continue;
 
         // effect rho -> rho exp(i angle * coeff * term)^dagger via linearised
@@ -65,14 +65,14 @@ void internal_applyFirstOrderTrotterRepetition(
 
 void internal_applyHigherOrderTrotterRepetition(
     Qureg qureg, vector<int>& ketCtrls, vector<int>& braCtrls,
-    vector<int>& states, PauliStrSum sum, qcomp angle, int order, bool postmultiply
+    vector<int>& states, PauliStrSum sum, qcomp angle, int order, bool onlyLeftApply
 ) {
     if (order == 1) {
-        internal_applyFirstOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, angle, postmultiply, false);
+        internal_applyFirstOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, angle, onlyLeftApply, false);
     
     } else if (order == 2) {
-        internal_applyFirstOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, angle/2, postmultiply, false);
-        internal_applyFirstOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, angle/2, postmultiply, true);
+        internal_applyFirstOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, angle/2, onlyLeftApply, false);
+        internal_applyFirstOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, angle/2, onlyLeftApply, true);
     
     } else {
         qreal p = 1. / (4 - std::pow(4, 1./(order-1)));
@@ -80,17 +80,17 @@ void internal_applyHigherOrderTrotterRepetition(
         qcomp b = (1-4*p) * angle;
 
         int lower = order - 2;
-        internal_applyHigherOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, a, lower, postmultiply); // angle -> a
-        internal_applyHigherOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, a, lower, postmultiply);
-        internal_applyHigherOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, b, lower, postmultiply); // angle -> b
-        internal_applyHigherOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, a, lower, postmultiply);
-        internal_applyHigherOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, a, lower, postmultiply);
+        internal_applyHigherOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, a, lower, onlyLeftApply); // angle -> a
+        internal_applyHigherOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, a, lower, onlyLeftApply);
+        internal_applyHigherOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, b, lower, onlyLeftApply); // angle -> b
+        internal_applyHigherOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, a, lower, onlyLeftApply);
+        internal_applyHigherOrderTrotterRepetition(qureg, ketCtrls, braCtrls, states, sum, a, lower, onlyLeftApply);
     }
 }
 
 void internal_applyAllTrotterRepetitions(
     Qureg qureg, int* controls, int* states, int numControls, 
-    PauliStrSum sum, qcomp angle, int order, int reps, bool postmultiply
+    PauliStrSum sum, qcomp angle, int order, int reps, bool onlyLeftApply
 ) {
     // exp(i angle sum) = identity when angle=0
     if (angle == qcomp(0,0))
@@ -106,7 +106,7 @@ void internal_applyAllTrotterRepetitions(
     // perform carefully-ordered sequence of gadgets
     for (int r=0; r<reps; r++)
         internal_applyHigherOrderTrotterRepetition(
-            qureg, ketCtrlsVec, braCtrlsVec, statesVec, sum, arg, order, postmultiply);
+            qureg, ketCtrlsVec, braCtrlsVec, statesVec, sum, arg, order, onlyLeftApply);
 
     /// @todo
     /// the accuracy of Trotterisation is greatly improved by randomisation
@@ -160,8 +160,9 @@ void applyNonUnitaryTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, q
     validate_trotterParams(qureg, order, reps, __func__);
     // sum is permitted to be non-Hermitian
 
-    bool postmultiply = true;
-    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, sum, angle, order, reps, postmultiply);
+    // |psi> -> U |psi>, rho -> U rho U^dagger
+    bool onlyLeftApply = false;
+    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, sum, angle, order, reps, onlyLeftApply);
 }
 
 void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps) {
@@ -171,8 +172,8 @@ void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle
     validate_pauliStrSumIsHermitian(sum, __func__);
     validate_trotterParams(qureg, order, reps, __func__);
 
-    bool postmultiply = true;
-    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, sum, angle, order, reps, postmultiply);
+    bool onlyLeftApply = false;
+    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, sum, angle, order, reps, onlyLeftApply);
 }
 
 void applyControlledTrotterizedPauliStrSumGadget(Qureg qureg, int control, PauliStrSum sum, qreal angle, int order, int reps) {
@@ -182,8 +183,8 @@ void applyControlledTrotterizedPauliStrSumGadget(Qureg qureg, int control, Pauli
     validate_controlAndPauliStrSumTargets(qureg, control, sum, __func__);
     validate_trotterParams(qureg, order, reps, __func__);
     
-    bool postmultiply = true;
-    internal_applyAllTrotterRepetitions(qureg, &control, nullptr, 1, sum, angle, order, reps, postmultiply);
+    bool onlyLeftApply = false;
+    internal_applyAllTrotterRepetitions(qureg, &control, nullptr, 1, sum, angle, order, reps, onlyLeftApply);
 }
 
 void applyMultiControlledTrotterizedPauliStrSumGadget(Qureg qureg, int* controls, int numControls, PauliStrSum sum, qreal angle, int order, int reps) {
@@ -193,8 +194,8 @@ void applyMultiControlledTrotterizedPauliStrSumGadget(Qureg qureg, int* controls
     validate_controlsAndPauliStrSumTargets(qureg, controls, numControls, sum, __func__);
     validate_trotterParams(qureg, order, reps, __func__);
 
-    bool postmultiply = true;
-    internal_applyAllTrotterRepetitions(qureg, controls, nullptr, numControls, sum, angle, order, reps, postmultiply);
+    bool onlyLeftApply = false;
+    internal_applyAllTrotterRepetitions(qureg, controls, nullptr, numControls, sum, angle, order, reps, onlyLeftApply);
 }
 
 void applyMultiStateControlledTrotterizedPauliStrSumGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStrSum sum, qreal angle, int order, int reps) {
@@ -205,8 +206,8 @@ void applyMultiStateControlledTrotterizedPauliStrSumGadget(Qureg qureg, int* con
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
     validate_trotterParams(qureg, order, reps, __func__);
 
-    bool postmultiply = true;
-    internal_applyAllTrotterRepetitions(qureg, controls, states, numControls, sum, angle, order, reps, postmultiply);
+    bool onlyLeftApply = false;
+    internal_applyAllTrotterRepetitions(qureg, controls, states, numControls, sum, angle, order, reps, onlyLeftApply);
 }
 
 } // end de-mangler
@@ -239,8 +240,8 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
 
     // exp(-i t H) = exp(x i H) | x=-t
     qcomp angle = - time;
-    bool postmultiply = true;
-    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, hamil, angle, order, reps, postmultiply);
+    bool onlyLeftApply = false;
+    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, hamil, angle, order, reps, onlyLeftApply);
 }
 
 void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal tau, int order, int reps) {
@@ -252,8 +253,8 @@ void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qrea
 
     // exp(-tau H) = exp(x i H) | x=tau*i
     qcomp angle = qcomp(0, tau);
-    bool postmultiply = true;
-    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, hamil, angle, order, reps, postmultiply);
+    bool onlyLeftApply = false;
+    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, hamil, angle, order, reps, onlyLeftApply);
 }
 
 } // end de-mangler
@@ -350,8 +351,8 @@ void applyTrotterizedPauliNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qre
 
     // effect exp(t S) = exp(x i S) | x=-i*time, left-multiplying only
     qcomp angle = qcomp(0, -time);
-    bool postmultiply = false;
-    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, superSum, angle, order, reps, postmultiply);
+    bool onlyLeftApply = true;
+    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, superSum, angle, order, reps, onlyLeftApply);
 }
 
 } // end de-mangler
