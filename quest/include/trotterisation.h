@@ -499,9 +499,148 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
 void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal tau, int order, int reps);
 
 
-/// @notyettested
-/// @notyetvalidated
-/// @notyetdoced
+/** @notyettested
+ * 
+ * Simulates open dynamics of @p qureg as per the Lindblad master equation, under the time-independent
+ * Hamiltonian @p hamil and jump operators @p jumps with corresponding damping rates @p damps, with 
+ * evolution approximated by symmetrized Trotterisation of the specified @p order and number of cycles
+ * @p reps. See applyTrotterizedPauliStrSumGadget() for information about the Trotter method.
+ * 
+ * @formulae 
+ * 
+ * Let @f$ \rho = @f$ @p qureg, @f$ \hat{H} = @f$ @p hamil, @f$ t = @f$ @p time, and denote the @f$ i @f$-th
+ * element of @p damps and @p jumps as @f$ \gamma_i @f$ and @f$ \hat{J}_i @f$ respectively. The Lindblad
+ * master equation prescribes that @f$ \rho @f$ time-evolves according to
+ * @f[
+     \frac{\mathrm{d}}{\mathrm{d}t} \rho = -\iu [\hat{H}, \rho] + \sum\limits_i \gamma_i \left(
+          \hat{J}_i \rho \hat{J}_i^\dagger - \frac{1}{2} \left\{ \hat{J}_i^\dagger \hat{J}_i, \rho \right\}
+     \right).
+ * @f]
+ * This function works by building a superoperator of the right-hand-side which acts upon the space of
+ * linearised @f$\rho@f$,
+ * @f[
+     \boldsymbol{L} = -\iu \left( \hat{\id} \otimes \hat{H} - \hat{H}^* \otimes \hat{\id} \right) +
+          \sum\limits_i \gamma_i \left(
+               \hat{J}_i^* \otimes \hat{J}_i - \frac{1}{2} \hat{\id} \otimes (\hat{J}^\dagger J_i)
+               - \frac{1}{2} (\hat{J}^\dagger J_i)^* \otimes \hat{\id}
+          \right),
+ * @f]
+ * as a non-Hermitian weighted sum of Pauli strings (a PauliStrSum). The superoperator @f$ \boldsymbol{L} @f$
+ * informs a superpropagator which exactly solves evolution as:
+ * @f[
+     \ket{\rho(t)} = \exp\left( t \boldsymbol{L} \right) \ket{\rho(0)}.
+ * @f]
+ * This function approximates the superpropagator @f$ \exp\left( t \boldsymbol{L} \right) @f$ using a higher-order 
+ * symmetrized Suzuki-Trotter decomposition, as informed by parameters @p order and @p reps.
+ * 
+ * @par Utility
+ * 
+ * This function simulates time evolution of an open system, where the jump operators model interactions with
+ * the environment. This can capture sophisticated decoherence processes of the quantum state which are untenable
+ * to model as discrete operations with functions like mixKrausMap(). This function also proves useful for
+ * preparing realistic, physical input states to quantum metrological circuits, or the general high-performance
+ * simulation of digital time evolution of condensed matter systems.
+ *
+ * @equivalences
+ * 
+ * - When `numJumps = 0`, evolution is unitary and the Lindblad master equation simplifes to the Liouville–von Neumann 
+ *   equation, which is equivalently (and more efficiently) simulated via applyTrotterizedUnitaryTimeEvolution().
+ * 
+ * @constraints
+ * 
+ * - Each damping rate in @p damps is expected to be a zero or positive number, in order for evolution to be trace 
+ *   preserving. Validation will assert that each damping rate @f$ \gamma_i @f$ satisfies
+ *   @f[
+          \min\limits_{i} \gamma_i \ge - \valeps
+ *   @f]
+ *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setValidationEpsilon(). Non-trace-preserving,
+ *   negative damping rates can be simulated by disabling numerical validation via `setValidationEpsilon(0)`.
+ * 
+ * - The @p time parameter is necessarily real, and cannot be generalised to imaginary or complex like in other
+ *   functions. Generalisation is trivially numerically possible, but has no established physical meaning and so
+ *   is not exposed in the API. Please open an issue on Github for advice on complex-time simulation.
+ * 
+ * - Simulation is exact only when @p reps @f$ \rightarrow \infty @f$ or all terms in the superoperator 
+ *   @f$ \boldsymbol{L} @f$ incidentally commute with one another, and otherwise incorporates Trotter error.
+ *   Unlike for unitary evolution, Trotter error _does_ break normalisation of the state and so this function
+ *   is generally non-trace-preserving. In theory, normalisation can be restored with setQuregToRenormalized()
+ *   though noticable norm-breaking indicates evolution was inaccurate, and should instead be repeated with 
+ *   increased @p order or @p reps parameters.
+ * 
+ * - The function instantiates superoperator @f$ \boldsymbol{L} @f$ above as a temporary PauliStrSum, incurring a 
+ *   memory and time overhead which grows quadratically with the number of terms in @p hamil, plus quadratically
+ *   with the number in each jump operator. These overheads may prove prohibitively costly for PauliStrSum
+ *   containing very many terms.
+ * 
+ * @myexample
+ *
+ * ```
+    // |+><+|
+    Qureg qureg = createDensityQureg(3);
+    initPlusState(qureg);
+
+    PauliStrSum hamil = createInlinePauliStrSum(R"(
+        1  IIX
+        2  IYI
+        3  ZZZ
+    )");
+
+    // |0><0|
+    PauliStrSum jump1 = createInlinePauliStrSum(R"(
+        0.5  I
+        0.5  Z
+    )");
+
+    // |1><0|
+    PauliStrSum jump2 = createInlinePauliStrSum(R"(
+         0.5  X
+        -0.5i Y
+    )");
+
+    // "noisiness"
+    qreal damps[] = {.3, .4};
+    PauliStrSum jumps[] = {jump1, jump2};
+    int numJumps = 2;
+
+    reportScalar("initial energy", calcExpecPauliStrSum(qureg, hamil));
+
+    // time and accuracy
+    qreal time = 0.5;
+    int order = 4;
+    int reps = 100;
+    applyTrotterizedNoisyTimeEvolution(qureg, hamil, damps, jumps, numJumps, time, order, reps);
+
+    reportScalar("final energy", calcExpecPauliStrSum(qureg, hamil));
+ * ```
+ * 
+ * @see
+ *  - applyTrotterizedUnitaryTimeEvolution()
+ *  - applyTrotterizedImaginaryTimeEvolution()
+ * 
+ * @param[in,out] qureg     the density-matrix state to evolve and modify.
+ * @param[in]     hamil     the Hamiltonian of the qubit system (excludes any environment).
+ * @param[in]     damps     the damping rates of each jump operator in @p jumps.
+ * @param[in]     jumps     the jump operators specified as PauliStrSum.
+ * @param[in]     numJumps  the length of list @p jumps (and @p damps).
+ * @param[in]     time      the duration through which to evolve the state.
+ * @param[in]     order     the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
+ * @param[in]     reps      the number of Trotter repetitions.
+ * 
+ * @throws @validationerror
+ * - if @p qureg, @p hamil or any element of @p jumps are uninitialised.
+ * - if @p qureg is not a density matrix.
+ * - if @p hamil or any element of @p jumps contains non-identities on qubits beyond the size of @p qureg.
+ * - if @p hamil is not approximately Hermitian.
+ * - if @p numJumps is negative.
+ * - if any element of @p damps is not approximately positive.
+ * - if the total number of Lindbladian superoperator terms overflows the `qindex` type.
+ * - if all Lindbladian superoperator terms cannot simultaneously fit into CPU memory.
+ * - if memory allocation of the Lindbladian superoperator terms unexpectedly fails.
+ * - if @p order is not 1 nor a positive, @b even integer.
+ * - if @p reps is not a positive integer.
+ * 
+ * @author Tyson Jones
+ */
 void applyTrotterizedNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStrSum* jumps, int numJumps, qreal time, int order, int reps);
 
 
