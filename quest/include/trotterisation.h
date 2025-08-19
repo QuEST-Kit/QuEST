@@ -123,7 +123,7 @@ extern "C" {
  *   only real coefficients. Validation will check that @p sum is approximately Hermitian, permitting
  *   coefficients with imaginary components smaller (in magnitude) than epsilon.
  *   @f[ 
-        \max\limits_{i} \Big|c_i| \le \valeps
+        \max\limits_{i} |c_i| \le \valeps
  *   @f]
  *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setValidationEpsilon().
  *   Otherwise, use applyNonUnitaryTrotterizedPauliStrSumGadget() to permit non-Hermitian @p sum
@@ -140,8 +140,8 @@ extern "C" {
  * @param[in,out] qureg  the state to modify.
  * @param[in]     sum    a weighted sum of Pauli strings to approximately exponentiate.
  * @param[in]     angle  the prefactor of @p sum times @f$ i @f$ in the exponent.
- * @param[in]     order  the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...)
- * @param[in]     reps   the number of Trotter repetitions
+ * @param[in]     order  the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
+ * @param[in]     reps   the number of Trotter repetitions.
  * 
  * @throws @validationerror
  * - if @p qureg or @p sum are uninitialised.
@@ -221,8 +221,8 @@ void applyMultiStateControlledTrotterizedPauliStrSumGadget(Qureg qureg, int* con
  * @param[in,out] qureg  the state to modify.
  * @param[in]     sum    a weighted sum of Pauli strings to approximately exponentiate.
  * @param[in]     angle  an effective prefactor of @p sum in the exponent.
- * @param[in]     order  the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...)
- * @param[in]     reps   the number of Trotter repetitions
+ * @param[in]     order  the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
+ * @param[in]     reps   the number of Trotter repetitions.
  * 
  * @throws @validationerror
  * - if @p qureg or @p sum are uninitialised.
@@ -311,7 +311,7 @@ extern "C" {
  *   @p hamil is approximately Hermitian, permitting coefficients with imaginary components smaller (in magnitude) than 
  *   epsilon.
  *   @f[ 
-        \max\limits_{i} \Big|c_i| \le \valeps
+        \max\limits_{i} |c_i| \le \valeps
  *   @f]
  *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setValidationEpsilon(). The imaginary components
  *   of the Hamiltonian _are_ considered during simulation.
@@ -322,10 +322,11 @@ extern "C" {
  *   applyNonUnitaryTrotterizedPauliStrSumGadget().
  * 
  * - The simulated system is _closed_ with dynamics described fully by the Hamiltonian @p hamil. Open or otherwise noisy
- *   system dynamics can be simulated with applyTrotterizedPauliNoisyTimeEvolution().
+ *   system dynamics can be simulated with applyTrotterizedNoisyTimeEvolution().
  * 
  * - Simulation is exact such that the effected operation is precisely @f$ \exp(-\iu t \hat{H}) @f$ only when 
- *   @p reps @f$ \rightarrow \infty @f$ or all terms in @p hamil commute with one another.
+ *   @p reps @f$ \rightarrow \infty @f$ or all terms in @p hamil commute with one another. Conveniently, Trotter error
+ *   does _not_ break normalisation of the state since the approximating circuit remains unitary.
  * 
  * @myexample
  * 
@@ -348,14 +349,14 @@ extern "C" {
  *
  * @see
  *  - applyTrotterizedImaginaryTimeEvolution()
- *  - applyTrotterizedPauliNoisyTimeEvolution()
+ *  - applyTrotterizedNoisyTimeEvolution()
  *  - applyNonUnitaryTrotterizedPauliStrSumGadget()
  * 
  * @param[in,out] qureg  the state to modify.
  * @param[in]     hamil  the Hamiltonian as a a weighted sum of Pauli strings.
  * @param[in]     time   the duration over which to simulate evolution.
- * @param[in]     order  the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...)
- * @param[in]     reps   the number of Trotter repetitions
+ * @param[in]     order  the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
+ * @param[in]     reps   the number of Trotter repetitions.
  * 
  * @throws @validationerror
  * - if @p qureg or @p hamil are uninitialised.
@@ -369,7 +370,7 @@ extern "C" {
 void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal time, int order, int reps);
 
 
-/** @notyetdoced
+/** @notyettested
  * 
  * Simulates imaginary-time evolution of @p qureg for the duration @p tau under the time-independent 
  * Hamiltonian @p hamil, as approximated by symmetrized Trotterisation of the specified @p order and
@@ -444,7 +445,7 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
  *   assumed, requiring it contains only real coefficients. Validation will check that @p hamil is _approximately_ Hermitian, 
  *   permitting coefficients with imaginary components smaller (in magnitude) than epsilon.
  *   @f[ 
-        \max\limits_{i} \Big|c_i| \le \valeps
+        \max\limits_{i} |c_i| \le \valeps
  *   @f]
  *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setValidationEpsilon(). Beware however that 
  *   imaginary-time evolution under a non-Hermitian Hamiltonian will _not_ necessarily approach the lowest lying eigenstate
@@ -484,8 +485,8 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
  * @param[in,out] qureg  the state to modify.
  * @param[in]     hamil  the Hamiltonian as a a weighted sum of Pauli strings.
  * @param[in]     tau    the duration over which to simulate imaginary-time evolution.
- * @param[in]     order  the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...)
- * @param[in]     reps   the number of Trotter repetitions
+ * @param[in]     order  the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
+ * @param[in]     reps   the number of Trotter repetitions.
  * 
  * @throws @validationerror
  * - if @p qureg or @p hamil are uninitialised.
