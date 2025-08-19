@@ -113,7 +113,7 @@ extern "C" {
  *   @f]
  *   as utilised by the function applyTrotterizedUnitaryTimeEvolution().
  * 
- * - This function is equivalent to applyNonUnitaryTrotterizedPauliStrSumGadget() when passing
+ * - This function is equivalent to applyTrotterizedNonUnitaryPauliStrSumGadget() when passing
  *   a @p qcomp instance with a zero imaginary component as the @p angle parameter. This latter 
  *   function is useful for generalising dynamical simulation to imaginary-time evolution.
  * 
@@ -126,11 +126,11 @@ extern "C" {
         \max\limits_{i} |c_i| \le \valeps
  *   @f]
  *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setValidationEpsilon().
- *   Otherwise, use applyNonUnitaryTrotterizedPauliStrSumGadget() to permit non-Hermitian @p sum
+ *   Otherwise, use applyTrotterizedNonUnitaryPauliStrSumGadget() to permit non-Hermitian @p sum
  *   and ergo effect a non-unitary exponential(s). 
  * 
  * - The @p angle parameter is necessarily real to retain unitarity, but can be relaxed to an arbitrary 
- *   complex scalar (i.e. a @p qcomp) using applyNonUnitaryTrotterizedPauliStrSumGadget(). This permits
+ *   complex scalar (i.e. a @p qcomp) using applyTrotterizedNonUnitaryPauliStrSumGadget(). This permits
  *   cancelling the complex unit @f$ i @f$ to effect non-unitary @f$ \exp(\theta \, \hat{H}) @f$ as
  *   is useful for imaginary-time evolution.
  * 
@@ -152,7 +152,7 @@ extern "C" {
  * 
  * @see
  *  - applyPauliGadget()
- *  - applyNonUnitaryTrotterizedPauliStrSumGadget()
+ *  - applyTrotterizedNonUnitaryPauliStrSumGadget()
  *  - applyTrotterizedUnitaryTimeEvolution()
  * 
  * @author Tyson Jones
@@ -165,7 +165,7 @@ void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle
 /// @see
 ///  - applyTrotterizedPauliStrSumGadget()
 ///  - applyControlledCompMatr1()
-void applyControlledTrotterizedPauliStrSumGadget(Qureg qureg, int control, PauliStrSum sum, qreal angle, int order, int reps);
+void applyTrotterizedControlledPauliStrSumGadget(Qureg qureg, int control, PauliStrSum sum, qreal angle, int order, int reps);
 
 
 /// @notyetdoced
@@ -173,7 +173,7 @@ void applyControlledTrotterizedPauliStrSumGadget(Qureg qureg, int control, Pauli
 /// @see
 ///  - applyTrotterizedPauliStrSumGadget()
 ///  - applyMultiControlledCompMatr1()
-void applyMultiControlledTrotterizedPauliStrSumGadget(Qureg qureg, int* controls, int numControls, PauliStrSum sum, qreal angle, int order, int reps);
+void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, int* controls, int numControls, PauliStrSum sum, qreal angle, int order, int reps);
 
 
 /// @notyetdoced
@@ -181,7 +181,7 @@ void applyMultiControlledTrotterizedPauliStrSumGadget(Qureg qureg, int* controls
 /// @see
 ///  - applyTrotterizedPauliStrSumGadget()
 ///  - applyMultiStateControlledCompMatr1()
-void applyMultiStateControlledTrotterizedPauliStrSumGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStrSum sum, qreal angle, int order, int reps);
+void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStrSum sum, qreal angle, int order, int reps);
 
 
 /** @notyettested
@@ -232,7 +232,7 @@ void applyMultiStateControlledTrotterizedPauliStrSumGadget(Qureg qureg, int* con
  * 
  * @author Tyson Jones
  */
-void applyNonUnitaryTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps);
+void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps);
 
 
 // end de-mangler
@@ -247,16 +247,16 @@ void applyNonUnitaryTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, q
 /// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
-/// @see applyMultiControlledTrotterizedPauliStrSumGadget()
-void applyMultiControlledTrotterizedPauliStrSumGadget(Qureg qureg, std::vector<int> controls, PauliStrSum sum, qreal angle, int order, int reps);
+/// @see applyTrotterizedMultiControlledPauliStrSumGadget()
+void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, std::vector<int> controls, PauliStrSum sum, qreal angle, int order, int reps);
 
 
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
-/// @see applyMultiStateControlledTrotterizedPauliStrSumGadget()
-void applyMultiStateControlledTrotterizedPauliStrSumGadget(Qureg qureg, std::vector<int> controls, std::vector<int> states, PauliStrSum sum, qreal angle, int order, int reps);
+/// @see applyTrotterizedMultiStateControlledPauliStrSumGadget()
+void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, std::vector<int> controls, std::vector<int> states, PauliStrSum sum, qreal angle, int order, int reps);
 
 
 #endif // __cplusplus
@@ -320,7 +320,7 @@ extern "C" {
  * - The @p time parameter is necessarily real to retain unitarity. It can be substituted for a strictly imaginary
  *   scalar to perform imaginary-time evolution (as per Wick rotation @f$ t \rightarrow - \iu \tau @f$) via 
  *   applyTrotterizedImaginaryTimeEvolution(), or generalised to an arbitrary complex number through direct use of 
- *   applyNonUnitaryTrotterizedPauliStrSumGadget().
+ *   applyTrotterizedNonUnitaryPauliStrSumGadget().
  * 
  * - The simulated system is _closed_ with dynamics described fully by the Hamiltonian @p hamil. Open or otherwise noisy
  *   system dynamics can be simulated with applyTrotterizedNoisyTimeEvolution().
@@ -351,7 +351,7 @@ extern "C" {
  * @see
  *  - applyTrotterizedImaginaryTimeEvolution()
  *  - applyTrotterizedNoisyTimeEvolution()
- *  - applyNonUnitaryTrotterizedPauliStrSumGadget()
+ *  - applyTrotterizedNonUnitaryPauliStrSumGadget()
  * 
  * @param[in,out] qureg  the state to modify.
  * @param[in]     hamil  the Hamiltonian as a a weighted sum of Pauli strings.
@@ -438,7 +438,7 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
  * 
  * @equivalences
  * 
- * - This function merely wraps applyNonUnitaryTrotterizedPauliStrSumGadget() which effects @f$ \exp(\iu \theta \hat{H}) @f$,
+ * - This function merely wraps applyTrotterizedNonUnitaryPauliStrSumGadget() which effects @f$ \exp(\iu \theta \hat{H}) @f$,
  *   passing @f$ \theta = \tau \iu @f$.
  * 
  * @constraints
@@ -454,7 +454,7 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
  *   (the eigenvalues may be non-real) so is likely of limited utility.
  * 
  * - The @p tau parameter is necessarily real such that evolution approaches the groundstate (modulo renormalisation).
- *   It can generalised to an arbitrary complex number through direct use of applyNonUnitaryTrotterizedPauliStrSumGadget().
+ *   It can generalised to an arbitrary complex number through direct use of applyTrotterizedNonUnitaryPauliStrSumGadget().
  * 
  * - Simulation is exact such that the effected operation is precisely @f$ \exp(-\tau \hat{H}) @f$ only when 
  *   @p reps @f$ \rightarrow \infty @f$ or all terms in @p hamil commute with one another.
@@ -482,7 +482,7 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
  *
  * @see
  *  - applyTrotterizedUnitaryTimeEvolution()
- *  - applyNonUnitaryTrotterizedPauliStrSumGadget()
+ *  - applyTrotterizedNonUnitaryPauliStrSumGadget()
  * 
  * @param[in,out] qureg  the state to modify.
  * @param[in]     hamil  the Hamiltonian as a a weighted sum of Pauli strings.
