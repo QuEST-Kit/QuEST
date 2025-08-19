@@ -198,7 +198,7 @@ void applyMultiStateControlledTrotterizedPauliStrSumGadget(Qureg qureg, int* con
  * @f]
  * via a Trotter-Suzuki decomposition of the specified @p order and number of repetitions (@p reps). 
  * 
- * See applyTrotterizedPauliStrSumGadget() for more information about the decomposition.
+ * > See applyTrotterizedPauliStrSumGadget() for more information about the decomposition.
  *
  * @equivalences
  * 
@@ -281,7 +281,6 @@ extern "C" {
  * 
  * Unitarily time evolves @p qureg for the duration @p time under the time-independent Hamiltonian @p hamil, 
  * as approximated by symmetrized Trotterisation of the specified @p order and number of cycles @p reps. 
- * See applyTrotterizedPauliStrSumGadget() for information about the Trotter method.
  * 
  * @formulae 
  * 
@@ -299,6 +298,8 @@ extern "C" {
  * @f[
       \approx U(t) \, \dmrho \, U(t)^\dagger.
  * @f]
+ *
+ * > See applyTrotterizedPauliStrSumGadget() for information about the Trotter method.
  * 
  * @equivalences
  * 
@@ -374,8 +375,7 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
  * 
  * Simulates imaginary-time evolution of @p qureg for the duration @p tau under the time-independent 
  * Hamiltonian @p hamil, as approximated by symmetrized Trotterisation of the specified @p order and
- * number of cycles @p reps. See applyTrotterizedPauliStrSumGadget() for information about the Trotter 
- * method.
+ * number of cycles @p reps. 
  * 
  * > [!IMPORTANT]
  * > This is a non-physical operation and breaks the normalisation of state which can be restored
@@ -398,6 +398,8 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
  * @f[
       \approx V(\tau) \, \dmrho \, V(\tau)^\dagger.
  * @f]
+ *
+ * > See applyTrotterizedPauliStrSumGadget() for information about the Trotter method.
  * 
  * @par Utility
  * 
@@ -505,7 +507,7 @@ void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qrea
  * Simulates open dynamics of @p qureg as per the Lindblad master equation, under the time-independent
  * Hamiltonian @p hamil and jump operators @p jumps with corresponding damping rates @p damps, with 
  * evolution approximated by symmetrized Trotterisation of the specified @p order and number of cycles
- * @p reps. See applyTrotterizedPauliStrSumGadget() for information about the Trotter method.
+ * @p reps.
  * 
  * @formulae 
  * 
@@ -533,6 +535,8 @@ void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qrea
  * @f]
  * This function approximates the superpropagator @f$ \exp\left( t \boldsymbol{L} \right) @f$ using a higher-order 
  * symmetrized Suzuki-Trotter decomposition, as informed by parameters @p order and @p reps.
+ * 
+ * > See applyTrotterizedPauliStrSumGadget() for information about the Trotter method.
  * 
  * @par Utility
  * 
