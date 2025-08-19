@@ -502,7 +502,7 @@ void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qrea
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
-void applyTrotterizedPauliNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStrSum* jumps, int numJumps, qreal time, int order, int reps);
+void applyTrotterizedNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStrSum* jumps, int numJumps, qreal time, int order, int reps);
 
 
 // end de-mangler

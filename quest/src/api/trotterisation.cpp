@@ -267,7 +267,7 @@ void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qrea
 
 extern "C" {
 
-void applyTrotterizedPauliNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStrSum* jumps, int numJumps, qreal time, int order, int reps) {
+void applyTrotterizedNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStrSum* jumps, int numJumps, qreal time, int order, int reps) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_pauliStrSumFields(hamil, __func__);
