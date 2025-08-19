@@ -45,6 +45,12 @@ using std::tuple;
 using Catch::Matchers::ContainsSubstring;
 
 
+/*
+ * INTERNAL QUEST FUNCITONS
+ */
+
+extern int paulis_getPauliAt(PauliStr str, int ind);
+
 
 /*
  * UTILITIES
@@ -628,8 +634,6 @@ std::string toString(vector<int> list) {
     out += "}";
     return out;
 }
-
-extern int paulis_getPauliAt(PauliStr str, int ind);
 
 std::string toString(PauliStr str, vector<int> targs) {
 

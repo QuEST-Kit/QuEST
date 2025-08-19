@@ -19,6 +19,7 @@
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/memory.hpp"
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/paulilogic.hpp"
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/comm/comm_config.hpp"
@@ -1258,12 +1259,6 @@ void print_elems(Qureg qureg, string indent) {
  *    1.23i  XYZXZ
  *    -1-6i  IIIII
  */
-
-
-// we'll make use of these internal functions from paulis.cpp
-extern int paulis_getPauliAt(PauliStr str, int ind);
-extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
-extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr* strings, qindex numStrings);
 
 
 string getPauliStrAsAllQubitsString(PauliStr str, int numPaulis) {

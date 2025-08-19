@@ -9,6 +9,7 @@ target_sources(QuEST
   localiser.cpp
   memory.cpp
   parser.cpp
+  paulilogic.cpp
   printer.cpp
   randomiser.cpp
   utilities.cpp

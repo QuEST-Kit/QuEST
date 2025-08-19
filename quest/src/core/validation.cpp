@@ -21,6 +21,7 @@
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
 #include "quest/src/core/utilities.hpp"
+#include "quest/src/core/paulilogic.hpp"
 #include "quest/src/core/parser.hpp"
 #include "quest/src/core/printer.hpp"
 #include "quest/src/core/envvars.hpp"
@@ -3177,9 +3178,6 @@ void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* cal
  * EXISTING PAULI STRING
  */
 
-extern int paulis_getPauliAt(PauliStr str, int ind);
-extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
-
 void validate_pauliStrTargets(Qureg qureg, PauliStr str, const char* caller) {
 
     // avoid producing a list of targets which requires enumerating all bits
@@ -3305,10 +3303,6 @@ void validate_parsedStringIsNotEmpty(bool stringIsNotEmpty, const char* caller) 
 /*
  * EXISTING PAULI STRING SUMS
  */
-
-extern bool paulis_containsXOrY(PauliStrSum sum);
-extern qindex paulis_getTargetBitMask(PauliStrSum sum);
-extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum);
 
 bool areQubitsDisjoint(qindex qubitsMaskA, int* qubitsB, int numQubitsB);
 

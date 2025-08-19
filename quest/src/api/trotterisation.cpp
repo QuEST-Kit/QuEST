@@ -13,6 +13,7 @@
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/localiser.hpp"
+#include "quest/src/core/paulilogic.hpp"
 #include "quest/src/core/errors.hpp"
 
 #include <vector>
@@ -24,13 +25,6 @@ using std::vector;
 /*
  * INTERNAL UTILS
  */
-
-extern int paulis_getSignOfPauliStrConj(PauliStr str);
-extern PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift);
-extern void paulis_setPauliStrSumToScaledTensorProdOfConjWithSelf(PauliStrSum out, qreal factor, PauliStrSum in, int numQubits);
-extern void paulis_setPauliStrSumToScaledProdOfAdjointWithSelf(PauliStrSum out, qreal factor, PauliStrSum in);
-extern void paulis_setPauliStrSumToShiftedConj(PauliStrSum out, PauliStrSum in, int numQubits);
-extern qindex paulis_getNumTermsInPauliStrSumProdOfAdjointWithSelf(PauliStrSum in);
 
 void internal_applyFirstOrderTrotterRepetition(
     Qureg qureg, vector<int>& ketCtrls, vector<int>& braCtrls,
@@ -356,4 +350,3 @@ void applyTrotterizedNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* d
 }
 
 } // end de-mangler
-

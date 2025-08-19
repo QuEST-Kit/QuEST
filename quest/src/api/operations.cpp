@@ -19,6 +19,7 @@
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/constants.hpp"
+#include "quest/src/core/paulilogic.hpp"
 
 #include <vector>
 
@@ -29,12 +30,6 @@ using std::vector;
 /*
  * PRVIATE UTILITIES
  */
-
-extern int paulis_getSignOfPauliStrConj(PauliStr str);
-
-extern bool paulis_isIdentity(PauliStr str);
-extern PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift);
-extern PauliStr paulis_getKetAndBraPauliStr(PauliStr str, Qureg qureg);
 
 // T can be CompMatr, CompMatr1, CompMatr2, DiagMatr, DiagMatr1, DiagMatr2
 template <class T>

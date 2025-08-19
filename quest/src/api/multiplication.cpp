@@ -14,6 +14,7 @@
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/localiser.hpp"
+#include "quest/src/core/paulilogic.hpp"
 
 #include <vector>
 
@@ -370,8 +371,6 @@ void rightapplySwap(Qureg qureg, int qubit1, int qubit2) {
  * individual Paulis
  */
 
-extern PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift);
-
 extern "C" {
 
 void leftapplyPauliX(Qureg qureg, int target) {
@@ -437,8 +436,6 @@ void rightapplyPauliZ(Qureg qureg, int target) {
  * Pauli strings
  */
 
-extern bool paulis_hasOddNumY(PauliStr str);
-
 extern "C" {
 
 void leftapplyPauliStr(Qureg qureg, PauliStr str) {
@@ -453,7 +450,7 @@ void rightapplyPauliStr(Qureg qureg, PauliStr str) {
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_pauliStrTargets(qureg, str, __func__);
 
-    qcomp factor = paulis_hasOddNumY(str)? -1 : 1; // undo transpose
+    qcomp factor = paulis_getSignOfPauliStrConj(str); // undo transpose
     str = paulis_getShiftedPauliStr(str, qureg.numQubits);
     localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str, factor);
 }
@@ -481,7 +478,7 @@ void rightapplyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
     validate_quregIsDensityMatrix(qureg, __func__);
     validate_pauliStrTargets(qureg, str, __func__);
 
-    qreal factor = paulis_hasOddNumY(str)? -1 : 1;
+    qreal factor = paulis_getSignOfPauliStrConj(str);
     qreal phase = factor * util_getPhaseFromGateAngle(angle);
     str = paulis_getShiftedPauliStr(str, qureg.numQubits);
     localiser_statevec_anyCtrlPauliGadget(qureg, {}, {}, str, phase);
@@ -675,7 +672,7 @@ void rightapplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace) {
     // post-multiply each term in-turn, mixing into output qureg, then undo using idempotency
     for (qindex i=0; i<sum.numTerms; i++) {
         PauliStr str =  paulis_getShiftedPauliStr(sum.strings[i], qureg.numQubits);
-        qcomp factor = paulis_hasOddNumY(str)? -1 : 1; // undoes transpose
+        qcomp factor = paulis_getSignOfPauliStrConj(str); // undoes transpose
 
         localiser_statevec_anyCtrlPauliTensor(workspace, {}, {}, str, factor);
         localiser_statevec_setQuregToSuperposition(1, qureg, sum.coeffs[i], workspace, 0, workspace);

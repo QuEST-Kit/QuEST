@@ -19,6 +19,7 @@
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/utilities.hpp"
+#include "quest/src/core/paulilogic.hpp"
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/comm/comm_config.hpp"
@@ -1246,13 +1247,6 @@ template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, vector<int>, vecto
 /*
  * PAULI TENSORS AND GADGETS
  */
-
-
-extern bool paulis_containsXOrY(PauliStr str);
-extern vector<int> paulis_getTargetInds(PauliStr str);
-extern std::array<vector<int>,3> paulis_getSeparateInds(PauliStr str);
-extern int paulis_getPrefixZSign(Qureg qureg, vector<int> prefixZ) ;
-extern qcomp paulis_getPrefixPaulisElem(Qureg qureg, vector<int> prefixY, vector<int> prefixZ);
 
 
 void anyCtrlZTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, bool isGadget, qcomp phase) {     
