@@ -48,6 +48,8 @@ void localiser_fullstatediagmatr_setElems(FullStateDiagMatr matr, qindex startIn
 
 void localiser_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStrSum in);
 
+void localiser_statevec_scaleAmps(Qureg qureg, qcomp factor);
+
 
 /*
  * STATE INITIALISATION
@@ -127,9 +129,9 @@ void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vecto
  * QUREG COMBINATION
  */
 
-void localiser_statevec_setQuregToWeightedSum(Qureg outQureg, vector<qcomp> coeffs, vector<Qureg> inQuregs);
+void localiser_statevec_setQuregToClone(Qureg out, Qureg in);
 
-void localiser_statevec_setQuregToSuperposition(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2);
+void localiser_statevec_setQuregToWeightedSum(Qureg outQureg, vector<qcomp> coeffs, vector<Qureg> inQuregs);
 
 void localiser_densmatr_mixQureg(qreal outProb, Qureg out, qreal inProb, Qureg in);
 

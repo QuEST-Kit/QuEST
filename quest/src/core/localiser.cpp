@@ -675,6 +675,11 @@ void localiser_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, Pa
     accel_fullstatediagmatr_setElemsToPauliStrSum(out, in);
 }
 
+void localiser_statevec_scaleAmps(Qureg qureg, qcomp factor) {
+
+    localiser_statevec_setQuregToWeightedSum(qureg, {factor}, {qureg});
+}
+
 
 
 /*
@@ -1390,17 +1395,15 @@ void localiser_statevec_setQuregToWeightedSum(Qureg outQureg, vector<qcomp> coef
 }
 
 
-void localiser_statevec_setQuregToSuperposition(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2) {
+void localiser_statevec_setQuregToClone(Qureg out, Qureg in) {
 
     /// @todo
-    /// this function requires (as validated) distributions are identical.
-    /// It would be trivial to generalise this so that Qureg distributions
-    /// can differ (we merely spoof local Quregs, offsetting their memory).
-    /// They must still however be identically GPU-accelerated; this is a
-    /// low priority because this situation is non-sensical
+    /// we lazily re-use setQuregToWeightedSum(), inducing a gratuitous
+    /// x1 multiplication per element which we expected is completely
+    /// occluded by memory movement costs. We should check this and
+    /// potentially replace this function with (NUMA-aware?) memory copying!
 
-    // given Qureg dimensions must match, this is always embarrassingly parallel
-    accel_statevec_setQuregToSuperposition_sub(facOut, outQureg, fac1, inQureg1, fac2, inQureg2);
+    localiser_statevec_setQuregToWeightedSum(out, {1}, {in});
 }
 
 
@@ -2333,7 +2336,7 @@ void localiser_statevec_multiQubitProjector(Qureg qureg, vector<int> qubits, vec
     // all other nodes has some or all states consistent with suffix outcomes
     removePrefixQubitsAndStates(qureg, qubits, outcomes);
     (qubits.empty())?
-        accel_statevec_setQuregToSuperposition_sub(1/std::sqrt(prob), qureg,0,qureg, 0,qureg): // scale by norm
+        localiser_statevec_scaleAmps(qureg, 1/std::sqrt(prob)):
         accel_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, prob);
 }
 

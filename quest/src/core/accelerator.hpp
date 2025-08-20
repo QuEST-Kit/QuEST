@@ -234,8 +234,6 @@ void accel_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> 
 
 void accel_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs, vector<Qureg> inQuregs);
 
-void accel_statevec_setQuregToSuperposition_sub(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2);
-
 void accel_densmatr_mixQureg_subA(qreal outProb, Qureg out, qreal inProb, Qureg in);
 void accel_densmatr_mixQureg_subB(qreal outProb, Qureg out, qreal inProb, Qureg in);
 void accel_densmatr_mixQureg_subC(qreal outProb, Qureg out, qreal inProb);

@@ -474,8 +474,6 @@ void validate_numQuregsMatchesCoeffs(size_t numQuregs, size_t numCoeffs, const c
 
 void validate_numQuregsMatchesProbs(size_t numQuregs, size_t numProbs, const char* caller);
 
-void validate_quregsCanBeSuperposed(Qureg qureg1, Qureg qureg2, Qureg qureg3, const char* caller);
-
 void validate_quregCanBeInitialisedToPureState(Qureg qureg, Qureg pure, const char* caller);
 
 void validate_quregsCanBeCloned(Qureg quregA, Qureg quregB, const char* caller);
