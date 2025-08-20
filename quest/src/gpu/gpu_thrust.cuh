@@ -65,7 +65,8 @@
  * are copied to device memory using thrust's device_vector's 
  * copy constructor (devicevec d_vec = hostvec). The pointer 
  * to the data (d_vec.data()) can be cast into a raw pointer
- * and passed directly to CUDA kernels
+ * and passed directly to CUDA kernels (though qcomp must be
+ * reinterpreted to cu_qcomp)
  */
 
 
@@ -102,6 +103,25 @@ devreals getDeviceRealsVec(qindex dim) {
     }
 
     return out;
+}
+
+
+using devcomps = thrust::device_vector<qcomp>;
+
+cu_qcomp* getPtr(devcomps& comps) {
+
+    // devcomps -> qcomp -> cu_qcomp
+    qcomp* ptr =  thrust::raw_pointer_cast(comps.data());
+    return toCuQcomps(ptr);
+}
+
+
+// father forgive me for I have sinned
+using devcuqcompptrs = thrust::device_vector<cu_qcomp*>;
+
+cu_qcomp** getPtr(devcuqcompptrs& ptrs) {
+
+    return thrust::raw_pointer_cast(ptrs.data());
 }
 
 

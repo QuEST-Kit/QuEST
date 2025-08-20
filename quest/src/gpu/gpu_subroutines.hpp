@@ -93,6 +93,8 @@ template <int NumCtrls> void gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qu
  * QUREG COMBINATION
  */
 
+template <int NumQuregs> void gpu_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs, vector<Qureg> inQuregs);
+
 void gpu_statevec_setQuregToSuperposition_sub(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2);
 
 void gpu_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, Qureg inDensMatr);

@@ -116,6 +116,16 @@ void setDensityQuregFlatAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex n
 void setQuregToClone(Qureg targetQureg, Qureg copyQureg);
 
 
+/// @notyetdoced
+/// @notyettested
+void setQuregToWeightedSum(Qureg out, qcomp* coeffs, Qureg* in, int numIn);
+
+
+/// @notyetdoced
+/// @notyettested
+void setQuregToMixture(Qureg out, qreal* probs, Qureg* in, int numIn);
+
+
 /** @notyetdoced
  * @notyettested
  * 
@@ -225,6 +235,20 @@ void setQuregToPartialTrace(Qureg out, Qureg in, std::vector<int> traceOutQubits
 /// @cpponly
 /// @see setQuregToReducedDensityMatrix()
 void setQuregToReducedDensityMatrix(Qureg out, Qureg in, std::vector<int> retainQubits);
+
+
+/// @ingroup init_amps
+/// @notyetdoced
+/// @cpponly
+/// @see setQuregToWeightedSum()
+void setQuregToWeightedSum(Qureg out, std::vector<qcomp> coeffs, std::vector<Qureg> in);
+
+
+/// @ingroup init_amps
+/// @notyetdoced
+/// @cpponly
+/// @see setQuregToMixture()
+void setQuregToMixture(Qureg out, std::vector<qreal> probs, std::vector<Qureg> in);
 
 
 #endif // __cplusplus

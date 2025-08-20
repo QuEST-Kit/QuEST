@@ -1377,6 +1377,19 @@ void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vecto
  */
 
 
+void localiser_statevec_setQuregToWeightedSum(Qureg outQureg, vector<qcomp> coeffs, vector<Qureg> inQuregs) {
+
+    /// @todo
+    /// this function requires (as validated) distributions are identical.
+    /// It would be trivial to generalise this so that Qureg distributions
+    /// can differ (we merely spoof local Quregs, offsetting their memory).
+    /// They must still however be identically GPU-accelerated; this is a
+    /// low priority because this situation is non-sensical
+
+    accel_statevec_setQuregToWeightedSum_sub(outQureg, coeffs, inQuregs);
+}
+
+
 void localiser_statevec_setQuregToSuperposition(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2) {
 
     /// @todo

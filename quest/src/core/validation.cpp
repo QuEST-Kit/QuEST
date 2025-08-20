@@ -909,9 +909,14 @@ namespace report {
      * CHANNEL PARAMETERS 
      */
 
-    string INVALID_PROBABILITY =
+    string INVALID_PROB =
         "The given probability is invalid, and must instead be between 0 and 1 (both inclusive).";
 
+    string INVALID_PROBS =
+        "One or more given probabilities are invalid. Each must be between 0 and 1 (both inclusive).";
+
+    string PROBS_DO_NOT_SUM_TO_ONE =
+        "The given probabilities do not sum to (within epsilon of) one.";
 
     string ONE_QUBIT_DEPHASING_PROB_EXCEEDS_MAXIMAL_MIXING =
         "The given one-qubit dephasing probability exceeds that which induces maximal mixing, i.e. 1/2.";
@@ -935,6 +940,30 @@ namespace report {
     /*
      * QUREG COMBINATION
      */
+
+    string NON_POSITIVE_NUM_QUREGS_IN_SUM =
+        "The number of passed Quregs (${NUM_QUREGS}) is invalid. Must pass one or more.";
+
+    string SUMMED_QUREGS_HAVE_INCONSISTENT_MEM_LAYOUTS =
+        "The given list of Quregs have inconsistent attributes. They must all be the same size, all statevectors or density matrices, and be identically distributed or GPU-accelerated.";
+
+    string DIFFERENT_NUM_QUREGS_AND_COEFFS =
+        "A different number of coefficients (${NUM_COEFFS}) than Quregs (${NUM_QUREGS}) were passed.";
+
+
+    // relates to mixing-in multiple Quregs
+
+    string MIXED_QUREGS_NOT_ALL_DENSITY_MATRICES =
+        "One or more Quregs were statevectors though only density matrices are supported. To mix a single statevector, use mixQureg().";
+
+    string MIXED_QUREGS_HAVE_INCONSISTENT_MEM_LAYOUTS =
+        "The given list of Quregs have inconsistent attributes. They must all be the same size and be identically distributed or GPU-accelerated.";
+
+    string DIFFERENT_NUM_QUREGS_AND_PROBS =
+        "A different number of probabilities (${NUM_PROBS}) than Quregs (${NUM_QUREGS}) were passed.";
+        
+
+    // relates to mixing-in single Qureg (more permissive than above)
 
     string MIXED_QUREG_NOT_DENSITY_MATRIX =
         "The first Qureg, which will undergo mixing, must be a density matrix.";
@@ -1353,6 +1382,19 @@ bool isIndexListUnique(int* list, int len) {
             mask |= 1ULL << list[i];
 
     return true;
+}
+
+bool doQuregsHaveIdenticalMemoryLayouts(Qureg a, Qureg b) {
+
+    // same #dims, same size, same distribution and GPU status
+    return (
+        (a.numQubits        == b.numQubits       ) &&
+        (a.isDensityMatrix  == b.isDensityMatrix ) &&
+        (a.isDistributed    == b.isDistributed   ) &&
+        (a.isGpuAccelerated == b.isGpuAccelerated)
+    );
+
+    // note that multithreading does not affecting memory layout
 }
 
 
@@ -3864,7 +3906,32 @@ void validate_probability(qreal prob, const char* caller) {
 
     /// @todo report 'prob' once validation reporting can handle floats
 
-    assertThat(prob >= 0 && prob <= 1, report::INVALID_PROBABILITY, caller);
+    /// @todo 
+    ///     should we permit -eps <= prob <= 1+eps so that this validation
+    ///     can skipped by disabled only numerical validation?
+
+    assertThat(prob >= 0 && prob <= 1, report::INVALID_PROB, caller);
+}
+
+void validate_probabilities(qreal* probs, int numProbs, const char* caller) {
+
+    // we assume that numProbs>0 was prior validated
+
+    /// @todo like above, should we permit -eps <= prob <= 1+eps?
+
+    for (int i=0; i<numProbs; i++)
+        assertThat(probs[i] >= 0 && probs[i] <= 1, report::INVALID_PROBS, caller);
+
+    if (isNumericalValidationDisabled())
+        return;
+    
+    // check sum=1 using numerically stable sum, because our users deserve the best ;)
+    // note numProbs is expected small (the caller accepts just as many Quregs) so we
+    // are safe to allocate this vector without internal checks
+    qreal total = util_getSum(util_getVector(probs, numProbs));
+
+    qreal dist = std::abs(total - 1);
+    assertThat(dist <= global_validationEpsilon, report::PROBS_DO_NOT_SUM_TO_ONE, caller);
 }
 
 void validate_oneQubitDepashingProb(qreal prob, const char* caller) {
@@ -3944,14 +4011,46 @@ void validate_oneQubitPauliChannelProbs(qreal pX, qreal pY, qreal pZ, const char
 void validate_quregCanBeWorkspace(Qureg qureg, Qureg workspace, const char* caller) {
 
     assertThat(
-        (qureg.numQubits        == workspace.numQubits       ) &&
-        (qureg.isDensityMatrix  == workspace.isDensityMatrix ) &&
-        (qureg.isDistributed    == workspace.isDistributed   ) &&
-        (qureg.isGpuAccelerated == workspace.isGpuAccelerated),
+        doQuregsHaveIdenticalMemoryLayouts(qureg, workspace),
         report::QUREG_IS_INCOMPATIBLE_WITH_WORKSPACE, caller);
 }
 
-void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller) {
+void validate_numQuregsInSum(int numQuregs, const char* caller) {
+
+    assertThat(numQuregs > 0, report::NON_POSITIVE_NUM_QUREGS_IN_SUM, {{"${NUM_QUREGS}", numQuregs}}, caller);
+}
+
+void validate_quregsCanBeSummed(Qureg out, Qureg* in, int numIn, const char* caller) {
+
+    for (int i=0; i<numIn; i++)
+        validate_quregFields(in[i], caller);
+
+    bool valid = true;
+    for (int i=0; i<numIn && valid; i++)
+        valid = valid && doQuregsHaveIdenticalMemoryLayouts(out, in[i]);
+
+    assertThat(valid, report::SUMMED_QUREGS_HAVE_INCONSISTENT_MEM_LAYOUTS, caller);
+}
+
+void validate_quregsCanBeMixed(Qureg out, Qureg* in, int numIn, const char* caller) {
+
+    // mixing in multiple quregs (done here) is much stricter than when 
+    // only one pair is being mixed in, which is handled below
+
+    for (int i=0; i<numIn; i++)
+        validate_quregFields(in[i], caller);
+
+    for (int i=0; i<numIn; i++)
+        assertThat(in[i].isDensityMatrix, report::MIXED_QUREGS_NOT_ALL_DENSITY_MATRICES, caller);
+
+    bool valid = true;
+    for (int i=0; i<numIn && valid; i++)
+        valid = valid && doQuregsHaveIdenticalMemoryLayouts(out, in[i]);
+
+    assertThat(valid, report::MIXED_QUREGS_HAVE_INCONSISTENT_MEM_LAYOUTS, caller);
+}
+
+void validate_quregPairCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller) {
 
     // mixing must be mathematically possible; dims are compatible, but quregIn can be a statevector
     assertThat(quregOut.isDensityMatrix, report::MIXED_QUREG_NOT_DENSITY_MATRIX, caller);
@@ -3967,6 +4066,24 @@ void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller
     // the statevector can only be distributed if the density matrix is (because there is otherwise no buffer to receive broadcast)
     if (!quregOut.isDistributed)
         assertThat(!quregIn.isDistributed, report::MIXED_DENSITY_MATRIX_LOCAL_BUT_STATEVEC_DISTRIBUTED, caller);
+}
+
+void validate_numQuregsMatchesCoeffs(size_t numQuregs, size_t numCoeffs, const char* caller) {
+
+    tokenSubs vars = {
+        {"${NUM_QUREGS}", numQuregs},
+        {"${NUM_COEFFS}", numCoeffs}
+    };
+    assertThat(numQuregs == numCoeffs, report::DIFFERENT_NUM_QUREGS_AND_COEFFS, vars, caller);
+}
+
+void validate_numQuregsMatchesProbs(size_t numQuregs, size_t numProbs, const char* caller) {
+
+    tokenSubs vars = {
+        {"${NUM_QUREGS}", numQuregs},
+        {"${NUM_PROBS}",  numProbs}
+    };
+    assertThat(numQuregs == numProbs, report::DIFFERENT_NUM_QUREGS_AND_PROBS, vars, caller);
 }
 
 void validate_quregsCanBeSuperposed(Qureg qureg1, Qureg qureg2, Qureg qureg3, const char* caller) {

@@ -218,15 +218,6 @@ qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> ta
     return util_getBitMask(qubits, states);
 }
 
-vector<int> util_getVector(int* qubits, int numQubits) {
-
-    // permit qubits=nullptr, overriding numQubits (might be non-zero)
-    if (qubits == nullptr)
-        return {};
-
-    return vector<int> (qubits, qubits + numQubits);
-}
-
 
 
 /*
@@ -384,7 +375,7 @@ qreal util_getSum(vector<qreal> list) {
     qreal sum = 0;
     qreal y, t, c=0;
     
-    // complex Kahan summation
+    // Kahan summation
     for (auto& x : list) {
         y = x - c;
         t = sum + y;
@@ -1117,6 +1108,23 @@ qreal util_getMaxProbOfTwoQubitDepolarising() {
 /*
  * TEMPORARY MEMORY ALLOCATION
  */
+
+template <typename T>
+vector<T> getVector(T* ptr, int length) {
+
+    // permit nullptr to indicate empty list, regardless of length
+    if (ptr == nullptr)
+        return {};
+
+    // assumes memory alloc failure is impossible
+    return vector<T> (ptr, ptr + length);
+}
+
+vector<int>   util_getVector(int*   ptr, int length) { return getVector(ptr, length); }
+vector<qreal> util_getVector(qreal* ptr, int length) { return getVector(ptr, length); }
+vector<qcomp> util_getVector(qcomp* ptr, int length) { return getVector(ptr, length); }
+vector<Qureg> util_getVector(Qureg* ptr, int length) { return getVector(ptr, length); }
+
 
 template <typename T>
 void tryAllocVector(vector<T> &vec, qindex size, std::function<void()> errFunc) {

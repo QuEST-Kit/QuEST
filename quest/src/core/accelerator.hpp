@@ -35,7 +35,7 @@ using std::vector;
  * used by cpu_subroutines.cpp and gpu_subroutines to force the compiler
  * to instantiate and compile their template definitions with the given
  * explicit parameters below. Notice the final parameter is always -1, 
- * to handle when the number of controls or targets is not known at 
+ * to handle when the number of parameters (e.g. controls) is not known at 
  * compile-time (it is larger than a bespoke, optimised instantiations), 
  * causing the optimised function to fallback to a suboptimal but general 
  * implementation.
@@ -44,6 +44,7 @@ using std::vector;
 // must match the macros below, and those in accelerator.cpp
 #define MAX_OPTIMISED_NUM_CTRLS 5
 #define MAX_OPTIMISED_NUM_TARGS 5
+#define MAX_OPTIMISED_NUM_QUREGS 5
 
 
 #define INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS(returntype, funcname, args) \
@@ -56,6 +57,9 @@ using std::vector;
     template returntype funcname<-1> args;
 
 #define INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS(returntype, funcname, args) \
+    INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS(returntype, funcname, args)
+
+#define INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_QUREGS(returntype, funcname, args) \
     INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS(returntype, funcname, args)
 
 
@@ -227,6 +231,8 @@ void accel_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> 
 /*
  * QUREG COMBINATION
  */
+
+void accel_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs, vector<Qureg> inQuregs);
 
 void accel_statevec_setQuregToSuperposition_sub(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2);
 

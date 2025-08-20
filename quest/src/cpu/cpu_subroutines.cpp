@@ -1034,6 +1034,29 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlAnyTargZO
  */
 
 
+template <int NumQuregs>
+void cpu_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs, vector<Qureg> inQuregs) {
+
+    qindex numIts = outQureg.numAmpsPerNode;
+
+    // use template param to compile-time unroll inner loop below
+    SET_VAR_AT_COMPILE_TIME(int, numQuregs, NumQuregs, inQuregs.size());
+
+    #pragma omp parallel for if(outQureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // unrolled when inQuregs.size() <= 5
+        qcomp amp = 0;
+        for (int q=0; q<numQuregs; q++)
+            amp += coeffs[q] * inQuregs[q].cpuAmps[n];
+
+        // must not modify cpuAmps[n] before computing the amp since
+        // outQureg can legally appear among inQuregs
+        outQureg.cpuAmps[n] = amp;
+    }
+}
+
+
 void cpu_statevec_setQuregToSuperposition_sub(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2) {
 
     assert_superposedQuregDimsAndDeploysMatch(outQureg, inQureg1, inQureg2);
@@ -1101,6 +1124,9 @@ void cpu_densmatr_mixQureg_subC(qreal outProb, Qureg outQureg, qreal inProb) {
         out[n] = (outProb * out[n]) + (inProb * in[i] * std::conj(in[j]));
     }
 }
+
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_QUREGS( void, cpu_statevec_setQuregToWeightedSum_sub, (Qureg, vector<qcomp>, vector<Qureg>) )
 
 
 

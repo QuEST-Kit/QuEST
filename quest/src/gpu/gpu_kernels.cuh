@@ -711,9 +711,30 @@ __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
  */
 
 
+template <int NumQuregs> 
+__global__ void kernel_statevec_setQuregToWeightedSum_sub(
+    cu_qcomp* outAmps, qindex numThreads,
+    cu_qcomp* coeffs, cu_qcomp** inAmps, int numQuregs
+) {
+    GET_THREAD_IND(n, numThreads);
+
+    // use template param to compile-time unroll below loop
+    SET_VAR_AT_COMPILE_TIME(int, numInner, NumQuregs, numQuregs);
+
+    cu_qcomp amp = getCuQcomp(0, 0);
+
+    for (int q=0; q<numInner; q++)
+        amp = amp + coeffs[q] * inAmps[q][n];
+
+    // must not modify outAmps[n] before computing the amp 
+    // since outAmps can legally appear among inAmps
+    outAmps[n] = amp;
+}
+
+
 // kernel_densmatr_mixQureg_subA() is avoided; we instead use
 // Thrust for this common circumstances (mixing density matrices),
-// which should be significantly more optimisex
+// which should be significantly more optimised
 
 
 __global__ void kernel_densmatr_mixQureg_subB(

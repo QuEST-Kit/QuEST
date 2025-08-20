@@ -59,8 +59,6 @@ vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg);
 
 vector<int> util_getNonTargetedQubits(int* targets, int numTargets, int numQubits);
 
-vector<int> util_getVector(int* qubits, int numQubits);
-
 vector<int> util_getConcatenated(vector<int> list1, vector<int> list2);
 
 vector<int> util_getSorted(vector<int> list);
@@ -401,6 +399,13 @@ qreal util_getMaxProbOfTwoQubitDepolarising();
  * TEMPORARY MEMORY ALLOCATION
  */
 
+// alloc assumed to never fail
+vector<int>   util_getVector(int*   ptr, int length);
+vector<qreal> util_getVector(qreal* ptr, int length);
+vector<qcomp> util_getVector(qcomp* ptr, int length);
+vector<Qureg> util_getVector(Qureg* ptr, int length);
+
+// calls errFunc when alloc fails
 void util_tryAllocVector(vector<qreal>    &vec, qindex size, std::function<void()> errFunc);
 void util_tryAllocVector(vector<qcomp>    &vec, qindex size, std::function<void()> errFunc);
 void util_tryAllocVector(vector<qcomp*>   &vec, qindex size, std::function<void()> errFunc);

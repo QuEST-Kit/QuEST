@@ -442,6 +442,8 @@ void validate_numLindbladSuperPropagatorTerms(qindex numSuperTerms, const char* 
 
 void validate_probability(qreal prob, const char* caller);
 
+void validate_probabilities(qreal* probs, int numProbs, const char* caller);
+
 void validate_oneQubitDepashingProb(qreal prob, const char* caller);
 void validate_twoQubitDepashingProb(qreal prob, const char* caller);
 
@@ -458,9 +460,19 @@ void validate_oneQubitPauliChannelProbs(qreal pX, qreal pY, qreal pZ, const char
  * QUREG COMBINATION
  */
 
+void validate_numQuregsInSum(int numQuregs, const char* caller);
+
 void validate_quregCanBeWorkspace(Qureg quregA, Qureg quregB, const char* caller);
 
-void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller);
+void validate_quregsCanBeSummed(Qureg out, Qureg* in, int numIn, const char* caller);
+
+void validate_quregsCanBeMixed(Qureg out, Qureg* in, int numIn, const char* caller);
+
+void validate_quregPairCanBeMixed(Qureg out, Qureg in, const char* caller);
+
+void validate_numQuregsMatchesCoeffs(size_t numQuregs, size_t numCoeffs, const char* caller);
+
+void validate_numQuregsMatchesProbs(size_t numQuregs, size_t numProbs, const char* caller);
 
 void validate_quregsCanBeSuperposed(Qureg qureg1, Qureg qureg2, Qureg qureg3, const char* caller);
 

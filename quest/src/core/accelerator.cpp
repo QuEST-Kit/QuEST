@@ -74,6 +74,10 @@ using std::min;
 #endif
 
 
+#define GET_FUNC_OPTIMISED_FOR_NUM_QUREGS(f, numquregs) \
+    (vector <decltype(&f<0>)> {&f<0>, &f<1>, &f<2>, &f<3>, &f<4>, &f<5>, &f<-1>}) \
+    [std::min((int) numquregs, MAX_OPTIMISED_NUM_QUREGS + 1)]
+
 #define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS(f, numctrls) \
     (vector <decltype(&f<0>)> {&f<0>, &f<1>, &f<2>, &f<3>, &f<4>, &f<5>, &f<-1>}) \
     [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS + 1)]
@@ -96,6 +100,11 @@ using std::min;
 
 #define ARR(f) vector<decltype(&f<0,0>)>
 
+
+#define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_QUREGS(funcsuffix, qureg, numquregs) \
+    ((qureg.isGpuAccelerated)? \
+        GET_FUNC_OPTIMISED_FOR_NUM_QUREGS( gpu_##funcsuffix, numquregs ) : \
+        GET_FUNC_OPTIMISED_FOR_NUM_QUREGS( cpu_##funcsuffix, numquregs ))
 
 #define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS(funcsuffix, qureg, numctrls) \
     ((qureg.isGpuAccelerated)? \
@@ -537,6 +546,14 @@ void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, vector<int>
 /*
  * QUREG COMBINATION
  */
+
+
+void accel_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs, vector<Qureg> inQuregs) {
+
+    // consult outQureg's deployment since others are prior validated to match
+    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_QUREGS( statevec_setQuregToWeightedSum_sub, outQureg, inQuregs.size() );
+    func(outQureg, coeffs, inQuregs);
+}
 
 
 void accel_statevec_setQuregToSuperposition_sub(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2) {
