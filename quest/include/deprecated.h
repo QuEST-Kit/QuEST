@@ -865,16 +865,23 @@ static inline void _applyGateSubDiagonalOp(Qureg qureg, int* targets, int numTar
     _WARN_FUNC_RENAMED("cloneQureg()", "setQuregToClone()") \
     setQuregToClone(__VA_ARGS__)
 
+
+
+static inline void _setWeightedQureg(qcomp f1, Qureg q1, qcomp f2, Qureg q2, qcomp fOut, Qureg qOut) {
+    qcomp coeffs[] = {fOut, f1, f2};
+    Qureg quregs[] = {qOut, q1, q2};
+    setQuregToWeightedSum(qOut, coeffs, quregs, 3);
+}
+
 #define setWeightedQureg(f1, q1, f2, q2, fOut, qOut) \
     _WARN_GENERAL_MSG( \
         "The QuEST function 'setWeightedQureg(f1,q1, f2,q2, fOut,qOut)' is deprecated, and replaced with " \
-        "'setQuregToSuperposition(fOut,qOut, f1,q1, f2,q2)' which has been automatically invoked. The new " \
-        "fucntion however accepts only statevectors, not density matrices, so may error at runtime. Beware " \
-        "that the order of the arguments has changed, so that the first supplied Qureg is modified." ) \
-    setQuregToSuperposition( \
-        getQcomp(fOut.real, fOut.imag), qOut, \
-        getQcomp(f1.real, f1.imag), q1, \
-        getQcomp(f2.real, f2.imag), q2)
+        "'setQuregToWeightedSum(qOut, {f1,f2,...}, {q1,q2,..}, len)' which has been automatically invoked. " \
+        "Beware that the order of the arguments has changed, so that the first supplied Qureg is modified." ) \
+    _setWeightedQureg( \
+        _GET_QCOMP_FROM_COMPLEX_STRUCT(f1) ,q1, \
+        _GET_QCOMP_FROM_COMPLEX_STRUCT(f2) ,q2, \
+        _GET_QCOMP_FROM_COMPLEX_STRUCT(fOut), qOut)
 
 
 

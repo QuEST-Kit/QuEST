@@ -978,19 +978,6 @@ namespace report {
         "The given density matrix was local, but the statevector was distributed; this configuration is unsupported (and is ridiculous!).";
 
 
-    string SUPERPOSED_QUREGS_ARE_NOT_ALL_STATEVECTORS =
-        "Cannot superpose a density matrix. All quregs must be statevectors.";
-
-    string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_NUM_QUBITS =
-        "Cannot superpose Quregs with differing numbers of qubits.";
-
-    string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_GPU_DEPLOYMENT =
-        "Cannot superpose Quregs with inconsistent GPU deployments. All or no Quregs must be GPU-accelerated.";
-
-    string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_DISTRIBUTION =
-        "Cannot superpose Quregs which are inconsistently distributed. All or no Quregs must be distributed.";
-
-
     string INIT_PURE_STATE_IS_DENSMATR =
         "The pure-state Qureg (the second argument) must be a statevector, not a density matrix.";
 
@@ -4084,31 +4071,6 @@ void validate_numQuregsMatchesProbs(size_t numQuregs, size_t numProbs, const cha
         {"${NUM_PROBS}",  numProbs}
     };
     assertThat(numQuregs == numProbs, report::DIFFERENT_NUM_QUREGS_AND_PROBS, vars, caller);
-}
-
-void validate_quregsCanBeSuperposed(Qureg qureg1, Qureg qureg2, Qureg qureg3, const char* caller) {
-
-    // all quregs must be statevectors
-    assertThat(
-        !qureg1.isDensityMatrix && !qureg2.isDensityMatrix && !qureg3.isDensityMatrix,
-        report::SUPERPOSED_QUREGS_ARE_NOT_ALL_STATEVECTORS, caller);
-
-    // and the same dimension
-    int nQb = qureg1.numQubits;
-    assertThat(
-        qureg2.numQubits == nQb && qureg3.numQubits == nQb, 
-        report::SUPERPOSED_QUREGS_HAVE_INCONSISTENT_NUM_QUBITS, caller);
-
-    // and all the same deployment (GPU & distribution; multithreading doesn't matter)
-    int isGpu = qureg1.isGpuAccelerated;
-    assertThat(
-        qureg2.isGpuAccelerated == isGpu && qureg3.isGpuAccelerated == isGpu, 
-        report::SUPERPOSED_QUREGS_HAVE_INCONSISTENT_GPU_DEPLOYMENT, caller);
-
-    int isDis = qureg1.isDistributed;
-    assertThat(
-        qureg2.isDistributed == isDis && qureg3.isDistributed == isDis, 
-        report::SUPERPOSED_QUREGS_HAVE_INCONSISTENT_DISTRIBUTION, caller);
 }
 
 void validateDensMatrCanBeInitialisedToPureState(Qureg qureg, Qureg pure, const char* caller) {

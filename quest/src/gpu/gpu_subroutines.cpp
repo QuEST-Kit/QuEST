@@ -938,18 +938,6 @@ void gpu_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs
 }
 
 
-void gpu_statevec_setQuregToSuperposition_sub(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2) {
-
-#if COMPILE_CUDA || COMPILE_CUQUANTUM
-
-    thrust_statevec_setQuregToSuperposition_sub(toCuQcomp(facOut), outQureg, toCuQcomp(fac1), inQureg1, toCuQcomp(fac2), inQureg2);
-
-#else
-    error_gpuSimButGpuNotCompiled();
-#endif
-}
-
-
 void gpu_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, Qureg inQureg) {
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM

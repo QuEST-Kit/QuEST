@@ -33,7 +33,6 @@ using std::vector;
 extern "C" {
 
 
-
 /*
  * INIT
  */
@@ -72,12 +71,9 @@ void initPureState(Qureg qureg, Qureg pure) {
     validate_quregFields(pure, __func__);
     validate_quregCanBeInitialisedToPureState(qureg, pure, __func__);
 
-    // when qureg=statevec, we lazily invoke setQuregToSuperposition which
-    // invokes superfluous floating-point operations which will be happily
-    // occluded by the memory movement costs
     (qureg.isDensityMatrix)?
         localiser_densmatr_initPureState(qureg, pure):
-        localiser_statevec_setQuregToSuperposition(0, qureg, 1, pure, 0, pure);
+        localiser_statevec_setQuregToClone(qureg, pure);
 }
 
 
@@ -185,17 +181,7 @@ void setQuregToClone(Qureg targetQureg, Qureg copyQureg) {
     // appreciable slowdown since simulation is memory-bound
     (targetQureg.isDensityMatrix)?
         localiser_densmatr_mixQureg(0, targetQureg, 1, copyQureg):
-        localiser_statevec_setQuregToSuperposition(0, targetQureg, 1, copyQureg, 0, copyQureg);
-}
-
-
-void setQuregToSuperposition(qcomp facOut, Qureg out, qcomp fac1, Qureg qureg1, qcomp fac2, Qureg qureg2) {
-    validate_quregFields(out, __func__);
-    validate_quregFields(qureg1, __func__);
-    validate_quregFields(qureg2, __func__);
-    validate_quregsCanBeSuperposed(out, qureg1, qureg2, __func__); // asserts statevectors
-
-    localiser_statevec_setQuregToSuperposition(facOut, out, fac1, qureg1, fac2, qureg2);
+        localiser_statevec_setQuregToClone(targetQureg, copyQureg);
 }
 
 
@@ -207,7 +193,7 @@ qreal setQuregToRenormalized(Qureg qureg) {
 
     qreal norm = (qureg.isDensityMatrix)? prob : std::sqrt(prob);
     qreal fac = 1 / norm;
-    localiser_statevec_setQuregToSuperposition(fac, qureg, 0, qureg, 0, qureg);
+    localiser_statevec_scaleAmps(qureg, fac);
 
     return fac;
 }

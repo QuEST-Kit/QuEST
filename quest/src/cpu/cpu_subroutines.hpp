@@ -102,8 +102,6 @@ template <int NumCtrls> void cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qu
 
 template <int NumQuregs> void cpu_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs, vector<Qureg> inQuregs);
 
-void cpu_statevec_setQuregToSuperposition_sub(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2);
-
 void cpu_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, Qureg inDensMatr);
 void cpu_densmatr_mixQureg_subB(qreal outProb, Qureg outQureg, qreal inProb, Qureg inStateVec);
 void cpu_densmatr_mixQureg_subC(qreal outProb, Qureg outQureg, qreal inProb);

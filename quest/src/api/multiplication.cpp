@@ -647,13 +647,13 @@ void leftapplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace) {
     validate_pauliStrSumTargets(sum, qureg, __func__);
 
     // clone qureg to workspace, set qureg to blank
-    localiser_statevec_setQuregToSuperposition(0, workspace, 1, qureg, 0, qureg);
+    localiser_statevec_setQuregToClone(workspace, qureg);
     localiser_statevec_initUniformState(qureg, 0);
 
     // left-multiply each term in-turn, mixing into output qureg, then undo using idempotency
     for (qindex i=0; i<sum.numTerms; i++) {
         localiser_statevec_anyCtrlPauliTensor(workspace, {}, {}, sum.strings[i]);
-        localiser_statevec_setQuregToSuperposition(1, qureg, sum.coeffs[i], workspace, 0, workspace);
+        localiser_statevec_setQuregToWeightedSum(qureg, {1, sum.coeffs[i]}, {qureg, workspace});
         localiser_statevec_anyCtrlPauliTensor(workspace, {}, {}, sum.strings[i]);
     }
 
@@ -669,7 +669,7 @@ void rightapplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace) {
     validate_pauliStrSumTargets(sum, qureg, __func__);
 
     // clone qureg to workspace, set qureg to blank
-    localiser_statevec_setQuregToSuperposition(0, workspace, 1, qureg, 0, qureg);
+    localiser_statevec_setQuregToClone(workspace, qureg);
     localiser_statevec_initUniformState(qureg, 0);
 
     // post-multiply each term in-turn, mixing into output qureg, then undo using idempotency
@@ -678,7 +678,7 @@ void rightapplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace) {
         qcomp factor = paulis_hasOddNumY(str)? -1 : 1; // undoes transpose
 
         localiser_statevec_anyCtrlPauliTensor(workspace, {}, {}, str, factor);
-        localiser_statevec_setQuregToSuperposition(1, qureg, sum.coeffs[i], workspace, 0, workspace);
+        localiser_statevec_setQuregToWeightedSum(qureg, {1, sum.coeffs[i]}, {qureg, workspace});
         localiser_statevec_anyCtrlPauliTensor(workspace, {}, {}, str, factor);
     }
 
