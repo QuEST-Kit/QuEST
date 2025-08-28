@@ -1007,6 +1007,54 @@ qcomp util_getPhaseFromGateAngle(qcomp angle) {
     return - angle / 2;
 }
 
+CompMatr1 util_getPauliX() {
+    return getCompMatr1({
+        {0,1},
+        {1,0}
+    });
+}
+CompMatr1 util_getPauliY() {
+    return getCompMatr1({
+        {0,qcomp(0,-1)},
+        {qcomp(0,1),0}
+    });
+}
+DiagMatr1 util_getPauliZ() {
+    return getDiagMatr1({1,-1});
+}
+
+CompMatr1 util_getExpPauliX(qreal angle) {
+
+    qreal x = util_getPhaseFromGateAngle(angle);
+    qreal c = std::cos(x);
+    qreal s = std::sin(x);
+
+    return getCompMatr1({
+        {qcomp(c,0), qcomp(0,s)},
+        {qcomp(0,s), qcomp(c,0)}
+    });
+}
+
+CompMatr1 util_getExpPauliY(qreal angle) {
+
+    qreal x = util_getPhaseFromGateAngle(angle);
+    qreal c = std::cos(x);
+    qreal s = std::sin(x);
+
+    return getCompMatr1({
+        { c, s},
+        {-s, c}
+    });
+}
+
+DiagMatr1 util_getExpPauliZ(qreal angle) {
+
+    qreal x = util_getPhaseFromGateAngle(angle);
+    qcomp y = qcomp(0, x);
+
+    return getDiagMatr1({std::exp(y), std::exp(-y)});
+}
+
 
 
 /*

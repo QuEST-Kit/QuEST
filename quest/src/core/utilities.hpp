@@ -365,6 +365,14 @@ std::pair<qindex, qindex> util_getBlockMultipleSubRange(qindex rangeLen, qindex 
 qreal util_getPhaseFromGateAngle(qreal angle);
 qcomp util_getPhaseFromGateAngle(qcomp angle);
 
+CompMatr1 util_getPauliX();
+CompMatr1 util_getPauliY();
+DiagMatr1 util_getPauliZ();
+
+CompMatr1 util_getExpPauliX(qreal angle);
+CompMatr1 util_getExpPauliY(qreal angle);
+DiagMatr1 util_getExpPauliZ(qreal angle);
+
 
 
 /*
