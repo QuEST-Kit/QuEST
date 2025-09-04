@@ -65,7 +65,8 @@
  * are copied to device memory using thrust's device_vector's 
  * copy constructor (devicevec d_vec = hostvec). The pointer 
  * to the data (d_vec.data()) can be cast into a raw pointer
- * and passed directly to CUDA kernels
+ * and passed directly to CUDA kernels (though qcomp must be
+ * reinterpreted to cu_qcomp)
  */
 
 
@@ -102,6 +103,25 @@ devreals getDeviceRealsVec(qindex dim) {
     }
 
     return out;
+}
+
+
+using devcomps = thrust::device_vector<qcomp>;
+
+cu_qcomp* getPtr(devcomps& comps) {
+
+    // devcomps -> qcomp -> cu_qcomp
+    qcomp* ptr =  thrust::raw_pointer_cast(comps.data());
+    return toCuQcomps(ptr);
+}
+
+
+// father forgive me for I have sinned
+using devcuqcompptrs = thrust::device_vector<cu_qcomp*>;
+
+cu_qcomp** getPtr(devcuqcompptrs& ptrs) {
+
+    return thrust::raw_pointer_cast(ptrs.data());
 }
 
 
@@ -362,21 +382,6 @@ struct functor_mixAmps : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qco
     __host__ __device__ cu_qcomp operator()(cu_qcomp outAmp, cu_qcomp inAmp) {
         
         return (outProb * outAmp) + (inProb * inAmp);
-    }
-};
-
-
-struct functor_superposeAmps {
-
-    // this functor linearly combines the given trio
-    // of amplitudes, weighted by fixed qcomps, and is
-    // used by setQuregToSuperposition
-
-    cu_qcomp fac0, fac1, fac2;
-    functor_superposeAmps(cu_qcomp f0, cu_qcomp f1, cu_qcomp f2) : fac0(f0), fac1(f1), fac2(f2) {}
-
-    template <typename Tuple> __host__ __device__ void operator()(Tuple t) {
-        thrust::get<0>(t) = fac0*thrust::get<0>(t) + fac1*thrust::get<1>(t) + fac2*thrust::get<2>(t);
     }
 };
 
@@ -714,15 +719,6 @@ void thrust_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, 
         getStartPtr(outQureg), getEndPtr(outQureg), 
         getStartPtr(inQureg),  getStartPtr(outQureg), // 4th arg is output pointer
         functor_mixAmps(outProb, inProb));
-}
-
-
-void thrust_statevec_setQuregToSuperposition_sub(cu_qcomp facOut, Qureg outQureg, cu_qcomp fac1, Qureg inQureg1, cu_qcomp fac2, Qureg inQureg2) {
-
-    thrust::for_each(
-        thrust::make_zip_iterator(thrust::make_tuple(getStartPtr(outQureg), getStartPtr(inQureg1), getStartPtr(inQureg2))),
-        thrust::make_zip_iterator(thrust::make_tuple(getEndPtr(outQureg),   getEndPtr(inQureg1),   getEndPtr(inQureg2))),
-        functor_superposeAmps(facOut, fac1, fac2));
 }
 
 

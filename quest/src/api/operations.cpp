@@ -19,6 +19,7 @@
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/constants.hpp"
+#include "quest/src/core/paulilogic.hpp"
 
 #include <vector>
 
@@ -29,11 +30,6 @@ using std::vector;
 /*
  * PRVIATE UTILITIES
  */
-
-extern bool paulis_isIdentity(PauliStr str);
-extern bool paulis_hasOddNumY(PauliStr str);
-extern PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift);
-extern PauliStr paulis_getKetAndBraPauliStr(PauliStr str, Qureg qureg);
 
 // T can be CompMatr, CompMatr1, CompMatr2, DiagMatr, DiagMatr1, DiagMatr2
 template <class T>
@@ -863,8 +859,18 @@ void applyMultiStateControlledPauliX(Qureg qureg, int* controls, int* states, in
     validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    // harmlessly re-validates
-    applyMultiStateControlledPauliStr(qureg, controls, states, numControls, getPauliStr("X", {target}));
+    // note that for the single-target scenario, we do not call the backend of
+    // applyMultiStateControlledPauliStr() since it contains sub-optimal logic
+    // which sees the factor of every amplitude dynamically evaluated (based on
+    // index parity, etc); the dense-matrix element lookup is faster
+
+    /// @todo
+    /// a bespoke all-pauli-X function (like in QuEST v3) will be faster still 
+    /// since it avoids all superfluous flops; check worthwhile for multi-qubit
+
+    // harmlessly re-validates, including hardcoded matrix unitarity
+    CompMatr1 matrix = util_getPauliX();
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matrix, __func__);
 }
 
 void applyMultiStateControlledPauliY(Qureg qureg, int* controls, int* states, int numControls, int target) {
@@ -872,8 +878,9 @@ void applyMultiStateControlledPauliY(Qureg qureg, int* controls, int* states, in
     validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    // harmlessly re-validates
-    applyMultiStateControlledPauliStr(qureg, controls, states, numControls, getPauliStr("Y", {target}));
+    // harmlessly re-validates, including hardcoded matrix unitarity
+    CompMatr1 matrix = util_getPauliY();
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matrix, __func__);
 }
 
 void applyMultiStateControlledPauliZ(Qureg qureg, int* controls, int* states, int numControls, int target)  {
@@ -881,9 +888,9 @@ void applyMultiStateControlledPauliZ(Qureg qureg, int* controls, int* states, in
     validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    // harmlessly re-validates
-    DiagMatr1 matr = getDiagMatr1({1, -1});
-    applyMultiStateControlledDiagMatr1(qureg, controls, states, numControls, target, matr);
+    // harmlessly re-validates, including hardcoded matrix unitarity
+    DiagMatr1 matrix = util_getPauliZ();
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matrix, __func__);
 }
 
 } // end de-mangler
@@ -966,7 +973,7 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
     // operation sinto a single tensor, i.e. +- (shift(str) (x) str), to 
     // avoid superfluous re-enumeration of the state
     if (qureg.isDensityMatrix && numControls == 0) {
-        factor = paulis_hasOddNumY(str)? -1 : 1;
+        factor = paulis_getSignOfPauliStrConj(str);
         ctrlVec = util_getConcatenated(ctrlVec, util_getBraQubits(ctrlVec, qureg));
         stateVec = util_getConcatenated(stateVec, stateVec); 
         str = paulis_getKetAndBraPauliStr(str, qureg);
@@ -976,7 +983,7 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
 
     // but density-matrix control qubits require two distinct operations
     if (qureg.isDensityMatrix && numControls > 0) {
-        factor = paulis_hasOddNumY(str)? -1 : 1;
+        factor = paulis_getSignOfPauliStrConj(str);
         ctrlVec = util_getBraQubits(ctrlVec, qureg);
         str = paulis_getShiftedPauliStr(str, qureg.numQubits);
         localiser_statevec_anyCtrlPauliTensor(qureg, ctrlVec, stateVec, str, factor);
@@ -1081,8 +1088,14 @@ void applyMultiStateControlledRotateX(Qureg qureg, int* controls, int* states, i
     validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    // harmlessly re-validates
-    applyMultiStateControlledPauliGadget(qureg, controls, states, numControls, getPauliStr("X", {target}), angle);
+    // note that for the single-target scenario, we do not call the backend of
+    // applyMultiStateControlledPauliGadget() since it contains sub-optimal logic
+    // which sees the factor of every amplitude dynamically evaluated (based on
+    // index parity, etc); the dense-matrix element lookup is faster
+
+    // harmlessly re-validates, including hardcoded matrix unitarity
+    CompMatr1 matrix = util_getExpPauliX(angle);
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matrix, __func__);
 }
 
 void applyMultiStateControlledRotateY(Qureg qureg, int* controls, int* states, int numControls, int target, qreal angle) {
@@ -1090,8 +1103,14 @@ void applyMultiStateControlledRotateY(Qureg qureg, int* controls, int* states, i
     validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    // harmlessly re-validates
-    applyMultiStateControlledPauliGadget(qureg, controls, states, numControls, getPauliStr("Y", {target}), angle);
+    // note that for the single-target scenario, we do not call the backend of
+    // applyMultiStateControlledPauliGadget() since it contains sub-optimal logic
+    // which sees the factor of every amplitude dynamically evaluated (based on
+    // index parity, etc); the dense-matrix element lookup is faster
+
+    // harmlessly re-validates, including hardcoded matrix unitarity
+    CompMatr1 matrix = util_getExpPauliY(angle);
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matrix, __func__);
 }
 
 void applyMultiStateControlledRotateZ(Qureg qureg, int* controls, int* states, int numControls, int target, qreal angle) {
@@ -1099,8 +1118,14 @@ void applyMultiStateControlledRotateZ(Qureg qureg, int* controls, int* states, i
     validate_controlsAndTarget(qureg, controls, numControls, target, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    // harmlessly re-validates
-    applyMultiStateControlledPauliGadget(qureg, controls, states, numControls, getPauliStr("Z", {target}), angle);
+    // note that for the single-target scenario, we do not call the backend of
+    // applyMultiStateControlledPauliGadget() since it contains sub-optimal logic
+    // which sees the factor of every amplitude dynamically evaluated (based on
+    // index parity, etc); the dense-matrix element lookup is faster
+
+    // harmlessly re-validates, including hardcoded matrix unitarity
+    DiagMatr1 matrix = util_getExpPauliZ(angle);
+    validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matrix, __func__);
 }
 
 } // end de-mangler
@@ -1230,8 +1255,8 @@ void applyNonUnitaryPauliGadget(Qureg qureg, PauliStr str, qcomp angle) {
     if (!qureg.isDensityMatrix)
         return;
 
-    // conj(e^i(a)XZ) = e^(-i conj(a)XZ) but conj(Y)=-Y, so odd-Y undoes phase negation
-    phase = std::conj(phase) * (paulis_hasOddNumY(str) ? 1 : -1);
+    // conj(e^i(a)P) = e^(-i s conj(a) P)
+    phase = - std::conj(phase) * paulis_getSignOfPauliStrConj(str);
     str = paulis_getShiftedPauliStr(str, qureg.numQubits);
     localiser_statevec_anyCtrlPauliGadget(qureg, {}, {}, str, phase);
 }
@@ -1273,8 +1298,8 @@ void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* state
     if (!qureg.isDensityMatrix)
         return;
 
-    // conj(e^iXZ) = e^(-iXZ), but conj(Y)=-Y, so odd-Y undoes phase negation
-    phase *= paulis_hasOddNumY(str) ? 1 : -1;
+    // conj(e^(i a P)) = e^(-i s a P)
+    phase *= - paulis_getSignOfPauliStrConj(str);
     ctrlVec = util_getBraQubits(ctrlVec, qureg);
     str = paulis_getShiftedPauliStr(str, qureg.numQubits);
     localiser_statevec_anyCtrlPauliGadget(qureg, ctrlVec, stateVec, str, phase);

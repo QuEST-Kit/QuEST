@@ -750,7 +750,7 @@ void cpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 }
 
 
-template <bool HasPower, bool MultiplyLeft, bool MultiplyRight, bool ConjRight>
+template <bool HasPower, bool ApplyLeft, bool ApplyRight, bool ConjRight>
 void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
 
     // unlike other functions, this function handles all scenarios of...
@@ -773,7 +773,7 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
         qcomp fac = 1;
 
         // update fac to effect rho -> (matr * rho) or (matr^exponent * rho)
-        if constexpr (MultiplyLeft) {
+        if constexpr (ApplyLeft) {
 
             // i = global row of nth local amp
             qindex i = fast_getQuregGlobalRowFromFlatIndex(n, matr.numElems);
@@ -789,7 +789,7 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 
         // update fac to additional include rho -> (rho * matr) or 
         // (rho * conj(matr)), or the same exponentiated
-        if constexpr (MultiplyRight) {
+        if constexpr (ApplyRight) {
 
             // m = global index corresponding to n
             qindex m = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
@@ -1034,18 +1034,26 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlAnyTargZO
  */
 
 
-void cpu_statevec_setQuregToSuperposition_sub(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2) {
-
-    assert_superposedQuregDimsAndDeploysMatch(outQureg, inQureg1, inQureg2);
+template <int NumQuregs>
+void cpu_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs, vector<Qureg> inQuregs) {
 
     qindex numIts = outQureg.numAmpsPerNode;
-    qcomp* out = outQureg.cpuAmps;
-    qcomp* in1 = inQureg1.cpuAmps;
-    qcomp* in2 = inQureg2.cpuAmps;
+
+    // use template param to compile-time unroll inner loop below
+    SET_VAR_AT_COMPILE_TIME(int, numQuregs, NumQuregs, inQuregs.size());
 
     #pragma omp parallel for if(outQureg.isMultithreaded)
-    for (qindex n=0; n<numIts; n++)
-        out[n] = (facOut * out[n]) + (fac1 * in1[n]) + (fac2 * in2[n]);
+    for (qindex n=0; n<numIts; n++) {
+
+        // unrolled when inQuregs.size() <= 5
+        qcomp amp = 0;
+        for (int q=0; q<numQuregs; q++)
+            amp += coeffs[q] * inQuregs[q].cpuAmps[n];
+
+        // must not modify cpuAmps[n] before computing the amp since
+        // outQureg can legally appear among inQuregs
+        outQureg.cpuAmps[n] = amp;
+    }
 }
 
 
@@ -1101,6 +1109,9 @@ void cpu_densmatr_mixQureg_subC(qreal outProb, Qureg outQureg, qreal inProb) {
         out[n] = (outProb * out[n]) + (inProb * in[i] * std::conj(in[j]));
     }
 }
+
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_QUREGS( void, cpu_statevec_setQuregToWeightedSum_sub, (Qureg, vector<qcomp>, vector<Qureg>) )
 
 
 

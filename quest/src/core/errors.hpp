@@ -166,7 +166,7 @@ void assert_fullStateDiagMatrIsLocal(FullStateDiagMatr matr);
 
 void assert_fullStateDiagMatrIsDistributed(FullStateDiagMatr matr);
 
-void assert_fullStateDiagMatrTemplateParamsAreValid(bool multiplyLeft, bool multiplyRight, bool conjRight);
+void assert_fullStateDiagMatrTemplateParamsAreValid(bool applyLeft, bool applyRight, bool conjRight);
 
 void assert_acceleratorQuregIsDistributed(Qureg qureg);
 
@@ -201,9 +201,6 @@ void assert_bufferPackerGivenIncreasingQubits(int qubit1, int qubit2, int qubit3
 void assert_quregAndFullStateDiagMatrHaveSameDistrib(Qureg qureg, FullStateDiagMatr matr);
 
 void assert_quregDistribAndFullStateDiagMatrLocal(Qureg qureg, FullStateDiagMatr matr);
-
-void assert_superposedQuregDimsAndDeploysMatch(Qureg facOut, Qureg in1, Qureg in2);
-
 
 
 /*
@@ -292,6 +289,16 @@ void error_cuQuantumTempCpuAllocFailed();
 
 void error_pauliStrShiftedByIllegalAmount();
 
+void error_pauliStrSumHasMoreQubitsThanSpecifiedInTensorProd();
+
+void error_pauliStrSumHasMoreQubitsThanSpecifiedInConjShift();
+
+void error_pauliStrSumTensorProdHasIncorrectNumTerms();
+
+void error_pauliStrSumProdHasIncorrectNumTerms();
+
+void error_pauliStrSumConjHasIncorrectNumTerms();
+
 
 
 /*
@@ -365,6 +372,14 @@ void assert_printerGivenPositiveNumNewlines();
 void error_envVarsNotYetLoaded();
 
 void error_envVarsAlreadyLoaded();
+
+
+
+/*
+ * TROTTERISATION ERRORS
+ */
+
+void error_unexpectedNumLindbladSuperpropTerms();
 
 
 

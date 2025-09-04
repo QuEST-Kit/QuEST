@@ -19,6 +19,7 @@
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/utilities.hpp"
+#include "quest/src/core/paulilogic.hpp"
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/comm/comm_config.hpp"
@@ -675,6 +676,11 @@ void localiser_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, Pa
     accel_fullstatediagmatr_setElemsToPauliStrSum(out, in);
 }
 
+void localiser_statevec_scaleAmps(Qureg qureg, qcomp factor) {
+
+    localiser_statevec_setQuregToWeightedSum(qureg, {factor}, {qureg});
+}
+
 
 
 /*
@@ -1171,7 +1177,7 @@ void localiser_statevec_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qco
 }
 
 
-void localiser_densmatr_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool multiplyLeft, bool multiplyRight, bool conjRight) {
+void localiser_densmatr_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool applyLeft, bool applyRight, bool conjRight) {
     assert_localiserGivenDensMatr(qureg);
 
     // the diagonal matr has quadratically fewer elements than the density-matrix
@@ -1197,7 +1203,7 @@ void localiser_densmatr_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qco
     // when the matrix is not distributed, we call the same routine despite whether qureg 
     // is distributed or not; that merely changes how many qureg columns get updated
     if (!matrDist) {
-        accel_densmatr_allTargDiagMatr_subA(qureg, matr, exponent, multiplyLeft, multiplyRight, conjRight);
+        accel_densmatr_allTargDiagMatr_subA(qureg, matr, exponent, applyLeft, applyRight, conjRight);
         return;
     }
 
@@ -1206,7 +1212,7 @@ void localiser_densmatr_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qco
 
     // matr elems are inside qureg buffer, but we still pass matr struct along to
     // accelerator, because it is going to perform mischief to re-use subA().
-    accel_densmatr_allTargDiagMatr_subB(qureg, matr, exponent, multiplyLeft, multiplyRight, conjRight); 
+    accel_densmatr_allTargDiagMatr_subB(qureg, matr, exponent, applyLeft, applyRight, conjRight); 
 }
 
 
@@ -1252,13 +1258,6 @@ template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, vector<int>, vecto
  */
 
 
-extern bool paulis_containsXOrY(PauliStr str);
-extern vector<int> paulis_getTargetInds(PauliStr str);
-extern std::array<vector<int>,3> paulis_getSeparateInds(PauliStr str, Qureg qureg);
-extern int paulis_getPrefixZSign(Qureg qureg, vector<int> prefixZ) ;
-extern qcomp paulis_getPrefixPaulisElem(Qureg qureg, vector<int> prefixY, vector<int> prefixZ);
-
-
 void anyCtrlZTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, bool isGadget, qcomp phase) {     
     assertValidCtrlStates(ctrls, ctrlStates);
     setDefaultCtrlStates(ctrls, ctrlStates);
@@ -1302,7 +1301,7 @@ void anyCtrlPauliTensorOrGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrl
     // - prefix X,Y determine communication, because they apply bit-not to rank
     // - prefix Y,Z determine node-wide coefficient, because they contain rank-determined !=1 elements
     // - suffix X,Y,Z determine local amp coefficients
-    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
+    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str);
     auto [prefixX, suffixX] = util_getPrefixAndSuffixQubits(targsX, qureg);
     auto [prefixY, suffixY] = util_getPrefixAndSuffixQubits(targsY, qureg);
     auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targsZ, qureg);
@@ -1381,7 +1380,7 @@ void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vecto
  */
 
 
-void localiser_statevec_setQuregToSuperposition(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2) {
+void localiser_statevec_setQuregToWeightedSum(Qureg outQureg, vector<qcomp> coeffs, vector<Qureg> inQuregs) {
 
     /// @todo
     /// this function requires (as validated) distributions are identical.
@@ -1390,8 +1389,19 @@ void localiser_statevec_setQuregToSuperposition(qcomp facOut, Qureg outQureg, qc
     /// They must still however be identically GPU-accelerated; this is a
     /// low priority because this situation is non-sensical
 
-    // given Qureg dimensions must match, this is always embarrassingly parallel
-    accel_statevec_setQuregToSuperposition_sub(facOut, outQureg, fac1, inQureg1, fac2, inQureg2);
+    accel_statevec_setQuregToWeightedSum_sub(outQureg, coeffs, inQuregs);
+}
+
+
+void localiser_statevec_setQuregToClone(Qureg out, Qureg in) {
+
+    /// @todo
+    /// we lazily re-use setQuregToWeightedSum(), inducing a gratuitous
+    /// x1 multiplication per element which we expected is completely
+    /// occluded by memory movement costs. We should check this and
+    /// potentially replace this function with (NUMA-aware?) memory copying!
+
+    localiser_statevec_setQuregToWeightedSum(out, {1}, {in});
 }
 
 
@@ -1998,7 +2008,7 @@ qcomp getDensMatrExpecPauliStrTermOfOnlyThisNode(Qureg qureg, PauliStr str) {
     // caller must reduce the returned value between nodes if necessary
 
     // all ket-paulis are in the suffix state
-    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
+    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str);
 
     // optimised scenario when str = I
     if (targsX.empty() && targsY.empty() && targsZ.empty())
@@ -2023,7 +2033,7 @@ qcomp localiser_statevec_calcExpecPauliStr(Qureg qureg, PauliStr str) {
     // - prefix Y,Z determine node-wide coefficient, because they contain rank-determined !=1 elements
     // - suffix X,Y,Z determine local amp coefficients
     // noting that when !qureg.isDistributed, all paulis will be in suffix
-    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
+    auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str);
     auto [prefixX, suffixX] = util_getPrefixAndSuffixQubits(targsX, qureg);
     auto [prefixY, suffixY] = util_getPrefixAndSuffixQubits(targsY, qureg);
     auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targsZ, qureg);
@@ -2111,7 +2121,7 @@ qcomp localiser_statevec_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
 
         // for each term within the current group...
         for (auto& [str, coeff] : terms) {
-            auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str, qureg);
+            auto [targsX, targsY, targsZ] = paulis_getSeparateInds(str);
             auto [prefixX, suffixX] = util_getPrefixAndSuffixQubits(targsX, qureg);
             auto [prefixY, suffixY] = util_getPrefixAndSuffixQubits(targsY, qureg);
             auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targsZ, qureg);
@@ -2324,7 +2334,7 @@ void localiser_statevec_multiQubitProjector(Qureg qureg, vector<int> qubits, vec
     // all other nodes has some or all states consistent with suffix outcomes
     removePrefixQubitsAndStates(qureg, qubits, outcomes);
     (qubits.empty())?
-        accel_statevec_setQuregToSuperposition_sub(1/std::sqrt(prob), qureg,0,qureg, 0,qureg): // scale by norm
+        localiser_statevec_scaleAmps(qureg, 1/std::sqrt(prob)):
         accel_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, prob);
 }
 

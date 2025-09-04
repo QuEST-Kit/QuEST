@@ -1,6 +1,5 @@
 /** @file
- * An example of using QuEST (primarily function
- * applyTrotterizedPauliStrSumGadget()) to perform
+ * An example of using QuEST to perform closed
  * dynamical simulation via Trotterisation of the
  * unitary-time evolution operator.
  * 
@@ -158,7 +157,7 @@ int main() {
     for (int i=0; i<steps; i++) {
 
         // evolve qureg under (approx) exp(-i dt H)
-        applyTrotterizedPauliStrSumGadget(qureg, hamil, -dt, order, reps);
+        applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt, order, reps);
 
         // calculate and report <O>
         qreal time = dt * (i+1);
@@ -188,7 +187,7 @@ int main() {
 
     // verify results by uninterrupted higher-order simulation to target time
     initPlusState(qureg);
-    applyTrotterizedPauliStrSumGadget(qureg, hamil, -dt*steps, order+2, reps*steps);
+    applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt*steps, order+2, reps*steps);
     reportScalar("final <O>", calcExpecPauliStrSum(qureg, observ));
 
     // clean up

@@ -16,6 +16,7 @@
 #include "quest/src/core/autodeployer.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/localiser.hpp"
+#include "quest/src/core/paulilogic.hpp"
 #include "quest/src/core/printer.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/fastmath.hpp"
@@ -627,9 +628,6 @@ extern "C" {
 /*
  * SPECIAL CREATORS AND SETTERS
  */
-
-
-extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum);
 
 
 extern "C" void setFullStateDiagMatrFromPauliStrSum(FullStateDiagMatr out, PauliStrSum in) {

@@ -749,7 +749,7 @@ void gpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 }
 
 
-template <bool HasPower, bool MultiplyLeft, bool MultiplyRight, bool ConjRight>
+template <bool HasPower, bool ApplyLeft, bool ApplyRight, bool ConjRight>
 void gpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
 
     assert_exponentMatchesTemplateParam(exponent, HasPower);
@@ -760,7 +760,7 @@ void gpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
     qindex numBlocks = getNumBlocks(numThreads);
 
     kernel_densmatr_allTargDiagMatr_sub 
-        <HasPower, MultiplyLeft, MultiplyRight, ConjRight> 
+        <HasPower, ApplyLeft, ApplyRight, ConjRight> 
         <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
             toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
             toCuQcomps(util_getGpuMemPtr(matr)), matr.numElems, toCuQcomp(exponent)
@@ -909,11 +909,28 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, gpu_statevector_anyCtrlAnyTargZO
  */
 
 
-void gpu_statevec_setQuregToSuperposition_sub(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2) {
+template <int NumQuregs> 
+void gpu_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs, vector<Qureg> inQuregs) {
 
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
-    thrust_statevec_setQuregToSuperposition_sub(toCuQcomp(facOut), outQureg, toCuQcomp(fac1), inQureg1, toCuQcomp(fac2), inQureg2);
+    qindex numThreads = outQureg.numAmpsPerNode;
+    qindex numBlocks = getNumBlocks(numThreads);
+
+    // extract amp ptrs from qureg list
+    vector<cu_qcomp*> ptrs;
+    ptrs.reserve(inQuregs.size());
+    for (auto& qureg : inQuregs)
+        ptrs.push_back(toCuQcomps(qureg.gpuAmps));
+    
+    // copy coeff and qureg lists into GPU memory
+    devcuqcompptrs devQuregAmps = ptrs;
+    devcomps devCoeffs = coeffs;
+
+    kernel_statevec_setQuregToWeightedSum_sub <NumQuregs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        toCuQcomps(outQureg.gpuAmps), numThreads,
+        getPtr(devCoeffs), getPtr(devQuregAmps), inQuregs.size()
+    );
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -967,6 +984,9 @@ void gpu_densmatr_mixQureg_subC(qreal outProb, Qureg outQureg, qreal inProb) {
     error_gpuSimButGpuNotCompiled();
 #endif
 }
+
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_QUREGS( void, gpu_statevec_setQuregToWeightedSum_sub, (Qureg, vector<qcomp>, vector<Qureg>) )
 
 
 

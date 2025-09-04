@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <utility>
 #include <complex>
+#include <limits>
 #include <cmath>
 #include <vector>
 #include <array>
@@ -217,15 +218,6 @@ qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> ta
     return util_getBitMask(qubits, states);
 }
 
-vector<int> util_getVector(int* qubits, int numQubits) {
-
-    // permit qubits=nullptr, overriding numQubits (might be non-zero)
-    if (qubits == nullptr)
-        return {};
-
-    return vector<int> (qubits, qubits + numQubits);
-}
-
 
 
 /*
@@ -339,6 +331,39 @@ qcomp util_getPowerOfI(size_t exponent) {
     return values[exponent % 4];
 }
 
+bool util_willProdOverflow(vector<qindex> terms) {
+
+    qindex max = std::numeric_limits<qindex>::max();
+    qindex prod = 1;
+
+    for (auto x : terms) {
+
+        // division floors, so prod strictly exceed
+        if (prod > max / x)
+            return true;
+
+        prod *= x;
+    }
+
+    return false;
+}
+
+bool util_willSumOverflow(vector<qindex> terms) {
+
+    qindex max = std::numeric_limits<qindex>::max();
+    qindex sum = 0;
+
+    for (auto x : terms) {
+
+        if (sum >= max - x)
+            return true;
+        
+        sum += x;
+    }
+
+    return false;
+}
+
 
 
 /*
@@ -350,7 +375,7 @@ qreal util_getSum(vector<qreal> list) {
     qreal sum = 0;
     qreal y, t, c=0;
     
-    // complex Kahan summation
+    // Kahan summation
     for (auto& x : list) {
         y = x - c;
         t = sum + y;
@@ -982,6 +1007,54 @@ qcomp util_getPhaseFromGateAngle(qcomp angle) {
     return - angle / 2;
 }
 
+CompMatr1 util_getPauliX() {
+    return getCompMatr1({
+        {0,1},
+        {1,0}
+    });
+}
+CompMatr1 util_getPauliY() {
+    return getCompMatr1({
+        {0,qcomp(0,-1)},
+        {qcomp(0,1),0}
+    });
+}
+DiagMatr1 util_getPauliZ() {
+    return getDiagMatr1({1,-1});
+}
+
+CompMatr1 util_getExpPauliX(qreal angle) {
+
+    qreal x = util_getPhaseFromGateAngle(angle);
+    qreal c = std::cos(x);
+    qreal s = std::sin(x);
+
+    return getCompMatr1({
+        {qcomp(c,0), qcomp(0,s)},
+        {qcomp(0,s), qcomp(c,0)}
+    });
+}
+
+CompMatr1 util_getExpPauliY(qreal angle) {
+
+    qreal x = util_getPhaseFromGateAngle(angle);
+    qreal c = std::cos(x);
+    qreal s = std::sin(x);
+
+    return getCompMatr1({
+        { c, s},
+        {-s, c}
+    });
+}
+
+DiagMatr1 util_getExpPauliZ(qreal angle) {
+
+    qreal x = util_getPhaseFromGateAngle(angle);
+    qcomp y = qcomp(0, x);
+
+    return getDiagMatr1({std::exp(y), std::exp(-y)});
+}
+
 
 
 /*
@@ -1085,6 +1158,23 @@ qreal util_getMaxProbOfTwoQubitDepolarising() {
  */
 
 template <typename T>
+vector<T> getVector(T* ptr, int length) {
+
+    // permit nullptr to indicate empty list, regardless of length
+    if (ptr == nullptr)
+        return {};
+
+    // assumes memory alloc failure is impossible
+    return vector<T> (ptr, ptr + length);
+}
+
+vector<int>   util_getVector(int*   ptr, int length) { return getVector(ptr, length); }
+vector<qreal> util_getVector(qreal* ptr, int length) { return getVector(ptr, length); }
+vector<qcomp> util_getVector(qcomp* ptr, int length) { return getVector(ptr, length); }
+vector<Qureg> util_getVector(Qureg* ptr, int length) { return getVector(ptr, length); }
+
+
+template <typename T>
 void tryAllocVector(vector<T> &vec, qindex size, std::function<void()> errFunc) {
 
     // this function resizes the vector, not only reserving it,
@@ -1107,6 +1197,7 @@ void util_tryAllocVector(vector<qreal>    &vec, qindex size, std::function<void(
 void util_tryAllocVector(vector<qcomp>    &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
 void util_tryAllocVector(vector<qcomp*>   &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
 void util_tryAllocVector(vector<unsigned> &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
+void util_tryAllocVector(vector<PauliStr> &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
 
 // cuQuantum needs a vector<double> overload, which we additionally define when qreal!=double. Gross!
 #if FLOAT_PRECISION != 2

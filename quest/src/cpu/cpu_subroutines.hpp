@@ -82,7 +82,7 @@ template <int NumCtrls, int NumTargs, bool ApplyConj, bool HasPower> void cpu_st
 
 template <bool HasPower> void cpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
 
-template <bool HasPower, bool MultiplyLeft, bool MultiplyRight, bool ConjRight> void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
+template <bool HasPower, bool ApplyLeft, bool ApplyRight, bool ConjRight> void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
 
 
 /*
@@ -100,7 +100,7 @@ template <int NumCtrls> void cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qu
  * QUREG COMBINATION
  */
 
-void cpu_statevec_setQuregToSuperposition_sub(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2);
+template <int NumQuregs> void cpu_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs, vector<Qureg> inQuregs);
 
 void cpu_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, Qureg inDensMatr);
 void cpu_densmatr_mixQureg_subB(qreal outProb, Qureg outQureg, qreal inProb, Qureg inStateVec);

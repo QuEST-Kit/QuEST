@@ -115,8 +115,8 @@ digraph {
  * @see
  * - getCompMatr1()
  * - getInlineCompMatr1()
- * - multiplyCompMatr1()
- * - postMultiplyCompMatr1()
+ * - leftapplyCompMatr1()
+ * - rightapplyCompMatr1()
  * - applyControlledCompMatr1()
  * - applyCompMatr2()
  * - applyCompMatr()
@@ -322,8 +322,8 @@ digraph {
  *
  * @see
  * - applyCompMatr1()
- * - multiplyCompMatr2()
- * - postMultiplyCompMatr2()
+ * - leftapplyCompMatr2()
+ * - rightapplyCompMatr2()
  */
 void applyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix);
 
@@ -515,8 +515,8 @@ extern "C" {
  *
  * @see
  * - applyCompMatr1()
- * - multiplyCompMatr()
- * - postMultiplyCompMatr()
+ * - leftapplyCompMatr()
+ * - rightapplyCompMatr()
  */
 void applyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matr);
 
@@ -600,8 +600,8 @@ extern "C" {
 /** @notyetdoced
  * @see 
  * - applyCompMatr1()
- * - multiplyCompMatr2()
- * - postMultiplyCompMatr2()
+ * - leftapplyCompMatr2()
+ * - rightapplyCompMatr2()
  */
 void applyDiagMatr1(Qureg qureg, int target, DiagMatr1 matr);
 
@@ -1670,14 +1670,16 @@ extern "C" {
           - \iu  \sin\left( \frac{\theta}{2} \right) \, \hat{\sigma},
  *   @f]
  *   this function is equivalent to (but much faster than) effecting @f$ \hat{\sigma} @f$
- *   upon a clone which is subsequently superposed.
+ *   upon a clone which is subsequently combined.
  *   ```
      // prepare |temp> = str |qureg>
      Qureg temp = createCloneQureg(qureg);
      applyPauliStr(temp, str);
 
      // set |qureg> = cos(theta/2) |qureg> - i sin(theta/2) str |qureg>
-     setQuregToSuperposition(cos(theta/2), qureg, - 1.0i * sin(theta/2), temp, 0, temp);
+     qcomp coeffs[] = {cos(theta/2), -1i * sin(theta/2)};
+     Qureg quregs[] = {qureg, temp};
+     setQuregToWeightedSum(qureg, coeffs, quregs, 2);
  *   ```
  * - When @p str contains only @f$ \hat{Z} @f$ or @f$ \id @f$ Paulis, this function will
  *   automatically invoke applyPhaseGadget() which leverages an optimised implementation.
@@ -1686,7 +1688,7 @@ extern "C" {
  *   unchanged.
  *   ```
      qcomp factor = cexp(- theta / 2 * 1.i);
-     setQuregToSuperposition(factor, qureg, 0,qureg,0,qureg);
+     setQuregToWeightedSum(qureg, &factor, &qureg, 1);
  *   ```
  * - Passing @p angle=0 is equivalent to effecting the identity, leaving the state unchanged.
  *

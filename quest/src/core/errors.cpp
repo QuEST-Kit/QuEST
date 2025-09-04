@@ -462,12 +462,12 @@ void assert_fullStateDiagMatrIsDistributed(FullStateDiagMatr matr) {
         raiseInternalError("An accelerator function received a non-distributed FullStateDiagMatr where a distributed one was expected.");
 }
 
-void assert_fullStateDiagMatrTemplateParamsAreValid(bool multiplyLeft, bool multiplyRight, bool conjRight) {
+void assert_fullStateDiagMatrTemplateParamsAreValid(bool applyLeft, bool applyRight, bool conjRight) {
 
     bool valid = (
-        (  multiplyLeft &&   multiplyRight &&   conjRight) || // matr qureg conj(matr)
-        (  multiplyLeft && ! multiplyRight && ! conjRight) || // matr qureg
-        (! multiplyLeft &&   multiplyRight && ! conjRight)    //      qureg matr
+        (  applyLeft &&   applyRight &&   conjRight) || // matr qureg conj(matr)
+        (  applyLeft && ! applyRight && ! conjRight) || // matr qureg
+        (! applyLeft &&   applyRight && ! conjRight)    //      qureg matr
     );
 
     if (!valid)
@@ -556,17 +556,6 @@ void assert_quregDistribAndFullStateDiagMatrLocal(Qureg qureg, FullStateDiagMatr
         
     if (matr.isDistributed)
         raiseInternalError("The FullStateDiagMatr was unexpectedly distributed.");
-}
-
-void assert_superposedQuregDimsAndDeploysMatch(Qureg facOut, Qureg in1, Qureg in2) {
-
-    if (
-        facOut.isDistributed    != in1.isDistributed    || in1.isDistributed    != in2.isDistributed    ||
-        facOut.isDensityMatrix  != in1.isDensityMatrix  || in1.isDensityMatrix  != in2.isDensityMatrix  ||
-        facOut.isGpuAccelerated != in1.isGpuAccelerated || in1.isGpuAccelerated != in2.isGpuAccelerated ||
-        facOut.numQubits        != in1.numQubits        || in1.numQubits        != in2.numQubits
-    )
-        raiseInternalError("An internal function *_setQuregToSuperposition() received Quregs of mismatching dimensions and/or deployments.");
 }
 
 
@@ -737,6 +726,31 @@ void error_pauliStrShiftedByIllegalAmount() {
     raiseInternalError("A PauliStr was attemptedly shifted (likely invoked by its application upon a density matrix) by an illegal amount (e.g. negative, or that exceeding the PauliStr bitmask length).");
 }
 
+void error_pauliStrSumHasMoreQubitsThanSpecifiedInTensorProd() {
+
+    raiseInternalError("Attempted to calculate the tensor product of a PauliStrSum with itself, but it contained non-identity Paulis on qubits beyond the number specified.");
+}
+
+void error_pauliStrSumHasMoreQubitsThanSpecifiedInConjShift() {
+
+    raiseInternalError("Attempted to calculate the tensor product of a (conjugated) PauliStrSum with identity, but it contained non-identity Paulis on qubits beyond the number specified in the identity.");
+}
+
+void error_pauliStrSumTensorProdHasIncorrectNumTerms() {
+
+    raiseInternalError("The tensor product of a (conjugated) PauliStrSum with itself was attemptedly written to output PauliStrSum with an incompatible number of terms.");
+}
+
+void error_pauliStrSumProdHasIncorrectNumTerms() {
+
+    raiseInternalError("The product of a (conjugate transposed) PauliStrSum with itself was attemptedly written to an output PauliStrSum with an incompatible number of terms.");
+}
+
+void error_pauliStrSumConjHasIncorrectNumTerms() {
+
+    raiseInternalError("Attempted to calculate the conjugate of a PauliStrSum but the output PauliStrSum had a differing (and ergo invalid) number of terms.");
+}
+
 
 
 /*
@@ -886,4 +900,15 @@ void error_envVarsNotYetLoaded() {
 void error_envVarsAlreadyLoaded() {
 
     raiseInternalError("All environment variables were already loaded and validated yet re-loading was attempted.");
+}
+
+
+
+/*
+ * TROTTERISATION ERRORS
+ */
+
+void error_unexpectedNumLindbladSuperpropTerms() {
+
+    raiseInternalError("A different number of Lindblad superpropagator terms were prepared than expected.");
 }

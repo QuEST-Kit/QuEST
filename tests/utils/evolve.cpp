@@ -166,21 +166,21 @@ void applyReferenceOperator(qmatrix& state, qmatrix matrix) {
     state = matrix * state * getConjugateTranspose(matrix);
 }
 
-void multiplyReferenceOperator(qvector& state, qmatrix matrix) {
+void leftapplyReferenceOperator(qvector& state, qmatrix matrix) {
     DEMAND( state.size() == matrix.size() );
 
     // for statevectors, multiplying is the same as applying
     applyReferenceOperator(state, matrix);
 }
 
-void multiplyReferenceOperator(qmatrix& state, qmatrix matrix) {
+void leftapplyReferenceOperator(qmatrix& state, qmatrix matrix) {
     DEMAND( state.size() == matrix.size() );
 
     // we left-multiply upon density matrices only
     state = matrix * state;
 }
 
-void postMultiplyReferenceOperator(qmatrix& state, qmatrix matrix) {
+void rightapplyReferenceOperator(qmatrix& state, qmatrix matrix) {
     DEMAND( state.size() == matrix.size() );
 
     // we right-multiply upon density matrices only
@@ -202,21 +202,21 @@ void applyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> ctrlS
     applyReferenceOperator(state, fullOp);
 }
 
-void multiplyReferenceOperator(qvector& state, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qmatrix matrix) {
+void leftapplyReferenceOperator(qvector& state, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qmatrix matrix) {
     
     applyReferenceOperator(state, ctrls, ctrlStates, targs, matrix);
 }
 
-void multiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qmatrix matrix) {
+void leftapplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qmatrix matrix) {
     
     qmatrix left = getFullStateOperator(ctrls, ctrlStates, targs, matrix, getLog2(state.size()));
-    multiplyReferenceOperator(state, left);
+    leftapplyReferenceOperator(state, left);
 }
 
-void postMultiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qmatrix matrix) {
+void rightapplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qmatrix matrix) {
     
     qmatrix left = getFullStateOperator(ctrls, ctrlStates, targs, matrix, getLog2(state.size()));
-    postMultiplyReferenceOperator(state, left);
+    rightapplyReferenceOperator(state, left);
 }
 
 
@@ -230,17 +230,17 @@ void applyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> targs
     
     applyReferenceOperator(state, ctrls, {}, targs, matrix);
 }
-void multiplyReferenceOperator(qvector& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
+void leftapplyReferenceOperator(qvector& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
     
-    multiplyReferenceOperator(state, ctrls, {}, targs, matrix);
+    leftapplyReferenceOperator(state, ctrls, {}, targs, matrix);
 }
-void multiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
+void leftapplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
     
-    multiplyReferenceOperator(state, ctrls, {}, targs, matrix);
+    leftapplyReferenceOperator(state, ctrls, {}, targs, matrix);
 }
-void postMultiplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
+void rightapplyReferenceOperator(qmatrix& state, vector<int> ctrls, vector<int> targs, qmatrix matrix) {
     
-    postMultiplyReferenceOperator(state, ctrls, {}, targs, matrix);
+    rightapplyReferenceOperator(state, ctrls, {}, targs, matrix);
 }
 
 
@@ -254,17 +254,17 @@ void applyReferenceOperator(qmatrix& state, vector<int> targs, qmatrix matrix) {
 
     applyReferenceOperator(state, {}, {}, targs, matrix);
 }
-void multiplyReferenceOperator(qvector& state, vector<int> targs, qmatrix matrix) {
+void leftapplyReferenceOperator(qvector& state, vector<int> targs, qmatrix matrix) {
 
-    multiplyReferenceOperator(state, {}, {}, targs, matrix);
+    leftapplyReferenceOperator(state, {}, {}, targs, matrix);
 }
-void multiplyReferenceOperator(qmatrix& state, vector<int> targs, qmatrix matrix) {
+void leftapplyReferenceOperator(qmatrix& state, vector<int> targs, qmatrix matrix) {
 
-    multiplyReferenceOperator(state, {}, {}, targs, matrix);
+    leftapplyReferenceOperator(state, {}, {}, targs, matrix);
 }
-void postMultiplyReferenceOperator(qmatrix& state, vector<int> targs, qmatrix matrix) {
+void rightapplyReferenceOperator(qmatrix& state, vector<int> targs, qmatrix matrix) {
 
-    postMultiplyReferenceOperator(state, {}, {}, targs, matrix);
+    rightapplyReferenceOperator(state, {}, {}, targs, matrix);
 }
 
 

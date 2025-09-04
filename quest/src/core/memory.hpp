@@ -101,6 +101,8 @@ bool mem_canMatrixFitInMemory(int numQubits, bool isDense, int numNodes, qindex 
 
 bool mem_canSuperOpFitInMemory(int numQubits, qindex numBytesPerNode);
 
+bool mem_canPauliStrSumFitInMemory(qindex numTerms, qindex numBytesPerNode);
+
 
 
 /*

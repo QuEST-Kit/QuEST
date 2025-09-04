@@ -8,47 +8,27 @@
 #include "quest/include/precision.h"
 #include "quest/include/paulis.h"
 
+#include "quest/src/core/paulilogic.hpp"
 #include "quest/src/core/validation.hpp"
-#include "quest/src/core/printer.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/parser.hpp"
+#include "quest/src/core/printer.hpp"
 #include "quest/src/core/memory.hpp"
-#include "quest/src/core/errors.hpp"
-#include "quest/src/core/bitwise.hpp"
-#include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
+#include "quest/src/cpu/cpu_config.hpp"
 
-#include <iostream>
 #include <vector>
 #include <string>
-#include <array>
 
 using std::string;
 using std::vector;
-using std::array;
-
-
-
-/*
- * PRIVATE CONSTANTS
- */
-
-
-static const int MAX_NUM_PAULIS_PER_MASK = sizeof(PAULI_MASK_TYPE) * 8 / 2;
-static const int MAX_NUM_PAULIS_PER_STR  = MAX_NUM_PAULIS_PER_MASK * 2;
 
 
 
 /*
  * PRIVATE UTILITIES
  */
-
-
-int getPauliFromMaskAt(PAULI_MASK_TYPE mask, int ind) {
-
-    return getTwoAdjacentBits(mask, 2*ind); // bits at (ind+1, ind)
-}
 
 
 bool didAnyAllocsFailOnAnyNode(PauliStrSum sum) {
@@ -82,245 +62,6 @@ void freeAllMemoryIfAnyAllocsFailed(PauliStrSum sum) {
 
     // otherwise free every successful allocation (freeing nullptr is legal)
     freePauliStrSum(sum);
-}
-
-
-
-/*
- * INTERNAL UTILITIES
- *
- * callable by other internal files but which are not exposed in the header
- * because we do not wish to make them visible to users. Ergo other internal
- * files must declare these functions as extern where needed. Yes, it's ugly :(
- */
-
-
-bool paulis_isIdentity(PauliStr str) {
-
-    return 
-        (str.lowPaulis  == 0) && 
-        (str.highPaulis == 0);
-}
-
-
-int paulis_getPauliAt(PauliStr str, int ind) {
-
-    return (ind < MAX_NUM_PAULIS_PER_MASK)?
-        getPauliFromMaskAt(str.lowPaulis,  ind) :
-        getPauliFromMaskAt(str.highPaulis, ind - MAX_NUM_PAULIS_PER_MASK);
-}
-
-
-int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str) {
-
-    int ind   = (str.highPaulis == 0)? 0 : MAX_NUM_PAULIS_PER_MASK;
-    auto mask = (str.highPaulis == 0)? str.lowPaulis : str.highPaulis;
-
-    while (mask) {
-        mask >>= 2;
-        ind++;
-    }
-
-    return ind - 1;
-}
-
-
-int paulis_getIndOfLefmostNonIdentityPauli(PauliStr* strings, qindex numStrings) {
-
-    int maxInd = 0;
-
-    for (qindex i=0; i<numStrings; i++) {
-        int ind = paulis_getIndOfLefmostNonIdentityPauli(strings[i]);
-        if (ind > maxInd)
-            maxInd = ind;
-    }
-
-    return maxInd;
-}
-
-
-int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum) {
-
-    return paulis_getIndOfLefmostNonIdentityPauli(sum.strings, sum.numTerms);
-}
-
-
-bool paulis_containsXOrY(PauliStr str) {
-
-    int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
-
-    for (int i=0; i<=maxInd; i++) {
-        int pauli = paulis_getPauliAt(str, i);
-
-        if (pauli == 1 || pauli == 2)
-            return true;
-    }
-
-    return false;
-}
-
-
-bool paulis_containsXOrY(PauliStrSum sum) {
-
-    for (qindex i=0; i<sum.numTerms; i++)
-        if (paulis_containsXOrY(sum.strings[i]))
-            return true;
-
-    return false;
-}
-
-
-bool paulis_hasOddNumY(PauliStr str) {
-
-    bool odd = false;
-
-    for (int targ=0; targ < MAX_NUM_PAULIS_PER_STR; targ++) 
-        if (paulis_getPauliAt(str, targ) == 2)
-            odd = !odd;
-
-    return odd;
-}
-
-
-int paulis_getPrefixZSign(Qureg qureg, vector<int> prefixZ) {
-
-    int sign = 1;
-
-    // each Z contributes +- 1
-    for (int qubit : prefixZ)
-        sign *= util_getRankBitOfQubit(qubit, qureg)? -1 : 1;
-
-    return sign;
-}
-
-
-qcomp paulis_getPrefixPaulisElem(Qureg qureg, vector<int> prefixY, vector<int> prefixZ) {
-
-    // each Z contributes +- 1
-    qcomp elem = paulis_getPrefixZSign(qureg, prefixZ);
-
-    // each Y contributes -+ i
-    for (int qubit : prefixY)
-        elem *= 1_i * (util_getRankBitOfQubit(qubit, qureg)? 1 : -1);
-
-    return elem;
-}
-
-
-vector<int> paulis_getTargetInds(PauliStr str) {
-
-    int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
-
-    vector<int> inds(0);
-    inds.reserve(maxInd+1);
-
-    for (int i=0; i<=maxInd; i++)
-        if (paulis_getPauliAt(str, i) != 0) // Id
-            inds.push_back(i);
-
-    return inds;
-}
-
-
-qindex paulis_getTargetBitMask(PauliStr str) {
-    
-    /// @todo 
-    /// would compile-time MAX_NUM_PAULIS_PER_STR bound be faster here,
-    /// since this function is invoked upon every PauliStrSum element?
-    int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
-
-    qindex mask = 0;
-
-    for (int i=0; i<=maxInd; i++)
-        if (paulis_getPauliAt(str, i) != 0) // Id
-            mask = flipBit(mask, i);
-
-    return mask;
-}
-
-
-array<vector<int>,3> paulis_getSeparateInds(PauliStr str, Qureg qureg) {
-
-    vector<int> iXYZ = paulis_getTargetInds(str);
-    vector<int> iX, iY, iZ;
-
-    vector<int>* ptrs[] = {&iX, &iY, &iZ};
-
-    for (int i : iXYZ)
-        ptrs[paulis_getPauliAt(str, i) - 1]->push_back(i);
-
-    return {iX, iY, iZ};
-}
-
-
-PauliStr paulis_getShiftedPauliStr(PauliStr str, int pauliShift) {
-
-    if (pauliShift <= 0 || pauliShift >= MAX_NUM_PAULIS_PER_MASK)
-        error_pauliStrShiftedByIllegalAmount();
-
-    int numBitsPerPauli = 2;
-    int numMaskBits = numBitsPerPauli * MAX_NUM_PAULIS_PER_MASK;
-    int bitShift    = numBitsPerPauli * pauliShift;
-
-    // record the bits we will lose from lowPaulis, to move to highPaulis
-    PAULI_MASK_TYPE lostBits = getBitsLeftOfIndex(str.lowPaulis, numMaskBits - bitShift - 1);
-
-    // ensure we actually lose these bits from lowPaulis
-    PAULI_MASK_TYPE lowerBits = getBitsRightOfIndex(str.lowPaulis, numMaskBits - bitShift) << bitShift;
-
-    // and add them to highPaulis; we don't have to force lose upper bits of high paulis
-    PAULI_MASK_TYPE upperBits = concatenateBits(str.highPaulis, lostBits, bitShift);
-
-    // return a new stack PauliStr instance (avoiding C++20 initialiser)
-    PauliStr out;
-    out.lowPaulis = lowerBits;
-    out.highPaulis = upperBits;
-    return out;
-}
-
-
-PauliStr paulis_getKetAndBraPauliStr(PauliStr str, Qureg qureg) {
-
-    PauliStr shifted = paulis_getShiftedPauliStr(str, qureg.numQubits);
-    
-    // return a new stack PauliStr instance (avoiding C++20 initialiser)
-    PauliStr out;
-    out.lowPaulis  = str.lowPaulis  | shifted.lowPaulis;
-    out.highPaulis = str.highPaulis | shifted.highPaulis;
-    return out;
-}
-
-
-PAULI_MASK_TYPE paulis_getKeyOfSameMixedAmpsGroup(PauliStr str) {
-
-    PAULI_MASK_TYPE key = 0;
-
-    // in theory, we can reduce the number of involved operations by bit-shifting
-    // str left by 1, XOR'ing this with str, and retaining every 2nd bit, producing
-    // e.g. key=0110 from str=IXYZ. However, this is an insignificant speedup which
-    // risks sneaky bugs related to handling str's two masks.
-
-    int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
-
-    for (int i=0; i<=maxInd; i++) {
-        int pauli = paulis_getPauliAt(str, i);
-        int isXY = (pauli == 1 || pauli == 2);
-        key |= (isXY << i);
-    }
-
-    return key;
-}
-
-
-qindex paulis_getTargetBitMask(PauliStrSum sum) {
-
-    qindex mask = 0;
-
-    // mask has 1 where any str has a != Id
-    for (int t=0; t<sum.numTerms; t++)
-        mask |= paulis_getTargetBitMask(sum.strings[t]);
-
-    return mask;
 }
 
 
