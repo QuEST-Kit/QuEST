@@ -179,7 +179,7 @@ void setQuregToClone(Qureg outQureg, Qureg inQureg) {
     // we invoke mixing/superposing, which involves superfluous
     // floating-point operators but is not expected to cause an
     // appreciable slowdown since simulation is often memory-bound
-    (targetQureg.isDensityMatrix)?
+    (outQureg.isDensityMatrix)?
         localiser_densmatr_mixQureg(0, outQureg, 1, inQureg):
         localiser_statevec_setQuregToClone(outQureg, inQureg);
 }
