@@ -8,6 +8,25 @@
 -->
 
 
+## 🧭  Development
+
+
+### 2025
+
+  - Oliver Brown of EPCC leads QuEST development (`v4.3`+)
+
+
+### 2018
+
+  - Tyson Jones of QTechTheory leads QuEST development (`v1.1` - `v4.2`)
+
+
+### 2017
+
+  - Mihai Duta and Simon Benjamin begin QuEST development (`v0.1` - `v0.9`)
+  - Anna (Ania) Brown leads QuEST development (`v0.9` - `v1.0`)
+
+
 
 ## 🏆  Recognitions
 
@@ -39,16 +58,18 @@
 
 
 
-
 ## 💪  Major features
 
 
 ### 2025
 
-#### v4.2
+#### [v4.2](https://github.com/QuEST-Kit/QuEST/releases/tag/v4.2.0)
 
   - multi-controlled Trotter circuits
   - non-unitary Trotter circuits (permitting e.g. imaginary-time evolution)
+  - noisy time evolution via the Lindbladian
+  - customisation environment variables
+  - restored NUMA awareness (woops)
 
 #### [v4.0](https://github.com/QuEST-Kit/QuEST/releases/tag/v4.0.0)
 
@@ -58,7 +79,6 @@
   - multi-qubit projectors
   - distance measures
   - numerical tolerance control
-
 
 ### 2023
 
