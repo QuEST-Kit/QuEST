@@ -382,6 +382,33 @@ else()
   target_compile_definitions(QuEST PRIVATE INCLUDE_DEPRECATED_FUNCTIONS=0)
 endif()
 
+# Patch Clang/LLVM performance.
+# std::complex arithmetic overloads are painfully slow in Clang/LLVM, and
+# further greatly sabotage multithreaded performance. We patch this by
+# passing additional optimisation flags only to the single affected file
+# (cpu_subroutines.cpp), which should not worsen accuracy nor e.g. assert
+# associativity (which would break e.g. Kahan summation). We pass these flags
+# only in Release mode, and also pass defensive 'PATCHED' macros so that 
+# cpu_subroutines.cpp can detect whether the build forgot these flags, which
+# would otherwise silently ruin performance
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
+
+  if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    message(WARNING "Building with Clang, the CPU backend will receive additional optimisation flags to counteract a std::complex performance issue.")
+  endif()
+
+  set(patch_flags "-ffinite-math-only -fno-signed-zeros -ffp-contract=fast -DCLANG_COMPLEX_PERFORMANCE_PATCHED=1")
+  set(no_patch_flags "-DCLANG_COMPLEX_PERFORMANCE_PATCHED=0")
+
+  set_source_files_properties(
+    quest/src/cpu/cpu_subroutines.cpp
+    PROPERTIES
+    COMPILE_FLAGS
+      "$<IF:$<CONFIG:Release>,${patch_flags},${no_patch_flags}>"
+  )
+
+endif()
 
 # add math library
 if (NOT MSVC)

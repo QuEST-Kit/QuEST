@@ -42,6 +42,32 @@ using std::vector;
 
 
 /*
+ * Beware that this file makes extensive use of std::complex arithmetic
+ * overloads which, on Clang/LLVM, have enormous performance issues and sabotage
+ * multithreading using LLVM's OpenMP runtime library (libomp). We counteract
+ * this pitfall by specifying compiler flags
+ *      -ffinite-math-only
+ *      -fno-signed-zeros
+ *      -ffp-contract=fast 
+ * which restores performance to that of manual complex arithmetic. We here 
+ * defensively check the build correctly passed these flags. Note that value
+ * CLANG_COMPLEX_PERFORMANCE_PATCHED=0 is permitted which communicates that the
+ * flags were deliberately not passed because the CMake build type is not "Release".
+ */
+
+#if defined(__clang__)
+
+    #if !defined(CLANG_COMPLEX_PERFORMANCE_PATCHED)
+        #error "Additional optimisation flags were not passed (or acknowledged) to cpu_subroutines.cpp which is necessary with Clang to counteract a performance issue."
+    
+    #elif !CLANG_COMPLEX_PERFORMANCE_PATCHED
+        #warning "The CPU backend is being compiled without the necessary flags to counteract a Clang-specific performance issue."
+    #endif
+#endif
+
+
+
+/*
  * GETTERS
  */
 
