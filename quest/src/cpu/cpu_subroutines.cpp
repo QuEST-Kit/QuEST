@@ -56,8 +56,15 @@ using std::vector;
 
 #if !defined(COMPLEX_OVERLOADS_PATCHED)
     #error "Crucial, bespoke optimisation flags were not passed (or acknowledged) to cpu_subroutines.cpp which are necessary for full complex arithmetic performance."
+    
 #elif !COMPLEX_OVERLOADS_PATCHED
-    #warning "The CPU backend is being deliberately compiled without the necessary flags to obtain full complex arithmetic performance."
+
+    #if defined(_MSC_VER)
+        #pragma message("Warning: The CPU backend is being deliberately compiled without the necessary flags to obtain full complex arithmetic performance.")
+    #else
+        #warning "The CPU backend is being deliberately compiled without the necessary flags to obtain full complex arithmetic performance."
+    #endif
+
 #endif
 
 
