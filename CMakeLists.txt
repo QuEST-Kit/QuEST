@@ -382,33 +382,65 @@ else()
   target_compile_definitions(QuEST PRIVATE INCLUDE_DEPRECATED_FUNCTIONS=0)
 endif()
 
-# Patch Clang/LLVM performance.
-# std::complex arithmetic overloads are painfully slow in Clang/LLVM, and
-# further greatly sabotage multithreaded performance. We patch this by
-# passing additional optimisation flags only to the single affected file
-# (cpu_subroutines.cpp), which should not worsen accuracy nor e.g. assert
-# associativity (which would break e.g. Kahan summation). We pass these flags
-# only in Release mode, and also pass defensive 'PATCHED' macros so that 
-# cpu_subroutines.cpp can detect whether the build forgot these flags, which
-# would otherwise silently ruin performance
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
+# Patch performance of CPU std::complex arithmetic operator overloads.
+# The cpu_subroutines.cpp file makes extensive use of std::complex operator
+# overloads, and alas these are significantly slower than hand-rolled 
+# arithmetic, due to their NaN and inf checks, and interference with SIMD.
+# It is crucial to pass additional optimisation flags to this file to restore
+# hand-rolled performance (else QuEST v3 is faster than v4 eep). In theory,
+# we can achieve this with specific, relatively 'safe' flags such as LLVM's:
+#     -ffinite-math-only -fno-signed-zeros -ffp-contract=fast
+# However, it is a nuisance to find equivalent flags for different compilers
+# and monitor their performance vs accuracy trade-offs. So instead, we use the
+# much more aggressive and ubiquitous -Ofast flag to guarantee performance. 
+# This introduces many potentially dangerous optimisations, such as asserting
+# associativity of flops, which would break techniques like Kahan summation.
+# The cpu_subroutines.cpp must ergo be very conscious of these optimisations.
+# We here also explicitly inform the file cpu_subroutines.cpp whether or not
+# we are passing the flags, so it can detect/error when flags are forgotten.
 
-  if (CMAKE_BUILD_TYPE STREQUAL "Release")
-    message(WARNING "Building with Clang, the CPU backend will receive additional optimisation flags to counteract a std::complex performance issue.")
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+
+  # Release build will pass -Ofast when known for the given compiler, and
+  # fallback to giving a performance warning and proceeding with compilation
+
+  if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang|Cray|CrayClang|GNU|HP|Intel|IntelLLVM|NVHPC|NVIDIA|XL|XLClang")
+    set(patch_flags "-Ofast")
+    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=1")
+  elseif (CMAKE_CXX_COMPILER_ID MATCHES "HP")
+    set(patch_flags "+Ofast")
+    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=1")
+  elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    set(patch_flags "/fp:fast")
+    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=1")
+  else()
+    message(WARNING 
+      "The compiler (${CMAKE_CXX_COMPILER_ID}) is unrecognised and so crucial optimisation flags have not been "
+      "passed to the CPU backend. These flags are necessary for full performance when performing complex algebra, "
+      "otherwise a slowdown of 3-50x may be observed. Please edit the root CMakeLists.txt to include flags which are "
+      "equivalent to GNU's -Ofast flag for your compiler (search this warning), or contact the QuEST developers for help."
+    )
+    set(patch_flags "")
+    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=0")
   endif()
+  
+else()
 
-  set(patch_flags "-ffinite-math-only -fno-signed-zeros -ffp-contract=fast -DCLANG_COMPLEX_PERFORMANCE_PATCHED=1")
-  set(no_patch_flags "-DCLANG_COMPLEX_PERFORMANCE_PATCHED=0")
+  # Non-release builds (e.g. Debug) will pass no optimisation flags, and will
+  # communicate to cpu_subroutines.cpp that this is intentional via a macro
 
-  set_source_files_properties(
-    quest/src/cpu/cpu_subroutines.cpp
-    PROPERTIES
-    COMPILE_FLAGS
-      "$<IF:$<CONFIG:Release>,${patch_flags},${no_patch_flags}>"
-  )
+  set(patch_flags "")
+  set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=0")
 
 endif()
+
+set_source_files_properties(
+  quest/src/cpu/cpu_subroutines.cpp
+  PROPERTIES
+  COMPILE_FLAGS "${patch_flags} ${patch_macro}"
+)
+
 
 # add math library
 if (NOT MSVC)
