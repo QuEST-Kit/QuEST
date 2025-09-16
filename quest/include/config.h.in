@@ -28,6 +28,29 @@
 
 
 /*
+ * check that the below CMake options are not being erroneously
+ * passed as macros (as was previously accepted), which would 
+ * anyway trigger a 'macro redefined' warning below.
+ */
+
+
+#if defined(FLOAT_PRECISION)              || \
+    defined(COMPILE_OPENMP)               || \
+    defined(COMPILE_MPI)                  || \
+    defined(COMPILE_CUDA)                 || \
+    defined(COMPILE_HIP)                  || \
+    defined(COMPILE_CUQUANTUM)            || \
+    defined(NUMA_AWARE)                   || \
+    defined(INCLUDE_DEPRECATED_FUNCTIONS) || \
+    defined(DISABLE_DEPRECATION_WARNINGS) || \
+    defined(DEFINE_ARITHMETIC_OVERLOADS)
+
+    #error "Pre-config macros were erroneously passed directly to the source rather than through the CMake config file."
+
+#endif
+
+
+/*
  * save the CMake option values as macros. 
  *
  * Note we use cmakedefine (rather than just define @VAL) so that 
@@ -57,6 +80,30 @@
 
 // not consulted by src (included for book-keeping)
 #cmakedefine01 COMPILE_HIP
+
+
+
+/*
+ * check that all above expected CMake options were
+ * actually passed (since use of 'cmakedefine' means
+ * they otherwise default to no macro definition)
+ */
+
+
+#if ! defined(FLOAT_PRECISION)              || \
+    ! defined(COMPILE_OPENMP)               || \
+    ! defined(COMPILE_MPI)                  || \
+    ! defined(COMPILE_CUDA)                 || \
+    ! defined(COMPILE_HIP)                  || \
+    ! defined(COMPILE_CUQUANTUM)            || \
+    ! defined(NUMA_AWARE)                   || \
+    ! defined(INCLUDE_DEPRECATED_FUNCTIONS) || \
+    ! defined(DISABLE_DEPRECATION_WARNINGS) || \
+    ! defined(DEFINE_ARITHMETIC_OVERLOADS)
+
+    #error "Expected macros were not defined by the config.h header, possibly because their corresponding CMake variables were not substituted."
+
+#endif
 
 
 
