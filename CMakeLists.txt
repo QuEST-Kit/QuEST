@@ -184,6 +184,33 @@ option(
 )
 message(STATUS "AMD GPU acceleration is turned ${ENABLE_HIP}. Set ENABLE_HIP to modify.")
 
+
+# Deprecated API
+option(
+  ENABLE_DEPRECATED_API
+  "Whether QuEST will be built with deprecated API support. Turned OFF by default."
+  OFF
+)
+message(STATUS "Deprecated API support is turned ${ENABLE_DEPRECATED_API}. Set ENABLE_DEPRECATED_API to modify.")
+
+option(
+  DISABLE_DEPRECATION_WARNINGS
+  "Whether to disable compile-time warnings ordinarily triggered by use of the deprecated API. Turned OFF by default."
+  OFF
+)
+message(STATUS "Disabling of deprecated API warnings is turned ${DISABLE_DEPRECATION_WARNINGS}. Set DISABLE_DEPRECATION_WARNINGS to modify.")
+
+
+# Complex arithmetic
+option(
+  DEFINE_ARITHMETIC_OVERLOADS
+  "Whether to define convenience arithmetic operator overloads between qcomp (the QuEST complex scalar type) and other precision numbers."
+  ON
+)
+message(STATUS "Complex arithmetic overloads are turned ${DEFINE_ARITHMETIC_OVERLOADS}. Set DEFINE_ARITHMETIC_OVERLOADS to modify.")
+
+
+
 # ============================
 # Validate options
 # ============================

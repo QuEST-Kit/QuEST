@@ -66,6 +66,7 @@ jobs:
           -DENABLE_TESTING=ON
           -DENABLE_MULTITHREADING=OFF
           -DENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
+          -DDISABLE_DEPRECATION_WARNINGS=${{ matrix.version == 3 && 'ON' || 'OFF' }}
           -DFLOAT_PRECISION=${{ matrix.precision }}
 
       # force 'Release' build (needed by MSVC to enable optimisations)

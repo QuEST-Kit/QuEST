@@ -16,12 +16,7 @@
 #include <catch2/generators/catch_generators_range.hpp>
 #include <catch2/generators/catch_generators_random.hpp>
 
-// must define preprocessors to enable quest's
-// deprecated v3 API, and disable the numerous
-// warnings issued by its compilation
-#define INCLUDE_DEPRECATED_FUNCTIONS 1
-#define DISABLE_DEPRECATION_WARNINGS 1
-
+#include "quest.h"
 #include "test_utilities.hpp"
 
 #include <random>
