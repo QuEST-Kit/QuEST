@@ -19,7 +19,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include "quest/include/modes.h"
+#include "quest/include/config.h"
 #include "quest/include/precision.h"
 
 
@@ -160,21 +160,7 @@ static inline qcomp getQcomp(qreal re, qreal im) {
     // between all type/precision permutations, always returning qcomp.
     // Via the unholy macros below, we create 312 overloads; since this will
     // no doubt break somebody's build/integration, users can disable this
-    // attempt at precision-agnostic arithmetic via DEFINE_ARITHMETIC_OVERLOADS=0
-
-    #ifndef DEFINE_ARITHMETIC_OVERLOADS
-    #define DEFINE_ARITHMETIC_OVERLOADS 1
-    #endif
-
-    // spoofing above macro as const to doc
-    #if 0
-
-        /// @notyetdoced
-        /// @macrodoc
-        const int DEFINE_ARITHMETIC_OVERLOADS = 1;
-
-    #endif
-
+    // attempt at precision-agnostic arithmetic via DEFINE_ARITHMETIC_OVERLOADS
 
     #if DEFINE_ARITHMETIC_OVERLOADS
 

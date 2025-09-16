@@ -2,9 +2,6 @@
  * The main QuEST header, exposing the entire API.
  * This header is intendedly included by user
  * source-code, and is both C11 and C++14 compatible.
- * Preprocessor 'INCLUDE_DEPRECATED_FUNCTIONS' can
- * be defined as 1 to additionally include QuEST's
- * deprecated v3 API, before including this header.
  * 
  * @author Tyson Jones
  * @author Luc Jaulmes (patching CMake install)
@@ -30,11 +27,8 @@
 #ifndef QUEST_H
 #define QUEST_H
 
-
-// include version first so it is accessible to 
-// debuggers in case a subsequent include fails
-#include "quest/include/version.h"
-
+// include config.h first to define macros
+// consulted by subsequent headers
 #include "quest/include/config.h"
 
 // include before API headers since it validates

@@ -1,6 +1,6 @@
 /** @file
- * User-overridable numerical precision of
- * both the QuEST API and backends
+ * The precision of QuEST's numerical types, some of which 
+ * are overridable and others of which are intendedly fixed.
  * 
  * @author Tyson Jones
  * @author Milos Prokop (patched trig overloads in v3)
@@ -14,7 +14,7 @@
 #ifndef PRECISION_H
 #define PRECISION_H
 
-#include "quest/include/modes.h"
+#include "quest/include/config.h"
 
 
 
@@ -76,11 +76,6 @@
  * RE-CONFIGURABLE FLOATING-POINT PRECISION
  */
 
-// assume double precision as default
-#ifndef FLOAT_PRECISION
-    #define FLOAT_PRECISION 2
-#endif
-
 // validate precision is 1 (float), 2 (double) or 4 (long double)
 #if ! (FLOAT_PRECISION == 1 || FLOAT_PRECISION == 2 || FLOAT_PRECISION == 4)
     #error "FLOAT_PRECISION must be 1 (float), 2 (double) or 4 (long double)"
@@ -100,10 +95,14 @@
 
     /// @notyetdoced
     /// @macrodoc
+    ///
+    /// (note this macro is informed by the FLOAT_PRECISION CMake variable)
     const int FLOAT_PRECISION = 2;
 
     /// @notyetdoced
     /// @macrodoc
+    ///
+    /// (note this macro is informed by the FLOAT_PRECISION CMake variable)
     typedef double int FLOAT_TYPE;
 
 #endif
