@@ -1,6 +1,6 @@
 # @author Oliver Thomson Brown
 # @author Erich Essmann (patches including MSVC support)
-# @author Tyson Jones (patches including clang multithreading)
+# @author Tyson Jones (tidying + patches including clang multithreading)
 # @author Luc Jaulmes (NUMA awareness, patching install)
 #
 # Contributions to previous builds from:
@@ -13,7 +13,15 @@
 #  - Christopher J. Anders
 #  - Drew Silcock
 
+
+
+# ============================
+# Project
+# ============================
+
+
 cmake_minimum_required(VERSION 3.21)
+
 
 project(QuEST
   VERSION 4.1.0
@@ -21,9 +29,15 @@ project(QuEST
   LANGUAGES CXX C
 )
 
+
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
-## Dependencies
+
+
+# ============================
+# Dependencies
+# ============================
+
 
 # GNUInstallDirs to provide sensible default install directory names
 cmake_path(SET ORG_INSTALL_PATH NORMALIZE "${CMAKE_INSTALL_PREFIX}")
@@ -31,12 +45,18 @@ cmake_path(APPEND CMAKE_INSTALL_PREFIX "quest")
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
+
 # Maths
 if (NOT WIN32)
   find_library(MATH_LIBRARY m REQUIRED)
 endif()
 
-## Configuration options
+
+
+# ============================
+# Declare options
+# ============================
+
 
 # Build type
 # Default to "Release"
@@ -52,10 +72,12 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
+
 # Library type
 # Shared library by default
 option(BUILD_SHARED_LIBS "Build shared library. Turned ON by default." ON)
 message(STATUS "Shared library is turned ${BUILD_SHARED_LIBS}. Set BUILD_SHARED_LIBS to modify.")
+
 
 # Library naming
 set(LIB_NAME QuEST 
@@ -101,6 +123,7 @@ if (VERBOSE_LIB_NAME)
   string(CONCAT LIB_NAME ${LIB_NAME} "-fp${FLOAT_PRECISION}")
 endif()
 
+
 # Examples
 option(
   BUILD_EXAMPLES
@@ -108,6 +131,7 @@ option(
   OFF
 )
 message(STATUS "Examples are turned ${BUILD_EXAMPLES}. Set BUILD_EXAMPLES to modify.")
+
 
 # Testing
 option(
@@ -123,6 +147,7 @@ option(
   ON
 )
 
+
 # Multithreading
 option(
   ENABLE_MULTITHREADING 
@@ -131,6 +156,7 @@ option(
 )
 message(STATUS "Multithreading is turned ${ENABLE_MULTITHREADING}. Set ENABLE_MULTITHREADING to modify.")
 
+
 # Distribution
 option(
   ENABLE_DISTRIBUTION 
@@ -138,6 +164,7 @@ option(
   OFF
 )
 message(STATUS "Distribution is turned ${ENABLE_DISTRIBUTION}. Set ENABLE_DISTRIBUTION to modify.")
+
 
 # GPU Acceleration
 option(
@@ -163,7 +190,7 @@ option(
 )
 message(STATUS "AMD GPU acceleration is turned ${ENABLE_HIP}. Set ENABLE_HIP to modify.")
 
-# Throw on disallowed combinations
+# Throw on disallowed GPU combinations
 if (ENABLE_CUDA AND ENABLE_HIP)
   message(FATAL_ERROR "QuEST cannot support CUDA and HIP simultaneously.")
 endif()
@@ -172,6 +199,7 @@ if ((ENABLE_CUDA OR ENABLE_HIP) AND FLOAT_PRECISION STREQUAL 4)
   message(FATAL_ERROR "Quad precision is not supported on GPU. Please disable GPU acceleration or lower precision.")
 endif()
 
+
 # Deprecated API
 option(
   ENABLE_DEPRECATED_API
@@ -179,6 +207,7 @@ option(
   OFF
 )
 message(STATUS "Deprecated API support is turned ${ENABLE_DEPRECATED_API}. Set ENABLE_DEPRECATED_API to modify.")
+
 
 # Windows Specific Options
 if(WIN32)
@@ -190,12 +219,18 @@ if(WIN32)
   endif()
 endif()
 
-## Library
+
+
+# ============================
+# Library
+# ============================
+
 
 add_library(QuEST)
 
 # Add namespaced alias to support inclusion of QuEST as a subproject
 add_library(QuEST::QuEST ALIAS QuEST)
+
 
 # Set include directories
 target_include_directories(QuEST
@@ -209,6 +244,7 @@ set_target_properties(QuEST PROPERTIES
         VERSION     ${PROJECT_VERSION}
         SOVERSION   ${PROJECT_VERSION_MAJOR}
 )
+
 
 # Add required C and C++ standards.
 # Note the QuEST interface(s) require only C11 and C++14, 
@@ -224,6 +260,7 @@ target_compile_features(QuEST
   cxx_std_17
 )
 
+
 # Turn on all compiler warnings
 if (MSVC)
   set(WARNING_FLAG /W4)
@@ -238,9 +275,16 @@ target_compile_options(QuEST
 )
 
 
-# Set user options
+
+# ============================
+# Pass options to library
+# ============================
+
+
 compile_option(FLOAT_PRECISION ${FLOAT_PRECISION})
 
+
+# OpenMP
 if (ENABLE_MULTITHREADING)
 
   # find OpenMP, but fail gracefully...
@@ -293,6 +337,8 @@ else()
   compile_option(COMPILE_OPENMP 0)
 endif()
 
+
+# MPI
 if (ENABLE_DISTRIBUTION)
   find_package(MPI REQUIRED
     COMPONENTS CXX
@@ -309,6 +355,8 @@ else()
   compile_option(COMPILE_MPI 0)
 endif()
 
+
+# CUDA
 if (ENABLE_CUDA)
 
   # make nvcc use user cxx-compiler as default host (before cuda-host is set below)
@@ -326,8 +374,14 @@ if (ENABLE_CUDA)
   if (VERBOSE_LIB_NAME)
     string(CONCAT LIB_NAME ${LIB_NAME} "+cuda")
   endif()
+
+  # beware that compile_option(COMPILE_CUDA) is deferred to below because
+  # it is triggered by both/either ENABLE_CUDA and ENABLE_HIP
+
 endif()
 
+
+# cuQuantum
 if (ENABLE_CUQUANTUM)
   find_package(CUQUANTUM REQUIRED)
   compile_option(COMPILE_CUQUANTUM 1)
@@ -340,6 +394,8 @@ else()
   compile_option(COMPILE_CUQUANTUM 0)
 endif()
 
+
+# HIP
 if (ENABLE_HIP)
 
   # if generation fails (hip::amdhip64 not found), users can try setting
@@ -365,12 +421,16 @@ if (ENABLE_HIP)
   endif()
 endif()
 
+
+# set COMPILE_CUDA
 if (ENABLE_CUDA OR ENABLE_HIP)
   compile_option(COMPILE_CUDA 1)
 else()
   compile_option(COMPILE_CUDA 0)
 endif()
 
+
+# v3 API
 if (ENABLE_DEPRECATED_API)
   target_compile_definitions(QuEST PRIVATE INCLUDE_DEPRECATED_FUNCTIONS=1)
 
@@ -381,6 +441,12 @@ if (ENABLE_DEPRECATED_API)
 else()
   target_compile_definitions(QuEST PRIVATE INCLUDE_DEPRECATED_FUNCTIONS=0)
 endif()
+
+
+
+# ============================
+# Patch CPU performance
+# ============================
 
 
 # Patch performance of CPU std::complex arithmetic operator overloads.
@@ -442,19 +508,33 @@ set_source_files_properties(
 )
 
 
+
+# ============================
+# Pass files to library
+# ============================
+
+
 # add math library
 if (NOT MSVC)
   target_link_libraries(QuEST PRIVATE ${MATH_LIBRARY})
 endif()
 
+
 # Set output name
 set_target_properties(QuEST PROPERTIES OUTPUT_NAME ${LIB_NAME})
+
 
 # Add source files
 add_subdirectory(quest)
 
-## Examples
 
+
+# ============================
+# Examples
+# ============================
+
+
+# min example is always built
 add_executable(min_example
   examples/tutorials/min_example.c
 )
@@ -465,9 +545,12 @@ install(TARGETS min_example
   DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+
+# all examples optionally built
 if (BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
+
 
 ## RATH
 set(BUILD_RPATH_USE_ORIGIN ON)
@@ -492,14 +575,24 @@ endfunction()
 
 setup_quest_rpath(QuEST)
 setup_quest_rpath(min_example)
-## User Source
 
+
+
+# ============================
+# User source
+# ============================
+
+
+# validate
 if (USER_SOURCE AND NOT OUTPUT_EXE)
     message(SEND_ERROR "USER_SOURCE specified, but not OUTPUT_EXE.")
 endif()
 if (OUTPUT_EXE AND NOT USER_SOURCE)
     message(SEND_ERROR "OUTPUT_EXE specified, but not USER_SOURCE.")
 endif()
+
+
+# compile user source
 if (USER_SOURCE AND OUTPUT_EXE)
   message(STATUS "Compiling ${USER_SOURCE} to executable ${OUTPUT_EXE}.")
 
@@ -510,14 +603,19 @@ if (USER_SOURCE AND OUTPUT_EXE)
 endif()
 
 
-## Tests
+
+# ============================
+# Tests
+# ============================
+
 
 if (ENABLE_TESTING)
 
+  # try find Catch2
   set(CatchVersion 3.8.0)
-
   find_package(Catch2 ${CatchVersion} QUIET)
 
+  # else try download Catch2
   if (NOT TARGET Catch2::Catch2 AND DOWNLOAD_CATCH2)
     message(STATUS "Catch2 not found, it will be downloaded and built in the build directory.")
     Include(FetchContent)
@@ -530,6 +628,7 @@ if (ENABLE_TESTING)
     
     FetchContent_MakeAvailable(Catch2)
   
+  # otherwise fail
   else()
     # We won't magically find it here, but this is the easiest way to
     # a) Force the build to fail, and
@@ -537,61 +636,74 @@ if (ENABLE_TESTING)
     find_package(Catch2 ${CatchVersion} REQUIRED)
   endif()
 
+  # compile tests
   include(Catch)
   enable_testing()
   add_subdirectory(tests)
 endif()
 
-## Install
+
+
+# ============================
+# Installation
+# ============================
+
 
 install(TARGETS QuEST
-        EXPORT QuESTTargets
-        LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
+  EXPORT QuESTTargets
+  LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-## Export
+
 # Write CMake version file for QuEST
 set(QuEST_INSTALL_CONFIGDIR "${CMAKE_INSTALL_LIBDIR}/cmake/QuEST")
 
+
 # Write QuESTConfigVersion.cmake
 write_basic_package_version_file(
-        "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}ConfigVersion.cmake"
-        VERSION ${PROJECT_VERSION}
-        COMPATIBILITY AnyNewerVersion
+  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}ConfigVersion.cmake"
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY AnyNewerVersion
 )
+
 
 # Configure QuESTConfig.cmake (from template)
 configure_package_config_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QuESTConfig.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
-        INSTALL_DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QuESTConfig.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
+  INSTALL_DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
 )
+
 
 # Install them
 install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}ConfigVersion.cmake"
-        DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
+  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}ConfigVersion.cmake"
+  DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
 )
 
-install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/quest/include/quest.h"
-        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+install(FILES 
+  "${CMAKE_CURRENT_SOURCE_DIR}/quest/include/quest.h"
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/quest/include/config.h"
-        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/quest/include"
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/include/quest/include/config.h"
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/quest/include"
 )
 
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/quest/include"
-        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/quest"
-        FILES_MATCHING PATTERN "*.h"
-        PATTERN "quest.h" EXCLUDE
+install(
+  DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/quest/include"
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/quest"
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN "quest.h" EXCLUDE
 )
 
-install(EXPORT QuESTTargets
-        FILE "${LIB_NAME}Targets.cmake"
-        NAMESPACE QuEST::
-        DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
+install(
+  EXPORT QuESTTargets
+  FILE "${LIB_NAME}Targets.cmake"
+  NAMESPACE QuEST::
+  DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
 )
