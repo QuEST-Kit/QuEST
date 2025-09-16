@@ -187,32 +187,41 @@ option(
 message(STATUS "AMD GPU acceleration is turned ${ENABLE_HIP}. Set ENABLE_HIP to modify.")
 
 # Throw on disallowed GPU combinations
+# ============================
+# Validate options
+# ============================
+
+
 if (ENABLE_CUDA AND ENABLE_HIP)
   message(FATAL_ERROR "QuEST cannot support CUDA and HIP simultaneously.")
 endif()
+
 
 if ((ENABLE_CUDA OR ENABLE_HIP) AND FLOAT_PRECISION STREQUAL 4)
   message(FATAL_ERROR "Quad precision is not supported on GPU. Please disable GPU acceleration or lower precision.")
 endif()
 
 
-# Deprecated API
-option(
-  ENABLE_DEPRECATED_API
-  "Whether QuEST will be built with deprecated API support. Turned OFF by default."
-  OFF
-)
-message(STATUS "Deprecated API support is turned ${ENABLE_DEPRECATED_API}. Set ENABLE_DEPRECATED_API to modify.")
+if (ENABLE_CUQUANTUM AND NOT ENABLE_CUDA)
+  message(FATAL_ERROR "Use of cuQuantum requires CUDA.")
+endif()
 
 
-# Windows Specific Options
 if(WIN32)
   
   # Force MSVC to export all symbols in a shared library, like GCC and clang
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-  if (ENABLE_TESTING)
+
+  if (ENABLE_TESTING AND BUILD_SHARED_LIBS)
+    message(WARNING "Compiling the tests on Windows requires BUILD_SHARED_LIBS=OFF which we now force.")
     set(BUILD_SHARED_LIBS OFF)
   endif()
+
+  if (ENABLE_DEPRECATED_API)
+    message(FATAL_ERROR "The deprecated API is not compatible with MSVC.")
+  endif()
+
+endif()
 
 
 
