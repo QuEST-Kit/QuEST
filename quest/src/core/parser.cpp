@@ -10,6 +10,7 @@
  * @author Tyson Jones
  */
 
+#include "quest/include/config.h"
 #include "quest/include/precision.h"
 #include "quest/include/types.h"
 #include "quest/include/paulis.h"

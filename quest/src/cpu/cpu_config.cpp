@@ -6,7 +6,7 @@
  * @author Luc Jaulmes (NUMA awareness)
  */
 
-#include "quest/include/modes.h"
+#include "quest/include/config.h"
 #include "quest/include/types.h"
 #include "quest/include/paulis.h"
 

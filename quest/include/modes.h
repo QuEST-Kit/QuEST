@@ -54,36 +54,6 @@
 
 
 
-// define optional-macro defaults (mostly to list them)
-
-#ifndef INCLUDE_DEPRECATED_FUNCTIONS
-#define INCLUDE_DEPRECATED_FUNCTIONS 0
-#endif
-
-#ifndef DISABLE_DEPRECATION_WARNINGS
-#define DISABLE_DEPRECATION_WARNINGS 0
-#endif
-
-// further macros are defined in precision.h
-
-// spoofing above macro as consts to doc
-#if 0
-
-
-    /// @notyetdoced
-    /// @macrodoc
-    const int INCLUDE_DEPRECATED_FUNCTIONS = 0;
-
-
-    /// @notyetdoced
-    /// @macrodoc
-    const int DISABLE_DEPRECATION_WARNINGS = 0;
-
-
-#endif
-
-
-
 // document environment variables
 
 // spoof env-vars as consts to doc (hackily and hopefully temporarily)

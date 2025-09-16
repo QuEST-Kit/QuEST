@@ -6,6 +6,7 @@
  */
 
 #include "quest/include/qureg.h"
+#include "quest/include/modes.h"
 #include "quest/include/environment.h"
 #include "quest/include/initialisations.h"
 

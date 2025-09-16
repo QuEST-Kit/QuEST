@@ -8,6 +8,7 @@
  * @author Luc Jaulmes (distributing ranges over blocks)
  */
 
+#include "quest/include/config.h"
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
 #include "quest/include/paulis.h"

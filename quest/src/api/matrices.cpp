@@ -9,8 +9,9 @@
  */
 
 #include "quest/include/matrices.h"
-#include "quest/include/environment.h"
+#include "quest/include/modes.h"
 #include "quest/include/types.h"
+#include "quest/include/environment.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/autodeployer.hpp"

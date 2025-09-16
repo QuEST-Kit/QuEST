@@ -5,7 +5,7 @@
  * @author Tyson Jones
  */
 
-#include "quest/include/modes.h"
+#include "quest/include/config.h"
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"

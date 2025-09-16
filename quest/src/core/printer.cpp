@@ -9,6 +9,7 @@
  * @author Erich Essmann (improved OS agnosticism, patched mem-leak)
  */
 
+#include "quest/include/config.h"
 #include "quest/include/qureg.h"
 #include "quest/include/types.h"
 #include "quest/include/matrices.h"

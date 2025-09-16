@@ -15,7 +15,6 @@
  * @author Ania (Anna) Brown (developed QuEST v1 logic)
  */
 
-#include "quest/include/modes.h"
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
 #include "quest/include/paulis.h"

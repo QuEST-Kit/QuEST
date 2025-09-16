@@ -25,7 +25,9 @@
 #define GPU_CUQUANTUM_HPP
 
 
-// check preprocessors and compilers are valid before #includes to avoid compile errors
+// check preprocessors and compilers are valid before #includes to avoid 
+// compile errors (though we must still obtain the preprocessors from config.h)
+#include "quest/include/config.h"
 
 #if ! COMPILE_CUQUANTUM
     #error "A file being compiled somehow included gpu_cuquantum.hpp despite QuEST not being compiled in cuQuantum mode."

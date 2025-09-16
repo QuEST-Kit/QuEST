@@ -21,11 +21,13 @@
 #ifndef GPU_THRUST_HPP
 #define GPU_THRUST_HPP
 
+// obtain preprocessors from config.h prior to validation
+#include "quest/include/config.h"
+
 #if ! COMPILE_CUDA
     #error "A file being compiled somehow included gpu_thrust.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 
-#include "quest/include/modes.h"
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
 #include "quest/include/paulis.h"

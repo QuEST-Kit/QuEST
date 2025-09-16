@@ -12,6 +12,7 @@
 #ifndef UTILITIES_HPP
 #define UTILITIES_HPP
 
+#include "quest/include/config.h"
 #include "quest/include/types.h"
 #include "quest/include/qureg.h"
 #include "quest/include/paulis.h"
