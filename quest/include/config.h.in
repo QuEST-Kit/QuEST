@@ -50,6 +50,17 @@
 #endif
 
 
+#if defined(QUEST_VERSION_MAJOR) || \
+    defined(QUEST_VERSION_MINOR) || \
+    defined(QUEST_VERSION_PATCH) || \
+    defined(QUEST_VERSION_STRING)
+
+    #error "QuEST version macros were erroneously passed directly to the source rather than through the CMake config file."
+
+#endif
+
+
+
 /*
  * save the CMake option values as macros. 
  *
@@ -80,6 +91,22 @@
 
 // not consulted by src (included for book-keeping)
 #cmakedefine01 COMPILE_HIP
+
+
+
+/*
+ * inherit the version information from CMake.
+ *
+ * Note we do not (and actually cannot) validate these using the 
+ * cmakedefine trick used above since they are always gauranteed 
+ * to be passed and substituted by CMake
+ */ 
+
+
+#define QUEST_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define QUEST_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define QUEST_VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define QUEST_VERSION_STRING "@PROJECT_VERSION@"
 
 
 
