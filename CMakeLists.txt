@@ -170,14 +170,12 @@ option(
 )
 message(STATUS "NVIDIA GPU acceleration is turned ${ENABLE_CUDA}. Set ENABLE_CUDA to modify.")
 
-if (ENABLE_CUDA)
-  option(
-    ENABLE_CUQUANTUM
-    "Whether QuEST will be built with support for NVIDIA CuQuantum. Turned OFF by default."
-    OFF
-  )
-  message(STATUS "CuQuantum support is turned ${ENABLE_CUQUANTUM}. Set ENABLE_CUQUANTUM to modify.")
-endif()
+option(
+  ENABLE_CUQUANTUM
+  "Whether QuEST will be built with support for NVIDIA cuQuantum. Turned OFF by default."
+  OFF
+)
+message(STATUS "CuQuantum support is turned ${ENABLE_CUQUANTUM}. Set ENABLE_CUQUANTUM to modify.")
 
 option(
   ENABLE_HIP
@@ -186,7 +184,6 @@ option(
 )
 message(STATUS "AMD GPU acceleration is turned ${ENABLE_HIP}. Set ENABLE_HIP to modify.")
 
-# Throw on disallowed GPU combinations
 # ============================
 # Validate options
 # ============================
@@ -275,15 +272,15 @@ add_library(QuEST::QuEST ALIAS QuEST)
 
 # Set include directories
 target_include_directories(QuEST
-        PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/quest/include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/quest/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 set_target_properties(QuEST PROPERTIES
-        VERSION     ${PROJECT_VERSION}
-        SOVERSION   ${PROJECT_VERSION_MAJOR}
+  VERSION     ${PROJECT_VERSION}
+  SOVERSION   ${PROJECT_VERSION_MAJOR}
 )
 
 
@@ -318,7 +315,7 @@ target_compile_options(QuEST
 
 
 # ============================
-# Pass options to library
+# Link optional dependencies
 # ============================
 
 
