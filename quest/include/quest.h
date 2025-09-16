@@ -31,11 +31,7 @@
 // consulted by subsequent headers
 #include "quest/include/config.h"
 
-// include before API headers since it validates
-// preprocessor configuration, and affirms macro
-// preconditions assumed by subsequent header
 #include "quest/include/modes.h"
-
 #include "quest/include/precision.h"
 #include "quest/include/types.h"
 #include "quest/include/calculations.h"

@@ -107,8 +107,40 @@
 
 
 
-#endif
+/*
+ * validate boolean macro definitions.
+ *
+ * Note that more specific checks (e.g. whether non-boolean
+ * macros have legal values, or whether combinations of
+ * multiple macro values are legal) are performed by the files
+ * that concern them. These checks merely validate the macro
+ * has the right 'type' so will not trip up other preprocesing
+ */
+
+
+#if ! (COMPILE_OPENMP               == 0 || COMPILE_OPENMP               == 1) || \
+    ! (COMPILE_MPI                  == 0 || COMPILE_MPI                  == 1) || \
+    ! (COMPILE_CUDA                 == 0 || COMPILE_CUDA                 == 1) || \
+    ! (COMPILE_HIP                  == 0 || COMPILE_HIP                  == 1) || \
+    ! (COMPILE_CUQUANTUM            == 0 || COMPILE_CUQUANTUM            == 1) || \
+    ! (NUMA_AWARE                   == 0 || NUMA_AWARE                   == 1) || \
+    ! (INCLUDE_DEPRECATED_FUNCTIONS == 0 || INCLUDE_DEPRECATED_FUNCTIONS == 1) || \
+    ! (DISABLE_DEPRECATION_WARNINGS == 0 || DISABLE_DEPRECATION_WARNINGS == 1) || \
+    ! (DEFINE_ARITHMETIC_OVERLOADS  == 0 || DEFINE_ARITHMETIC_OVERLOADS  == 1)
+
+    #error "A macro defined by the config.h header (as inferred from a CMake variable) had an illegal value."
 
 #endif
+
+
+// ensure __cplusplus macro is valid (API headers use #ifdef, not #if)
+
+#ifdef __cplusplus
+#if !__cplusplus
+#error "Preprocessor __cplusplus was 0 and should instead be undefined"
+#endif
+#endif
+
+
 
 #endif // CONFIG_H

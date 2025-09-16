@@ -1,56 +1,17 @@
 /** @file
- * Compile-time checks that all expected
- * preprocessor macros are defined and valid 
+ * Constants related to configuring QuEST runtime modes,
+ * and documentation of environment variables
  * 
  * @author Tyson Jones
  * 
  * @defgroup modes Modes
  * @ingroup api
- * @brief Macros for controlling QuEST compilation.
+ * @brief Constants and environment variables for controlling QuEST execution.
  * @{
  */
 
 #ifndef MODES_H
 #define MODES_H
-
-
-
-// ensure all mode flags are valid values
-// undefined allowed as undefined == 0 in C/C++ standards
-
-#if ! (COMPILE_MPI == 0 || COMPILE_MPI == 1)
-    #error "Macro COMPILE_MPI must have value 0 or 1"
-#endif
-
-#if ! (COMPILE_OPENMP == 0 || COMPILE_OPENMP == 1)
-    #error "Macro COMPILE_OPENMP must have value 0 or 1"
-#endif
-
-#if ! (COMPILE_CUDA == 0 || COMPILE_CUDA == 1)
-    #error "Macro COMPILE_CUDA must have value 0 or 1"
-#endif
-
-#if ! (COMPILE_CUQUANTUM == 0 || COMPILE_CUQUANTUM == 1)
-    #error "Macro COMPILE_CUQUANTUM must have value 0 or 1"
-#endif
-
-
-
-// ensure mode flags are compatible
-
-#if COMPILE_CUQUANTUM && ! COMPILE_CUDA
-    #error "Cannot enable cuQuantum without simultaneously enabling GPU-acceleration"
-#endif
-
-
-
-// ensure C++ macro is valid (API headers use #ifdef, not #if)
-
-#ifdef __cplusplus
-#if !__cplusplus
-#error "Preprocessor __cplusplus was 0 and should instead be undefined"
-#endif
-#endif
 
 
 
