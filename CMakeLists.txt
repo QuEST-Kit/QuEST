@@ -54,7 +54,7 @@ endif()
 
 
 # ============================
-# Declare options
+# Obtain options
 # ============================
 
 
@@ -118,10 +118,6 @@ set_property(CACHE FLOAT_PRECISION PROPERTY STRINGS
   4
 )
 message(STATUS "Precision set to ${FLOAT_PRECISION}. Set FLOAT_PRECISION to modify.")
-
-if (VERBOSE_LIB_NAME)
-  string(CONCAT LIB_NAME ${LIB_NAME} "-fp${FLOAT_PRECISION}")
-endif()
 
 
 # Examples
@@ -217,6 +213,42 @@ if(WIN32)
   if (ENABLE_TESTING)
     set(BUILD_SHARED_LIBS OFF)
   endif()
+
+
+
+# ============================
+# Extend verbose library name
+# ============================
+
+
+if (VERBOSE_LIB_NAME)
+
+  string(CONCAT LIB_NAME ${LIB_NAME} "-fp${FLOAT_PRECISION}")
+
+  if (ENABLE_MULTITHREADING)
+    string(CONCAT LIB_NAME ${LIB_NAME} "+mt")
+  endif()
+
+  if (ENABLE_DISTRIBUTION)
+    string(CONCAT LIB_NAME ${LIB_NAME} "+mpi")
+  endif()
+
+  if (ENABLE_CUDA)
+    string(CONCAT LIB_NAME ${LIB_NAME} "+cuda")
+  endif()
+
+  if (ENABLE_HIP)
+    string(CONCAT LIB_NAME ${LIB_NAME} "+hip")
+  endif()
+
+  if (ENABLE_CUQUANTUM)
+    string(CONCAT LIB_NAME ${LIB_NAME} "+cuquantum")
+  endif()
+
+  if (ENABLE_DEPRECATED_API)
+    string(CONCAT LIB_NAME ${LIB_NAME} "+depr")
+  endif()
+
 endif()
 
 
@@ -323,10 +355,6 @@ if (ENABLE_MULTITHREADING)
     endif()
   endif()
 
-  if (VERBOSE_LIB_NAME)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+mt")
-  endif()
-
 else()
 
   # suppress GCC "unknown pragma" warning when OpenMP disabled
@@ -348,9 +376,6 @@ if (ENABLE_DISTRIBUTION)
     PRIVATE
     MPI::MPI_CXX
   )
-  if (VERBOSE_LIB_NAME)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+mpi")
-  endif()
 else()
   compile_option(COMPILE_MPI 0)
 endif()
@@ -371,10 +396,6 @@ if (ENABLE_CUDA)
   
   set(CUDA_PROPAGATE_HOST_FLAGS OFF)
   
-  if (VERBOSE_LIB_NAME)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+cuda")
-  endif()
-
   # beware that compile_option(COMPILE_CUDA) is deferred to below because
   # it is triggered by both/either ENABLE_CUDA and ENABLE_HIP
 
@@ -387,9 +408,6 @@ if (ENABLE_CUQUANTUM)
   compile_option(COMPILE_CUQUANTUM 1)
   target_link_libraries(QuEST PRIVATE CUQUANTUM::cuStateVec)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
-  if (VERBOSE_LIB_NAME)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+cuquantum")
-  endif()
 else()
   compile_option(COMPILE_CUQUANTUM 0)
 endif()
@@ -416,9 +434,6 @@ if (ENABLE_HIP)
   compile_option(COMPILE_CUQUANTUM 0)
   target_link_libraries(QuEST PRIVATE hip::host)
 
-  if (VERBOSE_LIB_NAME)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+hip")
-  endif()
 endif()
 
 
@@ -434,9 +449,6 @@ endif()
 if (ENABLE_DEPRECATED_API)
   target_compile_definitions(QuEST PRIVATE INCLUDE_DEPRECATED_FUNCTIONS=1)
 
-  if (VERBOSE_LIB_NAME)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+depr")
-  endif()
 
 else()
   target_compile_definitions(QuEST PRIVATE INCLUDE_DEPRECATED_FUNCTIONS=0)
