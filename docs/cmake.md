@@ -8,13 +8,13 @@
   @author Tyson Jones (test variables)
 -->
 
-Version 4 of QuEST includes reworked CMake to support library builds, CMake export, and installation. Here we detail useful variables to configure the compilation of QuEST. If using a Unix-like operating system any of these variables can be set using the `-D` flag when invoking CMake, for example:
+Version 4 of QuEST includes reworked CMake to support library builds, CMake export, and installation. Here we detail useful variables to configure the compilation of QuEST. If using a Unix-like operating system, any of these variables can be set using the `-D` flag when invoking CMake, for example:
 
 ```
 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/QuEST -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DENABLE_MULTITHREADING=ON -DENABLE_DISTRIBUTION=OFF ./
 ```
 
-Then one need only move to the build directory, and invoke make:
+Then, as detailed in [`compile.md`](compile.md), one need only move to the build directory and compile by invoking make:
 
 ```
 cd build
@@ -42,8 +42,12 @@ make
 | `ENABLE_CUQUANTUM` | (`OFF`), `ON` | Determines whether QuEST will make use of the NVIDIA CuQuantum library. Cannot be turned on if `ENABLE_CUDA` is off. |
 | `ENABLE_HIP` | (`OFF`), `ON` | Determines whether QuEST will be built with support for AMD GPU acceleration. If turned on, `CMAKE_HIP_ARCHITECTURES` should probably also be set. |
 | `ENABLE_DEPRECATED_API` | (`OFF`), `ON` | Determines whether QuEST will be built with support for the deprecated (v3) API. ***Note**: this will generate compiler warnings and is not supported by MSVC.* |
+| `DISABLE_DEPRECATION_WARNINGS` | (`OFF`), `ON` | Whether to disable the compile-time deprecation warnings when using the deprecated (v3) API. |
 | `USER_SOURCE` | (Undefined), String | The source file for a user program which will be compiled alongside QuEST. `OUTPUT_EXE` *must* also be defined. |
 | `OUTPUT_EXE` | (Undefined), String | The name of the executable which will be created from the provided `USER_SOURCE`. `USER_SOURCE` *must* also be defined. |
+| `DEFINE_ARITHMETIC_OVERLOADS` | (`ON`), `OFF` | Whether to define convenient arithmetic operator overloads between QuEST's `qcomp` complex type, and other precision number types (like `int`, `unsigned long`, `float`, etc). |
+
+
 
 
 --------------------------
