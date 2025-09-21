@@ -13,11 +13,11 @@
 # USER SETTINGS
 
 # numerical precision (1, 2, 4)
-FLOAT_PRECISION=4
+FLOAT_PRECISION=2
 
 # deployments to compile (0, 1)
 ENABLE_DISTRIBUTION=0       # MPI
-ENABLE_MULTITHREADING=1     # OpenMP
+ENABLE_MULTITHREADING=0     # OpenMP
 ENABLE_CUDA=0               # NVIDIA GPU
 ENABLE_HIP=0                # AMD GPU
 ENABLE_CUQUANTUM=0          # NVIDIA cuStateVec
@@ -46,7 +46,7 @@ LINKER=g++
 # or the unit tests (1), which when paired with above
 # ENABLE_DEPRECATED_API=1, will use the v3 tests (which
 # you should pair with DISABLE_DEPRECATION_WARNINGS=1)
-COMPILE_TESTS=1
+COMPILE_TESTS=0
 
 # name of the compiled test executable
 TEST_EXEC_FILE="test"
