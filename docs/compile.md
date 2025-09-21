@@ -55,6 +55,9 @@ Compiling is configured with variables supplied by the [`-D` flag](https://cmake
 > [!TIP]
 > QuEST's [Github Actions](https://github.com/QuEST-Kit/QuEST/actions/workflows/compile.yml) regularly test QuEST compilation using a broad combination of deployment settings; presently `108` combinations! The [`compile.yml`](/.github/workflows/compile.yml) workflow can serve as a concrete example of how to compile QuEST in a sanitised, virtual setting.
 
+> [!NOTE]
+> Afraid of CMake? See [`compile.sh`](/utils/scripts/compile.sh) for manual compilation (which we discourage!)
+
 
 ------------------
 
