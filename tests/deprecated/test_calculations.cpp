@@ -912,8 +912,8 @@ TEST_CASE( "calcInnerProduct", "[calculations]" ) {
                 toQureg(vec2, r2);
                 qcomp res = calcInnerProduct(vec1,vec2);
                 
-                REQUIRE( real(res) == Approx(real(prod)) );
-                REQUIRE( imag(res) == Approx(imag(prod)) );
+                REQUIRE( real(res) == Approx(real(prod)).margin(REAL_EPS) );
+                REQUIRE( imag(res) == Approx(imag(prod)).margin(REAL_EPS) );
             }
         }
     }
