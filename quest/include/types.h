@@ -157,12 +157,10 @@ static inline qcomp getQcomp(qreal re, qreal im) {
     // Furthermore, the user might do arithmetic on complex literals which are
     // not the same precision as qcomp, so compilation will fail depending
     // on the setting of PRECISION. To avoid this, we'll define overloads
-    // between all type/precision permutations, always returning qcomp.
-    // Via the unholy macros below, we create 312 overloads; since this will
-    // no doubt break somebody's build/integration, users can disable this
-    // attempt at precision-agnostic arithmetic via DEFINE_ARITHMETIC_OVERLOADS
-
-    #if DEFINE_ARITHMETIC_OVERLOADS
+    // between all type/precision permutations, always returning qcomp. These
+    // overloads are also used by the QuEST source code. Via the unholy macros 
+    // below, we create 312 overloads; no doubt this is going to break something
+    // in the future, for which I am already sorry :'(
 
     /// @cond EXCLUDE_FROM_DOXYGEN
 
@@ -259,8 +257,6 @@ static inline qcomp getQcomp(qreal re, qreal im) {
     #undef DEFINE_SINGLE_DIRECTION_ARITHMETIC_BETWEEN_COMPLEX_AND_COMPLEX
 
     /// @endcond // EXCLUDE_FROM_DOXYGEN
-
-    #endif // DEFINE_ARITHMETIC_OVERLOADS
 
 #endif
 

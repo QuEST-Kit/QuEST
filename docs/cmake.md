@@ -45,7 +45,6 @@ make
 | `DISABLE_DEPRECATION_WARNINGS` | (`OFF`), `ON` | Whether to disable the compile-time deprecation warnings when using the deprecated (v3) API. |
 | `USER_SOURCE` | (Undefined), String | The source file for a user program which will be compiled alongside QuEST. `OUTPUT_EXE` *must* also be defined. |
 | `OUTPUT_EXE` | (Undefined), String | The name of the executable which will be created from the provided `USER_SOURCE`. `USER_SOURCE` *must* also be defined. |
-| `DEFINE_ARITHMETIC_OVERLOADS` | (`ON`), `OFF` | Whether to define convenient arithmetic operator overloads between QuEST's `qcomp` complex type, and other precision number types (like `int`, `unsigned long`, `float`, etc). |
 
 
 

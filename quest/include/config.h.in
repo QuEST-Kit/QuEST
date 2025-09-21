@@ -42,8 +42,7 @@
     defined(COMPILE_CUQUANTUM)            || \
     defined(NUMA_AWARE)                   || \
     defined(INCLUDE_DEPRECATED_FUNCTIONS) || \
-    defined(DISABLE_DEPRECATION_WARNINGS) || \
-    defined(DEFINE_ARITHMETIC_OVERLOADS)
+    defined(DISABLE_DEPRECATION_WARNINGS)
 
     #error "Pre-config macros were erroneously passed directly to the source rather than through the CMake config file."
 
@@ -75,7 +74,6 @@
 #cmakedefine FLOAT_PRECISION @FLOAT_PRECISION@
 #cmakedefine01 INCLUDE_DEPRECATED_FUNCTIONS
 #cmakedefine01 DISABLE_DEPRECATION_WARNINGS
-#cmakedefine01 DEFINE_ARITHMETIC_OVERLOADS
 
 
 // crucial to QuEST source (informs external library usage)
@@ -125,8 +123,7 @@
     ! defined(COMPILE_CUQUANTUM)            || \
     ! defined(NUMA_AWARE)                   || \
     ! defined(INCLUDE_DEPRECATED_FUNCTIONS) || \
-    ! defined(DISABLE_DEPRECATION_WARNINGS) || \
-    ! defined(DEFINE_ARITHMETIC_OVERLOADS)
+    ! defined(DISABLE_DEPRECATION_WARNINGS)
 
     #error "Expected macros were not defined by the config.h header, possibly because their corresponding CMake variables were not substituted."
 
@@ -152,8 +149,7 @@
     ! (COMPILE_CUQUANTUM            == 0 || COMPILE_CUQUANTUM            == 1) || \
     ! (NUMA_AWARE                   == 0 || NUMA_AWARE                   == 1) || \
     ! (INCLUDE_DEPRECATED_FUNCTIONS == 0 || INCLUDE_DEPRECATED_FUNCTIONS == 1) || \
-    ! (DISABLE_DEPRECATION_WARNINGS == 0 || DISABLE_DEPRECATION_WARNINGS == 1) || \
-    ! (DEFINE_ARITHMETIC_OVERLOADS  == 0 || DEFINE_ARITHMETIC_OVERLOADS  == 1)
+    ! (DISABLE_DEPRECATION_WARNINGS == 0 || DISABLE_DEPRECATION_WARNINGS == 1)
 
     #error "A macro defined by the config.h header (as inferred from a CMake variable) had an illegal value."
 

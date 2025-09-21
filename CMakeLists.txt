@@ -186,15 +186,6 @@ option(
 message(STATUS "Disabling of deprecated API warnings is turned ${DISABLE_DEPRECATION_WARNINGS}. Set DISABLE_DEPRECATION_WARNINGS to modify.")
 
 
-# Complex arithmetic
-option(
-  DEFINE_ARITHMETIC_OVERLOADS
-  "Whether to define convenience arithmetic operator overloads between qcomp (the QuEST complex scalar type) and other precision numbers."
-  ON
-)
-message(STATUS "Complex arithmetic overloads are turned ${DEFINE_ARITHMETIC_OVERLOADS}. Set DEFINE_ARITHMETIC_OVERLOADS to modify.")
-
-
 
 # ============================
 # Validate options
@@ -471,7 +462,6 @@ endif()
 set(FLOAT_PRECISION ${FLOAT_PRECISION})
 set(NUMA_AWARE ${NUMA_AWARE})
 set(DISABLE_DEPRECATION_WARNINGS ${DISABLE_DEPRECATION_WARNINGS})
-set(DEFINE_ARITHMETIC_OVERLOADS ${DEFINE_ARITHMETIC_OVERLOADS})
 
 
 # these do not appear in src but are saved for record-keeping in config.h.in
