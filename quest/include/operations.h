@@ -189,7 +189,7 @@ digraph {
  * 
  * - Unitarity of @f$ \hat{U} = @f$ @p matrix requires that 
  *   @f$ \hat{U} \hat{U}^\dagger = \id @f$. Validation will check that @p matrix is
- *   approximately unitarity via
+ *   approximately unitary via
  *   @f[ 
         \max\limits_{ij} \Big|\left(\hat{U} \hat{U}^\dagger - \id\right)_{ij}\Big|^2 \le \valeps
  *   @f]
@@ -269,7 +269,7 @@ digraph {
  * @f[
     C_1[\hat{U}_0] \equiv 
     \begin{pmatrix} 
-      1 \\ & 1 \\ & & u_{00} & u_{10} \\ & & u_{10} & u_{11}
+      1 \\ & 1 \\ & & u_{00} & u_{01} \\ & & u_{10} & u_{11}
     \end{pmatrix}.
  * @f]
  *
@@ -288,7 +288,7 @@ digraph {
  * 
  * - Unitarity of @f$ \hat{U} = @f$ @p matrix requires that 
  *   @f$ \hat{U} \hat{U}^\dagger = \id @f$. Validation will check that @p matrix is
- *   approximately unitarity via
+ *   approximately unitary via
  *   @f[ 
         \max\limits_{ij} \Big|\left(\hat{U} \hat{U}^\dagger - \id\right)_{ij}\Big|^2 \le \valeps
  *   @f]
