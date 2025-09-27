@@ -763,8 +763,88 @@ void calcProbsOfAllMultiQubitOutcomes(qreal* outcomeProbs, Qureg qureg, int* qub
 qreal calcTotalProb(Qureg qureg);
 
 
-/// @notyetdoced
-/// @notyetvalidated
+/** Calculates the purity of @p qureg, which is a measure of its mixedness.
+ *
+ * @formulae
+ * 
+ * Let @f$N@f$ be the number of qubits in @p qureg.
+ * 
+ * - When @p qureg is a density matrix @f$ \dmrho @f$ (as expected), this function returns
+ *   @f[
+         \tr{ \dmrho^2 } = \sum\limits_{i,j} \left| \dmrho_{ij} \right|^2
+ *   @f]
+ *   where @f$ \dmrho_{ij} @f$ is the @f$(i,j)@f$-th element of @f$ \dmrho @f$.
+ *   
+ *   A purity of `1` indicates that the matrix is _pure_ and can be expressed as
+ *   @f[
+         \dmrho \equiv \ketbra{\phi}{\phi}
+ *   @f]
+ *   where @f$ \ket{\phi} @f$ is some pure state expressible as a statevector.
+ *   
+ *   In contrast, a purity less than `1` indicates the matrix is _mixed_ and can be
+ *   understood as a convex combination of multiple (at least _two_) pure states.
+ *   That is,
+ *   @f[
+         \dmrho \equiv \sum\limits_n p_n \ketbra{\phi}{\phi}_n,
+ *   @f]
+ *   where @f$p_n \in [0,1]@f$ and sum to `1` whenever @f$\dmrho@f$ is a valid and correctly
+ *   normalised density matrix. Mixedness can result, for example, from @ref decoherence.
+ * 
+ *   The minimum purity of an @f$N@f$-qubit density matrix is @f$ 1/2^N @f$, which is
+ *   admitted only by the maximally-mixed state @f$ \dmrho = \hat{\id} / 2^N @f$.
+ * 
+ * - When @p qureg is a statevector @f$ \svpsi @f$, this function returns
+ *   @f[
+         \tr{ \ketbra{\psi}{\psi} \; \ketbra{\psi}{\psi} } 
+            = \left( \sum\limits_i |\psi_i|^2 \right)^2
+ *   @f]
+ *   where @f$\psi_i@f$ is the @f$i@f$-th amplitude of @f$\svpsi@f$. This is always `1` for
+ *   any valid statevector, and is otherwise equivalent to the output of calcTotalProb(), squared.
+ * 
+ * @constraints
+ *
+ * - The output of this function is only a reliable measure of purity when @p qureg is correctly 
+ *   normalised. For example, an invalid density matrix can return a purity of `1`, such as the
+ *   @f$N@f$-qubit maximally-mixed state scaled by factor @f$ 2^N @f$. Note that the function 
+ *   calcTotalProb() alone _cannot_ be used to validate validity since it only consults diagonal 
+ *   elements, whereas the purity is informed by all elements.
+ *
+ * @equivalences
+ *
+ * - When @p qureg is a valid density matrix (specifically, Hermitian), this function is faster
+ *   than, but mathematically equivalent to, calling calcInnerProduct() and passing @p qureg twice.
+ *   ```
+     qcomp out = calcInnerProduct(qureg, qureg);
+     qreal pur = real(out); // im=0
+ *   ```
+ * - When @p qureg is a statevector, this function returns the output of calcTotalProb(), squared.
+ *
+ * @myexample
+ * ```
+    Qureg qureg = createDensityQureg(5);
+    initRandomPureState(qureg);
+
+    // = 1
+    qreal purity1 = calcPurity(qureg);
+    reportScalar("purity1", purity1);
+
+    mixTwoQubitDepolarising(qureg, 0, 1, 0.5);
+
+    // < 1
+    qreal purity2 = calcPurity(qureg);
+    reportScalar("purity2", purity2);
+ * ```
+ *
+ * @param[in] qureg the reference state, which is unchanged.
+ * @returns The purity of @p qureg.
+ * @throws @validationerror
+ * - if @p qureg is uninitialised.
+* @notyetvalidated
+ * @see
+ * - calcFidelity()
+ * - calcTotalProb()
+ * @author Tyson Jones
+ */
 qreal calcPurity(Qureg qureg);
 
 
