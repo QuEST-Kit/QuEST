@@ -32,6 +32,7 @@ extern "C" {
 /** @notyetdoced
  * 
  * @formulae
+ * 
  * Let @f$ \dmrho = @f$ @p qureg, @f$ p = @f$ @p prob and @f$ t = @f$ @p target. 
  * 
  * This function effects
@@ -44,6 +45,7 @@ extern "C" {
  * @f]
  * 
  * @equivalences
+ * 
  * This function is equivalent to (but much faster than):
  * - mixPaulis() with a zero probability for the @f$\hat{X}@f$ and @f$\hat{Y}@f$ components.
  *   ```
@@ -76,6 +78,7 @@ void mixDephasing(Qureg qureg, int target, qreal prob);
 /** @notyetdoced
  * 
  * @formulae
+ * 
  * Let @f$ \dmrho = @f$ @p qureg, @f$ p = @f$ @p prob, @f$ t_1 = @f$ @p target1 and @f$ t_2 = @f$ @p target2.
  * 
  * This function effects
@@ -94,6 +97,7 @@ void mixDephasing(Qureg qureg, int target, qreal prob);
  * @f]
  * 
  * @equivalences
+ * 
  * This function is equivalent to (but much faster than):
  * - mixKrausMap() with (scaled) @f$\hat{\id}\otimes\hat{\id}@f$, @f$\hat{\id}\otimes\hat{Z}@f$, 
  *   @f$\hat{Z}\otimes\hat{\id}@f$ and @f$\hat{Z}\otimes\hat{Z}@f$ Kraus operators.
@@ -120,6 +124,7 @@ void mixTwoQubitDephasing(Qureg qureg, int target1, int target2, qreal prob);
 /** @notyetdoced
  * 
  * @formulae
+ * 
  * Let @f$ \dmrho = @f$ @p qureg, @f$ p = @f$ @p prob and @f$ t = @f$ @p target. 
  * 
  * This function effects
@@ -133,6 +138,7 @@ void mixTwoQubitDephasing(Qureg qureg, int target1, int target2, qreal prob);
  * @f]
  * 
  * @equivalences
+ * 
  * This function is equivalent to (but much faster than):
  * - mixPaulis() with a uniform probability.
  *   ```
@@ -161,6 +167,7 @@ void mixDepolarising(Qureg qureg, int target, qreal prob);
 /** @notyetdoced
  * 
  * @formulae
+ * 
  * Let @f$ \dmrho = @f$ @p qureg, @f$ p = @f$ @p prob, @f$ t_1 = @f$ @p target1 and @f$ t_2 = @f$ @p target2.
  * 
  * This function effects:
@@ -209,6 +216,7 @@ void mixDepolarising(Qureg qureg, int target, qreal prob);
  * @f]
  *
  * @equivalences
+ * 
  * This function is equivalent to (but much faster than):
  * - mixKrausMap() with Kraus operators containing every possible tensor product 
  *   of two Pauli matrices, all scaled by @f$ (p/15)^{1/2} @f$, _except_ for
@@ -222,6 +230,7 @@ void mixTwoQubitDepolarising(Qureg qureg, int target1, int target2, qreal prob);
 /** @notyetdoced
  * 
  * @formulae
+ * 
  * Let @f$ \dmrho = @f$ @p qureg, @f$ p = @f$ @p prob and @f$ t = @f$ @p target.
  * 
  * This function effects
@@ -239,6 +248,7 @@ void mixTwoQubitDepolarising(Qureg qureg, int target1, int target2, qreal prob);
  * @f]
  * 
  * @equivalences
+ * 
  * This function is equivalent to (but much faster than):
  * - mixKrausMap() with the above Kraus operators.
  *   ```
@@ -258,6 +268,7 @@ void mixDamping(Qureg qureg, int target, qreal prob);
 /** @notyetdoced
  * 
  * @formulae
+ * 
  * Let @f$ \dmrho = @f$ @p qureg, @f$ t = @f$ @p target, and
  * @f$ p_x = @f$ @p probX, @f$ p_y = @f$ @p probY, @f$ p_z = @f$ @p probZ.
  * 
@@ -274,6 +285,7 @@ void mixDamping(Qureg qureg, int target, qreal prob);
  * @f]
  * 
  * @equivalences
+ * 
  * This function is equivalent to (but much faster than):
  * - mixKrausMap() with (scaled) @f$\hat{\id}@f$, @f$\hat{X}@f$, @f$\hat{Y}@f$ and @f$\hat{Z}@f$ Kraus operators.
  *   ```
@@ -300,6 +312,7 @@ void mixPaulis(Qureg qureg, int target, qreal probX, qreal probY, qreal probZ);
 /** @notyetdoced
  * 
  * @formulae
+ * 
  * Let @f$ \dmrho_1 = @f$ @p qureg, @f$ \dmrho_2 = @f$ @p other and @f$ p = @f$ @p prob.
  * 
  * This function effects
@@ -318,6 +331,7 @@ void mixQureg(Qureg qureg, Qureg other, qreal prob);
 /** @notyetdoced
  * 
  * @formulae
+ * 
  * Let @f$ \dmrho = @f$ @p qureg, @f$ \vec{t} = @f$ @p targets and @f$ \hat{K}^{(i)} @f$
  * denote the @f$i@f$-th Kraus operator in @p map.
  * 

@@ -53,6 +53,7 @@ extern "C" {
  * state @p qureg without modifying it. 
  * 
  * @formulae
+ * 
  * Let @f$ \pstr = @f$ @p str.
  * - When @p qureg is a statevector @f$\svpsi@f$, this function returns
  *   @f[ 
@@ -65,11 +66,13 @@ extern "C" {
  *   which is exact when @f$\dmrho@f$ is physical (specifically Hermitian).
  * 
  * @constraints
+ * 
  * - The returned value is always real, even when @p qureg is an unnormalised density matrix, in
  *   which case the imaginary component of the above expression is neglected.
  *   The full complex value can be obtained using calcExpecNonHermitianPauliStrSum().
  * 
  * @equivalences
+ * 
  * - When @p str is general, this function is equivalent to calling calcExpecPauliStrSum() with a 
  *   PauliStrSum composed of only a single PauliStr term and a unity coefficient.
  * - When @p str @f$ = \id^\otimes @f$, the output is equivalent to that of calcTotalProb().
@@ -105,6 +108,7 @@ qreal calcExpecPauliStr(Qureg qureg, PauliStr str);
  * Pauli strings - under the given state @p qureg, without modifying it. 
  * 
  * @formulae
+ * 
  * Let @f$ \hat{H} = @f$ @p sum.
  * - When @p qureg is a statevector @f$\svpsi@f$, this function returns
  *   @f[ 
@@ -117,6 +121,7 @@ qreal calcExpecPauliStr(Qureg qureg, PauliStr str);
  *   which is the exact expectation value when @f$\dmrho@f$ is physical (or at least, Hermitian).
  * 
  * @constraints
+ * 
  * - Hermiticity of @p sum requires that every coefficient within is real. 
  *   Validation will check @p sum is _approximately_ Hermitian, i.e. that
  *   @f[ 
@@ -128,6 +133,7 @@ qreal calcExpecPauliStr(Qureg qureg, PauliStr str);
  *   The full complex value can be obtained using calcExpecNonHermitianPauliStrSum().
  * 
  * @equivalences
+ * 
  * - This function is mathematically equivalent to (albeit faster than) calling calcExpecPauliStr() upon
  *   each constituent @p PauliStr within @p sum, weighting each by its corresponding coefficient, and
  *   summing the outputs.
@@ -170,6 +176,7 @@ qreal calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum);
  * modifying it. 
  * 
  * @formulae
+ * 
  * Let @f$ \hat{D} = @f$ @p matr.
  * - When @p qureg is a statevector @f$\svpsi@f$, this function returns
  *   @f[ 
@@ -182,6 +189,7 @@ qreal calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum);
  *   which is the exact expectation value when @f$\dmrho@f$ is physical (or at least, Hermitian).
  * 
  * @constraints
+ * 
  * - Hermiticity of @p matr requires that every element within is real. 
  *   Validation will check @p matr is _approximately_ Hermitian, i.e. that
  *   @f[ 
@@ -193,11 +201,13 @@ qreal calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum);
  *   The full complex value can be obtained using calcExpecNonHermitianFullStateDiagMatr().
  * 
  * @equivalences
+ * 
  * - This function is mathematically equivalent to (albeit much faster than) calling calcExpecPauliStrSum()
  *   with a PauliStrSum consisting of all permutations of @f$\hat{I}@f$ and @f$\hat{Z}@f$ Pauli operators
  *   with a precise, linear combination of coefficients.
  * 
  * @myexample
+ * 
  * ```
     Qureg qureg = createQureg(5);
     initPlusState(qureg);
@@ -239,6 +249,7 @@ qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
  * under the given state @p qureg, which is not modified.
  * 
  * @formulae
+ * 
  * Let @f$ \hat{D} = @f$ @p matrix and @f$x = @f$ @p exponent.
  * - When @p qureg is a statevector @f$\svpsi@f$, this function returns
  *   @f[ 
@@ -251,6 +262,7 @@ qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
  *   which is the exact expectation value when @f$\dmrho@f$ is physical (or at least, Hermitian).
  * 
  * @constraints
+ * 
  * - Hermiticity of @p matrix itself requires that every element within is real. 
  *   Validation will check @p matrix is _approximately_ Hermitian, i.e. that
  *   @f[ 
@@ -388,6 +400,7 @@ qreal calcPurity(Qureg qureg);
 /// @notyetdoced
 /// @notyetvalidated
 qreal calcFidelity(Qureg qureg, Qureg other);
+
 
 /// @notyetdoced
 /// @notyetvalidated
@@ -609,6 +622,7 @@ qreal calcProbOfMultiQubitOutcome(Qureg qureg, std::vector<int> qubits, std::vec
 /// @notyetdoced
 /// @notyetvalidated
 /// @cpponly
+/// @cppvectoroverload
 /// @see calcProbsOfAllMultiQubitOutcomes()
 std::vector<qreal> calcProbsOfAllMultiQubitOutcomes(Qureg qureg, std::vector<int> qubits);
 
