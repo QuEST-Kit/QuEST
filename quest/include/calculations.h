@@ -345,23 +345,349 @@ qreal calcExpecFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qre
  */
 
 
-/// @notyetdoced
-/// @notyetvalidated
+/** Calculates the probability of the full computational basis state of the specified
+ * @p index. This is the probability that, when measured in the @f$ \hat{Z} @f$ basis,
+ * every qubit of @p qureg is consistent with the bits of @p index.
+ * 
+ * Indexing is little-endian and from zero, such that (for example) computational basis state 
+ * @f$ \ket{0011} @f$ (where qubits at indices @f$0@f$ and @f$1@f$ are in the @f$\ket{1}@f$ state)
+ * corresponds to @p index @f$ = 3 @f$. The maximum legal @p index of an @f$N@f$-qubit
+ * register is @p index @f$ = 2^N-1 @f$.
+ *
+ * @formulae
+ * 
+ * Let @f$ i = @f$ @p index.
+ * 
+ * - When @p qureg is a statevector @f$ \svpsi @f$, this function returns
+ *   @f[ 
+      P(i) = |\braket{i}{\psi}|^2 = |\psi_i|^2
+ *   @f] 
+ *   where @f$\psi_i@f$ is the @f$i@f$-th amplitude of @f$\svpsi@f$.
+ * - When @p qureg is a density matrix @f$\dmrho@f$, this function returns
+ *   @f[ 
+      P(i) = \re{ \tr{ \ketbra{i}{i} \dmrho } } = \re{ \bra{i} \dmrho \ket{i} } = \re{ \dmrho_{ii} }
+ *   @f]
+ *   where @f$ \dmrho_{ii} @f$ is the @f$i@f$-th diagonal element of @f$\dmrho@f$, and is
+ *   real whenever @f$ \dmrho @f$ is valid (or at least, Hermitian).
+ * 
+ * When @p qureg is correctly normalised, these quantities are within @f$[0, 1]@f$, and satisfy
+ * @f[
+      \sum\limits_{i=0}^{2^N-1} P(i) = 1
+ * @f]
+ * where @f$N@f$ is the number of qubits in @p qureg.
+ * 
+ * @equivalences
+ * 
+ * - This function is equivalent to obtaining the corresponding @p qureg amplitude directly
+ *   and evaluating the probability.
+ *   ```
+     // qureg is statevector
+     qcomp amp = getQuregAmp(qureg, index);
+     qreal prob = pow(abs(amp, 2));
+
+     // qureg is a density matrix
+     qcomp amp = getDensityQuregAmp(qureg, index, index);
+     qreal prob = real(amp);
+ *   ```
+ * - This function is slightly faster than, but otherwise mathematically equivalent to, invoking
+ *   calcProbOfMultiQubitOutcome() and passing explicitly the bits of @p index. I.e.
+ *   ```
+     int qubits[qureg.numQubits];
+     int outcomes[qureg.numQubits];
+
+     for (int q=0; q<qureg.numQubits; q++) {
+         qubits[q] = q;
+         outcomes[q] = (index >> q) & 1;
+     }
+
+     qreal prob = calcProbOfMultiQubitOutcome(qureg, qubits, outcomes, qureg.numQubits);
+ *   ```
+ *   Use of calcProbOfMultiQubitOutcome() may be more convenient if only the individual qubit 
+ *   outcomes are known.
+ * - This function is significantly faster than, but mathematically equivalent to, preparing
+ *   a secondary Qureg in the basis state @p index and computing their overlap.
+ *   ```
+     Qureg alt = createCloneQureg(qureg);
+     initClassicalState(alt, index);
+     qcomp amp = calcInnerProduct(alt, qureg);
+     qreal prob = pow(abs(amp), 2);
+ *   ```
+ * 
+ * @myexample
+ * ```
+    Qureg qureg = createQureg(5);
+    initPlusState(qureg);
+
+    qreal prob = calcProbOfBasisState(qureg, 2);
+    reportScalar("prob of |00010>", prob);
+ * ```
+ *
+ * @param[in] qureg the reference state, which is unchanged.
+ * @param[in] index the index of the queried basis state among the ordered set of all basis states.
+ * @returns The probability of the basis state at @p index.
+ * @throws @validationerror
+ * - if @p qureg is uninitialised.
+ * - if @p index is less than zero or beyond (or equal to) the dimension of @p qureg.
+* @notyetvalidated
+ * @see
+ * - calcProbOfQubitOutcome()
+ * - calcProbOfMultiQubitOutcome()
+ * - getQuregAmp()
+ * - getDensityQuregAmp()
+ * @author Tyson Jones
+ */
 qreal calcProbOfBasisState(Qureg qureg, qindex index);
 
 
-/// @notyetdoced
-/// @notyetvalidated
+/** Calculates the probability of the single qubit at index @p qubit being in the
+ * given computational basis @p outcome (`0` or `1`).
+ *
+ * @formulae
+ * 
+ * Let @f$ q = @f$ @p qubit and @f$ x = @f$ @p outcome, and let @f$\ketbra{x}{x}_q@f$
+ * notate a projector operating upon qubit @f$ q @f$. 
+ * 
+ * - When @p qureg is a statevector @f$ \svpsi @f$, this function returns
+ *   @f[
+      P_q(x) = \tr{ \ketbra{x}{x}_q \, \ketbra{\psi}{\psi} }
+         = \sum\limits_i |\psi_i|^2 \delta_{x,i_{[q]}}
+ *   @f]
+ *   where @f$\psi_i@f$ is the @f$i@f$-th amplitude of @f$\svpsi@f$, and @f$i_{[q]}@f$
+ *   notates the @f$q@f$-th bit of @f$i@f$.
+ * - When @p qureg is a density matrix @f$ \dmrho @f$, this function returns
+ *   @f[
+     P_q(x) = \tr{ \ketbra{x}{x}_q \, \dmrho }
+         = \sum\limits_i \re{ \dmrho_{ii} } \delta_{x,i_{[q]}}
+ *   @f]
+ *   where @f$ \dmrho_{ii} @f$ is the @f$i@f$-th diagonal element of @f$\dmrho@f$. This 
+ *   is real whenever @f$\dmrho@f$ is validly normalised (specifically, Hermitian).
+ * 
+ * When @p qureg is correctly normalised, these quantities are within @f$[0, 1]@f$, and
+ * satisfy
+ * @f[
+     P_q(x=0) + P_q(x=1) = 1.
+ * @f]
+ *
+ * @equivalences
+ * 
+ * - This function is a single-qubit convenience overload of calcProbOfMultiQubitOutcome(), 
+ *   which itself has optimised implementations for few-qubit outcomes.
+ *   ```
+     calcProbOfMultiQubitOutcome(qureg, &qubit, &outcome, 1);
+ *   ```
+ * - This function is much faster than, but mathematically equivalent to, summing the probability
+ *   of every computational basis state (e.g. via calcProbOfBasisState()) which is consistent
+ *   with the given qubit outcome.
+ *   ```
+     qreal prob = 0;
+     qindex dim = 1 << qureg.numQubits;
+     for (qindex i=0; i<dim; i++)
+         if (outcome == (i >> qubit) & 1)
+            prob += calcProbOfBasisState(qureg, i);
+ *   ```
+ *
+ * @myexample
+ * ```
+    Qureg qureg = createQureg(5);
+    
+    int qubit = 2;
+    int outcome = 1;
+    qreal theta = 0.3;
+    applyRotateX(qureg, qubit, theta);
+
+    // prob = cos(theta/2)^2
+    qreal prob = calcProbOfQubitOutcome(qureg, qubit, outcome);
+ * ```
+ *
+ * @param[in] qureg   the reference state, which is unchanged.
+ * @param[in] qubit   the target qubit to query.
+ * @param[in] outcome the outcome of @p qubit to query (i.e. `0` oe `1`).
+ * @returns The probability that the given qubit is in the given outcome.
+ * @throws @validationerror
+ * - if @p qureg is uninitialised.
+ * - if @p qubit is less than zero or beyond the number of qubits in @p qureg.
+ * - if @p outcome is not `0` or `1`.
+* @notyetvalidated
+ * @see
+ * - calcProbOfMultiQubitOutcome()
+ * @author Tyson Jones
+ */
 qreal calcProbOfQubitOutcome(Qureg qureg, int qubit, int outcome);
 
 
-/// @notyetdoced
-/// @notyetvalidated
+/** Calculates the probability that the given list of @p qubits are simultaneously in the 
+ * respective single-qubit states specified in @p outcomes.
+ *
+ * @formulae
+ * 
+ * Let @f$q_j@f$ and @f$x_j@f$ notate the @f$j@f$-th qubit in @p qubits and its respective
+ * outcome in @p outcomes. 
+ * 
+ * - When @p qureg is a statevector @f$ \svpsi @f$, this function returns
+ *   @f[
+         \tr{
+            \bigotimes\limits_j \ketbra{x_j}{x_j}_{q_j} \; \ketbra{\psi}{\psi} 
+         }
+         =
+         \sum\limits_i |\psi_i|^2 \prod\limits_j \delta_{x_j, \, i_{[q_j]}}
+ *   @f]
+ *   where @f$\psi_i@f$ is the @f$i@f$-th amplitude of @f$\svpsi@f$, and 
+ *   @f$i_{[q]}@f$ notates the @f$q@f$-th bit of @f$i@f$.
+ * - When @p qureg is a density matrix @f$ \dmrho @f$, this function returns
+ *   @f[
+         \tr{
+            \bigotimes\limits_j \ketbra{x_j}{x_j}_{q_j} \; \dmrho
+         }
+         =
+         \sum\limits_i \re{\dmrho_{ii}} \prod\limits_j \delta_{x_j, \, i_{[q_j]}}
+ *   @f]
+ *   where @f$ \dmrho_{ii} @f$ is the @f$i@f$-th diagonal element of @f$\dmrho@f$. This 
+ *   is real whenever @f$\dmrho@f$ is validly normalised (specifically, Hermitian).
+ *
+ * When @p qureg is correctly normalised, these quantities are within @f$[0, 1]@f$, and their sum
+ * across all possible values of @p outcomes equals one.
+ *
+ * @equivalences
+ * 
+ * - The output of this function is equal to that found by in-turn finding the probability of each
+ *   qubit being in the specified outcome, then projecting @p qureg into it (i.e. forcing that 
+ *   measurement outcome). That approach is however slower and modifies @p qureg, whereas this
+ *   function leaves @p qureg unchanged.
+ *   ```
+     qreal prob = 1;
+     for (int j=0; j<numQubits; j++)
+         prob *= applyForcedQubitMeasurement(qureg, qubits[j], outcomes[j]);
+ *   ```
+ *
+ * - This function is much faster than, but mathematically equivalent to, summing the probability
+ *   of every computational basis state (e.g. via calcProbOfBasisState()) which is consistent
+ *   with the given qubit outcomes.
+ *
+ * @myexample
+ * ```
+    Qureg qureg = createQureg(5);
+    initRandomPureState(qureg);
+
+    int num = 3;
+    int qubits[]   = {0, 3, 4};
+    int outcomes[] = {1, 1, 0};
+
+    qreal prob = calcProbOfMultiQubitOutcome(qureg, qubits, outcomes, num);
+ * ```
+ *
+ * @param[in] qureg     the reference state, which is unchanged.
+ * @param[in] qubits    a list of target qubits to query.
+ * @param[in] outcomes  a list of corresponding qubit outcomes (each `0` or `1`).
+ * @param[in] numQubits the length of list @p qubits (and @p outcomes).
+ * @returns The probability that the given qubits are simultaneously in the specified outcomes.
+ * @throws @validationerror
+ * - if @p qureg is uninitialised.
+ * - if @p qubits contains any duplicates.
+ * - if any element of @p qubits is less than zero or beyond the number of qubits in @p qureg.
+ * - if any element of @p outcomes is not `0` or `1`.
+ * - if @p numQubits is less than one or exceeds the number of qubits in @p qureg.
+ * @throws @segfault
+ * - if either of @p qubits or @p outcomes are not lists of length @p numQubits.
+* @notyetvalidated
+ * @see
+ * - calcProbsOfAllMultiQubitOutcomes()
+ * - calcProbOfBasisState()
+ * @author Tyson Jones
+ */
 qreal calcProbOfMultiQubitOutcome(Qureg qureg, int* qubits, int* outcomes, int numQubits);
 
 
-/// @notyetdoced
-/// @notyetvalidated
+/** Populates @p outcomeProbs with the probabilities of the specified list of @p qubits
+ * being in _all_ of their possible, simultaneous outcomes (of which there are `2^`
+ * @p numQubits).
+ * 
+ * The list @p qubits is taken to be in order of _increasing_ significance, determining 
+ * the ordering of the output @p outcomeProbs.
+ * For example, if @p qubits @f$ = \{ 1, 3 \} @f$, then @p outcomeProbs will be populated
+ * with _four_ values; the probabilities of qubits @f$(3,1)@f$ being in the respective
+ * simultaneously outcomes @f$(0,0), \, (0,1), \, (1,0) @f$ and @f$(1,1)@f$. In contrast,
+ * @p qubits @f$ = \{ 3, 1 \} @f$ would see the middle two outputs swapped.
+ * 
+ * @formulae
+ * 
+ * Let @f$ n = @f$ @p numQubits, and @f$ q_i @f$ be the @f$i@f$-th element of @p qubits,
+ * such that @p qubits = @f$ \{ q_0, q_1, \dots, q_{n-1} \} @f$. 
+ * Let @f$ P_{\ket{q_{n-1} \dots q_1 q_0}}(\ket{i}) @f$ denote the probability that the specified
+ * substate is in the computational basis substate @f$\ket{i}@f$. Explicitly, that
+ * qubit @f$q_j@f$ is in the outcome given by the @f$j@f$-th bit of @f$n@f$-digit integer 
+ * @f$i@f$ (simultaneously for all @f$j@f$).
+ * 
+ * Then, this function sets
+ * @f[
+      \text{outcomeProbs}[i] = P_{\ket{q_{n-1} \dots q_1 q_0}}(\ket{i})
+ * @f]
+ * for all @f$i \in \{0, 1, \dots 2^n-1\} @f$.
+ * 
+ * Explicitly, expressing substate @f$\ket{i}@f$ in terms of its individual qubits;
+ * @f[
+      \begin{gathered}
+      \text{outcomeProbs}[0] = P_{\ket{q_{n-1} \dots q_1 q_0}}( \ket{0\dots00} ) \\
+      \text{outcomeProbs}[1] = P_{\ket{q_{n-1} \dots q_1 q_0}}( \ket{0\dots01} ) \\
+      \text{outcomeProbs}[2] = P_{\ket{q_{n-1} \dots q_1 q_0}}( \ket{0\dots10} ) \\
+      \text{outcomeProbs}[3] = P_{\ket{q_{n-1} \dots q_1 q_0}}( \ket{0\dots11} ) \\
+      \vdots \\
+      \text{outcomeProbs}[2^n-1] = P_{\ket{q_{n-1} \dots q_1 q_0}}( \ket{1\dots11} )
+      \end{gathered}
+ * @f]
+ *
+ * Each probability is that which would be output by calcProbOfMultiQubitOutcome() when
+ * passed @p qubits and the bits of @f$ i @f$.
+ *
+ * When @p qureg is correctly normalised, all probabilities are within @f$[0, 1]@f$, and
+ * the sum of all elements written to @p outcomeProbs equals one.
+ * 
+ * @equivalences
+ * 
+ * - This function is significantly faster than, but otherwise equivalent to, populating
+ *   each element of @p outcomeProbs in-turn with the output of calcProbOfMultiQubitOutcome().
+ *   ```
+     qindex numOut = (1 << numQubits);
+
+     for (qindex i=0; i<numOut; i++) {
+
+         // set outcomes to the bits of i
+         int outcomes[numQubits];
+         for (int j=0; j<numQubits; j++)
+            outcomes[j] = (i >> j) & 1;
+
+         outcomeProbs[i] = calcProbOfMultiQubitOutcome(qureg, qubits, outcomes, numQubits);
+     }
+ *   ``` 
+ *
+ * @myexample
+ * ```
+    Qureg qureg = createQureg(5);
+    initRandomPureState(qureg);
+
+    int num = 3;
+    int qubits[] = {0, 3, 4};
+    
+    qreal probs[8];
+    calcProbsOfAllMultiQubitOutcomes(probs, qureg, qubits, num);
+ * ```
+ * @param[out] outcomeProbs the array to which the output is written.
+ * @param[in]  qureg        the reference state, which is unchanged.
+ * @param[in]  qubits       a list of target qubits to query.
+ * @param[in]  numQubits    the length of list @p qubits.
+ * @throws @validationerror
+ * - if @p qureg is uninitialised.
+ * - if @p qubits contains any duplicates.
+ * - if any element of @p qubits is less than zero or beyond the number of qubits in @p qureg.
+ * - if @p numQubits is less than one or exceeds the number of qubits in @p qureg.
+ * @throws @segfault
+ * - if @p outcomeProbs is not a pre-allocated list of length `2^` @p numQubits.
+ * - if @p qubits is not a list of length @p numQubits.
+* @notyetvalidated
+ * @see
+ * - calcProbOfMultiQubitOutcome()
+ * - calcProbOfBasisState()
+ * @author Tyson Jones
+ */
 void calcProbsOfAllMultiQubitOutcomes(qreal* outcomeProbs, Qureg qureg, int* qubits, int numQubits);
 
 
@@ -376,8 +702,64 @@ void calcProbsOfAllMultiQubitOutcomes(qreal* outcomeProbs, Qureg qureg, int* qub
  */
 
 
-/// @notyetdoced
-/// @notyetvalidated
+/** Calculates the probability normalisation of the given @p qureg. This is the probability
+ * of the @p qureg being in _any_ outcome state, which is expected to equal `1`.
+ *
+ * @formulae
+ * 
+ * Let @f$N@f$ be the number of qubits in @p qureg.
+ * 
+ * - When @p qureg is a statevector @f$ \svpsi @f$ with @f$i@f$-th amplitude @f$\psi_i@f$,
+ *   this function returns
+ *   @f[
+         \sum\limits_{i=0}^{2^N-1} |\psi_i|^2.
+ *   @f]
+ * - When @p qureg is a density matrix @f$ \dmrho @f$ with @f$i@f$-th diagonal element
+ *   @f$ \dmrho_{ii} @f$, this function returns
+ *   @f[
+         \sum\limits_{i=0}^{2^N-1} \re{ \rho_{ii} }
+ *   @f]
+ * 
+ * @constraints
+ * 
+ * - As above, only the real components of the diagonal elements of a density matrix are consulted;
+ *   these are the only amplitudes consulted by functions which calculate probabilities in the
+ *   computational basis. As such, this function gives no indication of the general validity of density
+ *   matrices, such as whether they are Hermitian, whether the diagonals are real, and whether the
+ *   off-diagoanl elements are valid. 
+ *
+ * @equivalences
+ *
+ * - This function is faster than, but mathematically equivalent to, summing the outputs of other
+ *   functions which calculate probabilitie across all possible outcomes.
+ *   ```
+     // choice is arbitrary
+     int qubit = 0;
+
+     qreal totalProb = (
+         calcProbOfQubitOutcome(qureg, qubit, 0) + 
+         calcProbOfQubitOutcome(qureg, qubit, 1));
+ *   ```
+ *
+ * @myexample
+ * ```
+    Qureg qureg = createDensityQureg(5);
+    initRandomMixedState(qureg, 1<<5);
+
+    // differs from 1 by numerical error
+    qreal totalProb = calcTotalProb(qureg);
+ * ```
+ *
+ * @param[in] qureg the reference state, which is unchanged.
+ * @returns The probability normalisation of @p qureg.
+ * @throws @validationerror
+ * - if @p qureg is uninitialised.
+* @notyetvalidated
+ * @see
+ * - calcPurity()
+ * - calcProbsOfAllMultiQubitOutcomes()
+ * @author Tyson Jones
+ */
 qreal calcTotalProb(Qureg qureg);
 
 

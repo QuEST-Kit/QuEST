@@ -310,6 +310,7 @@ ALIASES += "constraints=@par Constraints"
 ALIASES += "formulae=@par Formulae"
 ALIASES += "diagram=@par Diagram"
 ALIASES += "validationerror=error"
+ALIASES += "segfault=seg-fault"
 
 # We are temporarily hiding the @cppvectoroverload functions since they differ
 # trivially from the language-agnostic functions (ptr,len vs vector) yet clutter
