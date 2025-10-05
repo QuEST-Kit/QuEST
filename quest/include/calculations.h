@@ -54,7 +54,7 @@ extern "C" {
  * 
  * @formulae
  * 
- * Let @f$ \pstr = @f$ @p str.
+ * Let @f$ \pstr = @f$ @p str, which notates a tensor product of single-qubit Pauli operators.
  * - When @p qureg is a statevector @f$\svpsi@f$, this function returns
  *   @f[ 
     \brapsi \pstr \svpsi \in \mathbb{R}.
@@ -67,9 +67,11 @@ extern "C" {
  * 
  * @constraints
  * 
- * - The returned value is always real, even when @p qureg is an unnormalised density matrix, in
- *   which case the imaginary component of the above expression is neglected.
- *   The full complex value can be obtained using calcExpecNonHermitianPauliStrSum().
+ * - Postcondition validation will check that the calculated expectation value is approximately
+ *   real (i.e. the imaginary component is smaller in size than the validation epsilon), as admitted
+ *   when @p qureg is correctly normalised. This behaviour can be adjusted using setValidationEpsilon(). 
+ * - Regardless of the validation epsilon, the returned value is always real and the imaginary component
+ *   is discarded. The full complex value can be obtained using calcExpecNonHermitianPauliStrSum().
  * 
  * @equivalences
  * 
@@ -128,6 +130,10 @@ qreal calcExpecPauliStr(Qureg qureg, PauliStr str);
      |\im{c}| \le \valeps
  *   @f]
  *   for all @f$c \in @f$ `sum.coeffs`. Adjust @f$\valeps@f$ using setValidationEpsilon().
+ *   The sub-epsilon imaginary components of the coefficients _are_ included in calculation.
+ * - Postcondition validation will check that the calculated expectation value is approximately
+ *   real (i.e. the imaginary component is smaller in size than the validation epsilon), as should be
+ *   admitted when @p qureg is correctly normalised, and @p sum is Hermitian.
  * - The returned value is always real, and the imaginary component is neglected even when 
  *   Hermiticity validation is relaxed and/or @p qureg is an unnormalised density matrix. 
  *   The full complex value can be obtained using calcExpecNonHermitianPauliStrSum().
@@ -196,7 +202,10 @@ qreal calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum);
      |\im{c}| \le \valeps
  *   @f]
  *   for all @f$c \in @f$ `matr.cpuElems`. Adjust @f$\valeps@f$ using setValidationEpsilon().
- * - The returned value is always real, and the imaginary component is neglected even when 
+ * - Postcondition validation will check that the calculated expectation value is approximately
+ *   real (i.e. the imaginary component is smaller in size than the validation epsilon), as should be
+ *   admitted when @p qureg is correctly normalised, and @p matr is Hermitian.
+ * - The returned value is always real, and the imaginary component is neglected even when @p matr
  *   Hermiticity validation is relaxed and/or @p qureg is an unnormalised density matrix. 
  *   The full complex value can be obtained using calcExpecNonHermitianFullStateDiagMatr().
  * 
