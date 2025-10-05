@@ -868,14 +868,207 @@ qreal calcPurity(Qureg qureg);
  */
 
 
-/// @notyetdoced
-/// @notyetvalidated
+/** Calculates the fidelity between @p qureg and @p other, where at least one is a
+ * statevector.
+ *
+ * @formulae
+ * 
+ * - When both @p qureg and @p other are statevectors (respectively @f$\ket{\psi}@f$ and 
+ *   @f$\ket{\phi}@f$), this function returns
+ *   @f[
+         \left| \braket{\phi}{\psi} \right|^2.
+ *   @f]
+ * - When @p qureg is a density matrix @f$\dmrho@f$ and @p other is a statevector @f$\svpsi@f$,
+ *   this function returns
+ *   @f[
+         \bra{\psi} \dmrho \ket{\psi},
+ *   @f]
+ *   and similarly when @p qureg is a statevector and @p other is a density matrix.
+ * 
+ * @constraints
+ *
+ * - The output of this function is always real, which validation will check after computing the
+ *   fidelity as a complex scalar. Specifically, validation will assert that the result has an
+ *   absolute imaginary component less than the validation epsilon, which can be adjusted with
+ *   setValidationEpsilon().
+ * 
+ * - This function does not yet support both @p qureg and @p other being density matrices, for
+ *   which the fidelity calculation is more substantial.
+ * 
+ * - When @p qureg and @p other are _both_ statevectors, or _both_ density matrices, then _both_ or
+ *   _neither_ must be GPU-accelerated. That is, their CPU vs GPU deployments must agree. They are
+ *   permitted to differ in distribution however. Such considerations are only relevant when
+ *   creating the registers using createCustomQureg(), since the automatic deployments of createQureg()
+ *   and createDensityQureg() will always agree.
+ * 
+ * - When @p qureg and @p other dimensionally _differ_ (i.e. one is a statevector while the other is a
+ *   density matrix), the statevector must not be distributed _unless_ the density matrix is distributed.
+ *   The CPU vs GPU deployments however are permitted to disagree. These requirements are again
+ *   consistent with the automatic deployments of the createQureg() and createDensityQureg() functions.
+ * 
+ * @equivalences
+ * 
+ * - When both @p qureg and @p other are statevectors, this function is equivalent to calling
+ *   calcInnerProduct() and squaring the absolute value of the result.
+ *   ```
+     qcomp prod = calcInnerProduct(qureg, other);
+     qreal fid = pow(abs(prod), 2);
+ *   ```
+ * - When one of @p qureg or @p other is a statevector in the computational basis state @f$\ket{i}@f$
+ *   (e.g. as can be produced via initClassicalState()), this function is slower but equivalent to 
+ *   finding directly the probability of the basis state.
+ *   ```
+     // initClassicalState(other, index);
+
+     qreal fid = calcProbOfBasisState(qureg, index);
+ *   ```
+ *
+ * @myexample
+ * ```
+   // rho = |psi><psi|
+   Qureg psi = createQureg(5);
+   Qureg rho = createDensityQureg(5);
+   initRandomPureState(psi);
+   initPureState(rho, psi);
+
+   qreal fid0 = calcFidelity(rho, psi); // = 1
+
+   mixDepolarising(rho, 0, 0.5);
+   qreal fid1 = calcFidelity(rho, psi); // < 1
+ * ```
+ *
+ * @param[in] qureg a state
+ * @param[in] other another state containing an equal number of qubits.
+ * @returns The fidelity between @p qureg and @p other.
+ * @throws @validationerror
+ * - if @p qureg or @p other is uninitialised.
+ * - if @p qureg and @p other contain a different number of qubits.
+ * - if @p qureg and @p other are incompatible deployed.
+ * - if both @p qureg and @p other are density matrices (as is not yet supported).
+ * - if @p qureg or @p other is unnormalised such that the calculated fidelity is non-real.
+ * @notyetvalidated
+ * @see
+ * - calcInnerProduct()
+ * - calcDistance()
+ * @author Tyson Jones
+ */
 qreal calcFidelity(Qureg qureg, Qureg other);
 
 
-/// @notyetdoced
-/// @notyetvalidated
-qreal calcDistance(Qureg qureg1, Qureg qureg2);
+/** Calculates one of three distance measures between @p qureg and @p other, depending
+ * upon whether one or both are density matrices. These are the Hilbert-Schmidt distance,
+ * Bures distance and purified distance.
+ *
+ * @formulae
+ * 
+ * - When both @p qureg and @p other are statevectors (respectively @f$\ket{\psi}@f$ and 
+ *   @f$\ket{\phi}@f$), this function returns the **Bures distance** defined as
+ *   @f[
+         d_B\left(\ket{\psi},\ket{\phi}\right) = \sqrt{2 - 2 \left| \braket{\phi}{\psi} \right|}
+ *   @f]
+ *   where @f$\left| \braket{\phi}{\psi} \right|@f$ is the square-root of the fidelity
+ *   between @f$\ket{\psi}@f$ and @f$\ket{\phi}@f$ as would be computed by calcFidelity().
+ *
+ * - When both @p qureg and @p other are density matrices (respectively @f$\mathbf{\rho}@f$
+ *   and @f$\mathbf{\sigma}@f$), this function returns the **Hilbert-Schmidt distance** defined as
+ *   @f[
+         d_{HS}\left(\mathbf{\rho}, \mathbf{\sigma}\right) 
+            = 
+            \sqrt{ \tr{
+               \left| \mathbf{\rho} - \mathbf{\sigma} \right|^2
+            } }
+            =
+            \sqrt{
+               \sum\limits_{ij} \left| \rho_{ij} - \sigma_{ij} \right|^2
+            }.
+ *   @f]
+ *
+ * - When one of @p qureg or @p other is a statevector @f$\svpsi@f$, and the other is a density
+ *   matrix @f$\dmrho@f$, this function returns the **purified distance** defined as
+ *   @f[
+         d_p\left(\svpsi,\dmrho\right) = \sqrt{ 1 - \brapsi \dmrho \svpsi }
+ *   @f]
+ *   where @f$\brapsi \dmrho \svpsi@f$ is the fidelity as returned by calcFidelity().
+ * 
+ * @constraints
+ * 
+ * - The output of this function is always real, which is always mathematically satisfied by the
+ *   Hilbert-Schmidt distance, but may be violated by the Bures and purified distances when the
+ *   input Qureg are not normalised, or otherwise due to numerical imprecision. Postcondition
+ *   validation of the Bures distance will check that
+ *   @f[
+         \left| \braket{\phi}{\psi} \right| \le 1 + \valeps
+ *   @f]
+ *   while the purified distance validation will check that
+ *   @f[
+         \left| \, \im{ \brapsi \dmrho \svpsi } \, \right| \le \valeps, \\
+         \re{ \brapsi \dmrho \svpsi } \le 1 + \valeps,
+ *   @f]
+ *   where @f$\valeps@f$ is the validation epsilon, adjustable via setValidationEpsilon().
+ * 
+ * - Even when the above postcondition validation is disabled, the Bures and purified distance
+ *   calculations will respectively replace @f$\left| \braket{\phi}{\psi} \right|@f$ and 
+ *   @f$\re{ \brapsi \dmrho \svpsi }@f$ which exceed @f$1@f$ with value @f$1@f$, and the imaginary
+ *   component of @f$\brapsi \dmrho \svpsi@f$ is discarded.
+ * 
+ * - When @p qureg and @p other are _both_ statevectors, or _both_ density matrices, then _both_ or
+ *   _neither_ must be GPU-accelerated. That is, their CPU vs GPU deployments must agree. They are
+ *   permitted to differ in distribution however. Such considerations are only relevant when
+ *   creating the registers using createCustomQureg(), since the automatic deployments of createQureg()
+ *   and createDensityQureg() will always agree.
+ * 
+ * - When @p qureg and @p other dimensionally _differ_ (i.e. one is a statevector while the other is a
+ *   density matrix), the statevector must not be distributed _unless_ the density matrix is distributed.
+ *   The CPU vs GPU deployments however are permitted to disagree. These requirements are again
+ *   consistent with the automatic deployments of the createQureg() and createDensityQureg() functions.
+ * 
+ * @equivalences
+ * 
+ * - When both @p qureg and @p other are statevectors, this function wraps calcInnerProduct().
+ *   ```
+     qcomp prod = calcInnerProduct(qureg, other); // <qureg|other>
+     qreal mag = abs(prod);
+     mag = (mag > 1)? 1 : mag;
+     qreal dist = std::sqrt(2 - 2 * mag);
+ *   ```
+ *
+ * - When @p qureg is a density matrix and @p other is a statevector, this function wraps calcInnerProduct()
+ *   as a complex-valued proxy for calcFidelity().
+ *   ```
+     qcomp prod = calcInnerProduct(other, qureg); // <other|qureg|other>
+     qreal re = real(prod);
+     re = (re > 1)? 1 : re;
+     qreal dist = sqrt(1 - re);
+ *   ```
+ *
+ * @myexample
+ * ```
+   Qureg rho1 = createDensityQureg(5);
+   Qureg rho2 = createDensityQureg(5);
+
+   initRandomMixedState(rho1, 10);
+   setQuregToClone(rho2, rho1);
+   qreal distA = calcDistance(rho1, rho2); // = 0
+
+   initRandomMixedState(rho2, 10);
+   qreal distB = calcDistance(rho1, rho2); // > 0
+ * ```
+ *
+ * @param[in] qureg a state
+ * @param[in] other another state containing an equal number of qubits
+ * @returns The distance between @p qureg and @p other, according to the above measures.
+ * @throws @validationerror
+ * - if @p qureg or @p other is uninitialised.
+ * - if @p qureg and @p other contain a different number of qubits.
+ * - if @p qureg and @p other are incompatible deployed.
+ * - if @p qureg or @p other is unnormalised such that the Bures or purified distances would be non-real.
+ * @notyetvalidated
+ * @see
+ * - calcInnerProduct()
+ * - calcFidelity()
+ * @author Tyson Jones
+ */
+qreal calcDistance(Qureg qureg, Qureg other);
 
 
 /** @} */
@@ -925,10 +1118,86 @@ Qureg calcReducedDensityMatrix(Qureg qureg, int* retainQubits, int numRetainQubi
  */
 
 
-/// @ingroup calc_comparisons
-/// @notyetdoced
-/// @notyetvalidated
-qcomp calcInnerProduct(Qureg qureg1, Qureg qureg2);
+/** @ingroup calc_comparisons
+ * 
+ * Calculates the inner product of state @p qureg with @p other. 
+ *
+ * @formulae
+ * 
+ * - When both @p qureg and @p other are statevectors (respectively @f$\ket{\psi}@f$ and 
+ *   @f$\ket{\phi}@f$), this function returns
+ *   @f[
+         \braket{\psi}{\phi} = \sum\limits_i \psi_i^* \phi_i
+ *   @f]
+ *   where @f$\psi_i@f$ and @f$\phi_i@f$ are the @f$i@f$-th amplitudes of @f$\ket{\psi}@f$ 
+ *   (@p qureg) and  @f$\ket{\phi}@f$ (@p other) respectively, and @f$\alpha^*@f$ notates
+ *   the complex conjugate of scalar @f$\alpha@f$.
+ * 
+ * - When both @p qureg and @p other are density matrices (respectively @f$\mathbf{\rho}@f$
+ *   and @f$\mathbf{\sigma}@f$), this function returns
+ *   @f[
+         \tr{ \rho^\dagger \sigma } = \sum\limits_{ij} {\rho_{ij}}^* \, \sigma_{ij}.
+ *   @f]
+ * 
+ * - When @p qureg is a density matrix @f$\dmrho@f$ and @p other is a statevector @f$\ket{\phi}@f$,
+ *   this function returns
+ *   @f[
+         \bra{\phi} \dmrho^\dagger \ket{\phi}.
+ *   @f]
+ *
+ * - When @p qureg is a statevector @f$\svpsi@f$ and @p other is a density matrix @f$\mathbf{\sigma}@f$,
+ *   this function returns
+ *   @f[
+         \brapsi \mathbf{\sigma} \svpsi.
+ *   @f]
+ *
+ * @constraints
+ * 
+ * - When @p qureg and @p other are _both_ statevectors, or _both_ density matrices, then _both_ or
+ *   _neither_ must be GPU-accelerated. That is, their CPU vs GPU deployments must agree. They are
+ *   permitted to differ in distribution however. Such considerations are only relevant when
+ *   creating the registers using createCustomQureg(), since the automatic deployments of createQureg()
+ *   and createDensityQureg() will always agree.
+ * 
+ * - When @p qureg and @p other dimensionally _differ_ (i.e. one is a statevector while the other is a
+ *   density matrix), the statevector must not be distributed _unless_ the density matrix is distributed.
+ *   The CPU vs GPU deployments however are permitted to disagree. These requirements are again
+ *   consistent with the automatic deployments of the createQureg() and createDensityQureg() functions.
+ *
+ * @myexample
+ * ```
+   Qureg rho1 = createDensityQureg(5);
+   Qureg rho2 = createDensityQureg(5);
+
+   // rho1 = rho2 = |psi><psi|
+   initRandomPureState(rho1);
+   setQuregToClone(rho2, rho1);
+   qcomp prodA = calcInnerProduct(rho1, rho2); // = 1
+
+   // rho1 = rho2 = sum_i prob_i |psi_i><psi_i|
+   initRandomMixedState(rho1, 10);
+   setQuregToClone(rho2, rho1);
+   qcomp prodB = calcInnerProduct(rho1, rho2); // < 1, real
+
+   // rho1 != rho2
+   initRandomMixedState(rho2, 10);
+   qcomp prodC = calcInnerProduct(rho1, rho2); // abs < 1, complex
+ * ```
+ *
+ * @param[in] qureg a state
+ * @param[in] other another state with an equal number of qubits
+ * @returns The inner product of @p qureg with @p other.
+ * @throws @validationerror
+ * - if @p qureg or @p other is uninitialised.
+ * - if @p qureg and @p other contain a different number of qubits.
+ * - if @p qureg and @p other are incompatibly deployed.
+ * @notyetvalidated
+ * @see
+ * - calcDistance()
+ * - calcFidelity()
+ * @author Tyson Jones
+ */
+qcomp calcInnerProduct(Qureg qureg, Qureg other);
 
 
 /** @ingroup calc_expec

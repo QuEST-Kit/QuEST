@@ -338,14 +338,14 @@ qreal calcDistance(Qureg quregA, Qureg quregB) {
 
     // Hilbert-Schmidt = sqrt( Tr((A-B)(A-B)^dagger) = sqrt(sum_ij |A_ij - B_ij|^2)
     if (isDensA && isDensB) {
-        qreal dif = localiser_densmatr_calcHilbertSchmidtDistance(quregA, quregB);
+        qreal dif = localiser_densmatr_calcHilbertSchmidtDistance(quregA, quregB); // >= 0
         return std::sqrt(dif);
     }
 
     // Bures = sqrt(2 - 2 |<A|B>|) (even when unnormalised)
     if (!isDensA && !isDensB) {
         qcomp prod = localiser_statevec_calcInnerProduct(quregA, quregB);
-        qreal mag = std::abs(prod);
+        qreal mag = std::abs(prod); // >= 0
 
         validate_buresDistanceInnerProdIsNormalised(mag, __func__);
         mag = (mag > 1)? 1 : mag; // forgive eps error to avoid complex
