@@ -35,6 +35,7 @@ Want to learn how what's under the hood? Read the
 - 🏆  [whitepaper](https://www.nature.com/articles/s41598-019-47174-9) which featured in Scientific Report's [Top 100 in Physics](https://www.nature.com/collections/ecehgdfcba/)
 - 📝  [preprint](https://arxiv.org/abs/2311.01512) which derives `v4`'s optimised algorithms.
 - 🧪  [tests](/tests) which compare QuEST's outputs to non-optimised calculations.
+- 📰  [news](news.md) which summarises QuEST's history and accolades.
 - 📈  [benchmarks](https://www.youtube.com/watch?v=dQw4w9WgXcQ) which are coming soon!
 
 

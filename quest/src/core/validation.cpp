@@ -21,6 +21,7 @@
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
 #include "quest/src/core/utilities.hpp"
+#include "quest/src/core/paulilogic.hpp"
 #include "quest/src/core/parser.hpp"
 #include "quest/src/core/printer.hpp"
 #include "quest/src/core/envvars.hpp"
@@ -693,6 +694,9 @@ namespace report {
     string NEW_PAULI_STR_SUM_DIFFERENT_NUM_STRINGS_AND_COEFFS =
         "Given a different number of Pauli strings (${NUM_STRS}) and coefficients ${NUM_COEFFS}.";
 
+    string NEW_PAULI_STR_SUM_CANNOT_FIT_INTO_CPU_MEM =
+        "A PauliStrSum containing ${NUM_TERMS} terms cannot fit in the available RAM of ${NUM_BYTES} bytes.";
+
     string NEW_PAULI_STR_SUM_STRINGS_ALLOC_FAILED = 
         "Attempted allocation of the PauliStrSum's ${NUM_TERMS}-term array of Pauli strings (${NUM_BYTES} bytes total) unexpectedly failed.";
 
@@ -874,6 +878,10 @@ namespace report {
         "Cannot perform this ${NUM_TARGS}-target operation upon a ${NUM_QUREG_QUBITS}-qubit density-matrix distributed between ${NUM_NODES} nodes, since each node's communication buffer (with capacity for ${NUM_QUREG_AMPS_PER_NODE} amps) cannot simultaneously store the ${NUM_TARG_AMPS} mixed remote amplitudes.";
 
 
+    /*
+    * TROTTERISATION PARAMETERS
+    */
+
     string INVALID_TROTTER_ORDER =
         "Invalid Trotter order (${ORDER}). The order parameter must be positive and even, or unity.";
 
@@ -882,12 +890,34 @@ namespace report {
 
 
     /*
+    * TIME EVOLUTION PARAMETERS
+    */
+
+    string NEGATIVE_NUM_LINDBLAD_JUMP_OPS =
+        "The number of jump operators must be zero or positive.";
+
+    string NEGATIVE_LINDBLAD_DAMPING_RATE = 
+        "One or more damping rates were negative, beyond the tolerance set by the validation epsilon.";
+
+    string NUM_LINDBLAD_SUPER_PROPAGATOR_TERMS_OVERFLOWED =
+        "The given Hamiltonian and jump operators suggest a Lindbladian superpropagator with more weighted Pauli strings than can be stored in a qindex type.";
+
+    string NEW_LINDBLAD_SUPER_PROPAGATOR_CANNOT_FIT_INTO_CPU_MEM =
+        "The Lindbladian superpropagator would contain ${NUM_TERMS} weighted Pauli strings and exceed the available RAM of ${NUM_BYTES} bytes.";
+
+
+    /*
      * CHANNEL PARAMETERS 
      */
 
-    string INVALID_PROBABILITY =
+    string INVALID_PROB =
         "The given probability is invalid, and must instead be between 0 and 1 (both inclusive).";
 
+    string INVALID_PROBS =
+        "One or more given probabilities are invalid. Each must be between 0 and 1 (both inclusive).";
+
+    string PROBS_DO_NOT_SUM_TO_ONE =
+        "The given probabilities do not sum to (within epsilon of) one.";
 
     string ONE_QUBIT_DEPHASING_PROB_EXCEEDS_MAXIMAL_MIXING =
         "The given one-qubit dephasing probability exceeds that which induces maximal mixing, i.e. 1/2.";
@@ -912,6 +942,30 @@ namespace report {
      * QUREG COMBINATION
      */
 
+    string NON_POSITIVE_NUM_QUREGS_IN_SUM =
+        "The number of passed Quregs (${NUM_QUREGS}) is invalid. Must pass one or more.";
+
+    string SUMMED_QUREGS_HAVE_INCONSISTENT_MEM_LAYOUTS =
+        "The given list of Quregs have inconsistent attributes. They must all be the same size, all statevectors or density matrices, and be identically distributed or GPU-accelerated.";
+
+    string DIFFERENT_NUM_QUREGS_AND_COEFFS =
+        "A different number of coefficients (${NUM_COEFFS}) than Quregs (${NUM_QUREGS}) were passed.";
+
+
+    // relates to mixing-in multiple Quregs
+
+    string MIXED_QUREGS_NOT_ALL_DENSITY_MATRICES =
+        "One or more Quregs were statevectors though only density matrices are supported. To mix a single statevector, use mixQureg().";
+
+    string MIXED_QUREGS_HAVE_INCONSISTENT_MEM_LAYOUTS =
+        "The given list of Quregs have inconsistent attributes. They must all be the same size and be identically distributed or GPU-accelerated.";
+
+    string DIFFERENT_NUM_QUREGS_AND_PROBS =
+        "A different number of probabilities (${NUM_PROBS}) than Quregs (${NUM_QUREGS}) were passed.";
+        
+
+    // relates to mixing-in single Qureg (more permissive than above)
+
     string MIXED_QUREG_NOT_DENSITY_MATRIX =
         "The first Qureg, which will undergo mixing, must be a density matrix.";
 
@@ -923,19 +977,6 @@ namespace report {
 
     string MIXED_DENSITY_MATRIX_LOCAL_BUT_STATEVEC_DISTRIBUTED =
         "The given density matrix was local, but the statevector was distributed; this configuration is unsupported (and is ridiculous!).";
-
-
-    string SUPERPOSED_QUREGS_ARE_NOT_ALL_STATEVECTORS =
-        "Cannot superpose a density matrix. All quregs must be statevectors.";
-
-    string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_NUM_QUBITS =
-        "Cannot superpose Quregs with differing numbers of qubits.";
-
-    string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_GPU_DEPLOYMENT =
-        "Cannot superpose Quregs with inconsistent GPU deployments. All or no Quregs must be GPU-accelerated.";
-
-    string SUPERPOSED_QUREGS_HAVE_INCONSISTENT_DISTRIBUTION =
-        "Cannot superpose Quregs which are inconsistently distributed. All or no Quregs must be distributed.";
 
 
     string INIT_PURE_STATE_IS_DENSMATR =
@@ -1329,6 +1370,19 @@ bool isIndexListUnique(int* list, int len) {
             mask |= 1ULL << list[i];
 
     return true;
+}
+
+bool doQuregsHaveIdenticalMemoryLayouts(Qureg a, Qureg b) {
+
+    // same #dims, same size, same distribution and GPU status
+    return (
+        (a.numQubits        == b.numQubits       ) &&
+        (a.isDensityMatrix  == b.isDensityMatrix ) &&
+        (a.isDistributed    == b.isDistributed   ) &&
+        (a.isGpuAccelerated == b.isGpuAccelerated)
+    );
+
+    // note that multithreading does not affecting memory layout
 }
 
 
@@ -3153,9 +3207,6 @@ void validate_newPauliStrNumChars(int numPaulis, int numIndices, const char* cal
  * EXISTING PAULI STRING
  */
 
-extern int paulis_getPauliAt(PauliStr str, int ind);
-extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
-
 void validate_pauliStrTargets(Qureg qureg, PauliStr str, const char* caller) {
 
     // avoid producing a list of targets which requires enumerating all bits
@@ -3190,14 +3241,25 @@ void validate_controlAndPauliStrTargets(Qureg qureg, int ctrl, PauliStr str, con
 
 void validate_newPauliStrSumParams(qindex numTerms, const char* caller) {
 
-    // note we do not bother checking whether RAM has enough memory to contain
-    // the new Pauli sum, because the caller to this function has already
-    // been passed data of the same size (and it's unlikely the user is about
-    // to max RAM), and the memory requirements scale only linearly with the
-    // parameters (e.g. numTerms), unlike the exponential scaling of the memory
-    // of Qureg and CompMatr, for example
-
     assertThat(numTerms > 0, report::NEW_PAULI_STR_SUM_NON_POSITIVE_NUM_STRINGS, {{"${NUM_TERMS}", numTerms}}, caller);
+
+    // attempt to fetch RAM, and simply return if we fail; if we unknowingly
+    // didn't have enough RAM, then alloc validation will trigger later
+    size_t memPerNode = 0;
+    try {
+        memPerNode = mem_tryGetLocalRamCapacityInBytes();
+    } catch(mem::COULD_NOT_QUERY_RAM e) {
+        return;
+    }
+
+    // pedantically check whether the PauliStrSum fits in memory. This seems
+    // ridiculous/pointless because the user is expected to have already prepared
+    // data of an equivalent size (which is passed), but checking means we catch
+    // when the user has passed an erroneous 'numTerms' which is way too large,
+    // avoiding a seg fault
+
+    bool fits = mem_canPauliStrSumFitInMemory(numTerms, memPerNode);
+    assertThat(fits, report::NEW_PAULI_STR_SUM_CANNOT_FIT_INTO_CPU_MEM, {{"${NUM_TERMS}", numTerms}, {"${NUM_BYTES}", memPerNode}}, caller);
 }
 
 void validate_newPauliStrSumMatchingListLens(qindex numStrs, qindex numCoeffs, const char* caller) {
@@ -3270,10 +3332,6 @@ void validate_parsedStringIsNotEmpty(bool stringIsNotEmpty, const char* caller) 
 /*
  * EXISTING PAULI STRING SUMS
  */
-
-extern bool paulis_containsXOrY(PauliStrSum sum);
-extern qindex paulis_getTargetBitMask(PauliStrSum sum);
-extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum);
 
 bool areQubitsDisjoint(qindex qubitsMaskA, int* qubitsB, int numQubitsB);
 
@@ -3751,11 +3809,72 @@ void validate_mixedAmpsFitInNode(Qureg qureg, int numTargets, const char* caller
     assertThat(qureg.numAmpsPerNode >= numTargAmps, msg, vars, caller);
 }
 
+
+
+/*
+ * TROTTERISATION PARAMETERS
+ */
+
 void validate_trotterParams(Qureg qureg, int order, int reps, const char* caller) {
 
     bool isEven = (order % 2) == 0;
     assertThat(order > 0 && (isEven || order==1), report::INVALID_TROTTER_ORDER, {{"${ORDER}", order}}, caller);
     assertThat(reps > 0, report::INVALID_TROTTER_REPS, {{"${REPS}", reps}}, caller);
+}
+
+
+
+/*
+ * TIME EVOLUTION PARAMETERS
+ */
+
+void validate_lindbladJumpOps(PauliStrSum* jumps, int numJumps, Qureg qureg, const char* caller) {
+
+    assertThat(numJumps >= 0, report::NEGATIVE_NUM_LINDBLAD_JUMP_OPS, caller);
+
+    // @todo
+    // these error messages report as if each jump operator was "the" PauliStrSum
+    // to a function expecting one, and should be tailored to them being "a" jump op
+    for (int n=0; n<numJumps; n++) {
+        validate_pauliStrSumFields(jumps[n], caller);
+        validate_pauliStrSumTargets(jumps[n], qureg, caller);
+    }
+
+    // separate validation checks whether there is sufficient memory to translate 
+    // all jump operators into terms of a super-propagator (and guards overflow)
+}
+
+void validate_lindbladDampingRates(qreal* damps, int numJumps, const char* caller) {
+
+    // possibly repeated from jump op validation, for safety
+    assertThat(numJumps >= 0, report::NEGATIVE_NUM_LINDBLAD_JUMP_OPS, caller);
+
+    if (isNumericalValidationDisabled())
+        return;
+
+    // in lieu of asserting positivity, we somewhat unusually permit small negative
+    // damping rates just for consistency with other numerical validation tolerances
+    for (int n=0; n<numJumps; n++)
+        assertThat(damps[n] >= - global_validationEpsilon, report::NEGATIVE_LINDBLAD_DAMPING_RATE, caller);
+}
+
+void validate_numLindbladSuperPropagatorTerms(qindex numSuperTerms, const char* caller) {
+
+    assertThat(numSuperTerms != 0, report::NUM_LINDBLAD_SUPER_PROPAGATOR_TERMS_OVERFLOWED, caller);
+
+    // attempt to fetch RAM, and simply return if we fail; if we unknowingly
+    // didn't have enough RAM, then alloc validation will trigger later
+    size_t memPerNode = 0;
+    try {
+        memPerNode = mem_tryGetLocalRamCapacityInBytes();
+    } catch(mem::COULD_NOT_QUERY_RAM e) {
+        return;
+    }
+
+    // check whether the superpropagator fits in memory
+    bool fits = mem_canPauliStrSumFitInMemory(numSuperTerms, memPerNode);
+    assertThat(fits, report::NEW_LINDBLAD_SUPER_PROPAGATOR_CANNOT_FIT_INTO_CPU_MEM, {{"${NUM_TERMS}", numSuperTerms}, {"${NUM_BYTES}", memPerNode}}, caller);
+
 }
 
 
@@ -3768,7 +3887,32 @@ void validate_probability(qreal prob, const char* caller) {
 
     /// @todo report 'prob' once validation reporting can handle floats
 
-    assertThat(prob >= 0 && prob <= 1, report::INVALID_PROBABILITY, caller);
+    /// @todo 
+    ///     should we permit -eps <= prob <= 1+eps so that this validation
+    ///     can skipped by disabled only numerical validation?
+
+    assertThat(prob >= 0 && prob <= 1, report::INVALID_PROB, caller);
+}
+
+void validate_probabilities(qreal* probs, int numProbs, const char* caller) {
+
+    // we assume that numProbs>0 was prior validated
+
+    /// @todo like above, should we permit -eps <= prob <= 1+eps?
+
+    for (int i=0; i<numProbs; i++)
+        assertThat(probs[i] >= 0 && probs[i] <= 1, report::INVALID_PROBS, caller);
+
+    if (isNumericalValidationDisabled())
+        return;
+    
+    // check sum=1 using numerically stable sum, because our users deserve the best ;)
+    // note numProbs is expected small (the caller accepts just as many Quregs) so we
+    // are safe to allocate this vector without internal checks
+    qreal total = util_getSum(util_getVector(probs, numProbs));
+
+    qreal dist = std::abs(total - 1);
+    assertThat(dist <= global_validationEpsilon, report::PROBS_DO_NOT_SUM_TO_ONE, caller);
 }
 
 void validate_oneQubitDepashingProb(qreal prob, const char* caller) {
@@ -3848,14 +3992,49 @@ void validate_oneQubitPauliChannelProbs(qreal pX, qreal pY, qreal pZ, const char
 void validate_quregCanBeWorkspace(Qureg qureg, Qureg workspace, const char* caller) {
 
     assertThat(
-        (qureg.numQubits        == workspace.numQubits       ) &&
-        (qureg.isDensityMatrix  == workspace.isDensityMatrix ) &&
-        (qureg.isDistributed    == workspace.isDistributed   ) &&
-        (qureg.isGpuAccelerated == workspace.isGpuAccelerated),
+        doQuregsHaveIdenticalMemoryLayouts(qureg, workspace),
         report::QUREG_IS_INCOMPATIBLE_WITH_WORKSPACE, caller);
+
+    // @todo
+    // check whether any of their memories overlap, which is forbidden
 }
 
-void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller) {
+void validate_numQuregsInSum(int numQuregs, const char* caller) {
+
+    assertThat(numQuregs > 0, report::NON_POSITIVE_NUM_QUREGS_IN_SUM, {{"${NUM_QUREGS}", numQuregs}}, caller);
+}
+
+void validate_quregsCanBeSummed(Qureg out, Qureg* in, int numIn, const char* caller) {
+
+    for (int i=0; i<numIn; i++)
+        validate_quregFields(in[i], caller);
+
+    bool valid = true;
+    for (int i=0; i<numIn && valid; i++)
+        valid = valid && doQuregsHaveIdenticalMemoryLayouts(out, in[i]);
+
+    assertThat(valid, report::SUMMED_QUREGS_HAVE_INCONSISTENT_MEM_LAYOUTS, caller);
+}
+
+void validate_quregsCanBeMixed(Qureg out, Qureg* in, int numIn, const char* caller) {
+
+    // mixing in multiple quregs (done here) is much stricter than when 
+    // only one pair is being mixed in, which is handled below
+
+    for (int i=0; i<numIn; i++)
+        validate_quregFields(in[i], caller);
+
+    for (int i=0; i<numIn; i++)
+        assertThat(in[i].isDensityMatrix, report::MIXED_QUREGS_NOT_ALL_DENSITY_MATRICES, caller);
+
+    bool valid = true;
+    for (int i=0; i<numIn && valid; i++)
+        valid = valid && doQuregsHaveIdenticalMemoryLayouts(out, in[i]);
+
+    assertThat(valid, report::MIXED_QUREGS_HAVE_INCONSISTENT_MEM_LAYOUTS, caller);
+}
+
+void validate_quregPairCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller) {
 
     // mixing must be mathematically possible; dims are compatible, but quregIn can be a statevector
     assertThat(quregOut.isDensityMatrix, report::MIXED_QUREG_NOT_DENSITY_MATRIX, caller);
@@ -3873,29 +4052,22 @@ void validate_quregsCanBeMixed(Qureg quregOut, Qureg quregIn, const char* caller
         assertThat(!quregIn.isDistributed, report::MIXED_DENSITY_MATRIX_LOCAL_BUT_STATEVEC_DISTRIBUTED, caller);
 }
 
-void validate_quregsCanBeSuperposed(Qureg qureg1, Qureg qureg2, Qureg qureg3, const char* caller) {
+void validate_numQuregsMatchesCoeffs(size_t numQuregs, size_t numCoeffs, const char* caller) {
 
-    // all quregs must be statevectors
-    assertThat(
-        !qureg1.isDensityMatrix && !qureg2.isDensityMatrix && !qureg3.isDensityMatrix,
-        report::SUPERPOSED_QUREGS_ARE_NOT_ALL_STATEVECTORS, caller);
+    tokenSubs vars = {
+        {"${NUM_QUREGS}", numQuregs},
+        {"${NUM_COEFFS}", numCoeffs}
+    };
+    assertThat(numQuregs == numCoeffs, report::DIFFERENT_NUM_QUREGS_AND_COEFFS, vars, caller);
+}
 
-    // and the same dimension
-    int nQb = qureg1.numQubits;
-    assertThat(
-        qureg2.numQubits == nQb && qureg3.numQubits == nQb, 
-        report::SUPERPOSED_QUREGS_HAVE_INCONSISTENT_NUM_QUBITS, caller);
+void validate_numQuregsMatchesProbs(size_t numQuregs, size_t numProbs, const char* caller) {
 
-    // and all the same deployment (GPU & distribution; multithreading doesn't matter)
-    int isGpu = qureg1.isGpuAccelerated;
-    assertThat(
-        qureg2.isGpuAccelerated == isGpu && qureg3.isGpuAccelerated == isGpu, 
-        report::SUPERPOSED_QUREGS_HAVE_INCONSISTENT_GPU_DEPLOYMENT, caller);
-
-    int isDis = qureg1.isDistributed;
-    assertThat(
-        qureg2.isDistributed == isDis && qureg3.isDistributed == isDis, 
-        report::SUPERPOSED_QUREGS_HAVE_INCONSISTENT_DISTRIBUTION, caller);
+    tokenSubs vars = {
+        {"${NUM_QUREGS}", numQuregs},
+        {"${NUM_PROBS}",  numProbs}
+    };
+    assertThat(numQuregs == numProbs, report::DIFFERENT_NUM_QUREGS_AND_PROBS, vars, caller);
 }
 
 void validateDensMatrCanBeInitialisedToPureState(Qureg qureg, Qureg pure, const char* caller) {

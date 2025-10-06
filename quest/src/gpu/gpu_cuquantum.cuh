@@ -260,7 +260,7 @@ void cuquantum_densmatr_oneQubitDephasing_subA(Qureg qureg, int qubit, qreal pro
     cu_qcomp a = {1,        0};
     cu_qcomp b = {1-2*prob, 0};
     cu_qcomp elems[] = {a, b, b, a};
-    vector<int> targs {qubit, qubit + qureg.numQubits};
+    vector<int> targs {qubit, util_getBraQubit(qubit,qureg)};
 
     bool conj = false;
     cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {}, {}, targs, elems, conj);
@@ -297,7 +297,7 @@ void cuquantum_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubi
     cu_qcomp a = {1,          0};
     cu_qcomp b = {1-4*prob/3, 0};
     cu_qcomp elems[] = {a,b,b,b, b,a,b,b, b,b,a,b, b,b,b,a};
-    vector<int> targs {qubitA, qubitB, qubitA + qureg.numQubits, qubitB + qureg.numQubits};
+    vector<int> targs {qubitA, qubitB, util_getBraQubit(qubitA,qureg), util_getBraQubit(qubitB,qureg)};
 
     bool conj = false;
     cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {}, {}, targs, elems, conj);

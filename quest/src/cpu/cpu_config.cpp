@@ -3,17 +3,21 @@
  * configuration, and allocating and copying RAM data.
  * 
  * @author Tyson Jones
+ * @author Luc Jaulmes (NUMA awareness)
  */
 
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
 #include "quest/include/paulis.h"
 
+#include "quest/src/core/memory.hpp"
 #include "quest/src/core/errors.hpp"
+#include "quest/src/core/bitwise.hpp"
 
 #include <vector>
 #include <cstring>
 #include <cstdlib>
+#include <cstdint>
 
 using std::vector;
 
@@ -30,8 +34,33 @@ using std::vector;
 #endif
 
 
+/// @todo
+/// Windows provides a NUMA API we could access in theory, although we 
+/// forego the hassle for now - who is running QuEST on big multi-core 
+/// Windows? This validation protects against enabling NUMA awareness
+/// on Windows but silently recieving no benefit due to no NUMA API calls
+
+#if NUMA_AWARE && defined(_WIN32)
+    #error "NUMA awareness is not currently supported on non-POSIX systems like Windows."
+#endif
+
+
 #if COMPILE_OPENMP
     #include <omp.h>
+#endif
+
+#if NUMA_AWARE && ! defined(_WIN32)
+    #include <sys/mman.h>
+    #include <numaif.h>
+    #include <numa.h>
+#endif
+
+#if defined(_WIN32)
+    #define NOMINMAX
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
+#else
+    #include <unistd.h>
 #endif
 
 
@@ -46,11 +75,12 @@ bool cpu_isOpenmpCompiled() {
 }
 
 
-int cpu_getCurrentNumThreads() {
+int cpu_getAvailableNumThreads() {
 #if COMPILE_OPENMP
     int n = -1;
 
     #pragma omp parallel shared(n)
+    #pragma omp single
     n = omp_get_num_threads();
 
     return n;
@@ -90,28 +120,137 @@ int cpu_getOpenmpThreadInd() {
 }
 
 
+int cpu_getCurrentNumThreads() {
+#if COMPILE_OPENMP
+    return omp_get_num_threads();
+#else
+    return 1;
+#endif
+}
+
+
 
 /*
  * MEMORY ALLOCATION
  */
 
 
+qindex getNumPagesToContainArray(long pageLen, qindex arrLen) {
+
+    // round up to the nearest page
+    return static_cast<qindex>(std::ceil(arrLen / (qreal) pageLen));
+}
+
+
+long cpu_getPageSize() {
+
+    // avoid repeated queries to this fixed value
+    static long pageSize = 0;
+    if (pageSize > 0)
+        return pageSize;
+
+    // obtain pageSize for the first time
+#if defined(_WIN32)
+    SYSTEM_INFO sysInfo;
+    GetSystemInfo(&sysInfo);
+    pageSize = sysInfo.dwPageSize;
+#else
+    pageSize = sysconf(_SC_PAGESIZE);
+#endif
+
+    // rigorously check the found pagesize is valid
+    // and consistent with preconditions assumed by
+    // callers, to avoid extremely funky bugs on
+    // esoteric future systems
+
+    if (pageSize <= 0)
+        error_gettingPageSizeFailed();
+
+    if (!isPowerOf2(pageSize))
+        error_pageSizeNotAPowerOf2();
+
+    if (pageSize % sizeof(qcomp) != 0)
+        error_pageSizeNotAMultipleOfQcomp();
+
+    return pageSize;
+}
+
+
 qcomp* cpu_allocArray(qindex length) {
-
-    /// @todo
-    /// here, we calloc the entire array in a serial setting, rather than one malloc 
-    /// followed by threads subsequently memset'ing their own partitions. The latter
-    /// approach would distribute the array pages across NUMA nodes, accelerating 
-    /// their subsequent access by the same threads (via NUMA's first-touch policy).
-    /// We have so far foregone this optimisation since a thread's memory-access pattern
-    /// in many of the QuEST functions is non-trivial, and likely to be inconsistent 
-    /// with the memset pattern. As such, I expect the benefit is totally occluded
-    /// and only introduces potential new bugs - but this should be tested and confirmed!
-
-    // we call calloc over malloc in order to fail immediately if mem isn't available;
-    // caller must handle nullptr result
-
     return (qcomp*) calloc(length, sizeof(qcomp));
+}
+
+
+qcomp* cpu_allocNumaArray(qindex length) {
+#if ! NUMA_AWARE
+    return cpu_allocArray(length);
+
+#elif defined(_WIN32)
+    error_numaAllocOrDeallocAttemptedOnWindows();
+
+#else
+    // we will divide array's memory into pages
+    long pageSize = cpu_getPageSize();
+    qindex arraySize = length * sizeof(qcomp); // gauranteed no overflow
+
+    // if entire array fits within a single page, alloc like normal
+    if (arraySize <= pageSize)
+        return cpu_allocArray(length);
+
+    // otherwise we will bind pages across NUMA nodes
+    static int numNodes = numa_num_configured_nodes();
+    if (numNodes < 1)
+        error_gettingNumNumaNodesFailed();
+
+    qindex numPages = getNumPagesToContainArray(pageSize, arraySize);
+    qindex numBytes = numPages * pageSize; // prior validation gaurantees no overflow
+    
+    // allocate memory, potentially more than arraySize (depending on page divisibility)
+    void *rawAddr = mmap(NULL, numBytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    
+    // indicate memory alloc failure to caller (no NUMA-specific validation error message)
+    if (rawAddr == MAP_FAILED)
+        return nullptr;
+
+    // if there is only a single NUMA node, then all memory access will occur within it
+    qcomp* outAddr = reinterpret_cast<qcomp*>(rawAddr);
+    if (numNodes == 1)
+        return outAddr;
+
+    // otherwise, we bind continguous pages to NUMA nodes, distributing the pages 
+    // attemptedly uniformly and spreading remaining pages maximally apart
+    qindex baseNumPagesPerNode = numPages / numNodes; // floors
+    qindex remainingNumPagesTotal = numPages % numNodes;
+
+    // use integer type for safe address arithmetic below
+    uintptr_t offsetAddr = reinterpret_cast<uintptr_t>(rawAddr);
+
+    for (int node=0, shift=numNodes; node < numNodes; ++node) {
+
+        // decide number of pages to bind to NUMA node
+        shift -= remainingNumPagesTotal;
+        qindex numPagesInNode = baseNumPagesPerNode + (shift <= 0);
+        qindex numBytesInNode = numPagesInNode * pageSize; // validation prevents overflow
+
+        // bind those pages from the offset address to the node (identified by mask)
+        unsigned long nodeMask = 1UL << node;
+        unsigned long numBitsInMask = 8 * sizeof(nodeMask);
+        void* nodeAddr = reinterpret_cast<void*>(offsetAddr);
+        long success = mbind(nodeAddr, numBytesInNode, MPOL_BIND, &nodeMask, numBitsInMask, 0);
+
+        // treat bind failure as internal error (even though it can result from insufficient kernel mem),
+        // rather than permitting silent fallback to non-NUMA awareness which might be astonishingly slow
+        if (success == -1)
+            error_numaBindingFailed();
+
+        // prepare next node's address
+        offsetAddr += numPagesInNode * pageSize;
+        if (shift <= 0)
+            shift += numNodes;
+    }
+
+    return outAddr;
+#endif
 }
 
 
@@ -119,6 +258,36 @@ void cpu_deallocArray(qcomp* arr) {
 
     // arr can safely be nullptr
     free(arr);
+}
+
+
+void cpu_deallocNumaArray(qcomp* arr, qindex length) {
+
+    // musn't pass nullptr to munmap() below
+    if (arr == nullptr)
+        return;
+
+#if ! NUMA_AWARE
+    cpu_deallocArray(arr);
+
+#elif defined(_WIN32)
+    error_numaAllocOrDeallocAttemptedOnWindows();
+
+#else
+    qindex arrSize = length * sizeof(qcomp);
+    long pageSize = cpu_getPageSize();
+
+    // sub-page arrays were allocated with calloc()
+    if (arrSize <= pageSize)
+        return cpu_deallocArray(arr);
+
+    qindex numPages = getNumPagesToContainArray(pageSize, arrSize);
+    qindex numBytes = numPages * pageSize; // gauranteed no overflow
+    int success = munmap(arr, numBytes);
+
+    if (success == -1)
+        error_numaUnmappingFailed();
+#endif
 }
 
 

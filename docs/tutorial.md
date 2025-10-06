@@ -713,9 +713,9 @@ We can even directy mix density matrices together
 mixQureg(rho1, rho2, prob);
 ```
 
-Sometimes we wish to left-multiply general operators upon density matrices without also right-multiplying their adjoint - i.e. our operators should _not_ be effected as unitaries. We can do this with the `multiply*()` functions.
+Sometimes we wish to left-multiply general operators upon density matrices without also right-multiplying their adjoint - i.e. our operators should _not_ be effected as unitaries. We can do this with the `leftapply*()` and `rightapply*()` functions.
 ```cpp
-multiplyDiagMatrPower(rho, fullmatrix, 0.5);
+leftapplyDiagMatrPower(rho, fullmatrix, 0.5);
 ```
 
 

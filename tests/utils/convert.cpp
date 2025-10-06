@@ -23,6 +23,16 @@ using std::vector;
 
 
 /*
+ * INTERNAL QUEST FUNCTIONS
+ */
+
+extern int paulis_getPauliAt(PauliStr str, int ind);
+extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
+extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum);
+
+
+
+/*
  * TO QUREG
  */
 
@@ -134,11 +144,6 @@ qmatrix getMatrix(SuperOp   m) { return getMatrixInner(m); }
 /*
  * FROM PAULI STRING
  */
-
-
-extern int paulis_getPauliAt(PauliStr str, int ind);
-extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
-extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum);
 
 
 qmatrix getMatrix(PauliStr str, vector<int> targs) {

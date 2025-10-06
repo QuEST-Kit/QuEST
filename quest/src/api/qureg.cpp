@@ -154,7 +154,7 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
     Qureg qureg = qureg_populateNonHeapFields(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread);
 
     // always allocate CPU memory
-    qureg.cpuAmps = cpu_allocArray(qureg.numAmpsPerNode); // nullptr if failed
+    qureg.cpuAmps = cpu_allocNumaArray(qureg.numAmpsPerNode); // nullptr if failed
 
     // conditionally allocate GPU memory and communication buffers (even if numNodes == 1).
     // note that in distributed settings but where useDistrib=false, each node will have a
@@ -334,7 +334,7 @@ void destroyQureg(Qureg qureg) {
     validate_quregFields(qureg, __func__);
 
     // free CPU memory
-    cpu_deallocArray(qureg.cpuAmps);
+    cpu_deallocNumaArray(qureg.cpuAmps, qureg.numAmpsPerNode);
 
     // free CPU communication buffer
     if (qureg.isDistributed)

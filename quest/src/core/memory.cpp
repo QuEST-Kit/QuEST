@@ -30,6 +30,7 @@
     #include <sys/sysctl.h>
 #elif defined(_WIN32)
     #define NOMINMAX
+    #define WIN32_LEAN_AND_MEAN
     #include <windows.h>
 #endif
 
@@ -384,6 +385,15 @@ bool mem_canSuperOpFitInMemory(int numQubits, qindex numBytesPerNode) {
     int numNodes = 1;
     bool isDense = true;
     return mem_canMatrixFitInMemory(numMatrixQubits, isDense, numNodes, numBytesPerNode);
+}
+
+
+bool mem_canPauliStrSumFitInMemory(qindex numTerms, qindex numBytesPerNode) {
+
+    // awkwardly arranged to avoid overflow when numTerms is too large
+    size_t numBytesPerTerm = sizeof(PauliStr) + sizeof(qcomp);
+    qindex maxNumTerms = numBytesPerNode / numBytesPerTerm; // floors
+    return numTerms <= maxNumTerms;
 }
 
 

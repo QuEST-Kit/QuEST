@@ -225,7 +225,7 @@ void printCpuInfo() {
         "cpu", {
         {"numCpuCores",   printer_toStr(std::thread::hardware_concurrency()) + pm},
         {"numOmpProcs",   (cpu_isOpenmpCompiled())? printer_toStr(cpu_getNumOpenmpProcessors()) + pm : na},
-        {"numOmpThrds",   (cpu_isOpenmpCompiled())? printer_toStr(cpu_getCurrentNumThreads()) + pn : na},
+        {"numOmpThrds",   (cpu_isOpenmpCompiled())? printer_toStr(cpu_getAvailableNumThreads()) + pn : na},
         {"cpuMemory",     ram},
         {"cpuMemoryFree", un},
     });
@@ -494,7 +494,7 @@ void getEnvironmentString(char str[200]) {
 
     QuESTEnv env = getQuESTEnv();
 
-    int numThreads = cpu_isOpenmpCompiled()? cpu_getCurrentNumThreads() : 1;
+    int numThreads = cpu_isOpenmpCompiled()? cpu_getAvailableNumThreads() : 1;
     int cuQuantum = env.isGpuAccelerated && gpu_isCuQuantumCompiled();
     int gpuDirect = env.isGpuAccelerated && gpu_isDirectGpuCommPossible();
 

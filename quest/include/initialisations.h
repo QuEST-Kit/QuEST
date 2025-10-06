@@ -113,29 +113,17 @@ void setDensityQuregFlatAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex n
 
 /// @notyetdoced
 /// @notyettested
-void setQuregToClone(Qureg targetQureg, Qureg copyQureg);
+void setQuregToClone(Qureg outQureg, Qureg inQureg);
 
 
-/** @notyetdoced
- * @notyettested
- * 
- * @formulae
- * 
- * Let @f$ f_{\text{out}} = @f$ @p facOut, @f$ f_1 = @f$ @p fac1 and @f$ f_2 = @f$ @p fac2.
- * Similarly, let @f$ \psi_{\text{out}} = @f$ @p out, @f$ \psi_{1} = @f$ @p qureg1 and @f$ \psi_{2} = @f$ @p qureg2.
- * 
- * This function modifies only @p facOut to become
- * @f[
-     |\psi_{\text{out}}\rangle \; \rightarrow \;
-        f_{\text{out}} |\psi_{\text{out}}\rangle \, + \,
-        f_1 |\psi_1\rangle \, + \,
-        f_2 |\psi_2\rangle.
- * @f]
- *
- * All factors are unconstrained and are permitted to be zero, and the same @p Qureg can be duplicated among
- * all arguments.
- */
-void setQuregToSuperposition(qcomp facOut, Qureg out, qcomp fac1, Qureg qureg1, qcomp fac2, Qureg qureg2);
+/// @notyetdoced
+/// @notyettested
+void setQuregToWeightedSum(Qureg out, qcomp* coeffs, Qureg* in, int numIn);
+
+
+/// @notyetdoced
+/// @notyettested
+void setQuregToMixture(Qureg out, qreal* probs, Qureg* in, int numIn);
 
 
 /// @notyetdoced
@@ -225,6 +213,20 @@ void setQuregToPartialTrace(Qureg out, Qureg in, std::vector<int> traceOutQubits
 /// @cpponly
 /// @see setQuregToReducedDensityMatrix()
 void setQuregToReducedDensityMatrix(Qureg out, Qureg in, std::vector<int> retainQubits);
+
+
+/// @ingroup init_amps
+/// @notyetdoced
+/// @cpponly
+/// @see setQuregToWeightedSum()
+void setQuregToWeightedSum(Qureg out, std::vector<qcomp> coeffs, std::vector<Qureg> in);
+
+
+/// @ingroup init_amps
+/// @notyetdoced
+/// @cpponly
+/// @see setQuregToMixture()
+void setQuregToMixture(Qureg out, std::vector<qreal> probs, std::vector<Qureg> in);
 
 
 #endif // __cplusplus

@@ -2,6 +2,12 @@
  * CPU OpenMP-accelerated definitions of the main backend simulation routines,
  * as mirrored by gpu_subroutines.cpp, and called by accelerator.cpp. 
  * 
+ * BEWARE that this specific file receives additional compiler optimisation flags
+ * in order to counteract a performance issue in the use of std::complex operator
+ * overloads. These flags (like -Ofast) may induce assumed associativity of qcomp
+ * algebra, breaking techniques like Kahan summation. As such, this file CANNOT
+ * assume IEEE floating-point behaviour.
+ * 
  * Some of these definitions are templated, defining multiple versions optimised 
  * (at compile-time) for handling different numbers of input qubits; such functions
  * are proceeded by macro INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS(), to force the 
@@ -9,6 +15,7 @@
  * 
  * @author Tyson Jones
  * @author Oliver Brown (OpenMP 'if' clauses)
+ * @author Luc Jaulmes (optimised initUniformState)
  * @author Richard Meister (helped patch on LLVM)
  * @author Kshitij Chhabra (patched v3 clauses with gcc9)
  * @author Ania (Anna) Brown (developed QuEST v1 logic)
@@ -37,6 +44,28 @@
 #include <algorithm>
 
 using std::vector;
+
+
+/*
+ * Beware that this file makes extensive use of std::complex (qcomp) operator
+ * overloads and so requires additional compiler flags to achieve hand-rolled
+ * arithmetic performance; otherwise a 3-50x slowdown may be observed. We here
+ * enforce that these flags were not forgotton (but may be deliberatedly avoided).
+ * Beware these flags may induce associativity and break e.g. Kakan summation.
+ */
+
+#if !defined(COMPLEX_OVERLOADS_PATCHED)
+    #error "Crucial, bespoke optimisation flags were not passed (or acknowledged) to cpu_subroutines.cpp which are necessary for full complex arithmetic performance."
+    
+#elif !COMPLEX_OVERLOADS_PATCHED
+
+    #if defined(_MSC_VER)
+        #pragma message("Warning: The CPU backend is being deliberately compiled without the necessary flags to obtain full complex arithmetic performance.")
+    #else
+        #warning "The CPU backend is being deliberately compiled without the necessary flags to obtain full complex arithmetic performance."
+    #endif
+
+#endif
 
 
 
@@ -567,6 +596,9 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
                     /// qureg.cpuAmps[i] is being serially updated by only this thread,
                     /// so is a candidate for Kahan summation for improved numerical
                     /// stability. Explore whether this is time-free and worthwhile!
+                    ///
+                    /// BEWARE that Kahan summation is incompatible with the optimisation
+                    /// flags currently passed to this file
                 }
             }
         }
@@ -749,7 +781,7 @@ void cpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 }
 
 
-template <bool HasPower, bool MultiplyLeft, bool MultiplyRight, bool ConjRight>
+template <bool HasPower, bool ApplyLeft, bool ApplyRight, bool ConjRight>
 void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent) {
 
     // unlike other functions, this function handles all scenarios of...
@@ -772,7 +804,7 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
         qcomp fac = 1;
 
         // update fac to effect rho -> (matr * rho) or (matr^exponent * rho)
-        if constexpr (MultiplyLeft) {
+        if constexpr (ApplyLeft) {
 
             // i = global row of nth local amp
             qindex i = fast_getQuregGlobalRowFromFlatIndex(n, matr.numElems);
@@ -788,7 +820,7 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 
         // update fac to additional include rho -> (rho * matr) or 
         // (rho * conj(matr)), or the same exponentiated
-        if constexpr (MultiplyRight) {
+        if constexpr (ApplyRight) {
 
             // m = global index corresponding to n
             qindex m = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
@@ -907,7 +939,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
     // whenever each thread has at least 1 iteration for itself. And of course
     // we serialise both inner and outer loops when qureg multithreading is off.
 
-    if (!qureg.isMultithreaded || numOuterIts >= cpu_getCurrentNumThreads()) {
+    if (!qureg.isMultithreaded || numOuterIts >= cpu_getAvailableNumThreads()) {
     
         // parallel
         #pragma omp parallel for if(qureg.isMultithreaded)
@@ -1033,18 +1065,26 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlAnyTargZO
  */
 
 
-void cpu_statevec_setQuregToSuperposition_sub(qcomp facOut, Qureg outQureg, qcomp fac1, Qureg inQureg1, qcomp fac2, Qureg inQureg2) {
-
-    assert_superposedQuregDimsAndDeploysMatch(outQureg, inQureg1, inQureg2);
+template <int NumQuregs>
+void cpu_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs, vector<Qureg> inQuregs) {
 
     qindex numIts = outQureg.numAmpsPerNode;
-    qcomp* out = outQureg.cpuAmps;
-    qcomp* in1 = inQureg1.cpuAmps;
-    qcomp* in2 = inQureg2.cpuAmps;
+
+    // use template param to compile-time unroll inner loop below
+    SET_VAR_AT_COMPILE_TIME(int, numQuregs, NumQuregs, inQuregs.size());
 
     #pragma omp parallel for if(outQureg.isMultithreaded)
-    for (qindex n=0; n<numIts; n++)
-        out[n] = (facOut * out[n]) + (fac1 * in1[n]) + (fac2 * in2[n]);
+    for (qindex n=0; n<numIts; n++) {
+
+        // unrolled when inQuregs.size() <= 5
+        qcomp amp = 0;
+        for (int q=0; q<numQuregs; q++)
+            amp += coeffs[q] * inQuregs[q].cpuAmps[n];
+
+        // must not modify cpuAmps[n] before computing the amp since
+        // outQureg can legally appear among inQuregs
+        outQureg.cpuAmps[n] = amp;
+    }
 }
 
 
@@ -1100,6 +1140,9 @@ void cpu_densmatr_mixQureg_subC(qreal outProb, Qureg outQureg, qreal inProb) {
         out[n] = (outProb * out[n]) + (inProb * in[i] * std::conj(in[j]));
     }
 }
+
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_QUREGS( void, cpu_statevec_setQuregToWeightedSum_sub, (Qureg, vector<qcomp>, vector<Qureg>) )
 
 
 
@@ -1746,6 +1789,9 @@ qreal cpu_statevec_calcTotalProb_sub(Qureg qureg) {
     /// final serial combination). This invokes several times
     /// as many arithmetic operations (4x?) but we are anyway
     /// memory-bandwidth bound
+    ///
+    /// BEWARE that Kahan summation is incompatible with the optimisation
+    /// flags currently passed to this file
 
     qreal prob = 0;
 
@@ -1771,6 +1817,9 @@ qreal cpu_densmatr_calcTotalProb_sub(Qureg qureg) {
     /// final serial combination). This invokes several times
     /// as many arithmetic operations (4x?) but we are anyway
     /// memory-bandwidth bound
+    ///
+    /// BEWARE that Kahan summation is incompatible with the optimisation
+    /// flags currently passed to this file
 
     qreal prob = 0;
 
@@ -2344,6 +2393,10 @@ void cpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
 template <int NumQubits>
 void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
 
+    // this function is merely an optimisation to avoid calling the above
+    // cpu_statevec_multiQubitProjector_sub() twice upon a density matrix;
+    // pre- and post-multiply projector versions DO just call above.
+
     // qubits are unconstrained, and can include prefix qubits
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
@@ -2389,9 +2442,20 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_multiQubitProjector
 
 void cpu_statevec_initUniformState_sub(Qureg qureg, qcomp amp) {
 
-    // faster on average (though perhaps not for large quregs)
-    // than a custom multithreaded loop
-    std::fill(qureg.cpuAmps, qureg.cpuAmps + qureg.numAmpsPerNode, amp);
+    // approx-uniformly distribute modified memory pages across threads,
+    // in the hope that each std::fill() will touch only memory within 
+    // the thread's corresponding NUMA node, for best performance 
+
+    int numAmpsPerPage = cpu_getPageSize() / sizeof(qcomp); // divides evenly
+
+    #pragma omp parallel if(qureg.isMultithreaded)
+    {
+        const auto [start, end] = util_getBlockMultipleSubRange(
+            qureg.numAmpsPerNode, numAmpsPerPage,
+            cpu_getOpenmpThreadInd(), cpu_getCurrentNumThreads());
+
+        std::fill(qureg.cpuAmps + start, qureg.cpuAmps + end, amp);
+    }
 }
 
 

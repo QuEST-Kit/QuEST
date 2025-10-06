@@ -23,7 +23,7 @@ using std::vector;
 
 bool cpu_isOpenmpCompiled();
 
-int cpu_getCurrentNumThreads();
+int cpu_getAvailableNumThreads();
 
 int cpu_getNumOpenmpProcessors();
 
@@ -35,6 +35,8 @@ int cpu_getNumOpenmpProcessors();
 
 int cpu_getOpenmpThreadInd();
 
+int cpu_getCurrentNumThreads();
+
 
 
 /*
@@ -43,6 +45,9 @@ int cpu_getOpenmpThreadInd();
 
 qcomp* cpu_allocArray(qindex length);
 void cpu_deallocArray(qcomp* arr);
+
+qcomp* cpu_allocNumaArray(qindex length);
+void cpu_deallocNumaArray(qcomp* arr, qindex length);
 
 qcomp** cpu_allocAndInitMatrixWrapper(qcomp* arr, qindex dim);
 void cpu_deallocMatrixWrapper(qcomp** wrapper);
@@ -59,6 +64,8 @@ void cpu_deallocHeapFlag(int* ptr);
 PauliStr* cpu_allocPauliStrings(qindex numStrings);
 void cpu_deallocPauliStrings(PauliStr* strings);
 
+
+long cpu_getPageSize();
 
 
 /*

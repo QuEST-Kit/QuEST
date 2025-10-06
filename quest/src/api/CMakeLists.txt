@@ -8,8 +8,10 @@ target_sources(QuEST
   initialisations.cpp
   matrices.cpp
   modes.cpp
+  multiplication.cpp
   operations.cpp
   paulis.cpp
   qureg.cpp
+  trotterisation.cpp
   types.cpp
 )

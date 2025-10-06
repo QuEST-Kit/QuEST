@@ -19,6 +19,7 @@
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/memory.hpp"
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/paulilogic.hpp"
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/comm/comm_config.hpp"
@@ -459,10 +460,9 @@ string printer_getMemoryWithUnitStr(size_t numBytes) {
         ind++;
     ind--;
 
-    // express numBytes in terms of new unit, forcefully rounding to 3 sig-figs max,
-    // except when the chosen unit is bytes (then we permit all 4 digits)
+    // express numBytes in terms of new unit, forcefully rounding to 4 sig-figs max
     qreal frac = numBytes / static_cast<qreal>(sizes[ind]);
-    return floatToStr(frac, false, (ind==0)? 4 : 3) + " " + units[ind];
+    return floatToStr(frac, false, 4) + " " + units[ind];
 }
 
 
@@ -1258,12 +1258,6 @@ void print_elems(Qureg qureg, string indent) {
  *    1.23i  XYZXZ
  *    -1-6i  IIIII
  */
-
-
-// we'll make use of these internal functions from paulis.cpp
-extern int paulis_getPauliAt(PauliStr str, int ind);
-extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr str);
-extern int paulis_getIndOfLefmostNonIdentityPauli(PauliStr* strings, qindex numStrings);
 
 
 string getPauliStrAsAllQubitsString(PauliStr str, int numPaulis) {
