@@ -1082,13 +1082,198 @@ qreal calcDistance(Qureg qureg, Qureg other);
  */
 
 
-/// @notyetdoced
-/// @notyetvalidated
+/** Creates and populates a new Qureg which is a reduced density matrix resulting from tracing out 
+ * the specified qubits of @p qureg. This should be later freed by the user like all Qureg.
+ * 
+ * Note that the deployments of the output Qureg (i.e. whether multithreaded, GPU-accelerated and
+ * distributed) will match those of @p qureg. It is ergo intended that this function is used to
+ * trace out few qubits, and may show worsening performance when tracing many qubits.
+ * 
+ * The ordering of @p traceOutQubits has no effect, and the ordering of the remaining qubits in
+ * the output Qureg match their original relative ordering in @p qureg.
+ * 
+ * @formulae
+ * 
+ * Let @f$\dmrho_{\text{in}} = @f$ @p qureg and let @f$\vec{t} = @f$ @p traceOutQubits which is a list of
+ * length @f$n = @f$ @p numTraceQubits.
+ * 
+ * This function returns a new Qureg @f$\dmrho_{\text{out}}@f$ which satisfies
+ * @f[
+        \dmrho_{\text{out}} = \text{Tr}_{\vec{t}} \left( \dmrho_{\text{in}} \right)
+        =
+        \sum\limits_i^{2^n} 
+        (\hat{\id} \otimes \bra{i}_{\vec{t}} ) \,
+         \dmrho_{\text{in}} \,
+        (\hat{\id} \otimes \ket{i}_{\vec{t}} )
+ * @f]
+ * where @f$\ket{i}_{\vec{t}}@f$ notates the @f$i@f$-th basis state (in any orthonormal basis) of the
+ * targeted qubits, and @f$(\hat{\id} \otimes \ket{i}_{\vec{t}})@f$ notates interleaved identity operators
+ * upon the non-targeted qubits.
+ * 
+ * Given an @f$N@f$-qubit Qureg @f$\dmrho_{\text{in}}@f$, the output @f$\dmrho_{\text{out}}@f$ contains
+ * @f$N-n@f$ qubits.
+ * 
+ * @constraints
+ * 
+ * - The given @p qureg must be a density matrix. It is however straightforward to prepare a density matrix
+ *   from a statevector.
+ *   ```
+     // let qureg be the intended initial statevector
+
+     Qureg temp = createDensityQureg(qureg.numQubits);
+     initPureState(temp, qureg);
+
+     Qureg reduced = calcPartialTrace(temp, traceOutQubits, numTraceQubits);
+     destroyQureg(temp);
+ *   ```
+ * 
+ * - When @p qureg is distributed, the returned Qureg will also be distributed, which imposes a minimum on
+ *   the number of qubits contained within; @f$\log_2(W)@f$ where @f$W@f$ is the number of distributed nodes
+ *   (or "world size"). This imposes a maximum upon @p traceOutQubits of
+ *   ```
+ *   numTraceQubits <= qureg.numQubits - qureg.logNumNodes
+ *   ```
+ * 
+ * @equivalences
+ * 
+ * - The function calcReducedDensityMatrix() is entirely equivalent, but conveniently permits specifying
+ *   a list of which qubits to _retain_ during partial tracing. 
+ * 
+ * - The functions setQuregToPartialTrace() and setQuregToReducedDensityMatrix() are also equivalent but
+ *   permit overwriting an existing Qureg.
+ *  
+ * @myexample
+ * 
+ * ```
+   Qureg state = createDensityQureg(5);
+   initRandomMixedState(state, 10);
+   reportQureg(state);
+
+   int qubits[] = {0,2,4};
+   Qureg reduced = calcPartialTrace(state, qubits, 3);
+   reportQureg(reduced);
+
+   // state's qubits {1,3} have become reduced's qubits {0,1}
+ * ```
+ * 
+ * @param[in] qureg          a density matrix which is not modified.
+ * @param[in] traceOutQubits a list of qubits to trace out and ergo from the output Qureg.
+ * @param[in] numTraceQubits the length of @p traceOutQubits.
+ * @returns A new, smaller Qureg initialised to the reduced density matrix of @p qureg.
+ * @throws @validationerror
+ * - if @p qureg is uninitialised.
+ * - if @p numTraceQubits is less than one.
+ * - if @p numTraceQubits is equal or greater than the number of qubits in @p qureg.
+ * - if @p qureg is distributed and @p numTraceQubits exceeds `qureg.numQubits - qureg.logNumNodes`.
+ * - if the system contains insufficient RAM (or VRAM) to store the new Qureg in any deployment.
+ * - if any memory allocation of the output Qureg unexpectedly fails.
+ * @throws seg-fault
+ * - if @p traceOutQubits is not a list of length @p numTraceQubits.
+ * @notyetvalidated
+ * @see
+ * - calcReducedDensityMatrix()
+ * - setQuregToPartialTrace()
+ * - setQuregToReducedDensityMatrix()
+ * @author Tyson Jones
+ */
 Qureg calcPartialTrace(Qureg qureg, int* traceOutQubits, int numTraceQubits);
 
 
-/// @notyetdoced
-/// @notyetvalidated
+/** Creates and populates a new Qureg which is a reduced density matrix of @p qureg,
+ * retaining only the specified qubits and tracing out all others.
+ * 
+ * Note that the deployments of the output Qureg (i.e. whether multithreaded, GPU-accelerated and
+ * distributed) will match those of @p qureg. It is ergo intended that this function is used to
+ * preserve most qubits of @p qureg, and may show worsening performance when retaining only few.
+ * 
+ * > [!CAUTION]
+ * > The ordering of @p retainQubits has no effect on the output state. The ordering of the
+ * > retained qubits will match their original, relative ordering in @p qureg.
+ *
+ * @formulae
+ * 
+ * This function is entirely equivalent to calcPartialTrace() except that here the _retained_ qubits
+ * are specified, whereas calcPartialTrace() accepts those to be traced out.
+ * 
+ * Let @f$\dmrho_{\text{in}} = @f$ @p qureg, @f$\vec{r} = @f$ @p retainQubits, and let @f$\vec{q}@f$
+ * be a list containing _all_ qubits of @p qureg. This function partially traces out all qubits in
+ * list @f$\vec{t} = \vec{q} \setminus \vec{r}@f$, and returns a new Qureg @f$\dmrho_{\text{out}}@f$ 
+ * which satisfies
+ * @f[
+        \dmrho_{\text{out}} = \text{Tr}_{\vec{t}} \left( \dmrho_{\text{in}} \right)
+        =
+        \sum\limits_i^{2^n} 
+        (\hat{\id} \otimes \bra{i}_{\vec{t}} ) \,
+         \dmrho_{\text{in}} \,
+        (\hat{\id} \otimes \ket{i}_{\vec{t}} )
+ * @f]
+ * where @f$\ket{i}_{\vec{t}}@f$ notates the @f$i@f$-th basis state (in any orthonormal basis) of the
+ * qubits in @f$\vec{t}@f$, and @f$(\hat{\id} \otimes \ket{i}_{\vec{t}})@f$ notates interleaved identity
+ * operators upon the qubits in @f$\vec{r}@f$.
+ * 
+ * @constraints
+ * 
+ * - The given @p qureg must be a density matrix. It is however straightforward to prepare a density matrix
+ *   from a statevector.
+ *   ```
+     // let qureg be the intended initial statevector
+
+     Qureg temp = createDensityQureg(qureg.numQubits);
+     initPureState(temp, qureg);
+
+     Qureg reduced = calcReducedDensityMatrix(temp, retainQubits, numRetainQubits);
+     destroyQureg(temp);
+ *   ```
+ * 
+ * - When @p qureg is distributed, the returned Qureg will also be distributed, which imposes a minimum on
+ *   the number of qubits contained within; @f$\log_2(W)@f$ where @f$W@f$ is the number of distributed nodes
+ *   (or "world size"). This imposes bounds upon @p numRetainQubits of
+ *   ```
+ *   qureg.logNumNodes <= numRetainQubits <= qureg.numQubits - 1
+ *   ```
+ *
+ * @equivalences
+ * 
+ * - The function calcPartialTrace() is entirely equivalent, but permits directly specifying the qubits to
+ *   be traced out.
+ * 
+ * - The functions setQuregToPartialTrace() and setQuregToReducedDensityMatrix() are also equivalent but
+ *   permit overwriting an existing Qureg.
+ *  
+ * @myexample
+ * 
+ * ```
+   Qureg state = createDensityQureg(5);
+   initRandomMixedState(state, 10);
+   reportQureg(state);
+
+   int qubits[] = {1,3};
+   Qureg reduced = calcReducedDensityMatrix(state, qubits, 2);
+   reportQureg(reduced);
+
+   // state's qubits {1,3} have become reduced's qubits {0,1}
+ * ```
+ * 
+ * @param[in] qureg            a density matrix.
+ * @param[in] retainQubits    a list of qubits to retain in the reduced density matrix (at shifted, contiguous indices).
+ * @param[in] numRetainQubits the length of @p retainQubits.
+ * @returns A new Qureg containing @p numRetainQubits qubits, initialised to the reduced density matrix of @p qureg.
+ * @throws @validationerror
+ * - if @p qureg is uninitialised.
+ * - if @p numRetainQubits is less than one.
+ * - if @p numRetainQubits is equal or greater than the number of qubits in @p qureg.
+ * - if @p qureg is distributed and @p numRetainQubits is less than `qureg.logNumNodes`.
+ * - if the system contains insufficient RAM (or VRAM) to store the new Qureg in any deployment.
+ * - if any memory allocation of the output Qureg unexpectedly fails.
+ * @throws seg-fault
+ * - if @p retainQubits is not a list of length @p numRetainQubits.
+ * @notyetvalidated
+ * @see
+ * - calcPartialTrace()
+ * - setQuregToPartialTrace()
+ * - setQuregToReducedDensityMatrix()
+ * @author Tyson Jones
+ */
 Qureg calcReducedDensityMatrix(Qureg qureg, int* retainQubits, int numRetainQubits);
 
 
