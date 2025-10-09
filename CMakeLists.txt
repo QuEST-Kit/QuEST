@@ -278,7 +278,7 @@ target_include_directories(QuEST
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/quest/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 set_target_properties(QuEST PROPERTIES
@@ -650,7 +650,7 @@ install(FILES
 )
 
 install(FILES
-  "${CMAKE_CURRENT_BINARY_DIR}/include/quest/include/config.h"
+  "${CMAKE_CURRENT_BINARY_DIR}/quest/include/config.h"
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/quest/include"
 )
 

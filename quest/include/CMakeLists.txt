@@ -9,4 +9,4 @@
 # through compiler flags and the associated conflicts arising when
 # installing QuEST. Note that config.h must be manually created when
 # not compiling via CMake, e.g. when using a custom build script 
-configure_file(config.h.in "${CMAKE_BINARY_DIR}/include/quest/include/config.h" @ONLY)
+configure_file(config.h.in config.h @ONLY)
