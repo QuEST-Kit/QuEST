@@ -72,10 +72,11 @@ endif()
 
 
 # Library type
-# Shared library by default
-option(BUILD_SHARED_LIBS "Build shared library. Turned ON by default." ON)
-message(STATUS "Shared library is turned ${BUILD_SHARED_LIBS}. Set BUILD_SHARED_LIBS to modify.")
-
+# Shared library by default when we are the top level cmake project
+if(PROJECT_IS_TOP_LEVEL)
+  option(BUILD_SHARED_LIBS "Build shared library. Turned ON by default." ON)
+  message(STATUS "Shared library is turned ${BUILD_SHARED_LIBS}. Set BUILD_SHARED_LIBS to modify.")
+endif ()
 
 # Library naming
 set(LIB_NAME QuEST 
@@ -183,6 +184,7 @@ option(
 )
 message(STATUS "Disabling of deprecated API warnings is turned ${DISABLE_DEPRECATION_WARNINGS}. Set DISABLE_DEPRECATION_WARNINGS to modify.")
 
+option(INSTALL_BINARIES "Whether to include example and user binaries in the install." OFF)
 
 
 # ============================
@@ -563,10 +565,12 @@ add_executable(min_example
 )
 target_link_libraries(min_example PRIVATE QuEST::QuEST)
 
-install(TARGETS min_example
-  RUNTIME
-  DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+if (INSTALL_BINARIES)
+  install(TARGETS min_example
+    RUNTIME
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+  )
+endif ()
 
 
 # all examples optionally built
@@ -575,7 +579,7 @@ if (BUILD_EXAMPLES)
 endif()
 
 
-## RATH
+## RPATH
 set(BUILD_RPATH_USE_ORIGIN ON)
 if(APPLE)
   set(_RPATH_ORIGIN "@loader_path")
@@ -730,3 +734,7 @@ install(
   NAMESPACE QuEST::
   DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
 )
+
+if(PROJECT_IS_TOP_LEVEL)
+  include(CPack)
+endif ()
