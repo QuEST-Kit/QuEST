@@ -10,8 +10,11 @@
  * @{
  */
 
+
 #ifndef TROTTERISATION_H
 #define TROTTERISATION_H
+
+#include <stdbool.h>
 
 #include "quest/include/qureg.h"
 #include "quest/include/paulis.h"
@@ -157,7 +160,7 @@ extern "C" {
  * 
  * @author Tyson Jones
  */
-void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
+void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps, bool randomiseString);
 
 
 /// @notyetdoced
@@ -165,7 +168,7 @@ void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle
 /// @see
 ///  - applyTrotterizedPauliStrSumGadget()
 ///  - applyControlledCompMatr1()
-void applyTrotterizedControlledPauliStrSumGadget(Qureg qureg, int control, PauliStrSum sum, qreal angle, int order, int reps);
+void applyTrotterizedControlledPauliStrSumGadget(Qureg qureg, int control, PauliStrSum sum, qreal angle, int order, int reps, bool randomiseString);
 
 
 /// @notyetdoced
@@ -173,7 +176,7 @@ void applyTrotterizedControlledPauliStrSumGadget(Qureg qureg, int control, Pauli
 /// @see
 ///  - applyTrotterizedPauliStrSumGadget()
 ///  - applyMultiControlledCompMatr1()
-void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, int* controls, int numControls, PauliStrSum sum, qreal angle, int order, int reps);
+void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, int* controls, int numControls, PauliStrSum sum, qreal angle, int order, int reps, bool randomiseString);
 
 
 /// @notyetdoced
@@ -181,7 +184,7 @@ void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, int* controls
 /// @see
 ///  - applyTrotterizedPauliStrSumGadget()
 ///  - applyMultiStateControlledCompMatr1()
-void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStrSum sum, qreal angle, int order, int reps);
+void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStrSum sum, qreal angle, int order, int reps, bool randomiseString);
 
 
 /** @notyettested
@@ -232,7 +235,7 @@ void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, int* con
  * 
  * @author Tyson Jones
  */
-void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps);
+void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps, bool randomiseString);
 
 
 // end de-mangler
@@ -248,7 +251,7 @@ void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, q
 /// @notyetdoced
 /// @cppvectoroverload
 /// @see applyTrotterizedMultiControlledPauliStrSumGadget()
-void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, std::vector<int> controls, PauliStrSum sum, qreal angle, int order, int reps);
+void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, std::vector<int> controls, PauliStrSum sum, qreal angle, int order, int reps, bool randomiseString);
 
 
 /// @notyettested
@@ -256,7 +259,7 @@ void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, std::vector<i
 /// @notyetdoced
 /// @cppvectoroverload
 /// @see applyTrotterizedMultiStateControlledPauliStrSumGadget()
-void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, std::vector<int> controls, std::vector<int> states, PauliStrSum sum, qreal angle, int order, int reps);
+void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, std::vector<int> controls, std::vector<int> states, PauliStrSum sum, qreal angle, int order, int reps, bool randomiseString);
 
 
 #endif // __cplusplus
@@ -368,7 +371,7 @@ extern "C" {
  * 
  * @author Tyson Jones
  */
-void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal time, int order, int reps);
+void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal time, int order, int reps, bool randomiseString);
 
 
 /** @notyettested
@@ -499,7 +502,7 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
  * 
  * @author Tyson Jones
  */
-void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal tau, int order, int reps);
+void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal tau, int order, int reps, bool randomiseString);
 
 
 /** @notyettested
@@ -646,7 +649,7 @@ void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qrea
  * 
  * @author Tyson Jones
  */
-void applyTrotterizedNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStrSum* jumps, int numJumps, qreal time, int order, int reps);
+void applyTrotterizedNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStrSum* jumps, int numJumps, qreal time, int order, int reps, bool randomiseString);
 
 
 // end de-mangler
