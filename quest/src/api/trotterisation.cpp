@@ -85,7 +85,7 @@ void internal_applyHigherOrderTrotterRepetition(
 
 void internal_applyAllTrotterRepetitions(
     Qureg qureg, int* controls, int* states, int numControls, 
-    PauliStrSum sum, qcomp angle, int order, int reps, bool onlyLeftApply, bool randomiseString
+    PauliStrSum sum, qcomp angle, int order, int reps, bool onlyLeftApply, bool permutePaulis
 ) {
     // exp(i angle sum) = identity when angle=0
     if (angle == qcomp(0,0))
@@ -100,7 +100,7 @@ void internal_applyAllTrotterRepetitions(
 
     // perform carefully-ordered sequence of gadgets
     for (int r=0; r<reps; r++){
-        if (randomiseString)
+        if (permutePaulis)
             rand_permutePauliStrSum(sum);
         internal_applyHigherOrderTrotterRepetition(
             qureg, ketCtrlsVec, braCtrlsVec, statesVec, sum, arg, order, onlyLeftApply);
@@ -151,7 +151,7 @@ qindex internal_getNumTotalSuperPropagatorTerms(PauliStrSum hamil, PauliStrSum* 
 
 extern "C" {
 
-void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps, bool randomiseString) {
+void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps, bool permutePaulis) {
     validate_quregFields(qureg, __func__);
     validate_pauliStrSumFields(sum, __func__);
     validate_pauliStrSumTargets(sum, qureg, __func__);
@@ -160,10 +160,10 @@ void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, q
 
     // |psi> -> U |psi>, rho -> U rho U^dagger
     bool onlyLeftApply = false;
-    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, sum, angle, order, reps, onlyLeftApply, randomiseString);
+    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, sum, angle, order, reps, onlyLeftApply, permutePaulis);
 }
 
-void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps, bool randomiseString) {
+void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps, bool permutePaulis) {
     validate_quregFields(qureg, __func__);
     validate_pauliStrSumFields(sum, __func__);
     validate_pauliStrSumTargets(sum, qureg, __func__);
@@ -171,12 +171,12 @@ void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle
     validate_trotterParams(qureg, order, reps, __func__);
 
     bool onlyLeftApply = false;
-    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, sum, angle, order, reps, onlyLeftApply, randomiseString);
+    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, sum, angle, order, reps, onlyLeftApply, permutePaulis);
 }
 
 void applyTrotterizedControlledPauliStrSumGadget(
         Qureg qureg, int control, PauliStrSum sum,
-        qreal angle, int order, int reps, bool randomiseString
+        qreal angle, int order, int reps, bool permutePaulis
 ) {
     validate_quregFields(qureg, __func__);
     validate_pauliStrSumFields(sum, __func__);
@@ -185,12 +185,12 @@ void applyTrotterizedControlledPauliStrSumGadget(
     validate_trotterParams(qureg, order, reps, __func__);
     
     bool onlyLeftApply = false;
-    internal_applyAllTrotterRepetitions(qureg, &control, nullptr, 1, sum, angle, order, reps, onlyLeftApply, randomiseString);
+    internal_applyAllTrotterRepetitions(qureg, &control, nullptr, 1, sum, angle, order, reps, onlyLeftApply, permutePaulis);
 }
 
 void applyTrotterizedMultiControlledPauliStrSumGadget(
         Qureg qureg, int* controls, int numControls, PauliStrSum sum,
-        qreal angle, int order, int reps, bool randomiseString
+        qreal angle, int order, int reps, bool permutePaulis
 ) {
     validate_quregFields(qureg, __func__);
     validate_pauliStrSumFields(sum, __func__);
@@ -199,12 +199,12 @@ void applyTrotterizedMultiControlledPauliStrSumGadget(
     validate_trotterParams(qureg, order, reps, __func__);
 
     bool onlyLeftApply = false;
-    internal_applyAllTrotterRepetitions(qureg, controls, nullptr, numControls, sum, angle, order, reps, onlyLeftApply, randomiseString);
+    internal_applyAllTrotterRepetitions(qureg, controls, nullptr, numControls, sum, angle, order, reps, onlyLeftApply, permutePaulis);
 }
 
 void applyTrotterizedMultiStateControlledPauliStrSumGadget(
         Qureg qureg, int* controls, int* states, int numControls, PauliStrSum sum,
-        qreal angle, int order, int reps, bool randomiseString
+        qreal angle, int order, int reps, bool permutePaulis
 ) {
     validate_quregFields(qureg, __func__);
     validate_pauliStrSumFields(sum, __func__);
@@ -214,26 +214,26 @@ void applyTrotterizedMultiStateControlledPauliStrSumGadget(
     validate_trotterParams(qureg, order, reps, __func__);
 
     bool onlyLeftApply = false;
-    internal_applyAllTrotterRepetitions(qureg, controls, states, numControls, sum, angle, order, reps, onlyLeftApply, randomiseString);
+    internal_applyAllTrotterRepetitions(qureg, controls, states, numControls, sum, angle, order, reps, onlyLeftApply, permutePaulis);
 }
 
 } // end de-mangler
 
 void applyTrotterizedMultiControlledPauliStrSumGadget(
         Qureg qureg, vector<int> controls, PauliStrSum sum,
-        qreal angle, int order, int reps, bool randomiseString
+        qreal angle, int order, int reps, bool permutePaulis
 ) {
 
-    applyTrotterizedMultiControlledPauliStrSumGadget(qureg, controls.data(), controls.size(), sum, angle, order, reps, randomiseString);
+    applyTrotterizedMultiControlledPauliStrSumGadget(qureg, controls.data(), controls.size(), sum, angle, order, reps, permutePaulis);
 }
 
 void applyTrotterizedMultiStateControlledPauliStrSumGadget(
         Qureg qureg, vector<int> controls, vector<int> states, PauliStrSum sum,
-        qreal angle, int order, int reps, bool randomiseString
+        qreal angle, int order, int reps, bool permutePaulis
 ) {
     validate_controlsMatchStates(controls.size(), states.size(), __func__);
 
-    applyTrotterizedMultiStateControlledPauliStrSumGadget(qureg, controls.data(), states.data(), controls.size(), sum, angle, order, reps, randomiseString);
+    applyTrotterizedMultiStateControlledPauliStrSumGadget(qureg, controls.data(), states.data(), controls.size(), sum, angle, order, reps, permutePaulis);
 }
 
 
@@ -244,7 +244,7 @@ void applyTrotterizedMultiStateControlledPauliStrSumGadget(
 
 extern "C" {
 
-void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal time, int order, int reps, bool randomiseString) {
+void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal time, int order, int reps, bool permutePaulis) {
     validate_quregFields(qureg, __func__);
     validate_pauliStrSumFields(hamil, __func__);
     validate_pauliStrSumTargets(hamil, qureg, __func__);
@@ -254,10 +254,10 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
     // exp(-i t H) = exp(x i H) | x=-t
     qcomp angle = - time;
     bool onlyLeftApply = false;
-    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, hamil, angle, order, reps, onlyLeftApply, randomiseString);
+    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, hamil, angle, order, reps, onlyLeftApply, permutePaulis);
 }
 
-void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal tau, int order, int reps, bool randomiseString) {
+void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal tau, int order, int reps, bool permutePaulis) {
     validate_quregFields(qureg, __func__);
     validate_pauliStrSumFields(hamil, __func__);
     validate_pauliStrSumTargets(hamil, qureg, __func__);
@@ -267,7 +267,7 @@ void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qrea
     // exp(-tau H) = exp(x i H) | x=tau*i
     qcomp angle = qcomp(0, tau);
     bool onlyLeftApply = false;
-    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, hamil, angle, order, reps, onlyLeftApply, randomiseString);
+    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, hamil, angle, order, reps, onlyLeftApply, permutePaulis);
 }
 
 } // end de-mangler
@@ -282,7 +282,7 @@ extern "C" {
 
 void applyTrotterizedNoisyTimeEvolution(
         Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStrSum* jumps,
-        int numJumps, qreal time, int order, int reps, bool randomiseString
+        int numJumps, qreal time, int order, int reps, bool permutePaulis
 ) {
     validate_quregFields(qureg, __func__);
     validate_quregIsDensityMatrix(qureg, __func__);
@@ -368,7 +368,7 @@ void applyTrotterizedNoisyTimeEvolution(
     // effect exp(t S) = exp(x i S) | x=-i*time, left-multiplying only
     qcomp angle = qcomp(0, -time);
     bool onlyLeftApply = true;
-    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, superSum, angle, order, reps, onlyLeftApply, randomiseString);
+    internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, superSum, angle, order, reps, onlyLeftApply, permutePaulis);
 }
 
 } // end de-mangler
