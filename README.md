@@ -94,7 +94,7 @@ initRandomPureState(qureg);
 
 applyHadamard(qureg, 0);
 applyControlledRotateX(qureg, 0, 1, angle);
-applyFullQuantumFourierTransform(qureg);
+applyFullQuantumFourierTransform(qureg, inverse);
 
 reportQureg(qureg);
 
