@@ -1372,16 +1372,18 @@ TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY_OPS ) {
 
         int numTargs = GENERATE_COPY( range(1,numQubits+1) );
         auto targs = GENERATE_TARGS( numQubits, numTargs );
+        bool inverse = GENERATE(false, true);
 
         CAPTURE( targs );
 
         SECTION( LABEL_STATEVEC ) { 
 
             auto testFunc = [&](Qureg qureg, qvector& ref) {
-                applyQuantumFourierTransform(qureg, targs.data(), targs.size());
-                ref = getDisceteFourierTransform(ref, targs);
+                applyQuantumFourierTransform(qureg, targs.data(), targs.size(), inverse);
+                ref = getDiscreteFourierTransform(ref, targs, inverse);
             };
 
+            CAPTURE(inverse);
             TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc);
         }
 
@@ -1395,15 +1397,16 @@ TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY_OPS ) {
 
                 // overwrite the Qureg debug state set by caller to above mixture
                 setQuregToReference(qureg, getMixture(states, probs));
-                applyQuantumFourierTransform(qureg, targs.data(), targs.size());
+                applyQuantumFourierTransform(qureg, targs.data(), targs.size(), inverse);
                 
                 ref = getZeroMatrix(ref.size());
                 for (size_t i=0; i<states.size(); i++) {
-                    qvector vec = getDisceteFourierTransform(states[i], targs);
+                    qvector vec = getDiscreteFourierTransform(states[i], targs, inverse);
                     ref += probs[i] * getOuterProduct(vec, vec);
                 }
             };
 
+            CAPTURE(inverse);
             TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc);
         }
     }
@@ -1419,14 +1422,16 @@ TEST_CASE( "applyFullQuantumFourierTransform", TEST_CATEGORY_OPS ) {
     SECTION( LABEL_CORRECTNESS ) {
 
         GENERATE( range(0,10) );
+        bool inverse = GENERATE(false, true);
 
         SECTION( LABEL_STATEVEC ) { 
 
             auto testFunc = [&](Qureg qureg, qvector& ref) {
-                applyFullQuantumFourierTransform(qureg);
-                ref = getDisceteFourierTransform(ref);
+                applyFullQuantumFourierTransform(qureg, inverse);
+                ref = getDiscreteFourierTransform(ref, inverse);
             };
 
+            CAPTURE(inverse);
             TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc);
         }
 
@@ -1440,15 +1445,16 @@ TEST_CASE( "applyFullQuantumFourierTransform", TEST_CATEGORY_OPS ) {
 
                 // overwrite the Qureg debug state set by caller to above mixture
                 setQuregToReference(qureg, getMixture(states, probs));
-                applyFullQuantumFourierTransform(qureg);
+                applyFullQuantumFourierTransform(qureg, inverse);
                 
                 ref = getZeroMatrix(ref.size());
                 for (size_t i=0; i<states.size(); i++) {
-                    qvector vec = getDisceteFourierTransform(states[i]);
+                    qvector vec = getDiscreteFourierTransform(states[i], inverse);
                     ref += probs[i] * getOuterProduct(vec, vec);
                 }
             };
 
+            CAPTURE(inverse);
             TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc);
         }
     }
