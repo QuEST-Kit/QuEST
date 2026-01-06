@@ -157,7 +157,7 @@ qvector getNormalised(qvector vec) {
 }
 
 
-qvector getDisceteFourierTransform(qvector in) {
+qvector getDiscreteFourierTransform(qvector in, bool inverse) {
     DEMAND( in.size() > 0 );
     
     size_t dim = in.size();
@@ -166,7 +166,7 @@ qvector getDisceteFourierTransform(qvector in) {
     // PI must be accurate here
     qreal pi = 3.14159265358979323846;
     qreal a = 1 / std::sqrt(dim);
-    qreal b = 2 * pi / dim;
+    qreal b = (inverse ? -1 : 1) * 2 * pi / dim;
     
     for (size_t x=0; x<dim; x++)
         for (size_t y=0; y<dim; y++)
@@ -176,7 +176,7 @@ qvector getDisceteFourierTransform(qvector in) {
 }
 
 
-qvector getDisceteFourierTransform(qvector in, vector<int> targs) {
+qvector getDiscreteFourierTransform(qvector in, vector<int> targs, bool inverse) {
     DEMAND( in.size() > 0 );
 
     size_t dim = in.size();
@@ -185,7 +185,7 @@ qvector getDisceteFourierTransform(qvector in, vector<int> targs) {
     qindex len = getPow2(targs.size());
     qreal pi = 3.14159265358979323846;
     qreal a = 1 / std::sqrt(len);
-    qreal b = 2 * pi / len;
+    qreal b = (inverse ? -1 : 1) * 2 * pi / len;
 
     for (size_t i=0; i<dim; i++) {
         size_t x = getBitsAt(i, targs);
