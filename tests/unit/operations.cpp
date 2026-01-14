@@ -24,6 +24,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
 #include "tests/utils/config.hpp"
@@ -1042,8 +1043,12 @@ void testOperationValidation(auto operation) {
 
     SECTION( "targeted amps fit in node" ) {
 
-        // simplest to trigger validation using a statevector
-        qureg = getCachedStatevecs().begin()->second;
+        // use any qureg which is otherwise compatible
+        // (but beware statevecs vs density matrices permit
+        //  different num targets before validation is triggered)
+        qureg = (Apply == rightapply)?
+            getCachedDensmatrs().begin()->second:
+            getCachedStatevecs().begin()->second;
 
         // can only be validated when environment AND qureg
         // are distributed (over more than 1 node, of course)
@@ -1053,7 +1058,8 @@ void testOperationValidation(auto operation) {
         // can only be validated if forced ctrl qubits permit 
         // enough remaining targets
         int minNumCtrls = (Ctrls == one)? 1 : 0;
-        int minNumTargs = numQubits - qureg.logNumNodes + 1;
+        int numVecQubits = (qureg.isDensityMatrix)? 2*numQubits : numQubits;
+        int minNumTargs = numVecQubits - qureg.logNumNodes + 1;
         int maxNumTargs = numQubits - minNumCtrls;
         if (minNumTargs > maxNumTargs)
             return;
@@ -1406,7 +1412,47 @@ TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY_OPS ) {
         }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+        int targs[] = {0, 1, 2};
+        int numTargs = 3;
+
+        SECTION( "qureg uninitialised" ) {
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyQuantumFourierTransform(badQureg, targs, numTargs),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubits" ) {
+            int badTargs[] = {0, 1, 10};
+            REQUIRE_THROWS_WITH(
+                applyQuantumFourierTransform(qureg, badTargs, 3),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "duplicate target qubits" ) {
+            int dupTargs[] = {0, 1, 1};
+            REQUIRE_THROWS_WITH(
+                applyQuantumFourierTransform(qureg, dupTargs, 3),
+                ContainsSubstring("duplicate")
+            );
+        }
+
+        SECTION( "zero number of targets" ) {
+            REQUIRE_THROWS_WITH(
+                applyQuantumFourierTransform(qureg, targs, 0),
+                ContainsSubstring("targets")
+            );
+        }
+
+        destroyQureg(qureg);
+    }
 }
 
 
@@ -1451,7 +1497,22 @@ TEST_CASE( "applyFullQuantumFourierTransform", TEST_CATEGORY_OPS ) {
         }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+
+        SECTION( "qureg uninitialised" ) {
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyFullQuantumFourierTransform(badQureg),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        destroyQureg(qureg);
+    }
 }
 
 
@@ -1477,7 +1538,30 @@ TEST_CASE( "applyQubitProjector", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+
+        SECTION( "qureg uninitialised" ) {
+            // Invalidate the qureg by setting a negative qubit count
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyQubitProjector(badQureg, 0, 0),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubit" ) {
+            // Try to project a qubit that doesn't exist (qubit index 10 on a 5-qubit system)
+            REQUIRE_THROWS_WITH(
+                applyQubitProjector(qureg, 10, 0),
+                ContainsSubstring("target")
+            );
+        }
+
+        destroyQureg(qureg);
+    }
 }
 
 
@@ -1503,7 +1587,51 @@ TEST_CASE( "applyMultiQubitProjector", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+        int targets[] = {0, 1, 2};
+        int outcomes[] = {0, 1, 0};
+        int numTargets = 3;
+
+        SECTION( "qureg uninitialised" ) {
+            // Invalidate the qureg by setting a negative qubit count
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitProjector(badQureg, targets, outcomes, numTargets),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubits" ) {
+            // Try to project qubits that don't exist (qubit index 10 on a 5-qubit system)
+            int badTargets[] = {0, 1, 10};
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitProjector(qureg, badTargets, outcomes, numTargets),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "duplicate target qubits" ) {
+            // Try to project the same qubit twice in one operation
+            int dupTargets[] = {0, 1, 1};
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitProjector(qureg, dupTargets, outcomes, numTargets),
+                ContainsSubstring("duplicate")
+            );
+        }
+
+        SECTION( "zero number of targets" ) {
+            // Try to project no qubits at all (empty list)
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitProjector(qureg, targets, outcomes, 0),
+                ContainsSubstring("targets")
+            );
+        }
+
+        destroyQureg(qureg);
+    }
 }
 
 
@@ -1542,7 +1670,30 @@ TEST_CASE( "applyForcedQubitMeasurement", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+
+        SECTION( "qureg uninitialised" ) {
+            // Invalidate the qureg by setting a negative qubit count
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyForcedQubitMeasurement(badQureg, 0, 0),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubit" ) {
+            // Try to measure a qubit that doesn't exist (qubit index 10 on a 5-qubit system)
+            REQUIRE_THROWS_WITH(
+                applyForcedQubitMeasurement(qureg, 10, 0),
+                ContainsSubstring("target")
+            );
+        }
+
+        destroyQureg(qureg);
+    }
 }
 
 
@@ -1588,7 +1739,51 @@ TEST_CASE( "applyForcedMultiQubitMeasurement", TEST_CATEGORY_OPS ) {
         setValidationEpsilonToDefault();
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+        int targets[] = {0, 1, 2};
+        int outcomes[] = {0, 1, 0};
+        int numTargets = 3;
+
+        SECTION( "qureg uninitialised" ) {
+            // Invalidate the qureg by setting a negative qubit count
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyForcedMultiQubitMeasurement(badQureg, targets, outcomes, numTargets),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubits" ) {
+            // Try to measure qubits that don't exist (qubit index 10 on a 5-qubit system)
+            int badTargets[] = {0, 1, 10};
+            REQUIRE_THROWS_WITH(
+                applyForcedMultiQubitMeasurement(qureg, badTargets, outcomes, numTargets),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "duplicate target qubits" ) {
+            // Try to measure the same qubit twice in one operation
+            int dupTargets[] = {0, 1, 1};
+            REQUIRE_THROWS_WITH(
+                applyForcedMultiQubitMeasurement(qureg, dupTargets, outcomes, numTargets),
+                ContainsSubstring("duplicate")
+            );
+        }
+
+        SECTION( "zero number of targets" ) {
+            // Try to measure no qubits at all (empty list)
+            REQUIRE_THROWS_WITH(
+                applyForcedMultiQubitMeasurement(qureg, targets, outcomes, 0),
+                ContainsSubstring("targets")
+            );
+        }
+
+        destroyQureg(qureg);
+    }
 }
 
 
@@ -1625,7 +1820,50 @@ TEST_CASE( "applyMultiQubitMeasurement", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+        int targets[] = {0, 1, 2};
+        int numTargets = 3;
+
+        SECTION( "qureg uninitialised" ) {
+            // Invalidate the qureg by setting a negative qubit count
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurement(badQureg, targets, numTargets),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubits" ) {
+            // Try to measure qubits that don't exist (qubit index 10 on a 5-qubit system)
+            int badTargets[] = {0, 1, 10};
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurement(qureg, badTargets, numTargets),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "duplicate target qubits" ) {
+            // Try to measure the same qubit twice in one operation
+            int dupTargets[] = {0, 1, 1};
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurement(qureg, dupTargets, numTargets),
+                ContainsSubstring("duplicate")
+            );
+        }
+
+        SECTION( "zero number of targets" ) {
+            // Try to measure no qubits at all (empty list)
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurement(qureg, targets, 0),
+                ContainsSubstring("targets")
+            );
+        }
+
+        destroyQureg(qureg);
+    }
 }
 
 
@@ -1664,7 +1902,53 @@ TEST_CASE( "applyMultiQubitMeasurementAndGetProb", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+        int targets[] = {0, 1, 2};
+        int numTargets = 3;
+
+        SECTION( "qureg uninitialised" ) {
+            // Invalidate the qureg by setting a negative qubit count
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurementAndGetProb(badQureg, targets, numTargets, nullptr),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubits" ) {
+            // Try to measure qubits that don't exist (qubit index 10 on a 5-qubit system)
+            int badTargets[] = {0, 1, 10};
+            qreal prob = 0;
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurementAndGetProb(qureg, badTargets, numTargets, &prob),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "duplicate target qubits" ) {
+            // Try to measure the same qubit twice in one operation
+            int dupTargets[] = {0, 1, 1};
+            qreal prob = 0;
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurementAndGetProb(qureg, dupTargets, numTargets, &prob),
+                ContainsSubstring("duplicate")
+            );
+        }
+
+        SECTION( "zero number of targets" ) {
+            // Try to measure no qubits at all (empty list)
+            qreal prob = 0;
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurementAndGetProb(qureg, targets, 0, &prob),
+                ContainsSubstring("targets")
+            );
+        }
+
+        destroyQureg(qureg);
+    }
 }
 
 
@@ -1700,7 +1984,30 @@ TEST_CASE( "applyQubitMeasurement", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+
+        SECTION( "qureg uninitialised" ) {
+            // Invalidate the qureg by setting a negative qubit count
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyQubitMeasurement(badQureg, 0),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubit" ) {
+            // Try to measure a qubit that doesn't exist (qubit index 10 on a 5-qubit system)
+            REQUIRE_THROWS_WITH(
+                applyQubitMeasurement(qureg, 10),
+                ContainsSubstring("target")
+            );
+        }
+
+        destroyQureg(qureg);
+    }
 }
 
 
@@ -1738,7 +2045,31 @@ TEST_CASE( "applyQubitMeasurementAndGetProb", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+
+        SECTION( "qureg uninitialised" ) {
+            // Invalidate the qureg by setting a negative qubit count
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyQubitMeasurementAndGetProb(badQureg, 0, nullptr),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubit" ) {
+            // Try to measure a qubit that doesn't exist (qubit index 10 on a 5-qubit system)
+            qreal prob = 0;
+            REQUIRE_THROWS_WITH(
+                applyQubitMeasurementAndGetProb(qureg, 10, &prob),
+                ContainsSubstring("target")
+            );
+        }
+
+        destroyQureg(qureg);
+    }
 }
 
 
@@ -1769,8 +2100,6 @@ TEST_CASE( "applyFullStateDiagMatr", TEST_CATEGORY_OPS LABEL_MIXED_DEPLOY_TAG ) 
             TEST_ON_CACHED_QUREG_AND_MATRIX( cachedDM, cachedMatrs, apiFunc, refDM, refMatr, refFunc);
         }
     }
-
-    /// @todo input validation
 }
 
 
@@ -1824,8 +2153,6 @@ TEST_CASE( "applyFullStateDiagMatrPower", TEST_CATEGORY_OPS LABEL_MIXED_DEPLOY_T
 
         setValidationEpsilonToDefault();
     }
-
-    /// @todo input validation
 }
 
 
@@ -1854,7 +2181,23 @@ TEST_CASE( "applyNonUnitaryPauliGadget", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+        PauliStr str = getPauliStr("XY", {0, 1});
+
+        SECTION( "qureg uninitialised" ) {
+            // Invalidate the qureg by setting a negative qubit count
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyNonUnitaryPauliGadget(badQureg, str, qcomp(0.5, 0)),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        destroyQureg(qureg);
+    }
 }
 
 
@@ -1984,8 +2327,6 @@ TEST_CASE( "leftapplyFullStateDiagMatr", TEST_CATEGORY_MULT LABEL_MIXED_DEPLOY_T
             TEST_ON_CACHED_QUREG_AND_MATRIX( cachedDM, cachedMatrs, apiFunc, refDM, refMatr, refFunc);
         }
     }
-
-    /// @todo input validation
 }
 
 
@@ -2009,8 +2350,6 @@ TEST_CASE( "rightapplyFullStateDiagMatr", TEST_CATEGORY_MULT LABEL_MIXED_DEPLOY_
             TEST_ON_CACHED_QUREG_AND_MATRIX( cachedDM, cachedMatrs, apiFunc, refDM, refMatr, refFunc);
         }
     }
-
-    /// @todo input validation
 }
 
 
@@ -2053,8 +2392,6 @@ TEST_CASE( "leftapplyFullStateDiagMatrPower", TEST_CATEGORY_MULT LABEL_MIXED_DEP
             TEST_ON_CACHED_QUREG_AND_MATRIX( cachedDM, cachedMatrs, apiFunc, refDM, refMatr, refFunc);
         }
     }
-
-    /// @todo input validation
 }
 
 
@@ -2088,7 +2425,23 @@ TEST_CASE( "rightapplyFullStateDiagMatrPower", TEST_CATEGORY_MULT LABEL_MIXED_DE
         }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+
+        SECTION( "qureg uninitialised" ) {
+            // Invalidate the qureg by setting a negative qubit count
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            FullStateDiagMatr matr = getCachedFullStateDiagMatrs()[0];
+            REQUIRE_THROWS_WITH(
+                rightapplyFullStateDiagMatrPower(badQureg, matr, qcomp(2.0, 0)),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        destroyQureg(qureg);
+    }
 }
 
 
@@ -2114,7 +2467,30 @@ TEST_CASE( "leftapplyQubitProjector", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+
+        SECTION( "qureg uninitialised" ) {
+            // Invalidate the qureg by setting a negative qubit count
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                leftapplyQubitProjector(badQureg, 0, 0),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubit" ) {
+            // Try to project a qubit that doesn't exist (qubit index 10 on a 5-qubit system)
+            REQUIRE_THROWS_WITH(
+                leftapplyQubitProjector(qureg, 10, 0),
+                ContainsSubstring("target")
+            );
+        }
+
+        destroyQureg(qureg);
+    }
 }
 
 
@@ -2139,7 +2515,30 @@ TEST_CASE( "rightapplyQubitProjector", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+
+        SECTION( "qureg uninitialised" ) {
+            // Invalidate the qureg by setting a negative qubit count
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                rightapplyQubitProjector(badQureg, 0, 0),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubit" ) {
+            // Try to project a qubit that doesn't exist (qubit index 10 on a 5-qubit system)
+            REQUIRE_THROWS_WITH(
+                rightapplyQubitProjector(qureg, 10, 0),
+                ContainsSubstring("target")
+            );
+        }
+
+        destroyQureg(qureg);
+    }
 }
 
 
@@ -2165,7 +2564,51 @@ TEST_CASE( "leftapplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+        int targets[] = {0, 1, 2};
+        int outcomes[] = {0, 1, 0};
+        int numTargets = 3;
+
+        SECTION( "qureg uninitialised" ) {
+            // Invalidate the qureg by setting a negative qubit count
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                leftapplyMultiQubitProjector(badQureg, targets, outcomes, numTargets),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubits" ) {
+            // Try to project qubits that don't exist (qubit index 10 on a 5-qubit system)
+            int badTargets[] = {0, 1, 10};
+            REQUIRE_THROWS_WITH(
+                leftapplyMultiQubitProjector(qureg, badTargets, outcomes, numTargets),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "duplicate target qubits" ) {
+            // Try to project the same qubit twice in one operation
+            int dupTargets[] = {0, 1, 1};
+            REQUIRE_THROWS_WITH(
+                leftapplyMultiQubitProjector(qureg, dupTargets, outcomes, numTargets),
+                ContainsSubstring("duplicate")
+            );
+        }
+
+        SECTION( "zero number of targets" ) {
+            // Try to project no qubits at all (empty list)
+            REQUIRE_THROWS_WITH(
+                leftapplyMultiQubitProjector(qureg, targets, outcomes, 0),
+                ContainsSubstring("targets")
+            );
+        }
+
+        destroyQureg(qureg);
+    }
 }
 
 
@@ -2190,7 +2633,51 @@ TEST_CASE( "rightapplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+        int targets[] = {0, 1, 2};
+        int outcomes[] = {0, 1, 0};
+        int numTargets = 3;
+
+        SECTION( "qureg uninitialised" ) {
+            // Invalidate the qureg by setting a negative qubit count
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                rightapplyMultiQubitProjector(badQureg, targets, outcomes, numTargets),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubits" ) {
+            // Try to project qubits that don't exist (qubit index 10 on a 5-qubit system)
+            int badTargets[] = {0, 1, 10};
+            REQUIRE_THROWS_WITH(
+                rightapplyMultiQubitProjector(qureg, badTargets, outcomes, numTargets),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "duplicate target qubits" ) {
+            // Try to project the same qubit twice in one operation
+            int dupTargets[] = {0, 1, 1};
+            REQUIRE_THROWS_WITH(
+                rightapplyMultiQubitProjector(qureg, dupTargets, outcomes, numTargets),
+                ContainsSubstring("duplicate")
+            );
+        }
+
+        SECTION( "zero number of targets" ) {
+            // Try to project no qubits at all (empty list)
+            REQUIRE_THROWS_WITH(
+                rightapplyMultiQubitProjector(qureg, targets, outcomes, 0),
+                ContainsSubstring("targets")
+            );
+        }
+
+        destroyQureg(qureg);
+    }
 }
 
 
@@ -2220,7 +2707,26 @@ TEST_CASE( "leftapplyPauliStrSum", TEST_CATEGORY_MULT LABEL_MIXED_DEPLOY_TAG ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+        PauliStrSum sum = createRandomPauliStrSum(numQubits, 2);
+
+        SECTION( "qureg uninitialised" ) {
+            // Invalidate the qureg by setting a negative qubit count
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            Qureg workspace = createCloneQureg(qureg);
+            REQUIRE_THROWS_WITH(
+                leftapplyPauliStrSum(badQureg, sum, workspace),
+                ContainsSubstring("invalid Qureg")
+            );
+            destroyQureg(workspace);
+        }
+
+        destroyQureg(qureg);
+        destroyPauliStrSum(sum);
+    }
 }
 
 
@@ -2249,7 +2755,26 @@ TEST_CASE( "rightapplyPauliStrSum", TEST_CATEGORY_MULT LABEL_MIXED_DEPLOY_TAG ) 
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+        PauliStrSum sum = createRandomPauliStrSum(numQubits, 2);
+
+        SECTION( "qureg uninitialised" ) {
+            // Invalidate the qureg by setting a negative qubit count
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            Qureg workspace = createCloneQureg(qureg);
+            REQUIRE_THROWS_WITH(
+                rightapplyPauliStrSum(badQureg, sum, workspace),
+                ContainsSubstring("invalid Qureg")
+            );
+            destroyQureg(workspace);
+        }
+
+        destroyQureg(qureg);
+        destroyPauliStrSum(sum);
+    }
 }
 
 

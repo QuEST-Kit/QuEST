@@ -9,6 +9,22 @@
 
 #include "quest.h"
 
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
+
+#include "tests/utils/macros.hpp"
+#include "tests/utils/cache.hpp"
+#include "tests/utils/compare.hpp"
+#include "tests/utils/random.hpp"
+
+#include <vector>
+#include <string>
+
+using std::vector;
+using std::string;
+using namespace Catch::Matchers;
+
 
 
 /*
@@ -19,10 +35,127 @@
     LABEL_UNIT_TAG "[trotterisation]"
 
 
+/*
+ * Prepare a Hamiltonian H under which dynamical
+ * evolution will be simulated via Trotterisation
+ * of unitary-time evolution operator e^(-itH).
+ * If the Hamiltonian was fixed/known in advance,
+ * we could instead use createInlinePauliStrSum()
+ *
+ * (Adapted from dynamics.cpp, @author Tyson Jones)
+ */
+PauliStrSum createHeisenbergHamiltonian(int numQubits) {
+
+    // we prepare a Heisenberg XYZ spin-ring Hamiltonian,
+    // i.e. H = -1/2 sum( Jx XX + Jy YY + Jz ZZ + h Z )
+    // upon all nearest neighbour qubits, with periodicity.
+    // The coefficients must be real for H to be Hermitian
+    // and ergo its time-evolution operator to be unitary,
+    // although they must be represented with a qcomp type.
+    vector<string> operators = {"XX", "YY", "ZZ", "Z"};
+    vector<qcomp> coefficients = {.1, .2, .3, .4}; // Jx,Jy,Jz,h
+
+    // we will populate the below vectors with 4*numQubits
+    // elements which we could pre-allocate with .reserve,
+    // but we might incur Donald Knuth's justified wrath.
+    vector<PauliStr> allStrings;
+    vector<qcomp> allCoeffs;
+    
+    // prepare all XX + YY + ZZ
+    for (int p=0; p<3; p++) {
+        for (int i=0; i<numQubits; i++) {
+
+            // A_i, A_i+1
+            vector<int> targs = {i, (i+1)%numQubits};
+            PauliStr str = getPauliStr(operators[p], targs);
+
+            allStrings.push_back(str);
+            allCoeffs.push_back(coefficients[p]);
+        }
+    }
+
+    // prepare Z
+    for (int i=0; i<numQubits; i++) {
+        allStrings.push_back(getPauliStr(operators[3], {i}));
+        allCoeffs.push_back(coefficients[3]);
+    }
+
+    // must be freed by caller
+    return createPauliStrSum(allStrings, allCoeffs);
+}
+
+
+/*
+ * Prepare the observable operator O under which the
+ * evolved state (under H above) will be measured.
+ * If this were one term (a single tensor product of
+ * Pauli operators), we could return instead a PauliStr
+ * but we here return an arbitrary weighted sum thereof.
+ *
+ * (Adapted from dynamics.cpp, @author Tyson Jones)
+ */
+PauliStrSum createAlternatingPauliObservable(int numQubits) {
+
+    // we prepare a weighted sum of alternating Paulis
+    // upon each qubit, i.e. 1 X0 + 2 Y1 + 3 Z2 + 1 X3 + ...
+    // where the coefficients are real such that the
+    // output observable is Hermitian.
+
+    vector<PauliStr> strings(numQubits);
+    vector<qcomp> coeffs(numQubits);
+
+    for (int i=0; i<numQubits; i++) {
+        strings[i] = getPauliStr({"XYZ"[i%3]}, {i});
+        coeffs[i] = getQcomp(i%4 + 1, 0);
+    }
+
+    // must be freed by caller
+    return createPauliStrSum(strings, coeffs);
+}
+
+/*
+ * Constructs a PauliStrSum representing a 1D Hamiltonian of the form
+ * H = - \mu \sum^{N}_{j} Z_{j} - J \sum_{<ij>}^{N} Z_{i}Z_{j}
+ * where,
+ * \mu = magField,
+ * J = interactionStrength,
+ * <ij> indicates nearest-neighbour interactions only,
+ * and boundary conditions are periodic such that site N-1 interacts with site 0.
+ *
+ * The asymmetricBias term can be used to break the symmetry of the system
+ * in order to 'choose' a preferred antiferromagnetic state, and ensure repeatable
+ * predictable outcomes.
+ * It adds a term of the form:
+ * -BZ_{0}
+ */
+PauliStrSum createIsingHamiltonian(int numQubits, qreal magField, 
+                                   qreal interactionStrength, qreal asymmetricBias) {
+    const int NTERMS = 2 * numQubits + 1;
+    
+    vector<qcomp> coeffs;
+    vector<PauliStr> pauli_terms;
+    coeffs.reserve(NTERMS);
+    pauli_terms.reserve(NTERMS);
+    
+    for (int i = 0; i < numQubits; ++i) {
+        pauli_terms.push_back(getPauliStr("Z", {i}));
+        coeffs.push_back(getQcomp(-magField, 0));
+        
+        int next = (i + 1) % numQubits;
+        pauli_terms.push_back(getPauliStr("ZZ", {i, next}));
+        coeffs.push_back(getQcomp(-interactionStrength, 0));
+    }
+    
+    pauli_terms.push_back(getPauliStr("Z", {0}));
+    coeffs.push_back(getQcomp(-asymmetricBias, 0));
+    
+    return createPauliStrSum(pauli_terms, coeffs);
+}
+
 
 /**
  * @todo
- * UNTESTED FUNCTIONS
+ * UNTESTED FUNCTIONS (NOT YET VALIDATED BY REFERENCE TESTS)
  */
 
 void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps);
@@ -35,8 +168,358 @@ void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, int* controls
 
 void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStrSum sum, qreal angle, int order, int reps);
 
-void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal time, int order, int reps);
-
-void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal tau, int order, int reps);
-
 void applyTrotterizedNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStr* jumps, int numJumps, qreal time, int order, int reps);
+
+
+/** @} */
+
+/*
+ * TESTS
+ */
+
+TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+            int numQubits = 20;
+            Qureg qureg = createQureg(numQubits);
+            initPlusState(qureg);
+            
+            PauliStrSum hamil = createHeisenbergHamiltonian(numQubits);
+            PauliStrSum observ = createAlternatingPauliObservable(numQubits);
+            
+            qreal dt = 0.1;
+            int order = 4;
+            int reps = 5;
+            int steps = 10;
+            
+            // Tolerance for floating-point comparison
+            // Allows for minor numerical differences between runs
+            qreal eps = 1E-10;
+            
+            vector<qreal> refObservables = {
+                19.26827777028073,
+                20.34277275871839,
+                21.21120737889526,
+                21.86585902741717,
+                22.30371711358924,
+                22.52644660547882,
+                22.54015748825067,
+                22.35499202583118,
+                21.9845541501027,
+                21.44521638719462
+            };
+            
+            for (int i = 0; i < steps; i++) {
+                applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt, order, reps);
+                qreal expec = calcExpecPauliStrSum(qureg, observ);
+                
+                REQUIRE_THAT( expec, WithinAbs(refObservables[i], eps) );
+            }
+            
+            // Verify state remains normalized
+            REQUIRE_THAT( calcTotalProb(qureg), WithinAbs(1.0, 1E-10) );
+            
+            destroyQureg(qureg);
+            destroyPauliStrSum(hamil);
+            destroyPauliStrSum(observ);
+    }
+
+    SECTION( LABEL_VALIDATION ) {
+
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+        PauliStrSum hamil = createHeisenbergHamiltonian(numQubits);
+
+        SECTION( "qureg uninitialised" ) {
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH( 
+                applyTrotterizedUnitaryTimeEvolution(badQureg, hamil, 0.1, 4, 5),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "pauli sum uninitialized" ) {
+            PauliStrSum badHamil = hamil;
+            badHamil.numTerms = 0;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedUnitaryTimeEvolution(qureg, badHamil, 0.1, 4, 5),
+                ContainsSubstring("Pauli")
+            );
+        }
+
+        SECTION( "pauli sum exceeds qureg qubits" ) {
+            Qureg smallQureg = createQureg(3);
+            PauliStrSum largeHamil = createHeisenbergHamiltonian(numQubits);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedUnitaryTimeEvolution(smallQureg, largeHamil, 0.1, 4, 5),
+                ContainsSubstring("only compatible")
+            );
+            destroyQureg(smallQureg);
+            destroyPauliStrSum(largeHamil);
+        }
+
+        SECTION( "invalid trotter order (zero)" ) {
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, 0, 5),
+                ContainsSubstring("order")
+            );
+        }
+
+        SECTION( "invalid trotter order (negative)" ) {
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, -2, 5),
+                ContainsSubstring("order")
+            );
+        }
+
+        SECTION( "invalid trotter order (odd, not 1)" ) {
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, 3, 5),
+                ContainsSubstring("order")
+            );
+        }
+
+        SECTION( "invalid trotter reps (zero)" ) {
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, 4, 0),
+                ContainsSubstring("repetitions")
+            );
+        }
+
+        SECTION( "invalid trotter reps (negative)" ) {
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, 4, -3),
+                ContainsSubstring("repetitions")
+            );
+        }
+
+        destroyQureg(qureg);
+        destroyPauliStrSum(hamil);
+    }
+}
+
+
+TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+           
+        int numQubits = 16;
+        qreal tau = 0.1;
+        int order = 6;
+        int reps = 5;
+        int steps = 10;
+        
+        // Tolerance for ground state amplitude
+        qreal eps = 1E-2;
+        
+        // Ground state: all qubits align down (driven by strong magnetic field)
+        {
+            Qureg qureg = createQureg(numQubits);
+            initPlusState(qureg);
+            
+            PauliStrSum ising = createIsingHamiltonian(numQubits, 10.0, 0.0, 0.0);
+            
+            for (int i = 0; i < steps; ++i) {
+                applyTrotterizedImaginaryTimeEvolution(qureg, ising, tau, order, reps);
+                setQuregToRenormalized(qureg);
+            }
+            
+            qcomp amp = getQuregAmp(qureg, 0);
+            qreal amp_mag = amp.real() * amp.real() + amp.imag() * amp.imag();
+            
+            REQUIRE_THAT( amp_mag, WithinAbs(1.0, eps) );
+            
+            for (long long i = 1; i < (1LL << numQubits); i++) {
+                qcomp other_amp = getQuregAmp(qureg, i);
+                qreal other_mag = other_amp.real() * other_amp.real() + 
+                                 other_amp.imag() * other_amp.imag();
+                REQUIRE( other_mag < eps );
+            }
+            
+            destroyQureg(qureg);
+            destroyPauliStrSum(ising);
+        }
+        
+        // Ground state: all qubits align up (driven by opposite magnetic field)
+        {
+            Qureg qureg = createQureg(numQubits);
+            initPlusState(qureg);
+            
+            PauliStrSum ising = createIsingHamiltonian(numQubits, -10.0, 0.0, 0.0);
+            
+            for (int i = 0; i < steps; ++i) {
+                applyTrotterizedImaginaryTimeEvolution(qureg, ising, tau, order, reps);
+                setQuregToRenormalized(qureg);
+            }
+            
+            long long last_state = (1LL << numQubits) - 1;
+            qcomp amp = getQuregAmp(qureg, last_state);
+            qreal amp_mag = amp.real() * amp.real() + amp.imag() * amp.imag();
+            
+            REQUIRE_THAT( amp_mag, WithinAbs(1.0, eps) );
+            
+            for (long long i = 0; i < (1LL << numQubits); i++) {
+                if (i == last_state) continue;
+                qcomp other_amp = getQuregAmp(qureg, i);
+                qreal other_mag = other_amp.real() * other_amp.real() + 
+                                 other_amp.imag() * other_amp.imag();
+                REQUIRE( other_mag < eps );
+            }
+            
+            destroyQureg(qureg);
+            destroyPauliStrSum(ising);
+        }
+        
+        // Ground state: all qubits align down (driven by ferromagnetic interactions and bias)
+        {
+            Qureg qureg = createQureg(numQubits);
+            initPlusState(qureg);
+            
+            PauliStrSum ising = createIsingHamiltonian(numQubits, 0.0, 10.0, 10.0);
+            
+            for (int i = 0; i < steps; ++i) {
+                applyTrotterizedImaginaryTimeEvolution(qureg, ising, tau, order, reps);
+                setQuregToRenormalized(qureg);
+            }
+            
+            qcomp amp = getQuregAmp(qureg, 0);
+            qreal amp_mag = amp.real() * amp.real() + amp.imag() * amp.imag();
+            
+            REQUIRE_THAT( amp_mag, WithinAbs(1.0, eps) );
+            
+            for (long long i = 1; i < (1LL << numQubits); i++) {
+                qcomp other_amp = getQuregAmp(qureg, i);
+                qreal other_mag = other_amp.real() * other_amp.real() + 
+                                 other_amp.imag() * other_amp.imag();
+                REQUIRE( other_mag < eps );
+            }
+            
+            destroyQureg(qureg);
+            destroyPauliStrSum(ising);
+        }
+        
+        // Ground state: alternating pattern (driven by antiferromagnetic interactions)
+        {
+            Qureg qureg = createQureg(numQubits);
+            initPlusState(qureg);
+            
+            PauliStrSum ising = createIsingHamiltonian(numQubits, 0.0, -10.0, 10.0);
+            
+            for (int i = 0; i < steps; ++i) {
+                applyTrotterizedImaginaryTimeEvolution(qureg, ising, tau, order, reps);
+                setQuregToRenormalized(qureg);
+            }
+            
+            unsigned long long idx = 0;
+            for (int i = 0; i < numQubits / 2; ++i) {
+                idx += (1ULL << (2*i + 1));
+            }
+            
+            qcomp amp = getQuregAmp(qureg, idx);
+            qreal amp_mag = amp.real() * amp.real() + amp.imag() * amp.imag();
+            
+            REQUIRE_THAT( amp_mag, WithinAbs(1.0, eps) );
+            
+            for (long long i = 0; i < (1LL << numQubits); i++) {
+                if (i == idx) continue;
+                qcomp other_amp = getQuregAmp(qureg, i);
+                qreal other_mag = other_amp.real() * other_amp.real() + 
+                                 other_amp.imag() * other_amp.imag();
+                REQUIRE( other_mag < eps );
+            }
+            
+            destroyQureg(qureg);
+            destroyPauliStrSum(ising);
+        }
+    }
+
+    SECTION( LABEL_VALIDATION ) {
+
+        int numQubits = 5;
+        Qureg qureg = createQureg(numQubits);
+        PauliStrSum ising = createIsingHamiltonian(numQubits, 1.0, 1.0, 0.0);
+
+        SECTION( "qureg uninitialised" ) {
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedImaginaryTimeEvolution(badQureg, ising, 0.1, 4, 5),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "pauli sum uninitialized" ) {
+            PauliStrSum badIsing = ising;
+            badIsing.numTerms = 0;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedImaginaryTimeEvolution(qureg, badIsing, 0.1, 4, 5),
+                ContainsSubstring("Pauli")
+            );
+        }
+
+        SECTION( "pauli sum exceeds qureg qubits" ) {
+            Qureg smallQureg = createQureg(3);
+            PauliStrSum largeIsing = createIsingHamiltonian(numQubits, 1.0, 1.0, 0.0);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedImaginaryTimeEvolution(smallQureg, largeIsing, 0.1, 4, 5),
+                ContainsSubstring("only compatible")
+            );
+            destroyQureg(smallQureg);
+            destroyPauliStrSum(largeIsing);
+        }
+
+        SECTION( "hamiltonian not hermitian" ) {
+            vector<PauliStr> strings;
+            vector<qcomp> coeffs;
+            strings.push_back(getPauliStr("X", {0}));
+            coeffs.push_back(getQcomp(1.0, 1.0));  
+            PauliStrSum nonHermitian = createPauliStrSum(strings, coeffs);
+
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedImaginaryTimeEvolution(qureg, nonHermitian, 0.1, 4, 5),
+                ContainsSubstring("Hermitian")
+            );
+            destroyPauliStrSum(nonHermitian);
+        }
+
+        SECTION( "invalid trotter order (zero)" ) {
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, 0, 5),
+                ContainsSubstring("order")
+            );
+        }
+
+        SECTION( "invalid trotter order (negative)" ) {
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, -2, 5),
+                ContainsSubstring("order")
+            );
+        }
+
+        SECTION( "invalid trotter order (odd, not 1)" ) {
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, 3, 5),
+                ContainsSubstring("order")
+            );
+        }
+
+        SECTION( "invalid trotter reps (zero)" ) {
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, 4, 0),
+                ContainsSubstring("repetitions")
+            );
+        }
+
+        SECTION( "invalid trotter reps (negative)" ) {
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, 4, -3),
+                ContainsSubstring("repetitions")
+            );
+        }
+
+        destroyQureg(qureg);
+        destroyPauliStrSum(ising);
+    }
+}
