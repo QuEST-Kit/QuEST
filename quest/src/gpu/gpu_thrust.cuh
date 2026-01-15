@@ -175,21 +175,21 @@ auto getEndPtr(FullStateDiagMatr matr) {
  */
 
 
-struct functor_getAmpConj : public thrust::unary_function<cu_qcomp,cu_qcomp> {
+struct functor_getAmpConj {
 
     __host__ __device__ cu_qcomp operator()(cu_qcomp amp) {
         return getCompConj(amp);
     }
 };
 
-struct functor_getAmpNorm : public thrust::unary_function<cu_qcomp,qreal> {
+struct functor_getAmpNorm {
 
     __host__ __device__ qreal operator()(cu_qcomp amp) {
         return getCompNorm(amp);
     }
 };
 
-struct functor_getAmpReal : public thrust::unary_function<cu_qcomp,qreal> {
+struct functor_getAmpReal {
 
     __host__ __device__ qreal operator()(cu_qcomp amp) {
         return getCompReal(amp);
@@ -197,14 +197,14 @@ struct functor_getAmpReal : public thrust::unary_function<cu_qcomp,qreal> {
 };
 
 
-struct functor_getAmpConjProd : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qcomp> {
+struct functor_getAmpConjProd {
 
     __host__ __device__ cu_qcomp operator()(cu_qcomp braAmp, cu_qcomp ketAmp) { 
         return getCompConj(braAmp) * ketAmp;
     }
 };
 
-struct functor_getNormOfAmpDif : public thrust::binary_function<cu_qcomp,cu_qcomp,qreal> {
+struct functor_getNormOfAmpDif {
 
     __host__ __device__ qreal operator()(cu_qcomp amp1, cu_qcomp amp2) { 
         return getCompNorm(amp1 - amp2);
@@ -212,7 +212,7 @@ struct functor_getNormOfAmpDif : public thrust::binary_function<cu_qcomp,cu_qcom
 };
 
 
-struct functor_getExpecStateVecZTerm : public thrust::binary_function<qindex,cu_qcomp,qreal> {
+struct functor_getExpecStateVecZTerm {
 
     // this functor computes a single term from the sum
     // in the expectation value of Z of a statevector
@@ -229,7 +229,7 @@ struct functor_getExpecStateVecZTerm : public thrust::binary_function<qindex,cu_
 };
 
 
-struct functor_getExpecDensMatrZTerm : public thrust::unary_function<qindex,cu_qcomp> {
+struct functor_getExpecDensMatrZTerm {
 
     // this functor computes a single term from the sum
     // in the expectation value of Z of a density matrix
@@ -252,7 +252,7 @@ struct functor_getExpecDensMatrZTerm : public thrust::unary_function<qindex,cu_q
 };
 
 
-struct functor_getExpecStateVecPauliTerm : public thrust::unary_function<qindex,cu_qcomp> {
+struct functor_getExpecStateVecPauliTerm {
 
     // this functor computes a single term from the sum in the
     // expectation value of a Pauli str (which necessarily contains 
@@ -276,7 +276,7 @@ struct functor_getExpecStateVecPauliTerm : public thrust::unary_function<qindex,
 };
 
 
-struct functor_getExpecDensMatrPauliTerm : public thrust::unary_function<qindex,cu_qcomp> {
+struct functor_getExpecDensMatrPauliTerm {
 
     // this functor computes a single term from the sum in the
     // expectation value of a Pauli str (which necessarily contains 
@@ -304,7 +304,7 @@ struct functor_getExpecDensMatrPauliTerm : public thrust::unary_function<qindex,
 
 
 template <bool HasPower, bool UseRealPow>
-struct functor_getExpecDensMatrDiagMatrTerm : public thrust::unary_function<qindex,cu_qcomp> {
+struct functor_getExpecDensMatrDiagMatrTerm {
 
     // this functor computes a single term from the sum in the expectation 
     // value of a FullStateDiagMatr upon a density matrix
@@ -372,7 +372,7 @@ struct functor_setAmpToPauliStrSumElem {
 };
 
 
-struct functor_mixAmps : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qcomp> {
+struct functor_mixAmps {
 
     // this functor linearly combines the given pair
     // of amplitudes, weighted by the fixed qreals,
@@ -389,7 +389,7 @@ struct functor_mixAmps : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qco
 
 
 template <bool HasPower, bool UseRealPow, bool Norm>
-struct functor_multiplyElemPowerWithAmpOrNorm : public thrust::binary_function<cu_qcomp,cu_qcomp,cu_qcomp> {
+struct functor_multiplyElemPowerWithAmpOrNorm {
 
     // this functor multiplies a diagonal matrix element 
     // raised to a power (templated to optimise away the 
@@ -415,7 +415,7 @@ struct functor_multiplyElemPowerWithAmpOrNorm : public thrust::binary_function<c
 };
 
 
-struct functor_getDiagInd : public thrust::unary_function<qindex,qindex> {
+struct functor_getDiagInd {
 
     // this functor accepts the index of a statevector 
     // basis-state and produces the index of a density 
@@ -435,7 +435,7 @@ struct functor_getDiagInd : public thrust::unary_function<qindex,qindex> {
 
 
 template <int NumBits>
-struct functor_insertBits : public thrust::unary_function<qindex,qindex> {
+struct functor_insertBits {
 
     // this functor inserts bits into a qindex value, and
     // is used to enumerate specific basis-state indices
@@ -463,8 +463,7 @@ struct functor_insertBits : public thrust::unary_function<qindex,qindex> {
 
 
 template <bool Conj>
-struct functor_getFidelityTerm : public thrust::unary_function<qindex,cu_qcomp>
-{
+struct functor_getFidelityTerm {
     int rank, numQubits;
     qindex logNumAmpsPerNode, numAmpsPerCol;
     cu_qcomp *rho, *psi;
@@ -503,7 +502,7 @@ struct functor_getFidelityTerm : public thrust::unary_function<qindex,cu_qcomp>
 
 
 template <int NumTargets>
-struct functor_projectStateVec : public thrust::binary_function<qindex,cu_qcomp,cu_qcomp> {
+struct functor_projectStateVec {
 
     // this functor multiplies an amp with zero or a 
     // renormalisation codfficient, depending on whether
@@ -540,7 +539,7 @@ struct functor_projectStateVec : public thrust::binary_function<qindex,cu_qcomp,
 
 
 template <int NumTargets>
-struct functor_projectDensMatr : public thrust::binary_function<qindex,cu_qcomp,cu_qcomp> {
+struct functor_projectDensMatr {
 
     // this functor multiplies an amp with zero or a 
     // renormalisation coefficient, depending on whether
@@ -585,7 +584,7 @@ struct functor_projectDensMatr : public thrust::binary_function<qindex,cu_qcomp,
 };
 
 
-struct functor_setRandomStateVecAmp : public thrust::unary_function<qindex,cu_qcomp> {
+struct functor_setRandomStateVecAmp {
 
     // this functor generates a random, unnormalised
     // statevector amplitude which, after normalisation
@@ -666,7 +665,7 @@ void thrust_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, Pauli
         rank, out.numElems, logNumElemsPerNode,
         in.numTerms, toCuQcomps(out.gpuElems), devCoeffsPtr, devStringsPtr);
 
-    auto indIter = thrust::make_counting_iterator(0);
+    auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + out.numElemsPerNode;
     thrust::for_each(indIter, endIter, functor);
 }
@@ -709,7 +708,7 @@ void thrust_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
         qureg.rank, powerOf2(qureg.numQubits), qureg.logNumAmpsPerNode,
         sum.numTerms, toCuQcomps(qureg.gpuAmps), devCoeffsPtr, devStringsPtr);
 
-    auto indIter = thrust::make_counting_iterator(0);
+    auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + qureg.numAmpsPerNode;
     thrust::for_each(indIter, endIter, functor);
 }
@@ -772,7 +771,7 @@ qreal thrust_densmatr_calcTotalProb_sub(Qureg qureg) {
     /// reduction may be suboptimal; it may be necessary to
     /// implement a custom numerically-stable CUDA reduction.
 
-    auto rawIter = thrust::make_counting_iterator(0);
+    auto rawIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto indIter = thrust::make_transform_iterator(rawIter, functor_getDiagInd(qureg));
     auto ampIter = thrust::make_permutation_iterator(getStartPtr(qureg), indIter);
     auto probIter= thrust::make_transform_iterator(ampIter, functor_getAmpReal());
@@ -792,7 +791,7 @@ qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> q
     auto indFunctor = functor_insertBits<NumQubits>(getPtr(sortedQubits), valueMask, qubits.size());
     auto probFunctor = functor_getAmpNorm();
 
-    auto rawIter = thrust::make_counting_iterator(0);
+    auto rawIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto indIter = thrust::make_transform_iterator(rawIter, indFunctor);
     auto ampIter = thrust::make_permutation_iterator(getStartPtr(qureg), indIter);
     auto probIter = thrust::make_transform_iterator(ampIter, probFunctor);
@@ -815,7 +814,7 @@ qreal thrust_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> q
     auto diagIndFunctor = functor_getDiagInd(qureg);
     auto probFunctor = functor_getAmpReal();
 
-    auto rawIter = thrust::make_counting_iterator(0);
+    auto rawIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto indIter = thrust::make_transform_iterator(rawIter, basisIndFunctor);
     auto diagIter= thrust::make_transform_iterator(indIter, diagIndFunctor);
     auto ampIter = thrust::make_permutation_iterator(getStartPtr(qureg), diagIter);
@@ -865,7 +864,7 @@ cu_qcomp thrust_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
         rho.rank, rho.numQubits, rho.logNumAmpsPerNode, 
         psi.numAmps, toCuQcomps(rho.gpuAmps), toCuQcomps(psi.gpuAmps));
 
-    auto indIter = thrust::make_counting_iterator(0);
+    auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     qindex numIts = rho.numAmpsPerNode;
 
     cu_qcomp init = getCuQcomp(0, 0);
@@ -889,7 +888,7 @@ qreal thrust_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
     auto functor = functor_getExpecStateVecZTerm(mask);
 
     qreal init = 0;
-    auto indIter = thrust::make_counting_iterator(0);
+    auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + qureg.numAmpsPerNode;
 
     return thrust::inner_product(
@@ -906,7 +905,7 @@ cu_qcomp thrust_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
     auto functor = functor_getExpecDensMatrZTerm(dim, ind, mask, toCuQcomps(qureg.gpuAmps));
 
     cu_qcomp init = getCuQcomp(0, 0);
-    auto indIter = thrust::make_counting_iterator(0);
+    auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + powerOf2(qureg.logNumColsPerNode);
 
     return thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
@@ -921,7 +920,7 @@ cu_qcomp thrust_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vect
     auto functor = functor_getExpecStateVecPauliTerm(maskXY, maskYZ, ampsPtr, ampsPtr); // amps=pairAmps
 
     cu_qcomp init = getCuQcomp(0, 0);
-    auto indIter = thrust::make_counting_iterator(0);
+    auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + qureg.numAmpsPerNode;
 
     cu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
@@ -939,7 +938,7 @@ cu_qcomp thrust_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vect
     auto functor = functor_getExpecStateVecPauliTerm(maskXY, maskYZ, ampsPtr, buffPtr);
 
     cu_qcomp init = getCuQcomp(0, 0);
-    auto indIter = thrust::make_counting_iterator(0);
+    auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + qureg.numAmpsPerNode;
 
     cu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
@@ -957,7 +956,7 @@ cu_qcomp thrust_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vecto
     auto functor = functor_getExpecDensMatrPauliTerm(mXY, mYZ, dim, ind, toCuQcomps(qureg.gpuAmps));
 
     cu_qcomp init = getCuQcomp(0, 0);
-    auto indIter = thrust::make_counting_iterator(0);
+    auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + powerOf2(qureg.logNumColsPerNode);
 
     cu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
@@ -996,7 +995,7 @@ cu_qcomp thrust_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDi
     auto functor = functor_getExpecDensMatrDiagMatrTerm<HasPower,UseRealPow>(dim, ind, ampsPtr, elemsPtr, expo);
 
     cu_qcomp init = getCuQcomp(0, 0);
-    auto indIter = thrust::make_counting_iterator(0);
+    auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + powerOf2(qureg.logNumColsPerNode);
 
     return thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
@@ -1017,7 +1016,7 @@ void thrust_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, ve
     auto projFunctor = functor_projectStateVec<NumQubits>(
         getPtr(devQubits), qubits.size(), retainValue, renorm);
 
-    auto indIter = thrust::make_counting_iterator(0);
+    auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto ampIter = getStartPtr(qureg);
 
     qindex numIts = qureg.numAmpsPerNode;
@@ -1034,7 +1033,7 @@ void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, ve
         getPtr(devQubits), qubits.size(), qureg.rank, qureg.numQubits,
         qureg.logNumAmpsPerNode, retainValue, renorm);
 
-    auto indIter = thrust::make_counting_iterator(0);
+    auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto ampIter = getStartPtr(qureg);
 
     qindex numIts = qureg.numAmpsPerNode;
@@ -1074,7 +1073,7 @@ void thrust_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qure
     unsigned seed = rand_getThreadSharedRandomSeed(qureg.isDistributed);
     auto functor = functor_setRandomStateVecAmp(seed);
 
-    auto indIter = thrust::make_counting_iterator(0);
+    auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto ampIter = getStartPtr(qureg);
 
     qindex numIts = qureg.numAmpsPerNode;
