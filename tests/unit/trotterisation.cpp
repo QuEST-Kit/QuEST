@@ -2,6 +2,9 @@
  * Unit tests of the trotterisation module.
  *
  * @author Tyson Jones
+ * @author Vasco Ferreira (initial Pauli permutation tests)
+ * @author Maurice Jamieson (real and imaginary time evolution tests)
+ * @author Oliver Thomson Brown (real and imaginary time evolution tests)
  * 
  * @defgroup unittrotter Trotterisation
  * @ingroup unittests
