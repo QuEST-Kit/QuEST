@@ -5,6 +5,7 @@
  * 
  * @author Tyson Jones
  * @author Balint Koczor (patched v3 MSVC seeding)
+ * @author Vasco Ferreira (PauliStrSum permutation)
  */
 
 #include "quest/include/types.h"
@@ -265,4 +266,23 @@ qcomp rand_getThreadPrivateRandomAmp(std::mt19937_64 &gen, std::normal_distribut
     // https://sumeetkhatri.com/wp-content/uploads/2020/05/random_pure_states.pdf
     qcomp amp = std::sqrt(prob) * std::exp(phase * 1_i);
     return amp;
+}
+
+
+
+/*
+ * PAULI STRINGS
+ */
+
+
+void rand_permutePauliStrSum(PauliStrSum &sum) {
+
+    // permute ordering of terms inplace using Fisher-Yates
+    for (qindex i = sum.numTerms - 1; i > 0; --i) {
+        std::uniform_int_distribution<qindex> distrib(0, i);
+        qindex j = distrib(mainGenerator);
+
+        std::swap(sum.coeffs[i], sum.coeffs[j]);
+        std::swap(sum.strings[i], sum.strings[j]);
+    }
 }

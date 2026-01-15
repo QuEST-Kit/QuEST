@@ -4,6 +4,7 @@
  * quantum measurements and randomly initialising Quregs.
  * 
  * @author Tyson Jones
+ * @author Vasco Ferreira (PauliStrSum permutation)
  */
 
 #ifndef RANDOMISER_HPP
@@ -60,5 +61,12 @@ std::uniform_real_distribution<qreal> rand_getThreadPrivateAmpPhaseDistribution(
 qcomp rand_getThreadPrivateRandomAmp(std::mt19937_64 &gen, std::normal_distribution<qreal> &normDist, std::uniform_real_distribution<qreal> &phaseDist);
 
 
+
+/*
+ * PAULI STRINGS
+ */
+
+
+void rand_permutePauliStrSum(PauliStrSum &sum);
 
 #endif // RANDOMISER_HPP
