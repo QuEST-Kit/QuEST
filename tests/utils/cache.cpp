@@ -168,6 +168,22 @@ quregCache getAltCachedDensmatrs() {
     return densmatrs2;
 }
 
+Qureg getArbitraryCachedStatevec() {
+
+    // must not be called pre-creation nor post-destruction
+    DEMAND( !statevecs1.empty() );
+
+    return statevecs1.begin()->second;
+}
+
+Qureg getArbitraryCachedDensmatr() {
+
+    // must not be called pre-creation nor post-destruction
+    DEMAND( !densmatrs1.empty() );
+
+    return densmatrs1.begin()->second;
+}
+
 
 
 /*

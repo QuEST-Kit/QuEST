@@ -1047,8 +1047,8 @@ void testOperationValidation(auto operation) {
         // (but beware statevecs vs density matrices permit
         //  different num targets before validation is triggered)
         qureg = (Apply == rightapply)?
-            getCachedDensmatrs().begin()->second:
-            getCachedStatevecs().begin()->second;
+            getArbitraryCachedDensmatr():
+            getArbitraryCachedStatevec();
 
         // can only be validated when environment AND qureg
         // are distributed (over more than 1 node, of course)
@@ -1138,9 +1138,8 @@ void testOperationValidation(auto operation) {
         if (Apply != rightapply)
             return;
 
-        // use any statevector
-        qureg = getCachedStatevecs().begin()->second;
-
+        // override qureg in apiyFunc with a statevector
+        qureg = getArbitraryCachedStatevec();
         REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("Expected a density matrix") );
     }
 
