@@ -2079,6 +2079,8 @@ TEST_CASE( "applyFullStateDiagMatr", TEST_CATEGORY_OPS LABEL_MIXED_DEPLOY_TAG ) 
             TEST_ON_CACHED_QUREG_AND_MATRIX( cachedDM, cachedMatrs, apiFunc, refDM, refMatr, refFunc);
         }
     }
+
+    /// @todo input validation
 }
 
 
@@ -2132,6 +2134,8 @@ TEST_CASE( "applyFullStateDiagMatrPower", TEST_CATEGORY_OPS LABEL_MIXED_DEPLOY_T
 
         setValidationEpsilonToDefault();
     }
+
+    /// @todo input validation
 }
 
 
@@ -2304,6 +2308,8 @@ TEST_CASE( "leftapplyFullStateDiagMatr", TEST_CATEGORY_MULT LABEL_MIXED_DEPLOY_T
             TEST_ON_CACHED_QUREG_AND_MATRIX( cachedDM, cachedMatrs, apiFunc, refDM, refMatr, refFunc);
         }
     }
+
+    /// @todo input validation
 }
 
 
@@ -2327,6 +2333,8 @@ TEST_CASE( "rightapplyFullStateDiagMatr", TEST_CATEGORY_MULT LABEL_MIXED_DEPLOY_
             TEST_ON_CACHED_QUREG_AND_MATRIX( cachedDM, cachedMatrs, apiFunc, refDM, refMatr, refFunc);
         }
     }
+
+    /// @todo input validation
 }
 
 
@@ -2369,6 +2377,8 @@ TEST_CASE( "leftapplyFullStateDiagMatrPower", TEST_CATEGORY_MULT LABEL_MIXED_DEP
             TEST_ON_CACHED_QUREG_AND_MATRIX( cachedDM, cachedMatrs, apiFunc, refDM, refMatr, refFunc);
         }
     }
+
+    /// @todo input validation
 }
 
 
@@ -2402,7 +2412,7 @@ TEST_CASE( "rightapplyFullStateDiagMatrPower", TEST_CATEGORY_MULT LABEL_MIXED_DE
         }
     }
 
-
+    /// @todo input validation
 }
 
 
