@@ -2416,7 +2416,7 @@ TEST_CASE( "rightapplyFullStateDiagMatrPower", TEST_CATEGORY_MULT LABEL_MIXED_DE
 }
 
 
-TEST_CASE( "leftapplyQubitProjector", TEST_CATEGORY_OPS ) {
+TEST_CASE( "leftapplyQubitProjector", TEST_CATEGORY_MULT ) {
 
     PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
 
@@ -2463,7 +2463,7 @@ TEST_CASE( "leftapplyQubitProjector", TEST_CATEGORY_OPS ) {
 }
 
 
-TEST_CASE( "rightapplyQubitProjector", TEST_CATEGORY_OPS ) {
+TEST_CASE( "rightapplyQubitProjector", TEST_CATEGORY_MULT ) {
 
     PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
 
@@ -2509,7 +2509,7 @@ TEST_CASE( "rightapplyQubitProjector", TEST_CATEGORY_OPS ) {
 }
 
 
-TEST_CASE( "leftapplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
+TEST_CASE( "leftapplyMultiQubitProjector", TEST_CATEGORY_MULT ) {
 
     PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
 
@@ -2577,7 +2577,7 @@ TEST_CASE( "leftapplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
 }
 
 
-TEST_CASE( "rightapplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
+TEST_CASE( "rightapplyMultiQubitProjector", TEST_CATEGORY_MULT ) {
 
     PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
 
