@@ -235,9 +235,37 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
             int reps = 5;
             int steps = 10;
             
-            // Tolerance for floating-point comparison
-            // Allows for minor numerical differences between runs
-            qreal eps = 1E-10;
+            // nudge the epsilon used by internal validation functions up a bit
+            // as the time evolution operation plays badly with single precision
+            // Defaults for validation epsilon are:
+            //  - 1E-5 at single precision
+            //  - 1E-12 at double precision
+            //  - 1E-13 at quad precision
+            qreal initialValidationEps = getValidationEpsilon();
+            setValidationEpsilon(2 * initialValidationEps);
+
+            /*
+            * Tolerance for floating-point comparisons
+            * Note that the underlying numerics are sensitive to the float precision AND
+            * to the number of threads. As such we set quite large epsilon values to
+            * account for the worst-case scenario which is single precision, single thread.
+            * The baseline for these results is double precision, multiple threads.
+            *
+            * Values (assuming default initialValidationEps) are:
+            * Single precision:
+            *   obsEps = 0.03
+            *   normEps = 0.001
+            *
+            * Double precision:
+            *   obsEps = 3E-9
+            *   normEps = 1E-10
+            *
+            * Quad precision:
+            *   obsEps = 3E-10
+            *   normEps = 1E-11
+            */
+            qreal obsEps = 3E3 * initialValidationEps;
+            qreal normEps = 100 * initialValidationEps;
             
             vector<qreal> refObservables = {
                 19.26827777028073,
@@ -256,12 +284,15 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
                 applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt, order, reps, permutePaulis);
                 qreal expec = calcExpecPauliStrSum(qureg, observ);
                 
-                REQUIRE_THAT( expec, WithinAbs(refObservables[i], eps) );
+                REQUIRE_THAT( expec, WithinAbs(refObservables[i], obsEps) );
             }
             
             // Verify state remains normalized
-            REQUIRE_THAT( calcTotalProb(qureg), WithinAbs(1.0, 1E-10) );
-            
+            REQUIRE_THAT( calcTotalProb(qureg), WithinAbs(1.0, normEps) );
+
+            // Restore validation epsilon
+            setValidationEpsilon(initialValidationEps);
+
             destroyQureg(qureg);
             destroyPauliStrSum(hamil);
             destroyPauliStrSum(observ);
