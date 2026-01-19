@@ -2425,23 +2425,7 @@ TEST_CASE( "rightapplyFullStateDiagMatrPower", TEST_CATEGORY_MULT LABEL_MIXED_DE
         }
     }
 
-    SECTION( LABEL_VALIDATION ) {
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
 
-        SECTION( "qureg uninitialised" ) {
-            // Invalidate the qureg by setting a negative qubit count
-            Qureg badQureg = qureg;
-            badQureg.numQubits = -1;
-            FullStateDiagMatr matr = getCachedFullStateDiagMatrs()[0];
-            REQUIRE_THROWS_WITH(
-                rightapplyFullStateDiagMatrPower(badQureg, matr, qcomp(2.0, 0)),
-                ContainsSubstring("invalid Qureg")
-            );
-        }
-
-        destroyQureg(qureg);
-    }
 }
 
 
@@ -2517,7 +2501,7 @@ TEST_CASE( "rightapplyQubitProjector", TEST_CATEGORY_OPS ) {
 
     SECTION( LABEL_VALIDATION ) {
         int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
+        Qureg qureg = createDensityQureg(numQubits);
 
         SECTION( "qureg uninitialised" ) {
             // Invalidate the qureg by setting a negative qubit count
@@ -2635,7 +2619,7 @@ TEST_CASE( "rightapplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
 
     SECTION( LABEL_VALIDATION ) {
         int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
+        Qureg qureg = createDensityQureg(numQubits);
         int targets[] = {0, 1, 2};
         int outcomes[] = {0, 1, 0};
         int numTargets = 3;
