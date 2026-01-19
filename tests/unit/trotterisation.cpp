@@ -222,49 +222,49 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
-            int numQubits = 20;
-            Qureg qureg = createQureg(numQubits);
-            initPlusState(qureg);
-            bool permutePaulis = false;
+        int numQubits = 20;
+        Qureg qureg = createQureg(numQubits);
+        initPlusState(qureg);
+        bool permutePaulis = false;
+        
+        PauliStrSum hamil = createHeisenbergHamiltonian(numQubits);
+        PauliStrSum observ = createAlternatingPauliObservable(numQubits);
+        
+        qreal dt = 0.1;
+        int order = 4;
+        int reps = 5;
+        int steps = 10;
+        
+        // Tolerance for floating-point comparison
+        // Allows for minor numerical differences between runs
+        qreal eps = 1E-10;
+        
+        vector<qreal> refObservables = {
+            19.26827777028073,
+            20.34277275871839,
+            21.21120737889526,
+            21.86585902741717,
+            22.30371711358924,
+            22.52644660547882,
+            22.54015748825067,
+            22.35499202583118,
+            21.9845541501027,
+            21.44521638719462
+        };
+        
+        for (int i = 0; i < steps; i++) {
+            applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt, order, reps, permutePaulis);
+            qreal expec = calcExpecPauliStrSum(qureg, observ);
             
-            PauliStrSum hamil = createHeisenbergHamiltonian(numQubits);
-            PauliStrSum observ = createAlternatingPauliObservable(numQubits);
-            
-            qreal dt = 0.1;
-            int order = 4;
-            int reps = 5;
-            int steps = 10;
-            
-            // Tolerance for floating-point comparison
-            // Allows for minor numerical differences between runs
-            qreal eps = 1E-10;
-            
-            vector<qreal> refObservables = {
-                19.26827777028073,
-                20.34277275871839,
-                21.21120737889526,
-                21.86585902741717,
-                22.30371711358924,
-                22.52644660547882,
-                22.54015748825067,
-                22.35499202583118,
-                21.9845541501027,
-                21.44521638719462
-            };
-            
-            for (int i = 0; i < steps; i++) {
-                applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt, order, reps, permutePaulis);
-                qreal expec = calcExpecPauliStrSum(qureg, observ);
-                
-                REQUIRE_THAT( expec, WithinAbs(refObservables[i], eps) );
-            }
-            
-            // Verify state remains normalized
-            REQUIRE_THAT( calcTotalProb(qureg), WithinAbs(1.0, 1E-10) );
-            
-            destroyQureg(qureg);
-            destroyPauliStrSum(hamil);
-            destroyPauliStrSum(observ);
+            REQUIRE_THAT( expec, WithinAbs(refObservables[i], eps) );
+        }
+        
+        // Verify state remains normalized
+        REQUIRE_THAT( calcTotalProb(qureg), WithinAbs(1.0, 1E-10) );
+        
+        destroyQureg(qureg);
+        destroyPauliStrSum(hamil);
+        destroyPauliStrSum(observ);
     }
 
     SECTION( LABEL_VALIDATION ) {
