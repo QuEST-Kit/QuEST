@@ -269,9 +269,8 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
-        PauliStrSum hamil = createHeisenbergHamiltonian(numQubits);
+        Qureg qureg = getArbitraryCachedStatevec();
+        PauliStrSum hamil = createHeisenbergHamiltonian(qureg.numQubits);
         bool permutePaulis = false;
 
         SECTION( "qureg uninitialised" ) {
@@ -293,13 +292,12 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "pauli sum exceeds qureg qubits" ) {
-            Qureg smallQureg = createQureg(3);
-            PauliStrSum largeHamil = createHeisenbergHamiltonian(numQubits);
+
+            PauliStrSum largeHamil = createHeisenbergHamiltonian(qureg.numQubits + 1);
             REQUIRE_THROWS_WITH(
-                applyTrotterizedUnitaryTimeEvolution(smallQureg, largeHamil, 0.1, 4, 5, permutePaulis),
+                applyTrotterizedUnitaryTimeEvolution(qureg, largeHamil, 0.1, 4, 5, permutePaulis),
                 ContainsSubstring("only compatible")
             );
-            destroyQureg(smallQureg);
             destroyPauliStrSum(largeHamil);
         }
 
@@ -338,7 +336,6 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
             );
         }
 
-        destroyQureg(qureg);
         destroyPauliStrSum(hamil);
     }
 }
@@ -481,9 +478,8 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
-        PauliStrSum ising = createIsingHamiltonian(numQubits, 1.0, 1.0, 0.0);
+        Qureg qureg = getArbitraryCachedStatevec();
+        PauliStrSum ising = createIsingHamiltonian(qureg.numQubits, 1.0, 1.0, 0.0);
         bool permutePaulis = false;
 
         SECTION( "qureg uninitialised" ) {
@@ -505,13 +501,12 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "pauli sum exceeds qureg qubits" ) {
-            Qureg smallQureg = createQureg(3);
-            PauliStrSum largeIsing = createIsingHamiltonian(numQubits, 1.0, 1.0, 0.0);
+
+            PauliStrSum largeIsing = createIsingHamiltonian(qureg.numQubits+1, 1.0, 1.0, 0.0);
             REQUIRE_THROWS_WITH(
-                applyTrotterizedImaginaryTimeEvolution(smallQureg, largeIsing, 0.1, 4, 5, permutePaulis),
+                applyTrotterizedImaginaryTimeEvolution(qureg, largeIsing, 0.1, 4, 5, permutePaulis),
                 ContainsSubstring("only compatible")
             );
-            destroyQureg(smallQureg);
             destroyPauliStrSum(largeIsing);
         }
 
@@ -564,7 +559,6 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
             );
         }
 
-        destroyQureg(qureg);
         destroyPauliStrSum(ising);
     }
 }

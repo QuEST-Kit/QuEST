@@ -1413,8 +1413,7 @@ TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY_OPS ) {
 
     SECTION( LABEL_VALIDATION ) {
 
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
+        Qureg qureg = getArbitraryCachedStatevec();
         int targs[] = {0, 1, 2};
         int numTargs = 3;
 
@@ -1428,7 +1427,8 @@ TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY_OPS ) {
         }
 
         SECTION( "invalid target qubits" ) {
-            int badTargs[] = {0, 1, 10};
+
+            int badTargs[] = {0, 1, qureg.numQubits}; // latter is too large
             REQUIRE_THROWS_WITH(
                 applyQuantumFourierTransform(qureg, badTargs, 3),
                 ContainsSubstring("target")
@@ -1450,7 +1450,6 @@ TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY_OPS ) {
             );
         }
 
-        destroyQureg(qureg);
     }
 }
 
@@ -1498,8 +1497,7 @@ TEST_CASE( "applyFullQuantumFourierTransform", TEST_CATEGORY_OPS ) {
 
     SECTION( LABEL_VALIDATION ) {
 
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
+        Qureg qureg = getArbitraryCachedStatevec();
 
         SECTION( "qureg uninitialised" ) {
             Qureg badQureg = qureg;
@@ -1509,8 +1507,6 @@ TEST_CASE( "applyFullQuantumFourierTransform", TEST_CATEGORY_OPS ) {
                 ContainsSubstring("invalid Qureg")
             );
         }
-
-        destroyQureg(qureg);
     }
 }
 
@@ -1538,8 +1534,8 @@ TEST_CASE( "applyQubitProjector", TEST_CATEGORY_OPS ) {
     }
 
     SECTION( LABEL_VALIDATION ) {
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
+
+        Qureg qureg = getArbitraryCachedStatevec();
 
         SECTION( "qureg uninitialised" ) {
             // Invalidate the qureg by setting a negative qubit count
@@ -1558,8 +1554,6 @@ TEST_CASE( "applyQubitProjector", TEST_CATEGORY_OPS ) {
                 ContainsSubstring("target")
             );
         }
-
-        destroyQureg(qureg);
     }
 }
 
@@ -1587,8 +1581,8 @@ TEST_CASE( "applyMultiQubitProjector", TEST_CATEGORY_OPS ) {
     }
 
     SECTION( LABEL_VALIDATION ) {
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
+
+        Qureg qureg = getArbitraryCachedStatevec();
         int targets[] = {0, 1, 2};
         int outcomes[] = {0, 1, 0};
         int numTargets = 3;
@@ -1628,8 +1622,6 @@ TEST_CASE( "applyMultiQubitProjector", TEST_CATEGORY_OPS ) {
                 ContainsSubstring("targets")
             );
         }
-
-        destroyQureg(qureg);
     }
 }
 
@@ -1670,8 +1662,8 @@ TEST_CASE( "applyForcedQubitMeasurement", TEST_CATEGORY_OPS ) {
     }
 
     SECTION( LABEL_VALIDATION ) {
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
+        
+        Qureg qureg = getArbitraryCachedStatevec();
 
         SECTION( "qureg uninitialised" ) {
             // Invalidate the qureg by setting a negative qubit count
@@ -1690,8 +1682,6 @@ TEST_CASE( "applyForcedQubitMeasurement", TEST_CATEGORY_OPS ) {
                 ContainsSubstring("target")
             );
         }
-
-        destroyQureg(qureg);
     }
 }
 
@@ -1739,8 +1729,8 @@ TEST_CASE( "applyForcedMultiQubitMeasurement", TEST_CATEGORY_OPS ) {
     }
 
     SECTION( LABEL_VALIDATION ) {
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
+
+        Qureg qureg = getArbitraryCachedStatevec();
         int targets[] = {0, 1, 2};
         int outcomes[] = {0, 1, 0};
         int numTargets = 3;
@@ -1780,8 +1770,6 @@ TEST_CASE( "applyForcedMultiQubitMeasurement", TEST_CATEGORY_OPS ) {
                 ContainsSubstring("targets")
             );
         }
-
-        destroyQureg(qureg);
     }
 }
 
@@ -1820,8 +1808,8 @@ TEST_CASE( "applyMultiQubitMeasurement", TEST_CATEGORY_OPS ) {
     }
 
     SECTION( LABEL_VALIDATION ) {
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
+        
+        Qureg qureg = getArbitraryCachedStatevec();
         int targets[] = {0, 1, 2};
         int numTargets = 3;
 
@@ -1860,8 +1848,6 @@ TEST_CASE( "applyMultiQubitMeasurement", TEST_CATEGORY_OPS ) {
                 ContainsSubstring("targets")
             );
         }
-
-        destroyQureg(qureg);
     }
 }
 
@@ -1902,8 +1888,8 @@ TEST_CASE( "applyMultiQubitMeasurementAndGetProb", TEST_CATEGORY_OPS ) {
     }
 
     SECTION( LABEL_VALIDATION ) {
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
+        
+        Qureg qureg = getArbitraryCachedStatevec();
         int targets[] = {0, 1, 2};
         int numTargets = 3;
 
@@ -1945,8 +1931,6 @@ TEST_CASE( "applyMultiQubitMeasurementAndGetProb", TEST_CATEGORY_OPS ) {
                 ContainsSubstring("targets")
             );
         }
-
-        destroyQureg(qureg);
     }
 }
 
@@ -1984,8 +1968,8 @@ TEST_CASE( "applyQubitMeasurement", TEST_CATEGORY_OPS ) {
     }
 
     SECTION( LABEL_VALIDATION ) {
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
+        
+        Qureg qureg = getArbitraryCachedStatevec();
 
         SECTION( "qureg uninitialised" ) {
             // Invalidate the qureg by setting a negative qubit count
@@ -2004,8 +1988,6 @@ TEST_CASE( "applyQubitMeasurement", TEST_CATEGORY_OPS ) {
                 ContainsSubstring("target")
             );
         }
-
-        destroyQureg(qureg);
     }
 }
 
@@ -2045,8 +2027,8 @@ TEST_CASE( "applyQubitMeasurementAndGetProb", TEST_CATEGORY_OPS ) {
     }
 
     SECTION( LABEL_VALIDATION ) {
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
+        
+        Qureg qureg = getArbitraryCachedStatevec();
 
         SECTION( "qureg uninitialised" ) {
             // Invalidate the qureg by setting a negative qubit count
@@ -2066,8 +2048,6 @@ TEST_CASE( "applyQubitMeasurementAndGetProb", TEST_CATEGORY_OPS ) {
                 ContainsSubstring("target")
             );
         }
-
-        destroyQureg(qureg);
     }
 }
 
@@ -2181,8 +2161,8 @@ TEST_CASE( "applyNonUnitaryPauliGadget", TEST_CATEGORY_OPS ) {
     }
 
     SECTION( LABEL_VALIDATION ) {
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
+        
+        Qureg qureg = getArbitraryCachedStatevec();
         PauliStr str = getPauliStr("XY", {0, 1});
 
         SECTION( "qureg uninitialised" ) {
@@ -2194,8 +2174,6 @@ TEST_CASE( "applyNonUnitaryPauliGadget", TEST_CATEGORY_OPS ) {
                 ContainsSubstring("invalid Qureg")
             );
         }
-
-        destroyQureg(qureg);
     }
 }
 
@@ -2451,8 +2429,8 @@ TEST_CASE( "leftapplyQubitProjector", TEST_CATEGORY_OPS ) {
     }
 
     SECTION( LABEL_VALIDATION ) {
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
+        
+        Qureg qureg = getArbitraryCachedStatevec();
 
         SECTION( "qureg uninitialised" ) {
             // Invalidate the qureg by setting a negative qubit count
@@ -2471,8 +2449,6 @@ TEST_CASE( "leftapplyQubitProjector", TEST_CATEGORY_OPS ) {
                 ContainsSubstring("target")
             );
         }
-
-        destroyQureg(qureg);
     }
 }
 
@@ -2499,8 +2475,8 @@ TEST_CASE( "rightapplyQubitProjector", TEST_CATEGORY_OPS ) {
     }
 
     SECTION( LABEL_VALIDATION ) {
-        int numQubits = 5;
-        Qureg qureg = createDensityQureg(numQubits);
+        
+        Qureg qureg = getArbitraryCachedDensmatr();
 
         SECTION( "qureg uninitialised" ) {
             // Invalidate the qureg by setting a negative qubit count
@@ -2519,8 +2495,6 @@ TEST_CASE( "rightapplyQubitProjector", TEST_CATEGORY_OPS ) {
                 ContainsSubstring("target")
             );
         }
-
-        destroyQureg(qureg);
     }
 }
 
@@ -2548,8 +2522,8 @@ TEST_CASE( "leftapplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
     }
 
     SECTION( LABEL_VALIDATION ) {
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
+        
+        Qureg qureg = getArbitraryCachedStatevec();
         int targets[] = {0, 1, 2};
         int outcomes[] = {0, 1, 0};
         int numTargets = 3;
@@ -2589,8 +2563,6 @@ TEST_CASE( "leftapplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
                 ContainsSubstring("targets")
             );
         }
-
-        destroyQureg(qureg);
     }
 }
 
@@ -2617,8 +2589,8 @@ TEST_CASE( "rightapplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
     }
 
     SECTION( LABEL_VALIDATION ) {
-        int numQubits = 5;
-        Qureg qureg = createDensityQureg(numQubits);
+
+        Qureg qureg = getArbitraryCachedDensmatr();
         int targets[] = {0, 1, 2};
         int outcomes[] = {0, 1, 0};
         int numTargets = 3;
@@ -2658,8 +2630,6 @@ TEST_CASE( "rightapplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
                 ContainsSubstring("targets")
             );
         }
-
-        destroyQureg(qureg);
     }
 }
 
@@ -2691,8 +2661,8 @@ TEST_CASE( "leftapplyPauliStrSum", TEST_CATEGORY_MULT LABEL_MIXED_DEPLOY_TAG ) {
     }
 
     SECTION( LABEL_VALIDATION ) {
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
+       
+        Qureg qureg = getArbitraryCachedStatevec();
         PauliStrSum sum = createRandomPauliStrSum(numQubits, 2);
 
         SECTION( "qureg uninitialised" ) {
@@ -2707,7 +2677,6 @@ TEST_CASE( "leftapplyPauliStrSum", TEST_CATEGORY_MULT LABEL_MIXED_DEPLOY_TAG ) {
             destroyQureg(workspace);
         }
 
-        destroyQureg(qureg);
         destroyPauliStrSum(sum);
     }
 }
@@ -2739,8 +2708,8 @@ TEST_CASE( "rightapplyPauliStrSum", TEST_CATEGORY_MULT LABEL_MIXED_DEPLOY_TAG ) 
     }
 
     SECTION( LABEL_VALIDATION ) {
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
+        
+        Qureg qureg = getArbitraryCachedStatevec();
         PauliStrSum sum = createRandomPauliStrSum(numQubits, 2);
 
         SECTION( "qureg uninitialised" ) {
@@ -2755,7 +2724,6 @@ TEST_CASE( "rightapplyPauliStrSum", TEST_CATEGORY_MULT LABEL_MIXED_DEPLOY_TAG ) 
             destroyQureg(workspace);
         }
 
-        destroyQureg(qureg);
         destroyPauliStrSum(sum);
     }
 }
