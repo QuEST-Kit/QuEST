@@ -274,6 +274,7 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         bool permutePaulis = false;
 
         SECTION( "qureg uninitialised" ) {
+
             Qureg badQureg = qureg;
             badQureg.numQubits = -1;
             REQUIRE_THROWS_WITH( 
@@ -283,12 +284,28 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "pauli sum uninitialized" ) {
+
             PauliStrSum badHamil = hamil;
             badHamil.numTerms = 0;
             REQUIRE_THROWS_WITH(
                 applyTrotterizedUnitaryTimeEvolution(qureg, badHamil, 0.1, 4, 5, permutePaulis),
                 ContainsSubstring("Pauli")
             );
+        }
+
+        SECTION( "hamiltonian not hermitian" ) {
+
+            vector<PauliStr> strings;
+            vector<qcomp> coeffs;
+            strings.push_back(getPauliStr("X", {0}));
+            coeffs.push_back(getQcomp(1.0, 1.0));  
+            PauliStrSum nonHermitian = createPauliStrSum(strings, coeffs);
+
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedUnitaryTimeEvolution(qureg, nonHermitian, 0.1, 4, 5, permutePaulis),
+                ContainsSubstring("Hermitian")
+            );
+            destroyPauliStrSum(nonHermitian);
         }
 
         SECTION( "pauli sum exceeds qureg qubits" ) {
@@ -302,6 +319,7 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter order (zero)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, 0, 5, permutePaulis),
                 ContainsSubstring("order")
@@ -309,6 +327,7 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter order (negative)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, -2, 5, permutePaulis),
                 ContainsSubstring("order")
@@ -316,6 +335,7 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter order (odd, not 1)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, 3, 5, permutePaulis),
                 ContainsSubstring("order")
@@ -323,6 +343,7 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter reps (zero)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, 4, 0, permutePaulis),
                 ContainsSubstring("repetitions")
@@ -330,6 +351,7 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter reps (negative)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, 4, -3, permutePaulis),
                 ContainsSubstring("repetitions")
@@ -483,6 +505,7 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
         bool permutePaulis = false;
 
         SECTION( "qureg uninitialised" ) {
+
             Qureg badQureg = qureg;
             badQureg.numQubits = -1;
             REQUIRE_THROWS_WITH(
@@ -492,6 +515,7 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "pauli sum uninitialized" ) {
+
             PauliStrSum badIsing = ising;
             badIsing.numTerms = 0;
             REQUIRE_THROWS_WITH(
@@ -511,6 +535,7 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "hamiltonian not hermitian" ) {
+
             vector<PauliStr> strings;
             vector<qcomp> coeffs;
             strings.push_back(getPauliStr("X", {0}));
@@ -525,6 +550,7 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter order (zero)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, 0, 5, permutePaulis),
                 ContainsSubstring("order")
@@ -532,6 +558,7 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter order (negative)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, -2, 5, permutePaulis),
                 ContainsSubstring("order")
@@ -539,6 +566,7 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter order (odd, not 1)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, 3, 5, permutePaulis),
                 ContainsSubstring("order")
@@ -546,6 +574,7 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter reps (zero)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, 4, 0, permutePaulis),
                 ContainsSubstring("repetitions")
@@ -553,6 +582,7 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter reps (negative)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, 4, -3, permutePaulis),
                 ContainsSubstring("repetitions")
