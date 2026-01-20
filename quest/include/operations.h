@@ -2328,8 +2328,12 @@ qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, 
 #ifdef __cplusplus
 
 
-/// @notyettested
-/// @notyetvalidated
+/// @notyetdoced
+/// @cppvectoroverload
+/// @see applyMultiQubitMeasurement()
+qindex applyMultiQubitMeasurement(Qureg qureg, std::vector<int> qubits);
+
+
 /// @notyetdoced
 /// @cppvectoroverload
 /// @see applyMultiQubitMeasurementAndGetProb()

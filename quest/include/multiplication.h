@@ -782,6 +782,25 @@ void rightapplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int 
 }
 #endif
 
+#ifdef __cplusplus
+
+
+/// @notyetdoced
+/// @cppvectoroverload
+/// @see leftapplyMultiQubitProjector()
+void leftapplyMultiQubitProjector(Qureg qureg, std::vector<int> qubits, std::vector<int> outcomes);
+
+
+/// @notyetdoced
+/// @cppvectoroverload
+/// @see rightapplyMultiQubitProjector()
+void rightapplyMultiQubitProjector(Qureg qureg, std::vector<int> qubits, std::vector<int> outcomes);
+
+
+#endif
+
+/** @} */
+
 
 
 /** 
