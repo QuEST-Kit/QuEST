@@ -220,92 +220,101 @@ TEST_CASE( "randomisedTrotter", TEST_CATEGORY ) {
 */ 
 TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) { 
 
+    // BEWARE: this test creates a new Qureg below which will have
+    // deployments chosen by the auto-deployer; it is ergo unpredictable
+    // whether it will be multithreaded, GPU-accelerated or distributed.
+    // This test is ergo checking only a single, unspecified deployment,
+    // unlike other tests which check all deployments. This is tolerable
+    // since (non-randomised) Trotterisation is merely invoking routines
+    // (Pauli gadgets) already independently tested across deployments
+
     SECTION( LABEL_CORRECTNESS ) {
 
-            int numQubits = 20;
-            Qureg qureg = createQureg(numQubits);
-            initPlusState(qureg);
-            bool permutePaulis = false;
-            
-            PauliStrSum hamil = createHeisenbergHamiltonian(numQubits);
-            PauliStrSum observ = createAlternatingPauliObservable(numQubits);
-            
-            qreal dt = 0.1;
-            int order = 4;
-            int reps = 5;
-            int steps = 10;
-            
-            // nudge the epsilon used by internal validation functions up a bit
-            // as the time evolution operation plays badly with single precision
-            // Defaults for validation epsilon are:
-            //  - 1E-5 at single precision
-            //  - 1E-12 at double precision
-            //  - 1E-13 at quad precision
-            qreal initialValidationEps = getValidationEpsilon();
-            setValidationEpsilon(2 * initialValidationEps);
+        int numQubits = 20;
+        Qureg qureg = createQureg(numQubits);
+        initPlusState(qureg);
+        bool permutePaulis = false;
+        
+        PauliStrSum hamil = createHeisenbergHamiltonian(numQubits);
+        PauliStrSum observ = createAlternatingPauliObservable(numQubits);
+        
+        qreal dt = 0.1;
+        int order = 4;
+        int reps = 5;
+        int steps = 10;
+        
+        // nudge the epsilon used by internal validation functions up a bit
+        // as the time evolution operation plays badly with single precision
+        // Defaults for validation epsilon are:
+        //  - 1E-5 at single precision
+        //  - 1E-12 at double precision
+        //  - 1E-13 at quad precision
+        qreal initialValidationEps = getValidationEpsilon();
+        setValidationEpsilon(2 * initialValidationEps);
 
-            /*
-            * Tolerance for floating-point comparisons
-            * Note that the underlying numerics are sensitive to the float precision AND
-            * to the number of threads. As such we set quite large epsilon values to
-            * account for the worst-case scenario which is single precision, single thread.
-            * The baseline for these results is double precision, multiple threads.
-            *
-            * Values (assuming default initialValidationEps) are:
-            * Single precision:
-            *   obsEps = 0.03
-            *   normEps = 0.001
-            *
-            * Double precision:
-            *   obsEps = 3E-9
-            *   normEps = 1E-10
-            *
-            * Quad precision:
-            *   obsEps = 3E-10
-            *   normEps = 1E-11
-            */
-            qreal obsEps = 3E3 * initialValidationEps;
-            qreal normEps = 100 * initialValidationEps;
+        /*
+        * Tolerance for floating-point comparisons
+        * Note that the underlying numerics are sensitive to the float
+        * precision AND to the number of threads. As such we set quite 
+        * large epsilon values to account for the worst-case scenario which 
+        * is single precision, single thread. The baseline for these results
+        * is double precision, multiple threads.
+        *
+        * Values (assuming default initialValidationEps) are:
+        * Single precision:
+        *   obsEps = 0.03
+        *   normEps = 0.001
+        *
+        * Double precision:
+        *   obsEps = 3E-9
+        *   normEps = 1E-10
+        *
+        * Quad precision:
+        *   obsEps = 3E-10
+        *   normEps = 1E-11
+        */
+        qreal obsEps = 3E3 * initialValidationEps;
+        qreal normEps = 100 * initialValidationEps;
+       
+        vector<qreal> refObservables = {
+            19.26827777028073,
+            20.34277275871839,
+            21.21120737889526,
+            21.86585902741717,
+            22.30371711358924,
+            22.52644660547882,
+            22.54015748825067,
+            22.35499202583118,
+            21.9845541501027,
+            21.44521638719462
+        };
+        
+        for (int i = 0; i < steps; i++) {
+            applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt, order, reps, permutePaulis);
+            qreal expec = calcExpecPauliStrSum(qureg, observ);
             
-            vector<qreal> refObservables = {
-                19.26827777028073,
-                20.34277275871839,
-                21.21120737889526,
-                21.86585902741717,
-                22.30371711358924,
-                22.52644660547882,
-                22.54015748825067,
-                22.35499202583118,
-                21.9845541501027,
-                21.44521638719462
-            };
-            
-            for (int i = 0; i < steps; i++) {
-                applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt, order, reps, permutePaulis);
-                qreal expec = calcExpecPauliStrSum(qureg, observ);
-                
-                REQUIRE_THAT( expec, WithinAbs(refObservables[i], obsEps) );
-            }
-            
-            // Verify state remains normalized
-            REQUIRE_THAT( calcTotalProb(qureg), WithinAbs(1.0, normEps) );
+            REQUIRE_THAT( expec, WithinAbs(refObservables[i], obsEps) );
+        }
+        
+        // Verify state remains normalized
+        REQUIRE_THAT( calcTotalProb(qureg), WithinAbs(1.0, normEps) );
 
-            // Restore validation epsilon
-            setValidationEpsilon(initialValidationEps);
+        // Restore validation epsilon
+        setValidationEpsilon(initialValidationEps);
 
-            destroyQureg(qureg);
-            destroyPauliStrSum(hamil);
-            destroyPauliStrSum(observ);
+        destroyQureg(qureg);
+        destroyPauliStrSum(hamil);
+        destroyPauliStrSum(observ);
     }
 
     SECTION( LABEL_VALIDATION ) {
 
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
-        PauliStrSum hamil = createHeisenbergHamiltonian(numQubits);
+        Qureg qureg = getArbitraryCachedStatevec();
+        PauliStrSum hamil = createHeisenbergHamiltonian(qureg.numQubits);
         bool permutePaulis = false;
 
         SECTION( "qureg uninitialised" ) {
+
             Qureg badQureg = qureg;
             badQureg.numQubits = -1;
             REQUIRE_THROWS_WITH( 
@@ -315,6 +324,7 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "pauli sum uninitialized" ) {
+
             PauliStrSum badHamil = hamil;
             badHamil.numTerms = 0;
             REQUIRE_THROWS_WITH(
@@ -323,18 +333,33 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
             );
         }
 
-        SECTION( "pauli sum exceeds qureg qubits" ) {
-            Qureg smallQureg = createQureg(3);
-            PauliStrSum largeHamil = createHeisenbergHamiltonian(numQubits);
+        SECTION( "hamiltonian not hermitian" ) {
+
+            vector<PauliStr> strings;
+            vector<qcomp> coeffs;
+            strings.push_back(getPauliStr("X", {0}));
+            coeffs.push_back(getQcomp(1.0, 1.0));  
+            PauliStrSum nonHermitian = createPauliStrSum(strings, coeffs);
+
             REQUIRE_THROWS_WITH(
-                applyTrotterizedUnitaryTimeEvolution(smallQureg, largeHamil, 0.1, 4, 5, permutePaulis),
+                applyTrotterizedUnitaryTimeEvolution(qureg, nonHermitian, 0.1, 4, 5, permutePaulis),
+                ContainsSubstring("Hermitian")
+            );
+            destroyPauliStrSum(nonHermitian);
+        }
+
+        SECTION( "pauli sum exceeds qureg qubits" ) {
+
+            PauliStrSum largeHamil = createHeisenbergHamiltonian(qureg.numQubits + 1);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedUnitaryTimeEvolution(qureg, largeHamil, 0.1, 4, 5, permutePaulis),
                 ContainsSubstring("only compatible")
             );
-            destroyQureg(smallQureg);
             destroyPauliStrSum(largeHamil);
         }
 
         SECTION( "invalid trotter order (zero)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, 0, 5, permutePaulis),
                 ContainsSubstring("order")
@@ -342,6 +367,7 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter order (negative)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, -2, 5, permutePaulis),
                 ContainsSubstring("order")
@@ -349,6 +375,7 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter order (odd, not 1)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, 3, 5, permutePaulis),
                 ContainsSubstring("order")
@@ -356,6 +383,7 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter reps (zero)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, 4, 0, permutePaulis),
                 ContainsSubstring("repetitions")
@@ -363,19 +391,27 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter reps (negative)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, 4, -3, permutePaulis),
                 ContainsSubstring("repetitions")
             );
         }
 
-        destroyQureg(qureg);
         destroyPauliStrSum(hamil);
     }
 }
 
 
 TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
+
+    // BEWARE: this test creates a new Qureg below which will have
+    // deployments chosen by the auto-deployer; it is ergo unpredictable
+    // whether it will be multithreaded, GPU-accelerated or distributed.
+    // This test is ergo checking only a single, unspecified deployment,
+    // unlike other tests which check all deployments. This is tolerable
+    // since (non-randomised) Trotterisation is merely invoking routines
+    // (Pauli gadgets) already independently tested across deployments
 
     SECTION( LABEL_CORRECTNESS ) {
            
@@ -512,12 +548,12 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
-        int numQubits = 5;
-        Qureg qureg = createQureg(numQubits);
-        PauliStrSum ising = createIsingHamiltonian(numQubits, 1.0, 1.0, 0.0);
+        Qureg qureg = getArbitraryCachedStatevec();
+        PauliStrSum ising = createIsingHamiltonian(qureg.numQubits, 1.0, 1.0, 0.0);
         bool permutePaulis = false;
 
         SECTION( "qureg uninitialised" ) {
+
             Qureg badQureg = qureg;
             badQureg.numQubits = -1;
             REQUIRE_THROWS_WITH(
@@ -527,6 +563,7 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "pauli sum uninitialized" ) {
+
             PauliStrSum badIsing = ising;
             badIsing.numTerms = 0;
             REQUIRE_THROWS_WITH(
@@ -536,17 +573,17 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "pauli sum exceeds qureg qubits" ) {
-            Qureg smallQureg = createQureg(3);
-            PauliStrSum largeIsing = createIsingHamiltonian(numQubits, 1.0, 1.0, 0.0);
+
+            PauliStrSum largeIsing = createIsingHamiltonian(qureg.numQubits+1, 1.0, 1.0, 0.0);
             REQUIRE_THROWS_WITH(
-                applyTrotterizedImaginaryTimeEvolution(smallQureg, largeIsing, 0.1, 4, 5, permutePaulis),
+                applyTrotterizedImaginaryTimeEvolution(qureg, largeIsing, 0.1, 4, 5, permutePaulis),
                 ContainsSubstring("only compatible")
             );
-            destroyQureg(smallQureg);
             destroyPauliStrSum(largeIsing);
         }
 
         SECTION( "hamiltonian not hermitian" ) {
+
             vector<PauliStr> strings;
             vector<qcomp> coeffs;
             strings.push_back(getPauliStr("X", {0}));
@@ -561,6 +598,7 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter order (zero)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, 0, 5, permutePaulis),
                 ContainsSubstring("order")
@@ -568,6 +606,7 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter order (negative)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, -2, 5, permutePaulis),
                 ContainsSubstring("order")
@@ -575,6 +614,7 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter order (odd, not 1)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, 3, 5, permutePaulis),
                 ContainsSubstring("order")
@@ -582,6 +622,7 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter reps (zero)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, 4, 0, permutePaulis),
                 ContainsSubstring("repetitions")
@@ -589,13 +630,13 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         SECTION( "invalid trotter reps (negative)" ) {
+
             REQUIRE_THROWS_WITH(
                 applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, 4, -3, permutePaulis),
                 ContainsSubstring("repetitions")
             );
         }
 
-        destroyQureg(qureg);
         destroyPauliStrSum(ising);
     }
 }
@@ -617,5 +658,3 @@ void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, int* controls
 void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStrSum sum, qreal angle, int order, int reps, bool permutePaulis);
 
 void applyTrotterizedNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStr* jumps, int numJumps, qreal time, int order, int reps, bool permutePaulis);
-
-void applyTrotterizedNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStr* jumps, int numJumps, qreal time, int order, int reps);

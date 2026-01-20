@@ -172,12 +172,17 @@ extern "C" {
  *  - applyTrotterizedUnitaryTimeEvolution()
  * 
  * @author Tyson Jones
+ * @author Vasco Ferreira (randomisation)
  */
 void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps, bool permutePaulis);
 
 
 /// @notyetdoced
 /// @notyettested
+///
+/// @author Tyson Jones
+/// @author Vasco Ferreira (randomisation)
+///
 /// @see
 ///  - applyTrotterizedPauliStrSumGadget()
 ///  - applyControlledCompMatr1()
@@ -186,6 +191,10 @@ void applyTrotterizedControlledPauliStrSumGadget(Qureg qureg, int control, Pauli
 
 /// @notyetdoced
 /// @notyettested
+///
+/// @author Tyson Jones
+/// @author Vasco Ferreira (randomisation)
+///
 /// @see
 ///  - applyTrotterizedPauliStrSumGadget()
 ///  - applyMultiControlledCompMatr1()
@@ -194,6 +203,10 @@ void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, int* controls
 
 /// @notyetdoced
 /// @notyettested
+///
+/// @author Tyson Jones
+/// @author Vasco Ferreira (randomisation)
+///
 /// @see
 ///  - applyTrotterizedPauliStrSumGadget()
 ///  - applyMultiStateControlledCompMatr1()
@@ -248,6 +261,7 @@ void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, int* con
  * - if @p reps is not a positive integer.
  * 
  * @author Tyson Jones
+ * @author Vasco Ferreira (randomisation)
  */
 void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps, bool permutePaulis);
 
@@ -264,6 +278,10 @@ void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, q
 /// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
+///
+/// @author Tyson Jones
+/// @author Vasco Ferreira (randomisation)
+///
 /// @see applyTrotterizedMultiControlledPauliStrSumGadget()
 void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, std::vector<int> controls, PauliStrSum sum, qreal angle, int order, int reps, bool permutePaulis);
 
@@ -272,6 +290,10 @@ void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, std::vector<i
 /// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
+///
+/// @author Tyson Jones
+/// @author Vasco Ferreira (randomisation)
+///
 /// @see applyTrotterizedMultiStateControlledPauliStrSumGadget()
 void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, std::vector<int> controls, std::vector<int> states, PauliStrSum sum, qreal angle, int order, int reps, bool permutePaulis);
 
@@ -294,9 +316,7 @@ extern "C" {
 #endif
 
 
-/** @notyettested
- * 
- * Unitarily time evolves @p qureg for the duration @p time under the time-independent Hamiltonian @p hamil, 
+/** Unitarily time evolves @p qureg for the duration @p time under the time-independent Hamiltonian @p hamil, 
  * as approximated by symmetrized Trotterisation of the specified @p order and number of cycles @p reps. 
  * 
  * @formulae 
@@ -385,13 +405,12 @@ extern "C" {
  * - if @p reps is not a positive integer.
  * 
  * @author Tyson Jones
+ * @author Vasco Ferreira (randomisation)
  */
 void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal time, int order, int reps, bool permutePaulis);
 
 
-/** @notyettested
- * 
- * Simulates imaginary-time evolution of @p qureg for the duration @p tau under the time-independent 
+/** Simulates imaginary-time evolution of @p qureg for the duration @p tau under the time-independent 
  * Hamiltonian @p hamil, as approximated by symmetrized Trotterisation of the specified @p order and
  * number of cycles @p reps. 
  * 
@@ -517,6 +536,7 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
  * - if @p reps is not a positive integer.
  * 
  * @author Tyson Jones
+ * @author Vasco Ferreira (randomisation)
  */
 void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal tau, int order, int reps, bool permutePaulis);
 
@@ -665,6 +685,7 @@ void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qrea
  * - if @p reps is not a positive integer.
  * 
  * @author Tyson Jones
+ * @author Vasco Ferreira (randomisation)
  */
 void applyTrotterizedNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStrSum* jumps, int numJumps, qreal time, int order, int reps, bool permutePaulis);
 

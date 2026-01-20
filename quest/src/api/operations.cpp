@@ -1717,6 +1717,11 @@ qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, 
 
 } // end de-mangler
 
+qindex applyMultiQubitMeasurement(Qureg qureg, vector<int> qubits) {
+
+    return applyMultiQubitMeasurement(qureg, qubits.data(), qubits.size());
+}
+
 qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, vector<int> qubits, qreal* probability) {
 
     return applyMultiQubitMeasurementAndGetProb(qureg, qubits.data(), qubits.size(), probability);
