@@ -430,4 +430,10 @@ void util_tryAllocMatrix(vector<vector<qcomp>> &vec, qindex numRows, qindex numC
 
 
 
+/*
+ * OTHER
+ */
+
+vector<qindex> util_invertPermutation(const vector<qindex>& permutation);
+
 #endif // UTILITIES_HPP

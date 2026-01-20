@@ -1229,3 +1229,21 @@ void util_tryAllocMatrix(vector<vector<qcomp>> &matr, qindex numRows, qindex num
         errFunc();
     }
 }
+
+
+
+/*
+ * OTHER
+ */
+
+vector<qindex> util_invertPermutation(const vector<qindex>& permutation) {
+    qindex numTerms = permutation.size();
+    vector<qindex> out(numTerms);
+
+    // invert permutation
+    for (qindex i = 0; i < numTerms; i++) {
+        out[permutation[i]] = i;
+    }
+
+    return out;
+}
