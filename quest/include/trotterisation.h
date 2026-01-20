@@ -294,9 +294,7 @@ extern "C" {
 #endif
 
 
-/** @notyettested
- * 
- * Unitarily time evolves @p qureg for the duration @p time under the time-independent Hamiltonian @p hamil, 
+/** Unitarily time evolves @p qureg for the duration @p time under the time-independent Hamiltonian @p hamil, 
  * as approximated by symmetrized Trotterisation of the specified @p order and number of cycles @p reps. 
  * 
  * @formulae 
@@ -389,9 +387,7 @@ extern "C" {
 void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal time, int order, int reps, bool permutePaulis);
 
 
-/** @notyettested
- * 
- * Simulates imaginary-time evolution of @p qureg for the duration @p tau under the time-independent 
+/** Simulates imaginary-time evolution of @p qureg for the duration @p tau under the time-independent 
  * Hamiltonian @p hamil, as approximated by symmetrized Trotterisation of the specified @p order and
  * number of cycles @p reps. 
  * 

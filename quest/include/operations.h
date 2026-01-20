@@ -2291,32 +2291,26 @@ extern "C" {
 
 
 /// @notyetdoced
-/// @notyetvalidated
 int applyQubitMeasurement(Qureg qureg, int target);
 
 
 /// @notyetdoced
-/// @notyetvalidated
 int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability);
 
 
 /// @notyetdoced
-/// @notyetvalidated
 qreal applyForcedQubitMeasurement(Qureg qureg, int target, int outcome);
 
 
 /// @notyetdoced
-/// @notyetvalidated
 qindex applyMultiQubitMeasurement(Qureg qureg, int* qubits, int numQubits);
 
 
 /// @notyetdoced
-/// @notyetvalidated
 qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQubits, qreal* probability);
 
 
 /// @notyetdoced
-/// @notyetvalidated
 qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, int numQubits);
 
 
@@ -2340,8 +2334,6 @@ qindex applyMultiQubitMeasurement(Qureg qureg, std::vector<int> qubits);
 qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, std::vector<int> qubits, qreal* probability);
 
 
-/// @notyettested
-/// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
 /// @see applyForcedMultiQubitMeasurement()
@@ -2367,12 +2359,10 @@ extern "C" {
 
 
 /// @notyetdoced
-/// @notyetvalidated
 void applyQubitProjector(Qureg qureg, int target, int outcome);
 
 
 /// @notyetdoced
-/// @notyetvalidated
 void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits);
 
 
@@ -2384,8 +2374,6 @@ void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQu
 #ifdef __cplusplus
 
 
-/// @notyettested
-/// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
 /// @see applyMultiQubitProjector()
@@ -2411,12 +2399,10 @@ extern "C" {
 
 
 /// @notyetdoced
-/// @notyetvalidated
 void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets);
 
 
 /// @notyetdoced
-/// @notyetvalidated
 void applyFullQuantumFourierTransform(Qureg qureg);
 
 
@@ -2428,8 +2414,6 @@ void applyFullQuantumFourierTransform(Qureg qureg);
 #ifdef __cplusplus
 
 
-/// @notyettested
-/// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
 /// @see applyQuantumFourierTransform()
