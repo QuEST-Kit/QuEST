@@ -1661,6 +1661,14 @@ TEST_CASE( "applyMultiQubitProjector", TEST_CATEGORY_OPS ) {
             );
         }
 
+        SECTION( "targets mismatch outcomes (C++ only)" ) {
+
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitProjector(qureg, {0,1,2}, {0,1}),
+                ContainsSubstring("outcomes") && ContainsSubstring("inconsistent with the given number of qubits")
+            );
+        }
+
         // projector does NOT validate outcome probability
     }
 }
@@ -1912,6 +1920,14 @@ TEST_CASE( "applyForcedMultiQubitMeasurement", TEST_CATEGORY_OPS ) {
 
             // restore qureg state
             initDebugState(qureg);
+        }
+
+        SECTION( "targets mismatch outcomes (C++ only)") {
+
+            REQUIRE_THROWS_WITH(
+                applyForcedMultiQubitMeasurement(qureg, {0,1}, {0,1,1}),
+                ContainsSubstring("inconsistent")
+            );
         }
     }
 }
@@ -2782,6 +2798,14 @@ TEST_CASE( "leftapplyMultiQubitProjector", TEST_CATEGORY_MULT ) {
             );
         }
 
+        SECTION( "targets mismatch outcomes (C++ only)" ) {
+
+            REQUIRE_THROWS_WITH(
+                leftapplyMultiQubitProjector(qureg, {0,1,2}, {0,1}),
+                ContainsSubstring("inconsistent")
+            );
+        }
+
         // projector does NOT validate outcome probability
     }
 }
@@ -2873,6 +2897,14 @@ TEST_CASE( "rightapplyMultiQubitProjector", TEST_CATEGORY_MULT ) {
             REQUIRE_THROWS_WITH(
                 rightapplyMultiQubitProjector(qureg, targets, badOutcomes, numTargets),
                 ContainsSubstring("outcome")
+            );
+        }
+
+        SECTION( "targets mismatch outcomes (C++ only)" ) {
+
+            REQUIRE_THROWS_WITH(
+                rightapplyMultiQubitProjector(qureg, {0,1,2}, {0,1}),
+                ContainsSubstring("inconsistent")
             );
         }
 
