@@ -13,6 +13,7 @@
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/errors.hpp"
 
+#include <numeric>
 #include <utility>
 #include <vector>
 #include <array>
@@ -306,6 +307,32 @@ qindex paulis_getTargetBitMask(PauliStrSum sum) {
     return mask;
 }
 
+
+void paulis_applyPermutation(PauliStrSum sum, vector<qindex> scatterPermutation) {
+    // permutation passed by value since we modify it
+
+    // scatterPermutation[i] = destination index for element originally at i
+    for (qindex i = 0; i < sum.numTerms; i++) {
+        while (scatterPermutation[i] != i) {
+            qindex j = scatterPermutation[i];
+            std::swap(sum.strings[i], sum.strings[j]);
+            std::swap(sum.coeffs[i], sum.coeffs[j]);
+            std::swap(scatterPermutation[i], scatterPermutation[j]);
+        }
+    }
+}
+
+void paulis_sortGeneric(PauliStrSum sum, std::function<bool(qindex, qindex)> comparator) {
+
+    // gatherPermutation[j] = source index of element placed at j
+    vector<qindex> gatherPermutation(sum.numTerms);
+    std::iota(gatherPermutation.begin(), gatherPermutation.end(), 0);
+    std::stable_sort(gatherPermutation.begin(), gatherPermutation.end(), comparator);
+
+    // invert permutation and apply
+    vector<qindex> scatterPermutation = util_invertPermutation(gatherPermutation);
+    paulis_applyPermutation(sum, scatterPermutation);
+}
 
 void paulis_setPauliStrSumToScaledTensorProdOfConjWithSelf(PauliStrSum out, qreal factor, PauliStrSum in, int numQubits) {
 

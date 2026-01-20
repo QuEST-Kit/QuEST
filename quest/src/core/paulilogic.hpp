@@ -76,6 +76,10 @@ int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum);
 
 qindex paulis_getTargetBitMask(PauliStrSum sum);
 
+void paulis_applyPermutation(PauliStrSum sum, vector<qindex> permutation);
+
+void paulis_sortGeneric(PauliStrSum sum, std::function<bool(qindex, qindex)> comparator);
+
 
 // below are used exclusively by Trotterisation
 
