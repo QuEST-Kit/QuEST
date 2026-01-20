@@ -220,6 +220,14 @@ TEST_CASE( "randomisedTrotter", TEST_CATEGORY ) {
 */ 
 TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) { 
 
+    // BEWARE: this test creates a new Qureg below which will have
+    // deployments chosen by the auto-deployer; it is ergo unpredictable
+    // whether it will be multithreaded, GPU-accelerated or distributed.
+    // This test is ergo checking only a single, unspecified deployment,
+    // unlike other tests which check all deployments. This is tolerable
+    // since (non-randomised) Trotterisation is merely invoking routines
+    // (Pauli gadgets) already independently tested across deployments
+
     SECTION( LABEL_CORRECTNESS ) {
 
         int numQubits = 20;
@@ -364,6 +372,14 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
 
 
 TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
+
+    // BEWARE: this test creates a new Qureg below which will have
+    // deployments chosen by the auto-deployer; it is ergo unpredictable
+    // whether it will be multithreaded, GPU-accelerated or distributed.
+    // This test is ergo checking only a single, unspecified deployment,
+    // unlike other tests which check all deployments. This is tolerable
+    // since (non-randomised) Trotterisation is merely invoking routines
+    // (Pauli gadgets) already independently tested across deployments
 
     SECTION( LABEL_CORRECTNESS ) {
            
