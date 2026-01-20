@@ -2416,8 +2416,8 @@ extern "C" {
  * 
  * @formulae
  * 
- * Let @f$ N @f$ = @p numTargets, the @f$ N @f$ qubit Quantum Fourier Transform maps each
- * computational basis state belonging to the targeted qubits, @f$ \ket{j} @f$, according to
+ * Letting @f$ N @f$ = @p numTargets, the @f$ N @f$ qubit Quantum Fourier Transform maps each
+ * computational basis state of the targeted qubits, @f$ \ket{j} @f$, according to
  * @f[ 
         \ket{j} \rightarrow \frac{1}{\sqrt{2^N}} \sum_{k=0}^{2^N-1} e^{2 \pi i j k / 2^N} \ket{k}.
  * @f]
@@ -2433,6 +2433,7 @@ extern "C" {
  * @throws @validationerror
  * - if @p qureg is uninitialised.
 *  - if @p targets are invalid qubit indices.
+*  - if @p targets are not unique.
  * - if @p numTargets < 1.
  * @see
  * - applyFullQuantumFourierTransform()
