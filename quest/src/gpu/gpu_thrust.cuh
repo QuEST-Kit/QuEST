@@ -382,8 +382,11 @@ struct functor_mixAmps {
     functor_mixAmps(qreal out, qreal in) : outProb(out), inProb(in) {}
 
     __host__ __device__ cu_qcomp operator()(cu_qcomp outAmp, cu_qcomp inAmp) {
-        
-        return (outProb * outAmp) + (inProb * inAmp);
+
+        return addCuQcomp(
+            mulCuQcomp(outProb, outAmp),
+            mulCuQcomp(inProb, inAmp)
+        );
     }
 };
 
@@ -533,7 +536,7 @@ struct functor_projectStateVec {
         // return amp scaled by zero or renorm, depending on whether n has projected substate
         qindex val = getValueOfBits(n, targetsPtr, numBits);
         qreal fac = renorm * (val == retainValue);
-        return fac * amp;
+        return mulCuQcomp(fac, amp);
     }
 };
 
@@ -579,7 +582,7 @@ struct functor_projectDensMatr {
 
         // multiply amp with renorm or zero if values disagree with given outcomes
         qreal fac = renorm * (v1 == v2) * (retainValue == v1);
-        return fac * amp;
+        return mulCuQcomp(fac, amp);
     }
 };
 

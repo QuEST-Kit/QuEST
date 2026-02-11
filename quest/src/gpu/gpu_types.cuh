@@ -135,6 +135,36 @@ __host__ inline std::array<cu_qcomp,16> unpackMatrixToCuQcomps(CompMatr2 in) {
 
 
 /*
+ * cu_qcomp ARITHMETIC HELPERS
+ *
+ * These explicitly implement component-wise arithmetic and are used in
+ * critical kernels/functors where backend operator overload behaviour has
+ * varied across toolchains.
+ */
+
+
+INLINE cu_qcomp addCuQcomp(cu_qcomp a, cu_qcomp b) {
+    return getCuQcomp(a.x + b.x, a.y + b.y);
+}
+
+INLINE cu_qcomp mulCuQcomp(cu_qcomp a, cu_qcomp b) {
+    return getCuQcomp(
+        (a.x * b.x) - (a.y * b.y),
+        (a.x * b.y) + (a.y * b.x)
+    );
+}
+
+INLINE cu_qcomp mulCuQcomp(cu_qcomp a, qreal b) {
+    return getCuQcomp(a.x * b, a.y * b);
+}
+
+INLINE cu_qcomp mulCuQcomp(qreal b, cu_qcomp a) {
+    return mulCuQcomp(a, b);
+}
+
+
+
+/*
  * cu_qcomp ARITHMETIC OVERLOADS
  *
  * which are only needed by NVCC because

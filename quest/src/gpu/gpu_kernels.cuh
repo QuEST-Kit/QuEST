@@ -724,7 +724,7 @@ __global__ void kernel_statevec_setQuregToWeightedSum_sub(
     cu_qcomp amp = getCuQcomp(0, 0);
 
     for (int q=0; q<numInner; q++)
-        amp = amp + coeffs[q] * inAmps[q][n];
+        amp = addCuQcomp(amp, mulCuQcomp(coeffs[q], inAmps[q][n]));
 
     // must not modify outAmps[n] before computing the amp 
     // since outAmps can legally appear among inAmps
@@ -749,8 +749,11 @@ __global__ void kernel_densmatr_mixQureg_subB(
 
     cu_qcomp iAmp = inAmps[i];
     cu_qcomp jAmp = inAmps[j]; jAmp.y *= -1; // conj
-    
-    outAmps[n] = (outProb * outAmps[n]) + (inProb * iAmp * jAmp);
+
+    outAmps[n] = addCuQcomp(
+        mulCuQcomp(outProb, outAmps[n]),
+        mulCuQcomp(inProb, mulCuQcomp(iAmp, jAmp))
+    );
 }
 
 
@@ -769,8 +772,11 @@ __global__ void kernel_densmatr_mixQureg_subC(
 
     cu_qcomp iAmp = inAmps[i];
     cu_qcomp jAmp = inAmps[j]; jAmp.y *= -1; // conj
-    
-    outAmps[n] = (outProb * outAmps[n]) + (inProb * iAmp * jAmp);
+
+    outAmps[n] = addCuQcomp(
+        mulCuQcomp(outProb, outAmps[n]),
+        mulCuQcomp(inProb, mulCuQcomp(iAmp, jAmp))
+    );
 }
 
 
