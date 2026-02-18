@@ -3765,7 +3765,7 @@ void validate_measurementOutcomesMatchTargets(int numQubits, int numOutcomes, co
         {"${NUM_QUBITS}",    numQubits},
         {"${NUM_OUTCOMES}",  numOutcomes}};
 
-    assertThat(numQubits == numOutcomes, report::MEASUREMENT_OUTCOMES_MISMATCH_NUM_TARGETS, caller);
+    assertThat(numQubits == numOutcomes, report::MEASUREMENT_OUTCOMES_MISMATCH_NUM_TARGETS, vars, caller);
 }
 
 

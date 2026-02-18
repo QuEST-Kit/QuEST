@@ -24,6 +24,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
 #include "tests/utils/config.hpp"
@@ -1043,9 +1044,11 @@ void testOperationValidation(auto operation) {
     SECTION( "targeted amps fit in node" ) {
 
         // use any qureg which is otherwise compatible
+        // (but beware statevecs vs density matrices permit
+        //  different num targets before validation is triggered)
         qureg = (Apply == rightapply)?
-            getCachedDensmatrs().begin()->second:
-            getCachedStatevecs().begin()->second;
+            getArbitraryCachedDensmatr():
+            getArbitraryCachedStatevec();
 
         // can only be validated when environment AND qureg
         // are distributed (over more than 1 node, of course)
@@ -1055,7 +1058,8 @@ void testOperationValidation(auto operation) {
         // can only be validated if forced ctrl qubits permit 
         // enough remaining targets
         int minNumCtrls = (Ctrls == one)? 1 : 0;
-        int minNumTargs = numQubits - qureg.logNumNodes + 1;
+        int numVecQubits = (qureg.isDensityMatrix)? 2*numQubits : numQubits;
+        int minNumTargs = numVecQubits - qureg.logNumNodes + 1;
         int maxNumTargs = numQubits - minNumCtrls;
         if (minNumTargs > maxNumTargs)
             return;
@@ -1134,9 +1138,8 @@ void testOperationValidation(auto operation) {
         if (Apply != rightapply)
             return;
 
-        // use any statevector
-        qureg = getCachedStatevecs().begin()->second;
-
+        // override qureg in apiyFunc with a statevector
+        qureg = getArbitraryCachedStatevec();
         REQUIRE_THROWS_WITH( apiFunc(), ContainsSubstring("Expected a density matrix") );
     }
 
@@ -1411,7 +1414,55 @@ TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY_OPS ) {
         }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+
+        Qureg qureg = getArbitraryCachedStatevec();
+        int targs[] = {0, 1, 2};
+        int numTargs = 3;
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyQuantumFourierTransform(badQureg, targs, numTargs),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubits" ) {
+
+            int badTargs[] = {0, 1, qureg.numQubits}; // latter is too large
+            REQUIRE_THROWS_WITH(
+                applyQuantumFourierTransform(qureg, badTargs, 3),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "duplicate target qubits" ) {
+
+            int dupTargs[] = {0, 1, 1};
+            REQUIRE_THROWS_WITH(
+                applyQuantumFourierTransform(qureg, dupTargs, 3),
+                ContainsSubstring("duplicate")
+            );
+        }
+
+        SECTION( "invalid number of targets" ) {
+
+            int badNumTargs = GENERATE_COPY( -1, 0 ); 
+            REQUIRE_THROWS_WITH(
+                applyQuantumFourierTransform(qureg, targs, badNumTargs),
+                ContainsSubstring("targets") || ContainsSubstring("target qubits")
+            );
+
+            badNumTargs = qureg.numQubits+1;
+            REQUIRE_THROWS_WITH(
+                applyQuantumFourierTransform(qureg, targs, badNumTargs),
+                ContainsSubstring("exceeds the number of qubits in the Qureg")
+            );
+        }
+    }
 }
 
 
@@ -1459,7 +1510,20 @@ TEST_CASE( "applyFullQuantumFourierTransform", TEST_CATEGORY_OPS ) {
         }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+
+        Qureg qureg = getArbitraryCachedStatevec();
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyFullQuantumFourierTransform(badQureg),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+    }
 }
 
 
@@ -1485,7 +1549,40 @@ TEST_CASE( "applyQubitProjector", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+
+        Qureg qureg = getArbitraryCachedStatevec();
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyQubitProjector(badQureg, 0, 0),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubit" ) {
+
+            int badTarget = GENERATE_COPY( -1, qureg.numQubits );
+            REQUIRE_THROWS_WITH(
+                applyQubitProjector(qureg, badTarget, 0),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "invalid outcome" ) {
+
+            int badOutcome = GENERATE_COPY( -1, 2 );
+            REQUIRE_THROWS_WITH(
+                applyQubitProjector(qureg, 0, badOutcome),
+                ContainsSubstring("outcome")
+            );
+        }
+
+        // projector does NOT validate outcome probability
+    }
 }
 
 
@@ -1511,7 +1608,75 @@ TEST_CASE( "applyMultiQubitProjector", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+
+        Qureg qureg = getArbitraryCachedStatevec();
+        int targets[] = {0, 1, 2};
+        int outcomes[] = {0, 1, 0};
+        int numTargets = 3;
+
+        SECTION( "qureg uninitialised" ) {
+            
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitProjector(badQureg, targets, outcomes, numTargets),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubits" ) {
+
+            int badTargets[] = {0, 1, GENERATE_COPY( -1, qureg.numQubits) };
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitProjector(qureg, badTargets, outcomes, numTargets),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "duplicate target qubits" ) {
+
+            int dupTargets[] = {0, 1, 1};
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitProjector(qureg, dupTargets, outcomes, numTargets),
+                ContainsSubstring("duplicate")
+            );
+        }
+
+        SECTION( "invalid number of targets" ) {
+            
+            int badNumTargs = GENERATE( 0, -1 );
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitProjector(qureg, targets, outcomes, badNumTargs),
+                ContainsSubstring("targets")
+            );
+
+            badNumTargs = qureg.numQubits + 1;
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitProjector(qureg, targets, outcomes, badNumTargs),
+                ContainsSubstring("exceeds the number of qubits in the Qureg")
+            );
+        }
+
+        SECTION( "invalid outcomes" ) {
+
+            int badOutcomes[] = {0, 1, GENERATE( -1, 2 ) };
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitProjector(qureg, targets, badOutcomes, numTargets),
+                ContainsSubstring("outcome")
+            );
+        }
+
+        SECTION( "targets mismatch outcomes (C++ only)" ) {
+
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitProjector(qureg, {0,1,2}, {0,1}),
+                ContainsSubstring("outcomes") && ContainsSubstring("inconsistent with the given number of qubits")
+            );
+        }
+
+        // projector does NOT validate outcome probability
+    }
 }
 
 
@@ -1550,7 +1715,77 @@ TEST_CASE( "applyForcedQubitMeasurement", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        
+        Qureg qureg = getArbitraryCachedStatevec();
+
+        // below validation tests assume qubit 0 can collapse to either outcome
+        // (which does not require normalisation; qureg can be in the debug state)
+        initDebugState(qureg);
+        REQUIRE( calcProbOfQubitOutcome(qureg, 0, 0) > getValidationEpsilon() );
+        REQUIRE( calcProbOfQubitOutcome(qureg, 0, 1) > getValidationEpsilon() );
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyForcedQubitMeasurement(badQureg, 0, 0),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubit" ) {
+
+            int badTarget = GENERATE_COPY( -1, qureg.numQubits );
+            REQUIRE_THROWS_WITH(
+                applyForcedQubitMeasurement(qureg, badTarget, 0),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "invalid outcome" ) {
+
+            int badOutcome = GENERATE_COPY( -1, 2 );
+            REQUIRE_THROWS_WITH(
+                applyForcedQubitMeasurement(qureg, 0, badOutcome),
+                ContainsSubstring("outcome")
+            );
+        }
+
+        SECTION( "improbable outcome" ) {
+
+            // precisely zero probability outcome
+            initZeroState(qureg);
+            int badOutcome = 1; // impossible
+            REQUIRE_THROWS_WITH(
+                applyForcedQubitMeasurement(qureg, 0, badOutcome),
+                ContainsSubstring("impossibly unlikely")
+            );
+
+            // outcome of non-zero probability smaller than epsilon
+            qreal badTheta = 1E-8;
+            applyRotateX(qureg, 0, badTheta); // causes prob(1) = sin^2(theta) ~ 2.5E-17
+            REQUIRE_THROWS_WITH(
+                applyForcedQubitMeasurement(qureg, 0, badOutcome),
+                ContainsSubstring("impossibly unlikely")
+            );
+
+            // confirm that >epsilon probability is fine
+            initZeroState(qureg);
+            qreal goodTheta = 0.1;
+            applyRotateX(qureg, 0, goodTheta);
+            REQUIRE( 
+                calcProbOfQubitOutcome(qureg, 0, badOutcome) > getValidationEpsilon() 
+            );
+            REQUIRE_NOTHROW(
+                applyForcedQubitMeasurement(qureg, 0, badOutcome)
+            );
+
+            // restore qureg state
+            initDebugState(qureg);
+        }
+    }
 }
 
 
@@ -1596,7 +1831,111 @@ TEST_CASE( "applyForcedMultiQubitMeasurement", TEST_CATEGORY_OPS ) {
         setValidationEpsilonToDefault();
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+
+        Qureg qureg = getArbitraryCachedStatevec();
+        int targets[] = {0, 1, 2};
+        int outcomes[] = {0, 1, 0};
+        int numTargets = 3;
+
+        // below validation tests assume the above parameters are valid (not impossibly unlikely)
+        initDebugState(qureg);
+        REQUIRE( calcProbOfMultiQubitOutcome(qureg, targets, outcomes, numTargets) > getValidationEpsilon() );
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyForcedMultiQubitMeasurement(badQureg, targets, outcomes, numTargets),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubits" ) {
+
+            int badTargets[] = {0, 1, GENERATE_COPY( -1, qureg.numQubits )};
+            REQUIRE_THROWS_WITH(
+                applyForcedMultiQubitMeasurement(qureg, badTargets, outcomes, numTargets),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "duplicate target qubits" ) {
+            
+            int dupTargets[] = {0, 1, 1};
+            REQUIRE_THROWS_WITH(
+                applyForcedMultiQubitMeasurement(qureg, dupTargets, outcomes, numTargets),
+                ContainsSubstring("duplicate")
+            );
+        }
+
+        SECTION( "invalid number of targets" ) {
+            
+            int badNumTargs = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH(
+                applyForcedMultiQubitMeasurement(qureg, targets, outcomes, badNumTargs),
+                ContainsSubstring("targets")
+            );
+
+            badNumTargs = qureg.numQubits + 1;
+            REQUIRE_THROWS_WITH(
+                applyForcedMultiQubitMeasurement(qureg, targets, outcomes, badNumTargs),
+                ContainsSubstring("exceeds the number of qubits in the Qureg")
+            );
+        }
+
+        SECTION( "invalid outcomes" ) {
+
+            int badOutcomes[] = {0, 1, GENERATE( -1, 2 )};
+            REQUIRE_THROWS_WITH(
+                applyForcedMultiQubitMeasurement(qureg, targets, badOutcomes, numTargets),
+                ContainsSubstring("outcome")
+            );
+        }
+
+        SECTION( "improbable outcomes" ) {
+
+            // impossible outcome
+            initZeroState(qureg);
+            int badOutcomes[] = {0, 0, 1};
+            REQUIRE_THROWS_WITH(
+                applyForcedMultiQubitMeasurement(qureg, targets, badOutcomes, numTargets),
+                ContainsSubstring("impossibly unlikely")
+            );
+
+            // outcome of non-zero probability smaller than epsilon
+            qreal badTheta = 1E-8;
+            applyRotateX(qureg, targets[2], badTheta);
+            REQUIRE_THROWS_WITH(
+                applyForcedMultiQubitMeasurement(qureg, targets, badOutcomes, numTargets),
+                ContainsSubstring("impossibly unlikely")
+            );
+
+            // confirm that >epsilon probability is fine
+            initZeroState(qureg);
+            qreal goodTheta = 0.1;
+            applyRotateX(qureg, targets[2], goodTheta);
+            int goodOutcomes[] = {0, 0, 1};
+            REQUIRE( 
+                calcProbOfMultiQubitOutcome(qureg, targets, goodOutcomes, numTargets) > getValidationEpsilon() 
+            );
+            REQUIRE_NOTHROW(
+                applyForcedMultiQubitMeasurement(qureg, targets, goodOutcomes, numTargets)
+            );
+
+            // restore qureg state
+            initDebugState(qureg);
+        }
+
+        SECTION( "targets mismatch outcomes (C++ only)") {
+
+            REQUIRE_THROWS_WITH(
+                applyForcedMultiQubitMeasurement(qureg, {0,1}, {0,1,1}),
+                ContainsSubstring("inconsistent")
+            );
+        }
+    }
 }
 
 
@@ -1633,7 +1972,55 @@ TEST_CASE( "applyMultiQubitMeasurement", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        
+        Qureg qureg = getArbitraryCachedStatevec();
+        int targets[] = {0, 1, 2};
+        int numTargets = 3;
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurement(badQureg, targets, numTargets),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubits" ) {
+
+            int badTargets[] = {0, 1, GENERATE_COPY(-1, qureg.numQubits)};
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurement(qureg, badTargets, numTargets),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "duplicate target qubits" ) {
+            
+            int dupTargets[] = {0, 1, 1};
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurement(qureg, dupTargets, numTargets),
+                ContainsSubstring("duplicate")
+            );
+        }
+
+        SECTION( "invalid number of targets" ) {
+            
+            int badNumTargs = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurement(qureg, targets, badNumTargs),
+                ContainsSubstring("targets")
+            );
+
+            badNumTargs = qureg.numQubits + 1;
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurement(qureg, targets, badNumTargs),
+                ContainsSubstring("exceeds the number of qubits in the Qureg")
+            );
+        }
+    }
 }
 
 
@@ -1672,7 +2059,56 @@ TEST_CASE( "applyMultiQubitMeasurementAndGetProb", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        
+        Qureg qureg = getArbitraryCachedStatevec();
+        int targets[] = {0, 1, 2};
+        int numTargets = 3;
+        qreal outProb = 0;
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurementAndGetProb(badQureg, targets, numTargets, nullptr),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubits" ) {
+
+            int badTargets[] = {0, 1, GENERATE_COPY( -1, qureg.numQubits )};
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurementAndGetProb(qureg, badTargets, numTargets, &outProb),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "duplicate target qubits" ) {
+            
+            int dupTargets[] = {0, 1, 1};
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurementAndGetProb(qureg, dupTargets, numTargets, &outProb),
+                ContainsSubstring("duplicate")
+            );
+        }
+
+        SECTION( "invalid number of targets" ) {
+            
+            int badNumTargs = GENERATE( -1, 0 );
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurementAndGetProb(qureg, targets, badNumTargs, &outProb),
+                ContainsSubstring("targets")
+            );
+
+            badNumTargs = qureg.numQubits + 1;
+            REQUIRE_THROWS_WITH(
+                applyMultiQubitMeasurementAndGetProb(qureg, targets, badNumTargs, &outProb),
+                ContainsSubstring("exceeds the number of qubits in the Qureg")
+            );
+        }
+    }
 }
 
 
@@ -1708,7 +2144,29 @@ TEST_CASE( "applyQubitMeasurement", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        
+        Qureg qureg = getArbitraryCachedStatevec();
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyQubitMeasurement(badQureg, 0),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubit" ) {
+
+            int badTarget = GENERATE_COPY( -1, qureg.numQubits );
+            REQUIRE_THROWS_WITH(
+                applyQubitMeasurement(qureg, badTarget),
+                ContainsSubstring("target")
+            );
+        }
+    }
 }
 
 
@@ -1746,7 +2204,30 @@ TEST_CASE( "applyQubitMeasurementAndGetProb", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        
+        Qureg qureg = getArbitraryCachedStatevec();
+        qreal outProb = 0;
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyQubitMeasurementAndGetProb(badQureg, 0, &outProb),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubit" ) {
+
+            int badTarget = GENERATE_COPY( -1, qureg.numQubits );
+            REQUIRE_THROWS_WITH(
+                applyQubitMeasurementAndGetProb(qureg, badTarget, &outProb),
+                ContainsSubstring("target")
+            );
+        }
+    }
 }
 
 
@@ -1862,7 +2343,23 @@ TEST_CASE( "applyNonUnitaryPauliGadget", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        
+        Qureg qureg = getArbitraryCachedStatevec();
+        PauliStr str = getPauliStr("XY", {0, 1});
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyNonUnitaryPauliGadget(badQureg, str, qcomp(0.5, 0)),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        /// @todo remaining input validation
+    }
 }
 
 
@@ -2100,7 +2597,7 @@ TEST_CASE( "rightapplyFullStateDiagMatrPower", TEST_CATEGORY_MULT LABEL_MIXED_DE
 }
 
 
-TEST_CASE( "leftapplyQubitProjector", TEST_CATEGORY_OPS ) {
+TEST_CASE( "leftapplyQubitProjector", TEST_CATEGORY_MULT ) {
 
     PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
 
@@ -2122,11 +2619,44 @@ TEST_CASE( "leftapplyQubitProjector", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        
+        Qureg qureg = getArbitraryCachedStatevec();
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                leftapplyQubitProjector(badQureg, 0, 0),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubit" ) {
+            
+            int badTarget = GENERATE_COPY( -1, qureg.numQubits );
+            REQUIRE_THROWS_WITH(
+                leftapplyQubitProjector(qureg, badTarget, 0),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "invalid outcome" ) {
+
+            int badOutcome = GENERATE_COPY( -1, 2 );
+            REQUIRE_THROWS_WITH(
+                leftapplyQubitProjector(qureg, 0, badOutcome),
+                ContainsSubstring("outcome")
+            );
+        }
+
+        // projector does NOT validate outcome probability
+    }
 }
 
 
-TEST_CASE( "rightapplyQubitProjector", TEST_CATEGORY_OPS ) {
+TEST_CASE( "rightapplyQubitProjector", TEST_CATEGORY_MULT ) {
 
     PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
 
@@ -2147,11 +2677,53 @@ TEST_CASE( "rightapplyQubitProjector", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        
+        Qureg qureg = getArbitraryCachedDensmatr();
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                rightapplyQubitProjector(badQureg, 0, 0),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "qureg is not density matrix" ) {
+
+            Qureg badQureg = getArbitraryCachedStatevec();
+            REQUIRE_THROWS_WITH(
+                rightapplyQubitProjector(badQureg, 0, 0),
+                ContainsSubstring("received a statevector")
+            );
+        }
+
+        SECTION( "invalid target qubit" ) {
+            
+            int badTarget = GENERATE_COPY( -1, qureg.numQubits );
+            REQUIRE_THROWS_WITH(
+                rightapplyQubitProjector(qureg, badTarget, 0),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "invalid outcome" ) {
+
+            int badOutcome = GENERATE_COPY( -1, 2 );
+            REQUIRE_THROWS_WITH(
+                rightapplyQubitProjector(qureg, 0, badOutcome),
+                ContainsSubstring("outcome")
+            );
+        }
+
+        // projector does NOT validate outcome probability
+    }
 }
 
 
-TEST_CASE( "leftapplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
+TEST_CASE( "leftapplyMultiQubitProjector", TEST_CATEGORY_MULT ) {
 
     PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
 
@@ -2173,11 +2745,79 @@ TEST_CASE( "leftapplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        
+        Qureg qureg = getArbitraryCachedStatevec();
+        int targets[] = {0, 1, 2};
+        int outcomes[] = {0, 1, 0};
+        int numTargets = 3;
+
+        SECTION( "qureg uninitialised" ) {
+            
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                leftapplyMultiQubitProjector(badQureg, targets, outcomes, numTargets),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "invalid target qubits" ) {
+
+            int badTargets[] = {0, 1, GENERATE_COPY( -1, qureg.numQubits) };
+            REQUIRE_THROWS_WITH(
+                leftapplyMultiQubitProjector(qureg, badTargets, outcomes, numTargets),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "duplicate target qubits" ) {
+
+            int dupTargets[] = {0, 1, 1};
+            REQUIRE_THROWS_WITH(
+                leftapplyMultiQubitProjector(qureg, dupTargets, outcomes, numTargets),
+                ContainsSubstring("duplicate")
+            );
+        }
+
+        SECTION( "invalid number of targets" ) {
+            
+            int badNumTargs = GENERATE( 0, -1 );
+            REQUIRE_THROWS_WITH(
+                leftapplyMultiQubitProjector(qureg, targets, outcomes, badNumTargs),
+                ContainsSubstring("targets")
+            );
+
+            badNumTargs = qureg.numQubits + 1;
+            REQUIRE_THROWS_WITH(
+                leftapplyMultiQubitProjector(qureg, targets, outcomes, badNumTargs),
+                ContainsSubstring("exceeds the number of qubits in the Qureg")
+            );
+        }
+
+        SECTION( "invalid outcomes" ) {
+
+            int badOutcomes[] = {0, 1, GENERATE( -1, 2 ) };
+            REQUIRE_THROWS_WITH(
+                leftapplyMultiQubitProjector(qureg, targets, badOutcomes, numTargets),
+                ContainsSubstring("outcome")
+            );
+        }
+
+        SECTION( "targets mismatch outcomes (C++ only)" ) {
+
+            REQUIRE_THROWS_WITH(
+                leftapplyMultiQubitProjector(qureg, {0,1,2}, {0,1}),
+                ContainsSubstring("inconsistent")
+            );
+        }
+
+        // projector does NOT validate outcome probability
+    }
 }
 
 
-TEST_CASE( "rightapplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
+TEST_CASE( "rightapplyMultiQubitProjector", TEST_CATEGORY_MULT ) {
 
     PREPARE_TEST( numQubits, statevecQuregs, densmatrQuregs, statevecRef, densmatrRef );
 
@@ -2198,7 +2838,84 @@ TEST_CASE( "rightapplyMultiQubitProjector", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+
+        Qureg qureg = getArbitraryCachedDensmatr();
+        int targets[] = {0, 1, 2};
+        int outcomes[] = {0, 1, 0};
+        int numTargets = 3;
+
+        SECTION( "qureg uninitialised" ) {
+            
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                rightapplyMultiQubitProjector(badQureg, targets, outcomes, numTargets),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "qureg is not density matrix" ) {
+
+            Qureg badQureg = getArbitraryCachedStatevec();
+            REQUIRE_THROWS_WITH(
+                rightapplyMultiQubitProjector(badQureg, targets, outcomes, numTargets),
+                ContainsSubstring("received a statevector")
+            );
+        }
+
+        SECTION( "invalid target qubits" ) {
+
+            int badTargets[] = {0, 1, GENERATE_COPY( -1, qureg.numQubits) };
+            REQUIRE_THROWS_WITH(
+                rightapplyMultiQubitProjector(qureg, badTargets, outcomes, numTargets),
+                ContainsSubstring("target")
+            );
+        }
+
+        SECTION( "duplicate target qubits" ) {
+
+            int dupTargets[] = {0, 1, 1};
+            REQUIRE_THROWS_WITH(
+                rightapplyMultiQubitProjector(qureg, dupTargets, outcomes, numTargets),
+                ContainsSubstring("duplicate")
+            );
+        }
+
+        SECTION( "invalid number of targets" ) {
+            
+            int badNumTargs = GENERATE( 0, -1 );
+            REQUIRE_THROWS_WITH(
+                rightapplyMultiQubitProjector(qureg, targets, outcomes, badNumTargs),
+                ContainsSubstring("targets")
+            );
+
+            badNumTargs = qureg.numQubits + 1;
+            REQUIRE_THROWS_WITH(
+                rightapplyMultiQubitProjector(qureg, targets, outcomes, badNumTargs),
+                ContainsSubstring("exceeds the number of qubits in the Qureg")
+            );
+        }
+
+        SECTION( "invalid outcomes" ) {
+
+            int badOutcomes[] = {0, 1, GENERATE( -1, 2 ) };
+            REQUIRE_THROWS_WITH(
+                rightapplyMultiQubitProjector(qureg, targets, badOutcomes, numTargets),
+                ContainsSubstring("outcome")
+            );
+        }
+
+        SECTION( "targets mismatch outcomes (C++ only)" ) {
+
+            REQUIRE_THROWS_WITH(
+                rightapplyMultiQubitProjector(qureg, {0,1,2}, {0,1}),
+                ContainsSubstring("inconsistent")
+            );
+        }
+
+        // projector does NOT validate outcome probability
+    }
 }
 
 
@@ -2228,7 +2945,27 @@ TEST_CASE( "leftapplyPauliStrSum", TEST_CATEGORY_MULT LABEL_MIXED_DEPLOY_TAG ) {
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+       
+        Qureg qureg = getArbitraryCachedStatevec();
+        PauliStrSum sum = createRandomPauliStrSum(numQubits, 2);
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            Qureg workspace = createCloneQureg(qureg);
+            REQUIRE_THROWS_WITH(
+                leftapplyPauliStrSum(badQureg, sum, workspace),
+                ContainsSubstring("invalid Qureg")
+            );
+            destroyQureg(workspace);
+        }
+
+        destroyPauliStrSum(sum);
+
+        /// @todo remaining input validation
+    }
 }
 
 
@@ -2257,7 +2994,27 @@ TEST_CASE( "rightapplyPauliStrSum", TEST_CATEGORY_MULT LABEL_MIXED_DEPLOY_TAG ) 
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+        
+        Qureg qureg = getArbitraryCachedStatevec();
+        PauliStrSum sum = createRandomPauliStrSum(numQubits, 2);
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            Qureg workspace = createCloneQureg(qureg);
+            REQUIRE_THROWS_WITH(
+                rightapplyPauliStrSum(badQureg, sum, workspace),
+                ContainsSubstring("invalid Qureg")
+            );
+            destroyQureg(workspace);
+        }
+
+        destroyPauliStrSum(sum);
+
+        /// @todo remaining input validation
+    }
 }
 
 

@@ -150,11 +150,12 @@ int main() {
     int order = 4;
     int reps  = 5;
     int steps = 20;
+    bool randomise = true;
 
     for (int i=0; i<steps; i++) {
 
         // evolve qureg under (approx) exp(-i dt H)
-        applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt, order, reps);
+        applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt, order, reps, randomise);
 
         // calculate and report <O>
         qreal time = dt * (i+1);
@@ -181,7 +182,7 @@ int main() {
 
     // verify results by uninterrupted higher-order simulation to target time
     initPlusState(qureg);
-    applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt*steps, order+2, reps*steps);
+    applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt*steps, order+2, reps*steps, randomise);
     reportScalar("final <O>", calcExpecPauliStrSum(qureg, observ));
 
     // clean up

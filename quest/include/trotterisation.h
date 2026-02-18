@@ -10,8 +10,11 @@
  * @{
  */
 
+
 #ifndef TROTTERISATION_H
 #define TROTTERISATION_H
+
+#include <stdbool.h>
 
 #include "quest/include/qureg.h"
 #include "quest/include/paulis.h"
@@ -40,9 +43,12 @@ extern "C" {
  * 
  * Effects an approximation to the exponential of @p sum, weighted by @p angle times @f$ i @f$, upon @p qureg,
  * via the symmetrized Trotter-Suzuki decomposition (<a href="https://arxiv.org/abs/math-ph/0506007">arXiv</a>).
+ * 
  * Increasing @p reps (the number of Trotter repetitions) or @p order (an even, positive integer or one) 
  * improves the accuracy of the approximation by reducing the "Trotter error" due to non-commuting 
- * terms of @p sum, though increases the runtime linearly and exponentially respectively.
+ * terms of @p sum, though increases the runtime linearly and exponentially respectively. 
+ * Using @p permutePaulis the ordering of terms in the sum can also be randomised, which generally 
+ * improves the accuracy of the approximation for low order decompositions (<a href="https://arxiv.org/abs/1805.08385">arXiv</a>).
  * 
  * @formulae 
  * 
@@ -103,6 +109,15 @@ extern "C" {
  * > These formulations are taken from 'Finding Exponential Product Formulas
  * > of Higher Orders', Naomichi Hatano and Masuo Suzuki (2005) (<a href="https://arxiv.org/abs/math-ph/0506007">arXiv</a>).
  * 
+ * When @p permutePaulis=true the terms of @p sum are effected in a random order at each repetition. That is, each repetition of the Trotter-Suzuki decomposition is evaluated with the sum
+ * @f[
+      \hat{H} = \sum\limits_j^T c_{\pi(j)} \, \hat{\sigma}_{\pi(j)}
+ * @f]
+ * where @f$ \pi @f$  is a randomly selected permutation.
+ *
+ * @important
+ *   Using @p permutePaulis=true will cause @p sum to be mutated by the Trotterisation.
+ *
  * @equivalences
  * 
  * - By passing @f$ \theta = - \Delta t / \hbar @f$, this function approximates unitary time evolution of a closed 
@@ -137,11 +152,12 @@ extern "C" {
  * - This function only ever effects @f$ \exp \left(\iu \, \theta \, \hat{H} \right) @f$ exactly
  *   when all PauliStr in @p sum = @f$ \hat{H} @f$ commute, or @p reps @f$ \rightarrow \infty @f$.
  * 
- * @param[in,out] qureg  the state to modify.
- * @param[in]     sum    a weighted sum of Pauli strings to approximately exponentiate.
- * @param[in]     angle  the prefactor of @p sum times @f$ i @f$ in the exponent.
- * @param[in]     order  the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
- * @param[in]     reps   the number of Trotter repetitions.
+ * @param[in,out] qureg                the state to modify.
+ * @param[in]     sum                  a weighted sum of Pauli strings to approximately exponentiate.
+ * @param[in]     angle                the prefactor of @p sum times @f$ i @f$ in the exponent.
+ * @param[in]     order                the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
+ * @param[in]     reps                 the number of Trotter repetitions.
+ * @param[in]     permutePaulis        whether to randomly reorder Pauli strings at each repetition.
  * 
  * @throws @validationerror
  * - if @p qureg or @p sum are uninitialised.
@@ -156,32 +172,45 @@ extern "C" {
  *  - applyTrotterizedUnitaryTimeEvolution()
  * 
  * @author Tyson Jones
+ * @author Vasco Ferreira (randomisation)
  */
-void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps);
+void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps, bool permutePaulis);
 
 
 /// @notyetdoced
 /// @notyettested
+///
+/// @author Tyson Jones
+/// @author Vasco Ferreira (randomisation)
+///
 /// @see
 ///  - applyTrotterizedPauliStrSumGadget()
 ///  - applyControlledCompMatr1()
-void applyTrotterizedControlledPauliStrSumGadget(Qureg qureg, int control, PauliStrSum sum, qreal angle, int order, int reps);
+void applyTrotterizedControlledPauliStrSumGadget(Qureg qureg, int control, PauliStrSum sum, qreal angle, int order, int reps, bool permutePaulis);
 
 
 /// @notyetdoced
 /// @notyettested
+///
+/// @author Tyson Jones
+/// @author Vasco Ferreira (randomisation)
+///
 /// @see
 ///  - applyTrotterizedPauliStrSumGadget()
 ///  - applyMultiControlledCompMatr1()
-void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, int* controls, int numControls, PauliStrSum sum, qreal angle, int order, int reps);
+void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, int* controls, int numControls, PauliStrSum sum, qreal angle, int order, int reps, bool permutePaulis);
 
 
 /// @notyetdoced
 /// @notyettested
+///
+/// @author Tyson Jones
+/// @author Vasco Ferreira (randomisation)
+///
 /// @see
 ///  - applyTrotterizedPauliStrSumGadget()
 ///  - applyMultiStateControlledCompMatr1()
-void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStrSum sum, qreal angle, int order, int reps);
+void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStrSum sum, qreal angle, int order, int reps, bool permutePaulis);
 
 
 /** @notyettested
@@ -218,11 +247,12 @@ void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, int* con
  * - This function only ever effects @f$ \exp \left(\iu \, \theta \, \hat{H} \right) @f$ exactly
  *   when all PauliStr in @p sum = @f$ \hat{H} @f$ commute. 
  * 
- * @param[in,out] qureg  the state to modify.
- * @param[in]     sum    a weighted sum of Pauli strings to approximately exponentiate.
- * @param[in]     angle  an effective prefactor of @p sum in the exponent.
- * @param[in]     order  the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
- * @param[in]     reps   the number of Trotter repetitions.
+ * @param[in,out] qureg                the state to modify.
+ * @param[in]     sum                  a weighted sum of Pauli strings to approximately exponentiate.
+ * @param[in]     angle                an effective prefactor of @p sum in the exponent.
+ * @param[in]     order                the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
+ * @param[in]     reps                 the number of Trotter repetitions.
+ * @param[in]     permutePaulis        whether to randomly reorder Pauli strings at each repetition.
  * 
  * @throws @validationerror
  * - if @p qureg or @p sum are uninitialised.
@@ -231,8 +261,9 @@ void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, int* con
  * - if @p reps is not a positive integer.
  * 
  * @author Tyson Jones
+ * @author Vasco Ferreira (randomisation)
  */
-void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps);
+void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps, bool permutePaulis);
 
 
 // end de-mangler
@@ -247,16 +278,24 @@ void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, q
 /// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
+///
+/// @author Tyson Jones
+/// @author Vasco Ferreira (randomisation)
+///
 /// @see applyTrotterizedMultiControlledPauliStrSumGadget()
-void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, std::vector<int> controls, PauliStrSum sum, qreal angle, int order, int reps);
+void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, std::vector<int> controls, PauliStrSum sum, qreal angle, int order, int reps, bool permutePaulis);
 
 
 /// @notyettested
 /// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
+///
+/// @author Tyson Jones
+/// @author Vasco Ferreira (randomisation)
+///
 /// @see applyTrotterizedMultiStateControlledPauliStrSumGadget()
-void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, std::vector<int> controls, std::vector<int> states, PauliStrSum sum, qreal angle, int order, int reps);
+void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, std::vector<int> controls, std::vector<int> states, PauliStrSum sum, qreal angle, int order, int reps, bool permutePaulis);
 
 
 #endif // __cplusplus
@@ -277,9 +316,7 @@ extern "C" {
 #endif
 
 
-/** @notyettested
- * 
- * Unitarily time evolves @p qureg for the duration @p time under the time-independent Hamiltonian @p hamil, 
+/** Unitarily time evolves @p qureg for the duration @p time under the time-independent Hamiltonian @p hamil, 
  * as approximated by symmetrized Trotterisation of the specified @p order and number of cycles @p reps. 
  * 
  * @formulae 
@@ -353,11 +390,12 @@ extern "C" {
  *  - applyTrotterizedNoisyTimeEvolution()
  *  - applyTrotterizedNonUnitaryPauliStrSumGadget()
  * 
- * @param[in,out] qureg  the state to modify.
- * @param[in]     hamil  the Hamiltonian as a a weighted sum of Pauli strings.
- * @param[in]     time   the duration over which to simulate evolution.
- * @param[in]     order  the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
- * @param[in]     reps   the number of Trotter repetitions.
+ * @param[in,out] qureg                the state to modify.
+ * @param[in]     hamil                the Hamiltonian as a a weighted sum of Pauli strings.
+ * @param[in]     time                 the duration over which to simulate evolution.
+ * @param[in]     order                the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
+ * @param[in]     reps                 the number of Trotter repetitions.
+ * @param[in]     permutePaulis        whether to randomly reorder Pauli strings at each repetition.
  * 
  * @throws @validationerror
  * - if @p qureg or @p hamil are uninitialised.
@@ -367,13 +405,12 @@ extern "C" {
  * - if @p reps is not a positive integer.
  * 
  * @author Tyson Jones
+ * @author Vasco Ferreira (randomisation)
  */
-void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal time, int order, int reps);
+void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal time, int order, int reps, bool permutePaulis);
 
 
-/** @notyettested
- * 
- * Simulates imaginary-time evolution of @p qureg for the duration @p tau under the time-independent 
+/** Simulates imaginary-time evolution of @p qureg for the duration @p tau under the time-independent 
  * Hamiltonian @p hamil, as approximated by symmetrized Trotterisation of the specified @p order and
  * number of cycles @p reps. 
  * 
@@ -484,11 +521,12 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
  *  - applyTrotterizedUnitaryTimeEvolution()
  *  - applyTrotterizedNonUnitaryPauliStrSumGadget()
  * 
- * @param[in,out] qureg  the state to modify.
- * @param[in]     hamil  the Hamiltonian as a a weighted sum of Pauli strings.
- * @param[in]     tau    the duration over which to simulate imaginary-time evolution.
- * @param[in]     order  the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
- * @param[in]     reps   the number of Trotter repetitions.
+ * @param[in,out] qureg                the state to modify.
+ * @param[in]     hamil                the Hamiltonian as a a weighted sum of Pauli strings.
+ * @param[in]     tau                  the duration over which to simulate imaginary-time evolution.
+ * @param[in]     order                the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
+ * @param[in]     reps                 the number of Trotter repetitions.
+ * @param[in]     permutePaulis        whether to randomly reorder Pauli strings at each repetition.
  * 
  * @throws @validationerror
  * - if @p qureg or @p hamil are uninitialised.
@@ -498,8 +536,9 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
  * - if @p reps is not a positive integer.
  * 
  * @author Tyson Jones
+ * @author Vasco Ferreira (randomisation)
  */
-void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal tau, int order, int reps);
+void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal tau, int order, int reps, bool permutePaulis);
 
 
 /** @notyettested
@@ -622,14 +661,15 @@ void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qrea
  *  - applyTrotterizedUnitaryTimeEvolution()
  *  - applyTrotterizedImaginaryTimeEvolution()
  * 
- * @param[in,out] qureg     the density-matrix state to evolve and modify.
- * @param[in]     hamil     the Hamiltonian of the qubit system (excludes any environment).
- * @param[in]     damps     the damping rates of each jump operator in @p jumps.
- * @param[in]     jumps     the jump operators specified as PauliStrSum.
- * @param[in]     numJumps  the length of list @p jumps (and @p damps).
- * @param[in]     time      the duration through which to evolve the state.
- * @param[in]     order     the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
- * @param[in]     reps      the number of Trotter repetitions.
+ * @param[in,out] qureg                the density-matrix state to evolve and modify.
+ * @param[in]     hamil                the Hamiltonian of the qubit system (excludes any environment).
+ * @param[in]     damps                the damping rates of each jump operator in @p jumps.
+ * @param[in]     jumps                the jump operators specified as PauliStrSum.
+ * @param[in]     numJumps             the length of list @p jumps (and @p damps).
+ * @param[in]     time                 the duration through which to evolve the state.
+ * @param[in]     order                the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
+ * @param[in]     reps                 the number of Trotter repetitions.
+ * @param[in]     permutePaulis        whether to randomly reorder Pauli strings at each repetition.
  * 
  * @throws @validationerror
  * - if @p qureg, @p hamil or any element of @p jumps are uninitialised.
@@ -645,8 +685,9 @@ void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qrea
  * - if @p reps is not a positive integer.
  * 
  * @author Tyson Jones
+ * @author Vasco Ferreira (randomisation)
  */
-void applyTrotterizedNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStrSum* jumps, int numJumps, qreal time, int order, int reps);
+void applyTrotterizedNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStrSum* jumps, int numJumps, qreal time, int order, int reps, bool permutePaulis);
 
 
 // end de-mangler

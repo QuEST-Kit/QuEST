@@ -40,6 +40,9 @@ quregCache getCachedDensmatrs();
 quregCache getAltCachedStatevecs();
 quregCache getAltCachedDensmatrs();
 
+Qureg getArbitraryCachedStatevec();
+Qureg getArbitraryCachedDensmatr();
+
 qvector getRefStatevec();
 qmatrix getRefDensmatr();
 
