@@ -1419,13 +1419,14 @@ TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY_OPS ) {
         Qureg qureg = getArbitraryCachedStatevec();
         int targs[] = {0, 1, 2};
         int numTargs = 3;
+        bool inverse = false;
 
         SECTION( "qureg uninitialised" ) {
 
             Qureg badQureg = qureg;
             badQureg.numQubits = -1;
             REQUIRE_THROWS_WITH(
-                applyQuantumFourierTransform(badQureg, targs, numTargs),
+                applyQuantumFourierTransform(badQureg, targs, numTargs, inverse),
                 ContainsSubstring("invalid Qureg")
             );
         }
@@ -1434,7 +1435,7 @@ TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY_OPS ) {
 
             int badTargs[] = {0, 1, qureg.numQubits}; // latter is too large
             REQUIRE_THROWS_WITH(
-                applyQuantumFourierTransform(qureg, badTargs, 3),
+                applyQuantumFourierTransform(qureg, badTargs, 3, inverse),
                 ContainsSubstring("target")
             );
         }
@@ -1443,7 +1444,7 @@ TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY_OPS ) {
 
             int dupTargs[] = {0, 1, 1};
             REQUIRE_THROWS_WITH(
-                applyQuantumFourierTransform(qureg, dupTargs, 3),
+                applyQuantumFourierTransform(qureg, dupTargs, 3, inverse),
                 ContainsSubstring("duplicate")
             );
         }
@@ -1452,13 +1453,13 @@ TEST_CASE( "applyQuantumFourierTransform", TEST_CATEGORY_OPS ) {
 
             int badNumTargs = GENERATE_COPY( -1, 0 ); 
             REQUIRE_THROWS_WITH(
-                applyQuantumFourierTransform(qureg, targs, badNumTargs),
+                applyQuantumFourierTransform(qureg, targs, badNumTargs, inverse),
                 ContainsSubstring("targets") || ContainsSubstring("target qubits")
             );
 
             badNumTargs = qureg.numQubits+1;
             REQUIRE_THROWS_WITH(
-                applyQuantumFourierTransform(qureg, targs, badNumTargs),
+                applyQuantumFourierTransform(qureg, targs, badNumTargs, inverse),
                 ContainsSubstring("exceeds the number of qubits in the Qureg")
             );
         }
@@ -1513,13 +1514,14 @@ TEST_CASE( "applyFullQuantumFourierTransform", TEST_CATEGORY_OPS ) {
     SECTION( LABEL_VALIDATION ) {
 
         Qureg qureg = getArbitraryCachedStatevec();
+        bool inverse = false;
 
         SECTION( "qureg uninitialised" ) {
 
             Qureg badQureg = qureg;
             badQureg.numQubits = -1;
             REQUIRE_THROWS_WITH(
-                applyFullQuantumFourierTransform(badQureg),
+                applyFullQuantumFourierTransform(badQureg, inverse),
                 ContainsSubstring("invalid Qureg")
             );
         }
