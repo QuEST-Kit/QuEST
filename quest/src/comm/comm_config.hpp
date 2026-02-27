@@ -31,7 +31,7 @@ bool comm_isRootNode();
 bool comm_isRootNode(int rank);
 
 #if COMPILE_MPI
-  MPI_Comm * getMpiComm();
+  MPI_Comm comm_getMpiComm();
 #endif
 
 #endif // COMM_CONFIG_HPP

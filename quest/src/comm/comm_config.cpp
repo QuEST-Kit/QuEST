@@ -194,7 +194,7 @@ void comm_sync() {
 }
 
 #if COMPILE_MPI
-    MPI_Comm * getMpiComm() {
-        return &mpiCommQuest;
+    MPI_Comm comm_getMpiComm() {
+        return mpiCommQuest;
     }
 #endif
