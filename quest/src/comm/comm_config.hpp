@@ -17,6 +17,7 @@
 constexpr int ROOT_RANK = 0;
 
 bool comm_isMpiCompiled();
+bool comm_isMpiSubCommunicatorCompiled();
 bool comm_isMpiGpuAware();
 
 void comm_init();
@@ -32,6 +33,9 @@ bool comm_isRootNode(int rank);
 
 #if COMPILE_MPI
   MPI_Comm comm_getMpiComm();
+  #if COMPILE_SUBCOMM
+    void comm_setMpiComm(MPI_Comm newComm);
+  #endif
 #endif
 
 #endif // COMM_CONFIG_HPP

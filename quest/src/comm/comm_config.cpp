@@ -197,4 +197,17 @@ void comm_sync() {
     MPI_Comm comm_getMpiComm() {
         return mpiCommQuest;
     }
+
+    #if COMPILE_SUBCOMM
+        void comm_setMpiComm(MPI_Comm newComm) {
+            if (mpiCommQuest != MPI_COMM_NULL) {
+                MPI_Barrier(mpiCommQuest);
+                MPI_Comm_free(&mpiCommQuest);
+            }
+
+            MPI_Comm_dup(newComm, &mpiCommQuest);
+
+            return;
+        }
+    #endif
 #endif
