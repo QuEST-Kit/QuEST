@@ -145,6 +145,12 @@ option(
 )
 message(STATUS "Distribution is turned ${ENABLE_DISTRIBUTION}. Set ENABLE_DISTRIBUTION to modify.")
 
+option(
+  ENABLE_SUBCOMM
+  "Whether QuEST will be built with support for restricting it to a user-defined MPI communicator. Turned OFF by default."
+  OFF
+)
+message(STATUS "Custom communicator support is turned ${ENABLE_SUBCOMM}. Set ENABLE_SUBCOMM to modify.")
 
 # GPU Acceleration
 option(
@@ -206,6 +212,9 @@ if (ENABLE_CUQUANTUM AND NOT ENABLE_CUDA)
   message(FATAL_ERROR "Use of cuQuantum requires CUDA.")
 endif()
 
+if (ENABLE_SUBCOMM AND NOT ENABLE_DISTRIBUTION)
+  message(FATAL_ERROR "Distribution must be enabled to make use of a user-defined communicator for QuEST.")
+endif()
 
 if(WIN32)
   
@@ -381,12 +390,22 @@ endif()
 # MPI
 if (ENABLE_DISTRIBUTION)
   find_package(MPI REQUIRED
+    # Component CXX is the C api usable from C++
+    # NOT the deprecated C++ API
     COMPONENTS CXX
   )
-  target_link_libraries(QuEST
-    PRIVATE
-    MPI::MPI_CXX
-  )
+
+  if(ENABLE_SUBCOMM)
+    target_link_libraries(QuEST
+      PUBLIC
+      MPI::MPI_CXX
+    )
+  else()
+    target_link_libraries(QuEST
+      PRIVATE
+      MPI::MPI_CXX
+    )
+  endif()
 endif()
 
 
@@ -446,6 +465,7 @@ endif()
 # set vars which will be written to config.h.in (auto-converted to 0 or 1)
 set(COMPILE_OPENMP ${ENABLE_MULTITHREADING})
 set(COMPILE_MPI ${ENABLE_DISTRIBUTION})
+set(COMPILE_SUBCOMM ${ENABLE_SUBCOMM})
 set(COMPILE_CUQUANTUM ${ENABLE_CUQUANTUM})
 set(INCLUDE_DEPRECATED_FUNCTIONS ${ENABLE_DEPRECATED_API})
 

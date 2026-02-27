@@ -37,6 +37,7 @@
 #if defined(FLOAT_PRECISION)              || \
     defined(COMPILE_OPENMP)               || \
     defined(COMPILE_MPI)                  || \
+    defined(COMPILE_SUBCOMM)              || \
     defined(COMPILE_CUDA)                 || \
     defined(COMPILE_HIP)                  || \
     defined(COMPILE_CUQUANTUM)            || \
@@ -79,6 +80,7 @@
 // crucial to QuEST source (informs external library usage)
 #cmakedefine01 COMPILE_OPENMP
 #cmakedefine01 COMPILE_MPI
+#cmakedefine01 COMPILE_SUBCOMM
 #cmakedefine01 COMPILE_CUDA
 #cmakedefine01 COMPILE_CUQUANTUM
 
@@ -118,6 +120,7 @@
 #if ! defined(FLOAT_PRECISION)              || \
     ! defined(COMPILE_OPENMP)               || \
     ! defined(COMPILE_MPI)                  || \
+    ! defined(COMPILE_SUBCOMM)              || \
     ! defined(COMPILE_CUDA)                 || \
     ! defined(COMPILE_HIP)                  || \
     ! defined(COMPILE_CUQUANTUM)            || \
@@ -144,6 +147,7 @@
 
 #if ! (COMPILE_OPENMP               == 0 || COMPILE_OPENMP               == 1) || \
     ! (COMPILE_MPI                  == 0 || COMPILE_MPI                  == 1) || \
+    ! (COMPILE_SUBCOMM             == 0  || COMPILE_SUBCOMM              == 1) || \
     ! (COMPILE_CUDA                 == 0 || COMPILE_CUDA                 == 1) || \
     ! (COMPILE_HIP                  == 0 || COMPILE_HIP                  == 1) || \
     ! (COMPILE_CUQUANTUM            == 0 || COMPILE_CUQUANTUM            == 1) || \
