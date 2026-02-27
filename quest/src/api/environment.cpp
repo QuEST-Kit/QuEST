@@ -153,6 +153,11 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     globalEnvPtr->numNodes = (useDistrib)? comm_getNumNodes() : 1;
 }
 
+void updateQuESTEnvDistInfo() {
+    globalEnvPtr->rank     = (globalEnvPtr->isDistributed)? comm_getRank()     : 0;
+    globalEnvPtr->numNodes = (globalEnvPtr->isDistributed)? comm_getNumNodes() : 1;
+    return;
+}
 
 
 /*
@@ -187,10 +192,11 @@ void printCompilationInfo() {
 
     print_table(
         "compilation", {
-        {"isMpiCompiled",       comm_isMpiCompiled()},
-        {"isGpuCompiled",       gpu_isGpuCompiled()},
-        {"isOmpCompiled",       cpu_isOpenmpCompiled()},
-        {"isCuQuantumCompiled", gpu_isCuQuantumCompiled()},
+        {"isMpiCompiled",                comm_isMpiCompiled()},
+        {"isMpiSubCommunicatorCompiled", comm_isMpiSubCommunicatorCompiled()},
+        {"isGpuCompiled",                gpu_isGpuCompiled()},
+        {"isOmpCompiled",                cpu_isOpenmpCompiled()},
+        {"isCuQuantumCompiled",          gpu_isCuQuantumCompiled()},
     });
 }
 
@@ -454,8 +460,12 @@ void syncQuESTEnv() {
     if (globalEnvPtr->isGpuAccelerated)
         gpu_sync();
 
-    if (globalEnvPtr->isDistributed)
+    if (globalEnvPtr->isDistributed) {
         comm_sync();
+        #if COMPILE_SUBCOMM
+            updateQuESTEnvDistInfo();
+        #endif
+    }
 }
 
 
