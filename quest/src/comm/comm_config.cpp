@@ -20,6 +20,8 @@
 
 #if COMPILE_MPI
     #include <mpi.h>
+
+    static MPI_Comm mpiCommQuest;
 #endif
 
 
@@ -60,6 +62,9 @@ bool comm_isMpiCompiled() {
     return (bool) COMPILE_MPI;
 }
 
+bool comm_isMpiSubCommunicatorCompiled() {
+    return (bool) COMPILE_SUBCOMM;
+}
 
 bool comm_isMpiGpuAware() {
 
@@ -106,6 +111,7 @@ void comm_init() {
         error_commAlreadyInit();
     
     MPI_Init(NULL, NULL);
+    MPI_Comm_dup(MPI_COMM_WORLD, &mpiCommQuest);
 
 #endif
 }
@@ -118,7 +124,8 @@ void comm_end() {
     if (!comm_isInit())
         return;
 
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(mpiCommQuest);
+    MPI_Comm_free(&mpiCommQuest);
     MPI_Finalize();
 
 #endif
@@ -135,7 +142,7 @@ int comm_getRank() {
         return ROOT_RANK;
 
     int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(mpiCommQuest, &rank);
     return rank;
 
 #else
@@ -164,7 +171,7 @@ int comm_getNumNodes() {
         return 1;
 
     int numNodes;
-    MPI_Comm_size(MPI_COMM_WORLD, &numNodes);
+    MPI_Comm_size(mpiCommQuest, &numNodes);
     return numNodes;
 
 #else
@@ -182,6 +189,12 @@ void comm_sync() {
     if (!comm_isInit())
         return;
 
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(mpiCommQuest);
 #endif
 }
+
+#if COMPILE_MPI
+    MPI_Comm * getMpiComm() {
+        return &mpiCommQuest;
+    }
+#endif

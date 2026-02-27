@@ -10,6 +10,9 @@
 #ifndef COMM_CONFIG_HPP
 #define COMM_CONFIG_HPP
 
+#if COMPILE_MPI
+  #include <mpi.h>
+#endif
 
 constexpr int ROOT_RANK = 0;
 
@@ -27,5 +30,8 @@ bool comm_isInit();
 bool comm_isRootNode();
 bool comm_isRootNode(int rank);
 
+#if COMPILE_MPI
+  MPI_Comm * getMpiComm();
+#endif
 
 #endif // COMM_CONFIG_HPP
