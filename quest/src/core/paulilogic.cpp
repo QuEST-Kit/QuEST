@@ -322,7 +322,11 @@ void paulis_applyPermutation(PauliStrSum sum, vector<qindex> scatterPermutation)
     }
 }
 
+
 void paulis_sortGeneric(PauliStrSum sum, std::function<bool(qindex, qindex)> comparator) {
+
+    // TODO: below is an unguarded vector alloc, forgiven since a subsequent
+    // change (giving PauliStrSum an 'ordering' list) supersedes it
 
     // gatherPermutation[j] = source index of element placed at j
     vector<qindex> gatherPermutation(sum.numTerms);
@@ -333,6 +337,7 @@ void paulis_sortGeneric(PauliStrSum sum, std::function<bool(qindex, qindex)> com
     vector<qindex> scatterPermutation = util_getInversePermutation(gatherPermutation);
     paulis_applyPermutation(sum, scatterPermutation);
 }
+
 
 void paulis_setPauliStrSumToScaledTensorProdOfConjWithSelf(PauliStrSum out, qreal factor, PauliStrSum in, int numQubits) {
 

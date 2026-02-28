@@ -388,6 +388,10 @@ qreal util_getSum(vector<qreal> list) {
 }
 
 vector<qindex> util_getInversePermutation(vector<qindex> permutation) {
+    
+    // TODO: below is an unguarded vector alloc, forgiven since a subsequent
+    // change (giving PauliStrSum an 'ordering' list) supersedes it
+
     qindex numTerms = permutation.size();
     vector<qindex> out(numTerms);
 
