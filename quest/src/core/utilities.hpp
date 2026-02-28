@@ -240,10 +240,12 @@ qcomp* util_getGpuMemPtr(T matr) {
 
 
 /*
- * VECTOR REDUCTION
+ * LIST PROCESSING
  */
 
 qreal util_getSum(vector<qreal> list);
+
+vector<qindex> util_getInversePermutation(vector<qindex> permutation);
 
 
 
@@ -429,11 +431,5 @@ void util_tryAllocVector(vector<PauliStr> &vec, qindex size, std::function<void(
 void util_tryAllocMatrix(vector<vector<qcomp>> &vec, qindex numRows, qindex numCols, std::function<void()> errFunc);
 
 
-
-/*
- * OTHER
- */
-
-vector<qindex> util_invertPermutation(const vector<qindex>& permutation);
 
 #endif // UTILITIES_HPP

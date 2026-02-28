@@ -330,7 +330,7 @@ void paulis_sortGeneric(PauliStrSum sum, std::function<bool(qindex, qindex)> com
     std::stable_sort(gatherPermutation.begin(), gatherPermutation.end(), comparator);
 
     // invert permutation and apply
-    vector<qindex> scatterPermutation = util_invertPermutation(gatherPermutation);
+    vector<qindex> scatterPermutation = util_getInversePermutation(gatherPermutation);
     paulis_applyPermutation(sum, scatterPermutation);
 }
 

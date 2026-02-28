@@ -368,7 +368,7 @@ bool util_willSumOverflow(vector<qindex> terms) {
 
 
 /*
- * VECTOR REDUCTION
+ * LIST PROCESSING
  */
 
 qreal util_getSum(vector<qreal> list) {
@@ -385,6 +385,16 @@ qreal util_getSum(vector<qreal> list) {
     }
 
     return sum;
+}
+
+vector<qindex> util_getInversePermutation(vector<qindex> permutation) {
+    qindex numTerms = permutation.size();
+    vector<qindex> out(numTerms);
+
+    for (qindex i = 0; i < numTerms; i++)
+        out[permutation[i]] = i;
+
+    return out;
 }
 
 
@@ -1228,22 +1238,4 @@ void util_tryAllocMatrix(vector<vector<qcomp>> &matr, qindex numRows, qindex num
     } catch (std::length_error &e) {
         errFunc();
     }
-}
-
-
-
-/*
- * OTHER
- */
-
-vector<qindex> util_invertPermutation(const vector<qindex>& permutation) {
-    qindex numTerms = permutation.size();
-    vector<qindex> out(numTerms);
-
-    // invert permutation
-    for (qindex i = 0; i < numTerms; i++) {
-        out[permutation[i]] = i;
-    }
-
-    return out;
 }
