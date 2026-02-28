@@ -295,8 +295,9 @@ extern "C" void reportPauliStrSum(PauliStrSum sum) {
 
 
 /*
- * SETTERS
+ * SORTING
  */
+
 
 extern "C" void sortPauliStrSumLexicographic(PauliStrSum sum) {
     validate_pauliStrSumFields(sum, __func__);
@@ -310,6 +311,7 @@ extern "C" void sortPauliStrSumLexicographic(PauliStrSum sum) {
     paulis_sortGeneric(sum, lexSort);
 }
 
+
 extern "C" void sortPauliStrSumMagnitude(PauliStrSum sum) {
     validate_pauliStrSumFields(sum, __func__);
 
@@ -319,4 +321,3 @@ extern "C" void sortPauliStrSumMagnitude(PauliStrSum sum) {
 
     paulis_sortGeneric(sum, magSort);
 }
-
