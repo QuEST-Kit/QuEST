@@ -18,6 +18,7 @@
 #include <vector>
 #include <array>
 #include <functional>
+#include <algorithm>
 
 using std::vector;
 
