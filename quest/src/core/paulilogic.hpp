@@ -15,6 +15,7 @@
 #include <utility>
 #include <vector>
 #include <array>
+#include <functional>
 
 using std::vector;
 
