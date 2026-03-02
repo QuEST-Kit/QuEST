@@ -291,3 +291,33 @@ extern "C" void reportPauliStrSum(PauliStrSum sum) {
     // exclude mandatory newline above
     print_oneFewerNewlines();
 }
+
+
+
+/*
+ * SORTING
+ */
+
+
+extern "C" void sortPauliStrSumLexicographic(PauliStrSum sum) {
+    validate_pauliStrSumFields(sum, __func__);
+
+    auto lexSort = [&](qindex i, qindex j) {
+        PauliStr strI = sum.strings[i];
+        PauliStr strJ = sum.strings[j];
+        return std::tie(strI.highPaulis, strI.lowPaulis) < std::tie(strJ.highPaulis, strJ.lowPaulis);
+    };
+
+    paulis_sortTermsViaComparator(sum, lexSort);
+}
+
+
+extern "C" void sortPauliStrSumMagnitude(PauliStrSum sum) {
+    validate_pauliStrSumFields(sum, __func__);
+
+    auto magSort = [&](qindex i, qindex j) {
+        return std::norm(sum.coeffs[i]) > std::norm(sum.coeffs[j]);
+    };
+
+    paulis_sortTermsViaComparator(sum, magSort);
+}

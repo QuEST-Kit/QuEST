@@ -240,10 +240,12 @@ qcomp* util_getGpuMemPtr(T matr) {
 
 
 /*
- * VECTOR REDUCTION
+ * LIST PROCESSING
  */
 
 qreal util_getSum(vector<qreal> list);
+
+vector<qindex> util_getInversePermutation(vector<qindex> permutation);
 
 
 

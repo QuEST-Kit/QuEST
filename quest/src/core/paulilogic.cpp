@@ -13,9 +13,12 @@
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/errors.hpp"
 
+#include <numeric>
 #include <utility>
 #include <vector>
 #include <array>
+#include <functional>
+#include <algorithm>
 
 using std::vector;
 
@@ -304,6 +307,37 @@ qindex paulis_getTargetBitMask(PauliStrSum sum) {
         mask |= paulis_getTargetBitMask(sum.strings[t]);
 
     return mask;
+}
+
+
+void paulis_applyPermutationToTerms(PauliStrSum sum, vector<qindex> scatterPermutation) {
+    // permutation passed by value since we modify it
+
+    // scatterPermutation[i] = destination index for element originally at i
+    for (qindex i = 0; i < sum.numTerms; i++) {
+        while (scatterPermutation[i] != i) {
+            qindex j = scatterPermutation[i];
+            std::swap(sum.strings[i], sum.strings[j]);
+            std::swap(sum.coeffs[i], sum.coeffs[j]);
+            std::swap(scatterPermutation[i], scatterPermutation[j]);
+        }
+    }
+}
+
+
+void paulis_sortTermsViaComparator(PauliStrSum sum, std::function<bool(qindex, qindex)> comparator) {
+
+    // TODO: below is an unguarded vector alloc, forgiven since a subsequent
+    // change (giving PauliStrSum an 'ordering' list) supersedes it
+
+    // gatherPermutation[j] = source index of element placed at j
+    vector<qindex> gatherPermutation(sum.numTerms);
+    std::iota(gatherPermutation.begin(), gatherPermutation.end(), 0);
+    std::stable_sort(gatherPermutation.begin(), gatherPermutation.end(), comparator);
+
+    // invert permutation and apply
+    vector<qindex> scatterPermutation = util_getInversePermutation(gatherPermutation);
+    paulis_applyPermutationToTerms(sum, scatterPermutation);
 }
 
 

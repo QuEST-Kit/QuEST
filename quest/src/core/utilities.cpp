@@ -368,7 +368,7 @@ bool util_willSumOverflow(vector<qindex> terms) {
 
 
 /*
- * VECTOR REDUCTION
+ * LIST PROCESSING
  */
 
 qreal util_getSum(vector<qreal> list) {
@@ -385,6 +385,20 @@ qreal util_getSum(vector<qreal> list) {
     }
 
     return sum;
+}
+
+vector<qindex> util_getInversePermutation(vector<qindex> permutation) {
+    
+    // TODO: below is an unguarded vector alloc, forgiven since a subsequent
+    // change (giving PauliStrSum an 'ordering' list) supersedes it
+
+    qindex numTerms = permutation.size();
+    vector<qindex> out(numTerms);
+
+    for (qindex i = 0; i < numTerms; i++)
+        out[permutation[i]] = i;
+
+    return out;
 }
 
 

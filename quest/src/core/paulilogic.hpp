@@ -15,6 +15,7 @@
 #include <utility>
 #include <vector>
 #include <array>
+#include <functional>
 
 using std::vector;
 
@@ -75,6 +76,10 @@ bool paulis_containsXOrY(PauliStrSum sum);
 int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum);
 
 qindex paulis_getTargetBitMask(PauliStrSum sum);
+
+void paulis_applyPermutationToTerms(PauliStrSum sum, vector<qindex> permutation);
+
+void paulis_sortTermsViaComparator(PauliStrSum sum, std::function<bool(qindex, qindex)> comparator);
 
 
 // below are used exclusively by Trotterisation
