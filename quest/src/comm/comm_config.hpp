@@ -20,8 +20,8 @@ bool comm_isMpiCompiled();
 bool comm_isMpiSubCommunicatorCompiled();
 bool comm_isMpiGpuAware();
 
-void comm_init();
-void comm_end();
+void comm_init(int userOwnsMpi);
+void comm_end(int userOwnsMpi);
 void comm_sync();
 
 int comm_getRank();

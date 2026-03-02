@@ -103,21 +103,27 @@ bool comm_isInit() {
 }
 
 
-void comm_init() {
+void comm_init(int userOwnsMpi) {
 #if COMPILE_MPI
 
     // error if attempting re-initialisation
-    if (comm_isInit())
+    if (!userOwnsMpi && comm_isInit())
         error_commAlreadyInit();
+
+    // TODO: error if user has not initialised
+    if (userOwnsMpi && !comm_isInit());
+   
+    // QuEST must initialise MPI if the user does not own it
+    if (!userOwnsMpi)
+        MPI_Init(NULL, NULL);
     
-    MPI_Init(NULL, NULL);
     MPI_Comm_dup(MPI_COMM_WORLD, &mpiCommQuest);
 
 #endif
 }
 
 
-void comm_end() {
+void comm_end(int userOwnsMpi) {
 #if COMPILE_MPI
 
     // gracefully permit comm_end() before comm_init(), as input validation can trigger
@@ -126,7 +132,10 @@ void comm_end() {
 
     MPI_Barrier(mpiCommQuest);
     MPI_Comm_free(&mpiCommQuest);
-    MPI_Finalize();
+    
+    // QuEST must finalise MPI if the user does not own it
+    if (!userOwnsMpi)
+        MPI_Finalize();
 
 #endif
 }
