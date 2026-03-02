@@ -395,17 +395,10 @@ if (ENABLE_DISTRIBUTION)
     COMPONENTS CXX
   )
 
-  if(ENABLE_SUBCOMM)
-    target_link_libraries(QuEST
-      PUBLIC
-      MPI::MPI_CXX
-    )
-  else()
-    target_link_libraries(QuEST
-      PRIVATE
-      MPI::MPI_CXX
-    )
-  endif()
+  target_link_libraries(QuEST
+    PRIVATE
+    MPI::MPI_CXX
+  )
 endif()
 
 
