@@ -10,6 +10,8 @@
 #ifndef COMM_CONFIG_HPP
 #define COMM_CONFIG_HPP
 
+#include "quest/include/config.h"
+
 #if COMPILE_MPI
   #include <mpi.h>
 #endif
