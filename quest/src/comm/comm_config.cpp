@@ -21,7 +21,7 @@
 #if COMPILE_MPI
     #include <mpi.h>
 
-    static MPI_Comm mpiCommQuest;
+    static MPI_Comm mpiCommQuest = MPI_COMM_NULL;
 #endif
 
 
@@ -117,7 +117,12 @@ void comm_init(int userOwnsMpi) {
     if (!userOwnsMpi)
         MPI_Init(NULL, NULL);
     
-    MPI_Comm_dup(MPI_COMM_WORLD, &mpiCommQuest);
+    // If user is setting their own comm, mpiCommQuest will be NOT MPI_COMM_NULL, 
+    // and we should not touch it.
+    // If user is NOT setting their own comm, mpiCommQuest will be MPI_COMM_NULL,
+    // and we should set it to MPI_COMM_WORLD.
+    if (mpiCommQuest == MPI_COMM_NULL)
+      MPI_Comm_dup(MPI_COMM_WORLD, &mpiCommQuest);
 
 #endif
 }
@@ -209,9 +214,8 @@ void comm_sync() {
 
     #if COMPILE_SUBCOMM
         void comm_setMpiComm(MPI_Comm newComm) {
+            // TODO:error if mpiCommQuEST is already set!
             if (mpiCommQuest != MPI_COMM_NULL) {
-                MPI_Barrier(mpiCommQuest);
-                MPI_Comm_free(&mpiCommQuest);
             }
 
             MPI_Comm_dup(newComm, &mpiCommQuest);
