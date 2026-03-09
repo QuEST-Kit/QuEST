@@ -578,6 +578,10 @@ add_executable(min_example
 )
 target_link_libraries(min_example PRIVATE QuEST::QuEST)
 
+if (ENABLE_DISTRIBUTION AND ENABLE_SUBCOMM)
+  target_link_libraries(min_example PRIVATE MPI::MPI_CXX)
+endif()
+
 if (INSTALL_BINARIES)
   install(TARGETS min_example
     RUNTIME
