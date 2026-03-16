@@ -17,8 +17,8 @@ on:
       - devel
   pull_request:
     branches:
-      - main
-      - devel
+      #      - main
+      #      - devel
 
 
 jobs:
