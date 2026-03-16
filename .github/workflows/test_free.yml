@@ -13,12 +13,12 @@ name: test (free, serial)
 on:
   push:
     branches:
-      #      - main
-      #      - devel
+      - main
+      - devel
   pull_request:
     branches:
-      #      - main
-      #      - devel
+      - main
+      - devel
 
 
 jobs:
