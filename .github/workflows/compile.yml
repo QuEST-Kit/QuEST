@@ -226,7 +226,8 @@ jobs:
           deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/graphics/7.2/ubuntu noble main
           EOF
           sudo apt update
-          sudo apt install rocm rocm-hip-sdk
+          sudo apt autoremove
+          sudo apt install rocm rocm-hip-sdk rocm-hip-runtime-dev
           echo "${{ env.rocm_path }}" >> $GITHUB_PATH
 
       # invoke cmake, disabling LTO (it duplicates symbols with CUDA + MPI)
