@@ -60,14 +60,14 @@ jobs:
 
       # compile QuEST with all combinations of below flags
       matrix:
-        os: [ubuntu-latest]
-        precision: [2]
-        omp:       [ON]
-        mpi:       [OFF]
-        cuda:      [OFF]
-        hip:       [ON]
-        cuquantum: [OFF]
-        mpilib:    ['']
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        precision: [1, 2, 4]
+        omp:       [ON, OFF]
+        mpi:       [ON, OFF]
+        cuda:      [ON, OFF]
+        hip:       [ON, OFF]
+        cuquantum: [ON, OFF]
+        mpilib:    ['', 'mpich', 'ompi', 'impi', 'msmpi']
 
         # disable deprecated API on MSVC, and assign unique compilers,
         # so that we can concisely consult e.g. matrix.compiler=='cl'
