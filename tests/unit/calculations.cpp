@@ -178,6 +178,39 @@ TEST_CASE( "calcExpecPauliStr", TEST_CATEGORY ) {
 }
 
 
+TEST_CASE( "calcExpecPauliStr GPU regression preserves complex contributions", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        if (!getQuESTEnv().isGpuAccelerated)
+            return;
+
+        int numQubits = getNumCachedQubits();
+        qindex dim = getPow2(numQubits);
+        qreal amp = 1 / std::sqrt((qreal) 2);
+        qvector ref = getZeroVector(dim);
+        PauliStr str = getPauliStr("Y", {0});
+
+        ref[0] = qcomp(amp, 0);
+        ref[1] = qcomp(0, amp);
+
+        qreal expected = std::real(getReferenceExpectationValue(ref, str));
+
+        for (auto& [label, qureg] : getCachedStatevecs()) {
+
+            if (!qureg.isGpuAccelerated)
+                continue;
+
+            DYNAMIC_SECTION( label ) {
+
+                setQuregToReference(qureg, ref);
+                REQUIRE_AGREE( calcExpecPauliStr(qureg, str), expected );
+            }
+        }
+    }
+}
+
+
 
 TEST_CASE( "calcExpecPauliStrSum", TEST_CATEGORY ) {
 

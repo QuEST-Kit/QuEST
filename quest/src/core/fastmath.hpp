@@ -59,6 +59,37 @@ INLINE int fast_getPlusOrMinusMaskedBitParity(qindex num, qindex mask) {
 }
 
 
+#ifdef USE_CU_QCOMP
+
+INLINE QCOMP_ALIAS fast_addQcompAlias(QCOMP_ALIAS a, QCOMP_ALIAS b) {
+    return addCuQcomp(a, b);
+}
+
+INLINE QCOMP_ALIAS fast_mulQcompAlias(QCOMP_ALIAS a, QCOMP_ALIAS b) {
+    return mulCuQcomp(a, b);
+}
+
+INLINE QCOMP_ALIAS fast_divQcompAlias(QCOMP_ALIAS a, QCOMP_ALIAS b) {
+    return divCuQcomp(a, b);
+}
+
+#else
+
+INLINE QCOMP_ALIAS fast_addQcompAlias(QCOMP_ALIAS a, QCOMP_ALIAS b) {
+    return a + b;
+}
+
+INLINE QCOMP_ALIAS fast_mulQcompAlias(QCOMP_ALIAS a, QCOMP_ALIAS b) {
+    return a * b;
+}
+
+INLINE QCOMP_ALIAS fast_divQcompAlias(QCOMP_ALIAS a, QCOMP_ALIAS b) {
+    return a / b;
+}
+
+#endif
+
+
 
 /*
  * INDEX ALGEBRA
@@ -165,7 +196,7 @@ INLINE QCOMP_ALIAS fast_getPauliStrElem(PauliStr str, qindex row, qindex col) {
         int p = getTwoAdjacentBits(str.lowPaulis, 2*t);
         int i = getBit(row, t);
         int j = getBit(col, t);
-        elem = elem * matrices[p][i][j]; // HIP-friendly avoiding *=
+        elem = fast_mulQcompAlias(elem, matrices[p][i][j]);
     }
 
     // could be compile-time unrolled into 32 iterations
@@ -173,7 +204,7 @@ INLINE QCOMP_ALIAS fast_getPauliStrElem(PauliStr str, qindex row, qindex col) {
         int p = getTwoAdjacentBits(str.highPaulis, 2*t);
         int i = getBit(row, t + numPaulisPerMask);
         int j = getBit(col, t + numPaulisPerMask);
-        elem = elem * matrices[p][i][j];
+        elem = fast_mulQcompAlias(elem, matrices[p][i][j]);
     }
 
     return elem;
@@ -190,7 +221,10 @@ INLINE QCOMP_ALIAS fast_getPauliStrSumElem(QCOMP_ALIAS* coeffs, PauliStr* string
 
     // this loop is expected exponentially smaller than caller's loop
     for (qindex n=0; n<numTerms; n++)
-        elem = elem + coeffs[n] * fast_getPauliStrElem(strings[n], row, col); // += is HIP-incomaptible
+        elem = fast_addQcompAlias(
+            elem,
+            fast_mulQcompAlias(coeffs[n], fast_getPauliStrElem(strings[n], row, col))
+        );
 
     return elem;
 }

@@ -2365,6 +2365,39 @@ TEST_CASE( "applyNonUnitaryPauliGadget", TEST_CATEGORY_OPS ) {
 }
 
 
+TEST_CASE( "applyPauliY GPU regression preserves imaginary amplitudes", TEST_CATEGORY_OPS ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        if (!getQuESTEnv().isGpuAccelerated)
+            return;
+
+        int numQubits = getNumCachedQubits();
+        qindex dim = getPow2(numQubits);
+        qreal amp = 1 / std::sqrt((qreal) dim);
+        qvector in = getConstantVector(dim, qcomp(amp, 0));
+        qvector ref = in;
+
+        applyReferenceOperator(ref, {0}, FixedMatrices::Y);
+
+        for (auto& [label, qureg] : getCachedStatevecs()) {
+
+            if (!qureg.isGpuAccelerated)
+                continue;
+
+            DYNAMIC_SECTION( label ) {
+
+                setQuregToReference(qureg, in);
+                applyPauliY(qureg, 0);
+
+                REQUIRE_AGREE( qureg, ref );
+                REQUIRE_AGREE( calcTotalProb(qureg), getReferenceProbability(ref) );
+            }
+        }
+    }
+}
+
+
 /** @} (end defgroup) */
 
 

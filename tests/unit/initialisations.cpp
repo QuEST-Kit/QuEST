@@ -406,6 +406,42 @@ TEST_CASE( "setQuregToPauliStrSum", TEST_CATEGORY ) {
 }
 
 
+TEST_CASE( "setQuregToPauliStrSum GPU regression preserves imaginary amplitudes", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        if (!getQuESTEnv().isGpuAccelerated)
+            return;
+
+        int numQubits = getNumCachedQubits();
+        std::vector<PauliStr> strings = {
+            getPauliStr("X", {0}),
+            getPauliStr("Y", {0})
+        };
+        std::vector<qcomp> coeffs = {
+            qcomp(0.25, 0.50),
+            qcomp(-0.50, 0.75)
+        };
+        PauliStrSum sum = createPauliStrSum(strings, coeffs);
+        qmatrix refMat = getMatrix(sum, numQubits);
+
+        for (auto& [label, qureg] : getCachedDensmatrs()) {
+
+            if (!qureg.isGpuAccelerated)
+                continue;
+
+            DYNAMIC_SECTION( label ) {
+
+                setQuregToPauliStrSum(qureg, sum);
+                REQUIRE_AGREE( qureg, refMat );
+            }
+        }
+
+        destroyPauliStrSum(sum);
+    }
+}
+
+
 TEST_CASE( "setQuregToWeightedSum", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {

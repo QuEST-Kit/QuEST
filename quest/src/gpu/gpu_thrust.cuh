@@ -200,14 +200,14 @@ struct functor_getAmpReal {
 struct functor_getAmpConjProd {
 
     __host__ __device__ cu_qcomp operator()(cu_qcomp braAmp, cu_qcomp ketAmp) { 
-        return getCompConj(braAmp) * ketAmp;
+        return mulCuQcomp(getCompConj(braAmp), ketAmp);
     }
 };
 
 struct functor_getNormOfAmpDif {
 
     __host__ __device__ qreal operator()(cu_qcomp amp1, cu_qcomp amp2) { 
-        return getCompNorm(amp1 - amp2);
+        return getCompNorm(subCuQcomp(amp1, amp2));
     }
 };
 
@@ -271,7 +271,7 @@ struct functor_getExpecStateVecPauliTerm {
         int sign = fast_getPlusOrMinusOne(par);
 
         // sign excludes i^numY contribution
-        return sign * getCompConj(amps[n]) * pairAmps[j]; // pairAmps may be amps or buffer
+        return mulCuQcomp((qreal) sign, mulCuQcomp(getCompConj(amps[n]), pairAmps[j]));
     }
 };
 
@@ -326,7 +326,7 @@ struct functor_getExpecDensMatrDiagMatrTerm {
 
         qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
 
-        return amps[i] * elem;
+        return mulCuQcomp(amps[i], elem);
     }
 };
 
@@ -413,7 +413,7 @@ struct functor_multiplyElemPowerWithAmpOrNorm {
         if constexpr (Norm)
             quregAmp = getCuQcomp(getCompNorm(quregAmp), 0);
 
-        return matrElem * quregAmp;
+        return mulCuQcomp(matrElem, quregAmp);
     }
 };
 
@@ -498,7 +498,7 @@ struct functor_getFidelityTerm {
         } else
             rowAmp = getCompConj(rowAmp);
 
-        cu_qcomp fid = rhoAmp * rowAmp * colAmp;
+        cu_qcomp fid = mulCuQcomp(mulCuQcomp(rhoAmp, rowAmp), colAmp);
         return fid;
     }
 };
@@ -928,7 +928,7 @@ cu_qcomp thrust_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vect
 
     cu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
 
-    return value * toCuQcomp(util_getPowerOfI(y.size()));
+    return mulCuQcomp(value, toCuQcomp(util_getPowerOfI(y.size())));
 }
 
 
@@ -946,7 +946,7 @@ cu_qcomp thrust_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vect
 
     cu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
 
-    return value * toCuQcomp(util_getPowerOfI(y.size()));
+    return mulCuQcomp(value, toCuQcomp(util_getPowerOfI(y.size())));
 }
 
 
@@ -964,7 +964,7 @@ cu_qcomp thrust_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vecto
 
     cu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
 
-    return value * toCuQcomp(util_getPowerOfI(y.size()));
+    return mulCuQcomp(value, toCuQcomp(util_getPowerOfI(y.size())));
 }
 
 

@@ -137,21 +137,41 @@ __host__ inline std::array<cu_qcomp,16> unpackMatrixToCuQcomps(CompMatr2 in) {
 /*
  * cu_qcomp ARITHMETIC HELPERS
  *
- * These explicitly implement component-wise arithmetic and are used in
- * critical kernels/functors where backend operator overload behaviour has
- * varied across toolchains.
+ * These wrap the cuComplex helper API and are used in critical kernels/functors
+ * where backend operator overload behaviour has varied across toolchains.
  */
 
 
 INLINE cu_qcomp addCuQcomp(cu_qcomp a, cu_qcomp b) {
-    return getCuQcomp(a.x + b.x, a.y + b.y);
+#if (FLOAT_PRECISION == 1)
+    return cuCaddf(a, b);
+#else
+    return cuCadd(a, b);
+#endif
+}
+
+INLINE cu_qcomp subCuQcomp(cu_qcomp a, cu_qcomp b) {
+#if (FLOAT_PRECISION == 1)
+    return cuCsubf(a, b);
+#else
+    return cuCsub(a, b);
+#endif
 }
 
 INLINE cu_qcomp mulCuQcomp(cu_qcomp a, cu_qcomp b) {
-    return getCuQcomp(
-        (a.x * b.x) - (a.y * b.y),
-        (a.x * b.y) + (a.y * b.x)
-    );
+#if (FLOAT_PRECISION == 1)
+    return cuCmulf(a, b);
+#else
+    return cuCmul(a, b);
+#endif
+}
+
+INLINE cu_qcomp divCuQcomp(cu_qcomp a, cu_qcomp b) {
+#if (FLOAT_PRECISION == 1)
+    return cuCdivf(a, b);
+#else
+    return cuCdiv(a, b);
+#endif
 }
 
 INLINE cu_qcomp mulCuQcomp(cu_qcomp a, qreal b) {
@@ -167,11 +187,10 @@ INLINE cu_qcomp mulCuQcomp(qreal b, cu_qcomp a) {
 /*
  * cu_qcomp ARITHMETIC OVERLOADS
  *
- * which are only needed by NVCC because
- * HIP defines them for us. This good deed
- * goes punished; a HIP bug disables our
- * use of *= and += overloads, so kernels.cuh
- * has disgusting (x = x * y) statements. Bah!
+ * which are only needed by NVCC because HIP
+ * defines them for us. GPU kernels should still
+ * prefer the helpers above for complex-complex
+ * multiply and divide to avoid backend quirks.
  */
 
 
@@ -263,12 +282,19 @@ INLINE cu_qcomp operator * (const qreal& b, const cu_qcomp& a) {
 
 
 INLINE qreal getCompReal(cu_qcomp num) {
-    return num.x;
+#if (FLOAT_PRECISION == 1)
+    return cuCrealf(num);
+#else
+    return cuCreal(num);
+#endif
 }
 
 INLINE cu_qcomp getCompConj(cu_qcomp num) {
-    num.y *= -1;
-    return num;
+#if (FLOAT_PRECISION == 1)
+    return cuConjf(num);
+#else
+    return cuConj(num);
+#endif
 }
 
 INLINE qreal getCompNorm(cu_qcomp num) {

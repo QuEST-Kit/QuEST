@@ -214,8 +214,8 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
     cu_qcomp amp0 = amps[i0];
     cu_qcomp amp1 = amps[i1];
 
-    amps[i0] = m00*amp0 + m01*amp1;
-    amps[i1] = m10*amp0 + m11*amp1;
+    amps[i0] = addCuQcomp(mulCuQcomp(m00, amp0), mulCuQcomp(m01, amp1));
+    amps[i1] = addCuQcomp(mulCuQcomp(m10, amp0), mulCuQcomp(m11, amp1));
 }
 
 
@@ -234,7 +234,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
     qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, ctrlStateMask);
 
     // caller offsets buffer by receive-index
-    amps[i] = fac0*amps[i] + fac1*buffer[n];
+    amps[i] = addCuQcomp(mulCuQcomp(fac0, amps[i]), mulCuQcomp(fac1, buffer[n]));
 }
 
 
@@ -271,10 +271,22 @@ __global__ void kernel_statevec_anyCtrlTwoTargDenseMatr_sub(
     cu_qcomp amp11 = amps[i11];
 
     // amps[i_n] = sum_j elems[n][j] amp[i_n]
-    amps[i00] = m00*amp00 + m01*amp01 + m02*amp10 + m03*amp11;
-    amps[i01] = m10*amp00 + m11*amp01 + m12*amp10 + m13*amp11;
-    amps[i10] = m20*amp00 + m21*amp01 + m22*amp10 + m23*amp11;
-    amps[i11] = m30*amp00 + m31*amp01 + m32*amp10 + m33*amp11;
+    amps[i00] = addCuQcomp(
+        addCuQcomp(mulCuQcomp(m00, amp00), mulCuQcomp(m01, amp01)),
+        addCuQcomp(mulCuQcomp(m02, amp10), mulCuQcomp(m03, amp11))
+    );
+    amps[i01] = addCuQcomp(
+        addCuQcomp(mulCuQcomp(m10, amp00), mulCuQcomp(m11, amp01)),
+        addCuQcomp(mulCuQcomp(m12, amp10), mulCuQcomp(m13, amp11))
+    );
+    amps[i10] = addCuQcomp(
+        addCuQcomp(mulCuQcomp(m20, amp00), mulCuQcomp(m21, amp01)),
+        addCuQcomp(mulCuQcomp(m22, amp10), mulCuQcomp(m23, amp11))
+    );
+    amps[i11] = addCuQcomp(
+        addCuQcomp(mulCuQcomp(m30, amp00), mulCuQcomp(m31, amp01)),
+        addCuQcomp(mulCuQcomp(m32, amp10), mulCuQcomp(m33, amp11))
+    );
 }
 
 
@@ -354,7 +366,7 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
                 elem.y *= -1;
 
             // thread-private cache is accessed with compile-time known index
-            amps[i] = amps[i] + (elem * privateCache[l]);
+            amps[i] = addCuQcomp(amps[i], mulCuQcomp(elem, privateCache[l]));
         }
     }
 }
@@ -415,7 +427,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
                 if constexpr (ApplyConj)
                     elem.y *= -1;
 
-                amps[i] = amps[i] + (elem * globalCache[j]);
+                amps[i] = addCuQcomp(amps[i], mulCuQcomp(elem, globalCache[j]));
 
                 /// @todo
                 /// qureg.cpuAmps[i] is being serially updated by only this thread,
@@ -462,7 +474,8 @@ __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
     qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
 
     int b = getBit(i, targ);
-    amps[j] = amps[j] * (m1 + b * (m2 - m1));
+    cu_qcomp elem = addCuQcomp(m1, mulCuQcomp((qreal) b, subCuQcomp(m2, m1)));
+    amps[j] = mulCuQcomp(amps[j], elem);
 }
 
 
@@ -503,7 +516,7 @@ __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
     // k = local elem index
     int k = getTwoBits(i, targ2, targ1);
     cu_qcomp elems[] = {m1, m2, m3, m4};
-    amps[j] = amps[j] * elems[k];
+    amps[j] = mulCuQcomp(amps[j], elems[k]);
 }
 
 
@@ -553,7 +566,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     if constexpr (ApplyConj)
         elem.y *= -1;
 
-    amps[j] = amps[j] * elem;
+    amps[j] = mulCuQcomp(amps[j], elem);
 }
 
 
@@ -595,10 +608,10 @@ __global__ void kernel_densmatr_allTargDiagMatr_sub(
         if constexpr (ConjRight)
             term.y *= -1;
 
-        fac = fac * term;
+        fac = mulCuQcomp(fac, term);
     }
 
-    amps[n] = amps[n] * fac;
+    amps[n] = mulCuQcomp(amps[n], fac);
 }
 
 
@@ -636,15 +649,21 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
     // determine whether to multiply amps by +-1 or +-i
     int parA = cudaGetBitMaskParity(iA & maskYZ);
     int parB = cudaGetBitMaskParity(iB & maskYZ);
-    cu_qcomp coeffA = powI * fast_getPlusOrMinusOne(parA);
-    cu_qcomp coeffB = powI * fast_getPlusOrMinusOne(parB);
+    cu_qcomp coeffA = mulCuQcomp(powI, (qreal) fast_getPlusOrMinusOne(parA));
+    cu_qcomp coeffB = mulCuQcomp(powI, (qreal) fast_getPlusOrMinusOne(parB));
 
     cu_qcomp ampA = amps[iA];
     cu_qcomp ampB = amps[iB];
 
     // mix or swap scaled amp pair
-    amps[iA] = (ampFac * ampA) + (pairAmpFac * coeffB * ampB);
-    amps[iB] = (ampFac * ampB) + (pairAmpFac * coeffA * ampA);
+    amps[iA] = addCuQcomp(
+        mulCuQcomp(ampFac, ampA),
+        mulCuQcomp(pairAmpFac, mulCuQcomp(coeffB, ampB))
+    );
+    amps[iB] = addCuQcomp(
+        mulCuQcomp(ampFac, ampB),
+        mulCuQcomp(pairAmpFac, mulCuQcomp(coeffA, ampA))
+    );
 }
 
 
@@ -671,9 +690,12 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
 
     // determine whether to multiply buffer amp by +-1 or +-i
     int par = cudaGetBitMaskParity(k & maskYZ);
-    cu_qcomp coeff = powI * fast_getPlusOrMinusOne(par);
+    cu_qcomp coeff = mulCuQcomp(powI, (qreal) fast_getPlusOrMinusOne(par));
 
-    amps[i] = (thisAmpFac * amps[i]) + (otherAmpFac * coeff * buffer[j]);
+    amps[i] = addCuQcomp(
+        mulCuQcomp(thisAmpFac, amps[i]),
+        mulCuQcomp(otherAmpFac, mulCuQcomp(coeff, buffer[j]))
+    );
 }
 
 
@@ -701,7 +723,7 @@ __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     int p = cudaGetBitMaskParity(i & targMask);
 
     cu_qcomp facs[] = {fac0, fac1};
-    amps[i] = amps[i] * facs[p];
+    amps[i] = mulCuQcomp(amps[i], facs[p]);
 }
 
 

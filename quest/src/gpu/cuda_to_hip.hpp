@@ -69,6 +69,20 @@ static constexpr int maxWarpsPerBlock = 1024/WARPSIZE;
 #define cuDoubleComplex hipDoubleComplex
 #define make_cuFloatComplex make_hipFloatComplex
 #define make_cuDoubleComplex make_hipDoubleComplex
+#define cuCadd hipCadd
+#define cuCaddf hipCaddf
+#define cuCsub hipCsub
+#define cuCsubf hipCsubf
+#define cuCmul hipCmul
+#define cuCmulf hipCmulf
+#define cuCdiv hipCdiv
+#define cuCdivf hipCdivf
+#define cuConj hipConj
+#define cuConjf hipConjf
+#define cuCreal hipCreal
+#define cuCrealf hipCrealf
+#define cuCimag hipCimag
+#define cuCimagf hipCimagf
 
 
 static void __attribute__((unused)) check(const hipError_t err, const char *const file, const int line)
