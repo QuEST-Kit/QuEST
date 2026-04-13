@@ -266,12 +266,19 @@ endif()
 # Library
 # ============================
 
+include(cmake/project_options.cmake)
+
+# Project option interface target
+add_library(project_options INTERFACE)
+add_library(quest::project_options ALIAS project_options)
+
+project_options_setup(project_options)
 
 add_library(QuEST)
 
 # Add namespaced alias to support inclusion of QuEST as a subproject
 add_library(QuEST::QuEST ALIAS QuEST)
-
+target_link_libraries(QuEST PRIVATE project_options)
 
 # Set include directories
 target_include_directories(QuEST
@@ -295,27 +302,6 @@ set_target_properties(QuEST PROPERTIES
 # applies to the C interface when users specify USER_SOURCE,
 # to attemptedly minimise user confusion. Users wishing to
 # link QuEST with C++14 should separate compilation.
-target_compile_features(QuEST
-  PUBLIC
-  c_std_11
-  cxx_std_17
-)
-
-
-# Turn on all compiler warnings
-if (MSVC)
-  set(WARNING_FLAG /W4)
-else()
-  set(WARNING_FLAG -Wall)
-endif()
-
-target_compile_options(QuEST 
-  PRIVATE
-  $<$<COMPILE_LANGUAGE:CXX>:${WARNING_FLAG}>
-  $<$<COMPILE_LANGUAGE:C>:${WARNING_FLAG}>
-)
-
-
 
 # ============================
 # Link optional dependencies
@@ -343,13 +329,6 @@ if (ENABLE_MULTITHREADING)
     OpenMP::OpenMP_C
   )
 
-else()
-
-  # suppress GCC "unknown pragma" warning when OpenMP disabled
-  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(QuEST PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-Wno-unknown-pragmas>)
-  endif()
-  
 endif()
 
 
@@ -466,72 +445,6 @@ set(DISABLE_DEPRECATION_WARNINGS ${DISABLE_DEPRECATION_WARNINGS})
 
 # these do not appear in src but are saved for record-keeping in config.h.in
 set(COMPILE_HIP ${ENABLE_HIP})
-
-
-
-# ============================
-# Patch CPU performance
-# ============================
-
-
-# Patch performance of CPU std::complex arithmetic operator overloads.
-# The cpu_subroutines.cpp file makes extensive use of std::complex operator
-# overloads, and alas these are significantly slower than hand-rolled 
-# arithmetic, due to their NaN and inf checks, and interference with SIMD.
-# It is crucial to pass additional optimisation flags to this file to restore
-# hand-rolled performance (else QuEST v3 is faster than v4 eep). In theory,
-# we can achieve this with specific, relatively 'safe' flags such as LLVM's:
-#     -ffinite-math-only -fno-signed-zeros -ffp-contract=fast
-# However, it is a nuisance to find equivalent flags for different compilers
-# and monitor their performance vs accuracy trade-offs. So instead, we use the
-# much more aggressive and ubiquitous -Ofast flag to guarantee performance. 
-# This introduces many potentially dangerous optimisations, such as asserting
-# associativity of flops, which would break techniques like Kahan summation.
-# The cpu_subroutines.cpp must ergo be very conscious of these optimisations.
-# We here also explicitly inform the file cpu_subroutines.cpp whether or not
-# we are passing the flags, so it can detect/error when flags are forgotten.
-
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
-
-  # Release build will pass -Ofast when known for the given compiler, and
-  # fallback to giving a performance warning and proceeding with compilation
-
-  if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang|Cray|CrayClang|GNU|HP|Intel|IntelLLVM|NVHPC|NVIDIA|XL|XLClang")
-    set(patch_flags "-Ofast")
-    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=1")
-  elseif (CMAKE_CXX_COMPILER_ID MATCHES "HP")
-    set(patch_flags "+Ofast")
-    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=1")
-  elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    set(patch_flags "/fp:fast")
-    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=1")
-  else()
-    message(WARNING 
-      "The compiler (${CMAKE_CXX_COMPILER_ID}) is unrecognised and so crucial optimisation flags have not been "
-      "passed to the CPU backend. These flags are necessary for full performance when performing complex algebra, "
-      "otherwise a slowdown of 3-50x may be observed. Please edit the root CMakeLists.txt to include flags which are "
-      "equivalent to GNU's -Ofast flag for your compiler (search this warning), or contact the QuEST developers for help."
-    )
-    set(patch_flags "")
-    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=0")
-  endif()
-  
-else()
-
-  # Non-release builds (e.g. Debug) will pass no optimisation flags, and will
-  # communicate to cpu_subroutines.cpp that this is intentional via a macro
-
-  set(patch_flags "")
-  set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=0")
-
-endif()
-
-set_source_files_properties(
-  quest/src/cpu/cpu_subroutines.cpp
-  PROPERTIES
-  COMPILE_FLAGS "${patch_flags} ${patch_macro}"
-)
-
 
 
 # ============================

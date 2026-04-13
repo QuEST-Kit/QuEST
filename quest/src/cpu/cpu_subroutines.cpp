@@ -43,31 +43,6 @@
 #include <algorithm>
 
 using std::vector;
-
-
-/*
- * Beware that this file makes extensive use of std::complex (qcomp) operator
- * overloads and so requires additional compiler flags to achieve hand-rolled
- * arithmetic performance; otherwise a 3-50x slowdown may be observed. We here
- * enforce that these flags were not forgotton (but may be deliberatedly avoided).
- * Beware these flags may induce associativity and break e.g. Kakan summation.
- */
-
-#if !defined(COMPLEX_OVERLOADS_PATCHED)
-    #error "Crucial, bespoke optimisation flags were not passed (or acknowledged) to cpu_subroutines.cpp which are necessary for full complex arithmetic performance."
-    
-#elif !COMPLEX_OVERLOADS_PATCHED
-
-    #if defined(_MSC_VER)
-        #pragma message("Warning: The CPU backend is being deliberately compiled without the necessary flags to obtain full complex arithmetic performance.")
-    #else
-        #warning "The CPU backend is being deliberately compiled without the necessary flags to obtain full complex arithmetic performance."
-    #endif
-
-#endif
-
-
-
 /*
  * GETTERS
  */
