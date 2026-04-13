@@ -83,6 +83,24 @@ TEST_CASE( "initCustomQuESTEnv", TEST_CATEGORY ) {
 }
 
 
+TEST_CASE( "initCustomMpiQuESTEnv", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        // cannot be meaningfully tested since env already active
+        SUCCEED( );
+    }
+
+    SECTION( LABEL_VALIDATION ) {
+
+        REQUIRE_THROWS_WITH( initCustomMpiQuESTEnv(0,0,0,0), ContainsSubstring( "already been initialised") );
+
+        // cannot check arguments since env-already-initialised
+        // validation is performed first
+    }
+}
+
+
 TEST_CASE( "finalizeQuESTEnv", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
@@ -143,6 +161,7 @@ TEST_CASE( "getQuESTEnv", TEST_CATEGORY ) {
         REQUIRE( (env.isMultithreaded     == 0 || env.isMultithreaded     == 1) );
         REQUIRE( (env.isGpuAccelerated    == 0 || env.isGpuAccelerated    == 1) );
         REQUIRE( (env.isDistributed       == 0 || env.isDistributed       == 1) );
+        REQUIRE( (env.userOwnsMpi         == 0 || env.userOwnsMpi         == 1) );
         REQUIRE( (env.isCuQuantumEnabled  == 0 || env.isCuQuantumEnabled  == 1) );
         REQUIRE( (env.isGpuSharingEnabled == 0 || env.isGpuSharingEnabled == 1) );
         
