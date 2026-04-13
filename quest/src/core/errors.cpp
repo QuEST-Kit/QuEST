@@ -181,6 +181,11 @@ void error_commNumMessagesExceedTagMax() {
     raiseInternalError("A function attempted to communicate via more messages than permitted (since there would be more uniquely-tagged messages than the tag upperbound).");
 }
 
+void error_commDoubleSetMpiComm() {
+  
+    raiseInternalError("An attempt was made to set mpiCommQuest after it had already been set, as indicated by mpiCommQuest != MPI_COMM_NULL.");
+}
+
 void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps) {
 
     bool valid = (

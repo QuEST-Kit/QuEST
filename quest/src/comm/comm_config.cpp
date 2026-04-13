@@ -110,8 +110,10 @@ void comm_init(int userOwnsMpi) {
     if (!userOwnsMpi && comm_isInit())
         error_commAlreadyInit();
 
-    // TODO: error if user has not initialised
-    if (userOwnsMpi && !comm_isInit());
+    // error if user owns MPI but has not initialised
+    if (userOwnsMpi && !comm_isInit()) {
+        error_commNotInit();
+    }
    
     // QuEST must initialise MPI if the user does not own it
     if (!userOwnsMpi)
@@ -122,7 +124,7 @@ void comm_init(int userOwnsMpi) {
     // If user is NOT setting their own comm, mpiCommQuest will be MPI_COMM_NULL,
     // and we should set it to MPI_COMM_WORLD.
     if (mpiCommQuest == MPI_COMM_NULL)
-      MPI_Comm_dup(MPI_COMM_WORLD, &mpiCommQuest);
+        MPI_Comm_dup(MPI_COMM_WORLD, &mpiCommQuest);
 
 #endif
 }
@@ -214,8 +216,9 @@ void comm_sync() {
 
     #if COMPILE_SUBCOMM
         void comm_setMpiComm(MPI_Comm newComm) {
-            // TODO:error if mpiCommQuEST is already set!
+            // error if mpiCommQuEST is already set!
             if (mpiCommQuest != MPI_COMM_NULL) {
+                error_commDoubleSetMpiComm();
             }
 
             MPI_Comm_dup(newComm, &mpiCommQuest);

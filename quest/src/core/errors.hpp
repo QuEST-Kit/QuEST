@@ -85,6 +85,8 @@ void error_commGivenInconsistentNumSubArraysANodes();
 
 void error_commNumMessagesExceedTagMax();
 
+void error_commDoubleSetMpiComm();
+
 void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps);
 
 void assert_commPayloadIsPowerOf2(qindex numAmps);
