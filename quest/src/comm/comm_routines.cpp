@@ -229,8 +229,8 @@ void exchangeArrays(qcomp* send, qcomp* recv, qindex numElems, int pairRank) {
     // so that messages are permitted to arrive out-of-order (supporting UCX adaptive-routing)
     for (qindex m=0; m<numMessages; m++) {
         int tag = static_cast<int>(m); // gauranteed int, but m*messageSize needs qindex
-        MPI_Isend(&send[m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiCommQuest, &requests[2*m]);
-        MPI_Irecv(&recv[m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiCommQuest, &requests[2*m+1]);
+        MPI_Irecv(&recv[m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiCommQuest, &requests[2*m]);
+        MPI_Isend(&send[m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiCommQuest, &requests[2*m+1]);
     }
 
     // wait for all exchanges to complete (MPI will automatically free the request memory)
