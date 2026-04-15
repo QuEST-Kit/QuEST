@@ -18,6 +18,8 @@
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/core/errors.hpp"
 
+#include <cstdlib>
+
 #if COMPILE_MPI
     #include <mpi.h>
 #endif
@@ -67,15 +69,29 @@ bool comm_isMpiGpuAware() {
     /// non-OpenMPI MPI compilers are always dismissed as
     /// not being CUDA-aware. Check e.g. MPICH method!
 
-    // definitely not GPU-aware if compiler declares it is not
-    #if defined(MPIX_CUDA_AWARE_SUPPORT) && ! MPIX_CUDA_AWARE_SUPPORT
-        return false;
-    #endif
+  
+    #ifdef OPEN_MPI
+        // definitely not GPU-aware if compiler declares it is not
+        #if defined(MPIX_CUDA_AWARE_SUPPORT) && ! MPIX_CUDA_AWARE_SUPPORT
+            return false;
+        #endif
 
-    // check CUDA-awareness at run-time if we know it's principally supported
-    #if defined(MPIX_CUDA_AWARE_SUPPORT)
-        return (bool) MPIX_Query_cuda_support();
-    #endif
+        // check CUDA-awareness at run-time if we know it's principally supported
+        #if defined(MPIX_CUDA_AWARE_SUPPORT)
+            return (bool) MPIX_Query_cuda_support();
+        #endif
+
+    #ifdef CRAY_MPICH // need cononical way to set this variable
+       // Check MPI awareness for Cray-MPICH
+       #if defined(MPICH_GPU_SUPPORT_ENABLED) && ! MPICH_GPU_SUPPORT_ENABLED
+           return false;
+       #endif
+
+       #if defined(MPICH_GPU_SUPPORT_ENABLED)
+	   const char* var = std::getenv("MPICH_GPU_SUPPORT_ENABLED");
+           return (bool) var;
+       #endif
+
 
     // if we can't ascertain CUDA-awareness, just assume no to avoid seg-fault
     return false;
