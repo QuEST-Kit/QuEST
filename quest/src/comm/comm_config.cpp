@@ -12,6 +12,7 @@
  * @author Tyson Jones
  */
 
+#include "quest/include/environment.h"
 #include "quest/include/config.h"
 #include "quest/include/types.h"
 
@@ -19,6 +20,7 @@
 #include "quest/src/core/errors.hpp"
 
 #include <cstdlib>
+#include <string>
 
 #if COMPILE_MPI
     #include <mpi.h>
@@ -62,15 +64,53 @@ bool comm_isMpiCompiled() {
     return (bool) COMPILE_MPI;
 }
 
+enum Mpi_version {NONE, OPENMPI, CRAYMPICH};
+
+int comm_whichMpi() {
+
+    char version_string[] = "";
+    int resultlen[] = {0};
+
+    //MPI_Get_library_version(version_string, resultlen);
+
+    enum Mpi_version version = NONE;
+
+    // Check if Openmpi used
+    #ifdef OPEN_MPI
+        version = OPENMPI;
+    #endif
+
+    // Check if Cray MPI used 
+	
+    const char* cray_string = "CRAY MPICH";
+
+    std::string v_string = version_string;
+
+    if (v_string.find(cray_string) != string::npos) {
+        version = CRAYMPICH;
+    }
+
+    return version;
+
+}
+
+
 
 bool comm_isMpiGpuAware() {
+
+	return getQuESTEnv().isMPIGPUAware;
+}
+
+bool comm_set_isMpiGpuAware() {
 
     /// @todo these checks may be OpenMPI specific, so that
     /// non-OpenMPI MPI compilers are always dismissed as
     /// not being CUDA-aware. Check e.g. MPICH method!
 
+
+   int mpi_lib = comm_whichMpi();
   
-    #ifdef OPEN_MPI
+    if(OPENMPI==mpi_lib) {
         // definitely not GPU-aware if compiler declares it is not
         #if defined(MPIX_CUDA_AWARE_SUPPORT) && ! MPIX_CUDA_AWARE_SUPPORT
             return false;
@@ -79,9 +119,10 @@ bool comm_isMpiGpuAware() {
         // check CUDA-awareness at run-time if we know it's principally supported
         #if defined(MPIX_CUDA_AWARE_SUPPORT)
             return (bool) MPIX_Query_cuda_support();
-        #endif
+	#endif
+    }
 
-    #ifdef CRAY_MPICH // need cononical way to set this variable
+    if(CRAYMPICH==mpi_lib) { 
        // Check MPI awareness for Cray-MPICH
        #if defined(MPICH_GPU_SUPPORT_ENABLED) && ! MPICH_GPU_SUPPORT_ENABLED
            return false;
@@ -91,7 +132,7 @@ bool comm_isMpiGpuAware() {
 	   const char* var = std::getenv("MPICH_GPU_SUPPORT_ENABLED");
            return (bool) var;
        #endif
-
+     }
 
     // if we can't ascertain CUDA-awareness, just assume no to avoid seg-fault
     return false;

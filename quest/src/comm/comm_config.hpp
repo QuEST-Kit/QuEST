@@ -13,8 +13,11 @@
 
 constexpr int ROOT_RANK = 0;
 
+int comm_whichMpi();
+
 bool comm_isMpiCompiled();
 bool comm_isMpiGpuAware();
+bool comm_set_isMpiGpuAware();
 
 void comm_init();
 void comm_end();

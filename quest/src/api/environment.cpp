@@ -147,6 +147,7 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     globalEnvPtr->isDistributed       = useDistrib;
     globalEnvPtr->isCuQuantumEnabled  = useCuQuantum;
     globalEnvPtr->isGpuSharingEnabled = permitGpuSharing;
+    globalEnvPtr->isMPIGPUAware = comm_set_isMpiGpuAware();
 
     // bind distributed info
     globalEnvPtr->rank     = (useDistrib)? comm_getRank()     : 0;

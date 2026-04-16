@@ -36,6 +36,7 @@ typedef struct {
     int isMultithreaded;
     int isGpuAccelerated;
     int isDistributed;
+    int isMPIGPUAware;
 
     // deployment modes which cannot be directly changed after compilation
     int isCuQuantumEnabled;
