@@ -60,6 +60,32 @@ void TEST_ON_CACHED_QUREGS(quregCache quregs, auto& refFunc, auto& regularFunc, 
     }
 }
 
+void TEST_ON_CACHED_QUREGS(quregCache quregs, qvector& referenceResult, auto& testFunction, PauliStrSum& testHamiltonian) {
+  for (auto& [label, qureg]: quregs) {
+
+    DYNAMIC_SECTION( label ) {
+      testFunction(qureg, testHamiltonian);
+      REQUIRE_AGREE(qureg, referenceResult);
+    }
+
+  }
+
+  return;
+}
+
+void TEST_ON_CACHED_QUREGS(quregCache quregs, qmatrix& referenceResult, auto& testFunction, PauliStrSum& testHamiltonian) {
+  for (auto& [label, qureg]: quregs) {
+
+    DYNAMIC_SECTION( label ) {
+      testFunction(qureg, testHamiltonian);
+      REQUIRE_AGREE(qureg, referenceResult);
+    }
+
+  }
+
+  return;
+}
+
 /*
  * Prepare a Hamiltonian H under which dynamical
  * evolution will be simulated via Trotterisation
@@ -404,144 +430,102 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
 
 
 TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
-
-    // BEWARE: this test creates a new Qureg below which will have
-    // deployments chosen by the auto-deployer; it is ergo unpredictable
-    // whether it will be multithreaded, GPU-accelerated or distributed.
-    // This test is ergo checking only a single, unspecified deployment,
-    // unlike other tests which check all deployments. This is tolerable
-    // since (non-randomised) Trotterisation is merely invoking routines
-    // (Pauli gadgets) already independently tested across deployments
+    int numQubits = getNumCachedQubits();
+    auto statevecQuregs = getCachedStatevecs();
+    auto densmatrQuregs = getCachedDensmatrs();
 
     SECTION( LABEL_CORRECTNESS ) {
            
-        int numQubits = 16;
         qreal tau = 0.1;
         int order = 6;
         int reps = 5;
         int steps = 10;
-        bool permutePaulis = false;
-        
-        // Tolerance for ground state amplitude
-        qreal eps = 1E-2;
-        
-        // Ground state: all qubits align down (driven by strong magnetic field)
-        {
-            Qureg qureg = createQureg(numQubits);
+        bool permutePaulis = GENERATE(true, false);
+
+        auto driveToGroundFunc = [steps, tau, order, reps, permutePaulis](Qureg qureg, PauliStrSum& hamil) {
             initPlusState(qureg);
-            
-            PauliStrSum ising = createIsingHamiltonian(numQubits, 10.0, 0.0, 0.0);
-            
+        
             for (int i = 0; i < steps; ++i) {
-                applyTrotterizedImaginaryTimeEvolution(qureg, ising, tau, order, reps, permutePaulis);
-                setQuregToRenormalized(qureg);
+              applyTrotterizedImaginaryTimeEvolution(qureg, hamil, tau, order, reps, permutePaulis);
+              setQuregToRenormalized(qureg);
             }
-            
-            qcomp amp = getQuregAmp(qureg, 0);
-            qreal amp_mag = amp.real() * amp.real() + amp.imag() * amp.imag();
-            
-            REQUIRE_THAT( amp_mag, WithinAbs(1.0, eps) );
-            
-            for (long long i = 1; i < (1LL << numQubits); i++) {
-                qcomp other_amp = getQuregAmp(qureg, i);
-                qreal other_mag = other_amp.real() * other_amp.real() + 
-                                 other_amp.imag() * other_amp.imag();
-                REQUIRE( other_mag < eps );
-            }
-            
-            destroyQureg(qureg);
+        };
+       
+ 
+        // Ground state: all qubits align down (driven by strong magnetic field)
+        SECTION("Spin Down Field")
+        {
+            PauliStrSum ising = createIsingHamiltonian(numQubits, 10.0, 0.0, 0.0);
+
+            qvector statevecRef = getZeroVector(getPow2(numQubits));
+            statevecRef.at(0) = 1;
+
+            qmatrix densmatrRef = getZeroMatrix(getPow2(numQubits));
+            densmatrRef[0][0] = 1;
+
+            TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, driveToGroundFunc, ising);
+            TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, driveToGroundFunc, ising); 
+
             destroyPauliStrSum(ising);
         }
         
         // Ground state: all qubits align up (driven by opposite magnetic field)
-        {
-            Qureg qureg = createQureg(numQubits);
-            initPlusState(qureg);
-            
+        SECTION("Spin Up Field")
+        {     
             PauliStrSum ising = createIsingHamiltonian(numQubits, -10.0, 0.0, 0.0);
-            
-            for (int i = 0; i < steps; ++i) {
-                applyTrotterizedImaginaryTimeEvolution(qureg, ising, tau, order, reps, permutePaulis);
-                setQuregToRenormalized(qureg);
-            }
-            
-            long long last_state = (1LL << numQubits) - 1;
-            qcomp amp = getQuregAmp(qureg, last_state);
-            qreal amp_mag = amp.real() * amp.real() + amp.imag() * amp.imag();
-            
-            REQUIRE_THAT( amp_mag, WithinAbs(1.0, eps) );
-            
-            for (long long i = 0; i < (1LL << numQubits); i++) {
-                if (i == last_state) continue;
-                qcomp other_amp = getQuregAmp(qureg, i);
-                qreal other_mag = other_amp.real() * other_amp.real() + 
-                                 other_amp.imag() * other_amp.imag();
-                REQUIRE( other_mag < eps );
-            }
-            
-            destroyQureg(qureg);
+
+            qindex namps = getPow2(numQubits);
+
+            qvector statevecRef = getZeroVector(namps);
+            statevecRef.at(namps - 1) = 1;
+
+            qmatrix densmatrRef = getZeroMatrix(namps);
+            densmatrRef[namps-1][namps-1] = 1;
+
+            TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, driveToGroundFunc, ising);
+            TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, driveToGroundFunc, ising); 
+
             destroyPauliStrSum(ising);
         }
         
         // Ground state: all qubits align down (driven by ferromagnetic interactions and bias)
+        SECTION("Ferromagnetic Interaction")
         {
-            Qureg qureg = createQureg(numQubits);
-            initPlusState(qureg);
-            
             PauliStrSum ising = createIsingHamiltonian(numQubits, 0.0, 10.0, 10.0);
-            
-            for (int i = 0; i < steps; ++i) {
-                applyTrotterizedImaginaryTimeEvolution(qureg, ising, tau, order, reps, permutePaulis);
-                setQuregToRenormalized(qureg);
-            }
-            
-            qcomp amp = getQuregAmp(qureg, 0);
-            qreal amp_mag = amp.real() * amp.real() + amp.imag() * amp.imag();
-            
-            REQUIRE_THAT( amp_mag, WithinAbs(1.0, eps) );
-            
-            for (long long i = 1; i < (1LL << numQubits); i++) {
-                qcomp other_amp = getQuregAmp(qureg, i);
-                qreal other_mag = other_amp.real() * other_amp.real() + 
-                                 other_amp.imag() * other_amp.imag();
-                REQUIRE( other_mag < eps );
-            }
-            
-            destroyQureg(qureg);
+           
+            qvector statevecRef = getZeroVector(getPow2(numQubits));
+            statevecRef.at(0) = 1;
+
+            qmatrix densmatrRef = getZeroMatrix(getPow2(numQubits));
+            densmatrRef[0][0] = 1;
+
+            TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, driveToGroundFunc, ising);
+            TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, driveToGroundFunc, ising); 
+
             destroyPauliStrSum(ising);
         }
         
         // Ground state: alternating pattern (driven by antiferromagnetic interactions)
+        SECTION("Antiferromagnetic Interaction")
         {
-            Qureg qureg = createQureg(numQubits);
-            initPlusState(qureg);
-            
             PauliStrSum ising = createIsingHamiltonian(numQubits, 0.0, -10.0, 10.0);
             
-            for (int i = 0; i < steps; ++i) {
-                applyTrotterizedImaginaryTimeEvolution(qureg, ising, tau, order, reps, permutePaulis);
-                setQuregToRenormalized(qureg);
-            }
-            
+            // This should correctly pick out the non-zero amplitude
+            // Qubit 0 is always 0 thanks to asymmetric bias 
             unsigned long long idx = 0;
             for (int i = 0; i < numQubits / 2; ++i) {
                 idx += (1ULL << (2*i + 1));
             }
-            
-            qcomp amp = getQuregAmp(qureg, idx);
-            qreal amp_mag = amp.real() * amp.real() + amp.imag() * amp.imag();
-            
-            REQUIRE_THAT( amp_mag, WithinAbs(1.0, eps) );
-            
-            for (long long i = 0; i < (1LL << numQubits); i++) {
-                if (i == idx) continue;
-                qcomp other_amp = getQuregAmp(qureg, i);
-                qreal other_mag = other_amp.real() * other_amp.real() + 
-                                 other_amp.imag() * other_amp.imag();
-                REQUIRE( other_mag < eps );
-            }
-            
-            destroyQureg(qureg);
+ 
+            qvector statevecRef = getZeroVector(getPow2(numQubits));
+            statevecRef.at(idx) = 1;
+
+            qmatrix densmatrRef = getZeroMatrix(getPow2(numQubits));
+            densmatrRef[idx][idx] = 1;
+
+            TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, driveToGroundFunc, ising);
+            TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, driveToGroundFunc, ising); 
+
             destroyPauliStrSum(ising);
         }
     }
