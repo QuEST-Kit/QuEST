@@ -21,6 +21,7 @@
 
 #include <cstdlib>
 #include <string>
+#include <iostream>
 
 #if COMPILE_MPI
     #include <mpi.h>
@@ -68,10 +69,10 @@ enum Mpi_version {NONE, OPENMPI, CRAYMPICH};
 
 int comm_whichMpi() {
 
-    char version_string[] = "";
+    char version_string[1000];
     int resultlen[] = {0};
 
-    //MPI_Get_library_version(version_string, resultlen);
+    MPI_Get_library_version(version_string, resultlen);
 
     enum Mpi_version version = NONE;
 
@@ -90,6 +91,9 @@ int comm_whichMpi() {
         version = CRAYMPICH;
     }
 
+
+    std::cout << "MPI version: " << version << std::endl;
+
     return version;
 
 }
@@ -98,6 +102,7 @@ int comm_whichMpi() {
 
 bool comm_isMpiGpuAware() {
 
+	std::cout << "MPI GPU aware check: " << getQuESTEnv().isMPIGPUAware << std::endl;
 	return getQuESTEnv().isMPIGPUAware;
 }
 
@@ -107,6 +112,7 @@ bool comm_set_isMpiGpuAware() {
     /// non-OpenMPI MPI compilers are always dismissed as
     /// not being CUDA-aware. Check e.g. MPICH method!
 
+   std::cout << "Start comm_set_isMpiGpuAware()" << std::endl;
 
    int mpi_lib = comm_whichMpi();
   
@@ -123,16 +129,15 @@ bool comm_set_isMpiGpuAware() {
     }
 
     if(CRAYMPICH==mpi_lib) { 
-       // Check MPI awareness for Cray-MPICH
-       #if defined(MPICH_GPU_SUPPORT_ENABLED) && ! MPICH_GPU_SUPPORT_ENABLED
-           return false;
-       #endif
+       std::cout << "CRAYMPICH comm_set_isMpiGpuAware()" << std::endl;
+          
+       const char* var = std::getenv("MPICH_GPU_SUPPORT_ENABLED");
+       std::cout << "MPICH_GPU_SUPPORT_ENABLED: " << var << std::endl;
+       
+       return (bool) var;
+    }
 
-       #if defined(MPICH_GPU_SUPPORT_ENABLED)
-	   const char* var = std::getenv("MPICH_GPU_SUPPORT_ENABLED");
-           return (bool) var;
-       #endif
-     }
+    std::cout << "End comm_set_isMpiGpuAware()" << std::endl;    
 
     // if we can't ascertain CUDA-awareness, just assume no to avoid seg-fault
     return false;
