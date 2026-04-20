@@ -29,11 +29,15 @@ using deployInfo  = std::vector<std::tuple<std::string,int,int,int>>;
 int getNumCachedQubits();
 deployInfo getSupportedDeployments();
 
+quregCache createFixedSizeCachedStatevecsOrDensmatrs(const int NUM_QUBITS, const bool IS_DENSITY_MATRIX);
+quregCache createCachedStatevecsOrDensmatrs(const bool IS_DENSITY_MATRIX);
+
 void createCachedFullStateDiagMatrs();
 void destroyCachedFullStateDiagMatrs();
 matrixCache getCachedFullStateDiagMatrs();
 
 void createCachedQuregs();
+void destroyCache(quregCache& cache);
 void destroyCachedQuregs();
 quregCache getCachedStatevecs();
 quregCache getCachedDensmatrs();
