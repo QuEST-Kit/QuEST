@@ -86,6 +86,21 @@ void TEST_ON_CACHED_QUREGS(quregCache quregs, qmatrix& referenceResult, auto& te
   return;
 }
 
+void TEST_OBSERVABLES_ON_QUREGS(quregCache quregs, qvector& referenceResult, auto& testFunction, PauliStrSum testHamiltonian, PauliStrSum testObservable) {
+   for (auto& [label, qureg]: quregs) {
+
+        DYNAMIC_SECTION( label ) {
+            qvector testResult = testFunction(qureg, testHamiltonian, testObservable);
+            REQUIRE_AGREE(calcTotalProb(qureg), 1.0);
+            REQUIRE_AGREE(testResult, referenceResult);
+        }
+
+   }
+
+   return;
+}
+
+
 /*
  * Prepare a Hamiltonian H under which dynamical
  * evolution will be simulated via Trotterisation
@@ -246,51 +261,42 @@ TEST_CASE( "randomisedTrotter", TEST_CATEGORY ) {
 */ 
 TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) { 
 
-    // BEWARE: this test creates a new Qureg below which will have
-    // deployments chosen by the auto-deployer; it is ergo unpredictable
-    // whether it will be multithreaded, GPU-accelerated or distributed.
-    // This test is ergo checking only a single, unspecified deployment,
-    // unlike other tests which check all deployments. This is tolerable
-    // since (non-randomised) Trotterisation is merely invoking routines
-    // (Pauli gadgets) already independently tested across deployments
-
     SECTION( LABEL_CORRECTNESS ) {
+        // nudge the epsilon used by internal validation functions up a bit
+        // as the time evolution operation plays badly with single precision
+        // Defaults for validation epsilon are:
+        //  - 1E-5 at single precision
+        //  - 1E-12 at double precision
+        //  - 1E-13 at quad precision
+        qreal initialValidationEps = getValidationEpsilon();
+        setValidationEpsilon(2 * initialValidationEps);
 
-        int numQubits = 20;
-        Qureg qureg = createQureg(numQubits);
-        initPlusState(qureg);
-        bool permutePaulis = false;
-        
-        PauliStrSum hamil = createHeisenbergHamiltonian(numQubits);
-        PauliStrSum observ = createAlternatingPauliObservable(numQubits);
+        const int NUM_QUBITS = 20;
+        quregCache twentyQubitSVCache = createFixedSizeCachedStatevecsOrDensmatrs(NUM_QUBITS, false);
         
         qreal dt = 0.1;
         int order = 4;
         int reps = 5;
         int steps = 10;
-        
-        /*
-        * Tolerance for floating-point comparisons
-        * Note that the underlying numerics are sensitive to the float
-        * precision AND to the number of threads. As such we set quite 
-        * large epsilon values to account for the worst-case scenario which 
-        * is single precision, single thread. The baseline for these results
-        * is double precision, multiple threads.
-        *
-        * Values (assuming default initialValidationEps) are:
-        * Single precision:
-        *   obsEps = 0.03
-        *   normEps = 0.001
-        *
-        * Double precision:
-        *   obsEps = 3E-9
-        *   normEps = 1E-10
-        *
-        * Quad precision:
-        *   obsEps = 3E-10
-        *   normEps = 1E-11
-        */
+        bool permutePaulis = false;
        
+        auto unitaryTimeEvoFunc = 
+        [dt, order, reps, steps, permutePaulis](Qureg qureg, PauliStrSum& hamil, PauliStrSum& observable) 
+        -> qvector {
+            qvector observations = getZeroVector(steps);
+            initPlusState(qureg);
+           
+            for (int i = 0; i < steps; i++) {
+                applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt, order, reps, permutePaulis);
+                observations.at(i)  = calcExpecPauliStrSum(qureg, observable);
+            }
+
+            return observations;
+        };
+        
+        PauliStrSum hamil = createHeisenbergHamiltonian(NUM_QUBITS);
+        PauliStrSum observ = createAlternatingPauliObservable(NUM_QUBITS);
+        
         qvector refObservables = {
             19.26827777028073,
             20.34277275871839,
@@ -304,19 +310,13 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
             21.44521638719462
         };
         
-        qvector observables = getZeroVector(steps); 
-        for (int i = 0; i < steps; i++) {
-            applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt, order, reps, permutePaulis);
-            observables.at(i)  = calcExpecPauliStrSum(qureg, observ);
-        }
 
-        // Verify state remains normalized
-        REQUIRE_AGREE( calcTotalProb(qureg), 1.0 );
+        TEST_OBSERVABLES_ON_QUREGS(twentyQubitSVCache, refObservables, unitaryTimeEvoFunc, hamil, observ);
 
-        // Verify the observables match
-        REQUIRE_AGREE(refObservables, observables);
+        // Restore validation epsilon
+        setValidationEpsilon(initialValidationEps);
 
-        destroyQureg(qureg);
+        destroyCache(twentyQubitSVCache);
         destroyPauliStrSum(hamil);
         destroyPauliStrSum(observ);
     }
