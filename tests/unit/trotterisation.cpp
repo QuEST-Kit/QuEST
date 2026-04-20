@@ -272,14 +272,12 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         setValidationEpsilon(2 * initialValidationEps);
 
         const int NUM_QUBITS = 8;
-        quregCache eightQubitSVCache = createFixedSizeCachedStatevecsOrDensmatrs(NUM_QUBITS, false);
-        
         qreal dt = 0.1;
         int order = 4;
         int reps = 5;
         const int STEPS = 20;
         bool permutePaulis = GENERATE(true, false);
-       
+
         auto unitaryTimeEvoFunc = 
         [dt, order, reps, STEPS, permutePaulis](Qureg qureg, PauliStrSum& hamil, PauliStrSum& observable) 
         -> qvector {
@@ -320,12 +318,21 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
             4.832953030744839
         };
 
-        TEST_OBSERVABLES_ON_QUREGS(eightQubitSVCache, refObservables, unitaryTimeEvoFunc, hamil, observ);
+        SECTION("Time Evolve Statevectors") {
+            quregCache eightQubitSVCache = createFixedSizeCachedStatevecsOrDensmatrs(NUM_QUBITS, false);
+            TEST_OBSERVABLES_ON_QUREGS(eightQubitSVCache, refObservables, unitaryTimeEvoFunc, hamil, observ);
+            destroyCache(eightQubitSVCache);
+        }
+
+        SECTION("Time Evolve Density Matrices") {
+            quregCache eightQubitDMCache = createFixedSizeCachedStatevecsOrDensmatrs(NUM_QUBITS, true);
+            TEST_OBSERVABLES_ON_QUREGS(eightQubitDMCache, refObservables, unitaryTimeEvoFunc, hamil, observ);
+            destroyCache(eightQubitDMCache);
+        }
 
         // Restore validation epsilon
         setValidationEpsilon(initialValidationEps);
 
-        destroyCache(eightQubitSVCache);
         destroyPauliStrSum(hamil);
         destroyPauliStrSum(observ);
     }
