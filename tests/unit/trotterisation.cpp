@@ -271,22 +271,22 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         qreal initialValidationEps = getValidationEpsilon();
         setValidationEpsilon(2 * initialValidationEps);
 
-        const int NUM_QUBITS = 20;
-        quregCache twentyQubitSVCache = createFixedSizeCachedStatevecsOrDensmatrs(NUM_QUBITS, false);
+        const int NUM_QUBITS = 8;
+        quregCache eightQubitSVCache = createFixedSizeCachedStatevecsOrDensmatrs(NUM_QUBITS, false);
         
         qreal dt = 0.1;
         int order = 4;
         int reps = 5;
-        int steps = 10;
-        bool permutePaulis = false;
+        const int STEPS = 20;
+        bool permutePaulis = GENERATE(true, false);
        
         auto unitaryTimeEvoFunc = 
-        [dt, order, reps, steps, permutePaulis](Qureg qureg, PauliStrSum& hamil, PauliStrSum& observable) 
+        [dt, order, reps, STEPS, permutePaulis](Qureg qureg, PauliStrSum& hamil, PauliStrSum& observable) 
         -> qvector {
-            qvector observations = getZeroVector(steps);
+            qvector observations = getZeroVector(STEPS);
             initPlusState(qureg);
            
-            for (int i = 0; i < steps; i++) {
+            for (int i = 0; i < STEPS; i++) {
                 applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt, order, reps, permutePaulis);
                 observations.at(i)  = calcExpecPauliStrSum(qureg, observable);
             }
@@ -298,25 +298,34 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         PauliStrSum observ = createAlternatingPauliObservable(NUM_QUBITS);
         
         qvector refObservables = {
-            19.26827777028073,
-            20.34277275871839,
-            21.21120737889526,
-            21.86585902741717,
-            22.30371711358924,
-            22.52644660547882,
-            22.54015748825067,
-            22.35499202583118,
-            21.9845541501027,
-            21.44521638719462
+            8.521995598825049,
+            8.963711845322115,
+            9.32005226684505,
+            9.587768088649602,
+            9.765522600223822,
+            9.85387668440598,
+            9.855195944206464,
+            9.773484879367675,
+            9.614158409472378,
+            9.383765238225045,
+            9.089680663909942,
+            8.739788123639109,
+            8.342168826039893,
+            7.904817272753528,
+            7.435397472039873,
+            6.94105054616863,
+            6.428259679798389,
+            5.90277345392904,
+            5.369584051930907,
+            4.832953030744839
         };
-        
 
-        TEST_OBSERVABLES_ON_QUREGS(twentyQubitSVCache, refObservables, unitaryTimeEvoFunc, hamil, observ);
+        TEST_OBSERVABLES_ON_QUREGS(eightQubitSVCache, refObservables, unitaryTimeEvoFunc, hamil, observ);
 
         // Restore validation epsilon
         setValidationEpsilon(initialValidationEps);
 
-        destroyCache(twentyQubitSVCache);
+        destroyCache(eightQubitSVCache);
         destroyPauliStrSum(hamil);
         destroyPauliStrSum(observ);
     }
