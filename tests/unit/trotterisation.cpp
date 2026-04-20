@@ -269,15 +269,6 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         int reps = 5;
         int steps = 10;
         
-        // nudge the epsilon used by internal validation functions up a bit
-        // as the time evolution operation plays badly with single precision
-        // Defaults for validation epsilon are:
-        //  - 1E-5 at single precision
-        //  - 1E-12 at double precision
-        //  - 1E-13 at quad precision
-        qreal initialValidationEps = getValidationEpsilon();
-        setValidationEpsilon(2 * initialValidationEps);
-
         /*
         * Tolerance for floating-point comparisons
         * Note that the underlying numerics are sensitive to the float
@@ -299,10 +290,8 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         *   obsEps = 3E-10
         *   normEps = 1E-11
         */
-        qreal obsEps = 3E3 * initialValidationEps;
-        qreal normEps = 100 * initialValidationEps;
        
-        vector<qreal> refObservables = {
+        qvector refObservables = {
             19.26827777028073,
             20.34277275871839,
             21.21120737889526,
@@ -315,18 +304,17 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
             21.44521638719462
         };
         
+        qvector observables = getZeroVector(steps); 
         for (int i = 0; i < steps; i++) {
             applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt, order, reps, permutePaulis);
-            qreal expec = calcExpecPauliStrSum(qureg, observ);
-            
-            REQUIRE_THAT( expec, WithinAbs(refObservables[i], obsEps) );
+            observables.at(i)  = calcExpecPauliStrSum(qureg, observ);
         }
-        
-        // Verify state remains normalized
-        REQUIRE_THAT( calcTotalProb(qureg), WithinAbs(1.0, normEps) );
 
-        // Restore validation epsilon
-        setValidationEpsilon(initialValidationEps);
+        // Verify state remains normalized
+        REQUIRE_AGREE( calcTotalProb(qureg), 1.0 );
+
+        // Verify the observables match
+        REQUIRE_AGREE(refObservables, observables);
 
         destroyQureg(qureg);
         destroyPauliStrSum(hamil);
