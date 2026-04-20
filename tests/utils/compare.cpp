@@ -34,25 +34,42 @@ using namespace Catch::Matchers;
 
 
 #if FLOAT_PRECISION == 1
-    const qreal ABSOLUTE_EPSILON = 1E-2;
-    const qreal RELATIVE_EPSILON = 1E-2;
+    qreal absolute_epsilon = 1E-2;
+    qreal relative_epsilon = 1E-2;
 #elif FLOAT_PRECISION == 2
-    const qreal ABSOLUTE_EPSILON = 1E-8;
-    const qreal RELATIVE_EPSILON = 1E-8;
+    qreal absolute_epsilon = 1E-8;
+    qreal relative_epsilon = 1E-8;
 #elif FLOAT_PRECISION == 4
-    const qreal ABSOLUTE_EPSILON = 1E-10;
-    const qreal RELATIVE_EPSILON = 1E-10;
+    qreal absolute_epsilon = 1E-10;
+    qreal relative_epsilon = 1E-10;
 #endif
 
 
 qreal getTestAbsoluteEpsilon() {
 
-    return ABSOLUTE_EPSILON;
+    return absolute_epsilon;
 }
 
 qreal getTestRelativeEpsilon() {
 
-    return RELATIVE_EPSILON;
+    return relative_epsilon;
+}
+
+
+void setTestAbsoluteEpsilon(const qreal TEST_ABS_EPS) {
+    absolute_epsilon = TEST_ABS_EPS;
+    return;
+}
+
+void setTestRelativeEpsilon(const qreal TEST_REL_EPS) {
+    relative_epsilon = TEST_REL_EPS;
+    return;
+}
+
+void setTestEpsilon(const qreal TEST_EPS) {
+    setTestAbsoluteEpsilon(TEST_EPS);
+    setTestRelativeEpsilon(TEST_EPS);
+    return;
 }
 
 
@@ -72,10 +89,10 @@ bool doScalarsAgree(qcomp a, qcomp b) {
 
     // permit absolute OR relative agreement
 
-    if (getAbsDif(a, b) <= ABSOLUTE_EPSILON)
+    if (getAbsDif(a, b) <= absolute_epsilon)
         return true;
 
-   return (getRelDif(a, b) <= RELATIVE_EPSILON);
+   return (getRelDif(a, b) <= relative_epsilon);
 }
 
 bool doMatricesAgree(qmatrix a, qmatrix b) {
@@ -107,8 +124,8 @@ void REPORT_AMP_AND_FAIL( size_t index, qcomp amplitude, qcomp reference ) {
     qreal relative_difference = getRelDif(amplitude, reference);
     CAPTURE( 
         index, amplitude, reference, 
-        absolute_difference, ABSOLUTE_EPSILON,
-        relative_difference, RELATIVE_EPSILON
+        absolute_difference, absolute_epsilon,
+        relative_difference, relative_epsilon
     );
     FAIL( );
 }
@@ -154,8 +171,8 @@ void REPORT_SCALAR_AND_FAIL( qcomp scalar, qcomp reference ) {
     qreal relative_difference = getRelDif(scalar, reference);
     CAPTURE( 
         scalar, reference, 
-        absolute_difference, ABSOLUTE_EPSILON,
-        relative_difference, RELATIVE_EPSILON
+        absolute_difference, absolute_epsilon,
+        relative_difference, relative_epsilon
     );
     FAIL( );
 }
@@ -167,8 +184,8 @@ void REPORT_SCALAR_AND_FAIL( qreal scalar, qreal reference ) {
     qreal relative_difference = getRelDif(qcomp(scalar,0), qcomp(reference,0));
     CAPTURE( 
         scalar, reference, 
-        absolute_difference, ABSOLUTE_EPSILON,
-        relative_difference, RELATIVE_EPSILON
+        absolute_difference, absolute_epsilon,
+        relative_difference, relative_epsilon
     );
     FAIL( );
 }
@@ -230,8 +247,8 @@ void REPORT_ELEM_AND_FAIL( size_t row, size_t col, qcomp elem, qcomp reference )
     qreal relative_difference = getRelDif(elem, reference);
     CAPTURE( 
         row, col, elem, reference, 
-        absolute_difference, ABSOLUTE_EPSILON,
-        relative_difference, RELATIVE_EPSILON
+        absolute_difference, absolute_epsilon,
+        relative_difference, relative_epsilon
     );
     FAIL( );
 }

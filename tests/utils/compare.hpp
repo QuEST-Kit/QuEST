@@ -24,6 +24,10 @@ using std::vector;
 qreal getTestAbsoluteEpsilon();
 qreal getTestRelativeEpsilon();
 
+void setTestAbsoluteEpsilon(const qreal TEST_ABS_EPS);
+void setTestRelativeEpsilon(const qreal TEST_REL_EPS);
+void setTestEpsilon(const qreal TEST_EPS);
+
 bool doScalarsAgree(qcomp a, qcomp b);
 bool doMatricesAgree(qmatrix a, qmatrix b);
 
