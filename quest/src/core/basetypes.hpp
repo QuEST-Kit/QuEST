@@ -49,6 +49,11 @@ struct base_qcomp {
         im *= a;
         return *this;
     }
+    INLINE base_qcomp& operator *= (const size_t& a) noexcept {
+        re *= a;
+        im *= a;
+        return *this;
+    }
 };
 
 
@@ -73,6 +78,10 @@ INLINE base_qcomp operator * (base_qcomp a, const int& b) noexcept {
     return a;
 }
 INLINE base_qcomp operator * (base_qcomp a, const qreal& b) noexcept {
+    a *= b;
+    return a;
+}
+INLINE base_qcomp operator * (base_qcomp a, const size_t& b) noexcept {
     a *= b;
     return a;
 }
