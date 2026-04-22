@@ -100,9 +100,10 @@ INLINE void fast_getSubQuregValues(qindex basisStateIndex, int* numQubitsPerSubQ
  */
 
 
-// T = qcomp, cpu_qcomp, gpu_qcomp
-template <typename T>
-INLINE T fast_getPauliStrElem(PauliStr str, qindex row, qindex col) {
+// DEBUG
+#include "quest/src/core/basetypes.hpp"
+
+INLINE base_qcomp fast_getPauliStrElem(PauliStr str, qindex row, qindex col) {
 
     // this function is called by both fullstatediagmatr_setElemsToPauliStrSum()
     // and densmatr_setAmpsToPauliStrSum_sub(). The former's PauliStr can have
@@ -120,7 +121,7 @@ INLINE T fast_getPauliStrElem(PauliStr str, qindex row, qindex col) {
     constexpr int numPaulisPerMask = sizeof(PAULI_MASK_TYPE) * 8 / 2;
 
     // T-agnostic complex literals
-    T p0, p1,n1, pI,nI;
+    base_qcomp p0, p1,n1, pI,nI;
     p0 = {0,  0}; //  0
     p1 = {+1, 0}; //  1
     n1 = {-1, 0}; // -1
@@ -133,13 +134,13 @@ INLINE T fast_getPauliStrElem(PauliStr str, qindex row, qindex col) {
     // but this poses no real slowdown; this function, and its caller, are inlined
     // so these 16 amps are re-processed one for each full enumeration of the
     // PauliStrSum which is expected to have significantly more terms/coeffs
-    T matrices[][2][2] = {
+    base_qcomp matrices[][2][2] = {
         {{p1,p0},{p0,p1}},  // I
         {{p0,p1},{p1,p0}},  // X
         {{p0,nI},{pI,p0}},  // Y
         {{p1,p0},{p0,n1}}}; // Z
 
-    T elem = p1; // 1
+    base_qcomp elem = p1; // 1
 
     // could be compile-time unrolled into 32 iterations
     for (int t=0; t<numPaulisPerMask; t++) {
@@ -162,18 +163,17 @@ INLINE T fast_getPauliStrElem(PauliStr str, qindex row, qindex col) {
 
 
 // T = qcomp, cpu_qcomp, gpu_qcomp
-template <typename T>
-INLINE T fast_getPauliStrSumElem(T* coeffs, PauliStr* strings, qindex numTerms, qindex row, qindex col) {
+INLINE base_qcomp fast_getPauliStrSumElem(base_qcomp* coeffs, PauliStr* strings, qindex numTerms, qindex row, qindex col) {
 
     // this function accepts unpacked PauliStrSum fields since a PauliStrSum cannot 
     // be directly processed in CUDA kernels/thrust due to its 'qcomp' field.
     // it also assumes str.highPaulis==0 for all str in strings, as per above func.
 
-    T elem = {0, 0}; // type-agnostic complex literal
+    base_qcomp elem = {0, 0}; // type-agnostic complex literal
 
     // this loop is expected exponentially smaller than caller's loop
     for (qindex n=0; n<numTerms; n++)
-        elem += coeffs[n] * fast_getPauliStrElem<T>(strings[n], row, col);
+        elem += coeffs[n] * fast_getPauliStrElem(strings[n], row, col);
 
     return elem;
 }
