@@ -81,6 +81,8 @@ __host__ inline std::array<gpu_qcomp,Dim> getGpuQcompArray(qcomp matr[Dim]) {
     std::array<gpu_qcomp,Dim> out;
     for (int i=0; i<Dim; i++)
         out[i] = getGpuQcomp(matr[i]);
+
+    return out;
 }
 
 template <int Dim>
