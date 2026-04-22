@@ -939,7 +939,7 @@ template void cpu_densmatr_allTargDiagMatr_sub<true,  false, true,  false> (Qure
 template <int NumTargs>
 INLINE void applyPauliUponAmpPair(
     cpu_qcomp* amps, qindex v, qindex i0, int* indXY, int numXY, 
-    qindex maskXY, qindex maskYZ, cpu_qcomp ampFac, cpu_qcomp pairAmpFac
+    qindex maskXY, qindex maskYZ, cpu_qcomp& ampFac, cpu_qcomp& pairAmpFac
 ) {
     // this is a subroutine of cpu_statevector_anyCtrlPauliTensorOrGadget_subA() below
     // called in a hot-loop (hence it is here inlined) which exists because the caller
