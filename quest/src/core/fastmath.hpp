@@ -1,7 +1,12 @@
 /** @file
  * Oerations used by all deployment modes for fast,
  * low-level maths, inlined and callable within hot
- * loops (i.e OpenMP loops and CUDA kernels)
+ * loops (i.e OpenMP loops and CUDA kernels).
+ * 
+ * Note this file uses the backend OpenMP/CUDA-agnostic
+ * base_qcomp, in lieu of the C++-user-facing qcomp (i.e.
+ * std::complex), to avoid its compiler-specific performance
+ * pitfalls.
  * 
  * @author Tyson Jones
  */
@@ -15,6 +20,7 @@
 
 #include "quest/src/core/inliner.hpp"
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/base_qcomp.hpp"
 
 
 
@@ -100,9 +106,6 @@ INLINE void fast_getSubQuregValues(qindex basisStateIndex, int* numQubitsPerSubQ
  */
 
 
-// DEBUG
-#include "quest/src/core/basetypes.hpp"
-
 INLINE base_qcomp fast_getPauliStrElem(PauliStr str, qindex row, qindex col) {
 
     // this function is called by both fullstatediagmatr_setElemsToPauliStrSum()
@@ -162,14 +165,13 @@ INLINE base_qcomp fast_getPauliStrElem(PauliStr str, qindex row, qindex col) {
 }
 
 
-// T = qcomp, cpu_qcomp, gpu_qcomp
 INLINE base_qcomp fast_getPauliStrSumElem(base_qcomp* coeffs, PauliStr* strings, qindex numTerms, qindex row, qindex col) {
 
     // this function accepts unpacked PauliStrSum fields since a PauliStrSum cannot 
     // be directly processed in CUDA kernels/thrust due to its 'qcomp' field.
     // it also assumes str.highPaulis==0 for all str in strings, as per above func.
 
-    base_qcomp elem = {0, 0}; // type-agnostic complex literal
+    base_qcomp elem = {0, 0};
 
     // this loop is expected exponentially smaller than caller's loop
     for (qindex n=0; n<numTerms; n++)

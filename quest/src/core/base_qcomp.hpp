@@ -1,35 +1,61 @@
 /** @file
- * Custom types used exclusively by the hot loops in the
- * hardware accelerated backends
+ * Definition of base_qcomp, which is extended by the CPU and GPU
+ * backends (into cpu_qcomp and gpu_qcomp) and used in hot loops
+ * and kernels.
+ * 
+ * The user-facing qcomp (which in the QuEST middle-end, resolves to 
+ * std::complex) is not used by the CPU backend, since it creates
+ * performance pitfalls (e.g. expensive NaN checks within arithmetic
+ * operators) in some compilers, and is furthermore illegal in the
+ * GPU backend (i.e. within CUDA kernels). So the backends instead
+ * use custom complex types with identical memory layouts/alignment
+ * to qcomp. Those types extend base_qcomp defined in this file,
+ * since they otherwise share all the same arithmetic boilerplate.
  * 
  * @author Tyson Jones
  */
 
-#ifndef BASETYPES_HPP
-#define BASETYPES_HPP
+#ifndef BASE_QCOMP_HPP
+#define BASE_QCOMP_HPP
 
 #include "quest/include/types.h"
 
 #include "quest/src/core/inliner.hpp"
 
 
+
+/*
+ * BASE DEFINITION
+ *
+ * which must remain POD (a simple {re,im}) and with an identical
+ * memory layout and alignment to qcomp (i.e. std::complex). Only
+ * the in-place arithmetic overloads are defined below which are
+ * reused by the subsequent out-of-place overloads, to avoid
+ * code duplication.
+ */
+
 struct base_qcomp {
 
-    // memory layout
     qreal re;
     qreal im;
 
-    // in-place complex arithmetic overloads
+
+    /*
+     * IN-PLACE COMPLEX ARITHMETIC
+     */
+    
     INLINE base_qcomp& operator += (const base_qcomp& a) noexcept {
         re += a.re;
         im += a.im;
         return *this;
     }
+
     INLINE base_qcomp& operator -= (const base_qcomp& a) noexcept {
         re -= a.re;
         im -= a.im;
         return *this;
     }
+
     INLINE base_qcomp& operator *= (const base_qcomp& a) noexcept {
         qreal re_ = re;
         qreal im_ = im;
@@ -38,131 +64,146 @@ struct base_qcomp {
         return *this;
     }
 
-    // in-place mixed-type arithmetic overloads
+
+    /*
+     * IN-PLACE MIXED-TYPE ARITHMETIC
+     */
+
     INLINE base_qcomp& operator *= (const int& a) noexcept {
         re *= a;
         im *= a;
         return *this;
     }
+
     INLINE base_qcomp& operator *= (const qreal& a) noexcept {
         re *= a;
         im *= a;
         return *this;
     }
+
     INLINE base_qcomp& operator *= (const size_t& a) noexcept {
         re *= a;
         im *= a;
         return *this;
     }
-};
+
+}; // base_qcomp
 
 
-// out-of-place complex arithmetic overloads (optimised)
+
+/*
+ * OUT-OF-PLACE COMPLEX ARITHMETIC
+ * 
+ * which avoid code duplication by re-using the
+ * in-place arithmetic operator overloads above
+ */
+
 INLINE base_qcomp operator + (base_qcomp a, const base_qcomp& b) noexcept {
     a += b;
     return a;
 }
+
 INLINE base_qcomp operator - (base_qcomp a, const base_qcomp& b) noexcept {
     a -= b;
     return a;
 }
+
 INLINE base_qcomp operator * (base_qcomp a, const base_qcomp& b) noexcept {
     a *= b;
     return a;
 }
 
 
-// out-of-place mixed-type arithmetic overloads
+
+/*
+ * OUT-OF-PLACE MIXED-TYPE ARITHMETIC
+ * 
+ * which avoid code duplication by re-using the
+ * in-place arithmetic operator overloads above
+ */
+
+
+// base_qcomp * other
+
 INLINE base_qcomp operator * (base_qcomp a, const int& b) noexcept {
     a *= b;
     return a;
 }
+
 INLINE base_qcomp operator * (base_qcomp a, const qreal& b) noexcept {
     a *= b;
     return a;
 }
+
 INLINE base_qcomp operator * (base_qcomp a, const size_t& b) noexcept {
     a *= b;
     return a;
 }
 
 
-// reverse order of out-of-place mixed-type arithmetic (via commutation)
+// other * base_qcomp (via commutation)
+
 INLINE base_qcomp operator * (const int& a, const base_qcomp& b) noexcept {
     return b * a;
 }
+
 INLINE base_qcomp operator * (const qreal& a, const base_qcomp& b) noexcept {
     return b * a;
 }
 
+INLINE base_qcomp operator * (const size_t& a, const base_qcomp& b) noexcept {
+    return b * a;
+}
 
-// backend agnostic maths
+
+
+/*
+ * BACKEND-AGNOSTIC MATHS
+ */
+
 INLINE qreal real(const base_qcomp& a) {
     return a.re;
 }
+
 INLINE qreal imag(const base_qcomp& a) {
     return a.im;
 }
+
 INLINE base_qcomp conj(const base_qcomp& a) {
     return {a.re, - a.im};
 }
+
 INLINE qreal norm(const base_qcomp& a) noexcept {
     return (a.re * a.re) + (a.im * a.im);
 }
 
 
-// backend specific maths must be defined elsewhere
 
-    // INLINE base_qcomp pow(base_qcomp base, base_qcomp expo) noexcept {
+/*
+ * CONVERTERS
+ */
 
-    //     // Here, we re-use std::pow(std::complex) to avoid a custom definition,
-    //     // and so accept NaN-check performance penalties. Notice too we also
-    //     // create new qcomp(), rather than just reinterpreting the given base_qcomp,
-    //     // just to avoid any insiduous issues alignment/aliasing issues (since the
-    //     // creation time iss occluded by std::pow time).
-    //     qcomp base_ = getQcomp(base);
-    //     qcomp expo_ = getQcomp(expo);
-    //     qcomp out_ = std::pow(base_, expo_);
-    //     return getCpuQcomp(out_);
-    // }
-
-
-// (base) creators
 INLINE base_qcomp* getBaseQcompPtr(qcomp* list) {
     return reinterpret_cast<base_qcomp*>(list);
 }
+
 INLINE base_qcomp getBaseQcomp(qreal re, qreal im) {
     return { re, im };
 }
+
 INLINE base_qcomp getBaseQcomp(const qcomp& a) {
     return { a.real(), a.imag() };
 }
+
 INLINE qcomp getQcomp(const base_qcomp& a) {
     return qcomp( a.re, a.im );
 }
 
 
-// creator for fixed-size dense matrices (CompMatr1 and CompMatr2) ((not inlined!))
-    // template <int dim>
-    // std::array<std::array<base_qcomp,dim>,dim> getCpuQcomps(qcomp matr[dim][dim]) {
 
-    //     // detect brain-dead compiler inferencing (looking at you MSVC...)
-    //     static_assert(dim == 2 || dim == 4, "getCpuQcomps called with unexpected dim");
-
-    //     std::array<std::array<base_qcomp,dim>,dim> out;
-
-    //     for (int i=0; i<dim; i++)
-    //         for (int j=0; j<dim; j++)
-    //             out[i][j] = getCpuQcomp(matr[i][j]);
-
-    //     return out;
-    // }
-
-
-
-
-
-
+/*
+ * CHECK COMPATIBILITY WITH QCOMP
+ */
 
 
 // check the memory layout of base_qcomp agrees with qcomp, since
@@ -182,4 +223,5 @@ static_assert(std::is_trivially_copyable_v<base_qcomp>);
 // casting is safe for all circumstances (e.g. heap mem, static lists)
 
 
-#endif // BASETYPES_HPP
+
+#endif // BASE_QCOMP_HPP

@@ -56,13 +56,6 @@
 #include "tests/utils/random.hpp"
 
 
-
-// DEBUG
-#ifdef _OPENMP
-#error "OpenMP reached tests' main.cpp!"
-#endif
-
-
 /*
  * recast QuEST errors into exceptions which Catch2 can intercept
  */
