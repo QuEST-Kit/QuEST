@@ -28,6 +28,7 @@ on:
     branches:
       - main
       - devel
+      - unifying-base-qcomp
   pull_request:
     branches:
       - main

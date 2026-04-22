@@ -46,7 +46,7 @@
 
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
-#include "quest/src/gpu/gpu_types.cuh"
+#include "quest/src/gpu/gpu_qcomp.cuh"
 
 #include <custatevec.h>
 #include <vector>

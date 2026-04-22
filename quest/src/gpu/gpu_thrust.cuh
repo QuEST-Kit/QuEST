@@ -33,7 +33,7 @@
 #include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 
-#include "quest/src/gpu/gpu_types.cuh"
+#include "quest/src/gpu/gpu_qcomp.cuh"
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/constants.hpp"

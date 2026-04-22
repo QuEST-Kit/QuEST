@@ -31,7 +31,7 @@
 #include "quest/src/core/randomiser.hpp"
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/core/autodeployer.hpp"
-#include "quest/src/cpu/cpu_types.hpp"
+#include "quest/src/cpu/cpu_qcomp.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
 #include "quest/src/comm/comm_config.hpp"
@@ -412,7 +412,7 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
 
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
-    auto elems = getCpuQcomps<2>(matr.elems); // MSVC requires explicit template param, bah!
+    auto elems = getCpuQcompsMatrix<2>(matr.elems); // MSVC requires explicit template param, bah!
 
     auto sortedQubits   = util_getSorted(ctrls, {targ});
     auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ}, {0});
@@ -495,7 +495,7 @@ void cpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
 
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
-    auto elems = getCpuQcomps<4>(matr.elems); // MSVC requires explicit template param, bah!
+    auto elems = getCpuQcompsMatrix<4>(matr.elems); // MSVC requires explicit template param, bah!
 
     auto sortedQubits   = util_getSorted(ctrls, {targ1, targ2});
     auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ1, targ2}, {0, 0});
