@@ -28,7 +28,7 @@ on:
     branches:
       - main
       - devel
-      - unifying-base-qcomp
+      - msvc-patch
   pull_request:
     branches:
       - main
