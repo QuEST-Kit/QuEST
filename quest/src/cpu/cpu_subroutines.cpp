@@ -938,12 +938,16 @@ template void cpu_densmatr_allTargDiagMatr_sub<true,  false, true,  false> (Qure
 
 template <int NumTargs>
 INLINE void applyPauliUponAmpPair(
-    cpu_qcomp* amps, qindex v, qindex i0, int* indXY, int numXY, 
-    qindex maskXY, qindex maskYZ, cpu_qcomp& ampFac, cpu_qcomp& pairAmpFac
+    cpu_qcomp* amps, qindex& v, qindex& i0, int* indXY, int& numXY, 
+    qindex& maskXY, qindex& maskYZ, cpu_qcomp& ampFac, cpu_qcomp& pairAmpFac
 ) {
-    // this is a subroutine of cpu_statevector_anyCtrlPauliTensorOrGadget_subA() below
+    // This is a subroutine of cpu_statevector_anyCtrlPauliTensorOrGadget_subA() below
     // called in a hot-loop (hence it is here inlined) which exists because the caller
-    // chooses one of two possible OpenMP parallelisation granularities
+    // chooses one of two possible OpenMP parallelisation granularities. All args are
+    // pass-by-reference for performance, and because passing the cpu_qcomp types by-
+    // value causes a stack overflow during compilation with MSVC with OpenMP enabled;
+    // but only at double and quad precision (single is fine), and only when Catch2 is
+    // also being compiled (through the tests)... Hours of my life forever lost!
 
     // remind compiler when NumTargs is compile-time to unroll loop in setBits()
     SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, numXY);
