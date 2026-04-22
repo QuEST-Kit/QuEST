@@ -6,9 +6,11 @@ add_executable(tests
 target_link_libraries(tests PRIVATE QuEST::QuEST Catch2::Catch2)
 target_compile_features(tests PUBLIC cxx_std_20)
 
-# DEBUG: use modern OpenMP
+# DEBUG
 if (MSVC)
-  target_compile_options(tests PRIVATE /openmp:llvm)
+  add_compile_options(/openmp:llvm /EHsc /bigobj /Zm500)
+  add_compile_definitions(CATCH_CONFIG_DISABLE_STRINGIFICATION)
+  add_compile_definitions(CATCH_CONFIG_FAST_COMPILE)
 endif()
 
 add_subdirectory(unit)
