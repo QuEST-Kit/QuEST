@@ -70,36 +70,26 @@ INLINE gpu_qcomp getGpuQcomp(const qcomp& a) {
     return getBaseQcomp(a);
 }
 
-__host__ inline std::array<gpu_qcomp,2> unpackMatrixToGpuQcomps(DiagMatr1 in) {
+template <int Dim>
+__host__ inline std::array<gpu_qcomp,Dim> getGpuQcompArray(qcomp matr[Dim]) {
+    static_assert(Dim == 2 || Dim == 4);
 
     // it's crucial we explicitly copy over the elements,
     // rather than just reinterpret the pointer, to avoid
     // segmentation faults when memory misaligns (like on HIP)
 
-    return {getGpuQcomp(in.elems[0]), getGpuQcomp(in.elems[1])};
+    std::array<cpu_qcomp,Dim> out;
+    for (int i=0; i<Dim; i++)
+        out[i] = getGpuQcomp(matr[i]);
 }
 
-__host__ inline std::array<gpu_qcomp,4> unpackMatrixToGpuQcomps(DiagMatr2 in) {
+template <int Dim>
+__host__ inline std::array<gpu_qcomp,Dim*Dim> getFlattenedGpuQcompMatrix(qcomp matr[Dim][Dim]) {
+    static_assert(Dim == 2 || Dim == 4);
 
-    return {
-        getGpuQcomp(in.elems[0]), getGpuQcomp(in.elems[1]),
-        getGpuQcomp(in.elems[2]), getGpuQcomp(in.elems[3])};
-}
-
-__host__ inline std::array<gpu_qcomp,4> unpackMatrixToGpuQcomps(CompMatr1 in) {
-
-    std::array<gpu_qcomp,4> out{};
-    for (int i=0; i<4; i++)
-        out[i] = getGpuQcomp(in.elems[i/2][i%2]);
-
-    return out;
-}
-
-__host__ inline std::array<gpu_qcomp,16> unpackMatrixToGpuQcomps(CompMatr2 in) {
-
-    std::array<gpu_qcomp,16> out{};
-    for (int i=0; i<16; i++)
-        out[i] = getGpuQcomp(in.elems[i/4][i%4]);
+    std::array<gpu_qcomp,Dim*Dim> out;
+    for (int i=0; i<Dim*Dim; i++)
+        out[i] = getGpuQcomp(in.elems[i/Dim][i%Dim]);
 
     return out;
 }

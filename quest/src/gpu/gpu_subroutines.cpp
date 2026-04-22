@@ -293,7 +293,7 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
 #if COMPILE_CUQUANTUM
 
     bool applyAdj = false;
-    auto arr = unpackMatrixToGpuQcomps(matr);
+    auto arr = getFlattenedGpuQcompMatrix<2>(matr.elems); // explicit template for MSVC, grr!
     cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(qureg, ctrls, ctrlStates, {targ}, arr.data(), applyAdj);
 
 #elif COMPILE_CUDA
@@ -304,7 +304,7 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
     devints sortedQubits = util_getSorted(ctrls, {targ});
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ}, {0});
 
-    auto [m00, m01, m10, m11] = unpackMatrixToGpuQcomps(matr);
+    auto [m00, m01, m10, m11] = getFlattenedGpuQcompMatrix<2>(matr.elems); // explicit template for MSVC, grr!
 
     kernel_statevec_anyCtrlOneTargDenseMatr_subA <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         getGpuQcompPtr(qureg.gpuAmps), numThreads, 
@@ -362,7 +362,7 @@ void gpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
 #if COMPILE_CUQUANTUM
 
     bool applyAdj = false;
-    auto arr = unpackMatrixToGpuQcomps(matr);
+    auto arr = getFlattenedGpuQcompMatrix<4>(matr.elems); // explicit template for MSVC, grr!
     cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(qureg, ctrls, ctrlStates, {targ1, targ2}, arr.data(), applyAdj);
 
 #elif COMPILE_CUDA
@@ -374,7 +374,7 @@ void gpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ1,targ2}, {0,0});
 
     // unpack matrix elems which are more efficiently accessed by kernels as args than shared mem (... maybe...)
-    auto m = unpackMatrixToGpuQcomps(matr);
+    auto m = getFlattenedGpuQcompMatrix<4>(matr.elems); // explicit template for MSVC, grr!
 
     kernel_statevec_anyCtrlTwoTargDenseMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         getGpuQcompPtr(qureg.gpuAmps), numThreads, 
@@ -570,7 +570,7 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
     devints deviceCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
-    auto elems = unpackMatrixToGpuQcomps(matr);
+    auto elems = getGpuQcompArray<2>(matr.elems); // explicit template for MSVC, grr!
 
     kernel_statevec_anyCtrlOneTargDiagMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         getGpuQcompPtr(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
@@ -638,7 +638,7 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
     devints deviceCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
-    auto elems = unpackMatrixToGpuQcomps(matr);
+    auto elems = getGpuQcompArray<4>(matr.elems); // explicit template for MSVC, grr!
 
     kernel_statevec_anyCtrlTwoTargDiagMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         getGpuQcompPtr(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,

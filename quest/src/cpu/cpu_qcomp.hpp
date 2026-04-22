@@ -51,17 +51,19 @@ INLINE cpu_qcomp getCpuQcomp(const qcomp& a) {
     return getBaseQcomp(a);
 }
 
-template <int dim>
-std::array<std::array<cpu_qcomp,dim>,dim> getCpuQcompsMatrix(qcomp matr[dim][dim]) {
+template <int Dim>
+std::array<std::array<cpu_qcomp,Dim>,Dim> getCpuQcompsMatrix(qcomp matr[Dim][Dim]) {
 
-    // creator for fixed-size dense matrices CompMatr1 and CompMatr2,
+    // Creator for fixed-size dense matrices CompMatr1 and CompMatr2,
     // which are respectively 2x2 and 4x4 - deliberately not inlined!
-    static_assert(dim == 2 || dim == 4, "getCpuQcomps called with unexpected dim");
+    // We create new cpu_qcomp in lieu of reinterpreting a 2D pointer
+    // in fear of alignment and static array nightmares
+    static_assert(Dim == 2 || Dim == 4);
 
-    std::array<std::array<cpu_qcomp,dim>,dim> out;
+    std::array<std::array<cpu_qcomp,Dim>,Dim> out;
 
-    for (int i=0; i<dim; i++)
-        for (int j=0; j<dim; j++)
+    for (int i=0; i<Dim; i++)
+        for (int j=0; j<Dim; j++)
             out[i][j] = getCpuQcomp(matr[i][j]);
 
     return out;
