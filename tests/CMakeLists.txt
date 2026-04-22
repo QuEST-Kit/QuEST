@@ -7,9 +7,9 @@ target_link_libraries(tests PRIVATE QuEST::QuEST Catch2::Catch2)
 target_compile_features(tests PUBLIC cxx_std_20)
 
 # DEBUG: use modern OpenMP
-target_compile_options(tests PRIVATE
-  $<$<CXX_COMPILER_ID:MSVC>:/openmp:llvm>
-)
+if (MSVC)
+  target_compile_options(tests PRIVATE /openmp:llvm)
+endif()
 
 add_subdirectory(unit)
 add_subdirectory(utils)
