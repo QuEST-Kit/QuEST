@@ -78,7 +78,7 @@ __host__ inline std::array<gpu_qcomp,Dim> getGpuQcompArray(qcomp matr[Dim]) {
     // rather than just reinterpret the pointer, to avoid
     // segmentation faults when memory misaligns (like on HIP)
 
-    std::array<cpu_qcomp,Dim> out;
+    std::array<gpu_qcomp,Dim> out;
     for (int i=0; i<Dim; i++)
         out[i] = getGpuQcomp(matr[i]);
 }
@@ -89,7 +89,7 @@ __host__ inline std::array<gpu_qcomp,Dim*Dim> getFlattenedGpuQcompMatrix(qcomp m
 
     std::array<gpu_qcomp,Dim*Dim> out;
     for (int i=0; i<Dim*Dim; i++)
-        out[i] = getGpuQcomp(in.elems[i/Dim][i%Dim]);
+        out[i] = getGpuQcomp(matr[i/Dim][i%Dim]);
 
     return out;
 }
