@@ -3,7 +3,9 @@
  * as mirrored by gpu_subroutines.cpp, and called by accelerator.cpp. 
  * 
  * These 'hot-loop' functions use cpu_qcomp arithmetic operators, in lieu of qcomp
- * (i.e. std::complex) which has compiler-specific performance pitfalls.
+ * (i.e. std::complex) which has compiler-specific performance pitfalls. BEWARE
+ * that passing a cpu_qcomp by-value to a function inside an OpenMP parallel region
+ * can cause MSVC to crash during compilation, so be sure to pass by reference!
  * 
  * Some of these definitions are templated, defining multiple versions optimised 
  * (at compile-time) for handling different numbers of input qubits; such functions
@@ -938,12 +940,16 @@ template void cpu_densmatr_allTargDiagMatr_sub<true,  false, true,  false> (Qure
 
 template <int NumTargs>
 INLINE void applyPauliUponAmpPair(
-    cpu_qcomp* amps, qindex v, qindex i0, int* indXY, int numXY, 
-    qindex maskXY, qindex maskYZ, cpu_qcomp ampFac, cpu_qcomp pairAmpFac
+    cpu_qcomp* amps, qindex& v, qindex& i0, int* indXY, int& numXY, 
+    qindex& maskXY, qindex& maskYZ, cpu_qcomp& ampFac, cpu_qcomp& pairAmpFac
 ) {
-    // this is a subroutine of cpu_statevector_anyCtrlPauliTensorOrGadget_subA() below
+    // This is a subroutine of cpu_statevector_anyCtrlPauliTensorOrGadget_subA() below
     // called in a hot-loop (hence it is here inlined) which exists because the caller
-    // chooses one of two possible OpenMP parallelisation granularities
+    // chooses one of two possible OpenMP parallelisation granularities. All args are
+    // pass-by-reference for performance, and because passing the cpu_qcomp types by-
+    // value causes a stack overflow during compilation with MSVC with OpenMP enabled;
+    // but only at double and quad precision (single is fine), and only when Catch2 is
+    // also being compiled (through the tests)... Hours of my life forever lost!
 
     // remind compiler when NumTargs is compile-time to unroll loop in setBits()
     SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, numXY);
