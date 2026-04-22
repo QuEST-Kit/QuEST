@@ -53,7 +53,7 @@
 #include "quest/src/gpu/gpu_subroutines.hpp"
 
 #if COMPILE_CUDA
-    #include "quest/src/gpu/gpu_types.cuh"
+    #include "quest/src/gpu/gpu_qcomp.cuh"
     #include "quest/src/gpu/gpu_kernels.cuh"
     #include "quest/src/gpu/gpu_thrust.cuh"
 #endif
