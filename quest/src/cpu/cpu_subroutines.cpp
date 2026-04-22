@@ -3,7 +3,9 @@
  * as mirrored by gpu_subroutines.cpp, and called by accelerator.cpp. 
  * 
  * These 'hot-loop' functions use cpu_qcomp arithmetic operators, in lieu of qcomp
- * (i.e. std::complex) which has compiler-specific performance pitfalls.
+ * (i.e. std::complex) which has compiler-specific performance pitfalls. BEWARE
+ * that passing a cpu_qcomp by-value to a function inside an OpenMP parallel region
+ * can cause MSVC to crash during compilation, so be sure to pass by reference!
  * 
  * Some of these definitions are templated, defining multiple versions optimised 
  * (at compile-time) for handling different numbers of input qubits; such functions
