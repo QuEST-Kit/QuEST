@@ -54,7 +54,6 @@ using std::vector;
             // to do the indvidual real/imag reduction
 
 
-            // TODO: move numIts closer to the for loops!
 
 
 
@@ -88,16 +87,16 @@ void cpu_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
     // case a similar optimisation is restored in the future
     assert_highPauliStrSumMaskIsZero(sum);
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+    cpu_qcomp* coeffs = getCpuQcompPtr(sum.coeffs);
+
     // process each amplitude in-turn, not bothering to leverage that adjacent
     // basis states have PauliStrSum elems which differ by a single +-i/1 (as
     // can be enumerated via Gray Code), because this breaks thread independence,
     // plus this function is only called infrequently (as initialisation)
     qindex numIts = qureg.numAmpsPerNode;
     qindex dim = powerOf2(qureg.numQubits);
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
-    cpu_qcomp* coeffs = getCpuQcompPtr(sum.coeffs);
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -117,6 +116,10 @@ void cpu_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
 
 void cpu_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStrSum in) {
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* inCoeffs = getCpuQcompPtr(in.coeffs);
+    cpu_qcomp* outElems = getCpuQcompPtr(out.cpuElems);
+
     // unlike in densmatr_setAmpsToPauliStrSum_sub() above, this PauliStrSum
     // can feature non-identity Paulis on every qubit, i.e. up to t=63
 
@@ -124,10 +127,6 @@ void cpu_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStr
     qindex numSuf = logBase2(numIts);
 
     int rank = out.isDistributed? comm_getRank() : 0;
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* inCoeffs = getCpuQcompPtr(in.coeffs);
-    cpu_qcomp* outElems = getCpuQcompPtr(out.cpuElems);
 
     #pragma omp parallel for if(out.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -220,15 +219,15 @@ qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubitInds, vecto
 
     assert_numQubitsMatchesQubitStatesAndTemplateParam(qubitInds.size(), qubitStates.size(), NumQubits);
 
+    // use cpu_qcomp (in lieu of qcomp) even though no arithmetic happens below - just for consistency!
+    cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
+    cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
+
     // each control qubit halves the needed iterations
     qindex numIts = qureg.numAmpsPerNode / powerOf2(qubitInds.size());
 
     // amplitudes are packed at an offset into the buffer
     qindex offset = getSubBufferSendInd(qureg);
-
-    // use cpu_qcomp (in lieu of qcomp) even though no arithmetic happens below - just for consistency!
-    cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
-    cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
 
     auto sortedQubitInds = util_getSorted(qubitInds);
     auto qubitStateMask  = util_getBitMask(qubitInds, qubitStates);
@@ -255,15 +254,15 @@ qindex cpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qu
     
     assert_bufferPackerGivenIncreasingQubits(qubit1, qubit2, qubit3);
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
+    cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
+
     // pack eighth of buffer with pre-summed amp pairs
     qindex numIts = qureg.numAmpsPerNode / 8;
 
     // amplitudes are packed at an offset into the buffer
     qindex offset = getSubBufferSendInd(qureg);
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
-    cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -295,11 +294,11 @@ void cpu_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> c
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
-    // each control qubit halves the number of iterations, each of which modifies 2 amplitudes, and skips 2
-    qindex numIts = qureg.numAmpsPerNode / powerOf2(2 + ctrls.size());
-
     // use cpu_qcomp (in lieu of qcomp) even though no arithmetic happens below - just for consistency!
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
+    // each control qubit halves the number of iterations, each of which modifies 2 amplitudes, and skips 2
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(2 + ctrls.size());
 
     auto sortedQubits   = util_getSorted(ctrls, {targ2, targ1});
     auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ2, targ1}, {0, 1});
@@ -325,15 +324,15 @@ void cpu_statevec_anyCtrlSwap_subB(Qureg qureg, vector<int> ctrls, vector<int> c
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
+    cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
+
     // each control qubit halves the number of received amplitudes
     qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
 
     // received amplitudes may begin at an arbitrary offset in the buffer
     qindex offset = getBufferRecvInd();
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
-    cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
 
     auto sortedCtrls   = util_getSorted(ctrls);
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
@@ -361,15 +360,15 @@ void cpu_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int> c
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
+    cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
+
     // each control qubit halves the number of iterations, each of which modifies one of the two target qubit states
     qindex numIts = qureg.numAmpsPerNode / powerOf2(1 + ctrls.size());
 
     // received amplitudes may begin at an arbitrary offset in the buffer
     qindex offset = getBufferRecvInd();
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
-    cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
 
     auto sortedQubits   = util_getSorted(ctrls, {targ});
     auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ}, {targState});
@@ -409,12 +408,12 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
-    // each control qubit halves the needed iterations, and each iteration modifies two amplitudes
-    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size() + 1);
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
     auto elems = getCpuQcompsMatrix<2>(matr.elems); // MSVC requires explicit template param, bah!
+
+    // each control qubit halves the needed iterations, and each iteration modifies two amplitudes
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size() + 1);
 
     auto sortedQubits   = util_getSorted(ctrls, {targ});
     auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ}, {0});
@@ -445,17 +444,17 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
-    // each control qubit halves the needed iterations, and each iteration modifies one amplitude
-    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
-    
-    // received amplitudes may begin at an arbitrary offset in the buffer
-    qindex offset = getBufferRecvInd();
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
     cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
     cpu_qcomp f0 = getCpuQcomp(fac0);
     cpu_qcomp f1 = getCpuQcomp(fac1);
+
+    // each control qubit halves the needed iterations, and each iteration modifies one amplitude
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
+    
+    // received amplitudes may begin at an arbitrary offset in the buffer
+    qindex offset = getBufferRecvInd();
 
     auto sortedCtrls   = util_getSorted(ctrls);
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
@@ -492,12 +491,12 @@ void cpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
-    // each control qubit halves the needed iterations, and each iteration modifies four amplitudes
-    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size() + 2);
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
     auto elems = getCpuQcompsMatrix<4>(matr.elems); // MSVC requires explicit template param, bah!
+
+    // each control qubit halves the needed iterations, and each iteration modifies four amplitudes
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size() + 2);
 
     auto sortedQubits   = util_getSorted(ctrls, {targ1, targ2});
     auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ1, targ2}, {0, 0});
@@ -545,6 +544,10 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
     assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* amps  = getCpuQcompPtr(qureg.cpuAmps);
+    cpu_qcomp* elems = getCpuQcompPtr(matr.cpuElemsFlat);
+
     /// @todo
     /// this function allocates powerOf2(targs.size())-sized caches for each thread, sometimes in
     /// heap. At the ~max non-distributed double CompMatr of 16 qubits = 64 GiB, this is 1 MiB 
@@ -565,10 +568,6 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
 
     // each control qubit halves iterations, each of which modifies 2^(targs.size()) amplitudes
     qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size() + targs.size());
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* amps  = getCpuQcompPtr(qureg.cpuAmps);
-    cpu_qcomp* elems = getCpuQcompPtr(matr.cpuElemsFlat);
 
     // prepare a mask which yields ctrls in specified state, and targs in all-zero
     auto sortedQubits   = util_getSorted(ctrls, targs);
@@ -651,20 +650,12 @@ void cpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
-    // each control qubit halves the needed iterations, each of which will modify 1 amplitude
-    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps  = getCpuQcompPtr(qureg.cpuAmps);
     cpu_qcomp* elems = getCpuQcompPtr(matr.elems);
 
-        // TODO:
-        // I am paranoid the above casting from qcomp* to cpu_qcomp* is
-        // more dangerous for the static matr.elems than the heap pointer.
-        // Is it more vulnerable to misalignment? Check this!
-        //
-        // If this IS the case, we simply prepare a new cpu_qcomp
-        // instance for each element, like the GPU backend does
+    // each control qubit halves the needed iterations, each of which will modify 1 amplitude
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
 
     auto sortedCtrls   = util_getSorted(ctrls);
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
@@ -701,20 +692,12 @@ void cpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
-    // each control qubit halves the needed iterations, each of which will modify 1 amplitude
-    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps  = getCpuQcompPtr(qureg.cpuAmps);
     cpu_qcomp* elems = getCpuQcompPtr(matr.elems);
 
-        // TODO:
-        // I am paranoid the above casting from qcomp* to cpu_qcomp* is
-        // more dangerous for the static matr.elems than the heap pointer.
-        // Is it more vulnerable to misalignment? Check this!
-        //
-        // If this IS the case, we simply prepare a new cpu_qcomp
-        // instance for each element, like the GPU backend does
+    // each control qubit halves the needed iterations, each of which will modify 1 amplitude
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
 
     auto sortedCtrls   = util_getSorted(ctrls);
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
@@ -753,14 +736,14 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
     assert_exponentMatchesTemplateParam(exponent, HasPower);
 
-    // each control qubit halves the needed iterations, each of which will modify 1 amplitude
-    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps  = getCpuQcompPtr(qureg.cpuAmps);
     cpu_qcomp* elems = getCpuQcompPtr(matr.cpuElems);
     cpu_qcomp expo   = getCpuQcomp(exponent);
     (void) expo; // silence when unused
+
+    // each control qubit halves the needed iterations, each of which will modify 1 amplitude
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
 
     auto sortedCtrls   = util_getSorted(ctrls);
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
@@ -821,14 +804,14 @@ void cpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
     assert_quregAndFullStateDiagMatrHaveSameDistrib(qureg, matr);
     assert_exponentMatchesTemplateParam(exponent, HasPower);
 
-    // every iteration modifies one amp, using one element
-    qindex numIts = qureg.numAmpsPerNode;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps  = getCpuQcompPtr(qureg.cpuAmps);
     cpu_qcomp* elems = getCpuQcompPtr(matr.cpuElems);
     cpu_qcomp expo   = getCpuQcomp(exponent);
     (void) expo; // silence when unused
+
+    // every iteration modifies one amp, using one element
+    qindex numIts = qureg.numAmpsPerNode;
 
     #pragma omp parallel for if(qureg.isMultithreaded||qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -861,14 +844,14 @@ void cpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 
     assert_exponentMatchesTemplateParam(exponent, HasPower);
 
-    // every iteration modifies one qureg amp, using one or two matr elements
-    qindex numIts = qureg.numAmpsPerNode;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps  = getCpuQcompPtr(qureg.cpuAmps);
     cpu_qcomp* elems = getCpuQcompPtr(matr.cpuElems);
     cpu_qcomp expo   = getCpuQcomp(exponent);
     (void) expo; // silence when unused
+
+    // every iteration modifies one qureg amp, using one or two matr elements
+    qindex numIts = qureg.numAmpsPerNode;
 
     #pragma omp parallel for if(qureg.isMultithreaded||matr.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -1063,15 +1046,15 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subB(
     // we will scale pairAmp by i^numY, so that each amp need only choose the +-1 sign
     pairAmpFac *= util_getPowerOfI(y.size());
 
-    // each control qubit halves the needed iterations
-    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
     cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
     cpu_qcomp f0 = getCpuQcomp(ampFac);
     cpu_qcomp f1 = getCpuQcomp(pairAmpFac);
     
+    // each control qubit halves the needed iterations
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
+
     // received amplitudes may begin at an arbitrary offset in the buffer
     qindex offset = getBufferRecvInd();
 
@@ -1119,12 +1102,12 @@ void cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
 ) {
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
-    // each control qubit halves the needed iterations, each of which modifies 1 amp
-    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
     cpu_qcomp facs[] = {getCpuQcomp(fac0), getCpuQcomp(fac1)};
+
+    // each control qubit halves the needed iterations, each of which modifies 1 amp
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
 
     auto sortedCtrls   = util_getSorted(ctrls);
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
@@ -1158,11 +1141,11 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlAnyTargZO
 template <int NumQuregs>
 void cpu_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs, vector<Qureg> inQuregs) {
 
-    qindex numIts = outQureg.numAmpsPerNode;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* outAmps = getCpuQcompPtr(outQureg.cpuAmps);
     cpu_qcomp* inFacs = getCpuQcompPtr(coeffs.data());
+
+    qindex numIts = outQureg.numAmpsPerNode;
 
     // use template param to compile-time unroll inner loop below
     SET_VAR_AT_COMPILE_TIME(int, numQuregs, NumQuregs, inQuregs.size());
@@ -1184,12 +1167,12 @@ void cpu_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs
 
 void cpu_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, Qureg inDensMatr) {
 
-    qindex numIts = outQureg.numAmpsPerNode;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* outAmps = getCpuQcompPtr(outQureg.cpuAmps);
     cpu_qcomp* inAmps = getCpuQcompPtr(inDensMatr.cpuAmps);
     
+    qindex numIts = outQureg.numAmpsPerNode;
+
     #pragma omp parallel for if(outQureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++)
         outAmps[n] = (outProb * outAmps[n]) + (inProb * inAmps[n]);
@@ -1198,13 +1181,13 @@ void cpu_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, Qur
 
 void cpu_densmatr_mixQureg_subB(qreal outProb, Qureg outQureg, qreal inProb, Qureg inStateVec) {
 
-    qindex numIts = outQureg.numAmpsPerNode;
-    qindex dim = inStateVec.numAmps;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* outAmps = getCpuQcompPtr(outQureg.cpuAmps);
     cpu_qcomp* inAmps = getCpuQcompPtr(inStateVec.cpuAmps);
     
+    qindex numIts = outQureg.numAmpsPerNode;
+    qindex dim = inStateVec.numAmps;
+
     #pragma omp parallel for if(outQureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -1219,13 +1202,13 @@ void cpu_densmatr_mixQureg_subB(qreal outProb, Qureg outQureg, qreal inProb, Qur
 
 void cpu_densmatr_mixQureg_subC(qreal outProb, Qureg outQureg, qreal inProb) {
 
-    // received inQureg's entire statevector amplitudes into every node's buffer
-    qindex numIts = outQureg.numAmpsPerNode;
-    qindex dim = powerOf2(outQureg.numQubits);
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* outAmps = getCpuQcompPtr(outQureg.cpuAmps);
     cpu_qcomp* inAmps = getCpuQcompPtr(outQureg.cpuCommBuffer);
+
+    // received inQureg's entire statevector amplitudes into every node's buffer
+    qindex numIts = outQureg.numAmpsPerNode;
+    qindex dim = powerOf2(outQureg.numQubits);
 
     #pragma omp parallel for if(outQureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -1253,11 +1236,11 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_QUREGS( void, cpu_statevec_setQuregToWeighted
 
 void cpu_densmatr_oneQubitDephasing_subA(Qureg qureg, int ketQubit, qreal prob) {
 
-    // half of all local amps are scaled, and each iteration modifies two
-    qindex numIts = qureg.numAmpsPerNode / 4;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
+    // half of all local amps are scaled, and each iteration modifies two
+    qindex numIts = qureg.numAmpsPerNode / 4;
 
     // loop constants
     qreal fac = util_getOneQubitDephasingFactor(prob);
@@ -1288,12 +1271,12 @@ void cpu_densmatr_oneQubitDephasing_subA(Qureg qureg, int ketQubit, qreal prob) 
 
 void cpu_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal prob) {
 
-    // half of all local amps are scaled
-    qindex numIts = qureg.numAmpsPerNode / 2;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
     
+    // half of all local amps are scaled
+    qindex numIts = qureg.numAmpsPerNode / 2;
+
     // loop constants
     qreal fac = util_getOneQubitDephasingFactor(prob);
     int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
@@ -1330,11 +1313,11 @@ void cpu_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubitB, qr
 
 void cpu_densmatr_twoQubitDephasing_subB(Qureg qureg, int ketQubitA, int ketQubitB, qreal prob) {
 
-    // 75% of amps are updated, but we just enumerate all for simplicity
-    qindex numIts = qureg.numAmpsPerNode;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
+    // 75% of amps are updated, but we just enumerate all for simplicity
+    qindex numIts = qureg.numAmpsPerNode;
 
     // loop constants
     qreal term = util_getTwoQubitDephasingTerm(prob);
@@ -1368,11 +1351,11 @@ void cpu_densmatr_twoQubitDephasing_subB(Qureg qureg, int ketQubitA, int ketQubi
 
 void cpu_densmatr_oneQubitDepolarising_subA(Qureg qureg, int ketQubit, qreal prob) {
 
-    // all amps are modified, and each iteration modifies 4
-    qindex numIts = qureg.numAmpsPerNode / 4;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
+    // all amps are modified, and each iteration modifies 4
+    qindex numIts = qureg.numAmpsPerNode / 4;
 
     int braQubit = util_getBraQubit(ketQubit, qureg);
     auto factors = util_getOneQubitDepolarisingFactors(prob);
@@ -1403,12 +1386,12 @@ void cpu_densmatr_oneQubitDepolarising_subA(Qureg qureg, int ketQubit, qreal pro
 
 void cpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal prob) {
 
-    // all amps are modified, and each iteration modifies 2
-    qindex numIts = qureg.numAmpsPerNode / 2;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
     cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
+
+    // all amps are modified, and each iteration modifies 2
+    qindex numIts = qureg.numAmpsPerNode / 2;
 
     // received amplitudes may begin at an arbitrary offset in the buffer
     qindex offset = getBufferRecvInd();
@@ -1452,11 +1435,11 @@ void cpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal pro
 
 void cpu_densmatr_twoQubitDepolarising_subA(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
 
-    // all amps are scaled (although 1/16 of them will be unchanged)
-    qindex numIts  = qureg.numAmpsPerNode;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
+    // all amps are scaled (although 1/16 of them will be unchanged)
+    qindex numIts  = qureg.numAmpsPerNode;
 
     // bra-qubits corresponding to ket-qubits
     int braQb1 = util_getBraQubit(ketQb1, qureg);
@@ -1480,11 +1463,11 @@ void cpu_densmatr_twoQubitDepolarising_subA(Qureg qureg, int ketQb1, int ketQb2,
 
 void cpu_densmatr_twoQubitDepolarising_subB(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
 
-    // one quarter of amps will be modified, and four are mixed each iteration
-    qindex numIts = qureg.numAmpsPerNode / 16;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
+    // one quarter of amps will be modified, and four are mixed each iteration
+    qindex numIts = qureg.numAmpsPerNode / 16;
 
     // bra-qubits corresponding to ket-qubits
     int braQb1 = util_getBraQubit(ketQb1, qureg);
@@ -1520,11 +1503,11 @@ void cpu_densmatr_twoQubitDepolarising_subB(Qureg qureg, int ketQb1, int ketQb2,
 
 void cpu_densmatr_twoQubitDepolarising_subC(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
 
-    // scale 25% of amps but iterate all
-    qindex numIts = qureg.numAmpsPerNode;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
+    // scale 25% of amps but iterate all
+    qindex numIts = qureg.numAmpsPerNode;
 
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
@@ -1553,12 +1536,12 @@ void cpu_densmatr_twoQubitDepolarising_subC(Qureg qureg, int ketQb1, int ketQb2,
 
 void cpu_densmatr_twoQubitDepolarising_subD(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
 
-    // 25% of local amps are modified, two in each iteration
-    qindex numIts = qureg.numAmpsPerNode / 8;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
     cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
+
+    // 25% of local amps are modified, two in each iteration
+    qindex numIts = qureg.numAmpsPerNode / 8;
 
     // received amplitudes may begin at an arbitrary offset in the buffer
     qindex offset = getBufferRecvInd();
@@ -1593,11 +1576,11 @@ void cpu_densmatr_twoQubitDepolarising_subD(Qureg qureg, int ketQb1, int ketQb2,
 
 void cpu_densmatr_twoQubitDepolarising_subE(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
 
-    // all amplitudes are scaled; 25% by c1 and 75% by 1 + c3
-    qindex numIts = qureg.numAmpsPerNode;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
+    // all amplitudes are scaled; 25% by c1 and 75% by 1 + c3
+    qindex numIts = qureg.numAmpsPerNode;
 
     auto factors = util_getTwoQubitDepolarisingFactors(prob);
     qreal fac0 = 1 + factors.c3;
@@ -1622,12 +1605,12 @@ void cpu_densmatr_twoQubitDepolarising_subE(Qureg qureg, int ketQb1, int ketQb2,
 
 void cpu_densmatr_twoQubitDepolarising_subF(Qureg qureg, int ketQb1, int ketQb2, qreal prob) {
 
-    // modify 25% of local amps, one per iteration
-    qindex numIts = qureg.numAmpsPerNode / 4;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
     cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
+
+    // modify 25% of local amps, one per iteration
+    qindex numIts = qureg.numAmpsPerNode / 4;
 
     // received amplitudes may begin at an arbitrary offset in the buffer
     qindex offset = getBufferRecvInd();
@@ -1660,11 +1643,11 @@ void cpu_densmatr_twoQubitDepolarising_subF(Qureg qureg, int ketQb1, int ketQb2,
 
 void cpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ) {
 
-    // all amps are modified, and each iteration modifies 4
-    qindex numIts = qureg.numAmpsPerNode / 4;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
+    // all amps are modified, and each iteration modifies 4
+    qindex numIts = qureg.numAmpsPerNode / 4;
 
     int braQubit = util_getBraQubit(ketQubit, qureg);
 
@@ -1705,12 +1688,12 @@ void cpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int ketQubit, qreal pI,
 
 void cpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI, qreal pX, qreal pY, qreal pZ) {
 
-    // all amps are modified, and each iteration modifies 2
-    qindex numIts = qureg.numAmpsPerNode / 2;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
     cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
+
+    // all amps are modified, and each iteration modifies 2
+    qindex numIts = qureg.numAmpsPerNode / 2;
 
     // received amplitudes may begin at an arbitrary offset in the buffer
     qindex offset = getBufferRecvInd();
@@ -1759,11 +1742,11 @@ void cpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI,
 
 void cpu_densmatr_oneQubitDamping_subA(Qureg qureg, int ketQubit, qreal prob) {
 
-    // each iteration modifies 4 amps
-    qindex numIts = qureg.numAmpsPerNode / 4;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
+    // each iteration modifies 4 amps
+    qindex numIts = qureg.numAmpsPerNode / 4;
 
     int braQubit = util_getBraQubit(ketQubit, qureg);
 
@@ -1793,11 +1776,11 @@ void cpu_densmatr_oneQubitDamping_subA(Qureg qureg, int ketQubit, qreal prob) {
 
 void cpu_densmatr_oneQubitDamping_subB(Qureg qureg, int qubit, qreal prob) {
 
-    // half of all local amps are scaled
-    qindex numIts = qureg.numAmpsPerNode / 2;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
+    // half of all local amps are scaled
+    qindex numIts = qureg.numAmpsPerNode / 2;
 
     auto c2 = util_getOneQubitDampingFactors(prob).c2;
 
@@ -1813,11 +1796,11 @@ void cpu_densmatr_oneQubitDamping_subB(Qureg qureg, int qubit, qreal prob) {
 
 void cpu_densmatr_oneQubitDamping_subC(Qureg qureg, int ketQubit, qreal prob) {
 
-    // half of all local amps are scaled
-    qindex numIts = qureg.numAmpsPerNode / 2;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
+    // half of all local amps are scaled
+    qindex numIts = qureg.numAmpsPerNode / 2;
 
     int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
     auto c1 = util_getOneQubitDampingFactors(prob).c1;
@@ -1834,12 +1817,12 @@ void cpu_densmatr_oneQubitDamping_subC(Qureg qureg, int ketQubit, qreal prob) {
 
 void cpu_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob) {
 
-    // half of all local amps are combined with buffer
-    qindex numIts = qureg.numAmpsPerNode / 2;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
     cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
+
+    // half of all local amps are combined with buffer
+    qindex numIts = qureg.numAmpsPerNode / 2;
 
     // received amplitudes may begin at an arbitrary offset in the buffer
     qindex offset = getBufferRecvInd();
@@ -1869,12 +1852,12 @@ void cpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> ta
 
     assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
 
-    // each outer iteration sets one element of outQureg
-    qindex numOuterIts = outQureg.numAmpsPerNode;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* inAmps = getCpuQcompPtr(inQureg.cpuAmps);
     cpu_qcomp* outAmps = getCpuQcompPtr(outQureg.cpuAmps);
+
+    // each outer iteration sets one element of outQureg
+    qindex numOuterIts = outQureg.numAmpsPerNode;
 
     // targs and allTargs are sorted, but pairTargs is arbitrarily ordered (though corresponding targs)
     auto allTargsSorted = util_getSorted(targs, pairTargs);
@@ -1930,6 +1913,9 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_partialTrace_sub, (
 
 qreal cpu_statevec_calcTotalProb_sub(Qureg qureg) {
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
     /// @todo
     /// check whether OpenMP is performing a numerically stable
     /// reduction, e.g. via 'parallel summation', to avoid the
@@ -1948,9 +1934,6 @@ qreal cpu_statevec_calcTotalProb_sub(Qureg qureg) {
     // every amp, iterated independently, contributes to the probability
     qindex numIts = qureg.numAmpsPerNode;
 
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
-
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++)
         prob += norm(amps[n]);
@@ -1960,6 +1943,9 @@ qreal cpu_statevec_calcTotalProb_sub(Qureg qureg) {
 
 
 qreal cpu_densmatr_calcTotalProb_sub(Qureg qureg) {
+
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
 
     /// @todo
     /// check whether OpenMP is performing a numerically stable
@@ -1981,9 +1967,6 @@ qreal cpu_densmatr_calcTotalProb_sub(Qureg qureg) {
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
     qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
 
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
-
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -2001,14 +1984,14 @@ qreal cpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
     qreal prob = 0;
 
     // each iteration visits one amp per 2^qubits.size() amps
     // (>=1 since all qubits are in suffix, so qubits.size() <= suffix size) 
     qindex numIts = qureg.numAmpsPerNode / powerOf2(qubits.size());
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
 
     auto sortedQubits = util_getSorted(qubits); // all in suffix
     auto qubitStateMask = util_getBitMask(qubits, outcomes);
@@ -2034,6 +2017,9 @@ qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
     // note that qubits are only ket qubits for which the corresponding bra-qubit is in the suffix;
     // this function is not invoked upon nodes where prefix bra-qubits do not correspond to given outcomes
 
@@ -2043,9 +2029,6 @@ qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubi
     qindex numIts = powerOf2(qureg.logNumColsPerNode - qubits.size());
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
     qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
 
     auto sortedQubits = util_getSorted(qubits); // all in suffix, with corresponding bra's all in suffix
     auto qubitStateMask = util_getBitMask(qubits, outcomes);
@@ -2074,11 +2057,11 @@ void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
-    // every amp contributes to a statevector prob
-    qindex numIts = qureg.numAmpsPerNode;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
+    // every amp contributes to a statevector prob
+    qindex numIts = qureg.numAmpsPerNode;
 
     // use template param to compile-time unroll loop in getValueOfBits()
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
@@ -2115,14 +2098,14 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+    
     // iterate every column, each contributing one element (the diagonal)
     qindex numIts = powerOf2(qureg.logNumColsPerNode);
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
     qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
 
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
-    
     // use template param to compile-time unroll loop in getValueOfBits()
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
     qindex numOutcomes = powerOf2(numBits);
@@ -2169,16 +2152,16 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_calcProbsOfAllMulti
 
 qcomp cpu_statevec_calcInnerProduct_sub(Qureg quregA, Qureg quregB) {
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* ampsA = getCpuQcompPtr(quregA.cpuAmps);
+    cpu_qcomp* ampsB = getCpuQcompPtr(quregB.cpuAmps);
+
     // separately reduce real and imag components to make MSVC happy
     qreal prodRe = 0;
     qreal prodIm = 0;
 
     // every local amp contributes to the reduction
     qindex numIts = quregA.numAmpsPerNode;
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* ampsA = getCpuQcompPtr(quregA.cpuAmps);
-    cpu_qcomp* ampsB = getCpuQcompPtr(quregB.cpuAmps);
 
     #pragma omp parallel for reduction(+:prodRe,prodIm) if(quregA.isMultithreaded||quregB.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -2194,14 +2177,14 @@ qcomp cpu_statevec_calcInnerProduct_sub(Qureg quregA, Qureg quregB) {
 
 qreal cpu_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB) {
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* ampsA = getCpuQcompPtr(quregA.cpuAmps);
+    cpu_qcomp* ampsB = getCpuQcompPtr(quregB.cpuAmps);
+
     qreal dist = 0;
 
     // every local amp contributes to the reduction
     qindex numIts = quregA.numAmpsPerNode;
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* ampsA = getCpuQcompPtr(quregA.cpuAmps);
-    cpu_qcomp* ampsB = getCpuQcompPtr(quregB.cpuAmps);
 
     #pragma omp parallel for reduction(+:dist) if(quregA.isMultithreaded||quregA.isMultithreaded)
     for (qindex n=0; n<numIts; n++)
@@ -2214,16 +2197,16 @@ qreal cpu_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB) {
 template <bool Conj>
 qcomp cpu_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* rhoAmps = getCpuQcompPtr(rho.cpuAmps);
+    cpu_qcomp* psiAmps = getCpuQcompPtr(psi.cpuAmps);
+
     // separately reduce real and imag components to make MSVC happy
     qreal fidRe = 0;
     qreal fidIm = 0;
 
     // every local density matrix amp contributes to the reduction
     qindex numIts = rho.numAmpsPerNode;
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* rhoAmps = getCpuQcompPtr(rho.cpuAmps);
-    cpu_qcomp* psiAmps = getCpuQcompPtr(psi.cpuAmps);
 
     #pragma omp parallel for reduction(+:fidRe,fidIm) if(rho.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -2268,6 +2251,9 @@ template qcomp cpu_densmatr_calcFidelityWithPureState_sub<false>(Qureg, Qureg);
 
 qreal cpu_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
     // this is the only expec-val routine gauranteed to be real,
     // regardless of state normalisation and numerical errors
     qreal value = 0;
@@ -2275,9 +2261,6 @@ qreal cpu_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
     // each iteration contributes one term to the sum
     qindex numIts = qureg.numAmpsPerNode;
     qindex targMask = util_getBitMask(targs);
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
 
     #pragma omp parallel for reduction(+:value) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -2292,6 +2275,9 @@ qreal cpu_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 
 qcomp cpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
     // separately reduce real and imag components to make MSVC happy
     qreal valueRe = 0;
     qreal valueIm = 0;
@@ -2300,9 +2286,6 @@ qcomp cpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
     qindex numIts = powerOf2(qureg.logNumColsPerNode);
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
     qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
 
     qindex targMask = util_getBitMask(targs);
 
@@ -2327,15 +2310,15 @@ qcomp cpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 
 qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
     // separately reduce real and imag components to make MSVC happy
     qreal valueRe = 0;
     qreal valueIm = 0;
 
     // all local amps appear twice, and each iteration contributes two amps
     qindex numIts = qureg.numAmpsPerNode;
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
 
     qindex maskXY = util_getBitMask(util_getConcatenated(x, y));
     qindex maskYZ = util_getBitMask(util_getConcatenated(y, z));
@@ -2361,6 +2344,10 @@ qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int
 
 qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
+    cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
+
     /// @todo
     /// this is identical to the subA() version above, except that
     /// qureg.cpuAmps[j] becomes qureg.cpuCommBuffer[j]. We could
@@ -2375,10 +2362,6 @@ qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int
 
     // all local amps contribute to the sum
     qindex numIts = qureg.numAmpsPerNode;
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
-    cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
 
     qindex maskXY = util_getBitMask(util_getConcatenated(x, y));
     qindex maskYZ = util_getBitMask(util_getConcatenated(y, z));
@@ -2404,6 +2387,9 @@ qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int
 
 qcomp cpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
     // separately reduce real and imag components to make MSVC happy
     qreal valueRe = 0;
     qreal valueIm = 0;
@@ -2412,9 +2398,6 @@ qcomp cpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int>
     qindex numIts = powerOf2(qureg.logNumColsPerNode);
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
     qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
 
     // these masks indicate global paulis (i.e. not just suffix)
     qindex maskXY = util_getBitMask(util_getConcatenated(x, y));
@@ -2457,18 +2440,18 @@ qcomp cpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
     assert_quregAndFullStateDiagMatrHaveSameDistrib(qureg, matr);
     assert_exponentMatchesTemplateParam(exponent, HasPower, UseRealPow);
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* amps  = getCpuQcompPtr(qureg.cpuAmps);
+    cpu_qcomp* elems = getCpuQcompPtr(matr.cpuElems);
+    cpu_qcomp expo   = getCpuQcomp(exponent);
+    (void) expo; // silence when unused
+
     // separately reduce real and imag components to make MSVC happy
     qreal valueRe = 0;
     qreal valueIm = 0;
 
     // every amp, iterated independently, contributes to the expectation value
     qindex numIts = qureg.numAmpsPerNode;
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* amps  = getCpuQcompPtr(qureg.cpuAmps);
-    cpu_qcomp* elems = getCpuQcompPtr(matr.cpuElems);
-    cpu_qcomp expo   = getCpuQcomp(exponent);
-    (void) expo; // silence when unused
 
     #pragma omp parallel for reduction(+:valueRe,valueIm) if(qureg.isMultithreaded||matr.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -2503,6 +2486,12 @@ qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
     assert_quregAndFullStateDiagMatrHaveSameDistrib(qureg, matr);
     assert_exponentMatchesTemplateParam(exponent, HasPower, UseRealPow);
 
+    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
+    cpu_qcomp* amps  = getCpuQcompPtr(qureg.cpuAmps);
+    cpu_qcomp* elems = getCpuQcompPtr(matr.cpuElems);
+    cpu_qcomp expo   = getCpuQcomp(exponent);
+    (void) expo; // silence when unused
+
     // separately reduce real and imag components to make MSVC happy
     qreal valueRe = 0;
     qreal valueIm = 0;
@@ -2511,12 +2500,6 @@ qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr
     qindex numIts = powerOf2(qureg.logNumColsPerNode);
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
     qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
-
-    // use cpu_qcomp arithmetic overloads (avoid qcomp's)
-    cpu_qcomp* amps  = getCpuQcompPtr(qureg.cpuAmps);
-    cpu_qcomp* elems = getCpuQcompPtr(matr.cpuElems);
-    cpu_qcomp expo   = getCpuQcomp(exponent);
-    (void) expo; // silence when unused
 
     #pragma omp parallel for reduction(+:valueRe,valueIm) if(qureg.isMultithreaded||matr.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -2575,11 +2558,11 @@ void cpu_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
     // all qubits are in suffix
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
-    // visit every amp, setting to zero or multiplying it by renorm
-    qindex numIts = qureg.numAmpsPerNode;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps  = getCpuQcompPtr(qureg.cpuAmps);
+
+    // visit every amp, setting to zero or multiplying it by renorm
+    qindex numIts = qureg.numAmpsPerNode;
 
     // binary value of targeted qubits in basis states which are to be retained
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
@@ -2610,11 +2593,11 @@ void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vecto
     // qubits are unconstrained, and can include prefix qubits
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
-    // visit every amp, setting most to zero and multiplying the remainder by renorm
-    qindex numIts = qureg.numAmpsPerNode;
-
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+
+    // visit every amp, setting most to zero and multiplying the remainder by renorm
+    qindex numIts = qureg.numAmpsPerNode;
 
     // binary value of targeted qubits in basis states which are to be retained
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
