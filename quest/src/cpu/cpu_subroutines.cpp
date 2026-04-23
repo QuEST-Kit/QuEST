@@ -46,14 +46,15 @@ using std::vector;
 
 
 
+/*
+ * OPENMP QCOMP REDUCTION
+ */
 
 
-            // TODO:
-            // try to restore OpenMP custom reduction for cpu_qcomp??
-            // may work on modern MSVC compilers now, negating the need
-            // to do the indvidual real/imag reduction
-
-
+// As of Apr 2026, custom reductions are not supported by MSVC,
+// even when using the LLVM OpenMP runtime (grr!). So all qcomp
+// reductions within this file reduce the real and imaginary
+// components (each, a qreal) separately
 
 
 
@@ -629,6 +630,11 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
                     /// qureg.cpuAmps[i] is being serially updated by only this thread,
                     /// so is a candidate for Kahan summation for improved numerical
                     /// stability. Explore whether this is time-free and worthwhile!
+                    ///
+                    /// BEWARE that Kahan summation may be incompatible with
+                    /// the commutator tricks used in base_qcomp's (ancestor
+                    /// of cpu_qcomp) arithmetic operator overloads. Check
+                    /// base_qcomp.hpp before implementing compensation.
                 }
             }
         }
@@ -1926,8 +1932,10 @@ qreal cpu_statevec_calcTotalProb_sub(Qureg qureg) {
     /// as many arithmetic operations (4x?) but we are anyway
     /// memory-bandwidth bound
     ///
-    /// BEWARE that Kahan summation is incompatible with the optimisation
-    /// flags currently passed to this file
+    /// BEWARE that Kahan summation may be incompatible with
+    /// the commutator tricks used in base_qcomp's (ancestor
+    /// of cpu_qcomp) arithmetic operator overloads. Check
+    /// base_qcomp.hpp before implementing compensation.
 
     qreal prob = 0;
 
@@ -1955,10 +1963,12 @@ qreal cpu_densmatr_calcTotalProb_sub(Qureg qureg) {
     /// having each thread Kahan-sum independently before a
     /// final serial combination). This invokes several times
     /// as many arithmetic operations (4x?) but we are anyway
-    /// memory-bandwidth bound
+    /// memory-bandwidth bound.
     ///
-    /// BEWARE that Kahan summation is incompatible with the optimisation
-    /// flags currently passed to this file
+    /// BEWARE that Kahan summation may be incompatible with
+    /// the commutator tricks used in base_qcomp's (ancestor
+    /// of cpu_qcomp) arithmetic operator overloads. Check
+    /// base_qcomp.hpp before implementing compensation.
 
     qreal prob = 0;
 
