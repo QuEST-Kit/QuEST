@@ -83,6 +83,14 @@ int isQuESTEnvInit();
 QuESTEnv getQuESTEnv();
 
 
+/** @notyetdoced
+ * GPU thread per block control
+ * This is somehow probably the best pre-existing place for this. It only really applies to GPU, because for
+ * OpenMP the user can just export OMP_NUM_THREADS or call omp_set_num_threads.
+ */
+int getQuESTGpuThreadsPerBlock();
+void setQuESTGpuThreadsPerBlock(const int NEW_TPB);
+
 
 // end de-mangler
 #ifdef __cplusplus

@@ -19,7 +19,6 @@
 #include "quest/include/channels.h"
 
 
-
 /*
  * CUDA ERROR HANDLING
  */
@@ -65,6 +64,10 @@ qindex gpu_getMaxNumConcurrentThreads();
  * ENVIRONMENT MANAGEMENT
  */
 
+int gpu_getNumThreadsPerBlock();
+
+void gpu_setNumThreadsPerBlock(const int NEW_TPB);
+
 void gpu_bindLocalGPUsToNodes();
 
 bool gpu_areAnyNodesBoundToSameGpu();
@@ -74,7 +77,6 @@ void gpu_sync();
 void gpu_initCuQuantum();
 
 void gpu_finalizeCuQuantum();
-
 
 
 /*

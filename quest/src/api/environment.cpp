@@ -509,5 +509,16 @@ void getEnvironmentString(char str[200]) {
 }
 
 
+int getQuESTGpuThreadsPerBlock() {
+    QuESTEnv env = getQuESTEnv();
+    return env.isGpuAccelerated? gpu_getNumThreadsPerBlock() : 0;
+}
+
+void setQuESTGpuThreadsPerBlock(const int NEW_TPB) {
+    // just rely on the internal function to throw an error if there's no GPU support compiled
+    gpu_setNumThreadsPerBlock(NEW_TPB);
+    return;
+}
+
 // end de-mangler
 }

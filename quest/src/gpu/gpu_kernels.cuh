@@ -46,16 +46,12 @@
  * THREAD MANAGEMENT
  */
 
-
-const int NUM_THREADS_PER_BLOCK = 128;
-
-
 __forceinline__ __device__ qindex getThreadInd() {
     return blockIdx.x*blockDim.x + threadIdx.x;
 }
 
 
-__host__ qindex getNumBlocks(qindex numThreads) {
+__host__ qindex getNumBlocks(qindex numThreads, const int NUM_THREADS_PER_BLOCK) {
 
     /// @todo
     /// improve this with cudaOccupancyMaxPotentialBlockSize(),
