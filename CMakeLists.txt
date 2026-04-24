@@ -403,6 +403,15 @@ if (ENABLE_CUDA)
   set(CUDA_PROPAGATE_HOST_FLAGS OFF)
   
   set_property(TARGET QuEST PROPERTY CUDA_STANDARD 20)
+
+  # force MSVC to use the modern preprocessor
+  if (MSVC)
+    target_compile_options(QuEST PRIVATE
+      $<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor>
+      $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/Zc:preprocessor>
+    )
+  endif()
+
 endif()
 
 

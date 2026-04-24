@@ -11,6 +11,12 @@
  * use custom complex types with identical memory layouts/alignment
  * to qcomp. Those types extend base_qcomp defined in this file,
  * since they otherwise share all the same arithmetic boilerplate.
+ *
+ * Beware that this file is parsed by both the CPU and GPU compiler,
+ * for which the meaning of INLINE is different, and so all INLINE
+ * functions must be both OpenMP and CUDA compatible. Non-inline
+ * functions are not permitted since this header is included by
+ * multiple src files.
  * 
  * @author Tyson Jones
  */
@@ -189,14 +195,6 @@ INLINE base_qcomp* getBaseQcompPtr(qcomp* list) {
 
 INLINE base_qcomp getBaseQcomp(qreal re, qreal im) {
     return { re, im };
-}
-
-INLINE base_qcomp getBaseQcomp(const qcomp& a) {
-    return { a.real(), a.imag() };
-}
-
-INLINE qcomp getQcomp(const base_qcomp& a) {
-    return qcomp( a.re, a.im );
 }
 
 
