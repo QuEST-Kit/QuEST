@@ -48,7 +48,11 @@ INLINE cpu_qcomp getCpuQcomp(qreal re, qreal im) {
 }
 
 INLINE cpu_qcomp getCpuQcomp(const qcomp& a) {
-    return getBaseQcomp(a);
+    return getBaseQcomp(a.real(), a.imag());
+}
+
+INLINE qcomp getQcomp(const cpu_qcomp& a) {
+    return qcomp( a.re, a.im );
 }
 
 template <int Dim>

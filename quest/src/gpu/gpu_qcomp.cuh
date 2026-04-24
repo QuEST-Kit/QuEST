@@ -66,8 +66,14 @@ INLINE gpu_qcomp getGpuQcomp(qreal re, qreal im) {
     return getBaseQcomp(re, im);
 }
 
-INLINE gpu_qcomp getGpuQcomp(const qcomp& a) {
-    return getBaseQcomp(a);
+// not INLINE to avoid __device__ because qcomp not supported in CUDA kernels
+inline gpu_qcomp getGpuQcomp(const qcomp& a) {
+    return getBaseQcomp(a.real(), a.imag());
+}
+
+// not INLINE to avoid __device__ because qcomp not supported in CUDA kernels
+inline qcomp getQcomp(const gpu_qcomp& a) {
+    return qcomp( a.re, a.im );
 }
 
 template <int Dim>
