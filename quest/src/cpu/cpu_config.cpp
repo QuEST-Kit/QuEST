@@ -79,9 +79,7 @@ int cpu_getAvailableNumThreads() {
 #if COMPILE_OPENMP
     int n = -1;
 
-    #pragma omp parallel shared(n)
-    #pragma omp single
-    n = omp_get_num_threads();
+    n = omp_get_max_threads();
 
     return n;
 #else
