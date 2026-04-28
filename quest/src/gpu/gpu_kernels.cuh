@@ -47,7 +47,7 @@
  */
 
 
-const int NUM_THREADS_PER_BLOCK = 128;
+const int NUM_THREADS_PER_BLOCK =128;
 
 __device__ __constant__ int ctrl_device[30]; 
 
@@ -210,7 +210,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
 
     // i0 = nth local index where ctrls are active and targ is 0
-    qindex i0 = insertBitsWithMaskedValues(n, ctrls_device, numCtrlBits + 1, ctrlStateMask);
+    qindex i0 = insertBitsWithMaskedValues(n, ctrl_device, numCtrlBits + 1, ctrlStateMask);
     qindex i1 = flipBit(i0, targ);
 
     // note amps are strided by 2^targ

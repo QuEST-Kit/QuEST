@@ -791,7 +791,7 @@ qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> q
     auto indFunctor = functor_insertBits<NumQubits>(getPtr(sortedQubits), valueMask, qubits.size());
     auto probFunctor = functor_getAmpNorm();
 
-    auto rawIter = thrust::make_counting_iterator(0);
+    auto rawIter = thrust::make_counting_iterator(0LL);
     auto indIter = thrust::make_transform_iterator(rawIter, indFunctor);
     auto ampIter = thrust::make_permutation_iterator(getStartPtr(qureg), indIter);
     auto probIter = thrust::make_transform_iterator(ampIter, probFunctor);
@@ -1016,7 +1016,7 @@ void thrust_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, ve
     auto projFunctor = functor_projectStateVec<NumQubits>(
         getPtr(devQubits), qubits.size(), retainValue, renorm);
 
-    auto indIter = thrust::make_counting_iterator(0);
+    auto indIter = thrust::make_counting_iterator(0LL);
     auto ampIter = getStartPtr(qureg);
 
     qindex numIts = qureg.numAmpsPerNode;

@@ -310,9 +310,9 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
     auto [m00, m01, m10, m11] = unpackMatrixToCuQcomps(matr);
 
 
-    int ctrl_device[sortedQubits.size()];
+    //int ctrl_device[sortedQubits.size()];
 
-    cudaMemcpyToSymbol(ctrl_device, sortedQubits.data(), ctrls.size()*sizeof(int));
+    cudaMemcpyToSymbol(ctrl_device, sortedQubits.data(), sortedQubits.size()*sizeof(int));
 
     kernel_statevec_anyCtrlOneTargDenseMatr_subA <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, 
@@ -582,7 +582,7 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
 
     // Assume size of ctls is at most one per qubit so small enough for device contant memory
-    int ctrl_device[ctrls.size()];
+    //int ctrl_device[ctrls.size()];
 
     cudaMemcpyToSymbol(ctrl_device, sortedCtrls.data(), ctrls.size()*sizeof(int));
 
@@ -667,7 +667,7 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
 
     // Assume size of ctls is at most one per qubit so small enough for device contant memory
-    int ctrl_device[ctrls.size()];
+    // int ctrl_device[ctrls.size()];
 
     cudaMemcpyToSymbol(ctrl_device, sortedCtrls.data(), ctrls.size()*sizeof(int));
     
@@ -747,7 +747,7 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
 
     // Assume size of ctls is at most one per qubit so small enough for device contant memory
-    int ctrl_device[ctrls.size()];
+    //int ctrl_device[ctrls.size()];
 
     cudaMemcpyToSymbol(ctrl_device, sortedCtrls.data(), ctrls.size()*sizeof(int));
     
