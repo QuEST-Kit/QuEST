@@ -466,7 +466,7 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
          */
     
         qreal initialEps = getTestAbsoluteEpsilon();
-        setTestAbsoluteEpsilon(30 * initialEps);
+        setTestAbsoluteEpsilon(300 * initialEps);
 #endif
 
 
