@@ -91,19 +91,15 @@ deployInfo getSupportedDeployments() {
  * manage cached quregs
  */
 
-quregCache createFixedSizeCachedStatevecsOrDensmatrs(const int NUM_QUBITS, const bool IS_DENSITY_MATRIX) {
+quregCache createCustomCachedQuregs(int numQubits, bool isDensityMatrix) {
 
     quregCache out;
 
     // only add supported-deployment quregs to the cache
     for (auto [label, mpi, gpu, omp] : getSupportedDeployments())
-        out[label] = createCustomQureg(NUM_QUBITS, IS_DENSITY_MATRIX, mpi, gpu, omp);
+        out[label] = createCustomQureg(numQubits, isDensityMatrix, mpi, gpu, omp);
 
     return out;
-}
-
-quregCache createCachedStatevecsOrDensmatrs(const bool IS_DENSITY_MATRIX) {
-    return createFixedSizeCachedStatevecsOrDensmatrs(getNumCachedQubits(), IS_DENSITY_MATRIX);
 }
 
 void createCachedQuregs() {
@@ -114,16 +110,16 @@ void createCachedQuregs() {
     DEMAND( densmatrs1.empty() );
     DEMAND( densmatrs2.empty() );
 
-    statevecs1 = createCachedStatevecsOrDensmatrs(false);
-    statevecs2 = createCachedStatevecsOrDensmatrs(false);
-    densmatrs1 = createCachedStatevecsOrDensmatrs(true);
-    densmatrs2 = createCachedStatevecsOrDensmatrs(true);
+    int numQubits = getNumCachedQubits();
+    statevecs1 = createCustomCachedQuregs(numQubits, false);
+    statevecs2 = createCustomCachedQuregs(numQubits, false);
+    densmatrs1 = createCustomCachedQuregs(numQubits, true);
+    densmatrs2 = createCustomCachedQuregs(numQubits, true);
 }
 
-void destroyCache(quregCache& cache) {
-        for (auto& [label, qureg]: cache)
-            destroyQureg(qureg);
-        return;
+void destroyCustomCachedQuregs(quregCache& cache) {
+    for (auto& [label, qureg]: cache)
+        destroyQureg(qureg);
 }
 
 void destroyCachedQuregs() {
@@ -139,7 +135,7 @@ void destroyCachedQuregs() {
         densmatrs1, densmatrs2};
 
     for (auto& cache : caches)
-        destroyCache(cache);
+        destroyCustomCachedQuregs(cache);
 
     statevecs1.clear();
     statevecs2.clear();

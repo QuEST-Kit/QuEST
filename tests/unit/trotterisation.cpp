@@ -319,15 +319,15 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         };
 
         SECTION("Time Evolve Statevectors") {
-            quregCache eightQubitSVCache = createFixedSizeCachedStatevecsOrDensmatrs(NUM_QUBITS, false);
+            quregCache eightQubitSVCache = createCustomCachedQuregs(NUM_QUBITS, false);
             TEST_OBSERVABLES_ON_QUREGS(eightQubitSVCache, refObservables, unitaryTimeEvoFunc, hamil, observ);
-            destroyCache(eightQubitSVCache);
+            destroyCustomCachedQuregs(eightQubitSVCache);
         }
 
         SECTION("Time Evolve Density Matrices") {
-            quregCache eightQubitDMCache = createFixedSizeCachedStatevecsOrDensmatrs(NUM_QUBITS, true);
+            quregCache eightQubitDMCache = createCustomCachedQuregs(NUM_QUBITS, true);
             TEST_OBSERVABLES_ON_QUREGS(eightQubitDMCache, refObservables, unitaryTimeEvoFunc, hamil, observ);
-            destroyCache(eightQubitDMCache);
+            destroyCustomCachedQuregs(eightQubitDMCache);
         }
 
         // Restore validation epsilon

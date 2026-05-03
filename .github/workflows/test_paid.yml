@@ -89,7 +89,7 @@ jobs:
       # don't test Trotter functions (ctest is func-name regex, catch is tag)
       test_exec: ./tests/tests
       ctest_flag: "-E Trotter"
-      catch_flag: "~[trotterisation]"
+      catch_flag: '"~[trotterisation]"'
 
       # GPU runner has a Tesla T4 16 GB
       cuda_arch: 75
