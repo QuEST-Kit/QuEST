@@ -4370,6 +4370,11 @@ void validate_tempListAllocSucceeded(bool succeeded, qindex numElems, qindex num
     assertThat(succeeded, report::TEMP_LIST_ALLOC_FAILED, vars, caller);
 }
 
+void validate_tempAllocSucceeded(bool succeeded, size_t numBytes, const char* caller) {
+
+    assertThat(succeeded, report::TEMP_ALLOC_FAILED, {{"${NUM_BYTES}", numBytes}}, caller);
+}
+
 
 
 /*

@@ -79,7 +79,7 @@ qindex paulis_getTargetBitMask(PauliStrSum sum);
 
 void paulis_applyPermutationToTerms(PauliStrSum sum, vector<qindex> permutation);
 
-void paulis_sortTermsViaComparator(PauliStrSum sum, std::function<bool(qindex, qindex)> comparator);
+void paulis_sortTermsViaComparator(PauliStrSum sum, std::function<bool(qindex, qindex)> comparator, std::function<void(size_t)> errFunc);
 
 
 // below are used exclusively by Trotterisation

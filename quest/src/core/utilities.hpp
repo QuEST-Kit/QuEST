@@ -245,8 +245,6 @@ qcomp* util_getGpuMemPtr(T matr) {
 
 qreal util_getSum(vector<qreal> list);
 
-vector<qindex> util_getInversePermutation(vector<qindex> permutation);
-
 
 
 /*
