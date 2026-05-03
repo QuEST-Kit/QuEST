@@ -1107,7 +1107,10 @@ namespace report {
      */
 
     string TEMP_ALLOC_FAILED =
-        "A temporary allocation of ${NUM_ELEMS} elements (each of ${NUM_BYTES_PER_ELEM} bytes) failed, possibly because of insufficient memory.";
+        "A temporary, internal allocation of ${NUM_BYTES} bytes failed, possibly because of insufficient memory.";
+
+    string TEMP_LIST_ALLOC_FAILED =
+        "A temporary, internal allocation of a length-${NUM_ELEMS} list (each element requiring ${NUM_BYTES_PER_ELEM} bytes) failed, possibly because of insufficient memory.";
 
 
     /*
@@ -4346,14 +4349,14 @@ void validate_canReadFile(string fn, const char* caller) {
  * TEMPORARY ALLOCATIONS
  */
 
-void validate_tempAllocSucceeded(bool succeeded, qindex numElems, qindex numBytesPerElem, const char* caller) {
+void validate_tempListAllocSucceeded(bool succeeded, qindex numElems, qindex numBytesPerElem, const char* caller) {
 
     // avoid showing total bytes in case it overflows
     tokenSubs vars = {
         {"${NUM_ELEMS}", numElems},
         {"${NUM_BYTES_PER_ELEM}", numBytesPerElem}};
 
-    assertThat(succeeded, report::TEMP_ALLOC_FAILED, vars, caller);
+    assertThat(succeeded, report::TEMP_LIST_ALLOC_FAILED, vars, caller);
 }
 
 

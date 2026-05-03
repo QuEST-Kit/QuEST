@@ -523,7 +523,7 @@ vector<qcomp> getQuregAmps(Qureg qureg, qindex startInd, qindex numAmps) {
 
     // allocate the output vector, and validate successful
     vector<qcomp> out;
-    auto callback = [&]() { validate_tempAllocSucceeded(false, numAmps, sizeof(qcomp), __func__); };
+    auto callback = [&]() { validate_tempListAllocSucceeded(false, numAmps, sizeof(qcomp), __func__); };
     util_tryAllocVector(out, numAmps, callback);
 
     // performs main validation
@@ -537,12 +537,12 @@ vector<vector<qcomp>> getDensityQuregAmps(Qureg qureg, qindex startRow, qindex s
     // allocate the output matrix, and validate successful
     vector<vector<qcomp>> out;
     qindex numElems = numRows * numCols; // never overflows (else Qureg alloc would fail)
-    auto callback1 = [&]() { validate_tempAllocSucceeded(false, numElems, sizeof(qcomp), __func__); };
+    auto callback1 = [&]() { validate_tempListAllocSucceeded(false, numElems, sizeof(qcomp), __func__); };
     util_tryAllocMatrix(out, numRows, numCols, callback1);
 
     // we must pass nested pointers to core C function, requiring another temp array, also validated
     vector<qcomp*> ptrs;
-    auto callback2 = [&]() { validate_tempAllocSucceeded(false, numRows, sizeof(qcomp*), __func__); };
+    auto callback2 = [&]() { validate_tempListAllocSucceeded(false, numRows, sizeof(qcomp*), __func__); };
     util_tryAllocVector(ptrs, numRows, callback2);
 
     // embed out pointers

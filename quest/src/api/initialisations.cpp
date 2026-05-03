@@ -284,7 +284,7 @@ void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, vector<v
     // of pointers of amps. We defensively check the temp vector allocates fine
     vector<qcomp*> ptrs;
     size_t len = amps.size();
-    auto callback = [&]() { validate_tempAllocSucceeded(false, len, sizeof(qcomp*), __func__); };
+    auto callback = [&]() { validate_tempListAllocSucceeded(false, len, sizeof(qcomp*), __func__); };
     util_tryAllocVector(ptrs, len, callback);
 
     // then set the pointers

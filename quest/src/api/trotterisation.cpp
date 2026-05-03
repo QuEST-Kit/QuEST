@@ -299,8 +299,8 @@ void applyTrotterizedNoisyTimeEvolution(
     // validate memory allocations for all super-propagator terms
     vector<PauliStr> superStrings;
     vector<qcomp> superCoeffs;
-    auto callbackString = [&]() { validate_tempAllocSucceeded(false, numSuperTerms, sizeof(PauliStr), __func__); };
-    auto callbackCoeff  = [&]() { validate_tempAllocSucceeded(false, numSuperTerms, sizeof(qcomp),    __func__); };
+    auto callbackString = [&]() { validate_tempListAllocSucceeded(false, numSuperTerms, sizeof(PauliStr), __func__); };
+    auto callbackCoeff  = [&]() { validate_tempListAllocSucceeded(false, numSuperTerms, sizeof(qcomp),    __func__); };
     util_tryAllocVector(superStrings, numSuperTerms, callbackString);
     util_tryAllocVector(superCoeffs,  numSuperTerms, callbackCoeff);
 
