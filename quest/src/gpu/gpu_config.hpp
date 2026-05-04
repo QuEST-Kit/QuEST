@@ -66,7 +66,7 @@ qindex gpu_getMaxNumConcurrentThreads();
 
 int gpu_getNumThreadsPerBlock();
 
-void gpu_setNumThreadsPerBlock(const int NEW_TPB);
+void gpu_setNumThreadsPerBlock(const int newThreadsPerBlock);
 
 void gpu_bindLocalGPUsToNodes();
 

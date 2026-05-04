@@ -340,9 +340,9 @@ int gpu_getNumThreadsPerBlock() {
 #endif
 }
 
-void gpu_setNumThreadsPerBlock(const int NEW_TPB) {
+void gpu_setNumThreadsPerBlock(const int newThreadsPerBlock) {
 #if COMPILE_CUDA
-    numThreadsPerBlock = NEW_TPB;
+    numThreadsPerBlock = newThreadsPerBlock;
 #else
     error_gpuQueriedButGpuNotCompiled();
 #endif

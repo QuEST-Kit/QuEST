@@ -51,14 +51,14 @@ __forceinline__ __device__ qindex getThreadInd() {
 }
 
 
-__host__ qindex getNumBlocks(qindex numThreads, const int NUM_THREADS_PER_BLOCK) {
+__host__ qindex getNumBlocks(qindex numThreads, const int numThreadsPerBlock) {
 
     /// @todo
     /// improve this with cudaOccupancyMaxPotentialBlockSize(),
     /// making it function specific
 
     // CUDA ceil
-    return ceil(numThreads / static_cast<qreal>(NUM_THREADS_PER_BLOCK));
+    return ceil(numThreads / static_cast<qreal>(numThreadsPerBlock));
 }
 
 

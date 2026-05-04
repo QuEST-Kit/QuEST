@@ -140,14 +140,14 @@ qindex gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector<i
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(qubits.size());
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
     qindex sendInd = getSubBufferSendInd(qureg);
 
     devints sortedQubits = util_getSorted(qubits);
     qindex qubitStateMask  = util_getBitMask(qubits, qubitStates);
 
-    kernel_statevec_packAmpsIntoBuffer <NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_packAmpsIntoBuffer <NumQubits> <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[sendInd], numThreads, 
         getPtr(sortedQubits), qubits.size(), qubitStateMask
     );
@@ -169,11 +169,11 @@ qindex gpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qu
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / 8;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
     qindex sendInd = getSubBufferSendInd(qureg);
 
-    kernel_statevec_packPairSummedAmpsIntoBuffer <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_packPairSummedAmpsIntoBuffer <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[sendInd], numThreads, 
         qubit1, qubit2, qubit3, bit2
     );
@@ -209,13 +209,13 @@ void gpu_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> c
 #elif COMPILE_CUDA
 
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(2 + ctrls.size());
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     devints sortedQubits = util_getSorted(ctrls, {targ2, targ1});
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ2, targ1}, {0, 1});
 
-    kernel_statevec_anyCtrlSwap_subA <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_anyCtrlSwap_subA <NumCtrls> <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, 
         getPtr(sortedQubits), ctrls.size(), qubitStateMask, targ1, targ2
     );
@@ -234,14 +234,14 @@ void gpu_statevec_anyCtrlSwap_subB(Qureg qureg, vector<int> ctrls, vector<int> c
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
     qindex recvInd = getBufferRecvInd();
 
     devints sortedCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
-    kernel_statevec_anyCtrlSwap_subB <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_anyCtrlSwap_subB <NumCtrls> <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
         getPtr(sortedCtrls), ctrls.size(), ctrlStateMask
     );
@@ -260,14 +260,14 @@ void gpu_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int> c
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(1 + ctrls.size());
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
     qindex recvInd = getBufferRecvInd();
 
     devints sortedQubits = util_getSorted(ctrls, {targ});
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ}, {targState});
 
-    kernel_statevec_anyCtrlSwap_subC <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_anyCtrlSwap_subC <NumCtrls> <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
         getPtr(sortedQubits), ctrls.size(), qubitStateMask
     );
@@ -303,15 +303,15 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
 #elif COMPILE_CUDA
 
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size() + 1);
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     devints sortedQubits = util_getSorted(ctrls, {targ});
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ}, {0});
 
     auto [m00, m01, m10, m11] = unpackMatrixToCuQcomps(matr);
 
-    kernel_statevec_anyCtrlOneTargDenseMatr_subA <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_anyCtrlOneTargDenseMatr_subA <NumCtrls> <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, 
         getPtr(sortedQubits), ctrls.size(), qubitStateMask, targ, 
         m00, m01, m10, m11
@@ -331,14 +331,14 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
     qindex recvInd = getBufferRecvInd();
 
     devints sortedCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
-    kernel_statevec_anyCtrlOneTargDenseMatr_subB <NumCtrls> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_anyCtrlOneTargDenseMatr_subB <NumCtrls> <<<numBlocks,numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
         getPtr(sortedCtrls), ctrls.size(), ctrlStateMask, 
         toCuQcomp(fac0), toCuQcomp(fac1)
@@ -374,8 +374,8 @@ void gpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
 #elif COMPILE_CUDA
 
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size() + 2);
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     devints sortedQubits = util_getSorted(ctrls, {targ1,targ2});
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ1,targ2}, {0,0});
@@ -383,7 +383,7 @@ void gpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     // unpack matrix elems which are more efficiently accessed by kernels as args than shared mem (... maybe...)
     auto m = unpackMatrixToCuQcomps(matr);
 
-    kernel_statevec_anyCtrlTwoTargDenseMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_anyCtrlTwoTargDenseMatr_sub <NumCtrls> <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, 
         getPtr(sortedQubits), ctrls.size(), qubitStateMask, targ1, targ2,
         m[0], m[1], m[2],  m[3],  m[4],  m[5],  m[6],  m[7],
@@ -460,7 +460,7 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     if constexpr (NumTargs != -1) {
 
         // when NumTargs <= 5, each thread has a private array stored in the registers,
-        // enabling rapid IO. Given NUM_THREADS_PER_BLOCK = 128, the maximum size of 
+        // enabling rapid IO. Given numThreadsPerBlock = 128, the maximum size of 
         // this array per-block is 16 * 128 * 2^5 B = 64 KiB which exceeds shared
         // memory capacity, but does NOT exceed maximum register capacity.
 
@@ -470,12 +470,12 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
         /// global memory) and greatly sabotage performance on some GPUs.
 
         qindex numThreads = numBatches;
-        const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-        qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+        const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+        qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
         kernel_statevec_anyCtrlFewTargDenseMatr
             <NumCtrls, NumTargs, ApplyConj, ApplyTransp> 
-            <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+            <<<numBlocks, numThreadsPerBlock>>> (
                 ampsPtr, numThreads, 
                 qubitsPtr, nCtrls, qubitStateMask, 
                 targsPtr, matrPtr
@@ -494,7 +494,7 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
         // where we assign one-block per multiprocessor because we are anyway memory-
         // bandwidth bound (so we don't expect many interweaved blocks per MP).
         qindex numThreads = gpu_getMaxNumConcurrentThreads();
-        const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
+        const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
         
         // use strictly 2^# threads to maintain precondition of all kernels
         if (!isPowerOf2(numThreads))
@@ -506,15 +506,15 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
 
         // evenly distribute the batches between threads, and the threads unevenly between blocks
         qindex numBatchesPerThread = numBatches / numThreads; // divides evenly
-        qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+        qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
         // expand the cache if necessary
-        qindex numKernelInvocations = numBlocks * NUM_THREADS_PER_BLOCK;
+        qindex numKernelInvocations = numBlocks * numThreadsPerBlock;
         qcomp* cache = gpu_getCacheOfSize(powerOf2(targs.size()), numKernelInvocations);
 
         kernel_statevec_anyCtrlManyTargDenseMatr 
             <NumCtrls, ApplyConj, ApplyTransp> 
-            <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+            <<<numBlocks, numThreadsPerBlock>>> (
                 toCuQcomps(cache),
                 ampsPtr, numThreads, numBatchesPerThread, 
                 qubitsPtr, nCtrls, qubitStateMask, 
@@ -575,14 +575,14 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     /// efficient (because of improved parallelisation granularity) 
 
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     devints deviceCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
     auto elems = unpackMatrixToCuQcomps(matr);
 
-    kernel_statevec_anyCtrlOneTargDiagMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_anyCtrlOneTargDiagMatr_sub <NumCtrls> <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
         getPtr(deviceCtrls), ctrls.size(), ctrlStateMask, targ, elems[0], elems[1]
     );
@@ -644,14 +644,14 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     /// efficient (because of improved parallelisation granularity) 
 
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     devints deviceCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
     auto elems = unpackMatrixToCuQcomps(matr);
 
-    kernel_statevec_anyCtrlTwoTargDiagMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_anyCtrlTwoTargDiagMatr_sub <NumCtrls> <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
         getPtr(deviceCtrls), ctrls.size(), ctrlStateMask, targ1, targ2,
         elems[0], elems[1], elems[2], elems[3]
@@ -713,14 +713,14 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     /// efficient (because of improved parallelisation granularity) 
 
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     devints deviceTargs = targs;
     devints deviceCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
-    kernel_statevec_anyCtrlAnyTargDiagMatr_sub <NumCtrls, NumTargs, ApplyConj, HasPower> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_anyCtrlAnyTargDiagMatr_sub <NumCtrls, NumTargs, ApplyConj, HasPower> <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
         getPtr(deviceCtrls), ctrls.size(), ctrlStateMask, getPtr(deviceTargs), targs.size(), 
         toCuQcomps(util_getGpuMemPtr(matr)), toCuQcomp(exponent)
@@ -771,12 +771,12 @@ void gpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     kernel_densmatr_allTargDiagMatr_sub 
         <HasPower, ApplyLeft, ApplyRight, ConjRight> 
-        <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+        <<<numBlocks, numThreadsPerBlock>>> (
             toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
             toCuQcomps(util_getGpuMemPtr(matr)), matr.numElems, toCuQcomp(exponent)
     );
@@ -834,9 +834,9 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ct
     // faster than when giving threads many pair-amps to modify, due to memory movements
 
     qindex numThreads = (qureg.numAmpsPerNode / powerOf2(ctrls.size())) / 2; // divides evenly
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
-    kernel_statevector_anyCtrlPauliTensorOrGadget_subA <NumCtrls, NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
+    kernel_statevector_anyCtrlPauliTensorOrGadget_subA <NumCtrls, NumTargs> <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads,
         getPtr(deviceQubits), ctrls.size(), qubitStateMask, 
         getPtr(deviceTargs), deviceTargs.size(),
@@ -857,8 +857,8 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ct
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
     qindex recvInd = getBufferRecvInd();
 
     qcomp powI = util_getPowerOfI(y.size());
@@ -868,7 +868,7 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ct
     devints sortedCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
-    kernel_statevector_anyCtrlPauliTensorOrGadget_subB <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevector_anyCtrlPauliTensorOrGadget_subB <NumCtrls> <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
         getPtr(sortedCtrls), ctrls.size(), ctrlStateMask,
         maskXY, maskYZ, bufferMaskXY,
@@ -899,14 +899,14 @@ void gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, vector<int> c
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     devints sortedCtrls = util_getSorted(ctrls);
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
     qindex targMask = util_getBitMask(targs);
 
-    kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub <NumCtrls> <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads,
         getPtr(sortedCtrls), ctrls.size(), ctrlStateMask, targMask,
         toCuQcomp(fac0), toCuQcomp(fac1)
@@ -933,8 +933,8 @@ void gpu_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = outQureg.numAmpsPerNode;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     // extract amp ptrs from qureg list
     vector<cu_qcomp*> ptrs;
@@ -946,7 +946,7 @@ void gpu_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs
     devcuqcompptrs devQuregAmps = ptrs;
     devcomps devCoeffs = coeffs;
 
-    kernel_statevec_setQuregToWeightedSum_sub <NumQuregs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_setQuregToWeightedSum_sub <NumQuregs> <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(outQureg.gpuAmps), numThreads,
         getPtr(devCoeffs), getPtr(devQuregAmps), inQuregs.size()
     );
@@ -974,10 +974,10 @@ void gpu_densmatr_mixQureg_subB(qreal outProb, Qureg outQureg, qreal inProb, Qur
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = outQureg.numAmpsPerNode;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
-    kernel_densmatr_mixQureg_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_mixQureg_subB <<<numBlocks, numThreadsPerBlock>>> (
         outProb, toCuQcomps(outQureg.gpuAmps), inProb, toCuQcomps(inQureg.gpuAmps),
         numThreads, inQureg.numAmps
     );
@@ -993,10 +993,10 @@ void gpu_densmatr_mixQureg_subC(qreal outProb, Qureg outQureg, qreal inProb) {
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = outQureg.numAmpsPerNode;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
-    kernel_densmatr_mixQureg_subC <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_mixQureg_subC <<<numBlocks, numThreadsPerBlock>>> (
         outProb, toCuQcomps(outQureg.gpuAmps), inProb, toCuQcomps(outQureg.gpuCommBuffer),
         numThreads, outQureg.rank, powerOf2(outQureg.numQubits), outQureg.logNumAmpsPerNode        
     );
@@ -1026,13 +1026,13 @@ void gpu_densmatr_oneQubitDephasing_subA(Qureg qureg, int ketQubit, qreal prob) 
 #elif COMPILE_CUDA
 
     qindex numThreads = qureg.numAmpsPerNode / 4;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     auto fac = util_getOneQubitDephasingFactor(prob);
     int braQubit = util_getBraQubit(ketQubit, qureg);
 
-    kernel_densmatr_oneQubitDephasing_subA <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_oneQubitDephasing_subA <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, ketQubit, braQubit, fac
     );
 
@@ -1053,13 +1053,13 @@ void gpu_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal prob) 
 #elif COMPILE_CUDA
 
     qindex numThreads = qureg.numAmpsPerNode / 2;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     auto fac = util_getOneQubitDephasingFactor(prob);
     int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
 
-    kernel_densmatr_oneQubitDephasing_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_oneQubitDephasing_subB <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, ketQubit, braBit, fac
     );
 
@@ -1099,14 +1099,14 @@ void gpu_densmatr_twoQubitDephasing_subB(Qureg qureg, int ketQubitA, int ketQubi
 #if COMPILE_CUDA || COMPILE_CUQUANTUM 
 
     qindex numThreads = qureg.numAmpsPerNode;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     auto term = util_getTwoQubitDephasingTerm(prob);
     int braQubitA = util_getBraQubit(ketQubitA, qureg);
     int braQubitB = util_getBraQubit(ketQubitB, qureg);
 
-    kernel_densmatr_twoQubitDephasing_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_twoQubitDephasing_subB <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode, // numAmps, not numCols
         ketQubitA, ketQubitB, braQubitA, braQubitB, term
     );
@@ -1128,13 +1128,13 @@ void gpu_densmatr_oneQubitDepolarising_subA(Qureg qureg, int ketQubit, qreal pro
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / 4;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     int braQubit = util_getBraQubit(ketQubit, qureg);
     auto factors = util_getOneQubitDepolarisingFactors(prob);
 
-    kernel_densmatr_oneQubitDepolarising_subA <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_oneQubitDepolarising_subA <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, ketQubit, braQubit, factors.c1, factors.c2, factors.c3
     );
 
@@ -1149,14 +1149,14 @@ void gpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal pro
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / 2;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
     qindex recvInd = getBufferRecvInd();
 
     int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
     auto factors = util_getOneQubitDepolarisingFactors(prob);
 
-    kernel_densmatr_oneQubitDepolarising_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_oneQubitDepolarising_subB <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
         ketQubit, braBit, factors.c1, factors.c2, factors.c3
     );
@@ -1178,14 +1178,14 @@ void gpu_densmatr_twoQubitDepolarising_subA(Qureg qureg, int ketQb1, int ketQb2,
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braQb2 = util_getBraQubit(ketQb2, qureg);
     auto c3 = util_getTwoQubitDepolarisingFactors(prob).c3;
 
-    kernel_densmatr_twoQubitDepolarising_subA <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_twoQubitDepolarising_subA <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads,
         ketQb1, ketQb2, braQb1, braQb2, c3
     );
@@ -1201,8 +1201,8 @@ void gpu_densmatr_twoQubitDepolarising_subB(Qureg qureg, int ketQb1, int ketQb2,
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / 16;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braQb2 = util_getBraQubit(ketQb2, qureg);
@@ -1211,7 +1211,7 @@ void gpu_densmatr_twoQubitDepolarising_subB(Qureg qureg, int ketQb1, int ketQb2,
     // each kernel invocation sums all 4 amps together, so adjusts c1
     qreal altc1 = factors.c1 - factors.c2;
 
-    kernel_densmatr_twoQubitDepolarising_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_twoQubitDepolarising_subB <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads,
         ketQb1, ketQb2, braQb1, braQb2, altc1, factors.c2
     );
@@ -1227,14 +1227,14 @@ void gpu_densmatr_twoQubitDepolarising_subC(Qureg qureg, int ketQb1, int ketQb2,
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
     auto c3 = util_getTwoQubitDepolarisingFactors(prob).c3;
 
-    kernel_densmatr_twoQubitDepolarising_subC <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_twoQubitDepolarising_subC <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads,
         ketQb1, ketQb2, braQb1, braBit2, c3
     );
@@ -1250,15 +1250,15 @@ void gpu_densmatr_twoQubitDepolarising_subD(Qureg qureg, int ketQb1, int ketQb2,
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / 8;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
     qindex offset = getBufferRecvInd();
 
     int braQb1 = util_getBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
     auto factors = util_getTwoQubitDepolarisingFactors(prob);
 
-    kernel_densmatr_twoQubitDepolarising_subD <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_twoQubitDepolarising_subD <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[offset], numThreads,
         ketQb1, ketQb2, braQb1, braBit2, factors.c1, factors.c2
     );
@@ -1274,8 +1274,8 @@ void gpu_densmatr_twoQubitDepolarising_subE(Qureg qureg, int ketQb1, int ketQb2,
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
@@ -1284,7 +1284,7 @@ void gpu_densmatr_twoQubitDepolarising_subE(Qureg qureg, int ketQb1, int ketQb2,
     qreal fac0 = 1 + factors.c3;
     qreal fac1 = factors.c1 - fac0;
 
-    kernel_densmatr_twoQubitDepolarising_subE <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_twoQubitDepolarising_subE <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads,
         ketQb1, ketQb2, braBit1, braBit2, fac0, fac1
     );
@@ -1300,15 +1300,15 @@ void gpu_densmatr_twoQubitDepolarising_subF(Qureg qureg, int ketQb1, int ketQb2,
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / 4;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
     qindex offset = getBufferRecvInd();
 
     int braBit1 = util_getRankBitOfBraQubit(ketQb1, qureg);
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
     auto c2 = util_getTwoQubitDepolarisingFactors(prob).c2;
 
-    kernel_densmatr_twoQubitDepolarising_subF <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_twoQubitDepolarising_subF <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[offset], numThreads,
         ketQb1, ketQb2, braBit1, braBit2, c2
     );
@@ -1330,13 +1330,13 @@ void gpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int ketQubit, qreal pI,
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / 4;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     int braQubit = util_getBraQubit(ketQubit, qureg);
     auto factors = util_getOneQubitPauliChannelFactors(pI, pX, pY, pZ);
 
-    kernel_densmatr_oneQubitPauliChannel_subA <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_oneQubitPauliChannel_subA <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, ketQubit, braQubit, 
         factors.c1, factors.c2, factors.c3, factors.c4
     );
@@ -1352,14 +1352,14 @@ void gpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI,
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / 2;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
     qindex recvInd = getBufferRecvInd();
 
     int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
     auto factors = util_getOneQubitPauliChannelFactors(pI, pX, pY, pZ);
 
-    kernel_densmatr_oneQubitPauliChannel_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_oneQubitPauliChannel_subB <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
         ketQubit, braBit, factors.c1, factors.c2, factors.c3, factors.c4
     );
@@ -1381,13 +1381,13 @@ void gpu_densmatr_oneQubitDamping_subA(Qureg qureg, int ketQubit, qreal prob) {
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / 4;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     int braQubit = util_getBraQubit(ketQubit, qureg);
     auto factors = util_getOneQubitDampingFactors(prob);
 
-    kernel_densmatr_oneQubitDamping_subA <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_oneQubitDamping_subA <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads,
         ketQubit, braQubit, prob, factors.c1, factors.c2
     );
@@ -1403,12 +1403,12 @@ void gpu_densmatr_oneQubitDamping_subB(Qureg qureg, int qubit, qreal prob) {
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / 2;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     auto c2 = util_getOneQubitDampingFactors(prob).c2;
 
-    kernel_densmatr_oneQubitDamping_subB <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_oneQubitDamping_subB <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qubit, c2
     );
 
@@ -1423,13 +1423,13 @@ void gpu_densmatr_oneQubitDamping_subC(Qureg qureg, int ketQubit, qreal prob) {
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / 2;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     auto braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
     auto c1 = util_getOneQubitDampingFactors(prob).c1;
 
-    kernel_densmatr_oneQubitDamping_subC <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_oneQubitDamping_subC <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, ketQubit, braBit, c1
     );
 
@@ -1444,11 +1444,11 @@ void gpu_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob) {
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = qureg.numAmpsPerNode / 2;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
     qindex recvInd = getBufferRecvInd();
 
-    kernel_densmatr_oneQubitDamping_subD <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_oneQubitDamping_subD <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
         qubit, prob
     );
@@ -1473,14 +1473,14 @@ void gpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> ta
 #if COMPILE_CUDA || COMPILE_CUQUANTUM
 
     qindex numThreads = outQureg.numAmpsPerNode;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     devints devTargs = targs;
     devints devPairTargs = pairTargs;
     devints devAllTargs = util_getSorted(targs, pairTargs);
 
-    kernel_densmatr_partialTrace_sub <NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_partialTrace_sub <NumTargs> <<<numBlocks, numThreadsPerBlock>>> (
         toCuQcomps(inQureg.gpuAmps), toCuQcomps(outQureg.gpuAmps), numThreads,
         getPtr(devTargs), getPtr(devPairTargs), getPtr(devAllTargs), targs.size()
     );
@@ -1594,14 +1594,14 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 #if COMPILE_CUDA
 
     qindex numThreads = qureg.numAmpsPerNode;
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     // allocate exponentially-big temporary memory (error if failed)
     devints devQubits = qubits;
     devreals devProbs = getDeviceRealsVec(powerOf2(qubits.size())); // throws
 
-    kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, numThreadsPerBlock>>> (
         getPtr(devProbs), toCuQcomps(qureg.gpuAmps), numThreads, 
         qureg.rank, qureg.logNumAmpsPerNode, getPtr(devQubits), devQubits.size()
     );
@@ -1629,8 +1629,8 @@ void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     // we decouple numColsPerNode and numThreads for clarity
     // (and in case parallelisation granularity ever changes);
     qindex numThreads = powerOf2(qureg.logNumColsPerNode);
-    const int NUM_THREADS_PER_BLOCK = gpu_getNumThreadsPerBlock();
-    qindex numBlocks = getNumBlocks(numThreads, NUM_THREADS_PER_BLOCK);
+    const int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
     
     qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
@@ -1639,7 +1639,7 @@ void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     devints devQubits = qubits;
     devreals devProbs = getDeviceRealsVec(powerOf2(qubits.size())); // throws
 
-    kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
+    kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, numThreadsPerBlock>>> (
         getPtr(devProbs), toCuQcomps(qureg.gpuAmps), 
         numThreads, firstDiagInd, numAmpsPerCol,
         qureg.rank, qureg.logNumAmpsPerNode, 
