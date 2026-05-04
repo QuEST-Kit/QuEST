@@ -1219,7 +1219,7 @@ void applyMultiControlledSqrtSwap(Qureg qureg, std::vector<int> controls, int qu
 /// @notyetdoced
 /// @cppvectoroverload
 /// @see applyMultiStateControlledSqrtSwap()
-void applyMultiStateControlledSqrtSwap(Qureg qureg, std::vector<int> controls, std::vector<int> states, int numControls, int qubit1, int qubit2);
+void applyMultiStateControlledSqrtSwap(Qureg qureg, std::vector<int> controls, std::vector<int> states, int qubit1, int qubit2);
 
 
 #endif // __cplusplus
