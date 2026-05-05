@@ -231,7 +231,7 @@ endif()
 # https://cmake.org/cmake/help/latest/manual/cmake-buildsystem.7.html#build-configurations
 # We have to use it here as we want to message the user! We are handling multiconfig
 # separately anyway.
-string(TOLOWER ${CMAKE_BUILD_TYPE} build_type)
+string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type)
 
 if(CMAKE_CONFIGURATION_TYPES)
   message(WARNING
