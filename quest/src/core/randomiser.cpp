@@ -22,6 +22,7 @@
 #include <random>
 #include <limits>
 #include <vector>
+#include <algorithm>
 
 using std::vector;
 

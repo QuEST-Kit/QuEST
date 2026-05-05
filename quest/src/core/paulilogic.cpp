@@ -344,7 +344,7 @@ void paulis_sortTermsViaComparator(PauliStrSum sum, std::function<bool(qindex, q
     }
 
     // overwrite user-held PauliStrSum buffers with sorted temp ones
-    for (size_t i=0; i<sum.numTerms; i++) {
+    for (qindex i=0; i<sum.numTerms; i++) {
         sum.coeffs[i] = tempCoeffs[i];
         sum.strings[i] = tempStrings[i];
     }

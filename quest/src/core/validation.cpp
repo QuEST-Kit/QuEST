@@ -3255,7 +3255,7 @@ void validate_newPauliStrSumParams(qindex numTerms, const char* caller) {
     size_t memPerTerm = sizeof(qcomp) + sizeof(PauliStr);
     size_t maxNumTerms = std::numeric_limits<size_t>::max() / memPerTerm;
     tokenSubs vars = {{"${NUM_TERMS}", numTerms}, {"${NUM_BYTES_PER_TERM}", memPerTerm}, {"${MAX_NUM_TERMS}", maxNumTerms}};
-    assertThat(numTerms < maxNumTerms, report::NEW_PAULI_STR_SUM_MEM_WOULD_OVERFLOW, vars, caller);
+    assertThat(numTerms < (qindex) maxNumTerms, report::NEW_PAULI_STR_SUM_MEM_WOULD_OVERFLOW, vars, caller);
 
     // attempt to fetch RAM, and simply return if we fail; if we unknowingly
     // didn't have enough RAM, then alloc validation will trigger later
