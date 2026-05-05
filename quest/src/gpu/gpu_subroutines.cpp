@@ -309,13 +309,17 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
 
     auto [m00, m01, m10, m11] = unpackMatrixToCuQcomps(matr);
 
+    ctrl_device_t ctrl;
+
+    std::copy(sortedQubits.begin(), sortedQubits.end(), ctrl.ctrl_device);
+
 
     //int ctrl_device[sortedQubits.size()];
 
-    cudaMemcpyToSymbol(ctrl_device, sortedQubits.data(), sortedQubits.size()*sizeof(int));
+    //cudaMemcpyToSymbol(ctrl_device, sortedQubits.data(), sortedQubits.size()*sizeof(int));
 
     kernel_statevec_anyCtrlOneTargDenseMatr_subA <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), numThreads, 
+        toCuQcomps(qureg.gpuAmps), numThreads, ctrl,
         ctrls.size(), qubitStateMask, targ, 
         m00, m01, m10, m11
     );
@@ -580,11 +584,15 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     // removed implicit thrust mem copy
     vector<int> sortedCtrls = util_getSorted(ctrls);
 
+    ctrl_device_t ctrl;
+
+    std::copy(sortedCtrls.begin(), sortedCtrls.end(), ctrl.ctrl_device);
+
 
     // Assume size of ctls is at most one per qubit so small enough for device contant memory
     //int ctrl_device[ctrls.size()];
 
-    cudaMemcpyToSymbol(ctrl_device, sortedCtrls.data(), ctrls.size()*sizeof(int));
+    // cudaMemcpyToSymbol(ctrl_device, sortedCtrls.data(), ctrls.size()*sizeof(int));
 
 //    cudaMemcpyToSymbol (const char * 	symbol,
 // const void * 	src,
@@ -597,7 +605,7 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     auto elems = unpackMatrixToCuQcomps(matr);
 
     kernel_statevec_anyCtrlOneTargDiagMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
+        toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode, ctrl,
         ctrls.size(), ctrlStateMask, targ, elems[0], elems[1]
     );
 
@@ -665,18 +673,21 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     // removed implicit thrust mem copy
     vector<int> sortedCtrls = util_getSorted(ctrls);
 
+    ctrl_device_t ctrl;
+
+    std::copy(sortedCtrls.begin(), sortedCtrls.end(), ctrl.ctrl_device);
 
     // Assume size of ctls is at most one per qubit so small enough for device contant memory
     // int ctrl_device[ctrls.size()];
 
-    cudaMemcpyToSymbol(ctrl_device, sortedCtrls.data(), ctrls.size()*sizeof(int));
+    //cudaMemcpyToSymbol(ctrl_device, sortedCtrls.data(), ctrls.size()*sizeof(int));
     
     
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
     auto elems = unpackMatrixToCuQcomps(matr);
 
     kernel_statevec_anyCtrlTwoTargDiagMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
+        toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode, ctrl,
         ctrls.size(), ctrlStateMask, targ1, targ2,
         elems[0], elems[1], elems[2], elems[3]
     );
@@ -745,17 +756,20 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     // removed implicit thrust mem copy
     vector<int> sortedCtrls = util_getSorted(ctrls);
 
+    ctrl_device_t ctrl;
+
+    std::copy(sortedCtrls.begin(), sortedCtrls.end(), ctrl.ctrl_device);
 
     // Assume size of ctls is at most one per qubit so small enough for device contant memory
     //int ctrl_device[ctrls.size()];
 
-    cudaMemcpyToSymbol(ctrl_device, sortedCtrls.data(), ctrls.size()*sizeof(int));
+    //cudaMemcpyToSymbol(ctrl_device, sortedCtrls.data(), ctrls.size()*sizeof(int));
     
 
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
     kernel_statevec_anyCtrlAnyTargDiagMatr_sub <NumCtrls, NumTargs, ApplyConj, HasPower> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
-        toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
+        toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode, ctrl,
         ctrls.size(), ctrlStateMask, getPtr(deviceTargs), targs.size(), 
         toCuQcomps(util_getGpuMemPtr(matr)), toCuQcomp(exponent)
     );

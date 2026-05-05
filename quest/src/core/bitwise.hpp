@@ -170,6 +170,15 @@ INLINE qindex insertBits(qindex number, int* bitIndices, int numIndices, int bit
     return number;
 }
 
+INLINE qindex insertBits(qindex number, const int* bitIndices, int numIndices, int bitValue) {
+
+    // bitIndices must be strictly increasing
+    for (int i=0; i<numIndices; i++)
+        number = insertBit(number, bitIndices[i], bitValue);
+
+    return number;
+}
+
 
 INLINE qindex setBits(qindex number, int* bitIndices, int numIndices, qindex bitsValue) {
     
@@ -204,6 +213,12 @@ INLINE qindex getValueOfBits(qindex number, int* bitIndices, int numIndices) {
 
 
 INLINE qindex insertBitsWithMaskedValues(qindex number, int* bitInds, int numBits, qindex mask) {
+
+    // bitInds must be sorted (increasing), and mask must be zero everywhere except bitInds
+    return mask | insertBits(number, bitInds, numBits, 0);
+}
+
+INLINE qindex insertBitsWithMaskedValues(qindex number, const int* bitInds, int numBits, qindex mask) {
 
     // bitInds must be sorted (increasing), and mask must be zero everywhere except bitInds
     return mask | insertBits(number, bitInds, numBits, 0);

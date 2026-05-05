@@ -49,8 +49,12 @@
 
 const int NUM_THREADS_PER_BLOCK =128;
 
-__device__ __constant__ int ctrl_device[30]; 
+// __device__ __constant__ int ctrl_device[30]; 
 
+
+typedef struct {
+    int ctrl_device[64];
+} ctrl_device_t;
 
 
 __forceinline__ __device__ qindex getThreadInd() {
@@ -200,7 +204,7 @@ __global__ void kernel_statevec_anyCtrlSwap_subC(
 
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
-    cu_qcomp* amps, qindex numThreads, 
+    cu_qcomp* amps, qindex numThreads, __grid_constant__ const ctrl_device_t ctrl,
     int numCtrls, qindex ctrlStateMask, int targ, 
     cu_qcomp m00, cu_qcomp m01, cu_qcomp m10, cu_qcomp m11
 ) {
@@ -210,7 +214,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
 
     // i0 = nth local index where ctrls are active and targ is 0
-    qindex i0 = insertBitsWithMaskedValues(n, ctrl_device, numCtrlBits + 1, ctrlStateMask);
+    qindex i0 = insertBitsWithMaskedValues(n, ctrl.ctrl_device, numCtrlBits + 1, ctrlStateMask);
     qindex i1 = flipBit(i0, targ);
 
     // note amps are strided by 2^targ
@@ -438,7 +442,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
 
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
-    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
+    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, __grid_constant__ const ctrl_device_t ctrl,
     int numCtrls, qindex ctrlStateMask, int targ, 
     cu_qcomp m1, cu_qcomp m2
 ) {
@@ -459,7 +463,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
 
     // j = nth local index where ctrls are active (in the specified states)
-    qindex j = insertBitsWithMaskedValues(n, ctrl_device, numCtrlBits, ctrlStateMask);
+    qindex j = insertBitsWithMaskedValues(n, ctrl.ctrl_device, numCtrlBits, ctrlStateMask);
 
     // i = global index corresponding to j
     qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
@@ -477,7 +481,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
 
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
-    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
+    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, __grid_constant__ const ctrl_device_t ctrl,
     int numCtrls, qindex ctrlStateMask, int targ1, int targ2,
     cu_qcomp m1, cu_qcomp m2, cu_qcomp m3, cu_qcomp m4
 ) {
@@ -498,7 +502,7 @@ __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
 
     // j = nth local index where ctrls are active (in the specified states)
-    qindex j = insertBitsWithMaskedValues(n, ctrl_device, numCtrlBits, ctrlStateMask);
+    qindex j = insertBitsWithMaskedValues(n, ctrl.ctrl_device, numCtrlBits, ctrlStateMask);
 
     // i = global index corresponding to j
     qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
@@ -518,7 +522,7 @@ __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
 
 template <int NumCtrls, int NumTargs, bool ApplyConj, bool HasPower>
 __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
-    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
+    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, __grid_constant__ const ctrl_device_t ctrl,
     int numCtrls, qindex ctrlStateMask, int* targs, int numTargs,
     cu_qcomp* elems, cu_qcomp exponent
 ) {
@@ -540,7 +544,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, numTargs);
 
     // j = nth local index where ctrls are active (in the specified states)
-    qindex j = insertBitsWithMaskedValues(n, ctrl_device, numCtrlBits, ctrlStateMask);
+    qindex j = insertBitsWithMaskedValues(n, ctrl.ctrl_device, numCtrlBits, ctrlStateMask);
 
     // i = global index corresponding to j
     qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
