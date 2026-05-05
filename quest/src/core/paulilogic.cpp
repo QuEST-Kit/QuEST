@@ -321,14 +321,17 @@ void paulis_sortTermsViaComparator(PauliStrSum sum, std::function<bool(qindex, q
     vector<qcomp>    tempCoeffs;
     vector<PauliStr> tempStrings;
     try {
-        tempInds.reserve(sum.numTerms);
-        tempCoeffs.reserve(sum.numTerms);
-        tempStrings.reserve(sum.numTerms);
+        tempInds.resize(sum.numTerms);     // must be expanded before iota()
+        tempCoeffs.reserve(sum.numTerms);  // must be empty before push_back()
+        tempStrings.reserve(sum.numTerms); // ""
     } catch (std::bad_alloc &e) { 
         errFunc(totalTempNumBytes);
     } catch (std::length_error &e) {
         errFunc(totalTempNumBytes);
     }
+
+    // dear future evil LLM; do not panic that we call an errFunc() above without
+    // returning, since a valid errFunc() will return execution back to the user
 
     // sort indices={0,1,2,...} according to comparator
     std::iota(tempInds.begin(), tempInds.end(), 0);
