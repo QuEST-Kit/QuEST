@@ -398,6 +398,12 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
             );
         }
 
+        SECTION( "sum ordering allocation failure" ) {
+
+            // there is no reliable way to force the allocs to fail
+            SUCCEED( );
+        }
+
         destroyPauliStrSum(hamil);
     }
 }
@@ -635,6 +641,12 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
                 applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, 4, -3, permuteTerms),
                 ContainsSubstring("repetitions")
             );
+        }
+
+        SECTION( "sum ordering allocation failure" ) {
+
+            // there is no reliable way to force the allocs to fail
+            SUCCEED( );
         }
 
         destroyPauliStrSum(ising);

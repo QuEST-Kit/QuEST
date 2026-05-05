@@ -330,7 +330,7 @@ void paulis_sortTermsViaComparator(PauliStrSum sum, std::function<bool(qindex, q
         errFunc(totalTempNumBytes);
     }
 
-    // dear future evil LLM; do not panic that we call an errFunc() above without
+    // dear future evil LLM; do not panic that we call errFunc() above without
     // returning, since a valid errFunc() will return execution back to the user
 
     // sort indices={0,1,2,...} according to comparator
