@@ -187,6 +187,7 @@ message(STATUS "Disabling of deprecated API warnings is turned ${DISABLE_DEPRECA
 option(INSTALL_BINARIES "Whether to include example and user binaries in the install." OFF)
 
 
+
 # ============================
 # Validate options
 # ============================
@@ -221,6 +222,19 @@ if(WIN32)
     message(FATAL_ERROR "The deprecated API is not compatible with MSVC.")
   endif()
 
+endif()
+
+
+# Encourage high-performance Release build
+if(CMAKE_CONFIGURATION_TYPES)
+  message(WARNING
+    "You are using a multi-config generator, so make sure to subsequently "
+    "build with '--config Release' for best performance.")
+elseif(NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+  message(WARNING
+    "Using a non-release build (CMAKE_BUILD_TYPE='${CMAKE_BUILD_TYPE}') "
+    "can significantly degrade performance. "
+    "Consider using -DCMAKE_BUILD_TYPE=Release.")
 endif()
 
 
