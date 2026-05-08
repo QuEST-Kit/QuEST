@@ -81,8 +81,10 @@ __host__ inline std::array<gpu_qcomp,Dim> getGpuQcompArray(qcomp matr[Dim]) {
     static_assert(Dim == 2 || Dim == 4);
 
     // it's crucial we explicitly copy over the elements,
-    // rather than just reinterpret the pointer, to avoid
-    // segmentation faults when memory misaligns (like on HIP)
+    // rather than just reinterpret the pointer (like we do
+    // for heap-memory), because LLVM-based compilers like HIP
+    // use aggressive TBAA on stack memory and break the
+    // interoperability, causing segfaults here!
 
     std::array<gpu_qcomp,Dim> out;
     for (int i=0; i<Dim; i++)

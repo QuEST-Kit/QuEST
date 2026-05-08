@@ -40,7 +40,7 @@
  * code duplication.
  */
 
-struct base_qcomp {
+struct alignas(qcomp) base_qcomp {
 
     qreal re;
     qreal im;
