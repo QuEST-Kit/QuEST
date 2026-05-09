@@ -468,16 +468,24 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     // task each thread with processing more than a single batch
     qindex numBatches = qureg.numAmpsPerNode / powerOf2(ctrls.size() + targs.size());
 
-    devints deviceTargs = targs;
-    devints deviceQubits = util_getSorted(ctrls, targs); // change for performance
+    vector<int> deviceTargs = targs;
+    vector<int> deviceQubits = util_getSorted(ctrls, targs); // change for performance
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, targs, vector<int>(targs.size(),0));
+
+    QubitList_t qubits_dev;
+    std::copy(deviceQubits.begin(), deviceQubits.end(), qubits_dev.indices);
+    qubits_dev.length = deviceQubits.size();
+
+    QubitList_t targs_dev;
+    std::copy(deviceTargs.begin(), deviceTargs.end(), targs_dev.indices);
+    targs_dev.length = deviceTargs.size();
 
     // unpacking args (to better distinguish below signatures)
     auto ampsPtr   = toCuQcomps(qureg.gpuAmps);
     auto matrPtr   = toCuQcomps(matr.gpuElemsFlat);
-    auto qubitsPtr = getPtr(deviceQubits);
-    auto targsPtr  = getPtr(deviceTargs);
-    auto nCtrls    = ctrls.size();
+    // auto qubitsPtr = getPtr(deviceQubits);
+    // auto targsPtr  = getPtr(deviceTargs);
+    // auto nCtrls    = ctrls.size();
 
     // this function updates amplitudes in batches of 2^NumTargs, where each is
     // determined by distinct mixtures of the existing 2^NumTargs values, which
@@ -505,8 +513,8 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
             <NumCtrls, NumTargs, ApplyConj, ApplyTransp> 
             <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
                 ampsPtr, numThreads, 
-                qubitsPtr, nCtrls, qubitStateMask, 
-                targsPtr, matrPtr
+                qubits_dev, qubitStateMask, 
+                targs_dev, matrPtr
         );
 
     } else {

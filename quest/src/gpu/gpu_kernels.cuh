@@ -325,18 +325,18 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
     REGISTER cu_qcomp privateCache[1 << NumTargs];
 
     // we know NumTargs <= 5, though NumCtrls is permitted anything (including -1)
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.length);
     constexpr qindex numTargAmps = (1 << NumTargs); // explicit, in lieu of powerOf2
 
     // i0 = nth local index where ctrls are active and targs are all zero
-    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs, numCtrlBits + NumTargs, ctrlsAndTargsMask); // loop may be unrolled
+    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs.indices, numCtrlBits + NumTargs, ctrlsAndTargsMask); // loop may be unrolled
 
     // populate cache (force unroll to ensure compile-time cache indices)
     #pragma unroll  
     for (qindex k=0; k<numTargAmps; k++) {
 
         // i = nth local index where ctrls are active and targs form value k
-        qindex i = setBits(i0, targs, NumTargs, k); // loop will be unrolled
+        qindex i = setBits(i0, targs.indices, NumTargs, k); // loop will be unrolled
 
         // write to thread-private cache at compile-time known index
         privateCache[k] = amps[i];
@@ -346,7 +346,7 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
     for (qindex k=0; k<numTargAmps; k++) {
 
         // i = nth local index where ctrls are active and targs form value k
-        qindex i = setBits(i0, targs, NumTargs, k); // loop will be unrolled
+        qindex i = setBits(i0, targs.indices, NumTargs, k); // loop will be unrolled
         amps[i] = getCuQcomp(0, 0);
     
         // force unroll to ensure compile-time cache indices
