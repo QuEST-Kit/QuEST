@@ -402,15 +402,19 @@ void gpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size() + 2);
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devints sortedQubits = util_getSorted(ctrls, {targ1,targ2}); // change for performance
+    vector<int> sortedQubits = util_getSorted(ctrls, {targ1,targ2}); // change for performance
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ1,targ2}, {0,0});
+
+    QubitList_t qubits_dev;
+    std::copy(sortedQubits.begin(), sortedQubits.end(), qubits_dev.indices);
+    qubits_dev.length = sortedQubits.size();
 
     // unpack matrix elems which are more efficiently accessed by kernels as args than shared mem (... maybe...)
     auto m = unpackMatrixToCuQcomps(matr);
 
     kernel_statevec_anyCtrlTwoTargDenseMatr_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, 
-        getPtr(sortedQubits), ctrls.size(), qubitStateMask, targ1, targ2,
+        qubits_dev, qubitStateMask, targ1, targ2,
         m[0], m[1], m[2],  m[3],  m[4],  m[5],  m[6],  m[7],
         m[8], m[9], m[10], m[11], m[12], m[13], m[14], m[15]
     );

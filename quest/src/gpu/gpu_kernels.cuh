@@ -259,7 +259,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlTwoTargDenseMatr_sub(
     cu_qcomp* amps, qindex numThreads, 
-    int* ctrlsAndTarg, int numCtrls, qindex ctrlStateMask, int targ1, int targ2,
+    __grid_constant__ const QubitList_t ctrlsAndTarg, qindex ctrlStateMask, int targ1, int targ2,
     cu_qcomp m00, cu_qcomp m01, cu_qcomp m02, cu_qcomp m03,
     cu_qcomp m10, cu_qcomp m11, cu_qcomp m12, cu_qcomp m13,
     cu_qcomp m20, cu_qcomp m21, cu_qcomp m22, cu_qcomp m23,
@@ -268,10 +268,10 @@ __global__ void kernel_statevec_anyCtrlTwoTargDenseMatr_sub(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTarg.length);
 
     // i00 = nth local index where ctrls are active and both targs are 0
-    qindex i00 = insertBitsWithMaskedValues(n, ctrlsAndTarg, numCtrlBits + 2, ctrlStateMask);
+    qindex i00 = insertBitsWithMaskedValues(n, ctrlsAndTarg.indices, numCtrlBits + 2, ctrlStateMask);
     qindex i01 = flipBit(i00, targ1);
     qindex i10 = flipBit(i00, targ2);
     qindex i11 = flipBit(i01, targ2);
