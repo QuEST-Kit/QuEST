@@ -782,9 +782,13 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devints deviceTargs = targs; // change for performance and standardise 
+    vector<int> deviceTargs = targs; // change for performance and standardise 
     // devints deviceCtrls = util_getSorted(ctrls);
     
+    QubitList_t targs_dev;
+    std::copy(deviceTargs.begin(), deviceTargs.end(), targs_dev.indices);
+    targs_dev.length = deviceTargs.size();
+
     // removed implicit thrust mem copy
     vector<int> sortedCtrls = util_getSorted(ctrls);
 
@@ -802,7 +806,7 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
     kernel_statevec_anyCtrlAnyTargDiagMatr_sub <NumCtrls, NumTargs, ApplyConj, HasPower> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode, ctrl,
-        ctrls.size(), ctrlStateMask, getPtr(deviceTargs), targs.size(), 
+        ctrls.size(), ctrlStateMask, targs_dev, 
         toCuQcomps(util_getGpuMemPtr(matr)), toCuQcomp(exponent)
     );
 

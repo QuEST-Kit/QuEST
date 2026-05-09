@@ -528,7 +528,7 @@ __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
 template <int NumCtrls, int NumTargs, bool ApplyConj, bool HasPower>
 __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, __grid_constant__ const ctrl_device_t ctrl,
-    int numCtrls, qindex ctrlStateMask, int* targs, int numTargs,
+    int numCtrls, qindex ctrlStateMask, __grid_constant__ const QubitList_t targs,
     cu_qcomp* elems, cu_qcomp exponent
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -546,7 +546,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
 
     // use template params to compile-time unroll loops in insertBits() and getValueOfBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
-    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, numTargs);
+    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, targs.length);
 
     // j = nth local index where ctrls are active (in the specified states)
     qindex j = insertBitsWithMaskedValues(n, ctrl.ctrl_device, numCtrlBits, ctrlStateMask);
@@ -555,7 +555,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
 
     // t = value of targeted bits, which may be in the prefix substate
-    qindex t = getValueOfBits(i, targs, numTargBits);
+    qindex t = getValueOfBits(i, targs.indices, numTargBits);
 
     cu_qcomp elem = elems[t];
 
