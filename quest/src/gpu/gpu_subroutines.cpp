@@ -1547,13 +1547,25 @@ void gpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> ta
     qindex numThreads = outQureg.numAmpsPerNode;
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devints devTargs = targs; // change for performance
-    devints devPairTargs = pairTargs;
-    devints devAllTargs = util_getSorted(targs, pairTargs);
+    vector<int> devTargs = targs; // change for performance
+    vector<int> devPairTargs = pairTargs;
+    vector<int> devAllTargs = util_getSorted(targs, pairTargs);
+
+    QubitList_t targs_dev;
+    std::copy(devTargs.begin(), devTargs.end(), targs_dev.indices);
+    targs_dev.length = devTargs.size();
+
+    QubitList_t pairTargs_dev;
+    std::copy(devPairTargs.begin(), devPairTargs.end(), pairTargs_dev.indices);
+    pairTargs_dev.length = devPairTargs.size();
+
+    QubitList_t allTargs_dev;
+    std::copy(devAllTargs.begin(), devAllTargs.end(), allTargs_dev.indices);
+    allTargs_dev.length = devAllTargs.size();
 
     kernel_densmatr_partialTrace_sub <NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(inQureg.gpuAmps), toCuQcomps(outQureg.gpuAmps), numThreads,
-        getPtr(devTargs), getPtr(devPairTargs), getPtr(devAllTargs), targs.size()
+        targs_dev, pairTargs_dev, allTargs_dev
     );
 
 #else

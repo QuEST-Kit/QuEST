@@ -1146,12 +1146,14 @@ __global__ void kernel_densmatr_oneQubitDamping_subD(
 template <int NumTargs>
 __global__ void kernel_densmatr_partialTrace_sub(
     cu_qcomp* ampsIn, cu_qcomp* ampsOut, qindex numThreads,
-    int* ketTargs, int* pairTargs, int* allTargs, int numKetTargs
+    __grid_constant__ const QubitList_t ketTargs,
+    __grid_constant__ const QubitList_t pairTargs,
+    __grid_constant__ const QubitList_t allTargs
 ) {
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll below loops
-    SET_VAR_AT_COMPILE_TIME(int, numTargPairs, NumTargs, numKetTargs);
+    SET_VAR_AT_COMPILE_TIME(int, numTargPairs, NumTargs, KetTargs.length);
 
     // may be inferred at compile-time
     int numAllTargs = 2*numTargPairs;
@@ -1163,7 +1165,7 @@ __global__ void kernel_densmatr_partialTrace_sub(
     /// should change the parallelisation axis in this scenario, or preclude it with validation!
 
     // k = nth local index of inQureg where all targs and pairs are zero
-    qindex k = insertBits(n, allTargs, numAllTargs, 0); // loop may be unrolled
+    qindex k = insertBits(n, allTargs.indices, numAllTargs, 0); // loop may be unrolled
 
     // each outQureg amp results from summing 2^targs inQureg amps
     cu_qcomp outAmp = getCuQcomp(0, 0);
@@ -1173,8 +1175,8 @@ __global__ void kernel_densmatr_partialTrace_sub(
 
         // i = nth local index of inQureg where targs=j and pairTargs=j
         qindex i = k;
-        i = setBits(i, ketTargs,  numTargPairs, j); // loops may be unrolled
-        i = setBits(i, pairTargs, numTargPairs, j);
+        i = setBits(i, ketTargs.indices,  numTargPairs, j); // loops may be unrolled
+        i = setBits(i, pairTargs.indices, numTargPairs, j);
 
         outAmp = outAmp + ampsIn[i];
     }
