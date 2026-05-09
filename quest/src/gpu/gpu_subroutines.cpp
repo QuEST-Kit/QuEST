@@ -1721,14 +1721,18 @@ void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
 
     // allocate exponentially-big temporary memory (error if failed)
-    devints devQubits = qubits; // change for performance
+    vector<int> devQubits = qubits; // change for performance
     devreals devProbs = getDeviceRealsVec(powerOf2(qubits.size())); // throws
+
+    QubitList_t qubits_dev;
+    std::copy(devQubits.begin(), devQubits.end(), qubits_dev.indices);
+    qubits_dev.length = devQubits.size();
 
     kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         getPtr(devProbs), toCuQcomps(qureg.gpuAmps), 
         numThreads, firstDiagInd, numAmpsPerCol,
         qureg.rank, qureg.logNumAmpsPerNode, 
-        getPtr(devQubits), devQubits.size()
+        qubits_dev
     );
 
     // overwrite outProbs with GPU memory

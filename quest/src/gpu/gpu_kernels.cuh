@@ -1225,12 +1225,12 @@ __global__ void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
     qreal* outProbs, cu_qcomp* amps, qindex numThreads, 
     qindex firstDiagInd, qindex numAmpsPerCol,
     int rank, qindex logNumAmpsPerNode,
-    int* qubits, int numQubits
+    __grid_constant__ const QubitList_t qubits
 ) {
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, numQubits);
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.length);
 
     // i = index of nth local diagonal elem
     qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
@@ -1240,7 +1240,7 @@ __global__ void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
     qindex j = concatenateBits(rank, i, logNumAmpsPerNode);
 
     // k = outcome index corresponding to 
-    qindex k = getValueOfBits(j, qubits, numBits); // loop therein may be unrolled
+    qindex k = getValueOfBits(j, qubits.indices, numBits); // loop therein may be unrolled
 
     atomicAdd(&outProbs[k], prob);
 }
