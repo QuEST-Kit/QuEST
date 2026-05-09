@@ -145,16 +145,16 @@ __global__ void kernel_statevec_packPairSummedAmpsIntoBuffer(
 template <int NumCtrls> 
 __global__ void kernel_statevec_anyCtrlSwap_subA(
     cu_qcomp* amps, qindex numThreads, 
-    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int targ1, int targ2
+    __grid_constant__ const QubitList_t ctrlsAndTargs, qindex ctrlsAndTargsMask, int targ1, int targ2
 ) {
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, ctrlsAndTargs.length, numCtrls);
     int numQubitBits = 2 + numCtrlBits;
 
     // i01 = nth local index where ctrls are active, targ2=0 and targ1=1
-    qindex i01 = insertBitsWithMaskedValues(n, ctrlsAndTargs, numQubitBits, ctrlsAndTargsMask);
+    qindex i01 = insertBitsWithMaskedValues(n, ctrlsAndTargs.indices, numQubitBits, ctrlsAndTargsMask);
     qindex i10 = flipTwoBits(i01, targ2, targ1);
 
     // swap amps
