@@ -903,9 +903,17 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ct
     auto maskXY  = util_getBitMask(targsXY);
     auto maskYZ  = util_getBitMask(util_getConcatenated(y, z));
 
-    devints deviceTargs   = targsXY; 
-    devints deviceQubits  = util_getSorted(ctrls, targsXY); // change for performance
+    vector<int> deviceTargs   = targsXY; 
+    vector<int> deviceQubits  = util_getSorted(ctrls, targsXY); // change for performance
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, targsXY, vector<int>(targsXY.size(),0));
+
+    QubitList_t qubits_dev;
+    std::copy(deviceQubits.begin(), deviceQubits.end(), qubits_dev.indices);
+    qubits_dev.length = deviceQubits.size();
+
+    QubitList_t targs_dev;
+    std::copy(deviceTargs.begin(), deviceTargs.end(), targs_dev.indices);
+    targs_dev.length = deviceTargs.size();
 
     // unlike the analogous cpu routine, this function has only a single parallelisation
     // granularity; where every pair-of-amps is modified by an independent thread, despite
@@ -916,8 +924,8 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ct
     qindex numBlocks = getNumBlocks(numThreads);
     kernel_statevector_anyCtrlPauliTensorOrGadget_subA <NumCtrls, NumTargs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads,
-        getPtr(deviceQubits), ctrls.size(), qubitStateMask, 
-        getPtr(deviceTargs), deviceTargs.size(),
+        qubits_dev, qubitStateMask, 
+        targs_dev,
         maskXY, maskYZ, toCuQcomp(powI), toCuQcomp(ampFac), toCuQcomp(pairAmpFac)
     );
 

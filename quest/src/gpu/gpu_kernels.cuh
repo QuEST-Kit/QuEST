@@ -308,7 +308,7 @@ __forceinline__ __device__ qindex getThreadsNthGlobalArrInd(qindex n, qindex thr
 template <int NumCtrls, int NumTargs, bool ApplyConj, bool ApplyTransp>
 __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
     cu_qcomp* amps, qindex numThreads,
-    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, int* targs,
+    __grid_constant__ const QubitList_t ctrlsAndTargs, qindex ctrlsAndTargsMask, __grid_constant__ const QubitList_t targs,
     cu_qcomp* flatMatrElems
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -623,15 +623,15 @@ __global__ void kernel_densmatr_allTargDiagMatr_sub(
 template <int NumCtrls, int NumTargs> 
 __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
     cu_qcomp* amps, qindex numThreads,
-    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsStateMask, 
-    int* targsXY, int numXY, qindex maskXY, qindex maskYZ, 
+    __grid_constant__ const QubitList_t ctrlsAndTargs, qindex ctrlsAndTargsStateMask, 
+    __grid_constant__ const QubitList_t targsXY, qindex maskXY, qindex maskYZ, 
     cu_qcomp powI, cu_qcomp ampFac, cu_qcomp pairAmpFac
 ) {
     GET_THREAD_IND(t, numThreads);
 
     // use template params to compile-time unroll loops in insertBits() and setBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
-    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, numXY);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.length);
+    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, targsXY.length);
 
     // n = local index of amp sub-batch with common i0, v = value of target bits
     qindex numInnerIts = powerOf2(numTargBits) / 2;
@@ -639,10 +639,10 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
     qindex v = t % numInnerIts;
 
     // i0 = nth local index where ctrls are active and targs are all zero (loop therein may be unrolled)
-    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs, numCtrlBits + numTargBits, ctrlsAndTargsStateMask);
+    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs.indices, numCtrlBits + numTargBits, ctrlsAndTargsStateMask);
 
     // iA = nth local index where targs have value v, iB = (last - nth) such index
-    qindex iA = setBits(i0, targsXY, numTargBits, v); // may be unrolled
+    qindex iA = setBits(i0, targsXY.indices, numTargBits, v); // may be unrolled
     qindex iB = flipBits(iA, maskXY);
 
     // determine whether to multiply amps by +-1 or +-i
