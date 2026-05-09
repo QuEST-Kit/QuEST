@@ -243,12 +243,16 @@ void gpu_statevec_anyCtrlSwap_subB(Qureg qureg, vector<int> ctrls, vector<int> c
     qindex numBlocks = getNumBlocks(numThreads);
     qindex recvInd = getBufferRecvInd();
 
-    devints sortedCtrls = util_getSorted(ctrls); // change for performance
+    vector<int> sortedCtrls = util_getSorted(ctrls); // change for performance
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
+
+    QubitList_t Ctrls_dev;
+    std::copy(sortedCtrls.begin(), sortedCtrls.end(), Ctrls_dev.indices);
+    Ctrls_dev.length = sortedCtrls.size();
 
     kernel_statevec_anyCtrlSwap_subB <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
-        getPtr(sortedCtrls), ctrls.size(), ctrlStateMask
+        Ctrls_dev, ctrlStateMask
     );
 
 #else
