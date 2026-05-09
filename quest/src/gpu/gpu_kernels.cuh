@@ -185,16 +185,16 @@ __global__ void kernel_statevec_anyCtrlSwap_subB(
 template <int NumCtrls> 
 __global__ void kernel_statevec_anyCtrlSwap_subC(
     cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
-    int* ctrlsAndTarg, int numCtrls, qindex ctrlsAndTargMask
+    __grid_constant__ const QubitList_t ctrlsAndTarg, qindex ctrlsAndTargMask
 ) {
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTarg.length);
     int numQubitBits = numCtrlBits + 1;
 
     // i = nth local index where ctrls and targ are in specified states
-    qindex i = insertBitsWithMaskedValues(n, ctrlsAndTarg, numQubitBits, ctrlsAndTargMask);
+    qindex i = insertBitsWithMaskedValues(n, ctrlsAndTarg.indices, numQubitBits, ctrlsAndTargMask);
 
     // caller offsets buffer if necessary
     amps[i] = buffer[n];
