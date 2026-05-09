@@ -56,6 +56,11 @@ typedef struct {
     int ctrl_device[64];
 } ctrl_device_t;
 
+struct QubitList_t {
+    int indices[64];
+    int length;
+};
+
 
 __forceinline__ __device__ qindex getThreadInd() {
     return blockIdx.x*blockDim.x + threadIdx.x;
@@ -101,15 +106,15 @@ __forceinline__ __device__ int cudaGetBitMaskParity(qindex mask) {
 template <int NumCtrls>
 __global__ void kernel_statevec_packAmpsIntoBuffer(
     cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
-    int* qubits, int numQubits, qindex qubitStateMask
+    __grid_constant__ const QubitList_t qubits, qindex qubitStateMask
 ) {
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumCtrls, numQubits);
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumCtrls, qubits.length);
 
     // i = nth local index where qubits are active
-    qindex i = insertBitsWithMaskedValues(n, qubits, numBits, qubitStateMask);
+    qindex i = insertBitsWithMaskedValues(n, qubits.indices, numBits, qubitStateMask);
 
     // caller offsets buffer by sub-buffer send-index
     buffer[n] = amps[i];

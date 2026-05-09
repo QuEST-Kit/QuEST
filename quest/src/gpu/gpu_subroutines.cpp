@@ -144,12 +144,16 @@ qindex gpu_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector<i
     qindex numBlocks = getNumBlocks(numThreads);
     qindex sendInd = getSubBufferSendInd(qureg);
 
-    devints sortedQubits = util_getSorted(qubits);
+    vector<int> sortedQubits = util_getSorted(qubits); // change
     qindex qubitStateMask  = util_getBitMask(qubits, qubitStates);
+
+    QubitList_t qubits_dev;
+    std::copy(sortedQubits.begin(), sortedQubits.end(), qubits_dev.indices);
+    qubits_dev.length = sortedQubits.size();
 
     kernel_statevec_packAmpsIntoBuffer <NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[sendInd], numThreads, 
-        getPtr(sortedQubits), qubits.size(), qubitStateMask
+        qubits_dev, qubitStateMask
     );
 
     // return the number of packed amps
@@ -210,7 +214,7 @@ void gpu_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> c
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(2 + ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devints sortedQubits = util_getSorted(ctrls, {targ2, targ1});
+    devints sortedQubits = util_getSorted(ctrls, {targ2, targ1}); // change for performance
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ2, targ1}, {0, 1});
 
     kernel_statevec_anyCtrlSwap_subA <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
@@ -235,7 +239,7 @@ void gpu_statevec_anyCtrlSwap_subB(Qureg qureg, vector<int> ctrls, vector<int> c
     qindex numBlocks = getNumBlocks(numThreads);
     qindex recvInd = getBufferRecvInd();
 
-    devints sortedCtrls = util_getSorted(ctrls);
+    devints sortedCtrls = util_getSorted(ctrls); // change for performance
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
     kernel_statevec_anyCtrlSwap_subB <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
@@ -260,7 +264,7 @@ void gpu_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int> c
     qindex numBlocks = getNumBlocks(numThreads);
     qindex recvInd = getBufferRecvInd();
 
-    devints sortedQubits = util_getSorted(ctrls, {targ});
+    devints sortedQubits = util_getSorted(ctrls, {targ}); // change for performance
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ}, {targState});
 
     kernel_statevec_anyCtrlSwap_subC <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
@@ -303,13 +307,13 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, v
 
     //devints sortedQubits = util_getSorted(ctrls, {targ});
     
-    vector<int> sortedQubits = util_getSorted(ctrls, {targ});
+    vector<int> sortedQubits = util_getSorted(ctrls, {targ}); 
 
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ}, {0});
 
     auto [m00, m01, m10, m11] = unpackMatrixToCuQcomps(matr);
 
-    ctrl_device_t ctrl;
+    ctrl_device_t ctrl; // change for performance Standardise
 
     std::copy(sortedQubits.begin(), sortedQubits.end(), ctrl.ctrl_device);
 
@@ -341,7 +345,7 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, v
     qindex numBlocks = getNumBlocks(numThreads);
     qindex recvInd = getBufferRecvInd();
 
-    devints sortedCtrls = util_getSorted(ctrls);
+    devints sortedCtrls = util_getSorted(ctrls); // change for performance
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
     kernel_statevec_anyCtrlOneTargDenseMatr_subB <NumCtrls> <<<numBlocks,NUM_THREADS_PER_BLOCK>>> (
@@ -382,7 +386,7 @@ void gpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size() + 2);
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devints sortedQubits = util_getSorted(ctrls, {targ1,targ2});
+    devints sortedQubits = util_getSorted(ctrls, {targ1,targ2}); // change for performance
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ1,targ2}, {0,0});
 
     // unpack matrix elems which are more efficiently accessed by kernels as args than shared mem (... maybe...)
@@ -445,7 +449,7 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
     qindex numBatches = qureg.numAmpsPerNode / powerOf2(ctrls.size() + targs.size());
 
     devints deviceTargs = targs;
-    devints deviceQubits = util_getSorted(ctrls, targs);
+    devints deviceQubits = util_getSorted(ctrls, targs); // change for performance
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, targs, vector<int>(targs.size(),0));
 
     // unpacking args (to better distinguish below signatures)
@@ -582,7 +586,7 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
 
 
     // removed implicit thrust mem copy
-    vector<int> sortedCtrls = util_getSorted(ctrls);
+    vector<int> sortedCtrls = util_getSorted(ctrls); // change for performance and standarisation
 
     ctrl_device_t ctrl;
 
@@ -671,7 +675,7 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     // devints deviceCtrls = util_getSorted(ctrls);
 
     // removed implicit thrust mem copy
-    vector<int> sortedCtrls = util_getSorted(ctrls);
+    vector<int> sortedCtrls = util_getSorted(ctrls); // change for performance and standardisationn
 
     ctrl_device_t ctrl;
 
@@ -750,7 +754,7 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vec
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devints deviceTargs = targs;
+    devints deviceTargs = targs; // change for performance and standardise 
     // devints deviceCtrls = util_getSorted(ctrls);
     
     // removed implicit thrust mem copy
@@ -871,8 +875,8 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ct
     auto maskXY  = util_getBitMask(targsXY);
     auto maskYZ  = util_getBitMask(util_getConcatenated(y, z));
 
-    devints deviceTargs   = targsXY;
-    devints deviceQubits  = util_getSorted(ctrls, targsXY);
+    devints deviceTargs   = targsXY; 
+    devints deviceQubits  = util_getSorted(ctrls, targsXY); // change for performance
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, targsXY, vector<int>(targsXY.size(),0));
 
     // unlike the analogous cpu routine, this function has only a single parallelisation
@@ -910,7 +914,7 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ct
     auto maskXY = util_getBitMask(util_getConcatenated(x, y));
     auto maskYZ = util_getBitMask(util_getConcatenated(y, z));
 
-    devints sortedCtrls = util_getSorted(ctrls);
+    devints sortedCtrls = util_getSorted(ctrls); // change for performance
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
     kernel_statevector_anyCtrlPauliTensorOrGadget_subB <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
@@ -946,7 +950,7 @@ void gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, vector<int> c
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devints sortedCtrls = util_getSorted(ctrls);
+    devints sortedCtrls = util_getSorted(ctrls); // change for performance
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
     qindex targMask = util_getBitMask(targs);
 
@@ -986,8 +990,8 @@ void gpu_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs
         ptrs.push_back(toCuQcomps(qureg.gpuAmps));
     
     // copy coeff and qureg lists into GPU memory
-    devcuqcompptrs devQuregAmps = ptrs;
-    devcomps devCoeffs = coeffs;
+    devcuqcompptrs devQuregAmps = ptrs; // review performance
+    devcomps devCoeffs = coeffs;  // review performance
 
     kernel_statevec_setQuregToWeightedSum_sub <NumQuregs> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(outQureg.gpuAmps), numThreads,
@@ -1499,7 +1503,7 @@ void gpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> ta
     qindex numThreads = outQureg.numAmpsPerNode;
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devints devTargs = targs;
+    devints devTargs = targs; // change for performance
     devints devPairTargs = pairTargs;
     devints devAllTargs = util_getSorted(targs, pairTargs);
 
@@ -1620,7 +1624,7 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     qindex numBlocks = getNumBlocks(numThreads);
 
     // allocate exponentially-big temporary memory (error if failed)
-    devints devQubits = qubits;
+    devints devQubits = qubits; // change for performance
     devreals devProbs = getDeviceRealsVec(powerOf2(qubits.size())); // throws
 
     kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
@@ -1657,7 +1661,7 @@ void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
 
     // allocate exponentially-big temporary memory (error if failed)
-    devints devQubits = qubits;
+    devints devQubits = qubits; // change for performance
     devreals devProbs = getDeviceRealsVec(powerOf2(qubits.size())); // throws
 
     kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (

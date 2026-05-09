@@ -72,7 +72,7 @@
  */
 
 
-using devints = thrust::device_vector<int>;
+using devints = thrust::device_vector<int>; // remove for performance
 
 int* getPtr(devints& qubits) {
 
@@ -785,7 +785,7 @@ qreal thrust_densmatr_calcTotalProb_sub(Qureg qureg) {
 template <int NumQubits>
 qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
 
-    devints sortedQubits = util_getSorted(qubits);
+    devints sortedQubits = util_getSorted(qubits); // change for performance
     qindex valueMask = util_getBitMask(qubits, outcomes);
 
     auto indFunctor = functor_insertBits<NumQubits>(getPtr(sortedQubits), valueMask, qubits.size());
@@ -807,7 +807,7 @@ qreal thrust_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> q
 
     // cannot move these into functor_insertBits constructor, since the memory
     // would dangle - and we cannot bind deviceints as an attribute - it's host-only!
-    devints sortedQubits = util_getSorted(qubits);
+    devints sortedQubits = util_getSorted(qubits); // change for performance
     qindex valueMask = util_getBitMask(qubits, outcomes);
 
     auto basisIndFunctor = functor_insertBits<NumQubits>(getPtr(sortedQubits), valueMask, qubits.size());
@@ -1011,7 +1011,7 @@ cu_qcomp thrust_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDi
 template <int NumQubits>
 void thrust_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal renorm) {
 
-    devints devQubits = qubits;
+    devints devQubits = qubits; // change for performance
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
     auto projFunctor = functor_projectStateVec<NumQubits>(
         getPtr(devQubits), qubits.size(), retainValue, renorm);
@@ -1027,7 +1027,7 @@ void thrust_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, ve
 template <int NumQubits>
 void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal renorm) {
 
-    devints devQubits = qubits;
+    devints devQubits = qubits; // change for performance
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
     auto projFunctor = functor_projectDensMatr<NumQubits>(
         getPtr(devQubits), qubits.size(), qureg.rank, qureg.numQubits,
