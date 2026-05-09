@@ -276,7 +276,7 @@ void gpu_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int> c
     qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ}, {targState});
 
     QubitList_t Qubits_dev;
-    std::copy(sorteQubits.begin(), sortedQubits.end(), Qubits_dev.indices);
+    std::copy(sortedQubits.begin(), sortedQubits.end(), Qubits_dev.indices);
     Qubits_dev.length = sortedQubits.size();
 
     kernel_statevec_anyCtrlSwap_subC <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
@@ -552,8 +552,8 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, ve
             <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
                 toCuQcomps(cache),
                 ampsPtr, numThreads, numBatchesPerThread, 
-                qubitsPtr, nCtrls, qubitStateMask, 
-                targsPtr, targs.size(), powerOf2(targs.size()), matrPtr
+                qubits_dev, qubitStateMask, 
+                targs_dev, powerOf2(targs.size()), matrPtr
         );
     }
 

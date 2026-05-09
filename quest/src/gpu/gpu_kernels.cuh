@@ -376,14 +376,14 @@ template <int NumCtrls, bool ApplyConj, bool ApplyTransp>
 __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
     cu_qcomp* globalCache,
     cu_qcomp* amps, qindex numThreads, qindex numBatchesPerThread,
-    int* ctrlsAndTargs, int numCtrls, qindex ctrlsAndTargsMask, 
-    int* targs, int numTargBits, qindex numTargAmps,
+    __grid_constant__ const QubitList_t ctrlsAndTargs, qindex ctrlsAndTargsMask, 
+    __grid_constant__ const QubitList_t targs, qindex numTargAmps,
     cu_qcomp* flatMatrElems
 ) {
     GET_THREAD_IND(t, numThreads);
 
     // NumCtrls might be compile-time known, but numTargBits>5 is always unknown/runtime
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.length);
 
     // unlike all other kernels, each thread modifies multiple batches of amplitudes
     for (qindex b=0; b<numBatchesPerThread; b++) {
@@ -392,13 +392,13 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
         qindex n = t + b * numThreads;
 
         // i0 = nth local index where ctrls are active and targs are all zero
-        qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs, numCtrlBits + numTargBits, ctrlsAndTargsMask);
+        qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs.indices, numCtrlBits + targs.length, ctrlsAndTargsMask);
 
         // collect and cache all to-be-modified amps (loop might be unrolled)        
         for (qindex k=0; k<numTargAmps; k++) {
 
             // i = nth local index where ctrls are active and targs form value k
-            qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
+            qindex i = setBits(i0, targs.indices, targs.length, k); // loop may be unrolled
 
             // j = index of k-th element of thread's private cache partition
             qindex j = getThreadsNthGlobalArrInd(k, t, numThreads);
@@ -409,7 +409,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
         for (qindex k=0; k<numTargAmps; k++) {
 
             // i = nth local index where ctrls are active and targs form value k
-            qindex i = setBits(i0, targs, numTargBits, k); // loop may be unrolled
+            qindex i = setBits(i0, targs.indices, targs.length, k); // loop may be unrolled
             amps[i] = getCuQcomp(0, 0);
         
             for (qindex l=0; l<numTargAmps; l++) {
@@ -1153,7 +1153,7 @@ __global__ void kernel_densmatr_partialTrace_sub(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll below loops
-    SET_VAR_AT_COMPILE_TIME(int, numTargPairs, NumTargs, KetTargs.length);
+    SET_VAR_AT_COMPILE_TIME(int, numTargPairs, NumTargs, ketTargs.length);
 
     // may be inferred at compile-time
     int numAllTargs = 2*numTargPairs;
