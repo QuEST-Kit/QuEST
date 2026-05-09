@@ -234,16 +234,16 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
     cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
-    int* ctrls, int numCtrls, qindex ctrlStateMask,
+    __grid_constant__ const QubitList_t ctrls, qindex ctrlStateMask,
     cu_qcomp fac0, cu_qcomp fac1
 ) {
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.length);
 
     // i = nth local index where ctrl bits are active
-    qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, ctrlStateMask);
+    qindex i = insertBitsWithMaskedValues(n, ctrls.indices, numCtrlBits, ctrlStateMask);
 
     // caller offsets buffer by receive-index
     amps[i] = fac0*amps[i] + fac1*buffer[n];
