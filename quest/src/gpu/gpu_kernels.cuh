@@ -663,17 +663,17 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
 template <int NumCtrls>
 __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
     cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads,
-    int* ctrls, int numCtrls, qindex ctrlStateMask,
+    __grid_constant__ const QubitList_t ctrls, qindex ctrlStateMask,
     qindex maskXY, qindex maskYZ, qindex bufferMaskXY,
     cu_qcomp powI, cu_qcomp thisAmpFac, cu_qcomp otherAmpFac
 ) {
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.length);
 
     // i = nth local index where ctrl bits are in specified states
-    qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, ctrlStateMask);
+    qindex i = insertBitsWithMaskedValues(n, ctrls.indices, numCtrlBits, ctrlStateMask);
 
     // j = buffer index of amp to be mixed with i
     qindex j = flipBits(n, bufferMaskXY);

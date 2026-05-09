@@ -950,12 +950,16 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ct
     auto maskXY = util_getBitMask(util_getConcatenated(x, y));
     auto maskYZ = util_getBitMask(util_getConcatenated(y, z));
 
-    devints sortedCtrls = util_getSorted(ctrls); // change for performance
+    vector<int> sortedCtrls = util_getSorted(ctrls); // change for performance
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
+
+    QubitList_t Ctrls_dev;
+    std::copy(sortedCtrls.begin(), sortedCtrls.end(), Ctrls_dev.indices);
+    Ctrls_dev.length = sortedCtrls.size();
 
     kernel_statevector_anyCtrlPauliTensorOrGadget_subB <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), &toCuQcomps(qureg.gpuCommBuffer)[recvInd], numThreads, 
-        getPtr(sortedCtrls), ctrls.size(), ctrlStateMask,
+        Ctrls_dev, ctrlStateMask,
         maskXY, maskYZ, bufferMaskXY,
         toCuQcomp(powI), toCuQcomp(ampFac), toCuQcomp(pairAmpFac)
     );
