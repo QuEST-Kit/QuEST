@@ -191,6 +191,17 @@ INLINE qindex setBits(qindex number, int* bitIndices, int numIndices, qindex bit
     return number;
 }
 
+INLINE qindex setBits(qindex number, const int* bitIndices, int numIndices, qindex bitsValue) {
+
+    // bitIndices are arbitrarily ordered, which does not affect number
+    for (int i=0; i<numIndices; i++) {
+        int bit = getBit(bitsValue, i);
+        number = setBit(number, bitIndices[i], bit);
+    }
+
+    return number;
+}
+
 
 INLINE qindex getValueOfBits(qindex number, int* bitIndices, int numIndices) {
 
@@ -203,6 +214,16 @@ INLINE qindex getValueOfBits(qindex number, int* bitIndices, int numIndices) {
     return value;
 }
 
+INLINE qindex getValueOfBits(qindex number, const int* bitIndices, int numIndices) {
+
+    // bits are arbitrarily ordered, which affects value
+    qindex value = 0;
+
+    for (int i=0; i<numIndices; i++)
+        value |= getBit(number, bitIndices[i]) << i;
+
+    return value;
+}
 
 
 /*
