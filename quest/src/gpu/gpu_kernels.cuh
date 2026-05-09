@@ -698,16 +698,16 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
 template <int NumCtrls>
 __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     cu_qcomp* amps, qindex numThreads,
-    int* ctrls, int numCtrls, qindex ctrlStateMask, qindex targMask,
+    __grid_constant__ const QubitList_t ctrls, qindex ctrlStateMask, qindex targMask,
     cu_qcomp fac0, cu_qcomp fac1
 ) {
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, numCtrls);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.length);
 
     // i = nth local index where ctrl bits are in specified states
-    qindex i = insertBitsWithMaskedValues(n, ctrls, numCtrlBits, ctrlStateMask);
+    qindex i = insertBitsWithMaskedValues(n, ctrls.indices, numCtrlBits, ctrlStateMask);
 
     // apply phase to amp depending on parity of targets in global index 
     int p = cudaGetBitMaskParity(i & targMask);

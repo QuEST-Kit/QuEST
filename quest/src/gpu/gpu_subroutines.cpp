@@ -990,13 +990,17 @@ void gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, vector<int> c
     qindex numThreads = qureg.numAmpsPerNode / powerOf2(ctrls.size());
     qindex numBlocks = getNumBlocks(numThreads);
 
-    devints sortedCtrls = util_getSorted(ctrls); // change for performance
+    vector<int> sortedCtrls = util_getSorted(ctrls); // change for performance
     qindex ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
     qindex targMask = util_getBitMask(targs);
 
+    QubitList_t Ctrls_dev;
+    std::copy(sortedCtrls.begin(), sortedCtrls.end(), Ctrls_dev.indices);
+    Ctrls_dev.length = sortedCtrls.size();
+
     kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub <NumCtrls> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         toCuQcomps(qureg.gpuAmps), numThreads,
-        getPtr(sortedCtrls), ctrls.size(), ctrlStateMask, targMask,
+        Ctrls_dev, ctrlStateMask, targMask,
         toCuQcomp(fac0), toCuQcomp(fac1)
     );
 
