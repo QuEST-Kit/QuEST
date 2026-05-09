@@ -1680,12 +1680,16 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     qindex numBlocks = getNumBlocks(numThreads);
 
     // allocate exponentially-big temporary memory (error if failed)
-    devints devQubits = qubits; // change for performance
+    vector<int> devQubits = qubits; // change for performance
     devreals devProbs = getDeviceRealsVec(powerOf2(qubits.size())); // throws
+
+    QubitList_t qubits_dev;
+    std::copy(devQubits.begin(), devQubits.end(), qubits_dev.indices);
+    qubits_dev.length = devQubits.size();
 
     kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         getPtr(devProbs), toCuQcomps(qureg.gpuAmps), numThreads, 
-        qureg.rank, qureg.logNumAmpsPerNode, getPtr(devQubits), devQubits.size()
+        qureg.rank, qureg.logNumAmpsPerNode, qubits_dev
     );
 
     // overwrite outProbs with GPU memory

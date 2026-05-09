@@ -1195,7 +1195,7 @@ template <int NumQubits>
 __global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
     qreal* outProbs, cu_qcomp* amps, qindex numThreads, 
     int rank, qindex logNumAmpsPerNode,
-    int* qubits, int numQubits
+    __grid_constant__ const QubitList_t qubits
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -1206,7 +1206,7 @@ __global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
     /// whether this is worthwhile and faster!
 
     // use template param to compile-time unroll below loops
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, numQubits);
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.length);
 
     qreal prob = getCompNorm(amps[n]);
 
@@ -1214,7 +1214,7 @@ __global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
     qindex i = concatenateBits(rank, n, logNumAmpsPerNode);
 
     // j = outcome index corresponding to prob
-    qindex j = getValueOfBits(i, qubits, numBits); // loop therein may be unrolled
+    qindex j = getValueOfBits(i, qubits.indices, numBits); // loop therein may be unrolled
 
     atomicAdd(&outProbs[j], prob);
 }
