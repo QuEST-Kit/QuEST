@@ -72,13 +72,13 @@ public:
     // and other syntactic goodies :(
 
     // let SmallList be iterable, e.g. for(auto x : list)
-    auto begin()       { return elems; }
-    auto begin() const { return elems; }
-    auto end()         { return elems + length; }
-    auto end()   const { return elems + length; }
+    INLINE auto begin()       { return elems; }
+    INLINE auto begin() const { return elems; }
+    INLINE auto end()         { return elems + length; }
+    INLINE auto end()   const { return elems + length; }
 
     // let SmallList be indexable, e.g. list[3]
-    const int& operator[](int index) const {
+    INLINE const int& operator[](int index) const {
 
         if (index < 0)
             error_smallListIndexWasNegative();
@@ -87,30 +87,30 @@ public:
 
         return elems[index];
     }
-    int& operator[](int index) {
+    INLINE int& operator[](int index) {
 
         return const_cast<int&>(
             static_cast<const SmallList&>(*this)[index]);
     }
 
     // give SmallList all the familiar methods of std::vector
-    void clear() {
+    INLINE void clear() {
         length = 0;
     }
-    bool empty() const { 
+    INLINE bool empty() const { 
         return length == 0; 
     }
-    int size() const { 
+    INLINE int size() const { 
         return length;
     }
-    int* data() {
+    INLINE int* data() {
         return elems;
     }
-    const int* data() const {
+    INLINE const int* data() const {
         return elems;
     }
 
-    void push_back(int elem) {
+    INLINE void push_back(int elem) {
 
         if (length >= MAX_LIST_LENGTH)
             error_smallListLengthExceededMax();
@@ -118,7 +118,7 @@ public:
         elems[length++] = elem;
     }
 
-    void resize(int newLength, int value=0) {
+    INLINE void resize(int newLength, int value=0) {
 
         if (newLength > MAX_LIST_LENGTH)
             error_smallListLengthExceededMax();
@@ -129,14 +129,14 @@ public:
         length = newLength;
     }
 
-    const int& back() const {
+    INLINE const int& back() const {
 
         if (empty())
             error_smallListWasEmpty();
 
         return elems[length - 1];
     }
-    int& back() {
+    INLINE int& back() {
 
         return const_cast<int&>(
             static_cast<const SmallList&>(*this).back());
