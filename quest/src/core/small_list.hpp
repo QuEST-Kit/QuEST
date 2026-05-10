@@ -1,0 +1,206 @@
+/** @file
+ * A stack-based list of length <= 64, primarily
+ * for storing qubit indices, as an alternative to
+ * std::vector and associated heap-alloc/copy
+ * overheads. Use of SmallList optimises few-qubit
+ * simulation where STL container costs dominate;
+ * and in the GPU backend, use of SmallList avoids
+ * CUDA memory writes before kernel launches!
+ * 
+ * The functions herein are inlined (in this header-
+ * only file) in the hopes of unbridled compiler
+ * optimisations, but this may prove incompatible
+ * with GPU mode (since INLINE specifies __device__,
+ * which may be incompatible with initialiser lists)
+ * 
+ * @author Tyson Jones
+ */
+
+#ifndef SMALL_LIST_HPP
+#define SMALL_LIST_HPP
+
+#include "quest/src/core/errors.hpp"
+#include "quest/src/core/inliner.hpp"
+
+
+
+/*
+ * CAPACITY
+ *
+ * Since stored in stack, we must upperbound the length of
+ * a SmallList; we choose 64, which is around the maximum
+ * addressable number of qubits by qindex. In theory, we
+ * could permit users to compile-time reduce this length,
+ * restricting their max simulable system but speeding up
+ * SmallList copies in function calls - this may have a
+ * measurable benefit for Quregs of 1-8 qubits. But Donald
+ * Knuth knows and sees all, and he won't be happy!
+ */
+
+
+constexpr int MAX_LIST_LENGTH = 64;
+
+
+
+/*
+ * SMALL LIST DECLARATION
+ *
+ * which mimics an STL container so that it is easily
+ * substituted for std::vector in our codebase, but
+ * crucially, remains (almost) POD and with no heap
+ * allocs, and compatible with CUDA kernels 
+ */
+
+
+struct SmallList {
+
+private:
+
+    // Keep data private to dissuade inconsistent
+    // access patterns (e.g. .elems vs .data()),
+    // and so users cannot invalidly mutate length.
+    // Readers may wonder why we avoid std::array;
+    // it has a surprise overhead in pass-by-ref!
+    int elems[MAX_LIST_LENGTH];
+    int length;
+
+public:
+
+    // Note there is deliberately no constructor!
+    // This keeps the struct trivial and compatible
+    // with CUDA; we must forego initializer ctors
+    // and other syntactic goodies :(
+
+    // let SmallList be iterable, e.g. for(auto x : list)
+    auto begin()       { return elems; }
+    auto begin() const { return elems; }
+    auto end()         { return elems + length; }
+    auto end()   const { return elems + length; }
+
+    // let SmallList be indexable, e.g. list[3]
+    const int& operator[](int index) const {
+
+        if (index < 0)
+            error_smallListIndexWasNegative();
+        if (index >= length)
+            error_smallListIndexExceededLength();
+
+        return elems[index];
+    }
+    int& operator[](int index) {
+
+        return const_cast<int&>(
+            static_cast<const SmallList&>(*this)[index]);
+    }
+
+    // give SmallList all the familiar methods of std::vector
+    bool empty() const { 
+        return length == 0; 
+    }
+    int size() const { 
+        return length;
+    }
+    int* data() {
+        return elems;
+    }
+    const int* data() const {
+        return elems;
+    }
+
+    void push_back(int elem) {
+
+        if (length >= MAX_LIST_LENGTH)
+            error_smallListLengthExceededMax();
+
+        elems[length++] = elem;
+    }
+
+    void resize(int newLength, int value=0) {
+
+        if (length >= MAX_LIST_LENGTH)
+            error_smallListLengthExceededMax();
+
+        for (int i=length; i<newLength; i++)
+            elems[i] = value;
+
+        length = newLength;
+    }
+
+    const int& back() const {
+
+        if (empty())
+            error_smallListWasEmpty();
+
+        return elems[length - 1];
+    }
+    int& back() {
+
+        return const_cast<int&>(
+            static_cast<const SmallList&>(*this).back());
+    }
+};
+
+
+
+/*
+ * SMALL LIST CONSTRUCTORS
+ *
+ * which are separated here because making them actual
+ * constructors stops SmallList being POD/trivial, and
+ * makes it incompatible with CUDA kernels
+ */
+
+
+INLINE SmallList list_getEmptySmallList() {
+
+    SmallList out;
+    out.resize(0);
+    return out;
+}
+
+
+INLINE SmallList list_getSmallList(const int* begin, const int* end) {
+
+    if (end < begin)
+        error_smallListIndexExceededLength();
+
+    int length = static_cast<int>(end - begin);
+    if (length > MAX_LIST_LENGTH)
+        error_smallListLengthExceededMax();
+
+    SmallList out = list_getEmptySmallList();
+
+    for (const int* ptr = begin; ptr != end; ++ptr)
+        out.push_back(*ptr);
+
+    return out;
+}
+
+
+INLINE SmallList list_getSmallList(const int* elems, int length) {
+
+    return list_getSmallList(elems, elems + length);
+}
+
+
+INLINE SmallList list_getSmallList(std::initializer_list<int> init) {
+
+    return list_getSmallList(init.begin(), init.end());
+}
+
+
+
+/*
+ * ASSERT TRIVIAL
+ *
+ * which doesn't really gaurantee CUDA compatibility, but may
+ * catch a developer accidentally breaking compatibility
+ */
+
+
+static_assert(std::is_trivially_copyable_v<SmallList>);
+static_assert(std::is_standard_layout_v<SmallList>);
+
+
+
+#endif // SMALL_LIST_HPP
