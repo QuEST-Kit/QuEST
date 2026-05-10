@@ -12,6 +12,7 @@
 #include "quest/include/calculations.h"
 
 #include "quest/src/core/validation.hpp"
+#include "quest/src/core/small_list.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/bitwise.hpp"
@@ -253,12 +254,12 @@ qreal calcProbOfMultiQubitOutcome(Qureg qureg, int* qubits, int* outcomes, int n
     validate_targets(qureg, qubits, numQubits, __func__);
     validate_measurementOutcomesAreValid(outcomes, numQubits, __func__);
 
-    auto qubitVec = util_getVector(qubits, numQubits);
-    auto outcomeVec = util_getVector(outcomes, numQubits);
+    auto qubitList = list_getSmallList(qubits, numQubits);
+    auto outcomeList = list_getSmallList(outcomes, numQubits);
 
     return (qureg.isDensityMatrix)?
-        localiser_densmatr_calcProbOfMultiQubitOutcome(qureg, qubitVec, outcomeVec):
-        localiser_statevec_calcProbOfMultiQubitOutcome(qureg, qubitVec, outcomeVec);
+        localiser_densmatr_calcProbOfMultiQubitOutcome(qureg, qubitList, outcomeList):
+        localiser_statevec_calcProbOfMultiQubitOutcome(qureg, qubitList, outcomeList);
 }
 
 
@@ -267,11 +268,11 @@ void calcProbsOfAllMultiQubitOutcomes(qreal* outcomeProbs, Qureg qureg, int* qub
     validate_targets(qureg, qubits, numQubits, __func__);
     validate_measurementOutcomesFitInGpuMem(qureg, numQubits, __func__);
 
-    auto qubitVec = util_getVector(qubits, numQubits);
+    auto qubitList = list_getSmallList(qubits, numQubits);
 
     (qureg.isDensityMatrix)?
-        localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(outcomeProbs, qureg, qubitVec):
-        localiser_statevec_calcProbsOfAllMultiQubitOutcomes(outcomeProbs, qureg, qubitVec);
+        localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(outcomeProbs, qureg, qubitList):
+        localiser_statevec_calcProbsOfAllMultiQubitOutcomes(outcomeProbs, qureg, qubitList);
 }
 
 
@@ -383,7 +384,7 @@ Qureg calcPartialTrace(Qureg qureg, int* traceOutQubits, int numTraceQubits) {
         qureg.isGpuAccelerated, qureg.isMultithreaded, __func__);
 
     // set it to reduced density matrix
-    auto targets = util_getVector(traceOutQubits, numTraceQubits);
+    auto targets = list_getSmallList(traceOutQubits, numTraceQubits);
     localiser_densmatr_partialTrace(qureg, out, targets);
 
     return out;
@@ -396,7 +397,7 @@ Qureg calcReducedDensityMatrix(Qureg qureg, int* retainQubits, int numRetainQubi
     validate_targets(qureg, retainQubits, numRetainQubits, __func__);
     validate_quregCanBeReduced(qureg, qureg.numQubits - numRetainQubits, __func__);
 
-    auto traceQubits = util_getNonTargetedQubits(retainQubits, numRetainQubits, qureg.numQubits);
+    auto traceQubits = util_getNonTargetedQubits(list_getSmallList(retainQubits, numRetainQubits), qureg.numQubits);
 
     // harmlessly re-validates
     return calcPartialTrace(qureg, traceQubits.data(), traceQubits.size());

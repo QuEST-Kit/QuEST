@@ -23,6 +23,7 @@
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/memory.hpp"
 #include "quest/src/core/bitwise.hpp"
+#include "quest/src/core/small_list.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 #include "quest/src/cpu/cpu_subroutines.hpp"
@@ -244,7 +245,7 @@ void accel_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliS
  */
 
 
-qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector<int> qubitStates) {
+qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, SmallList qubits, SmallList qubitStates) {
 
     // we can never pack and swap buffers when there are no constrained qubit states, because we'd 
     // then fill the entire buffer andhave no room to receive the other node's buffer; caller would 
@@ -274,17 +275,17 @@ qindex accel_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int 
  */
 
 
-void accel_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2) {
+void accel_statevec_anyCtrlSwap_subA(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlSwap_subA, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ1, targ2);
 }
-void accel_statevec_anyCtrlSwap_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates) {
+void accel_statevec_anyCtrlSwap_subB(Qureg qureg, SmallList ctrls, SmallList ctrlStates) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlSwap_subB, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates);
 }
-void accel_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, int targState) {
+void accel_statevec_anyCtrlSwap_subC(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, int targState) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlSwap_subC, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ, targState);
@@ -297,26 +298,26 @@ void accel_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int>
  */
 
 
-void accel_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr) {
+void accel_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, CompMatr1 matr) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlOneTargDenseMatr_subA, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ, matr);
 }
-void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1) {
+void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, SmallList ctrls, SmallList ctrlStates, qcomp fac0, qcomp fac1) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlOneTargDenseMatr_subB, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, fac0, fac1);
 }
 
 
-void accel_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, CompMatr2 matr) {
+void accel_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2, CompMatr2 matr) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlTwoTargDenseMatr_sub, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ1, targ2, matr);
 }
 
 
-void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr, bool conj, bool transp) {
+void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, CompMatr matr, bool conj, bool transp) {
 
     auto func = GET_CPU_OR_GPU_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( statevec_anyCtrlAnyTargDenseMatr_sub, qureg, ctrls.size(), targs.size(), conj, transp );
     func(qureg, ctrls, ctrlStates, targs, matr);
@@ -329,21 +330,21 @@ void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, 
  */
 
 
-void accel_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr) {
+void accel_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, DiagMatr1 matr) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlOneTargDiagMatr_sub, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ, matr);
 }
 
 
-void accel_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, DiagMatr2 matr) {
+void accel_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2, DiagMatr2 matr) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlTwoTargDiagMatr_sub, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ1, targ2, matr);
 }
 
 
-void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, qcomp exponent, bool conj) {
+void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, DiagMatr matr, qcomp exponent, bool conj) {
 
     bool hasPower = exponent != qcomp(1, 0);
 
@@ -520,7 +521,7 @@ void accel_densmatr_allTargDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qc
  */
 
 
-void accel_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ctrls, vector<int> states, vector<int> x, vector<int> y, vector<int> z, qcomp f0, qcomp f1) {
+void accel_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, SmallList ctrls, SmallList states, SmallList x, SmallList y, SmallList z, qcomp f0, qcomp f1) {
 
     // only X and Y constitute target qubits (Z merely induces a phase)
     int numTargs = x.size() + y.size();
@@ -528,14 +529,14 @@ void accel_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( statevector_anyCtrlPauliTensorOrGadget_subA, qureg, ctrls.size(), numTargs );
     func(qureg, ctrls, states, x, y, z, f0, f1);
 }
-void accel_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ctrls, vector<int> states, vector<int> x, vector<int> y, vector<int> z, qcomp f0, qcomp f1, qindex mask) {
+void accel_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, SmallList ctrls, SmallList states, SmallList x, SmallList y, SmallList z, qcomp f0, qcomp f1, qindex mask) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevector_anyCtrlPauliTensorOrGadget_subB, qureg, ctrls.size() );
     func(qureg, ctrls, states, x, y, z, f0, f1, mask);
 }
 
 
-void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, vector<int> ctrls, vector<int> states, vector<int> targs, qcomp f0, qcomp f1) {
+void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, SmallList ctrls, SmallList states, SmallList targs, qcomp f0, qcomp f1) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevector_anyCtrlAnyTargZOrPhaseGadget_sub, qureg, ctrls.size() );
     func(qureg, ctrls, states, targs, f0, f1);
@@ -845,7 +846,7 @@ void accel_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob) {
  */
 
 
-void accel_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> targs, vector<int> pairTargs) {
+void accel_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, SmallList targs, SmallList pairTargs) {
     assert_partialTraceQuregsAreIdenticallyDeployed(inQureg, outQureg);
 
     auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_TARGS( cpu_densmatr_partialTrace_sub, targs.size() );
@@ -877,24 +878,24 @@ qreal accel_densmatr_calcTotalProb_sub(Qureg qureg) {
 }
 
 
-qreal accel_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+qreal accel_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallList qubits, SmallList outcomes) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( statevec_calcProbOfMultiQubitOutcome_sub, qureg, qubits.size() );
     return func(qureg, qubits, outcomes);
 }
-qreal accel_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+qreal accel_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallList qubits, SmallList outcomes) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( densmatr_calcProbOfMultiQubitOutcome_sub, qureg, qubits.size() );
     return func(qureg, qubits, outcomes);
 }
 
 
-void accel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits) {
+void accel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallList qubits) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( statevec_calcProbsOfAllMultiQubitOutcomes_sub, qureg, qubits.size() );
     func(outProbs, qureg, qubits);
 }
-void accel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits) {
+void accel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallList qubits) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( densmatr_calcProbsOfAllMultiQubitOutcomes_sub, qureg, qubits.size() );
     func(outProbs, qureg, qubits);
@@ -982,13 +983,13 @@ qcomp accel_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi, bool co
  */
 
 
-qreal accel_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
+qreal accel_statevec_calcExpecAnyTargZ_sub(Qureg qureg, SmallList targs) {
 
     return (qureg.isGpuAccelerated)?
         gpu_statevec_calcExpecAnyTargZ_sub(qureg, targs):
         cpu_statevec_calcExpecAnyTargZ_sub(qureg, targs);
 }
-qcomp accel_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
+qcomp accel_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, SmallList targs) {
 
     return (qureg.isGpuAccelerated)?
         gpu_densmatr_calcExpecAnyTargZ_sub(qureg, targs):
@@ -996,19 +997,19 @@ qcomp accel_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 }
 
 
-qcomp accel_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
+qcomp accel_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallList x, SmallList y, SmallList z) {
 
     return (qureg.isGpuAccelerated)?
         gpu_statevec_calcExpecPauliStr_subA(qureg, x, y, z):
         cpu_statevec_calcExpecPauliStr_subA(qureg, x, y, z);
 }
-qcomp accel_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
+qcomp accel_statevec_calcExpecPauliStr_subB(Qureg qureg, SmallList x, SmallList y, SmallList z) {
 
     return (qureg.isGpuAccelerated)?
         gpu_statevec_calcExpecPauliStr_subB(qureg, x, y, z):
         cpu_statevec_calcExpecPauliStr_subB(qureg, x, y, z);
 }
-qcomp accel_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
+qcomp accel_densmatr_calcExpecPauliStr_sub(Qureg qureg, SmallList x, SmallList y, SmallList z) {
 
     return (qureg.isGpuAccelerated)?
         gpu_densmatr_calcExpecPauliStr_sub(qureg, x, y, z):
@@ -1110,12 +1111,12 @@ qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMa
  */
 
 
-void accel_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
+void accel_statevec_multiQubitProjector_sub(Qureg qureg, SmallList qubits, SmallList outcomes, qreal prob) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( statevec_multiQubitProjector_sub, qureg, qubits.size() );
     func(qureg, qubits, outcomes, prob);
 }
-void accel_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
+void accel_densmatr_multiQubitProjector_sub(Qureg qureg, SmallList qubits, SmallList outcomes, qreal prob) {
 
     auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( densmatr_multiQubitProjector_sub, qureg, qubits.size() );
     func(qureg, qubits, outcomes, prob);

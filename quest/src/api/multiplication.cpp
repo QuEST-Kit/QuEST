@@ -12,6 +12,7 @@
 #include "quest/include/multiplication.h"
 
 #include "quest/src/core/validation.hpp"
+#include "quest/src/core/small_list.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/paulilogic.hpp"
@@ -19,6 +20,14 @@
 #include <vector>
 
 using std::vector;
+
+
+
+// The multiplication API doesn't accept control qubits
+// (which don't have much relevance to non-unitaries),
+// so passes ctrls={} to most internal functions; we
+// spare ourselves some keystrokes by this shortcut
+SmallList none = list_getEmptySmallList();
 
 
 
@@ -35,7 +44,7 @@ void leftapplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix) {
 
     bool conj = false;
     bool transp = false;
-    localiser_statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, target, matrix, conj, transp);
+    localiser_statevec_anyCtrlOneTargDenseMatr(qureg, none, none, target, matrix, conj, transp);
 }
 
 void rightapplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix) {
@@ -48,7 +57,7 @@ void rightapplyCompMatr1(Qureg qureg, int target, CompMatr1 matrix) {
     bool conj = false;
     bool transp = true;
     int qubit = util_getBraQubit(target, qureg);
-    localiser_statevec_anyCtrlOneTargDenseMatr(qureg, {}, {}, qubit, matrix, conj, transp);
+    localiser_statevec_anyCtrlOneTargDenseMatr(qureg, none, none, qubit, matrix, conj, transp);
 }
 
 } // end de-mangler
@@ -69,7 +78,7 @@ void leftapplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix)
 
     bool conj = false;
     bool transp = false;
-    localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, {}, {}, target1, target2, matrix, conj, transp);
+    localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, none, none, target1, target2, matrix, conj, transp);
 }
 
 void rightapplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix) {
@@ -84,7 +93,7 @@ void rightapplyCompMatr2(Qureg qureg, int target1, int target2, CompMatr2 matrix
     bool transp = true;
     int qubit1 = util_getBraQubit(target1, qureg);
     int qubit2 = util_getBraQubit(target2, qureg);
-    localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, {}, {}, qubit1, qubit2, matrix, conj, transp);
+    localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, none, none, qubit1, qubit2, matrix, conj, transp);
 }
 
 } // end de-mangler
@@ -105,7 +114,7 @@ void leftapplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matri
 
     bool conj = false;
     bool transp = false;
-    localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, {}, {}, util_getVector(targets, numTargets), matrix, conj, transp);
+    localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, none, none, list_getSmallList(targets, numTargets), matrix, conj, transp);
 }
 
 void rightapplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix) {
@@ -118,8 +127,8 @@ void rightapplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matr
     // rho matrix ~ transpose(rho) (x) I ||rho>>
     bool conj = false;
     bool transp = true;
-    auto qubits = util_getBraQubits(util_getVector(targets, numTargets), qureg);
-    localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, {}, {}, qubits, matrix, conj, transp);
+    auto qubits = util_getBraQubits(list_getSmallList(targets, numTargets), qureg);
+    localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, none, none, qubits, matrix, conj, transp);
 }
 
 } // end de-mangler
@@ -148,7 +157,7 @@ void leftapplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matrix) {
     validate_matrixFields(matrix, __func__);
 
     bool conj = false;
-    localiser_statevec_anyCtrlOneTargDiagMatr(qureg, {}, {}, target, matrix, conj);
+    localiser_statevec_anyCtrlOneTargDiagMatr(qureg, none, none, target, matrix, conj);
 }
 
 void rightapplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matrix) {
@@ -159,7 +168,7 @@ void rightapplyDiagMatr1(Qureg qureg, int target, DiagMatr1 matrix) {
 
     bool conj = false;
     int qubit = util_getBraQubit(target, qureg);
-    localiser_statevec_anyCtrlOneTargDiagMatr(qureg, {}, {}, qubit, matrix, conj);
+    localiser_statevec_anyCtrlOneTargDiagMatr(qureg, none, none, qubit, matrix, conj);
 }
 
 } // end de-mangler
@@ -178,7 +187,7 @@ void leftapplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matrix)
     validate_matrixFields(matrix, __func__);
 
     bool conj = false;
-    localiser_statevec_anyCtrlTwoTargDiagMatr(qureg, {}, {}, target1, target2, matrix, conj);
+    localiser_statevec_anyCtrlTwoTargDiagMatr(qureg, none, none, target1, target2, matrix, conj);
 }
 
 void rightapplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matrix) {
@@ -190,7 +199,7 @@ void rightapplyDiagMatr2(Qureg qureg, int target1, int target2, DiagMatr2 matrix
     bool conj = false;
     int qubit1 = util_getBraQubit(target1, qureg);
     int qubit2 = util_getBraQubit(target2, qureg);
-    localiser_statevec_anyCtrlTwoTargDiagMatr(qureg, {}, {}, qubit1, qubit2, matrix, conj);
+    localiser_statevec_anyCtrlTwoTargDiagMatr(qureg, none, none, qubit1, qubit2, matrix, conj);
 }
 
 } // end de-mangler
@@ -210,8 +219,8 @@ void leftapplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matri
 
     bool conj = false;
     qcomp exponent = 1;
-    auto qubits = util_getVector(targets, numTargets);
-    localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, {}, {}, qubits, matrix, exponent, conj);
+    auto qubits = list_getSmallList(targets, numTargets);
+    localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, none, none, qubits, matrix, exponent, conj);
 }
 
 void rightapplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matrix) {
@@ -222,8 +231,8 @@ void rightapplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matr
 
     bool conj = false;
     qcomp exponent = 1;
-    auto qubits = util_getBraQubits(util_getVector(targets, numTargets), qureg);
-    localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, {}, {}, qubits, matrix, exponent, conj);
+    auto qubits = util_getBraQubits(list_getSmallList(targets, numTargets), qureg);
+    localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, none, none, qubits, matrix, exponent, conj);
 }
 
 } // end de-mangler
@@ -253,8 +262,8 @@ void leftapplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr 
     validate_matrixExpIsNonDiverging(matrix, exponent, __func__); // harmlessly re-validates fields and is-sync
 
     bool conj = false;
-    auto qubits = util_getVector(targets, numTargets);
-    localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, {}, {}, qubits, matrix, exponent, conj);
+    auto qubits = list_getSmallList(targets, numTargets);
+    localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, none, none, qubits, matrix, exponent, conj);
 }
 
 void rightapplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr matrix, qcomp exponent) {
@@ -265,8 +274,8 @@ void rightapplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr
     validate_matrixExpIsNonDiverging(matrix, exponent, __func__); // harmlessly re-validates fields and is-sync
 
     bool conj = false;
-    auto qubits = util_getBraQubits(util_getVector(targets, numTargets), qureg);
-    localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, {}, {}, qubits, matrix, exponent, conj);
+    auto qubits = util_getBraQubits(list_getSmallList(targets, numTargets), qureg);
+    localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, none, none, qubits, matrix, exponent, conj);
 }
 
 } // end de-mangler
@@ -350,7 +359,7 @@ void leftapplySwap(Qureg qureg, int qubit1, int qubit2) {
     validate_quregFields(qureg, __func__);
     validate_twoTargets(qureg, qubit1, qubit2, __func__);
 
-    localiser_statevec_anyCtrlSwap(qureg, {}, {}, qubit1, qubit2);
+    localiser_statevec_anyCtrlSwap(qureg, none, none, qubit1, qubit2);
 }
 
 void rightapplySwap(Qureg qureg, int qubit1, int qubit2) {
@@ -360,7 +369,7 @@ void rightapplySwap(Qureg qureg, int qubit1, int qubit2) {
 
     qubit1 = util_getBraQubit(qubit1, qureg);
     qubit2 = util_getBraQubit(qubit2, qureg);
-    localiser_statevec_anyCtrlSwap(qureg, {}, {}, qubit1, qubit2);
+    localiser_statevec_anyCtrlSwap(qureg, none, none, qubit1, qubit2);
 }
 
 } // end de-mangler
@@ -378,7 +387,7 @@ void leftapplyPauliX(Qureg qureg, int target) {
     validate_target(qureg, target, __func__);
 
     PauliStr str = getPauliStr("X", {target});
-    localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str);
+    localiser_statevec_anyCtrlPauliTensor(qureg, none, none, str);
 }
 
 void leftapplyPauliY(Qureg qureg, int target) {
@@ -386,7 +395,7 @@ void leftapplyPauliY(Qureg qureg, int target) {
     validate_target(qureg, target, __func__);
 
     PauliStr str = getPauliStr("Y", {target});
-    localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str);
+    localiser_statevec_anyCtrlPauliTensor(qureg, none, none, str);
 }
 
 void leftapplyPauliZ(Qureg qureg, int target) {
@@ -394,7 +403,7 @@ void leftapplyPauliZ(Qureg qureg, int target) {
     validate_target(qureg, target, __func__);
 
     PauliStr str = getPauliStr("Z", {target});
-    localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str);
+    localiser_statevec_anyCtrlPauliTensor(qureg, none, none, str);
 }
 
 void rightapplyPauliX(Qureg qureg, int target) {
@@ -404,7 +413,7 @@ void rightapplyPauliX(Qureg qureg, int target) {
 
     PauliStr str = getPauliStr("X", {target});
     str = paulis_getShiftedPauliStr(str, qureg.numQubits);
-    localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str);
+    localiser_statevec_anyCtrlPauliTensor(qureg, none, none, str);
 }
 
 void rightapplyPauliY(Qureg qureg, int target) {
@@ -415,7 +424,7 @@ void rightapplyPauliY(Qureg qureg, int target) {
     qcomp factor = -1; // undo transpose
     PauliStr str = getPauliStr("Y", {target});
     str = paulis_getShiftedPauliStr(str, qureg.numQubits);
-    localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str, factor);
+    localiser_statevec_anyCtrlPauliTensor(qureg, none, none, str, factor);
 }
 
 void rightapplyPauliZ(Qureg qureg, int target) {
@@ -425,7 +434,7 @@ void rightapplyPauliZ(Qureg qureg, int target) {
 
     PauliStr str = getPauliStr("Z", {target});
     str = paulis_getShiftedPauliStr(str, qureg.numQubits);
-    localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str);
+    localiser_statevec_anyCtrlPauliTensor(qureg, none, none, str);
 }
 
 } // end de-mangler
@@ -442,7 +451,7 @@ void leftapplyPauliStr(Qureg qureg, PauliStr str) {
     validate_quregFields(qureg, __func__);
     validate_pauliStrTargets(qureg, str, __func__);
 
-    localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str);
+    localiser_statevec_anyCtrlPauliTensor(qureg, none, none, str);
 }
 
 void rightapplyPauliStr(Qureg qureg, PauliStr str) {
@@ -452,7 +461,7 @@ void rightapplyPauliStr(Qureg qureg, PauliStr str) {
 
     qcomp factor = paulis_getSignOfPauliStrConj(str); // undo transpose
     str = paulis_getShiftedPauliStr(str, qureg.numQubits);
-    localiser_statevec_anyCtrlPauliTensor(qureg, {}, {}, str, factor);
+    localiser_statevec_anyCtrlPauliTensor(qureg, none, none, str, factor);
 }
 
 } // end de-mangler
@@ -470,7 +479,7 @@ void leftapplyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
     validate_pauliStrTargets(qureg, str, __func__);
 
     qreal phase = util_getPhaseFromGateAngle(angle);
-    localiser_statevec_anyCtrlPauliGadget(qureg, {}, {}, str, phase);
+    localiser_statevec_anyCtrlPauliGadget(qureg, none, none, str, phase);
 }
 
 void rightapplyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
@@ -481,7 +490,7 @@ void rightapplyPauliGadget(Qureg qureg, PauliStr str, qreal angle) {
     qreal factor = paulis_getSignOfPauliStrConj(str);
     qreal phase = factor * util_getPhaseFromGateAngle(angle);
     str = paulis_getShiftedPauliStr(str, qureg.numQubits);
-    localiser_statevec_anyCtrlPauliGadget(qureg, {}, {}, str, phase);
+    localiser_statevec_anyCtrlPauliGadget(qureg, none, none, str, phase);
 }
 
 } // end de-mangler
@@ -499,8 +508,8 @@ void leftapplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle
     validate_targets(qureg, targets, numTargets, __func__);
 
     qreal phase = util_getPhaseFromGateAngle(angle);
-    auto qubits = util_getVector(targets, numTargets);
-    localiser_statevec_anyCtrlPhaseGadget(qureg, {}, {}, qubits, phase);
+    auto qubits = list_getSmallList(targets, numTargets);
+    localiser_statevec_anyCtrlPhaseGadget(qureg, none, none, qubits, phase);
 }
 
 void rightapplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle) {
@@ -509,8 +518,8 @@ void rightapplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angl
     validate_targets(qureg, targets, numTargets, __func__);
 
     qreal phase = util_getPhaseFromGateAngle(angle);
-    auto qubits = util_getBraQubits(util_getVector(targets, numTargets), qureg);
-    localiser_statevec_anyCtrlPhaseGadget(qureg, {}, {}, qubits, phase);
+    auto qubits = util_getBraQubits(list_getSmallList(targets, numTargets), qureg);
+    localiser_statevec_anyCtrlPhaseGadget(qureg, none, none, qubits, phase);
 }
 
 } // end de-mangler
@@ -578,7 +587,7 @@ void leftapplyQubitProjector(Qureg qureg, int qubit, int outcome) {
     validate_measurementOutcomeIsValid(outcome, __func__); 
 
     qreal prob = 1;
-    localiser_statevec_multiQubitProjector(qureg, {qubit}, {outcome}, prob);
+    localiser_statevec_multiQubitProjector(qureg, list_getSmallList({qubit}), list_getSmallList({outcome}), prob);
 }
 
 void leftapplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits) {
@@ -587,8 +596,8 @@ void leftapplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int n
     validate_measurementOutcomesAreValid(outcomes, numQubits, __func__);
 
     qreal prob = 1;
-    auto qubitVec = util_getVector(qubits, numQubits);
-    auto outcomeVec = util_getVector(outcomes, numQubits);
+    auto qubitVec = list_getSmallList(qubits, numQubits);
+    auto outcomeVec = list_getSmallList(outcomes, numQubits);
     localiser_statevec_multiQubitProjector(qureg, qubitVec, outcomeVec, prob);
 }
 
@@ -599,7 +608,8 @@ void rightapplyQubitProjector(Qureg qureg, int qubit, int outcome) {
     validate_measurementOutcomeIsValid(outcome, __func__); 
     
     qreal prob = 1;
-    localiser_statevec_multiQubitProjector(qureg, {util_getBraQubit(qubit,qureg)}, {outcome}, prob);
+    auto qubitList = list_getSmallList({util_getBraQubit(qubit,qureg)});
+    localiser_statevec_multiQubitProjector(qureg, qubitList, list_getSmallList({outcome}), prob);
 }
 
 void rightapplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits) {
@@ -609,8 +619,8 @@ void rightapplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int 
     validate_measurementOutcomesAreValid(outcomes, numQubits, __func__);
 
     qreal prob = 1;
-    auto qubitVec = util_getBraQubits(util_getVector(qubits, numQubits), qureg);
-    auto outcomeVec = util_getVector(outcomes, numQubits);
+    auto qubitVec = util_getBraQubits(list_getSmallList(qubits, numQubits), qureg);
+    auto outcomeVec = list_getSmallList(outcomes, numQubits);
     localiser_statevec_multiQubitProjector(qureg, qubitVec, outcomeVec, prob);
 }
 
@@ -649,9 +659,9 @@ void leftapplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace) {
 
     // left-multiply each term in-turn, mixing into output qureg, then undo using idempotency
     for (qindex i=0; i<sum.numTerms; i++) {
-        localiser_statevec_anyCtrlPauliTensor(workspace, {}, {}, sum.strings[i]);
+        localiser_statevec_anyCtrlPauliTensor(workspace, none, none, sum.strings[i]);
         localiser_statevec_setQuregToWeightedSum(qureg, {1, sum.coeffs[i]}, {qureg, workspace});
-        localiser_statevec_anyCtrlPauliTensor(workspace, {}, {}, sum.strings[i]);
+        localiser_statevec_anyCtrlPauliTensor(workspace, none, none, sum.strings[i]);
     }
 
     // workspace -> qureg, and qureg -> sum * qureg
@@ -674,9 +684,9 @@ void rightapplyPauliStrSum(Qureg qureg, PauliStrSum sum, Qureg workspace) {
         PauliStr str =  paulis_getShiftedPauliStr(sum.strings[i], qureg.numQubits);
         qcomp factor = paulis_getSignOfPauliStrConj(str); // undoes transpose
 
-        localiser_statevec_anyCtrlPauliTensor(workspace, {}, {}, str, factor);
+        localiser_statevec_anyCtrlPauliTensor(workspace, none, none, str, factor);
         localiser_statevec_setQuregToWeightedSum(qureg, {1, sum.coeffs[i]}, {qureg, workspace});
-        localiser_statevec_anyCtrlPauliTensor(workspace, {}, {}, str, factor);
+        localiser_statevec_anyCtrlPauliTensor(workspace, none, none, str, factor);
     }
 
     // workspace -> qureg, and qureg -> sum * qureg

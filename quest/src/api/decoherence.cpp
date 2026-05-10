@@ -126,7 +126,7 @@ void mixKrausMap(Qureg qureg, int* qubits, int numQubits, KrausMap map) {
     validate_krausMapIsCPTP(map, __func__); // also checks fields and is-sync
     validate_krausMapMatchesTargets(map, numQubits, __func__);
 
-    localiser_densmatr_krausMap(qureg, map, util_getVector(qubits, numQubits));
+    localiser_densmatr_krausMap(qureg, map, list_getSmallList(qubits, numQubits));
 }
 
 
@@ -149,7 +149,7 @@ void mixSuperOp(Qureg qureg, int* targets, int numTargets, SuperOp superop) {
     validate_superOpDimMatchesTargs(superop, numTargets, __func__);
     validate_mixedAmpsFitInNode(qureg, 2*numTargets, __func__); // superop acts on 2x
 
-    localiser_densmatr_superoperator(qureg, superop, util_getVector(targets, numTargets));
+    localiser_densmatr_superoperator(qureg, superop, list_getSmallList(targets, numTargets));
 }
 
 

@@ -302,6 +302,20 @@ void error_pauliStrSumConjHasIncorrectNumTerms();
 
 
 /*
+ * LIST ERRORS 
+ */
+
+void error_smallListLengthExceededMax();
+
+void error_smallListIndexWasNegative();
+
+void error_smallListIndexExceededLength();
+
+void error_smallListWasEmpty();
+
+
+
+/*
  * UTILITY ERRORS 
  */
 
