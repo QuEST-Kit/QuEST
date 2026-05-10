@@ -160,7 +160,7 @@ int util_getRankWithBraQubitsFlipped(SmallList ketQubits, Qureg qureg) {
 SmallList util_getBraQubits(SmallList ketQubits, Qureg qureg) {
 
     for (int &qubit : ketQubits)
-        qubit += util_getBraQubit(qubit, qureg);
+        qubit = util_getBraQubit(qubit, qureg);
 
     return ketQubits;
 }

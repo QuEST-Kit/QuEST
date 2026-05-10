@@ -1694,7 +1694,7 @@ qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQub
 
     // map outcome to individual qubit outcomes
     auto qubitList = list_getSmallList(qubits, numQubits);
-    auto outcomeList = list_getEmptySmallList();
+    auto outcomeList = util_getConstantList(-1, numQubits);
     getBitsFromInteger(outcomeList.data(), outcome, numQubits);
 
     // project to the outcomes, renormalising the surviving states

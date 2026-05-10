@@ -135,8 +135,9 @@ void removePrefixQubitsAndStates(Qureg qureg, SmallList &qubits, SmallList &stat
 
     for (int i=0; i<oldLength; i++) {
         if (util_isQubitInSuffix(qubits[i], qureg)) {
-            qubits[newLength++] = qubits[i];
-            qubits[newLength++] = states[i];
+            qubits[newLength] = qubits[i];
+            states[newLength] = states[i];
+            newLength++;
         }
     }
 

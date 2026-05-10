@@ -94,6 +94,9 @@ public:
     }
 
     // give SmallList all the familiar methods of std::vector
+    void clear() {
+        length = 0;
+    }
     bool empty() const { 
         return length == 0; 
     }
@@ -117,7 +120,7 @@ public:
 
     void resize(int newLength, int value=0) {
 
-        if (length >= MAX_LIST_LENGTH)
+        if (newLength > MAX_LIST_LENGTH)
             error_smallListLengthExceededMax();
 
         for (int i=length; i<newLength; i++)
@@ -154,7 +157,7 @@ public:
 INLINE SmallList list_getEmptySmallList() {
 
     SmallList out;
-    out.resize(0);
+    out.clear();
     return out;
 }
 
@@ -178,6 +181,9 @@ INLINE SmallList list_getSmallList(const int* begin, const int* end) {
 
 
 INLINE SmallList list_getSmallList(const int* elems, int length) {
+
+    if (elems == nullptr)
+        return list_getEmptySmallList();
 
     return list_getSmallList(elems, elems + length);
 }
