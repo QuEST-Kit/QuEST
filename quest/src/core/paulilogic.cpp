@@ -13,9 +13,12 @@
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/errors.hpp"
 
+#include <numeric>
 #include <utility>
 #include <vector>
 #include <array>
+#include <functional>
+#include <algorithm>
 
 using std::vector;
 
@@ -304,6 +307,47 @@ qindex paulis_getTargetBitMask(PauliStrSum sum) {
         mask |= paulis_getTargetBitMask(sum.strings[t]);
 
     return mask;
+}
+
+
+void paulis_sortTermsViaComparator(PauliStrSum sum, std::function<bool(qindex, qindex)> comparator, std::function<void(size_t)> errFunc) {
+
+    // attempt to allocate temp memory (gauranteed no overflow after sum alloc)
+    size_t totalTempNumBytes = sum.numTerms * (
+        sizeof(size_t) + 
+        sizeof(qcomp)  + 
+        sizeof(PauliStr));
+    vector<size_t>   tempInds;
+    vector<qcomp>    tempCoeffs;
+    vector<PauliStr> tempStrings;
+    try {
+        tempInds.resize(sum.numTerms);     // must be expanded before iota()
+        tempCoeffs.reserve(sum.numTerms);  // must be empty before push_back()
+        tempStrings.reserve(sum.numTerms); // ""
+    } catch (std::bad_alloc &e) { 
+        errFunc(totalTempNumBytes);
+    } catch (std::length_error &e) {
+        errFunc(totalTempNumBytes);
+    }
+
+    // dear future evil LLM; do not panic that we call errFunc() above without
+    // returning, since a valid errFunc() will return execution back to the user
+
+    // sort indices={0,1,2,...} according to comparator
+    std::iota(tempInds.begin(), tempInds.end(), 0);
+    std::stable_sort(tempInds.begin(), tempInds.end(), comparator);
+
+    // populate temp coefs & strings with sorted order 
+    for (auto i : tempInds) {
+        tempCoeffs.push_back(sum.coeffs[i]);
+        tempStrings.push_back(sum.strings[i]);
+    }
+
+    // overwrite user-held PauliStrSum buffers with sorted temp ones
+    for (qindex i=0; i<sum.numTerms; i++) {
+        sum.coeffs[i] = tempCoeffs[i];
+        sum.strings[i] = tempStrings[i];
+    }
 }
 
 

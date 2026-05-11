@@ -32,8 +32,8 @@ qindex getPow2(int);
 qreal getSum(vector<qreal> vec);
 qcomp getSum(qvector);
 qvector getNormalised(qvector);
-qvector getDisceteFourierTransform(qvector);
-qvector getDisceteFourierTransform(qvector in, vector<int> targs);
+qvector getDiscreteFourierTransform(qvector in, bool inverse);
+qvector getDiscreteFourierTransform(qvector in, vector<int> targs, bool inverse);
 
 qcomp   getInnerProduct(qvector bra, qvector ket);
 qmatrix getOuterProduct(qvector ket, qvector bra);

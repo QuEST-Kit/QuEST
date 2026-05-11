@@ -368,7 +368,7 @@ bool util_willSumOverflow(vector<qindex> terms) {
 
 
 /*
- * VECTOR REDUCTION
+ * LIST PROCESSING
  */
 
 qreal util_getSum(vector<qreal> list) {
@@ -1194,6 +1194,7 @@ void tryAllocVector(vector<T> &vec, qindex size, std::function<void()> errFunc) 
     }
 }
 
+void util_tryAllocVector(vector<qindex>   &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
 void util_tryAllocVector(vector<qreal>    &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
 void util_tryAllocVector(vector<qcomp>    &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
 void util_tryAllocVector(vector<qcomp*>   &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }

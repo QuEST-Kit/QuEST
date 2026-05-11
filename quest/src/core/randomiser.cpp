@@ -5,6 +5,7 @@
  * 
  * @author Tyson Jones
  * @author Balint Koczor (patched v3 MSVC seeding)
+ * @author Vasco Ferreira (PauliStrSum permutation)
  */
 
 #include "quest/include/types.h"
@@ -21,6 +22,7 @@
 #include <random>
 #include <limits>
 #include <vector>
+#include <algorithm>
 
 using std::vector;
 
@@ -265,4 +267,15 @@ qcomp rand_getThreadPrivateRandomAmp(std::mt19937_64 &gen, std::normal_distribut
     // https://sumeetkhatri.com/wp-content/uploads/2020/05/random_pure_states.pdf
     qcomp amp = std::sqrt(prob) * std::exp(phase * 1_i);
     return amp;
+}
+
+
+
+/*
+ * LIST SHUFFLING
+ */
+
+void rand_setListToShuffled(vector<qindex>& list) {
+
+    std::shuffle(list.begin(), list.end(), mainGenerator);
 }

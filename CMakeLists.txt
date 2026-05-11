@@ -40,8 +40,6 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 
 # GNUInstallDirs to provide sensible default install directory names
-cmake_path(SET ORG_INSTALL_PATH NORMALIZE "${CMAKE_INSTALL_PREFIX}")
-cmake_path(APPEND CMAKE_INSTALL_PREFIX "quest")
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
@@ -74,10 +72,11 @@ endif()
 
 
 # Library type
-# Shared library by default
-option(BUILD_SHARED_LIBS "Build shared library. Turned ON by default." ON)
-message(STATUS "Shared library is turned ${BUILD_SHARED_LIBS}. Set BUILD_SHARED_LIBS to modify.")
-
+# Shared library by default when we are the top level cmake project
+if(PROJECT_IS_TOP_LEVEL)
+  option(BUILD_SHARED_LIBS "Build shared library. Turned ON by default." ON)
+  message(STATUS "Shared library is turned ${BUILD_SHARED_LIBS}. Set BUILD_SHARED_LIBS to modify.")
+endif ()
 
 # Library naming
 set(LIB_NAME QuEST 
@@ -185,6 +184,8 @@ option(
 )
 message(STATUS "Disabling of deprecated API warnings is turned ${DISABLE_DEPRECATION_WARNINGS}. Set DISABLE_DEPRECATION_WARNINGS to modify.")
 
+option(INSTALL_BINARIES "Whether to include example and user binaries in the install." OFF)
+
 
 
 # ============================
@@ -221,6 +222,26 @@ if(WIN32)
     message(FATAL_ERROR "The deprecated API is not compatible with MSVC.")
   endif()
 
+endif()
+
+
+# Encourage high-performance Release build
+
+# Taken from Kitware's exmaple of problematic code at
+# https://cmake.org/cmake/help/latest/manual/cmake-buildsystem.7.html#build-configurations
+# We have to use it here as we want to message the user! We are handling multiconfig
+# separately anyway.
+string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type)
+
+if(CMAKE_CONFIGURATION_TYPES)
+  message(WARNING
+    "You are using a multi-config generator, so make sure to subsequently "
+    "build with '--config Release' for best performance.")
+elseif(NOT (build_type STREQUAL "release" OR build_type STREQUAL "relwithdebinfo"))
+  message(WARNING
+    "Using a non-release build (CMAKE_BUILD_TYPE='${CMAKE_BUILD_TYPE}') "
+    "can significantly degrade performance. "
+    "Consider using -DCMAKE_BUILD_TYPE=Release.")
 endif()
 
 
@@ -403,6 +424,15 @@ if (ENABLE_CUDA)
   set(CUDA_PROPAGATE_HOST_FLAGS OFF)
   
   set_property(TARGET QuEST PROPERTY CUDA_STANDARD 20)
+
+  # force MSVC to use the modern preprocessor
+  if (MSVC)
+    target_compile_options(QuEST PRIVATE
+      $<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor>
+      $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/Zc:preprocessor>
+    )
+  endif()
+
 endif()
 
 
@@ -470,71 +500,6 @@ set(COMPILE_HIP ${ENABLE_HIP})
 
 
 # ============================
-# Patch CPU performance
-# ============================
-
-
-# Patch performance of CPU std::complex arithmetic operator overloads.
-# The cpu_subroutines.cpp file makes extensive use of std::complex operator
-# overloads, and alas these are significantly slower than hand-rolled 
-# arithmetic, due to their NaN and inf checks, and interference with SIMD.
-# It is crucial to pass additional optimisation flags to this file to restore
-# hand-rolled performance (else QuEST v3 is faster than v4 eep). In theory,
-# we can achieve this with specific, relatively 'safe' flags such as LLVM's:
-#     -ffinite-math-only -fno-signed-zeros -ffp-contract=fast
-# However, it is a nuisance to find equivalent flags for different compilers
-# and monitor their performance vs accuracy trade-offs. So instead, we use the
-# much more aggressive and ubiquitous -Ofast flag to guarantee performance. 
-# This introduces many potentially dangerous optimisations, such as asserting
-# associativity of flops, which would break techniques like Kahan summation.
-# The cpu_subroutines.cpp must ergo be very conscious of these optimisations.
-# We here also explicitly inform the file cpu_subroutines.cpp whether or not
-# we are passing the flags, so it can detect/error when flags are forgotten.
-
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
-
-  # Release build will pass -Ofast when known for the given compiler, and
-  # fallback to giving a performance warning and proceeding with compilation
-
-  if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang|Cray|CrayClang|GNU|HP|Intel|IntelLLVM|NVHPC|NVIDIA|XL|XLClang")
-    set(patch_flags "-Ofast")
-    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=1")
-  elseif (CMAKE_CXX_COMPILER_ID MATCHES "HP")
-    set(patch_flags "+Ofast")
-    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=1")
-  elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    set(patch_flags "/fp:fast")
-    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=1")
-  else()
-    message(WARNING 
-      "The compiler (${CMAKE_CXX_COMPILER_ID}) is unrecognised and so crucial optimisation flags have not been "
-      "passed to the CPU backend. These flags are necessary for full performance when performing complex algebra, "
-      "otherwise a slowdown of 3-50x may be observed. Please edit the root CMakeLists.txt to include flags which are "
-      "equivalent to GNU's -Ofast flag for your compiler (search this warning), or contact the QuEST developers for help."
-    )
-    set(patch_flags "")
-    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=0")
-  endif()
-  
-else()
-
-  # Non-release builds (e.g. Debug) will pass no optimisation flags, and will
-  # communicate to cpu_subroutines.cpp that this is intentional via a macro
-
-  set(patch_flags "")
-  set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=0")
-
-endif()
-
-set_source_files_properties(
-  quest/src/cpu/cpu_subroutines.cpp
-  PROPERTIES
-  COMPILE_FLAGS "${patch_flags} ${patch_macro}"
-)
-
-
-
-# ============================
 # Pass files to library
 # ============================
 
@@ -565,10 +530,12 @@ add_executable(min_example
 )
 target_link_libraries(min_example PRIVATE QuEST::QuEST)
 
-install(TARGETS min_example
-  RUNTIME
-  DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+if (INSTALL_BINARIES)
+  install(TARGETS min_example
+    RUNTIME
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+  )
+endif ()
 
 
 # all examples optionally built
@@ -577,7 +544,7 @@ if (BUILD_EXAMPLES)
 endif()
 
 
-## RATH
+## RPATH
 set(BUILD_RPATH_USE_ORIGIN ON)
 if(APPLE)
   set(_RPATH_ORIGIN "@loader_path")
@@ -623,7 +590,11 @@ if (USER_SOURCE AND OUTPUT_EXE)
 
   add_executable(${OUTPUT_EXE} ${USER_SOURCE})
   target_link_libraries(${OUTPUT_EXE} PUBLIC QuEST)
-  install(TARGETS ${OUTPUT_EXE} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+   
+  if (INSTALL_BINARIES)
+    install(TARGETS ${OUTPUT_EXE} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+  endif()
+  
   setup_quest_rpath(${OUTPUT_EXE})
 endif()
 
@@ -732,3 +703,8 @@ install(
   NAMESPACE QuEST::
   DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
 )
+
+if(PROJECT_IS_TOP_LEVEL)
+  include(CPack)
+endif ()
+

@@ -1669,7 +1669,7 @@ qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQub
 
     // by allocating a temp vector, and validating successful (since exponentially big!)
     vector<qreal> probs;
-    auto callback = [&]() { validate_tempAllocSucceeded(false, numProbs, sizeof(qreal), __func__); };
+    auto callback = [&]() { validate_tempListAllocSucceeded(false, numProbs, sizeof(qreal), __func__); };
     util_tryAllocVector(probs, numProbs, callback);
 
     // populate probs
@@ -1717,6 +1717,11 @@ qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, 
 
 } // end de-mangler
 
+qindex applyMultiQubitMeasurement(Qureg qureg, vector<int> qubits) {
+
+    return applyMultiQubitMeasurement(qureg, qubits.data(), qubits.size());
+}
+
 qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, vector<int> qubits, qreal* probability) {
 
     return applyMultiQubitMeasurementAndGetProb(qureg, qubits.data(), qubits.size(), probability);
@@ -1736,7 +1741,7 @@ qreal applyForcedMultiQubitMeasurement(Qureg qureg, vector<int> qubits, vector<i
 
 extern "C" {
 
-void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets) {
+void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets, bool inverse) {
     validate_quregFields(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
 
@@ -1744,20 +1749,37 @@ void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets) {
     /// change this placeholder implementation to the bespoke, optimised routine,
     /// wherein each contiguous controlled-phase gate is merged
 
-    for (int n=numTargets-1; n>=0; n--) {
-        applyHadamard(qureg, targets[n]);
-        for (int m=0; m<n; m++) {
-            qreal arg = const_PI / powerOf2(m+1);
-            applyTwoQubitPhaseShift(qureg, targets[n], targets[n-m-1], arg);
-        }
-    }
-
     int mid = numTargets/2; // floors
-    for (int n=0; n<mid; n++)
-        applySwap(qureg, targets[n], targets[numTargets-1-n]);
+
+    // don't think it is worth overcomplicating this to avoid slight repetition
+    if (inverse) {
+        for (int n=0; n<mid; n++)
+            applySwap(qureg, targets[n], targets[numTargets-1-n]);
+
+        for (int n=0; n<numTargets; n++) {
+            for (int m=0; m<n; m++) {
+                qreal arg = - const_PI / powerOf2(m+1);
+                applyTwoQubitPhaseShift(qureg, targets[n], targets[n-m-1], arg);
+            }
+            applyHadamard(qureg, targets[n]);
+        }
+
+    } else {
+        for (int n=numTargets-1; n>=0; n--) {
+            applyHadamard(qureg, targets[n]);
+
+            for (int m=0; m<n; m++) {
+                qreal arg = const_PI / powerOf2(m+1);
+                applyTwoQubitPhaseShift(qureg, targets[n], targets[n-m-1], arg);
+            }
+        }
+
+        for (int n=0; n<mid; n++)
+            applySwap(qureg, targets[n], targets[numTargets-1-n]);
+    }
 }
 
-void applyFullQuantumFourierTransform(Qureg qureg) {
+void applyFullQuantumFourierTransform(Qureg qureg, bool inverse) {
     validate_quregFields(qureg, __func__);
 
     // tiny; no need to validate alloc
@@ -1765,12 +1787,12 @@ void applyFullQuantumFourierTransform(Qureg qureg) {
     for (size_t i=0; i<targets.size(); i++)
         targets[i] = i;
 
-    applyQuantumFourierTransform(qureg, targets.data(), targets.size());
+    applyQuantumFourierTransform(qureg, targets.data(), targets.size(), inverse);
 }
 
 } // end de-mangler
 
-void applyQuantumFourierTransform(Qureg qureg, vector<int> targets) {
+void applyQuantumFourierTransform(Qureg qureg, vector<int> targets, bool inverse) {
 
-    applyQuantumFourierTransform(qureg, targets.data(), targets.size());
+    applyQuantumFourierTransform(qureg, targets.data(), targets.size(), inverse);
 }

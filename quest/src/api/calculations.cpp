@@ -430,7 +430,7 @@ vector<qreal> calcProbsOfAllMultiQubitOutcomes(Qureg qureg, vector<int> qubits) 
     // allocate temp vector, and validate successful (since it's exponentially large!)
     vector<qreal> out;
     qindex numOut = powerOf2(qubits.size());
-    auto callback = [&]() { validate_tempAllocSucceeded(false, numOut, sizeof(qreal), __func__); };
+    auto callback = [&]() { validate_tempListAllocSucceeded(false, numOut, sizeof(qreal), __func__); };
     util_tryAllocVector(out, numOut, callback);
 
     calcProbsOfAllMultiQubitOutcomes(out.data(), qureg, qubits.data(), qubits.size());

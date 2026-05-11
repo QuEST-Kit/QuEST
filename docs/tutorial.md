@@ -626,7 +626,8 @@ applyCompMatr1(qureg, 0, m);
 QuEST includes a few convenience functions for effecting [QFT](https://quest-kit.github.io/QuEST/group__op__qft.html) and [Trotter](https://quest-kit.github.io/QuEST/group__op__paulistrsum.html) circuits.
 
 ```cpp
-applyQuantumFourierTransform(qureg, targets, 3);
+bool inverse = false;
+applyQuantumFourierTransform(qureg, targets, 3, inverse);
 
 qreal time = .3;
 int order = 4;

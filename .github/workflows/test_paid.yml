@@ -1,6 +1,13 @@
 # Tests execution of v4 unit and integration tests
 # on paid runners using multithreading, GPU-
 # acceleration and distribution, only on Linux. 
+#
+# Note that the blow tests are deliberately
+# excluding Trotter functions because they are
+# slow and expensive, and the functions merely
+# invoke other functions existed elsewhere, in
+# a backend agnostic way.
+#
 # As of 12/03/2025, these "large runners" cost:
 # - 16c/min for each ARM runner (OMP, MPI)
 # - 7c/min for each GPU runner (CUDA, cuQuantum)
@@ -79,11 +86,15 @@ jobs:
     env:
       build_dir: "build"
 
+      # don't test Trotter functions (ctest is func-name regex, catch is tag)
+      test_exec: ./tests/tests
+      ctest_flag: "-E Trotter"
+      catch_flag: '"~[trotterisation]"'
+
       # GPU runner has a Tesla T4 16 GB
       cuda_arch: 75
 
       # CPU/MPI runner has 64 cores
-      test_exec: ./tests/tests
       num_mpi_nodes: 16
       num_mpi_threads: 4
       num_omp_threads: 64
@@ -150,19 +161,19 @@ jobs:
         if: ${{ matrix.mpi == 'ON' }}
         run: |
           OMP_NUM_THREADS=${{ env.num_mpi_threads }} \
-          mpiexec -n ${{ env.num_mpi_nodes }} ${{ env.test_exec }}
+          mpiexec -n ${{ env.num_mpi_nodes }} ${{ env.test_exec }} ${{ env.catch_flag }}
         working-directory: ${{ env.build_dir }}
     
       - name: Run GPU v4 tests
         if: ${{ matrix.cuda == 'ON' }}
-        run: ctest --output-on-failure
+        run: ctest --output-on-failure ${{ env.ctest_flag }}
         working-directory: ${{ env.build_dir }}
 
       - name: Run multithreaded v4 tests (64 threads ARM)
         if: ${{ matrix.cuda == 'OFF' && matrix.mpi == 'OFF' }}
         run: |
           OMP_NUM_THREADS=${{ env.num_omp_threads }} \
-          ctest --output-on-failure
+          ctest --output-on-failure ${{ env.ctest_flag }}
         working-directory: ${{ env.build_dir }}
 
     
@@ -202,7 +213,7 @@ jobs:
     env:
       build_dir: "build"
 
-      # we will only execute mixed-deployment unit tests
+      # we will only execute mixed-deployment unit tests (no overlap with Trotter)
       test_exec: ./tests/tests
       test_flag: "[mixed]"
 

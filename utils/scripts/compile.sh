@@ -312,8 +312,6 @@ echo "deployment modes:"
 ALL_LINK_FLAGS="${USER_LINK_FLAGS}"
 
 # choose compiler and flags for CPU/OMP files
-CPU_FILES_FLAGS='-Ofast -DCOMPLEX_OVERLOADS_PATCHED=1'
-
 if [ $ENABLE_MULTITHREADING == 1 ]
 then
     echo "${INDENT}(multithreading enabled)"

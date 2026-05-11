@@ -328,10 +328,14 @@ TEST_CASE( "createPauliStrSum", TEST_CATEGORY ) {
             REQUIRE_THROWS_WITH( createPauliStrSum(nullptr, nullptr, numTerms), ContainsSubstring("number of terms must be a positive integer") );
         }
 
+        SECTION( "overflows size_t" ) {
+
+            REQUIRE_THROWS_WITH( createPauliStrSum(nullptr, nullptr, 1LL << 60), ContainsSubstring("overflow size_t") );
+        }
+
         SECTION( "exceeds memory" ) {
 
-            // can choose even a number of terms so large that its size (in bytes) overflows
-            REQUIRE_THROWS_WITH( createPauliStrSum(nullptr, nullptr, 1LL << 60), ContainsSubstring("cannot fit in the available RAM") );
+            REQUIRE_THROWS_WITH( createPauliStrSum(nullptr, nullptr, 1LL << 50), ContainsSubstring("cannot fit in the available RAM") );
         }
 
         SECTION( "mismatching lengths" ) {
@@ -584,6 +588,61 @@ TEST_CASE( "destroyPauliStrSum", TEST_CATEGORY ) {
         }
         #endif
         #endif
+    }
+}
+
+TEST_CASE( "sortPauliStrSumLexicographic", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        vector<qcomp> coeffs = {0.1_i, 2+1_i, 5, 3+4_i};
+        vector<PauliStr> strings = {
+            getPauliStr("XY", {31,32}),
+            getPauliStr("YX", {0,1}),
+            getPauliStr("II", {0,1}),
+            getPauliStr("YY", {31,32})
+        };
+
+        PauliStrSum sum = createPauliStrSum(strings, coeffs);
+        sortPauliStrSumLexicographic(sum);
+
+        REQUIRE(sum.coeffs[0] == 5+0_i);
+        REQUIRE(sum.coeffs[1] == 2+1_i);
+        REQUIRE(sum.coeffs[3] == 3+4_i);
+
+        REQUIRE(sum.strings[0].lowPaulis == 0);
+        REQUIRE(sum.strings[1].lowPaulis == 2 + 1*4);
+        REQUIRE(sum.strings[3].highPaulis == 2);
+        REQUIRE(sum.strings[3].lowPaulis == 2*std::pow(4, 31));
+
+        destroyPauliStrSum(sum);
+    }
+}
+
+TEST_CASE( "sortPauliStrSumMagnitude", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+
+        vector<qcomp> coeffs = {0.1_i, 2+1_i, 5, 3+4_i};
+        vector<PauliStr> strings = {
+            getPauliStr("XY", {0,1}),
+            getPauliStr("ZX", {0,1}),
+            getPauliStr("II", {0,1}),
+            getPauliStr("YZ", {0,1})
+        };
+
+        PauliStrSum sum = createPauliStrSum(strings, coeffs);
+        sortPauliStrSumMagnitude(sum);
+
+        REQUIRE(sum.coeffs[0] == 5+0_i);
+        REQUIRE(sum.coeffs[1] == 3+4_i);
+        REQUIRE(sum.coeffs[3] == 0+0.1_i);
+
+        REQUIRE(sum.strings[0].lowPaulis == 0);
+        REQUIRE(sum.strings[1].lowPaulis == 2 + 3*4);
+        REQUIRE(sum.strings[3].lowPaulis == 1 + 2*4);
+
+        destroyPauliStrSum(sum);
     }
 }
 

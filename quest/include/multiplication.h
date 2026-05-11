@@ -746,7 +746,6 @@ extern "C" {
 
 
 /// @notyetdoced
-/// @notyetvalidated
 /// @see
 /// - leftapplyCompMatr1()
 /// - applyQubitProjector()
@@ -754,7 +753,6 @@ void leftapplyQubitProjector(Qureg qureg, int qubit, int outcome);
 
 
 /// @notyetdoced
-/// @notyetvalidated
 /// @see
 /// - leftapplyCompMatr1()
 /// - applyMultiQubitProjector()
@@ -762,7 +760,6 @@ void leftapplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int n
 
 
 /// @notyetdoced
-/// @notyetvalidated
 /// @see
 /// - rightapplyCompMatr1()
 /// - applyQubitProjector()
@@ -781,6 +778,25 @@ void rightapplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int 
 #ifdef __cplusplus
 }
 #endif
+
+#ifdef __cplusplus
+
+
+/// @notyetdoced
+/// @cppvectoroverload
+/// @see leftapplyMultiQubitProjector()
+void leftapplyMultiQubitProjector(Qureg qureg, std::vector<int> qubits, std::vector<int> outcomes);
+
+
+/// @notyetdoced
+/// @cppvectoroverload
+/// @see rightapplyMultiQubitProjector()
+void rightapplyMultiQubitProjector(Qureg qureg, std::vector<int> qubits, std::vector<int> outcomes);
+
+
+#endif
+
+/** @} */
 
 
 

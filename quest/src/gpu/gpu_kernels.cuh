@@ -22,12 +22,8 @@
 #include "quest/include/types.h"
 
 #include "quest/src/core/bitwise.hpp"
-#include "quest/src/gpu/gpu_types.cuh"
-
-// kernels/thrust must use cu_qcomp, never qcomp
-#define USE_CU_QCOMP
 #include "quest/src/core/fastmath.hpp"
-#undef USE_CU_QCOMP
+#include "quest/src/gpu/gpu_qcomp.cuh"
 
 #if ! COMPILE_CUDA
     #error "A file being compiled somehow included gpu_kernels.hpp despite QuEST not being compiled in GPU-accelerated mode."
@@ -107,6 +103,7 @@ template <int NumCtrls>
 __global__ void kernel_statevec_packAmpsIntoBuffer(
     cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
     __grid_constant__ const QubitList_t qubits, qindex qubitStateMask
+
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -122,7 +119,7 @@ __global__ void kernel_statevec_packAmpsIntoBuffer(
 
 
 __global__ void kernel_statevec_packPairSummedAmpsIntoBuffer(
-    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
+    gpu_qcomp* amps, gpu_qcomp* buffer, qindex numThreads, 
     int qubit1, int qubit2, int qubit3, int bit2
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -158,7 +155,7 @@ __global__ void kernel_statevec_anyCtrlSwap_subA(
     qindex i10 = flipTwoBits(i01, targ2, targ1);
 
     // swap amps
-    cu_qcomp amp01 = amps[i01];
+    gpu_qcomp amp01 = amps[i01];
     amps[i01] = amps[i10];
     amps[i10] = amp01;
 }
@@ -223,8 +220,8 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
     qindex i1 = flipBit(i0, targ);
 
     // note amps are strided by 2^targ
-    cu_qcomp amp0 = amps[i0];
-    cu_qcomp amp1 = amps[i1];
+    gpu_qcomp amp0 = amps[i0];
+    gpu_qcomp amp1 = amps[i1];
 
     amps[i0] = m00*amp0 + m01*amp1;
     amps[i1] = m10*amp0 + m11*amp1;
@@ -277,10 +274,10 @@ __global__ void kernel_statevec_anyCtrlTwoTargDenseMatr_sub(
     qindex i11 = flipBit(i01, targ2);
 
     // note amps00 and amps01 are strided by 2^targ1, and amps00 and amps10 are strided by 2^targ2
-    cu_qcomp amp00 = amps[i00];
-    cu_qcomp amp01 = amps[i01];
-    cu_qcomp amp10 = amps[i10];
-    cu_qcomp amp11 = amps[i11];
+    gpu_qcomp amp00 = amps[i00];
+    gpu_qcomp amp01 = amps[i01];
+    gpu_qcomp amp10 = amps[i10];
+    gpu_qcomp amp11 = amps[i11];
 
     // amps[i_n] = sum_j elems[n][j] amp[i_n]
     amps[i00] = m00*amp00 + m01*amp01 + m02*amp10 + m03*amp11;
@@ -322,7 +319,7 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
     // spill to local memory). Hence, this _subA() function is not a subroutine 
     // despite some logic being common to non-compile-time _subB(), and hence
     // why the loops below are explicitly compile-time unrolled
-    REGISTER cu_qcomp privateCache[1 << NumTargs];
+    REGISTER gpu_qcomp privateCache[1 << NumTargs];
 
     // we know NumTargs <= 5, though NumCtrls is permitted anything (including -1)
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.length);
@@ -361,12 +358,12 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
                 h = fast_getMatrixFlatIndex(k, l, numTargAmps);
 
             // optionally conjugate matrix elem
-            cu_qcomp elem = flatMatrElems[h];
+            gpu_qcomp elem = flatMatrElems[h];
             if constexpr (ApplyConj)
-                elem.y *= -1;
+                elem = conj(elem);
 
             // thread-private cache is accessed with compile-time known index
-            amps[i] = amps[i] + (elem * privateCache[l]);
+            amps[i] += elem * privateCache[l];
         }
     }
 }
@@ -422,12 +419,12 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
                 else
                     h = fast_getMatrixFlatIndex(k, l, numTargAmps);
 
-                cu_qcomp elem = flatMatrElems[h];
+                gpu_qcomp elem = flatMatrElems[h];
 
                 if constexpr (ApplyConj)
-                    elem.y *= -1;
+                    elem = conj(elem);
 
-                amps[i] = amps[i] + (elem * globalCache[j]);
+                amps[i] += elem * globalCache[j];
 
                 /// @todo
                 /// qureg.cpuAmps[i] is being serially updated by only this thread,
@@ -474,7 +471,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
     qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
 
     int b = getBit(i, targ);
-    amps[j] = amps[j] * (m1 + b * (m2 - m1));
+    amps[j] *= m1 + b * (m2 - m1);
 }
 
 
@@ -514,8 +511,8 @@ __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
 
     // k = local elem index
     int k = getTwoBits(i, targ2, targ1);
-    cu_qcomp elems[] = {m1, m2, m3, m4};
-    amps[j] = amps[j] * elems[k];
+    gpu_qcomp elems[] = {m1, m2, m3, m4};
+    amps[j] *= elems[k];
 }
 
 
@@ -557,15 +554,15 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     // t = value of targeted bits, which may be in the prefix substate
     qindex t = getValueOfBits(i, targs.indices, numTargBits);
 
-    cu_qcomp elem = elems[t];
+    gpu_qcomp elem = elems[t];
 
     if constexpr (HasPower)
-        elem = getCompPower(elem, exponent);
+        elem = pow(elem, exponent);
 
     if constexpr (ApplyConj)
-        elem.y *= -1;
+        elem = conj(elem);
 
-    amps[j] = amps[j] * elem;
+    amps[j] *= elem;
 }
 
 
@@ -577,20 +574,20 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
 
 template <bool HasPower, bool ApplyLeft, bool ApplyRight, bool ConjRight> 
 __global__ void kernel_densmatr_allTargDiagMatr_sub(
-    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
-    cu_qcomp* elems, qindex numElems, cu_qcomp exponent
+    gpu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode,
+    gpu_qcomp* elems, qindex numElems, gpu_qcomp exponent
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    cu_qcomp fac = getCuQcomp(1, 0);
+    gpu_qcomp fac = getGpuQcomp(1, 0);
 
     if constexpr (ApplyLeft) {
 
         qindex i = fast_getQuregGlobalRowFromFlatIndex(n, numElems);
-        cu_qcomp term = elems[i];
+        gpu_qcomp term = elems[i];
 
         if constexpr (HasPower)
-            term = getCompPower(term, exponent);
+            term = pow(term, exponent);
 
         fac = term;
     }
@@ -599,18 +596,18 @@ __global__ void kernel_densmatr_allTargDiagMatr_sub(
 
         qindex m = concatenateBits(rank, n, logNumAmpsPerNode);
         qindex j = fast_getQuregGlobalColFromFlatIndex(m, numElems);
-        cu_qcomp term = elems[j];
+        gpu_qcomp term = elems[j];
 
         if constexpr (HasPower)
-            term = getCompPower(term, exponent);
+            term = pow(term, exponent);
 
         if constexpr (ConjRight)
-            term.y *= -1;
+            term = conj(term);
 
-        fac = fac * term;
+        fac *= term;
     }
 
-    amps[n] = amps[n] * fac;
+    amps[n] *= fac;
 }
 
 
@@ -648,11 +645,11 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
     // determine whether to multiply amps by +-1 or +-i
     int parA = cudaGetBitMaskParity(iA & maskYZ);
     int parB = cudaGetBitMaskParity(iB & maskYZ);
-    cu_qcomp coeffA = powI * fast_getPlusOrMinusOne(parA);
-    cu_qcomp coeffB = powI * fast_getPlusOrMinusOne(parB);
+    gpu_qcomp coeffA = powI * fast_getPlusOrMinusOne(parA);
+    gpu_qcomp coeffB = powI * fast_getPlusOrMinusOne(parB);
 
-    cu_qcomp ampA = amps[iA];
-    cu_qcomp ampB = amps[iB];
+    gpu_qcomp ampA = amps[iA];
+    gpu_qcomp ampB = amps[iB];
 
     // mix or swap scaled amp pair
     amps[iA] = (ampFac * ampA) + (pairAmpFac * coeffB * ampB);
@@ -665,7 +662,7 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
     cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads,
     __grid_constant__ const QubitList_t ctrls, qindex ctrlStateMask,
     qindex maskXY, qindex maskYZ, qindex bufferMaskXY,
-    cu_qcomp powI, cu_qcomp thisAmpFac, cu_qcomp otherAmpFac
+    gpu_qcomp powI, gpu_qcomp thisAmpFac, gpu_qcomp otherAmpFac
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -683,7 +680,7 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
 
     // determine whether to multiply buffer amp by +-1 or +-i
     int par = cudaGetBitMaskParity(k & maskYZ);
-    cu_qcomp coeff = powI * fast_getPlusOrMinusOne(par);
+    gpu_qcomp coeff = powI * fast_getPlusOrMinusOne(par);
 
     amps[i] = (thisAmpFac * amps[i]) + (otherAmpFac * coeff * buffer[j]);
 }
@@ -712,8 +709,8 @@ __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     // apply phase to amp depending on parity of targets in global index 
     int p = cudaGetBitMaskParity(i & targMask);
 
-    cu_qcomp facs[] = {fac0, fac1};
-    amps[i] = amps[i] * facs[p];
+    gpu_qcomp facs[] = {fac0, fac1};
+    amps[i] *= facs[p];
 }
 
 
@@ -725,18 +722,18 @@ __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
 
 template <int NumQuregs> 
 __global__ void kernel_statevec_setQuregToWeightedSum_sub(
-    cu_qcomp* outAmps, qindex numThreads,
-    cu_qcomp* coeffs, cu_qcomp** inAmps, int numQuregs
+    gpu_qcomp* outAmps, qindex numThreads,
+    gpu_qcomp* coeffs, gpu_qcomp** inAmps, int numQuregs
 ) {
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll below loop
     SET_VAR_AT_COMPILE_TIME(int, numInner, NumQuregs, numQuregs);
 
-    cu_qcomp amp = getCuQcomp(0, 0);
+    gpu_qcomp amp = getGpuQcomp(0, 0);
 
     for (int q=0; q<numInner; q++)
-        amp = amp + coeffs[q] * inAmps[q][n];
+        amp += coeffs[q] * inAmps[q][n];
 
     // must not modify outAmps[n] before computing the amp 
     // since outAmps can legally appear among inAmps
@@ -750,7 +747,7 @@ __global__ void kernel_statevec_setQuregToWeightedSum_sub(
 
 
 __global__ void kernel_densmatr_mixQureg_subB(
-    qreal outProb, cu_qcomp* outAmps, qreal inProb, cu_qcomp* inAmps,
+    qreal outProb, gpu_qcomp* outAmps, qreal inProb, gpu_qcomp* inAmps,
     qindex numThreads, qindex numInAmps
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -759,15 +756,15 @@ __global__ void kernel_densmatr_mixQureg_subB(
     qindex i = n % numInAmps;
     qindex j = n / numInAmps;
 
-    cu_qcomp iAmp = inAmps[i];
-    cu_qcomp jAmp = inAmps[j]; jAmp.y *= -1; // conj
+    gpu_qcomp iAmp = inAmps[i];
+    gpu_qcomp jAmp = conj(inAmps[j]);
     
     outAmps[n] = (outProb * outAmps[n]) + (inProb * iAmp * jAmp);
 }
 
 
 __global__ void kernel_densmatr_mixQureg_subC(
-    qreal outProb, cu_qcomp* outAmps, qreal inProb, cu_qcomp* inAmps,
+    qreal outProb, gpu_qcomp* outAmps, qreal inProb, gpu_qcomp* inAmps,
     qindex numThreads, int rank, qindex numInAmps, qindex logNumOutAmpsPerNode
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -779,8 +776,8 @@ __global__ void kernel_densmatr_mixQureg_subC(
     qindex i = m % numInAmps;
     qindex j = m / numInAmps;
 
-    cu_qcomp iAmp = inAmps[i];
-    cu_qcomp jAmp = inAmps[j]; jAmp.y *= -1; // conj
+    gpu_qcomp iAmp = inAmps[i];
+    gpu_qcomp jAmp = conj(inAmps[j]);
     
     outAmps[n] = (outProb * outAmps[n]) + (inProb * iAmp * jAmp);
 }
@@ -793,7 +790,7 @@ __global__ void kernel_densmatr_mixQureg_subC(
 
 
 __global__ void kernel_densmatr_oneQubitDephasing_subA(
-    cu_qcomp* amps, qindex numThreads, 
+    gpu_qcomp* amps, qindex numThreads, 
     int ketQubit, int braQubit, qreal fac
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -807,13 +804,13 @@ __global__ void kernel_densmatr_oneQubitDephasing_subA(
     qindex i01 = insertTwoBits(n, braQubit, 0, ketQubit, 1);
     qindex i10 = insertTwoBits(n, braQubit, 1, ketQubit, 0);
 
-    amps[i01] = amps[i01] * fac;
-    amps[i10] = amps[i10] * fac;
+    amps[i01] *= fac;
+    amps[i10] *= fac;
 }
 
 
 __global__ void kernel_densmatr_oneQubitDephasing_subB(
-    cu_qcomp* amps, qindex numThreads, 
+    gpu_qcomp* amps, qindex numThreads, 
     int ketQubit, int braBit, qreal fac
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -825,7 +822,7 @@ __global__ void kernel_densmatr_oneQubitDephasing_subB(
 
     // i = nth local index where bra-qubit differs from ket-qubit
     qindex i = insertBit(n, ketQubit, ! braBit);
-    amps[i] = amps[i] * fac;
+    amps[i] *= fac;
 }
 
 
@@ -833,7 +830,7 @@ __global__ void kernel_densmatr_oneQubitDephasing_subB(
 
 
 __global__ void kernel_densmatr_twoQubitDephasing_subB(
-    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, // numAmps, not numCols
+    gpu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, // numAmps, not numCols
     int ketQubit1, int ketQubit2, int braQubit1, int braQubit2, qreal term
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -848,7 +845,7 @@ __global__ void kernel_densmatr_twoQubitDephasing_subB(
     int flag = bitA | bitB;
 
     // by multiplying by 1 or (1 + term)
-    amps[n] = amps[n] * ((term * flag) + 1);
+    amps[n] *= (term * flag) + 1;
 }
 
 
@@ -859,7 +856,7 @@ __global__ void kernel_densmatr_twoQubitDephasing_subB(
 
 
 __global__ void kernel_densmatr_oneQubitDepolarising_subA(
-    cu_qcomp* amps, qindex numThreads, 
+    gpu_qcomp* amps, qindex numThreads, 
     int ketQubit, int braQubit, qreal facAA, qreal facBB, qreal facAB
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -871,16 +868,16 @@ __global__ void kernel_densmatr_oneQubitDepolarising_subA(
     qindex i11 = flipBit(i01, braQubit);
 
     // modify 4 amps, mixing a pair, and scaling the other
-    cu_qcomp amp00 = amps[i00];
+    gpu_qcomp amp00 = amps[i00];
     amps[i00] = (facAA * amp00) + (facBB * amps[i11]);
-    amps[i01] = amps[i01] * facAB;
-    amps[i10] = amps[i10] * facAB;
+    amps[i01] *= facAB;
+    amps[i10] *= facAB;
     amps[i11] = (facAA * amps[i11]) + (facBB * amp00);
 }
 
 
 __global__ void kernel_densmatr_oneQubitDepolarising_subB(
-    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
+    gpu_qcomp* amps, gpu_qcomp* buffer, qindex numThreads, 
     int ketQubit, int braBit, qreal facAA, qreal facBB, qreal facAB
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -891,7 +888,7 @@ __global__ void kernel_densmatr_oneQubitDepolarising_subB(
 
     // iAB = nth local index where ket qubit disagrees with bra qubit
     qindex iAB = insertBit(n, ketQubit, ! braBit);
-    amps[iAB] = facAB * amps[iAB];
+    amps[iAB] *= facAB;
 }
 
 
@@ -902,7 +899,7 @@ __global__ void kernel_densmatr_oneQubitDepolarising_subB(
 
 
 __global__ void kernel_densmatr_twoQubitDepolarising_subA(
-    cu_qcomp* amps, qindex numThreads, 
+    gpu_qcomp* amps, qindex numThreads, 
     int ketQb1, int ketQb2, int braQb1, int braQb2, qreal c3
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -913,12 +910,12 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subA(
     int mod   = !(flag1 & flag2);
 
     // multiply amp by 1 or (1 + c3)
-    amps[n] = amps[n] * (1 + c3 * mod);
+    amps[n] *= 1 + c3 * mod;
 }
 
 
 __global__ void kernel_densmatr_twoQubitDepolarising_subB(
-    cu_qcomp* amps, qindex numThreads, 
+    gpu_qcomp* amps, qindex numThreads, 
     int ketQb1, int ketQb2, int braQb1, int braQb2, qreal c1alt, qreal c2
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -930,7 +927,7 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subB(
     qindex i1111 = flipTwoBits(i0101, braQb2, ketQb2);
     
     // mix 1/16 of all amps in groups of 4
-    cu_qcomp term = amps[i0000] + amps[i0101] + amps[i1010] + amps[i1111];
+    gpu_qcomp term = amps[i0000] + amps[i0101] + amps[i1010] + amps[i1111];
 
     amps[i0000] = c1alt*amps[i0000] + c2*term;
     amps[i0101] = c1alt*amps[i0101] + c2*term;
@@ -940,7 +937,7 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subB(
 
 
 __global__ void kernel_densmatr_twoQubitDepolarising_subC(
-    cu_qcomp* amps, qindex numThreads, 
+    gpu_qcomp* amps, qindex numThreads, 
     int ketQb1, int ketQb2, int braQb1, int braBit2, qreal c3
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -956,12 +953,12 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subC(
     bool mod   = !(flag1 & flag2);
 
     // scale amp by 1 or (1 + c3)
-    amps[n] = amps[n] * (1 + c3 * mod);
+    amps[n] *= 1 + c3 * mod;
 }
 
 
 __global__ void kernel_densmatr_twoQubitDepolarising_subD(
-    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
+    gpu_qcomp* amps, gpu_qcomp* buffer, qindex numThreads, 
     int ketQb1, int ketQb2, int braQb1, int braBit2, qreal c1, qreal c2
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -972,8 +969,8 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subD(
     qindex i1b1 = flipTwoBits(i0b0, braQb1, ketQb1);
 
     // mix pair of amps using buffer
-    cu_qcomp amp0b0 = amps[i0b0];
-    cu_qcomp amp1b1 = amps[i1b1];
+    gpu_qcomp amp0b0 = amps[i0b0];
+    gpu_qcomp amp1b1 = amps[i1b1];
 
     amps[i0b0] = c1*amp0b0 + c2*(amp1b1 + buffer[n]);
     amps[i1b1] = c1*amp1b1 + c2*(amp0b0 + buffer[n]);
@@ -981,7 +978,7 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subD(
 
 
 __global__ void kernel_densmatr_twoQubitDepolarising_subE(
-    cu_qcomp* amps, qindex numThreads, 
+    gpu_qcomp* amps, qindex numThreads, 
     int ketQb1, int ketQb2, int braBit1, int braBit2, qreal fac0, qreal fac1
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -992,12 +989,12 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subE(
     bool flag = (same1 & same2);
 
     // scale amp by c1 or (1+c3)
-    amps[n] = amps[n] * (fac1 * flag + fac0);
+    amps[n] *= fac1 * flag + fac0;
 }
 
 
 __global__ void kernel_densmatr_twoQubitDepolarising_subF(
-    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
+    gpu_qcomp* amps, gpu_qcomp* buffer, qindex numThreads, 
     int ketQb1, int ketQb2, int braBit1, int braBit2, qreal c2
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -1006,7 +1003,7 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subF(
     qindex i = insertTwoBits(n, ketQb2, braBit2, ketQb1, braBit1);
 
     // mix local amp with received buffer amp
-    amps[i] = amps[i] + (c2 * buffer[n]);
+    amps[i] += c2 * buffer[n];
 }
 
 
@@ -1017,7 +1014,7 @@ __global__ void kernel_densmatr_twoQubitDepolarising_subF(
 
 
 __global__ void kernel_densmatr_oneQubitPauliChannel_subA(
-    cu_qcomp* amps, qindex numThreads, int ketQubit, int braQubit, 
+    gpu_qcomp* amps, qindex numThreads, int ketQubit, int braQubit, 
     qreal facAA, qreal facBB, qreal facAB, qreal facBA
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -1029,10 +1026,10 @@ __global__ void kernel_densmatr_oneQubitPauliChannel_subA(
     qindex i11 = flipBit(i01, braQubit);
 
     // modify 4 amps in 2 separable pairs
-    cu_qcomp amp00 = amps[i00];
-    cu_qcomp amp01 = amps[i01];
-    cu_qcomp amp10 = amps[i10];
-    cu_qcomp amp11 = amps[i11];
+    gpu_qcomp amp00 = amps[i00];
+    gpu_qcomp amp01 = amps[i01];
+    gpu_qcomp amp10 = amps[i10];
+    gpu_qcomp amp11 = amps[i11];
 
     amps[i00] = (facAA * amp00) + (facBB * amp11);
     amps[i01] = (facAB * amp01) + (facBA * amp10);
@@ -1042,7 +1039,7 @@ __global__ void kernel_densmatr_oneQubitPauliChannel_subA(
 
 
 __global__ void kernel_densmatr_oneQubitPauliChannel_subB(
-    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
+    gpu_qcomp* amps, gpu_qcomp* buffer, qindex numThreads, 
     int ketQubit, int braBit, qreal facAA, qreal facBB, qreal facAB, qreal facBA
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -1070,7 +1067,7 @@ __global__ void kernel_densmatr_oneQubitPauliChannel_subB(
 
 
 __global__ void kernel_densmatr_oneQubitDamping_subA(
-    cu_qcomp* amps, qindex numThreads,
+    gpu_qcomp* amps, qindex numThreads,
     int ketQubit, int braQubit, qreal prob, qreal c1, qreal c2
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -1082,17 +1079,17 @@ __global__ void kernel_densmatr_oneQubitDamping_subA(
     qindex i11 = flipBit(i01, braQubit);
     
     // mix both-zero amp with both-one amp (but not vice versa)
-    amps[i00] = amps[i00] + (prob * amps[i11]);
+    amps[i00] += prob * amps[i11];
 
     // scale other amps
-    amps[i01] = amps[i01] * c1;
-    amps[i10] = amps[i10] * c1;
-    amps[i11] = amps[i11] * c2;
+    amps[i01] *= c1;
+    amps[i10] *= c1;
+    amps[i11] *= c2;
 }
 
 
 __global__ void kernel_densmatr_oneQubitDamping_subB(
-    cu_qcomp* amps, qindex numThreads,
+    gpu_qcomp* amps, qindex numThreads,
     int qubit, qreal c2
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -1104,12 +1101,12 @@ __global__ void kernel_densmatr_oneQubitDamping_subB(
 
     // i = nth local index where qubit=1
     qindex i = insertBit(n, qubit, 1);
-    amps[i] = amps[i] * c2;
+    amps[i] *= c2;
 }
 
 
 __global__ void kernel_densmatr_oneQubitDamping_subC(
-    cu_qcomp* amps, qindex numThreads,
+    gpu_qcomp* amps, qindex numThreads,
     int ketQubit, int braBit, qreal c1
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -1121,19 +1118,19 @@ __global__ void kernel_densmatr_oneQubitDamping_subC(
 
     // i = nth local index where ket differs from bra
     qindex i = insertBit(n, ketQubit, ! braBit);
-    amps[i] = amps[i] * c1;
+    amps[i] *= c1;
 }
 
 
 __global__ void kernel_densmatr_oneQubitDamping_subD(
-    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads,
+    gpu_qcomp* amps, gpu_qcomp* buffer, qindex numThreads,
     int qubit, qreal prob
 ) {
     GET_THREAD_IND(n, numThreads);
 
     // i = nth local index where ket is 0
     qindex i = insertBit(n, qubit, 0);
-    amps[i] = amps[i] + (prob * buffer[n]);
+    amps[i] += prob * buffer[n];
 }
 
 
@@ -1156,7 +1153,7 @@ __global__ void kernel_densmatr_partialTrace_sub(
     SET_VAR_AT_COMPILE_TIME(int, numTargPairs, NumTargs, ketTargs.length);
 
     // may be inferred at compile-time
-    int numAllTargs = 2*numTargPairs;
+    int numAllTargs = 2 * numTargPairs;
     qindex numIts = powerOf2(numTargPairs);
 
     /// @todo
@@ -1168,7 +1165,7 @@ __global__ void kernel_densmatr_partialTrace_sub(
     qindex k = insertBits(n, allTargs.indices, numAllTargs, 0); // loop may be unrolled
 
     // each outQureg amp results from summing 2^targs inQureg amps
-    cu_qcomp outAmp = getCuQcomp(0, 0);
+    gpu_qcomp outAmp = getGpuQcomp(0, 0);
 
     // loop may be unrolled
     for (qindex j=0; j<numIts; j++) {
@@ -1178,7 +1175,7 @@ __global__ void kernel_densmatr_partialTrace_sub(
         i = setBits(i, ketTargs.indices,  numTargPairs, j); // loops may be unrolled
         i = setBits(i, pairTargs.indices, numTargPairs, j);
 
-        outAmp = outAmp + ampsIn[i];
+        outAmp += ampsIn[i];
     }
 
     ampsOut[n] = outAmp;
@@ -1193,7 +1190,7 @@ __global__ void kernel_densmatr_partialTrace_sub(
 
 template <int NumQubits>
 __global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
-    qreal* outProbs, cu_qcomp* amps, qindex numThreads, 
+    qreal* outProbs, gpu_qcomp* amps, qindex numThreads, 
     int rank, qindex logNumAmpsPerNode,
     __grid_constant__ const QubitList_t qubits
 ) {
@@ -1208,7 +1205,7 @@ __global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
     // use template param to compile-time unroll below loops
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.length);
 
-    qreal prob = getCompNorm(amps[n]);
+    qreal prob = norm(amps[n]);
 
     // i = global index corresponding to n
     qindex i = concatenateBits(rank, n, logNumAmpsPerNode);
@@ -1222,7 +1219,7 @@ __global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
 
 template <int NumQubits>
 __global__ void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
-    qreal* outProbs, cu_qcomp* amps, qindex numThreads, 
+    qreal* outProbs, gpu_qcomp* amps, qindex numThreads, 
     qindex firstDiagInd, qindex numAmpsPerCol,
     int rank, qindex logNumAmpsPerNode,
     __grid_constant__ const QubitList_t qubits
@@ -1234,7 +1231,7 @@ __global__ void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
 
     // i = index of nth local diagonal elem
     qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
-    qreal prob = getCompReal(amps[i]);
+    qreal prob = real(amps[i]);
 
     // j = global index of i
     qindex j = concatenateBits(rank, i, logNumAmpsPerNode);

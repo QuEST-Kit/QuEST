@@ -28,7 +28,9 @@
  */
 
 
-#define QINDEX_ONE 1ULL
+// alternatives to type-unsafe literals 
+constexpr qindex QINDEX_ZERO = 0; // used by gpu_thrust.cuh
+constexpr qindex QINDEX_ONE  = 1; // used only here
 
 
 INLINE qindex powerOf2(int exponent) {

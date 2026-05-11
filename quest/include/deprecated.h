@@ -21,6 +21,7 @@
 #include "quest.h"
 
 #include "stdlib.h"
+#include <stdbool.h>
 
 
 
@@ -1321,11 +1322,11 @@ static inline void _multiControlledMultiRotatePauli(Qureg qureg, int* ctrls, int
 
 #define applyFullQFT(...) \
     _WARN_FUNC_RENAMED("applyFullQFT()", "applyFullQuantumFourierTransform()") \
-    applyFullQuantumFourierTransform(__VA_ARGS__)
+    applyFullQuantumFourierTransform(__VA_ARGS__, false)
 
 #define applyQFT(...) \
     _WARN_FUNC_RENAMED("applyQFT()", "applyQuantumFourierTransform()") \
-    applyQuantumFourierTransform(__VA_ARGS__)
+    applyQuantumFourierTransform(__VA_ARGS__, false)
 
 
 
