@@ -101,10 +101,8 @@ __forceinline__ __device__ int cudaGetBitMaskParity(qindex mask) {
 
 template <int NumCtrls>
 __global__ void kernel_statevec_packAmpsIntoBuffer(
-    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
-    __grid_constant__ const QubitList_t qubits, qindex qubitStateMask
-
-) {
+    gpu_qcomp* amps, gpu_qcomp* buffer, qindex numThreads, 
+    __grid_constant__ const QubitList_t qubits, qindex qubitStateMask) {
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
@@ -120,8 +118,7 @@ __global__ void kernel_statevec_packAmpsIntoBuffer(
 
 __global__ void kernel_statevec_packPairSummedAmpsIntoBuffer(
     gpu_qcomp* amps, gpu_qcomp* buffer, qindex numThreads, 
-    int qubit1, int qubit2, int qubit3, int bit2
-) {
+    int qubit1, int qubit2, int qubit3, int bit2) {
     GET_THREAD_IND(n, numThreads);
 
     // i000 = nth local index where all qubits are 0
@@ -141,9 +138,8 @@ __global__ void kernel_statevec_packPairSummedAmpsIntoBuffer(
 
 template <int NumCtrls> 
 __global__ void kernel_statevec_anyCtrlSwap_subA(
-    cu_qcomp* amps, qindex numThreads, 
-    __grid_constant__ const QubitList_t ctrlsAndTargs, qindex ctrlsAndTargsMask, int targ1, int targ2
-) {
+    gpu_qcomp* amps, qindex numThreads, 
+    __grid_constant__ const QubitList_t ctrlsAndTargs, qindex ctrlsAndTargsMask, int targ1, int targ2) {
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
@@ -163,7 +159,7 @@ __global__ void kernel_statevec_anyCtrlSwap_subA(
 
 template <int NumCtrls> 
 __global__ void kernel_statevec_anyCtrlSwap_subB(
-    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
+    gpu_qcomp* amps, gpu_qcomp* buffer, qindex numThreads, 
     __grid_constant__ const QubitList_t ctrls, qindex ctrlStateMask
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -181,7 +177,7 @@ __global__ void kernel_statevec_anyCtrlSwap_subB(
 
 template <int NumCtrls> 
 __global__ void kernel_statevec_anyCtrlSwap_subC(
-    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
+    gpu_qcomp* amps, gpu_qcomp* buffer, qindex numThreads, 
     __grid_constant__ const QubitList_t ctrlsAndTarg, qindex ctrlsAndTargMask
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -206,9 +202,9 @@ __global__ void kernel_statevec_anyCtrlSwap_subC(
 
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
-    cu_qcomp* amps, qindex numThreads, __grid_constant__ const ctrl_device_t ctrl,
+    gpu_qcomp* amps, qindex numThreads, __grid_constant__ const ctrl_device_t ctrl,
     int numCtrls, qindex ctrlStateMask, int targ, 
-    cu_qcomp m00, cu_qcomp m01, cu_qcomp m10, cu_qcomp m11
+    gpu_qcomp m00, gpu_qcomp m01, gpu_qcomp m10, gpu_qcomp m11
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -230,9 +226,9 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
 
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
-    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads, 
+    gpu_qcomp* amps, gpu_qcomp* buffer, qindex numThreads, 
     __grid_constant__ const QubitList_t ctrls, qindex ctrlStateMask,
-    cu_qcomp fac0, cu_qcomp fac1
+    gpu_qcomp fac0, gpu_qcomp fac1
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -255,12 +251,12 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
 
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlTwoTargDenseMatr_sub(
-    cu_qcomp* amps, qindex numThreads, 
+    gpu_qcomp* amps, qindex numThreads, 
     __grid_constant__ const QubitList_t ctrlsAndTarg, qindex ctrlStateMask, int targ1, int targ2,
-    cu_qcomp m00, cu_qcomp m01, cu_qcomp m02, cu_qcomp m03,
-    cu_qcomp m10, cu_qcomp m11, cu_qcomp m12, cu_qcomp m13,
-    cu_qcomp m20, cu_qcomp m21, cu_qcomp m22, cu_qcomp m23,
-    cu_qcomp m30, cu_qcomp m31, cu_qcomp m32, cu_qcomp m33
+    gpu_qcomp m00, gpu_qcomp m01, gpu_qcomp m02, gpu_qcomp m03,
+    gpu_qcomp m10, gpu_qcomp m11, gpu_qcomp m12, gpu_qcomp m13,
+    gpu_qcomp m20, gpu_qcomp m21, gpu_qcomp m22, gpu_qcomp m23,
+    gpu_qcomp m30, gpu_qcomp m31, gpu_qcomp m32, gpu_qcomp m33
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -304,9 +300,9 @@ __forceinline__ __device__ qindex getThreadsNthGlobalArrInd(qindex n, qindex thr
 
 template <int NumCtrls, int NumTargs, bool ApplyConj, bool ApplyTransp>
 __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
-    cu_qcomp* amps, qindex numThreads,
+    gpu_qcomp* amps, qindex numThreads,
     __grid_constant__ const QubitList_t ctrlsAndTargs, qindex ctrlsAndTargsMask, __grid_constant__ const QubitList_t targs,
-    cu_qcomp* flatMatrElems
+    gpu_qcomp* flatMatrElems
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -344,7 +340,7 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
 
         // i = nth local index where ctrls are active and targs form value k
         qindex i = setBits(i0, targs.indices, NumTargs, k); // loop will be unrolled
-        amps[i] = getCuQcomp(0, 0);
+        amps[i] = getGpuQcomp(0, 0);
     
         // force unroll to ensure compile-time cache indices
         #pragma unroll
@@ -371,12 +367,11 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
 
 template <int NumCtrls, bool ApplyConj, bool ApplyTransp>
 __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
-    cu_qcomp* globalCache,
-    cu_qcomp* amps, qindex numThreads, qindex numBatchesPerThread,
+    gpu_qcomp* globalCache,
+    gpu_qcomp* amps, qindex numThreads, qindex numBatchesPerThread,
     __grid_constant__ const QubitList_t ctrlsAndTargs, qindex ctrlsAndTargsMask, 
     __grid_constant__ const QubitList_t targs, qindex numTargAmps,
-    cu_qcomp* flatMatrElems
-) {
+    gpu_qcomp* flatMatrElems) {
     GET_THREAD_IND(t, numThreads);
 
     // NumCtrls might be compile-time known, but numTargBits>5 is always unknown/runtime
@@ -407,7 +402,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
 
             // i = nth local index where ctrls are active and targs form value k
             qindex i = setBits(i0, targs.indices, targs.length, k); // loop may be unrolled
-            amps[i] = getCuQcomp(0, 0);
+            amps[i] = getGpuQcomp(0, 0);
         
             for (qindex l=0; l<numTargAmps; l++) {
                 qindex j = getThreadsNthGlobalArrInd(l, t, numThreads);
@@ -444,9 +439,9 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
 
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
-    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, __grid_constant__ const ctrl_device_t ctrl,
+    gpu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, __grid_constant__ const ctrl_device_t ctrl,
     int numCtrls, qindex ctrlStateMask, int targ, 
-    cu_qcomp m1, cu_qcomp m2
+    gpu_qcomp m1, gpu_qcomp m2
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -483,9 +478,9 @@ __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
 
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
-    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, __grid_constant__ const ctrl_device_t ctrl,
+    gpu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, __grid_constant__ const ctrl_device_t ctrl,
     int numCtrls, qindex ctrlStateMask, int targ1, int targ2,
-    cu_qcomp m1, cu_qcomp m2, cu_qcomp m3, cu_qcomp m4
+    gpu_qcomp m1, gpu_qcomp m2, gpu_qcomp m3, gpu_qcomp m4
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -524,9 +519,9 @@ __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
 
 template <int NumCtrls, int NumTargs, bool ApplyConj, bool HasPower>
 __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
-    cu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, __grid_constant__ const ctrl_device_t ctrl,
+    gpu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, __grid_constant__ const ctrl_device_t ctrl,
     int numCtrls, qindex ctrlStateMask, __grid_constant__ const QubitList_t targs,
-    cu_qcomp* elems, cu_qcomp exponent
+    gpu_qcomp* elems, gpu_qcomp exponent
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -619,10 +614,10 @@ __global__ void kernel_densmatr_allTargDiagMatr_sub(
 
 template <int NumCtrls, int NumTargs> 
 __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
-    cu_qcomp* amps, qindex numThreads,
+    gpu_qcomp* amps, qindex numThreads,
     __grid_constant__ const QubitList_t ctrlsAndTargs, qindex ctrlsAndTargsStateMask, 
     __grid_constant__ const QubitList_t targsXY, qindex maskXY, qindex maskYZ, 
-    cu_qcomp powI, cu_qcomp ampFac, cu_qcomp pairAmpFac
+    gpu_qcomp powI, gpu_qcomp ampFac, gpu_qcomp pairAmpFac
 ) {
     GET_THREAD_IND(t, numThreads);
 
@@ -659,7 +654,7 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
 
 template <int NumCtrls>
 __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
-    cu_qcomp* amps, cu_qcomp* buffer, qindex numThreads,
+    gpu_qcomp* amps, gpu_qcomp* buffer, qindex numThreads,
     __grid_constant__ const QubitList_t ctrls, qindex ctrlStateMask,
     qindex maskXY, qindex maskYZ, qindex bufferMaskXY,
     gpu_qcomp powI, gpu_qcomp thisAmpFac, gpu_qcomp otherAmpFac
@@ -694,9 +689,9 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
 
 template <int NumCtrls>
 __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
-    cu_qcomp* amps, qindex numThreads,
+    gpu_qcomp* amps, qindex numThreads,
     __grid_constant__ const QubitList_t ctrls, qindex ctrlStateMask, qindex targMask,
-    cu_qcomp fac0, cu_qcomp fac1
+    gpu_qcomp fac0, gpu_qcomp fac1
 ) {
     GET_THREAD_IND(n, numThreads);
 
@@ -1142,7 +1137,7 @@ __global__ void kernel_densmatr_oneQubitDamping_subD(
 
 template <int NumTargs>
 __global__ void kernel_densmatr_partialTrace_sub(
-    cu_qcomp* ampsIn, cu_qcomp* ampsOut, qindex numThreads,
+    gpu_qcomp* ampsIn, gpu_qcomp* ampsOut, qindex numThreads,
     __grid_constant__ const QubitList_t ketTargs,
     __grid_constant__ const QubitList_t pairTargs,
     __grid_constant__ const QubitList_t allTargs
