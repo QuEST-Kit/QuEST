@@ -23,7 +23,6 @@ using std::vector;
  * SEEDING
  */
 
-
 void rand_setSeeds(vector<unsigned> seeds);
 
 void rand_setSeedsToDefault();
@@ -37,7 +36,6 @@ vector<unsigned> rand_getSeeds();
 /*
  * SAMPLING
  */
-
 
 int rand_getRandomSingleQubitOutcome(qreal probOfZero);
 
@@ -63,10 +61,11 @@ qcomp rand_getThreadPrivateRandomAmp(std::mt19937_64 &gen, std::normal_distribut
 
 
 /*
- * PAULI STRINGS
+ * LIST SHUFFLING
  */
 
+void rand_setListToShuffled(vector<qindex>& list);
 
-void rand_permutePauliStrSum(PauliStrSum &sum);
+
 
 #endif // RANDOMISER_HPP

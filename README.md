@@ -253,6 +253,7 @@ See the [docs](docs/README.md) for enabling acceleration and running the unit te
 
 In addition to QuEST's [authors](AUTHORS.txt), we sincerely thank the following external contributors to QuEST.
 
+- [Daniel Expósito Patiño](https://github.com/D-Exposito) for patching a signature of the v4 C++ API.
 - [Diogo Pratas Maia](https://github.com/diogomaia00) for implementing non-unitary Pauli gadgets (unitaryHACK 2025 [#594](https://github.com/QuEST-Kit/QuEST/issues/594)).
 - [Mai Đức Khang](https://github.com/Roll249) for implementing a RAM probe (unitaryHACK 2025 [#600](https://github.com/QuEST-Kit/QuEST/issues/600)). 
 - [James Richings](https://github.com/JPRichings) for patching a v4 overflow bug.

@@ -308,7 +308,8 @@ extern "C" void sortPauliStrSumLexicographic(PauliStrSum sum) {
         return std::tie(strI.highPaulis, strI.lowPaulis) < std::tie(strJ.highPaulis, strJ.lowPaulis);
     };
 
-    paulis_sortTermsViaComparator(sum, lexSort);
+    auto errFunc = [&](size_t numBytes) { validate_tempAllocSucceeded(false, numBytes, __func__); };
+    paulis_sortTermsViaComparator(sum, lexSort, errFunc);
 }
 
 
@@ -319,5 +320,6 @@ extern "C" void sortPauliStrSumMagnitude(PauliStrSum sum) {
         return std::norm(sum.coeffs[i]) > std::norm(sum.coeffs[j]);
     };
 
-    paulis_sortTermsViaComparator(sum, magSort);
+    auto errFunc = [&](size_t numBytes) { validate_tempAllocSucceeded(false, numBytes, __func__); };
+    paulis_sortTermsViaComparator(sum, magSort, errFunc);
 }

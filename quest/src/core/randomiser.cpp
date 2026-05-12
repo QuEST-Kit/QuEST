@@ -22,6 +22,7 @@
 #include <random>
 #include <limits>
 #include <vector>
+#include <algorithm>
 
 using std::vector;
 
@@ -271,18 +272,10 @@ qcomp rand_getThreadPrivateRandomAmp(std::mt19937_64 &gen, std::normal_distribut
 
 
 /*
- * PAULI STRINGS
+ * LIST SHUFFLING
  */
 
+void rand_setListToShuffled(vector<qindex>& list) {
 
-void rand_permutePauliStrSum(PauliStrSum &sum) {
-
-    // permute ordering of terms inplace using Fisher-Yates
-    for (qindex i = sum.numTerms - 1; i > 0; --i) {
-        std::uniform_int_distribution<qindex> distrib(0, i);
-        qindex j = distrib(mainGenerator);
-
-        std::swap(sum.coeffs[i], sum.coeffs[j]);
-        std::swap(sum.strings[i], sum.strings[j]);
-    }
+    std::shuffle(list.begin(), list.end(), mainGenerator);
 }

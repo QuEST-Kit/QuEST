@@ -66,8 +66,8 @@ typedef struct {
 
     qindex numTerms;
 
-    // arbitrarily-sized collection of Pauli strings and their
-    // coefficients are stored in heap memory.
+    // numTerms-sized collection of Pauli strings and their
+    // coefficients, stored in heap memory.
     PauliStr* strings;
     qcomp* coeffs;
 
@@ -101,7 +101,7 @@ typedef struct {
  * @brief Functions for printing Pauli data structures.
  *
  * @defgroup paulis_setters Setters
- * @brief Functions for overwriting the elements of Pauli data structures.
+ * @brief Functions for modifying existing Pauli data structures.
  */
 
 
@@ -435,17 +435,18 @@ extern "C" {
 
     /** @ingroup paulis_setters
      *
-     * Reorders the terms within a @p sum of weighted Pauli strings to sort Pauli
-     * strings into lexicographic (dictionary) ordering.
+     * Reorders the terms within a @p sum of weighted Pauli strings
+     * so that the Pauli strings are ordered lexicographically.
      *
      * @formulae
-     * Let @f$ H = @f$ @p sum, which can be represented as
+     * 
+     * Let @f$ H = @f$ @p sum, satisfying
      * @f[
           H = \sum\limits_j c_j \, \hat{\sigma}_j
      * @f]
      * where @f$ c_j @f$ is the coefficient of the @f$ j @f$-th PauliStr @f$ \hat{\sigma}_j @f$.
      *
-     * This function constructs and applies the permutation @f$ \pi @f$ to @f$ H @f$
+     * This function applies the permutation @f$ \pi @f$ to @f$ H @f$, whereby
      * @f[
           H = \sum\limits_j c_{\pi(j)} \, \hat{\sigma}_{\pi(j)}
      * @f]
@@ -469,21 +470,18 @@ extern "C" {
 
     /** @ingroup paulis_setters
      *
-     * Reorders the terms within a @p sum of weighted Pauli strings to sort Pauli
-     * strings into decreasing magnitude weights.
+     * Reorders the terms within a @p sum of weighted Pauli strings such that
+     * coefficients are ordered with decreasing magnitude.
      *
      * @formulae
-     * Let @f$ H = @f$ @p sum, represented as the weighted sum
+     *
+     * Let @f$ H = @f$ @p sum, satisfying
      * @f[
           H = \sum\limits_j c_j \, \hat{\sigma}_j
      * @f]
      * where @f$ c_j @f$ is the coefficient of the @f$ j @f$-th PauliStr @f$ \hat{\sigma}_j @f$.
      *
-     * This function constructs and applies the permutation @f$ \pi @f$ to @f$ H @f$
-     * @f[
-          H = \sum\limits_j c_{\pi(j)} \, \hat{\sigma}_{\pi(j)}
-     * @f]
-     * such that
+     * This function applies the permutation @f$ \pi @f$ to @f$ H @f$ such that
      * @f[
      *    |c_{\pi(i)}| > |c_{\pi(j)}| \, \forall \,  \pi(i) < \pi(j).
      * @f]

@@ -33,18 +33,14 @@
 #include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 
-#include "quest/src/gpu/gpu_types.cuh"
+#include "quest/src/gpu/gpu_qcomp.cuh"
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/constants.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/randomiser.hpp"
-#include "quest/src/comm/comm_config.hpp"
-
-// kernels/thrust must use cu_qcomp, never qcomp
-#define USE_CU_QCOMP
 #include "quest/src/core/fastmath.hpp"
-#undef USE_CU_QCOMP
+#include "quest/src/comm/comm_config.hpp"
 
 #include <thrust/random.h>
 #include <thrust/complex.h>
@@ -68,7 +64,7 @@
  * copy constructor (devicevec d_vec = hostvec). The pointer 
  * to the data (d_vec.data()) can be cast into a raw pointer
  * and passed directly to CUDA kernels (though qcomp must be
- * reinterpreted to cu_qcomp)
+ * reinterpreted to gpu_qcomp)
  */
 
 
@@ -110,18 +106,18 @@ devreals getDeviceRealsVec(qindex dim) {
 
 using devcomps = thrust::device_vector<qcomp>;
 
-cu_qcomp* getPtr(devcomps& comps) {
+gpu_qcomp* getPtr(devcomps& comps) {
 
-    // devcomps -> qcomp -> cu_qcomp
+    // devcomps -> qcomp -> gpu_qcomp
     qcomp* ptr =  thrust::raw_pointer_cast(comps.data());
-    return toCuQcomps(ptr);
+    return getGpuQcompPtr(ptr);
 }
 
 
 // father forgive me for I have sinned
-using devcuqcompptrs = thrust::device_vector<cu_qcomp*>;
+using devgpuqcompptrs = thrust::device_vector<gpu_qcomp*>;
 
-cu_qcomp** getPtr(devcuqcompptrs& ptrs) {
+gpu_qcomp** getPtr(devgpuqcompptrs& ptrs) {
 
     return thrust::raw_pointer_cast(ptrs.data());
 }
@@ -136,13 +132,13 @@ cu_qcomp** getPtr(devcuqcompptrs& ptrs) {
  */
 
 
-thrust::device_ptr<cu_qcomp> getStartPtr(cu_qcomp* amps) {
+thrust::device_ptr<gpu_qcomp> getStartPtr(gpu_qcomp* amps) {
 
     return thrust::device_pointer_cast(amps);
 }
 auto getStartPtr(qcomp* amps) {
 
-    return getStartPtr(toCuQcomps(amps));
+    return getStartPtr(getGpuQcompPtr(amps));
 }
 
 
@@ -177,37 +173,37 @@ auto getEndPtr(FullStateDiagMatr matr) {
 
 struct functor_getAmpConj {
 
-    __host__ __device__ cu_qcomp operator()(cu_qcomp amp) {
-        return getCompConj(amp);
+    __host__ __device__ gpu_qcomp operator()(gpu_qcomp amp) {
+        return conj(amp);
     }
 };
 
 struct functor_getAmpNorm {
 
-    __host__ __device__ qreal operator()(cu_qcomp amp) {
-        return getCompNorm(amp);
+    __host__ __device__ qreal operator()(gpu_qcomp amp) {
+        return norm(amp);
     }
 };
 
 struct functor_getAmpReal {
 
-    __host__ __device__ qreal operator()(cu_qcomp amp) {
-        return getCompReal(amp);
+    __host__ __device__ qreal operator()(gpu_qcomp amp) {
+        return real(amp);
     }
 };
 
 
 struct functor_getAmpConjProd {
 
-    __host__ __device__ cu_qcomp operator()(cu_qcomp braAmp, cu_qcomp ketAmp) { 
-        return getCompConj(braAmp) * ketAmp;
+    __host__ __device__ gpu_qcomp operator()(gpu_qcomp braAmp, gpu_qcomp ketAmp) { 
+        return conj(braAmp) * ketAmp;
     }
 };
 
 struct functor_getNormOfAmpDif {
 
-    __host__ __device__ qreal operator()(cu_qcomp amp1, cu_qcomp amp2) { 
-        return getCompNorm(amp1 - amp2);
+    __host__ __device__ qreal operator()(gpu_qcomp amp1, gpu_qcomp amp2) { 
+        return norm(amp1 - amp2);
     }
 };
 
@@ -220,11 +216,11 @@ struct functor_getExpecStateVecZTerm {
     qindex targMask;
     functor_getExpecStateVecZTerm(qindex mask) : targMask(mask) {}
 
-    __device__ qreal operator()(qindex ind, cu_qcomp amp) {
+    __device__ qreal operator()(qindex ind, gpu_qcomp amp) {
         
         int par = cudaGetBitMaskParity(ind & targMask); // device-only
         int sign = fast_getPlusOrMinusOne(par);
-        return sign * getCompNorm(amp);
+        return sign * norm(amp);
     }
 };
 
@@ -235,12 +231,12 @@ struct functor_getExpecDensMatrZTerm {
     // in the expectation value of Z of a density matrix
 
     qindex numAmpsPerCol, firstDiagInd, targMask;
-    cu_qcomp* amps;
+    gpu_qcomp* amps;
 
-    functor_getExpecDensMatrZTerm(qindex dim, qindex diagInd, qindex mask, cu_qcomp* _amps) : 
+    functor_getExpecDensMatrZTerm(qindex dim, qindex diagInd, qindex mask, gpu_qcomp* _amps) : 
         numAmpsPerCol(dim), firstDiagInd(diagInd), targMask(mask), amps(_amps) {}
 
-    __device__ cu_qcomp operator()(qindex n) {
+    __device__ gpu_qcomp operator()(qindex n) {
 
         qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
         qindex r = n + firstDiagInd;
@@ -259,19 +255,19 @@ struct functor_getExpecStateVecPauliTerm {
     // at least one X or Y) of a statevector
 
     qindex maskXY, maskYZ;
-    cu_qcomp *amps, *pairAmps;
+    gpu_qcomp *amps, *pairAmps;
 
-    functor_getExpecStateVecPauliTerm(qindex _maskXY, qindex _maskYZ, cu_qcomp* _amps, cu_qcomp* _pairAmps) : 
+    functor_getExpecStateVecPauliTerm(qindex _maskXY, qindex _maskYZ, gpu_qcomp* _amps, gpu_qcomp* _pairAmps) : 
         maskXY(_maskXY), maskYZ(_maskYZ), amps(_amps), pairAmps(_pairAmps) {}
 
-    __device__ cu_qcomp operator()(qindex n) {
+    __device__ gpu_qcomp operator()(qindex n) {
 
         qindex j = flipBits(n, maskXY);
         int par = cudaGetBitMaskParity(j & maskYZ); // device-only
         int sign = fast_getPlusOrMinusOne(par);
 
         // sign excludes i^numY contribution
-        return sign * getCompConj(amps[n]) * pairAmps[j]; // pairAmps may be amps or buffer
+        return sign * conj(amps[n]) * pairAmps[j]; // pairAmps may be amps or buffer
     }
 };
 
@@ -284,12 +280,12 @@ struct functor_getExpecDensMatrPauliTerm {
 
     qindex maskXY, maskYZ;
     qindex numAmpsPerCol, firstDiagInd;
-    cu_qcomp *amps;
+    gpu_qcomp *amps;
 
-    functor_getExpecDensMatrPauliTerm(qindex _maskXY, qindex _maskYZ, qindex _numAmpsPerCol, qindex _firstDiagInd, cu_qcomp* _amps) :
+    functor_getExpecDensMatrPauliTerm(qindex _maskXY, qindex _maskYZ, qindex _numAmpsPerCol, qindex _firstDiagInd, gpu_qcomp* _amps) :
         maskXY(_maskXY), maskYZ(_maskYZ), numAmpsPerCol(_numAmpsPerCol), firstDiagInd(_firstDiagInd), amps(_amps) {}
 
-    __device__ cu_qcomp operator()(qindex n) {
+    __device__ gpu_qcomp operator()(qindex n) {
 
         qindex r = n + firstDiagInd;
         qindex i = flipBits(r, maskXY);
@@ -310,19 +306,19 @@ struct functor_getExpecDensMatrDiagMatrTerm {
     // value of a FullStateDiagMatr upon a density matrix
 
     qindex numAmpsPerCol, firstDiagInd;
-    cu_qcomp *amps, *elems, expo;
+    gpu_qcomp *amps, *elems, expo;
 
-    functor_getExpecDensMatrDiagMatrTerm(qindex dim, qindex diagInd, cu_qcomp* _amps, cu_qcomp* _elems, cu_qcomp _expo) : 
+    functor_getExpecDensMatrDiagMatrTerm(qindex dim, qindex diagInd, gpu_qcomp* _amps, gpu_qcomp* _elems, gpu_qcomp _expo) : 
         numAmpsPerCol(dim), firstDiagInd(diagInd), amps(_amps), elems(_elems), expo(_expo) {}
 
-    __device__ cu_qcomp operator()(qindex n) {
+    __device__ gpu_qcomp operator()(qindex n) {
 
-        cu_qcomp elem = elems[n];
+        gpu_qcomp elem = elems[n];
 
         if constexpr (HasPower && ! UseRealPow)
-            elem = getCompPower(elem, expo);
+            elem = pow(elem, expo);
         if constexpr (HasPower &&   UseRealPow)
-            elem = getCuQcomp(pow(getCompReal(elem), getCompReal(expo)),0); // CUDA pow(qreal,qreal)
+            elem = getGpuQcomp(pow(real(elem), real(expo)), 0); // CUDA pow(qreal,qreal)
 
         qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
 
@@ -339,13 +335,13 @@ struct functor_setAmpToPauliStrSumElem {
     qindex suffixLen;
     qindex numTerms;
 
-    cu_qcomp* amps;
-    cu_qcomp* coeffs;
+    gpu_qcomp* amps;
+    gpu_qcomp* coeffs;
     PauliStr* strings;
     
     functor_setAmpToPauliStrSumElem(
         int rank, qindex dim, qindex suffixLen, qindex numTerms, 
-        cu_qcomp* amps, cu_qcomp* coeffs, PauliStr* strings
+        gpu_qcomp* amps, gpu_qcomp* coeffs, PauliStr* strings
     ) :
         rank(rank), dim(dim), suffixLen(suffixLen), numTerms(numTerms), 
         amps(amps), coeffs(coeffs), strings(strings)
@@ -381,7 +377,7 @@ struct functor_mixAmps {
     qreal outProb, inProb;
     functor_mixAmps(qreal out, qreal in) : outProb(out), inProb(in) {}
 
-    __host__ __device__ cu_qcomp operator()(cu_qcomp outAmp, cu_qcomp inAmp) {
+    __host__ __device__ gpu_qcomp operator()(gpu_qcomp outAmp, gpu_qcomp inAmp) {
         
         return (outProb * outAmp) + (inProb * inAmp);
     }
@@ -397,18 +393,18 @@ struct functor_multiplyElemPowerWithAmpOrNorm {
     // a statevector amp (used when modifying the state)
     // or its norm (used when calculating expected values)
 
-    cu_qcomp exponent;
-    functor_multiplyElemPowerWithAmpOrNorm(cu_qcomp power) : exponent(power) {}
+    gpu_qcomp exponent;
+    functor_multiplyElemPowerWithAmpOrNorm(gpu_qcomp power) : exponent(power) {}
 
-    __host__ __device__ cu_qcomp operator()(cu_qcomp quregAmp, cu_qcomp matrElem) {
+    __host__ __device__ gpu_qcomp operator()(gpu_qcomp quregAmp, gpu_qcomp matrElem) {
 
         if constexpr (HasPower && ! UseRealPow)
-            matrElem = getCompPower(matrElem, exponent);
+            matrElem = pow(matrElem, exponent);
         if constexpr (HasPower &&   UseRealPow)
-            matrElem = getCuQcomp(pow(getCompReal(matrElem), getCompReal(exponent)),0); // CUDA pow(qreal,qreal)
+            matrElem = getGpuQcomp(pow(real(matrElem), real(exponent)), 0); // CUDA pow(qreal,qreal)
 
         if constexpr (Norm)
-            quregAmp = getCuQcomp(getCompNorm(quregAmp), 0);
+            quregAmp = getGpuQcomp(norm(quregAmp), 0);
 
         return matrElem * quregAmp;
     }
@@ -466,15 +462,15 @@ template <bool Conj>
 struct functor_getFidelityTerm {
     int rank, numQubits;
     qindex logNumAmpsPerNode, numAmpsPerCol;
-    cu_qcomp *rho, *psi;
+    gpu_qcomp *rho, *psi;
 
     functor_getFidelityTerm(
-        int _rank, int _numQubits, qindex _logNumAmpsPerNode, qindex _numAmpsPerCol, cu_qcomp* _rho, cu_qcomp* _psi
+        int _rank, int _numQubits, qindex _logNumAmpsPerNode, qindex _numAmpsPerCol, gpu_qcomp* _rho, gpu_qcomp* _psi
     ) :
         rank(_rank), numQubits(_numQubits), logNumAmpsPerNode(_logNumAmpsPerNode), numAmpsPerCol(_numAmpsPerCol), rho(_rho), psi(_psi)
     {}
 
-    __host__ __device__ cu_qcomp operator()(qindex n) {
+    __host__ __device__ gpu_qcomp operator()(qindex n) {
 
         // i = global index of nth local amp of rho
         qindex i = concatenateBits(rank, n, logNumAmpsPerNode);
@@ -484,18 +480,18 @@ struct functor_getFidelityTerm {
         qindex c = getBitsLeftOfIndex(i, numQubits-1);
 
         // collect amps involved in this term
-        cu_qcomp rhoAmp = rho[n];
-        cu_qcomp rowAmp = psi[r];
-        cu_qcomp colAmp = psi[c];
+        gpu_qcomp rhoAmp = rho[n];
+        gpu_qcomp rowAmp = psi[r];
+        gpu_qcomp colAmp = psi[c];
 
         // compute term of <psi|rho^dagger|psi> or <psi|rho|psi>
         if constexpr (Conj) {
-            rhoAmp = getCompConj(rhoAmp);
-            colAmp = getCompConj(colAmp);
+            rhoAmp = conj(rhoAmp);
+            colAmp = conj(colAmp);
         } else
-            rowAmp = getCompConj(rowAmp);
+            rowAmp = conj(rowAmp);
 
-        cu_qcomp fid = rhoAmp * rowAmp * colAmp;
+        gpu_qcomp fid = rhoAmp * rowAmp * colAmp;
         return fid;
     }
 };
@@ -525,7 +521,7 @@ struct functor_projectStateVec {
         assert_numTargsMatchesTemplateParam(numTargets, NumTargets);
     }
 
-    __host__ __device__ cu_qcomp operator()(qindex n, cu_qcomp amp) {
+    __host__ __device__ gpu_qcomp operator()(qindex n, gpu_qcomp amp) {
 
         // use the compile-time value if possible, to auto-unroll the getValueOfBits() loop below
         SET_VAR_AT_COMPILE_TIME(int, numBits, NumTargets, numTargets);
@@ -562,7 +558,7 @@ struct functor_projectDensMatr {
         assert_numTargsMatchesTemplateParam(numTargets, NumTargets);
     }
 
-    __host__ __device__ cu_qcomp operator()(qindex n, cu_qcomp amp) {
+    __host__ __device__ gpu_qcomp operator()(qindex n, gpu_qcomp amp) {
 
         // use the compile-time value if possible, to auto-unroll the getValueOfBits() loop below
         SET_VAR_AT_COMPILE_TIME(int, numBits, NumTargets, numTargets);
@@ -603,7 +599,7 @@ struct functor_setRandomStateVecAmp {
     unsigned baseSeed;
     functor_setRandomStateVecAmp(unsigned seed) : baseSeed(seed) {}
 
-    __host__ __device__ cu_qcomp operator()(qindex ampInd) {
+    __host__ __device__ gpu_qcomp operator()(qindex ampInd) {
 
         // wastefully create new distributions for every amp
         thrust::random::normal_distribution<qreal> normDist(0, 1); // mean=0, var=1
@@ -634,8 +630,8 @@ struct functor_setRandomStateVecAmp {
         auto iphase = thrust::complex<qreal>(0, phase);
         auto amp = sqrt(prob) * thrust::exp(iphase); // CUDA sqrt
 
-        // cast thrust::complex to cu_qcomp
-        return getCuQcomp(amp.real(), amp.imag());
+        // cast thrust::complex to gpu_qcomp
+        return getGpuQcomp(amp.real(), amp.imag());
     }
 };
 
@@ -654,7 +650,7 @@ void thrust_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, Pauli
     thrust::device_vector<PauliStr> devStrings(in.strings, in.strings + in.numTerms);
     
     // obtain raw pointers which can be passed to fastmath.hpp routines
-    cu_qcomp* devCoeffsPtr = toCuQcomps(thrust::raw_pointer_cast(devCoeffs.data()));
+    gpu_qcomp* devCoeffsPtr = getGpuQcompPtr(thrust::raw_pointer_cast(devCoeffs.data()));
     PauliStr* devStringsPtr = thrust::raw_pointer_cast(devStrings.data());
 
     int rank = out.isDistributed? comm_getRank() : 0;
@@ -663,7 +659,7 @@ void thrust_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, Pauli
     // <true> indicates the PauliStrSum is diagonal (contains only I or Z)
     auto functor = functor_setAmpToPauliStrSumElem<true>(
         rank, out.numElems, logNumElemsPerNode,
-        in.numTerms, toCuQcomps(out.gpuElems), devCoeffsPtr, devStringsPtr);
+        in.numTerms, getGpuQcompPtr(out.gpuElems), devCoeffsPtr, devStringsPtr);
 
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + out.numElemsPerNode;
@@ -677,7 +673,7 @@ void thrust_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, Pauli
  */
 
 
-void thrust_setElemsToConjugate(cu_qcomp* matrElemsPtr, qindex matrElemsLen) {
+void thrust_setElemsToConjugate(gpu_qcomp* matrElemsPtr, qindex matrElemsLen) {
 
     auto ptr = getStartPtr(matrElemsPtr);
     thrust::transform(ptr, ptr + matrElemsLen, ptr, functor_getAmpConj());
@@ -700,13 +696,13 @@ void thrust_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
     thrust::device_vector<PauliStr> devStrings(sum.strings, sum.strings + sum.numTerms);
     
     // obtain raw pointers which can be passed to fastmath.hpp routines
-    cu_qcomp* devCoeffsPtr = toCuQcomps(thrust::raw_pointer_cast(devCoeffs.data()));
+    gpu_qcomp* devCoeffsPtr = getGpuQcompPtr(thrust::raw_pointer_cast(devCoeffs.data()));
     PauliStr* devStringsPtr = thrust::raw_pointer_cast(devStrings.data());
 
     // <false> indicates the PauliStrSum is not diagonal (contains X or Y)
     auto functor = functor_setAmpToPauliStrSumElem<false>(
         qureg.rank, powerOf2(qureg.numQubits), qureg.logNumAmpsPerNode,
-        sum.numTerms, toCuQcomps(qureg.gpuAmps), devCoeffsPtr, devStringsPtr);
+        sum.numTerms, getGpuQcompPtr(qureg.gpuAmps), devCoeffsPtr, devStringsPtr);
 
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + qureg.numAmpsPerNode;
@@ -724,7 +720,7 @@ void thrust_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, 
 
 
 template <bool HasPower>
-void thrust_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu_qcomp exponent) {
+void thrust_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, gpu_qcomp exponent) {
 
     thrust::transform(
         getStartPtr(qureg), getEndPtr(qureg), 
@@ -832,13 +828,13 @@ qreal thrust_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> q
  */
 
 
-cu_qcomp thrust_statevec_calcInnerProduct_sub(Qureg quregA, Qureg quregB) {
+gpu_qcomp thrust_statevec_calcInnerProduct_sub(Qureg quregA, Qureg quregB) {
 
-    cu_qcomp init = getCuQcomp(0, 0);
+    gpu_qcomp init = getGpuQcomp(0, 0);
 
-    cu_qcomp prod = thrust::inner_product(
+    gpu_qcomp prod = thrust::inner_product(
         getStartPtr(quregA), getEndPtr(quregA), getStartPtr(quregB), 
-        init, thrust::plus<cu_qcomp>(), functor_getAmpConjProd());
+        init, thrust::plus<gpu_qcomp>(), functor_getAmpConjProd());
 
     return prod;
 }
@@ -857,20 +853,20 @@ qreal thrust_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB)
 
 
 template <bool Conj>
-cu_qcomp thrust_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
+gpu_qcomp thrust_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
 
-    // functor accepts an index and produces a cu_qcomp
+    // functor accepts an index and produces a gpu_qcomp
     auto functor = functor_getFidelityTerm<Conj>(
         rho.rank, rho.numQubits, rho.logNumAmpsPerNode, 
-        psi.numAmps, toCuQcomps(rho.gpuAmps), toCuQcomps(psi.gpuAmps));
+        psi.numAmps, getGpuQcompPtr(rho.gpuAmps), getGpuQcompPtr(psi.gpuAmps));
 
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     qindex numIts = rho.numAmpsPerNode;
 
-    cu_qcomp init = getCuQcomp(0, 0);
-    cu_qcomp fid = thrust::transform_reduce(
+    gpu_qcomp init = getGpuQcomp(0, 0);
+    gpu_qcomp fid = thrust::transform_reduce(
         indIter, indIter + numIts, 
-        functor, init, thrust::plus<cu_qcomp>());
+        functor, init, thrust::plus<gpu_qcomp>());
 
     return fid;
 }
@@ -897,71 +893,71 @@ qreal thrust_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 }
 
 
-cu_qcomp thrust_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
+gpu_qcomp thrust_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 
     qindex dim = powerOf2(qureg.numQubits);
     qindex ind = util_getLocalIndexOfFirstDiagonalAmp(qureg);
     qindex mask = util_getBitMask(targs);
-    auto functor = functor_getExpecDensMatrZTerm(dim, ind, mask, toCuQcomps(qureg.gpuAmps));
+    auto functor = functor_getExpecDensMatrZTerm(dim, ind, mask, getGpuQcompPtr(qureg.gpuAmps));
 
-    cu_qcomp init = getCuQcomp(0, 0);
+    gpu_qcomp init = getGpuQcomp(0, 0);
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + powerOf2(qureg.logNumColsPerNode);
 
-    return thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
+    return thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<gpu_qcomp>());
 }
 
 
-cu_qcomp thrust_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
+gpu_qcomp thrust_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
     qindex maskXY = util_getBitMask(util_getConcatenated(x, y));
     qindex maskYZ = util_getBitMask(util_getConcatenated(y, z));
-    auto ampsPtr = toCuQcomps(qureg.gpuAmps);
+    auto ampsPtr = getGpuQcompPtr(qureg.gpuAmps);
     auto functor = functor_getExpecStateVecPauliTerm(maskXY, maskYZ, ampsPtr, ampsPtr); // amps=pairAmps
 
-    cu_qcomp init = getCuQcomp(0, 0);
+    gpu_qcomp init = getGpuQcomp(0, 0);
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + qureg.numAmpsPerNode;
 
-    cu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
+    gpu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<gpu_qcomp>());
 
-    return value * toCuQcomp(util_getPowerOfI(y.size()));
+    return value * getGpuQcomp(util_getPowerOfI(y.size()));
 }
 
 
-cu_qcomp thrust_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
+gpu_qcomp thrust_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
     qindex maskXY = util_getBitMask(util_getConcatenated(x, y));
     qindex maskYZ = util_getBitMask(util_getConcatenated(y, z));
-    auto ampsPtr = toCuQcomps(qureg.gpuAmps);
-    auto buffPtr = toCuQcomps(qureg.gpuCommBuffer);
+    auto ampsPtr = getGpuQcompPtr(qureg.gpuAmps);
+    auto buffPtr = getGpuQcompPtr(qureg.gpuCommBuffer);
     auto functor = functor_getExpecStateVecPauliTerm(maskXY, maskYZ, ampsPtr, buffPtr);
 
-    cu_qcomp init = getCuQcomp(0, 0);
+    gpu_qcomp init = getGpuQcomp(0, 0);
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + qureg.numAmpsPerNode;
 
-    cu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
+    gpu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<gpu_qcomp>());
 
-    return value * toCuQcomp(util_getPowerOfI(y.size()));
+    return value * getGpuQcomp(util_getPowerOfI(y.size()));
 }
 
 
-cu_qcomp thrust_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
+gpu_qcomp thrust_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
 
     qindex mXY = util_getBitMask(util_getConcatenated(x, y));
     qindex mYZ = util_getBitMask(util_getConcatenated(y, z));
     qindex dim = powerOf2(qureg.numQubits);
     qindex ind = util_getLocalIndexOfFirstDiagonalAmp(qureg);
-    auto functor = functor_getExpecDensMatrPauliTerm(mXY, mYZ, dim, ind, toCuQcomps(qureg.gpuAmps));
+    auto functor = functor_getExpecDensMatrPauliTerm(mXY, mYZ, dim, ind, getGpuQcompPtr(qureg.gpuAmps));
 
-    cu_qcomp init = getCuQcomp(0, 0);
+    gpu_qcomp init = getGpuQcomp(0, 0);
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + powerOf2(qureg.logNumColsPerNode);
 
-    cu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
+    gpu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<gpu_qcomp>());
 
-    return value * toCuQcomp(util_getPowerOfI(y.size()));
+    return value * getGpuQcomp(util_getPowerOfI(y.size()));
 }
 
 
@@ -972,33 +968,33 @@ cu_qcomp thrust_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vecto
 
 
 template <bool HasPower, bool UseRealPow> 
-cu_qcomp thrust_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu_qcomp expo) {
+gpu_qcomp thrust_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, gpu_qcomp expo) {
 
-    cu_qcomp init = getCuQcomp(0, 0);
+    gpu_qcomp init = getGpuQcomp(0, 0);
     auto functor = functor_multiplyElemPowerWithAmpOrNorm<HasPower,UseRealPow,true>(expo);
 
-    cu_qcomp value = thrust::inner_product(
+    gpu_qcomp value = thrust::inner_product(
         getStartPtr(qureg), getEndPtr(qureg), getStartPtr(matr), 
-        init, thrust::plus<cu_qcomp>(), functor);
+        init, thrust::plus<gpu_qcomp>(), functor);
 
     return value;
 }
 
 
 template <bool HasPower, bool UseRealPow> 
-cu_qcomp thrust_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, cu_qcomp expo) {
+gpu_qcomp thrust_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, gpu_qcomp expo) {
 
     qindex dim = powerOf2(qureg.numQubits);
     qindex ind = util_getLocalIndexOfFirstDiagonalAmp(qureg);
-    auto ampsPtr = toCuQcomps(qureg.gpuAmps);
-    auto elemsPtr = toCuQcomps(matr.gpuElems);
+    auto ampsPtr = getGpuQcompPtr(qureg.gpuAmps);
+    auto elemsPtr = getGpuQcompPtr(matr.gpuElems);
     auto functor = functor_getExpecDensMatrDiagMatrTerm<HasPower,UseRealPow>(dim, ind, ampsPtr, elemsPtr, expo);
 
-    cu_qcomp init = getCuQcomp(0, 0);
+    gpu_qcomp init = getGpuQcomp(0, 0);
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + powerOf2(qureg.logNumColsPerNode);
 
-    return thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<cu_qcomp>());
+    return thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<gpu_qcomp>());
 }
 
 
@@ -1047,7 +1043,7 @@ void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, ve
  */
 
 
-void thrust_statevec_initUniformState(Qureg qureg, cu_qcomp amp) {
+void thrust_statevec_initUniformState(Qureg qureg, gpu_qcomp amp) {
 
     thrust::fill(getStartPtr(qureg), getEndPtr(qureg), amp);
 }
@@ -1057,11 +1053,11 @@ void thrust_statevec_initDebugState_sub(Qureg qureg) {
 
     // globally, |n> gains coefficient 2n/10 + i(2n+1)/10,
     // which is a step-size of 2/10 + i(2/10)...
-    cu_qcomp step = getCuQcomp(2/10., 2/10.);
+    gpu_qcomp step = getGpuQcomp(2/10., 2/10.);
 
     // and each node begins from a unique n (if distributed)
     qindex n = util_getGlobalIndexOfFirstLocalAmp(qureg);
-    cu_qcomp init = getCuQcomp(2*n/10., (2*n+1)/10.);
+    gpu_qcomp init = getGpuQcomp(2*n/10., (2*n+1)/10.);
 
     thrust::sequence(getStartPtr(qureg), getEndPtr(qureg), init, step);
 }

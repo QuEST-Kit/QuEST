@@ -10,6 +10,11 @@ if (ENABLE_DISTRIBUTION AND ENABLE_SUBCOMM)
   target_link_libraries(tests PRIVATE MPI::MPI_CXX)
 endif()
 
+# extend the MSVC max object size
+if (MSVC)
+  target_compile_options(tests PRIVATE /bigobj)
+endif()
+
 add_subdirectory(unit)
 add_subdirectory(utils)
 add_subdirectory(integration)
@@ -17,7 +22,6 @@ add_subdirectory(integration)
 if (ENABLE_DEPRECATED_API)
   add_subdirectory(deprecated)
 endif()
-
 
 # let Catch2 register all tests with CTest
 catch_discover_tests(tests)

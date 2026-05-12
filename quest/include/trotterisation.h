@@ -47,7 +47,7 @@ extern "C" {
  * Increasing @p reps (the number of Trotter repetitions) or @p order (an even, positive integer or one) 
  * improves the accuracy of the approximation by reducing the "Trotter error" due to non-commuting 
  * terms of @p sum, though increases the runtime linearly and exponentially respectively. 
- * Using @p permutePaulis the ordering of terms in the sum can also be randomised, which generally 
+ * Using @p permuteTerms the ordering of terms in the sum can also be randomised, which generally 
  * improves the accuracy of the approximation for low order decompositions (<a href="https://arxiv.org/abs/1805.08385">arXiv</a>).
  * 
  * @formulae 
@@ -109,14 +109,12 @@ extern "C" {
  * > These formulations are taken from 'Finding Exponential Product Formulas
  * > of Higher Orders', Naomichi Hatano and Masuo Suzuki (2005) (<a href="https://arxiv.org/abs/math-ph/0506007">arXiv</a>).
  * 
- * When @p permutePaulis=true the terms of @p sum are effected in a random order at each repetition. That is, each repetition of the Trotter-Suzuki decomposition is evaluated with the sum
+ * When @p permuteTerms=true, the terms of @p sum are effected in a random order at each repetition.
+ * That is, each repetition of the Trotter-Suzuki decomposition is evaluated with the sum
  * @f[
       \hat{H} = \sum\limits_j^T c_{\pi(j)} \, \hat{\sigma}_{\pi(j)}
  * @f]
- * where @f$ \pi @f$  is a randomly selected permutation.
- *
- * @important
- *   Using @p permutePaulis=true will cause @p sum to be mutated by the Trotterisation.
+ * where @f$ \pi @f$ is a randomly selected permutation.
  *
  * @equivalences
  * 
@@ -157,7 +155,7 @@ extern "C" {
  * @param[in]     angle                the prefactor of @p sum times @f$ i @f$ in the exponent.
  * @param[in]     order                the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
  * @param[in]     reps                 the number of Trotter repetitions.
- * @param[in]     permutePaulis        whether to randomly reorder Pauli strings at each repetition.
+ * @param[in]     permuteTerms         whether to randomly reorder Pauli terms at each repetition.
  * 
  * @throws @validationerror
  * - if @p qureg or @p sum are uninitialised.
@@ -165,6 +163,7 @@ extern "C" {
  * - if @p sum contains non-identities on qubits beyond the size of @p qureg.
  * - if @p order is not 1 nor a positive, @b even integer.
  * - if @p reps is not a positive integer.
+ * - if internal allocation needed for term permutation fails.
  * 
  * @see
  *  - applyPauliGadget()
@@ -174,7 +173,7 @@ extern "C" {
  * @author Tyson Jones
  * @author Vasco Ferreira (randomisation)
  */
-void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps, bool permutePaulis);
+void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps, bool permuteTerms);
 
 
 /// @notyetdoced
@@ -186,7 +185,7 @@ void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle
 /// @see
 ///  - applyTrotterizedPauliStrSumGadget()
 ///  - applyControlledCompMatr1()
-void applyTrotterizedControlledPauliStrSumGadget(Qureg qureg, int control, PauliStrSum sum, qreal angle, int order, int reps, bool permutePaulis);
+void applyTrotterizedControlledPauliStrSumGadget(Qureg qureg, int control, PauliStrSum sum, qreal angle, int order, int reps, bool permuteTerms);
 
 
 /// @notyetdoced
@@ -198,7 +197,7 @@ void applyTrotterizedControlledPauliStrSumGadget(Qureg qureg, int control, Pauli
 /// @see
 ///  - applyTrotterizedPauliStrSumGadget()
 ///  - applyMultiControlledCompMatr1()
-void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, int* controls, int numControls, PauliStrSum sum, qreal angle, int order, int reps, bool permutePaulis);
+void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, int* controls, int numControls, PauliStrSum sum, qreal angle, int order, int reps, bool permuteTerms);
 
 
 /// @notyetdoced
@@ -210,7 +209,7 @@ void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, int* controls
 /// @see
 ///  - applyTrotterizedPauliStrSumGadget()
 ///  - applyMultiStateControlledCompMatr1()
-void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStrSum sum, qreal angle, int order, int reps, bool permutePaulis);
+void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStrSum sum, qreal angle, int order, int reps, bool permuteTerms);
 
 
 /** @notyettested
@@ -227,7 +226,8 @@ void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, int* con
  * @f]
  * via a Trotter-Suzuki decomposition of the specified @p order and number of repetitions (@p reps). 
  * 
- * > See applyTrotterizedPauliStrSumGadget() for more information about the decomposition.
+ * > See applyTrotterizedPauliStrSumGadget() for more information about the decomposition, and other
+ * > parameters.
  *
  * @equivalences
  * 
@@ -252,18 +252,19 @@ void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, int* con
  * @param[in]     angle                an effective prefactor of @p sum in the exponent.
  * @param[in]     order                the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
  * @param[in]     reps                 the number of Trotter repetitions.
- * @param[in]     permutePaulis        whether to randomly reorder Pauli strings at each repetition.
+ * @param[in]     permuteTerms         whether to randomly reorder Pauli terms at each repetition.
  * 
  * @throws @validationerror
  * - if @p qureg or @p sum are uninitialised.
  * - if @p sum contains non-identities on qubits beyond the size of @p qureg.
  * - if @p order is not 1 nor a positive, @b even integer.
  * - if @p reps is not a positive integer.
+ * - if internal allocation needed for term permutation fails.
  * 
  * @author Tyson Jones
  * @author Vasco Ferreira (randomisation)
  */
-void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps, bool permutePaulis);
+void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps, bool permuteTerms);
 
 
 // end de-mangler
@@ -283,7 +284,7 @@ void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, q
 /// @author Vasco Ferreira (randomisation)
 ///
 /// @see applyTrotterizedMultiControlledPauliStrSumGadget()
-void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, std::vector<int> controls, PauliStrSum sum, qreal angle, int order, int reps, bool permutePaulis);
+void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, std::vector<int> controls, PauliStrSum sum, qreal angle, int order, int reps, bool permuteTerms);
 
 
 /// @notyettested
@@ -295,7 +296,7 @@ void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, std::vector<i
 /// @author Vasco Ferreira (randomisation)
 ///
 /// @see applyTrotterizedMultiStateControlledPauliStrSumGadget()
-void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, std::vector<int> controls, std::vector<int> states, PauliStrSum sum, qreal angle, int order, int reps, bool permutePaulis);
+void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, std::vector<int> controls, std::vector<int> states, PauliStrSum sum, qreal angle, int order, int reps, bool permuteTerms);
 
 
 #endif // __cplusplus
@@ -395,7 +396,7 @@ extern "C" {
  * @param[in]     time                 the duration over which to simulate evolution.
  * @param[in]     order                the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
  * @param[in]     reps                 the number of Trotter repetitions.
- * @param[in]     permutePaulis        whether to randomly reorder Pauli strings at each repetition.
+ * @param[in]     permuteTerms         whether to randomly reorder Pauli terms at each repetition.
  * 
  * @throws @validationerror
  * - if @p qureg or @p hamil are uninitialised.
@@ -403,11 +404,12 @@ extern "C" {
  * - if @p hamil is not approximately Hermitian.
  * - if @p order is not 1 nor a positive, @b even integer.
  * - if @p reps is not a positive integer.
+ * - if internal allocation needed for term permutation fails.
  * 
  * @author Tyson Jones
  * @author Vasco Ferreira (randomisation)
  */
-void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal time, int order, int reps, bool permutePaulis);
+void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal time, int order, int reps, bool permuteTerms);
 
 
 /** Simulates imaginary-time evolution of @p qureg for the duration @p tau under the time-independent 
@@ -526,7 +528,7 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
  * @param[in]     tau                  the duration over which to simulate imaginary-time evolution.
  * @param[in]     order                the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
  * @param[in]     reps                 the number of Trotter repetitions.
- * @param[in]     permutePaulis        whether to randomly reorder Pauli strings at each repetition.
+ * @param[in]     permuteTerms         whether to randomly reorder Pauli terms at each repetition.
  * 
  * @throws @validationerror
  * - if @p qureg or @p hamil are uninitialised.
@@ -534,11 +536,12 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
  * - if @p hamil is not approximately Hermitian.
  * - if @p order is not 1 nor a positive, @b even integer.
  * - if @p reps is not a positive integer.
+ * - if internal allocation needed for term permutation fails.
  * 
  * @author Tyson Jones
  * @author Vasco Ferreira (randomisation)
  */
-void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal tau, int order, int reps, bool permutePaulis);
+void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal tau, int order, int reps, bool permuteTerms);
 
 
 /** @notyettested
@@ -547,6 +550,10 @@ void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qrea
  * Hamiltonian @p hamil and jump operators @p jumps with corresponding damping rates @p damps, with 
  * evolution approximated by symmetrized Trotterisation of the specified @p order and number of cycles
  * @p reps.
+ * 
+ * Note the ordering of all passed PauliStrSum (through functions like sortPauliStrSumMagnitude()) will
+ * affect that of the internally created super-propagator and ergo the Trotter accuracy. This is overridden
+ * by passing @p permuteTerms=true, whereby the super-propagator order is randomised every Trotter repetition.
  * 
  * @formulae 
  * 
@@ -669,7 +676,7 @@ void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qrea
  * @param[in]     time                 the duration through which to evolve the state.
  * @param[in]     order                the order of the Trotter-Suzuki decomposition (e.g. @p 1, @p 2, @p 4, ...).
  * @param[in]     reps                 the number of Trotter repetitions.
- * @param[in]     permutePaulis        whether to randomly reorder Pauli strings at each repetition.
+ * @param[in]     permuteTerms         whether to randomly reorder Pauli terms at each repetition.
  * 
  * @throws @validationerror
  * - if @p qureg, @p hamil or any element of @p jumps are uninitialised.
@@ -683,11 +690,12 @@ void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qrea
  * - if memory allocation of the Lindbladian superoperator terms unexpectedly fails.
  * - if @p order is not 1 nor a positive, @b even integer.
  * - if @p reps is not a positive integer.
+ * - if internal allocation needed for term permutation fails.
  * 
  * @author Tyson Jones
  * @author Vasco Ferreira (randomisation)
  */
-void applyTrotterizedNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStrSum* jumps, int numJumps, qreal time, int order, int reps, bool permutePaulis);
+void applyTrotterizedNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStrSum* jumps, int numJumps, qreal time, int order, int reps, bool permuteTerms);
 
 
 // end de-mangler

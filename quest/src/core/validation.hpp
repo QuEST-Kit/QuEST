@@ -534,7 +534,9 @@ void validate_canReadFile(string fn, const char* caller);
  * TEMPORARY ALLOCATIONS
  */
 
-void validate_tempAllocSucceeded(bool succeeded, qindex numElems, qindex numBytesPerElem, const char* caller);
+void validate_tempAllocSucceeded(bool succeeded, size_t numBytes, const char* caller);
+
+void validate_tempListAllocSucceeded(bool succeeded, qindex numElems, qindex numBytesPerElem, const char* caller);
 
 
 

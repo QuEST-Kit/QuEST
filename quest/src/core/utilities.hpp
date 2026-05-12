@@ -245,8 +245,6 @@ qcomp* util_getGpuMemPtr(T matr) {
 
 qreal util_getSum(vector<qreal> list);
 
-vector<qindex> util_getInversePermutation(vector<qindex> permutation);
-
 
 
 /*
@@ -417,6 +415,7 @@ vector<qcomp> util_getVector(qcomp* ptr, int length);
 vector<Qureg> util_getVector(Qureg* ptr, int length);
 
 // calls errFunc when alloc fails
+void util_tryAllocVector(vector<qindex>   &vec, qindex size, std::function<void()> errFunc);
 void util_tryAllocVector(vector<qreal>    &vec, qindex size, std::function<void()> errFunc);
 void util_tryAllocVector(vector<qcomp>    &vec, qindex size, std::function<void()> errFunc);
 void util_tryAllocVector(vector<qcomp*>   &vec, qindex size, std::function<void()> errFunc);
