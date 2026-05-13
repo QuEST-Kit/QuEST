@@ -249,8 +249,15 @@ TEST_CASE( "setQuregAmps", TEST_CATEGORY ) {
     SECTION( LABEL_CORRECTNESS ) {
 
         int numTotalAmps = getPow2(getNumCachedQubits());
-        int numSetAmps = GENERATE_COPY( range(0,numTotalAmps+1) ); 
-        int startInd = GENERATE_COPY( range(0,numTotalAmps-numSetAmps) );
+        int numSetAmps = GENERATE_COPY( range(0,numTotalAmps+1) );
+
+        // Bounds-checking causes GENERATE_COPY( range(0,0) ) to fail
+        // when tests are compiled in Debug 
+        int startInd = 0;
+        if (numTotalAmps - numSetAmps > 0) {
+            startInd = GENERATE_COPY( range(0,numTotalAmps-numSetAmps) );
+        }
+        
         qvector amps = getRandomVector(numSetAmps);
 
         auto testFunc = [&](Qureg qureg) {
