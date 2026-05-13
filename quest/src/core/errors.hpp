@@ -75,6 +75,8 @@ void error_commNotInit();
 
 void error_commAlreadyInit();
 
+void error_commInvalidMpiComm();
+
 void error_commButEnvNotDistributed();
 
 void error_commOutOfBounds();

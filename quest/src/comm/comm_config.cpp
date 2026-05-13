@@ -216,12 +216,18 @@ void comm_sync() {
 
     #if COMPILE_SUBCOMM
         void comm_setMpiComm(MPI_Comm newComm) {
+
             // error if mpiCommQuEST is already set!
             if (mpiCommQuest != MPI_COMM_NULL) {
+                MPI_Barrier(mpiCommQuest);
+                MPI_Comm_free(mpiCommQuest);
                 error_commDoubleSetMpiComm();
             }
 
-            MPI_Comm_dup(newComm, &mpiCommQuest);
+            int mpi_err = MPI_Comm_dup(newComm, &mpiCommQuest);
+            if (mpi_err != MPI_SUCCESS) {
+                error_commInvalidMpiComm();
+            }
 
             return;
         }
