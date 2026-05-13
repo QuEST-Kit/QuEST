@@ -14,6 +14,8 @@
 #ifndef ENVIRONMENT_H
 #define ENVIRONMENT_H
 
+#include <stdbool.h>
+
 // enable invocation by both C and C++ binaries
 #ifdef __cplusplus
 extern "C" {
@@ -36,7 +38,7 @@ typedef struct {
     int isMultithreaded;
     int isGpuAccelerated;
     int isDistributed;
-    int userOwnsMpi;
+    bool userOwnsMpi;
 
     // deployment modes which cannot be directly changed after compilation
     int isCuQuantumEnabled;
@@ -62,7 +64,7 @@ void initQuESTEnv();
  */
 void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread);
 
-void initCustomMpiQuESTEnv(int useDistrib, int userOwnsMpi, int useGpuAccel, int useMultithread);
+void initCustomMpiQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, int useMultithread);
 
 /// @notyetdoced
 void finalizeQuESTEnv();

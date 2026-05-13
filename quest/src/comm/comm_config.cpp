@@ -103,7 +103,7 @@ bool comm_isInit() {
 }
 
 
-void comm_init(int userOwnsMpi) {
+void comm_init(bool userOwnsMpi) {
 #if COMPILE_MPI
 
     // error if attempting re-initialisation
@@ -130,7 +130,7 @@ void comm_init(int userOwnsMpi) {
 }
 
 
-void comm_end(int userOwnsMpi) {
+void comm_end(bool userOwnsMpi) {
 #if COMPILE_MPI
 
     // gracefully permit comm_end() before comm_init(), as input validation can trigger

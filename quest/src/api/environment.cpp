@@ -71,7 +71,7 @@ static bool hasEnvBeenFinalized = false;
  */
 
 
-void validateAndInitCustomQuESTEnv(int useDistrib, int userOwnsMpi, int useGpuAccel, int useMultithread, const char* caller) {
+void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, int useMultithread, const char* caller) {
 
     // ensure that we are never re-initialising QuEST (even after finalize) because
     // this leads to undefined behaviour in distributed mode, as per the MPI
@@ -410,7 +410,7 @@ void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread) {
 }
 
 
-void initCustomMpiQuESTEnv(int useDistrib, int userOwnsMpi, int useGpuAccel, int useMultithread) {
+void initCustomMpiQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, int useMultithread) {
     validateAndInitCustomQuESTEnv(useDistrib, userOwnsMpi, useGpuAccel, useMultithread, __func__);
 }
 
