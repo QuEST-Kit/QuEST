@@ -220,7 +220,7 @@ void comm_sync() {
             // error if mpiCommQuEST is already set!
             if (mpiCommQuest != MPI_COMM_NULL) {
                 MPI_Barrier(mpiCommQuest);
-                MPI_Comm_free(mpiCommQuest);
+                MPI_Comm_free(&mpiCommQuest);
                 error_commDoubleSetMpiComm();
             }
 
