@@ -65,8 +65,7 @@ void setDefaultCtrlStates(SmallList ctrls, SmallList &states) {
 
     // default ctrl state is all-1
     if (states.empty())
-        for (auto _ : ctrls)
-            states.push_back(1);
+        states.assign(ctrls.size(), 1);
 }
 
 

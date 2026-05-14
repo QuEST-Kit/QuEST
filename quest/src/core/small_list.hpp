@@ -144,6 +144,17 @@ public:
         return const_cast<int&>(
             static_cast<const SmallList&>(*this).back());
     }
+
+    INLINE void assign(size_t count, int value) {
+
+        if (count > MAX_LIST_LENGTH)
+            error_smallListLengthExceededMax();
+
+        for (auto i = 0; i < count; i++)
+            elems[i] = value;
+
+        length = count;
+    }
 };
 
 
