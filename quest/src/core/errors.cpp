@@ -777,6 +777,11 @@ void error_smallListWasEmpty() {
     raiseInternalError("A SmallList was unexpectedly empty.");
 }
 
+void error_smallListNullPtrWithPositiveLength() {
+
+    raiseInternalError("The SmallList constructor was given a nullptr yet a non-zero length.");
+}
+
 
 
 /*

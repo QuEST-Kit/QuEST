@@ -110,7 +110,7 @@ void internal_applyAllTrotterRepetitions(
     // prepare control-qubit lists once for all invoked gadgets below
     auto ketCtrlsList = list_getSmallList(controls, numControls);
     auto braCtrlsList = (qureg.isDensityMatrix)? util_getBraQubits(ketCtrlsList, qureg) : list_getEmptySmallList();
-    auto statesList = list_getSmallList(states, numControls);
+    auto statesList = list_getSmallList(states, numControls * (states != nullptr));
 
     qcomp arg = angle / reps;
 

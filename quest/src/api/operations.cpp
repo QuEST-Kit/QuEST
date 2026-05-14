@@ -43,7 +43,7 @@ void validateAndApplyAnyCtrlAnyTargUnitaryMatrix(Qureg qureg, int* ctrls, int* s
         validate_mixedAmpsFitInNode(qureg, numTargs, caller);
 
     SmallList ctrlList  = list_getSmallList(ctrls,  numCtrls);
-    SmallList stateList = list_getSmallList(states, numCtrls);
+    SmallList stateList = list_getSmallList(states, numCtrls * (states != nullptr));
     SmallList targList  = list_getSmallList(targs,  numTargs);
 
     bool conj = false;
@@ -411,7 +411,7 @@ void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* sta
 
     bool conj = false;
     auto ctrlList = list_getSmallList(controls, numControls);
-    auto stateList = list_getSmallList(states,  numControls); // empty if states==nullptr
+    auto stateList = list_getSmallList(states,  numControls * (states != nullptr));
     auto targList = list_getSmallList(targets,  numTargets);
     localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, ctrlList, stateList, targList, matrix, exponent, conj);
 
@@ -679,7 +679,7 @@ void applyMultiStateControlledSwap(Qureg qureg, int* controls, int* states, int 
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
     auto ctrlList = list_getSmallList(controls, numControls);
-    auto stateList = list_getSmallList(states, numControls); // empty if states==nullptr
+    auto stateList = list_getSmallList(states, numControls * (states != nullptr));
     localiser_statevec_anyCtrlSwap(qureg, ctrlList, stateList, qubit1, qubit2);
 
     if (!qureg.isDensityMatrix)
@@ -967,7 +967,7 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
 
     qcomp factor = 1;
     auto ctrlList = list_getSmallList(controls, numControls);
-    auto stateList = list_getSmallList(states, numControls); // empty if states==nullptr
+    auto stateList = list_getSmallList(states, numControls * (states != nullptr));
 
     // when there are no control qubits, we can merge the density matrix's 
     // operation sinto a single tensor, i.e. +- (shift(str) (x) str), to 
@@ -1293,7 +1293,7 @@ void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* state
 
     qreal phase = util_getPhaseFromGateAngle(angle);
     auto ctrlList = list_getSmallList(controls, numControls);
-    auto stateList = list_getSmallList(states, numControls); // empty if states==nullptr
+    auto stateList = list_getSmallList(states, numControls * (states != nullptr));
     localiser_statevec_anyCtrlPauliGadget(qureg, ctrlList, stateList, str, phase);
 
     if (!qureg.isDensityMatrix)
@@ -1358,8 +1358,8 @@ void applyMultiStateControlledPhaseGadget(Qureg qureg, int* controls, int* state
 
     qreal phase = util_getPhaseFromGateAngle(angle);
     auto ctrlList = list_getSmallList(controls, numControls);
+    auto stateList = list_getSmallList(states,  numControls * (states != nullptr));
     auto targList = list_getSmallList(targets,  numTargets);
-    auto stateList = list_getSmallList(states,  numControls); // empty if states==nullptr
     localiser_statevec_anyCtrlPhaseGadget(qureg, ctrlList, stateList, targList, phase);
 
     if (!qureg.isDensityMatrix)

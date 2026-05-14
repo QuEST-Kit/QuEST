@@ -313,6 +313,8 @@ void error_smallListIndexExceededLength();
 
 void error_smallListWasEmpty();
 
+void error_smallListNullPtrWithPositiveLength();
+
 
 
 /*
