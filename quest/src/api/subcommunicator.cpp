@@ -6,12 +6,13 @@
 
 #if COMPILE_MPI && COMPILE_SUBCOMM
 
+#include <stdbool.h>
 #include <mpi.h>
 
 void initCustomMpiCommQuESTEnv(MPI_Comm userQuestComm, int useGpuAccel, int useMultithread) {
     // useDistrib and userOwnsMpi are implied by the user of this initialiser
     const int useDistrib = 1;
-    const int userOwnsMpi = 1;
+    const bool userOwnsMpi = true;
 
     // set mpiCommQuest to user provided communicator
     comm_setMpiComm(userQuestComm);
