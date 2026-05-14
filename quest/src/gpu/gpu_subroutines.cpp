@@ -293,8 +293,9 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, SmallList ctrls, Sma
 #if COMPILE_CUQUANTUM
 
     bool applyAdj = false;
+    auto targsList = list_getSmallList({targ});
     auto arr = getFlattenedGpuQcompMatrix<2>(matr.elems); // explicit template for MSVC, grr!
-    cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(qureg, ctrls, ctrlStates, {targ}, arr.data(), applyAdj);
+    cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(qureg, ctrls, ctrlStates, targsList, arr.data(), applyAdj);
 
 #elif COMPILE_CUDA
 
@@ -550,8 +551,8 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, SmallList ctrls, Small
         bool conj = false;
 
         // we can pass 1D CPU .elems array directly to cuQuantum which will recognise host pointers
-        auto targs = list_getSmallList({targ});
-        cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, getGpuQcompPtr(matr.elems), conj);
+        cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(
+            qureg, ctrls, ctrlStates, list_getSmallList({targ}), getGpuQcompPtr(matr.elems), conj);
         
         // explicitly return to avoid re-simulation below
         return;
@@ -613,14 +614,15 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, SmallList ctrls, Small
 
 #if COMPILE_CUQUANTUM
 
-    if (util_areAllQubitsInSuffix({targ1,targ2}, qureg)) {
+    auto targsList = list_getSmallList({targ1, targ2});
+
+    if (util_areAllQubitsInSuffix(targsList, qureg)) {
 
         // we never conjugate DiagMatr2 at this level; the caller will have already conjugated
         bool conj = false;
 
         // we can pass 1D CPU array directly to cuQuantum, and it will recognise host pointers
-        auto targs = list_getSmallList({targ1, targ2});
-        cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, getGpuQcompPtr(matr.elems), conj);
+        cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targsList, getGpuQcompPtr(matr.elems), conj);
 
         // explicitly return to avoid re-simulation below
         return;

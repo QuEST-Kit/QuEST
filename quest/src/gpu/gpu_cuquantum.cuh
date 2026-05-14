@@ -285,7 +285,10 @@ void cuquantum_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal 
     int targ = qureg.logNumAmpsPerNode - 1; // leftmost suffix bra qubit
 
     bool conj = false;
-    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {ketQubit}, {!braBit}, {targ}, elems, conj);
+    auto ctrls  = list_getEmptySmallList({ketQubit});
+    auto states = list_getEmptySmallList({!braBit});
+    auto targs  = list_getEmptySmallList({targ});
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, states, targs, elems, conj);
 }
 
 
@@ -305,7 +308,7 @@ void cuquantum_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubi
 
     bool conj = false;
     auto empty = list_getEmptySmallList();
-    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, empty, empty targs, elems, conj);
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, empty, empty, targs, elems, conj);
 }
 
 
