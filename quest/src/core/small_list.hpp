@@ -38,7 +38,7 @@
  */
 
 
-constexpr int MAX_LIST_LENGTH = 64;
+constexpr size_t MAX_LIST_LENGTH = 64;
 
 
 
@@ -62,7 +62,10 @@ private:
     // Readers may wonder why we avoid std::array;
     // it has a surprise overhead in pass-by-ref!
     int elems[MAX_LIST_LENGTH];
-    int length;
+
+    // We use size_t, over the arguably internally
+    // natural int, for consistency with STL containers
+    size_t length;
 
 public:
 
@@ -100,7 +103,7 @@ public:
     INLINE bool empty() const { 
         return length == 0; 
     }
-    INLINE int size() const { 
+    INLINE size_t size() const { 
         return length;
     }
     INLINE int* data() {
@@ -118,12 +121,12 @@ public:
         elems[length++] = elem;
     }
 
-    INLINE void resize(int newLength, int value=0) {
+    INLINE void resize(size_t newLength, int value=0) {
 
         if (newLength > MAX_LIST_LENGTH)
             error_smallListLengthExceededMax();
 
-        for (int i=length; i<newLength; i++)
+        for (auto i=length; i<newLength; i++)
             elems[i] = value;
 
         length = newLength;
@@ -131,7 +134,7 @@ public:
 
     INLINE const int& back() const {
 
-        if (empty())
+        if (length == 0)
             error_smallListWasEmpty();
 
         return elems[length - 1];
@@ -167,7 +170,7 @@ INLINE SmallList list_getSmallList(const int* begin, const int* end) {
     if (end < begin)
         error_smallListIndexExceededLength();
 
-    int length = static_cast<int>(end - begin);
+    auto length = static_cast<size_t>(end - begin);
     if (length > MAX_LIST_LENGTH)
         error_smallListLengthExceededMax();
 
@@ -180,12 +183,16 @@ INLINE SmallList list_getSmallList(const int* begin, const int* end) {
 }
 
 
-INLINE SmallList list_getSmallList(const int* elems, int length) {
+INLINE SmallList list_getSmallList(const int* elems, size_t length) {
 
+    if (elems == nullptr && length > 0)
+        error_smallListNullPtrWithPositiveLength();
+    
+    // no ptr necessary whgen list is empty
     if (elems == nullptr)
         return list_getEmptySmallList();
 
-    return list_getSmallList(elems, elems + length);
+    return list_getSmallList(elems, elems + length); // validates length <= MAX
 }
 
 
