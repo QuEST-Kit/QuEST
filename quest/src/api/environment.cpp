@@ -405,8 +405,8 @@ extern "C" {
 
 void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread) {
 
-    const int USER_OWNS_MPI = 0;
-    validateAndInitCustomQuESTEnv(useDistrib, USER_OWNS_MPI, useGpuAccel, useMultithread, __func__);
+    const bool userOwnsMpi = false;
+    validateAndInitCustomQuESTEnv(useDistrib, userOwnsMpi, useGpuAccel, useMultithread, __func__);
 }
 
 
@@ -416,8 +416,8 @@ void initCustomMpiQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, in
 
 void initQuESTEnv() {
 
-    const int USER_OWNS_MPI = 0;
-    validateAndInitCustomQuESTEnv(modeflag::USE_AUTO, USER_OWNS_MPI, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
+    const bool userOwnsMpi = false;
+    validateAndInitCustomQuESTEnv(modeflag::USE_AUTO, userOwnsMpi, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
 }
 
 
