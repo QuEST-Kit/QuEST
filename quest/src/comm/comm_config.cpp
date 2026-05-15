@@ -106,18 +106,10 @@ bool comm_isInit() {
 void comm_init(int useDistrib, bool userOwnsMpi) {
 #if COMPILE_MPI
 
-    // error if attempting re-initialisation
-    if (!userOwnsMpi && comm_isInit())
-        error_commAlreadyInit();
-
     // error if user owns MPI but has not initialised
     if (userOwnsMpi && !comm_isInit()) {
         error_commNotInit();
     }
-   
-    // QuEST must initialise MPI if the user does not own it
-    if (!userOwnsMpi)
-        MPI_Init(NULL, NULL);
    
     // Overall mpiCommQuest should be set in the following ways
     // however only useDistrib = 1 and userOwnsMpi = false
@@ -139,8 +131,14 @@ void comm_init(int useDistrib, bool userOwnsMpi) {
     
 
     if (useDistrib && !userOwnsMpi) {
-        // The user wants MPI and is leaving it to QuEST
-        MPI_Comm_dup(MPI_COMM_WORLD, &mpiCommQuest);
+        // error if attempting re-initialisation
+        if (comm_isInit()) {
+            error_commAlreadyInit();
+        } else {
+            MPI_Init(NULL, NULL);
+            // The user wants MPI and is leaving it to QuEST
+            MPI_Comm_dup(MPI_COMM_WORLD, &mpiCommQuest);
+        }
     } else if (!useDistrib && userOwnsMpi) {
         // The user has initialised MPI but wants QuEST to ignore it
         MPI_Comm_dup(MPI_COMM_SELF, &mpiCommQuest);
