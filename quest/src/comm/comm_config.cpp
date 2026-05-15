@@ -103,7 +103,7 @@ bool comm_isInit() {
 }
 
 
-void comm_init(bool userOwnsMpi) {
+void comm_init(int useDistrib, bool userOwnsMpi) {
 #if COMPILE_MPI
 
     // error if attempting re-initialisation
@@ -118,15 +118,42 @@ void comm_init(bool userOwnsMpi) {
     // QuEST must initialise MPI if the user does not own it
     if (!userOwnsMpi)
         MPI_Init(NULL, NULL);
+   
+    // Overall mpiCommQuest should be set in the following ways
+    // however only useDistrib = 1 and userOwnsMpi = false
+    // and useDistrib = 0 and userOwnsMpi = true 
+    // require action here
+    //
+    // | useDistrib | userOwnsMpi |  mpiCommQuest  |
+    // | ---------- | ----------- | -------------- |
+    // |     0      |    false    | MPI_COMM_NULL  |
+    // | ---------- | ----------- | -------------- |
+    // |     1      |    false    | MPI_COMM_WORLD |
+    // | ---------- | ----------- | -------------- |
+    // |     0      |    true     | MPI_COMM_SELF  |
+    // | ---------- | ----------- | -------------- |
+    // |            |             | MPI_COMM_WORLD |
+    // |     1      |    true     |      or        |
+    // |            |             | userQuestComm  |
+    // | ---------- | ----------- | -------------- |
     
-    // If user is setting their own comm, mpiCommQuest will be NOT MPI_COMM_NULL, 
-    // and we should not touch it.
-    // If user is NOT setting their own comm, mpiCommQuest will be MPI_COMM_NULL,
-    // and we should set it to MPI_COMM_WORLD.
-    if (mpiCommQuest == MPI_COMM_NULL)
+
+    if (useDistrib && !userOwnsMpi) {
+        // The user wants MPI and is leaving it to QuEST
         MPI_Comm_dup(MPI_COMM_WORLD, &mpiCommQuest);
+    } else if (!useDistrib && userOwnsMpi) {
+        // The user has initialised MPI but wants QuEST to ignore it
+        MPI_Comm_dup(MPI_COMM_SELF, &mpiCommQuest);
+    } else if (useDistrib && userOwnsMpi) {
+        // if mpiCommQuEST is still MPI_COMM_NULL the user is not 
+        // providing their own MPI_Comm and we should set mpiCommQuest
+        // to MPI_COMM_WORLD
+        if (mpiCommQuest == MPI_COMM_NULL)
+            MPI_Comm_dup(MPI_COMM_WORLD, &mpiCommQuest);
+    }
 
 #endif
+    return;
 }
 
 
