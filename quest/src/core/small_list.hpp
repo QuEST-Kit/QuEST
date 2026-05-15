@@ -85,7 +85,7 @@ public:
 
         if (index < 0)
             error_smallListIndexWasNegative();
-        if (index >= length)
+        if (index >= static_cast<int>(length))
             error_smallListIndexExceededLength();
 
         return elems[index];
@@ -150,7 +150,7 @@ public:
         if (count > MAX_LIST_LENGTH)
             error_smallListLengthExceededMax();
 
-        for (auto i = 0; i < count; i++)
+        for (size_t i = 0; i < count; i++)
             elems[i] = value;
 
         length = count;
@@ -170,7 +170,7 @@ public:
 
 INLINE SmallList list_getEmptySmallList() {
 
-    SmallList out;
+    SmallList out{};
     out.clear();
     return out;
 }

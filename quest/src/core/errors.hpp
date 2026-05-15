@@ -4,6 +4,12 @@
  * hardware accelerators are behaving as expected, and that runtime
  * deployment is consistent with the compiled deployment modes.
  * 
+ * Some error() functions are explicitly marked as [[noreturn]] so that
+ * the compiler knows code after their invocation is never executed,
+ * avoiding warnings about (e.g.) invalid static array indexing. In
+ * theory, all error() functions can be [[noreturn]], but we only
+ * bother with the ones that make a compile-time difference.
+ * 
  * @author Tyson Jones
  * @author Luc Jaulmes (NUMA & pagesize errors)
  */
@@ -305,15 +311,15 @@ void error_pauliStrSumConjHasIncorrectNumTerms();
  * LIST ERRORS 
  */
 
-void error_smallListLengthExceededMax();
+[[noreturn]] void error_smallListLengthExceededMax();
 
-void error_smallListIndexWasNegative();
+[[noreturn]] void error_smallListIndexWasNegative();
 
-void error_smallListIndexExceededLength();
+[[noreturn]] void error_smallListIndexExceededLength();
 
-void error_smallListWasEmpty();
+[[noreturn]] void error_smallListWasEmpty();
 
-void error_smallListNullPtrWithPositiveLength();
+[[noreturn]] void error_smallListNullPtrWithPositiveLength();
 
 
 
