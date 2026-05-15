@@ -3,6 +3,7 @@
 #include "quest/include/subcommunicator.h"
 
 #include "quest/src/comm/comm_config.hpp"
+#include "quest/src/core/errors.hpp"
 
 #if COMPILE_MPI && COMPILE_SUBCOMM
 
@@ -15,7 +16,11 @@ void initCustomMpiCommQuESTEnv(MPI_Comm userQuestComm, int useGpuAccel, int useM
     const bool userOwnsMpi = true;
 
     // set mpiCommQuest to user provided communicator
-    comm_setMpiComm(userQuestComm);
+    if (comm_isInit()) {
+        comm_setMpiComm(userQuestComm);
+    } else {
+        error_commNotInit();
+    }
 
     // initialise QuEST around that communicator
     initCustomMpiQuESTEnv(useDistrib, userOwnsMpi, useGpuAccel, useMultithread);
