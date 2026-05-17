@@ -363,7 +363,7 @@ void gpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, SmallList ctrls, Smal
 #if COMPILE_CUQUANTUM
 
     bool applyAdj = false;
-    auto targsList = list_getSmallList({targ});
+    auto targsList = list_getSmallList({targ1, targ2});
     auto arr = getFlattenedGpuQcompMatrix<4>(matr.elems); // explicit template for MSVC, grr!
     cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(qureg, ctrls, ctrlStates, targsList, arr.data(), applyAdj);
 
