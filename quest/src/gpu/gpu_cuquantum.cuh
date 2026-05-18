@@ -44,6 +44,7 @@
 
 #include "quest/include/precision.h"
 
+#include "quest/src/core/small_list.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 #include "quest/src/gpu/gpu_qcomp.cuh"
@@ -174,7 +175,7 @@ void gpu_finalizeCuQuantum() {
  */
 
 
-void cuquantum_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2) {
+void cuquantum_statevec_anyCtrlSwap_subA(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2) {
 
     // our SWAP targets are bundled into pairs
     int2 targPairs[] = {{targ1, targ2}};;
@@ -199,7 +200,7 @@ void cuquantum_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<
  */
 
 
-void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, gpu_qcomp* flatMatrElems, bool applyAdj) {
+void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, gpu_qcomp* flatMatrElems, bool applyAdj) {
 
     // this funciton is called 'subA' instead of just 'sub', because it is also called in 
     // the one-target case whereby it is strictly the embarrassingly parallel _subA scenario
@@ -222,7 +223,7 @@ void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> 
 // there is no bespoke cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subB()
 
 
-void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, gpu_qcomp* flatMatrElems, bool conj) {
+void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, gpu_qcomp* flatMatrElems, bool conj) {
 
     // beware that despite diagonal matrices being embarrassingly parallel,
     // the target qubits must still all be suffix-only to avoid a cuStateVec error
@@ -262,10 +263,11 @@ void cuquantum_densmatr_oneQubitDephasing_subA(Qureg qureg, int qubit, qreal pro
     gpu_qcomp a = {1,        0};
     gpu_qcomp b = {1-2*prob, 0};
     gpu_qcomp elems[] = {a, b, b, a};
-    vector<int> targs {qubit, util_getBraQubit(qubit,qureg)};
+    auto targs = list_getSmallList({qubit, util_getBraQubit(qubit,qureg)});
 
     bool conj = false;
-    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {}, {}, targs, elems, conj);
+    auto empty = list_getEmptySmallList();
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, empty, empty, targs, elems, conj);
 }
 
 
@@ -283,7 +285,10 @@ void cuquantum_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal 
     int targ = qureg.logNumAmpsPerNode - 1; // leftmost suffix bra qubit
 
     bool conj = false;
-    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {ketQubit}, {!braBit}, {targ}, elems, conj);
+    auto ctrls  = list_getSmallList({ketQubit});
+    auto states = list_getSmallList({!braBit});
+    auto targs  = list_getSmallList({targ});
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, states, targs, elems, conj);
 }
 
 
@@ -299,10 +304,11 @@ void cuquantum_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubi
     gpu_qcomp a = {1,          0};
     gpu_qcomp b = {1-4*prob/3, 0};
     gpu_qcomp elems[] = {a,b,b,b, b,a,b,b, b,b,a,b, b,b,b,a};
-    vector<int> targs {qubitA, qubitB, util_getBraQubit(qubitA,qureg), util_getBraQubit(qubitB,qureg)};
+    auto targs = list_getSmallList({qubitA, qubitB, util_getBraQubit(qubitA,qureg), util_getBraQubit(qubitB,qureg)});
 
     bool conj = false;
-    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {}, {}, targs, elems, conj);
+    auto empty = list_getEmptySmallList();
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, empty, empty, targs, elems, conj);
 }
 
 
@@ -339,7 +345,7 @@ qreal cuquantum_statevec_calcTotalProb_sub(Qureg qureg) {
 }
 
 
-qreal cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+qreal cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallList qubits, SmallList outcomes) {
 
     // cuQuantum probabilities are always double
     double prob;
@@ -353,7 +359,7 @@ qreal cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int
 }
 
 
-void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits) {
+void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallList qubits) {
 
     // cuQuantum can accept a host-pointer (like outProbs), but only
     // double precision; if qreal != double, we use temporary memory
@@ -384,12 +390,12 @@ void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qu
  */
 
 
-qreal cuquantum_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
+qreal cuquantum_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallList x, SmallList y, SmallList z) {
 
     // prepare term (XX...YY...ZZ...)
     size_t numPaulis = x.size() + y.size() + z.size();
     vector<custatevecPauli_t> paulis; 
-    vector<int32_t> targs; 
+    vector<int32_t> targs; // forego SmallList for symmetry
     
     paulis.reserve(numPaulis);
     targs.reserve(numPaulis);
@@ -416,9 +422,10 @@ qreal cuquantum_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vect
 }
 
 
-qreal cuquantum_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
+qreal cuquantum_statevec_calcExpecAnyTargZ_sub(Qureg qureg, SmallList targs) {
 
-    return cuquantum_statevec_calcExpecPauliStr_subA(qureg, {}, {}, targs);
+    auto empty = list_getEmptySmallList();
+    return cuquantum_statevec_calcExpecPauliStr_subA(qureg, empty, empty, targs);
 }
 
 
@@ -428,7 +435,7 @@ qreal cuquantum_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
  */
 
 
-void cuquantum_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
+void cuquantum_statevec_multiQubitProjector_sub(Qureg qureg, SmallList qubits, SmallList outcomes, qreal prob) {
 
     CUDA_CHECK( custatevecCollapseByBitString(
         config.handle,

@@ -24,6 +24,8 @@
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 
+#include "quest/src/core/small_list.hpp"
+
 #include <vector>
 
 using std::vector;
@@ -175,7 +177,7 @@ void accel_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliS
  * COMMUNICATION BUFFER PACKING
  */
 
-qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, vector<int> qubits, vector<int> qubitStates);
+qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, SmallList qubits, SmallList qubitStates);
 
 qindex accel_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qubit2, int qubit3, int bit2);
 
@@ -184,32 +186,32 @@ qindex accel_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int 
  * SWAPS
  */
 
-void accel_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2);
-void accel_statevec_anyCtrlSwap_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates);
-void accel_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, int targState);
+void accel_statevec_anyCtrlSwap_subA(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2);
+void accel_statevec_anyCtrlSwap_subB(Qureg qureg, SmallList ctrls, SmallList ctrlStates);
+void accel_statevec_anyCtrlSwap_subC(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, int targState);
 
 
 /*
  * DENSE MATRICES
  */
 
-void accel_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr);
-void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, qcomp fac0, qcomp fac1);
+void accel_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, CompMatr1 matr);
+void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, SmallList ctrls, SmallList ctrlStates, qcomp fac0, qcomp fac1);
 
-void accel_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, CompMatr2 matr);
+void accel_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2, CompMatr2 matr);
 
-void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr, bool conj, bool transp);
+void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, CompMatr matr, bool conj, bool transp);
 
 
 /*
  * DIAGONAL MATRICES
  */
 
-void accel_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr);
+void accel_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, DiagMatr1 matr);
 
-void accel_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, DiagMatr2 matr);
+void accel_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2, DiagMatr2 matr);
 
-void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, qcomp exponent, bool conj);
+void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, DiagMatr matr, qcomp exponent, bool conj);
 
 void accel_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
 
@@ -222,10 +224,10 @@ void accel_densmatr_allTargDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qc
  * PAULI TENSOR AND GADGET
  */
 
-void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> z, qcomp ampFac, qcomp pairAmpFac);
+void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList z, qcomp ampFac, qcomp pairAmpFac);
 
-void accel_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> x, vector<int> y, vector<int> z, qcomp ampFac, qcomp pairAmpFac);
-void accel_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> x, vector<int> y, vector<int> z, qcomp ampFac, qcomp pairAmpFac, qindex bufferMaskXY);
+void accel_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList x, SmallList y, SmallList z, qcomp ampFac, qcomp pairAmpFac);
+void accel_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList x, SmallList y, SmallList z, qcomp ampFac, qcomp pairAmpFac, qindex bufferMaskXY);
 
 
 /*
@@ -273,7 +275,7 @@ void accel_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob);
  * PARTIAL TRACE
  */
 
-void accel_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> targs, vector<int> pairTargs);
+void accel_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, SmallList targs, SmallList pairTargs);
 
 
 /*
@@ -283,11 +285,11 @@ void accel_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, vector<int> 
 qreal accel_statevec_calcTotalProb_sub(Qureg qureg);
 qreal accel_densmatr_calcTotalProb_sub(Qureg qureg);
 
-qreal accel_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes);
-qreal accel_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes);
+qreal accel_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallList qubits, SmallList outcomes);
+qreal accel_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallList qubits, SmallList outcomes);
 
-void accel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits);
-void accel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits);
+void accel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallList qubits);
+void accel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallList qubits);
 
 
 /*
@@ -305,12 +307,12 @@ qreal accel_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB);
  * EXPECTATION VALUES
  */
 
-qreal accel_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> sufTargs);
-qcomp accel_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> allTargs);;
+qreal accel_statevec_calcExpecAnyTargZ_sub(Qureg qureg, SmallList sufTargs);
+qcomp accel_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, SmallList allTargs);;
 
-qcomp accel_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
-qcomp accel_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
-qcomp accel_densmatr_calcExpecPauliStr_sub (Qureg qureg, vector<int> x, vector<int> y, vector<int> z);
+qcomp accel_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallList x, SmallList y, SmallList z);
+qcomp accel_statevec_calcExpecPauliStr_subB(Qureg qureg, SmallList x, SmallList y, SmallList z);
+qcomp accel_densmatr_calcExpecPauliStr_sub (Qureg qureg, SmallList x, SmallList y, SmallList z);
 
 qcomp accel_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool useRealPow);
 qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool useRealPow);
@@ -320,8 +322,8 @@ qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMa
  * PROJECTORS 
  */
 
-void accel_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob);
-void accel_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob);
+void accel_statevec_multiQubitProjector_sub(Qureg qureg, SmallList qubits, SmallList outcomes, qreal prob);
+void accel_densmatr_multiQubitProjector_sub(Qureg qureg, SmallList qubits, SmallList outcomes, qreal prob);
 
 
 /*

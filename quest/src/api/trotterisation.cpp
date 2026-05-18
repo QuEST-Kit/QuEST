@@ -11,6 +11,7 @@
 #include "quest/include/matrices.h"
 
 #include "quest/src/core/validation.hpp"
+#include "quest/src/core/small_list.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/paulilogic.hpp"
@@ -29,8 +30,8 @@ using std::vector;
  */
 
 void internal_applyFirstOrderTrotterRepetition(
-    Qureg qureg, vector<int>& ketCtrls, vector<int>& braCtrls,
-    vector<int>& states, PauliStrSum sum, vector<qindex>& sumOrdering,
+    Qureg qureg, SmallList& ketCtrls, SmallList& braCtrls,
+    SmallList& states, PauliStrSum sum, vector<qindex>& sumOrdering,
     qcomp angle, bool onlyLeftApply, bool reverse
 ) {
     // apply each sum term as a gadget, in forward or reverse order
@@ -62,8 +63,8 @@ void internal_applyFirstOrderTrotterRepetition(
 }
 
 void internal_applyHigherOrderTrotterRepetition(
-    Qureg qureg, vector<int>& ketCtrls, vector<int>& braCtrls,
-    vector<int>& states, PauliStrSum sum, vector<qindex>& sumOrdering, 
+    Qureg qureg, SmallList& ketCtrls, SmallList& braCtrls,
+    SmallList& states, PauliStrSum sum, vector<qindex>& sumOrdering, 
     qcomp angle, int order, bool onlyLeftApply
 ) {
     if (order == 1) {
@@ -107,9 +108,9 @@ void internal_applyAllTrotterRepetitions(
     }
 
     // prepare control-qubit lists once for all invoked gadgets below
-    auto ketCtrlsVec = util_getVector(controls, numControls);
-    auto braCtrlsVec = (qureg.isDensityMatrix)? util_getBraQubits(ketCtrlsVec, qureg) : vector<int>{};
-    auto statesVec = util_getVector(states, numControls);
+    auto ketCtrlsList = list_getSmallList(controls, numControls);
+    auto braCtrlsList = (qureg.isDensityMatrix)? util_getBraQubits(ketCtrlsList, qureg) : list_getEmptySmallList();
+    auto statesList = list_getSmallList(states, numControls * (states != nullptr));
 
     qcomp arg = angle / reps;
 
@@ -120,7 +121,7 @@ void internal_applyAllTrotterRepetitions(
             rand_setListToShuffled(sumOrdering);
 
         internal_applyHigherOrderTrotterRepetition(
-            qureg, ketCtrlsVec, braCtrlsVec, statesVec, sum, sumOrdering, arg, order, onlyLeftApply);
+            qureg, ketCtrlsList, braCtrlsList, statesList, sum, sumOrdering, arg, order, onlyLeftApply);
     }
 }
 

@@ -19,6 +19,7 @@
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
+#include "quest/src/core/small_list.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/validation.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
@@ -73,7 +74,7 @@ bool util_isQubitInSuffix(int qubit, Qureg qureg) {
     return qubit < qureg.logNumAmpsPerNode;
 }
 
-bool util_areAllQubitsInSuffix(vector<int> qubits, Qureg qureg) {
+bool util_areAllQubitsInSuffix(SmallList qubits, Qureg qureg) {
 
     for (int q : qubits)
         if (!util_isQubitInSuffix(q, qureg))
@@ -89,22 +90,21 @@ bool util_isBraQubitInSuffix(int ketQubit, Qureg qureg) {
     return ketQubit < qureg.logNumColsPerNode;
 }
 
-vector<int> getPrefixOrSuffixQubits(vector<int> qubits, Qureg qureg, bool getSuffix) {
+SmallList getPrefixOrSuffixQubits(SmallList qubits, Qureg qureg, bool getSuffix) {
 
     // note that when the qureg is local/duplicated, 
     // all qubits will be suffix, none will be prefix
 
-    vector<int> subQubits(0);
-    subQubits.reserve(qubits.size());
-
+    int newLength = 0;
     for (int qubit : qubits)
         if (util_isQubitInSuffix(qubit, qureg) == getSuffix)
-            subQubits.push_back(qubit);
+            qubits[newLength++] = qubit;
 
-    return subQubits;
+    qubits.resize(newLength);
+    return qubits;
 }
 
-std::array<vector<int>,2> util_getPrefixAndSuffixQubits(vector<int> qubits, Qureg qureg) {
+std::array<SmallList,2> util_getPrefixAndSuffixQubits(SmallList qubits, Qureg qureg) {
     return {
         getPrefixOrSuffixQubits(qubits, qureg, false), 
         getPrefixOrSuffixQubits(qubits, qureg, true)
@@ -132,7 +132,7 @@ int util_getRankWithQubitFlipped(int prefixKetQubit, Qureg qureg) {
     return rankFlip;
 }
 
-int util_getRankWithQubitsFlipped(vector<int> prefixQubits,  Qureg qureg) {
+int util_getRankWithQubitsFlipped(SmallList prefixQubits,  Qureg qureg) {
 
     int rank = qureg.rank;
     for (int qubit : prefixQubits)
@@ -148,7 +148,7 @@ int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg) {
     return rankFlip;
 }
 
-int util_getRankWithBraQubitsFlipped(vector<int> ketQubits, Qureg qureg) {
+int util_getRankWithBraQubitsFlipped(SmallList ketQubits, Qureg qureg) {
 
     int rank = qureg.rank;
     for (int qubit : ketQubits)
@@ -157,23 +157,19 @@ int util_getRankWithBraQubitsFlipped(vector<int> ketQubits, Qureg qureg) {
     return rank;
 }
 
-vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg) {
+SmallList util_getBraQubits(SmallList ketQubits, Qureg qureg) {
 
-    vector<int> braInds(0);
-    braInds.reserve(ketQubits.size());
+    for (int &qubit : ketQubits)
+        qubit = util_getBraQubit(qubit, qureg);
 
-    for (int qubit : ketQubits)
-        braInds.push_back(util_getBraQubit(qubit, qureg));
-
-    return braInds;
+    return ketQubits;
 }
 
-vector<int> util_getNonTargetedQubits(int* targets, int numTargets, int numQubits) {
+SmallList util_getNonTargetedQubits(SmallList targets, int numQubits) {
     
-    qindex mask = getBitMask(targets, numTargets);
+    qindex mask = util_getBitMask(targets);
 
-    vector<int> nonTargets;
-    nonTargets.reserve(numQubits - numTargets);
+    SmallList nonTargets = list_getEmptySmallList();
 
     for (int i=0; i<numQubits; i++)
         if (getBit(mask, i) == 0)
@@ -182,41 +178,83 @@ vector<int> util_getNonTargetedQubits(int* targets, int numTargets, int numQubit
     return nonTargets;
 }
 
-vector<int> util_getConcatenated(vector<int> list1, vector<int> list2) {
+SmallList util_getConcatenated(SmallList list1, SmallList list2) {
 
-    // modify the copy of list1
-    list1.insert(list1.end(), list2.begin(), list2.end());
+    for (auto elem : list2)
+        list1.push_back(elem);
+
     return list1;
 }
 
-vector<int> util_getSorted(vector<int> qubits) {
+SmallList util_getSorted(SmallList list) {
 
-    vector<int> copy = qubits;
-    std::sort(copy.begin(), copy.end());
-    return copy;
+    // optimise common edgecases
+    if (list.size() < 2)
+        return list;
+
+    if (list.size() == 2) {
+        if (list[0] > list[1])
+            std::swap(list[0], list[1]);
+        return list;
+    }
+
+    // fallback to inbuilt sort
+    std::sort(list.begin(), list.end());
+    return list;
 }
 
-vector<int> util_getSorted(vector<int> ctrls, vector<int> targs) {
+SmallList util_getSorted(SmallList ctrls, SmallList targs) {
 
     return util_getSorted(util_getConcatenated(ctrls, targs));
 }
 
-qindex util_getBitMask(vector<int> qubits) {
+SmallList util_getSorted(SmallList ctrls, std::initializer_list<int> targs) {
+
+    return util_getSorted(ctrls, list_getSmallList(targs));
+}
+
+SmallList util_getRange(int maxExcl) {
+
+    SmallList out = list_getEmptySmallList();
+
+    for (int i=0; i<maxExcl; i++)
+        out.push_back(i);
+        
+    return out;
+}
+
+SmallList util_getConstantList(int elem, int length) {
+
+    SmallList out = list_getEmptySmallList();
+
+    for (int i=0; i<length; i++)
+        out.push_back(elem);
+    
+    return out;
+}
+
+qindex util_getBitMask(SmallList qubits) {
 
     // inserts qubits in state 1
     return getBitMask(qubits.data(), qubits.size());
 }
 
-qindex util_getBitMask(vector<int> qubits, vector<int> states) {
+qindex util_getBitMask(SmallList qubits, SmallList states) {
 
+    // assumes qubits.size() == states.size()
     return getBitMask(qubits.data(), states.data(), states.size());
 }
 
-qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, vector<int> targStates) {
+qindex util_getBitMask(SmallList ctrls, SmallList ctrlStates, SmallList targs, SmallList targStates) {
 
     auto qubits = util_getConcatenated(ctrls, targs);
     auto states = util_getConcatenated(ctrlStates, targStates);
     return util_getBitMask(qubits, states);
+}
+
+qindex util_getBitMask(SmallList ctrls, SmallList ctrlStates, std::initializer_list<int> targs, std::initializer_list<int> targStates) {
+
+    return util_getBitMask(ctrls, ctrlStates, list_getSmallList(targs), list_getSmallList(targStates));
 }
 
 

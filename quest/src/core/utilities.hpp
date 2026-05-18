@@ -20,6 +20,8 @@
 #include "quest/include/channels.h"
 #include "quest/include/environment.h"
 
+#include "quest/src/core/small_list.hpp"
+
 #include <type_traits>
 #include <functional>
 #include <utility>
@@ -38,36 +40,42 @@ using std::vector;
 
 bool util_isQubitInSuffix(int qubit, Qureg qureg);
 bool util_isBraQubitInSuffix(int ketQubit, Qureg qureg);
-bool util_areAllQubitsInSuffix(vector<int> qubits, Qureg qureg);
+bool util_areAllQubitsInSuffix(SmallList qubits, Qureg qureg);
 
 int util_getBraQubit(int ketQubit, Qureg qureg);
 
 int util_getPrefixInd(int qubit, Qureg qureg);
 int util_getPrefixBraInd(int ketQubit, Qureg qureg);
 
-std::array<vector<int>,2> util_getPrefixAndSuffixQubits(vector<int> qubits, Qureg qureg);
+std::array<SmallList,2> util_getPrefixAndSuffixQubits(SmallList qubits, Qureg qureg);
 
 int util_getRankBitOfQubit(int ketQubit, Qureg qureg);
 int util_getRankBitOfBraQubit(int ketQubit, Qureg qureg);
 
 int util_getRankWithQubitFlipped(int ketQubit, Qureg qureg);
-int util_getRankWithQubitsFlipped(vector<int> prefixQubits, Qureg qureg);
+int util_getRankWithQubitsFlipped(SmallList prefixQubits, Qureg qureg);
 
 int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg);
-int util_getRankWithBraQubitsFlipped(vector<int> ketQubits, Qureg qureg);
+int util_getRankWithBraQubitsFlipped(SmallList ketQubits, Qureg qureg);
 
-vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg);
+SmallList util_getBraQubits(SmallList ketQubits, Qureg qureg);
 
-vector<int> util_getNonTargetedQubits(int* targets, int numTargets, int numQubits);
+SmallList util_getNonTargetedQubits(SmallList, int numQubits);
 
-vector<int> util_getConcatenated(vector<int> list1, vector<int> list2);
+SmallList util_getConcatenated(SmallList list1, SmallList list2);
 
-vector<int> util_getSorted(vector<int> list);
-vector<int> util_getSorted(vector<int> ctrls, vector<int> targs);
+SmallList util_getRange(int maxExcl);
 
-qindex util_getBitMask(vector<int> qubits);
-qindex util_getBitMask(vector<int> qubits, vector<int> states);
-qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, vector<int> targStates);
+SmallList util_getConstantList(int elem, int length);
+
+SmallList util_getSorted(SmallList list);
+SmallList util_getSorted(SmallList ctrls, SmallList targs);
+SmallList util_getSorted(SmallList ctrls, std::initializer_list<int> targs);
+
+qindex util_getBitMask(SmallList qubits);
+qindex util_getBitMask(SmallList qubits, SmallList states);
+qindex util_getBitMask(SmallList ctrls, SmallList ctrlStates, SmallList targs, SmallList targStates);
+qindex util_getBitMask(SmallList ctrls, SmallList ctrlStates, std::initializer_list<int> targs, std::initializer_list<int> targStates);
 
 
 

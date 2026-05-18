@@ -37,6 +37,7 @@
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/constants.hpp"
+#include "quest/src/core/small_list.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/randomiser.hpp"
 #include "quest/src/core/fastmath.hpp"
@@ -64,11 +65,21 @@
  * copy constructor (devicevec d_vec = hostvec). The pointer 
  * to the data (d_vec.data()) can be cast into a raw pointer
  * and passed directly to CUDA kernels (though qcomp must be
- * reinterpreted to gpu_qcomp)
+ * reinterpreted to gpu_qcomp).
  */
 
 
 using devints = thrust::device_vector<int>;
+
+devints getDevInts(SmallList h_list) {
+
+    // DEBUG: this is a placeholder! James' GPU refactor should make it redundant, 
+    // and we can pass SmallList directly to a CUDA kernel, paying no heap allocs,
+    // nor CUDA memcpy costs
+
+    devints d_list = std::vector<int>(h_list.data(), h_list.data() + h_list.size());
+    return d_list;
+}
 
 int* getPtr(devints& qubits) {
 
@@ -779,9 +790,9 @@ qreal thrust_densmatr_calcTotalProb_sub(Qureg qureg) {
 
 
 template <int NumQubits>
-qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallList qubits, SmallList outcomes) {
 
-    devints sortedQubits = util_getSorted(qubits);
+    devints sortedQubits = getDevInts(util_getSorted(qubits));
     qindex valueMask = util_getBitMask(qubits, outcomes);
 
     auto indFunctor = functor_insertBits<NumQubits>(getPtr(sortedQubits), valueMask, qubits.size());
@@ -799,11 +810,11 @@ qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> q
 
 
 template <int NumQubits>
-qreal thrust_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+qreal thrust_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallList qubits, SmallList outcomes) {
 
     // cannot move these into functor_insertBits constructor, since the memory
     // would dangle - and we cannot bind deviceints as an attribute - it's host-only!
-    devints sortedQubits = util_getSorted(qubits);
+    devints sortedQubits = getDevInts(util_getSorted(qubits));
     qindex valueMask = util_getBitMask(qubits, outcomes);
 
     auto basisIndFunctor = functor_insertBits<NumQubits>(getPtr(sortedQubits), valueMask, qubits.size());
@@ -878,7 +889,7 @@ gpu_qcomp thrust_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
  */
 
 
-qreal thrust_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
+qreal thrust_statevec_calcExpecAnyTargZ_sub(Qureg qureg, SmallList targs) {
 
     qindex mask = util_getBitMask(targs);
     auto functor = functor_getExpecStateVecZTerm(mask);
@@ -893,7 +904,7 @@ qreal thrust_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
 }
 
 
-gpu_qcomp thrust_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
+gpu_qcomp thrust_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, SmallList targs) {
 
     qindex dim = powerOf2(qureg.numQubits);
     qindex ind = util_getLocalIndexOfFirstDiagonalAmp(qureg);
@@ -908,7 +919,7 @@ gpu_qcomp thrust_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) 
 }
 
 
-gpu_qcomp thrust_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
+gpu_qcomp thrust_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallList x, SmallList y, SmallList z) {
 
     qindex maskXY = util_getBitMask(util_getConcatenated(x, y));
     qindex maskYZ = util_getBitMask(util_getConcatenated(y, z));
@@ -925,7 +936,7 @@ gpu_qcomp thrust_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vec
 }
 
 
-gpu_qcomp thrust_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
+gpu_qcomp thrust_statevec_calcExpecPauliStr_subB(Qureg qureg, SmallList x, SmallList y, SmallList z) {
 
     qindex maskXY = util_getBitMask(util_getConcatenated(x, y));
     qindex maskYZ = util_getBitMask(util_getConcatenated(y, z));
@@ -943,7 +954,7 @@ gpu_qcomp thrust_statevec_calcExpecPauliStr_subB(Qureg qureg, vector<int> x, vec
 }
 
 
-gpu_qcomp thrust_densmatr_calcExpecPauliStr_sub(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
+gpu_qcomp thrust_densmatr_calcExpecPauliStr_sub(Qureg qureg, SmallList x, SmallList y, SmallList z) {
 
     qindex mXY = util_getBitMask(util_getConcatenated(x, y));
     qindex mYZ = util_getBitMask(util_getConcatenated(y, z));
@@ -1005,9 +1016,9 @@ gpu_qcomp thrust_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateD
 
 
 template <int NumQubits>
-void thrust_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal renorm) {
+void thrust_statevec_multiQubitProjector_sub(Qureg qureg, SmallList qubits, SmallList outcomes, qreal renorm) {
 
-    devints devQubits = qubits;
+    devints devQubits = getDevInts(qubits);
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
     auto projFunctor = functor_projectStateVec<NumQubits>(
         getPtr(devQubits), qubits.size(), retainValue, renorm);
@@ -1021,9 +1032,9 @@ void thrust_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, ve
 
 
 template <int NumQubits>
-void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal renorm) {
+void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, SmallList qubits, SmallList outcomes, qreal renorm) {
 
-    devints devQubits = qubits;
+    devints devQubits = getDevInts(qubits);
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
     auto projFunctor = functor_projectDensMatr<NumQubits>(
         getPtr(devQubits), qubits.size(), qureg.rank, qureg.numQubits,
