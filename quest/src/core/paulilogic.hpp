@@ -12,6 +12,8 @@
 #include "quest/include/paulis.h"
 #include "quest/include/qureg.h"
 
+#include "quest/src/core/small_list.hpp"
+
 #include <utility>
 #include <vector>
 #include <array>
@@ -43,13 +45,13 @@ int paulis_getIndOfLefmostNonIdentityPauli(PauliStr* strings, qindex numStrings)
 
 int paulis_getSignOfPauliStrConj(PauliStr str);
 
-int paulis_getPrefixZSign(Qureg qureg, vector<int> prefixZ);
+int paulis_getPrefixZSign(Qureg qureg, SmallList prefixZ);
 
-qcomp paulis_getPrefixPaulisElem(Qureg qureg, vector<int> prefixY, vector<int> prefixZ);
+qcomp paulis_getPrefixPaulisElem(Qureg qureg, SmallList prefixY, SmallList prefixZ);
 
-vector<int> paulis_getTargetInds(PauliStr str);
+SmallList paulis_getTargetInds(PauliStr str);
 
-std::array<vector<int>,3> paulis_getSeparateInds(PauliStr str);
+std::array<SmallList,3> paulis_getSeparateInds(PauliStr str);
 
 qindex paulis_getTargetBitMask(PauliStr str);
 
@@ -79,7 +81,7 @@ qindex paulis_getTargetBitMask(PauliStrSum sum);
 
 void paulis_applyPermutationToTerms(PauliStrSum sum, vector<qindex> permutation);
 
-void paulis_sortTermsViaComparator(PauliStrSum sum, std::function<bool(qindex, qindex)> comparator);
+void paulis_sortTermsViaComparator(PauliStrSum sum, std::function<bool(qindex, qindex)> comparator, std::function<void(size_t)> errFunc);
 
 
 // below are used exclusively by Trotterisation

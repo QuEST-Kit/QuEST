@@ -754,6 +754,37 @@ void error_pauliStrSumConjHasIncorrectNumTerms() {
 
 
 /*
+ * LIST ERRORS 
+ */
+
+void error_smallListLengthExceededMax() {
+
+    raiseInternalError("A SmallList was attemptedly allocated or grown to an illegally large size.");
+}
+
+void error_smallListIndexWasNegative() {
+
+    raiseInternalError("A SmallList index was negative.");
+}
+
+void error_smallListIndexExceededLength() {
+
+    raiseInternalError("A SmallList index equalled or exceeded the list length.");
+}
+
+void error_smallListWasEmpty() {
+
+    raiseInternalError("A SmallList was unexpectedly empty.");
+}
+
+void error_smallListNullPtrWithPositiveLength() {
+
+    raiseInternalError("The SmallList constructor was given a nullptr yet a non-zero length.");
+}
+
+
+
+/*
  * UTILITY ERRORS 
  */
 

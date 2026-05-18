@@ -44,6 +44,8 @@ Dr Ian Bush [consultant]
     HPC
 
 External contributors:
+Daniel Expósito Patiño
+    patched the applyMultiStateControlledSqrtSwap C++ signature (#737)
 Diogo Pratas Maia
     added non-unitary Pauli gadget (for unitaryHACK issue #594)
 Mai Đức Khang

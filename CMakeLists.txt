@@ -187,6 +187,7 @@ message(STATUS "Disabling of deprecated API warnings is turned ${DISABLE_DEPRECA
 option(INSTALL_BINARIES "Whether to include example and user binaries in the install." OFF)
 
 
+
 # ============================
 # Validate options
 # ============================
@@ -221,6 +222,26 @@ if(WIN32)
     message(FATAL_ERROR "The deprecated API is not compatible with MSVC.")
   endif()
 
+endif()
+
+
+# Encourage high-performance Release build
+
+# Taken from Kitware's exmaple of problematic code at
+# https://cmake.org/cmake/help/latest/manual/cmake-buildsystem.7.html#build-configurations
+# We have to use it here as we want to message the user! We are handling multiconfig
+# separately anyway.
+string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type)
+
+if(CMAKE_CONFIGURATION_TYPES)
+  message(WARNING
+    "You are using a multi-config generator, so make sure to subsequently "
+    "build with '--config Release' for best performance.")
+elseif(NOT (build_type STREQUAL "release" OR build_type STREQUAL "relwithdebinfo"))
+  message(WARNING
+    "Using a non-release build (CMAKE_BUILD_TYPE='${CMAKE_BUILD_TYPE}') "
+    "can significantly degrade performance. "
+    "Consider using -DCMAKE_BUILD_TYPE=Release.")
 endif()
 
 
@@ -403,6 +424,15 @@ if (ENABLE_CUDA)
   set(CUDA_PROPAGATE_HOST_FLAGS OFF)
   
   set_property(TARGET QuEST PROPERTY CUDA_STANDARD 20)
+
+  # force MSVC to use the modern preprocessor
+  if (MSVC)
+    target_compile_options(QuEST PRIVATE
+      $<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor>
+      $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/Zc:preprocessor>
+    )
+  endif()
+
 endif()
 
 
@@ -466,71 +496,6 @@ set(DISABLE_DEPRECATION_WARNINGS ${DISABLE_DEPRECATION_WARNINGS})
 
 # these do not appear in src but are saved for record-keeping in config.h.in
 set(COMPILE_HIP ${ENABLE_HIP})
-
-
-
-# ============================
-# Patch CPU performance
-# ============================
-
-
-# Patch performance of CPU std::complex arithmetic operator overloads.
-# The cpu_subroutines.cpp file makes extensive use of std::complex operator
-# overloads, and alas these are significantly slower than hand-rolled 
-# arithmetic, due to their NaN and inf checks, and interference with SIMD.
-# It is crucial to pass additional optimisation flags to this file to restore
-# hand-rolled performance (else QuEST v3 is faster than v4 eep). In theory,
-# we can achieve this with specific, relatively 'safe' flags such as LLVM's:
-#     -ffinite-math-only -fno-signed-zeros -ffp-contract=fast
-# However, it is a nuisance to find equivalent flags for different compilers
-# and monitor their performance vs accuracy trade-offs. So instead, we use the
-# much more aggressive and ubiquitous -Ofast flag to guarantee performance. 
-# This introduces many potentially dangerous optimisations, such as asserting
-# associativity of flops, which would break techniques like Kahan summation.
-# The cpu_subroutines.cpp must ergo be very conscious of these optimisations.
-# We here also explicitly inform the file cpu_subroutines.cpp whether or not
-# we are passing the flags, so it can detect/error when flags are forgotten.
-
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
-
-  # Release build will pass -Ofast when known for the given compiler, and
-  # fallback to giving a performance warning and proceeding with compilation
-
-  if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang|Cray|CrayClang|GNU|HP|Intel|IntelLLVM|NVHPC|NVIDIA|XL|XLClang")
-    set(patch_flags "-Ofast")
-    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=1")
-  elseif (CMAKE_CXX_COMPILER_ID MATCHES "HP")
-    set(patch_flags "+Ofast")
-    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=1")
-  elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    set(patch_flags "/fp:fast")
-    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=1")
-  else()
-    message(WARNING 
-      "The compiler (${CMAKE_CXX_COMPILER_ID}) is unrecognised and so crucial optimisation flags have not been "
-      "passed to the CPU backend. These flags are necessary for full performance when performing complex algebra, "
-      "otherwise a slowdown of 3-50x may be observed. Please edit the root CMakeLists.txt to include flags which are "
-      "equivalent to GNU's -Ofast flag for your compiler (search this warning), or contact the QuEST developers for help."
-    )
-    set(patch_flags "")
-    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=0")
-  endif()
-  
-else()
-
-  # Non-release builds (e.g. Debug) will pass no optimisation flags, and will
-  # communicate to cpu_subroutines.cpp that this is intentional via a macro
-
-  set(patch_flags "")
-  set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=0")
-
-endif()
-
-set_source_files_properties(
-  quest/src/cpu/cpu_subroutines.cpp
-  PROPERTIES
-  COMPILE_FLAGS "${patch_flags} ${patch_macro}"
-)
 
 
 
@@ -742,3 +707,4 @@ install(
 if(PROJECT_IS_TOP_LEVEL)
   include(CPack)
 endif ()
+

@@ -34,6 +34,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
+#include <limits>
 #include <string>
 #include <vector>
 #include <map>
@@ -694,6 +695,9 @@ namespace report {
     string NEW_PAULI_STR_SUM_DIFFERENT_NUM_STRINGS_AND_COEFFS =
         "Given a different number of Pauli strings (${NUM_STRS}) and coefficients ${NUM_COEFFS}.";
 
+    string NEW_PAULI_STR_SUM_MEM_WOULD_OVERFLOW =
+        "Cannot create a sum with ${NUM_TERMS} terms, since it exceeds the maximum of ${MAX_NUM_TERMS}, above which the total needed memory (${NUM_TERMS} * ${NUM_BYTES_PER_TERM}) would overflow size_t.";
+
     string NEW_PAULI_STR_SUM_CANNOT_FIT_INTO_CPU_MEM =
         "A PauliStrSum containing ${NUM_TERMS} terms cannot fit in the available RAM of ${NUM_BYTES} bytes.";
 
@@ -1107,7 +1111,10 @@ namespace report {
      */
 
     string TEMP_ALLOC_FAILED =
-        "A temporary allocation of ${NUM_ELEMS} elements (each of ${NUM_BYTES_PER_ELEM} bytes) failed, possibly because of insufficient memory.";
+        "A temporary, internal allocation of ${NUM_BYTES} bytes failed, possibly because of insufficient memory.";
+
+    string TEMP_LIST_ALLOC_FAILED =
+        "A temporary, internal allocation of a length-${NUM_ELEMS} list (each element requiring ${NUM_BYTES_PER_ELEM} bytes) failed, possibly because of insufficient memory.";
 
 
     /*
@@ -3243,6 +3250,13 @@ void validate_newPauliStrSumParams(qindex numTerms, const char* caller) {
 
     assertThat(numTerms > 0, report::NEW_PAULI_STR_SUM_NON_POSITIVE_NUM_STRINGS, {{"${NUM_TERMS}", numTerms}}, caller);
 
+    // assert that the total memory required does not overflow
+    // (so that alloc failure error messages can report numBytes)
+    size_t memPerTerm = sizeof(qcomp) + sizeof(PauliStr);
+    size_t maxNumTerms = std::numeric_limits<size_t>::max() / memPerTerm;
+    tokenSubs vars = {{"${NUM_TERMS}", numTerms}, {"${NUM_BYTES_PER_TERM}", memPerTerm}, {"${MAX_NUM_TERMS}", maxNumTerms}};
+    assertThat(numTerms < (qindex) maxNumTerms, report::NEW_PAULI_STR_SUM_MEM_WOULD_OVERFLOW, vars, caller);
+
     // attempt to fetch RAM, and simply return if we fail; if we unknowingly
     // didn't have enough RAM, then alloc validation will trigger later
     size_t memPerNode = 0;
@@ -4346,14 +4360,19 @@ void validate_canReadFile(string fn, const char* caller) {
  * TEMPORARY ALLOCATIONS
  */
 
-void validate_tempAllocSucceeded(bool succeeded, qindex numElems, qindex numBytesPerElem, const char* caller) {
+void validate_tempListAllocSucceeded(bool succeeded, qindex numElems, qindex numBytesPerElem, const char* caller) {
 
     // avoid showing total bytes in case it overflows
     tokenSubs vars = {
         {"${NUM_ELEMS}", numElems},
         {"${NUM_BYTES_PER_ELEM}", numBytesPerElem}};
 
-    assertThat(succeeded, report::TEMP_ALLOC_FAILED, vars, caller);
+    assertThat(succeeded, report::TEMP_LIST_ALLOC_FAILED, vars, caller);
+}
+
+void validate_tempAllocSucceeded(bool succeeded, size_t numBytes, const char* caller) {
+
+    assertThat(succeeded, report::TEMP_ALLOC_FAILED, {{"${NUM_BYTES}", numBytes}}, caller);
 }
 
 

@@ -216,7 +216,7 @@ vector<unsigned> getSeeds() {
     // allocate temp vector, and pedantically validate successful
     vector<unsigned> out;
     int numSeeds = getNumSeeds();
-    auto callback = [&]() { validate_tempAllocSucceeded(false, numSeeds, sizeof(unsigned), __func__); };
+    auto callback = [&]() { validate_tempListAllocSucceeded(false, numSeeds, sizeof(unsigned), __func__); };
     util_tryAllocVector(out, numSeeds, callback);
 
     getSeeds(out.data());
