@@ -46,7 +46,7 @@ using std::vector;
  */
 
 
-TEST_CASE( "setInputErrorHandler", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTInputErrorHandler", TEST_CATEGORY ) {
 
     /// @todo
     /// We can test this by saving the current handler,

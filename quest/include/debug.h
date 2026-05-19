@@ -79,7 +79,7 @@ int getQuESTNumSeeds();
  * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/setting_errorhandler.c) and 
  *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/setting_errorhandler.cpp) examples
  */
-void setInputErrorHandler(void (*callback)(const char* func, const char* msg));
+void setQuESTInputErrorHandler(void (*callback)(const char* func, const char* msg));
 
 
 /// @notyetdoced

@@ -205,7 +205,7 @@ void myErrorHandler(const char *func, const char *msg) {
     exit(1);
 }
 
-setInputErrorHandler(myErrorHandler);
+setQuESTInputErrorHandler(myErrorHandler);
 ```
 
 > [!TIP]
@@ -218,7 +218,7 @@ setInputErrorHandler(myErrorHandler);
 >     std::string msg(errMsg);
 >     throw std::runtime_error(func + ": " + msg);
 > }
-> setInputErrorHandler(myErrorHandler);
+> setQuESTInputErrorHandler(myErrorHandler);
 > ```
 <!-- newlines removed above because doxygen renders them as <br> text, how stupid! -->
 

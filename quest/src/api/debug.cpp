@@ -71,7 +71,7 @@ void getQuESTSeeds(unsigned* seeds) {
  * VALIDATION
  */
 
-void setInputErrorHandler(void (*callback)(const char*, const char*)) {
+void setQuESTInputErrorHandler(void (*callback)(const char*, const char*)) {
     validate_envIsInit(__func__);
 
     validateconfig_setErrorHandler(callback);

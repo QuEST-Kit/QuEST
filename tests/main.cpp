@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
     // prepare QuEST before anything else, since many
     // testing utility functions repurpose QuEST ones
     initQuESTEnv();
-    setInputErrorHandler(validationErrorHandler);
+    setQuESTInputErrorHandler(validationErrorHandler);
 
     // ensure RNG consensus among all nodes
     setRandomTestStateSeeds();
