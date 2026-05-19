@@ -125,7 +125,7 @@ qreal getQuESTValidationEpsilon() {
  */
 
 
-void setMaxNumReportedItems(qindex numRows, qindex numCols) {
+void setQuESTMaxNumReportedItems(qindex numRows, qindex numCols) {
     validate_envIsInit(__func__);
     validate_newMaxNumReportedScalars(numRows, numCols, __func__);
 

@@ -183,7 +183,7 @@ We may wish further to [adjust](https://quest-kit.github.io/QuEST/group__debug__
 ```cpp
 int maxRows = 8;
 int maxCols = 4;
-setMaxNumReportedItems(maxRows, maxCols);
+setQuESTMaxNumReportedItems(maxRows, maxCols);
 setMaxNumReportedSigFigs(3);
 ```
 or [add](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga29413703d609254244d6b13c663e6e06) extra spacing between QuEST's printed outputs
@@ -253,7 +253,7 @@ Qureg (10 qubit statevector, 1024 qcomps, 16.1 KiB):
     0  |1022⟩
     0  |1023⟩
 ```
-> This printed only `8` amplitudes as per our setting of [`setMaxNumReportedItems()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga093c985b1970a0fd8616c01b9825979a) above.
+> This printed only `8` amplitudes as per our setting of [`setQuESTMaxNumReportedItems()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga093c985b1970a0fd8616c01b9825979a) above.
 
 Behind the scenes, the function `createQureg` did something clever; it consulted the compiled deployments and available hardware to decide whether to distribute `qureg`, or dedicate it persistent GPU memory, and marked whether or not to multithread its subsequent modification. It attempts to choose _optimally_, avoiding gratuitous parallelisation if the overheads outweigh the benefits, or if the hardware devices have insufficient memory.
 
@@ -805,7 +805,7 @@ PauliStrSum (4 terms, 160 bytes):
 ```
 All outputs are affected by the [reporter settings](https://quest-kit.github.io/QuEST/group__debug__reporting.html).
 ```cpp
-setMaxNumReportedItems(4,4);
+setQuESTMaxNumReportedItems(4,4);
 setMaxNumReportedSigFigs(1);
 reportCompMatr(bigmatrix);
 ```

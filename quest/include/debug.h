@@ -115,7 +115,7 @@ qreal getQuESTValidationEpsilon();
 
 /// @notyetdoced
 /// @notyettested
-void setMaxNumReportedItems(qindex numRows, qindex numCols);
+void setQuESTMaxNumReportedItems(qindex numRows, qindex numCols);
 
 
 /** @notyetdoced

@@ -104,12 +104,12 @@ void reportMyStructs(Qureg qureg, PauliStrSum hamil, PauliStrSum observ) {
     setNumReportedNewlines(2);     // spacing between reports
     setReportedPauliChars(".XYZ"); // print I as .
     setReportedPauliStrStyle(0);   // print XYZ (0) or Z3 Y2 X1 (1)
-    setMaxNumReportedItems(8, 8);  // show max 8 qureg amplitudes
+    setQuESTMaxNumReportedItems(8, 8);  // show max 8 qureg amplitudes
 
     reportStr("[Initial state]");
     reportQureg(qureg);
 
-    setMaxNumReportedItems(0, 0); // show 0=all Pauli operators
+    setQuESTMaxNumReportedItems(0, 0); // show 0=all Pauli operators
 
     reportStr("[Hamiltonian]");
     reportPauliStrSum(hamil);
@@ -167,7 +167,7 @@ int main() {
     
     // preview the final state...
     setNumReportedNewlines(2);
-    setMaxNumReportedItems(25, 25);
+    setQuESTMaxNumReportedItems(25, 25);
     reportStr("[Final state]");
     reportQureg(qureg);
 

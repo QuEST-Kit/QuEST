@@ -746,7 +746,7 @@ TEST_CASE( "getGpuCacheSize", TEST_CATEGORY ) {
  */
 
 
-void setMaxNumReportedItems(qindex numRows, qindex numCols);
+void setQuESTMaxNumReportedItems(qindex numRows, qindex numCols);
 
 void getEnvironmentString(char str[200]);
 
