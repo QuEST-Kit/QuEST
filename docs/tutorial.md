@@ -193,7 +193,7 @@ setNumReportedNewlines(3);
 
 Perhaps we also wish to relax the [precision](https://quest-kit.github.io/QuEST/group__debug__validation.html#gae395568df6def76045ec1881fcb4e6d1) with which our future inputs will be asserted unitary or Hermitian
 ```cpp
-setValidationEpsilon(0.001);
+setQuESTValidationEpsilon(0.001);
 ```
 but when unitarity _is_ violated, or we otherwise pass an invalid input, we wish to execute a [custom function](https://quest-kit.github.io/QuEST/group__debug__validation.html#ga14b6e7ce08465e36750da3acbc41062f) before exiting.
 ```cpp
@@ -612,7 +612,7 @@ Exiting...
 If we're satisfied our matrix _is_ sufficiently approximately unitary, we can [adjust](https://quest-kit.github.io/QuEST/group__debug__validation.html#gae395568df6def76045ec1881fcb4e6d1) or [disable](https://quest-kit.github.io/QuEST/group__debug__validation.html#ga5999824df0785ea88fb2d5b5582f2b46) the validation.
 ```cpp
 // max(norm(m * dagger(m) - identity)) = 0.9025
-setValidationEpsilon(0.903);
+setQuESTValidationEpsilon(0.903);
 applyCompMatr1(qureg, 0, m);
 ```
 

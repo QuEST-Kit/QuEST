@@ -658,9 +658,9 @@ static inline void v3_mixKrausMap(Qureg qureg, int targ, _NoWarnComplexMatrix2 *
 
 static inline void _mixNonTPKrausMap(Qureg qureg, int targ, _NoWarnComplexMatrix2 *ops, int numOps) {
     qreal eps = getValidationEpsilon();
-    setValidationEpsilon(0);
+    setQuESTValidationEpsilon(0);
     _MIX_KRAUS_MAP_INNER(qureg, ops, numOps, &targ, 1);
-    setValidationEpsilon(eps);
+    setQuESTValidationEpsilon(eps);
 }
 
 #define mixNonTPKrausMap(...) \
@@ -674,9 +674,9 @@ static inline void _mixNonTPKrausMap(Qureg qureg, int targ, _NoWarnComplexMatrix
 static inline void _mixTwoQubitKrausMap(Qureg qureg, int targ1, int targ2, _NoWarnComplexMatrix4 *ops, int numOps, int isNonCPTP) {
     int targs[] = {targ1, targ2};
     qreal eps = getValidationEpsilon();
-    if (isNonCPTP) setValidationEpsilon(0);
+    if (isNonCPTP) setQuESTValidationEpsilon(0);
     _MIX_KRAUS_MAP_INNER(qureg, ops, numOps, targs, 2);
-    setValidationEpsilon(eps);
+    setQuESTValidationEpsilon(eps);
 }
 
 #define mixTwoQubitKrausMap(...) \
@@ -704,10 +704,10 @@ static inline void _mixMultiQubitKrausMap(Qureg qureg, int* targs, int numTargs,
     free(ptrs);
 
     qreal eps = getValidationEpsilon();
-    if (isNonCPTP) setValidationEpsilon(0);
+    if (isNonCPTP) setQuESTValidationEpsilon(0);
     (mixKrausMap)(qureg, targs, numTargs, map); // calls above macro, wrapped to avoid warning */
     destroyKrausMap(map);
-    setValidationEpsilon(eps);
+    setQuESTValidationEpsilon(eps);
 }
 
 #define mixMultiQubitKrausMap(...) \
@@ -828,14 +828,14 @@ static inline QuESTEnv _createQuESTEnv() {
 
 static inline void _applyGateSubDiagonalOp(Qureg qureg, int* targets, int numTargets, DiagMatr op) {
     qreal eps = getValidationEpsilon();
-    setValidationEpsilon(0);
+    setQuESTValidationEpsilon(0);
     applyDiagMatr(qureg, targets, numTargets, op);
-    setValidationEpsilon(eps);
+    setQuESTValidationEpsilon(eps);
 }
 #define applyGateSubDiagonalOp(...) \
     _WARN_GENERAL_MSG( \
         "The QuEST function 'applyGateSubDiagonalOp()' is deprecated. To achieve the same thing, disable " \
-        "numerical validation via 'setValidationEpsilon(0)' before calling 'applyDiagMatr()'. You can " \
+        "numerical validation via 'setQuESTValidationEpsilon(0)' before calling 'applyDiagMatr()'. You can " \
         "save the existing epsilon via 'getValidationEpsilon()' to thereafter restore. This procedure " \
         "has been performed here automatically.") \
     _applyGateSubDiagonalOp(__VA_ARGS__)
@@ -1132,30 +1132,30 @@ static inline void _applyPauliHamil(Qureg inQureg, PauliStrSum hamil, Qureg outQ
 
 static inline void _applyGateMatrixN(Qureg qureg, int* targs, int numTargs, CompMatr u) {
     qreal eps = getValidationEpsilon();
-    setValidationEpsilon(0);
+    setQuESTValidationEpsilon(0);
     applyCompMatr(qureg, targs, numTargs, u);
-    setValidationEpsilon(eps);
+    setQuESTValidationEpsilon(eps);
 }
 
 #define applyGateMatrixN(...) \
     _WARN_GENERAL_MSG( \
         "The QuEST function 'applyGateMatrixN()' is deprecated. To achieve the same thing, disable " \
-        "numerical validation via 'setValidationEpsilon(0)' before calling 'applyCompMatr()'. You can " \
+        "numerical validation via 'setQuESTValidationEpsilon(0)' before calling 'applyCompMatr()'. You can " \
         "save the existing epsilon via 'getValidationEpsilon()' to thereafter restore. This procedure " \
         "has been performed here automatically.") \
     _applyGateMatrixN(__VA_ARGS__)
 
 static inline void _applyMultiControlledGateMatrixN(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs, CompMatr u) {
     qreal eps = getValidationEpsilon();
-    setValidationEpsilon(0);
+    setQuESTValidationEpsilon(0);
     applyMultiControlledCompMatr(qureg, ctrls, numCtrls, targs, numTargs, u);
-    setValidationEpsilon(eps);
+    setQuESTValidationEpsilon(eps);
 }
 
 #define applyMultiControlledGateMatrixN(...) \
     _WARN_GENERAL_MSG( \
         "The QuEST function 'applyMultiControlledGateMatrixN()' is deprecated. To achieve the same thing, disable " \
-        "numerical validation via 'setValidationEpsilon(0)' before calling 'applyMultiControlledCompMatr()'. You can " \
+        "numerical validation via 'setQuESTValidationEpsilon(0)' before calling 'applyMultiControlledCompMatr()'. You can " \
         "save the existing epsilon via 'getValidationEpsilon()' to thereafter restore. This procedure has been " \
         "performed here automatically.") \
     _applyMultiControlledGateMatrixN(__VA_ARGS__)

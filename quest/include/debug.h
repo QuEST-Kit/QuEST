@@ -95,7 +95,7 @@ void setQuESTValidationEpsilonToDefault();
 
 
 /// @notyetdoced
-void setValidationEpsilon(qreal eps);
+void setQuESTValidationEpsilon(qreal eps);
 
 
 /// @notyetdoced

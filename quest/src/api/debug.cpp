@@ -97,7 +97,7 @@ void setQuESTValidationOff() {
 }
 
 
-void setValidationEpsilon(qreal eps) {
+void setQuESTValidationEpsilon(qreal eps) {
     validate_envIsInit(__func__);
     validate_newEpsilonValue(eps, __func__);
 

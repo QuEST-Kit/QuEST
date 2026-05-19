@@ -744,7 +744,7 @@ void testOperationCorrectness(auto operation, auto matrixRefGen) {
     // upon few qubits are single-precision. So we disable completely until
     // we re-implement 'input validation' checks which force us to fix thresholds
     (Args == compmatr)?
-        setValidationEpsilon(0):
+        setQuESTValidationEpsilon(0):
         setQuESTValidationEpsilonToDefault();
 
     // prepare test function which will receive both statevectors and density matrices
@@ -1806,7 +1806,7 @@ TEST_CASE( "applyForcedMultiQubitMeasurement", TEST_CATEGORY_OPS ) {
         // this test may randomly request a measurement outcome which
         // is illegally unlikely, triggering validation; we merely
         // disable such validation and hope divergences don't break the test!
-        setValidationEpsilon(0);
+        setQuESTValidationEpsilon(0);
 
         auto testFunc = [&](Qureg qureg, auto& ref) {
 
@@ -2291,7 +2291,7 @@ TEST_CASE( "applyFullStateDiagMatrPower", TEST_CATEGORY_OPS LABEL_MIXED_DEPLOY_T
         GENERATE( range(0, getNumTestedMixedDeploymentRepetitions()) );
 
         if (!testRealExp)
-            setValidationEpsilon(0);
+            setQuESTValidationEpsilon(0);
 
         SECTION( LABEL_STATEVEC ) {
 

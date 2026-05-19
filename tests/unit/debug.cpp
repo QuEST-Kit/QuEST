@@ -437,7 +437,7 @@ TEST_CASE( "setQuESTValidationOff", TEST_CATEGORY ) {
 }
 
 
-TEST_CASE( "setValidationEpsilon", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTValidationEpsilon", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
@@ -454,14 +454,14 @@ TEST_CASE( "setValidationEpsilon", TEST_CATEGORY ) {
                 REQUIRE_THROWS( applyCompMatr1(qureg, 0, m) );
 
                 // confirm setting = 0 disables epsilon errors...
-                setValidationEpsilon(0);
+                setQuESTValidationEpsilon(0);
                 REQUIRE_NOTHROW( applyCompMatr1(qureg, 0, m) );
 
                 // but does not disable absolute errors
                 REQUIRE_THROWS( applyCompMatr1(qureg, -1, m) );
 
                 // confirm non-zero (forgive all) works
-                setValidationEpsilon(9999); // bigger than dist of m*conj(m) from identity squared
+                setQuESTValidationEpsilon(9999); // bigger than dist of m*conj(m) from identity squared
                 REQUIRE_NOTHROW( applyCompMatr1(qureg, 0, m) );
             }
 
@@ -483,7 +483,7 @@ TEST_CASE( "setValidationEpsilon", TEST_CATEGORY ) {
                 *(m.isApproxUnitary)   = 1;
                 *(m.isApproxHermitian) = 1;
 
-                setValidationEpsilon(.1);
+                setQuESTValidationEpsilon(.1);
                 REQUIRE( *(m.isApproxUnitary)   == -1 );
                 REQUIRE( *(m.isApproxHermitian) == -1 );
 
@@ -497,7 +497,7 @@ TEST_CASE( "setValidationEpsilon", TEST_CATEGORY ) {
                 *(m.isApproxHermitian) = 0;
                 *(m.isApproxNonZero)   = 1;
 
-                setValidationEpsilon(.1);
+                setQuESTValidationEpsilon(.1);
                 REQUIRE( *(m.isApproxUnitary)   == -1 );
                 REQUIRE( *(m.isApproxHermitian) == -1 );
                 REQUIRE( *(m.isApproxNonZero)   == -1 );
@@ -512,7 +512,7 @@ TEST_CASE( "setValidationEpsilon", TEST_CATEGORY ) {
                 *(m.isApproxHermitian) = 0;
                 *(m.isApproxNonZero)   = 1;
 
-                setValidationEpsilon(.1);
+                setQuESTValidationEpsilon(.1);
                 REQUIRE( *(m.isApproxUnitary)   == -1 );
                 REQUIRE( *(m.isApproxHermitian) == -1 );
                 REQUIRE( *(m.isApproxNonZero)   == -1 );
@@ -525,7 +525,7 @@ TEST_CASE( "setValidationEpsilon", TEST_CATEGORY ) {
                 KrausMap k = createKrausMap(1, 3);
                 *(k.isApproxCPTP) = 1;
 
-                setValidationEpsilon(.1);
+                setQuESTValidationEpsilon(.1);
                 REQUIRE( *(k.isApproxCPTP) == -1 );
 
                 destroyKrausMap(k);
@@ -539,7 +539,7 @@ TEST_CASE( "setValidationEpsilon", TEST_CATEGORY ) {
 
             qreal eps = GENERATE( -0.5, -1, -100 );
 
-            REQUIRE_THROWS_WITH( setValidationEpsilon(eps), ContainsSubstring("positive number") );
+            REQUIRE_THROWS_WITH( setQuESTValidationEpsilon(eps), ContainsSubstring("positive number") );
         }
     }
 
@@ -560,7 +560,7 @@ TEST_CASE( "getValidationEpsilon", TEST_CATEGORY ) {
 
         // confirm set correctly
         qreal eps = getRandomReal(0, 99999);
-        setValidationEpsilon(eps);
+        setQuESTValidationEpsilon(eps);
 
         REQUIRE( getValidationEpsilon() == eps );
     }
@@ -596,7 +596,7 @@ TEST_CASE( "setQuESTValidationEpsilonToDefault", TEST_CATEGORY ) {
             REQUIRE_THROWS( applyCompMatr1(qureg, 0, m) );
 
             // confirm setting = 0 disables epsilon errors...
-            setValidationEpsilon(0);
+            setQuESTValidationEpsilon(0);
             REQUIRE_NOTHROW( applyCompMatr1(qureg, 0, m) );
 
             // which returns when stored to default
