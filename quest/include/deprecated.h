@@ -449,13 +449,6 @@ typedef enum pauliOpType _NoWarnPauliOpType;
         "setDensityQuregAmps(Qureg, qindex startRow, qindex startCol, qcomp** amps, qindex numRows, qindex numCols)")
 
 
-#define getQuESTSeeds(...) \
-    _ERROR_GENERAL_MSG( \
-        "The QuEST function 'getQuESTSeeds(QuESTEnv env, unsigned long int* out, int numOut)' has been deprecated. " \
-        "Please instead use 'getQuESTSeeds(unsigned* out)' which accepts a pointer to pre-allocated memory of length " \
-        "equal to that returned by 'getQuESTNumSeeds()'. We cannot automatically invoke this replacement routine." )
-
-
 #define applyPhaseFunc(...) \
     _ERROR_PHASE_FUNC_REMOVED("applyPhaseFunc")
 
@@ -556,6 +549,33 @@ typedef enum pauliOpType _NoWarnPauliOpType;
 
 #define getQuESTEnvironmentString(...) \
     _CALL_MACRO_WITH_1_OR_2_ARGS(_GET_ENVIRONMENT_STRING, __VA_ARGS__)
+
+
+
+/*
+ * FUNCTIONS WITH THE SAME NAME BUT 1 INSTEAD OF 3 ARGS
+ *
+ * which are handled similar to above
+ */
+
+
+#define _GET_MACRO_WITH_1_OR_3_ARGS(_1, _2, _3, macroname, ...) macroname
+
+#define _CALL_MACRO_WITH_1_OR_3_ARGS(prefix, ...) \
+    _GET_MACRO_WITH_1_OR_3_ARGS(__VA_ARGS__, prefix##_3, prefix##_2, prefix##_1)(__VA_ARGS__)
+
+
+#define _GET_QUEST_SEEDS_1(out) \
+    getQuESTSeeds(out)
+
+#define _GET_QUEST_SEEDS_3(env, out, numOut) \
+    _WARN_FUNC_NOW_HAS_FEWER_ARGS( \
+        "getQuESTSeeds(QuESTEnv env, unsigned long int* out, int numOut)", \
+        "getQuESTSeeds(unsigned* out)") \
+    _GET_QUEST_SEEDS_1(out)
+
+#define getQuESTSeeds(...) \
+    _CALL_MACRO_WITH_1_OR_3_ARGS(_GET_QUEST_SEEDS, __VA_ARGS__)
 
 
 
