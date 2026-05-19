@@ -138,11 +138,11 @@ void setQuESTNumReportedNewlines(int numNewlines);
    PauliStr str = getInlinePauliStr("XYZ", {0,10,20});
    reportPauliStr(str);
 
-   setReportedPauliChars(".xyz");
+   setQuESTReportedPauliChars(".xyz");
    reportPauliStr(str);
  * ```
  */
-void setReportedPauliChars(const char* paulis);
+void setQuESTReportedPauliChars(const char* paulis);
 
 
 /** 

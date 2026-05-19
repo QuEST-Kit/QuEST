@@ -155,7 +155,7 @@ void setQuESTNumReportedNewlines(int numNewlines) {
 }
 
 
-void setReportedPauliChars(const char* paulis) {
+void setQuESTReportedPauliChars(const char* paulis) {
     validate_envIsInit(__func__);
     validate_numPauliChars(paulis, __func__);
 

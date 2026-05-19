@@ -750,6 +750,6 @@ void setQuESTMaxNumReportedItems(qindex numRows, qindex numCols);
 
 void getEnvironmentString(char str[200]);
 
-void setReportedPauliChars(const char* paulis);
+void setQuESTReportedPauliChars(const char* paulis);
 
 void setReportedPauliStrStyle(int style);
