@@ -139,7 +139,7 @@ void setQuESTMaxNumReportedItems(qindex numRows, qindex numCols) {
 }
 
 
-void setMaxNumReportedSigFigs(int numSigFigs) {
+void setQuESTMaxNumReportedSigFigs(int numSigFigs) {
     validate_envIsInit(__func__);
     validate_newMaxNumReportedSigFigs(numSigFigs, __func__);
 

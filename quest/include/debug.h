@@ -123,7 +123,7 @@ void setQuESTMaxNumReportedItems(qindex numRows, qindex numCols);
  * > (e.g. `5.32 KiB`) which is always shown with three significant figures 
  * > (or four when in bytes, e.g. `1023 bytes`).
  */
-void setMaxNumReportedSigFigs(int numSigFigs);
+void setQuESTMaxNumReportedSigFigs(int numSigFigs);
 
 
 /// @notyetdoced

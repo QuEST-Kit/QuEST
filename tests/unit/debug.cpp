@@ -62,7 +62,7 @@ TEST_CASE( "setQuESTInputErrorHandler", TEST_CATEGORY ) {
 }
 
 
-TEST_CASE( "setMaxNumReportedSigFigs", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTMaxNumReportedSigFigs", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
@@ -81,7 +81,7 @@ TEST_CASE( "setMaxNumReportedSigFigs", TEST_CATEGORY ) {
 
         for (size_t numSigFigs=1; numSigFigs<=refs.size(); numSigFigs++) {
 
-            setMaxNumReportedSigFigs(numSigFigs);
+            setQuESTMaxNumReportedSigFigs(numSigFigs);
 
             // redirect stdout to buffer
             std::stringstream buffer;
@@ -103,12 +103,12 @@ TEST_CASE( "setMaxNumReportedSigFigs", TEST_CATEGORY ) {
 
             int num = GENERATE( -1, 0 );
 
-            REQUIRE_THROWS_WITH( setMaxNumReportedSigFigs(num), ContainsSubstring("Cannot be less than one") );
+            REQUIRE_THROWS_WITH( setQuESTMaxNumReportedSigFigs(num), ContainsSubstring("Cannot be less than one") );
         }
     }
 
     // restore to QuEST default for future tests
-    setMaxNumReportedSigFigs(5);
+    setQuESTMaxNumReportedSigFigs(5);
 }
 
 

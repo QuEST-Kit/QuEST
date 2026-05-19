@@ -184,7 +184,7 @@ We may wish further to [adjust](https://quest-kit.github.io/QuEST/group__debug__
 int maxRows = 8;
 int maxCols = 4;
 setQuESTMaxNumReportedItems(maxRows, maxCols);
-setMaxNumReportedSigFigs(3);
+setQuESTMaxNumReportedSigFigs(3);
 ```
 or [add](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga29413703d609254244d6b13c663e6e06) extra spacing between QuEST's printed outputs
 ```cpp
@@ -415,7 +415,7 @@ Qureg (5 qubit density matrix, 32x32 qcomps, 16.1 KiB):
     -0.00597-0.00615i   -0.00207-0.00451i   …  0.000509-0.00401i   0.0173+(3.12e-19)i
 ```
 
-> The number of printed significant figures above results from our earlier calling of [`setMaxNumReportedSigFigs()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga15d46e5d813f70b587762814964e1994).
+> The number of printed significant figures above results from our earlier calling of [`setQuESTMaxNumReportedSigFigs()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga15d46e5d813f70b587762814964e1994).
 
 
 
@@ -783,7 +783,7 @@ reportScalar("entanglement", calcPurity(reduced));
 ## Report the results
 
 
-We've seen above that [scalars](https://quest-kit.github.io/QuEST/group__types.html) can be reported, handling the pretty formatting of real and complex numbers, controlled by settings like [`setMaxNumReportedSigFigs()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga15d46e5d813f70b587762814964e1994). But we can also report every data structure in the QuEST API, such as Pauli strings
+We've seen above that [scalars](https://quest-kit.github.io/QuEST/group__types.html) can be reported, handling the pretty formatting of real and complex numbers, controlled by settings like [`setQuESTMaxNumReportedSigFigs()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga15d46e5d813f70b587762814964e1994). But we can also report every data structure in the QuEST API, such as Pauli strings
 ```cpp
 reportPauliStr(
     getInlinePauliStr("XXYYZZ", {5,50, 10,60, 30,40})
@@ -806,7 +806,7 @@ PauliStrSum (4 terms, 160 bytes):
 All outputs are affected by the [reporter settings](https://quest-kit.github.io/QuEST/group__debug__reporting.html).
 ```cpp
 setQuESTMaxNumReportedItems(4,4);
-setMaxNumReportedSigFigs(1);
+setQuESTMaxNumReportedSigFigs(1);
 reportCompMatr(bigmatrix);
 ```
 ```
