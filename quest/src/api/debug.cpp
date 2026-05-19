@@ -34,7 +34,7 @@ extern "C" {
  */
 
 
-void setSeeds(unsigned* seeds, int numSeeds) {
+void setQuESTSeeds(unsigned* seeds, int numSeeds) {
     validate_envIsInit(__func__);
     validate_randomSeeds(seeds, numSeeds, __func__);
 
@@ -42,7 +42,7 @@ void setSeeds(unsigned* seeds, int numSeeds) {
     rand_setSeeds(vector<unsigned>(seeds, seeds+numSeeds));
 }
 
-void setSeedsToDefault() {
+void setQuESTSeedsToDefault() {
     validate_envIsInit(__func__);
 
     rand_setSeedsToDefault();
@@ -206,8 +206,8 @@ void clearGpuCache() {
  */
 
 
-void setSeeds(vector<unsigned> seeds) {
-    setSeeds(seeds.data(), seeds.size());
+void setQuESTSeeds(vector<unsigned> seeds) {
+    setQuESTSeeds(seeds.data(), seeds.size());
 }
 
 vector<unsigned> getSeeds() {

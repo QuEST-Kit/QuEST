@@ -154,7 +154,7 @@ TEST_CASE( "setNumReportedNewlines", TEST_CATEGORY ) {
 }
 
 
-TEST_CASE( "setSeeds", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTSeeds", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
@@ -173,7 +173,7 @@ TEST_CASE( "setSeeds", TEST_CATEGORY ) {
                     const int numReps = 5;
 
                     // set an arbitrary fixed seed...
-                    setSeeds(seeds, numSeeds);
+                    setQuESTSeeds(seeds, numSeeds);
 
                     // generate and remember a random state
                     initRandomMixedState(qureg, numMixedStates);
@@ -188,7 +188,7 @@ TEST_CASE( "setSeeds", TEST_CATEGORY ) {
                     for (int r=0; r<numReps; r++) {
 
                         // reset the seed
-                        setSeeds(seeds, numSeeds);
+                        setQuESTSeeds(seeds, numSeeds);
 
                         // and confirm all random states are re-produced
                         initRandomMixedState(qureg, numMixedStates);
@@ -207,14 +207,14 @@ TEST_CASE( "setSeeds", TEST_CATEGORY ) {
                     const int ampInd = 0;
 
                     // set arbitrary seed and collect random-state amp
-                    setSeeds(seeds, numSeeds);
+                    setQuESTSeeds(seeds, numSeeds);
                     initRandomPureState(qureg);
                     qcomp amp1 = getDensityQuregAmp(qureg, ampInd, ampInd);
 
                     // change one passed seed and re-collect random-state amp
                     int i = GENERATE_COPY( range(0,numSeeds) );
                     seeds[i] = 987654321;
-                    setSeeds(seeds, numSeeds);
+                    setQuESTSeeds(seeds, numSeeds);
                     initRandomPureState(qureg);
                     qcomp amp2 = getDensityQuregAmp(qureg, ampInd, ampInd);
 
@@ -237,18 +237,18 @@ TEST_CASE( "setSeeds", TEST_CATEGORY ) {
 
             int numSeeds = GENERATE( -1, 0 );
 
-            REQUIRE_THROWS_WITH( setSeeds(nullptr, numSeeds), ContainsSubstring("Invalid number of random seeds") );
+            REQUIRE_THROWS_WITH( setQuESTSeeds(nullptr, numSeeds), ContainsSubstring("Invalid number of random seeds") );
         }
 
         // inconsistency between nodes is permitted
     }
 
     // re-randomise seeds for remaining tests
-    setSeedsToDefault();
+    setQuESTSeedsToDefault();
 }
 
 
-TEST_CASE( "setSeedsToDefault", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTSeedsToDefault", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
@@ -264,12 +264,12 @@ TEST_CASE( "setSeedsToDefault", TEST_CATEGORY ) {
                     const int ampInd = 0;
 
                     // randomise seed and collect random-state amp
-                    setSeedsToDefault();
+                    setQuESTSeedsToDefault();
                     initRandomPureState(qureg);
                     qcomp amp1 = getDensityQuregAmp(qureg, ampInd, ampInd);
 
                     // re-randomise seed and collect new random-state amp
-                    setSeedsToDefault();
+                    setQuESTSeedsToDefault();
                     initRandomPureState(qureg);
                     qcomp amp2 = getDensityQuregAmp(qureg, ampInd, ampInd);
 
@@ -290,7 +290,7 @@ TEST_CASE( "setSeedsToDefault", TEST_CATEGORY ) {
     }
 
     // re-randomise seeds for remaining tests
-    setSeedsToDefault();
+    setQuESTSeedsToDefault();
 }
 
 
@@ -319,7 +319,7 @@ TEST_CASE( "getSeeds", TEST_CATEGORY ) {
                 in[i] = static_cast<unsigned>(getRandomInt(0, 99999));
 
             // pass seeds to QuEST
-            setSeeds(in.data(), numSeeds);
+            setQuESTSeeds(in.data(), numSeeds);
 
             // check we get them back
             vector<unsigned> out(numSeeds);
@@ -339,7 +339,7 @@ TEST_CASE( "getSeeds", TEST_CATEGORY ) {
     }
 
     // re-randomise seeds for remaining tests
-    setSeedsToDefault();
+    setQuESTSeedsToDefault();
 }
 
 
@@ -363,7 +363,7 @@ TEST_CASE( "getNumSeeds", TEST_CATEGORY ) {
                 in[i] = static_cast<unsigned>(getRandomInt(0, 99999));
 
             // pass seeds to QuEST
-            setSeeds(in.data(), numSeeds);
+            setQuESTSeeds(in.data(), numSeeds);
 
             // confirm we get out correct number
             REQUIRE( getNumSeeds() == numSeeds );
@@ -380,7 +380,7 @@ TEST_CASE( "getNumSeeds", TEST_CATEGORY ) {
     }
 
     // re-randomise seeds for remaining tests
-    setSeedsToDefault();
+    setQuESTSeedsToDefault();
 }
 
 
@@ -393,7 +393,7 @@ TEST_CASE( "setValidationOn", TEST_CATEGORY ) {
             REQUIRE_NOTHROW( setValidationOn() );
 
         // illegal and caught
-        REQUIRE_THROWS( setSeeds(nullptr, -99) );
+        REQUIRE_THROWS( setQuESTSeeds(nullptr, -99) );
     }
 
     SECTION( LABEL_VALIDATION ) {

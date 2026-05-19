@@ -176,7 +176,7 @@ Configuring the environment is ordinarily not necessary, but convenient in certa
 For example, we may wish our simulations to deterministically obtain the same measurement outcomes and random states as a previous or future run, and ergo choose to [override](https://quest-kit.github.io/QuEST/group__debug__seed.html#ga9e3a6de413901afbf50690573add1587) the default seeds.
 ```cpp
 unsigned seeds[] = {123u, 1u << 10};
-setSeeds(seeds, 2);
+setQuESTSeeds(seeds, 2);
 ```
 
 We may wish further to [adjust](https://quest-kit.github.io/QuEST/group__debug__reporting.html) how subsequent functions will display information to the screen

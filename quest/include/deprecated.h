@@ -1331,12 +1331,12 @@ static inline void _multiControlledMultiRotatePauli(Qureg qureg, int* ctrls, int
 
 
 #define seedQuESTDefault(...) \
-    _WARN_FUNC_RENAMED("seedQuESTDefault(QuESTEnv)", "setSeedsToDefault()") \
-    setSeedsToDefault()
+    _WARN_FUNC_RENAMED("seedQuESTDefault(QuESTEnv)", "setQuESTSeedsToDefault()") \
+    setQuESTSeedsToDefault()
 
 #define seedQuEST(env, seeds, numSeeds) \
-    _WARN_FUNC_RENAMED("seedQuEST(QuESTEnv, unsigned long int*, int)", "setSeeds(unsigned*, int)") \
-    setSeeds(seeds, numSeeds)
+    _WARN_FUNC_RENAMED("seedQuEST(QuESTEnv, unsigned long int*, int)", "setQuESTSeeds(unsigned*, int)") \
+    setQuESTSeeds(seeds, numSeeds)
 
 
 

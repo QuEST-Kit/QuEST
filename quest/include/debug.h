@@ -43,11 +43,11 @@ extern "C" {
 
 
 /// @notyetdoced
-void setSeeds(unsigned* seeds, int numSeeds);
+void setQuESTSeeds(unsigned* seeds, int numSeeds);
 
 
 /// @notyetdoced
-void setSeedsToDefault();
+void setQuESTSeedsToDefault();
 
 
 /// @notyetdoced
@@ -225,8 +225,8 @@ void getEnvironmentString(char str[200]);
 /// @notyettested
 /// @notyetdoced
 /// @cppvectoroverload
-/// @see setSeeds()
-void setSeeds(std::vector<unsigned> seeds);
+/// @see setQuESTSeeds()
+void setQuESTSeeds(std::vector<unsigned> seeds);
 
 
 /// @ingroup debug_seed

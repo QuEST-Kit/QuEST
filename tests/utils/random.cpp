@@ -44,7 +44,7 @@ void setRandomTestStateSeeds() {
     unsigned seed = cspnrg();
     
     // seed QuEST, which uses only the root node's seed
-    setSeeds(&seed, 1);
+    setQuESTSeeds(&seed, 1);
 
     // broadcast root node seed to all nodes
     getSeeds(&seed);
