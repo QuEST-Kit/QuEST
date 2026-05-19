@@ -752,4 +752,4 @@ void getEnvironmentString(char str[200]);
 
 void setQuESTReportedPauliChars(const char* paulis);
 
-void setReportedPauliStrStyle(int style);
+void setQuESTReportedPauliStrStyle(int style);

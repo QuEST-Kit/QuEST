@@ -152,14 +152,14 @@ void setQuESTReportedPauliChars(const char* paulis);
  * ```
    PauliStr str = getInlinePauliStr("XYZ", {0,10,20});
 
-   setReportedPauliStrStyle(0);
+   setQuESTReportedPauliStrStyle(0);
    reportPauliStr(str);
 
-   setReportedPauliStrStyle(1);
+   setQuESTReportedPauliStrStyle(1);
    reportPauliStr(str);
  * ```
  */
-void setReportedPauliStrStyle(int style);
+void setQuESTReportedPauliStrStyle(int style);
 
 
 /** @} */

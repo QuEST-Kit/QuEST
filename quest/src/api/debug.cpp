@@ -163,7 +163,7 @@ void setQuESTReportedPauliChars(const char* paulis) {
 }
 
 
-void setReportedPauliStrStyle(int flag) {
+void setQuESTReportedPauliStrStyle(int flag) {
     validate_envIsInit(__func__);
     validate_reportedPauliStrStyleFlag(flag, __func__);
 

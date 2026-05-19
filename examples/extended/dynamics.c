@@ -106,7 +106,7 @@ void reportMyStructs(Qureg qureg, PauliStrSum hamil, PauliStrSum observ) {
     setQuESTMaxNumReportedSigFigs(6);   // sig-figs in scalars
     setQuESTNumReportedNewlines(2);     // spacing between reports
     setQuESTReportedPauliChars(".XYZ"); // print I as .
-    setReportedPauliStrStyle(0);   // print XYZ (0) or Z3 Y2 X1 (1)
+    setQuESTReportedPauliStrStyle(0);   // print XYZ (0) or Z3 Y2 X1 (1)
     setQuESTMaxNumReportedItems(8, 8);  // show max 8 qureg amplitudes
 
     reportStr("[Initial state]");
