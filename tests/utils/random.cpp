@@ -47,7 +47,7 @@ void setRandomTestStateSeeds() {
     setQuESTSeeds(&seed, 1);
 
     // broadcast root node seed to all nodes
-    getSeeds(&seed);
+    getQuESTSeeds(&seed);
 
     // seed RNG
     RNG.seed(seed);

@@ -55,7 +55,7 @@ int getNumSeeds() {
     return rand_getNumSeeds();
 }
 
-void getSeeds(unsigned* seeds) {
+void getQuESTSeeds(unsigned* seeds) {
     validate_envIsInit(__func__);
 
     auto vec = rand_getSeeds();
@@ -210,7 +210,7 @@ void setQuESTSeeds(vector<unsigned> seeds) {
     setQuESTSeeds(seeds.data(), seeds.size());
 }
 
-vector<unsigned> getSeeds() {
+vector<unsigned> getQuESTSeeds() {
     validate_envIsInit(__func__);
 
     // allocate temp vector, and pedantically validate successful
@@ -219,6 +219,6 @@ vector<unsigned> getSeeds() {
     auto callback = [&]() { validate_tempListAllocSucceeded(false, numSeeds, sizeof(unsigned), __func__); };
     util_tryAllocVector(out, numSeeds, callback);
 
-    getSeeds(out.data());
+    getQuESTSeeds(out.data());
     return out;
 }

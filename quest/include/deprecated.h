@@ -452,7 +452,7 @@ typedef enum pauliOpType _NoWarnPauliOpType;
 #define getQuESTSeeds(...) \
     _ERROR_GENERAL_MSG( \
         "The QuEST function 'getQuESTSeeds(QuESTEnv env, unsigned long int* out, int numOut)' has been deprecated. " \
-        "Please instead use 'getSeeds(unsigned* out)' which accepts a pointer to pre-allocated memory of length " \
+        "Please instead use 'getQuESTSeeds(unsigned* out)' which accepts a pointer to pre-allocated memory of length " \
         "equal to that returned by 'getNumSeeds()'. We cannot automatically invoke this replacement routine." )
 
 

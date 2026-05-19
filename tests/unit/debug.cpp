@@ -294,7 +294,7 @@ TEST_CASE( "setQuESTSeedsToDefault", TEST_CATEGORY ) {
 }
 
 
-TEST_CASE( "getSeeds", TEST_CATEGORY ) {
+TEST_CASE( "getQuESTSeeds", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
@@ -305,7 +305,7 @@ TEST_CASE( "getSeeds", TEST_CATEGORY ) {
             int numSeeds = getNumSeeds();
             vector<unsigned> out(numSeeds);
 
-            REQUIRE_NOTHROW( getSeeds(out.data()) );
+            REQUIRE_NOTHROW( getQuESTSeeds(out.data()) );
         }
 
         SECTION( "correct output" ) {
@@ -323,7 +323,7 @@ TEST_CASE( "getSeeds", TEST_CATEGORY ) {
 
             // check we get them back
             vector<unsigned> out(numSeeds);
-            getSeeds(out.data());
+            getQuESTSeeds(out.data());
             for (int i=0; i<numSeeds; i++)
                 REQUIRE( in[i] == out[i] );
         }

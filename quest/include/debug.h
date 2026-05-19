@@ -51,7 +51,7 @@ void setQuESTSeedsToDefault();
 
 
 /// @notyetdoced
-void getSeeds(unsigned* seeds);
+void getQuESTSeeds(unsigned* seeds);
 
 
 /// @notyetdoced
@@ -233,8 +233,8 @@ void setQuESTSeeds(std::vector<unsigned> seeds);
 /// @notyettested
 /// @notyetdoced
 /// @cpponly
-/// @see getSeeds()
-std::vector<unsigned> getSeeds();
+/// @see getQuESTSeeds()
+std::vector<unsigned> getQuESTSeeds();
 
 
 #endif // __cplusplus
