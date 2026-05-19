@@ -194,7 +194,7 @@ void clearQuESTGpuCache();
 
 /// @notyetdoced
 /// @notyettested
-void getEnvironmentString(char str[200]);
+void getQuESTEnvironmentString(char str[200]);
 
 
 /** @} */

@@ -548,13 +548,13 @@ typedef enum pauliOpType _NoWarnPauliOpType;
 
 
 #define _GET_ENVIRONMENT_STRING_1(str) \
-    getEnvironmentString(str)
+    getQuESTEnvironmentString(str)
 
 #define _GET_ENVIRONMENT_STRING_2(str) \
-    _WARN_FUNC_NOW_HAS_FEWER_ARGS("getEnvironmentString(QuESTEnv, char[200])", "getEnvironmentString(char[200])") \
+    _WARN_FUNC_NOW_HAS_FEWER_ARGS("getQuESTEnvironmentString(QuESTEnv, char[200])", "getQuESTEnvironmentString(char[200])") \
     _GET_ENVIRONMENT_STRING_1(str)
 
-#define getEnvironmentString(...) \
+#define getQuESTEnvironmentString(...) \
     _CALL_MACRO_WITH_1_OR_2_ARGS(_GET_ENVIRONMENT_STRING, __VA_ARGS__)
 
 

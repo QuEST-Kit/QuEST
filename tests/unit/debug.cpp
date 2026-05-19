@@ -683,12 +683,12 @@ TEST_CASE( "getQuESTGpuCacheSize", TEST_CATEGORY ) {
     SECTION( LABEL_CORRECTNESS ) {
 
         // confirm cache begins empty
-        clearGpuCache();
+        clearQuESTGpuCache();
         REQUIRE( getQuESTGpuCacheSize() == 0 );
 
         // hackily detect cuQuantum
         char envStr[200];
-        getEnvironmentString(envStr);
+        getQuESTEnvironmentString(envStr);
         bool usingCuQuantum = std::string(envStr).find("cuQuantum=0") == std::string::npos;
 
         // proceed only if we're ever using our own GPU cache
@@ -748,7 +748,7 @@ TEST_CASE( "getQuESTGpuCacheSize", TEST_CATEGORY ) {
 
 void setQuESTMaxNumReportedItems(qindex numRows, qindex numCols);
 
-void getEnvironmentString(char str[200]);
+void getQuESTEnvironmentString(char str[200]);
 
 void setQuESTReportedPauliChars(const char* paulis);
 
