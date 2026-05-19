@@ -544,7 +544,7 @@ TEST_CASE( "setValidationEpsilon", TEST_CATEGORY ) {
     }
 
     // ensure validation epsilon is default for remaining tests
-    setValidationEpsilonToDefault();
+    setQuESTValidationEpsilonToDefault();
 }
 
 
@@ -572,18 +572,18 @@ TEST_CASE( "getValidationEpsilon", TEST_CATEGORY ) {
     }
 
     // ensure validation epsilon is default for remaining tests
-    setValidationEpsilonToDefault();
+    setQuESTValidationEpsilonToDefault();
 }
 
 
-TEST_CASE( "setValidationEpsilonToDefault", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTValidationEpsilonToDefault", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
         SECTION( "always safe to call" ) {
 
             for (int i=0; i<3; i++)
-                REQUIRE_NOTHROW( setValidationEpsilonToDefault() );
+                REQUIRE_NOTHROW( setQuESTValidationEpsilonToDefault() );
         }
 
         SECTION( "affects validation" ) {
@@ -600,7 +600,7 @@ TEST_CASE( "setValidationEpsilonToDefault", TEST_CATEGORY ) {
             REQUIRE_NOTHROW( applyCompMatr1(qureg, 0, m) );
 
             // which returns when stored to default
-            setValidationEpsilonToDefault();
+            setQuESTValidationEpsilonToDefault();
             REQUIRE_THROWS( applyCompMatr1(qureg, 0, m) );
 
             destroyQureg(qureg);
@@ -614,7 +614,7 @@ TEST_CASE( "setValidationEpsilonToDefault", TEST_CATEGORY ) {
                 *(m.isApproxUnitary)   = 1;
                 *(m.isApproxHermitian) = 1;
 
-                setValidationEpsilonToDefault();
+                setQuESTValidationEpsilonToDefault();
                 REQUIRE( *(m.isApproxUnitary)   == -1 );
                 REQUIRE( *(m.isApproxHermitian) == -1 );
 
@@ -628,7 +628,7 @@ TEST_CASE( "setValidationEpsilonToDefault", TEST_CATEGORY ) {
                 *(m.isApproxHermitian) = 0;
                 *(m.isApproxNonZero)   = 1;
 
-                setValidationEpsilonToDefault();
+                setQuESTValidationEpsilonToDefault();
                 REQUIRE( *(m.isApproxUnitary)   == -1 );
                 REQUIRE( *(m.isApproxHermitian) == -1 );
                 REQUIRE( *(m.isApproxNonZero)   == -1 );
@@ -643,7 +643,7 @@ TEST_CASE( "setValidationEpsilonToDefault", TEST_CATEGORY ) {
                 *(m.isApproxHermitian) = 0;
                 *(m.isApproxNonZero)   = 1;
 
-                setValidationEpsilonToDefault();
+                setQuESTValidationEpsilonToDefault();
                 REQUIRE( *(m.isApproxUnitary)   == -1 );
                 REQUIRE( *(m.isApproxHermitian) == -1 );
                 REQUIRE( *(m.isApproxNonZero)   == -1 );
@@ -656,7 +656,7 @@ TEST_CASE( "setValidationEpsilonToDefault", TEST_CATEGORY ) {
                 KrausMap k = createKrausMap(1, 3);
                 *(k.isApproxCPTP) = 1;
 
-                setValidationEpsilonToDefault();
+                setQuESTValidationEpsilonToDefault();
                 REQUIRE( *(k.isApproxCPTP) == -1 );
 
                 destroyKrausMap(k);
@@ -674,7 +674,7 @@ TEST_CASE( "setValidationEpsilonToDefault", TEST_CATEGORY ) {
     }
 
     // ensure validation epsilon is default for remaining tests
-    setValidationEpsilonToDefault();
+    setQuESTValidationEpsilonToDefault();
 }
 
 

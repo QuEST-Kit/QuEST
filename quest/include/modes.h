@@ -56,7 +56,7 @@
      * precision-specific default (`1E-5`, `1E-12`, `1E-13` for single, double and quadruple 
      * precision respectively). The specified epsilon is used by QuEST for numerical validation
      * unless overriden at runtime via setValidationEpsilon(), in which case it can be
-     * restored to that specified by this environment variable using setValidationEpsilonToDefault().
+     * restored to that specified by this environment variable using setQuESTValidationEpsilonToDefault().
      * 
      * @envvarvalues
      *  - setting @p DEFAULT_VALIDATION_EPSILON=0 disables numerical validation, as if the value

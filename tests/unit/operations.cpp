@@ -745,7 +745,7 @@ void testOperationCorrectness(auto operation, auto matrixRefGen) {
     // we re-implement 'input validation' checks which force us to fix thresholds
     (Args == compmatr)?
         setValidationEpsilon(0):
-        setValidationEpsilonToDefault();
+        setQuESTValidationEpsilonToDefault();
 
     // prepare test function which will receive both statevectors and density matrices
     auto testFunc = [&](Qureg qureg, auto& stateRef) -> void { 
@@ -777,7 +777,7 @@ void testOperationCorrectness(auto operation, auto matrixRefGen) {
 
     // free any heap-alloated API matrices and restore epsilon
     freeRemainingArgs<Targs,Args>(furtherArgs);
-    setValidationEpsilonToDefault();
+    setQuESTValidationEpsilonToDefault();
 }
 
 
@@ -1830,7 +1830,7 @@ TEST_CASE( "applyForcedMultiQubitMeasurement", TEST_CATEGORY_OPS ) {
         SECTION( LABEL_STATEVEC ) { TEST_ON_CACHED_QUREGS(statevecQuregs, statevecRef, testFunc); }
         SECTION( LABEL_DENSMATR ) { TEST_ON_CACHED_QUREGS(densmatrQuregs, densmatrRef, testFunc); }
 
-        setValidationEpsilonToDefault();
+        setQuESTValidationEpsilonToDefault();
     }
 
     SECTION( LABEL_VALIDATION ) {
@@ -2313,7 +2313,7 @@ TEST_CASE( "applyFullStateDiagMatrPower", TEST_CATEGORY_OPS LABEL_MIXED_DEPLOY_T
             TEST_ON_CACHED_QUREG_AND_MATRIX( cachedDM, cachedMatrs, apiFunc, refDM, refMatr, refFunc);
         }
 
-        setValidationEpsilonToDefault();
+        setQuESTValidationEpsilonToDefault();
     }
 
     /// @todo input validation

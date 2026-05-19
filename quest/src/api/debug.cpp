@@ -105,7 +105,7 @@ void setValidationEpsilon(qreal eps) {
     util_setEpsilonSensitiveHeapFlagsToUnknown();
 }
 
-void setValidationEpsilonToDefault() {
+void setQuESTValidationEpsilonToDefault() {
     validate_envIsInit(__func__);
 
     validateconfig_setEpsilonToDefault();

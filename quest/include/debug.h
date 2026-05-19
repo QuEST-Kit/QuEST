@@ -91,7 +91,7 @@ void setQuESTValidationOff();
 
 
 /// @notyetdoced
-void setValidationEpsilonToDefault();
+void setQuESTValidationEpsilonToDefault();
 
 
 /// @notyetdoced
