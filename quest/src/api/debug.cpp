@@ -147,7 +147,7 @@ void setQuESTMaxNumReportedSigFigs(int numSigFigs) {
 }
 
 
-void setNumReportedNewlines(int numNewlines) {
+void setQuESTNumReportedNewlines(int numNewlines) {
     validate_envIsInit(__func__);
     validate_newNumReportedNewlines(numNewlines, __func__);
 

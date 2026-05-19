@@ -77,7 +77,7 @@ TEST_CASE( "setQuESTMaxNumReportedSigFigs", TEST_CATEGORY ) {
         };
 
         // disable auto \n after lines
-        setNumReportedNewlines(0);
+        setQuESTNumReportedNewlines(0);
 
         for (size_t numSigFigs=1; numSigFigs<=refs.size(); numSigFigs++) {
 
@@ -112,13 +112,13 @@ TEST_CASE( "setQuESTMaxNumReportedSigFigs", TEST_CATEGORY ) {
 }
 
 
-TEST_CASE( "setNumReportedNewlines", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTNumReportedNewlines", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
         for (int numNewlines=0; numNewlines<3; numNewlines++) {
 
-            setNumReportedNewlines(numNewlines);
+            setQuESTNumReportedNewlines(numNewlines);
 
             // redirect stdout to buffer
             std::stringstream buffer;
@@ -138,19 +138,19 @@ TEST_CASE( "setNumReportedNewlines", TEST_CATEGORY ) {
 
         SECTION( "number" ) {
 
-            REQUIRE_THROWS_WITH( setNumReportedNewlines(-1), ContainsSubstring("Cannot generally be less than zero") );
+            REQUIRE_THROWS_WITH( setQuESTNumReportedNewlines(-1), ContainsSubstring("Cannot generally be less than zero") );
         }
 
         SECTION( "multine number" ) {
 
-            setNumReportedNewlines(0);
+            setQuESTNumReportedNewlines(0);
 
             REQUIRE_THROWS_WITH( reportQuESTEnv(), ContainsSubstring("zero") && ContainsSubstring("not permitted when calling multi-line") );
         }
     }
 
     // restore to QuEST default for future tests
-    setNumReportedNewlines(2);
+    setQuESTNumReportedNewlines(2);
 }
 
 

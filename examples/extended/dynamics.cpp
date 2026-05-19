@@ -101,7 +101,7 @@ PauliStrSum createMyObservable(int numQubits) {
 void reportMyStructs(Qureg qureg, PauliStrSum hamil, PauliStrSum observ) {
 
     setQuESTMaxNumReportedSigFigs(6);   // sig-figs in scalars
-    setNumReportedNewlines(2);     // spacing between reports
+    setQuESTNumReportedNewlines(2);     // spacing between reports
     setReportedPauliChars(".XYZ"); // print I as .
     setReportedPauliStrStyle(0);   // print XYZ (0) or Z3 Y2 X1 (1)
     setQuESTMaxNumReportedItems(8, 8);  // show max 8 qureg amplitudes
@@ -142,7 +142,7 @@ int main() {
 
     // tidy reporting of below expectation values
     setQuESTMaxNumReportedSigFigs(3);
-    setNumReportedNewlines(1);
+    setQuESTNumReportedNewlines(1);
 
     // evolve by repeatedly (each is a "step") Trotterising
     // exp(-i dt H) with the specified order and repetitions.
@@ -166,7 +166,7 @@ int main() {
     reportStr("");
     
     // preview the final state...
-    setNumReportedNewlines(2);
+    setQuESTNumReportedNewlines(2);
     setQuESTMaxNumReportedItems(25, 25);
     reportStr("[Final state]");
     reportQureg(qureg);

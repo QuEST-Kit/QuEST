@@ -127,7 +127,7 @@ void setQuESTMaxNumReportedSigFigs(int numSigFigs);
 
 
 /// @notyetdoced
-void setNumReportedNewlines(int numNewlines);
+void setQuESTNumReportedNewlines(int numNewlines);
 
 
 /** 

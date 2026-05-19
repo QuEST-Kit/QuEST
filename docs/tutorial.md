@@ -188,7 +188,7 @@ setQuESTMaxNumReportedSigFigs(3);
 ```
 or [add](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga29413703d609254244d6b13c663e6e06) extra spacing between QuEST's printed outputs
 ```cpp
-setNumReportedNewlines(3);
+setQuESTNumReportedNewlines(3);
 ```
 
 Perhaps we also wish to relax the [precision](https://quest-kit.github.io/QuEST/group__debug__validation.html#gae395568df6def76045ec1881fcb4e6d1) with which our future inputs will be asserted unitary or Hermitian
@@ -356,7 +356,7 @@ Qureg:
     globalTotal.......16 MiB
 ```
 
-> The spacing between the outputs of those two consecutive QuEST functions was determined by our earlier call to [`setNumReportedNewlines()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga29413703d609254244d6b13c663e6e06).
+> The spacing between the outputs of those two consecutive QuEST functions was determined by our earlier call to [`setQuESTNumReportedNewlines()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga29413703d609254244d6b13c663e6e06).
 
 
 A density matrix `Qureg` can model classical uncertainty as results from [decoherence](https://quest-kit.github.io/QuEST/group__decoherence.html), and proves useful when simulating quantum operations on a noisy quantum computer.

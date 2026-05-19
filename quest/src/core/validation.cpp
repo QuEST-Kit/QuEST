@@ -136,7 +136,7 @@ namespace report {
         "Invalid number of trailing newlines (${NUM_NEWLINES}). Cannot generally be less than zero, and must not be zero when calling multi-line reporting functions like reportQureg().";
 
     string INSUFFICIENT_NUM_REPORTED_NEWLINES =
-        "The number of trailing newlines (set by setNumReportedNewlines()) is zero which is not permitted when calling multi-line reporters.";
+        "The number of trailing newlines (set by setQuESTNumReportedNewlines()) is zero which is not permitted when calling multi-line reporters.";
 
     string INVALID_NUM_NEW_PAULI_CHARS =
         "Given an invalid number of Pauli characters. Must specify precisely four to respectively replace IXYZ.";
@@ -1144,7 +1144,7 @@ void default_inputErrorHandler(const char* func, const char* msg) {
 
     // safe to call even before MPI has been setup, and ignores user-set trailing newlines.
     // It begins with \n to interrupt half-printed lines (when trailing newlines are set to
-    // 0 via setNumReportedNewlines(0)), for visual clarity. Note that user's overriding
+    // 0 via setQuESTNumReportedNewlines(0)), for visual clarity. Note that user's overriding
     // functions might not think to print an initial newline but oh well!
     print(string("\n")
         + "QuEST encountered a validation error during function " 
