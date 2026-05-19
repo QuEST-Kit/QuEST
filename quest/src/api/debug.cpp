@@ -77,13 +77,13 @@ void setQuESTInputErrorHandler(void (*callback)(const char*, const char*)) {
     validateconfig_setErrorHandler(callback);
 }
 
-void setValidationOn() {
+void setQuESTValidationOn() {
     validate_envIsInit(__func__);
     
     validateconfig_enable();
 }
 
-void setValidationOff() {
+void setQuESTValidationOff() {
     validate_envIsInit(__func__);
 
     // disables all validation and computation

@@ -83,11 +83,11 @@ void setQuESTInputErrorHandler(void (*callback)(const char* func, const char* ms
 
 
 /// @notyetdoced
-void setValidationOn();
+void setQuESTValidationOn();
 
 
 /// @notyetdoced
-void setValidationOff();
+void setQuESTValidationOff();
 
 
 /// @notyetdoced

@@ -284,7 +284,7 @@ qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
  *   > consult the imaginary components of the elements of @p matrix, since a non-complex exponentiation
  *   > function is used. That is, while validation permits the imaginary components to be small, they
  *   > will be internally treated as precisely zero. This is true even when Hermiticity validation
- *   > is disabled using setValidationOff(). To consult the imaginary components of @p matrix, use
+ *   > is disabled using setQuESTValidationOff(). To consult the imaginary components of @p matrix, use
  *   > calcExpecNonHermitianFullStateDiagMatrPower().
  * 
  * - Hermiticity of @p matrix when raised to @p exponent further requires that, when @p exponent is 

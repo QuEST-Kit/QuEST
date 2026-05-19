@@ -384,13 +384,13 @@ TEST_CASE( "getQuESTNumSeeds", TEST_CATEGORY ) {
 }
 
 
-TEST_CASE( "setValidationOn", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTValidationOn", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
         // always safe to call
         for (int i=0; i<3; i++)
-            REQUIRE_NOTHROW( setValidationOn() );
+            REQUIRE_NOTHROW( setQuESTValidationOn() );
 
         // illegal and caught
         REQUIRE_THROWS( setQuESTSeeds(nullptr, -99) );
@@ -404,13 +404,13 @@ TEST_CASE( "setValidationOn", TEST_CATEGORY ) {
 }
 
 
-TEST_CASE( "setValidationOff", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTValidationOff", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
         // confirm always safe to call
         for (int i=0; i<3; i++)
-            REQUIRE_NOTHROW( setValidationOff() );
+            REQUIRE_NOTHROW( setQuESTValidationOff() );
 
         // prepare non-unitary matrix
         CompMatr1 m = getCompMatr1({{1,2},{3,4}});
@@ -420,7 +420,7 @@ TEST_CASE( "setValidationOff", TEST_CATEGORY ) {
         REQUIRE_NOTHROW( applyCompMatr1(qureg, 0, m) );
 
         // which otherwise triggers
-        setValidationOn();
+        setQuESTValidationOn();
         REQUIRE_THROWS( applyCompMatr1(qureg, 0, m) );
 
         destroyQureg(qureg);
@@ -433,7 +433,7 @@ TEST_CASE( "setValidationOff", TEST_CATEGORY ) {
     }
 
     // ensure validation is on for remaining tests
-    setValidationOn();
+    setQuESTValidationOn();
 }
 
 
