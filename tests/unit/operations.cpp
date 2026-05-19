@@ -1724,8 +1724,8 @@ TEST_CASE( "applyForcedQubitMeasurement", TEST_CATEGORY_OPS ) {
         // below validation tests assume qubit 0 can collapse to either outcome
         // (which does not require normalisation; qureg can be in the debug state)
         initDebugState(qureg);
-        REQUIRE( calcProbOfQubitOutcome(qureg, 0, 0) > getValidationEpsilon() );
-        REQUIRE( calcProbOfQubitOutcome(qureg, 0, 1) > getValidationEpsilon() );
+        REQUIRE( calcProbOfQubitOutcome(qureg, 0, 0) > getQuESTValidationEpsilon() );
+        REQUIRE( calcProbOfQubitOutcome(qureg, 0, 1) > getQuESTValidationEpsilon() );
 
         SECTION( "qureg uninitialised" ) {
 
@@ -1778,7 +1778,7 @@ TEST_CASE( "applyForcedQubitMeasurement", TEST_CATEGORY_OPS ) {
             qreal goodTheta = 0.1;
             applyRotateX(qureg, 0, goodTheta);
             REQUIRE( 
-                calcProbOfQubitOutcome(qureg, 0, badOutcome) > getValidationEpsilon() 
+                calcProbOfQubitOutcome(qureg, 0, badOutcome) > getQuESTValidationEpsilon() 
             );
             REQUIRE_NOTHROW(
                 applyForcedQubitMeasurement(qureg, 0, badOutcome)
@@ -1842,7 +1842,7 @@ TEST_CASE( "applyForcedMultiQubitMeasurement", TEST_CATEGORY_OPS ) {
 
         // below validation tests assume the above parameters are valid (not impossibly unlikely)
         initDebugState(qureg);
-        REQUIRE( calcProbOfMultiQubitOutcome(qureg, targets, outcomes, numTargets) > getValidationEpsilon() );
+        REQUIRE( calcProbOfMultiQubitOutcome(qureg, targets, outcomes, numTargets) > getQuESTValidationEpsilon() );
 
         SECTION( "qureg uninitialised" ) {
 
@@ -1920,7 +1920,7 @@ TEST_CASE( "applyForcedMultiQubitMeasurement", TEST_CATEGORY_OPS ) {
             applyRotateX(qureg, targets[2], goodTheta);
             int goodOutcomes[] = {0, 0, 1};
             REQUIRE( 
-                calcProbOfMultiQubitOutcome(qureg, targets, goodOutcomes, numTargets) > getValidationEpsilon() 
+                calcProbOfMultiQubitOutcome(qureg, targets, goodOutcomes, numTargets) > getQuESTValidationEpsilon() 
             );
             REQUIRE_NOTHROW(
                 applyForcedMultiQubitMeasurement(qureg, targets, goodOutcomes, numTargets)

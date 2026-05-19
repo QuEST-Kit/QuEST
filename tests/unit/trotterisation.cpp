@@ -268,7 +268,7 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         //  - 1E-5 at single precision
         //  - 1E-12 at double precision
         //  - 1E-13 at quad precision
-        qreal initialValidationEps = getValidationEpsilon();
+        qreal initialValidationEps = getQuESTValidationEpsilon();
         setQuESTValidationEpsilon(2 * initialValidationEps);
 
         const int NUM_QUBITS = 8;

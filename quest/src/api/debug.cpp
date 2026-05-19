@@ -112,7 +112,7 @@ void setQuESTValidationEpsilonToDefault() {
     util_setEpsilonSensitiveHeapFlagsToUnknown();
 }
 
-qreal getValidationEpsilon() {
+qreal getQuESTValidationEpsilon() {
     validate_envIsInit(__func__);
 
     return validateconfig_getEpsilon();

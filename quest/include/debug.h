@@ -99,7 +99,7 @@ void setQuESTValidationEpsilon(qreal eps);
 
 
 /// @notyetdoced
-qreal getValidationEpsilon();
+qreal getQuESTValidationEpsilon();
 
 
 /** @} */

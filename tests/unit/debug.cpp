@@ -548,13 +548,13 @@ TEST_CASE( "setQuESTValidationEpsilon", TEST_CATEGORY ) {
 }
 
 
-TEST_CASE( "getValidationEpsilon", TEST_CATEGORY ) {
+TEST_CASE( "getQuESTValidationEpsilon", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
         // confirm always safe to call
         for (int i=0; i<3; i++)
-            REQUIRE_NOTHROW( getValidationEpsilon() ); // ignores output
+            REQUIRE_NOTHROW( getQuESTValidationEpsilon() ); // ignores output
 
         GENERATE( range(0,10) );
 
@@ -562,7 +562,7 @@ TEST_CASE( "getValidationEpsilon", TEST_CATEGORY ) {
         qreal eps = getRandomReal(0, 99999);
         setQuESTValidationEpsilon(eps);
 
-        REQUIRE( getValidationEpsilon() == eps );
+        REQUIRE( getQuESTValidationEpsilon() == eps );
     }
 
     SECTION( LABEL_VALIDATION ) {
