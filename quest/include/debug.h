@@ -178,7 +178,7 @@ qindex getQuESTGpuCacheSize();
 
 
 /// @notyetdoced
-void clearGpuCache();
+void clearQuESTGpuCache();
 
 
 /** @} */

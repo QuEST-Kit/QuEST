@@ -188,7 +188,7 @@ qindex getQuESTGpuCacheSize() {
 }
 
 
-void clearGpuCache() {
+void clearQuESTGpuCache() {
     validate_envIsInit(__func__);
 
     // safely do nothing if not GPU accelerated
