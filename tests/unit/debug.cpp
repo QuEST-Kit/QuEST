@@ -678,13 +678,13 @@ TEST_CASE( "setQuESTValidationEpsilonToDefault", TEST_CATEGORY ) {
 }
 
 
-TEST_CASE( "getGpuCacheSize", TEST_CATEGORY ) {
+TEST_CASE( "getQuESTGpuCacheSize", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
         // confirm cache begins empty
         clearGpuCache();
-        REQUIRE( getGpuCacheSize() == 0 );
+        REQUIRE( getQuESTGpuCacheSize() == 0 );
 
         // hackily detect cuQuantum
         char envStr[200];
@@ -716,7 +716,7 @@ TEST_CASE( "getGpuCacheSize", TEST_CATEGORY ) {
                 // confirm it expanded, OR stayed the same, which happens when
                 // the total number of simultaneous threads needed hits/exceeds
                 // the number available in the hardware
-                qindex newSize = getGpuCacheSize();
+                qindex newSize = getQuESTGpuCacheSize();
                 CAPTURE( cacheSize, newSize );
                 REQUIRE( newSize >= cacheSize );
 

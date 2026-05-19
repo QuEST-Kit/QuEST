@@ -174,7 +174,7 @@ void setQuESTReportedPauliStrStyle(int style);
 
 
 /// @notyetdoced
-qindex getGpuCacheSize();
+qindex getQuESTGpuCacheSize();
 
 
 /// @notyetdoced

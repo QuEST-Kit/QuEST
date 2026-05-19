@@ -177,7 +177,7 @@ void setQuESTReportedPauliStrStyle(int flag) {
  */
 
 
-qindex getGpuCacheSize() {
+qindex getQuESTGpuCacheSize() {
     validate_envIsInit(__func__);
 
     if (getQuESTEnv().isGpuAccelerated)
