@@ -55,7 +55,7 @@ void getQuESTSeeds(unsigned* seeds);
 
 
 /// @notyetdoced
-int getNumSeeds();
+int getQuESTNumSeeds();
 
 
 /** @} */

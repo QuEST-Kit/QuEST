@@ -49,7 +49,7 @@ void setQuESTSeedsToDefault() {
 }
 
 
-int getNumSeeds() {
+int getQuESTNumSeeds() {
     validate_envIsInit(__func__);
 
     return rand_getNumSeeds();
@@ -215,7 +215,7 @@ vector<unsigned> getQuESTSeeds() {
 
     // allocate temp vector, and pedantically validate successful
     vector<unsigned> out;
-    int numSeeds = getNumSeeds();
+    int numSeeds = rand_getNumSeeds();
     auto callback = [&]() { validate_tempListAllocSucceeded(false, numSeeds, sizeof(unsigned), __func__); };
     util_tryAllocVector(out, numSeeds, callback);
 

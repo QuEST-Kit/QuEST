@@ -300,9 +300,9 @@ TEST_CASE( "getQuESTSeeds", TEST_CATEGORY ) {
 
         SECTION( "can be called immediately" ) {
 
-            REQUIRE_NOTHROW( getNumSeeds() );
+            REQUIRE_NOTHROW( getQuESTNumSeeds() );
 
-            int numSeeds = getNumSeeds();
+            int numSeeds = getQuESTNumSeeds();
             vector<unsigned> out(numSeeds);
 
             REQUIRE_NOTHROW( getQuESTSeeds(out.data()) );
@@ -343,13 +343,13 @@ TEST_CASE( "getQuESTSeeds", TEST_CATEGORY ) {
 }
 
 
-TEST_CASE( "getNumSeeds", TEST_CATEGORY ) {
+TEST_CASE( "getQuESTNumSeeds", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
         SECTION( "can be called immediately" ) {
 
-            REQUIRE_NOTHROW( getNumSeeds() );
+            REQUIRE_NOTHROW( getQuESTNumSeeds() );
         }
 
         SECTION( "correct output" ) {
@@ -366,7 +366,7 @@ TEST_CASE( "getNumSeeds", TEST_CATEGORY ) {
             setQuESTSeeds(in.data(), numSeeds);
 
             // confirm we get out correct number
-            REQUIRE( getNumSeeds() == numSeeds );
+            REQUIRE( getQuESTNumSeeds() == numSeeds );
         }
     }
 
