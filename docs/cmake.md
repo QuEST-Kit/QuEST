@@ -39,6 +39,7 @@ make
 | `INSTALL_BINARIES` | (`OFF`), `ON` | Determines whether compiled binaries such as the examples will be installed as well as the QuEST library. |
 | `ENABLE_MULTITHREADING` | (`ON`), `OFF` | Determines whether QuEST will be built with support for parallelisation with OpenMP. |
 | `ENABLE_DISTRIBUTION` | (`OFF`), `ON` | Determines whether QuEST will be built with support for parallelisation with MPI. |
+| `ENABLE_SUBCOMM` | (`OFF`), `ON` | Determines whether QuEST will be built with support for custom MPI communicators. _**Note**: This has the unfortunate side-effect of requiring the MPI header in the public header for QuEST, meaning MPI will become a dependency of any application or library which includes the QuEST header whether it uses MPI or not._ |
 | `ENABLE_CUDA` | (`OFF`), `ON` | Determines whether QuEST will be built with support for NVIDIA GPU acceleration. If turned on, `CMAKE_CUDA_ARCHITECTURES` should probably also be set. |
 | `ENABLE_CUQUANTUM` | (`OFF`), `ON` | Determines whether QuEST will make use of the NVIDIA CuQuantum library. Cannot be turned on if `ENABLE_CUDA` is off. |
 | `ENABLE_HIP` | (`OFF`), `ON` | Determines whether QuEST will be built with support for AMD GPU acceleration. If turned on, `CMAKE_HIP_ARCHITECTURES` should probably also be set. |
