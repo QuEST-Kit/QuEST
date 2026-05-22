@@ -492,31 +492,32 @@ void reportQuESTEnv() {
 void getEnvironmentString(char str[200]) {
     validate_envIsInit(__func__);
 
-    QuESTEnv env = getQuESTEnv();
-
     int numThreads = cpu_isOpenmpCompiled()? cpu_getAvailableNumThreads() : 1;
-    int cuQuantum = env.isGpuAccelerated && gpu_isCuQuantumCompiled();
-    int gpuDirect = env.isGpuAccelerated && gpu_isDirectGpuCommPossible();
+    int cuQuantum = globalEnvPtr->isGpuAccelerated && gpu_isCuQuantumCompiled();
+    int gpuDirect = globalEnvPtr->isGpuAccelerated && gpu_isDirectGpuCommPossible();
 
     snprintf(str, 200, "CUDA=%d OpenMP=%d MPI=%d threads=%d ranks=%d cuQuantum=%d gpuDirect=%d",
-        env.isGpuAccelerated,
-        env.isMultithreaded,
-        env.isDistributed,
+        globalEnvPtr->isGpuAccelerated,
+        globalEnvPtr->isMultithreaded,
+        globalEnvPtr->isDistributed,
         numThreads,
-        env.numNodes,
+        globalEnvPtr->numNodes,
         cuQuantum,
         gpuDirect);
 }
 
 
-int getQuESTGpuThreadsPerBlock() {
-    QuESTEnv env = getQuESTEnv();
-    return env.isGpuAccelerated? gpu_getNumThreadsPerBlock() : 0;
+int getQuESTNumGpuThreadsPerBlock() {
+    validate_envIsInit(__func__);
+    
+    return globalEnvPtr->isGpuAccelerated? gpu_getNumThreadsPerBlock() : 0;
 }
 
-void setQuESTGpuThreadsPerBlock(const int NEW_TPB) {
+void setQuESTNumGpuThreadsPerBlock(const int newThreadsPerBlock) {
+    validate_envIsInit(__func__);
+
     // just rely on the internal function to throw an error if there's no GPU support compiled
-    gpu_setNumThreadsPerBlock(NEW_TPB);
+    gpu_setNumThreadsPerBlock(newThreadsPerBlock);
     return;
 }
 
