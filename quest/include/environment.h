@@ -64,6 +64,10 @@ void initQuESTEnv();
  */
 void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread);
 
+/** @notyetdoced
+ *  Advanced initialiser which lets the user positively declare that they take responsibility for MPI.
+ *  This means we assume they have called MPI_Init, and that they will call MPI_Finalize.
+ */
 void initCustomMpiQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, int useMultithread);
 
 /// @notyetdoced
