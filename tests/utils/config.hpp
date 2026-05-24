@@ -73,7 +73,7 @@
     const int TEST_ALL_DEPLOYMENTS = 1;
 
     /// @envvardoc
-    const int TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS = 10;
+    const int QUEST_TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS = 10;
 
 #endif
 

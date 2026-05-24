@@ -281,7 +281,7 @@ jobs:
       - name: Configure tests with environment variables
         run: | 
           echo "TEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}" >> $GITHUB_ENV
-          echo "TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS=${{ env.test_repetitions }}" >> $GITHUB_ENV
+          echo "QUEST_TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS=${{ env.test_repetitions }}" >> $GITHUB_ENV
           echo "QUEST_PERMIT_NODES_TO_SHARE_GPU=${{ env.mpi_share_gpu }}" >> $GITHUB_ENV
 
       # cannot use ctests when distributed, grr!

@@ -65,7 +65,7 @@ int getMaxNumTestedSuperoperatorTargets() {
 
 int getNumTestedMixedDeploymentRepetitions() {
 
-    static int value = getIntEnvVarValueOrDefault("TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS", 10);
+    static int value = getIntEnvVarValueOrDefault("QUEST_TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS", 10);
     return value;
 }
 
