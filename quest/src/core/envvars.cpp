@@ -27,7 +27,7 @@ using std::string;
 
 namespace envvar_names {
     string QUEST_PERMIT_NODES_TO_SHARE_GPU = "QUEST_PERMIT_NODES_TO_SHARE_GPU";
-    string DEFAULT_VALIDATION_EPSILON = "DEFAULT_VALIDATION_EPSILON";
+    string QUEST_DEFAULT_VALIDATION_EPSILON = "QUEST_DEFAULT_VALIDATION_EPSILON";
 }
 
 
@@ -45,7 +45,7 @@ namespace envvar_values {
 
     // by default, the initial validation epsilon (before being overriden
     // by users at runtime) should depend on qreal (i.e. FLOAT_PRECISION)
-    qreal DEFAULT_VALIDATION_EPSILON = UNSPECIFIED_DEFAULT_VALIDATION_EPSILON;
+    qreal QUEST_DEFAULT_VALIDATION_EPSILON = UNSPECIFIED_DEFAULT_VALIDATION_EPSILON;
 }
 
 
@@ -110,7 +110,7 @@ void validateAndSetWhetherGpuSharingIsPermitted(const char* caller) {
 void validateAndSetDefaultValidationEpsilon(const char* caller) {
 
     // permit unspecified, falling back to the hardcoded precision-specific default
-    string name = envvar_names::DEFAULT_VALIDATION_EPSILON;
+    string name = envvar_names::QUEST_DEFAULT_VALIDATION_EPSILON;
     if (!isEnvVarSpecified(name))
         return;
     
@@ -119,7 +119,7 @@ void validateAndSetDefaultValidationEpsilon(const char* caller) {
     validate_envVarDefaultValidationEpsilon(value, caller);
 
     // overwrite default env-var value
-    envvar_values::DEFAULT_VALIDATION_EPSILON = parser_parseReal(value);    
+    envvar_values::QUEST_DEFAULT_VALIDATION_EPSILON = parser_parseReal(value);    
 }
 
 
@@ -154,5 +154,5 @@ bool envvars_getWhetherGpuSharingIsPermitted() {
 qreal envvars_getDefaultValidationEpsilon() {
     assertEnvVarsAreLoaded();
 
-    return envvar_values::DEFAULT_VALIDATION_EPSILON;
+    return envvar_values::QUEST_DEFAULT_VALIDATION_EPSILON;
 }

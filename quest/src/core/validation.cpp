@@ -1125,13 +1125,13 @@ namespace report {
         "The optional, boolean '" + envvar_names::QUEST_PERMIT_NODES_TO_SHARE_GPU + "' environment variable was specified to an invalid value. The variable can be unspecified, or set to '', '0' or '1'.";
 
     string DEFAULT_EPSILON_ENV_VAR_NOT_A_REAL =
-        "The optional '" + envvar_names::DEFAULT_VALIDATION_EPSILON + "' environment variable was not a recognisable real number.";
+        "The optional '" + envvar_names::QUEST_DEFAULT_VALIDATION_EPSILON + "' environment variable was not a recognisable real number.";
 
     string DEFAULT_EPSILON_ENV_VAR_EXCEEDS_QREAL_RANGE = 
-        "The optional '" + envvar_names::DEFAULT_VALIDATION_EPSILON + "' environment variable was larger (in magnitude) than the maximum value which can be stored in a qreal.";
+        "The optional '" + envvar_names::QUEST_DEFAULT_VALIDATION_EPSILON + "' environment variable was larger (in magnitude) than the maximum value which can be stored in a qreal.";
 
     string DEFAULT_EPSILON_ENV_VAR_IS_NEGATIVE =
-        "The optional '" + envvar_names::DEFAULT_VALIDATION_EPSILON + "' environment variable was negative. The value must be zero or positive.";
+        "The optional '" + envvar_names::QUEST_DEFAULT_VALIDATION_EPSILON + "' environment variable was negative. The value must be zero or positive.";
 }
 
 
@@ -1220,8 +1220,8 @@ qreal REDUCTION_EPSILON_FACTOR = 100;
  */
 
 // the default epsilon is not known until runtime since the macro
-// UNSPECIFIED_DEFAULT_VALIDATION_EPSILON may be overriden by the
-// DEFAULT_VALIDATION_EPSILON environment variable. We do not read
+// UNSPECIFIED_QUEST_DEFAULT_VALIDATION_EPSILON may be overriden by the
+// QUEST_DEFAULT_VALIDATION_EPSILON environment variable. We do not read
 // the env-var immediately since it may malformed; we must wait for
 // initQuESTEnv() to validate and potentially throw an error
 static qreal global_validationEpsilon = -1; // must be overriden

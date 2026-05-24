@@ -52,18 +52,18 @@
      * 
      * Specifies the default validation epsilon. 
      * 
-     * Specifying `DEFAULT_VALIDATION_EPSILON` to a positive, real number overrides the 
+     * Specifying `QUEST_DEFAULT_VALIDATION_EPSILON` to a positive, real number overrides the 
      * precision-specific default (`1E-5`, `1E-12`, `1E-13` for single, double and quadruple 
      * precision respectively). The specified epsilon is used by QuEST for numerical validation
      * unless overriden at runtime via setValidationEpsilon(), in which case it can be
      * restored to that specified by this environment variable using setValidationEpsilonToDefault().
      * 
      * @envvarvalues
-     *  - setting @p DEFAULT_VALIDATION_EPSILON=0 disables numerical validation, as if the value
+     *  - setting @p QUEST_DEFAULT_VALIDATION_EPSILON=0 disables numerical validation, as if the value
      *    were instead infinity.
-     *  - setting @p DEFAULT_VALIDATION_EPSILON='' is equivalent to _not_ specifying the variable,
+     *  - setting @p QUEST_DEFAULT_VALIDATION_EPSILON='' is equivalent to _not_ specifying the variable,
      *    adopting instead the precision-specific default above.
-     *  - setting @p DEFAULT_VALIDATION_EPSILON=x where `x` is a positive, valid `qreal` in any
+     *  - setting @p QUEST_DEFAULT_VALIDATION_EPSILON=x where `x` is a positive, valid `qreal` in any
      *    format accepted by `C` or `C++` (e.g. `0.01`, `1E-2`, `+1e-2`) will use `x` as the
      *    default validation epsilon.
      * 
@@ -75,7 +75,7 @@
      * 
      * @author Tyson Jones
      */
-    const qreal DEFAULT_VALIDATION_EPSILON = 0;
+    const qreal QUEST_DEFAULT_VALIDATION_EPSILON = 0;
 
 
 #endif

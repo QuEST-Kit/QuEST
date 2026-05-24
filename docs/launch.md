@@ -269,7 +269,7 @@ ctest
 QuEST execution can be configured prior to runtime using the below [environment variables](https://en.wikipedia.org/wiki/Environment_variable).
 
 - [`QUEST_PERMIT_NODES_TO_SHARE_GPU`](https://quest-kit.github.io/QuEST/group__modes.html#ga7e12922138caa68ddaa6221e40f62dda)
-- [`DEFAULT_VALIDATION_EPSILON`](https://quest-kit.github.io/QuEST/group__modes.html#ga55810d6f3d23de810cd9b12a2bbb8cc2)
+- [`QUEST_DEFAULT_VALIDATION_EPSILON`](https://quest-kit.github.io/QuEST/group__modes.html#ga55810d6f3d23de810cd9b12a2bbb8cc2)
 
 Note the unit tests in the preceding section accept additional environment variables.
 
