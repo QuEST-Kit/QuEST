@@ -60,7 +60,7 @@ make
 | `ENABLE_DEPRECATED_API` | (`OFF`), `ON` | As described above. When enabled alongside testing, the `v3 deprecated` unit tests will additionally be compiled and can be run from within `build` via `cd tests/deprecated; ctest`, or manually launched with `./tests/deprecated/dep_tests` (enabling distribution, as above).
 | `DOWNLOAD_CATCH2` | (`ON`), `OFF` | QuEST's tests require Catch2. By default, if you don't have Catch2 installed (or CMake doesn't find it) it will be downloaded from Github and built for you. If you don't want that to happen, for example because you _do_ have Catch2 installed, set this to `OFF`. |
 
-> As of `v4.2`, macros which configure the unit tests such as `TEST_MAX_NUM_QUBIT_PERMUTATIONS` have become environment variables specified before launch. See [`launch.md`](launch.md)
+> As of `v4.2`, macros which configure the unit tests such as `QUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS` have become environment variables specified before launch. See [`launch.md`](launch.md)
 
 ---------------------------
 

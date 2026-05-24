@@ -53,7 +53,7 @@ int getNumQubitsInUnitTestedQuregs() {
 
 int getMaxNumTestedQubitPermutations() {
 
-    static int value = getIntEnvVarValueOrDefault("TEST_MAX_NUM_QUBIT_PERMUTATIONS", 0);
+    static int value = getIntEnvVarValueOrDefault("QUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS", 0);
     return value;
 }
 
