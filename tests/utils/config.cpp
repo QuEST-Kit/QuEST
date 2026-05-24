@@ -47,7 +47,7 @@ int getIntEnvVarValueOrDefault(string name, int defaultValue) {
 
 int getNumQubitsInUnitTestedQuregs() {
 
-    static int value = getIntEnvVarValueOrDefault("TEST_NUM_QUBITS_IN_QUREG", 6);
+    static int value = getIntEnvVarValueOrDefault("QUEST_TEST_NUM_QUBITS_IN_QUREG", 6);
     return value;
 }
 

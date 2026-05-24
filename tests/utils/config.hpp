@@ -33,7 +33,7 @@
 #if 0
 
     /// @envvardoc
-    const int TEST_NUM_QUBITS_IN_QUREG = 6;
+    const int QUEST_TEST_NUM_QUBITS_IN_QUREG = 6;
 
     /** @envvardoc
      * 
