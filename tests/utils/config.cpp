@@ -59,7 +59,7 @@ int getMaxNumTestedQubitPermutations() {
 
 int getMaxNumTestedSuperoperatorTargets() {
 
-    static int value = getIntEnvVarValueOrDefault("TEST_MAX_NUM_SUPEROP_TARGETS", 4);
+    static int value = getIntEnvVarValueOrDefault("QUEST_TEST_MAX_NUM_SUPEROP_TARGETS", 4);
     return value;
 }
 

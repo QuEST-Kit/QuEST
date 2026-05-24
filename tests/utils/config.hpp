@@ -67,7 +67,7 @@
     const int QUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS = 0;
 
     /// @envvardoc
-    const int TEST_MAX_NUM_SUPEROP_TARGETS = 4;
+    const int QUEST_TEST_MAX_NUM_SUPEROP_TARGETS = 4;
 
     /// @envvardoc
     const int TEST_ALL_DEPLOYMENTS = 1;
