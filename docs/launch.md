@@ -227,7 +227,7 @@ The `v4` unit tests make use of the below, optional environment variables to con
 | `QUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS`  | `0` | The maximum number of control and target qubit permutations under which to unit test each function. Set to `0` (default) to test all permutations, or to a positive integer (e.g. `50`) to accelerate the unit tests. See more info [here](https://quest-kit.github.io/QuEST/group__testutilsconfig.html#gac5adcc10bd26c56f20344f5ae3d9ba41). |
 | `QUEST_TEST_MAX_NUM_SUPEROP_TARGETS` | `4` | The maximum number of superoperator targets for which to unit test functions `mixKrausMap()` and `mixSuperOp()`. These are computationally equivalent to simulating unitaries with double the number of targets upon a density matrix. Set to `0` to test all sizes which is likely prohibitively slow, or to a positive integer (e.g. the default of `4`) to accelerate the unit tests. |
 | `QUEST_TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS` | `10` | The number of times (minimum of `1`) to repeat each random mixed-deployment unit test for each deployment combination. |
-| `TEST_ALL_DEPLOYMENTS` | `1` | Whether unit tests will be run using all possible deployment combinations (i.e. OpenMP, CUDA, MPI) in-turn (`=1`), or only once using all available deployments simultaneously (`=0`). |
+| `QUEST_TEST_TRY_ALL_DEPLOYMENTS` | `1` | Whether unit tests will be run using all possible deployment combinations (i.e. OpenMP, CUDA, MPI) in-turn (`=1`), or only once using all available deployments simultaneously (`=0`). |
 
 
 
