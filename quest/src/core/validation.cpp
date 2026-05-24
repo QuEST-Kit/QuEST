@@ -99,7 +99,7 @@ namespace report {
         "Cannot distribute QuEST between ${NUM_NODES} nodes; must use a power-of-2 number of nodes.";
 
     string MULTIPLE_NODES_BOUND_TO_SAME_GPU =
-        "Multiple MPI processes (nodes) were bound to the same GPU which is detrimental to performance and almost never intended. Please re-deploy QuEST with no more MPI processes than there are total GPUs. Alternatively, recompile QuEST with macro PERMIT_NODES_TO_SHARE_GPU=1.";
+        "Multiple MPI processes (nodes) were bound to the same GPU which is detrimental to performance and almost never intended. Please re-deploy QuEST with no more MPI processes than there are total GPUs. Alternatively, recompile QuEST with macro QUEST_PERMIT_NODES_TO_SHARE_GPU=1.";
 
     string CUQUANTUM_DEPLOYED_ON_BELOW_CC_GPU =
         "Cannot use cuQuantum on a GPU with compute-capability ${OUR_CC}; a compute-capability of ${MIN_CC} or above is required. Recompile with cuQuantum disabled to fall-back to using Thrust and custom kernels.";
@@ -1121,8 +1121,8 @@ namespace report {
      * ENVIRONMENT VARIABLES
      */
 
-    string INVALID_PERMIT_NODES_TO_SHARE_GPU_ENV_VAR =
-        "The optional, boolean '" + envvar_names::PERMIT_NODES_TO_SHARE_GPU + "' environment variable was specified to an invalid value. The variable can be unspecified, or set to '', '0' or '1'.";
+    string INVALID_QUEST_PERMIT_NODES_TO_SHARE_GPU_ENV_VAR =
+        "The optional, boolean '" + envvar_names::QUEST_PERMIT_NODES_TO_SHARE_GPU + "' environment variable was specified to an invalid value. The variable can be unspecified, or set to '', '0' or '1'.";
 
     string DEFAULT_EPSILON_ENV_VAR_NOT_A_REAL =
         "The optional '" + envvar_names::DEFAULT_VALIDATION_EPSILON + "' environment variable was not a recognisable real number.";
@@ -4386,7 +4386,7 @@ void validate_envVarPermitNodesToShareGpu(string varValue, const char* caller) {
     // though caller should gaurantee varValue contains at least one character, 
     // we'll still check to avoid a segfault if this gaurantee is broken
     bool isValid = (varValue.size() == 1) && (varValue[0] == '0' || varValue[0] == '1');
-    assertThat(isValid, report::INVALID_PERMIT_NODES_TO_SHARE_GPU_ENV_VAR, caller);
+    assertThat(isValid, report::INVALID_QUEST_PERMIT_NODES_TO_SHARE_GPU_ENV_VAR, caller);
 }
 
 void validate_envVarDefaultValidationEpsilon(string varValue, const char* caller) {

@@ -26,7 +26,7 @@ using std::string;
 
 
 namespace envvar_names {
-    string PERMIT_NODES_TO_SHARE_GPU = "PERMIT_NODES_TO_SHARE_GPU";
+    string QUEST_PERMIT_NODES_TO_SHARE_GPU = "QUEST_PERMIT_NODES_TO_SHARE_GPU";
     string DEFAULT_VALIDATION_EPSILON = "DEFAULT_VALIDATION_EPSILON";
 }
 
@@ -41,7 +41,7 @@ namespace envvar_values {
 
     // by default, do not permit GPU sharing since it sabotages performance
     // and should only ever be carefully, deliberately enabled
-    bool PERMIT_NODES_TO_SHARE_GPU = false;
+    bool QUEST_PERMIT_NODES_TO_SHARE_GPU = false;
 
     // by default, the initial validation epsilon (before being overriden
     // by users at runtime) should depend on qreal (i.e. FLOAT_PRECISION)
@@ -94,7 +94,7 @@ void assertEnvVarsAreLoaded() {
 void validateAndSetWhetherGpuSharingIsPermitted(const char* caller) {
 
     // permit unspecified, falling back to default value
-    string name = envvar_names::PERMIT_NODES_TO_SHARE_GPU;
+    string name = envvar_names::QUEST_PERMIT_NODES_TO_SHARE_GPU;
     if (!isEnvVarSpecified(name))
         return;
 
@@ -103,7 +103,7 @@ void validateAndSetWhetherGpuSharingIsPermitted(const char* caller) {
     validate_envVarPermitNodesToShareGpu(value, caller);
 
     // overwrite default env-var value
-    envvar_values::PERMIT_NODES_TO_SHARE_GPU = (value[0] == '1');
+    envvar_values::QUEST_PERMIT_NODES_TO_SHARE_GPU = (value[0] == '1');
 }
 
 
@@ -147,7 +147,7 @@ void envvars_validateAndLoadEnvVars(const char* caller) {
 bool envvars_getWhetherGpuSharingIsPermitted() {
     assertEnvVarsAreLoaded();
 
-    return envvar_values::PERMIT_NODES_TO_SHARE_GPU;
+    return envvar_values::QUEST_PERMIT_NODES_TO_SHARE_GPU;
 }
 
 

@@ -45,7 +45,7 @@
      * 
      * @author Tyson Jones
      */
-    const int PERMIT_NODES_TO_SHARE_GPU = 0;
+    const int QUEST_PERMIT_NODES_TO_SHARE_GPU = 0;
 
 
     /** @envvardoc

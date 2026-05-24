@@ -13,7 +13,7 @@
 
 
 namespace envvar_names { 
-    extern std::string PERMIT_NODES_TO_SHARE_GPU;
+    extern std::string QUEST_PERMIT_NODES_TO_SHARE_GPU;
     extern std::string DEFAULT_VALIDATION_EPSILON;
 }
 

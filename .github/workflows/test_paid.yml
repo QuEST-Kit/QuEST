@@ -282,7 +282,7 @@ jobs:
         run: | 
           echo "TEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}" >> $GITHUB_ENV
           echo "TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS=${{ env.test_repetitions }}" >> $GITHUB_ENV
-          echo "PERMIT_NODES_TO_SHARE_GPU=${{ env.mpi_share_gpu }}" >> $GITHUB_ENV
+          echo "QUEST_PERMIT_NODES_TO_SHARE_GPU=${{ env.mpi_share_gpu }}" >> $GITHUB_ENV
 
       # cannot use ctests when distributed, grr!
       - name: Run GPU + distributed v4 mixed tests (4 nodes sharing 1 GPU)
