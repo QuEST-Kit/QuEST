@@ -187,9 +187,10 @@ void printCompilationInfo() {
 
     print_table(
         "compilation", {
+        {"isOmpCompiled",       cpu_isOpenmpCompiled()},
         {"isMpiCompiled",       comm_isMpiCompiled()},
         {"isGpuCompiled",       gpu_isGpuCompiled()},
-        {"isOmpCompiled",       cpu_isOpenmpCompiled()},
+        {"isHipCompiled",       gpu_isHipCompiled()},
         {"isCuQuantumCompiled", gpu_isCuQuantumCompiled()},
     });
 }
@@ -199,9 +200,9 @@ void printDeploymentInfo() {
 
     print_table(
         "deployment", {
+        {"isOmpEnabled",        globalEnvPtr->isMultithreaded},
         {"isMpiEnabled",        globalEnvPtr->isDistributed},
         {"isGpuEnabled",        globalEnvPtr->isGpuAccelerated},
-        {"isOmpEnabled",        globalEnvPtr->isMultithreaded},
         {"isCuQuantumEnabled",  globalEnvPtr->isCuQuantumEnabled},
         {"isGpuSharingEnabled", globalEnvPtr->isGpuSharingEnabled},
     });
