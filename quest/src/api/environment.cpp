@@ -510,7 +510,7 @@ void getEnvironmentString(char str[200]) {
 int getQuESTNumGpuThreadsPerBlock() {
     validate_envIsInit(__func__);
     
-    return globalEnvPtr->isGpuAccelerated? gpu_getNumThreadsPerBlock() : 0;
+    return gpu_getNumThreadsPerBlock();
 }
 
 void setQuESTNumGpuThreadsPerBlock(const int newThreadsPerBlock) {

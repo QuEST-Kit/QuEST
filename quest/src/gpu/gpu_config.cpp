@@ -333,20 +333,13 @@ qindex gpu_getMaxNumConcurrentThreads() {
 int global_numThreadsPerBlock = 128;
 
 int gpu_getNumThreadsPerBlock() {
-#if COMPILE_CUDA
+    // permitted even when GPU backend not compiled
     return global_numThreadsPerBlock;
-#else
-    error_gpuQueriedButGpuNotCompiled();
-    return -1;
-#endif
 }
 
 void gpu_setNumThreadsPerBlock(const int newNumThreadsPerBlock) {
-#if COMPILE_CUDA
+    // permitted even when GPU backend not compiled
     global_numThreadsPerBlock = newNumThreadsPerBlock;
-#else
-    error_gpuQueriedButGpuNotCompiled();
-#endif
     return;
 }
 
