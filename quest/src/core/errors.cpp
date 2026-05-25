@@ -640,6 +640,11 @@ void error_gpuDenseMatrixConjugatedAndTransposed() {
     raiseInternalError("The GPU + cuQuantum implementation of anyCtrlAnyTargDenseMatr() assumes that at most one of template arguments ApplyConj and ApplyTransp is true, though this was violated.");
 }
 
+void error_gpuBadNumThreadsPerBlock() {
+
+    raiseInternalError("The number of threads per block must be a multiple of 32 on NVIDIA GPUs or a multiple of 64 on AMD GPUs.");
+}
+
 void assert_quregIsGpuAccelerated(Qureg qureg) {
 
     if (!qureg.isGpuAccelerated)

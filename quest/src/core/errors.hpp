@@ -247,6 +247,8 @@ void error_gpuDeadCopyMatrixFunctionCalled();
 
 void error_gpuDenseMatrixConjugatedAndTransposed();
 
+void error_gpuBadNumThreadsPerBlock();
+
 void assert_gpuIsAccessible();
 
 void assert_gpuHasBeenBound(bool isBound);
