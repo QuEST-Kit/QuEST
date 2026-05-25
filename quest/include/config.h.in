@@ -82,6 +82,8 @@
 #cmakedefine01 COMPILE_CUDA
 #cmakedefine01 COMPILE_CUQUANTUM
 
+// default parameters which may have been tuned for performance when building the library
+#cmakedefine QUEST_DEFAULT_NUM_THREADS_PER_BLOCK @QUEST_DEFAULT_NUM_THREADS_PER_BLOCK@
 
 // not actually a CMake option (user cannot disable) but nonetheless crucial
 #cmakedefine01 NUMA_AWARE

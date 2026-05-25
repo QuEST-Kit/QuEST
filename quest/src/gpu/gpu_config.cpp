@@ -330,7 +330,7 @@ qindex gpu_getMaxNumConcurrentThreads() {
  * ENVIRONMENT MANAGEMENT
  */
 
-int global_numThreadsPerBlock = 128;
+int global_numThreadsPerBlock = QUEST_DEFAULT_NUM_THREADS_PER_BLOCK;
 
 int gpu_getNumThreadsPerBlock() {
     // permitted even when GPU backend not compiled
