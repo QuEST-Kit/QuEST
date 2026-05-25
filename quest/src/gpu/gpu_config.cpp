@@ -174,6 +174,11 @@ bool gpu_isCuQuantumCompiled() {
 }
 
 
+bool gpu_isHipCompiled() {
+    return (bool) (COMPILE_CUDA && COMPILE_HIP);
+}
+
+
 int gpu_getNumberOfLocalGpus() {
 #if COMPILE_CUDA
 
@@ -338,6 +343,16 @@ int gpu_getNumThreadsPerBlock() {
 }
 
 void gpu_setNumThreadsPerBlock(const int newNumThreadsPerBlock) {
+    if (gpu_isHipCompiled()) {
+        // number of threads per block should be a multiple of 64
+        if (newNumThreadsPerBlock % 64)
+            error_gpuBadNumThreadsPerBlock();
+    } else {
+        // number of threads per block should be a multiple of 32
+        if (newNumThreadsPerBlock % 32)
+            error_gpuBadNumThreadsPerBlock();
+    }
+
     // permitted even when GPU backend not compiled
     global_numThreadsPerBlock = newNumThreadsPerBlock;
     return;

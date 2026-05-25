@@ -42,6 +42,8 @@ bool gpu_isGpuCompiled();
 
 bool gpu_isCuQuantumCompiled();
 
+bool gpu_isHipCompiled();
+
 bool gpu_isGpuAvailable();
 
 bool gpu_isDirectGpuCommPossible();
