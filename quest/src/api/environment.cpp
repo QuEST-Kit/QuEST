@@ -252,6 +252,7 @@ void printGpuInfo() {
         {"gpuMemory",     isGpu?  printer_getMemoryWithUnitStr(gpu_getTotalMemoryInBytes())            + pg : na},
         {"gpuMemoryFree", isGpu?  printer_getMemoryWithUnitStr(gpu_getCurrentAvailableMemoryInBytes()) + pg : na},
         {"gpuCache",      isGpu?  printer_getMemoryWithUnitStr(gpu_getCacheMemoryInBytes())            + pg : na},
+        {"numThreadsPerBlock", isGpu? printer_toStr(gpu_getNumThreadsPerBlock()) : na},
     });
 }
 
