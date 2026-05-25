@@ -41,7 +41,6 @@
     #include "quest/src/gpu/cuda_to_hip.hpp"
 #endif
 
-int numThreadsPerBlock = 128;
 
 
 /*
@@ -331,18 +330,20 @@ qindex gpu_getMaxNumConcurrentThreads() {
  * ENVIRONMENT MANAGEMENT
  */
 
+int global_numThreadsPerBlock = 128;
+
 int gpu_getNumThreadsPerBlock() {
 #if COMPILE_CUDA
-    return numThreadsPerBlock;
+    return global_numThreadsPerBlock;
 #else
     error_gpuQueriedButGpuNotCompiled();
     return -1;
 #endif
 }
 
-void gpu_setNumThreadsPerBlock(const int newThreadsPerBlock) {
+void gpu_setNumThreadsPerBlock(const int newNumThreadsPerBlock) {
 #if COMPILE_CUDA
-    numThreadsPerBlock = newThreadsPerBlock;
+    global_numThreadsPerBlock = newNumThreadsPerBlock;
 #else
     error_gpuQueriedButGpuNotCompiled();
 #endif
