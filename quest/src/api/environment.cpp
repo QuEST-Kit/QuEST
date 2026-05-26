@@ -519,6 +519,7 @@ void setQuESTNumGpuThreadsPerBlock(const int newThreadsPerBlock) {
     validate_envIsInit(__func__);
 
     // just rely on the internal function to throw an error if there's no GPU support compiled
+    // or if newThreadsPerBlock is not a multiple of 32 (NVIDIA) or 64 (AMD)
     gpu_setNumThreadsPerBlock(newThreadsPerBlock);
     return;
 }
