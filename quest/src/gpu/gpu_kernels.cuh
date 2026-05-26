@@ -47,7 +47,7 @@ __forceinline__ __device__ qindex getThreadInd() {
 }
 
 
-__host__ qindex getNumBlocks(qindex numThreads, const int numThreadsPerBlock) {
+__host__ qindex getNumBlocks(qindex numThreads, int numThreadsPerBlock) {
 
     /// @todo
     /// improve this with cudaOccupancyMaxPotentialBlockSize(),
