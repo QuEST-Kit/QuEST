@@ -136,13 +136,13 @@ jobs:
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
-          -DENABLE_TESTING=ON
-          -DFLOAT_PRECISION=${{ matrix.precision }}
-          -DENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
-          -DENABLE_MULTITHREADING=${{ matrix.omp }}
-          -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
-          -DENABLE_CUDA=${{ matrix.cuda }}
-          -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
+          -DQUEST_BUILD_TESTS=ON
+          -DQUEST_FLOAT_PRECISION=${{ matrix.precision }}
+          -DQUEST_ENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
+          -DQUEST_ENABLE_OMP=${{ matrix.omp }}
+          -DQUEST_ENABLE_MPI=${{ matrix.mpi }}
+          -DQUEST_ENABLE_CUDA=${{ matrix.cuda }}
+          -DQUEST_ENABLE_CUQUANTUM=${{ matrix.cuquantum }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
           -DTEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}
           -DTEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}
@@ -264,13 +264,13 @@ jobs:
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
-          -DENABLE_TESTING=ON
-          -DFLOAT_PRECISION=${{ matrix.precision }}
-          -DENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
-          -DENABLE_MULTITHREADING=${{ matrix.omp }}
-          -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
-          -DENABLE_CUDA=${{ matrix.cuda }}
-          -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
+          -DQUEST_BUILD_TESTS=ON
+          -DQUEST_FLOAT_PRECISION=${{ matrix.precision }}
+          -DQUEST_ENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
+          -DQUEST_ENABLE_OMP=${{ matrix.omp }}
+          -DQUEST_ENABLE_MPI=${{ matrix.mpi }}
+          -DQUEST_ENABLE_CUDA=${{ matrix.cuda }}
+          -DQUEST_ENABLE_CUQUANTUM=${{ matrix.cuquantum }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
           -DCMAKE_CXX_FLAGS=${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' && '-fno-lto' || '' }}
 
