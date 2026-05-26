@@ -14,11 +14,7 @@ QuEST is included into a `C` or `C++` project via
 
 <!-- @todo the below link fails in Doxygen; it's too stupid to recognise the section ref -->
 > [!TIP]
-> Some of QuEST's deprecated `v3` API can be accessed by specifying `ENABLE_DEPRECATED_API` when [compiling](/docs/compile.md#v3), or defining it before import, i.e. 
-> ```cpp
-> #define ENABLE_DEPRECATED_API 1
-> #include "quest.h"
-> ```
+> Some of QuEST's deprecated `v3` API can be accessed by specifying `QUEST_ENABLE_DEPRECATED_API` when [compiling](/docs/compile.md#v3).
 > We recommend migrating to the latest `v4` API however as will be showcased below.
 
 Simulation typically proceeds as:

@@ -2,7 +2,7 @@
  * Subroutines which invoke cuStateVec, which are alternatives to the
  * kernels defined in gpu_kernels.cuh, as invoked by gpu_subroutines.cpp
  * 
- * This file is only ever included when COMPILE_CUQUANTUM=1 and COMPILE_CUDA=1
+ * This file is only ever included when QUEST_COMPILE_CUQUANTUM=1 and QUEST_COMPILE_CUDA=1
  * so it can safely invoke CUDA signatures without guards. Note that many of 
  * the statevector functions herein will be re-leveraged by QuEST's density
  * matrix simulation, so it important we do not pass Qureg.numQubits to the 
@@ -29,11 +29,11 @@
 // compile errors (though we must still obtain the preprocessors from config.h)
 #include "quest/include/config.h"
 
-#if ! COMPILE_CUQUANTUM
+#if ! QUEST_COMPILE_CUQUANTUM
     #error "A file being compiled somehow included gpu_cuquantum.hpp despite QuEST not being compiled in cuQuantum mode."
 #endif
 
-#if ! COMPILE_CUDA
+#if ! QUEST_COMPILE_CUDA
     #error "A file being compiled somehow included gpu_cuquantum.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 
@@ -64,10 +64,10 @@ using std::vector;
  * because QuEST uses only a single qcomp type for both in the API.
  */
 
-#if (FLOAT_PRECISION == 1)
+#if (QUEST_FLOAT_PRECISION == 1)
     #define CUQUANTUM_QCOMP CUDA_C_32F
 
-#elif (FLOAT_PRECISION == 2)
+#elif (QUEST_FLOAT_PRECISION == 2)
     #define CUQUANTUM_QCOMP CUDA_C_64F
 
 #else
@@ -363,7 +363,7 @@ void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qu
 
     // cuQuantum can accept a host-pointer (like outProbs), but only
     // double precision; if qreal != double, we use temporary memory
-    #if (FLOAT_PRECISION == 2)
+    #if (QUEST_FLOAT_PRECISION == 2)
         double* outPtr = outProbs;
     #else
         vector<double> tmpProbs;
@@ -377,7 +377,7 @@ void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qu
         outPtr, qubits.data(), qubits.size(), nullptr, nullptr, 0) );
 
     // serially cast and copy output probabilities, if necessary
-    #if (FLOAT_PRECISION != 2)
+    #if (QUEST_FLOAT_PRECISION != 2)
         for (size_t i=0; i<tmpProbs.size(); i++)
             outProbs[i] = static_cast<qreal>(tmpProbs[i]);
     #endif

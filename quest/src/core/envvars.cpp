@@ -44,7 +44,7 @@ namespace envvar_values {
     bool PERMIT_NODES_TO_SHARE_GPU = false;
 
     // by default, the initial validation epsilon (before being overriden
-    // by users at runtime) should depend on qreal (i.e. FLOAT_PRECISION)
+    // by users at runtime) should depend on qreal (i.e. QUEST_FLOAT_PRECISION)
     qreal DEFAULT_VALIDATION_EPSILON = UNSPECIFIED_DEFAULT_VALIDATION_EPSILON;
 }
 

@@ -1,7 +1,7 @@
 /** @file
  * Functions for communicating and exchanging amplitudes between compute
  * nodes, when running in distributed mode, using the C MPI standard.
- * Calling these functions when COMPILE_MPI=0, or when the passed Quregs
+ * Calling these functions when QUEST_COMPILE_MPI=0, or when the passed Quregs
  * are not distributed, will throw a runtime internal error. 
  * 
  * @author Tyson Jones
@@ -22,7 +22,7 @@
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_indices.hpp"
 
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
     #include <mpi.h>
 #endif
 
@@ -108,18 +108,18 @@ qindex MAX_MESSAGE_LENGTH = powerOf2(28);
  */
 
 
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     // declare MPI types for qreal and qcomp. We always use the 
     // C macros, even when the deprecated CXX equivalents are 
     // available, to maintain compatibility with modern MPICH
-    #if   (FLOAT_PRECISION == 1)
+    #if   (QUEST_FLOAT_PRECISION == 1)
         #define MPI_QREAL MPI_FLOAT
         #define MPI_QCOMP MPI_C_FLOAT_COMPLEX
-    #elif (FLOAT_PRECISION == 2)
+    #elif (QUEST_FLOAT_PRECISION == 2)
         #define MPI_QREAL MPI_DOUBLE
         #define MPI_QCOMP MPI_C_DOUBLE_COMPLEX
-    #elif (FLOAT_PRECISION == 4)
+    #elif (QUEST_FLOAT_PRECISION == 4)
         #define MPI_QREAL MPI_LONG_DOUBLE
         #define MPI_QCOMP MPI_C_LONG_DOUBLE_COMPLEX
     #else
@@ -136,7 +136,7 @@ qindex MAX_MESSAGE_LENGTH = powerOf2(28);
 
 
 int getMaxNumMessages() {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     // the max supported tag value constrains the total number of messages 
     // we can send in a round of communication, since we uniquely tag
@@ -214,7 +214,7 @@ std::array<qindex,3> dividePayloadIntoMessages(qindex numAmps) {
 
 
 void exchangeArrays(qcomp* send, qcomp* recv, qindex numElems, int pairRank) {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     // each message is asynchronously dispatched with a final wait, as per arxiv.org/abs/2308.07402
 
@@ -246,7 +246,7 @@ void exchangeArrays(qcomp* send, qcomp* recv, qindex numElems, int pairRank) {
 
 
 void asynchSendArray(qcomp* send, qindex numElems, int pairRank) {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     // we will not track nor wait for the asynch send; instead, the caller will later comm_sync()
     MPI_Request nullReq = MPI_REQUEST_NULL;
@@ -267,7 +267,7 @@ void asynchSendArray(qcomp* send, qindex numElems, int pairRank) {
 
 
 void receiveArray(qcomp* dest, qindex numElems, int pairRank) {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     // expect the data in multiple messages
     auto [messageSize, numMessages] = dividePow2PayloadIntoMessages(numElems);
@@ -301,7 +301,7 @@ void globallyCombineNonUniformSubArrays(
     vector<qindex> globalRecvIndPerRank, vector<qindex> localSendIndPerRank, vector<qindex> numSendPerRank,
     bool areGpuPtrs
 ) {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     int myRank = comm_getRank();
     int numNodes = comm_getNumNodes();
@@ -357,7 +357,7 @@ void globallyCombineNonUniformSubArrays(
 
 
 void globallyCombineSubArrays(qcomp* recv, qcomp* send, qindex numAmpsPerRank, bool areGpuPtrs) {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     // simply wrap and call the non-uniform case has no performance penalty, 
     // and is only slightly messier than a bespoke power-of-2 msg implementation
@@ -637,7 +637,7 @@ void comm_exchangeAmpsToBuffers(Qureg qureg, int pairRank) {
 
 
 void comm_broadcastAmp(int sendRank, qcomp* sendAmp) {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     MPI_Bcast(sendAmp, 1, MPI_QCOMP, sendRank, MPI_COMM_WORLD);
 
@@ -648,7 +648,7 @@ void comm_broadcastAmp(int sendRank, qcomp* sendAmp) {
 
 
 void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps) {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     // only the sender and root nodes need to continue
     int recvRank = ROOT_RANK;
@@ -679,7 +679,7 @@ void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps)
 
 
 void comm_broadcastIntsFromRoot(int* arr, qindex length) {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     int sendRank = ROOT_RANK;
     MPI_Bcast(arr, length, MPI_INT, sendRank, MPI_COMM_WORLD);
@@ -691,7 +691,7 @@ void comm_broadcastIntsFromRoot(int* arr, qindex length) {
 
 
 void comm_broadcastUnsignedsFromRoot(unsigned* arr, qindex length) {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     int sendRank = ROOT_RANK;
     MPI_Bcast(arr, length, MPI_UNSIGNED, sendRank, MPI_COMM_WORLD);
@@ -719,7 +719,7 @@ void comm_combineSubArrays(qcomp* recv, vector<qindex> recvInds, vector<qindex> 
 
 
 void comm_reduceAmp(qcomp* localAmp) {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     MPI_Allreduce(MPI_IN_PLACE, localAmp, 1, MPI_QCOMP, MPI_SUM, MPI_COMM_WORLD);
 
@@ -730,7 +730,7 @@ void comm_reduceAmp(qcomp* localAmp) {
 
 
 void comm_reduceReal(qreal* localReal) {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     MPI_Allreduce(MPI_IN_PLACE, localReal, 1, MPI_QREAL, MPI_SUM, MPI_COMM_WORLD);
 
@@ -741,7 +741,7 @@ void comm_reduceReal(qreal* localReal) {
 
 
 void comm_reduceReals(qreal* localReals, qindex numLocalReals) {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     MPI_Allreduce(MPI_IN_PLACE, localReals, numLocalReals, MPI_QREAL, MPI_SUM, MPI_COMM_WORLD);
 
@@ -752,7 +752,7 @@ void comm_reduceReals(qreal* localReals, qindex numLocalReals) {
 
 
 bool comm_isTrueOnAllNodes(bool val) {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     // perform global AND and broadcast result back to all nodes
     int local = (int) val;
@@ -768,7 +768,7 @@ bool comm_isTrueOnAllNodes(bool val) {
 
 
 bool comm_isTrueOnRootNode(bool val) {
-    #if COMPILE_MPI
+    #if QUEST_COMPILE_MPI
 
     // this isn't really a reduction - it's a broadcast - but
     // it's semantically relevant to comm_isTrueOnAllNodes()
@@ -791,7 +791,7 @@ bool comm_isTrueOnRootNode(bool val) {
 
 
 vector<string> comm_gatherStringsToRoot(char* localChars, int maxNumLocalChars) {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     // no need to validate array sizes and memory alloc successes;
     // these are trivial O(#nodes)-size arrays containing <20 chars

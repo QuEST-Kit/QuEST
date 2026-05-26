@@ -462,7 +462,7 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
         };
        
 
-#if FLOAT_PRECISION == 4
+#if QUEST_FLOAT_PRECISION == 4
         /*
          * The numerical exponent is sufficiently inaccurate to breach the default
          * tolerances at quad precision, so we apply the following kludge to prevent irritating test failures.
@@ -553,7 +553,7 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
             destroyPauliStrSum(ising);
         }
 
-#if FLOAT_PRECISION == 4
+#if QUEST_FLOAT_PRECISION == 4
         setTestEpsilon(initialEps);
 #endif
     }

@@ -719,7 +719,7 @@ namespace report {
         "Line ${LINE_NUMBER} specified ${NUM_LINE_PAULIS} Pauli operators which is inconsistent with the number of Paulis of the previous lines (${NUM_PAULIS}).";
 
     string PARSED_PAULI_STR_SUM_COEFF_EXCEEDS_QCOMP_RANGE =
-        "The coefficient of line ${LINE_NUMBER} is a valid floating-point number but exceeds the range which can be stored in a qcomp. Consider increasing FLOAT_PRECISION.";
+        "The coefficient of line ${LINE_NUMBER} is a valid floating-point number but exceeds the range which can be stored in a qcomp. Consider increasing QUEST_FLOAT_PRECISION.";
 
     string PARSED_STRING_IS_EMPTY =
         "The given string was empty (contained only whitespace characters) and could not be parsed.";

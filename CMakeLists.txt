@@ -60,10 +60,10 @@ endif()
 # Default to "Release"
 # Using recipe from Kitware Blog post
 # https://www.kitware.com/cmake-and-the-default-build-type/
-set(default_build_type "Release")
+set(quest_default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
-  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
+  message(STATUS "Setting build type to '${quest_default_build_type}' as none was specified.")
+  set(CMAKE_BUILD_TYPE "${quest_default_build_type}" CACHE
       STRING "Choose the type of build." FORCE)
   # Set the possible values of build type for cmake-gui
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
@@ -79,50 +79,50 @@ if(PROJECT_IS_TOP_LEVEL)
 endif ()
 
 # Library naming
-set(LIB_NAME QuEST 
-  CACHE 
+set(QUEST_OUTPUT_LIB_NAME QuEST
+  CACHE
   STRING
-  "Change library name. LIB_NAME is QuEST by default."
+  "Change library name. QUEST_OUTPUT_LIB_NAME is QuEST by default."
 )
-message(STATUS "Library will be named lib${LIB_NAME}. Set LIB_NAME to modify.")
+message(STATUS "Library will be named lib${QUEST_OUTPUT_LIB_NAME}. Set QUEST_OUTPUT_LIB_NAME to modify.")
 
-option(VERBOSE_LIB_NAME "Modify library name based on compilation configuration. Turned OFF by default." OFF)
-message(STATUS "Verbose library naming is turned ${VERBOSE_LIB_NAME}. Set VERBOSE_LIB_NAME to modify.")
+option(QUEST_APPEND_CONFIG_TO_LIB_NAME "Modify library name based on compilation configuration. Turned OFF by default." OFF)
+message(STATUS "Verbose library naming is turned ${QUEST_APPEND_CONFIG_TO_LIB_NAME}. Set QUEST_APPEND_CONFIG_TO_LIB_NAME to modify.")
 
 
 # Precision
-set(FLOAT_PRECISION 2 
-  CACHE 
-  STRING 
+set(QUEST_FLOAT_PRECISION 2
+  CACHE
+  STRING
   "Whether to use single, double, or quad floating point precision in the state vector. {1,2,4}"
 )
-set_property(CACHE FLOAT_PRECISION PROPERTY STRINGS
+set_property(CACHE QUEST_FLOAT_PRECISION PROPERTY STRINGS
   1
   2
   4
 )
-message(STATUS "Precision set to ${FLOAT_PRECISION}. Set FLOAT_PRECISION to modify.")
+message(STATUS "Precision set to ${QUEST_FLOAT_PRECISION}. Set QUEST_FLOAT_PRECISION to modify.")
 
 
 # Examples
 option(
-  BUILD_EXAMPLES
+  QUEST_BUILD_EXAMPLES
   "Whether the example programs will be built alongside the QuEST library. Turned OFF by default."
   OFF
 )
-message(STATUS "Examples are turned ${BUILD_EXAMPLES}. Set BUILD_EXAMPLES to modify.")
+message(STATUS "Examples are turned ${QUEST_BUILD_EXAMPLES}. Set QUEST_BUILD_EXAMPLES to modify.")
 
 
 # Testing
 option(
-  ENABLE_TESTING
+  QUEST_BUILD_TESTS
   "Whether the test suite will be built alongside the QuEST library. Turned ON by default."
   OFF
 )
-message(STATUS "Testing is turned ${ENABLE_TESTING}. Set ENABLE_TESTING to modify.")
+message(STATUS "Testing is turned ${QUEST_BUILD_TESTS}. Set QUEST_BUILD_TESTS to modify.")
 
 option(
-  DOWNLOAD_CATCH2
+  QUEST_TESTS_DOWNLOAD_CATCH2
   "Whether Catch2 v3 will be downloaded if it is not found. Turned ON by default."
   ON
 )
@@ -130,61 +130,70 @@ option(
 
 # Multithreading
 option(
-  ENABLE_MULTITHREADING 
-  "Whether QuEST will be built with shared-memory parallelism support using OpenMP. Turned ON by default." 
+  QUEST_ENABLE_OMP
+  "Whether QuEST will be built with shared-memory parallelism support using OpenMP. Turned ON by default."
   ON
 )
-message(STATUS "Multithreading is turned ${ENABLE_MULTITHREADING}. Set ENABLE_MULTITHREADING to modify.")
+message(STATUS "Multithreading is turned ${QUEST_ENABLE_OMP}. Set QUEST_ENABLE_OMP to modify.")
+
+
+# NUMA
+option(
+  QUEST_ENABLE_NUMA
+  "Whether QuEST will be built with NUMA awareness, when also using OpenMP. Turned ON by default."
+  ON
+)
+message(STATUS "NUMA awareness is turned ${QUEST_ENABLE_NUMA}. Set QUEST_ENABLE_NUMA to modify.")
 
 
 # Distribution
 option(
-  ENABLE_DISTRIBUTION 
-  "Whether QuEST will be built with distributed parallelism support using MPI. Turned OFF by default." 
+  QUEST_ENABLE_MPI
+  "Whether QuEST will be built with distributed parallelism support using MPI. Turned OFF by default."
   OFF
 )
-message(STATUS "Distribution is turned ${ENABLE_DISTRIBUTION}. Set ENABLE_DISTRIBUTION to modify.")
+message(STATUS "Distribution is turned ${QUEST_ENABLE_MPI}. Set QUEST_ENABLE_MPI to modify.")
 
 
 # GPU Acceleration
 option(
-  ENABLE_CUDA
+  QUEST_ENABLE_CUDA
   "Whether QuEST will be built with support for NVIDIA GPU acceleration. Turned OFF by default."
   OFF
 )
-message(STATUS "NVIDIA GPU acceleration is turned ${ENABLE_CUDA}. Set ENABLE_CUDA to modify.")
+message(STATUS "NVIDIA GPU acceleration is turned ${QUEST_ENABLE_CUDA}. Set QUEST_ENABLE_CUDA to modify.")
 
 option(
-  ENABLE_CUQUANTUM
+  QUEST_ENABLE_CUQUANTUM
   "Whether QuEST will be built with support for NVIDIA cuQuantum. Turned OFF by default."
   OFF
 )
-message(STATUS "CuQuantum support is turned ${ENABLE_CUQUANTUM}. Set ENABLE_CUQUANTUM to modify.")
+message(STATUS "CuQuantum support is turned ${QUEST_ENABLE_CUQUANTUM}. Set QUEST_ENABLE_CUQUANTUM to modify.")
 
 option(
-  ENABLE_HIP
+  QUEST_ENABLE_HIP
   "Whether QuEST will be built with support for AMD GPU acceleration. Turned OFF by default."
   OFF
 )
-message(STATUS "AMD GPU acceleration is turned ${ENABLE_HIP}. Set ENABLE_HIP to modify.")
+message(STATUS "AMD GPU acceleration is turned ${QUEST_ENABLE_HIP}. Set QUEST_ENABLE_HIP to modify.")
 
 
 # Deprecated API
 option(
-  ENABLE_DEPRECATED_API
+  QUEST_ENABLE_DEPRECATED_API
   "Whether QuEST will be built with deprecated API support. Turned OFF by default."
   OFF
 )
-message(STATUS "Deprecated API support is turned ${ENABLE_DEPRECATED_API}. Set ENABLE_DEPRECATED_API to modify.")
+message(STATUS "Deprecated API support is turned ${QUEST_ENABLE_DEPRECATED_API}. Set QUEST_ENABLE_DEPRECATED_API to modify.")
 
 option(
-  DISABLE_DEPRECATION_WARNINGS
+  QUEST_DISABLE_DEPRECATION_WARNINGS
   "Whether to disable compile-time warnings ordinarily triggered by use of the deprecated API. Turned OFF by default."
   OFF
 )
-message(STATUS "Disabling of deprecated API warnings is turned ${DISABLE_DEPRECATION_WARNINGS}. Set DISABLE_DEPRECATION_WARNINGS to modify.")
+message(STATUS "Disabling of deprecated API warnings is turned ${QUEST_DISABLE_DEPRECATION_WARNINGS}. Set QUEST_DISABLE_DEPRECATION_WARNINGS to modify.")
 
-option(INSTALL_BINARIES "Whether to include example and user binaries in the install." OFF)
+option(QUEST_INSTALL_BINARIES "Whether to include example and user binaries in the install." OFF)
 
 
 
@@ -193,17 +202,17 @@ option(INSTALL_BINARIES "Whether to include example and user binaries in the ins
 # ============================
 
 
-if (ENABLE_CUDA AND ENABLE_HIP)
+if (QUEST_ENABLE_CUDA AND QUEST_ENABLE_HIP)
   message(FATAL_ERROR "QuEST cannot support CUDA and HIP simultaneously.")
 endif()
 
 
-if ((ENABLE_CUDA OR ENABLE_HIP) AND FLOAT_PRECISION STREQUAL 4)
+if ((QUEST_ENABLE_CUDA OR QUEST_ENABLE_HIP) AND QUEST_FLOAT_PRECISION STREQUAL 4)
   message(FATAL_ERROR "Quad precision is not supported on GPU. Please disable GPU acceleration or lower precision.")
 endif()
 
 
-if (ENABLE_CUQUANTUM AND NOT ENABLE_CUDA)
+if (QUEST_ENABLE_CUQUANTUM AND NOT QUEST_ENABLE_CUDA)
   message(FATAL_ERROR "Use of cuQuantum requires CUDA.")
 endif()
 
@@ -213,12 +222,12 @@ if(WIN32)
   # Force MSVC to export all symbols in a shared library, like GCC and clang
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-  if (ENABLE_TESTING AND BUILD_SHARED_LIBS)
+  if (QUEST_BUILD_TESTS AND BUILD_SHARED_LIBS)
     message(WARNING "Compiling the tests on Windows requires BUILD_SHARED_LIBS=OFF which we now force.")
     set(BUILD_SHARED_LIBS OFF)
   endif()
 
-  if (ENABLE_DEPRECATED_API)
+  if (QUEST_ENABLE_DEPRECATED_API)
     message(FATAL_ERROR "The deprecated API is not compatible with MSVC.")
   endif()
 
@@ -251,32 +260,32 @@ endif()
 # ============================
 
 
-if (VERBOSE_LIB_NAME)
+if (QUEST_APPEND_CONFIG_TO_LIB_NAME)
 
-  string(CONCAT LIB_NAME ${LIB_NAME} "-fp${FLOAT_PRECISION}")
+  string(CONCAT QUEST_OUTPUT_LIB_NAME ${QUEST_OUTPUT_LIB_NAME} "-fp${QUEST_FLOAT_PRECISION}")
 
-  if (ENABLE_MULTITHREADING)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+mt")
+  if (QUEST_ENABLE_OMP)
+    string(CONCAT QUEST_OUTPUT_LIB_NAME ${QUEST_OUTPUT_LIB_NAME} "+mt")
   endif()
 
-  if (ENABLE_DISTRIBUTION)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+mpi")
+  if (QUEST_ENABLE_MPI)
+    string(CONCAT QUEST_OUTPUT_LIB_NAME ${QUEST_OUTPUT_LIB_NAME} "+mpi")
   endif()
 
-  if (ENABLE_CUDA)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+cuda")
+  if (QUEST_ENABLE_CUDA)
+    string(CONCAT QUEST_OUTPUT_LIB_NAME ${QUEST_OUTPUT_LIB_NAME} "+cuda")
   endif()
 
-  if (ENABLE_HIP)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+hip")
+  if (QUEST_ENABLE_HIP)
+    string(CONCAT QUEST_OUTPUT_LIB_NAME ${QUEST_OUTPUT_LIB_NAME} "+hip")
   endif()
 
-  if (ENABLE_CUQUANTUM)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+cuquantum")
+  if (QUEST_ENABLE_CUQUANTUM)
+    string(CONCAT QUEST_OUTPUT_LIB_NAME ${QUEST_OUTPUT_LIB_NAME} "+cuquantum")
   endif()
 
-  if (ENABLE_DEPRECATED_API)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+depr")
+  if (QUEST_ENABLE_DEPRECATED_API)
+    string(CONCAT QUEST_OUTPUT_LIB_NAME ${QUEST_OUTPUT_LIB_NAME} "+depr")
   endif()
 
 endif()
@@ -313,7 +322,7 @@ set_target_properties(QuEST PROPERTIES
 # while the source code is entirely C++ and requires C++17,
 # and the tests further require C++20 (handled in tests/).
 # Yet, we here specify C++17 for the source, and C11 as only
-# applies to the C interface when users specify USER_SOURCE,
+# applies to the C interface when users specify USER_SOURCE_NAMES,
 # to attemptedly minimise user confusion. Users wishing to
 # link QuEST with C++14 should separate compilation.
 target_compile_features(QuEST
@@ -344,7 +353,7 @@ target_compile_options(QuEST
 
 
 # OpenMP
-if (ENABLE_MULTITHREADING)
+if (QUEST_ENABLE_OMP)
 
   # find OpenMP, but fail gracefully...
   find_package(OpenMP QUIET)
@@ -375,32 +384,32 @@ endif()
 
 
 # NUMA (only relevant when multithreading)
-if (ENABLE_MULTITHREADING)
+if (QUEST_ENABLE_OMP AND QUEST_ENABLE_NUMA)
 
   # Find NUMA - location of NUMA headers
   if (WIN32)
-    set(NUMA_AWARE 0)
+    set(QUEST_ENABLE_NUMA 0)
     message(WARNING "Building on Windows, QuEST will not be aware of numa locality")
   else()
     include(FindPkgConfig)
     pkg_search_module(NUMA numa IMPORTED_TARGET GLOBAL)
     if (${NUMA_FOUND})
-      set(NUMA_AWARE ${NUMA_FOUND})
+      set(QUEST_ENABLE_NUMA ${NUMA_FOUND})
       target_link_libraries(QuEST PRIVATE PkgConfig::NUMA)
       message(STATUS "NUMA awareness is enabled.")
     else()
-      set(NUMA_AWARE 0)
+      set(QUEST_ENABLE_NUMA 0)
       message(WARNING "libnuma not found, QuEST will not be aware of numa locality")
     endif()
   endif()
 
 else()
-  set(NUMA_AWARE 0)
+  set(QUEST_ENABLE_NUMA 0)
 endif()
 
 
 # MPI
-if (ENABLE_DISTRIBUTION)
+if (QUEST_ENABLE_MPI)
   find_package(MPI REQUIRED
     COMPONENTS CXX
   )
@@ -412,7 +421,7 @@ endif()
 
 
 # CUDA
-if (ENABLE_CUDA)
+if (QUEST_ENABLE_CUDA)
 
   # make nvcc use user cxx-compiler as default host (before cuda-host is set below)
   if (NOT DEFINED CMAKE_CUDA_HOST_COMPILER)
@@ -437,7 +446,7 @@ endif()
 
 
 # HIP
-if (ENABLE_HIP)
+if (QUEST_ENABLE_HIP)
 
   # if generation fails (hip::amdhip64 not found), users can try setting
   # CMAKE_MODULE_PATH to '/opt/rocm/cmake' or '/opt/rocm/hip/lib/cmake/hip'
@@ -460,7 +469,7 @@ endif()
 
 
 # cuQuantum
-if (ENABLE_CUQUANTUM)
+if (QUEST_ENABLE_CUQUANTUM)
   find_package(CUQUANTUM REQUIRED)
   target_link_libraries(QuEST PRIVATE CUQUANTUM::cuStateVec)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
@@ -474,28 +483,28 @@ endif()
 
 
 # set vars which will be written to config.h.in (auto-converted to 0 or 1)
-set(COMPILE_OPENMP ${ENABLE_MULTITHREADING})
-set(COMPILE_MPI ${ENABLE_DISTRIBUTION})
-set(COMPILE_CUQUANTUM ${ENABLE_CUQUANTUM})
-set(INCLUDE_DEPRECATED_FUNCTIONS ${ENABLE_DEPRECATED_API})
+set(QUEST_COMPILE_OPENMP ${QUEST_ENABLE_OMP})
+set(QUEST_COMPILE_MPI ${QUEST_ENABLE_MPI})
+set(QUEST_COMPILE_CUQUANTUM ${QUEST_ENABLE_CUQUANTUM})
+set(QUEST_INCLUDE_DEPRECATED_FUNCTIONS ${QUEST_ENABLE_DEPRECATED_API})
 
 
 # (for the love of God cmake, create a concise syntax for this)
-if (ENABLE_CUDA OR ENABLE_HIP)
-  set(COMPILE_CUDA 1)
+if (QUEST_ENABLE_CUDA OR QUEST_ENABLE_HIP)
+  set(QUEST_COMPILE_CUDA 1)
 else()
-  set(COMPILE_CUDA 0)
+  set(QUEST_COMPILE_CUDA 0)
 endif()
 
 
 # these vars are already set, but repeated here for clarity
-set(FLOAT_PRECISION ${FLOAT_PRECISION})
-set(NUMA_AWARE ${NUMA_AWARE})
-set(DISABLE_DEPRECATION_WARNINGS ${DISABLE_DEPRECATION_WARNINGS})
+set(QUEST_FLOAT_PRECISION ${QUEST_FLOAT_PRECISION})
+set(QUEST_ENABLE_NUMA ${QUEST_ENABLE_NUMA})
+set(QUEST_DISABLE_DEPRECATION_WARNINGS ${QUEST_DISABLE_DEPRECATION_WARNINGS})
 
 
 # these do not appear in src but are saved for record-keeping in config.h.in
-set(COMPILE_HIP ${ENABLE_HIP})
+set(QUEST_COMPILE_HIP ${QUEST_ENABLE_HIP})
 
 
 
@@ -511,7 +520,7 @@ endif()
 
 
 # Set output name
-set_target_properties(QuEST PROPERTIES OUTPUT_NAME ${LIB_NAME})
+set_target_properties(QuEST PROPERTIES OUTPUT_NAME ${QUEST_OUTPUT_LIB_NAME})
 
 
 # Add source files
@@ -530,7 +539,7 @@ add_executable(min_example
 )
 target_link_libraries(min_example PRIVATE QuEST::QuEST)
 
-if (INSTALL_BINARIES)
+if (QUEST_INSTALL_BINARIES)
   install(TARGETS min_example
     RUNTIME
     DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -539,7 +548,7 @@ endif ()
 
 
 # all examples optionally built
-if (BUILD_EXAMPLES)
+if (QUEST_BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
@@ -576,26 +585,26 @@ setup_quest_rpath(min_example)
 
 
 # validate
-if (USER_SOURCE AND NOT OUTPUT_EXE)
-    message(SEND_ERROR "USER_SOURCE specified, but not OUTPUT_EXE.")
+if (USER_SOURCE_NAMES AND NOT USER_OUTPUT_EXE_NAME)
+    message(SEND_ERROR "USER_SOURCE_NAMES specified, but not USER_OUTPUT_EXE_NAME.")
 endif()
-if (OUTPUT_EXE AND NOT USER_SOURCE)
-    message(SEND_ERROR "OUTPUT_EXE specified, but not USER_SOURCE.")
+if (USER_OUTPUT_EXE_NAME AND NOT USER_SOURCE_NAMES)
+    message(SEND_ERROR "USER_OUTPUT_EXE_NAME specified, but not USER_SOURCE_NAMES.")
 endif()
 
 
 # compile user source
-if (USER_SOURCE AND OUTPUT_EXE)
-  message(STATUS "Compiling ${USER_SOURCE} to executable ${OUTPUT_EXE}.")
+if (USER_SOURCE_NAMES AND USER_OUTPUT_EXE_NAME)
+  message(STATUS "Compiling ${USER_SOURCE_NAMES} to executable ${USER_OUTPUT_EXE_NAME}.")
 
-  add_executable(${OUTPUT_EXE} ${USER_SOURCE})
-  target_link_libraries(${OUTPUT_EXE} PUBLIC QuEST)
+  add_executable(${USER_OUTPUT_EXE_NAME} ${USER_SOURCE_NAMES})
+  target_link_libraries(${USER_OUTPUT_EXE_NAME} PUBLIC QuEST)
    
-  if (INSTALL_BINARIES)
-    install(TARGETS ${OUTPUT_EXE} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+  if (QUEST_INSTALL_BINARIES)
+    install(TARGETS ${USER_OUTPUT_EXE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
   endif()
   
-  setup_quest_rpath(${OUTPUT_EXE})
+  setup_quest_rpath(${USER_OUTPUT_EXE_NAME})
 endif()
 
 
@@ -605,14 +614,14 @@ endif()
 # ============================
 
 
-if (ENABLE_TESTING)
+if (QUEST_BUILD_TESTS)
 
   # try find Catch2
   set(CatchVersion 3.8.0)
   find_package(Catch2 ${CatchVersion} QUIET)
 
   # else try download Catch2
-  if (NOT TARGET Catch2::Catch2 AND DOWNLOAD_CATCH2)
+  if (NOT TARGET Catch2::Catch2 AND QUEST_TESTS_DOWNLOAD_CATCH2)
     message(STATUS "Catch2 not found, it will be downloaded and built in the build directory.")
     Include(FetchContent)
 
@@ -654,12 +663,12 @@ install(TARGETS QuEST
 
 
 # Write CMake version file for QuEST
-set(QuEST_INSTALL_CONFIGDIR "${CMAKE_INSTALL_LIBDIR}/cmake/QuEST")
+set(quest_install_config_dir "${CMAKE_INSTALL_LIBDIR}/cmake/QuEST")
 
 
 # Write QuESTConfigVersion.cmake
 write_basic_package_version_file(
-  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}ConfigVersion.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/${QUEST_OUTPUT_LIB_NAME}ConfigVersion.cmake"
   VERSION ${PROJECT_VERSION}
   COMPATIBILITY AnyNewerVersion
 )
@@ -668,16 +677,16 @@ write_basic_package_version_file(
 # Configure QuESTConfig.cmake (from template)
 configure_package_config_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QuESTConfig.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
-  INSTALL_DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
+  "${CMAKE_CURRENT_BINARY_DIR}/${QUEST_OUTPUT_LIB_NAME}Config.cmake"
+  INSTALL_DESTINATION "${quest_install_config_dir}"
 )
 
 
 # Install them
 install(FILES
-  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
-  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}ConfigVersion.cmake"
-  DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
+  "${CMAKE_CURRENT_BINARY_DIR}/${QUEST_OUTPUT_LIB_NAME}Config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/${QUEST_OUTPUT_LIB_NAME}ConfigVersion.cmake"
+  DESTINATION "${quest_install_config_dir}"
 )
 
 install(FILES 
@@ -699,9 +708,9 @@ install(
 
 install(
   EXPORT QuESTTargets
-  FILE "${LIB_NAME}Targets.cmake"
+  FILE "${QUEST_OUTPUT_LIB_NAME}Targets.cmake"
   NAMESPACE QuEST::
-  DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
+  DESTINATION "${quest_install_config_dir}"
 )
 
 if(PROJECT_IS_TOP_LEVEL)

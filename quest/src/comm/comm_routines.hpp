@@ -1,7 +1,7 @@
 /** @file
  * Signatures for communicating and exchanging amplitudes between compute
  * nodes, when running in distributed mode, using the C MPI standard.
- * Calling these functions when COMPILE_MPI=0, or when the passed Quregs
+ * Calling these functions when QUEST_COMPILE_MPI=0, or when the passed Quregs
  * are not distributed, will throw a runtime internal error. 
  * 
  * @author Tyson Jones

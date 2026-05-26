@@ -29,7 +29,7 @@
  * INITIAL WARNING
  */
 
-#if !defined(DISABLE_DEPRECATION_WARNINGS) || DISABLE_DEPRECATION_WARNINGS == 0
+#if !defined(QUEST_DISABLE_DEPRECATION_WARNINGS) || QUEST_DISABLE_DEPRECATION_WARNINGS == 0
 
     // #warning command is always recognised (deprecated API is not MSVC-compatible)
     #warning "\
@@ -49,7 +49,7 @@ refactor your code to v4, and should absolutely not continue to use the old v3 A
 /*
  * TOGGLEABLE WARNING MESSAGES
  *
- * users can define precompiler constant DISABLE_DEPRECATION_WARNINGS=1
+ * users can define precompiler constant QUEST_DISABLE_DEPRECATION_WARNINGS=1
  * in order to disable compile-time deprecation warnings. This will
  * make most of the QuEST v3 API silently work by casting to the 
  * v4 API at compile-time. Note that _Pragma() are resolved at
@@ -62,7 +62,7 @@ refactor your code to v4, and should absolutely not continue to use the old v3 A
 
 #define _EFFECT_PRAGMA(cmd) _Pragma(#cmd)
 
-#if DISABLE_DEPRECATION_WARNINGS
+#if QUEST_DISABLE_DEPRECATION_WARNINGS
 
     #define _WARN_TYPE_RENAMED(oldname, newname)
 

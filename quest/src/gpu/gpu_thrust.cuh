@@ -1,6 +1,6 @@
 /** @file
  * Subroutines which invoke Thrust. This file is only ever included
- * when COMPILE_CUDA=1 so it can safely invoke CUDA signatures without 
+ * when QUEST_COMPILE_CUDA=1 so it can safely invoke CUDA signatures without
  * guards. Further, as it is entirely a header, it can declare templated
  * times without explicitly instantiating them across all parameter values.
  * 
@@ -24,7 +24,7 @@
 // obtain preprocessors from config.h prior to validation
 #include "quest/include/config.h"
 
-#if ! COMPILE_CUDA
+#if ! QUEST_COMPILE_CUDA
     #error "A file being compiled somehow included gpu_thrust.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 
