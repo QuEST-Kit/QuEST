@@ -46,7 +46,7 @@ make
 | `DISABLE_DEPRECATION_WARNINGS` | (`OFF`), `ON` | Whether to disable the compile-time deprecation warnings when using the deprecated (v3) API. |
 | `USER_SOURCE` | (Undefined), String | The source file for a user program which will be compiled alongside QuEST. `OUTPUT_EXE` *must* also be defined. |
 | `OUTPUT_EXE` | (Undefined), String | The name of the executable which will be created from the provided `USER_SOURCE`. `USER_SOURCE` *must* also be defined. |
-
+| `QUEST_GPU_NUM_THREADS_PER_BLOCK` | (128), Number | The default number of threads per block QuEST will use when offloading to a GPU. *Must* be a multiple of 32. For AMD GPUs this *should* be a multiple of 64. |
 
 
 
