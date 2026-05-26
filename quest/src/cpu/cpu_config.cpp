@@ -22,14 +22,14 @@
 using std::vector;
 
 
-// when QUEST_COMPILE_OPENMP=1, the compiler expects arguments like -fopenmp
+// when QUEST_COMPILE_OMP=1, the compiler expects arguments like -fopenmp
 // which cause _OPENMP to be defined, which we check to ensure that
-// QUEST_COMPILE_OPENMP has been set correctly. Note that HIP compilers do
+// QUEST_COMPILE_OMP has been set correctly. Note that HIP compilers do
 // not define _OPENMP even when parsing OpenMP, and it's possible that
 // the user is compiling all the source code (including this file) with
 // HIP; we tolerate _OPENMP being undefined in that instance
 
-#if QUEST_COMPILE_OPENMP && !defined(_OPENMP) && !defined(__HIP__)
+#if QUEST_COMPILE_OMP && !defined(_OPENMP) && !defined(__HIP__)
     #error "Attempted to compile in multithreaded mode without enabling OpenMP in the compiler flags."
 #endif
 
@@ -45,7 +45,7 @@ using std::vector;
 #endif
 
 
-#if QUEST_COMPILE_OPENMP
+#if QUEST_COMPILE_OMP
     #include <omp.h>
 #endif
 
@@ -71,12 +71,12 @@ using std::vector;
 
 
 bool cpu_isOpenmpCompiled() {
-    return (bool) QUEST_COMPILE_OPENMP;
+    return (bool) QUEST_COMPILE_OMP;
 }
 
 
 int cpu_getAvailableNumThreads() {
-#if QUEST_COMPILE_OPENMP
+#if QUEST_COMPILE_OMP
     int n = -1;
 
     #pragma omp parallel shared(n)
@@ -92,7 +92,7 @@ int cpu_getAvailableNumThreads() {
 
 
 int cpu_getNumOpenmpProcessors() {
-#if QUEST_COMPILE_OPENMP
+#if QUEST_COMPILE_OMP
     return omp_get_num_procs();
 #else
     error_cpuThreadsQueriedButEnvNotMultithreaded();
@@ -112,7 +112,7 @@ int cpu_getNumOpenmpProcessors() {
 
 
 int cpu_getOpenmpThreadInd() {
-#if QUEST_COMPILE_OPENMP
+#if QUEST_COMPILE_OMP
     return omp_get_thread_num();
 #else
     return 0;
@@ -121,7 +121,7 @@ int cpu_getOpenmpThreadInd() {
 
 
 int cpu_getCurrentNumThreads() {
-#if QUEST_COMPILE_OPENMP
+#if QUEST_COMPILE_OMP
     return omp_get_num_threads();
 #else
     return 1;

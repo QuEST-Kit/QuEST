@@ -9,7 +9,7 @@
  * ensures that when QuEST is installed, critical user-facing
  * macros such as QUEST_FLOAT_PRECISION cannot ever be changed from
  * their value during source compilation. Finally, it enables
- * users to access macros such as QUEST_COMPILE_OPENMP at pre-build
+ * users to access macros such as QUEST_COMPILE_OMP at pre-build
  * time of their own source code, which could prove necessary 
  * when interfacing with external libraries.
  * 
@@ -35,7 +35,7 @@
 
 
 #if defined(QUEST_FLOAT_PRECISION)              || \
-    defined(QUEST_COMPILE_OPENMP)               || \
+    defined(QUEST_COMPILE_OMP)                  || \
     defined(QUEST_COMPILE_MPI)                  || \
     defined(QUEST_COMPILE_CUDA)                 || \
     defined(QUEST_COMPILE_HIP)                  || \
@@ -77,7 +77,7 @@
 
 
 // crucial to QuEST source (informs external library usage)
-#cmakedefine01 QUEST_COMPILE_OPENMP
+#cmakedefine01 QUEST_COMPILE_OMP
 #cmakedefine01 QUEST_COMPILE_MPI
 #cmakedefine01 QUEST_COMPILE_CUDA
 #cmakedefine01 QUEST_COMPILE_CUQUANTUM
@@ -116,7 +116,7 @@
 
 
 #if ! defined(QUEST_FLOAT_PRECISION)              || \
-    ! defined(QUEST_COMPILE_OPENMP)               || \
+    ! defined(QUEST_COMPILE_OMP)                  || \
     ! defined(QUEST_COMPILE_MPI)                  || \
     ! defined(QUEST_COMPILE_CUDA)                 || \
     ! defined(QUEST_COMPILE_HIP)                  || \
@@ -142,7 +142,7 @@
  */
 
 
-#if ! (QUEST_COMPILE_OPENMP               == 0 || QUEST_COMPILE_OPENMP               == 1) || \
+#if ! (QUEST_COMPILE_OMP                  == 0 || QUEST_COMPILE_OMP                  == 1) || \
     ! (QUEST_COMPILE_MPI                  == 0 || QUEST_COMPILE_MPI                  == 1) || \
     ! (QUEST_COMPILE_CUDA                 == 0 || QUEST_COMPILE_CUDA                 == 1) || \
     ! (QUEST_COMPILE_HIP                  == 0 || QUEST_COMPILE_HIP                  == 1) || \
