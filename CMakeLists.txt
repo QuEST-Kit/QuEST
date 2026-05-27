@@ -222,7 +222,7 @@ if (QUEST_ENABLE_CUQUANTUM AND NOT QUEST_ENABLE_CUDA)
   message(FATAL_ERROR "Use of cuQuantum requires CUDA.")
 endif()
 
-if (ENABLE_SUBCOMM AND NOT ENABLE_DISTRIBUTION)
+if (ENABLE_SUBCOMM AND NOT QUEST_ENABLE_MPI)
   message(FATAL_ERROR "Distribution must be enabled to make use of a user-defined communicator for QuEST.")
 endif()
 

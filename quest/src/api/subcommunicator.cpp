@@ -5,7 +5,7 @@
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/core/errors.hpp"
 
-#if COMPILE_MPI && COMPILE_SUBCOMM
+#if QUEST_COMPILE_MPI && COMPILE_SUBCOMM
 
 #include <stdbool.h>
 #include <mpi.h>

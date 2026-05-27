@@ -12,7 +12,7 @@
 
 #include "quest/include/config.h"
 
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
   #include <mpi.h>
 #endif
 
@@ -33,7 +33,7 @@ bool comm_isInit();
 bool comm_isRootNode();
 bool comm_isRootNode(int rank);
 
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
   MPI_Comm comm_getMpiComm();
   #if COMPILE_SUBCOMM
     void comm_setMpiComm(MPI_Comm newComm);

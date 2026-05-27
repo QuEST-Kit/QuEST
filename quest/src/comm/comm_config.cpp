@@ -235,7 +235,7 @@ void comm_sync() {
 #endif
 }
 
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
     MPI_Comm comm_getMpiComm() {
         return mpiCommQuest;
     }
