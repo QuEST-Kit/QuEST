@@ -53,13 +53,13 @@ typedef INDEX_TYPE qindex;
     // which is either MSVC's custom C complex...
     #ifdef _MSC_VER
 
-        #if (FLOAT_PRECISION == 1)
+        #if (QUEST_FLOAT_PRECISION == 1)
             typedef _Fcomplex qcomp;
 
-        #elif (FLOAT_PRECISION == 2)
+        #elif (QUEST_FLOAT_PRECISION == 2)
             typedef _Dcomplex qcomp;
 
-        #elif (FLOAT_PRECISION == 4)
+        #elif (QUEST_FLOAT_PRECISION == 4)
             typedef _Lcomplex qcomp;
 
         #endif

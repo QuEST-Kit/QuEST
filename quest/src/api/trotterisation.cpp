@@ -11,7 +11,7 @@
 #include "quest/include/matrices.h"
 
 #include "quest/src/core/validation.hpp"
-#include "quest/src/core/small_list.hpp"
+#include "quest/src/core/lists.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/paulilogic.hpp"
@@ -30,8 +30,8 @@ using std::vector;
  */
 
 void internal_applyFirstOrderTrotterRepetition(
-    Qureg qureg, SmallList& ketCtrls, SmallList& braCtrls,
-    SmallList& states, PauliStrSum sum, vector<qindex>& sumOrdering,
+    Qureg qureg, ConstList64 ketCtrls, ConstList64 braCtrls,
+    ConstList64 states, PauliStrSum sum, vector<qindex>& sumOrdering,
     qcomp angle, bool onlyLeftApply, bool reverse
 ) {
     // apply each sum term as a gadget, in forward or reverse order
@@ -63,8 +63,8 @@ void internal_applyFirstOrderTrotterRepetition(
 }
 
 void internal_applyHigherOrderTrotterRepetition(
-    Qureg qureg, SmallList& ketCtrls, SmallList& braCtrls,
-    SmallList& states, PauliStrSum sum, vector<qindex>& sumOrdering, 
+    Qureg qureg, ConstList64 ketCtrls, ConstList64 braCtrls,
+    ConstList64 states, PauliStrSum sum, vector<qindex>& sumOrdering, 
     qcomp angle, int order, bool onlyLeftApply
 ) {
     if (order == 1) {
@@ -108,9 +108,9 @@ void internal_applyAllTrotterRepetitions(
     }
 
     // prepare control-qubit lists once for all invoked gadgets below
-    auto ketCtrlsList = list_getSmallList(controls, numControls);
-    auto braCtrlsList = (qureg.isDensityMatrix)? util_getBraQubits(ketCtrlsList, qureg) : list_getEmptySmallList();
-    auto statesList = list_getSmallList(states, numControls * (states != nullptr));
+    auto ketCtrlsList = lists_getList64(controls, numControls);
+    auto braCtrlsList = (qureg.isDensityMatrix)? util_getBraQubits(ketCtrlsList, qureg) : lists_getEmptyList64();
+    auto statesList = lists_getList64(states, numControls * (states != nullptr));
 
     qcomp arg = angle / reps;
 

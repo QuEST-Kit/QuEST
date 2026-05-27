@@ -506,7 +506,7 @@ void reportQuESTEnv() {
 }
 
 
-void getEnvironmentString(char str[200]) {
+void getQuESTEnvironmentString(char str[200]) {
     validate_envIsInit(__func__);
 
     QuESTEnv env = getQuESTEnv();

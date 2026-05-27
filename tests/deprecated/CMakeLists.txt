@@ -14,7 +14,7 @@ add_executable(dep_tests
 )
 target_link_libraries(dep_tests PUBLIC QuEST::QuEST Catch2::Catch2)
 
-if (ENABLE_DISTRIBUTION)
+if (QUEST_ENABLE_MPI)
     target_link_libraries(dep_tests PRIVATE MPI::MPI_CXX)
 endif()
 

@@ -43,19 +43,19 @@ extern "C" {
 
 
 /// @notyetdoced
-void setSeeds(unsigned* seeds, int numSeeds);
+void setQuESTSeeds(unsigned* seeds, int numSeeds);
 
 
 /// @notyetdoced
-void setSeedsToDefault();
+void setQuESTSeedsToDefault();
 
 
 /// @notyetdoced
-void getSeeds(unsigned* seeds);
+void getQuESTSeeds(unsigned* seeds);
 
 
 /// @notyetdoced
-int getNumSeeds();
+int getQuESTNumSeeds();
 
 
 /** @} */
@@ -79,27 +79,27 @@ int getNumSeeds();
  * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/setting_errorhandler.c) and 
  *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/setting_errorhandler.cpp) examples
  */
-void setInputErrorHandler(void (*callback)(const char* func, const char* msg));
+void setQuESTInputErrorHandler(void (*callback)(const char* func, const char* msg));
 
 
 /// @notyetdoced
-void setValidationOn();
+void setQuESTValidationOn();
 
 
 /// @notyetdoced
-void setValidationOff();
+void setQuESTValidationOff();
 
 
 /// @notyetdoced
-void setValidationEpsilonToDefault();
+void setQuESTValidationEpsilonToDefault();
 
 
 /// @notyetdoced
-void setValidationEpsilon(qreal eps);
+void setQuESTValidationEpsilon(qreal eps);
 
 
 /// @notyetdoced
-qreal getValidationEpsilon();
+qreal getQuESTValidationEpsilon();
 
 
 /** @} */
@@ -115,7 +115,7 @@ qreal getValidationEpsilon();
 
 /// @notyetdoced
 /// @notyettested
-void setMaxNumReportedItems(qindex numRows, qindex numCols);
+void setQuESTMaxNumReportedItems(qindex numRows, qindex numCols);
 
 
 /** @notyetdoced
@@ -123,11 +123,11 @@ void setMaxNumReportedItems(qindex numRows, qindex numCols);
  * > (e.g. `5.32 KiB`) which is always shown with three significant figures 
  * > (or four when in bytes, e.g. `1023 bytes`).
  */
-void setMaxNumReportedSigFigs(int numSigFigs);
+void setQuESTMaxNumReportedSigFigs(int numSigFigs);
 
 
 /// @notyetdoced
-void setNumReportedNewlines(int numNewlines);
+void setQuESTNumReportedNewlines(int numNewlines);
 
 
 /** 
@@ -138,11 +138,11 @@ void setNumReportedNewlines(int numNewlines);
    PauliStr str = getInlinePauliStr("XYZ", {0,10,20});
    reportPauliStr(str);
 
-   setReportedPauliChars(".xyz");
+   setQuESTReportedPauliChars(".xyz");
    reportPauliStr(str);
  * ```
  */
-void setReportedPauliChars(const char* paulis);
+void setQuESTReportedPauliChars(const char* paulis);
 
 
 /** 
@@ -152,14 +152,14 @@ void setReportedPauliChars(const char* paulis);
  * ```
    PauliStr str = getInlinePauliStr("XYZ", {0,10,20});
 
-   setReportedPauliStrStyle(0);
+   setQuESTReportedPauliStrStyle(0);
    reportPauliStr(str);
 
-   setReportedPauliStrStyle(1);
+   setQuESTReportedPauliStrStyle(1);
    reportPauliStr(str);
  * ```
  */
-void setReportedPauliStrStyle(int style);
+void setQuESTReportedPauliStrStyle(int style);
 
 
 /** @} */
@@ -174,11 +174,11 @@ void setReportedPauliStrStyle(int style);
 
 
 /// @notyetdoced
-qindex getGpuCacheSize();
+qindex getQuESTGpuCacheSize();
 
 
 /// @notyetdoced
-void clearGpuCache();
+void clearQuESTGpuCache();
 
 
 /** @} */
@@ -194,7 +194,7 @@ void clearGpuCache();
 
 /// @notyetdoced
 /// @notyettested
-void getEnvironmentString(char str[200]);
+void getQuESTEnvironmentString(char str[200]);
 
 
 /** @} */
@@ -225,16 +225,16 @@ void getEnvironmentString(char str[200]);
 /// @notyettested
 /// @notyetdoced
 /// @cppvectoroverload
-/// @see setSeeds()
-void setSeeds(std::vector<unsigned> seeds);
+/// @see setQuESTSeeds()
+void setQuESTSeeds(std::vector<unsigned> seeds);
 
 
 /// @ingroup debug_seed
 /// @notyettested
 /// @notyetdoced
 /// @cpponly
-/// @see getSeeds()
-std::vector<unsigned> getSeeds();
+/// @see getQuESTSeeds()
+std::vector<unsigned> getQuESTSeeds();
 
 
 #endif // __cplusplus

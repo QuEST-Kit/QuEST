@@ -12,7 +12,7 @@
 #include "quest/include/multiplication.h"
 
 #include "quest/src/core/validation.hpp"
-#include "quest/src/core/small_list.hpp"
+#include "quest/src/core/lists.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/paulilogic.hpp"
@@ -27,7 +27,7 @@ using std::vector;
 // (which don't have much relevance to non-unitaries),
 // so passes ctrls={} to most internal functions; we
 // spare ourselves some keystrokes by this shortcut
-SmallList none = list_getEmptySmallList();
+List64 none = lists_getEmptyList64();
 
 
 
@@ -114,7 +114,7 @@ void leftapplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matri
 
     bool conj = false;
     bool transp = false;
-    localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, none, none, list_getSmallList(targets, numTargets), matrix, conj, transp);
+    localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, none, none, lists_getList64(targets, numTargets), matrix, conj, transp);
 }
 
 void rightapplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matrix) {
@@ -127,7 +127,7 @@ void rightapplyCompMatr(Qureg qureg, int* targets, int numTargets, CompMatr matr
     // rho matrix ~ transpose(rho) (x) I ||rho>>
     bool conj = false;
     bool transp = true;
-    auto qubits = util_getBraQubits(list_getSmallList(targets, numTargets), qureg);
+    auto qubits = util_getBraQubits(lists_getList64(targets, numTargets), qureg);
     localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, none, none, qubits, matrix, conj, transp);
 }
 
@@ -219,7 +219,7 @@ void leftapplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matri
 
     bool conj = false;
     qcomp exponent = 1;
-    auto qubits = list_getSmallList(targets, numTargets);
+    auto qubits = lists_getList64(targets, numTargets);
     localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, none, none, qubits, matrix, exponent, conj);
 }
 
@@ -231,7 +231,7 @@ void rightapplyDiagMatr(Qureg qureg, int* targets, int numTargets, DiagMatr matr
 
     bool conj = false;
     qcomp exponent = 1;
-    auto qubits = util_getBraQubits(list_getSmallList(targets, numTargets), qureg);
+    auto qubits = util_getBraQubits(lists_getList64(targets, numTargets), qureg);
     localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, none, none, qubits, matrix, exponent, conj);
 }
 
@@ -262,7 +262,7 @@ void leftapplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr 
     validate_matrixExpIsNonDiverging(matrix, exponent, __func__); // harmlessly re-validates fields and is-sync
 
     bool conj = false;
-    auto qubits = list_getSmallList(targets, numTargets);
+    auto qubits = lists_getList64(targets, numTargets);
     localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, none, none, qubits, matrix, exponent, conj);
 }
 
@@ -274,7 +274,7 @@ void rightapplyDiagMatrPower(Qureg qureg, int* targets, int numTargets, DiagMatr
     validate_matrixExpIsNonDiverging(matrix, exponent, __func__); // harmlessly re-validates fields and is-sync
 
     bool conj = false;
-    auto qubits = util_getBraQubits(list_getSmallList(targets, numTargets), qureg);
+    auto qubits = util_getBraQubits(lists_getList64(targets, numTargets), qureg);
     localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, none, none, qubits, matrix, exponent, conj);
 }
 
@@ -508,7 +508,7 @@ void leftapplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angle
     validate_targets(qureg, targets, numTargets, __func__);
 
     qreal phase = util_getPhaseFromGateAngle(angle);
-    auto qubits = list_getSmallList(targets, numTargets);
+    auto qubits = lists_getList64(targets, numTargets);
     localiser_statevec_anyCtrlPhaseGadget(qureg, none, none, qubits, phase);
 }
 
@@ -518,7 +518,7 @@ void rightapplyPhaseGadget(Qureg qureg, int* targets, int numTargets, qreal angl
     validate_targets(qureg, targets, numTargets, __func__);
 
     qreal phase = util_getPhaseFromGateAngle(angle);
-    auto qubits = util_getBraQubits(list_getSmallList(targets, numTargets), qureg);
+    auto qubits = util_getBraQubits(lists_getList64(targets, numTargets), qureg);
     localiser_statevec_anyCtrlPhaseGadget(qureg, none, none, qubits, phase);
 }
 
@@ -587,7 +587,7 @@ void leftapplyQubitProjector(Qureg qureg, int qubit, int outcome) {
     validate_measurementOutcomeIsValid(outcome, __func__); 
 
     qreal prob = 1;
-    localiser_statevec_multiQubitProjector(qureg, list_getSmallList({qubit}), list_getSmallList({outcome}), prob);
+    localiser_statevec_multiQubitProjector(qureg, lists_getList64({qubit}), lists_getList64({outcome}), prob);
 }
 
 void leftapplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits) {
@@ -596,8 +596,8 @@ void leftapplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int n
     validate_measurementOutcomesAreValid(outcomes, numQubits, __func__);
 
     qreal prob = 1;
-    auto qubitVec = list_getSmallList(qubits, numQubits);
-    auto outcomeVec = list_getSmallList(outcomes, numQubits);
+    auto qubitVec = lists_getList64(qubits, numQubits);
+    auto outcomeVec = lists_getList64(outcomes, numQubits);
     localiser_statevec_multiQubitProjector(qureg, qubitVec, outcomeVec, prob);
 }
 
@@ -608,8 +608,8 @@ void rightapplyQubitProjector(Qureg qureg, int qubit, int outcome) {
     validate_measurementOutcomeIsValid(outcome, __func__); 
     
     qreal prob = 1;
-    auto qubitList = list_getSmallList({util_getBraQubit(qubit,qureg)});
-    localiser_statevec_multiQubitProjector(qureg, qubitList, list_getSmallList({outcome}), prob);
+    auto qubitList = lists_getList64({util_getBraQubit(qubit,qureg)});
+    localiser_statevec_multiQubitProjector(qureg, qubitList, lists_getList64({outcome}), prob);
 }
 
 void rightapplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits) {
@@ -619,8 +619,8 @@ void rightapplyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int 
     validate_measurementOutcomesAreValid(outcomes, numQubits, __func__);
 
     qreal prob = 1;
-    auto qubitVec = util_getBraQubits(list_getSmallList(qubits, numQubits), qureg);
-    auto outcomeVec = list_getSmallList(outcomes, numQubits);
+    auto qubitVec = util_getBraQubits(lists_getList64(qubits, numQubits), qureg);
+    auto outcomeVec = lists_getList64(outcomes, numQubits);
     localiser_statevec_multiQubitProjector(qureg, qubitVec, outcomeVec, prob);
 }
 

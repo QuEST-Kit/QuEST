@@ -13,7 +13,7 @@
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/localiser.hpp"
-#include "quest/src/core/small_list.hpp"
+#include "quest/src/core/lists.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
@@ -221,7 +221,7 @@ void setQuregToPartialTrace(Qureg out, Qureg in, int* traceOutQubits, int numTra
     validate_targets(in, traceOutQubits, numTraceQubits, __func__);
     validate_quregCanBeSetToReducedDensMatr(out, in, numTraceQubits, __func__);
 
-    auto targets = list_getSmallList(traceOutQubits, numTraceQubits);
+    auto targets = lists_getList64(traceOutQubits, numTraceQubits);
     localiser_densmatr_partialTrace(in, out, targets);
 }
 
@@ -234,7 +234,7 @@ void setQuregToReducedDensityMatrix(Qureg out, Qureg in, int* retainQubits, int 
     validate_targets(in, retainQubits, numRetainQubits, __func__);
     validate_quregCanBeSetToReducedDensMatr(out, in, in.numQubits - numRetainQubits, __func__);
 
-    auto traceQubits = util_getNonTargetedQubits(list_getSmallList(retainQubits, numRetainQubits), in.numQubits);
+    auto traceQubits = util_getNonTargetedQubits(lists_getList64(retainQubits, numRetainQubits), in.numQubits);
     localiser_densmatr_partialTrace(in, out, traceQubits);
 }
 

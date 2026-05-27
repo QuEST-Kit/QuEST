@@ -42,9 +42,9 @@ void validateAndApplyAnyCtrlAnyTargUnitaryMatrix(Qureg qureg, int* ctrls, int* s
     if (util_isDenseMatrixType<T>())
         validate_mixedAmpsFitInNode(qureg, numTargs, caller);
 
-    SmallList ctrlList  = list_getSmallList(ctrls,  numCtrls);
-    SmallList stateList = list_getSmallList(states, numCtrls * (states != nullptr));
-    SmallList targList  = list_getSmallList(targs,  numTargs);
+    List64 ctrlList  = lists_getList64(ctrls,  numCtrls);
+    List64 stateList = util_getList64OrAllOnes(states, numCtrls);
+    List64 targList  = lists_getList64(targs,  numTargs);
 
     bool conj = false;
     localiser_statevec_anyCtrlAnyTargAnyMatr(qureg, ctrlList, stateList, targList, matr, conj);
@@ -410,9 +410,9 @@ void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* sta
     // when numerical validation is disabled without a separate func.
 
     bool conj = false;
-    auto ctrlList = list_getSmallList(controls, numControls);
-    auto stateList = list_getSmallList(states,  numControls * (states != nullptr));
-    auto targList = list_getSmallList(targets,  numTargets);
+    auto ctrlList = lists_getList64(controls, numControls);
+    auto stateList = util_getList64OrAllOnes(states, numControls);
+    auto targList = lists_getList64(targets,  numTargets);
     localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, ctrlList, stateList, targList, matrix, exponent, conj);
 
     if (!qureg.isDensityMatrix)
@@ -518,7 +518,7 @@ void applyMultiControlledS(Qureg qureg, int* controls, int numControls, int targ
 
 void applyMultiStateControlledS(Qureg qureg, int* controls, int* states, int numControls, int target) {
 
-    DiagMatr1 matr = getDiagMatr1({1, 1_i});
+    static const DiagMatr1 matr = getDiagMatr1({1, 1_i});
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
 }
 
@@ -569,7 +569,7 @@ void applyMultiControlledT(Qureg qureg, int* controls, int numControls, int targ
 
 void applyMultiStateControlledT(Qureg qureg, int* controls, int* states, int numControls, int target) {
 
-    DiagMatr1 matr = getDiagMatr1({1, 1/std::sqrt(2) + 1_i/std::sqrt(2)});
+    static const DiagMatr1 matr = getDiagMatr1({1, (1 + 1_i)/std::sqrt(2)});
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
 }
 
@@ -620,11 +620,11 @@ void applyMultiControlledHadamard(Qureg qureg, int* controls, int numControls, i
 
 void applyMultiStateControlledHadamard(Qureg qureg, int* controls, int* states, int numControls, int target) {
 
-    qcomp a = 1/std::sqrt(2);
-    CompMatr1 matr = getCompMatr1({
-        {a, a}, 
-        {a,-a}});
-
+    static const qcomp a = 1 / std::sqrt(2);
+    static const CompMatr1 matr = getCompMatr1({
+        {a,  a}, 
+        {a, -a}
+    });
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
 }
 
@@ -678,8 +678,8 @@ void applyMultiStateControlledSwap(Qureg qureg, int* controls, int* states, int 
     validate_controlsAndTwoTargets(qureg, controls, numControls, qubit1, qubit2, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    auto ctrlList = list_getSmallList(controls, numControls);
-    auto stateList = list_getSmallList(states, numControls * (states != nullptr));
+    auto ctrlList = lists_getList64(controls, numControls);
+    auto stateList = util_getList64OrAllOnes(states, numControls);
     localiser_statevec_anyCtrlSwap(qureg, ctrlList, stateList, qubit1, qubit2);
 
     if (!qureg.isDensityMatrix)
@@ -749,7 +749,7 @@ void applyMultiStateControlledSqrtSwap(Qureg qureg, int* controls, int* states, 
 
     validate_mixedAmpsFitInNode(qureg, 2, __func__); // to throw SqrtSwap error, not generic CompMatr2 error
 
-    CompMatr2 matr = getCompMatr2({
+    static const CompMatr2 matr = getCompMatr2({
         {1, 0, 0, 0},
         {0, .5+.5_i, .5-.5_i, 0},
         {0, .5-.5_i, .5+.5_i, 0},
@@ -869,7 +869,7 @@ void applyMultiStateControlledPauliX(Qureg qureg, int* controls, int* states, in
     /// since it avoids all superfluous flops; check worthwhile for multi-qubit
 
     // harmlessly re-validates, including hardcoded matrix unitarity
-    CompMatr1 matrix = util_getPauliX();
+    static const CompMatr1 matrix = util_getPauliX();
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matrix, __func__);
 }
 
@@ -879,7 +879,7 @@ void applyMultiStateControlledPauliY(Qureg qureg, int* controls, int* states, in
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
     // harmlessly re-validates, including hardcoded matrix unitarity
-    CompMatr1 matrix = util_getPauliY();
+    static const CompMatr1 matrix = util_getPauliY();
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matrix, __func__);
 }
 
@@ -889,7 +889,7 @@ void applyMultiStateControlledPauliZ(Qureg qureg, int* controls, int* states, in
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
     // harmlessly re-validates, including hardcoded matrix unitarity
-    DiagMatr1 matrix = util_getPauliZ();
+    static const DiagMatr1 matrix = util_getPauliZ();
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matrix, __func__);
 }
 
@@ -966,8 +966,8 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
     qcomp factor = 1;
-    auto ctrlList = list_getSmallList(controls, numControls);
-    auto stateList = list_getSmallList(states, numControls * (states != nullptr));
+    auto ctrlList = lists_getList64(controls, numControls);
+    auto stateList = util_getList64OrAllOnes(states, numControls);
 
     // when there are no control qubits, we can merge the density matrix's 
     // operation sinto a single tensor, i.e. +- (shift(str) (x) str), to 
@@ -1250,7 +1250,7 @@ void applyNonUnitaryPauliGadget(Qureg qureg, PauliStr str, qcomp angle) {
     validate_pauliStrTargets(qureg, str, __func__);
 
     qcomp phase = util_getPhaseFromGateAngle(angle);
-    auto none = list_getEmptySmallList();
+    auto none = lists_getEmptyList64();
     localiser_statevec_anyCtrlPauliGadget(qureg, none, none, str, phase);
 
     if (!qureg.isDensityMatrix)
@@ -1292,8 +1292,8 @@ void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* state
     // which is sufficiently efficient using the existing gadget backend function
 
     qreal phase = util_getPhaseFromGateAngle(angle);
-    auto ctrlList = list_getSmallList(controls, numControls);
-    auto stateList = list_getSmallList(states, numControls * (states != nullptr));
+    auto ctrlList = lists_getList64(controls, numControls);
+    auto stateList = util_getList64OrAllOnes(states, numControls);
     localiser_statevec_anyCtrlPauliGadget(qureg, ctrlList, stateList, str, phase);
 
     if (!qureg.isDensityMatrix)
@@ -1357,9 +1357,9 @@ void applyMultiStateControlledPhaseGadget(Qureg qureg, int* controls, int* state
     validate_controlStates(states, numControls, __func__);
 
     qreal phase = util_getPhaseFromGateAngle(angle);
-    auto ctrlList = list_getSmallList(controls, numControls);
-    auto stateList = list_getSmallList(states,  numControls * (states != nullptr));
-    auto targList = list_getSmallList(targets,  numTargets);
+    auto ctrlList = lists_getList64(controls, numControls);
+    auto stateList = util_getList64OrAllOnes(states, numControls);
+    auto targList = lists_getList64(targets,  numTargets);
     localiser_statevec_anyCtrlPhaseGadget(qureg, ctrlList, stateList, targList, phase);
 
     if (!qureg.isDensityMatrix)
@@ -1424,7 +1424,8 @@ void applyMultiQubitPhaseShift(Qureg qureg, int* targets, int numTargets, qreal 
     validate_targets(qureg, targets, numTargets, __func__);
 
     // treat as a (numTargets-1)-controlled 1-target diagonal matrix
-    DiagMatr1 matr = getDiagMatr1({1, std::exp(1_i * angle)});
+    static DiagMatr1 matr = getDiagMatr1({1, /*un-init*/ 0});
+    matr.elems[1] = std::exp(1_i * angle); // micro-optimisation
 
     // harmlessly re-validates
     applyMultiStateControlledDiagMatr1(qureg, &targets[1], nullptr, numTargets-1, targets[0], matr);
@@ -1467,7 +1468,7 @@ void applyMultiQubitPhaseFlip(Qureg qureg, int* targets, int numTargets) {
     validate_targets(qureg, targets, numTargets, __func__);
 
     // treat as a (numTargets-1)-controlled 1-target Pauli Z
-    DiagMatr1 matr = getDiagMatr1({1, -1});
+    static const DiagMatr1 matr = getDiagMatr1({1, -1});
 
     // harmlessly re-validates
     applyMultiStateControlledDiagMatr1(qureg, &targets[1], nullptr, numTargets-1, targets[0], matr);
@@ -1562,8 +1563,8 @@ void applyQubitProjector(Qureg qureg, int target, int outcome) {
     
     qreal prob = 1;
 
-    auto targList    = list_getSmallList({target});
-    auto outcomeList = list_getSmallList({outcome});
+    auto targList    = lists_getList64({target});
+    auto outcomeList = lists_getList64({outcome});
 
     // density matrix has an optimised func in lieu of calling the statevector func twice
     (qureg.isDensityMatrix)?
@@ -1577,8 +1578,8 @@ void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQu
     validate_measurementOutcomesAreValid(outcomes, numQubits, __func__);
 
     qreal prob = 1;
-    auto qubitList = list_getSmallList(qubits, numQubits);
-    auto outcomeList = list_getSmallList(outcomes, numQubits);
+    auto qubitList = lists_getList64(qubits, numQubits);
+    auto outcomeList = lists_getList64(outcomes, numQubits);
 
     // density matrix has an optimised func in lieu of calling the statevector func twice
     (qureg.isDensityMatrix)?
@@ -1627,8 +1628,8 @@ int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability)
     int outcome = rand_getRandomSingleQubitOutcome(probs[0]);
     *probability = probs[outcome];
 
-    auto targList    = list_getSmallList({target});
-    auto outcomeList = list_getSmallList({outcome});
+    auto targList    = lists_getList64({target});
+    auto outcomeList = lists_getList64({outcome});
 
     // collapse to the outcome
     (qureg.isDensityMatrix)?
@@ -1649,8 +1650,8 @@ qreal applyForcedQubitMeasurement(Qureg qureg, int target, int outcome) {
     qreal prob = calcProbOfQubitOutcome(qureg, target, outcome); // harmlessly re-validates
     validate_measurementOutcomeProbNotZero(outcome, prob, __func__);
 
-    auto targList    = list_getSmallList({target});
-    auto outcomeList = list_getSmallList({outcome});
+    auto targList    = lists_getList64({target});
+    auto outcomeList = lists_getList64({outcome});
 
     // project to the outcome, renormalising the surviving states
     (qureg.isDensityMatrix)?
@@ -1693,9 +1694,9 @@ qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQub
     *probability = probs[outcome];
 
     // map outcome to individual qubit outcomes
-    auto qubitList = list_getSmallList(qubits, numQubits);
+    auto qubitList = lists_getList64(qubits, numQubits);
     auto outcomeList = util_getConstantList(-1, numQubits);
-    getBitsFromInteger(outcomeList.data(), outcome, numQubits);
+    setToBitsOfInteger(outcomeList.data(), outcome, numQubits);
 
     // project to the outcomes, renormalising the surviving states
     (qureg.isDensityMatrix)?
@@ -1710,8 +1711,8 @@ qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, 
     validate_targets(qureg, qubits, numQubits, __func__);
     validate_measurementOutcomesAreValid(outcomes, numQubits, __func__);
 
-    auto qubitList = list_getSmallList(qubits, numQubits);
-    auto outcomeList = list_getSmallList(outcomes, numQubits);
+    auto qubitList = lists_getList64(qubits, numQubits);
+    auto outcomeList = lists_getList64(outcomes, numQubits);
 
     // ensure probability of the forced measurement outcome is not negligible
     qreal prob = calcProbOfMultiQubitOutcome(qureg, qubits, outcomes, numQubits); // harmlessly re-validates

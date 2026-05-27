@@ -69,7 +69,7 @@ extern "C" {
  * 
  * - Postcondition validation will check that the calculated expectation value is approximately
  *   real (i.e. the imaginary component is smaller in size than the validation epsilon), as admitted
- *   when @p qureg is correctly normalised. This behaviour can be adjusted using setValidationEpsilon(). 
+ *   when @p qureg is correctly normalised. This behaviour can be adjusted using setQuESTValidationEpsilon(). 
  * - Regardless of the validation epsilon, the returned value is always real and the imaginary component
  *   is discarded. The full complex value can be obtained using calcExpecNonHermitianPauliStrSum().
  * 
@@ -129,7 +129,7 @@ qreal calcExpecPauliStr(Qureg qureg, PauliStr str);
  *   @f[ 
      |\im{c}| \le \valeps
  *   @f]
- *   for all @f$c \in @f$ `sum.coeffs`. Adjust @f$\valeps@f$ using setValidationEpsilon().
+ *   for all @f$c \in @f$ `sum.coeffs`. Adjust @f$\valeps@f$ using setQuESTValidationEpsilon().
  *   The sub-epsilon imaginary components of the coefficients _are_ included in calculation.
  * - Postcondition validation will check that the calculated expectation value is approximately
  *   real (i.e. the imaginary component is smaller in size than the validation epsilon), as should be
@@ -201,7 +201,7 @@ qreal calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum);
  *   @f[ 
      |\im{c}| \le \valeps
  *   @f]
- *   for all @f$c \in @f$ `matr.cpuElems`. Adjust @f$\valeps@f$ using setValidationEpsilon().
+ *   for all @f$c \in @f$ `matr.cpuElems`. Adjust @f$\valeps@f$ using setQuESTValidationEpsilon().
  * - Postcondition validation will check that the calculated expectation value is approximately
  *   real (i.e. the imaginary component is smaller in size than the validation epsilon), as should be
  *   admitted when @p qureg is correctly normalised, and @p matr is Hermitian.
@@ -277,14 +277,14 @@ qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
  *   @f[ 
      |\im{c}| \le \valeps
  *   @f]
- *   for all @f$c \in @f$ `matr.cpuElems`. Adjust @f$\valeps@f$ using setValidationEpsilon().
+ *   for all @f$c \in @f$ `matr.cpuElems`. Adjust @f$\valeps@f$ using setQuESTValidationEpsilon().
  * 
  *   > [!CAUTION]
  *   > Unlike other functions (including calcExpecFullStateDiagMatr()), this function will _NOT_
  *   > consult the imaginary components of the elements of @p matrix, since a non-complex exponentiation
  *   > function is used. That is, while validation permits the imaginary components to be small, they
  *   > will be internally treated as precisely zero. This is true even when Hermiticity validation
- *   > is disabled using setValidationOff(). To consult the imaginary components of @p matrix, use
+ *   > is disabled using setQuESTValidationOff(). To consult the imaginary components of @p matrix, use
  *   > calcExpecNonHermitianFullStateDiagMatrPower().
  * 
  * - Hermiticity of @p matrix when raised to @p exponent further requires that, when @p exponent is 
@@ -298,7 +298,7 @@ qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
  *   zero elements which would otherwise create divergences in @f$\hat{D}^x@f$. Validation ergo
  *   checks that when @p exponent is (strictly) negative, @p matrix contains no elements within 
  *   distance @f$\valeps@f$ to zero (regardless of the magnitude of @p exponent). Adjust
- *   @f$\valeps@f$ using setValidationEpsilon().
+ *   @f$\valeps@f$ using setQuESTValidationEpsilon().
  * - The passed @p exponent is always real, but can be relaxed to a general complex scalar via
  *   calcExpecNonHermitianFullStateDiagMatrPower().
  * - The returned value is always real, and the imaginary component is neglected even when 
@@ -890,7 +890,7 @@ qreal calcPurity(Qureg qureg);
  * - The output of this function is always real, which validation will check after computing the
  *   fidelity as a complex scalar. Specifically, validation will assert that the result has an
  *   absolute imaginary component less than the validation epsilon, which can be adjusted with
- *   setValidationEpsilon().
+ *   setQuESTValidationEpsilon().
  * 
  * - This function does not yet support both @p qureg and @p other being density matrices, for
  *   which the fidelity calculation is more substantial.
@@ -1004,7 +1004,7 @@ qreal calcFidelity(Qureg qureg, Qureg other);
          \left| \, \im{ \brapsi \dmrho \svpsi } \, \right| \le \valeps, \\
          \re{ \brapsi \dmrho \svpsi } \le 1 + \valeps,
  *   @f]
- *   where @f$\valeps@f$ is the validation epsilon, adjustable via setValidationEpsilon().
+ *   where @f$\valeps@f$ is the validation epsilon, adjustable via setQuESTValidationEpsilon().
  * 
  * - Even when the above postcondition validation is disabled, the Bures and purified distance
  *   calculations will respectively replace @f$\left| \braket{\phi}{\psi} \right|@f$ and 

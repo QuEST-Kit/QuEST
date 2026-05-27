@@ -46,7 +46,7 @@ using std::vector;
  */
 
 
-TEST_CASE( "setInputErrorHandler", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTInputErrorHandler", TEST_CATEGORY ) {
 
     /// @todo
     /// We can test this by saving the current handler,
@@ -62,7 +62,7 @@ TEST_CASE( "setInputErrorHandler", TEST_CATEGORY ) {
 }
 
 
-TEST_CASE( "setMaxNumReportedSigFigs", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTMaxNumReportedSigFigs", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
@@ -77,11 +77,11 @@ TEST_CASE( "setMaxNumReportedSigFigs", TEST_CATEGORY ) {
         };
 
         // disable auto \n after lines
-        setNumReportedNewlines(0);
+        setQuESTNumReportedNewlines(0);
 
         for (size_t numSigFigs=1; numSigFigs<=refs.size(); numSigFigs++) {
 
-            setMaxNumReportedSigFigs(numSigFigs);
+            setQuESTMaxNumReportedSigFigs(numSigFigs);
 
             // redirect stdout to buffer
             std::stringstream buffer;
@@ -103,22 +103,22 @@ TEST_CASE( "setMaxNumReportedSigFigs", TEST_CATEGORY ) {
 
             int num = GENERATE( -1, 0 );
 
-            REQUIRE_THROWS_WITH( setMaxNumReportedSigFigs(num), ContainsSubstring("Cannot be less than one") );
+            REQUIRE_THROWS_WITH( setQuESTMaxNumReportedSigFigs(num), ContainsSubstring("Cannot be less than one") );
         }
     }
 
     // restore to QuEST default for future tests
-    setMaxNumReportedSigFigs(5);
+    setQuESTMaxNumReportedSigFigs(5);
 }
 
 
-TEST_CASE( "setNumReportedNewlines", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTNumReportedNewlines", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
         for (int numNewlines=0; numNewlines<3; numNewlines++) {
 
-            setNumReportedNewlines(numNewlines);
+            setQuESTNumReportedNewlines(numNewlines);
 
             // redirect stdout to buffer
             std::stringstream buffer;
@@ -138,23 +138,23 @@ TEST_CASE( "setNumReportedNewlines", TEST_CATEGORY ) {
 
         SECTION( "number" ) {
 
-            REQUIRE_THROWS_WITH( setNumReportedNewlines(-1), ContainsSubstring("Cannot generally be less than zero") );
+            REQUIRE_THROWS_WITH( setQuESTNumReportedNewlines(-1), ContainsSubstring("Cannot generally be less than zero") );
         }
 
         SECTION( "multine number" ) {
 
-            setNumReportedNewlines(0);
+            setQuESTNumReportedNewlines(0);
 
             REQUIRE_THROWS_WITH( reportQuESTEnv(), ContainsSubstring("zero") && ContainsSubstring("not permitted when calling multi-line") );
         }
     }
 
     // restore to QuEST default for future tests
-    setNumReportedNewlines(2);
+    setQuESTNumReportedNewlines(2);
 }
 
 
-TEST_CASE( "setSeeds", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTSeeds", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
@@ -173,7 +173,7 @@ TEST_CASE( "setSeeds", TEST_CATEGORY ) {
                     const int numReps = 5;
 
                     // set an arbitrary fixed seed...
-                    setSeeds(seeds, numSeeds);
+                    setQuESTSeeds(seeds, numSeeds);
 
                     // generate and remember a random state
                     initRandomMixedState(qureg, numMixedStates);
@@ -188,7 +188,7 @@ TEST_CASE( "setSeeds", TEST_CATEGORY ) {
                     for (int r=0; r<numReps; r++) {
 
                         // reset the seed
-                        setSeeds(seeds, numSeeds);
+                        setQuESTSeeds(seeds, numSeeds);
 
                         // and confirm all random states are re-produced
                         initRandomMixedState(qureg, numMixedStates);
@@ -207,14 +207,14 @@ TEST_CASE( "setSeeds", TEST_CATEGORY ) {
                     const int ampInd = 0;
 
                     // set arbitrary seed and collect random-state amp
-                    setSeeds(seeds, numSeeds);
+                    setQuESTSeeds(seeds, numSeeds);
                     initRandomPureState(qureg);
                     qcomp amp1 = getDensityQuregAmp(qureg, ampInd, ampInd);
 
                     // change one passed seed and re-collect random-state amp
                     int i = GENERATE_COPY( range(0,numSeeds) );
                     seeds[i] = 987654321;
-                    setSeeds(seeds, numSeeds);
+                    setQuESTSeeds(seeds, numSeeds);
                     initRandomPureState(qureg);
                     qcomp amp2 = getDensityQuregAmp(qureg, ampInd, ampInd);
 
@@ -237,18 +237,18 @@ TEST_CASE( "setSeeds", TEST_CATEGORY ) {
 
             int numSeeds = GENERATE( -1, 0 );
 
-            REQUIRE_THROWS_WITH( setSeeds(nullptr, numSeeds), ContainsSubstring("Invalid number of random seeds") );
+            REQUIRE_THROWS_WITH( setQuESTSeeds(nullptr, numSeeds), ContainsSubstring("Invalid number of random seeds") );
         }
 
         // inconsistency between nodes is permitted
     }
 
     // re-randomise seeds for remaining tests
-    setSeedsToDefault();
+    setQuESTSeedsToDefault();
 }
 
 
-TEST_CASE( "setSeedsToDefault", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTSeedsToDefault", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
@@ -264,12 +264,12 @@ TEST_CASE( "setSeedsToDefault", TEST_CATEGORY ) {
                     const int ampInd = 0;
 
                     // randomise seed and collect random-state amp
-                    setSeedsToDefault();
+                    setQuESTSeedsToDefault();
                     initRandomPureState(qureg);
                     qcomp amp1 = getDensityQuregAmp(qureg, ampInd, ampInd);
 
                     // re-randomise seed and collect new random-state amp
-                    setSeedsToDefault();
+                    setQuESTSeedsToDefault();
                     initRandomPureState(qureg);
                     qcomp amp2 = getDensityQuregAmp(qureg, ampInd, ampInd);
 
@@ -290,22 +290,22 @@ TEST_CASE( "setSeedsToDefault", TEST_CATEGORY ) {
     }
 
     // re-randomise seeds for remaining tests
-    setSeedsToDefault();
+    setQuESTSeedsToDefault();
 }
 
 
-TEST_CASE( "getSeeds", TEST_CATEGORY ) {
+TEST_CASE( "getQuESTSeeds", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
         SECTION( "can be called immediately" ) {
 
-            REQUIRE_NOTHROW( getNumSeeds() );
+            REQUIRE_NOTHROW( getQuESTNumSeeds() );
 
-            int numSeeds = getNumSeeds();
+            int numSeeds = getQuESTNumSeeds();
             vector<unsigned> out(numSeeds);
 
-            REQUIRE_NOTHROW( getSeeds(out.data()) );
+            REQUIRE_NOTHROW( getQuESTSeeds(out.data()) );
         }
 
         SECTION( "correct output" ) {
@@ -319,11 +319,11 @@ TEST_CASE( "getSeeds", TEST_CATEGORY ) {
                 in[i] = static_cast<unsigned>(getRandomInt(0, 99999));
 
             // pass seeds to QuEST
-            setSeeds(in.data(), numSeeds);
+            setQuESTSeeds(in.data(), numSeeds);
 
             // check we get them back
             vector<unsigned> out(numSeeds);
-            getSeeds(out.data());
+            getQuESTSeeds(out.data());
             for (int i=0; i<numSeeds; i++)
                 REQUIRE( in[i] == out[i] );
         }
@@ -339,17 +339,17 @@ TEST_CASE( "getSeeds", TEST_CATEGORY ) {
     }
 
     // re-randomise seeds for remaining tests
-    setSeedsToDefault();
+    setQuESTSeedsToDefault();
 }
 
 
-TEST_CASE( "getNumSeeds", TEST_CATEGORY ) {
+TEST_CASE( "getQuESTNumSeeds", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
         SECTION( "can be called immediately" ) {
 
-            REQUIRE_NOTHROW( getNumSeeds() );
+            REQUIRE_NOTHROW( getQuESTNumSeeds() );
         }
 
         SECTION( "correct output" ) {
@@ -363,10 +363,10 @@ TEST_CASE( "getNumSeeds", TEST_CATEGORY ) {
                 in[i] = static_cast<unsigned>(getRandomInt(0, 99999));
 
             // pass seeds to QuEST
-            setSeeds(in.data(), numSeeds);
+            setQuESTSeeds(in.data(), numSeeds);
 
             // confirm we get out correct number
-            REQUIRE( getNumSeeds() == numSeeds );
+            REQUIRE( getQuESTNumSeeds() == numSeeds );
         }
     }
 
@@ -380,20 +380,20 @@ TEST_CASE( "getNumSeeds", TEST_CATEGORY ) {
     }
 
     // re-randomise seeds for remaining tests
-    setSeedsToDefault();
+    setQuESTSeedsToDefault();
 }
 
 
-TEST_CASE( "setValidationOn", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTValidationOn", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
         // always safe to call
         for (int i=0; i<3; i++)
-            REQUIRE_NOTHROW( setValidationOn() );
+            REQUIRE_NOTHROW( setQuESTValidationOn() );
 
         // illegal and caught
-        REQUIRE_THROWS( setSeeds(nullptr, -99) );
+        REQUIRE_THROWS( setQuESTSeeds(nullptr, -99) );
     }
 
     SECTION( LABEL_VALIDATION ) {
@@ -404,13 +404,13 @@ TEST_CASE( "setValidationOn", TEST_CATEGORY ) {
 }
 
 
-TEST_CASE( "setValidationOff", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTValidationOff", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
         // confirm always safe to call
         for (int i=0; i<3; i++)
-            REQUIRE_NOTHROW( setValidationOff() );
+            REQUIRE_NOTHROW( setQuESTValidationOff() );
 
         // prepare non-unitary matrix
         CompMatr1 m = getCompMatr1({{1,2},{3,4}});
@@ -420,7 +420,7 @@ TEST_CASE( "setValidationOff", TEST_CATEGORY ) {
         REQUIRE_NOTHROW( applyCompMatr1(qureg, 0, m) );
 
         // which otherwise triggers
-        setValidationOn();
+        setQuESTValidationOn();
         REQUIRE_THROWS( applyCompMatr1(qureg, 0, m) );
 
         destroyQureg(qureg);
@@ -433,11 +433,11 @@ TEST_CASE( "setValidationOff", TEST_CATEGORY ) {
     }
 
     // ensure validation is on for remaining tests
-    setValidationOn();
+    setQuESTValidationOn();
 }
 
 
-TEST_CASE( "setValidationEpsilon", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTValidationEpsilon", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
@@ -454,14 +454,14 @@ TEST_CASE( "setValidationEpsilon", TEST_CATEGORY ) {
                 REQUIRE_THROWS( applyCompMatr1(qureg, 0, m) );
 
                 // confirm setting = 0 disables epsilon errors...
-                setValidationEpsilon(0);
+                setQuESTValidationEpsilon(0);
                 REQUIRE_NOTHROW( applyCompMatr1(qureg, 0, m) );
 
                 // but does not disable absolute errors
                 REQUIRE_THROWS( applyCompMatr1(qureg, -1, m) );
 
                 // confirm non-zero (forgive all) works
-                setValidationEpsilon(9999); // bigger than dist of m*conj(m) from identity squared
+                setQuESTValidationEpsilon(9999); // bigger than dist of m*conj(m) from identity squared
                 REQUIRE_NOTHROW( applyCompMatr1(qureg, 0, m) );
             }
 
@@ -483,7 +483,7 @@ TEST_CASE( "setValidationEpsilon", TEST_CATEGORY ) {
                 *(m.isApproxUnitary)   = 1;
                 *(m.isApproxHermitian) = 1;
 
-                setValidationEpsilon(.1);
+                setQuESTValidationEpsilon(.1);
                 REQUIRE( *(m.isApproxUnitary)   == -1 );
                 REQUIRE( *(m.isApproxHermitian) == -1 );
 
@@ -497,7 +497,7 @@ TEST_CASE( "setValidationEpsilon", TEST_CATEGORY ) {
                 *(m.isApproxHermitian) = 0;
                 *(m.isApproxNonZero)   = 1;
 
-                setValidationEpsilon(.1);
+                setQuESTValidationEpsilon(.1);
                 REQUIRE( *(m.isApproxUnitary)   == -1 );
                 REQUIRE( *(m.isApproxHermitian) == -1 );
                 REQUIRE( *(m.isApproxNonZero)   == -1 );
@@ -512,7 +512,7 @@ TEST_CASE( "setValidationEpsilon", TEST_CATEGORY ) {
                 *(m.isApproxHermitian) = 0;
                 *(m.isApproxNonZero)   = 1;
 
-                setValidationEpsilon(.1);
+                setQuESTValidationEpsilon(.1);
                 REQUIRE( *(m.isApproxUnitary)   == -1 );
                 REQUIRE( *(m.isApproxHermitian) == -1 );
                 REQUIRE( *(m.isApproxNonZero)   == -1 );
@@ -525,7 +525,7 @@ TEST_CASE( "setValidationEpsilon", TEST_CATEGORY ) {
                 KrausMap k = createKrausMap(1, 3);
                 *(k.isApproxCPTP) = 1;
 
-                setValidationEpsilon(.1);
+                setQuESTValidationEpsilon(.1);
                 REQUIRE( *(k.isApproxCPTP) == -1 );
 
                 destroyKrausMap(k);
@@ -539,30 +539,30 @@ TEST_CASE( "setValidationEpsilon", TEST_CATEGORY ) {
 
             qreal eps = GENERATE( -0.5, -1, -100 );
 
-            REQUIRE_THROWS_WITH( setValidationEpsilon(eps), ContainsSubstring("positive number") );
+            REQUIRE_THROWS_WITH( setQuESTValidationEpsilon(eps), ContainsSubstring("positive number") );
         }
     }
 
     // ensure validation epsilon is default for remaining tests
-    setValidationEpsilonToDefault();
+    setQuESTValidationEpsilonToDefault();
 }
 
 
-TEST_CASE( "getValidationEpsilon", TEST_CATEGORY ) {
+TEST_CASE( "getQuESTValidationEpsilon", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
         // confirm always safe to call
         for (int i=0; i<3; i++)
-            REQUIRE_NOTHROW( getValidationEpsilon() ); // ignores output
+            REQUIRE_NOTHROW( getQuESTValidationEpsilon() ); // ignores output
 
         GENERATE( range(0,10) );
 
         // confirm set correctly
         qreal eps = getRandomReal(0, 99999);
-        setValidationEpsilon(eps);
+        setQuESTValidationEpsilon(eps);
 
-        REQUIRE( getValidationEpsilon() == eps );
+        REQUIRE( getQuESTValidationEpsilon() == eps );
     }
 
     SECTION( LABEL_VALIDATION ) {
@@ -572,18 +572,18 @@ TEST_CASE( "getValidationEpsilon", TEST_CATEGORY ) {
     }
 
     // ensure validation epsilon is default for remaining tests
-    setValidationEpsilonToDefault();
+    setQuESTValidationEpsilonToDefault();
 }
 
 
-TEST_CASE( "setValidationEpsilonToDefault", TEST_CATEGORY ) {
+TEST_CASE( "setQuESTValidationEpsilonToDefault", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
         SECTION( "always safe to call" ) {
 
             for (int i=0; i<3; i++)
-                REQUIRE_NOTHROW( setValidationEpsilonToDefault() );
+                REQUIRE_NOTHROW( setQuESTValidationEpsilonToDefault() );
         }
 
         SECTION( "affects validation" ) {
@@ -596,11 +596,11 @@ TEST_CASE( "setValidationEpsilonToDefault", TEST_CATEGORY ) {
             REQUIRE_THROWS( applyCompMatr1(qureg, 0, m) );
 
             // confirm setting = 0 disables epsilon errors...
-            setValidationEpsilon(0);
+            setQuESTValidationEpsilon(0);
             REQUIRE_NOTHROW( applyCompMatr1(qureg, 0, m) );
 
             // which returns when stored to default
-            setValidationEpsilonToDefault();
+            setQuESTValidationEpsilonToDefault();
             REQUIRE_THROWS( applyCompMatr1(qureg, 0, m) );
 
             destroyQureg(qureg);
@@ -614,7 +614,7 @@ TEST_CASE( "setValidationEpsilonToDefault", TEST_CATEGORY ) {
                 *(m.isApproxUnitary)   = 1;
                 *(m.isApproxHermitian) = 1;
 
-                setValidationEpsilonToDefault();
+                setQuESTValidationEpsilonToDefault();
                 REQUIRE( *(m.isApproxUnitary)   == -1 );
                 REQUIRE( *(m.isApproxHermitian) == -1 );
 
@@ -628,7 +628,7 @@ TEST_CASE( "setValidationEpsilonToDefault", TEST_CATEGORY ) {
                 *(m.isApproxHermitian) = 0;
                 *(m.isApproxNonZero)   = 1;
 
-                setValidationEpsilonToDefault();
+                setQuESTValidationEpsilonToDefault();
                 REQUIRE( *(m.isApproxUnitary)   == -1 );
                 REQUIRE( *(m.isApproxHermitian) == -1 );
                 REQUIRE( *(m.isApproxNonZero)   == -1 );
@@ -643,7 +643,7 @@ TEST_CASE( "setValidationEpsilonToDefault", TEST_CATEGORY ) {
                 *(m.isApproxHermitian) = 0;
                 *(m.isApproxNonZero)   = 1;
 
-                setValidationEpsilonToDefault();
+                setQuESTValidationEpsilonToDefault();
                 REQUIRE( *(m.isApproxUnitary)   == -1 );
                 REQUIRE( *(m.isApproxHermitian) == -1 );
                 REQUIRE( *(m.isApproxNonZero)   == -1 );
@@ -656,7 +656,7 @@ TEST_CASE( "setValidationEpsilonToDefault", TEST_CATEGORY ) {
                 KrausMap k = createKrausMap(1, 3);
                 *(k.isApproxCPTP) = 1;
 
-                setValidationEpsilonToDefault();
+                setQuESTValidationEpsilonToDefault();
                 REQUIRE( *(k.isApproxCPTP) == -1 );
 
                 destroyKrausMap(k);
@@ -674,21 +674,21 @@ TEST_CASE( "setValidationEpsilonToDefault", TEST_CATEGORY ) {
     }
 
     // ensure validation epsilon is default for remaining tests
-    setValidationEpsilonToDefault();
+    setQuESTValidationEpsilonToDefault();
 }
 
 
-TEST_CASE( "getGpuCacheSize", TEST_CATEGORY ) {
+TEST_CASE( "getQuESTGpuCacheSize", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
 
         // confirm cache begins empty
-        clearGpuCache();
-        REQUIRE( getGpuCacheSize() == 0 );
+        clearQuESTGpuCache();
+        REQUIRE( getQuESTGpuCacheSize() == 0 );
 
         // hackily detect cuQuantum
         char envStr[200];
-        getEnvironmentString(envStr);
+        getQuESTEnvironmentString(envStr);
         bool usingCuQuantum = std::string(envStr).find("cuQuantum=0") == std::string::npos;
 
         // proceed only if we're ever using our own GPU cache
@@ -716,7 +716,7 @@ TEST_CASE( "getGpuCacheSize", TEST_CATEGORY ) {
                 // confirm it expanded, OR stayed the same, which happens when
                 // the total number of simultaneous threads needed hits/exceeds
                 // the number available in the hardware
-                qindex newSize = getGpuCacheSize();
+                qindex newSize = getQuESTGpuCacheSize();
                 CAPTURE( cacheSize, newSize );
                 REQUIRE( newSize >= cacheSize );
 
@@ -746,10 +746,10 @@ TEST_CASE( "getGpuCacheSize", TEST_CATEGORY ) {
  */
 
 
-void setMaxNumReportedItems(qindex numRows, qindex numCols);
+void setQuESTMaxNumReportedItems(qindex numRows, qindex numCols);
 
-void getEnvironmentString(char str[200]);
+void getQuESTEnvironmentString(char str[200]);
 
-void setReportedPauliChars(const char* paulis);
+void setQuESTReportedPauliChars(const char* paulis);
 
-void setReportedPauliStrStyle(int style);
+void setQuESTReportedPauliStrStyle(int style);

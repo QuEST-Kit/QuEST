@@ -39,7 +39,7 @@ void demo_CompMatr() {
 
     for (int num : {0, 12, 5, 1}) {
         rootPrint(num);
-        setMaxNumReportedItems(num, num);
+        setQuESTMaxNumReportedItems(num, num);
         reportCompMatr(matr);
     }
 }
@@ -55,7 +55,7 @@ void demo_DiagMatr() {
 
     for (int num : {0, 10}) {
         rootPrint(num);
-        setMaxNumReportedItems(num, num);
+        setQuESTMaxNumReportedItems(num, num);
         reportDiagMatr(matr);
     }
 }
@@ -74,7 +74,7 @@ void demo_FullStateDiagMatr() {
 
     for (int num : {0, 50, 30, 10, 5, 1}) {
         rootPrint(num);
-        setMaxNumReportedItems(num, num);
+        setQuESTMaxNumReportedItems(num, num);
         reportFullStateDiagMatr(matr);
     }
 }

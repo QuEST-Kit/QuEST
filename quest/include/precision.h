@@ -77,16 +77,16 @@
  */
 
 // validate precision is 1 (float), 2 (double) or 4 (long double)
-#if ! (FLOAT_PRECISION == 1 || FLOAT_PRECISION == 2 || FLOAT_PRECISION == 4)
-    #error "FLOAT_PRECISION must be 1 (float), 2 (double) or 4 (long double)"
+#if ! (QUEST_FLOAT_PRECISION == 1 || QUEST_FLOAT_PRECISION == 2 || QUEST_FLOAT_PRECISION == 4)
+    #error "QUEST_FLOAT_PRECISION must be 1 (float), 2 (double) or 4 (long double)"
 #endif
 
 // infer floating-point type from precision
-#if FLOAT_PRECISION == 1
+#if QUEST_FLOAT_PRECISION == 1
     #define FLOAT_TYPE float
-#elif FLOAT_PRECISION == 2
+#elif QUEST_FLOAT_PRECISION == 2
     #define FLOAT_TYPE double
-#elif FLOAT_PRECISION == 4
+#elif QUEST_FLOAT_PRECISION == 4
     #define FLOAT_TYPE long double
 #endif
 
@@ -96,13 +96,13 @@
     /// @notyetdoced
     /// @macrodoc
     ///
-    /// (note this macro is informed by the FLOAT_PRECISION CMake variable)
-    const int FLOAT_PRECISION = 2;
+    /// (note this macro is informed by the QUEST_FLOAT_PRECISION CMake variable)
+    const int QUEST_FLOAT_PRECISION = 2;
 
     /// @notyetdoced
     /// @macrodoc
     ///
-    /// (note this macro is informed by the FLOAT_PRECISION CMake variable)
+    /// (note this macro is informed by the QUEST_FLOAT_PRECISION CMake variable)
     typedef double int FLOAT_TYPE;
 
 #endif
@@ -113,8 +113,8 @@
  * CHECK PRECISION TYPES ARE COMPATIBLE WITH DEPLOYMENT
  */
 
-#if COMPILE_CUDA && (FLOAT_PRECISION == 4)
-    #error "A quad floating-point precision (FLOAT_PRECISION=4, i.e. long double) is not supported by GPU deployment"
+#if QUEST_COMPILE_CUDA && (QUEST_FLOAT_PRECISION == 4)
+    #error "A quad floating-point precision (QUEST_FLOAT_PRECISION=4, i.e. long double) is not supported by GPU deployment"
 #endif
 
 
@@ -125,13 +125,13 @@
  * which is pre-run-time overridable by specifying the corresponding environment variable.
  */
 
-#if FLOAT_PRECISION == 1
+#if QUEST_FLOAT_PRECISION == 1
     #define UNSPECIFIED_DEFAULT_VALIDATION_EPSILON 1E-5
 
-#elif FLOAT_PRECISION == 2
+#elif QUEST_FLOAT_PRECISION == 2
     #define UNSPECIFIED_DEFAULT_VALIDATION_EPSILON 1E-12
 
-#elif FLOAT_PRECISION == 4
+#elif QUEST_FLOAT_PRECISION == 4
     #define UNSPECIFIED_DEFAULT_VALIDATION_EPSILON 1E-13
 
 #endif
@@ -142,13 +142,13 @@
  * PRECISION-AGNOSTIC CONVENIENCE MACROS
  */
 
-#if FLOAT_PRECISION == 1
+#if QUEST_FLOAT_PRECISION == 1
     #define QREAL_FORMAT_SPECIFIER "%.8g"
 
-#elif FLOAT_PRECISION == 2
+#elif QUEST_FLOAT_PRECISION == 2
     #define QREAL_FORMAT_SPECIFIER "%.14g"
 
-#elif FLOAT_PRECISION == 4
+#elif QUEST_FLOAT_PRECISION == 4
     #define QREAL_FORMAT_SPECIFIER "%.17Lg"
     
 #endif

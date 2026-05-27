@@ -24,7 +24,7 @@
  * CUDA ERROR HANDLING
  */
 
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
 
 #define CUDA_CHECK(cmd) \
     assertCudaCallSucceeded((int) (cmd), #cmd, __func__, __FILE__, __LINE__)

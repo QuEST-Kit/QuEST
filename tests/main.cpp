@@ -89,7 +89,7 @@ public:
         QuESTEnv env = getQuESTEnv();
         std::cout << std::endl;
         std::cout << "QuEST execution environment:" << std::endl;
-        std::cout << "  precision:       " << FLOAT_PRECISION         << std::endl;
+        std::cout << "  precision:       " << QUEST_FLOAT_PRECISION   << std::endl;
         std::cout << "  multithreaded:   " << env.isMultithreaded     << std::endl;
         std::cout << "  distributed:     " << env.isDistributed       << std::endl;
         std::cout << "  GPU-accelerated: " << env.isGpuAccelerated    << std::endl;
@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
     // prepare QuEST before anything else, since many
     // testing utility functions repurpose QuEST ones
     initQuESTEnv();
-    setInputErrorHandler(validationErrorHandler);
+    setQuESTInputErrorHandler(validationErrorHandler);
 
     // ensure RNG consensus among all nodes
     setRandomTestStateSeeds();
