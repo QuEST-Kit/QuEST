@@ -263,10 +263,10 @@ void cuquantum_densmatr_oneQubitDephasing_subA(Qureg qureg, int qubit, qreal pro
     gpu_qcomp a = {1,        0};
     gpu_qcomp b = {1-2*prob, 0};
     gpu_qcomp elems[] = {a, b, b, a};
-    auto targs = list_getSmallList({qubit, util_getBraQubit(qubit,qureg)});
+    auto targs = list_getList64({qubit, util_getBraQubit(qubit,qureg)});
 
     bool conj = false;
-    auto empty = list_getEmptySmallList();
+    auto empty = list_getEmptyList64();
     cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, empty, empty, targs, elems, conj);
 }
 
@@ -285,9 +285,9 @@ void cuquantum_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal 
     int targ = qureg.logNumAmpsPerNode - 1; // leftmost suffix bra qubit
 
     bool conj = false;
-    auto ctrls  = list_getSmallList({ketQubit});
-    auto states = list_getSmallList({!braBit});
-    auto targs  = list_getSmallList({targ});
+    auto ctrls  = list_getList64({ketQubit});
+    auto states = list_getList64({!braBit});
+    auto targs  = list_getList64({targ});
     cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, states, targs, elems, conj);
 }
 
@@ -304,10 +304,10 @@ void cuquantum_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubi
     gpu_qcomp a = {1,          0};
     gpu_qcomp b = {1-4*prob/3, 0};
     gpu_qcomp elems[] = {a,b,b,b, b,a,b,b, b,b,a,b, b,b,b,a};
-    auto targs = list_getSmallList({qubitA, qubitB, util_getBraQubit(qubitA,qureg), util_getBraQubit(qubitB,qureg)});
+    auto targs = list_getList64({qubitA, qubitB, util_getBraQubit(qubitA,qureg), util_getBraQubit(qubitB,qureg)});
 
     bool conj = false;
-    auto empty = list_getEmptySmallList();
+    auto empty = list_getEmptyList64();
     cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, empty, empty, targs, elems, conj);
 }
 
@@ -395,7 +395,7 @@ qreal cuquantum_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallView x, SmallV
     // prepare term (XX...YY...ZZ...)
     size_t numPaulis = x.size() + y.size() + z.size();
     vector<custatevecPauli_t> paulis; 
-    vector<int32_t> targs; // forego SmallList for symmetry
+    vector<int32_t> targs; // forego List64 for symmetry
     
     paulis.reserve(numPaulis);
     targs.reserve(numPaulis);
@@ -424,7 +424,7 @@ qreal cuquantum_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallView x, SmallV
 
 qreal cuquantum_statevec_calcExpecAnyTargZ_sub(Qureg qureg, SmallView targs) {
 
-    auto empty = list_getEmptySmallList();
+    auto empty = list_getEmptyList64();
     return cuquantum_statevec_calcExpecPauliStr_subA(qureg, empty, empty, targs);
 }
 

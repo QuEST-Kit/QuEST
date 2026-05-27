@@ -48,7 +48,7 @@ int util_getBraQubit(int ketQubit, Qureg qureg);
 int util_getPrefixInd(int qubit, Qureg qureg);
 int util_getPrefixBraInd(int ketQubit, Qureg qureg);
 
-array<SmallList,2> util_getPrefixAndSuffixQubits(SmallView qubits, Qureg qureg);
+array<List64,2> util_getPrefixAndSuffixQubits(SmallView qubits, Qureg qureg);
 
 int util_getRankBitOfQubit(int ketQubit, Qureg qureg);
 int util_getRankBitOfBraQubit(int ketQubit, Qureg qureg);
@@ -59,26 +59,26 @@ int util_getRankWithQubitsFlipped(SmallView prefixQubits, Qureg qureg);
 int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg);
 int util_getRankWithBraQubitsFlipped(SmallView ketQubits, Qureg qureg);
 
-SmallList util_getBraQubits(SmallView ketQubits, Qureg qureg);
+List64 util_getBraQubits(SmallView ketQubits, Qureg qureg);
 
-SmallList util_getNonTargetedQubits(SmallView, int numQubits);
+List64 util_getNonTargetedQubits(SmallView, int numQubits);
 
-SmallList util_getConcatenated(SmallView list1, SmallView list2);
+List64 util_getConcatenated(SmallView list1, SmallView list2);
 
-SmallList util_getRange(int maxExcl);
+List64 util_getRange(int maxExcl);
 
-SmallList util_getConstantList(int elem, int length);
+List64 util_getConstantList(int elem, int length);
 
-SmallList util_getSorted(SmallView list);
-SmallList util_getSorted(SmallView ctrls, SmallView targs);
-SmallList util_getSorted(SmallView ctrls, std::initializer_list<int> targs);
+List64 util_getSorted(SmallView list);
+List64 util_getSorted(SmallView ctrls, SmallView targs);
+List64 util_getSorted(SmallView ctrls, std::initializer_list<int> targs);
 
 qindex util_getBitMask(SmallView qubits);
 qindex util_getBitMask(SmallView qubits, SmallView states);
 qindex util_getBitMask(SmallView ctrls, SmallView ctrlStates, SmallView targs, SmallView targStates);
 qindex util_getBitMask(SmallView ctrls, SmallView ctrlStates, std::initializer_list<int> targs, std::initializer_list<int> targStates);
 
-SmallList util_getSmallListOrAllOnes(const int* elemsOrNullptr, size_t length);
+List64 util_getList64OrAllOnes(const int* elemsOrNullptr, size_t length);
 
 
 

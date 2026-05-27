@@ -90,12 +90,12 @@ bool util_isBraQubitInSuffix(int ketQubit, Qureg qureg) {
     return ketQubit < qureg.logNumColsPerNode;
 }
 
-SmallList getPrefixOrSuffixQubits(SmallView qubits, Qureg qureg, bool getSuffix) {
+List64 getPrefixOrSuffixQubits(SmallView qubits, Qureg qureg, bool getSuffix) {
 
     // note that when the qureg is local/duplicated, 
     // all qubits will be suffix, none will be prefix
 
-    SmallList out = list_getEmptySmallList();
+    List64 out = list_getEmptyList64();
 
     for (int qubit : qubits)
         if (util_isQubitInSuffix(qubit, qureg) == getSuffix)
@@ -104,7 +104,7 @@ SmallList getPrefixOrSuffixQubits(SmallView qubits, Qureg qureg, bool getSuffix)
     return out;
 }
 
-std::array<SmallList,2> util_getPrefixAndSuffixQubits(SmallView qubits, Qureg qureg) {
+std::array<List64,2> util_getPrefixAndSuffixQubits(SmallView qubits, Qureg qureg) {
     return {
         getPrefixOrSuffixQubits(qubits, qureg, false), 
         getPrefixOrSuffixQubits(qubits, qureg, true)
@@ -157,9 +157,9 @@ int util_getRankWithBraQubitsFlipped(SmallView ketQubits, Qureg qureg) {
     return rank;
 }
 
-SmallList util_getBraQubits(SmallView ketQubits, Qureg qureg) {
+List64 util_getBraQubits(SmallView ketQubits, Qureg qureg) {
 
-    SmallList braQubits = ketQubits;
+    List64 braQubits = ketQubits;
 
     for (int &qubit : braQubits)
         qubit = util_getBraQubit(qubit, qureg);
@@ -167,11 +167,11 @@ SmallList util_getBraQubits(SmallView ketQubits, Qureg qureg) {
     return braQubits;
 }
 
-SmallList util_getNonTargetedQubits(SmallView targets, int numQubits) {
+List64 util_getNonTargetedQubits(SmallView targets, int numQubits) {
     
     qindex mask = util_getBitMask(targets);
 
-    SmallList out = list_getEmptySmallList();
+    List64 out = list_getEmptyList64();
 
     for (int i=0; i<numQubits; i++)
         if (getBit(mask, i) == 0)
@@ -180,7 +180,7 @@ SmallList util_getNonTargetedQubits(SmallView targets, int numQubits) {
     return out;
 }
 
-SmallList util_getConcatenated(SmallView list1, SmallView list2) {
+List64 util_getConcatenated(SmallView list1, SmallView list2) {
 
     auto out = list1;
     for (auto elem : list2)
@@ -189,13 +189,13 @@ SmallList util_getConcatenated(SmallView list1, SmallView list2) {
     return out;
 }
 
-SmallList util_getSorted(SmallView list) {
+List64 util_getSorted(SmallView list) {
 
     // optimise common edgecases
     if (list.size() < 2)
         return list;
     
-    SmallList out = list;
+    List64 out = list;
 
     if (out.size() == 2) {
         if (out[0] > out[1])
@@ -208,19 +208,19 @@ SmallList util_getSorted(SmallView list) {
     return out;
 }
 
-SmallList util_getSorted(SmallView ctrls, SmallView targs) {
+List64 util_getSorted(SmallView ctrls, SmallView targs) {
 
     return util_getSorted(util_getConcatenated(ctrls, targs));
 }
 
-SmallList util_getSorted(SmallView ctrls, std::initializer_list<int> targs) {
+List64 util_getSorted(SmallView ctrls, std::initializer_list<int> targs) {
 
-    return util_getSorted(ctrls, list_getSmallList(targs));
+    return util_getSorted(ctrls, list_getList64(targs));
 }
 
-SmallList util_getRange(int maxExcl) {
+List64 util_getRange(int maxExcl) {
 
-    SmallList out = list_getEmptySmallList();
+    List64 out = list_getEmptyList64();
 
     for (int i=0; i<maxExcl; i++)
         out.push_back(i);
@@ -228,9 +228,9 @@ SmallList util_getRange(int maxExcl) {
     return out;
 }
 
-SmallList util_getConstantList(int elem, int length) {
+List64 util_getConstantList(int elem, int length) {
 
-    SmallList out = list_getEmptySmallList();
+    List64 out = list_getEmptyList64();
     out.assign(length, elem);
     return out;
 }
@@ -256,15 +256,15 @@ qindex util_getBitMask(SmallView ctrls, SmallView ctrlStates, SmallView targs, S
 
 qindex util_getBitMask(SmallView ctrls, SmallView ctrlStates, std::initializer_list<int> targs, std::initializer_list<int> targStates) {
 
-    return util_getBitMask(ctrls, ctrlStates, list_getSmallList(targs), list_getSmallList(targStates));
+    return util_getBitMask(ctrls, ctrlStates, list_getList64(targs), list_getList64(targStates));
 }
 
-SmallList util_getSmallListOrAllOnes(const int* elemsOrNullptr, size_t length) {
+List64 util_getList64OrAllOnes(const int* elemsOrNullptr, size_t length) {
 
     if (elemsOrNullptr != nullptr)
-        return list_getSmallList(elemsOrNullptr, length);
+        return list_getList64(elemsOrNullptr, length);
 
-    SmallList out = list_getEmptySmallList();
+    List64 out = list_getEmptyList64();
     out.assign(length, 1);
     return out;
 }

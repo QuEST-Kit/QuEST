@@ -74,7 +74,7 @@ using devints = thrust::device_vector<int>;
 devints getDevInts(SmallView h_list) {
 
     // DEBUG: this is a placeholder! James' GPU refactor should make it redundant, 
-    // and we can pass SmallList directly to a CUDA kernel, paying no heap allocs,
+    // and we can pass List64 directly to a CUDA kernel, paying no heap allocs,
     // nor CUDA memcpy costs
 
     devints d_list = std::vector<int>(h_list.data(), h_list.data() + h_list.size());

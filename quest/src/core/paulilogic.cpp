@@ -139,10 +139,10 @@ qcomp paulis_getPrefixPaulisElem(Qureg qureg, SmallView prefixY, SmallView prefi
 }
 
 
-SmallList paulis_getTargetInds(PauliStr str) {
+List64 paulis_getTargetInds(PauliStr str) {
 
     int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
-    auto inds = list_getEmptySmallList();
+    auto inds = list_getEmptyList64();
 
     for (int i=0; i<=maxInd; i++)
         if (paulis_getPauliAt(str, i) != 0) // Id
@@ -169,14 +169,14 @@ qindex paulis_getTargetBitMask(PauliStr str) {
 }
 
 
-std::array<SmallList,3> paulis_getSeparateInds(PauliStr str) {
+std::array<List64,3> paulis_getSeparateInds(PauliStr str) {
 
     auto iXYZ = paulis_getTargetInds(str);
-    auto iX = list_getEmptySmallList();
-    auto iY = list_getEmptySmallList();
-    auto iZ = list_getEmptySmallList();
+    auto iX = list_getEmptyList64();
+    auto iY = list_getEmptyList64();
+    auto iZ = list_getEmptyList64();
 
-    SmallList* ptrs[] = {&iX, &iY, &iZ};
+    List64* ptrs[] = {&iX, &iY, &iZ};
 
     for (int i : iXYZ)
         ptrs[paulis_getPauliAt(str, i) - 1]->push_back(i);

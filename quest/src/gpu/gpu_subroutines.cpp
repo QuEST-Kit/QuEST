@@ -293,7 +293,7 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, SmallView ctrls, Sma
 #if COMPILE_CUQUANTUM
 
     bool applyAdj = false;
-    auto targsList = list_getSmallList({targ});
+    auto targsList = list_getList64({targ});
     auto arr = getFlattenedGpuQcompMatrix<2>(matr.elems); // explicit template for MSVC, grr!
     cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(qureg, ctrls, ctrlStates, targsList, arr.data(), applyAdj);
 
@@ -363,7 +363,7 @@ void gpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, SmallView ctrls, Smal
 #if COMPILE_CUQUANTUM
 
     bool applyAdj = false;
-    auto targsList = list_getSmallList({targ1, targ2});
+    auto targsList = list_getList64({targ1, targ2});
     auto arr = getFlattenedGpuQcompMatrix<4>(matr.elems); // explicit template for MSVC, grr!
     cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(qureg, ctrls, ctrlStates, targsList, arr.data(), applyAdj);
 
@@ -553,7 +553,7 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, SmallView ctrls, Small
 
         // we can pass 1D CPU .elems array directly to cuQuantum which will recognise host pointers
         cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(
-            qureg, ctrls, ctrlStates, list_getSmallList({targ}), getGpuQcompPtr(matr.elems), conj);
+            qureg, ctrls, ctrlStates, list_getList64({targ}), getGpuQcompPtr(matr.elems), conj);
         
         // explicitly return to avoid re-simulation below
         return;
@@ -615,7 +615,7 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, SmallView ctrls, Small
 
 #if COMPILE_CUQUANTUM
 
-    auto targsList = list_getSmallList({targ1, targ2});
+    auto targsList = list_getList64({targ1, targ2});
 
     if (util_areAllQubitsInSuffix(targsList, qureg)) {
 

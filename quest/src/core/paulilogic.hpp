@@ -49,9 +49,9 @@ int paulis_getPrefixZSign(Qureg qureg, SmallView prefixZ);
 
 qcomp paulis_getPrefixPaulisElem(Qureg qureg, SmallView prefixY, SmallView prefixZ);
 
-SmallList paulis_getTargetInds(PauliStr str);
+List64 paulis_getTargetInds(PauliStr str);
 
-std::array<SmallList,3> paulis_getSeparateInds(PauliStr str);
+std::array<List64,3> paulis_getSeparateInds(PauliStr str);
 
 qindex paulis_getTargetBitMask(PauliStr str);
 
