@@ -20,7 +20,7 @@ function(add_example direc in_fn)
   add_executable(${target} ${in_fn})
   target_link_libraries(${target} PUBLIC QuEST)
 
-  if (INSTALL_BINARIES)
+  if (QUEST_INSTALL_BINARIES)
     install(
       TARGETS ${target}
       RUNTIME

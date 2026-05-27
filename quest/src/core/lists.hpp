@@ -2,10 +2,14 @@
  * A stack-based list of length <= 64, primarily
  * for storing qubit indices, as an alternative to
  * std::vector and associated heap-alloc/copy
- * overheads. Use of SmallList optimises few-qubit
+ * overheads. Use of List64 optimises few-qubit
  * simulation where STL container costs dominate;
- * and in the GPU backend, use of SmallList avoids
+ * and in the GPU backend, use of List64 avoids
  * CUDA memory writes before kernel launches!
+ * 
+ * This header also defines ConstList64, which is
+ * merely 'const List64&', to avoid superfluous
+ * stack copies when passing non-mutated List64.
  * 
  * The functions herein are inlined (in this header-
  * only file) in the hopes of unbridled compiler
@@ -16,8 +20,8 @@
  * @author Tyson Jones
  */
 
-#ifndef SMALL_LIST_HPP
-#define SMALL_LIST_HPP
+#ifndef LISTS_HPP
+#define LISTS_HPP
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/inliner.hpp"
@@ -28,11 +32,11 @@
  * CAPACITY
  *
  * Since stored in stack, we must upperbound the length of
- * a SmallList; we choose 64, which is around the maximum
+ * a List64; we choose 64, which is around the maximum
  * addressable number of qubits by qindex. In theory, we
  * could permit users to compile-time reduce this length,
  * restricting their max simulable system but speeding up
- * SmallList copies in function calls - this may have a
+ * List64 copies in function calls - this may have a
  * measurable benefit for Quregs of 1-8 qubits. But Donald
  * Knuth knows and sees all, and he won't be happy!
  */
@@ -43,7 +47,7 @@ constexpr size_t MAX_LIST_LENGTH = 64;
 
 
 /*
- * SMALL LIST DECLARATION
+ * LIST64 DECLARATION
  *
  * which mimics an STL container so that it is easily
  * substituted for std::vector in our codebase, but
@@ -52,7 +56,7 @@ constexpr size_t MAX_LIST_LENGTH = 64;
  */
 
 
-struct SmallList {
+struct List64 {
 
 private:
 
@@ -74,13 +78,13 @@ public:
     // with CUDA; we must forego initializer ctors
     // and other syntactic goodies :(
 
-    // let SmallList be iterable, e.g. for(auto x : list)
+    // let List64 be iterable, e.g. for(auto x : list)
     INLINE auto begin()       { return elems; }
     INLINE auto begin() const { return elems; }
     INLINE auto end()         { return elems + length; }
     INLINE auto end()   const { return elems + length; }
 
-    // let SmallList be indexable, e.g. list[3]
+    // let List64 be indexable, e.g. list[3]
     INLINE const int& operator[](int index) const {
 
         if (index < 0)
@@ -93,10 +97,10 @@ public:
     INLINE int& operator[](int index) {
 
         return const_cast<int&>(
-            static_cast<const SmallList&>(*this)[index]);
+            static_cast<const List64&>(*this)[index]);
     }
 
-    // give SmallList all the familiar methods of std::vector
+    // give List64 all the familiar methods of std::vector
     INLINE void clear() {
         length = 0;
     }
@@ -142,7 +146,7 @@ public:
     INLINE int& back() {
 
         return const_cast<int&>(
-            static_cast<const SmallList&>(*this).back());
+            static_cast<const List64&>(*this).back());
     }
 
     INLINE void assign(size_t count, int value) {
@@ -160,23 +164,23 @@ public:
 
 
 /*
- * SMALL LIST CONSTRUCTORS
+ * LIST64 CONSTRUCTORS
  *
  * which are separated here because making them actual
- * constructors stops SmallList being POD/trivial, and
+ * constructors stops List64 being POD/trivial, and
  * makes it incompatible with CUDA kernels
  */
 
 
-INLINE SmallList list_getEmptySmallList() {
+INLINE List64 lists_getEmptyList64() {
 
-    SmallList out{};
+    List64 out{};
     out.clear();
     return out;
 }
 
 
-INLINE SmallList list_getSmallList(const int* begin, const int* end) {
+INLINE List64 lists_getList64(const int* begin, const int* end) {
 
     if (end < begin)
         error_smallListIndexExceededLength();
@@ -185,7 +189,7 @@ INLINE SmallList list_getSmallList(const int* begin, const int* end) {
     if (length > MAX_LIST_LENGTH)
         error_smallListLengthExceededMax();
 
-    SmallList out = list_getEmptySmallList();
+    List64 out = lists_getEmptyList64();
 
     for (const int* ptr = begin; ptr != end; ++ptr)
         out.push_back(*ptr);
@@ -194,22 +198,22 @@ INLINE SmallList list_getSmallList(const int* begin, const int* end) {
 }
 
 
-INLINE SmallList list_getSmallList(const int* elems, size_t length) {
+INLINE List64 lists_getList64(const int* elems, size_t length) {
 
     if (elems == nullptr && length > 0)
         error_smallListNullPtrWithPositiveLength();
     
     // no ptr necessary whgen list is empty
     if (elems == nullptr)
-        return list_getEmptySmallList();
+        return lists_getEmptyList64();
 
-    return list_getSmallList(elems, elems + length); // validates length <= MAX
+    return lists_getList64(elems, elems + length); // validates length <= MAX
 }
 
 
-INLINE SmallList list_getSmallList(std::initializer_list<int> init) {
+INLINE List64 lists_getList64(std::initializer_list<int> init) {
 
-    return list_getSmallList(init.begin(), init.end());
+    return lists_getList64(init.begin(), init.end());
 }
 
 
@@ -222,9 +226,22 @@ INLINE SmallList list_getSmallList(std::initializer_list<int> init) {
  */
 
 
-static_assert(std::is_trivially_copyable_v<SmallList>);
-static_assert(std::is_standard_layout_v<SmallList>);
+static_assert(std::is_trivially_copyable_v<List64>);
+static_assert(std::is_standard_layout_v<List64>);
 
 
 
-#endif // SMALL_LIST_HPP
+/*
+ * CONST LIST64 DECLARATION
+ * 
+ * Functions can accept ConstList64 (over List64) to avoid
+ * a stack copy. A List64 can always be passed to a
+ * function accepting a ConstList64, but a ConstList64 can never
+ * be returned from a function (duh).
+ */
+
+using ConstList64 = const List64&;
+
+
+
+#endif // LISTS_HPP

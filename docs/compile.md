@@ -9,7 +9,7 @@
   Some notes about this guide:
   - we will always use a build directory called 'build'
   - we will use spaces around cmake argnames and values for clarity, e.g.
-    cmake -B build -D ENABLE_CUDA=ON
+    cmake -B build -D QUEST_ENABLE_CUDA=ON
   - we will demonstrate the simplest and visually clear (and likely sub-optimal) 
     use-cases before progressively more visually complicated examples
 -->
@@ -183,10 +183,10 @@ int main() {
     return 0;
 }
 ```
-simply specify variables `USER_SOURCE` and `OUTPUT_EXE` at _configure time_:
+simply specify variables `USER_SOURCE_NAMES` and `USER_OUTPUT_EXE_NAME` at _configure time_:
 ```bash
 # configure
-cmake .. -D USER_SOURCE=myfile.c -D OUTPUT_EXE=myexec
+cmake .. -D USER_SOURCE_NAMES=myfile.c -D USER_OUTPUT_EXE_NAME=myexec
 ```
 where 
 - `myfile.c` is your `C` source file (or `myfile.cpp` if using `C++`).
@@ -194,7 +194,7 @@ where
 
 
 > [!IMPORTANT]
-> `USER_SOURCE` can be any relative or absolute path to a file, but `OUTPUT_EXE` must be strictly a filename and cannot contain subdirectories. See <a href="#compile_location">Location</a> to change the output directory.
+> `USER_SOURCE_NAMES` can be any relative or absolute path to a file, but `USER_OUTPUT_EXE_NAME` must be strictly a filename and cannot contain subdirectories. See <a href="#compile_location">Location</a> to change the output directory.
 
 
 To compile multiple dependent files, such as
@@ -221,10 +221,10 @@ void myfunc() {
     printf("hello quworld!\n");
 }
 ```
-simply separate them by `;` in `USER_SOURCE`, wrapped in quotations:
+simply separate them by `;` in `USER_SOURCE_NAMES`, wrapped in quotations:
 ```bash
 # configure
-cmake .. -D USER_SOURCE="myfile.cpp;otherfile.cpp" -D OUTPUT_EXE=myexec
+cmake .. -D USER_SOURCE_NAMES="myfile.cpp;otherfile.cpp" -D USER_OUTPUT_EXE_NAME=myexec
 ```
 
 
@@ -297,7 +297,7 @@ This applies to _all_ built executables, including your own custom files, the ex
 > [!IMPORTANT]
 > Configuration will fail if any two executables have the same output name since they will not be separated into subdirectories and will collide. We do not gaurantee that all test and example filenames will remain unique in the future, such that use of `CMAKE_RUNTIME_OUTPUT_DIRECTORY` may become invalid except when also specifying
 > ```
-> -D ENABLE_TESTING=OFF -D BUILD_EXAMPLES=OFF
+> -D QUEST_BUILD_TESTS=OFF -D QUEST_BUILD_EXAMPLES=OFF
 > ```
 
 
@@ -311,11 +311,11 @@ This applies to _all_ built executables, including your own custom files, the ex
 
 QuEST's numerical precision can be configured at compile-time, informing what _type_, and ergo how many _bytes_, are used to represent each `qreal` (a floating-point real number) and `qcomp` (a complex amplitude). This affects the memory used by each `Qureg`, but also the user-facing `qreal` and `qcomp` types, as detailed below. Reducing the precision accelerates QuEST at the cost of worsened numerical accuracy. 
 
-Precision is set at configure-time using the `FLOAT_PRECISION` [cmake variable](cmake.md), taking on the values `1`, `2` (default) or `4`.
+Precision is set at configure-time using the `QUEST_FLOAT_PRECISION` [cmake variable](cmake.md), taking on the values `1`, `2` (default) or `4`.
 For example
 ```bash
 # configure
-cmake .. -D FLOAT_PRECISION=1
+cmake .. -D QUEST_FLOAT_PRECISION=1
 ```
 
 The values inform types:
@@ -393,7 +393,7 @@ QuEST itself accepts a variety of its preprocessors (mostly related to testing) 
 To compile all of QuEST's [`examples/`](/examples/), use
 ```bash
 # configure
-cmake .. -D BUILD_EXAMPLES=ON
+cmake .. -D QUEST_BUILD_EXAMPLES=ON
 
 # build
 cmake --build .
@@ -433,7 +433,7 @@ To compile QuEST's latest unit and integration tests, use
 
 ```bash
 # configure
-cmake .. -D ENABLE_TESTING=ON
+cmake .. -D QUEST_BUILD_TESTS=ON
 
 # build
 cmake --build .
@@ -451,7 +451,7 @@ This will compile an executable `tests` in subdirectory `build/tests/`, which ca
 QuEST's deprecated v3 API has its own unit tests which can be additionally compiled (_except_ on Windows) via
 ```bash
 # configure
-cmake .. -D ENABLE_TESTING=ON -D ENABLE_DEPRECATED_API=ON
+cmake .. -D QUEST_BUILD_TESTS=ON -D QUEST_ENABLE_DEPRECATED_API=ON
 
 # build
 cmake --build .
@@ -488,7 +488,7 @@ QuEST uses [OpenMP](https://www.openmp.org/) to perform multithreading, so accel
 To compile with multithreading, simply enable it during configuration:
 ```bash
 # configure
-cmake .. -D ENABLE_MULTITHREADING=ON
+cmake .. -D QUEST_ENABLE_OMP=ON
 
 # build
 cmake --build .
@@ -533,13 +533,13 @@ nvcc --version
 To compile your QuEST application with CUDA-acceleration, specify both
 ```bash
 # configure
-cmake .. -D ENABLE_CUDA=ON -D CMAKE_CUDA_ARCHITECTURES=$CC
+cmake .. -D QUEST_ENABLE_CUDA=ON -D CMAKE_CUDA_ARCHITECTURES=$CC
 ```
 where `$CC` is your GPU's [compute capability](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compute-capabilities) (excluding the full-stop) which you can look up [here](https://developer.nvidia.com/cuda-gpus). 
 For example, compiling for the [NVIDIA A100](https://www.nvidia.com/en-us/data-center/a100/) looks like:
 ```bash
 # configure
-cmake .. -D ENABLE_CUDA=ON -D CMAKE_CUDA_ARCHITECTURES=80
+cmake .. -D QUEST_ENABLE_CUDA=ON -D CMAKE_CUDA_ARCHITECTURES=80
 ```
 
 
@@ -567,14 +567,14 @@ The compiled executable can be run like any other, though the GPU behaviour can 
 
 > TODO!
 > - ROCm
-> - ENABLE_HIP
+> - QUEST_ENABLE_HIP
 > - CMAKE_HIP_ARCHITECTURES
 
 
 To compile your QuEST application with HIP-acceleration, specify both
 ```bash
 # configure
-cmake .. -D ENABLE_HIP=ON -D CMAKE_HIP_ARCHITECTURES=$TN
+cmake .. -D QUEST_ENABLE_HIP=ON -D CMAKE_HIP_ARCHITECTURES=$TN
 ```
 where `$TN` is your AMD GPU's [LLVM target name](https://rocm.docs.amd.com/en/latest/reference/gpu-arch-specs.html#glossary). You can look this up [here](https://rocm.docs.amd.com/en/latest/reference/gpu-arch-specs.html), or find the names of all of your local GPUs by running the [ROCM agent enumerator](https://rocm.docs.amd.com/projects/rocminfo/en/latest/how-to/use-rocm-agent-enumerator.html) command, i.e.
 ```bash
@@ -583,7 +583,7 @@ rocm_agent_enumerator -name
 For example, compiling for the [AMD Instinct MI210 accelerator](https://www.amd.com/en/products/accelerators/instinct/mi200/mi210.html) looks like:
 ```bash
 # configure
-cmake .. -D ENABLE_HIP=ON -D CMAKE_HIP_ARCHITECTURES=gfx90a
+cmake .. -D QUEST_ENABLE_HIP=ON -D CMAKE_HIP_ARCHITECTURES=gfx90a
 ```
 
 
@@ -626,11 +626,11 @@ After download and installation, and before compiling, you must set the `CUQUANT
 export CUQUANTUM_ROOT=/path/to/cuquantum-folder
 ```
 
-Compilation is then simple; we specify `ENABLE_CUQUANTUM` in addition to the above GPU CMake variables. 
+Compilation is then simple; we specify `QUEST_ENABLE_CUQUANTUM` in addition to the above GPU CMake variables.
 For example
 ```bash
 # configure
-cmake .. -D ENABLE_CUDA=ON -D CMAKE_CUDA_ARCHITECTURES=80 -D ENABLE_CUQUANTUM=ON
+cmake .. -D QUEST_ENABLE_CUDA=ON -D CMAKE_CUDA_ARCHITECTURES=80 -D QUEST_ENABLE_CUQUANTUM=ON
 
 # build
 cmake --build . --parallel
@@ -665,7 +665,7 @@ Compiling QuEST's distributed backend is as simple as
 
 ```bash
 # configure
-cmake .. -D ENABLE_DISTRIBUTION=ON
+cmake .. -D QUEST_ENABLE_MPI=ON
 
 # build
 cmake --build . --parallel

@@ -12,7 +12,7 @@
 #include "quest/include/paulis.h"
 #include "quest/include/matrices.h"
 
-#include "quest/src/core/small_list.hpp"
+#include "quest/src/core/lists.hpp"
 
 #include <vector>
 
@@ -39,7 +39,7 @@ void gpu_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliStr
  * COMMUNICATION BUFFER PACKING
  */
 
-template <int NumQubits> qindex gpu_statevec_packAmpsIntoBuffer(Qureg qureg, SmallList qubits, SmallList qubitStates);
+template <int NumQubits> qindex gpu_statevec_packAmpsIntoBuffer(Qureg qureg, ConstList64 qubits, ConstList64 qubitStates);
 
 qindex gpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qubit2, int qubit3, int bit2);
 
@@ -48,32 +48,32 @@ qindex gpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qu
  * SWAPS
  */
 
-template <int NumCtrls> void gpu_statevec_anyCtrlSwap_subA(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2);
-template <int NumCtrls> void gpu_statevec_anyCtrlSwap_subB(Qureg qureg, SmallList ctrls, SmallList ctrlStates);
-template <int NumCtrls> void gpu_statevec_anyCtrlSwap_subC(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, int targState);
+template <int NumCtrls> void gpu_statevec_anyCtrlSwap_subA(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ1, int targ2);
+template <int NumCtrls> void gpu_statevec_anyCtrlSwap_subB(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates);
+template <int NumCtrls> void gpu_statevec_anyCtrlSwap_subC(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ, int targState);
 
 
 /*
  * DENSE MATRIX
  */
 
-template <int NumCtrls> void gpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, CompMatr1 matr);
-template <int NumCtrls> void gpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, SmallList ctrls, SmallList ctrlStates, qcomp fac0, qcomp fac1);
+template <int NumCtrls> void gpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ, CompMatr1 matr);
+template <int NumCtrls> void gpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, qcomp fac0, qcomp fac1);
 
-template <int NumCtrls> void gpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2, CompMatr2 matr);
+template <int NumCtrls> void gpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ1, int targ2, CompMatr2 matr);
 
-template <int NumCtrls, int NumTargs, bool ApplyConj, bool ApplyTransp> void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, CompMatr matr);
+template <int NumCtrls, int NumTargs, bool ApplyConj, bool ApplyTransp> void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 targs, CompMatr matr);
 
 
 /*
  * DIAGONAL MATRIX
  */
 
-template <int NumCtrls> void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, DiagMatr1 matr);
+template <int NumCtrls> void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ, DiagMatr1 matr);
 
-template <int NumCtrls> void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2, DiagMatr2 matr);
+template <int NumCtrls> void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ1, int targ2, DiagMatr2 matr);
 
-template <int NumCtrls, int NumTargs, bool ApplyConj, bool HasPower> void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, DiagMatr matr, qcomp exponent);
+template <int NumCtrls, int NumTargs, bool ApplyConj, bool HasPower> void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 targs, DiagMatr matr, qcomp exponent);
 
 template <bool HasPower> void gpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
 
@@ -84,11 +84,11 @@ template <bool HasPower, bool ApplyLeft, bool ApplyRight, bool ConjRight> void g
  * PAULI TENSOR AND GADGET
  */
 
-template <int NumCtrls, int NumTargs> void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList x, SmallList y, SmallList z, qcomp ampFac, qcomp pairAmpFac);
+template <int NumCtrls, int NumTargs> void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 x, ConstList64 y, ConstList64 z, qcomp ampFac, qcomp pairAmpFac);
 
-template <int NumCtrls> void gpu_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList x, SmallList y, SmallList z, qcomp ampFac, qcomp pairAmpFac, qindex bufferMaskXY);
+template <int NumCtrls> void gpu_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 x, ConstList64 y, ConstList64 z, qcomp ampFac, qcomp pairAmpFac, qindex bufferMaskXY);
 
-template <int NumCtrls> void gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, qcomp fac0, qcomp fac1);
+template <int NumCtrls> void gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 targs, qcomp fac0, qcomp fac1);
 
 
 /*
@@ -135,7 +135,7 @@ void gpu_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob);
  * PARTIAL TRACE
  */
 
-template <int NumTargs> void gpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, SmallList targs, SmallList pairTargs);
+template <int NumTargs> void gpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, ConstList64 targs, ConstList64 pairTargs);
 
 
 /*
@@ -145,11 +145,11 @@ template <int NumTargs> void gpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg 
 qreal gpu_statevec_calcTotalProb_sub(Qureg qureg);
 qreal gpu_densmatr_calcTotalProb_sub(Qureg qureg);
 
-template <int NumQubits> qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallList qubits, SmallList outcomes);
-template <int NumQubits> qreal gpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallList qubits, SmallList outcomes);
+template <int NumQubits> qreal gpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes);
+template <int NumQubits> qreal gpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes);
 
-template <int NumQubits> void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallList qubits);
-template <int NumQubits> void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallList qubits);
+template <int NumQubits> void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, ConstList64 qubits);
+template <int NumQubits> void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, ConstList64 qubits);
 
 
 /*
@@ -167,13 +167,13 @@ template <bool Conj> qcomp gpu_densmatr_calcFidelityWithPureState_sub(Qureg rho,
  * EXPECTATION VALUES
  */
 
-qreal gpu_statevec_calcExpecAnyTargZ_sub(Qureg qureg, SmallList targs);
-qcomp gpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, SmallList targs);
+qreal gpu_statevec_calcExpecAnyTargZ_sub(Qureg qureg, ConstList64 targs);
+qcomp gpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, ConstList64 targs);
 
 
-qcomp gpu_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallList x, SmallList y, SmallList z);
-qcomp gpu_statevec_calcExpecPauliStr_subB(Qureg qureg, SmallList x, SmallList y, SmallList z);
-qcomp gpu_densmatr_calcExpecPauliStr_sub (Qureg qureg, SmallList x, SmallList y, SmallList z);
+qcomp gpu_statevec_calcExpecPauliStr_subA(Qureg qureg, ConstList64 x, ConstList64 y, ConstList64 z);
+qcomp gpu_statevec_calcExpecPauliStr_subB(Qureg qureg, ConstList64 x, ConstList64 y, ConstList64 z);
+qcomp gpu_densmatr_calcExpecPauliStr_sub (Qureg qureg, ConstList64 x, ConstList64 y, ConstList64 z);
 
 template <bool HasPower, bool UseRealPow> qcomp gpu_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
 template <bool HasPower, bool UseRealPow> qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
@@ -183,8 +183,8 @@ template <bool HasPower, bool UseRealPow> qcomp gpu_densmatr_calcExpecFullStateD
  * PROJECTORS
  */
 
-template <int NumQubits> void gpu_statevec_multiQubitProjector_sub(Qureg qureg, SmallList qubits, SmallList outcomes, qreal prob);
-template <int NumQubits> void gpu_densmatr_multiQubitProjector_sub(Qureg qureg, SmallList qubits, SmallList outcomes, qreal prob);
+template <int NumQubits> void gpu_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob);
+template <int NumQubits> void gpu_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob);
 
 
 /*

@@ -33,13 +33,13 @@ using namespace Catch::Matchers;
  */
 
 
-#if FLOAT_PRECISION == 1
+#if QUEST_FLOAT_PRECISION == 1
     qreal absoluteEpsilon = 1E-2; // default...
     qreal relativeEpsilon = 1E-2;
-#elif FLOAT_PRECISION == 2
+#elif QUEST_FLOAT_PRECISION == 2
     qreal absoluteEpsilon = 1E-8;
     qreal relativeEpsilon = 1E-8;
-#elif FLOAT_PRECISION == 4
+#elif QUEST_FLOAT_PRECISION == 4
     qreal absoluteEpsilon = 1E-10;
     qreal relativeEpsilon = 1E-10;
 #endif

@@ -15,7 +15,7 @@ add_subdirectory(unit)
 add_subdirectory(utils)
 add_subdirectory(integration)
 
-if (ENABLE_DEPRECATED_API)
+if (QUEST_ENABLE_DEPRECATED_API)
   add_subdirectory(deprecated)
 endif()
 

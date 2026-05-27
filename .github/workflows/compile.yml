@@ -239,16 +239,16 @@ jobs:
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
-          -DBUILD_EXAMPLES=ON
-          -DENABLE_TESTING=ON
-          -DFLOAT_PRECISION=${{ matrix.precision }}
-          -DENABLE_DEPRECATED_API=${{ matrix.deprecated }}
-          -DDISABLE_DEPRECATION_WARNINGS=${{ matrix.deprecated }}
-          -DENABLE_MULTITHREADING=${{ matrix.omp }}
-          -DENABLE_DISTRIBUTION=${{ matrix.mpi }}
-          -DENABLE_CUDA=${{ matrix.cuda }}
-          -DENABLE_HIP=${{ matrix.hip }}
-          -DENABLE_CUQUANTUM=${{ matrix.cuquantum }}
+          -DQUEST_BUILD_EXAMPLES=ON
+          -DQUEST_BUILD_TESTS=ON
+          -DQUEST_FLOAT_PRECISION=${{ matrix.precision }}
+          -DQUEST_ENABLE_DEPRECATED_API=${{ matrix.deprecated }}
+          -DQUEST_DISABLE_DEPRECATION_WARNINGS=${{ matrix.deprecated }}
+          -DQUEST_ENABLE_OMP=${{ matrix.omp }}
+          -DQUEST_ENABLE_MPI=${{ matrix.mpi }}
+          -DQUEST_ENABLE_CUDA=${{ matrix.cuda }}
+          -DQUEST_ENABLE_HIP=${{ matrix.hip }}
+          -DQUEST_ENABLE_CUQUANTUM=${{ matrix.cuquantum }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}

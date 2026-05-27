@@ -49,7 +49,7 @@
 #include "quest/include/wrappers.h"
 
 
-#if INCLUDE_DEPRECATED_FUNCTIONS
+#if QUEST_INCLUDE_DEPRECATED_FUNCTIONS
     #include "quest/include/deprecated.h"
 #endif
 

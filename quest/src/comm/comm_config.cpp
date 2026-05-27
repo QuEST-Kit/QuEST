@@ -4,7 +4,7 @@
  * implementation (like OpenMPI vs MPICH). These functions
  * are callable even when MPI has not been compiled/linked.
  * 
- * Note that even when COMPILE_MPI=1, the user may have
+ * Note that even when QUEST_COMPILE_MPI=1, the user may have
  * disabled distribution when creating the QuEST environment
  * at runtime. Ergo we use comm_isInit() to determine whether
  * functions should invoke the MPI API.
@@ -18,7 +18,7 @@
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/core/errors.hpp"
 
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
     #include <mpi.h>
 #endif
 
@@ -28,7 +28,7 @@
  * WARN ABOUT CUDA-AWARENESS
  */
 
-#if COMPILE_MPI && COMPILE_CUDA
+#if QUEST_COMPILE_MPI && QUEST_COMPILE_CUDA
 
     // this check is OpenMPI specific
     #ifdef OPEN_MPI
@@ -57,7 +57,7 @@
 
 
 bool comm_isMpiCompiled() {
-    return (bool) COMPILE_MPI;
+    return (bool) QUEST_COMPILE_MPI;
 }
 
 
@@ -83,7 +83,7 @@ bool comm_isMpiGpuAware() {
 
 
 bool comm_isInit() {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     // safely callable before MPI initialisation, but NOT after comm_end()
     int isInit;
@@ -99,7 +99,7 @@ bool comm_isInit() {
 
 
 void comm_init() {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     // error if attempting re-initialisation
     if (comm_isInit())
@@ -112,7 +112,7 @@ void comm_init() {
 
 
 void comm_end() {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     // gracefully permit comm_end() before comm_init(), as input validation can trigger
     if (!comm_isInit())
@@ -126,7 +126,7 @@ void comm_end() {
 
 
 int comm_getRank() {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     // if distribution was not runtime enabled (or a validation error was 
     // triggered), every node (if many MPI processes were launched)
@@ -155,7 +155,7 @@ bool comm_isRootNode() {
 
 
 int comm_getNumNodes() {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     // if distribution was not runtime enabled (or a validation error was 
     // triggered), every node (if many MPI processes were launched)
@@ -176,7 +176,7 @@ int comm_getNumNodes() {
 
 
 void comm_sync() {
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
 
     // gracefully handle when not distributed, needed by e.g. pre-MPI-setup validation 
     if (!comm_isInit())

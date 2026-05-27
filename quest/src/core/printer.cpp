@@ -258,7 +258,7 @@ string printer_getQindexType() {
 
 string printer_getFloatPrecisionFlag() {
 
-    return GET_STR( FLOAT_PRECISION );
+    return GET_STR( QUEST_FLOAT_PRECISION );
 }
 
 

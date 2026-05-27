@@ -95,7 +95,7 @@ digraph {
  *   @f[ 
         \max\limits_{ij} \Big|\left(\hat{U} \hat{U}^\dagger - \id\right)_{ij}\Big|^2 \le \valeps
  *   @f]
- *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setValidationEpsilon().
+ *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setQuESTValidationEpsilon().
  * 
  * @myexample
  * ```
@@ -194,7 +194,7 @@ digraph {
  *   @f[ 
         \max\limits_{ij} \Big|\left(\hat{U} \hat{U}^\dagger - \id\right)_{ij}\Big|^2 \le \valeps
  *   @f]
- *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setValidationEpsilon().
+ *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setQuESTValidationEpsilon().
  *
  * @equivalences
  * 

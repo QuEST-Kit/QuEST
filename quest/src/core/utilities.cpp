@@ -19,7 +19,7 @@
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/memory.hpp"
-#include "quest/src/core/small_list.hpp"
+#include "quest/src/core/lists.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/validation.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
@@ -74,7 +74,7 @@ bool util_isQubitInSuffix(int qubit, Qureg qureg) {
     return qubit < qureg.logNumAmpsPerNode;
 }
 
-bool util_areAllQubitsInSuffix(SmallList qubits, Qureg qureg) {
+bool util_areAllQubitsInSuffix(ConstList64 qubits, Qureg qureg) {
 
     for (int q : qubits)
         if (!util_isQubitInSuffix(q, qureg))
@@ -90,21 +90,21 @@ bool util_isBraQubitInSuffix(int ketQubit, Qureg qureg) {
     return ketQubit < qureg.logNumColsPerNode;
 }
 
-SmallList getPrefixOrSuffixQubits(SmallList qubits, Qureg qureg, bool getSuffix) {
+List64 getPrefixOrSuffixQubits(ConstList64 qubits, Qureg qureg, bool getSuffix) {
 
     // note that when the qureg is local/duplicated, 
     // all qubits will be suffix, none will be prefix
 
-    int newLength = 0;
+    List64 out = lists_getEmptyList64();
+
     for (int qubit : qubits)
         if (util_isQubitInSuffix(qubit, qureg) == getSuffix)
-            qubits[newLength++] = qubit;
+            out.push_back(qubit);
 
-    qubits.resize(newLength);
-    return qubits;
+    return out;
 }
 
-std::array<SmallList,2> util_getPrefixAndSuffixQubits(SmallList qubits, Qureg qureg) {
+std::array<List64,2> util_getPrefixAndSuffixQubits(ConstList64 qubits, Qureg qureg) {
     return {
         getPrefixOrSuffixQubits(qubits, qureg, false), 
         getPrefixOrSuffixQubits(qubits, qureg, true)
@@ -132,7 +132,7 @@ int util_getRankWithQubitFlipped(int prefixKetQubit, Qureg qureg) {
     return rankFlip;
 }
 
-int util_getRankWithQubitsFlipped(SmallList prefixQubits,  Qureg qureg) {
+int util_getRankWithQubitsFlipped(ConstList64 prefixQubits,  Qureg qureg) {
 
     int rank = qureg.rank;
     for (int qubit : prefixQubits)
@@ -148,7 +148,7 @@ int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg) {
     return rankFlip;
 }
 
-int util_getRankWithBraQubitsFlipped(SmallList ketQubits, Qureg qureg) {
+int util_getRankWithBraQubitsFlipped(ConstList64 ketQubits, Qureg qureg) {
 
     int rank = qureg.rank;
     for (int qubit : ketQubits)
@@ -157,65 +157,70 @@ int util_getRankWithBraQubitsFlipped(SmallList ketQubits, Qureg qureg) {
     return rank;
 }
 
-SmallList util_getBraQubits(SmallList ketQubits, Qureg qureg) {
+List64 util_getBraQubits(ConstList64 ketQubits, Qureg qureg) {
 
-    for (int &qubit : ketQubits)
+    List64 braQubits = ketQubits;
+
+    for (int &qubit : braQubits)
         qubit = util_getBraQubit(qubit, qureg);
 
-    return ketQubits;
+    return braQubits;
 }
 
-SmallList util_getNonTargetedQubits(SmallList targets, int numQubits) {
+List64 util_getNonTargetedQubits(ConstList64 targets, int numQubits) {
     
     qindex mask = util_getBitMask(targets);
 
-    SmallList nonTargets = list_getEmptySmallList();
+    List64 out = lists_getEmptyList64();
 
     for (int i=0; i<numQubits; i++)
         if (getBit(mask, i) == 0)
-            nonTargets.push_back(i);
+            out.push_back(i);
 
-    return nonTargets;
+    return out;
 }
 
-SmallList util_getConcatenated(SmallList list1, SmallList list2) {
+List64 util_getConcatenated(ConstList64 list1, ConstList64 list2) {
 
+    auto out = list1;
     for (auto elem : list2)
-        list1.push_back(elem);
+        out.push_back(elem);
 
-    return list1;
+    return out;
 }
 
-SmallList util_getSorted(SmallList list) {
+List64 util_getSorted(ConstList64 list) {
 
     // optimise common edgecases
     if (list.size() < 2)
         return list;
+    
+    List64 out = list;
 
-    if (list.size() == 2) {
-        if (list[0] > list[1])
-            std::swap(list[0], list[1]);
-        return list;
+    if (out.size() == 2) {
+        if (out[0] > out[1])
+            std::swap(out[0], out[1]);
+        return out;
     }
 
     // fallback to inbuilt sort
-    std::sort(list.begin(), list.end());
-    return list;
+    std::sort(out.begin(), out.end());
+    return out;
 }
 
-SmallList util_getSorted(SmallList ctrls, SmallList targs) {
+List64 util_getSorted(ConstList64 ctrls, ConstList64 targs) {
 
     return util_getSorted(util_getConcatenated(ctrls, targs));
 }
 
-SmallList util_getSorted(SmallList ctrls, std::initializer_list<int> targs) {
+List64 util_getSorted(ConstList64 ctrls, std::initializer_list<int> targs) {
 
-    return util_getSorted(ctrls, list_getSmallList(targs));
+    return util_getSorted(ctrls, lists_getList64(targs));
 }
 
-SmallList util_getRange(int maxExcl) {
+List64 util_getRange(int maxExcl) {
 
-    SmallList out = list_getEmptySmallList();
+    List64 out = lists_getEmptyList64();
 
     for (int i=0; i<maxExcl; i++)
         out.push_back(i);
@@ -223,38 +228,45 @@ SmallList util_getRange(int maxExcl) {
     return out;
 }
 
-SmallList util_getConstantList(int elem, int length) {
+List64 util_getConstantList(int elem, int length) {
 
-    SmallList out = list_getEmptySmallList();
-
-    for (int i=0; i<length; i++)
-        out.push_back(elem);
-    
+    List64 out = lists_getEmptyList64();
+    out.assign(length, elem);
     return out;
 }
 
-qindex util_getBitMask(SmallList qubits) {
+qindex util_getBitMask(ConstList64 qubits) {
 
     // inserts qubits in state 1
     return getBitMask(qubits.data(), qubits.size());
 }
 
-qindex util_getBitMask(SmallList qubits, SmallList states) {
+qindex util_getBitMask(ConstList64 qubits, ConstList64 states) {
 
     // assumes qubits.size() == states.size()
     return getBitMask(qubits.data(), states.data(), states.size());
 }
 
-qindex util_getBitMask(SmallList ctrls, SmallList ctrlStates, SmallList targs, SmallList targStates) {
+qindex util_getBitMask(ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 targs, ConstList64 targStates) {
 
     auto qubits = util_getConcatenated(ctrls, targs);
     auto states = util_getConcatenated(ctrlStates, targStates);
     return util_getBitMask(qubits, states);
 }
 
-qindex util_getBitMask(SmallList ctrls, SmallList ctrlStates, std::initializer_list<int> targs, std::initializer_list<int> targStates) {
+qindex util_getBitMask(ConstList64 ctrls, ConstList64 ctrlStates, std::initializer_list<int> targs, std::initializer_list<int> targStates) {
 
-    return util_getBitMask(ctrls, ctrlStates, list_getSmallList(targs), list_getSmallList(targStates));
+    return util_getBitMask(ctrls, ctrlStates, lists_getList64(targs), lists_getList64(targStates));
+}
+
+List64 util_getList64OrAllOnes(const int* elemsOrNullptr, size_t length) {
+
+    if (elemsOrNullptr != nullptr)
+        return lists_getList64(elemsOrNullptr, length);
+
+    List64 out = lists_getEmptyList64();
+    out.assign(length, 1);
+    return out;
 }
 
 
@@ -1240,7 +1252,7 @@ void util_tryAllocVector(vector<unsigned> &vec, qindex size, std::function<void(
 void util_tryAllocVector(vector<PauliStr> &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
 
 // cuQuantum needs a vector<double> overload, which we additionally define when qreal!=double. Gross!
-#if FLOAT_PRECISION != 2
+#if QUEST_FLOAT_PRECISION != 2
     void util_tryAllocVector(vector<double> &vec, qindex size, std::function<void()> errFunc) { tryAllocVector(vec, size, errFunc); }
 #endif
 

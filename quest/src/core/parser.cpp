@@ -187,9 +187,9 @@ qreal precisionAgnosticStringToFloat(string str) {
     removeWhiteSpace(str);
 
     // below throws exception when the (prefix) of str cannot be/fit into a qreal
-    if (FLOAT_PRECISION == 1) return static_cast<qreal>(std::stof (str));
-    if (FLOAT_PRECISION == 2) return static_cast<qreal>(std::stod (str));
-    if (FLOAT_PRECISION == 4) return static_cast<qreal>(std::stold(str));
+    if (QUEST_FLOAT_PRECISION == 1) return static_cast<qreal>(std::stof (str));
+    if (QUEST_FLOAT_PRECISION == 2) return static_cast<qreal>(std::stod (str));
+    if (QUEST_FLOAT_PRECISION == 4) return static_cast<qreal>(std::stold(str));
 
     // unreachable
     return -1;

@@ -24,11 +24,11 @@
 #include "quest/src/core/inliner.hpp"
 #include "quest/src/core/base_qcomp.hpp"
 
-#if ! COMPILE_CUDA
+#if ! QUEST_COMPILE_CUDA
     #error "A file being compiled somehow included gpu_qcomp.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 
-#if (FLOAT_PRECISION == 4)
+#if (QUEST_FLOAT_PRECISION == 4)
     #error "Build bug; precision.h should have prevented non-float non-double qcomp precision on GPU."
 #endif
 

@@ -12,7 +12,7 @@
 #include "quest/include/paulis.h"
 #include "quest/include/qureg.h"
 
-#include "quest/src/core/small_list.hpp"
+#include "quest/src/core/lists.hpp"
 
 #include <utility>
 #include <vector>
@@ -45,13 +45,13 @@ int paulis_getIndOfLefmostNonIdentityPauli(PauliStr* strings, qindex numStrings)
 
 int paulis_getSignOfPauliStrConj(PauliStr str);
 
-int paulis_getPrefixZSign(Qureg qureg, SmallList prefixZ);
+int paulis_getPrefixZSign(Qureg qureg, ConstList64 prefixZ);
 
-qcomp paulis_getPrefixPaulisElem(Qureg qureg, SmallList prefixY, SmallList prefixZ);
+qcomp paulis_getPrefixPaulisElem(Qureg qureg, ConstList64 prefixY, ConstList64 prefixZ);
 
-SmallList paulis_getTargetInds(PauliStr str);
+List64 paulis_getTargetInds(PauliStr str);
 
-std::array<SmallList,3> paulis_getSeparateInds(PauliStr str);
+std::array<List64,3> paulis_getSeparateInds(PauliStr str);
 
 qindex paulis_getTargetBitMask(PauliStr str);
 

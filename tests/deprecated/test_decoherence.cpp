@@ -32,7 +32,7 @@ using std::vector;
     initDebugState(qureg); \
     QMatrix ref = toQMatrix(qureg); \
     assertQuregAndRefInDebugState(qureg, ref); \
-    setValidationEpsilon(REAL_EPS);
+    setQuESTValidationEpsilon(REAL_EPS);
 
 /* allows concise use of ContainsSubstring in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::ContainsSubstring;

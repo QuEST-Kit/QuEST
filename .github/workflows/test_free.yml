@@ -63,11 +63,11 @@ jobs:
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
-          -DENABLE_TESTING=ON
-          -DENABLE_MULTITHREADING=OFF
-          -DENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
-          -DDISABLE_DEPRECATION_WARNINGS=${{ matrix.version == 3 && 'ON' || 'OFF' }}
-          -DFLOAT_PRECISION=${{ matrix.precision }}
+          -DQUEST_BUILD_TESTS=ON
+          -DQUEST_ENABLE_OMP=OFF
+          -DQUEST_ENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
+          -DQUEST_DISABLE_DEPRECATION_WARNINGS=${{ matrix.version == 3 && 'ON' || 'OFF' }}
+          -DQUEST_FLOAT_PRECISION=${{ matrix.precision }}
 
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile

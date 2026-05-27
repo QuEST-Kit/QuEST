@@ -3,8 +3,8 @@
  * when there is no equivalent utility in Thrust (or cuQuantum, when it is
  * targeted). 
  * 
- * This file is only ever included when COMPILE_CUDA=1 so it can safely invoke 
  * CUDA signatures without guards. Some kernels are templated to compile-time 
+ * This file is only ever included when QUEST_COMPILE_CUDA=1 so it can safely invoke
  * optimise their bitwise and indexing logic depending on the number of qubits.
  * This file is a header since only ever included by gpu_subroutines.cpp.
  * 
@@ -25,7 +25,7 @@
 #include "quest/src/core/fastmath.hpp"
 #include "quest/src/gpu/gpu_qcomp.cuh"
 
-#if ! COMPILE_CUDA
+#if ! QUEST_COMPILE_CUDA
     #error "A file being compiled somehow included gpu_kernels.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 

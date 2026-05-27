@@ -491,7 +491,7 @@ void reportQuESTEnv() {
 }
 
 
-void getEnvironmentString(char str[200]) {
+void getQuESTEnvironmentString(char str[200]) {
     validate_envIsInit(__func__);
 
     int numThreads = cpu_isOpenmpCompiled()? cpu_getAvailableNumThreads() : 1;
