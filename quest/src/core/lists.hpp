@@ -164,7 +164,7 @@ public:
 
 
 /*
- * SMALL LIST CONSTRUCTORS
+ * LIST64 CONSTRUCTORS
  *
  * which are separated here because making them actual
  * constructors stops List64 being POD/trivial, and
@@ -232,7 +232,7 @@ static_assert(std::is_standard_layout_v<List64>);
 
 
 /*
- * SMALL VIEW DECLARATION
+ * CONST LIST64 DECLARATION
  * 
  * Functions can accept ConstList64 (over List64) to avoid
  * a stack copy. A List64 can always be passed to a
