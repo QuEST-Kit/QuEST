@@ -144,8 +144,8 @@ jobs:
           -DQUEST_ENABLE_CUDA=${{ matrix.cuda }}
           -DQUEST_ENABLE_CUQUANTUM=${{ matrix.cuquantum }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
-          -DTEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}
-          -DTEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}
+          -DQUEST_TEST_TRY_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}
+          -DQUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}
 
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --parallel
@@ -153,8 +153,8 @@ jobs:
       # specifying only env-vars with non-default values
       - name: Configure tests with environment variables
         run: | 
-          echo "TEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}" >> $GITHUB_ENV
-          echo "TEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}" >> $GITHUB_ENV
+          echo "QUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}" >> $GITHUB_ENV
+          echo "QUEST_TEST_TRY_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}" >> $GITHUB_ENV
 
       # cannot use ctests when distributed, grr!
       - name: Run multithreaded + distributed v4 tests (16 nodes, 4 threads eeach)
@@ -280,9 +280,9 @@ jobs:
       # specify only env-vars with non-default values
       - name: Configure tests with environment variables
         run: | 
-          echo "TEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}" >> $GITHUB_ENV
-          echo "TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS=${{ env.test_repetitions }}" >> $GITHUB_ENV
-          echo "PERMIT_NODES_TO_SHARE_GPU=${{ env.mpi_share_gpu }}" >> $GITHUB_ENV
+          echo "QUEST_TEST_TRY_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}" >> $GITHUB_ENV
+          echo "QUEST_TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS=${{ env.test_repetitions }}" >> $GITHUB_ENV
+          echo "QUEST_PERMIT_NODES_TO_SHARE_GPU=${{ env.mpi_share_gpu }}" >> $GITHUB_ENV
 
       # cannot use ctests when distributed, grr!
       - name: Run GPU + distributed v4 mixed tests (4 nodes sharing 1 GPU)

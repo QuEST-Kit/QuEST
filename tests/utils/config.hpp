@@ -33,7 +33,7 @@
 #if 0
 
     /// @envvardoc
-    const int TEST_NUM_QUBITS_IN_QUREG = 6;
+    const int QUEST_TEST_NUM_QUBITS_IN_QUREG = 6;
 
     /** @envvardoc
      * 
@@ -64,16 +64,16 @@
      * 
      * @author Tyson Jones
      */
-    const int TEST_MAX_NUM_QUBIT_PERMUTATIONS = 0;
+    const int QUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS = 0;
 
     /// @envvardoc
-    const int TEST_MAX_NUM_SUPEROP_TARGETS = 4;
+    const int QUEST_TEST_MAX_NUM_SUPEROP_TARGETS = 4;
 
     /// @envvardoc
-    const int TEST_ALL_DEPLOYMENTS = 1;
+    const int QUEST_TEST_TRY_ALL_DEPLOYMENTS = 1;
 
     /// @envvardoc
-    const int TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS = 10;
+    const int QUEST_TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS = 10;
 
 #endif
 

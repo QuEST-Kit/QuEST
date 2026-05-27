@@ -175,7 +175,7 @@ void gpu_finalizeCuQuantum() {
  */
 
 
-void cuquantum_statevec_anyCtrlSwap_subA(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2) {
+void cuquantum_statevec_anyCtrlSwap_subA(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ1, int targ2) {
 
     // our SWAP targets are bundled into pairs
     int2 targPairs[] = {{targ1, targ2}};;
@@ -200,7 +200,7 @@ void cuquantum_statevec_anyCtrlSwap_subA(Qureg qureg, SmallList ctrls, SmallList
  */
 
 
-void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, gpu_qcomp* flatMatrElems, bool applyAdj) {
+void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, SmallView ctrls, SmallView ctrlStates, SmallView targs, gpu_qcomp* flatMatrElems, bool applyAdj) {
 
     // this funciton is called 'subA' instead of just 'sub', because it is also called in 
     // the one-target case whereby it is strictly the embarrassingly parallel _subA scenario
@@ -223,7 +223,7 @@ void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, SmallList ct
 // there is no bespoke cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subB()
 
 
-void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, gpu_qcomp* flatMatrElems, bool conj) {
+void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, SmallView ctrls, SmallView ctrlStates, SmallView targs, gpu_qcomp* flatMatrElems, bool conj) {
 
     // beware that despite diagonal matrices being embarrassingly parallel,
     // the target qubits must still all be suffix-only to avoid a cuStateVec error
@@ -345,7 +345,7 @@ qreal cuquantum_statevec_calcTotalProb_sub(Qureg qureg) {
 }
 
 
-qreal cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallList qubits, SmallList outcomes) {
+qreal cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallView qubits, SmallView outcomes) {
 
     // cuQuantum probabilities are always double
     double prob;
@@ -359,7 +359,7 @@ qreal cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallList 
 }
 
 
-void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallList qubits) {
+void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallView qubits) {
 
     // cuQuantum can accept a host-pointer (like outProbs), but only
     // double precision; if qreal != double, we use temporary memory
@@ -390,7 +390,7 @@ void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qu
  */
 
 
-qreal cuquantum_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallList x, SmallList y, SmallList z) {
+qreal cuquantum_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallView x, SmallView y, SmallView z) {
 
     // prepare term (XX...YY...ZZ...)
     size_t numPaulis = x.size() + y.size() + z.size();
@@ -422,7 +422,7 @@ qreal cuquantum_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallList x, SmallL
 }
 
 
-qreal cuquantum_statevec_calcExpecAnyTargZ_sub(Qureg qureg, SmallList targs) {
+qreal cuquantum_statevec_calcExpecAnyTargZ_sub(Qureg qureg, SmallView targs) {
 
     auto empty = list_getEmptySmallList();
     return cuquantum_statevec_calcExpecPauliStr_subA(qureg, empty, empty, targs);
@@ -435,7 +435,7 @@ qreal cuquantum_statevec_calcExpecAnyTargZ_sub(Qureg qureg, SmallList targs) {
  */
 
 
-void cuquantum_statevec_multiQubitProjector_sub(Qureg qureg, SmallList qubits, SmallList outcomes, qreal prob) {
+void cuquantum_statevec_multiQubitProjector_sub(Qureg qureg, SmallView qubits, SmallView outcomes, qreal prob) {
 
     CUDA_CHECK( custatevecCollapseByBitString(
         config.handle,

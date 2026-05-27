@@ -449,13 +449,6 @@ typedef enum pauliOpType _NoWarnPauliOpType;
         "setDensityQuregAmps(Qureg, qindex startRow, qindex startCol, qcomp** amps, qindex numRows, qindex numCols)")
 
 
-#define getQuESTSeeds(...) \
-    _ERROR_GENERAL_MSG( \
-        "The QuEST function 'getQuESTSeeds(QuESTEnv env, unsigned long int* out, int numOut)' has been deprecated. " \
-        "Please instead use 'getSeeds(unsigned* out)' which accepts a pointer to pre-allocated memory of length " \
-        "equal to that returned by 'getNumSeeds()'. We cannot automatically invoke this replacement routine." )
-
-
 #define applyPhaseFunc(...) \
     _ERROR_PHASE_FUNC_REMOVED("applyPhaseFunc")
 
@@ -548,14 +541,41 @@ typedef enum pauliOpType _NoWarnPauliOpType;
 
 
 #define _GET_ENVIRONMENT_STRING_1(str) \
-    getEnvironmentString(str)
+    getQuESTEnvironmentString(str)
 
 #define _GET_ENVIRONMENT_STRING_2(str) \
-    _WARN_FUNC_NOW_HAS_FEWER_ARGS("getEnvironmentString(QuESTEnv, char[200])", "getEnvironmentString(char[200])") \
+    _WARN_FUNC_NOW_HAS_FEWER_ARGS("getQuESTEnvironmentString(QuESTEnv, char[200])", "getQuESTEnvironmentString(char[200])") \
     _GET_ENVIRONMENT_STRING_1(str)
 
-#define getEnvironmentString(...) \
+#define getQuESTEnvironmentString(...) \
     _CALL_MACRO_WITH_1_OR_2_ARGS(_GET_ENVIRONMENT_STRING, __VA_ARGS__)
+
+
+
+/*
+ * FUNCTIONS WITH THE SAME NAME BUT 1 INSTEAD OF 3 ARGS
+ *
+ * which are handled similar to above
+ */
+
+
+#define _GET_MACRO_WITH_1_OR_3_ARGS(_1, _2, _3, macroname, ...) macroname
+
+#define _CALL_MACRO_WITH_1_OR_3_ARGS(prefix, ...) \
+    _GET_MACRO_WITH_1_OR_3_ARGS(__VA_ARGS__, prefix##_3, prefix##_2, prefix##_1)(__VA_ARGS__)
+
+
+#define _GET_QUEST_SEEDS_1(out) \
+    getQuESTSeeds(out)
+
+#define _GET_QUEST_SEEDS_3(env, out, numOut) \
+    _WARN_FUNC_NOW_HAS_FEWER_ARGS( \
+        "getQuESTSeeds(QuESTEnv env, unsigned long int* out, int numOut)", \
+        "getQuESTSeeds(unsigned* out)") \
+    _GET_QUEST_SEEDS_1(out)
+
+#define getQuESTSeeds(...) \
+    _CALL_MACRO_WITH_1_OR_3_ARGS(_GET_QUEST_SEEDS, __VA_ARGS__)
 
 
 
@@ -657,10 +677,10 @@ static inline void v3_mixKrausMap(Qureg qureg, int targ, _NoWarnComplexMatrix2 *
 
 
 static inline void _mixNonTPKrausMap(Qureg qureg, int targ, _NoWarnComplexMatrix2 *ops, int numOps) {
-    qreal eps = getValidationEpsilon();
-    setValidationEpsilon(0);
+    qreal eps = getQuESTValidationEpsilon();
+    setQuESTValidationEpsilon(0);
     _MIX_KRAUS_MAP_INNER(qureg, ops, numOps, &targ, 1);
-    setValidationEpsilon(eps);
+    setQuESTValidationEpsilon(eps);
 }
 
 #define mixNonTPKrausMap(...) \
@@ -673,10 +693,10 @@ static inline void _mixNonTPKrausMap(Qureg qureg, int targ, _NoWarnComplexMatrix
 
 static inline void _mixTwoQubitKrausMap(Qureg qureg, int targ1, int targ2, _NoWarnComplexMatrix4 *ops, int numOps, int isNonCPTP) {
     int targs[] = {targ1, targ2};
-    qreal eps = getValidationEpsilon();
-    if (isNonCPTP) setValidationEpsilon(0);
+    qreal eps = getQuESTValidationEpsilon();
+    if (isNonCPTP) setQuESTValidationEpsilon(0);
     _MIX_KRAUS_MAP_INNER(qureg, ops, numOps, targs, 2);
-    setValidationEpsilon(eps);
+    setQuESTValidationEpsilon(eps);
 }
 
 #define mixTwoQubitKrausMap(...) \
@@ -703,11 +723,11 @@ static inline void _mixMultiQubitKrausMap(Qureg qureg, int* targs, int numTargs,
     setKrausMap(map, ptrs);
     free(ptrs);
 
-    qreal eps = getValidationEpsilon();
-    if (isNonCPTP) setValidationEpsilon(0);
+    qreal eps = getQuESTValidationEpsilon();
+    if (isNonCPTP) setQuESTValidationEpsilon(0);
     (mixKrausMap)(qureg, targs, numTargs, map); // calls above macro, wrapped to avoid warning */
     destroyKrausMap(map);
-    setValidationEpsilon(eps);
+    setQuESTValidationEpsilon(eps);
 }
 
 #define mixMultiQubitKrausMap(...) \
@@ -827,16 +847,16 @@ static inline QuESTEnv _createQuESTEnv() {
     leftapplyDiagMatr(__VA_ARGS__)
 
 static inline void _applyGateSubDiagonalOp(Qureg qureg, int* targets, int numTargets, DiagMatr op) {
-    qreal eps = getValidationEpsilon();
-    setValidationEpsilon(0);
+    qreal eps = getQuESTValidationEpsilon();
+    setQuESTValidationEpsilon(0);
     applyDiagMatr(qureg, targets, numTargets, op);
-    setValidationEpsilon(eps);
+    setQuESTValidationEpsilon(eps);
 }
 #define applyGateSubDiagonalOp(...) \
     _WARN_GENERAL_MSG( \
         "The QuEST function 'applyGateSubDiagonalOp()' is deprecated. To achieve the same thing, disable " \
-        "numerical validation via 'setValidationEpsilon(0)' before calling 'applyDiagMatr()'. You can " \
-        "save the existing epsilon via 'getValidationEpsilon()' to thereafter restore. This procedure " \
+        "numerical validation via 'setQuESTValidationEpsilon(0)' before calling 'applyDiagMatr()'. You can " \
+        "save the existing epsilon via 'getQuESTValidationEpsilon()' to thereafter restore. This procedure " \
         "has been performed here automatically.") \
     _applyGateSubDiagonalOp(__VA_ARGS__)
 
@@ -1131,32 +1151,32 @@ static inline void _applyPauliHamil(Qureg inQureg, PauliStrSum hamil, Qureg outQ
 
 
 static inline void _applyGateMatrixN(Qureg qureg, int* targs, int numTargs, CompMatr u) {
-    qreal eps = getValidationEpsilon();
-    setValidationEpsilon(0);
+    qreal eps = getQuESTValidationEpsilon();
+    setQuESTValidationEpsilon(0);
     applyCompMatr(qureg, targs, numTargs, u);
-    setValidationEpsilon(eps);
+    setQuESTValidationEpsilon(eps);
 }
 
 #define applyGateMatrixN(...) \
     _WARN_GENERAL_MSG( \
         "The QuEST function 'applyGateMatrixN()' is deprecated. To achieve the same thing, disable " \
-        "numerical validation via 'setValidationEpsilon(0)' before calling 'applyCompMatr()'. You can " \
-        "save the existing epsilon via 'getValidationEpsilon()' to thereafter restore. This procedure " \
+        "numerical validation via 'setQuESTValidationEpsilon(0)' before calling 'applyCompMatr()'. You can " \
+        "save the existing epsilon via 'getQuESTValidationEpsilon()' to thereafter restore. This procedure " \
         "has been performed here automatically.") \
     _applyGateMatrixN(__VA_ARGS__)
 
 static inline void _applyMultiControlledGateMatrixN(Qureg qureg, int* ctrls, int numCtrls, int* targs, int numTargs, CompMatr u) {
-    qreal eps = getValidationEpsilon();
-    setValidationEpsilon(0);
+    qreal eps = getQuESTValidationEpsilon();
+    setQuESTValidationEpsilon(0);
     applyMultiControlledCompMatr(qureg, ctrls, numCtrls, targs, numTargs, u);
-    setValidationEpsilon(eps);
+    setQuESTValidationEpsilon(eps);
 }
 
 #define applyMultiControlledGateMatrixN(...) \
     _WARN_GENERAL_MSG( \
         "The QuEST function 'applyMultiControlledGateMatrixN()' is deprecated. To achieve the same thing, disable " \
-        "numerical validation via 'setValidationEpsilon(0)' before calling 'applyMultiControlledCompMatr()'. You can " \
-        "save the existing epsilon via 'getValidationEpsilon()' to thereafter restore. This procedure has been " \
+        "numerical validation via 'setQuESTValidationEpsilon(0)' before calling 'applyMultiControlledCompMatr()'. You can " \
+        "save the existing epsilon via 'getQuESTValidationEpsilon()' to thereafter restore. This procedure has been " \
         "performed here automatically.") \
     _applyMultiControlledGateMatrixN(__VA_ARGS__)
 
@@ -1331,12 +1351,12 @@ static inline void _multiControlledMultiRotatePauli(Qureg qureg, int* ctrls, int
 
 
 #define seedQuESTDefault(...) \
-    _WARN_FUNC_RENAMED("seedQuESTDefault(QuESTEnv)", "setSeedsToDefault()") \
-    setSeedsToDefault()
+    _WARN_FUNC_RENAMED("seedQuESTDefault(QuESTEnv)", "setQuESTSeedsToDefault()") \
+    setQuESTSeedsToDefault()
 
 #define seedQuEST(env, seeds, numSeeds) \
-    _WARN_FUNC_RENAMED("seedQuEST(QuESTEnv, unsigned long int*, int)", "setSeeds(unsigned*, int)") \
-    setSeeds(seeds, numSeeds)
+    _WARN_FUNC_RENAMED("seedQuEST(QuESTEnv, unsigned long int*, int)", "setQuESTSeeds(unsigned*, int)") \
+    setQuESTSeeds(seeds, numSeeds)
 
 
 

@@ -47,30 +47,30 @@ int getIntEnvVarValueOrDefault(string name, int defaultValue) {
 
 int getNumQubitsInUnitTestedQuregs() {
 
-    static int value = getIntEnvVarValueOrDefault("TEST_NUM_QUBITS_IN_QUREG", 6);
+    static int value = getIntEnvVarValueOrDefault("QUEST_TEST_NUM_QUBITS_IN_QUREG", 6);
     return value;
 }
 
 int getMaxNumTestedQubitPermutations() {
 
-    static int value = getIntEnvVarValueOrDefault("TEST_MAX_NUM_QUBIT_PERMUTATIONS", 0);
+    static int value = getIntEnvVarValueOrDefault("QUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS", 0);
     return value;
 }
 
 int getMaxNumTestedSuperoperatorTargets() {
 
-    static int value = getIntEnvVarValueOrDefault("TEST_MAX_NUM_SUPEROP_TARGETS", 4);
+    static int value = getIntEnvVarValueOrDefault("QUEST_TEST_MAX_NUM_SUPEROP_TARGETS", 4);
     return value;
 }
 
 int getNumTestedMixedDeploymentRepetitions() {
 
-    static int value = getIntEnvVarValueOrDefault("TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS", 10);
+    static int value = getIntEnvVarValueOrDefault("QUEST_TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS", 10);
     return value;
 }
 
 bool getWhetherToTestAllDeployments() {
 
-    static bool value = getIntEnvVarValueOrDefault("TEST_ALL_DEPLOYMENTS", 1);
+    static bool value = getIntEnvVarValueOrDefault("QUEST_TEST_TRY_ALL_DEPLOYMENTS", 1);
     return value;
 }

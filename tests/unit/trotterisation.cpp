@@ -268,8 +268,8 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         //  - 1E-5 at single precision
         //  - 1E-12 at double precision
         //  - 1E-13 at quad precision
-        qreal initialValidationEps = getValidationEpsilon();
-        setValidationEpsilon(2 * initialValidationEps);
+        qreal initialValidationEps = getQuESTValidationEpsilon();
+        setQuESTValidationEpsilon(2 * initialValidationEps);
 
         const int NUM_QUBITS = 8;
         qreal dt = 0.1;
@@ -331,7 +331,7 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
         }
 
         // Restore validation epsilon
-        setValidationEpsilon(initialValidationEps);
+        setQuESTValidationEpsilon(initialValidationEps);
 
         destroyPauliStrSum(hamil);
         destroyPauliStrSum(observ);

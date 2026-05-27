@@ -31,6 +31,7 @@
 
 using std::is_same_v;
 using std::vector;
+using std::array;
 
 
 
@@ -40,42 +41,44 @@ using std::vector;
 
 bool util_isQubitInSuffix(int qubit, Qureg qureg);
 bool util_isBraQubitInSuffix(int ketQubit, Qureg qureg);
-bool util_areAllQubitsInSuffix(SmallList qubits, Qureg qureg);
+bool util_areAllQubitsInSuffix(SmallView qubits, Qureg qureg);
 
 int util_getBraQubit(int ketQubit, Qureg qureg);
 
 int util_getPrefixInd(int qubit, Qureg qureg);
 int util_getPrefixBraInd(int ketQubit, Qureg qureg);
 
-std::array<SmallList,2> util_getPrefixAndSuffixQubits(SmallList qubits, Qureg qureg);
+array<SmallList,2> util_getPrefixAndSuffixQubits(SmallView qubits, Qureg qureg);
 
 int util_getRankBitOfQubit(int ketQubit, Qureg qureg);
 int util_getRankBitOfBraQubit(int ketQubit, Qureg qureg);
 
 int util_getRankWithQubitFlipped(int ketQubit, Qureg qureg);
-int util_getRankWithQubitsFlipped(SmallList prefixQubits, Qureg qureg);
+int util_getRankWithQubitsFlipped(SmallView prefixQubits, Qureg qureg);
 
 int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg);
-int util_getRankWithBraQubitsFlipped(SmallList ketQubits, Qureg qureg);
+int util_getRankWithBraQubitsFlipped(SmallView ketQubits, Qureg qureg);
 
-SmallList util_getBraQubits(SmallList ketQubits, Qureg qureg);
+SmallList util_getBraQubits(SmallView ketQubits, Qureg qureg);
 
-SmallList util_getNonTargetedQubits(SmallList, int numQubits);
+SmallList util_getNonTargetedQubits(SmallView, int numQubits);
 
-SmallList util_getConcatenated(SmallList list1, SmallList list2);
+SmallList util_getConcatenated(SmallView list1, SmallView list2);
 
 SmallList util_getRange(int maxExcl);
 
 SmallList util_getConstantList(int elem, int length);
 
-SmallList util_getSorted(SmallList list);
-SmallList util_getSorted(SmallList ctrls, SmallList targs);
-SmallList util_getSorted(SmallList ctrls, std::initializer_list<int> targs);
+SmallList util_getSorted(SmallView list);
+SmallList util_getSorted(SmallView ctrls, SmallView targs);
+SmallList util_getSorted(SmallView ctrls, std::initializer_list<int> targs);
 
-qindex util_getBitMask(SmallList qubits);
-qindex util_getBitMask(SmallList qubits, SmallList states);
-qindex util_getBitMask(SmallList ctrls, SmallList ctrlStates, SmallList targs, SmallList targStates);
-qindex util_getBitMask(SmallList ctrls, SmallList ctrlStates, std::initializer_list<int> targs, std::initializer_list<int> targStates);
+qindex util_getBitMask(SmallView qubits);
+qindex util_getBitMask(SmallView qubits, SmallView states);
+qindex util_getBitMask(SmallView ctrls, SmallView ctrlStates, SmallView targs, SmallView targStates);
+qindex util_getBitMask(SmallView ctrls, SmallView ctrlStates, std::initializer_list<int> targs, std::initializer_list<int> targStates);
+
+SmallList util_getSmallListOrAllOnes(const int* elemsOrNullptr, size_t length);
 
 
 

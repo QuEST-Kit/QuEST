@@ -29,11 +29,12 @@
 #include "quest/src/cpu/cpu_subroutines.hpp"
 #include "quest/src/gpu/gpu_subroutines.hpp"
 
+#include <array>
 #include <vector>
 #include <algorithm>
 
-using std::vector;
 using std::min;
+using std::array;
 
 
 
@@ -46,19 +47,16 @@ using std::min;
  * number of controls or targets exceeds that which have optimised compilations, 
  * we fall back to using a generic implementation, indicated by <-1>. In essence,
  * these macros simply call func<ctrls.size()> albeit without illegally passing
- * a runtime variable as a template parameter. Note an awkward use of decltype()
- * is to workaround a GCC <12 bug with implicitly-typed vector initialisations.
- * 
- * BEWARE that these macros are single-line expressions, so they can be used in
- * braceless if/else or ternary operators - but stay vigilant!
+ * a runtime variable as a template parameter.
  */
 
 
-#define GET_FUNC_OPTIMISED_FOR_BOOL(funcname, value) \
+
+#define GET_FUNC_OPTIMISED_FOR_BOOL( funcname, value ) \
     ((value)? funcname<true> : funcname<false>)
 
 
-#define GET_FUNC_OPTIMISED_FOR_TWO_BOOLS(funcname, b1, b2) \
+#define GET_FUNC_OPTIMISED_FOR_TWO_BOOLS( funcname, b1, b2 ) \
     ((b1)? \
         ((b2)? funcname<true, true> : funcname<true, false>) : \
         ((b2)? funcname<false,true> : funcname<false,false>))
@@ -70,61 +68,74 @@ using std::min;
         ((value)? cpu_##funcsuffix<true, fixed1,fixed2,fixed3> : cpu_##funcsuffix<false, fixed1,fixed2,fixed3> ))
 
 
-#if (MAX_OPTIMISED_NUM_CTRLS != 5) || (MAX_OPTIMISED_NUM_TARGS != 5)
+#if (MAX_OPTIMISED_PARAM != 5)
     #error "The number of optimised, templated QuEST functions was inconsistent between accelerator's source and header."
 #endif
 
-
-#define GET_FUNC_OPTIMISED_FOR_NUM_QUREGS(f, numquregs) \
-    (vector <decltype(&f<0>)> {&f<0>, &f<1>, &f<2>, &f<3>, &f<4>, &f<5>, &f<-1>}) \
-    [std::min((int) numquregs, MAX_OPTIMISED_NUM_QUREGS + 1)]
-
-#define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS(f, numctrls) \
-    (vector <decltype(&f<0>)> {&f<0>, &f<1>, &f<2>, &f<3>, &f<4>, &f<5>, &f<-1>}) \
-    [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS + 1)]
-
-#define GET_FUNC_OPTIMISED_FOR_NUM_TARGS(f, numtargs) \
-    (vector <decltype(&f<0>)> {&f<0>, &f<1>, &f<2>, &f<3>, &f<4>, &f<5>, &f<-1>}) \
-    [std::min((int) numtargs, MAX_OPTIMISED_NUM_TARGS + 1)]
-
-#define GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(f, numctrls, numtargs) \
-    (vector <ARR(f)> { \
-        ARR(f) {&f<0,0>,  &f<0,1>,  &f<0,2>,  &f<0,3>,  &f<0,4>,  &f<0,5>,  &f<0,-1>}, \
-        ARR(f) {&f<1,0>,  &f<1,1>,  &f<1,2>,  &f<1,3>,  &f<1,4>,  &f<1,5>,  &f<1,-1>}, \
-        ARR(f) {&f<2,0>,  &f<2,1>,  &f<2,2>,  &f<2,3>,  &f<2,4>,  &f<2,5>,  &f<2,-1>}, \
-        ARR(f) {&f<3,0>,  &f<3,1>,  &f<3,2>,  &f<3,3>,  &f<3,4>,  &f<3,5>,  &f<3,-1>}, \
-        ARR(f) {&f<4,0>,  &f<4,1>,  &f<4,2>,  &f<4,3>,  &f<4,4>,  &f<4,5>,  &f<4,-1>}, \
-        ARR(f) {&f<5,0>,  &f<5,1>,  &f<5,2>,  &f<5,3>,  &f<5,4>,  &f<5,5>,  &f<5,-1>}, \
-        ARR(f) {&f<-1,0>, &f<-1,1>, &f<-1,2>, &f<-1,3>, &f<-1,4>, &f<-1,5>, &f<-1,-1>}}) \
-    [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS + 1)] \
-    [std::min((int) numtargs, MAX_OPTIMISED_NUM_TARGS + 1)]
-
-#define ARR(f) vector<decltype(&f<0,0>)>
+#define GET_TEMPLATE_PARAM( param ) \
+    std::min((int) param, MAX_OPTIMISED_PARAM + 1)
 
 
-#define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_QUREGS(funcsuffix, qureg, numquregs) \
-    ((qureg.isGpuAccelerated)? \
-        GET_FUNC_OPTIMISED_FOR_NUM_QUREGS( gpu_##funcsuffix, numquregs ) : \
-        GET_FUNC_OPTIMISED_FOR_NUM_QUREGS( cpu_##funcsuffix, numquregs ))
+#define GET_ONE_PARAM_TEMPLATED_FUNC_ARRAY( f ) \
+    array {&f<0>, &f<1>, &f<2>, &f<3>, &f<4>, &f<5>, &f<-1>}
 
-#define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS(funcsuffix, qureg, numctrls) \
-    ((qureg.isGpuAccelerated)? \
-        GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( gpu_##funcsuffix, numctrls ) : \
-        GET_FUNC_OPTIMISED_FOR_NUM_CTRLS( cpu_##funcsuffix, numctrls ))
+#define GET_FUNC_OPTIMISED_FOR_ONE_PARAM( outvar, funcname, param ) \
+    static constexpr auto (_ARRAY_##funcname) = GET_ONE_PARAM_TEMPLATED_FUNC_ARRAY( funcname ); \
+    const auto outvar = (_ARRAY_##funcname)[GET_TEMPLATE_PARAM( param )];
 
-#define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS(funcsuffix, qureg, numtargs) \
-    ((qureg.isGpuAccelerated)? \
-        GET_FUNC_OPTIMISED_FOR_NUM_TARGS( gpu_##funcsuffix, numtargs ) : \
-        GET_FUNC_OPTIMISED_FOR_NUM_TARGS( cpu_##funcsuffix, numtargs ))
+#define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( outvar, funcsuffix, qureg, param ) \
+    GET_FUNC_OPTIMISED_FOR_ONE_PARAM( _GPU_FUNC, gpu_##funcsuffix, param ) \
+    GET_FUNC_OPTIMISED_FOR_ONE_PARAM( _CPU_FUNC, cpu_##funcsuffix, param ) \
+    const auto outvar = qureg.isGpuAccelerated ? _GPU_FUNC : _CPU_FUNC;
 
-#define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(funcsuffix, qureg, numctrls, numtargs) \
-    ((qureg.isGpuAccelerated)? \
-        GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_##funcsuffix, numctrls, numtargs ) : \
-        GET_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs ))
+    
+#define GET_TWO_PARAM_TEMPLATED_FUNC_MATRIX( f ) \
+    array { \
+        array {&f<0,0>,  &f<0,1>,  &f<0,2>,  &f<0,3>,  &f<0,4>,  &f<0,5>,  &f<0,-1>}, \
+        array {&f<1,0>,  &f<1,1>,  &f<1,2>,  &f<1,3>,  &f<1,4>,  &f<1,5>,  &f<1,-1>}, \
+        array {&f<2,0>,  &f<2,1>,  &f<2,2>,  &f<2,3>,  &f<2,4>,  &f<2,5>,  &f<2,-1>}, \
+        array {&f<3,0>,  &f<3,1>,  &f<3,2>,  &f<3,3>,  &f<3,4>,  &f<3,5>,  &f<3,-1>}, \
+        array {&f<4,0>,  &f<4,1>,  &f<4,2>,  &f<4,3>,  &f<4,4>,  &f<4,5>,  &f<4,-1>}, \
+        array {&f<5,0>,  &f<5,1>,  &f<5,2>,  &f<5,3>,  &f<5,4>,  &f<5,5>,  &f<5,-1>}, \
+        array {&f<-1,0>, &f<-1,1>, &f<-1,2>, &f<-1,3>, &f<-1,4>, &f<-1,5>, &f<-1,-1>}}
+
+#define GET_FUNC_OPTIMISED_FOR_TWO_PARAMS( outvar, funcname, param1, param2 ) \
+    static constexpr auto (_MATRIX_##funcname) = GET_TWO_PARAM_TEMPLATED_FUNC_MATRIX( funcname ); \
+    const auto outvar = (_MATRIX_##funcname)[GET_TEMPLATE_PARAM( param1 )][GET_TEMPLATE_PARAM( param2 )];
+
+#define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_TWO_PARAMS( outvar, funcsuffix, qureg, param1, param2 ) \
+    GET_FUNC_OPTIMISED_FOR_TWO_PARAMS( _GPU_FUNC, gpu_##funcsuffix, param1, param2 ) \
+    GET_FUNC_OPTIMISED_FOR_TWO_PARAMS( _CPU_FUNC, cpu_##funcsuffix, param1, param2 ) \
+    const auto outvar = qureg.isGpuAccelerated ? _GPU_FUNC : _CPU_FUNC;
+
+
+#define GET_TWO_PARAM_TWO_BOOL_SUB_MATRIX( f, b1, b2 ) \
+    array { \
+        array {&f<0,0,b1,b2>,  &f<0,1,b1,b2>,  &f<0,2,b1,b2>,  &f<0,3,b1,b2>,  &f<0,4,b1,b2>,  &f<0,5,b1,b2>,  &f<0,-1,b1,b2>}, \
+        array {&f<1,0,b1,b2>,  &f<1,1,b1,b2>,  &f<1,2,b1,b2>,  &f<1,3,b1,b2>,  &f<1,4,b1,b2>,  &f<1,5,b1,b2>,  &f<1,-1,b1,b2>}, \
+        array {&f<2,0,b1,b2>,  &f<2,1,b1,b2>,  &f<2,2,b1,b2>,  &f<2,3,b1,b2>,  &f<2,4,b1,b2>,  &f<2,5,b1,b2>,  &f<2,-1,b1,b2>}, \
+        array {&f<3,0,b1,b2>,  &f<3,1,b1,b2>,  &f<3,2,b1,b2>,  &f<3,3,b1,b2>,  &f<3,4,b1,b2>,  &f<3,5,b1,b2>,  &f<3,-1,b1,b2>}, \
+        array {&f<4,0,b1,b2>,  &f<4,1,b1,b2>,  &f<4,2,b1,b2>,  &f<4,3,b1,b2>,  &f<4,4,b1,b2>,  &f<4,5,b1,b2>,  &f<4,-1,b1,b2>}, \
+        array {&f<5,0,b1,b2>,  &f<5,1,b1,b2>,  &f<5,2,b1,b2>,  &f<5,3,b1,b2>,  &f<5,4,b1,b2>,  &f<5,5,b1,b2>,  &f<5,-1,b1,b2>}, \
+        array {&f<-1,0,b1,b2>, &f<-1,1,b1,b2>, &f<-1,2,b1,b2>, &f<-1,3,b1,b2>, &f<-1,4,b1,b2>, &f<-1,5,b1,b2>, &f<-1,-1,b1,b2>}}
+
+#define GET_TWO_PARAM_TWO_BOOL_TEMPLATED_FUNC_MATRIX( f ) \
+    array { \
+        array{ GET_TWO_PARAM_TWO_BOOL_SUB_MATRIX( f, 0, 0 ), GET_TWO_PARAM_TWO_BOOL_SUB_MATRIX( f, 0, 1 ) }, \
+        array{ GET_TWO_PARAM_TWO_BOOL_SUB_MATRIX( f, 1, 0 ), GET_TWO_PARAM_TWO_BOOL_SUB_MATRIX( f, 1, 1 ) }}
+
+#define GET_FUNC_OPTIMISED_FOR_TWO_PARAMS_TWO_BOOLS( outvar, funcname, param1, param2, bool1, bool2 ) \
+    static constexpr auto (_MATRIX_##funcname) = GET_TWO_PARAM_TWO_BOOL_TEMPLATED_FUNC_MATRIX( funcname ); \
+    const auto outvar = (_MATRIX_##funcname)[bool1][bool2][GET_TEMPLATE_PARAM( param1 )][GET_TEMPLATE_PARAM( param2 )];
+
+#define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_TWO_PARAMS_TWO_BOOLS( outvar, funcsuffix, qureg, param1, param2, bool1, bool2 ) \
+    GET_FUNC_OPTIMISED_FOR_TWO_PARAMS_TWO_BOOLS( _GPU_FUNC, gpu_##funcsuffix, param1, param2, bool1, bool2 ) \
+    GET_FUNC_OPTIMISED_FOR_TWO_PARAMS_TWO_BOOLS( _CPU_FUNC, cpu_##funcsuffix, param1, param2, bool1, bool2 ) \
+    const auto outvar = qureg.isGpuAccelerated ? _GPU_FUNC : _CPU_FUNC;
 
 
 /// @todo
-/// GET_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS as defined below
+/// GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_TWO_PARAMS_TWO_BOOLS as defined above
 /// is used by anyCtrlAnyTargDiagMatr and anyCtrlAnyTargDenseMatr; the 
 /// latter only ever receives numTargs>=3 (due to accelerator redirecting 
 /// fewer targets to faster bespoke functions which e.g. avoid global GPU
@@ -133,40 +144,6 @@ using std::min;
 /// time which is large because of the 7*7*2=98 unique instantiations. We
 /// can ergo non-negligibly speed up compilation by avoiding these redundant 
 /// instances at the cost of increased code complexity/asymmetry. Consider!
-
-#define GET_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(f, numctrls, numtargs, c, h) \
-    (vector <POWER_CONJ_ARR(f)> { \
-        POWER_CONJ_ARR(f) {&f<0,0,c,h>,  &f<0,1,c,h>,  &f<0,2,c,h>,  &f<0,3,c,h>,  &f<0,4,c,h>,  &f<0,5,c,h>,  &f<0,-1,c,h>}, \
-        POWER_CONJ_ARR(f) {&f<1,0,c,h>,  &f<1,1,c,h>,  &f<1,2,c,h>,  &f<1,3,c,h>,  &f<1,4,c,h>,  &f<1,5,c,h>,  &f<1,-1,c,h>}, \
-        POWER_CONJ_ARR(f) {&f<2,0,c,h>,  &f<2,1,c,h>,  &f<2,2,c,h>,  &f<2,3,c,h>,  &f<2,4,c,h>,  &f<2,5,c,h>,  &f<2,-1,c,h>}, \
-        POWER_CONJ_ARR(f) {&f<3,0,c,h>,  &f<3,1,c,h>,  &f<3,2,c,h>,  &f<3,3,c,h>,  &f<3,4,c,h>,  &f<3,5,c,h>,  &f<3,-1,c,h>}, \
-        POWER_CONJ_ARR(f) {&f<4,0,c,h>,  &f<4,1,c,h>,  &f<4,2,c,h>,  &f<4,3,c,h>,  &f<4,4,c,h>,  &f<4,5,c,h>,  &f<4,-1,c,h>}, \
-        POWER_CONJ_ARR(f) {&f<5,0,c,h>,  &f<5,1,c,h>,  &f<5,2,c,h>,  &f<5,3,c,h>,  &f<5,4,c,h>,  &f<5,5,c,h>,  &f<5,-1,c,h>}, \
-        POWER_CONJ_ARR(f) {&f<-1,0,c,h>, &f<-1,1,c,h>, &f<-1,2,c,h>, &f<-1,3,c,h>, &f<-1,4,c,h>, &f<-1,5,c,h>, &f<-1,-1,c,h>}}) \
-    [std::min((int) numctrls, MAX_OPTIMISED_NUM_CTRLS + 1)] \
-    [std::min((int) numtargs, MAX_OPTIMISED_NUM_TARGS + 1)]
-
-#define POWER_CONJ_ARR(f) vector<decltype(&f<0,0,false,false>)>
-
-#define GET_CPU_OR_GPU_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS(funcsuffix, qureg, numctrls, numtargs, conj, haspower) \
-    ((qureg.isGpuAccelerated)? \
-        ((conj)? \
-            ((haspower)? \
-                GET_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_##funcsuffix, numctrls, numtargs, true, true ) : \
-                GET_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_##funcsuffix, numctrls, numtargs, true, false ) ) : \
-            ((haspower)? \
-                GET_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_##funcsuffix, numctrls, numtargs, false, true ) : \
-                GET_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( gpu_##funcsuffix, numctrls, numtargs, false, false ) ) ) : \
-        ((conj)? \
-            ((haspower)? \
-                GET_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs, true, true ) : \
-                GET_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs, true, false ) ) : \
-            ((haspower)? \
-                GET_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs, false, true ) : \
-                GET_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( cpu_##funcsuffix, numctrls, numtargs, false, false ) ) ) )
-
-/// @todo
-/// The above macro spaghetti is diabolical - update using C++ metaprogamming!
 
 
 
@@ -245,7 +222,7 @@ void accel_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliS
  */
 
 
-qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, SmallList qubits, SmallList qubitStates) {
+qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, SmallView qubits, SmallView qubitStates) {
 
     // we can never pack and swap buffers when there are no constrained qubit states, because we'd 
     // then fill the entire buffer andhave no room to receive the other node's buffer; caller would 
@@ -254,7 +231,7 @@ qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, SmallList qubits, SmallLis
         error_noCtrlsGivenToBufferPacker();
 
     // note qubits may incidentally be ctrls or targs; it doesn't matter
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( statevec_packAmpsIntoBuffer, qureg, qubits.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_packAmpsIntoBuffer, qureg, qubits.size() );
     
     // return the number of packed amps, for caller convenience
     return func(qureg, qubits, qubitStates);
@@ -275,19 +252,19 @@ qindex accel_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int 
  */
 
 
-void accel_statevec_anyCtrlSwap_subA(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2) {
+void accel_statevec_anyCtrlSwap_subA(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ1, int targ2) {
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlSwap_subA, qureg, ctrls.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_anyCtrlSwap_subA, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ1, targ2);
 }
-void accel_statevec_anyCtrlSwap_subB(Qureg qureg, SmallList ctrls, SmallList ctrlStates) {
+void accel_statevec_anyCtrlSwap_subB(Qureg qureg, SmallView ctrls, SmallView ctrlStates) {
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlSwap_subB, qureg, ctrls.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_anyCtrlSwap_subB, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates);
 }
-void accel_statevec_anyCtrlSwap_subC(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, int targState) {
+void accel_statevec_anyCtrlSwap_subC(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ, int targState) {
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlSwap_subC, qureg, ctrls.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_anyCtrlSwap_subC, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ, targState);
 }
 
@@ -298,28 +275,28 @@ void accel_statevec_anyCtrlSwap_subC(Qureg qureg, SmallList ctrls, SmallList ctr
  */
 
 
-void accel_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, CompMatr1 matr) {
+void accel_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ, CompMatr1 matr) {
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlOneTargDenseMatr_subA, qureg, ctrls.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_anyCtrlOneTargDenseMatr_subA, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ, matr);
 }
-void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, SmallList ctrls, SmallList ctrlStates, qcomp fac0, qcomp fac1) {
+void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, SmallView ctrls, SmallView ctrlStates, qcomp fac0, qcomp fac1) {
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlOneTargDenseMatr_subB, qureg, ctrls.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_anyCtrlOneTargDenseMatr_subB, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, fac0, fac1);
 }
 
 
-void accel_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2, CompMatr2 matr) {
+void accel_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ1, int targ2, CompMatr2 matr) {
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlTwoTargDenseMatr_sub, qureg, ctrls.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_anyCtrlTwoTargDenseMatr_sub, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ1, targ2, matr);
 }
 
 
-void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, CompMatr matr, bool conj, bool transp) {
+void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, SmallView ctrls, SmallView ctrlStates, SmallView targs, CompMatr matr, bool conj, bool transp) {
 
-    auto func = GET_CPU_OR_GPU_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( statevec_anyCtrlAnyTargDenseMatr_sub, qureg, ctrls.size(), targs.size(), conj, transp );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_TWO_PARAMS_TWO_BOOLS( func, statevec_anyCtrlAnyTargDenseMatr_sub, qureg, ctrls.size(), targs.size(), conj, transp );
     func(qureg, ctrls, ctrlStates, targs, matr);
 }
 
@@ -330,25 +307,25 @@ void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, SmallList ctrls, Sm
  */
 
 
-void accel_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, DiagMatr1 matr) {
+void accel_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ, DiagMatr1 matr) {
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlOneTargDiagMatr_sub, qureg, ctrls.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_anyCtrlOneTargDiagMatr_sub, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ, matr);
 }
 
 
-void accel_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2, DiagMatr2 matr) {
+void accel_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ1, int targ2, DiagMatr2 matr) {
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevec_anyCtrlTwoTargDiagMatr_sub, qureg, ctrls.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_anyCtrlTwoTargDiagMatr_sub, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ1, targ2, matr);
 }
 
 
-void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, DiagMatr matr, qcomp exponent, bool conj) {
+void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, SmallView ctrls, SmallView ctrlStates, SmallView targs, DiagMatr matr, qcomp exponent, bool conj) {
 
     bool hasPower = exponent != qcomp(1, 0);
 
-    auto func = GET_CPU_OR_GPU_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( statevec_anyCtrlAnyTargDiagMatr_sub, qureg, ctrls.size(), targs.size(), conj, hasPower );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_TWO_PARAMS_TWO_BOOLS( func, statevec_anyCtrlAnyTargDiagMatr_sub, qureg, ctrls.size(), targs.size(), conj, hasPower );
     func(qureg, ctrls, ctrlStates, targs, matr, exponent);
 }
 
@@ -521,24 +498,24 @@ void accel_densmatr_allTargDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qc
  */
 
 
-void accel_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, SmallList ctrls, SmallList states, SmallList x, SmallList y, SmallList z, qcomp f0, qcomp f1) {
+void accel_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, SmallView ctrls, SmallView states, SmallView x, SmallView y, SmallView z, qcomp f0, qcomp f1) {
 
     // only X and Y constitute target qubits (Z merely induces a phase)
     int numTargs = x.size() + y.size();
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( statevector_anyCtrlPauliTensorOrGadget_subA, qureg, ctrls.size(), numTargs );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_TWO_PARAMS( func, statevector_anyCtrlPauliTensorOrGadget_subA, qureg, ctrls.size(), numTargs );
     func(qureg, ctrls, states, x, y, z, f0, f1);
 }
-void accel_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, SmallList ctrls, SmallList states, SmallList x, SmallList y, SmallList z, qcomp f0, qcomp f1, qindex mask) {
+void accel_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, SmallView ctrls, SmallView states, SmallView x, SmallView y, SmallView z, qcomp f0, qcomp f1, qindex mask) {
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevector_anyCtrlPauliTensorOrGadget_subB, qureg, ctrls.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevector_anyCtrlPauliTensorOrGadget_subB, qureg, ctrls.size() );
     func(qureg, ctrls, states, x, y, z, f0, f1, mask);
 }
 
 
-void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, SmallList ctrls, SmallList states, SmallList targs, qcomp f0, qcomp f1) {
+void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, SmallView ctrls, SmallView states, SmallView targs, qcomp f0, qcomp f1) {
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_CTRLS( statevector_anyCtrlAnyTargZOrPhaseGadget_sub, qureg, ctrls.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevector_anyCtrlAnyTargZOrPhaseGadget_sub, qureg, ctrls.size() );
     func(qureg, ctrls, states, targs, f0, f1);
 }
 
@@ -549,10 +526,10 @@ void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, SmallList c
  */
 
 
-void accel_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs, vector<Qureg> inQuregs) {
+void accel_statevec_setQuregToWeightedSum_sub(Qureg outQureg, std::vector<qcomp> coeffs, std::vector<Qureg> inQuregs) {
 
     // consult outQureg's deployment since others are prior validated to match
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_QUREGS( statevec_setQuregToWeightedSum_sub, outQureg, inQuregs.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_setQuregToWeightedSum_sub, outQureg, inQuregs.size() );
     func(outQureg, coeffs, inQuregs);
 }
 
@@ -846,15 +823,12 @@ void accel_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob) {
  */
 
 
-void accel_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, SmallList targs, SmallList pairTargs) {
+void accel_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, SmallView targs, SmallView pairTargs) {
     assert_partialTraceQuregsAreIdenticallyDeployed(inQureg, outQureg);
 
-    auto cpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_TARGS( cpu_densmatr_partialTrace_sub, targs.size() );
-    auto gpuFunc = GET_FUNC_OPTIMISED_FOR_NUM_TARGS( gpu_densmatr_partialTrace_sub, targs.size() );
-
-    // inQureg == outQureg except for dimension, so use common backend
-    auto useFunc = (inQureg.isGpuAccelerated)? gpuFunc : cpuFunc;
-    useFunc(inQureg, outQureg, targs, pairTargs);
+    // inQureg == outQureg (except for dimension), so use common backend, informed by inQureg
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, densmatr_partialTrace_sub, inQureg, targs.size() );
+    func(inQureg, outQureg, targs, pairTargs);
 }
 
 
@@ -878,26 +852,26 @@ qreal accel_densmatr_calcTotalProb_sub(Qureg qureg) {
 }
 
 
-qreal accel_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallList qubits, SmallList outcomes) {
+qreal accel_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallView qubits, SmallView outcomes) {
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( statevec_calcProbOfMultiQubitOutcome_sub, qureg, qubits.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_calcProbOfMultiQubitOutcome_sub, qureg, qubits.size() );
     return func(qureg, qubits, outcomes);
 }
-qreal accel_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallList qubits, SmallList outcomes) {
+qreal accel_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallView qubits, SmallView outcomes) {
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( densmatr_calcProbOfMultiQubitOutcome_sub, qureg, qubits.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, densmatr_calcProbOfMultiQubitOutcome_sub, qureg, qubits.size() );
     return func(qureg, qubits, outcomes);
 }
 
 
-void accel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallList qubits) {
+void accel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallView qubits) {
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( statevec_calcProbsOfAllMultiQubitOutcomes_sub, qureg, qubits.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_calcProbsOfAllMultiQubitOutcomes_sub, qureg, qubits.size() );
     func(outProbs, qureg, qubits);
 }
-void accel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallList qubits) {
+void accel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallView qubits) {
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( densmatr_calcProbsOfAllMultiQubitOutcomes_sub, qureg, qubits.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, densmatr_calcProbsOfAllMultiQubitOutcomes_sub, qureg, qubits.size() );
     func(outProbs, qureg, qubits);
 }
 
@@ -983,13 +957,13 @@ qcomp accel_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi, bool co
  */
 
 
-qreal accel_statevec_calcExpecAnyTargZ_sub(Qureg qureg, SmallList targs) {
+qreal accel_statevec_calcExpecAnyTargZ_sub(Qureg qureg, SmallView targs) {
 
     return (qureg.isGpuAccelerated)?
         gpu_statevec_calcExpecAnyTargZ_sub(qureg, targs):
         cpu_statevec_calcExpecAnyTargZ_sub(qureg, targs);
 }
-qcomp accel_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, SmallList targs) {
+qcomp accel_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, SmallView targs) {
 
     return (qureg.isGpuAccelerated)?
         gpu_densmatr_calcExpecAnyTargZ_sub(qureg, targs):
@@ -997,19 +971,19 @@ qcomp accel_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, SmallList targs) {
 }
 
 
-qcomp accel_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallList x, SmallList y, SmallList z) {
+qcomp accel_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallView x, SmallView y, SmallView z) {
 
     return (qureg.isGpuAccelerated)?
         gpu_statevec_calcExpecPauliStr_subA(qureg, x, y, z):
         cpu_statevec_calcExpecPauliStr_subA(qureg, x, y, z);
 }
-qcomp accel_statevec_calcExpecPauliStr_subB(Qureg qureg, SmallList x, SmallList y, SmallList z) {
+qcomp accel_statevec_calcExpecPauliStr_subB(Qureg qureg, SmallView x, SmallView y, SmallView z) {
 
     return (qureg.isGpuAccelerated)?
         gpu_statevec_calcExpecPauliStr_subB(qureg, x, y, z):
         cpu_statevec_calcExpecPauliStr_subB(qureg, x, y, z);
 }
-qcomp accel_densmatr_calcExpecPauliStr_sub(Qureg qureg, SmallList x, SmallList y, SmallList z) {
+qcomp accel_densmatr_calcExpecPauliStr_sub(Qureg qureg, SmallView x, SmallView y, SmallView z) {
 
     return (qureg.isGpuAccelerated)?
         gpu_densmatr_calcExpecPauliStr_sub(qureg, x, y, z):
@@ -1111,14 +1085,14 @@ qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMa
  */
 
 
-void accel_statevec_multiQubitProjector_sub(Qureg qureg, SmallList qubits, SmallList outcomes, qreal prob) {
+void accel_statevec_multiQubitProjector_sub(Qureg qureg, SmallView qubits, SmallView outcomes, qreal prob) {
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( statevec_multiQubitProjector_sub, qureg, qubits.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_multiQubitProjector_sub, qureg, qubits.size() );
     func(qureg, qubits, outcomes, prob);
 }
-void accel_densmatr_multiQubitProjector_sub(Qureg qureg, SmallList qubits, SmallList outcomes, qreal prob) {
+void accel_densmatr_multiQubitProjector_sub(Qureg qureg, SmallView qubits, SmallView outcomes, qreal prob) {
 
-    auto func = GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_NUM_TARGS( densmatr_multiQubitProjector_sub, qureg, qubits.size() );
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, densmatr_multiQubitProjector_sub, qureg, qubits.size() );
     func(qureg, qubits, outcomes, prob);
 }
 

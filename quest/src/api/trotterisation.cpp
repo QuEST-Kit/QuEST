@@ -30,8 +30,8 @@ using std::vector;
  */
 
 void internal_applyFirstOrderTrotterRepetition(
-    Qureg qureg, SmallList& ketCtrls, SmallList& braCtrls,
-    SmallList& states, PauliStrSum sum, vector<qindex>& sumOrdering,
+    Qureg qureg, SmallView ketCtrls, SmallView braCtrls,
+    SmallView states, PauliStrSum sum, vector<qindex>& sumOrdering,
     qcomp angle, bool onlyLeftApply, bool reverse
 ) {
     // apply each sum term as a gadget, in forward or reverse order
@@ -63,8 +63,8 @@ void internal_applyFirstOrderTrotterRepetition(
 }
 
 void internal_applyHigherOrderTrotterRepetition(
-    Qureg qureg, SmallList& ketCtrls, SmallList& braCtrls,
-    SmallList& states, PauliStrSum sum, vector<qindex>& sumOrdering, 
+    Qureg qureg, SmallView ketCtrls, SmallView braCtrls,
+    SmallView states, PauliStrSum sum, vector<qindex>& sumOrdering, 
     qcomp angle, int order, bool onlyLeftApply
 ) {
     if (order == 1) {

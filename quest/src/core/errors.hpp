@@ -113,8 +113,6 @@ void assert_receiverCanFitSendersEntireElems(Qureg receiver, FullStateDiagMatr s
  * LOCALISER ERRORS
  */
 
-void error_localiserNumCtrlStatesInconsistentWithNumCtrls();
-
 void error_localiserGivenPauliTensorOrGadgetWithoutXOrY();
 
 void error_localiserPassedStateVecToChannelComCheck();
@@ -127,6 +125,8 @@ void error_localiserGivenPauliStrWithoutXorY();
 
 void error_localiserGivenNonUnityGlobalFactorToZTensor();
 
+void error_calcFidStateVecDistribWhileDensMatrLocal();
+
 void assert_localiserSuccessfullyAllocatedTempMemory(qcomp* ptr, bool isGpu);
 
 void assert_localiserGivenStateVec(Qureg qureg);
@@ -135,7 +135,7 @@ void assert_localiserGivenDensMatr(Qureg qureg);
 
 void assert_localiserPartialTraceGivenCompatibleQuregs(Qureg inQureg, Qureg outQureg, int numTargs);
 
-void error_calcFidStateVecDistribWhileDensMatrLocal();
+void assert_localiserListLengthsAgree(size_t length1, size_t length2);
 
 void assert_localiserDistribQuregSpooferGivenValidQuregs(Qureg local, Qureg distrib);
 

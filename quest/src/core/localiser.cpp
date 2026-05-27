@@ -45,31 +45,7 @@ using std::tuple;
  */
 
 
-void assertValidCtrlStates(SmallList ctrls, SmallList ctrlStates) {
-
-    // providing no control states is always valid (to invoke default all-on-1)
-    if (ctrlStates.empty())
-        return;
-
-    // otherwise a state must be explicitly given for each ctrl
-    if (ctrlStates.size() != ctrls.size())
-        error_localiserNumCtrlStatesInconsistentWithNumCtrls();
-}
-
-
-void setDefaultCtrlStates(SmallList ctrls, SmallList &states) {
-
-    // no states necessary if there are no control qubits
-    if (ctrls.empty())
-        return;
-
-    // default ctrl state is all-1
-    if (states.empty())
-        states.assign(ctrls.size(), 1);
-}
-
-
-bool doesGateRequireComm(Qureg qureg, SmallList targs) {
+bool doesGateRequireComm(Qureg qureg, SmallView targs) {
 
     // non-distributed quregs never communicate (duh)
     if (!qureg.isDistributed)
@@ -85,7 +61,7 @@ bool doesGateRequireComm(Qureg qureg, int targ) {
 }
 
 
-bool doesChannelRequireComm(Qureg qureg, SmallList ketQubits) {
+bool doesChannelRequireComm(Qureg qureg, SmallView ketQubits) {
     if (!qureg.isDensityMatrix)
         error_localiserPassedStateVecToChannelComCheck();
 
@@ -101,7 +77,7 @@ bool doesChannelRequireComm(Qureg qureg, int ketQubit) {
 }
 
 
-bool doAnyLocalStatesHaveQubitValues(Qureg qureg, SmallList qubits, SmallList states) {
+bool doAnyLocalStatesHaveQubitValues(Qureg qureg, SmallView qubits, SmallView states) {
 
     // this answers the generic question of "do any of the given qubits lie in the
     // prefix substate with node-fixed values inconsistent with the given states?"
@@ -127,25 +103,23 @@ bool doAnyLocalStatesHaveQubitValues(Qureg qureg, SmallList qubits, SmallList st
 }
 
 
-void removePrefixQubitsAndStates(Qureg qureg, SmallList &qubits, SmallList &states) {
+tuple<SmallList,SmallList> getSuffixQubitsAndStates(Qureg qureg, SmallView qubits, SmallView states) {
 
-    int oldLength = qubits.size();
-    int newLength = 0;
+    SmallList suffixQubits = list_getEmptySmallList();
+    SmallList suffixStates = list_getEmptySmallList();
 
-    for (int i=0; i<oldLength; i++) {
+    for (size_t i=0; i<qubits.size(); i++) {
         if (util_isQubitInSuffix(qubits[i], qureg)) {
-            qubits[newLength] = qubits[i];
-            states[newLength] = states[i];
-            newLength++;
+            suffixQubits.push_back(qubits[i]);
+            suffixStates.push_back(states[i]);
         }
     }
 
-    qubits.resize(newLength);
-    states.resize(newLength);
+    return {suffixQubits, suffixStates};
 }
 
 
-auto getCtrlsAndTargsSwappedToMinSuffix(Qureg qureg, SmallList ctrls, SmallList targs) {
+auto getCtrlsAndTargsSwappedToMinSuffix(Qureg qureg, SmallView ctrls, SmallView targs) {
 
     // this function is called by multi-target dense matrix, and is used to find
     // targets in the prefix substate and where they can be swapped into the suffix
@@ -157,19 +131,25 @@ auto getCtrlsAndTargsSwappedToMinSuffix(Qureg qureg, SmallList ctrls, SmallList 
     if (!doesGateRequireComm(qureg, targs))
         return tuple{ctrls, targs};
 
+    // otherwise, prepare lists to modify
+    SmallList outCtrls = ctrls;
+    SmallList outTargs = targs;
+    const auto numCtrls = ctrls.size();
+    const auto numTargs = targs.size();
+
     // prepare masks to avoid quadratic nested looping
-    qindex targMask = getBitMask(targs.data(), targs.size());
-    qindex ctrlMask = getBitMask(ctrls.data(), ctrls.size());
+    qindex targMask = util_getBitMask(outTargs);
+    qindex ctrlMask = util_getBitMask(outCtrls);
     int minNonTarg = getIndOfNextRightmostZeroBit(targMask, -1);
 
     // prepare map from control qubit to its index in ctrls list (i.e. inverse of ctrls)
     std::unordered_map<int,int> ctrlInds;
-    for (size_t i=0; i<ctrls.size(); i++)
-        ctrlInds[ctrls[i]] = i;
+    for (size_t i=0; i<numCtrls; i++)
+        ctrlInds[outCtrls[i]] = i;
 
-    // check every target in arbitrary order, modifying our copies of targs and ctrls as we go
-    for (size_t i=0; i<targs.size(); i++) {
-        int targ = targs[i];
+    // check every target in arbitrary order, modifying outTargs and outCtrls as we go
+    for (size_t i=0; i<numTargs; i++) {
+        int targ = outTargs[i];
 
         // consider only targs in the prefix substate
         if (util_isQubitInSuffix(targ, qureg))
@@ -180,7 +160,7 @@ auto getCtrlsAndTargsSwappedToMinSuffix(Qureg qureg, SmallList ctrls, SmallList 
 
             // find and swap that ctrl with the old targ
             int ctrlInd = ctrlInds[minNonTarg];
-            ctrls[ctrlInd] = targ;
+            outCtrls[ctrlInd] = targ;
 
             // update our ctrl trackers
             ctrlInds[targ] = ctrlInd;
@@ -189,7 +169,7 @@ auto getCtrlsAndTargsSwappedToMinSuffix(Qureg qureg, SmallList ctrls, SmallList 
         }
 
         // swap the prefix targ with the smallest available suffix targ
-        targs[i] = minNonTarg;
+        outTargs[i] = minNonTarg;
 
         // update our targ trackers
         targMask = flipTwoBits(targMask, targ, minNonTarg);
@@ -197,11 +177,11 @@ auto getCtrlsAndTargsSwappedToMinSuffix(Qureg qureg, SmallList ctrls, SmallList 
     }
 
     // the ordering in ctrls relative to the caller's ctrlStates is unchanged
-    return tuple{ctrls, targs};
+    return tuple{outCtrls, outTargs};
 }
 
 
-auto getQubitsSwappedToMaxSuffix(Qureg qureg, SmallList qubits) {
+auto getQubitsSwappedToMaxSuffix(Qureg qureg, SmallView qubits) {
 
     // this function is called by any-targ partial trace, and is used to find
     // targets in the prefix substate and where they can be swapped into the suffix
@@ -214,20 +194,23 @@ auto getQubitsSwappedToMaxSuffix(Qureg qureg, SmallList qubits) {
     if (!doesGateRequireComm(qureg, qubits))
         return qubits;
 
+    // otherwise, prepare list to modify
+    SmallList outQubits = qubits;
+
     // prepare mask to avoid quadratic nested looping
-    qindex qubitMask = getBitMask(qubits.data(), qubits.size());
+    qindex qubitMask = util_getBitMask(outQubits);
     int maxFreeSuffixQubit = getIndOfNextLeftmostZeroBit(qubitMask, qureg.logNumAmpsPerNode);
 
     // enumerate qubits backward, modifying our copy of qubits as we go
-    for (size_t i=qubits.size(); i-- != 0; ) {
-        int qubit = qubits[i];
+    for (size_t i=outQubits.size(); i-- != 0; ) {
+        int qubit = outQubits[i];
 
         // consider only qubits in the prefix substate
         if (util_isQubitInSuffix(qubit, qureg))
             continue;
 
         // swap the prefix qubit into the largest available suffix position
-        qubits[i] = maxFreeSuffixQubit;
+        outQubits[i] = maxFreeSuffixQubit;
 
         // update trackers
         qubitMask = flipTwoBits(qubitMask, qubit, maxFreeSuffixQubit);
@@ -235,20 +218,21 @@ auto getQubitsSwappedToMaxSuffix(Qureg qureg, SmallList qubits) {
     }
 
     // return our modified copy
-    return qubits;
+    return outQubits;
 }
 
 
-auto getNonSwappedCtrlsAndStates(SmallList oldCtrls, SmallList oldStates, SmallList newCtrls) {
+auto getNonSwappedCtrlsAndStates(SmallView oldCtrls, SmallView oldStates, SmallView newCtrls) {
 
     auto sameCtrls = list_getEmptySmallList();
     auto sameStates = list_getEmptySmallList();
 
-    for (size_t i=0; i<oldCtrls.size(); i++)
+    for (size_t i=0; i<oldCtrls.size(); i++) {
         if (oldCtrls[i] == newCtrls[i]) {
             sameCtrls .push_back(oldCtrls[i]);
             sameStates.push_back(oldStates[i]);
         }
+    }
 
     return tuple{sameCtrls, sameStates};
 }
@@ -447,7 +431,7 @@ void freeSpoofedLocalStateVec(Qureg spoof, bool wasMemAlloc) {
  */
 
 
-void exchangeAmpsToBuffersWhereQubitsAreInStates(Qureg qureg, int pairRank, SmallList qubits, SmallList states) {
+void exchangeAmpsToBuffersWhereQubitsAreInStates(Qureg qureg, int pairRank, SmallView qubits, SmallView states) {
 
     // when there are no constraining qubits, all amps are exchanged; there is no need to pack the buffer.
     // this is typically triggered when a communicating localiser function is given no control qubits
@@ -840,7 +824,7 @@ void localiser_densmatr_initMixtureOfUniformlyRandomPureStates(Qureg qureg, qind
  */
 
 
-void anyCtrlSwapBetweenPrefixAndPrefix(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2) {
+void anyCtrlSwapBetweenPrefixAndPrefix(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ1, int targ2) {
 
     int prefInd1 = util_getPrefixInd(targ1, qureg);
     int prefInd2 = util_getPrefixInd(targ2, qureg);
@@ -858,7 +842,7 @@ void anyCtrlSwapBetweenPrefixAndPrefix(Qureg qureg, SmallList ctrls, SmallList c
 }
 
 
-void anyCtrlSwapBetweenPrefixAndSuffix(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int suffixTarg, int prefixTarg) {
+void anyCtrlSwapBetweenPrefixAndSuffix(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int suffixTarg, int prefixTarg) {
 
     // every node exchanges at most half its amps; those where suffixTarg bit differs from rank's fixed prefixTarg bit
     int pairRank = util_getRankWithQubitFlipped(prefixTarg, qureg);
@@ -876,10 +860,9 @@ void anyCtrlSwapBetweenPrefixAndSuffix(Qureg qureg, SmallList ctrls, SmallList c
 }
 
 
-void localiser_statevec_anyCtrlSwap(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2) {
-    assertValidCtrlStates(ctrls, ctrlStates);
-    setDefaultCtrlStates(ctrls, ctrlStates);
-
+void localiser_statevec_anyCtrlSwap(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ1, int targ2) {
+    assert_localiserListLengthsAgree(ctrls.size(), ctrlStates.size());
+    
     // ensure targ2 > targ1
     if (targ1 > targ2)
         std::swap(targ1, targ2);
@@ -889,18 +872,18 @@ void localiser_statevec_anyCtrlSwap(Qureg qureg, SmallList ctrls, SmallList ctrl
         return;
 
     // retain only suffix control qubits as relevant to communication and local amp modification
-    removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
+    auto [suffixCtrls, suffixCtrlStates] = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
 
     // determine necessary communication
     bool comm1 = doesGateRequireComm(qureg, targ1);
     bool comm2 = doesGateRequireComm(qureg, targ2);
 
     if (comm2 && comm1)
-        anyCtrlSwapBetweenPrefixAndPrefix(qureg, ctrls, ctrlStates, targ1, targ2);
+        anyCtrlSwapBetweenPrefixAndPrefix(qureg, suffixCtrls, suffixCtrlStates, targ1, targ2);
     if (comm2 && !comm1)
-        anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, targ1, targ2);
+        anyCtrlSwapBetweenPrefixAndSuffix(qureg, suffixCtrls, suffixCtrlStates, targ1, targ2);
     if (!comm2 && !comm1)
-        accel_statevec_anyCtrlSwap_subA(qureg, ctrls, ctrlStates, targ1, targ2);
+        accel_statevec_anyCtrlSwap_subA(qureg, suffixCtrls, suffixCtrlStates, targ1, targ2);
 }
 
 
@@ -910,7 +893,7 @@ void localiser_statevec_anyCtrlSwap(Qureg qureg, SmallList ctrls, SmallList ctrl
  */
 
 
-void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targsA, SmallList targsB) {
+void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, SmallView ctrls, SmallView ctrlStates, SmallView targsA, SmallView targsB) {
 
     // this is an internal function called by the below routines which require
     // performing a sequence of SWAPs to reorder qubits, or move them into suffix.
@@ -945,7 +928,7 @@ void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, SmallList ctrls, SmallL
  */
 
 
-void anyCtrlOneTargDenseMatrOnPrefix(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, CompMatr1 matr) {
+void anyCtrlOneTargDenseMatrOnPrefix(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ, CompMatr1 matr) {
   
     int pairRank = util_getRankWithQubitFlipped(targ, qureg);
     exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank, ctrls, ctrlStates);
@@ -960,16 +943,15 @@ void anyCtrlOneTargDenseMatrOnPrefix(Qureg qureg, SmallList ctrls, SmallList ctr
 }
 
 
-void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, CompMatr1 matr, bool conj, bool transp) {
-    assertValidCtrlStates(ctrls, ctrlStates);
-    setDefaultCtrlStates(ctrls, ctrlStates);
+void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ, CompMatr1 matr, bool conj, bool transp) {
+    assert_localiserListLengthsAgree(ctrls.size(), ctrlStates.size());
 
     // node has nothing to do if all local amps violate control condition
     if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
         return;
 
     // retain only suffix control qubits as relevant to communication and local amp modification
-    removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
+    auto [suffixCtrls, suffixCtrlStates] = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
 
     // only one of conj or transp will be true (but logic is correct if both were true)
     if (conj) 
@@ -979,8 +961,8 @@ void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, SmallList ctrls, Sm
 
     // perform embarrassingly parallel routine or communication-inducing swaps
     doesGateRequireComm(qureg, targ)?
-        anyCtrlOneTargDenseMatrOnPrefix(qureg, ctrls, ctrlStates, targ, matr) :
-        accel_statevec_anyCtrlOneTargDenseMatr_subA(qureg, ctrls, ctrlStates, targ, matr);
+        anyCtrlOneTargDenseMatrOnPrefix(qureg, suffixCtrls, suffixCtrlStates, targ, matr) :
+        accel_statevec_anyCtrlOneTargDenseMatr_subA(qureg, suffixCtrls, suffixCtrlStates, targ, matr);
 }
 
 
@@ -993,21 +975,21 @@ void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, SmallList ctrls, Sm
  */
 
 
-void anyCtrlTwoOrAnyTargDenseMatrOnSuffix(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, CompMatr2 matr, bool conj, bool transp) {
+void anyCtrlTwoOrAnyTargDenseMatrOnSuffix(Qureg qureg, SmallView ctrls, SmallView ctrlStates, SmallView targs, CompMatr2 matr, bool conj, bool transp) {
     if (conj) 
         matr = util_getConj(matr);
     if (transp)
         matr = util_getTranspose(matr);
     accel_statevec_anyCtrlTwoTargDenseMatr_sub(qureg, ctrls, ctrlStates, targs[0], targs[1], matr);
 }
-void anyCtrlTwoOrAnyTargDenseMatrOnSuffix(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, CompMatr  matr, bool conj, bool transp) {
+void anyCtrlTwoOrAnyTargDenseMatrOnSuffix(Qureg qureg, SmallView ctrls, SmallView ctrlStates, SmallView targs, CompMatr  matr, bool conj, bool transp) {
     accel_statevec_anyCtrlAnyTargDenseMatr_sub(qureg, ctrls, ctrlStates, targs, matr, conj, transp);
 }
 
 
 // T can be CompMatr2 or CompMatr
 template <typename T>
-void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, T matr, bool conj, bool transp) {
+void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, SmallView ctrls, SmallView ctrlStates, SmallView targs, T matr, bool conj, bool transp) {
 
     // node has nothing to do if all local amps violate control condition
     if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
@@ -1017,8 +999,8 @@ void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, SmallList ctrls, SmallList ctrlSt
     if (!doesGateRequireComm(qureg, targs)) {
 
         // using only the suffix ctrls
-        removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
-        anyCtrlTwoOrAnyTargDenseMatrOnSuffix(qureg, ctrls, ctrlStates, targs, matr, conj, transp);
+        auto [suffixCtrls, suffixCtrlStates] = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
+        anyCtrlTwoOrAnyTargDenseMatrOnSuffix(qureg, suffixCtrls, suffixCtrlStates, targs, matr, conj, transp);
         return;
     }
 
@@ -1044,8 +1026,8 @@ void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, SmallList ctrls, SmallList ctrlSt
     if (doAnyLocalStatesHaveQubitValues(qureg, newCtrls, ctrlStates)) {
 
         // perform embarrassingly parallel simulation using only the new suffix ctrls
-        removePrefixQubitsAndStates(qureg, newCtrls, ctrlStates);
-        anyCtrlTwoOrAnyTargDenseMatrOnSuffix(qureg, newCtrls, ctrlStates, newTargs, matr, conj, transp);
+        auto [newSuffixCtrls, suffixCtrlStates] = getSuffixQubitsAndStates(qureg, newCtrls, ctrlStates);
+        anyCtrlTwoOrAnyTargDenseMatrOnSuffix(qureg, newSuffixCtrls, suffixCtrlStates, newTargs, matr, conj, transp);
     }
 
     // undo swaps, again invoking communication
@@ -1053,17 +1035,15 @@ void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, SmallList ctrls, SmallList ctrlSt
 }
 
 
-void localiser_statevec_anyCtrlTwoTargDenseMatr(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2, CompMatr2 matr, bool conj, bool transp) {
-    assertValidCtrlStates(ctrls, ctrlStates);
-    setDefaultCtrlStates(ctrls, ctrlStates);
+void localiser_statevec_anyCtrlTwoTargDenseMatr(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ1, int targ2, CompMatr2 matr, bool conj, bool transp) {
+    assert_localiserListLengthsAgree(ctrls.size(), ctrlStates.size());
 
     anyCtrlTwoOrAnyTargDenseMatr(qureg, ctrls, ctrlStates, list_getSmallList({targ1,targ2}), matr, conj, transp);
 }
 
 
-void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, CompMatr matr, bool conj, bool transp) {
-    assertValidCtrlStates(ctrls, ctrlStates);
-    setDefaultCtrlStates(ctrls, ctrlStates);
+void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, SmallView ctrls, SmallView ctrlStates, SmallView targs, CompMatr matr, bool conj, bool transp) {
+    assert_localiserListLengthsAgree(ctrls.size(), ctrlStates.size());
 
     // despite our use of compile-time templating, the bespoke one-targ routines are still faster 
     // than this any-targ routine when given a single target, because they can leverage a bespoke
@@ -1099,9 +1079,8 @@ void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, SmallList ctrls, Sm
  */
 
 
-void localiser_statevec_anyCtrlOneTargDiagMatr(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, DiagMatr1 matr, bool conj) {
-    assertValidCtrlStates(ctrls, ctrlStates);
-    setDefaultCtrlStates(ctrls, ctrlStates);
+void localiser_statevec_anyCtrlOneTargDiagMatr(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ, DiagMatr1 matr, bool conj) {
+    assert_localiserListLengthsAgree(ctrls.size(), ctrlStates.size());
 
     // node has nothing to do if all local amps violate control condition
     if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
@@ -1110,15 +1089,14 @@ void localiser_statevec_anyCtrlOneTargDiagMatr(Qureg qureg, SmallList ctrls, Sma
     if (conj)
         matr = util_getConj(matr);
 
-    // retain only suffix control qubits, as relevant to local amp modification
-    removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
-    accel_statevec_anyCtrlOneTargDiagMatr_sub(qureg, ctrls, ctrlStates, targ, matr);
+    // only suffix control qubits are relevant to local amp modification
+    auto [suffixCtrls, suffixCtrlStates] = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
+    accel_statevec_anyCtrlOneTargDiagMatr_sub(qureg, suffixCtrls, suffixCtrlStates, targ, matr);
 }
 
 
-void localiser_statevec_anyCtrlTwoTargDiagMatr(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2, DiagMatr2 matr, bool conj) {
-    assertValidCtrlStates(ctrls, ctrlStates);
-    setDefaultCtrlStates(ctrls, ctrlStates);
+void localiser_statevec_anyCtrlTwoTargDiagMatr(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ1, int targ2, DiagMatr2 matr, bool conj) {
+    assert_localiserListLengthsAgree(ctrls.size(), ctrlStates.size());
 
     // node has nothing to do if all local amps violate control condition
     if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
@@ -1127,23 +1105,22 @@ void localiser_statevec_anyCtrlTwoTargDiagMatr(Qureg qureg, SmallList ctrls, Sma
     if (conj)
         matr = util_getConj(matr);
 
-    // retain only suffix control qubits, as relevant to local amp modification
-    removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
-    accel_statevec_anyCtrlTwoTargDiagMatr_sub(qureg, ctrls, ctrlStates, targ1, targ2, matr);
+    // only suffix control qubits are relevant to local amp modification
+    auto [suffixCtrls, suffixCtrlStates] = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
+    accel_statevec_anyCtrlTwoTargDiagMatr_sub(qureg, suffixCtrls, suffixCtrlStates, targ1, targ2, matr);
 }
 
 
-void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, DiagMatr matr, qcomp exponent, bool conj) {
-    assertValidCtrlStates(ctrls, ctrlStates);
-    setDefaultCtrlStates(ctrls, ctrlStates);
+void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, SmallView ctrls, SmallView ctrlStates, SmallView targs, DiagMatr matr, qcomp exponent, bool conj) {
+    assert_localiserListLengthsAgree(ctrls.size(), ctrlStates.size());
 
     // node has nothing to do if all local amps violate control condition
     if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
         return;
 
-    // retain only suffix control qubits, as relevant to local amp modification
-    removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
-    accel_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, ctrlStates, targs, matr, exponent, conj);
+    // only suffix control qubits are relevant to local amp modification
+    auto [suffixCtrls, suffixCtrlStates] = getSuffixQubitsAndStates(qureg, ctrls, ctrlStates);
+    accel_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, suffixCtrls, suffixCtrlStates, targs, matr, exponent, conj);
 }
 
 
@@ -1227,7 +1204,7 @@ void localiser_densmatr_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qco
 
 
 template <class T>
-void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, T matr, bool conj) {
+void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg qureg, SmallView ctrls, SmallView ctrlStates, SmallView targs, T matr, bool conj) {
 
     // this function is never invoked by operations whch require transposing matr
     bool transp = false;
@@ -1245,12 +1222,12 @@ void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg qureg, SmallList ctrls, Smal
     if constexpr (util_isCompMatr2<T>()) localiser_statevec_anyCtrlTwoTargDenseMatr(qureg, ctrls, ctrlStates, targs[0], targs[1], matr, conj, transp);
 }
 
-template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, SmallList, SmallList, SmallList, DiagMatr,  bool);
-template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, SmallList, SmallList, SmallList, DiagMatr1, bool);
-template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, SmallList, SmallList, SmallList, DiagMatr2, bool);
-template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, SmallList, SmallList, SmallList, CompMatr,  bool);
-template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, SmallList, SmallList, SmallList, CompMatr1, bool);
-template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, SmallList, SmallList, SmallList, CompMatr2, bool);
+template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, SmallView, SmallView, SmallView, DiagMatr,  bool);
+template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, SmallView, SmallView, SmallView, DiagMatr1, bool);
+template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, SmallView, SmallView, SmallView, DiagMatr2, bool);
+template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, SmallView, SmallView, SmallView, CompMatr,  bool);
+template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, SmallView, SmallView, SmallView, CompMatr1, bool);
+template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, SmallView, SmallView, SmallView, CompMatr2, bool);
 
 
 
@@ -1259,16 +1236,14 @@ template void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg, SmallList, SmallLi
  */
 
 
-void anyCtrlZTensorOrGadget(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, bool isGadget, qcomp phase) {     
-    assertValidCtrlStates(ctrls, ctrlStates);
-    setDefaultCtrlStates(ctrls, ctrlStates);
+void anyCtrlZTensorOrGadget(Qureg qureg, SmallView allCtrls, SmallView allCtrlStates, SmallView targs, bool isGadget, qcomp phase) {
 
     // node has nothing to do if all local amps violate control condition
-    if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
+    if (!doAnyLocalStatesHaveQubitValues(qureg, allCtrls, allCtrlStates))
         return;
 
     // retain only suffix control qubits, as relevant to local amp modification
-    removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
+    auto [suffixCtrls, suffixCtrlStates] = getSuffixQubitsAndStates(qureg, allCtrls, allCtrlStates);
 
     // prefixZ merely applies a node-wide factor to fac0 and fac1
     auto [prefixZ, suffixZ] = util_getPrefixAndSuffixQubits(targs, qureg);
@@ -1279,24 +1254,22 @@ void anyCtrlZTensorOrGadget(Qureg qureg, SmallList ctrls, SmallList ctrlStates, 
     qcomp fac1 = (isGadget)? std::exp(- phase * sign * 1_i) : -1 * sign;
 
     // simulation is always embarrassingly parallel
-    accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(qureg, ctrls, ctrlStates, suffixZ, fac0, fac1);
+    accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(qureg, suffixCtrls, suffixCtrlStates, suffixZ, fac0, fac1);
 }
 
 
-void anyCtrlPauliTensorOrGadget(Qureg qureg, SmallList ctrls, SmallList ctrlStates, PauliStr str, qcomp ampFac, qcomp pairAmpFac) {
-    assertValidCtrlStates(ctrls, ctrlStates);
-    setDefaultCtrlStates(ctrls, ctrlStates);
+void anyCtrlPauliTensorOrGadget(Qureg qureg, SmallView allCtrls, SmallView allCtrlStates, PauliStr str, qcomp ampFac, qcomp pairAmpFac) {
 
     // this routine is invalid for str=ZI
     if (!paulis_containsXOrY(str))
         error_localiserGivenPauliStrWithoutXorY();
 
     // node has nothing to do if all local amps violate control condition
-    if (!doAnyLocalStatesHaveQubitValues(qureg, ctrls, ctrlStates))
+    if (!doAnyLocalStatesHaveQubitValues(qureg, allCtrls, allCtrlStates))
         return;
 
     // retain only suffix control qubits, as relevant to local amp modification
-    removePrefixQubitsAndStates(qureg, ctrls, ctrlStates);
+    auto [suffixCtrls, suffixCtrlStates] = getSuffixQubitsAndStates(qureg, allCtrls, allCtrlStates);
 
     // partition non-Id Paulis into prefix and suffix, since...
     // - prefix X,Y determine communication, because they apply bit-not to rank
@@ -1312,26 +1285,29 @@ void anyCtrlPauliTensorOrGadget(Qureg qureg, SmallList ctrls, SmallList ctrlStat
 
     // embarrassingly parallel when there is only Z's in prefix
     if (prefixX.empty() && prefixY.empty()) {
-        accel_statevector_anyCtrlPauliTensorOrGadget_subA(qureg, ctrls, ctrlStates, suffixX, suffixY, suffixZ, ampFac, pairAmpFac);
+        accel_statevector_anyCtrlPauliTensorOrGadget_subA(
+            qureg, suffixCtrls, suffixCtrlStates, suffixX, suffixY, suffixZ, ampFac, pairAmpFac);
         return;
     }
 
     // otherwise, we pair-wise communicate amps satisfying ctrls
     auto prefixXY = util_getConcatenated(prefixX, prefixY);
     int pairRank = util_getRankWithQubitsFlipped(prefixXY, qureg);
-    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank, ctrls, ctrlStates);
+    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank, suffixCtrls, suffixCtrlStates);
 
     // ctrls reduce communicated amps, so received buffer is compacted;
     // we must ergo prepare a no-ctrl XY mask for accessing buffer elems
-    auto sortedCtrls = util_getSorted(ctrls);
+    auto sortedCtrls = util_getSorted(suffixCtrls);
     auto suffixMaskXY = util_getBitMask(util_getConcatenated(suffixX, suffixY));
     auto bufferMaskXY = removeBits(suffixMaskXY, sortedCtrls.data(), sortedCtrls.size());
 
-    accel_statevector_anyCtrlPauliTensorOrGadget_subB(qureg, ctrls, ctrlStates, suffixX, suffixY, suffixZ, ampFac, pairAmpFac, bufferMaskXY);
+    accel_statevector_anyCtrlPauliTensorOrGadget_subB(
+        qureg, suffixCtrls, suffixCtrlStates, suffixX, suffixY, suffixZ, ampFac, pairAmpFac, bufferMaskXY);
 }
 
 
-void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, SmallList ctrls, SmallList ctrlStates, PauliStr str, qcomp factor) {
+void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, SmallView ctrls, SmallView ctrlStates, PauliStr str, qcomp factor) {
+    assert_localiserListLengthsAgree(ctrls.size(), ctrlStates.size());
 
     // this function accepts a global factor, so that density matrices can effect conj(pauli)
 
@@ -1354,14 +1330,16 @@ void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, SmallList ctrls, SmallLi
 }
 
 
-void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, qcomp phase) {
+void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, SmallView ctrls, SmallView ctrlStates, SmallView targs, qcomp phase) {
+    assert_localiserListLengthsAgree(ctrls.size(), ctrlStates.size());
 
     bool isGadget = true;
     anyCtrlZTensorOrGadget(qureg, ctrls, ctrlStates, targs, isGadget, phase);
 }
 
 
-void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, SmallList ctrls, SmallList ctrlStates, PauliStr str, qcomp phase) {
+void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, SmallView ctrls, SmallView ctrlStates, PauliStr str, qcomp phase) {
+    assert_localiserListLengthsAgree(ctrls.size(), ctrlStates.size());
 
     // when str=IZ, we must use the above bespoke algorithm
     if (!paulis_containsXOrY(str)) {
@@ -1694,7 +1672,7 @@ CompMatr getSpoofedCompMatrFromSuperOp(SuperOp op) {
 }
 
 
-void localiser_densmatr_superoperator(Qureg qureg, SuperOp op, SmallList ketTargs) {
+void localiser_densmatr_superoperator(Qureg qureg, SuperOp op, SmallView ketTargs) {
     assert_localiserGivenDensMatr(qureg);
 
     // effect the superoperator as a dense matrix on the ket + bra qubits
@@ -1708,7 +1686,7 @@ void localiser_densmatr_superoperator(Qureg qureg, SuperOp op, SmallList ketTarg
 }
 
 
-void localiser_densmatr_krausMap(Qureg qureg, KrausMap map, SmallList ketTargs) {
+void localiser_densmatr_krausMap(Qureg qureg, KrausMap map, SmallView ketTargs) {
     
     // Kraus map is simulated through its existing superoperator
     localiser_densmatr_superoperator(qureg, map.superop, ketTargs);
@@ -1721,7 +1699,7 @@ void localiser_densmatr_krausMap(Qureg qureg, KrausMap map, SmallList ketTargs) 
  */
 
 
-auto getNonTracedQubitOrder(Qureg qureg, SmallList originalTargs, SmallList revisedTargs) {
+auto getNonTracedQubitOrder(Qureg qureg, SmallView originalTargs, SmallView revisedTargs) {
 
     // get a list of all the qureg's qubits when treated as a statevector
     auto allQubits = util_getRange(2 * qureg.numQubits);
@@ -1758,7 +1736,7 @@ auto getNonTracedQubitOrder(Qureg qureg, SmallList originalTargs, SmallList revi
 }
 
 
-void reorderReducedQureg(Qureg inQureg, Qureg outQureg, SmallList allTargs, SmallList suffixTargs) {
+void reorderReducedQureg(Qureg inQureg, Qureg outQureg, SmallView allTargs, SmallView suffixTargs) {
 
     /// @todo 
     /// this function performs a sequence of SWAPs which are NOT necessarily upon disjoint qubits,
@@ -1789,14 +1767,14 @@ void reorderReducedQureg(Qureg inQureg, Qureg outQureg, SmallList allTargs, Smal
 }
 
 
-void partialTraceOnSuffix(Qureg inQureg, Qureg outQureg, SmallList ketTargs) {
+void partialTraceOnSuffix(Qureg inQureg, Qureg outQureg, SmallView ketTargs) {
 
     auto braTargs = util_getBraQubits(ketTargs, inQureg);
     accel_densmatr_partialTrace_sub(inQureg, outQureg, ketTargs, braTargs);
 }
 
 
-void partialTraceOnPrefix(Qureg inQureg, Qureg outQureg, SmallList ketTargs) {
+void partialTraceOnPrefix(Qureg inQureg, Qureg outQureg, SmallView ketTargs) {
 
     // all ketTargs (pre-sorted) are in the suffix, but one or more braTargs are in the prefix
     auto braTargs = util_getBraQubits(ketTargs, inQureg); // sorted
@@ -1821,7 +1799,7 @@ void partialTraceOnPrefix(Qureg inQureg, Qureg outQureg, SmallList ketTargs) {
 }
 
 
-void localiser_densmatr_partialTrace(Qureg inQureg, Qureg outQureg, SmallList targs) {
+void localiser_densmatr_partialTrace(Qureg inQureg, Qureg outQureg, SmallView targs) {
     assert_localiserPartialTraceGivenCompatibleQuregs(inQureg, outQureg, targs.size());
 
     // this function requires inQureg and outQureg are both or neither distributed;
@@ -1874,7 +1852,7 @@ qreal localiser_densmatr_calcTotalProb(Qureg qureg) {
 }
 
 
-qreal localiser_statevec_calcProbOfMultiQubitOutcome(Qureg qureg, SmallList qubits, SmallList outcomes) {
+qreal localiser_statevec_calcProbOfMultiQubitOutcome(Qureg qureg, SmallView qubits, SmallView outcomes) {
     assert_localiserGivenStateVec(qureg);
 
     qreal prob = 0;
@@ -1883,8 +1861,8 @@ qreal localiser_statevec_calcProbOfMultiQubitOutcome(Qureg qureg, SmallList qubi
     if (doAnyLocalStatesHaveQubitValues(qureg, qubits, outcomes)) {
 
         // and do so using only the suffix qubits/outcomes
-        removePrefixQubitsAndStates(qureg, qubits, outcomes);
-        prob += accel_statevec_calcProbOfMultiQubitOutcome_sub(qureg, qubits, outcomes);
+        auto [suffixQubits, suffixOutcomes] = getSuffixQubitsAndStates(qureg, qubits, outcomes);
+        prob += accel_statevec_calcProbOfMultiQubitOutcome_sub(qureg, suffixQubits, suffixOutcomes);
     }
 
     // but all nodes must sum their probabilities (unless qureg was cloned per-node), for conensus
@@ -1895,7 +1873,7 @@ qreal localiser_statevec_calcProbOfMultiQubitOutcome(Qureg qureg, SmallList qubi
 }
 
 
-qreal localiser_densmatr_calcProbOfMultiQubitOutcome(Qureg qureg, SmallList qubits, SmallList outcomes) {
+qreal localiser_densmatr_calcProbOfMultiQubitOutcome(Qureg qureg, SmallView qubits, SmallView outcomes) {
     assert_localiserGivenDensMatr(qureg);
 
     qreal prob = 0;
@@ -1928,7 +1906,7 @@ qreal localiser_densmatr_calcProbOfMultiQubitOutcome(Qureg qureg, SmallList qubi
 }
 
 
-void localiser_statevec_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg qureg, SmallList qubits) {
+void localiser_statevec_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg qureg, SmallView qubits) {
     assert_localiserGivenStateVec(qureg);
 
     /// @todo
@@ -1968,7 +1946,7 @@ void localiser_statevec_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg 
 }
 
 
-void localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg qureg, SmallList qubits) {
+void localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg qureg, SmallView qubits) {
     assert_localiserGivenDensMatr(qureg);
 
     // each node independently populates local outProbs
@@ -1989,7 +1967,7 @@ void localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg 
 PAULI_MASK_TYPE paulis_getKeyOfSameMixedAmpsGroup(PauliStr str);
 
 
-qcomp getStateVecExpecAllSuffixPauliStr(Qureg qureg, SmallList suffixX, SmallList suffixY, SmallList suffixZ) {
+qcomp getStateVecExpecAllSuffixPauliStr(Qureg qureg, SmallView suffixX, SmallView suffixY, SmallView suffixZ) {
     assert_localiserGivenStateVec(qureg);
 
     // optimised scenario when str = I
@@ -2321,7 +2299,8 @@ qreal localiser_densmatr_calcHilbertSchmidtDistance(Qureg quregA, Qureg quregB) 
  */
 
 
-void localiser_statevec_multiQubitProjector(Qureg qureg, SmallList qubits, SmallList outcomes, qreal prob) {
+void localiser_statevec_multiQubitProjector(Qureg qureg, SmallView qubits, SmallView outcomes, qreal prob) {
+    assert_localiserListLengthsAgree(qubits.size(), outcomes.size());
 
     // this routine is always embarrassingly parallel; however, we handle the
     // prefix-qubits here so that the backend can receive only the suffix qubits
@@ -2334,15 +2313,15 @@ void localiser_statevec_multiQubitProjector(Qureg qureg, SmallList qubits, Small
         return;
     }
 
-    // all other nodes has some or all states consistent with suffix outcomes
-    removePrefixQubitsAndStates(qureg, qubits, outcomes);
-    (qubits.empty())?
+    // all other nodes contain some or only basis states consistent with suffix outcomes
+    auto [suffixQubits, suffixOutcomes] = getSuffixQubitsAndStates(qureg, qubits, outcomes);
+    (suffixQubits.empty())?
         localiser_statevec_scaleAmps(qureg, 1/std::sqrt(prob)):
-        accel_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, prob);
+        accel_statevec_multiQubitProjector_sub(qureg, suffixQubits, suffixOutcomes, prob);
 }
 
 
-void localiser_densmatr_multiQubitProjector(Qureg qureg, SmallList qubits, SmallList outcomes, qreal prob) {
+void localiser_densmatr_multiQubitProjector(Qureg qureg, SmallView qubits, SmallView outcomes, qreal prob) {
     assert_localiserGivenDensMatr(qureg);
 
     // always embarrassingly parallel

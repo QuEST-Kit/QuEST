@@ -49,7 +49,7 @@ void demo_CompMatr() {
     for (int i=0; i<len; i++) {
         qindex num = numReportElems[i];
         rootPrint(num);
-        setMaxNumReportedItems(num, num);
+        setQuESTMaxNumReportedItems(num, num);
         reportCompMatr(matr);
     }
 }
@@ -69,7 +69,7 @@ void demo_DiagMatr() {
     for (int i=0; i<len; i++) {
         qindex num = numReportElems[i];
         rootPrint(num);
-        setMaxNumReportedItems(num, num);
+        setQuESTMaxNumReportedItems(num, num);
         reportDiagMatr(matr);
     }
 }
@@ -91,7 +91,7 @@ void demo_FullStateDiagMatr() {
     for (int i=0; i<6; i++) {
         qindex num = numReportElems[i];
         rootPrint(num);
-        setMaxNumReportedItems(num, num);
+        setQuESTMaxNumReportedItems(num, num);
         reportFullStateDiagMatr(matr);
     }
 }

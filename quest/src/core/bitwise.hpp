@@ -163,7 +163,7 @@ INLINE int getBitMaskParity(qindex mask) {
  */
 
 
-INLINE qindex insertBits(qindex number, int* bitIndices, int numIndices, int bitValue) {
+INLINE qindex insertBits(qindex number, const int* bitIndices, int numIndices, int bitValue) {
     
     // bitIndices must be strictly increasing
     for (int i=0; i<numIndices; i++)
@@ -173,7 +173,7 @@ INLINE qindex insertBits(qindex number, int* bitIndices, int numIndices, int bit
 }
 
 
-INLINE qindex setBits(qindex number, int* bitIndices, int numIndices, qindex bitsValue) {
+INLINE qindex setBits(qindex number, const int* bitIndices, int numIndices, qindex bitsValue) {
     
     // bitIndices are arbitrarily ordered, which does not affect number
     for (int i=0; i<numIndices; i++) {
@@ -185,7 +185,7 @@ INLINE qindex setBits(qindex number, int* bitIndices, int numIndices, qindex bit
 }
 
 
-INLINE qindex getValueOfBits(qindex number, int* bitIndices, int numIndices) {
+INLINE qindex getValueOfBits(qindex number, const int* bitIndices, int numIndices) {
 
     // bits are arbitrarily ordered, which affects value
     qindex value = 0;
@@ -205,7 +205,7 @@ INLINE qindex getValueOfBits(qindex number, int* bitIndices, int numIndices) {
  */
 
 
-INLINE qindex insertBitsWithMaskedValues(qindex number, int* bitInds, int numBits, qindex mask) {
+INLINE qindex insertBitsWithMaskedValues(qindex number, const int* bitInds, int numBits, qindex mask) {
 
     // bitInds must be sorted (increasing), and mask must be zero everywhere except bitInds
     return mask | insertBits(number, bitInds, numBits, 0);
@@ -268,7 +268,7 @@ INLINE qindex flipTwoBits(qindex number, int i1, int i0) {
  */
 
 
-INLINE qindex flipBits(qindex number, int* bitIndices, int numIndices) {
+INLINE qindex flipBits(qindex number, const int* bitIndices, int numIndices) {
 
     for (int i=0; i<numIndices; i++)
         number = flipBit(number, bitIndices[i]);
@@ -297,7 +297,7 @@ INLINE int getIndOfNextRightmostZeroBit(qindex mask, int bitInd) {
 }
 
 
-INLINE bool allBitsAreOne(qindex number, int* bitIndices, int numIndices) {
+INLINE bool allBitsAreOne(qindex number, const int* bitIndices, int numIndices) {
     
     for (int i=0; i<numIndices; i++)
         if (!getBit(number, bitIndices[i]))
@@ -307,7 +307,7 @@ INLINE bool allBitsAreOne(qindex number, int* bitIndices, int numIndices) {
 }
 
 
-INLINE qindex getBitMask(int* bitIndices, int* bitValues, int numIndices) {
+INLINE qindex getBitMask(const int* bitIndices, const int* bitValues, int numIndices) {
 
     qindex mask = 0;
     for (int i=0; i<numIndices; i++)
@@ -317,7 +317,7 @@ INLINE qindex getBitMask(int* bitIndices, int* bitValues, int numIndices) {
 }
 
 
-INLINE qindex getBitMask(int* bitIndices, int numIndices) {
+INLINE qindex getBitMask(const int* bitIndices, int numIndices) {
     
     qindex mask = 0;
     for (int i=0; i<numIndices; i++)
@@ -327,7 +327,7 @@ INLINE qindex getBitMask(int* bitIndices, int numIndices) {
 }
 
 
-INLINE qindex removeBits(qindex number, int* bitInds, int numInds) {
+INLINE qindex removeBits(qindex number, const int* bitInds, int numInds) {
 
     // assumes bitIndices are strictly increasing without duplicates
     int numRemoved = 0;
@@ -359,7 +359,7 @@ INLINE int logBase2(qindex powerOf2) {
 }
 
 
-INLINE qindex getIntegerFromBits(int* bits, int numBits) {
+INLINE qindex getIntegerFromBits(const int* bits, int numBits) {
 
     // first bit is treated as least significant
     qindex value = 0;
@@ -371,7 +371,7 @@ INLINE qindex getIntegerFromBits(int* bits, int numBits) {
 }
 
 
-INLINE void getBitsFromInteger(int* bits, qindex number, int numBits) {
+INLINE void setToBitsOfInteger(int* bits, qindex number, int numBits) {
 
     for (int i=0; i<numBits; i++)
         bits[i] = getBit(number, i);
