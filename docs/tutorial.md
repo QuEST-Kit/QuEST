@@ -173,7 +173,7 @@ if (env.isGpuAccelerated)
 
 Configuring the environment is ordinarily not necessary, but convenient in certain applications.
 
-For example, we may wish our simulations to deterministically obtain the same measurement outcomes and random states as a previous or future run, and ergo choose to [override](https://quest-kit.github.io/QuEST/group__debug__seed.html#ga9e3a6de413901afbf50690573add1587) the default seeds.
+For example, we may wish our simulations to deterministically obtain the same measurement outcomes and random states as a previous or future run, and ergo choose to [override](https://quest-kit.github.io/QuEST/group__debug__seed.html#ga4fea21c26edfea5a64cbdab860dbf583) the default seeds.
 ```cpp
 unsigned seeds[] = {123u, 1u << 10};
 setQuESTSeeds(seeds, 2);
@@ -186,16 +186,16 @@ int maxCols = 4;
 setQuESTMaxNumReportedItems(maxRows, maxCols);
 setQuESTMaxNumReportedSigFigs(3);
 ```
-or [add](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga29413703d609254244d6b13c663e6e06) extra spacing between QuEST's printed outputs
+or [add](https://quest-kit.github.io/QuEST/group__debug__reporting.html#gac5fa20b24814c555eae1d77229959b5e) extra spacing between QuEST's printed outputs
 ```cpp
 setQuESTNumReportedNewlines(3);
 ```
 
-Perhaps we also wish to relax the [precision](https://quest-kit.github.io/QuEST/group__debug__validation.html#gae395568df6def76045ec1881fcb4e6d1) with which our future inputs will be asserted unitary or Hermitian
+Perhaps we also wish to relax the [precision](https://quest-kit.github.io/QuEST/group__debug__validation.html#ga6be7e12fc056a751a03073ee6844b0eb) with which our future inputs will be asserted unitary or Hermitian
 ```cpp
 setQuESTValidationEpsilon(0.001);
 ```
-but when unitarity _is_ violated, or we otherwise pass an invalid input, we wish to execute a [custom function](https://quest-kit.github.io/QuEST/group__debug__validation.html#ga14b6e7ce08465e36750da3acbc41062f) before exiting.
+but when unitarity _is_ violated, or we otherwise pass an invalid input, we wish to execute a [custom function](https://quest-kit.github.io/QuEST/group__debug__validation.html#gaa02a39c21c770e06ff891e028fd1fe75) before exiting.
 ```cpp
 #include <stdlib.h>
 
@@ -253,7 +253,7 @@ Qureg (10 qubit statevector, 1024 qcomps, 16.1 KiB):
     0  |1022⟩
     0  |1023⟩
 ```
-> This printed only `8` amplitudes as per our setting of [`setQuESTMaxNumReportedItems()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga093c985b1970a0fd8616c01b9825979a) above.
+> This printed only `8` amplitudes as per our setting of [`setQuESTMaxNumReportedItems()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga2f2d0258f4f7acd6bfe74a19f697d0c2) above.
 
 Behind the scenes, the function `createQureg` did something clever; it consulted the compiled deployments and available hardware to decide whether to distribute `qureg`, or dedicate it persistent GPU memory, and marked whether or not to multithread its subsequent modification. It attempts to choose _optimally_, avoiding gratuitous parallelisation if the overheads outweigh the benefits, or if the hardware devices have insufficient memory.
 
@@ -356,7 +356,7 @@ Qureg:
     globalTotal.......16 MiB
 ```
 
-> The spacing between the outputs of those two consecutive QuEST functions was determined by our earlier call to [`setQuESTNumReportedNewlines()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga29413703d609254244d6b13c663e6e06).
+> The spacing between the outputs of those two consecutive QuEST functions was determined by our earlier call to [`setQuESTNumReportedNewlines()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#gac5fa20b24814c555eae1d77229959b5e).
 
 
 A density matrix `Qureg` can model classical uncertainty as results from [decoherence](https://quest-kit.github.io/QuEST/group__decoherence.html), and proves useful when simulating quantum operations on a noisy quantum computer.
@@ -415,7 +415,7 @@ Qureg (5 qubit density matrix, 32x32 qcomps, 16.1 KiB):
     -0.00597-0.00615i   -0.00207-0.00451i   …  0.000509-0.00401i   0.0173+(3.12e-19)i
 ```
 
-> The number of printed significant figures above results from our earlier calling of [`setQuESTMaxNumReportedSigFigs()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga15d46e5d813f70b587762814964e1994).
+> The number of printed significant figures above results from our earlier calling of [`setQuESTMaxNumReportedSigFigs()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga3b4156994fdcf65eee0875316a9cc95f).
 
 
 
@@ -609,7 +609,7 @@ QuEST encountered a validation error during function 'applyCompMatr1':
 The given matrix was not (approximately) unitary.
 Exiting...
 ```
-If we're satisfied our matrix _is_ sufficiently approximately unitary, we can [adjust](https://quest-kit.github.io/QuEST/group__debug__validation.html#gae395568df6def76045ec1881fcb4e6d1) or [disable](https://quest-kit.github.io/QuEST/group__debug__validation.html#ga5999824df0785ea88fb2d5b5582f2b46) the validation.
+If we're satisfied our matrix _is_ sufficiently approximately unitary, we can [adjust](https://quest-kit.github.io/QuEST/group__debug__validation.html#ga6be7e12fc056a751a03073ee6844b0eb) or [disable](https://quest-kit.github.io/QuEST/group__debug__validation.html#ga0a20ca2bc35e22e914bc25671dabdb9b) the validation.
 ```cpp
 // max(norm(m * dagger(m) - identity)) = 0.9025
 setQuESTValidationEpsilon(0.903);
@@ -783,7 +783,7 @@ reportScalar("entanglement", calcPurity(reduced));
 ## Report the results
 
 
-We've seen above that [scalars](https://quest-kit.github.io/QuEST/group__types.html) can be reported, handling the pretty formatting of real and complex numbers, controlled by settings like [`setQuESTMaxNumReportedSigFigs()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga15d46e5d813f70b587762814964e1994). But we can also report every data structure in the QuEST API, such as Pauli strings
+We've seen above that [scalars](https://quest-kit.github.io/QuEST/group__types.html) can be reported, handling the pretty formatting of real and complex numbers, controlled by settings like [`setQuESTMaxNumReportedSigFigs()`](https://quest-kit.github.io/QuEST/group__debug__reporting.html#ga3b4156994fdcf65eee0875316a9cc95f). But we can also report every data structure in the QuEST API, such as Pauli strings
 ```cpp
 reportPauliStr(
     getInlinePauliStr("XXYYZZ", {5,50, 10,60, 30,40})
