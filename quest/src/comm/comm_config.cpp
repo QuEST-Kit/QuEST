@@ -63,7 +63,7 @@ bool comm_isMpiCompiled() {
 }
 
 bool comm_isMpiSubCommunicatorCompiled() {
-    return (bool) COMPILE_SUBCOMM;
+    return (bool) QUEST_COMPILE_SUBCOMM;
 }
 
 bool comm_isMpiGpuAware() {
@@ -240,7 +240,7 @@ void comm_sync() {
         return mpiCommQuest;
     }
 
-    #if COMPILE_SUBCOMM
+    #if QUEST_COMPILE_SUBCOMM
         void comm_setMpiComm(MPI_Comm newComm) {
 
             // error if mpiCommQuEST is already set!

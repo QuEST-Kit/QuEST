@@ -35,7 +35,7 @@ bool comm_isRootNode(int rank);
 
 #if QUEST_COMPILE_MPI
   MPI_Comm comm_getMpiComm();
-  #if COMPILE_SUBCOMM
+  #if QUEST_COMPILE_SUBCOMM
     void comm_setMpiComm(MPI_Comm newComm);
   #endif
 #endif

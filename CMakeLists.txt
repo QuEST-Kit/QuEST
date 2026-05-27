@@ -155,11 +155,11 @@ option(
 message(STATUS "Distribution is turned ${QUEST_ENABLE_MPI}. Set QUEST_ENABLE_MPI to modify.")
 
 option(
-  ENABLE_SUBCOMM
+  QUEST_ENABLE_SUBCOMM
   "Whether QuEST will be built with support for restricting it to a user-defined MPI communicator. Turned OFF by default."
   OFF
 )
-message(STATUS "Custom communicator support is turned ${ENABLE_SUBCOMM}. Set ENABLE_SUBCOMM to modify.")
+message(STATUS "Custom communicator support is turned ${QUEST_ENABLE_SUBCOMM}. Set QUEST_ENABLE_SUBCOMM to modify.")
 
 # GPU Acceleration
 option(
@@ -222,7 +222,7 @@ if (QUEST_ENABLE_CUQUANTUM AND NOT QUEST_ENABLE_CUDA)
   message(FATAL_ERROR "Use of cuQuantum requires CUDA.")
 endif()
 
-if (ENABLE_SUBCOMM AND NOT QUEST_ENABLE_MPI)
+if (QUEST_ENABLE_SUBCOMM AND NOT QUEST_ENABLE_MPI)
   message(FATAL_ERROR "Distribution must be enabled to make use of a user-defined communicator for QuEST.")
 endif()
 
@@ -551,7 +551,7 @@ add_executable(min_example
 )
 target_link_libraries(min_example PRIVATE QuEST::QuEST)
 
-if (QUEST_ENABLE_MPI AND ENABLE_SUBCOMM)
+if (QUEST_ENABLE_MPI AND QUEST_ENABLE_SUBCOMM)
   target_link_libraries(min_example PRIVATE MPI::MPI_CXX)
 endif()
 

@@ -3,7 +3,7 @@
 
 #include "quest/include/config.h" 
 
-#if QUEST_COMPILE_MPI && COMPILE_SUBCOMM
+#if QUEST_COMPILE_MPI && QUEST_COMPILE_SUBCOMM
 
 #include <mpi.h>
 

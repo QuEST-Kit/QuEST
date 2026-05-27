@@ -469,7 +469,7 @@ void syncQuESTEnv() {
 
     if (globalEnvPtr->isDistributed) {
         comm_sync();
-        #if COMPILE_SUBCOMM
+        #if QUEST_COMPILE_SUBCOMM
             updateQuESTEnvDistInfo();
         #endif
     }
