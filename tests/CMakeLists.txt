@@ -1,4 +1,5 @@
 # @author Oliver Thomson Brown
+# @author Tyson Jones (patched MSVC and test discovery)
 
 add_executable(tests
   main.cpp
@@ -19,5 +20,5 @@ if (QUEST_ENABLE_DEPRECATED_API)
   add_subdirectory(deprecated)
 endif()
 
-# let Catch2 register all tests with CTest
-catch_discover_tests(tests)
+# defer test discovery, so that (e.g.) MPI libs aren't loaded during build
+catch_discover_tests(tests DISCOVERY_MODE PRE_TEST)
