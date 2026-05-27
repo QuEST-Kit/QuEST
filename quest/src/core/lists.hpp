@@ -172,7 +172,7 @@ public:
  */
 
 
-INLINE List64 list_getEmptyList64() {
+INLINE List64 lists_getEmptyList64() {
 
     List64 out{};
     out.clear();
@@ -180,7 +180,7 @@ INLINE List64 list_getEmptyList64() {
 }
 
 
-INLINE List64 list_getList64(const int* begin, const int* end) {
+INLINE List64 lists_getList64(const int* begin, const int* end) {
 
     if (end < begin)
         error_smallListIndexExceededLength();
@@ -189,7 +189,7 @@ INLINE List64 list_getList64(const int* begin, const int* end) {
     if (length > MAX_LIST_LENGTH)
         error_smallListLengthExceededMax();
 
-    List64 out = list_getEmptyList64();
+    List64 out = lists_getEmptyList64();
 
     for (const int* ptr = begin; ptr != end; ++ptr)
         out.push_back(*ptr);
@@ -198,22 +198,22 @@ INLINE List64 list_getList64(const int* begin, const int* end) {
 }
 
 
-INLINE List64 list_getList64(const int* elems, size_t length) {
+INLINE List64 lists_getList64(const int* elems, size_t length) {
 
     if (elems == nullptr && length > 0)
         error_smallListNullPtrWithPositiveLength();
     
     // no ptr necessary whgen list is empty
     if (elems == nullptr)
-        return list_getEmptyList64();
+        return lists_getEmptyList64();
 
-    return list_getList64(elems, elems + length); // validates length <= MAX
+    return lists_getList64(elems, elems + length); // validates length <= MAX
 }
 
 
-INLINE List64 list_getList64(std::initializer_list<int> init) {
+INLINE List64 lists_getList64(std::initializer_list<int> init) {
 
-    return list_getList64(init.begin(), init.end());
+    return lists_getList64(init.begin(), init.end());
 }
 
 

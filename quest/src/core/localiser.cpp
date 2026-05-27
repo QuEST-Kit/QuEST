@@ -57,7 +57,7 @@ bool doesGateRequireComm(Qureg qureg, ConstList64 targs) {
 
 bool doesGateRequireComm(Qureg qureg, int targ) {
 
-    return doesGateRequireComm(qureg, list_getList64({targ}));
+    return doesGateRequireComm(qureg, lists_getList64({targ}));
 }
 
 
@@ -73,7 +73,7 @@ bool doesChannelRequireComm(Qureg qureg, ConstList64 ketQubits) {
 
 bool doesChannelRequireComm(Qureg qureg, int ketQubit) {
 
-    return doesChannelRequireComm(qureg, list_getList64({ketQubit}));
+    return doesChannelRequireComm(qureg, lists_getList64({ketQubit}));
 }
 
 
@@ -105,8 +105,8 @@ bool doAnyLocalStatesHaveQubitValues(Qureg qureg, ConstList64 qubits, ConstList6
 
 tuple<List64,List64> getSuffixQubitsAndStates(Qureg qureg, ConstList64 qubits, ConstList64 states) {
 
-    List64 suffixQubits = list_getEmptyList64();
-    List64 suffixStates = list_getEmptyList64();
+    List64 suffixQubits = lists_getEmptyList64();
+    List64 suffixStates = lists_getEmptyList64();
 
     for (size_t i=0; i<qubits.size(); i++) {
         if (util_isQubitInSuffix(qubits[i], qureg)) {
@@ -224,8 +224,8 @@ auto getQubitsSwappedToMaxSuffix(Qureg qureg, ConstList64 qubits) {
 
 auto getNonSwappedCtrlsAndStates(ConstList64 oldCtrls, ConstList64 oldStates, ConstList64 newCtrls) {
 
-    auto sameCtrls = list_getEmptyList64();
-    auto sameStates = list_getEmptyList64();
+    auto sameCtrls = lists_getEmptyList64();
+    auto sameStates = lists_getEmptyList64();
 
     for (size_t i=0; i<oldCtrls.size(); i++) {
         if (oldCtrls[i] == newCtrls[i]) {
@@ -1016,8 +1016,8 @@ void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, ConstList64 ctrls, ConstList64 ct
     /// order to accelerate them (since more ctrls = fewer comm). However, this is strangely not
     /// working; controlling the SWAPs upon these 'meta' control qubits is breaking the unit tests!
     /// Until we better understand this, we disable this optimisation by removing all SWAP controls.
-    unmovedCtrls      = list_getEmptyList64();
-    unmovedCtrlStates = list_getEmptyList64();
+    unmovedCtrls      = lists_getEmptyList64();
+    unmovedCtrlStates = lists_getEmptyList64();
 
     // perform necessary swaps to move all targets into suffix, invoking communication (swaps are real, so no need to conj)
     anyCtrlMultiSwapBetweenPrefixAndSuffix(qureg, unmovedCtrls, unmovedCtrlStates, targs, newTargs);
@@ -1038,7 +1038,7 @@ void anyCtrlTwoOrAnyTargDenseMatr(Qureg qureg, ConstList64 ctrls, ConstList64 ct
 void localiser_statevec_anyCtrlTwoTargDenseMatr(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ1, int targ2, CompMatr2 matr, bool conj, bool transp) {
     assert_localiserListLengthsAgree(ctrls.size(), ctrlStates.size());
 
-    anyCtrlTwoOrAnyTargDenseMatr(qureg, ctrls, ctrlStates, list_getList64({targ1,targ2}), matr, conj, transp);
+    anyCtrlTwoOrAnyTargDenseMatr(qureg, ctrls, ctrlStates, lists_getList64({targ1,targ2}), matr, conj, transp);
 }
 
 
@@ -1465,7 +1465,7 @@ void oneQubitDepolarisingOnPrefix(Qureg qureg, int ketQubit, qreal prob) {
     // pack and exchange amps to buffers where local ket qubit and fixed-prefix-bra qubit agree
     int braBit = util_getRankBitOfBraQubit(ketQubit, qureg);
     int pairRank = util_getRankWithBraQubitFlipped(ketQubit, qureg);
-    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank, list_getList64({ketQubit}), list_getList64({braBit}));
+    exchangeAmpsToBuffersWhereQubitsAreInStates(qureg, pairRank, lists_getList64({ketQubit}), lists_getList64({braBit}));
 
     // use received sub-buffer to update local amps
     accel_densmatr_oneQubitDepolarising_subB(qureg, ketQubit, prob);
@@ -1515,8 +1515,8 @@ void twoQubitDepolarisingOnPrefixAndPrefix(Qureg qureg, int ketQb1, int ketQb2, 
     int braBit2 = util_getRankBitOfBraQubit(ketQb2, qureg);
 
     // pack unscaled amps before subsequent scaling
-    auto ketList = list_getList64({ketQb1,ketQb2});
-    qindex numPacked = accel_statevec_packAmpsIntoBuffer(qureg, ketList, list_getList64({braBit1,braBit2}));
+    auto ketList = lists_getList64({ketQb1,ketQb2});
+    qindex numPacked = accel_statevec_packAmpsIntoBuffer(qureg, ketList, lists_getList64({braBit1,braBit2}));
 
     // scale all amps
     accel_densmatr_twoQubitDepolarising_subE(qureg, ketQb1, ketQb2, prob);
@@ -1611,7 +1611,7 @@ void oneQubitDampingOnPrefix(Qureg qureg, int ketQubit, qreal prob) {
     if (braBit == 1) {
 
         // pack and async send half the buffer
-        accel_statevec_packAmpsIntoBuffer(qureg, list_getList64({ketQubit}), list_getList64({1}));
+        accel_statevec_packAmpsIntoBuffer(qureg, lists_getList64({ketQubit}), lists_getList64({1}));
         comm_asynchSendSubBuffer(qureg, numAmps, pairRank);
 
         // scale the local amps which were just sent
@@ -1681,7 +1681,7 @@ void localiser_densmatr_superoperator(Qureg qureg, SuperOp op, ConstList64 ketTa
     auto braTargs = util_getBraQubits(ketTargs, qureg);
     auto allTargs = util_getConcatenated(ketTargs, braTargs);
     CompMatr matr = getSpoofedCompMatrFromSuperOp(op);
-    List64 empty = list_getEmptyList64();
+    List64 empty = lists_getEmptyList64();
     localiser_statevec_anyCtrlAnyTargDenseMatr(qureg, empty, empty, allTargs, matr, conj, transp);
 }
 
@@ -1716,7 +1716,7 @@ auto getNonTracedQubitOrder(Qureg qureg, ConstList64 originalTargs, ConstList64 
     qindex revisedMask = util_getBitMask(revisedTargs);
 
     // retain only non-targeted qubits
-    auto remainingQubits = list_getEmptyList64();
+    auto remainingQubits = lists_getEmptyList64();
     for (size_t q=0; q<allQubits.size(); q++)
         if (!getBit(revisedMask, q))
             remainingQubits.push_back(allQubits[q]);
@@ -1760,7 +1760,7 @@ void reorderReducedQureg(Qureg inQureg, Qureg outQureg, ConstList64 allTargs, Co
             pair++;
         
         // and swap it directly to its required position, triggering any communication scenario (I think)
-        auto empty = list_getEmptyList64();
+        auto empty = lists_getEmptyList64();
         localiser_statevec_anyCtrlSwap(outQureg, empty, empty, qubit, pair);
         std::swap(remainingQubits[qubit], remainingQubits[pair]);
     }
@@ -1782,12 +1782,12 @@ void partialTraceOnPrefix(Qureg inQureg, Qureg outQureg, ConstList64 ketTargs) {
     auto sufTargs = getQubitsSwappedToMaxSuffix(inQureg, allTargs); // arbitrarily ordered
 
     // swap iniQureg's prefix bra-qubits into suffix, invoking communication
-    auto empty = list_getEmptyList64();
+    auto empty = lists_getEmptyList64();
     anyCtrlMultiSwapBetweenPrefixAndSuffix(inQureg, empty, empty, sufTargs, allTargs);
 
     // use the second half of sufTargs as the pair targs, which are now all in the suffix,
     // to perform embarrassingly parallel overwriting of outQureg (they're arbitrarily ordered)
-    auto pairTargs = list_getList64(sufTargs.begin() + ketTargs.size(), sufTargs.end());
+    auto pairTargs = lists_getList64(sufTargs.begin() + ketTargs.size(), sufTargs.end());
 
     accel_densmatr_partialTrace_sub(inQureg, outQureg, ketTargs, pairTargs);
 
@@ -1886,8 +1886,8 @@ qreal localiser_densmatr_calcProbOfMultiQubitOutcome(Qureg qureg, ConstList64 qu
     if (doAnyLocalStatesHaveQubitValues(qureg, braQubits, outcomes)) {
 
         // such nodes need only know the ket qubits/outcomes for which the bra-qubits are in suffix
-        auto ketQubitsWithBraInSuffix = list_getEmptyList64();
-        auto ketOutcomesWithBraInSuffix = list_getEmptyList64();
+        auto ketQubitsWithBraInSuffix = lists_getEmptyList64();
+        auto ketOutcomesWithBraInSuffix = lists_getEmptyList64();
         for (size_t q=0; q<qubits.size(); q++)
             if (util_isBraQubitInSuffix(qubits[q], qureg)) {
                 ketQubitsWithBraInSuffix.push_back(qubits[q]);

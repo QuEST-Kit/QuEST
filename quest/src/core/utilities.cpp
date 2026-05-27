@@ -95,7 +95,7 @@ List64 getPrefixOrSuffixQubits(ConstList64 qubits, Qureg qureg, bool getSuffix) 
     // note that when the qureg is local/duplicated, 
     // all qubits will be suffix, none will be prefix
 
-    List64 out = list_getEmptyList64();
+    List64 out = lists_getEmptyList64();
 
     for (int qubit : qubits)
         if (util_isQubitInSuffix(qubit, qureg) == getSuffix)
@@ -171,7 +171,7 @@ List64 util_getNonTargetedQubits(ConstList64 targets, int numQubits) {
     
     qindex mask = util_getBitMask(targets);
 
-    List64 out = list_getEmptyList64();
+    List64 out = lists_getEmptyList64();
 
     for (int i=0; i<numQubits; i++)
         if (getBit(mask, i) == 0)
@@ -215,12 +215,12 @@ List64 util_getSorted(ConstList64 ctrls, ConstList64 targs) {
 
 List64 util_getSorted(ConstList64 ctrls, std::initializer_list<int> targs) {
 
-    return util_getSorted(ctrls, list_getList64(targs));
+    return util_getSorted(ctrls, lists_getList64(targs));
 }
 
 List64 util_getRange(int maxExcl) {
 
-    List64 out = list_getEmptyList64();
+    List64 out = lists_getEmptyList64();
 
     for (int i=0; i<maxExcl; i++)
         out.push_back(i);
@@ -230,7 +230,7 @@ List64 util_getRange(int maxExcl) {
 
 List64 util_getConstantList(int elem, int length) {
 
-    List64 out = list_getEmptyList64();
+    List64 out = lists_getEmptyList64();
     out.assign(length, elem);
     return out;
 }
@@ -256,15 +256,15 @@ qindex util_getBitMask(ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 ta
 
 qindex util_getBitMask(ConstList64 ctrls, ConstList64 ctrlStates, std::initializer_list<int> targs, std::initializer_list<int> targStates) {
 
-    return util_getBitMask(ctrls, ctrlStates, list_getList64(targs), list_getList64(targStates));
+    return util_getBitMask(ctrls, ctrlStates, lists_getList64(targs), lists_getList64(targStates));
 }
 
 List64 util_getList64OrAllOnes(const int* elemsOrNullptr, size_t length) {
 
     if (elemsOrNullptr != nullptr)
-        return list_getList64(elemsOrNullptr, length);
+        return lists_getList64(elemsOrNullptr, length);
 
-    List64 out = list_getEmptyList64();
+    List64 out = lists_getEmptyList64();
     out.assign(length, 1);
     return out;
 }

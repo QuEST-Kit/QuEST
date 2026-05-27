@@ -142,7 +142,7 @@ qcomp paulis_getPrefixPaulisElem(Qureg qureg, ConstList64 prefixY, ConstList64 p
 List64 paulis_getTargetInds(PauliStr str) {
 
     int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
-    auto inds = list_getEmptyList64();
+    auto inds = lists_getEmptyList64();
 
     for (int i=0; i<=maxInd; i++)
         if (paulis_getPauliAt(str, i) != 0) // Id
@@ -172,9 +172,9 @@ qindex paulis_getTargetBitMask(PauliStr str) {
 std::array<List64,3> paulis_getSeparateInds(PauliStr str) {
 
     auto iXYZ = paulis_getTargetInds(str);
-    auto iX = list_getEmptyList64();
-    auto iY = list_getEmptyList64();
-    auto iZ = list_getEmptyList64();
+    auto iX = lists_getEmptyList64();
+    auto iY = lists_getEmptyList64();
+    auto iZ = lists_getEmptyList64();
 
     List64* ptrs[] = {&iX, &iY, &iZ};
 
