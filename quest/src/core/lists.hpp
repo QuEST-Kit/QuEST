@@ -234,13 +234,13 @@ static_assert(std::is_standard_layout_v<List64>);
 /*
  * SMALL VIEW DECLARATION
  * 
- * Functions can accept SmallView (over List64) to avoid
+ * Functions can accept ConstList64 (over List64) to avoid
  * a stack copy. A List64 can always be passed to a
- * function accepting a SmallView, but a SmallView can never
+ * function accepting a ConstList64, but a ConstList64 can never
  * be returned from a function (duh).
  */
 
-using SmallView = const List64&;
+using ConstList64 = const List64&;
 
 
 

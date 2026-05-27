@@ -74,7 +74,7 @@ bool util_isQubitInSuffix(int qubit, Qureg qureg) {
     return qubit < qureg.logNumAmpsPerNode;
 }
 
-bool util_areAllQubitsInSuffix(SmallView qubits, Qureg qureg) {
+bool util_areAllQubitsInSuffix(ConstList64 qubits, Qureg qureg) {
 
     for (int q : qubits)
         if (!util_isQubitInSuffix(q, qureg))
@@ -90,7 +90,7 @@ bool util_isBraQubitInSuffix(int ketQubit, Qureg qureg) {
     return ketQubit < qureg.logNumColsPerNode;
 }
 
-List64 getPrefixOrSuffixQubits(SmallView qubits, Qureg qureg, bool getSuffix) {
+List64 getPrefixOrSuffixQubits(ConstList64 qubits, Qureg qureg, bool getSuffix) {
 
     // note that when the qureg is local/duplicated, 
     // all qubits will be suffix, none will be prefix
@@ -104,7 +104,7 @@ List64 getPrefixOrSuffixQubits(SmallView qubits, Qureg qureg, bool getSuffix) {
     return out;
 }
 
-std::array<List64,2> util_getPrefixAndSuffixQubits(SmallView qubits, Qureg qureg) {
+std::array<List64,2> util_getPrefixAndSuffixQubits(ConstList64 qubits, Qureg qureg) {
     return {
         getPrefixOrSuffixQubits(qubits, qureg, false), 
         getPrefixOrSuffixQubits(qubits, qureg, true)
@@ -132,7 +132,7 @@ int util_getRankWithQubitFlipped(int prefixKetQubit, Qureg qureg) {
     return rankFlip;
 }
 
-int util_getRankWithQubitsFlipped(SmallView prefixQubits,  Qureg qureg) {
+int util_getRankWithQubitsFlipped(ConstList64 prefixQubits,  Qureg qureg) {
 
     int rank = qureg.rank;
     for (int qubit : prefixQubits)
@@ -148,7 +148,7 @@ int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg) {
     return rankFlip;
 }
 
-int util_getRankWithBraQubitsFlipped(SmallView ketQubits, Qureg qureg) {
+int util_getRankWithBraQubitsFlipped(ConstList64 ketQubits, Qureg qureg) {
 
     int rank = qureg.rank;
     for (int qubit : ketQubits)
@@ -157,7 +157,7 @@ int util_getRankWithBraQubitsFlipped(SmallView ketQubits, Qureg qureg) {
     return rank;
 }
 
-List64 util_getBraQubits(SmallView ketQubits, Qureg qureg) {
+List64 util_getBraQubits(ConstList64 ketQubits, Qureg qureg) {
 
     List64 braQubits = ketQubits;
 
@@ -167,7 +167,7 @@ List64 util_getBraQubits(SmallView ketQubits, Qureg qureg) {
     return braQubits;
 }
 
-List64 util_getNonTargetedQubits(SmallView targets, int numQubits) {
+List64 util_getNonTargetedQubits(ConstList64 targets, int numQubits) {
     
     qindex mask = util_getBitMask(targets);
 
@@ -180,7 +180,7 @@ List64 util_getNonTargetedQubits(SmallView targets, int numQubits) {
     return out;
 }
 
-List64 util_getConcatenated(SmallView list1, SmallView list2) {
+List64 util_getConcatenated(ConstList64 list1, ConstList64 list2) {
 
     auto out = list1;
     for (auto elem : list2)
@@ -189,7 +189,7 @@ List64 util_getConcatenated(SmallView list1, SmallView list2) {
     return out;
 }
 
-List64 util_getSorted(SmallView list) {
+List64 util_getSorted(ConstList64 list) {
 
     // optimise common edgecases
     if (list.size() < 2)
@@ -208,12 +208,12 @@ List64 util_getSorted(SmallView list) {
     return out;
 }
 
-List64 util_getSorted(SmallView ctrls, SmallView targs) {
+List64 util_getSorted(ConstList64 ctrls, ConstList64 targs) {
 
     return util_getSorted(util_getConcatenated(ctrls, targs));
 }
 
-List64 util_getSorted(SmallView ctrls, std::initializer_list<int> targs) {
+List64 util_getSorted(ConstList64 ctrls, std::initializer_list<int> targs) {
 
     return util_getSorted(ctrls, list_getList64(targs));
 }
@@ -235,26 +235,26 @@ List64 util_getConstantList(int elem, int length) {
     return out;
 }
 
-qindex util_getBitMask(SmallView qubits) {
+qindex util_getBitMask(ConstList64 qubits) {
 
     // inserts qubits in state 1
     return getBitMask(qubits.data(), qubits.size());
 }
 
-qindex util_getBitMask(SmallView qubits, SmallView states) {
+qindex util_getBitMask(ConstList64 qubits, ConstList64 states) {
 
     // assumes qubits.size() == states.size()
     return getBitMask(qubits.data(), states.data(), states.size());
 }
 
-qindex util_getBitMask(SmallView ctrls, SmallView ctrlStates, SmallView targs, SmallView targStates) {
+qindex util_getBitMask(ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 targs, ConstList64 targStates) {
 
     auto qubits = util_getConcatenated(ctrls, targs);
     auto states = util_getConcatenated(ctrlStates, targStates);
     return util_getBitMask(qubits, states);
 }
 
-qindex util_getBitMask(SmallView ctrls, SmallView ctrlStates, std::initializer_list<int> targs, std::initializer_list<int> targStates) {
+qindex util_getBitMask(ConstList64 ctrls, ConstList64 ctrlStates, std::initializer_list<int> targs, std::initializer_list<int> targStates) {
 
     return util_getBitMask(ctrls, ctrlStates, list_getList64(targs), list_getList64(targStates));
 }

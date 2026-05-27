@@ -222,7 +222,7 @@ void accel_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliS
  */
 
 
-qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, SmallView qubits, SmallView qubitStates) {
+qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, ConstList64 qubits, ConstList64 qubitStates) {
 
     // we can never pack and swap buffers when there are no constrained qubit states, because we'd 
     // then fill the entire buffer andhave no room to receive the other node's buffer; caller would 
@@ -252,17 +252,17 @@ qindex accel_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int 
  */
 
 
-void accel_statevec_anyCtrlSwap_subA(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ1, int targ2) {
+void accel_statevec_anyCtrlSwap_subA(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ1, int targ2) {
 
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_anyCtrlSwap_subA, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ1, targ2);
 }
-void accel_statevec_anyCtrlSwap_subB(Qureg qureg, SmallView ctrls, SmallView ctrlStates) {
+void accel_statevec_anyCtrlSwap_subB(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates) {
 
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_anyCtrlSwap_subB, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates);
 }
-void accel_statevec_anyCtrlSwap_subC(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ, int targState) {
+void accel_statevec_anyCtrlSwap_subC(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ, int targState) {
 
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_anyCtrlSwap_subC, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ, targState);
@@ -275,26 +275,26 @@ void accel_statevec_anyCtrlSwap_subC(Qureg qureg, SmallView ctrls, SmallView ctr
  */
 
 
-void accel_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ, CompMatr1 matr) {
+void accel_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ, CompMatr1 matr) {
 
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_anyCtrlOneTargDenseMatr_subA, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ, matr);
 }
-void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, SmallView ctrls, SmallView ctrlStates, qcomp fac0, qcomp fac1) {
+void accel_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, qcomp fac0, qcomp fac1) {
 
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_anyCtrlOneTargDenseMatr_subB, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, fac0, fac1);
 }
 
 
-void accel_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ1, int targ2, CompMatr2 matr) {
+void accel_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ1, int targ2, CompMatr2 matr) {
 
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_anyCtrlTwoTargDenseMatr_sub, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ1, targ2, matr);
 }
 
 
-void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, SmallView ctrls, SmallView ctrlStates, SmallView targs, CompMatr matr, bool conj, bool transp) {
+void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 targs, CompMatr matr, bool conj, bool transp) {
 
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_TWO_PARAMS_TWO_BOOLS( func, statevec_anyCtrlAnyTargDenseMatr_sub, qureg, ctrls.size(), targs.size(), conj, transp );
     func(qureg, ctrls, ctrlStates, targs, matr);
@@ -307,21 +307,21 @@ void accel_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, SmallView ctrls, Sm
  */
 
 
-void accel_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ, DiagMatr1 matr) {
+void accel_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ, DiagMatr1 matr) {
 
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_anyCtrlOneTargDiagMatr_sub, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ, matr);
 }
 
 
-void accel_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ1, int targ2, DiagMatr2 matr) {
+void accel_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ1, int targ2, DiagMatr2 matr) {
 
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_anyCtrlTwoTargDiagMatr_sub, qureg, ctrls.size() );
     func(qureg, ctrls, ctrlStates, targ1, targ2, matr);
 }
 
 
-void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, SmallView ctrls, SmallView ctrlStates, SmallView targs, DiagMatr matr, qcomp exponent, bool conj) {
+void accel_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 targs, DiagMatr matr, qcomp exponent, bool conj) {
 
     bool hasPower = exponent != qcomp(1, 0);
 
@@ -498,7 +498,7 @@ void accel_densmatr_allTargDiagMatr_subB(Qureg qureg, FullStateDiagMatr matr, qc
  */
 
 
-void accel_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, SmallView ctrls, SmallView states, SmallView x, SmallView y, SmallView z, qcomp f0, qcomp f1) {
+void accel_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, ConstList64 ctrls, ConstList64 states, ConstList64 x, ConstList64 y, ConstList64 z, qcomp f0, qcomp f1) {
 
     // only X and Y constitute target qubits (Z merely induces a phase)
     int numTargs = x.size() + y.size();
@@ -506,14 +506,14 @@ void accel_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, SmallView ct
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_TWO_PARAMS( func, statevector_anyCtrlPauliTensorOrGadget_subA, qureg, ctrls.size(), numTargs );
     func(qureg, ctrls, states, x, y, z, f0, f1);
 }
-void accel_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, SmallView ctrls, SmallView states, SmallView x, SmallView y, SmallView z, qcomp f0, qcomp f1, qindex mask) {
+void accel_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, ConstList64 ctrls, ConstList64 states, ConstList64 x, ConstList64 y, ConstList64 z, qcomp f0, qcomp f1, qindex mask) {
 
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevector_anyCtrlPauliTensorOrGadget_subB, qureg, ctrls.size() );
     func(qureg, ctrls, states, x, y, z, f0, f1, mask);
 }
 
 
-void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, SmallView ctrls, SmallView states, SmallView targs, qcomp f0, qcomp f1) {
+void accel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, ConstList64 ctrls, ConstList64 states, ConstList64 targs, qcomp f0, qcomp f1) {
 
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevector_anyCtrlAnyTargZOrPhaseGadget_sub, qureg, ctrls.size() );
     func(qureg, ctrls, states, targs, f0, f1);
@@ -823,7 +823,7 @@ void accel_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob) {
  */
 
 
-void accel_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, SmallView targs, SmallView pairTargs) {
+void accel_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, ConstList64 targs, ConstList64 pairTargs) {
     assert_partialTraceQuregsAreIdenticallyDeployed(inQureg, outQureg);
 
     // inQureg == outQureg (except for dimension), so use common backend, informed by inQureg
@@ -852,24 +852,24 @@ qreal accel_densmatr_calcTotalProb_sub(Qureg qureg) {
 }
 
 
-qreal accel_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallView qubits, SmallView outcomes) {
+qreal accel_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes) {
 
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_calcProbOfMultiQubitOutcome_sub, qureg, qubits.size() );
     return func(qureg, qubits, outcomes);
 }
-qreal accel_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallView qubits, SmallView outcomes) {
+qreal accel_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes) {
 
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, densmatr_calcProbOfMultiQubitOutcome_sub, qureg, qubits.size() );
     return func(qureg, qubits, outcomes);
 }
 
 
-void accel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallView qubits) {
+void accel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, ConstList64 qubits) {
 
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_calcProbsOfAllMultiQubitOutcomes_sub, qureg, qubits.size() );
     func(outProbs, qureg, qubits);
 }
-void accel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallView qubits) {
+void accel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, ConstList64 qubits) {
 
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, densmatr_calcProbsOfAllMultiQubitOutcomes_sub, qureg, qubits.size() );
     func(outProbs, qureg, qubits);
@@ -957,13 +957,13 @@ qcomp accel_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi, bool co
  */
 
 
-qreal accel_statevec_calcExpecAnyTargZ_sub(Qureg qureg, SmallView targs) {
+qreal accel_statevec_calcExpecAnyTargZ_sub(Qureg qureg, ConstList64 targs) {
 
     return (qureg.isGpuAccelerated)?
         gpu_statevec_calcExpecAnyTargZ_sub(qureg, targs):
         cpu_statevec_calcExpecAnyTargZ_sub(qureg, targs);
 }
-qcomp accel_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, SmallView targs) {
+qcomp accel_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, ConstList64 targs) {
 
     return (qureg.isGpuAccelerated)?
         gpu_densmatr_calcExpecAnyTargZ_sub(qureg, targs):
@@ -971,19 +971,19 @@ qcomp accel_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, SmallView targs) {
 }
 
 
-qcomp accel_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallView x, SmallView y, SmallView z) {
+qcomp accel_statevec_calcExpecPauliStr_subA(Qureg qureg, ConstList64 x, ConstList64 y, ConstList64 z) {
 
     return (qureg.isGpuAccelerated)?
         gpu_statevec_calcExpecPauliStr_subA(qureg, x, y, z):
         cpu_statevec_calcExpecPauliStr_subA(qureg, x, y, z);
 }
-qcomp accel_statevec_calcExpecPauliStr_subB(Qureg qureg, SmallView x, SmallView y, SmallView z) {
+qcomp accel_statevec_calcExpecPauliStr_subB(Qureg qureg, ConstList64 x, ConstList64 y, ConstList64 z) {
 
     return (qureg.isGpuAccelerated)?
         gpu_statevec_calcExpecPauliStr_subB(qureg, x, y, z):
         cpu_statevec_calcExpecPauliStr_subB(qureg, x, y, z);
 }
-qcomp accel_densmatr_calcExpecPauliStr_sub(Qureg qureg, SmallView x, SmallView y, SmallView z) {
+qcomp accel_densmatr_calcExpecPauliStr_sub(Qureg qureg, ConstList64 x, ConstList64 y, ConstList64 z) {
 
     return (qureg.isGpuAccelerated)?
         gpu_densmatr_calcExpecPauliStr_sub(qureg, x, y, z):
@@ -1085,12 +1085,12 @@ qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMa
  */
 
 
-void accel_statevec_multiQubitProjector_sub(Qureg qureg, SmallView qubits, SmallView outcomes, qreal prob) {
+void accel_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob) {
 
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_multiQubitProjector_sub, qureg, qubits.size() );
     func(qureg, qubits, outcomes, prob);
 }
-void accel_densmatr_multiQubitProjector_sub(Qureg qureg, SmallView qubits, SmallView outcomes, qreal prob) {
+void accel_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob) {
 
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, densmatr_multiQubitProjector_sub, qureg, qubits.size() );
     func(qureg, qubits, outcomes, prob);

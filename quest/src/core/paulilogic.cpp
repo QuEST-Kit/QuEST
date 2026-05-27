@@ -114,7 +114,7 @@ int paulis_getSignOfPauliStrConj(PauliStr str) {
 }
 
 
-int paulis_getPrefixZSign(Qureg qureg, SmallView prefixZ) {
+int paulis_getPrefixZSign(Qureg qureg, ConstList64 prefixZ) {
 
     int sign = 1;
 
@@ -126,7 +126,7 @@ int paulis_getPrefixZSign(Qureg qureg, SmallView prefixZ) {
 }
 
 
-qcomp paulis_getPrefixPaulisElem(Qureg qureg, SmallView prefixY, SmallView prefixZ) {
+qcomp paulis_getPrefixPaulisElem(Qureg qureg, ConstList64 prefixY, ConstList64 prefixZ) {
 
     // each Z contributes +- 1
     qcomp elem = paulis_getPrefixZSign(qureg, prefixZ);

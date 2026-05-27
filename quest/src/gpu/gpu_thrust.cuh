@@ -71,7 +71,7 @@
 
 using devints = thrust::device_vector<int>;
 
-devints getDevInts(SmallView h_list) {
+devints getDevInts(ConstList64 h_list) {
 
     // DEBUG: this is a placeholder! James' GPU refactor should make it redundant, 
     // and we can pass List64 directly to a CUDA kernel, paying no heap allocs,
@@ -790,7 +790,7 @@ qreal thrust_densmatr_calcTotalProb_sub(Qureg qureg) {
 
 
 template <int NumQubits>
-qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallView qubits, SmallView outcomes) {
+qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes) {
 
     devints sortedQubits = getDevInts(util_getSorted(qubits));
     qindex valueMask = util_getBitMask(qubits, outcomes);
@@ -810,7 +810,7 @@ qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallView qub
 
 
 template <int NumQubits>
-qreal thrust_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallView qubits, SmallView outcomes) {
+qreal thrust_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes) {
 
     // cannot move these into functor_insertBits constructor, since the memory
     // would dangle - and we cannot bind deviceints as an attribute - it's host-only!
@@ -889,7 +889,7 @@ gpu_qcomp thrust_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
  */
 
 
-qreal thrust_statevec_calcExpecAnyTargZ_sub(Qureg qureg, SmallView targs) {
+qreal thrust_statevec_calcExpecAnyTargZ_sub(Qureg qureg, ConstList64 targs) {
 
     qindex mask = util_getBitMask(targs);
     auto functor = functor_getExpecStateVecZTerm(mask);
@@ -904,7 +904,7 @@ qreal thrust_statevec_calcExpecAnyTargZ_sub(Qureg qureg, SmallView targs) {
 }
 
 
-gpu_qcomp thrust_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, SmallView targs) {
+gpu_qcomp thrust_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, ConstList64 targs) {
 
     qindex dim = powerOf2(qureg.numQubits);
     qindex ind = util_getLocalIndexOfFirstDiagonalAmp(qureg);
@@ -919,7 +919,7 @@ gpu_qcomp thrust_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, SmallView targs) {
 }
 
 
-gpu_qcomp thrust_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallView x, SmallView y, SmallView z) {
+gpu_qcomp thrust_statevec_calcExpecPauliStr_subA(Qureg qureg, ConstList64 x, ConstList64 y, ConstList64 z) {
 
     qindex maskXY = util_getBitMask(util_getConcatenated(x, y));
     qindex maskYZ = util_getBitMask(util_getConcatenated(y, z));
@@ -936,7 +936,7 @@ gpu_qcomp thrust_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallView x, Small
 }
 
 
-gpu_qcomp thrust_statevec_calcExpecPauliStr_subB(Qureg qureg, SmallView x, SmallView y, SmallView z) {
+gpu_qcomp thrust_statevec_calcExpecPauliStr_subB(Qureg qureg, ConstList64 x, ConstList64 y, ConstList64 z) {
 
     qindex maskXY = util_getBitMask(util_getConcatenated(x, y));
     qindex maskYZ = util_getBitMask(util_getConcatenated(y, z));
@@ -954,7 +954,7 @@ gpu_qcomp thrust_statevec_calcExpecPauliStr_subB(Qureg qureg, SmallView x, Small
 }
 
 
-gpu_qcomp thrust_densmatr_calcExpecPauliStr_sub(Qureg qureg, SmallView x, SmallView y, SmallView z) {
+gpu_qcomp thrust_densmatr_calcExpecPauliStr_sub(Qureg qureg, ConstList64 x, ConstList64 y, ConstList64 z) {
 
     qindex mXY = util_getBitMask(util_getConcatenated(x, y));
     qindex mYZ = util_getBitMask(util_getConcatenated(y, z));
@@ -1016,7 +1016,7 @@ gpu_qcomp thrust_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateD
 
 
 template <int NumQubits>
-void thrust_statevec_multiQubitProjector_sub(Qureg qureg, SmallView qubits, SmallView outcomes, qreal renorm) {
+void thrust_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal renorm) {
 
     devints devQubits = getDevInts(qubits);
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
@@ -1032,7 +1032,7 @@ void thrust_statevec_multiQubitProjector_sub(Qureg qureg, SmallView qubits, Smal
 
 
 template <int NumQubits>
-void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, SmallView qubits, SmallView outcomes, qreal renorm) {
+void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal renorm) {
 
     devints devQubits = getDevInts(qubits);
     qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
