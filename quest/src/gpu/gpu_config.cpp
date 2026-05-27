@@ -175,7 +175,7 @@ bool gpu_isCuQuantumCompiled() {
 
 
 bool gpu_isHipCompiled() {
-    return (bool) (COMPILE_CUDA && COMPILE_HIP);
+    return (bool) (QUEST_COMPILE_CUDA && QUEST_COMPILE_HIP);
 }
 
 
