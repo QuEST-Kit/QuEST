@@ -11,7 +11,7 @@
 #include "quest/include/matrices.h"
 
 #include "quest/src/core/validation.hpp"
-#include "quest/src/core/small_list.hpp"
+#include "quest/src/core/lists.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/paulilogic.hpp"

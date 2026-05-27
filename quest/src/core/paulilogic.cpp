@@ -9,7 +9,7 @@
 #include "quest/include/qureg.h"
 
 #include "quest/src/core/paulilogic.hpp"
-#include "quest/src/core/small_list.hpp"
+#include "quest/src/core/lists.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/errors.hpp"

@@ -44,7 +44,7 @@
 
 #include "quest/include/precision.h"
 
-#include "quest/src/core/small_list.hpp"
+#include "quest/src/core/lists.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 #include "quest/src/gpu/gpu_qcomp.cuh"

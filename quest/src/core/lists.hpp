@@ -2,13 +2,13 @@
  * A stack-based list of length <= 64, primarily
  * for storing qubit indices, as an alternative to
  * std::vector and associated heap-alloc/copy
- * overheads. Use of SmallList optimises few-qubit
+ * overheads. Use of List64 optimises few-qubit
  * simulation where STL container costs dominate;
- * and in the GPU backend, use of SmallList avoids
+ * and in the GPU backend, use of List64 avoids
  * CUDA memory writes before kernel launches!
  * 
- * This header also defines SmallView, which is
- * merely 'const SmallList&', to avoid superfluous
+ * This header also defines ConstList64, which is
+ * merely 'const List64&', to avoid superfluous
  * stack copies when passing non-mutated SmallList.
  * 
  * The functions herein are inlined (in this header-
@@ -20,8 +20,8 @@
  * @author Tyson Jones
  */
 
-#ifndef SMALL_LIST_HPP
-#define SMALL_LIST_HPP
+#ifndef LISTS_HPP
+#define LISTS_HPP
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/inliner.hpp"
@@ -47,7 +47,7 @@ constexpr size_t MAX_LIST_LENGTH = 64;
 
 
 /*
- * SMALL LIST DECLARATION
+ * LIST64 DECLARATION
  *
  * which mimics an STL container so that it is easily
  * substituted for std::vector in our codebase, but
@@ -244,4 +244,4 @@ using SmallView = const SmallList&;
 
 
 
-#endif // SMALL_LIST_HPP
+#endif // LISTS_HPP

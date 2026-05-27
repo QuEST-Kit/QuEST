@@ -18,7 +18,7 @@
 #include "quest/include/matrices.h"
 #include "quest/include/channels.h"
 
-#include "quest/src/core/small_list.hpp"
+#include "quest/src/core/lists.hpp"
 
 #include <vector>
 

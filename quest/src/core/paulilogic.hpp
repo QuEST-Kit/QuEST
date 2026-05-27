@@ -12,7 +12,7 @@
 #include "quest/include/paulis.h"
 #include "quest/include/qureg.h"
 
-#include "quest/src/core/small_list.hpp"
+#include "quest/src/core/lists.hpp"
 
 #include <utility>
 #include <vector>
