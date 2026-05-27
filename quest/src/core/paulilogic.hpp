@@ -45,9 +45,9 @@ int paulis_getIndOfLefmostNonIdentityPauli(PauliStr* strings, qindex numStrings)
 
 int paulis_getSignOfPauliStrConj(PauliStr str);
 
-int paulis_getPrefixZSign(Qureg qureg, SmallList prefixZ);
+int paulis_getPrefixZSign(Qureg qureg, SmallView prefixZ);
 
-qcomp paulis_getPrefixPaulisElem(Qureg qureg, SmallList prefixY, SmallList prefixZ);
+qcomp paulis_getPrefixPaulisElem(Qureg qureg, SmallView prefixY, SmallView prefixZ);
 
 SmallList paulis_getTargetInds(PauliStr str);
 

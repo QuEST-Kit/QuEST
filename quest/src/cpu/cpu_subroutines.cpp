@@ -216,7 +216,7 @@ void cpu_fullstatediagmatr_setElemsFromMultiVarFunc(FullStateDiagMatr out, qcomp
 
 
 template <int NumQubits>
-qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, SmallList qubitInds, SmallList qubitStates) {
+qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, SmallView qubitInds, SmallView qubitStates) {
 
     assert_numQubitsMatchesQubitStatesAndTemplateParam(qubitInds.size(), qubitStates.size(), NumQubits);
 
@@ -281,7 +281,7 @@ qindex cpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qu
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qindex, cpu_statevec_packAmpsIntoBuffer, (Qureg, SmallList, SmallList) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qindex, cpu_statevec_packAmpsIntoBuffer, (Qureg, SmallView, SmallView) )
 
 
 
@@ -291,7 +291,7 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qindex, cpu_statevec_packAmpsIntoBuffe
 
 
 template <int NumCtrls>
-void cpu_statevec_anyCtrlSwap_subA(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2) {
+void cpu_statevec_anyCtrlSwap_subA(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ1, int targ2) {
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
@@ -321,7 +321,7 @@ void cpu_statevec_anyCtrlSwap_subA(Qureg qureg, SmallList ctrls, SmallList ctrlS
 
 
 template <int NumCtrls>
-void cpu_statevec_anyCtrlSwap_subB(Qureg qureg, SmallList ctrls, SmallList ctrlStates) {
+void cpu_statevec_anyCtrlSwap_subB(Qureg qureg, SmallView ctrls, SmallView ctrlStates) {
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
@@ -357,7 +357,7 @@ void cpu_statevec_anyCtrlSwap_subB(Qureg qureg, SmallList ctrls, SmallList ctrlS
 
 
 template <int NumCtrls>
-void cpu_statevec_anyCtrlSwap_subC(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, int targState) {
+void cpu_statevec_anyCtrlSwap_subC(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ, int targState) {
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
@@ -393,9 +393,9 @@ void cpu_statevec_anyCtrlSwap_subC(Qureg qureg, SmallList ctrls, SmallList ctrlS
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlSwap_subA, (Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2) )
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlSwap_subB, (Qureg qureg, SmallList ctrls, SmallList ctrlStates) )
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlSwap_subC, (Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, int targState) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlSwap_subA, (Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ1, int targ2) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlSwap_subB, (Qureg qureg, SmallView ctrls, SmallView ctrlStates) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlSwap_subC, (Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ, int targState) )
 
 
 
@@ -405,7 +405,7 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlSwap_subC, (
 
 
 template <int NumCtrls>
-void cpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, CompMatr1 matr) {
+void cpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ, CompMatr1 matr) {
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
@@ -441,7 +441,7 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, SmallList ctrls, Sma
 
 
 template <int NumCtrls>
-void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, SmallList ctrls, SmallList ctrlStates, qcomp fac0, qcomp fac1) {
+void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, SmallView ctrls, SmallView ctrlStates, qcomp fac0, qcomp fac1) {
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
@@ -477,8 +477,8 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, SmallList ctrls, Sma
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDenseMatr_subA, (Qureg, SmallList, SmallList, int, CompMatr1) )
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDenseMatr_subB, (Qureg, SmallList, SmallList, qcomp, qcomp) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDenseMatr_subA, (Qureg, SmallView, SmallView, int, CompMatr1) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDenseMatr_subB, (Qureg, SmallView, SmallView, qcomp, qcomp) )
 
 
 
@@ -488,7 +488,7 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDense
 
 
 template <int NumCtrls> 
-void cpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2, CompMatr2 matr) {
+void cpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ1, int targ2, CompMatr2 matr) {
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
@@ -530,7 +530,7 @@ void cpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, SmallList ctrls, Smal
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlTwoTargDenseMatr_sub, (Qureg, SmallList, SmallList, int, int, CompMatr2) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlTwoTargDenseMatr_sub, (Qureg, SmallView, SmallView, int, int, CompMatr2) )
 
 
 
@@ -540,7 +540,7 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlTwoTargDense
 
 
 template <int NumCtrls, int NumTargs, bool ApplyConj, bool ApplyTransp>
-void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, CompMatr matr) {
+void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, SmallView ctrls, SmallView ctrlStates, SmallView targs, CompMatr matr) {
     
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
     assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
@@ -642,7 +642,7 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, SmallList ctrls, Smal
 }
 
 
-INSTANTIATE_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevec_anyCtrlAnyTargDenseMatr_sub, (Qureg, SmallList, SmallList, SmallList, CompMatr) )
+INSTANTIATE_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevec_anyCtrlAnyTargDenseMatr_sub, (Qureg, SmallView, SmallView, SmallView, CompMatr) )
 
 
 
@@ -652,7 +652,7 @@ INSTANTIATE_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevec_
 
 
 template <int NumCtrls>
-void cpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ, DiagMatr1 matr) {
+void cpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ, DiagMatr1 matr) {
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
@@ -684,7 +684,7 @@ void cpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, SmallList ctrls, Small
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDiagMatr_sub, (Qureg, SmallList, SmallList, int, DiagMatr1) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDiagMatr_sub, (Qureg, SmallView, SmallView, int, DiagMatr1) )
 
 
 
@@ -694,7 +694,7 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlOneTargDiagM
 
 
 template <int NumCtrls>
-void cpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, int targ1, int targ2, DiagMatr2 matr) {
+void cpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, SmallView ctrls, SmallView ctrlStates, int targ1, int targ2, DiagMatr2 matr) {
 
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
@@ -726,7 +726,7 @@ void cpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, SmallList ctrls, Small
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlTwoTargDiagMatr_sub, (Qureg, SmallList, SmallList, int, int, DiagMatr2) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlTwoTargDiagMatr_sub, (Qureg, SmallView, SmallView, int, int, DiagMatr2) )
 
 
 
@@ -736,7 +736,7 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlTwoTargDiagM
 
 
 template <int NumCtrls, int NumTargs, bool ApplyConj, bool HasPower>
-void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, DiagMatr matr, qcomp exponent) {
+void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, SmallView ctrls, SmallView ctrlStates, SmallView targs, DiagMatr matr, qcomp exponent) {
     
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
     assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
@@ -788,7 +788,7 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, SmallList ctrls, Small
 }
 
 
-INSTANTIATE_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevec_anyCtrlAnyTargDiagMatr_sub, (Qureg, SmallList, SmallList, SmallList, DiagMatr, qcomp) )
+INSTANTIATE_TWO_BOOL_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevec_anyCtrlAnyTargDiagMatr_sub, (Qureg, SmallView, SmallView, SmallView, DiagMatr, qcomp) )
 
 
 /// @todo
@@ -961,8 +961,8 @@ INLINE void applyPauliUponAmpPair(
 
 template <int NumCtrls, int NumTargs>
 void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
-    Qureg qureg, SmallList ctrls, SmallList ctrlStates, 
-    SmallList x, SmallList y, SmallList z, qcomp ampFac, qcomp pairAmpFac
+    Qureg qureg, SmallView ctrls, SmallView ctrlStates, 
+    SmallView x, SmallView y, SmallView z, qcomp ampFac, qcomp pairAmpFac
 ) {
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
     assert_numTargsMatchesTemplateParam(x.size() + y.size(), NumTargs);
@@ -976,7 +976,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
     cpu_qcomp f1 = getCpuQcomp(pairAmpFac);
     
     // only X and Y count as targets
-    SmallList sortedTargsXY = util_getSorted(util_getConcatenated(x, y));
+    auto sortedTargsXY = util_getSorted(util_getConcatenated(x, y));
 
     // prepare a mask which yields ctrls in specified state, and X-Y targs in all-zero
     auto sortedQubits   = util_getSorted(ctrls, sortedTargsXY);
@@ -1044,8 +1044,8 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
 
 template <int NumCtrls>
 void cpu_statevector_anyCtrlPauliTensorOrGadget_subB(
-    Qureg qureg, SmallList ctrls, SmallList ctrlStates,
-    SmallList x, SmallList y, SmallList z, qcomp ampFac, qcomp pairAmpFac, qindex bufferMaskXY
+    Qureg qureg, SmallView ctrls, SmallView ctrlStates,
+    SmallView x, SmallView y, SmallView z, qcomp ampFac, qcomp pairAmpFac, qindex bufferMaskXY
 ) {
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
 
@@ -1091,8 +1091,8 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subB(
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevector_anyCtrlPauliTensorOrGadget_subA, (Qureg, SmallList, SmallList, SmallList, SmallList, SmallList, qcomp, qcomp) )
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlPauliTensorOrGadget_subB, (Qureg, SmallList, SmallList, SmallList, SmallList, SmallList, qcomp, qcomp, qindex) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS_AND_TARGS( void, cpu_statevector_anyCtrlPauliTensorOrGadget_subA, (Qureg, SmallView, SmallView, SmallView, SmallView, SmallView, qcomp, qcomp) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlPauliTensorOrGadget_subB, (Qureg, SmallView, SmallView, SmallView, SmallView, SmallView, qcomp, qcomp, qindex) )
 
 
 
@@ -1103,7 +1103,7 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlPauliTens
 
 template <int NumCtrls>
 void cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
-    Qureg qureg, SmallList ctrls, SmallList ctrlStates, SmallList targs, 
+    Qureg qureg, SmallView ctrls, SmallView ctrlStates, SmallView targs, 
     qcomp fac0, qcomp fac1
 ) {
     assert_numCtrlsMatchesNumCtrlStatesAndTemplateParam(ctrls.size(), ctrlStates.size(), NumCtrls);
@@ -1135,7 +1135,7 @@ void cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub, (Qureg, SmallList, SmallList, SmallList, qcomp, qcomp) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub, (Qureg, SmallView, SmallView, SmallView, qcomp, qcomp) )
 
 
 
@@ -1854,7 +1854,7 @@ void cpu_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob) {
 
 
 template <int NumTargs>
-void cpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, SmallList targs, SmallList pairTargs) {
+void cpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, SmallView targs, SmallView pairTargs) {
 
     assert_numTargsMatchesTemplateParam(targs.size(), NumTargs);
 
@@ -1908,7 +1908,7 @@ void cpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, SmallList targ
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_partialTrace_sub, (Qureg, Qureg, SmallList, SmallList) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_partialTrace_sub, (Qureg, Qureg, SmallView, SmallView) )
 
 
 
@@ -1990,7 +1990,7 @@ qreal cpu_densmatr_calcTotalProb_sub(Qureg qureg) {
 
 
 template <int NumQubits>
-qreal cpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallList qubits, SmallList outcomes) {
+qreal cpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallView qubits, SmallView outcomes) {
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
@@ -2023,7 +2023,7 @@ qreal cpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallList qubits
 
 
 template <int NumQubits>
-qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallList qubits, SmallList outcomes) {
+qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallView qubits, SmallView outcomes) {
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
@@ -2063,7 +2063,7 @@ qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, SmallList qubits
 
 
 template <int NumQubits>
-void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallList qubits) {
+void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallView qubits) {
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
@@ -2104,7 +2104,7 @@ void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
 
 template <int NumQubits>
-void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallList qubits) {
+void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, SmallView qubits) {
 
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
@@ -2148,10 +2148,10 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qreal, cpu_statevec_calcProbOfMultiQubitOutcome_sub, (Qureg, SmallList, SmallList) )
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qreal, cpu_densmatr_calcProbOfMultiQubitOutcome_sub, (Qureg, SmallList, SmallList) )
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub, (qreal* outProbs, Qureg, SmallList) )
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub, (qreal* outProbs, Qureg, SmallList) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qreal, cpu_statevec_calcProbOfMultiQubitOutcome_sub, (Qureg, SmallView, SmallView) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qreal, cpu_densmatr_calcProbOfMultiQubitOutcome_sub, (Qureg, SmallView, SmallView) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub, (qreal* outProbs, Qureg, SmallView) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub, (qreal* outProbs, Qureg, SmallView) )
 
 
 
@@ -2259,7 +2259,7 @@ template qcomp cpu_densmatr_calcFidelityWithPureState_sub<false>(Qureg, Qureg);
  */
 
 
-qreal cpu_statevec_calcExpecAnyTargZ_sub(Qureg qureg, SmallList targs) {
+qreal cpu_statevec_calcExpecAnyTargZ_sub(Qureg qureg, SmallView targs) {
 
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
@@ -2283,7 +2283,7 @@ qreal cpu_statevec_calcExpecAnyTargZ_sub(Qureg qureg, SmallList targs) {
 }
 
 
-qcomp cpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, SmallList targs) {
+qcomp cpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, SmallView targs) {
 
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
@@ -2318,7 +2318,7 @@ qcomp cpu_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, SmallList targs) {
 }
 
 
-qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallList x, SmallList y, SmallList z) {
+qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallView x, SmallView y, SmallView z) {
 
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
@@ -2352,7 +2352,7 @@ qcomp cpu_statevec_calcExpecPauliStr_subA(Qureg qureg, SmallList x, SmallList y,
 }
 
 
-qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, SmallList x, SmallList y, SmallList z) {
+qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, SmallView x, SmallView y, SmallView z) {
 
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
@@ -2395,7 +2395,7 @@ qcomp cpu_statevec_calcExpecPauliStr_subB(Qureg qureg, SmallList x, SmallList y,
 }
 
 
-qcomp cpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, SmallList x, SmallList y, SmallList z) {
+qcomp cpu_densmatr_calcExpecPauliStr_sub(Qureg qureg, SmallView x, SmallView y, SmallView z) {
 
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
@@ -2563,7 +2563,7 @@ template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<false,true >(Qureg, F
 
 
 template <int NumQubits>
-void cpu_statevec_multiQubitProjector_sub(Qureg qureg, SmallList qubits, SmallList outcomes, qreal prob) {
+void cpu_statevec_multiQubitProjector_sub(Qureg qureg, SmallView qubits, SmallView outcomes, qreal prob) {
 
     // all qubits are in suffix
     assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
@@ -2594,7 +2594,7 @@ void cpu_statevec_multiQubitProjector_sub(Qureg qureg, SmallList qubits, SmallLi
 
 
 template <int NumQubits>
-void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, SmallList qubits, SmallList outcomes, qreal prob) {
+void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, SmallView qubits, SmallView outcomes, qreal prob) {
 
     // this function is merely an optimisation to avoid calling the above
     // cpu_statevec_multiQubitProjector_sub() twice upon a density matrix;
@@ -2635,8 +2635,8 @@ void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, SmallList qubits, SmallLi
 }
 
 
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_statevec_multiQubitProjector_sub, (Qureg qureg, SmallList qubits, SmallList outcomes, qreal prob) )
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_multiQubitProjector_sub, (Qureg qureg, SmallList qubits, SmallList outcomes, qreal prob) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_statevec_multiQubitProjector_sub, (Qureg qureg, SmallView qubits, SmallView outcomes, qreal prob) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_multiQubitProjector_sub, (Qureg qureg, SmallView qubits, SmallView outcomes, qreal prob) )
 
 
 

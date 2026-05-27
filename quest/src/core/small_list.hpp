@@ -7,6 +7,10 @@
  * and in the GPU backend, use of SmallList avoids
  * CUDA memory writes before kernel launches!
  * 
+ * This header also defines SmallView, which is
+ * merely 'const SmallList&', to avoid superfluous
+ * stack copies when passing non-mutated SmallList.
+ * 
  * The functions herein are inlined (in this header-
  * only file) in the hopes of unbridled compiler
  * optimisations, but this may prove incompatible
@@ -224,6 +228,19 @@ INLINE SmallList list_getSmallList(std::initializer_list<int> init) {
 
 static_assert(std::is_trivially_copyable_v<SmallList>);
 static_assert(std::is_standard_layout_v<SmallList>);
+
+
+
+/*
+ * SMALL VIEW DECLARATION
+ * 
+ * Functions can accept SmallView (over SmallList) to avoid
+ * a stack copy. A SmallList can always be passed to a
+ * function accepting a SmallView, but a SmallView can never
+ * be returned from a function (duh).
+ */
+
+using SmallView = const SmallList&;
 
 
 
