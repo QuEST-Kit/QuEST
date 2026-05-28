@@ -69,11 +69,12 @@ enum Mpi_version {NONE, OPENMPI, CRAYMPICH};
 
 int comm_whichMpi() {
 
-    char version_string[1000];
+    char version_string[MPI_MAX_LIBRARY_VERSION_STRING];
     int resultlen[] = {0};
 
-    MPI_Get_library_version(version_string, resultlen);
-
+    #ifdef COMPILE_MPI
+        MPI_Get_library_version(version_string, resultlen);
+    #endif
     enum Mpi_version version = NONE;
 
     // Check if Openmpi used
