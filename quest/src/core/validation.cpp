@@ -1156,8 +1156,9 @@ void default_inputErrorHandler(const char* func, const char* msg) {
     comm_sync();
 
     // finalise MPI before error-exit to avoid scaring user with giant MPI error message
+    // we always "take ownership" of MPI here since we're about to kill the whole program
     if (comm_isInit())
-        comm_end();
+        comm_end(0);
 
     // simply exit, interrupting any other process (potentially leaking)
     exit(EXIT_FAILURE);

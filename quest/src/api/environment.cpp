@@ -71,7 +71,7 @@ static bool hasEnvBeenFinalized = false;
  */
 
 
-void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread, const char* caller) {
+void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, int useMultithread, const char* caller) {
 
     // ensure that we are never re-initialising QuEST (even after finalize) because
     // this leads to undefined behaviour in distributed mode, as per the MPI
@@ -93,8 +93,7 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     // and before any GPU initialisation and validation, since we will
     // perform that specifically upon the MPI-process-bound GPU(s). Further,
     // we can make sure validation errors are reported only by the root node.
-    if (useDistrib)
-        comm_init();
+    comm_init(useDistrib, userOwnsMpi);
 
     validate_newEnvDistributedBetweenPower2Nodes(caller);
 
@@ -145,6 +144,7 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     globalEnvPtr->isMultithreaded     = useMultithread;
     globalEnvPtr->isGpuAccelerated    = useGpuAccel;
     globalEnvPtr->isDistributed       = useDistrib;
+    globalEnvPtr->userOwnsMpi         = userOwnsMpi;
     globalEnvPtr->isCuQuantumEnabled  = useCuQuantum;
     globalEnvPtr->isGpuSharingEnabled = permitGpuSharing;
 
@@ -153,6 +153,11 @@ void validateAndInitCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMulti
     globalEnvPtr->numNodes = (useDistrib)? comm_getNumNodes() : 1;
 }
 
+void updateQuESTEnvDistInfo() {
+    globalEnvPtr->rank     = (globalEnvPtr->isDistributed)? comm_getRank()     : 0;
+    globalEnvPtr->numNodes = (globalEnvPtr->isDistributed)? comm_getNumNodes() : 1;
+    return;
+}
 
 
 /*
@@ -189,6 +194,7 @@ void printCompilationInfo() {
         "compilation", {
         {"isOmpCompiled",       cpu_isOpenmpCompiled()},
         {"isMpiCompiled",       comm_isMpiCompiled()},
+        {"isMpiSubCommunicatorCompiled", comm_isMpiSubCommunicatorCompiled()},
         {"isGpuCompiled",       gpu_isGpuCompiled()},
         {"isHipCompiled",       gpu_isHipCompiled()},
         {"isCuQuantumCompiled", gpu_isCuQuantumCompiled()},
@@ -202,6 +208,7 @@ void printDeploymentInfo() {
         "deployment", {
         {"isOmpEnabled",        globalEnvPtr->isMultithreaded},
         {"isMpiEnabled",        globalEnvPtr->isDistributed},
+        {"doesUserOwnMpi",      globalEnvPtr->userOwnsMpi},
         {"isGpuEnabled",        globalEnvPtr->isGpuAccelerated},
         {"isCuQuantumEnabled",  globalEnvPtr->isCuQuantumEnabled},
         {"isGpuSharingEnabled", globalEnvPtr->isGpuSharingEnabled},
@@ -399,13 +406,19 @@ extern "C" {
 
 void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread) {
 
-    validateAndInitCustomQuESTEnv(useDistrib, useGpuAccel, useMultithread, __func__);
+    const bool userOwnsMpi = false;
+    validateAndInitCustomQuESTEnv(useDistrib, userOwnsMpi, useGpuAccel, useMultithread, __func__);
 }
 
 
+void initCustomMpiQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, int useMultithread) {
+    validateAndInitCustomQuESTEnv(useDistrib, userOwnsMpi, useGpuAccel, useMultithread, __func__);
+}
+
 void initQuESTEnv() {
 
-    validateAndInitCustomQuESTEnv(modeflag::USE_AUTO, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
+    const bool userOwnsMpi = false;
+    validateAndInitCustomQuESTEnv(modeflag::USE_AUTO, userOwnsMpi, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
 }
 
 
@@ -438,7 +451,7 @@ void finalizeQuESTEnv() {
 
     if (globalEnvPtr->isDistributed) {
         comm_sync();
-        comm_end();
+        comm_end(globalEnvPtr->userOwnsMpi);
     }
 
     // free global env's heap memory and flag it as unallocated
@@ -456,8 +469,12 @@ void syncQuESTEnv() {
     if (globalEnvPtr->isGpuAccelerated)
         gpu_sync();
 
-    if (globalEnvPtr->isDistributed)
+    if (globalEnvPtr->isDistributed) {
         comm_sync();
+        #if QUEST_COMPILE_SUBCOMM
+            updateQuESTEnvDistInfo();
+        #endif
+    }
 }
 
 
@@ -498,10 +515,11 @@ void getQuESTEnvironmentString(char str[200]) {
     int cuQuantum = globalEnvPtr->isGpuAccelerated && gpu_isCuQuantumCompiled();
     int gpuDirect = globalEnvPtr->isGpuAccelerated && gpu_isDirectGpuCommPossible();
 
-    snprintf(str, 200, "CUDA=%d OpenMP=%d MPI=%d threads=%d ranks=%d cuQuantum=%d gpuDirect=%d",
+    snprintf(str, 200, "CUDA=%d OpenMP=%d MPI=%d userOwnsMPI=%d threads=%d ranks=%d cuQuantum=%d gpuDirect=%d",
         globalEnvPtr->isGpuAccelerated,
         globalEnvPtr->isMultithreaded,
         globalEnvPtr->isDistributed,
+        globalEnvPtr->userOwnsMpi,
         numThreads,
         globalEnvPtr->numNodes,
         cuQuantum,

@@ -20,6 +20,8 @@
 
 #if QUEST_COMPILE_MPI
     #include <mpi.h>
+
+    static MPI_Comm mpiCommQuest = MPI_COMM_NULL;
 #endif
 
 
@@ -60,6 +62,9 @@ bool comm_isMpiCompiled() {
     return (bool) QUEST_COMPILE_MPI;
 }
 
+bool comm_isMpiSubCommunicatorCompiled() {
+    return (bool) QUEST_COMPILE_SUBCOMM;
+}
 
 bool comm_isMpiGpuAware() {
 
@@ -98,28 +103,72 @@ bool comm_isInit() {
 }
 
 
-void comm_init() {
+void comm_init(int useDistrib, bool userOwnsMpi) {
 #if QUEST_COMPILE_MPI
 
-    // error if attempting re-initialisation
-    if (comm_isInit())
-        error_commAlreadyInit();
+    // error if user owns MPI but has not initialised
+    if (userOwnsMpi && !comm_isInit()) {
+        error_commNotInit();
+    }
+   
+    // Overall mpiCommQuest should be set in the following ways
+    // however only useDistrib = 1 and userOwnsMpi = false
+    // and useDistrib = 0 and userOwnsMpi = true 
+    // require action here
+    //
+    // | useDistrib | userOwnsMpi |  mpiCommQuest  |
+    // | ---------- | ----------- | -------------- |
+    // |     0      |    false    | MPI_COMM_NULL  |
+    // | ---------- | ----------- | -------------- |
+    // |     1      |    false    | MPI_COMM_WORLD |
+    // | ---------- | ----------- | -------------- |
+    // |     0      |    true     | MPI_COMM_SELF  |
+    // | ---------- | ----------- | -------------- |
+    // |            |             | MPI_COMM_WORLD |
+    // |     1      |    true     |      or        |
+    // |            |             | userQuestComm  |
+    // | ---------- | ----------- | -------------- |
     
-    MPI_Init(NULL, NULL);
+
+    if (useDistrib && !userOwnsMpi) {
+        // error if attempting re-initialisation
+        if (comm_isInit()) {
+            error_commAlreadyInit();
+        } else {
+            MPI_Init(NULL, NULL);
+            // The user wants MPI and is leaving it to QuEST
+            MPI_Comm_dup(MPI_COMM_WORLD, &mpiCommQuest);
+        }
+    } else if (!useDistrib && userOwnsMpi) {
+        // The user has initialised MPI but wants QuEST to ignore it
+        MPI_Comm_dup(MPI_COMM_SELF, &mpiCommQuest);
+    } else if (useDistrib && userOwnsMpi) {
+        // if mpiCommQuEST is still MPI_COMM_NULL the user is not 
+        // providing their own MPI_Comm and we should set mpiCommQuest
+        // to MPI_COMM_WORLD
+        if (mpiCommQuest == MPI_COMM_NULL)
+            MPI_Comm_dup(MPI_COMM_WORLD, &mpiCommQuest);
+    }
 
 #endif
+    return;
 }
 
 
-void comm_end() {
+
+void comm_end(bool userOwnsMpi) {
 #if QUEST_COMPILE_MPI
 
     // gracefully permit comm_end() before comm_init(), as input validation can trigger
     if (!comm_isInit())
         return;
 
-    MPI_Barrier(MPI_COMM_WORLD);
-    MPI_Finalize();
+    MPI_Barrier(mpiCommQuest);
+    MPI_Comm_free(&mpiCommQuest);
+    
+    // QuEST must finalise MPI if the user does not own it
+    if (!userOwnsMpi)
+        MPI_Finalize();
 
 #endif
 }
@@ -135,7 +184,7 @@ int comm_getRank() {
         return ROOT_RANK;
 
     int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(mpiCommQuest, &rank);
     return rank;
 
 #else
@@ -164,7 +213,7 @@ int comm_getNumNodes() {
         return 1;
 
     int numNodes;
-    MPI_Comm_size(MPI_COMM_WORLD, &numNodes);
+    MPI_Comm_size(mpiCommQuest, &numNodes);
     return numNodes;
 
 #else
@@ -182,6 +231,31 @@ void comm_sync() {
     if (!comm_isInit())
         return;
 
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(mpiCommQuest);
 #endif
 }
+
+#if QUEST_COMPILE_MPI
+    MPI_Comm comm_getMpiComm() {
+        return mpiCommQuest;
+    }
+
+    #if QUEST_COMPILE_SUBCOMM
+        void comm_setMpiComm(MPI_Comm newComm) {
+
+            // error if mpiCommQuEST is already set!
+            if (mpiCommQuest != MPI_COMM_NULL) {
+                MPI_Barrier(mpiCommQuest);
+                MPI_Comm_free(&mpiCommQuest);
+                error_commDoubleSetMpiComm();
+            }
+
+            int mpi_err = MPI_Comm_dup(newComm, &mpiCommQuest);
+            if (mpi_err != MPI_SUCCESS) {
+                error_commInvalidMpiComm();
+            }
+
+            return;
+        }
+    #endif
+#endif

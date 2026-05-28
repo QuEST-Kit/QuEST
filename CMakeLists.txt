@@ -154,6 +154,12 @@ option(
 )
 message(STATUS "Distribution is turned ${QUEST_ENABLE_MPI}. Set QUEST_ENABLE_MPI to modify.")
 
+option(
+  QUEST_ENABLE_SUBCOMM
+  "Whether QuEST will be built with support for restricting it to a user-defined MPI communicator. Turned OFF by default."
+  OFF
+)
+message(STATUS "Custom communicator support is turned ${QUEST_ENABLE_SUBCOMM}. Set QUEST_ENABLE_SUBCOMM to modify.")
 
 # GPU Acceleration
 option(
@@ -230,6 +236,9 @@ if (QUEST_ENABLE_CUQUANTUM AND NOT QUEST_ENABLE_CUDA)
   message(FATAL_ERROR "Use of cuQuantum requires CUDA.")
 endif()
 
+if (QUEST_ENABLE_SUBCOMM AND NOT QUEST_ENABLE_MPI)
+  message(FATAL_ERROR "Distribution must be enabled to make use of a user-defined communicator for QuEST.")
+endif()
 
 if(WIN32)
   
@@ -425,8 +434,11 @@ endif()
 # MPI
 if (QUEST_ENABLE_MPI)
   find_package(MPI REQUIRED
+    # Component CXX is the C api usable from C++
+    # NOT the deprecated C++ API
     COMPONENTS CXX
   )
+
   target_link_libraries(QuEST
     PRIVATE
     MPI::MPI_CXX
@@ -497,8 +509,9 @@ endif()
 
 
 # set vars which will be written to config.h.in (auto-converted to 0 or 1)
-set(QUEST_COMPILE_OPENMP ${QUEST_ENABLE_OMP})
+set(QUEST_COMPILE_OMP ${QUEST_ENABLE_OMP})
 set(QUEST_COMPILE_MPI ${QUEST_ENABLE_MPI})
+set(QUEST_COMPILE_SUBCOMM ${QUEST_ENABLE_SUBCOMM})
 set(QUEST_COMPILE_CUQUANTUM ${QUEST_ENABLE_CUQUANTUM})
 set(QUEST_INCLUDE_DEPRECATED_FUNCTIONS ${QUEST_ENABLE_DEPRECATED_API})
 set(QUEST_DEFAULT_NUM_THREADS_PER_BLOCK ${QUEST_GPU_NUM_THREADS_PER_BLOCK})
@@ -553,6 +566,10 @@ add_executable(min_example
   examples/tutorials/min_example.c
 )
 target_link_libraries(min_example PRIVATE QuEST::QuEST)
+
+if (QUEST_ENABLE_MPI AND QUEST_ENABLE_SUBCOMM)
+  target_link_libraries(min_example PRIVATE MPI::MPI_CXX)
+endif()
 
 if (QUEST_INSTALL_BINARIES)
   install(TARGETS min_example

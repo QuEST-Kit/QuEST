@@ -12,6 +12,7 @@ target_sources(QuEST
   operations.cpp
   paulis.cpp
   qureg.cpp
+  subcommunicator.cpp
   trotterisation.cpp
   types.cpp
 )

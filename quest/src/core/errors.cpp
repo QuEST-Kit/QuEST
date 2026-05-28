@@ -156,6 +156,11 @@ void error_commAlreadyInit() {
     raiseInternalError("The MPI communication environment was attemptedly re-initialised despite the QuEST environment already existing.");
 }
 
+void error_commInvalidMpiComm() {
+
+    raiseInternalError("The supplied MPI communicator was MPI_COMM_NULL, or duplication failed.");
+}
+
 void error_commButEnvNotDistributed() {
 
     raiseInternalError("A function attempted to invoke communication despite QuEST being compiled in non-distributed mode.");
@@ -179,6 +184,11 @@ void error_commGivenInconsistentNumSubArraysANodes() {
 void error_commNumMessagesExceedTagMax() {
 
     raiseInternalError("A function attempted to communicate via more messages than permitted (since there would be more uniquely-tagged messages than the tag upperbound).");
+}
+
+void error_commDoubleSetMpiComm() {
+  
+    raiseInternalError("An attempt was made to set mpiCommQuest after it had already been set, as indicated by mpiCommQuest != MPI_COMM_NULL.");
 }
 
 void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps) {

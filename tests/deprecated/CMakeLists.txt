@@ -1,5 +1,6 @@
 # @author Oliver Thomson Brown
 # @author Erich Essmann (patched MPI)
+# @author Tyson Jones (deferred test discovery)
 
 add_executable(dep_tests
     test_main.cpp
@@ -18,4 +19,4 @@ if (QUEST_ENABLE_MPI)
     target_link_libraries(dep_tests PRIVATE MPI::MPI_CXX)
 endif()
 
-catch_discover_tests(dep_tests)
+catch_discover_tests(dep_tests DISCOVERY_MODE PRE_TEST)

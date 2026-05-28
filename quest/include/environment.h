@@ -14,6 +14,8 @@
 #ifndef ENVIRONMENT_H
 #define ENVIRONMENT_H
 
+#include <stdbool.h>
+
 // enable invocation by both C and C++ binaries
 #ifdef __cplusplus
 extern "C" {
@@ -36,6 +38,7 @@ typedef struct {
     int isMultithreaded;
     int isGpuAccelerated;
     int isDistributed;
+    bool userOwnsMpi;
 
     // deployment modes which cannot be directly changed after compilation
     int isCuQuantumEnabled;
@@ -60,6 +63,12 @@ void initQuESTEnv();
  *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_environments.cpp) examples
  */
 void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread);
+
+/** @notyetdoced
+ *  Advanced initialiser which lets the user positively declare that they take responsibility for MPI.
+ *  This means we assume they have called MPI_Init, and that they will call MPI_Finalize.
+ */
+void initCustomMpiQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, int useMultithread);
 
 /// @notyetdoced
 void finalizeQuESTEnv();
