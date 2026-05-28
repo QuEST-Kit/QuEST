@@ -1,6 +1,6 @@
 # @author Oliver Thomson Brown
 # @author Erich Essmann (patched MPI)
-# @author Tyson Jones (defered test discovery)
+# @author Tyson Jones (deferred test discovery)
 
 add_executable(dep_tests
     test_main.cpp
