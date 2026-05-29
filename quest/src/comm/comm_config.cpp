@@ -260,7 +260,7 @@ bool comm_setMpiComm(MPI_Comm newComm) {
     // and merely seeks to overwrite global_mpiComm 
 
     if (global_mpiComm != MPI_COMM_NULL)
-        error_commDoubleSetMpiComm();
+        error_commAlreadyHasSetMpiComm();
     if (newComm == MPI_COMM_NULL)
         error_commMpiCommIsNull();
 

@@ -91,7 +91,7 @@ void error_commGivenInconsistentNumSubArraysANodes();
 
 void error_commNumMessagesExceedTagMax();
 
-void error_commDoubleSetMpiComm();
+void error_commAlreadyHasSetMpiComm();
 
 void error_commMpiCommIsNull();
 

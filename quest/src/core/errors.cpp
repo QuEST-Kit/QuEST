@@ -181,7 +181,7 @@ void error_commNumMessagesExceedTagMax() {
     raiseInternalError("A function attempted to communicate via more messages than permitted (since there would be more uniquely-tagged messages than the tag upperbound).");
 }
 
-void error_commDoubleSetMpiComm() {
+void error_commAlreadyHasSetMpiComm() {
   
     raiseInternalError("An attempt was made to set the QuEST MPI communicator after it had already been set (and changed from MPI_COMM_NULL).");
 }
