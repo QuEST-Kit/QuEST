@@ -161,11 +161,6 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
     global_envPtr->numNodes = (useDistrib)? comm_getNumNodes() : 1;
 }
 
-void updateQuESTEnvDistInfo() {
-    global_envPtr->rank     = (global_envPtr->isDistributed)? comm_getRank()     : 0;
-    global_envPtr->numNodes = (global_envPtr->isDistributed)? comm_getNumNodes() : 1;
-    return;
-}
 
 
 /*
@@ -475,12 +470,8 @@ void syncQuESTEnv() {
     if (global_envPtr->isGpuAccelerated)
         gpu_sync();
 
-    if (global_envPtr->isDistributed) {
+    if (global_envPtr->isDistributed)
         comm_sync();
-        #if QUEST_COMPILE_SUBCOMM
-            updateQuESTEnvDistInfo();
-        #endif
-    }
 }
 
 
