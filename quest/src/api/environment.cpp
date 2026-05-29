@@ -152,13 +152,13 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
     globalEnvPtr->isMultithreaded     = useMultithread;
     globalEnvPtr->isGpuAccelerated    = useGpuAccel;
     globalEnvPtr->isDistributed       = useDistrib;
+    globalEnvPtr->isMpiUserOwned      = userOwnsMpi;
     globalEnvPtr->isCuQuantumEnabled  = useCuQuantum;
     globalEnvPtr->isGpuSharingEnabled = permitGpuSharing;
 
     // bind distributed info
     globalEnvPtr->rank     = (useDistrib)? comm_getRank()     : 0;
     globalEnvPtr->numNodes = (useDistrib)? comm_getNumNodes() : 1;
-    globalEnvPtr->userOwnsMpi = userOwnsMpi;
 }
 
 void updateQuESTEnvDistInfo() {
@@ -214,7 +214,7 @@ void printDeploymentInfo() {
     print_table(
         "deployment", {
         {"isMpiEnabled",        globalEnvPtr->isDistributed},
-        {"doesUserOwnMpi",      globalEnvPtr->userOwnsMpi},
+        {"isMpiUserOwned",      globalEnvPtr->isMpiUserOwned},
         {"isGpuEnabled",        globalEnvPtr->isGpuAccelerated},
         {"isOmpEnabled",        globalEnvPtr->isMultithreaded},
         {"isCuQuantumEnabled",  globalEnvPtr->isCuQuantumEnabled},
@@ -457,7 +457,7 @@ void finalizeQuESTEnv() {
 
     if (globalEnvPtr->isDistributed) {
         comm_sync();
-        comm_end(globalEnvPtr->userOwnsMpi);
+        comm_end(globalEnvPtr->isMpiUserOwned);
     }
 
     // free global env's heap memory and flag it as unallocated
@@ -517,19 +517,17 @@ void reportQuESTEnv() {
 void getQuESTEnvironmentString(char str[200]) {
     validate_envIsInit(__func__);
 
-    QuESTEnv env = getQuESTEnv();
-
     int numThreads = cpu_isOpenmpCompiled()? cpu_getAvailableNumThreads() : 1;
-    int cuQuantum = env.isGpuAccelerated && gpu_isCuQuantumCompiled();
-    int gpuDirect = env.isGpuAccelerated && gpu_isDirectGpuCommPossible();
+    int cuQuantum = globalEnvPtr->isGpuAccelerated && gpu_isCuQuantumCompiled();
+    int gpuDirect = globalEnvPtr->isGpuAccelerated && gpu_isDirectGpuCommPossible();
 
     snprintf(str, 200, "CUDA=%d OpenMP=%d MPI=%d userOwnsMPI=%d threads=%d ranks=%d cuQuantum=%d gpuDirect=%d",
-        env.isGpuAccelerated,
-        env.isMultithreaded,
-        env.isDistributed,
-        env.userOwnsMpi,
+        globalEnvPtr->isGpuAccelerated,
+        globalEnvPtr->isMultithreaded,
+        globalEnvPtr->isDistributed,
+        globalEnvPtr->isMpiUserOwned,
         numThreads,
-        env.numNodes,
+        globalEnvPtr->numNodes,
         cuQuantum,
         gpuDirect);
 }

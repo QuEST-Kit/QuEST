@@ -38,6 +38,7 @@ typedef struct {
     bool isMultithreaded;
     bool isGpuAccelerated;
     bool isDistributed;
+    bool isMpiUserOwned;
 
     // deployment modes which cannot be directly changed after compilation
     bool isCuQuantumEnabled;
@@ -48,7 +49,6 @@ typedef struct {
     // distributed configuration
     int rank;
     int numNodes;
-    bool userOwnsMpi;
 
 } QuESTEnv;
 
