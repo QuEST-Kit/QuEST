@@ -188,7 +188,7 @@ void error_commNumMessagesExceedTagMax() {
 
 void error_commDoubleSetMpiComm() {
   
-    raiseInternalError("An attempt was made to set mpiCommQuest after it had already been set, as indicated by mpiCommQuest != MPI_COMM_NULL.");
+    raiseInternalError("An attempt was made to set the QuEST MPI communicator after it had already been set (and changed from MPI_COMM_NULL).");
 }
 
 void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps) {
