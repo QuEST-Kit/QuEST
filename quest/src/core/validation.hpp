@@ -77,6 +77,8 @@ void validate_newEnvNodesEachHaveUniqueGpu(const char* caller);
 
 void validate_gpuIsCuQuantumCompatible(const char* caller);
 
+void validate_mpiInitStatus(bool useDistrib, bool userOwnsMpi, const char* caller);
+
 
 
 /*

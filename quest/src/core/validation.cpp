@@ -107,6 +107,15 @@ namespace report {
     string CUQUANTUM_DEPLOYED_ON_GPU_WITHOUT_MEM_POOLS =
         "Cannot use cuQuantum since your GPU does not support memory pools. Recompile with cuQuantum disabled to fall-back to using Thrust and custom kernels.";
 
+    string USER_OWNED_MPI_WAS_NOT_INIT =
+        "User owns MPI but did not prior initialise MPI before initialising QuEST.";
+
+    string QUEST_OWNED_MPI_WAS_PRE_INIT =
+        "MPI was already initialised prior to QuESTEnv initialisation, but the user did not declare MPI ownership.";
+
+    string QUEST_IS_NON_DISTRIBUTED_BUT_MPI_WAS_INIT =
+        "QuESTEnv was initialised to be non-distributed but MPI was externally initialised - this is presently unsupported due to a (very minor) technical limitation. If you need this facility, please raise a Github issue!";
+
     
     /*
      * EXISTING QUESTENV
@@ -1480,6 +1489,44 @@ void validate_gpuIsCuQuantumCompatible(const char* caller) {
 
     bool hasMemPools = gpu_doesGpuSupportMemPools();
     assertAllNodesAgreeThat(hasMemPools, report::CUQUANTUM_DEPLOYED_ON_GPU_WITHOUT_MEM_POOLS, caller);
+}
+
+void validate_mpiInitStatus(bool useDistrib, bool userOwnsMpi, const char* caller) {
+
+    if (!global_isValidationEnabled)
+        return;
+
+    // Validation prior to this function confirms init(Custom*)QuESTEnv is only ever called
+    // once, but we must additionally confirm the user has interacted with MPI legally
+
+    bool isMpiInit = comm_isInit();
+
+    // (A) If the user does not declare ownership of MPI, they are forbidden to initialise it
+    if (!userOwnsMpi)
+        assertThat(!isMpiInit, report::QUEST_OWNED_MPI_WAS_PRE_INIT, caller);
+
+    // (B) If QuEST is instructed not to use distribution, we must demand the user is not
+    // using MPI, because we internally consult comm_isInit() to detect QuEST distribution
+    // in many functions, and that will give a false positive when the user inits MPI directly. 
+    if (!useDistrib)
+        assertThat(!isMpiInit, report::QUEST_IS_NON_DISTRIBUTED_BUT_MPI_WAS_INIT, caller);
+
+    // TODO: we can relax above, permitting the user to play with MPI directly while 
+    // disabling it for QuEST, by replacing internal comm_isInit() with e.g. env_isDistributed()
+
+    // (C) If QuEST will use MPI owned by the user, the user must have pre-initialised it
+    if (useDistrib && userOwnsMpi)
+        assertThat(isMpiInit, report::USER_OWNED_MPI_WAS_NOT_INIT, caller);
+    
+    // Confirmation that all 8 scenarios are handled:
+    //     useDistrib=0, userOwnsMpi=0, isMpiInit=0 (legal: nobody wants MPI)
+    // (A) useDistrib=0, userOwnsMpi=0, isMpiInit=1 (illegal: user lied about ownership)
+    //     useDistrib=0, userOwnsMpi=1, isMpiInit=0 (legal: user owns MPI but does nothing!)
+    // (B) useDistrib=0, userOwnsMpi=1, isMpiInit=1 (illegal: comm_isInit() limitation as above)
+    //     useDistrib=1, userOwnsMpi=0, isMpiInit=0 (legal: QuEST will init MPI)
+    // (A) useDistrib=1, userOwnsMpi=0, isMpiInit=1 (illegal: user lied about ownership)
+    // (C) useDistrib=1, userOwnsMpi=1, isMpiInit=0 (illegal: user has reponsibility to pre-init)
+    //     useDistrib=1, userOwnsMpi=1, isMpiInit=1 (legal: user fulfilled responsibility to pre-init)
 }
 
 

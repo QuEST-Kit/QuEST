@@ -74,9 +74,12 @@ static bool hasEnvBeenFinalized = false;
 void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, int useMultithread, const char* caller) {
 
     // ensure that we are never re-initialising QuEST (even after finalize) because
-    // this leads to undefined behaviour in distributed mode, as per the MPI
+    // this leads to undefined behaviour in distributed mode, as per the MPI std,
+    // regardless of whether the user owns MPI
     validate_envNeverInit(globalEnvPtr != nullptr, hasEnvBeenFinalized, caller);
 
+    // load env-vars before validating deployment mode, because some env vars can
+    // affect validation (such as QUEST_PERMIT_NODES_TO_SHARE_GPU)
     envvars_validateAndLoadEnvVars(caller);
     validateconfig_setEpsilonToDefault();
 
@@ -89,6 +92,9 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
     // overwrite deployments (left as modeflag::USE_AUTO=-1) with 0,1 (a bool),
     // which crucially, resolves useDistrib, permitting its consultation below
     autodep_chooseQuESTEnvDeployment(useDistrib, useGpuAccel, useMultithread);
+
+    // ensure that current state of MPI is valid
+    validate_mpiInitStatus(useDistrib, userOwnsMpi, caller);
 
     // optionally initialise MPI; necessary before completing validation,
     // and before any GPU initialisation and validation, since we will
