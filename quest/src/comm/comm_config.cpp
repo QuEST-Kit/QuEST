@@ -227,6 +227,10 @@ void comm_sync() {
 
 #if QUEST_COMPILE_MPI
     MPI_Comm comm_getMpiComm() {
+
+        if (global_mpiComm == MPI_COMM_NULL)
+            error_commMpiCommIsNull();
+
         return global_mpiComm;
     }
 

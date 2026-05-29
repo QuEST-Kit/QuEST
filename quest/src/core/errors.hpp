@@ -95,6 +95,8 @@ void error_commNumMessagesExceedTagMax();
 
 void error_commDoubleSetMpiComm();
 
+void error_commMpiCommIsNull();
+
 void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps);
 
 void assert_commPayloadIsPowerOf2(qindex numAmps);

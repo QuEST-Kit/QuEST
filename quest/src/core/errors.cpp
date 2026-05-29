@@ -191,6 +191,11 @@ void error_commDoubleSetMpiComm() {
     raiseInternalError("An attempt was made to set the QuEST MPI communicator after it had already been set (and changed from MPI_COMM_NULL).");
 }
 
+void error_commMpiCommIsNull() {
+
+    raiseInternalError("The MPI communicator was queried but was unexpectedly still MPI_COMM_NULL.");
+}
+
 void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps) {
 
     bool valid = (
