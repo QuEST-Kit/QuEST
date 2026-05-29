@@ -2,29 +2,36 @@
 #include "quest/include/environment.h"
 #include "quest/include/subcommunicator.h"
 
+#include "quest/src/core/validation.hpp"
 #include "quest/src/comm/comm_config.hpp"
-#include "quest/src/core/errors.hpp"
 
 #if QUEST_COMPILE_MPI && QUEST_COMPILE_SUBCOMM
 
 #include <mpi.h>
 
+
+
+// TODO:
+// We must resolve this inner function of QuEST initialisation, but which is
+// private to api/environment.cpp, and so cannot be exposed in the user-facing
+// include/environment.hpp. Grr! For now, we here just cheekily extern it c:
+extern void validateAndInitCustomQuESTEnv(
+    int useDistrib, bool userOwnsMpi, int useGpuAccel, int useMultithread, const char* caller);
+
+
+
 void initCustomMpiCommQuESTEnv(MPI_Comm userQuestComm, int useGpuAccel, int useMultithread) {
+
     // useDistrib and userOwnsMpi are implied by the user of this initialiser
     const int useDistrib = 1;
     const bool userOwnsMpi = true;
 
-    // set mpiCommQuest to user provided communicator
-    if (comm_isInit()) {
-        comm_setMpiComm(userQuestComm);
-    } else {
-        error_commNotInit();
-    }
+    // pre-validate that we are able to set the MPI communicator
+    validate_mpiInitStatus(useDistrib, userOwnsMpi, __func__);
+    comm_setMpiComm(userQuestComm);
 
-    // initialise QuEST around that communicator
-    initCustomMpiQuESTEnv(useDistrib, userOwnsMpi, useGpuAccel, useMultithread);
-
-    return;
+    // perform remaining validation and init QuEST env
+    validateAndInitCustomQuESTEnv(useDistrib, userOwnsMpi, useGpuAccel, useMultithread, __func__);
 }
 
 #endif
