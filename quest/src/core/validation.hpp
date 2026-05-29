@@ -79,6 +79,8 @@ void validate_gpuIsCuQuantumCompatible(const char* caller);
 
 void validate_mpiInitStatus(bool useDistrib, bool userOwnsMpi, const char* caller);
 
+void validate_mpiSubCommIsNonNull(bool isNonNull, const char* caller);
+
 
 
 /*

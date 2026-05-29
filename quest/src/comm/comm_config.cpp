@@ -133,7 +133,7 @@ void comm_end(bool userOwnsMpi) {
     if (!comm_isInit())
         return;
 
-    // ungracefully handle when the communicator is still NULL, because comm_end() may be
+    // gracefully handle when the communicator is still NULL, because comm_end() may be
     // triggered by "bad MPI init" validation, during which, the communicator may not yet
     // have been set. We choose NOT to divert to MPI_COMM_WORLD, which is likely just to
     // stall at MPI_Barrier, and instead let the user's communicator live on; then crash!
@@ -160,16 +160,18 @@ int comm_getRank() {
     if (!comm_isInit())
         return ROOT_RANK;
 
-    // consult the (potentially sub-) communicator for rank; if it is still
-    // NULL, as can only validly happen during failed MPI status validation (the
-    // error msg is attemptedly printed on only the root process), fallback to
-    // using WORLD (and pray the user hasn't silenced world-root std-out!). We
-    // COULD safely return ROOT_RANK instead, letting all processes believe they
-    // are root, but this grossly duplicates the output across ALL processes
-    MPI_Comm comm = (global_mpiComm == MPI_COMM_NULL)? MPI_COMM_WORLD : global_mpiComm;
+    // Consult the (potentially sub-) communicator for rank; if it is still
+    // NULL, as can only validly happen during failed QuESTEnv init validation
+    // (which triggers root-only error printing and ergo this function), we
+    // fall back to every process believing it is root and so attempting to
+    // print. This safely avoids consulting a potentially bugged MPI communicator
+    // and losing the message. We once tried to fallback to MPI_COMM_WORLD here,
+    // to avoid duplicate output, but it is not worth the risk of msg loss!
+    if (global_mpiComm == MPI_COMM_NULL)
+        return ROOT_RANK;
 
     int rank;
-    MPI_Comm_rank(comm, &rank);
+    MPI_Comm_rank(global_mpiComm, &rank);
     return rank;
 
 #else

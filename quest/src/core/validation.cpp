@@ -110,6 +110,9 @@ namespace report {
     string USER_OWNED_MPI_WAS_NOT_INIT =
         "User owns MPI but did not prior initialise MPI before initialising QuEST.";
 
+    string USER_GIVEN_MPI_COMMUNICATOR_IS_NULL =
+        "The provided MPI communicator was null (MPI_COMM_NULL).";
+
     string QUEST_OWNED_MPI_WAS_PRE_INIT =
         "MPI was already initialised prior to QuESTEnv initialisation, but the user did not declare MPI ownership.";
 
@@ -1527,6 +1530,14 @@ void validate_mpiInitStatus(bool useDistrib, bool userOwnsMpi, const char* calle
     // (A) useDistrib=1, userOwnsMpi=0, isMpiInit=1 (illegal: user lied about ownership)
     // (C) useDistrib=1, userOwnsMpi=1, isMpiInit=0 (illegal: user has reponsibility to pre-init)
     //     useDistrib=1, userOwnsMpi=1, isMpiInit=1 (legal: user fulfilled responsibility to pre-init)
+}
+
+void validate_mpiSubCommIsNonNull(bool isNonNull, const char* caller) {
+
+    if (!global_isValidationEnabled)
+        return;
+
+    assertThat(isNonNull, report::USER_GIVEN_MPI_COMMUNICATOR_IS_NULL, caller);
 }
 
 

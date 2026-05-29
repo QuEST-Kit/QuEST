@@ -32,6 +32,7 @@ void initCustomMpiCommQuESTEnv(MPI_Comm userQuestComm, int useGpuAccel, int useM
 
     // pre-validate that we are able to set the MPI communicator
     validate_mpiInitStatus(useDistrib, userOwnsMpi, __func__);
+    validate_mpiSubCommIsNonNull(userQuestComm != MPI_COMM_NULL, __func__);
 
     // avoid re-setting the MPI comm (to avoid an internal error), which happens
     // if a user illegally re-calls this function, which will be subsequently
