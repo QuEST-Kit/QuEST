@@ -5,16 +5,24 @@
  * @author Oliver Brown
  */
 
-#include <mpi.h>
 #include "quest.h"
 
+// This example requires linking with MPI, which the CMake
+// build only enables when QUEST_ENABLE_SUBCOMM is ON, which
+// results in quest.h defining QUEST_COMPILE_SUBCOMM
+#if ! QUEST_COMPILE_SUBCOMM
 
-    // TODO:
-    // this file will only receive mpi.h from CMakeLists.txt if
-    // we are also compiling with QUEST_ENABLE_SUBCOMM. Fix this!
+int main(void)
+{    
+    std::printf("Example skipped since MPI is not linked.\n");
+    return 0;
+}
 
+#else 
 
-int main (void)
+#include <mpi.h>
+
+int main(void)
 {
     const int  USE_DISTRIB = 1;
     const bool USER_MPI    = 1;
@@ -29,3 +37,5 @@ int main (void)
 
     return 0;
 }
+
+#endif // QUEST_COMPILE_SUBCOMM

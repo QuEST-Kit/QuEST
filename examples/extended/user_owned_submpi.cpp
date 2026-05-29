@@ -5,15 +5,31 @@
  * @author Oliver Brown
  */
 
+#include "quest.h"
 #include <cstdio>
-#include <mpi.h>
-#include <quest.h>
 
 
     // TODO:
-    // this file will only receive mpi.h from CMakeLists.txt if
-    // we are also compiling with QUEST_ENABLE_SUBCOMM. Fix this!
+    // this example sees some processes print to std-out while
+    // QuEST is reporting, colliding with output. May be worth
+    // introducing a sync to force non-QuEST-processes to wait
+    // during QUEST reporting
 
+
+// This example requires linking with MPI, which the CMake
+// build only enables when QUEST_ENABLE_SUBCOMM is ON, which
+// results in quest.h defining QUEST_COMPILE_SUBCOMM
+#if ! QUEST_COMPILE_SUBCOMM
+
+int main()
+{    
+    std::printf("Example skipped since MPI is not linked.\n");
+    return 0;
+}
+
+#else 
+
+#include <mpi.h>
 
 int main (void)
 {
@@ -64,3 +80,5 @@ int main (void)
 
     return 0;
 }
+
+#endif // QUEST_COMPILE_SUBCOMM
