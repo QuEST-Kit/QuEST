@@ -456,11 +456,15 @@ extern "C" void reportSuperOp(SuperOp op) {
     size_t elemMem = mem_getLocalSuperOpMemoryRequired(op.numQubits);
     size_t structMem = sizeof(op);
 
+    printer_sync();
+
     print_header(op, elemMem + structMem);
     print_elems(op);
 
     // exclude mandatory newline above
     print_oneFewerNewlines();
+
+    printer_sync();
 }
 
 
@@ -479,6 +483,8 @@ extern "C" void reportKrausMap(KrausMap map) {
     size_t superMem = mem_getLocalSuperOpMemoryRequired(map.superop.numQubits);
     size_t strucMem = sizeof(map);
 
+    printer_sync();
+
     // gauranteed not to overflow
     size_t totalMem = krausMem + superMem + strucMem;
     print_header(map, totalMem);
@@ -486,4 +492,6 @@ extern "C" void reportKrausMap(KrausMap map) {
 
     // exclude mandatory newline above
     print_oneFewerNewlines();
+    
+    printer_sync();
 }

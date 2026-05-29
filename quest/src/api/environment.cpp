@@ -482,6 +482,8 @@ void reportQuESTEnv() {
 
     /// @todo add function to write this output to file (useful for HPC debugging)
 
+    printer_sync();
+
     print_label("QuEST execution environment");
 
     bool statevec = false;
@@ -503,6 +505,8 @@ void reportQuESTEnv() {
 
     // exclude mandatory newline above
     print_oneFewerNewlines();
+
+    printer_sync();
 }
 
 

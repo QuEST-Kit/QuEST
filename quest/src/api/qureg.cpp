@@ -360,7 +360,8 @@ void reportQuregParams(Qureg qureg) {
 
     /// @todo add function to write this output to file (useful for HPC debugging)
 
-    // printer routines will consult env rank to avoid duplicate printing
+    printer_sync();
+
     print_label("Qureg");
     printDeploymentInfo(qureg);
     printDimensionInfo(qureg);
@@ -369,6 +370,8 @@ void reportQuregParams(Qureg qureg) {
 
     // exclude mandatory newline above
     print_oneFewerNewlines();
+
+    printer_sync();
 }
 
 
@@ -385,11 +388,15 @@ void reportQureg(Qureg qureg) {
     // include struct size (expected negligibly tiny)
     localMem += sizeof(qureg);
 
+    printer_sync();
+
     print_header(qureg, localMem);
     print_elems(qureg);
 
     // exclude mandatory newline above
     print_oneFewerNewlines();
+
+    printer_sync();
 }
 
 

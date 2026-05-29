@@ -22,8 +22,12 @@ using std::string;
 void reportStr(std::string str) {
     validate_envIsInit(__func__);
 
+    printer_sync();
+
     print(str);
     print_newlines();
+
+    printer_sync();
 }
 
 extern "C" void reportStr(const char* str) {
