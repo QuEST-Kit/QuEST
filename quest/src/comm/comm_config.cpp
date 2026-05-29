@@ -231,11 +231,16 @@ void comm_sync() {
 /*
  * MPI COMMUNICATOR MANAGEMENT
  *
- * which requires exposing MPI_Comm in external-facing signatures.
- * In lieu of leaking these into comm_config.hpp, callers must
- * declare them as extern
+ * some of which requires exposing MPI_Comm in external-facing signatures.
+ * In lieu of leaking these into comm_config.hpp, callers must extern them.
  */
 
+bool comm_isMpiCommSet() {
+
+    // once comm_init() or comm_setMpiComm() overwrite
+    // the communicator, is can never return to NULL  
+    return (global_mpiComm == MPI_COMM_NULL);
+}
 
 #if QUEST_COMPILE_MPI
 
@@ -249,17 +254,18 @@ MPI_Comm comm_getMpiComm() {
 
 void comm_setMpiComm(MPI_Comm newComm) {
 
-    // error if global_mpiComm is already set!
-    if (global_mpiComm != MPI_COMM_NULL) {
-        MPI_Barrier(global_mpiComm);
-        MPI_Comm_free(&global_mpiComm);
+    // this is called prior to QuEST initialisation,
+    // and merely seeks to overwrite global_mpiComm 
+
+    if (global_mpiComm != MPI_COMM_NULL)
         error_commDoubleSetMpiComm();
-    }
+    if (newComm == MPI_COMM_NULL)
+        error_commMpiCommIsNull();
 
     int mpi_err = MPI_Comm_dup(newComm, &global_mpiComm);
-    if (mpi_err != MPI_SUCCESS) {
+
+    if (mpi_err != MPI_SUCCESS)
         error_commInvalidMpiComm();
-    }
 
     return;
 }

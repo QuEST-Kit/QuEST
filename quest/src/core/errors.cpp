@@ -193,7 +193,7 @@ void error_commDoubleSetMpiComm() {
 
 void error_commMpiCommIsNull() {
 
-    raiseInternalError("The MPI communicator was queried but was unexpectedly still MPI_COMM_NULL.");
+    raiseInternalError("The MPI communicator was queried (or set) but was unexpectedly MPI_COMM_NULL (or set to be).");
 }
 
 void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps) {

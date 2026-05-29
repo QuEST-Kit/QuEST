@@ -7,7 +7,7 @@
 
 #if QUEST_COMPILE_MPI && QUEST_COMPILE_SUBCOMM
 
-#include <mpi.h> // MPI_Comm
+#include <mpi.h>
 
 
 // TODO:
@@ -32,9 +32,14 @@ void initCustomMpiCommQuESTEnv(MPI_Comm userQuestComm, int useGpuAccel, int useM
 
     // pre-validate that we are able to set the MPI communicator
     validate_mpiInitStatus(useDistrib, userOwnsMpi, __func__);
-    comm_setMpiComm(userQuestComm);
 
-    // perform remaining validation and init QuEST env
+    // avoid re-setting the MPI comm (to avoid an internal error), which happens
+    // if a user illegally re-calls this function, which will be subsequently
+    // caught by the validation in validateAndInitCustomQuESTEnv() below
+    if (comm_isMpiCommSet())
+        comm_setMpiComm(userQuestComm);
+
+    // perform remaining validation (some is harmlessly repeated) and init QuEST env
     validateAndInitCustomQuESTEnv(useDistrib, userOwnsMpi, useGpuAccel, useMultithread, __func__);
 }
 
