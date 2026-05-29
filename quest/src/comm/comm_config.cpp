@@ -238,10 +238,14 @@ void comm_sync() {
  */
 
 bool comm_isMpiCommSet() {
+#if QUEST_COMPILE_MPI
 
     // once comm_init() or comm_setMpiComm() overwrite
     // the communicator, is can never return to NULL  
     return (global_mpiComm != MPI_COMM_NULL);
+# else
+    return false;
+#endif
 }
 
 #if QUEST_COMPILE_MPI

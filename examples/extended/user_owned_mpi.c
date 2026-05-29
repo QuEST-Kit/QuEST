@@ -6,6 +6,7 @@
  */
 
 #include "quest.h"
+#include <stdio.h>
 
 // This example requires linking with MPI, which the CMake
 // build only enables when QUEST_ENABLE_SUBCOMM is ON, which
@@ -14,7 +15,7 @@
 
 int main(void)
 {    
-    std::printf("Example skipped since MPI is not linked.\n");
+    printf("Example skipped since MPI is not linked.\n");
     return 0;
 }
 
