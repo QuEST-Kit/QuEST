@@ -1164,10 +1164,10 @@ void default_inputErrorHandler(const char* func, const char* msg) {
     // will then attempt to instantly abort all nodes, losing the error message.
     comm_sync();
 
-    // finalise MPI before error-exit to avoid scaring user with giant MPI error message
+    // finalise MPI before error-exit to avoid scaring user with giant MPI error message;
     // we always "take ownership" of MPI here since we're about to kill the whole program
     if (comm_isInit())
-        comm_end(0);
+        comm_end(/*userOwnsMpi=*/false);
 
     // simply exit, interrupting any other process (potentially leaking)
     exit(EXIT_FAILURE);
