@@ -7,7 +7,6 @@
 
 #if QUEST_COMPILE_MPI && QUEST_COMPILE_SUBCOMM
 
-#include <stdbool.h>
 #include <mpi.h>
 
 void initCustomMpiCommQuESTEnv(MPI_Comm userQuestComm, int useGpuAccel, int useMultithread) {
