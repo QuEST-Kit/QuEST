@@ -21,7 +21,7 @@
 #if QUEST_COMPILE_MPI
     #include <mpi.h>
 
-    static MPI_Comm mpiCommQuest = MPI_COMM_NULL;
+    static MPI_Comm global_mpiComm = MPI_COMM_NULL;
 #endif
 
 
@@ -117,8 +117,8 @@ void comm_init(bool userOwnsMpi) {
         MPI_Init(NULL, NULL);
 
     // choose communicator only when the user hasn't 
-    if (mpiCommQuest == MPI_COMM_NULL)
-        MPI_Comm_dup(MPI_COMM_WORLD, &mpiCommQuest);
+    if (global_mpiComm == MPI_COMM_NULL)
+        MPI_Comm_dup(MPI_COMM_WORLD, &global_mpiComm);
 
 #endif
 }
@@ -136,11 +136,11 @@ void comm_end(bool userOwnsMpi) {
     // triggered by "bad MPI init" validation, during which, the communicator may not yet
     // have been set. We choose NOT to divert to MPI_COMM_WORLD, which is likely just to
     // stall at MPI_Barrier, and instead let the user's communicator live on; then crash!
-    if (mpiCommQuest == MPI_COMM_NULL)
+    if (global_mpiComm == MPI_COMM_NULL)
         return;
 
-    MPI_Barrier(mpiCommQuest);
-    MPI_Comm_free(&mpiCommQuest);
+    MPI_Barrier(global_mpiComm);
+    MPI_Comm_free(&global_mpiComm);
     
     // QuEST must finalise MPI if the user does not own it
     if (!userOwnsMpi)
@@ -165,7 +165,7 @@ int comm_getRank() {
     // using WORLD (and pray the user hasn't silenced world-root std-out!). We
     // COULD safely return ROOT_RANK instead, letting all processes believe they
     // are root, but this grossly duplicates the output across ALL processes
-    MPI_Comm comm = (mpiCommQuest == MPI_COMM_NULL)? MPI_COMM_WORLD : mpiCommQuest;
+    MPI_Comm comm = (global_mpiComm == MPI_COMM_NULL)? MPI_COMM_WORLD : global_mpiComm;
 
     int rank;
     MPI_Comm_rank(comm, &rank);
@@ -197,7 +197,7 @@ int comm_getNumNodes() {
         return 1;
 
     int numNodes;
-    MPI_Comm_size(mpiCommQuest, &numNodes);
+    MPI_Comm_size(global_mpiComm, &numNodes);
     return numNodes;
 
 #else
@@ -218,29 +218,29 @@ void comm_sync() {
     // gracefully handle when the communicator is still NULL, because comm_sync() is
     // triggered by "bad MPI init" validation (during the error message printing)
     // during which, the communicator may not yet have been overriden
-    if (mpiCommQuest == MPI_COMM_NULL)
+    if (global_mpiComm == MPI_COMM_NULL)
         return;
 
-    MPI_Barrier(mpiCommQuest);
+    MPI_Barrier(global_mpiComm);
 #endif
 }
 
 #if QUEST_COMPILE_MPI
     MPI_Comm comm_getMpiComm() {
-        return mpiCommQuest;
+        return global_mpiComm;
     }
 
     #if QUEST_COMPILE_SUBCOMM
         void comm_setMpiComm(MPI_Comm newComm) {
 
-            // error if mpiCommQuEST is already set!
-            if (mpiCommQuest != MPI_COMM_NULL) {
-                MPI_Barrier(mpiCommQuest);
-                MPI_Comm_free(&mpiCommQuest);
+            // error if global_mpiComm is already set!
+            if (global_mpiComm != MPI_COMM_NULL) {
+                MPI_Barrier(global_mpiComm);
+                MPI_Comm_free(&global_mpiComm);
                 error_commDoubleSetMpiComm();
             }
 
-            int mpi_err = MPI_Comm_dup(newComm, &mpiCommQuest);
+            int mpi_err = MPI_Comm_dup(newComm, &global_mpiComm);
             if (mpi_err != MPI_SUCCESS) {
                 error_commInvalidMpiComm();
             }
