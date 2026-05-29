@@ -132,6 +132,13 @@ void comm_end(bool userOwnsMpi) {
     if (!comm_isInit())
         return;
 
+    // ungracefully handle when the communicator is still NULL, because comm_end() may be
+    // triggered by "bad MPI init" validation, during which, the communicator may not yet
+    // have been set. We choose NOT to divert to MPI_COMM_WORLD, which is likely just to
+    // stall at MPI_Barrier, and instead let the user's communicator live on; then crash!
+    if (mpiCommQuest == MPI_COMM_NULL)
+        return;
+
     MPI_Barrier(mpiCommQuest);
     MPI_Comm_free(&mpiCommQuest);
     
@@ -152,8 +159,16 @@ int comm_getRank() {
     if (!comm_isInit())
         return ROOT_RANK;
 
+    // consult the (potentially sub-) communicator for rank; if it is still
+    // NULL, as can only validly happen during failed MPI status validation (the
+    // error msg is attemptedly printed on only the root process), fallback to
+    // using WORLD (and pray the user hasn't silenced world-root std-out!). We
+    // COULD safely return ROOT_RANK instead, letting all processes believe they
+    // are root, but this grossly duplicates the output across ALL processes
+    MPI_Comm comm = (mpiCommQuest == MPI_COMM_NULL)? MPI_COMM_WORLD : mpiCommQuest;
+
     int rank;
-    MPI_Comm_rank(mpiCommQuest, &rank);
+    MPI_Comm_rank(comm, &rank);
     return rank;
 
 #else
@@ -198,6 +213,12 @@ void comm_sync() {
 
     // gracefully handle when not distributed, needed by e.g. pre-MPI-setup validation 
     if (!comm_isInit())
+        return;
+
+    // gracefully handle when the communicator is still NULL, because comm_sync() is
+    // triggered by "bad MPI init" validation (during the error message printing)
+    // during which, the communicator may not yet have been overriden
+    if (mpiCommQuest == MPI_COMM_NULL)
         return;
 
     MPI_Barrier(mpiCommQuest);
