@@ -6,7 +6,7 @@
  * 
  * @author Tyson Jones
  * @author Jakub Adamski (sped-up large comm by asynch messages)
- * @author Oliver Brown (patched max-message inference, consulted on AR and MPICH support)
+ * @author Oliver Brown (added custom communicators, patched max-message inference, consulted on AR and MPICH support)
  * @author Ania (Anna) Brown (developed QuEST v1 logic)
  */
 
@@ -24,6 +24,7 @@
 
 #if QUEST_COMPILE_MPI
     #include <mpi.h>
+    extern MPI_Comm comm_getMpiComm(); // comm_config.cpp does not leak MPI_Comm
 #endif
 
 #include <vector>

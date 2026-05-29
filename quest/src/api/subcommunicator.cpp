@@ -7,8 +7,13 @@
 
 #if QUEST_COMPILE_MPI && QUEST_COMPILE_SUBCOMM
 
-#include <mpi.h>
+#include <mpi.h> // MPI_Comm
 
+
+// TODO:
+// We must resolve this communicator function which contains an MPI type
+// and ergo should not be leaked outside comm_config.cpp. For now, we cheat! 
+extern void comm_setMpiComm(MPI_Comm newComm);
 
 
 // TODO:
@@ -17,7 +22,6 @@
 // include/environment.hpp. Grr! For now, we here just cheekily extern it c:
 extern void validateAndInitCustomQuESTEnv(
     int useDistrib, bool userOwnsMpi, int useGpuAccel, int useMultithread, const char* caller);
-
 
 
 void initCustomMpiCommQuESTEnv(MPI_Comm userQuestComm, int useGpuAccel, int useMultithread) {

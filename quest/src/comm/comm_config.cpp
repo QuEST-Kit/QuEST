@@ -30,6 +30,7 @@
  * WARN ABOUT CUDA-AWARENESS
  */
 
+
 #if QUEST_COMPILE_MPI && QUEST_COMPILE_CUDA
 
     // this check is OpenMPI specific
@@ -54,6 +55,7 @@
 
 /*
  * MPI ENVIRONMENT MANAGEMENT
+ *
  * all of which is safely callable in non-distributed mode
  */
 
@@ -122,7 +124,6 @@ void comm_init(bool userOwnsMpi) {
 
 #endif
 }
-
 
 
 void comm_end(bool userOwnsMpi) {
@@ -225,31 +226,42 @@ void comm_sync() {
 #endif
 }
 
+
+
+/*
+ * MPI COMMUNICATOR MANAGEMENT
+ *
+ * which requires exposing MPI_Comm in external-facing signatures.
+ * In lieu of leaking these into comm_config.hpp, callers must
+ * declare them as extern
+ */
+
+
 #if QUEST_COMPILE_MPI
-    MPI_Comm comm_getMpiComm() {
 
-        if (global_mpiComm == MPI_COMM_NULL)
-            error_commMpiCommIsNull();
+MPI_Comm comm_getMpiComm() {
 
-        return global_mpiComm;
+    if (global_mpiComm == MPI_COMM_NULL)
+        error_commMpiCommIsNull();
+
+    return global_mpiComm;
+}
+
+void comm_setMpiComm(MPI_Comm newComm) {
+
+    // error if global_mpiComm is already set!
+    if (global_mpiComm != MPI_COMM_NULL) {
+        MPI_Barrier(global_mpiComm);
+        MPI_Comm_free(&global_mpiComm);
+        error_commDoubleSetMpiComm();
     }
 
-    #if QUEST_COMPILE_SUBCOMM
-        void comm_setMpiComm(MPI_Comm newComm) {
+    int mpi_err = MPI_Comm_dup(newComm, &global_mpiComm);
+    if (mpi_err != MPI_SUCCESS) {
+        error_commInvalidMpiComm();
+    }
 
-            // error if global_mpiComm is already set!
-            if (global_mpiComm != MPI_COMM_NULL) {
-                MPI_Barrier(global_mpiComm);
-                MPI_Comm_free(&global_mpiComm);
-                error_commDoubleSetMpiComm();
-            }
+    return;
+}
 
-            int mpi_err = MPI_Comm_dup(newComm, &global_mpiComm);
-            if (mpi_err != MPI_SUCCESS) {
-                error_commInvalidMpiComm();
-            }
-
-            return;
-        }
-    #endif
-#endif
+#endif // QUEST_COMPILE_MPI
