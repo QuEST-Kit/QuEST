@@ -196,7 +196,7 @@ void printCompilationInfo() {
     print_table(
         "compilation", {
         {"isMpiCompiled",                comm_isMpiCompiled()},
-        {"isMpiSubCommunicatorCompiled", comm_isMpiSubCommunicatorCompiled()},
+        {"isMpiSubCommCompiled",         comm_isMpiSubCommCompiled()},
         {"isGpuCompiled",                gpu_isGpuCompiled()},
         {"isOmpCompiled",                cpu_isOpenmpCompiled()},
         {"isCuQuantumCompiled",          gpu_isCuQuantumCompiled()},

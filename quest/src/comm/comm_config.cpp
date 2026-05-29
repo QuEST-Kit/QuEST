@@ -64,7 +64,7 @@ bool comm_isMpiCompiled() {
     return (bool) QUEST_COMPILE_MPI;
 }
 
-bool comm_isMpiSubCommunicatorCompiled() {
+bool comm_isMpiSubCommCompiled() {
     return (bool) QUEST_COMPILE_SUBCOMM;
 }
 
