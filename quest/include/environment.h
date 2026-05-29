@@ -35,20 +35,20 @@ extern "C" {
 typedef struct {
 
     // deployment modes which can be runtime disabled
-    int isMultithreaded;
-    int isGpuAccelerated;
-    int isDistributed;
-    bool userOwnsMpi;
+    bool isMultithreaded;
+    bool isGpuAccelerated;
+    bool isDistributed;
 
     // deployment modes which cannot be directly changed after compilation
-    int isCuQuantumEnabled;
+    bool isCuQuantumEnabled;
 
     // deployment configurations which can be changed via environment variables
-    int isGpuSharingEnabled;
+    bool isGpuSharingEnabled;
 
     // distributed configuration
     int rank;
     int numNodes;
+    bool userOwnsMpi;
 
 } QuESTEnv;
 

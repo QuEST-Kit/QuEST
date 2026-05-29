@@ -86,7 +86,8 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
     // by mpirun believe they are each the main rank. This seems unavoidable.
     validate_newEnvDeploymentMode(useDistrib, useGpuAccel, useMultithread, caller);
 
-    // overwrite deployments left as modeflag::USE_AUTO
+    // overwrite deployments (left as modeflag::USE_AUTO=-1) with 0,1 (a bool),
+    // which crucially, resolves useDistrib, permitting its consultation below
     autodep_chooseQuESTEnvDeployment(useDistrib, useGpuAccel, useMultithread);
 
     // optionally initialise MPI; necessary before completing validation,
@@ -140,17 +141,17 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
     if (globalEnvPtr == nullptr)
         error_allocOfQuESTEnvFailed();
 
-    // bind deployment info to global instance
+    // bind deployment info to global instance (autocasting int to bool)
     globalEnvPtr->isMultithreaded     = useMultithread;
     globalEnvPtr->isGpuAccelerated    = useGpuAccel;
     globalEnvPtr->isDistributed       = useDistrib;
-    globalEnvPtr->userOwnsMpi         = userOwnsMpi;
     globalEnvPtr->isCuQuantumEnabled  = useCuQuantum;
     globalEnvPtr->isGpuSharingEnabled = permitGpuSharing;
 
     // bind distributed info
     globalEnvPtr->rank     = (useDistrib)? comm_getRank()     : 0;
     globalEnvPtr->numNodes = (useDistrib)? comm_getNumNodes() : 1;
+    globalEnvPtr->userOwnsMpi = userOwnsMpi;
 }
 
 void updateQuESTEnvDistInfo() {
