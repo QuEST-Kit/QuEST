@@ -103,55 +103,24 @@ bool comm_isInit() {
 }
 
 
-void comm_init(int useDistrib, bool userOwnsMpi) {
+void comm_init(bool userOwnsMpi) {
 #if QUEST_COMPILE_MPI
 
-    // error if user owns MPI but has not initialised
-    if (userOwnsMpi && !comm_isInit()) {
+    // re-assert prior user-validations for robustness
+    if (userOwnsMpi && !comm_isInit())
         error_commNotInit();
-    }
+    if (!userOwnsMpi && comm_isInit())
+        error_commAlreadyInit();
    
-    // Overall mpiCommQuest should be set in the following ways
-    // however only useDistrib = 1 and userOwnsMpi = false
-    // and useDistrib = 0 and userOwnsMpi = true 
-    // require action here
-    //
-    // | useDistrib | userOwnsMpi |  mpiCommQuest  |
-    // | ---------- | ----------- | -------------- |
-    // |     0      |    false    | MPI_COMM_NULL  |
-    // | ---------- | ----------- | -------------- |
-    // |     1      |    false    | MPI_COMM_WORLD |
-    // | ---------- | ----------- | -------------- |
-    // |     0      |    true     | MPI_COMM_SELF  |
-    // | ---------- | ----------- | -------------- |
-    // |            |             | MPI_COMM_WORLD |
-    // |     1      |    true     |      or        |
-    // |            |             | userQuestComm  |
-    // | ---------- | ----------- | -------------- |
-    
+    // init MPI only when it's not the user's responsibility
+    if (!userOwnsMpi)
+        MPI_Init(NULL, NULL);
 
-    if (useDistrib && !userOwnsMpi) {
-        // error if attempting re-initialisation
-        if (comm_isInit()) {
-            error_commAlreadyInit();
-        } else {
-            MPI_Init(NULL, NULL);
-            // The user wants MPI and is leaving it to QuEST
-            MPI_Comm_dup(MPI_COMM_WORLD, &mpiCommQuest);
-        }
-    } else if (!useDistrib && userOwnsMpi) {
-        // The user has initialised MPI but wants QuEST to ignore it
-        MPI_Comm_dup(MPI_COMM_SELF, &mpiCommQuest);
-    } else if (useDistrib && userOwnsMpi) {
-        // if mpiCommQuEST is still MPI_COMM_NULL the user is not 
-        // providing their own MPI_Comm and we should set mpiCommQuest
-        // to MPI_COMM_WORLD
-        if (mpiCommQuest == MPI_COMM_NULL)
-            MPI_Comm_dup(MPI_COMM_WORLD, &mpiCommQuest);
-    }
+    // choose communicator only when the user hasn't 
+    if (mpiCommQuest == MPI_COMM_NULL)
+        MPI_Comm_dup(MPI_COMM_WORLD, &mpiCommQuest);
 
 #endif
-    return;
 }
 
 

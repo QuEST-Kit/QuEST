@@ -22,7 +22,7 @@ bool comm_isMpiCompiled();
 bool comm_isMpiSubCommunicatorCompiled();
 bool comm_isMpiGpuAware();
 
-void comm_init(int useDistrib, bool userOwnsMpi);
+void comm_init(bool userOwnsMpi);
 void comm_end(bool userOwnsMpi);
 void comm_sync();
 

@@ -100,7 +100,8 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
     // and before any GPU initialisation and validation, since we will
     // perform that specifically upon the MPI-process-bound GPU(s). Further,
     // we can make sure validation errors are reported only by the root node.
-    comm_init(useDistrib, userOwnsMpi);
+    if (useDistrib)
+        comm_init(userOwnsMpi);
 
     validate_newEnvDistributedBetweenPower2Nodes(caller);
 
