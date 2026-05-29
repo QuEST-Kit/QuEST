@@ -113,6 +113,9 @@ namespace report {
     string USER_GIVEN_MPI_COMMUNICATOR_IS_NULL =
         "The provided MPI communicator was null (MPI_COMM_NULL).";
 
+    string USER_GIVEN_MPI_COMMUNICATOR_FAILED_TO_SET =
+        "The provided MPI communicator could not be used; MPI_Comm_dup() was not successful.";
+
     string QUEST_OWNED_MPI_WAS_PRE_INIT =
         "MPI was already initialised prior to QuESTEnv initialisation, but the user did not declare MPI ownership.";
 
@@ -1538,6 +1541,14 @@ void validate_mpiSubCommIsNonNull(bool isNonNull, const char* caller) {
         return;
 
     assertThat(isNonNull, report::USER_GIVEN_MPI_COMMUNICATOR_IS_NULL, caller);
+}
+
+void validate_mpiSubCommSetSucceeded(bool success, const char* caller) {
+
+    if (!global_isValidationEnabled)
+        return;
+
+    assertThat(success, report::USER_GIVEN_MPI_COMMUNICATOR_FAILED_TO_SET, caller);
 }
 
 

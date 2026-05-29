@@ -81,6 +81,8 @@ void validate_mpiInitStatus(bool useDistrib, bool userOwnsMpi, const char* calle
 
 void validate_mpiSubCommIsNonNull(bool isNonNull, const char* caller);
 
+void validate_mpiSubCommSetSucceeded(bool success, const char* caller);
+
 
 
 /*

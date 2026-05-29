@@ -156,11 +156,6 @@ void error_commAlreadyInit() {
     raiseInternalError("The MPI communication environment was attemptedly re-initialised despite the QuEST environment already existing.");
 }
 
-void error_commInvalidMpiComm() {
-
-    raiseInternalError("The supplied MPI communicator was MPI_COMM_NULL, or duplication failed.");
-}
-
 void error_commButEnvNotDistributed() {
 
     raiseInternalError("A function attempted to invoke communication despite QuEST being compiled in non-distributed mode.");

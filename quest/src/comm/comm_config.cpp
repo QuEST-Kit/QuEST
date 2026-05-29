@@ -241,7 +241,7 @@ bool comm_isMpiCommSet() {
 
     // once comm_init() or comm_setMpiComm() overwrite
     // the communicator, is can never return to NULL  
-    return (global_mpiComm == MPI_COMM_NULL);
+    return (global_mpiComm != MPI_COMM_NULL);
 }
 
 #if QUEST_COMPILE_MPI
@@ -254,7 +254,7 @@ MPI_Comm comm_getMpiComm() {
     return global_mpiComm;
 }
 
-void comm_setMpiComm(MPI_Comm newComm) {
+bool comm_setMpiComm(MPI_Comm newComm) {
 
     // this is called prior to QuEST initialisation,
     // and merely seeks to overwrite global_mpiComm 
@@ -264,12 +264,8 @@ void comm_setMpiComm(MPI_Comm newComm) {
     if (newComm == MPI_COMM_NULL)
         error_commMpiCommIsNull();
 
-    int mpi_err = MPI_Comm_dup(newComm, &global_mpiComm);
-
-    if (mpi_err != MPI_SUCCESS)
-        error_commInvalidMpiComm();
-
-    return;
+    auto status = MPI_Comm_dup(newComm, &global_mpiComm);
+    return status == MPI_SUCCESS;
 }
 
 #endif // QUEST_COMPILE_MPI

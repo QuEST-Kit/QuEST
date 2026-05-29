@@ -31,6 +31,6 @@ bool comm_isMpiCommSet();
 
 // Signatures containing MPI types which callers must extern:
 // extern MPI_Comm comm_getMpiComm()
-// extern void comm_setMpiComm(MPI_Comm newComm)
+// extern bool comm_setMpiComm(MPI_Comm newComm)
 
 #endif // COMM_CONFIG_HPP
