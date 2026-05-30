@@ -117,7 +117,7 @@ MPI_Comm comm_getMpiComm() {
 }
 
 
-bool comm_setMpiComm(MPI_Comm newComm) {
+bool comm_setMpiComm(MPI_Comm newComm, bool userOwnsMpi) {
 
     // illegal to re-set, or set to null
     if (global_mpiComm != MPI_COMM_NULL)
@@ -127,7 +127,13 @@ bool comm_setMpiComm(MPI_Comm newComm) {
 
     // detect bad communicator, and inform validation
     auto status = MPI_Comm_dup(newComm, &global_mpiComm);
-    return status == MPI_SUCCESS;
+    if (status != MPI_SUCCESS)
+        return false;
+
+    // record ownership as soon as QuEST communication becomes active, so
+    // validation errors during env initialisation never kill user-owned MPI
+    global_isMpiUserOwned = userOwnsMpi;
+    return true;
 }
 
 
@@ -220,10 +226,7 @@ void comm_init(bool userOwnsMpi) {
     // choose communicator only when the user hasn't already
     // (via comm_setMpiComm, during custom env initialisation)
     if (global_mpiComm == MPI_COMM_NULL)
-        comm_setMpiComm(MPI_COMM_WORLD);
-
-    // remember user ownership, so we avoid later killing user-owned MPI
-    global_isMpiUserOwned = userOwnsMpi;
+        comm_setMpiComm(MPI_COMM_WORLD, userOwnsMpi);
 
 #endif
 }

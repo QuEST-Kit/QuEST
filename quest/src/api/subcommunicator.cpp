@@ -13,7 +13,7 @@
 // TODO:
 // We must resolve this communicator function which contains an MPI type
 // and ergo should not be leaked outside comm_config.cpp. For now, we cheat! 
-extern bool comm_setMpiComm(MPI_Comm newComm);
+extern bool comm_setMpiComm(MPI_Comm newComm, bool userOwnsMpi);
 
 
 // TODO:
@@ -38,7 +38,7 @@ void initCustomMpiCommQuESTEnv(MPI_Comm userQuestComm, int useGpuAccel, int useM
     // if a user illegally re-calls this function, which will be subsequently
     // caught by the validation in validateAndInitCustomQuESTEnv() below
     if (!comm_isActive()) {
-        bool success = comm_setMpiComm(userQuestComm);
+        bool success = comm_setMpiComm(userQuestComm, userOwnsMpi);
         validate_mpiSubCommSetSucceeded(success, __func__);
     }
 
