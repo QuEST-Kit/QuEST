@@ -188,7 +188,17 @@ void error_commAlreadyHasSetMpiComm() {
 
 void error_commMpiCommIsNull() {
 
-    raiseInternalError("The MPI communicator was queried (or set) but was unexpectedly MPI_COMM_NULL (or set to be).");
+    raiseInternalError("The MPI communicator was queried but was unexpectedly MPI_COMM_NULL.");
+}
+
+void error_commNewMpiCommIsNull() {
+
+    raiseInternalError("The MPI communicator was attemptedly set to MPI_COMM_NULL, which validation should have prior caught.");
+}
+
+void error_commActiveButMpiNotInit() {
+
+    raiseInternalError("QuEST believed communication was active, but MPI_Init reported MPI was not initialised.");
 }
 
 void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps) {

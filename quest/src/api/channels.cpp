@@ -107,7 +107,7 @@ void freeAllMemoryIfAnyAllocsFailed(T& obj) {
 
     // determine whether any node experienced a failure
     bool anyFail = didAnyLocalAllocsFail(obj);
-    if (comm_isInit())
+    if (comm_isActive())
         anyFail = comm_isTrueOnAllNodes(anyFail);
 
     // if so, free all memory before subsequent validation

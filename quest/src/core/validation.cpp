@@ -1167,13 +1167,14 @@ void default_inputErrorHandler(const char* func, const char* msg) {
         + "Exiting...\n");
 
     // force a synch because otherwise non-main nodes may exit before print, and MPI
-    // will then attempt to instantly abort all nodes, losing the error message.
+    // will then attempt to instantly abort all nodes, losing the error message
     comm_sync();
 
-    // finalise MPI before error-exit to avoid scaring user with giant MPI error message;
-    // we always "take ownership" of MPI here since we're about to kill the whole program
-    if (comm_isInit())
-        comm_end(/*userOwnsMpi=*/false);
+    // finalise QuEST-owned MPI before error-exit to avoid scaring user with giant MPI crash
+    // message. note user-owned MPI is NOT killed because it's possible only SOME processes
+    // reach here, and attempting to sync/kill them would result in an MPI hang/crash anyway
+    if (comm_isActive())
+        comm_end(); // keeps user-owned MPI alive
 
     // simply exit, interrupting any other process (potentially leaking)
     exit(EXIT_FAILURE);
@@ -1355,7 +1356,7 @@ void assertAllNodesAgreeThat(bool valid, string msg, tokenSubs vars, const char*
     // when performing validation that may be non-uniform between nodes. For
     // example, mallocs may succeed on one node but fail on another due to
     // inhomogeneous loads.
-    if (comm_isInit())
+    if (comm_isActive())
         valid = comm_isTrueOnAllNodes(valid);
 
     // prepare error message only if validation will fail
@@ -1499,28 +1500,21 @@ void validate_gpuIsCuQuantumCompatible(const char* caller) {
 
 void validate_mpiInitStatus(bool useDistrib, bool userOwnsMpi, const char* caller) {
 
-    if (!global_isValidationEnabled)
-        return;
-
     // Validation prior to this function confirms init(Custom*)QuESTEnv is only ever called
     // once, but we must additionally confirm the user has interacted with MPI legally
 
-    bool isMpiInit = comm_isInit();
+    if (!global_isValidationEnabled)
+        return;
 
-    // (A) If the user does not declare ownership of MPI, they are forbidden to initialise it
+    // We consult whether MPI itself has been initialised, NOT whether QuEST is using it
+    bool isMpiInit = comm_isMpiInit();
+
+    // (A) If the user does not declare ownership of MPI, they are forbidden to initialise it,
+    //     even when they are not distributing QuEST (i.e. useDistrib=0), just for clarity!
     if (!userOwnsMpi)
         assertThat(!isMpiInit, report::QUEST_OWNED_MPI_WAS_PRE_INIT, caller);
 
-    // (B) If QuEST is instructed not to use distribution, we must demand the user is not
-    // using MPI, because we internally consult comm_isInit() to detect QuEST distribution
-    // in many functions, and that will give a false positive when the user inits MPI directly. 
-    if (!useDistrib)
-        assertThat(!isMpiInit, report::QUEST_IS_NON_DISTRIBUTED_BUT_MPI_WAS_INIT, caller);
-
-    // TODO: we can relax above, permitting the user to play with MPI directly while 
-    // disabling it for QuEST, by replacing internal comm_isInit() with e.g. env_isDistributed()
-
-    // (C) If QuEST will use MPI owned by the user, the user must have pre-initialised it
+    // (B) If QuEST will use MPI owned by the user, the user must have pre-initialised it
     if (useDistrib && userOwnsMpi)
         assertThat(isMpiInit, report::USER_OWNED_MPI_WAS_NOT_INIT, caller);
     
@@ -1528,10 +1522,10 @@ void validate_mpiInitStatus(bool useDistrib, bool userOwnsMpi, const char* calle
     //     useDistrib=0, userOwnsMpi=0, isMpiInit=0 (legal: nobody wants MPI)
     // (A) useDistrib=0, userOwnsMpi=0, isMpiInit=1 (illegal: user lied about ownership)
     //     useDistrib=0, userOwnsMpi=1, isMpiInit=0 (legal: user owns MPI but does nothing!)
-    // (B) useDistrib=0, userOwnsMpi=1, isMpiInit=1 (illegal: comm_isInit() limitation as above)
+    //     useDistrib=0, userOwnsMpi=1, isMpiInit=1 (legal: user owns MPI, QuEST won't use it)
     //     useDistrib=1, userOwnsMpi=0, isMpiInit=0 (legal: QuEST will init MPI)
     // (A) useDistrib=1, userOwnsMpi=0, isMpiInit=1 (illegal: user lied about ownership)
-    // (C) useDistrib=1, userOwnsMpi=1, isMpiInit=0 (illegal: user has reponsibility to pre-init)
+    // (B) useDistrib=1, userOwnsMpi=1, isMpiInit=0 (illegal: user has reponsibility to pre-init)
     //     useDistrib=1, userOwnsMpi=1, isMpiInit=1 (legal: user fulfilled responsibility to pre-init)
 }
 

@@ -6,8 +6,11 @@
  * 
  * Note that even when QUEST_COMPILE_MPI=1, the user may have
  * disabled distribution when creating the QuEST environment
- * at runtime. Ergo we use comm_isInit() to determine whether
- * functions should invoke the MPI API.
+ * at runtime - even despite they themselves initialising and
+ * using MPI. So we must be careful about consulting MPI status!
+ * Furthermore, all routines here will only ever consult/affect
+ * the QuEST communicator, never the entire MPI environment,
+ * the latter of which may contain non-participating processes.
  * 
  * @author Tyson Jones
  */
@@ -20,8 +23,6 @@
 
 #if QUEST_COMPILE_MPI
     #include <mpi.h>
-
-    static MPI_Comm global_mpiComm = MPI_COMM_NULL;
 #endif
 
 
@@ -54,9 +55,91 @@
 
 
 /*
+ * COMMUNICATOR MANAGEMENT
+ *
+ * QuEST will only ever use the overridable global_mpiComm communicator,
+ * so that superusers can dedicate external MPI processes to other tasks.
+ * Beware that it's valid for QuEST to be compiled with MPI, but have
+ * distribution runtime-disabled, while the user is themselves using
+ * (and ergo have initialised) MPI. In that scenario, we must not touch
+ * MPI, hence why comm_isActive() below is distinct from comm_isMpiInit().
+ */
+
+
+// We must record whether the user owns MPI, so that we do not ever attempt
+// to kill it when gracefully exiting, or due to a validation error
+static bool global_isMpiUserOwned = false;
+
+
+// Guarded since MPI_Comm cannot be exposed when not compiling MPI. This
+// communicator is overridden from NULL either BEFORE or DURING comm_init()
+#if QUEST_COMPILE_MPI
+    static MPI_Comm global_mpiComm = MPI_COMM_NULL;
+#endif
+
+
+bool comm_isActive() {
+#if QUEST_COMPILE_MPI
+
+    // comm_init(), or potentially comm_setMpiComm() before it, will only
+    // ever override mpiComm with non-NULL, indicating active comm. Note
+    // it's principally for mpiComm to later return to NULL, via comm_end(),
+    // and for QuEST execution to continue (though not supported presently).
+    // if comm_isActive() is true, then it is guaranteed MPI is initialised
+    return global_mpiComm != MPI_COMM_NULL;
+
+    // note it is legal for QuEST distribution to be disabled (and ergo
+    // mpiComm never initialised) even when the user is themselves accessing
+    // MPI, hence this function is semantically distinct from comm_isMpiInit()
+#else
+
+    // QuEST communication is obviously never active if
+    // not even MPI is compiled; though this does not
+    // imply at all the user isn't themselves using MPI!
+    return false;
+
+#endif
+}
+
+
+// Hide MPI_Comm from signatures when MPI is not compiled. Beware that
+// these are not exposed in comm_config.hpp; callers must 'extern' them!
+#if QUEST_COMPILE_MPI
+
+
+MPI_Comm comm_getMpiComm() {
+
+    // illegal to call before communicator has been overridden
+    if (global_mpiComm == MPI_COMM_NULL)
+        error_commMpiCommIsNull();
+
+    return global_mpiComm;
+}
+
+
+bool comm_setMpiComm(MPI_Comm newComm) {
+
+    // illegal to re-set, or set to null
+    if (global_mpiComm != MPI_COMM_NULL)
+        error_commAlreadyHasSetMpiComm();
+    if (newComm == MPI_COMM_NULL)
+        error_commNewMpiCommIsNull();
+
+    // detect bad communicator, and inform validation
+    auto status = MPI_Comm_dup(newComm, &global_mpiComm);
+    return status == MPI_SUCCESS;
+}
+
+
+#endif // QUEST_COMPILE_MPI
+
+
+
+/*
  * MPI ENVIRONMENT MANAGEMENT
  *
- * all of which is safely callable in non-distributed mode
+ * which queries MPI itself (as may be user-activated), rather
+ * than QuEST's (possibly more limited) MPI environment
  */
 
 
@@ -89,63 +172,95 @@ bool comm_isMpiGpuAware() {
 }
 
 
-bool comm_isInit() {
+bool comm_isMpiInit() {
 #if QUEST_COMPILE_MPI
 
     // safely callable before MPI initialisation, but NOT after comm_end()
     int isInit;
     MPI_Initialized(&isInit);
+
+    // when MPI is not initialised, it is guaranteed that QuEST's communicator
+    // is inactive, which we double check here so callers can be absolutely sure
+    if (!isInit && comm_isActive())
+        error_commActiveButMpiNotInit();
+
     return (bool) isInit;
 
 #else
 
     // obviously MPI is never initialised if not even compiled
     return false;
+
 #endif
 }
+
+
+
+/*
+ * QUEST COMMUNICATION MANAGEMENT
+ *
+ * which interacts only with QuEST's MPI environment,
+ * which may be smaller than the user-controlled MPI env
+ */
 
 
 void comm_init(bool userOwnsMpi) {
 #if QUEST_COMPILE_MPI
 
-    // re-assert prior user-validations for robustness
-    if (userOwnsMpi && !comm_isInit())
+    // re-assert prior user-validations for clarity
+    if (userOwnsMpi && !comm_isMpiInit())
         error_commNotInit();
-    if (!userOwnsMpi && comm_isInit())
+    if (!userOwnsMpi && comm_isMpiInit())
         error_commAlreadyInit();
    
     // init MPI only when it's not the user's responsibility
     if (!userOwnsMpi)
         MPI_Init(NULL, NULL);
 
-    // choose communicator only when the user hasn't 
+    // choose communicator only when the user hasn't already
+    // (via comm_setMpiComm, during custom env initialisation)
     if (global_mpiComm == MPI_COMM_NULL)
-        MPI_Comm_dup(MPI_COMM_WORLD, &global_mpiComm);
+        comm_setMpiComm(MPI_COMM_WORLD);
+
+    // remember user ownership, so we avoid later killing user-owned MPI
+    global_isMpiUserOwned = userOwnsMpi;
 
 #endif
 }
 
 
-void comm_end(bool userOwnsMpi) {
+void comm_end() {
 #if QUEST_COMPILE_MPI
 
-    // gracefully permit comm_end() before comm_init(), as input validation can trigger
-    if (!comm_isInit())
+    // If QuEST isn't using distribution, regardless of whether the user is using MPI,
+    // then we gracefully exit. We do NOT attempt to end MPI on the user's behalf (as we
+    // may be tempted to do during validation failure to avoid their MPI-crash), because
+    // it's possible/legal that not all processes are participating in this comm_end()
+    // call, in which case so MPI_Finalize() could just cause a hang.
+    if (!comm_isActive())
         return;
 
-    // gracefully handle when the communicator is still NULL, because comm_end() may be
-    // triggered by "bad MPI init" validation, during which, the communicator may not yet
-    // have been set. We choose NOT to divert to MPI_COMM_WORLD, which is likely just to
-    // stall at MPI_Barrier, and instead let the user's communicator live on; then crash!
-    if (global_mpiComm == MPI_COMM_NULL)
-        return;
-
+    // Syncing is not strictly necessary, but it ensures that finalizeQuESTEnv() never
+    // completes on one process while another process is still performing simulation
+    // (though that'd be weird), and so may avoid a silly user benchmarking pitfall
     MPI_Barrier(global_mpiComm);
     MPI_Comm_free(&global_mpiComm);
     
-    // QuEST must finalise MPI if the user does not own it
-    if (!userOwnsMpi)
+    // Do NOT close MPI if the user owns; they may still wish to use it after QuEST!
+    if (!global_isMpiUserOwned)
         MPI_Finalize();
+
+    // Presently, comm_end() is only ever called during QuESTEnv destruction (either
+    // deliberately, or because of failed validation during QuESTEnv initialisation).
+    // This means any comm_*() call hereafter is invalid/illegal and will be prevented
+    // by validation. However, we can imagine a future where distribution gets runtime
+    // disabled while QuEST execution continues (e.g. initQuESTEnv automatically
+    // disabled distribution), and so we must indicate that communication is no longer
+    // active by overwriting comm to NULL. BEWARE that this is "hacky"; we have
+    // updated mpiComm here without MPI_Comm_dup(), but that's fine, because hereafter
+    // MPI will never be used again (illegal to re-init both MPI, and QuEST!)
+    global_mpiComm = MPI_COMM_NULL;
+    global_isMpiUserOwned = false;
 
 #endif
 }
@@ -155,21 +270,13 @@ int comm_getRank() {
 #if QUEST_COMPILE_MPI
 
     // if distribution was not runtime enabled (or a validation error was 
-    // triggered), every node (if many MPI processes were launched)
-    // believes it is the root rank
-    if (!comm_isInit())
+    // triggered during distributed initialisation), every process believes
+    // it is the root rank; this may lead to unavoidable error msg spam!
+    if (!comm_isActive())
         return ROOT_RANK;
 
-    // Consult the (potentially sub-) communicator for rank; if it is still
-    // NULL, as can only validly happen during failed QuESTEnv init validation
-    // (which triggers root-only error printing and ergo this function), we
-    // fall back to every process believing it is root and so attempting to
-    // print. This safely avoids consulting a potentially bugged MPI communicator
-    // and losing the message. We once tried to fallback to MPI_COMM_WORLD here,
-    // to avoid duplicate output, but it is not worth the risk of msg loss!
-    if (global_mpiComm == MPI_COMM_NULL)
-        return ROOT_RANK;
-
+    // obtain the process rank within the QuEST communicator, which can
+    // differ from the global MPI process rank when users own MPI
     int rank;
     MPI_Comm_rank(global_mpiComm, &rank);
     return rank;
@@ -178,6 +285,7 @@ int comm_getRank() {
 
     // if MPI isn't compiled, we're definitely non-distributed; return main rank 
     return ROOT_RANK;
+
 #endif
 }
 
@@ -194,19 +302,25 @@ int comm_getNumNodes() {
 #if QUEST_COMPILE_MPI
 
     // if distribution was not runtime enabled (or a validation error was 
-    // triggered), every node (if many MPI processes were launched)
-    // believes it is the one and only node
-    if (!comm_isInit())
+    // triggered during distributed initialisation), every process is told
+    // it is the one and only node; this may lead to error msg spam, but
+    // appears unavoidable!
+    if (!comm_isActive())
         return 1;
 
+    // obtain the number of processes within the QuEST communicator, which
+    // can be smaller than global MPI process count when users own MPI
     int numNodes;
     MPI_Comm_size(global_mpiComm, &numNodes);
     return numNodes;
 
 #else
 
-    // if MPI isn't compiled, we're definitely non-distributed; return single node
+    // if MPI isn't compiled, QuEST is definitely non-distributed and
+    // each process only knows itself (though users may own MPI and
+    // actually have many processes; that's none of our business!)
     return 1;
+
 #endif
 }
 
@@ -214,62 +328,13 @@ int comm_getNumNodes() {
 void comm_sync() {
 #if QUEST_COMPILE_MPI
 
-    // gracefully handle when not distributed, needed by e.g. pre-MPI-setup validation 
-    if (!comm_isInit())
-        return;
-
-    // gracefully handle when the communicator is still NULL, because comm_sync() is
-    // triggered by "bad MPI init" validation (during the error message printing)
-    // during which, the communicator may not yet have been overriden
-    if (global_mpiComm == MPI_COMM_NULL)
+    // gracefully handle when not distributed, needed by e.g. pre-MPI-setup validation
+    if (!comm_isActive())
         return;
 
     MPI_Barrier(global_mpiComm);
+
 #endif
+
+    // do nothing at all when MPI is not compiled (user owned MPI processes go unsynced)
 }
-
-
-
-/*
- * MPI COMMUNICATOR MANAGEMENT
- *
- * some of which requires exposing MPI_Comm in external-facing signatures.
- * In lieu of leaking these into comm_config.hpp, callers must extern them.
- */
-
-bool comm_isMpiCommSet() {
-#if QUEST_COMPILE_MPI
-
-    // once comm_init() or comm_setMpiComm() overwrite
-    // the communicator, is can never return to NULL  
-    return (global_mpiComm != MPI_COMM_NULL);
-# else
-    return false;
-#endif
-}
-
-#if QUEST_COMPILE_MPI
-
-MPI_Comm comm_getMpiComm() {
-
-    if (global_mpiComm == MPI_COMM_NULL)
-        error_commMpiCommIsNull();
-
-    return global_mpiComm;
-}
-
-bool comm_setMpiComm(MPI_Comm newComm) {
-
-    // this is called prior to QuEST initialisation,
-    // and merely seeks to overwrite global_mpiComm 
-
-    if (global_mpiComm != MPI_COMM_NULL)
-        error_commAlreadyHasSetMpiComm();
-    if (newComm == MPI_COMM_NULL)
-        error_commMpiCommIsNull();
-
-    auto status = MPI_Comm_dup(newComm, &global_mpiComm);
-    return status == MPI_SUCCESS;
-}
-
-#endif // QUEST_COMPILE_MPI
