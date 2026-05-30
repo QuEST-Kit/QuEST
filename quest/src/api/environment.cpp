@@ -67,6 +67,27 @@ static bool global_hasEnvBeenFinalized = false;
 
 
 /*
+ * PUBLIC ENV PROPERTIES
+ *
+ * which are not exposed in the header, since the header is user-facing!
+ * For now, we grossly require callers to 'extern' these, blegh!
+ */
+
+
+bool env_isDistributed() {
+
+    if (global_envPtr == nullptr)
+        error_envIsNullPtr();
+
+    if (global_envPtr->isDistributed && ! comm_isInit())
+        error_envDistributedButCommIsNotInit();
+
+    return global_envPtr->isDistributed;
+}
+
+
+
+/*
  * PRIVATE QUESTENV INITIALISATION INNER FUNCTIONS
  */
 

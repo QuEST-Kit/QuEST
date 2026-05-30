@@ -94,6 +94,16 @@ void error_allocOfQuESTEnvFailed() {
     raiseInternalError("Attempted memory allocation for the newly created QuESTEnv unexpectedly failed.");
 }
 
+void error_envIsNullPtr() {
+
+    raiseInternalError("The private QuESTEnv instance of environment.cpp was unexpectedly nullptr, implying an internal function queried it before QuESTEnv initialisation.");
+}
+
+void error_envDistributedButCommIsNotInit() {
+
+    raiseInternalError("The QuESTEnv was believed distributed but the communicator was not initialised.");
+}
+
 
 
 /*

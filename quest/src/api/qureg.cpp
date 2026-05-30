@@ -31,6 +31,19 @@ using std::vector;
 
 
 /*
+ * EXTERNAL FUNCTIONS
+ *
+ * which are regrettably extern'd, rather than included
+ * in a header, because they are defined within /api/,
+ * within which the headers are user-visible. Gross!
+ */
+
+
+extern bool env_isDistributed();
+
+
+
+/*
  * INTERNALLY EXPOSED FUNCTION
  */
 
@@ -116,7 +129,7 @@ bool didAnyLocalAllocsFail(Qureg qureg) {
 bool didAnyAllocsFailOnAnyNode(Qureg qureg) {
 
     bool anyFail = didAnyLocalAllocsFail(qureg);
-    if (comm_isInit())
+    if (env_isDistributed())
         anyFail = comm_isTrueOnAllNodes(anyFail);
 
     return anyFail;

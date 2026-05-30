@@ -6,8 +6,8 @@
  * 
  * Note that even when QUEST_COMPILE_MPI=1, the user may have
  * disabled distribution when creating the QuEST environment
- * at runtime. Ergo we use comm_isInit() to determine whether
- * functions should invoke the MPI API.
+ * at runtime. Ergo we use env_isDistributed() to determine
+ * whether functions should invoke the MPI API.
  * 
  * @author Tyson Jones
  */
@@ -50,6 +50,28 @@
     /// Intel MPI would crash (but not MSMPI?)
 
 #endif
+
+
+
+/*
+ * EXTERNAL FUNCTIONS
+ *
+ * which are regrettably extern'd, rather than included
+ * in a header, because they are defined within /api/,
+ * within which the headers are user-visible. Gross!
+ */
+
+
+// NOTE I suspect this function is redundant; that we
+// can actually just consult whether global_mpiComm
+// is NULL to determine whether QuEST distribution is
+// active, which may avoid the pitfalls of this function;
+// chiefly, that it must not be called before QuESTEnv
+// creation, and so must not be invoked during failed
+// initQuESTEnv validation (which happens because the
+// error-msg printing attempts to print on root only)
+
+extern bool env_isDistributed();
 
 
 
@@ -154,20 +176,29 @@ void comm_end(bool userOwnsMpi) {
 int comm_getRank() {
 #if QUEST_COMPILE_MPI
 
-    // if distribution was not runtime enabled (or a validation error was 
-    // triggered), every node (if many MPI processes were launched)
-    // believes it is the root rank
+    // We must return ROOT_RANK whenever !env_isDistributed(), but alas we
+    // cannot immediately call that, because this function can be triggered
+    // BEFORE QuESTEnv is successfully created; this happens when validation
+    // during initQuESTEnv failed, triggering print(), which calls this
+    // function to avoid non-root printing! We first check whether MPI itself
+    // was ever initialised (by us, or by an MPI-owning user); if no, we exit.
     if (!comm_isInit())
         return ROOT_RANK;
 
     // Consult the (potentially sub-) communicator for rank; if it is still
-    // NULL, as can only validly happen during failed QuESTEnv init validation
-    // (which triggers root-only error printing and ergo this function), we
-    // fall back to every process believing it is root and so attempting to
-    // print. This safely avoids consulting a potentially bugged MPI communicator
-    // and losing the message. We once tried to fallback to MPI_COMM_WORLD here,
+    // NULL, as can only validly happen during failed QuESTEnv init validation,
+    // we fall back to every process believing it is root; all attempts to print.
+    // This safely avoids consulting a potentially bugged MPI communicator
+    // and losing the message. We COULD try to fallback to MPI_COMM_WORLD here,
     // to avoid duplicate output, but it is not worth the risk of msg loss!
     if (global_mpiComm == MPI_COMM_NULL)
+        return ROOT_RANK;
+
+    // Finally, we must not query MPI if it is user-owned, and QuEST has been
+    // deployed non-distributed. This scenario actually triggers mpiComm==NULL
+    // above, but we make it very explicit here to highlight that this can
+    // occur when input validation has NOT been failed.
+    if (!env_isDistributed())
         return ROOT_RANK;
 
     int rank;
@@ -193,10 +224,17 @@ bool comm_isRootNode() {
 int comm_getNumNodes() {
 #if QUEST_COMPILE_MPI
 
-    // if distribution was not runtime enabled (or a validation error was 
-    // triggered), every node (if many MPI processes were launched)
-    // believes it is the one and only node
+    // if MPI is not initialised, either deliberately or because a validation
+    // error triggered during initialisation, then every node believes it is 
+    // the one and only root node
     if (!comm_isInit())
+        return 1;
+
+    // if MPI is initialised, but QuEST is non-distributed, then the MPI is
+    // user-owned and must not influence our QuEST numNodes. We call this
+    // AFTER !comm_isInit() because it requires the QuESTEnv has been prior
+    // validly created, so failed validation must encounter above pathway first.
+    if (!env_isDistributed())
         return 1;
 
     int numNodes;
@@ -222,6 +260,14 @@ void comm_sync() {
     // triggered by "bad MPI init" validation (during the error message printing)
     // during which, the communicator may not yet have been overriden
     if (global_mpiComm == MPI_COMM_NULL)
+        return;
+
+    // when MPI is user-owned (QuEST is not distributed), we never consult it! This
+    // is checked last because it requires QuESTEnv is validly created, though this
+    // function can be triggered during failed initQuESTEnv validation. Note too that
+    // this scenario is already covered by mpiComm == NULL, but we handle it here to
+    // highlight that this is a valid non-error-triggered scenario!
+    if (!env_isDistributed())
         return;
 
     MPI_Barrier(global_mpiComm);

@@ -44,6 +44,19 @@
 
 
 /*
+ * EXTERNAL FUNCTIONS
+ *
+ * which are regrettably extern'd, rather than included
+ * in a header, because they are defined within /api/,
+ * within which the headers are user-visible. Gross!
+ */
+
+
+extern bool env_isDistributed();
+
+
+
+/*
  * CUDA ERROR HANDLING
  *
  * which are only defined when CUDA-compiling, since only ever invoked
@@ -395,7 +408,34 @@ bool gpu_areAnyNodesBoundToSameGpu() {
 #if QUEST_COMPILE_CUDA
     assert_gpuHasBeenBound(hasGpuBeenBound);
 
+    // if not even the user has triggered MPI, there's no issue
     if (!comm_isInit())
+        return false;
+
+    // if MPI is active, but QuEST isn't distributed, then we have
+    // no way to communicate the GPU IDs and so assume NO. Note that
+    // this check happens strictly AFTER comm_isInit(), because this
+    // ...
+    // WAIT
+    // ...
+    // RUH ROH
+    // ...
+    // THIS FUNCTION IS CALLED DURING QUEST ENV INITIALISATION! SO THE
+    // BELOW CALL WOULD ALWAYS BE PREMATURE AND TRIGGER AN INTERNAL ERROR
+    // (QuESTEnv not yet initialised)!! BUT WE CANNOT SIMPLY NOT CALL IT
+    // AND PROCEED, BECAUSE WE MUST NOT TOUCH MPI IF IT IS USER-OWNED
+    // AND QUEST IS NOT DISTRIBUTED (because we cannot even be sure that
+    // all processes are participating in initQuESTEnv()!)
+    //
+    // BAH! So env_isDistributed() is badly designed; we need a way to
+    // see that QuEST was never INTENDED to be distributed during its
+    // validation stage. So I guess we WILL need to commit comm_isActive()
+    // or similar, to disambiguate from comm_isInit (which should be
+    // renamed to an explicit comm_isMpiInit())
+    //
+    // REEEEEEE!
+    
+    if (!env_isDistributed())
         return false;
 
     // obtain bound GPU's UUID; a unique identifier 16-char identifier

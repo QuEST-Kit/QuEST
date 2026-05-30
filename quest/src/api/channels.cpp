@@ -28,6 +28,19 @@ using std::vector;
 
 
 /*
+ * EXTERNAL FUNCTIONS
+ *
+ * which are regrettably extern'd, rather than included
+ * in a header, because they are defined within /api/,
+ * within which the headers are user-visible. Gross!
+ */
+
+
+extern bool env_isDistributed();
+
+
+
+/*
  * PRIVATE UTILITIES
  */
 
@@ -107,7 +120,7 @@ void freeAllMemoryIfAnyAllocsFailed(T& obj) {
 
     // determine whether any node experienced a failure
     bool anyFail = didAnyLocalAllocsFail(obj);
-    if (comm_isInit())
+    if (env_isDistributed())
         anyFail = comm_isTrueOnAllNodes(anyFail);
 
     // if so, free all memory before subsequent validation

@@ -29,6 +29,19 @@ using std::vector;
 
 
 /*
+ * EXTERNAL FUNCTIONS
+ *
+ * which are regrettably extern'd, rather than included
+ * in a header, because they are defined within /api/,
+ * within which the headers are user-visible. Gross!
+ */
+
+
+extern bool env_isDistributed();
+
+
+
+/*
  * RNG HYPERPARAMTERS
  */
 
@@ -66,14 +79,14 @@ void rand_setSeeds(vector<unsigned> seeds) {
 
     // all nodes learn root node's #seeds
     unsigned numRootSeeds = seeds.size();
-    if (comm_isInit())
+    if (env_isDistributed())
         comm_broadcastUnsignedsFromRoot(&numRootSeeds, 1);
 
     // all nodes ensure they have space to receive root node's seeds
     seeds.resize(numRootSeeds);
     
     // all nodes receive root seeds
-    if (comm_isInit())
+    if (env_isDistributed())
         comm_broadcastUnsignedsFromRoot(seeds.data(), seeds.size());
 
     // all nodes remember seeds (in case user wishes to later recall them)

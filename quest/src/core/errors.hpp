@@ -49,6 +49,11 @@ void error_validationListUniquenessCheckExceededMaskSize();
 
 void error_allocOfQuESTEnvFailed();
 
+void error_envIsNullPtr();
+
+void error_envDistributedButCommIsNotInit();
+
+
 
 
 /*

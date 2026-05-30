@@ -53,6 +53,18 @@ using std::vector;
 
 
 /*
+ * EXTERNAL FUNCTIONS
+ *
+ * which are regrettably extern'd, rather than included
+ * in a header, because they are defined within /api/,
+ * within which the headers are user-visible. Gross!
+ */
+
+extern bool env_isDistributed();
+
+
+
+/*
  * INVALID INPUT ERROR MESSAGES
  * which can contain variables with syntax ${VAR1} ${VAR2}, substituted at error-throw with
  * runtime parameters via assertThat(..., {{"${VAR1}",1}, {"${VAR2}",2}}, ...)
@@ -118,9 +130,6 @@ namespace report {
 
     string QUEST_OWNED_MPI_WAS_PRE_INIT =
         "MPI was already initialised prior to QuESTEnv initialisation, but the user did not declare MPI ownership.";
-
-    string QUEST_IS_NON_DISTRIBUTED_BUT_MPI_WAS_INIT =
-        "QuESTEnv was initialised to be non-distributed but MPI was externally initialised - this is presently unsupported due to a (very minor) technical limitation. If you need this facility, please raise a Github issue!";
 
     
     /*
@@ -1172,6 +1181,7 @@ void default_inputErrorHandler(const char* func, const char* msg) {
 
     // finalise MPI before error-exit to avoid scaring user with giant MPI error message;
     // we always "take ownership" of MPI here since we're about to kill the whole program
+    // (hence why we consult comm_isInit(), and not env_isDistributed() - everyone loses!)
     if (comm_isInit())
         comm_end(/*userOwnsMpi=*/false);
 
@@ -1355,7 +1365,7 @@ void assertAllNodesAgreeThat(bool valid, string msg, tokenSubs vars, const char*
     // when performing validation that may be non-uniform between nodes. For
     // example, mallocs may succeed on one node but fail on another due to
     // inhomogeneous loads.
-    if (comm_isInit())
+    if (env_isDistributed())
         valid = comm_isTrueOnAllNodes(valid);
 
     // prepare error message only if validation will fail
@@ -1511,27 +1521,18 @@ void validate_mpiInitStatus(bool useDistrib, bool userOwnsMpi, const char* calle
     if (!userOwnsMpi)
         assertThat(!isMpiInit, report::QUEST_OWNED_MPI_WAS_PRE_INIT, caller);
 
-    // (B) If QuEST is instructed not to use distribution, we must demand the user is not
-    // using MPI, because we internally consult comm_isInit() to detect QuEST distribution
-    // in many functions, and that will give a false positive when the user inits MPI directly. 
-    if (!useDistrib)
-        assertThat(!isMpiInit, report::QUEST_IS_NON_DISTRIBUTED_BUT_MPI_WAS_INIT, caller);
-
-    // TODO: we can relax above, permitting the user to play with MPI directly while 
-    // disabling it for QuEST, by replacing internal comm_isInit() with e.g. env_isDistributed()
-
-    // (C) If QuEST will use MPI owned by the user, the user must have pre-initialised it
+    // (B) If QuEST will use MPI owned by the user, the user must have pre-initialised it
     if (useDistrib && userOwnsMpi)
         assertThat(isMpiInit, report::USER_OWNED_MPI_WAS_NOT_INIT, caller);
     
     // Confirmation that all 8 scenarios are handled:
     //     useDistrib=0, userOwnsMpi=0, isMpiInit=0 (legal: nobody wants MPI)
     // (A) useDistrib=0, userOwnsMpi=0, isMpiInit=1 (illegal: user lied about ownership)
-    //     useDistrib=0, userOwnsMpi=1, isMpiInit=0 (legal: user owns MPI but does nothing!)
-    // (B) useDistrib=0, userOwnsMpi=1, isMpiInit=1 (illegal: comm_isInit() limitation as above)
+    //     useDistrib=0, userOwnsMpi=1, isMpiInit=0 (legal: user "owns" MPI but doesn't use it!)
+    //     useDistrib=0, userOwnsMpi=1, isMpiInit=1 (legal: user owns MPI but doesn't give it to QuEST)
     //     useDistrib=1, userOwnsMpi=0, isMpiInit=0 (legal: QuEST will init MPI)
     // (A) useDistrib=1, userOwnsMpi=0, isMpiInit=1 (illegal: user lied about ownership)
-    // (C) useDistrib=1, userOwnsMpi=1, isMpiInit=0 (illegal: user has reponsibility to pre-init)
+    // (B) useDistrib=1, userOwnsMpi=1, isMpiInit=0 (illegal: user has reponsibility to pre-init)
     //     useDistrib=1, userOwnsMpi=1, isMpiInit=1 (legal: user fulfilled responsibility to pre-init)
 }
 

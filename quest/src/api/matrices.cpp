@@ -38,6 +38,19 @@ using std::vector;
 
 
 /*
+ * EXTERNAL FUNCTIONS
+ *
+ * which are regrettably extern'd, rather than included
+ * in a header, because they are defined within /api/,
+ * within which the headers are user-visible. Gross!
+ */
+
+
+extern bool env_isDistributed();
+
+
+
+/*
  * FIZED-SIZE MATRIX VECTOR GETTERS
  *
  * enabling getCompMatr1 (etc) to receive vectors, in addition
@@ -165,7 +178,7 @@ void freeAllMemoryIfAnyAllocsFailed(T matr) {
 
     // ascertain whether any allocs failed on any node
     bool anyFail = didAnyLocalAllocsFail(matr);
-    if (comm_isInit())
+    if (env_isDistributed())
         anyFail = comm_isTrueOnAllNodes(anyFail);
 
     // if so, free all heap fields

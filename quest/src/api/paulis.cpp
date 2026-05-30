@@ -27,6 +27,19 @@ using std::vector;
 
 
 /*
+ * EXTERNAL FUNCTIONS
+ *
+ * which are regrettably extern'd, rather than included
+ * in a header, because they are defined within /api/,
+ * within which the headers are user-visible. Gross!
+ */
+
+
+extern bool env_isDistributed();
+
+
+
+/*
  * PRIVATE UTILITIES
  */
 
@@ -38,7 +51,7 @@ bool didAnyAllocsFailOnAnyNode(PauliStrSum sum) {
         ! mem_isAllocated(sum.coeffs)  || 
         ! mem_isAllocated(sum.isApproxHermitian) );
     
-    if (comm_isInit())
+    if (env_isDistributed())
         anyFail = comm_isTrueOnAllNodes(anyFail);
 
     return anyFail;
