@@ -45,6 +45,7 @@ typedef struct {
 
     // deployment configurations which can be changed via environment variables
     int isGpuSharingEnabled;
+    int isMpiGpuAware;
 
     // distributed configuration
     int rank;

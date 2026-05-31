@@ -130,6 +130,10 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
         gpu_initCuQuantum();
     }
 
+    // MPI GPU-awareness detection is platform specific; sometimes it is
+    // known at compile-time, other times according to env-vars
+    bool isMpiGpuAware = comm_isMpiGpuAware();
+
     // initialise RNG, used by measurements and random-state generation
     rand_setSeedsToDefault();
 
@@ -147,6 +151,7 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
     globalEnvPtr->userOwnsMpi         = userOwnsMpi;
     globalEnvPtr->isCuQuantumEnabled  = useCuQuantum;
     globalEnvPtr->isGpuSharingEnabled = permitGpuSharing;
+    globalEnvPtr->isMpiGpuAware       = isMpiGpuAware;
 
     // bind distributed info
     globalEnvPtr->rank     = (useDistrib)? comm_getRank()     : 0;
@@ -211,6 +216,7 @@ void printDeploymentInfo() {
         {"isOmpEnabled",        globalEnvPtr->isMultithreaded},
         {"isCuQuantumEnabled",  globalEnvPtr->isCuQuantumEnabled},
         {"isGpuSharingEnabled", globalEnvPtr->isGpuSharingEnabled},
+        {"isMpiGpuAware",       globalEnvPtr->isMpiGpuAware},
     });
 }
 
@@ -269,7 +275,7 @@ void printDistributionInfo() {
 
     print_table(
         "distribution", {
-        {"isMpiGpuAware", (comm_isMpiCompiled())? printer_toStr(comm_isMpiGpuAware()) : na},
+        {"isMpiGpuAware", comm_isInit()? printer_toStr(globalEnvPtr->isMpiGpuAware) : na},
         {"numMpiNodes",   printer_toStr(globalEnvPtr->numNodes)},
     });
 }
