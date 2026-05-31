@@ -209,12 +209,12 @@ void printDeploymentInfo() {
 
     print_table(
         "deployment", {
-        {"isOmpEnabled",        globalEnvPtr->isMultithreaded},
-        {"isMpiEnabled",        globalEnvPtr->isDistributed},
-        {"isMpiUserOwned",      globalEnvPtr->isMpiUserOwned},
-        {"isGpuEnabled",        globalEnvPtr->isGpuAccelerated},
-        {"isCuQuantumEnabled",  globalEnvPtr->isCuQuantumEnabled},
-        {"isGpuSharingEnabled", globalEnvPtr->isGpuSharingEnabled},
+        {"isOmpEnabled",        global_envPtr->isMultithreaded},
+        {"isMpiEnabled",        global_envPtr->isDistributed},
+        {"isMpiUserOwned",      global_envPtr->isMpiUserOwned},
+        {"isGpuEnabled",        global_envPtr->isGpuAccelerated},
+        {"isCuQuantumEnabled",  global_envPtr->isCuQuantumEnabled},
+        {"isGpuSharingEnabled", global_envPtr->isGpuSharingEnabled},
     });
 }
 
@@ -521,21 +521,6 @@ void getQuESTEnvironmentString(char str[200]) {
         gpuDirect);
 }
 
-
-int getQuESTNumGpuThreadsPerBlock() {
-    validate_envIsInit(__func__);
-    
-    return gpu_getNumThreadsPerBlock();
-}
-
-void setQuESTNumGpuThreadsPerBlock(const int newThreadsPerBlock) {
-    validate_envIsInit(__func__);
-
-    // just rely on the internal function to throw an error if there's no GPU support compiled
-    // or if newThreadsPerBlock is not a multiple of 32 (NVIDIA) or 64 (AMD)
-    gpu_setNumThreadsPerBlock(newThreadsPerBlock);
-    return;
-}
 
 // end de-mangler
 }

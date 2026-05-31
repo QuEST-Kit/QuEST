@@ -44,7 +44,6 @@ void initCustomMpiQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, in
 
 
 #if QUEST_COMPILE_SUBCOMM
-
 /** @notyetdoced
  * 
  *  Advanced initialiser which allows the user to provide an MPI communicator for QuEST to use.
@@ -61,8 +60,20 @@ void initCustomMpiQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, in
  * @author Oliver Brown
  */
 void initCustomMpiCommQuESTEnv(MPI_Comm questComm, int useGpuAccel, int useMultithread);
-
 #endif // QUEST_COMPILE_SUBCOMM
+
+
+/** @notyetdoced
+ * 
+ * GPU thread per block control
+ * This is somehow probably the best pre-existing place for this. It only really applies to GPU, because for
+ * OpenMP the user can just export OMP_NUM_THREADS or call omp_set_num_threads.
+ */
+int getQuESTNumGpuThreadsPerBlock();
+
+
+/// notyetdoced
+void setQuESTNumGpuThreadsPerBlock(const int newThreadsPerBlock);
 
 
 // end de-mangler
