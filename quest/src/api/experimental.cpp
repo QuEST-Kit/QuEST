@@ -1,28 +1,64 @@
+/** @file
+ * Experimental functions which are liable to
+ * API breaks within QuEST minor version releases.
+ * Some optional functions require compiling this
+ * file against MPI, despite being outside of /comm/, 
+ * and so require opt-in macros (QUEST_COMPILE_SUBCOMM)
+ * 
+ * @author Oliver Brown
+ */
+
 #include "quest/include/config.h"
 #include "quest/include/environment.h"
-#include "quest/include/subcommunicator.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/comm/comm_config.hpp"
 
-#if QUEST_COMPILE_MPI && QUEST_COMPILE_SUBCOMM
+#if QUEST_COMPILE_SUBCOMM && ! QUEST_COMPILE_MPI
+    #error "Macro QUEST_COMPILE_SUBCOMM was true, but QUEST_COMPILE_MPI was illegally false."
+#endif
 
-#include <mpi.h>
-
-
-// TODO:
-// We must resolve this communicator function which contains an MPI type
-// and ergo should not be leaked outside comm_config.cpp. For now, we cheat! 
-extern bool comm_setMpiComm(MPI_Comm newComm, bool userOwnsMpi);
+#if QUEST_COMPILE_SUBCOMM
+    #include <mpi.h>
+#endif
 
 
-// TODO:
-// We must resolve this inner function of QuEST initialisation, but which is
-// private to api/environment.cpp, and so cannot be exposed in the user-facing
-// include/environment.hpp. Grr! For now, we here just cheekily extern it c:
+
+/*
+ * EXTERNAL FUNCTIONS
+ *
+ * which we here regretfully 'extern' because we are either
+ * unsure which header should expose them, or because they
+ * contain deployment-specific types (like MPI_Comm) which
+ * we do not wish to expose within internal headers 
+ */
+
+
 extern void validateAndInitCustomQuESTEnv(
     int useDistrib, bool userOwnsMpi, int useGpuAccel, int useMultithread, const char* caller);
 
+
+#if QUEST_COMPILE_SUBCOMM // hide MPI_Comm
+    extern bool comm_setMpiComm(MPI_Comm newComm, bool userOwnsMpi);
+#endif
+
+
+
+/*
+ * API FUNCTIONS
+ */
+
+
+// enable invocation by both C and C++ binaries
+extern "C" {
+
+
+void initCustomMpiQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, int useMultithread) {
+    validateAndInitCustomQuESTEnv(useDistrib, userOwnsMpi, useGpuAccel, useMultithread, __func__);
+}
+
+
+#if QUEST_COMPILE_SUBCOMM // hide MPI_Comm
 
 void initCustomMpiCommQuESTEnv(MPI_Comm userQuestComm, int useGpuAccel, int useMultithread) {
 
@@ -46,4 +82,8 @@ void initCustomMpiCommQuESTEnv(MPI_Comm userQuestComm, int useGpuAccel, int useM
     validateAndInitCustomQuESTEnv(useDistrib, userOwnsMpi, useGpuAccel, useMultithread, __func__);
 }
 
-#endif
+#endif // QUEST_COMPILE_SUBCOMM
+
+
+// end de-mangler
+}

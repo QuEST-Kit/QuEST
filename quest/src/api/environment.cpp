@@ -412,10 +412,6 @@ void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread) {
 }
 
 
-void initCustomMpiQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, int useMultithread) {
-    validateAndInitCustomQuESTEnv(useDistrib, userOwnsMpi, useGpuAccel, useMultithread, __func__);
-}
-
 void initQuESTEnv() {
 
     const bool userOwnsMpi = false;
