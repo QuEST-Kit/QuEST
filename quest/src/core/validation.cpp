@@ -107,6 +107,21 @@ namespace report {
     string CUQUANTUM_DEPLOYED_ON_GPU_WITHOUT_MEM_POOLS =
         "Cannot use cuQuantum since your GPU does not support memory pools. Recompile with cuQuantum disabled to fall-back to using Thrust and custom kernels.";
 
+    string USER_OWNED_MPI_WAS_NOT_INIT =
+        "User owns MPI but did not prior initialise MPI before initialising QuEST.";
+
+    string USER_GIVEN_MPI_COMMUNICATOR_IS_NULL =
+        "The provided MPI communicator was null (MPI_COMM_NULL).";
+
+    string USER_GIVEN_MPI_COMMUNICATOR_FAILED_TO_SET =
+        "The provided MPI communicator could not be used; MPI_Comm_dup() was not successful.";
+
+    string QUEST_OWNED_MPI_WAS_PRE_INIT =
+        "MPI was already initialised prior to QuESTEnv initialisation, but the user did not declare MPI ownership.";
+
+    string QUEST_IS_NON_DISTRIBUTED_BUT_MPI_WAS_INIT =
+        "QuESTEnv was initialised to be non-distributed but MPI was externally initialised - this is presently unsupported due to a (very minor) technical limitation. If you need this facility, please raise a Github issue!";
+
     
     /*
      * EXISTING QUESTENV
@@ -1152,13 +1167,14 @@ void default_inputErrorHandler(const char* func, const char* msg) {
         + "Exiting...\n");
 
     // force a synch because otherwise non-main nodes may exit before print, and MPI
-    // will then attempt to instantly abort all nodes, losing the error message.
+    // will then attempt to instantly abort all nodes, losing the error message
     comm_sync();
 
-    // finalise MPI before error-exit to avoid scaring user with giant MPI error message
-    // we always "take ownership" of MPI here since we're about to kill the whole program
-    if (comm_isInit())
-        comm_end(0);
+    // finalise QuEST-owned MPI before error-exit to avoid scaring user with giant MPI crash
+    // message. note user-owned MPI is NOT killed because it's possible only SOME processes
+    // reach here, and attempting to sync/kill them would result in an MPI hang/crash anyway
+    if (comm_isActive())
+        comm_end(); // keeps user-owned MPI alive
 
     // simply exit, interrupting any other process (potentially leaking)
     exit(EXIT_FAILURE);
@@ -1340,7 +1356,7 @@ void assertAllNodesAgreeThat(bool valid, string msg, tokenSubs vars, const char*
     // when performing validation that may be non-uniform between nodes. For
     // example, mallocs may succeed on one node but fail on another due to
     // inhomogeneous loads.
-    if (comm_isInit())
+    if (comm_isActive())
         valid = comm_isTrueOnAllNodes(valid);
 
     // prepare error message only if validation will fail
@@ -1480,6 +1496,53 @@ void validate_gpuIsCuQuantumCompatible(const char* caller) {
 
     bool hasMemPools = gpu_doesGpuSupportMemPools();
     assertAllNodesAgreeThat(hasMemPools, report::CUQUANTUM_DEPLOYED_ON_GPU_WITHOUT_MEM_POOLS, caller);
+}
+
+void validate_mpiInitStatus(bool useDistrib, bool userOwnsMpi, const char* caller) {
+
+    // Validation prior to this function confirms init(Custom*)QuESTEnv is only ever called
+    // once, but we must additionally confirm the user has interacted with MPI legally
+
+    if (!global_isValidationEnabled)
+        return;
+
+    // We consult whether MPI itself has been initialised, NOT whether QuEST is using it
+    bool isMpiInit = comm_isMpiInit();
+
+    // (A) If the user does not declare ownership of MPI, they are forbidden to initialise it,
+    //     even when they are not distributing QuEST (i.e. useDistrib=0), just for clarity!
+    if (!userOwnsMpi)
+        assertThat(!isMpiInit, report::QUEST_OWNED_MPI_WAS_PRE_INIT, caller);
+
+    // (B) If QuEST will use MPI owned by the user, the user must have pre-initialised it
+    if (useDistrib && userOwnsMpi)
+        assertThat(isMpiInit, report::USER_OWNED_MPI_WAS_NOT_INIT, caller);
+    
+    // Confirmation that all 8 scenarios are handled:
+    //     useDistrib=0, userOwnsMpi=0, isMpiInit=0 (legal: nobody wants MPI)
+    // (A) useDistrib=0, userOwnsMpi=0, isMpiInit=1 (illegal: user lied about ownership)
+    //     useDistrib=0, userOwnsMpi=1, isMpiInit=0 (legal: user owns MPI but does nothing!)
+    //     useDistrib=0, userOwnsMpi=1, isMpiInit=1 (legal: user owns MPI, QuEST won't use it)
+    //     useDistrib=1, userOwnsMpi=0, isMpiInit=0 (legal: QuEST will init MPI)
+    // (A) useDistrib=1, userOwnsMpi=0, isMpiInit=1 (illegal: user lied about ownership)
+    // (B) useDistrib=1, userOwnsMpi=1, isMpiInit=0 (illegal: user has reponsibility to pre-init)
+    //     useDistrib=1, userOwnsMpi=1, isMpiInit=1 (legal: user fulfilled responsibility to pre-init)
+}
+
+void validate_mpiSubCommIsNonNull(bool isNonNull, const char* caller) {
+
+    if (!global_isValidationEnabled)
+        return;
+
+    assertThat(isNonNull, report::USER_GIVEN_MPI_COMMUNICATOR_IS_NULL, caller);
+}
+
+void validate_mpiSubCommSetSucceeded(bool success, const char* caller) {
+
+    if (!global_isValidationEnabled)
+        return;
+
+    assertThat(success, report::USER_GIVEN_MPI_COMMUNICATOR_FAILED_TO_SET, caller);
 }
 
 

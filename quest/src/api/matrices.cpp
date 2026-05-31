@@ -165,7 +165,7 @@ void freeAllMemoryIfAnyAllocsFailed(T matr) {
 
     // ascertain whether any allocs failed on any node
     bool anyFail = didAnyLocalAllocsFail(matr);
-    if (comm_isInit())
+    if (comm_isActive())
         anyFail = comm_isTrueOnAllNodes(anyFail);
 
     // if so, free all heap fields

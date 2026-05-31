@@ -81,8 +81,6 @@ void error_commNotInit();
 
 void error_commAlreadyInit();
 
-void error_commInvalidMpiComm();
-
 void error_commButEnvNotDistributed();
 
 void error_commOutOfBounds();
@@ -93,7 +91,13 @@ void error_commGivenInconsistentNumSubArraysANodes();
 
 void error_commNumMessagesExceedTagMax();
 
-void error_commDoubleSetMpiComm();
+void error_commAlreadyHasSetMpiComm();
+
+void error_commMpiCommIsNull();
+
+void error_commNewMpiCommIsNull();
+
+void error_commActiveButMpiNotInit();
 
 void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps);
 

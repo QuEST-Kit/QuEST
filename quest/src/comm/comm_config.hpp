@@ -10,34 +10,28 @@
 #ifndef COMM_CONFIG_HPP
 #define COMM_CONFIG_HPP
 
-#include "quest/include/config.h"
-
-#if QUEST_COMPILE_MPI
-  #include <mpi.h>
-#endif
-
 constexpr int ROOT_RANK = 0;
 
+// queries of MPI's global/general status (when visible)
 bool comm_isMpiCompiled();
-bool comm_isMpiSubCommunicatorCompiled();
+bool comm_isMpiSubCommCompiled();
 bool comm_isMpiGpuAware();
+bool comm_isMpiInit();
 
-void comm_init(int useDistrib, bool userOwnsMpi);
-void comm_end(bool userOwnsMpi);
+// control of QuEST's (possibly more limited) MPI env
+bool comm_isActive();
+void comm_init(bool userOwnsMpi);
+void comm_end();
 void comm_sync();
 
+// queries of QuEST's (possibly more limited) MPI env
 int comm_getRank();
 int comm_getNumNodes();
-
-bool comm_isInit();
 bool comm_isRootNode();
 bool comm_isRootNode(int rank);
 
-#if QUEST_COMPILE_MPI
-  MPI_Comm comm_getMpiComm();
-  #if QUEST_COMPILE_SUBCOMM
-    void comm_setMpiComm(MPI_Comm newComm);
-  #endif
-#endif
+// Signatures containing MPI types which callers must extern:
+// extern MPI_Comm comm_getMpiComm()
+// extern bool comm_setMpiComm(MPI_Comm newComm, bool userOwnsMpi)
 
 #endif // COMM_CONFIG_HPP
