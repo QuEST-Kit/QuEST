@@ -301,7 +301,11 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
     // must be strictly through compile-time-known indices, otherwise it will auto-
     // spill to local memory). Hence, this _subA() function is not a subroutine 
     // despite some logic being common to non-compile-time _subB(), and hence
-    // why the loops below are explicitly compile-time unrolled
+    // why the loops below are explicitly compile-time unrolled. Beware that when
+    // numThreadsPerBlock is increased from 128, this kernel will still behave
+    // correctly, but privateCache below will spill over into local memory at a
+    // performance penalty for NumTargs <= 5, with spillage occurring for fewer
+    // NumTargs as numThreadsPerBlock increases.
     REGISTER gpu_qcomp privateCache[1 << NumTargs];
 
     // we know NumTargs <= 5, though NumCtrls is permitted anything (including -1)
