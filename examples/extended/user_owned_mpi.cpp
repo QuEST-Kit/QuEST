@@ -1,7 +1,7 @@
 /** @file
  * 
  * An example of using QuEST's experimental
- * initCustomMpiQuESTEnv() function, to
+ * initCustomMpiQuESTEnv() function to
  * initialise QuEST in an environment where
  * MPI is owned and controlled by the user.
  * 
@@ -10,7 +10,7 @@
  */
 
 #include "quest.h"
-#include <stdio.h>
+#include <cstdio>
 
 
 // This example requires linking with MPI, which the CMake
@@ -21,7 +21,7 @@
 #if ! QUEST_COMPILE_SUBCOMM
 int main(void)
 {    
-    printf("Example skipped since MPI is not linked.\n");
+    std::printf("Example skipped since MPI is not linked.\n");
     return 0;
 }
 #else 

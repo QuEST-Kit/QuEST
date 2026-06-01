@@ -763,11 +763,16 @@ void validateAndPrintMatrix(T matr, const char* caller) {
         structMem -= elemMem;
 
     size_t numBytesPerNode = elemMem + structMem;
+
+    printer_sync();
+    
     print_header(matr, numBytesPerNode);
     print_elems(matr);
 
     // exclude mandatory newline above
     print_oneFewerNewlines();
+    
+    printer_sync();
 }
 
 

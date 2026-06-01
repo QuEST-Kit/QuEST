@@ -263,12 +263,16 @@ extern "C" void destroyPauliStrSum(PauliStrSum sum) {
 
 extern "C" void reportPauliStr(PauliStr str) {
 
+    printer_sync();
+
     // no header, so no indentation
     string indent = "";
     print_elemsWithoutNewline(str, indent);
 
     // print all user-set newlines (including none)
     print_newlines();
+
+    printer_sync();
 }
 
 
@@ -285,11 +289,15 @@ extern "C" void reportPauliStrSum(PauliStrSum sum) {
     // linearly with user input parameters, unlike Qureg and matrices.
     qindex numTotalBytes = numStrBytes + numCoeffBytes + numStrucBytes;
 
+    printer_sync();
+
     print_header(sum, numTotalBytes);
     print_elems(sum);
     
     // exclude mandatory newline above
     print_oneFewerNewlines();
+
+    printer_sync();
 }
 
 

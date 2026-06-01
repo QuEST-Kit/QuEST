@@ -44,7 +44,8 @@ typedef struct {
     bool isCuQuantumEnabled;
 
     // deployment configurations which can be changed via environment variables
-    bool isGpuSharingEnabled;
+    int isGpuSharingEnabled;
+    int isMpiGpuAware;
 
     // distributed configuration
     int rank;

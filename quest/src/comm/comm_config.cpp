@@ -21,6 +21,8 @@
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/core/errors.hpp"
 
+#include <string>
+
 #if QUEST_COMPILE_MPI
     #include <mpi.h>
 #endif
@@ -157,11 +159,12 @@ bool comm_isMpiSubCommCompiled() {
     return (bool) QUEST_COMPILE_SUBCOMM;
 }
 
+
 bool comm_isMpiGpuAware() {
 
-    /// @todo these checks may be OpenMPI specific, so that
-    /// non-OpenMPI MPI compilers are always dismissed as
-    /// not being CUDA-aware. Check e.g. MPICH method!
+    // well duh
+    if (!comm_isMpiCompiled())
+        return false;
 
     // definitely not GPU-aware if compiler declares it is not
     #if defined(MPIX_CUDA_AWARE_SUPPORT) && ! MPIX_CUDA_AWARE_SUPPORT
@@ -172,6 +175,11 @@ bool comm_isMpiGpuAware() {
     #if defined(MPIX_CUDA_AWARE_SUPPORT)
         return (bool) MPIX_Query_cuda_support();
     #endif
+
+    // check whether an MPICH env-var indicates support (we assume it never lies!)
+    static const auto var = std::getenv("MPICH_GPU_SUPPORT_ENABLED");
+    if (var && std::string(var) == "1") // ill-formed vars = 0
+        return true;
 
     // if we can't ascertain CUDA-awareness, just assume no to avoid seg-fault
     return false;

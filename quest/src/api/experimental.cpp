@@ -60,6 +60,7 @@ void initCustomMpiQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, in
 
 
 #if QUEST_COMPILE_SUBCOMM // hide MPI_Comm
+ 
 void initCustomMpiCommQuESTEnv(MPI_Comm userQuestComm, int useGpuAccel, int useMultithread) {
 
     // useDistrib and userOwnsMpi are implied by the user of this initialiser

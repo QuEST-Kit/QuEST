@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <iomanip>
+#include <cstdio>
 #include <sstream>
 #include <memory>
 #include <vector>
@@ -163,6 +164,26 @@ void printer_setPauliStrFormat(int flag) {
     /// an API with custom types and constants!).
 
     global_pauliStrFormatFlag = flag;
+}
+
+
+
+/*
+ * MULTI-PROCESS MANAGEMENT
+ */
+
+
+void printer_sync() {
+
+    // make all participating processes flush, to improve the chance
+    // that user-printing from non-root processes reaches the screen
+    // before QuEST begins to print from the root process
+    std::cout << std::flush; // C++ buffer
+    fflush(stdout);          // C buffer
+
+    // wait for all process flushes to complete, which defers non-root
+    // processes from printing until after root has finished printing
+    comm_sync();
 }
 
 

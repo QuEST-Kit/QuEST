@@ -146,6 +146,10 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
         gpu_initCuQuantum();
     }
 
+    // MPI GPU-awareness detection is platform specific; sometimes it is
+    // known at compile-time, other times according to env-vars
+    bool isMpiGpuAware = comm_isMpiGpuAware();
+
     // initialise RNG, used by measurements and random-state generation
     rand_setSeedsToDefault();
 
@@ -161,6 +165,7 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
     global_envPtr->isGpuAccelerated    = useGpuAccel;
     global_envPtr->isDistributed       = useDistrib;
     global_envPtr->isMpiUserOwned      = userOwnsMpi;
+    global_envPtr->isMpiGpuAware       = isMpiGpuAware;
     global_envPtr->isCuQuantumEnabled  = useCuQuantum;
     global_envPtr->isGpuSharingEnabled = permitGpuSharing;
 
@@ -203,12 +208,12 @@ void printCompilationInfo() {
 
     print_table(
         "compilation", {
-        {"isOmpCompiled",        cpu_isOpenmpCompiled()},
-        {"isMpiCompiled",        comm_isMpiCompiled()},
-        {"isMpiSubCommCompiled", comm_isMpiSubCommCompiled()},
-        {"isGpuCompiled",        gpu_isGpuCompiled()},
-        {"isHipCompiled",        gpu_isHipCompiled()},
-        {"isCuQuantumCompiled",  gpu_isCuQuantumCompiled()},
+        {"isOmpCompiled",         cpu_isOpenmpCompiled()},
+        {"isMpiCompiled",         comm_isMpiCompiled()},
+        {"isMpiSubCommCompiled",  comm_isMpiSubCommCompiled()},
+        {"isGpuCompiled",         gpu_isGpuCompiled()},
+        {"isHipCompiled",         gpu_isHipCompiled()},
+        {"isCuQuantumCompiled",   gpu_isCuQuantumCompiled()},
     });
 }
 
@@ -219,10 +224,8 @@ void printDeploymentInfo() {
         "deployment", {
         {"isOmpEnabled",        global_envPtr->isMultithreaded},
         {"isMpiEnabled",        global_envPtr->isDistributed},
-        {"isMpiUserOwned",      global_envPtr->isMpiUserOwned},
         {"isGpuEnabled",        global_envPtr->isGpuAccelerated},
         {"isCuQuantumEnabled",  global_envPtr->isCuQuantumEnabled},
-        {"isGpuSharingEnabled", global_envPtr->isGpuSharingEnabled},
     });
 }
 
@@ -280,10 +283,16 @@ void printDistributionInfo() {
 
     using namespace printer_substrings;
 
+    bool comm = global_envPtr->isDistributed;
+    bool gpu  = global_envPtr->isGpuAccelerated;
+    bool both = comm && gpu;
+
     print_table(
         "distribution", {
-        {"isMpiGpuAware", (comm_isMpiCompiled())? printer_toStr(comm_isMpiGpuAware()) : na},
-        {"numMpiNodes",   printer_toStr(global_envPtr->numNodes)},
+        {"isMpiUserOwned",      comm? printer_toStr(global_envPtr->isMpiUserOwned) : na},
+        {"isMpiGpuAware",       comm? printer_toStr(global_envPtr->isMpiGpuAware ) : na},
+        {"isGpuSharingEnabled", both? printer_toStr(global_envPtr->isGpuSharingEnabled) : na},
+        {"numMpiNodes",         printer_toStr(global_envPtr->numNodes)},
     });
 }
 
@@ -487,6 +496,8 @@ void reportQuESTEnv() {
 
     /// @todo add function to write this output to file (useful for HPC debugging)
 
+    printer_sync();
+
     print_label("QuEST execution environment");
 
     bool statevec = false;
@@ -508,6 +519,8 @@ void reportQuESTEnv() {
 
     // exclude mandatory newline above
     print_oneFewerNewlines();
+
+    printer_sync();
 }
 
 

@@ -41,6 +41,8 @@ using std::string;
 
 void raiseInternalError(string errorMsg) {
 
+    printer_sync();
+
     print(string("")
         + "\n\n"
         + "A fatal internal QuEST error occurred. "
@@ -48,6 +50,8 @@ void raiseInternalError(string errorMsg) {
         + "Please report this to the QuEST developers. QuEST will now exit..."
         + "\n"
     );
+
+    printer_sync();
 
     exit(EXIT_FAILURE);
 }

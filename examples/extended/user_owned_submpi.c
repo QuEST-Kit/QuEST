@@ -11,7 +11,7 @@
  */
 
 #include "quest.h"
-#include <cstdio>
+#include <stdio.h>
 
 
 // This example requires linking with MPI, which the CMake
@@ -22,7 +22,7 @@
 #if ! QUEST_COMPILE_SUBCOMM
 int main()
 {    
-    std::printf("Example skipped since MPI is not linked.\n");
+    printf("Example skipped since MPI is not linked.\n");
     return 0;
 }
 #else 
@@ -42,7 +42,7 @@ int main (void)
 
     const int I_AM_QUANTUM = world_rank % 2;
 
-    std::printf("[%d] Hello from rank %d of %d in MPI_COMM_WORLD.\n", world_rank, world_rank, nprocs);
+    printf("[%d] Hello from rank %d of %d in MPI_COMM_WORLD.\n", world_rank, world_rank, nprocs);
 
     MPI_Comm_split(MPI_COMM_WORLD, I_AM_QUANTUM, world_rank, &comm_split);
 
@@ -50,7 +50,7 @@ int main (void)
         MPI_Comm_dup(comm_split, &comm_quantum);
         MPI_Comm_size(comm_quantum, &quest_nprocs);
         MPI_Comm_rank(comm_quantum, &quest_rank);
-        std::printf("[%d] Hello from rank %d of %d in comm_quantum.\n", world_rank, quest_rank, quest_nprocs);
+        printf("[%d] Hello from rank %d of %d in comm_quantum.\n", world_rank, quest_rank, quest_nprocs);
     } else {
         MPI_Comm_dup(comm_split, &comm_classical);
         quest_rank = -1;
@@ -59,12 +59,12 @@ int main (void)
 
     // only procs in quantum comm initialise QuEST
     if (I_AM_QUANTUM) {
-        std::printf("[%d] Initialising QuEST.\n", world_rank);
-        initCustomMpiCommQuESTEnv(comm_quantum, modeflag::USE_AUTO, modeflag::USE_AUTO);
+        printf("[%d] Initialising QuEST.\n", world_rank);
+        initCustomMpiCommQuESTEnv(comm_quantum, -1, -1); // -1 = auto-deployments
 
         reportQuESTEnv();
 
-        std::printf("[%d] Finalising QuEST.\n", world_rank);
+        printf("[%d] Finalising QuEST.\n", world_rank);
         finalizeQuESTEnv();
     }
 
