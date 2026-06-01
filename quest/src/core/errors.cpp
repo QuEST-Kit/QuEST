@@ -650,6 +650,11 @@ void error_gpuUnexpectedlyInaccessible() {
     raiseInternalError("A function internally assumed (as a precondition) that QuEST was compiled with GPU-acceleration enabled, and that one was physically accessible, though this was untrue.");
 }
 
+void error_gpuNumThreadsPerBlockNotSet() {
+
+    raiseInternalError("A function queried the GPU numThreadsPerBlock before it had been set (intendedly by QuESTEnv initialisation).");
+}
+
 void error_gpuMemSyncQueriedButEnvNotGpuAccelerated() {
 
     raiseInternalError("A function checked whether persistent GPU memory (such as in a CompMatr) had been synchronised, but the QuEST environment is not GPU accelerated.");  
@@ -665,9 +670,10 @@ void error_gpuDenseMatrixConjugatedAndTransposed() {
     raiseInternalError("The GPU + cuQuantum implementation of anyCtrlAnyTargDenseMatr() assumes that at most one of template arguments ApplyConj and ApplyTransp is true, though this was violated.");
 }
 
-void error_gpuBadNumThreadsPerBlock() {
-
-    raiseInternalError("The number of threads per block must be a multiple of 32 on NVIDIA GPUs or a multiple of 64 on AMD GPUs.");
+void assert_gpuNumThreadsPerBlockIsWarpDivisible(int numThreadsPerBlock) {
+    int warpSize = gpu_isHipCompiled()? gpu_HIP_WARP_SIZE : gpu_CUDA_WARP_SIZE;
+    if (numThreadsPerBlock > 0 && numThreadsPerBlock % warpSize != 0)
+        raiseInternalError("The number of threads per block was not a positive multiple of the platform warp size (32 for NVIDIA, 64 for AMD).");
 }
 
 void assert_quregIsGpuAccelerated(Qureg qureg) {
@@ -887,6 +893,16 @@ void error_attemptedToParseComplexFromInvalidString() {
 void error_attemptedToParseRealFromInvalidString() {
 
     raiseInternalError("A function attempted to parse a string to a qreal but the string was not validly formatted. This should have been caught by prior user validation.");
+}
+
+void error_attemptedToParseIntegerFromInvalidString() {
+
+    raiseInternalError("A function attempted to parse a string to an int but the string was not validly formatted. This should have been caught by prior user validation.");
+}
+
+void error_attemptedToParseOutOfRangeInteger() {
+
+    raiseInternalError("A function attempted to parse a string to an integer but the numerical value of the string literal exceeded the range of the integer. This should have been caught by prior validation.");
 }
 
 void error_attemptedToParseOutOfRangeReal() {

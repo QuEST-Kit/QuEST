@@ -82,6 +82,9 @@ namespace patterns {
     // full complex; any format, importantly in order of decreasing specificity. do not consult for captured groups
     string num = group(comp) + "|" + group(imag) + "|" + group(real);
 
+    // full signed integer
+    string signedInt = optSign + "[0-9]+";
+
     // no capturing because 'num' pollutes captured groups, and pauli syntax overlaps real integers
     string pauli = "[" + parser_RECOGNISED_PAULI_CHARS + "]";
     string paulis = group(optSpace + pauli + optSpace) + "+";
@@ -96,6 +99,7 @@ namespace regexes {
     regex imag(patterns::imag);
     regex comp(patterns::comp);
     regex num(patterns::num);
+    regex signedInt(patterns::signedInt);
     regex paulis(patterns::paulis);
     regex weightedPaulis(patterns::weightedPaulis);
 }
@@ -169,6 +173,63 @@ int getNumPaulisInLine(string line) {
     string coeff, paulis;
     separateStringIntoCoeffAndPaulis(line, coeff, paulis);
     return count_if(paulis.begin(), paulis.end(), isNotWhiteSpace);
+}
+
+
+
+/*
+ * INTEGER PARSING
+ */
+
+
+bool parser_isAnySizedInteger(string str) {
+
+    smatch match;
+    return regex_match(str, match, regexes::signedInt);
+}
+
+
+bool parser_isValidInteger(string str) {
+
+    // reject str if it doesn't match regex
+    if (!parser_isAnySizedInteger(str))
+        return false;
+
+    // remove whitespace which stoi() below cannot handle after the sign
+    removeWhiteSpace(str);
+
+    // check number is in-range of int via duck-typing
+    try {
+        std::stoi(str);
+    } catch (const out_of_range&) {
+        return false;
+
+    // error if our regex permitted an unparsable string
+    } catch (const invalid_argument&) {
+        error_attemptedToParseIntegerFromInvalidString();
+    }
+
+    return true;
+}
+
+
+int parser_parseInteger(string str) {
+
+    if (!parser_isValidInteger(str))
+        error_attemptedToParseIntegerFromInvalidString();
+
+    removeWhiteSpace(str); // stoi can't handle
+
+    try {
+        return std::stoi(str);
+    } catch (const invalid_argument&) {
+        error_attemptedToParseIntegerFromInvalidString();
+    } catch (const out_of_range&) {
+        error_attemptedToParseOutOfRangeInteger();
+    }
+
+    // unreachable
+    return -1;
 }
 
 

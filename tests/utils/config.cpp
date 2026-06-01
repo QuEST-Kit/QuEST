@@ -40,9 +40,7 @@ int getIntEnvVarValueOrDefault(string name, int defaultValue) {
 
 
 /*
- * PUBLIC
- *
- * which each call std::getenv only once
+ * PUBLIC TEST ENV VARS
  */
 
 int getNumQubitsInUnitTestedQuregs() {
@@ -72,5 +70,22 @@ int getNumTestedMixedDeploymentRepetitions() {
 bool getWhetherToTestAllDeployments() {
 
     static bool value = getIntEnvVarValueOrDefault("QUEST_TEST_TRY_ALL_DEPLOYMENTS", 1);
+    return value;
+}
+
+
+
+/*
+ * PUBLIC QUEST ENV VARS
+ */
+
+int getDefaultNumGpuThreadsPerBlock() {
+
+    // when the env-var is not present, we MUST return the default assumed by the QuEST src code,
+    // which at the time of writing, is a fixed 128 (rather than hardware-specific value)
+    const int compileTimeDefaultTPB = 128;
+
+    // when the env-var is present, we consult that, just like QuEST
+    static int value = getIntEnvVarValueOrDefault("QUEST_NUM_GPU_THREADS_PER_BLOCK", compileTimeDefaultTPB);
     return value;
 }

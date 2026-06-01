@@ -161,6 +161,7 @@ option(
 )
 message(STATUS "Custom communicator support is turned ${QUEST_ENABLE_SUBCOMM}. Set QUEST_ENABLE_SUBCOMM to modify.")
 
+
 # GPU Acceleration
 option(
   QUEST_ENABLE_CUDA
@@ -183,20 +184,20 @@ option(
 )
 message(STATUS "AMD GPU acceleration is turned ${QUEST_ENABLE_HIP}. Set QUEST_ENABLE_HIP to modify.")
 
+
 # GPU Performance Tuning
-## We do not print this value when configuring CMake as it is for advanced users only.
+# (We do not print this value when configuring CMake as it is for advanced users only)
 
-set(QUEST_GPU_NUM_THREADS_PER_BLOCK 128
-  CACHE
-  STRING
-  "The default number of threads per block QuEST will use when offloading to a GPU. Set to 128 by default. Must be a multiple of 32."
+set(quest_tpb_description # (the games we play for multi-line set() strings!)
+  "The default number of threads per block QuEST will use when offloading to a GPU. Set to 128 by default. "
+  "Must be a multiple of 32 (on NVIDIA GPUs) or 64 (on AMD GPUs). Can be overridden at executable launch "
+  "via an environment variable of the same name, or during runtime via a corresponding API setter function."
 )
-mark_as_advanced(QUEST_GPU_NUM_THREADS_PER_BLOCK)
+set(QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK 128 
+  CACHE STRING
+  "${quest_tpb_description}")
+mark_as_advanced(QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK)
 
-math(EXPR quest_tpb_remainder "${QUEST_GPU_NUM_THREADS_PER_BLOCK} % 32")
-if ((NOT (quest_tpb_remainder EQUAL 0)) OR (QUEST_GPU_NUM_THREADS_PER_BLOCK LESS 32))
-    message(FATAL_ERROR "QUEST_GPU_NUM_THREADS_PER_BLOCK must be a multiple of 32. QUEST_GPU_NUM_THREADS_PER_BLOCK=${QUEST_GPU_NUM_THREADS_PER_BLOCK}.")
-endif()
 
 # Deprecated API
 option(
@@ -211,9 +212,15 @@ option(
   "Whether to disable compile-time warnings ordinarily triggered by use of the deprecated API. Turned OFF by default."
   OFF
 )
-message(STATUS "Disabling of deprecated API warnings is turned ${QUEST_DISABLE_DEPRECATION_WARNINGS}. Set QUEST_DISABLE_DEPRECATION_WARNINGS to modify.")
+message(STATUS 
+  "Disabling of deprecated API warnings is turned ${QUEST_DISABLE_DEPRECATION_WARNINGS}. "
+  "Set QUEST_DISABLE_DEPRECATION_WARNINGS to modify."
+)
 
 option(QUEST_INSTALL_BINARIES "Whether to include example and user binaries in the install." OFF)
+if (QUEST_INSTALL_BINARIES)
+  message(STATUS "Including example and user binaries in the install (if built).")
+endif()
 
 
 
@@ -236,9 +243,11 @@ if (QUEST_ENABLE_CUQUANTUM AND NOT QUEST_ENABLE_CUDA)
   message(FATAL_ERROR "Use of cuQuantum requires CUDA.")
 endif()
 
+
 if (QUEST_ENABLE_SUBCOMM AND NOT QUEST_ENABLE_MPI)
   message(FATAL_ERROR "Distribution must be enabled to make use of a user-defined communicator for QuEST.")
 endif()
+
 
 if(WIN32)
   
@@ -254,6 +263,37 @@ if(WIN32)
     message(FATAL_ERROR "The deprecated API is not compatible with MSVC.")
   endif()
 
+endif()
+
+
+# validate numTPB even when GPU not compiled
+if (QUEST_ENABLE_HIP)
+  set(quest_warp_size 64)
+  set(quest_gpu_model "AMD GPUs (via HIP)")
+else()
+  set(quest_warp_size 32)
+  set(quest_gpu_model "NVIDIA GPUs (via CUDA), or when not targeting GPUs")
+endif()
+math(EXPR quest_tpb_remainder "${QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK} % ${quest_warp_size}")
+if ((NOT (quest_tpb_remainder EQUAL 0)) OR NOT (QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK GREATER 0))
+  message(FATAL_ERROR
+    "QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK was set to ${QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK}, "
+    "but it must be a positive multiple of ${quest_warp_size} when compiling for ${quest_gpu_model}."
+  )
+endif()
+
+
+# warn when numTPB will be later overridden by the current environment variable
+if(
+  DEFINED ENV{QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK} 
+  AND NOT "$ENV{QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK}" STREQUAL ""
+  AND NOT "$ENV{QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK}" STREQUAL "${QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK}"
+)
+  message(WARNING 
+    "The CMake option QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK=${QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK} "
+    "differs from the current environment variable (of the same name) value of $ENV{QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK}. "
+    "If not cleared before QuEST is launched, the latter will override the former."
+  )
 endif()
 
 
@@ -514,7 +554,6 @@ set(QUEST_COMPILE_MPI ${QUEST_ENABLE_MPI})
 set(QUEST_COMPILE_SUBCOMM ${QUEST_ENABLE_SUBCOMM})
 set(QUEST_COMPILE_CUQUANTUM ${QUEST_ENABLE_CUQUANTUM})
 set(QUEST_INCLUDE_DEPRECATED_FUNCTIONS ${QUEST_ENABLE_DEPRECATED_API})
-set(QUEST_DEFAULT_NUM_THREADS_PER_BLOCK ${QUEST_GPU_NUM_THREADS_PER_BLOCK})
 
 
 # (for the love of God cmake, create a concise syntax for this)
@@ -523,16 +562,17 @@ if (QUEST_ENABLE_CUDA OR QUEST_ENABLE_HIP)
 else()
   set(QUEST_COMPILE_CUDA 0)
 endif()
+set(QUEST_COMPILE_HIP ${QUEST_ENABLE_HIP})
 
 
-# these vars are already set, but repeated here for clarity
+# non-binary set vars which will be written to config.h.in (with a differing name) 
+set(QUEST_UNSPECIFIED_DEFAULT_NUM_GPU_THREADS_PER_BLOCK ${QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK})
+
+
+# these vars are already set (cmake name matches the macro name), but repeated here for clarity
 set(QUEST_FLOAT_PRECISION ${QUEST_FLOAT_PRECISION})
 set(QUEST_ENABLE_NUMA ${QUEST_ENABLE_NUMA})
 set(QUEST_DISABLE_DEPRECATION_WARNINGS ${QUEST_DISABLE_DEPRECATION_WARNINGS})
-
-
-# these do not appear in src but are saved for record-keeping in config.h.in
-set(QUEST_COMPILE_HIP ${QUEST_ENABLE_HIP})
 
 
 

@@ -82,11 +82,15 @@
  * ACCESSING ENV-VARS 
  */
 
+// test env-vars
 int getNumQubitsInUnitTestedQuregs();
 int getMaxNumTestedQubitPermutations();
 int getMaxNumTestedSuperoperatorTargets();
 int getNumTestedMixedDeploymentRepetitions();
 bool getWhetherToTestAllDeployments();
+
+// quest env-vars
+int getDefaultNumGpuThreadsPerBlock();
 
 
 #endif // CONFIG_PP

@@ -462,9 +462,12 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
     if constexpr (NumTargs != -1) {
 
         // when NumTargs <= 5, each thread has a private array stored in the registers,
-        // enabling rapid IO. Given numThreadsPerBlock = 128, the maximum size of 
-        // this array per-block is 16 * 128 * 2^5 B = 64 KiB which exceeds shared
-        // memory capacity, but does NOT exceed maximum register capacity.
+        // enabling rapid IO. When using the default numThreadsPerBlock = 128, the max
+        // size of this array per-block is 16 * 128 * 2^5 B = 64 KiB which exceeds shared
+        // memory capacity, but does NOT exceed maximum register capacity. When the user
+        // increases numThreadsPerBlock, the thread-private array in the below kernel
+        // will spill from registers into local memory, degrading performance, but
+        // behaving correctly and stably.
 
         /// @todo
         /// We should really check the above claims, otherwise the thread-private arrays could

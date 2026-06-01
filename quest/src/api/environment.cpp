@@ -79,7 +79,10 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
     validate_envNeverInit(global_envPtr != nullptr, global_hasEnvBeenFinalized, caller);
 
     // load env-vars before validating deployment mode, because some env vars can
-    // affect validation (such as QUEST_PERMIT_NODES_TO_SHARE_GPU)
+    // affect validation (such as QUEST_PERMIT_NODES_TO_SHARE_GPU). note that
+    // some env-vars (like QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK) will be here
+    // validated to have a correct format (like an int), but the validity of its
+    // actual value will be checked later (since it requires deciding GPU-accel).
     envvars_validateAndLoadEnvVars(caller);
     validateconfig_setEpsilonToDefault();
 
@@ -131,6 +134,11 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
     /// should we warn here if each machine contains
     /// more GPUs than deployed MPI-processes (some GPUs idle)?
 
+    // validate the initial numTPB env-var (if specified) is valid
+    int initNumThreadsPerBlock = envvars_getDefaultNumGpuThreadsPerBlock();
+    validate_numGpuThreadsPerBlock(initNumThreadsPerBlock, useGpuAccel, caller);
+    gpu_setNumThreadsPerBlock(initNumThreadsPerBlock);
+
     // cuQuantum is always used in GPU-accelerated envs when available
     bool useCuQuantum = useGpuAccel && gpu_isCuQuantumCompiled();
     if (useCuQuantum) {
@@ -157,7 +165,7 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
     global_envPtr->isGpuAccelerated    = useGpuAccel;
     global_envPtr->isDistributed       = useDistrib;
     global_envPtr->isMpiUserOwned      = userOwnsMpi;
-    global_envPtr->isMpiGpuAware        = isMpiGpuAware;
+    global_envPtr->isMpiGpuAware       = isMpiGpuAware;
     global_envPtr->isCuQuantumEnabled  = useCuQuantum;
     global_envPtr->isGpuSharingEnabled = permitGpuSharing;
 
@@ -534,21 +542,6 @@ void getQuESTEnvironmentString(char str[200]) {
         gpuDirect);
 }
 
-
-int getQuESTNumGpuThreadsPerBlock() {
-    validate_envIsInit(__func__);
-    
-    return gpu_getNumThreadsPerBlock();
-}
-
-void setQuESTNumGpuThreadsPerBlock(const int newThreadsPerBlock) {
-    validate_envIsInit(__func__);
-
-    // just rely on the internal function to throw an error if there's no GPU support compiled
-    // or if newThreadsPerBlock is not a multiple of 32 (NVIDIA) or 64 (AMD)
-    gpu_setNumThreadsPerBlock(newThreadsPerBlock);
-    return;
-}
 
 // end de-mangler
 }

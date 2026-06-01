@@ -6,12 +6,14 @@
  * @author Tyson Jones
  */
 
+#include "quest/include/config.h"
 #include "quest/include/precision.h"
 #include "quest/include/types.h"
 
 #include "quest/src/core/errors.hpp"
 #include "quest/src/core/parser.hpp"
 #include "quest/src/core/validation.hpp"
+#include "quest/src/gpu/gpu_config.hpp"
 
 #include <string>
 #include <cstdlib>
@@ -26,8 +28,9 @@ using std::string;
 
 
 namespace envvar_names {
-    string QUEST_PERMIT_NODES_TO_SHARE_GPU = "QUEST_PERMIT_NODES_TO_SHARE_GPU";
-    string QUEST_DEFAULT_VALIDATION_EPSILON = "QUEST_DEFAULT_VALIDATION_EPSILON";
+    string QUEST_PERMIT_NODES_TO_SHARE_GPU         = "QUEST_PERMIT_NODES_TO_SHARE_GPU";
+    string QUEST_DEFAULT_VALIDATION_EPSILON        = "QUEST_DEFAULT_VALIDATION_EPSILON";
+    string QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK = "QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK";
 }
 
 
@@ -45,7 +48,11 @@ namespace envvar_values {
 
     // by default, the initial validation epsilon (before being overriden
     // by users at runtime) should depend on qreal (i.e. FLOAT_PRECISION)
-    qreal QUEST_DEFAULT_VALIDATION_EPSILON = UNSPECIFIED_DEFAULT_VALIDATION_EPSILON;
+    qreal QUEST_DEFAULT_VALIDATION_EPSILON = QUEST_UNSPECIFIED_DEFAULT_VALIDATION_EPSILON;
+
+    // by default, the initial number of GPU threads per block is informed by
+    // the below cmake variable (before being overridden by env-var or at runtime)
+    int QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK = QUEST_UNSPECIFIED_DEFAULT_NUM_GPU_THREADS_PER_BLOCK;
 }
 
 
@@ -123,6 +130,21 @@ void validateAndSetDefaultValidationEpsilon(const char* caller) {
 }
 
 
+void validateAndSetDefaultNumGpuThreadsPerBlock(const char* caller) {
+
+    // permit unspecified, falling back to the hardcoded default
+    string name = envvar_names::QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK;
+    if (!isEnvVarSpecified(name))
+        return;
+
+    string value = getSpecifiedEnvVarValue(name);
+    validate_envVarDefaultNumGpuThreadsPerBlockIsAnInt(value, caller);
+
+    // overwrite default env-var value
+    envvar_values::QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK = parser_parseInteger(value);
+}
+
+
 
 /*
  * PUBLIC
@@ -138,6 +160,7 @@ void envvars_validateAndLoadEnvVars(const char* caller) {
     // load all env-vars
     validateAndSetWhetherGpuSharingIsPermitted(caller);
     validateAndSetDefaultValidationEpsilon(caller);
+    validateAndSetDefaultNumGpuThreadsPerBlock(caller);
 
     // ensure no re-loading
     global_areEnvVarsLoaded = true;
@@ -155,4 +178,11 @@ qreal envvars_getDefaultValidationEpsilon() {
     assertEnvVarsAreLoaded();
 
     return envvar_values::QUEST_DEFAULT_VALIDATION_EPSILON;
+}
+
+
+int envvars_getDefaultNumGpuThreadsPerBlock() {
+    assertEnvVarsAreLoaded();
+
+    return envvar_values::QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK;
 }

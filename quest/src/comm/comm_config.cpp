@@ -209,6 +209,14 @@ bool comm_isMpiInit() {
 }
 
 
+bool comm_isMpiUserOwned() {
+
+    // this isn't presently used by the code base; I'm just naughtily silencing
+    // "unused var" warning when compiling without MPI :^)
+    return global_isMpiUserOwned;
+}
+
+
 
 /*
  * QUEST COMMUNICATION MANAGEMENT

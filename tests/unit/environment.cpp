@@ -178,40 +178,6 @@ TEST_CASE( "getQuESTEnv", TEST_CATEGORY ) {
 }
 
 
-TEST_CASE( "QuESTNumGpuThreadsPerBlock", TEST_CATEGORY ) {
-
-    SECTION( LABEL_CORRECTNESS ) {
-        // Check that it initially matches the compile time value
-        // stored in config.h
-        REQUIRE(getQuESTNumGpuThreadsPerBlock() == QUEST_DEFAULT_NUM_THREADS_PER_BLOCK);
-
-        // try a set/get iteration
-        const int test_num_tpb = 64;
-        REQUIRE_NOTHROW(setQuESTNumGpuThreadsPerBlock(test_num_tpb));
-        REQUIRE(getQuESTNumGpuThreadsPerBlock() == test_num_tpb);
-
-        // set it back to the original and confirm that also worked
-        REQUIRE_NOTHROW(setQuESTNumGpuThreadsPerBlock(QUEST_DEFAULT_NUM_THREADS_PER_BLOCK));
-        REQUIRE(getQuESTNumGpuThreadsPerBlock() == QUEST_DEFAULT_NUM_THREADS_PER_BLOCK);
-
-    }
-
-    SECTION( LABEL_VALIDATION ) {
-
-        // The way the error-handling currently works, Catch2 can't catch these (ironically)
-        // but leaving them in case we ever update the way errors are done.
-        
-        SECTION( "Less than 32" ) {
-            //REQUIRE_THROWS_WITH( setQuESTNumGpuThreadsPerBlock(31) , ContainsSubstring("number of threads per block") );
-        }
-
-        SECTION("Not a multiple of 32 or 64.") {
-            //REQUIRE_THROWS_WITH( setQuESTNumGpuThreadsPerBlock(94) , ContainsSubstring("number of threads per block") );
-        }
-
-    }
-}
-
 /** @} (end defgroup) */
 
 

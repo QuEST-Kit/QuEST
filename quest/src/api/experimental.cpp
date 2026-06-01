@@ -13,6 +13,7 @@
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/comm/comm_config.hpp"
+#include "quest/src/gpu/gpu_config.hpp"
 
 #if QUEST_COMPILE_SUBCOMM && ! QUEST_COMPILE_MPI
     #error "Macro QUEST_COMPILE_SUBCOMM was true, but QUEST_COMPILE_MPI was illegally false."
@@ -59,7 +60,7 @@ void initCustomMpiQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, in
 
 
 #if QUEST_COMPILE_SUBCOMM // hide MPI_Comm
-
+ 
 void initCustomMpiCommQuESTEnv(MPI_Comm userQuestComm, int useGpuAccel, int useMultithread) {
 
     // useDistrib and userOwnsMpi are implied by the user of this initialiser
@@ -81,8 +82,25 @@ void initCustomMpiCommQuESTEnv(MPI_Comm userQuestComm, int useGpuAccel, int useM
     // perform remaining validation (some is harmlessly repeated) and init QuEST env
     validateAndInitCustomQuESTEnv(useDistrib, userOwnsMpi, useGpuAccel, useMultithread, __func__);
 }
-
 #endif // QUEST_COMPILE_SUBCOMM
+
+
+int getQuESTNumGpuThreadsPerBlock() {
+    validate_envIsInit(__func__);
+    
+    return gpu_getNumThreadsPerBlock();
+}
+
+
+void setQuESTNumGpuThreadsPerBlock(int numTPB) {
+    validate_envIsInit(__func__);
+
+    // validation messages and queries depend upon GPU usage
+    bool gpuIsActive = getQuESTEnv().isGpuAccelerated;
+    validate_numGpuThreadsPerBlock(numTPB, gpuIsActive, __func__);
+
+    gpu_setNumThreadsPerBlock(numTPB);
+}
 
 
 // end de-mangler

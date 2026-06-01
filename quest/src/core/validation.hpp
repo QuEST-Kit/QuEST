@@ -113,6 +113,8 @@ void validate_numPauliChars(const char* paulis, const char* caller);
 
 void validate_reportedPauliStrStyleFlag(int flag, const char* caller);
 
+void validate_numGpuThreadsPerBlock(int numTBP, bool isGpuActive, const char* caller);
+
 
 
 /*
@@ -553,6 +555,8 @@ void validate_tempListAllocSucceeded(bool succeeded, qindex numElems, qindex num
 void validate_envVarPermitNodesToShareGpu(string varValue, const char* caller);
 
 void validate_envVarDefaultValidationEpsilon(string varValue, const char* caller);
+
+void validate_envVarDefaultNumGpuThreadsPerBlockIsAnInt(string varValue, const char* caller);
 
 
 
