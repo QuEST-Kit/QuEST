@@ -200,11 +200,11 @@ void printCompilationInfo() {
 
     print_table(
         "compilation", {
-        {"isMpiCompiled",                comm_isMpiCompiled()},
-        {"isMpiSubCommCompiled",         comm_isMpiSubCommCompiled()},
-        {"isGpuCompiled",                gpu_isGpuCompiled()},
-        {"isOmpCompiled",                cpu_isOpenmpCompiled()},
-        {"isCuQuantumCompiled",          gpu_isCuQuantumCompiled()},
+        {"isMpiCompiled",         comm_isMpiCompiled()},
+        {"isMpiSubCommCompiled",  comm_isMpiSubCommCompiled()},
+        {"isGpuCompiled",         gpu_isGpuCompiled()},
+        {"isOmpCompiled",         cpu_isOpenmpCompiled()},
+        {"isCuQuantumCompiled",   gpu_isCuQuantumCompiled()},
     });
 }
 
@@ -274,7 +274,7 @@ void printDistributionInfo() {
     using namespace printer_substrings;
 
     bool comm = global_envPtr->isDistributed;
-    bool gpu = global_envPtr->isGpuAccelerated;
+    bool gpu  = global_envPtr->isGpuAccelerated;
     bool both = comm && gpu;
 
     print_table(
