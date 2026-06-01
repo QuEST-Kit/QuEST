@@ -523,16 +523,13 @@ if (QUEST_ENABLE_CUDA OR QUEST_ENABLE_HIP)
 else()
   set(QUEST_COMPILE_CUDA 0)
 endif()
+set(QUEST_COMPILE_HIP ${QUEST_ENABLE_HIP})
 
 
 # these vars are already set, but repeated here for clarity
 set(QUEST_FLOAT_PRECISION ${QUEST_FLOAT_PRECISION})
 set(QUEST_ENABLE_NUMA ${QUEST_ENABLE_NUMA})
 set(QUEST_DISABLE_DEPRECATION_WARNINGS ${QUEST_DISABLE_DEPRECATION_WARNINGS})
-
-
-# these do not appear in src but are saved for record-keeping in config.h.in
-set(QUEST_COMPILE_HIP ${QUEST_ENABLE_HIP})
 
 
 

@@ -83,16 +83,13 @@
 #cmakedefine01 QUEST_COMPILE_SUBCOMM
 #cmakedefine01 QUEST_COMPILE_CUDA
 #cmakedefine01 QUEST_COMPILE_CUQUANTUM
+#cmakedefine01 QUEST_COMPILE_HIP
 
 // default parameters which may have been tuned for performance when building the library
 #cmakedefine QUEST_DEFAULT_NUM_THREADS_PER_BLOCK @QUEST_DEFAULT_NUM_THREADS_PER_BLOCK@
 
 // crucial to QuEST source (informs optional NUMA usage)
 #cmakedefine01 QUEST_ENABLE_NUMA
-
-
-// not consulted by src (included for book-keeping)
-#cmakedefine01 QUEST_COMPILE_HIP
 
 
 
