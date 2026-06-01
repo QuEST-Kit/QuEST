@@ -6,6 +6,7 @@
  * @author Tyson Jones
  */
 
+#include "quest/include/config.h"
 #include "quest/include/precision.h"
 #include "quest/include/types.h"
 
@@ -49,9 +50,9 @@ namespace envvar_values {
     // by users at runtime) should depend on qreal (i.e. FLOAT_PRECISION)
     qreal QUEST_DEFAULT_VALIDATION_EPSILON = UNSPECIFIED_DEFAULT_VALIDATION_EPSILON;
 
-    // by default, the initial number of GPU threads per block is given
-    // by the constants of gpu_config.hpp, before env-var or runtime overriding
-    int QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK = gpu_UNSPECIFIED_DEFAULT_NUM_THREADS_PER_BLOCK;
+    // by default, the initial number of GPU threads per block is informed by
+    // the below cmake variable (before being overridden by env-var or at runtime)
+    int QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK = QUEST_UNSPECIFIED_DEFAULT_NUM_GPU_THREADS_PER_BLOCK;
 }
 
 

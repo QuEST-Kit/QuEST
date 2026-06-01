@@ -336,11 +336,9 @@ qindex gpu_getMaxNumConcurrentThreads() {
  */
 
 
-// the default numTPB is not known until runtime since the macro
-// gpu_UNSPECIFIED_DEFAULT_NUM_THREADS_PER_BLOCK may be overriden by the
-// QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK environment variable. We do 
-// not read the env-var immediately since it may malformed; we must wait
-// for initQuESTEnv() to validate and potentially throw an error
+// the default numTPB is not known until runtime since the initial value
+// (provided either by the CMake var, or the environment variable) must
+// be validated during QuEST initialisation.
 static int global_numThreadsPerBlock = -1;
 
 

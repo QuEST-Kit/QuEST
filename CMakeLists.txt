@@ -183,6 +183,21 @@ option(
 )
 message(STATUS "AMD GPU acceleration is turned ${QUEST_ENABLE_HIP}. Set QUEST_ENABLE_HIP to modify.")
 
+
+# GPU Performance Tuning
+# (We do not print this value when configuring CMake as it is for advanced users only)
+
+set(quest_tpb_description # (the games we play for multi-line set() strings!)
+  "The default number of threads per block QuEST will use when offloading to a GPU. Set to 128 by default. "
+  "Must be a multiple of 32 (on NVIDIA GPUs) or 64 (on AMD GPUs). Can be overridden at executable launch "
+  "via an environment variable of the same name, or during runtime via a corresponding API setter function."
+)
+set(QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK 128 
+  CACHE STRING
+  "${quest_tpb_description}")
+mark_as_advanced(QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK)
+
+
 # Deprecated API
 option(
   QUEST_ENABLE_DEPRECATED_API
@@ -239,6 +254,23 @@ if(WIN32)
     message(FATAL_ERROR "The deprecated API is not compatible with MSVC.")
   endif()
 
+endif()
+
+
+# validate numTPB even when GPU not compiled
+if (QUEST_ENABLE_HIP)
+  set(quest_warp_size 64)
+  set(quest_gpu_model "AMD GPUs (via HIP)")
+else()
+  set(quest_warp_size 32)
+  set(quest_gpu_model "NVIDIA GPUs (via CUDA), or when not targeting GPUs")
+endif()
+math(EXPR quest_tpb_remainder "${QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK} % ${quest_warp_size}")
+if ((NOT (quest_tpb_remainder EQUAL 0)) OR NOT (QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK GREATER 0))
+  message(FATAL_ERROR
+    "QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK was set to ${QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK}, "
+    "but it must be a positive multiple of ${quest_warp_size} when compiling for ${quest_gpu_model}."
+  )
 endif()
 
 
@@ -510,7 +542,11 @@ endif()
 set(QUEST_COMPILE_HIP ${QUEST_ENABLE_HIP})
 
 
-# these vars are already set, but repeated here for clarity
+# non-binary set vars which will be written to config.h.in (with a differing name) 
+set(QUEST_UNSPECIFIED_DEFAULT_NUM_GPU_THREADS_PER_BLOCK ${QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK})
+
+
+# these vars are already set (cmake name matches the macro name), but repeated here for clarity
 set(QUEST_FLOAT_PRECISION ${QUEST_FLOAT_PRECISION})
 set(QUEST_ENABLE_NUMA ${QUEST_ENABLE_NUMA})
 set(QUEST_DISABLE_DEPRECATION_WARNINGS ${QUEST_DISABLE_DEPRECATION_WARNINGS})

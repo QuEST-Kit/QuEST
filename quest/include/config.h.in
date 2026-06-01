@@ -90,6 +90,10 @@
 #cmakedefine01 QUEST_ENABLE_NUMA
 
 
+// default parameters which may have been tuned for performance when building the library
+#cmakedefine QUEST_UNSPECIFIED_DEFAULT_NUM_GPU_THREADS_PER_BLOCK @QUEST_UNSPECIFIED_DEFAULT_NUM_GPU_THREADS_PER_BLOCK@
+
+
 
 /*
  * inherit the version information from CMake.

@@ -27,11 +27,6 @@
 constexpr int gpu_CUDA_WARP_SIZE = 32;
 constexpr int gpu_HIP_WARP_SIZE = 64;
 
-// The default numTPB when the associated, overriding environment
-// variable is not specified. This hardcoded constant MUST pass
-// validation, else the user will be told their env-var is bad
-constexpr int gpu_UNSPECIFIED_DEFAULT_NUM_THREADS_PER_BLOCK = 128;
-
 
 
 /*
