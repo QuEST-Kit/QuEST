@@ -161,17 +161,19 @@ namespace report {
 
     // substrings re-used below
     string _invalid_num_tpb_prefix =
-        "Given an invalid number of threads per GPU block (possibly specified by environment variable) of ${NUM_TPB}.";
+        "An invalid number of GPU threads per block (${NUM_TPB}) was passed, or specified via environment variable " + envvar_names::QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK + ", or compiled into the QuEST library through the CMake option of the same name.";
+    string _num_tpb_warp_indivisible_infix =
+        "The specified number does not divide evenly into the warp size of ${CUDA_WARP_SIZE} (NVIDIA GPUs) or ${HIP_WARP_SIZE} (AMD GPUs).";
+    string _num_tpb_warp_negative_infix =
+        "The specified number must be positive.";
     string _num_tpb_ineffectual_suffix =
         "Note GPU acceleration is not active so this parameter has no effect anyway.";
-    string _num_tpb_warp_indivisible_infix =
-        "Number does not divide evenly into the warp size of ${CUDA_WARP_SIZE} (NVIDIA GPUs) or ${HIP_WARP_SIZE} (AMD GPUs).";
 
     string GPU_NUM_THREADS_PER_BLOCK_IS_NOT_POSITIVE =
-        _invalid_num_tpb_prefix + " Number must be positive.";
+        _invalid_num_tpb_prefix + " " + _num_tpb_warp_negative_infix;
 
     string GPU_NUM_THREADS_PER_BLOCK_IS_NOT_POSITIVE_BUT_GPU_NOT_ACTIVE_ANYWAY =
-        _invalid_num_tpb_prefix + " Number must be positive. " + _num_tpb_ineffectual_suffix;
+        _invalid_num_tpb_prefix + " " + _num_tpb_warp_negative_infix + " " + _num_tpb_ineffectual_suffix;
 
     string GPU_NUM_THREADS_PER_BLOCK_IS_NOT_WARP_DIVISIBLE =
         _invalid_num_tpb_prefix + " " + _num_tpb_warp_indivisible_infix;
