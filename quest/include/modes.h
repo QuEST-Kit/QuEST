@@ -84,15 +84,18 @@
 
     /** @envvardoc
      * 
-     * Specifies the default number of threads per block used by GPU acceleration. 
+     * Specifies the default number of threads per block (or "block dimension") used by GPU acceleration. 
      * 
      * The number of dispatched CUDA threads per block controls the parallelisation granularity of
      * QuEST's GPU backend, affecting performance.
      * Specifying `QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK` to a valid, positive integer overrides
-     * QuEST's hardcoded default of 128. The specified number will be used by all of QuEST's
-     * GPU backend functions, unless overridden at runtime via setQuESTNumGpuThreadsPerBlock().
+     * QuEST's default otherwise set during compilation via a CMake option of the same name. If 
+     * that CMake option was not set, the default is assumed to be @p 128.
+     * 
+     * The number specified by this environment variable will be used as the block dimension by all of
+     * QuEST's GPU backend functions, unless overridden at runtime via setQuESTNumGpuThreadsPerBlock().
      * The actual number of threads per block used at any time can be queried via 
-     * getQuESTNumGpuThreadsPerBlock(). 
+     * getQuESTNumGpuThreadsPerBlock(), or reported by reportQuESTEnv().
      * 
      * @envvarvalues
      *  - use internal default of `128`: @p '', @p , (unspecified)

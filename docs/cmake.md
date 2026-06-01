@@ -48,7 +48,7 @@ make
 | `QUEST_DISABLE_DEPRECATION_WARNINGS` | (`OFF`), `ON` | Whether to disable the compile-time deprecation warnings when using the deprecated (v3) API. |
 | `USER_SOURCE_NAMES` | (Undefined), String | The source file for a user program which will be compiled alongside QuEST. `USER_OUTPUT_EXE_NAME` *must* also be defined. |
 | `USER_OUTPUT_EXE_NAME` | (Undefined), String | The name of the executable which will be created from the provided `USER_SOURCE_NAMES`. `USER_SOURCE_NAMES` *must* also be defined. |
-| `QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK` | (128), Number | The default number of threads per block QuEST will use when offloading to a GPU. *Must* be a multiple of 32 (on NVIDIA GPUs) or 64 (on AMD GPUs). This CMake variable sets the default when not later overridden. The number can be overridden at process launch time using an [environment variable](https://quest-kit.github.io/QuEST/group__modes.html#gaf1b71f54d270d3353fe072c66827339b) of the same name, or during runtime using [`setQuESTNumGpuThreadsPerBlock()`](https://quest-kit.github.io/QuEST/group__experimental.html#gae35a55c6d9366ce677e6aaaf4c1ff5ef). |
+| `QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK` | (128), Number | The default number of threads per block QuEST will use when offloading to a GPU. *Must* be a multiple of 32 (on NVIDIA GPUs) or 64 (on AMD GPUs). This CMake variable sets the default if not later overridden. The number can be overridden at process launch time using an [environment variable](https://quest-kit.github.io/QuEST/group__modes.html#gaf1b71f54d270d3353fe072c66827339b) of the same name, or during runtime using [`setQuESTNumGpuThreadsPerBlock()`](https://quest-kit.github.io/QuEST/group__experimental.html#gae35a55c6d9366ce677e6aaaf4c1ff5ef). |
 
 
 

@@ -75,7 +75,10 @@ int getQuESTNumGpuThreadsPerBlock();
  * This changes the GPU parallelisation granularity and can affect performance, and is useful
  * for performance tuning or diagnostics. Before this function is called, QuEST will use the
  * number as specified by the environment variable @p QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK,
- * if defined. Otherwise, it will fallback to an internal default (presently @p 128).
+ * if defined. Otherwise, it will use the value specified by the CMake/compile option of the
+ * same name, which itself presently defaults to @p 128. After this function is called, QuEST
+ * will adopt @p numThreadsPerBlock for the remainder of execution, or until this function is
+ * called again.
  * 
  * Practical values of @p numThreadsPerBlock can vary with the simulation size, the user's GPU hardware,
  * and whether it is NVIDIA or AMD, which have respective warp sizes of @p 32 and @p 64.
