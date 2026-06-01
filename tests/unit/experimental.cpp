@@ -69,8 +69,14 @@ TEST_CASE( "setQuESTNumGpuThreadsPerBlock", TEST_CATEGORY ) {
 
         SECTION( "Indivisible by warp size" ) {
 
-            QuESTEnv env = getQuESTEnv();
-            int warpSize = (env.isGpuAccelerated && env.isHipCompiled)? 64 : 32;
+            // If HIP status was attached to QuESTEnv, we could do:
+            //     QuESTEnv env = getQuESTEnv();
+            //     int warpSize = (env.isGpuAccelerated && env.isHipCompiled)? 64 : 32;
+            // Since this currently isn't the case, we assume a warp size of 32,
+            // which will mean when this test is run on AMD GPUs, the below tested
+            // badNumTBP won't be as interestingly/rigorously spread
+            int warpSize = 32;
+
             int badNumTPB = GENERATE_COPY( warpSize - 1, warpSize + 1, warpSize + warpSize/2, 3*warpSize + warpSize/2 );
 
             REQUIRE_THROWS_WITH( setQuESTNumGpuThreadsPerBlock(badNumTPB), ContainsSubstring( "Number does not divide evenly into the warp size" ) );
