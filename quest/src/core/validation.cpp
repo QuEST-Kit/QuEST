@@ -1157,6 +1157,10 @@ namespace report {
 
 void default_inputErrorHandler(const char* func, const char* msg) {
 
+    // force a std-flush and comm-sync so that the error message is not (well, less likely
+    // to be interrupted_ by users printing from a non-root process
+    printer_sync();
+
     // safe to call even before MPI has been setup, and ignores user-set trailing newlines.
     // It begins with \n to interrupt half-printed lines (when trailing newlines are set to
     // 0 via setQuESTNumReportedNewlines(0)), for visual clarity. Note that user's overriding
@@ -1167,8 +1171,8 @@ void default_inputErrorHandler(const char* func, const char* msg) {
         + "Exiting...\n");
 
     // force a synch because otherwise non-main nodes may exit before print, and MPI
-    // will then attempt to instantly abort all nodes, losing the error message
-    comm_sync();
+    // will then attempt to instantly abort all nodes, losing the error message.
+    printer_sync();
 
     // finalise QuEST-owned MPI before error-exit to avoid scaring user with giant MPI crash
     // message. note user-owned MPI is NOT killed because it's possible only SOME processes

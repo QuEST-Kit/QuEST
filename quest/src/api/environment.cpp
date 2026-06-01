@@ -138,6 +138,10 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
         gpu_initCuQuantum();
     }
 
+    // MPI GPU-awareness detection is platform specific; sometimes it is
+    // known at compile-time, other times according to env-vars
+    bool isMpiGpuAware = comm_isMpiGpuAware();
+
     // initialise RNG, used by measurements and random-state generation
     rand_setSeedsToDefault();
 
@@ -153,6 +157,7 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
     global_envPtr->isGpuAccelerated    = useGpuAccel;
     global_envPtr->isDistributed       = useDistrib;
     global_envPtr->isMpiUserOwned      = userOwnsMpi;
+    global_envPtr->isMpiGpuAware        = isMpiGpuAware;
     global_envPtr->isCuQuantumEnabled  = useCuQuantum;
     global_envPtr->isGpuSharingEnabled = permitGpuSharing;
 
@@ -208,12 +213,13 @@ void printDeploymentInfo() {
 
     print_table(
         "deployment", {
-        {"isMpiEnabled",        global_envPtr->isDistributed},
+        {"isMpiEnabled",        globalEnvPtr->isDistributed},
         {"isMpiUserOwned",      global_envPtr->isMpiUserOwned},
-        {"isGpuEnabled",        global_envPtr->isGpuAccelerated},
-        {"isOmpEnabled",        global_envPtr->isMultithreaded},
-        {"isCuQuantumEnabled",  global_envPtr->isCuQuantumEnabled},
-        {"isGpuSharingEnabled", global_envPtr->isGpuSharingEnabled},
+        {"isMpiGpuAware",       globalEnvPtr->isMpiGpuAware},
+        {"isGpuEnabled",        globalEnvPtr->isGpuAccelerated},
+        {"isOmpEnabled",        globalEnvPtr->isMultithreaded},
+        {"isCuQuantumEnabled",  globalEnvPtr->isCuQuantumEnabled},
+        {"isGpuSharingEnabled", globalEnvPtr->isGpuSharingEnabled},
     });
 }
 
@@ -272,7 +278,7 @@ void printDistributionInfo() {
 
     print_table(
         "distribution", {
-        {"isMpiGpuAware", (comm_isMpiCompiled())? printer_toStr(comm_isMpiGpuAware()) : na},
+        {"isMpiGpuAware", comm_isInit()? printer_toStr(global_envPtr->isMpiGpuAware) : na},
         {"numMpiNodes",   printer_toStr(global_envPtr->numNodes)},
     });
 }
@@ -477,6 +483,8 @@ void reportQuESTEnv() {
 
     /// @todo add function to write this output to file (useful for HPC debugging)
 
+    printer_sync();
+
     print_label("QuEST execution environment");
 
     bool statevec = false;
@@ -498,6 +506,8 @@ void reportQuESTEnv() {
 
     // exclude mandatory newline above
     print_oneFewerNewlines();
+
+    printer_sync();
 }
 
 
