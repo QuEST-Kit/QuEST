@@ -79,7 +79,10 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
     validate_envNeverInit(global_envPtr != nullptr, global_hasEnvBeenFinalized, caller);
 
     // load env-vars before validating deployment mode, because some env vars can
-    // affect validation (such as QUEST_PERMIT_NODES_TO_SHARE_GPU)
+    // affect validation (such as QUEST_PERMIT_NODES_TO_SHARE_GPU). note that
+    // some env-vars (like QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK) will be here
+    // validated to have a correct format (like an int), but the validity of its
+    // actual value will be checked later (since it requires deciding GPU-accel).
     envvars_validateAndLoadEnvVars(caller);
     validateconfig_setEpsilonToDefault();
 
@@ -131,8 +134,10 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
     /// should we warn here if each machine contains
     /// more GPUs than deployed MPI-processes (some GPUs idle)?
 
-    // validate the initial numTBP is valid (we will change this to an env-var subsequently)
-    validate_numGpuThreadsPerBlock(QUEST_DEFAULT_NUM_THREADS_PER_BLOCK, useGpuAccel, caller);
+    // validate the initial numTPB env-var (if specified) is valid
+    int initNumThreadsPerBlock = envvars_getDefaultNumGpuThreadsPerBlock();
+    validate_numGpuThreadsPerBlock(initNumThreadsPerBlock, useGpuAccel, caller);
+    gpu_setNumThreadsPerBlock(initNumThreadsPerBlock);
 
     // cuQuantum is always used in GPU-accelerated envs when available
     bool useCuQuantum = useGpuAccel && gpu_isCuQuantumCompiled();

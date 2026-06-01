@@ -15,6 +15,7 @@
 namespace envvar_names { 
     extern std::string QUEST_PERMIT_NODES_TO_SHARE_GPU;
     extern std::string QUEST_DEFAULT_VALIDATION_EPSILON;
+    extern std::string QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK;
 }
 
 
@@ -32,6 +33,8 @@ void envvars_validateAndLoadEnvVars(const char* caller);
 bool envvars_getWhetherGpuSharingIsPermitted();
 
 qreal envvars_getDefaultValidationEpsilon();
+
+int envvars_getDefaultNumGpuThreadsPerBlock();
 
 
 #endif // ENVVARS_HPP

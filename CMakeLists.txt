@@ -183,21 +183,6 @@ option(
 )
 message(STATUS "AMD GPU acceleration is turned ${QUEST_ENABLE_HIP}. Set QUEST_ENABLE_HIP to modify.")
 
-# GPU Performance Tuning
-## We do not print this value when configuring CMake as it is for advanced users only.
-
-set(QUEST_GPU_NUM_THREADS_PER_BLOCK 128
-  CACHE
-  STRING
-  "The default number of threads per block QuEST will use when offloading to a GPU. Set to 128 by default. Must be a multiple of 32."
-)
-mark_as_advanced(QUEST_GPU_NUM_THREADS_PER_BLOCK)
-
-math(EXPR quest_tpb_remainder "${QUEST_GPU_NUM_THREADS_PER_BLOCK} % 32")
-if ((NOT (quest_tpb_remainder EQUAL 0)) OR (QUEST_GPU_NUM_THREADS_PER_BLOCK LESS 32))
-    message(FATAL_ERROR "QUEST_GPU_NUM_THREADS_PER_BLOCK must be a multiple of 32. QUEST_GPU_NUM_THREADS_PER_BLOCK=${QUEST_GPU_NUM_THREADS_PER_BLOCK}.")
-endif()
-
 # Deprecated API
 option(
   QUEST_ENABLE_DEPRECATED_API
@@ -514,7 +499,6 @@ set(QUEST_COMPILE_MPI ${QUEST_ENABLE_MPI})
 set(QUEST_COMPILE_SUBCOMM ${QUEST_ENABLE_SUBCOMM})
 set(QUEST_COMPILE_CUQUANTUM ${QUEST_ENABLE_CUQUANTUM})
 set(QUEST_INCLUDE_DEPRECATED_FUNCTIONS ${QUEST_ENABLE_DEPRECATED_API})
-set(QUEST_DEFAULT_NUM_THREADS_PER_BLOCK ${QUEST_GPU_NUM_THREADS_PER_BLOCK})
 
 
 # (for the love of God cmake, create a concise syntax for this)

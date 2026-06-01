@@ -556,6 +556,8 @@ void validate_envVarPermitNodesToShareGpu(string varValue, const char* caller);
 
 void validate_envVarDefaultValidationEpsilon(string varValue, const char* caller);
 
+void validate_envVarDefaultNumGpuThreadsPerBlockIsAnInt(string varValue, const char* caller);
+
 
 
 #endif // VALIDATION_HPP

@@ -249,6 +249,8 @@ void error_gpuCopyButMatrixNotGpuAccelerated();
 
 void error_gpuMemSyncQueriedButEnvNotGpuAccelerated();
 
+void error_gpuNumThreadsPerBlockNotSet();
+
 void error_gpuUnexpectedlyInaccessible();
 
 void error_gpuDeadCopyMatrixFunctionCalled();
@@ -368,6 +370,10 @@ void assert_utilsGivenNonZeroEpsilon(qreal eps);
 void error_attemptedToParseComplexFromInvalidString();
 
 void error_attemptedToParseRealFromInvalidString();
+
+void error_attemptedToParseIntegerFromInvalidString();
+
+void error_attemptedToParseOutOfRangeInteger();
 
 void error_attemptedToParseOutOfRangeReal();
 

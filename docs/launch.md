@@ -270,6 +270,7 @@ QuEST execution can be configured prior to runtime using the below [environment 
 
 - [`QUEST_PERMIT_NODES_TO_SHARE_GPU`](https://quest-kit.github.io/QuEST/group__modes.html#ga84b134d552464a82d29517e1ce1309a7)
 - [`QUEST_DEFAULT_VALIDATION_EPSILON`](https://quest-kit.github.io/QuEST/group__modes.html#gac4ab30619e411c965377c910680e242c)
+- [`QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK`](https://quest-kit.github.io/QuEST/group__modes.html#gaf1b71f54d270d3353fe072c66827339b)
 
 Note the unit tests in the preceding section accept additional environment variables.
 

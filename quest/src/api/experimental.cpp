@@ -91,14 +91,14 @@ int getQuESTNumGpuThreadsPerBlock() {
 }
 
 
-void setQuESTNumGpuThreadsPerBlock(int newThreadsPerBlock) {
+void setQuESTNumGpuThreadsPerBlock(int numTPB) {
     validate_envIsInit(__func__);
 
     // validation messages and queries depend upon GPU usage
     bool gpuIsActive = getQuESTEnv().isGpuAccelerated;
-    validate_numGpuThreadsPerBlock(newThreadsPerBlock, gpuIsActive, __func__);
+    validate_numGpuThreadsPerBlock(numTPB, gpuIsActive, __func__);
 
-    gpu_setNumThreadsPerBlock(newThreadsPerBlock);
+    gpu_setNumThreadsPerBlock(numTPB);
 }
 
 

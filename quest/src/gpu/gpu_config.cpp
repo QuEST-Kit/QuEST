@@ -336,10 +336,17 @@ qindex gpu_getMaxNumConcurrentThreads() {
  */
 
 
-int global_numThreadsPerBlock = QUEST_DEFAULT_NUM_THREADS_PER_BLOCK; // TODO!!! make this read env-var
+// the default numTPB is not known until runtime since the macro
+// gpu_UNSPECIFIED_DEFAULT_NUM_THREADS_PER_BLOCK may be overriden by the
+// QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK environment variable. We do 
+// not read the env-var immediately since it may malformed; we must wait
+// for initQuESTEnv() to validate and potentially throw an error
+static int global_numThreadsPerBlock = -1;
 
 
 int gpu_getNumThreadsPerBlock() {
+    if (global_numThreadsPerBlock == -1)
+        error_gpuNumThreadsPerBlockNotSet();
 
     return global_numThreadsPerBlock;
 }

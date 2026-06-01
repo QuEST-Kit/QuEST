@@ -1170,6 +1170,13 @@ namespace report {
 
     string DEFAULT_EPSILON_ENV_VAR_IS_NEGATIVE =
         "The optional '" + envvar_names::QUEST_DEFAULT_VALIDATION_EPSILON + "' environment variable was negative. The value must be zero or positive.";
+
+    string DEFAULT_NUM_GPU_THREADS_PER_BLOCK_ENV_VAR_NOT_AN_INT =
+        "The optional '" + envvar_names::QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK + "' environment variable was not a recognisable integer.";
+
+    string DEFAULT_NUM_GPU_THREADS_PER_BLOCK_ENV_VAR_EXCEEDS_INT_RANGE =
+        "The optional '" + envvar_names::QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK + "' environment variable was larger (in magnitude) than the maximum value which can be stored in an integer.";
+
 }
 
 
@@ -1684,8 +1691,8 @@ void validate_numGpuThreadsPerBlock(int numTPB, bool isGpuActive, const char* ca
     assertThat(numTPB > 0, errorMsg, vars, caller);
 
     // prepare to validate TPB is warp-divisible, again pointing out redundancy...
-    vars["${CUDA_WARP_SIZE}"] = CUDA_WARP_SIZE;
-    vars["${HIP_WARP_SIZE}"] = HIP_WARP_SIZE;
+    vars["${CUDA_WARP_SIZE}"] = gpu_CUDA_WARP_SIZE;
+    vars["${HIP_WARP_SIZE}"] = gpu_HIP_WARP_SIZE;
     errorMsg = isGpuActive? 
         report::GPU_NUM_THREADS_PER_BLOCK_IS_NOT_WARP_DIVISIBLE :
         report::GPU_NUM_THREADS_PER_BLOCK_IS_NOT_WARP_DIVISIBLE_BUT_GPU_NOT_AVAILABLE_ANYWAY;
@@ -1694,8 +1701,8 @@ void validate_numGpuThreadsPerBlock(int numTPB, bool isGpuActive, const char* ca
     // user has an NVIDIA or AMD GPU, which have distinct warps of 32 (CUDA) and 64 (HIP),
     // and so choose the smaller divisor (32,CUDA), ergo potentially permitting warp TPB
     // that are incompatible with HIP. An extremely unimportant subtlety!
-    static_assert(HIP_WARP_SIZE >= CUDA_WARP_SIZE);
-    int warpSize = gpu_isHipCompiled()? HIP_WARP_SIZE : CUDA_WARP_SIZE;
+    static_assert(gpu_HIP_WARP_SIZE >= gpu_CUDA_WARP_SIZE);
+    int warpSize = gpu_isHipCompiled()? gpu_HIP_WARP_SIZE : gpu_CUDA_WARP_SIZE;
     assertThat(numTPB % warpSize == 0, errorMsg, vars, caller);
 
     // the final check of max numTBP requires querying the hardware device, which obviously
@@ -5053,6 +5060,9 @@ void validate_tempAllocSucceeded(bool succeeded, size_t numBytes, const char* ca
 
 void validate_envVarPermitNodesToShareGpu(string varValue, const char* caller) {
 
+    // this presently does absolutely nothing; environment variables are
+    // loaded during QuESTEnv initialisation, before which there is no
+    // way to disable validation... but we keep for clarity/consistency!
     if (!global_isValidationEnabled)
         return;
 
@@ -5064,6 +5074,9 @@ void validate_envVarPermitNodesToShareGpu(string varValue, const char* caller) {
 
 void validate_envVarDefaultValidationEpsilon(string varValue, const char* caller) {
 
+    // this presently does absolutely nothing; environment variables are
+    // loaded during QuESTEnv initialisation, before which there is no
+    // way to disable validation... but we keep for clarity/consistency!
     if (!global_isValidationEnabled)
         return;
 
@@ -5072,4 +5085,18 @@ void validate_envVarDefaultValidationEpsilon(string varValue, const char* caller
 
     qreal eps = parser_parseReal(varValue);
     assertThat(eps >= 0, report::DEFAULT_EPSILON_ENV_VAR_IS_NEGATIVE, caller);
+}
+
+void validate_envVarDefaultNumGpuThreadsPerBlockIsAnInt(string varValue, const char* caller) {
+
+    // this presently does absolutely nothing; environment variables are
+    // loaded during QuESTEnv initialisation, before which there is no
+    // way to disable validation... but we keep for clarity/consistency!
+    if (!global_isValidationEnabled)
+        return;
+
+    // we here only validate that the value is a valid signed integer;
+    // validation of its GPU-compatibility is performed by another func
+    assertThat(parser_isAnySizedInteger(varValue), report::DEFAULT_NUM_GPU_THREADS_PER_BLOCK_ENV_VAR_NOT_AN_INT, caller);
+    assertThat(parser_isValidInteger(varValue), report::DEFAULT_NUM_GPU_THREADS_PER_BLOCK_ENV_VAR_EXCEEDS_INT_RANGE, caller);
 }

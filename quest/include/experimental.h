@@ -70,12 +70,31 @@ void initCustomMpiCommQuESTEnv(MPI_Comm questComm, int useGpuAccel, int useMulti
 int getQuESTNumGpuThreadsPerBlock();
 
 
-/** @notyetdoced
+/** Overrides the number of CUDA threads per block (or @p blockDim) used by QuEST's GPU-accelerated backend.
  * 
+ * This changes the GPU parallelisation granularity and can affect performance, and is useful
+ * for performance tuning or diagnostics. Before this function is called, QuEST will use the
+ * number as specified by the environment variable @p QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK,
+ * if defined. Otherwise, it will fallback to an internal default (presently @p 128).
+ * 
+ * Practical values of @p numThreadsPerBlock can vary with the simulation size, the user's GPU hardware,
+ * and whether it is NVIDIA or AMD, which have respective warp sizes of @p 32 and @p 64.
+ * 
+ * @note
+ * This function has no effect when QuEST is not deployed with GPU-acceleration enabled.
+ *
+ * @param[in] numThreadsPerBlock the new block size.
+ * @throws @validationerror
+ * - if the @p QuESTEnv is not initialised.
+ * - if @p numThreadsPerBlock is negative.
+ * - if @p numThreadsPerBlock is not a multiple of the GPU warp size.
+ * - if @p numThreadsPerBlock exceeds the maximum @p blockDim imposed by the GPU hardware.
+ * @see
+ * - QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK
  * @author Oliver Brown
- * @author Tyson Jones (input validation, tests)
+ * @author Tyson Jones
  */
-void setQuESTNumGpuThreadsPerBlock(int newThreadsPerBlock);
+void setQuESTNumGpuThreadsPerBlock(int numThreadsPerBlock);
 
 
 // end de-mangler
