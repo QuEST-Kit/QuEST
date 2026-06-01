@@ -6,7 +6,7 @@
  * 
  * @author Tyson Jones
  * @author Jakub Adamski (sped-up large comm by asynch messages)
- * @author Oliver Brown (patched max-message inference, consulted on AR and MPICH support)
+ * @author Oliver Brown (added custom communicators, patched max-message inference, consulted on AR and MPICH support)
  * @author Ania (Anna) Brown (developed QuEST v1 logic)
  */
 
@@ -24,6 +24,7 @@
 
 #if QUEST_COMPILE_MPI
     #include <mpi.h>
+    extern MPI_Comm comm_getMpiComm(); // comm_config.cpp does not leak MPI_Comm
 #endif
 
 #include <vector>
@@ -149,8 +150,7 @@ int getMaxNumMessages() {
     // messages. Beware the max is obtained via a void pointer and might be unset...
     void* tagUpperBoundPtr;
     int isAttribSet;
-    MPI_Comm mpiCommQuest = comm_getMpiComm();
-    MPI_Comm_get_attr(mpiCommQuest, MPI_TAG_UB, &tagUpperBoundPtr, &isAttribSet);
+    MPI_Comm_get_attr(comm_getMpiComm(), MPI_TAG_UB, &tagUpperBoundPtr, &isAttribSet);
 
     // if something went wrong with obtaining the tag bound, return the safe minimum
     if (!isAttribSet)
@@ -217,7 +217,7 @@ std::array<qindex,3> dividePayloadIntoMessages(qindex numAmps) {
 void exchangeArrays(qcomp* send, qcomp* recv, qindex numElems, int pairRank) {
 #if QUEST_COMPILE_MPI
 
-    MPI_Comm mpiCommQuest = comm_getMpiComm();
+    MPI_Comm mpiComm = comm_getMpiComm();
 
     // each message is asynchronously dispatched with a final wait, as per arxiv.org/abs/2308.07402
 
@@ -229,8 +229,8 @@ void exchangeArrays(qcomp* send, qcomp* recv, qindex numElems, int pairRank) {
     // so that messages are permitted to arrive out-of-order (supporting UCX adaptive-routing)
     for (qindex m=0; m<numMessages; m++) {
         int tag = static_cast<int>(m); // gauranteed int, but m*messageSize needs qindex
-        MPI_Irecv(&recv[m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiCommQuest, &requests[2*m]);
-        MPI_Isend(&send[m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiCommQuest, &requests[2*m+1]);
+        MPI_Irecv(&recv[m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiComm, &requests[2*m]);
+        MPI_Isend(&send[m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiComm, &requests[2*m+1]);
     }
 
     // wait for all exchanges to complete (MPI will automatically free the request memory)
@@ -251,7 +251,7 @@ void exchangeArrays(qcomp* send, qcomp* recv, qindex numElems, int pairRank) {
 void asynchSendArray(qcomp* send, qindex numElems, int pairRank) {
 #if QUEST_COMPILE_MPI
 
-    MPI_Comm mpiCommQuest = comm_getMpiComm();
+    MPI_Comm mpiComm = comm_getMpiComm();
 
     // we will not track nor wait for the asynch send; instead, the caller will later comm_sync()
     MPI_Request nullReq = MPI_REQUEST_NULL;
@@ -262,7 +262,7 @@ void asynchSendArray(qcomp* send, qindex numElems, int pairRank) {
     // asynchronously send the uniquely-tagged messages
     for (qindex m=0; m<numMessages; m++) {
         int tag = static_cast<int>(m); // gauranteed int, but m*messageSize needs qindex
-        MPI_Isend(&send[m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiCommQuest, &nullReq);
+        MPI_Isend(&send[m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiComm, &nullReq);
     }
 
 #else
@@ -274,7 +274,7 @@ void asynchSendArray(qcomp* send, qindex numElems, int pairRank) {
 void receiveArray(qcomp* dest, qindex numElems, int pairRank) {
 #if QUEST_COMPILE_MPI
 
-    MPI_Comm mpiCommQuest = comm_getMpiComm();
+    MPI_Comm mpiComm = comm_getMpiComm();
 
     // expect the data in multiple messages
     auto [messageSize, numMessages] = dividePow2PayloadIntoMessages(numElems);
@@ -285,7 +285,7 @@ void receiveArray(qcomp* dest, qindex numElems, int pairRank) {
     // listen to receive each uniquely-tagged message asynchronously (as per arxiv.org/abs/2308.07402)
     for (qindex m=0; m<numMessages; m++) {
         int tag = static_cast<int>(m); // gauranteed int, but m*messageSize needs qindex
-        MPI_Irecv(&dest[m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiCommQuest, &requests[m]);
+        MPI_Irecv(&dest[m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiComm, &requests[m]);
     }
 
     // receivers wait for all messages to be received (while sender asynch proceeds)
@@ -310,8 +310,7 @@ void globallyCombineNonUniformSubArrays(
 ) {
 #if QUEST_COMPILE_MPI
 
-    MPI_Comm mpiCommQuest = comm_getMpiComm();
-
+    auto mpiComm = comm_getMpiComm();
     int myRank = comm_getRank();
     int numNodes = comm_getNumNodes();
 
@@ -345,14 +344,14 @@ void globallyCombineNonUniformSubArrays(
         for (int m=0; m<numBigMsgs; m++) {
             qindex recvInd = globalRecvIndPerRank[sendRank] + (m * bigMsgSize);
             requests.push_back(MPI_REQUEST_NULL);
-            MPI_Ibcast(&recv[recvInd], bigMsgSize, MPI_QCOMP, sendRank, mpiCommQuest, &requests.back());
+            MPI_Ibcast(&recv[recvInd], bigMsgSize, MPI_QCOMP, sendRank, mpiComm, &requests.back());
         }
 
         // and potentially one remaining asynch message 
         if (remMsgSize > 0) {
             qindex recvInd = globalRecvIndPerRank[sendRank] + (numBigMsgs * bigMsgSize);
             requests.push_back(MPI_REQUEST_NULL);
-            MPI_Ibcast(&recv[recvInd], remMsgSize, MPI_QCOMP, sendRank, mpiCommQuest, &requests.back());
+            MPI_Ibcast(&recv[recvInd], remMsgSize, MPI_QCOMP, sendRank, mpiComm, &requests.back());
         }
     }
 
@@ -648,9 +647,7 @@ void comm_exchangeAmpsToBuffers(Qureg qureg, int pairRank) {
 void comm_broadcastAmp(int sendRank, qcomp* sendAmp) {
 #if QUEST_COMPILE_MPI
 
-    MPI_Comm mpiCommQuest = comm_getMpiComm();
-
-    MPI_Bcast(sendAmp, 1, MPI_QCOMP, sendRank, mpiCommQuest);
+    MPI_Bcast(sendAmp, 1, MPI_QCOMP, sendRank, comm_getMpiComm());
 
 #else
     error_commButEnvNotDistributed();
@@ -661,7 +658,7 @@ void comm_broadcastAmp(int sendRank, qcomp* sendAmp) {
 void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps) {
 #if QUEST_COMPILE_MPI
 
-    MPI_Comm mpiCommQuest = comm_getMpiComm();
+    MPI_Comm mpiComm = comm_getMpiComm();
 
     // only the sender and root nodes need to continue
     int recvRank = ROOT_RANK;
@@ -678,8 +675,8 @@ void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps)
     for (qindex m=0; m<numMessages; m++) {
         int tag = static_cast<int>(m);
         (myRank == sendRank)?
-            MPI_Isend(&send[m*messageSize], messageSize, MPI_QCOMP, recvRank, tag, mpiCommQuest, &requests[m]): // sender
-            MPI_Irecv(&recv[m*messageSize], messageSize, MPI_QCOMP, sendRank, tag, mpiCommQuest, &requests[m]); // root
+            MPI_Isend(&send[m*messageSize], messageSize, MPI_QCOMP, recvRank, tag, mpiComm, &requests[m]): // sender
+            MPI_Irecv(&recv[m*messageSize], messageSize, MPI_QCOMP, sendRank, tag, mpiComm, &requests[m]); // root
     }
 
     // wait for all exchanges to complete (MPI will automatically free the request memory)
@@ -692,13 +689,10 @@ void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps)
 
 
 void comm_broadcastIntsFromRoot(int* arr, qindex length) {
-
 #if QUEST_COMPILE_MPI
-    MPI_Comm mpiCommQuest = comm_getMpiComm();
-
 
     int sendRank = ROOT_RANK;
-    MPI_Bcast(arr, length, MPI_INT, sendRank, mpiCommQuest);
+    MPI_Bcast(arr, length, MPI_INT, sendRank, comm_getMpiComm());
 
 #else
     error_commButEnvNotDistributed();
@@ -709,10 +703,8 @@ void comm_broadcastIntsFromRoot(int* arr, qindex length) {
 void comm_broadcastUnsignedsFromRoot(unsigned* arr, qindex length) {
 #if QUEST_COMPILE_MPI
 
-    MPI_Comm mpiCommQuest = comm_getMpiComm();
-
     int sendRank = ROOT_RANK;
-    MPI_Bcast(arr, length, MPI_UNSIGNED, sendRank, mpiCommQuest);
+    MPI_Bcast(arr, length, MPI_UNSIGNED, sendRank, comm_getMpiComm());
 
 #else
     error_commButEnvNotDistributed();
@@ -739,9 +731,7 @@ void comm_combineSubArrays(qcomp* recv, vector<qindex> recvInds, vector<qindex> 
 void comm_reduceAmp(qcomp* localAmp) {
 #if QUEST_COMPILE_MPI
 
-    MPI_Comm mpiCommQuest = comm_getMpiComm();
-
-    MPI_Allreduce(MPI_IN_PLACE, localAmp, 1, MPI_QCOMP, MPI_SUM, mpiCommQuest);
+    MPI_Allreduce(MPI_IN_PLACE, localAmp, 1, MPI_QCOMP, MPI_SUM, comm_getMpiComm());
 
 #else
     error_commButEnvNotDistributed();
@@ -752,9 +742,7 @@ void comm_reduceAmp(qcomp* localAmp) {
 void comm_reduceReal(qreal* localReal) {
 #if QUEST_COMPILE_MPI
 
-    MPI_Comm mpiCommQuest = comm_getMpiComm();
-
-    MPI_Allreduce(MPI_IN_PLACE, localReal, 1, MPI_QREAL, MPI_SUM, mpiCommQuest);
+    MPI_Allreduce(MPI_IN_PLACE, localReal, 1, MPI_QREAL, MPI_SUM, comm_getMpiComm());
 
 #else
     error_commButEnvNotDistributed();
@@ -765,9 +753,7 @@ void comm_reduceReal(qreal* localReal) {
 void comm_reduceReals(qreal* localReals, qindex numLocalReals) {
 #if QUEST_COMPILE_MPI
 
-    MPI_Comm mpiCommQuest = comm_getMpiComm();
-
-    MPI_Allreduce(MPI_IN_PLACE, localReals, numLocalReals, MPI_QREAL, MPI_SUM, mpiCommQuest);
+    MPI_Allreduce(MPI_IN_PLACE, localReals, numLocalReals, MPI_QREAL, MPI_SUM, comm_getMpiComm());
 
 #else
     error_commButEnvNotDistributed();
@@ -778,12 +764,10 @@ void comm_reduceReals(qreal* localReals, qindex numLocalReals) {
 bool comm_isTrueOnAllNodes(bool val) {
 #if QUEST_COMPILE_MPI
 
-    MPI_Comm mpiCommQuest = comm_getMpiComm();
-
     // perform global AND and broadcast result back to all nodes
     int local = (int) val;
     int global;
-    MPI_Allreduce(&local, &global, 1, MPI_INT, MPI_LAND, mpiCommQuest);
+    MPI_Allreduce(&local, &global, 1, MPI_INT, MPI_LAND, comm_getMpiComm());
     return (bool) global;
 
 #else
@@ -819,8 +803,6 @@ bool comm_isTrueOnRootNode(bool val) {
 vector<string> comm_gatherStringsToRoot(char* localChars, int maxNumLocalChars) {
 #if QUEST_COMPILE_MPI
 
-    MPI_Comm mpiCommQuest = comm_getMpiComm();
-
     // no need to validate array sizes and memory alloc successes;
     // these are trivial O(#nodes)-size arrays containing <20 chars
     int numNodes = comm_getNumNodes();
@@ -831,7 +813,7 @@ vector<string> comm_gatherStringsToRoot(char* localChars, int maxNumLocalChars) 
     // all nodes send root all their local chars
     int recvRank = ROOT_RANK;
     MPI_Gather(localChars, maxNumLocalChars, MPI_CHAR, allChars.data(),
-        maxNumLocalChars, MPI_CHAR, recvRank, mpiCommQuest);
+        maxNumLocalChars, MPI_CHAR, recvRank, comm_getMpiComm());
 
     // divide allChars into stings, delimited by each node's terminal char
     vector<string> out(numNodes);

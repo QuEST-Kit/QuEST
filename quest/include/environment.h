@@ -35,16 +35,17 @@ extern "C" {
 typedef struct {
 
     // deployment modes which can be runtime disabled
-    int isMultithreaded;
-    int isGpuAccelerated;
-    int isDistributed;
-    bool userOwnsMpi;
+    bool isMultithreaded;
+    bool isGpuAccelerated;
+    bool isDistributed;
+    bool isMpiUserOwned;
 
     // deployment modes which cannot be directly changed after compilation
-    int isCuQuantumEnabled;
+    bool isCuQuantumEnabled;
 
     // deployment configurations which can be changed via environment variables
     int isGpuSharingEnabled;
+    int isMpiGpuAware;
 
     // distributed configuration
     int rank;
@@ -63,12 +64,6 @@ void initQuESTEnv();
  *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_environments.cpp) examples
  */
 void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread);
-
-/** @notyetdoced
- *  Advanced initialiser which lets the user positively declare that they take responsibility for MPI.
- *  This means we assume they have called MPI_Init, and that they will call MPI_Finalize.
- */
-void initCustomMpiQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, int useMultithread);
 
 /// @notyetdoced
 void finalizeQuESTEnv();

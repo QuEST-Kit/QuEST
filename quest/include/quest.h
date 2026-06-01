@@ -38,6 +38,7 @@
 #include "quest/include/debug.h"
 #include "quest/include/decoherence.h"
 #include "quest/include/environment.h"
+#include "quest/include/experimental.h"
 #include "quest/include/trotterisation.h"
 #include "quest/include/initialisations.h"
 #include "quest/include/channels.h"
@@ -45,7 +46,6 @@
 #include "quest/include/operations.h"
 #include "quest/include/paulis.h"
 #include "quest/include/qureg.h"
-#include "quest/include/subcommunicator.h"
 #include "quest/include/matrices.h"
 #include "quest/include/wrappers.h"
 

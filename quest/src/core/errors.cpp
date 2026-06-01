@@ -41,6 +41,8 @@ using std::string;
 
 void raiseInternalError(string errorMsg) {
 
+    printer_sync();
+
     print(string("")
         + "\n\n"
         + "A fatal internal QuEST error occurred. "
@@ -48,6 +50,8 @@ void raiseInternalError(string errorMsg) {
         + "Please report this to the QuEST developers. QuEST will now exit..."
         + "\n"
     );
+
+    printer_sync();
 
     exit(EXIT_FAILURE);
 }
@@ -156,11 +160,6 @@ void error_commAlreadyInit() {
     raiseInternalError("The MPI communication environment was attemptedly re-initialised despite the QuEST environment already existing.");
 }
 
-void error_commInvalidMpiComm() {
-
-    raiseInternalError("The supplied MPI communicator was MPI_COMM_NULL, or duplication failed.");
-}
-
 void error_commButEnvNotDistributed() {
 
     raiseInternalError("A function attempted to invoke communication despite QuEST being compiled in non-distributed mode.");
@@ -186,9 +185,24 @@ void error_commNumMessagesExceedTagMax() {
     raiseInternalError("A function attempted to communicate via more messages than permitted (since there would be more uniquely-tagged messages than the tag upperbound).");
 }
 
-void error_commDoubleSetMpiComm() {
+void error_commAlreadyHasSetMpiComm() {
   
-    raiseInternalError("An attempt was made to set mpiCommQuest after it had already been set, as indicated by mpiCommQuest != MPI_COMM_NULL.");
+    raiseInternalError("An attempt was made to set the QuEST MPI communicator after it had already been set (and changed from MPI_COMM_NULL).");
+}
+
+void error_commMpiCommIsNull() {
+
+    raiseInternalError("The MPI communicator was queried but was unexpectedly MPI_COMM_NULL.");
+}
+
+void error_commNewMpiCommIsNull() {
+
+    raiseInternalError("The MPI communicator was attemptedly set to MPI_COMM_NULL, which validation should have prior caught.");
+}
+
+void error_commActiveButMpiNotInit() {
+
+    raiseInternalError("QuEST believed communication was active, but MPI_Init reported MPI was not initialised.");
 }
 
 void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps) {
