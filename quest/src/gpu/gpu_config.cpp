@@ -340,24 +340,17 @@ int global_numThreadsPerBlock = QUEST_DEFAULT_NUM_THREADS_PER_BLOCK; // TODO!!! 
 
 
 int gpu_getNumThreadsPerBlock() {
-#if QUEST_COMPILE_CUDA
 
     return global_numThreadsPerBlock;
-#else
-    error_gpuQueriedButGpuNotCompiled();
-    return -1;
-#endif
 }
 
 
 void gpu_setNumThreadsPerBlock(int newNumTPB) {
 #if QUEST_COMPILE_CUDA
     assert_gpuNumThreadsPerBlockIsWarpDivisible(newNumTPB); // CUDA vs HIP specific
+#endif
 
     global_numThreadsPerBlock = newNumTPB;
-#else
-    error_gpuQueriedButGpuNotCompiled(); // not really a query, but eh
-#endif
 }
 
 
