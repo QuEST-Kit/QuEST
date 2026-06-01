@@ -48,7 +48,7 @@ namespace envvar_values {
 
     // by default, the initial validation epsilon (before being overriden
     // by users at runtime) should depend on qreal (i.e. FLOAT_PRECISION)
-    qreal QUEST_DEFAULT_VALIDATION_EPSILON = UNSPECIFIED_DEFAULT_VALIDATION_EPSILON;
+    qreal QUEST_DEFAULT_VALIDATION_EPSILON = QUEST_UNSPECIFIED_DEFAULT_VALIDATION_EPSILON;
 
     // by default, the initial number of GPU threads per block is informed by
     // the below cmake variable (before being overridden by env-var or at runtime)

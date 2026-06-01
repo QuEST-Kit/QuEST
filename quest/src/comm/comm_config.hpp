@@ -17,6 +17,7 @@ bool comm_isMpiCompiled();
 bool comm_isMpiSubCommCompiled();
 bool comm_isMpiGpuAware();
 bool comm_isMpiInit();
+bool comm_isMpiUserOwned();
 
 // control of QuEST's (possibly more limited) MPI env
 bool comm_isActive();

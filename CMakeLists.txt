@@ -161,6 +161,7 @@ option(
 )
 message(STATUS "Custom communicator support is turned ${QUEST_ENABLE_SUBCOMM}. Set QUEST_ENABLE_SUBCOMM to modify.")
 
+
 # GPU Acceleration
 option(
   QUEST_ENABLE_CUDA
@@ -211,9 +212,15 @@ option(
   "Whether to disable compile-time warnings ordinarily triggered by use of the deprecated API. Turned OFF by default."
   OFF
 )
-message(STATUS "Disabling of deprecated API warnings is turned ${QUEST_DISABLE_DEPRECATION_WARNINGS}. Set QUEST_DISABLE_DEPRECATION_WARNINGS to modify.")
+message(STATUS 
+  "Disabling of deprecated API warnings is turned ${QUEST_DISABLE_DEPRECATION_WARNINGS}. "
+  "Set QUEST_DISABLE_DEPRECATION_WARNINGS to modify."
+)
 
 option(QUEST_INSTALL_BINARIES "Whether to include example and user binaries in the install." OFF)
+if (QUEST_INSTALL_BINARIES)
+  message(STATUS "Including example and user binaries in the install (if built).")
+endif()
 
 
 
