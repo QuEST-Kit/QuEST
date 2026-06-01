@@ -236,9 +236,11 @@ if (QUEST_ENABLE_CUQUANTUM AND NOT QUEST_ENABLE_CUDA)
   message(FATAL_ERROR "Use of cuQuantum requires CUDA.")
 endif()
 
+
 if (QUEST_ENABLE_SUBCOMM AND NOT QUEST_ENABLE_MPI)
   message(FATAL_ERROR "Distribution must be enabled to make use of a user-defined communicator for QuEST.")
 endif()
+
 
 if(WIN32)
   
@@ -270,6 +272,20 @@ if ((NOT (quest_tpb_remainder EQUAL 0)) OR NOT (QUEST_DEFAULT_NUM_GPU_THREADS_PE
   message(FATAL_ERROR
     "QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK was set to ${QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK}, "
     "but it must be a positive multiple of ${quest_warp_size} when compiling for ${quest_gpu_model}."
+  )
+endif()
+
+
+# warn when numTPB will be later overridden by the current environment variable
+if(
+  DEFINED ENV{QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK} 
+  AND NOT "$ENV{QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK}" STREQUAL ""
+  AND NOT "$ENV{QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK}" STREQUAL "${QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK}"
+)
+  message(WARNING 
+    "The CMake option QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK=${QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK} "
+    "differs from the current environment variable (of the same name) value of $ENV{QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK}. "
+    "If not cleared before QuEST is launched, the latter will override the former."
   )
 endif()
 
