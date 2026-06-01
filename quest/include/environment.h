@@ -46,6 +46,12 @@ typedef struct {
     // deployment configurations which can be changed via environment variables
     bool isGpuSharingEnabled;
 
+
+        // TODO: we are attaching this for now, but we should, in a subsequent PR,
+        // attach all the important info to the QuESTEnv, for user consumption!
+        bool isHipCompiled;
+
+
     // distributed configuration
     int rank;
     int numNodes;

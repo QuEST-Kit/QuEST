@@ -73,7 +73,7 @@ int getQuESTNumGpuThreadsPerBlock();
 /** @notyetdoced
  * 
  * @author Oliver Brown
- * @author Tyson Jones (input validation)
+ * @author Tyson Jones (input validation, tests)
  */
 void setQuESTNumGpuThreadsPerBlock(int newThreadsPerBlock);
 

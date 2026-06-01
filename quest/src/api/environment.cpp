@@ -159,6 +159,19 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
     global_envPtr->isCuQuantumEnabled  = useCuQuantum;
     global_envPtr->isGpuSharingEnabled = permitGpuSharing;
 
+
+        // DEBUG / TODO
+        // We are attaching isHipCompiled here, as needed by the
+        // setNumTPB unit tests; but it's a great idea to attach
+        // all compilation information to the env, so that users
+        // can programmatically query. Even the compiled facilities
+        // not actively used by the environment are useful to know,
+        // since they inform how users re-initialise QuEST later
+        // (in a different runtime)!  
+
+        global_envPtr->isHipCompiled = gpu_isHipCompiled();
+
+
     // bind distributed info
     global_envPtr->rank     = (useDistrib)? comm_getRank()     : 0;
     global_envPtr->numNodes = (useDistrib)? comm_getNumNodes() : 1;
