@@ -65,15 +65,17 @@ void initCustomMpiCommQuESTEnv(MPI_Comm questComm, int useGpuAccel, int useMulti
 
 /** @notyetdoced
  * 
- * GPU thread per block control
- * This is somehow probably the best pre-existing place for this. It only really applies to GPU, because for
- * OpenMP the user can just export OMP_NUM_THREADS or call omp_set_num_threads.
+ * @author Oliver Brown
  */
 int getQuESTNumGpuThreadsPerBlock();
 
 
-/// notyetdoced
-void setQuESTNumGpuThreadsPerBlock(const int newThreadsPerBlock);
+/** @notyetdoced
+ * 
+ * @author Oliver Brown
+ * @author Tyson Jones (input validation)
+ */
+void setQuESTNumGpuThreadsPerBlock(int newThreadsPerBlock);
 
 
 // end de-mangler

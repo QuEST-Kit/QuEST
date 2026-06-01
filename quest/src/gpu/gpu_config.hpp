@@ -19,6 +19,16 @@
 #include "quest/include/channels.h"
 
 
+
+/*
+ * CONSTANTS
+ */
+
+constexpr int CUDA_WARP_SIZE = 32;
+constexpr int HIP_WARP_SIZE = 64;
+
+
+
 /*
  * CUDA ERROR HANDLING
  */
@@ -68,7 +78,9 @@ qindex gpu_getMaxNumConcurrentThreads();
 
 int gpu_getNumThreadsPerBlock();
 
-void gpu_setNumThreadsPerBlock(const int newThreadsPerBlock);
+void gpu_setNumThreadsPerBlock(int newThreadsPerBlock);
+
+int gpu_getMaxNumThreadsPerBlock();
 
 void gpu_bindLocalGPUsToNodes();
 

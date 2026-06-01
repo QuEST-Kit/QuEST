@@ -131,6 +131,9 @@ void validateAndInitCustomQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuA
     /// should we warn here if each machine contains
     /// more GPUs than deployed MPI-processes (some GPUs idle)?
 
+    // validate the initial numTBP is valid (we will change this to an env-var subsequently)
+    validate_numGpuThreadsPerBlock(QUEST_DEFAULT_NUM_THREADS_PER_BLOCK, useGpuAccel, caller);
+
     // cuQuantum is always used in GPU-accelerated envs when available
     bool useCuQuantum = useGpuAccel && gpu_isCuQuantumCompiled();
     if (useCuQuantum) {

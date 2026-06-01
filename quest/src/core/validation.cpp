@@ -159,6 +159,29 @@ namespace report {
     string INVALID_REPORTED_PAULI_STR_STYLE_FLAG =
         "Given an unrecognised style flag (${FLAG}). Legal flags are 0 and 1.";
 
+    // substrings re-used below
+    string _invalid_num_tpb_prefix =
+        "Given an invalid number of threads per GPU block (possibly specified by environment variable) of ${NUM_TPB}.";
+    string _num_tpb_ineffectual_suffix =
+        "Note GPU acceleration is not active so this parameter has no effect anyway.";
+    string _num_tpb_warp_indivisible_infix =
+        "Number does not divide evenly into the warp size of ${CUDA_WARP_SIZE} (NVIDIA GPUs) or ${HIP_WARP_SIZE} (AMD GPUs).";
+
+    string GPU_NUM_THREADS_PER_BLOCK_IS_NOT_POSITIVE =
+        _invalid_num_tpb_prefix + " Number must be positive.";
+
+    string GPU_NUM_THREADS_PER_BLOCK_IS_NOT_POSITIVE_BUT_GPU_NOT_ACTIVE_ANYWAY =
+        _invalid_num_tpb_prefix + " Number must be positive. " + _num_tpb_ineffectual_suffix;
+
+    string GPU_NUM_THREADS_PER_BLOCK_IS_NOT_WARP_DIVISIBLE =
+        _invalid_num_tpb_prefix + " " + _num_tpb_warp_indivisible_infix;
+
+    string GPU_NUM_THREADS_PER_BLOCK_IS_NOT_WARP_DIVISIBLE_BUT_GPU_NOT_AVAILABLE_ANYWAY =
+        _invalid_num_tpb_prefix + " " + _num_tpb_warp_indivisible_infix + " " + _num_tpb_ineffectual_suffix;
+
+    string GPU_NUM_THREADS_PER_BLOCK_EXCEEDS_HARDWARE_MAX =
+        _invalid_num_tpb_prefix + " Exceeds the hardware-imposed maximum of ${MAX_TPB}.";
+
 
     /*
      * QUREG CREATION
@@ -1641,6 +1664,49 @@ void validate_reportedPauliStrStyleFlag(int flag, const char* caller) {
         return;
 
     assertThat(flag==0 || flag==1, report::INVALID_REPORTED_PAULI_STR_STYLE_FLAG, {{"${FLAG}",flag}}, caller);
+}
+
+void validate_numGpuThreadsPerBlock(int numTPB, bool isGpuActive, const char* caller) {
+
+    if (!global_isValidationEnabled)
+        return;
+
+    // var 'isGpuActive' indicates that the GPU backend is compiled, a physical
+    // GPU is available, AND that the QuESTEnv has GPU-acceleration enabled, i.e.
+    // isGPuActive = gpu_isGpuCompiled() && gpu_isGpuAvailable() && env.isGpuAccelerated,
+    // though is established before QuESTEnv initialisation has completed.
+
+    // validate numTPB > 0 with an error message that points out TPB may be redundant
+    tokenSubs vars = {{"${NUM_TPB}", numTPB}};
+    auto errorMsg = isGpuActive? 
+        report::GPU_NUM_THREADS_PER_BLOCK_IS_NOT_POSITIVE :
+        report::GPU_NUM_THREADS_PER_BLOCK_IS_NOT_POSITIVE_BUT_GPU_NOT_ACTIVE_ANYWAY;
+    assertThat(numTPB > 0, errorMsg, vars, caller);
+
+    // prepare to validate TPB is warp-divisible, again pointing out redundancy...
+    vars["${CUDA_WARP_SIZE}"] = CUDA_WARP_SIZE;
+    vars["${HIP_WARP_SIZE}"] = HIP_WARP_SIZE;
+    errorMsg = isGpuActive? 
+        report::GPU_NUM_THREADS_PER_BLOCK_IS_NOT_WARP_DIVISIBLE :
+        report::GPU_NUM_THREADS_PER_BLOCK_IS_NOT_WARP_DIVISIBLE_BUT_GPU_NOT_AVAILABLE_ANYWAY;
+
+    // ... but note that when the GPU backend isn't compiled, we don't know whether the
+    // user has an NVIDIA or AMD GPU, which have distinct warps of 32 (CUDA) and 64 (HIP),
+    // and so choose the smaller divisor (32,CUDA), ergo potentially permitting warp TPB
+    // that are incompatible with HIP. An extremely unimportant subtlety!
+    static_assert(HIP_WARP_SIZE >= CUDA_WARP_SIZE);
+    int warpSize = gpu_isHipCompiled()? HIP_WARP_SIZE : CUDA_WARP_SIZE;
+    assertThat(numTPB % warpSize == 0, errorMsg, vars, caller);
+
+    // the final check of max numTBP requires querying the hardware device, which obviously
+    // isn't possible if not available (and is pointless if available but we're not using!)
+    if (!isGpuActive)
+        return;
+
+    // otherwise, we verify numTPB doesn't exceed the hardware-declared maximum
+    auto maxNumTPB = gpu_getMaxNumThreadsPerBlock();
+    vars = {{"${NUM_TPB}", numTPB}, {"${MAX_TPB}", maxNumTPB}};
+    assertThat(numTPB <= maxNumTPB, report::GPU_NUM_THREADS_PER_BLOCK_EXCEEDS_HARDWARE_MAX, vars, caller);
 }
 
 

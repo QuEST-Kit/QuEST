@@ -335,27 +335,43 @@ qindex gpu_getMaxNumConcurrentThreads() {
  * ENVIRONMENT MANAGEMENT
  */
 
-int global_numThreadsPerBlock = QUEST_DEFAULT_NUM_THREADS_PER_BLOCK;
+
+int global_numThreadsPerBlock = QUEST_DEFAULT_NUM_THREADS_PER_BLOCK; // TODO!!! make this read env-var
+
 
 int gpu_getNumThreadsPerBlock() {
-    // permitted even when GPU backend not compiled
+#if QUEST_COMPILE_CUDA
+
     return global_numThreadsPerBlock;
+#else
+    error_gpuQueriedButGpuNotCompiled();
+    return -1;
+#endif
 }
 
-void gpu_setNumThreadsPerBlock(const int newNumThreadsPerBlock) {
-    if (gpu_isHipCompiled()) {
-        // number of threads per block should be a multiple of 64
-        if (newNumThreadsPerBlock % 64)
-            error_gpuBadNumThreadsPerBlock();
-    } else {
-        // number of threads per block should be a multiple of 32
-        if (newNumThreadsPerBlock % 32)
-            error_gpuBadNumThreadsPerBlock();
-    }
 
-    // permitted even when GPU backend not compiled
-    global_numThreadsPerBlock = newNumThreadsPerBlock;
-    return;
+void gpu_setNumThreadsPerBlock(int newNumTPB) {
+#if QUEST_COMPILE_CUDA
+    assert_gpuNumThreadsPerBlockIsWarpDivisible(newNumTPB); // CUDA vs HIP specific
+
+    global_numThreadsPerBlock = newNumTPB;
+#else
+    error_gpuQueriedButGpuNotCompiled(); // not really a query, but eh
+#endif
+}
+
+
+int gpu_getMaxNumThreadsPerBlock() {
+#if QUEST_COMPILE_CUDA
+
+    cudaDeviceProp prop;
+    cudaGetDeviceProperties(&prop, getBoundGpuId());
+    return prop.maxThreadsPerBlock; // HIP compatible
+
+#else
+    error_gpuQueriedButGpuNotCompiled();
+    return -1;
+#endif
 }
 
 

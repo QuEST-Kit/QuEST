@@ -113,6 +113,8 @@ void validate_numPauliChars(const char* paulis, const char* caller);
 
 void validate_reportedPauliStrStyleFlag(int flag, const char* caller);
 
+void validate_numGpuThreadsPerBlock(int numTBP, bool isGpuActive, const char* caller);
+
 
 
 /*

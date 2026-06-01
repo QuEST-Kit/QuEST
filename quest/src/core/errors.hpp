@@ -261,6 +261,8 @@ void assert_gpuIsAccessible();
 
 void assert_gpuHasBeenBound(bool isBound);
 
+void assert_gpuNumThreadsPerBlockIsWarpDivisible(int numThreadsPerBlock);
+
 void assert_quregIsGpuAccelerated(Qureg qureg);
 
 void assert_mixQuregTempGpuAllocSucceeded(qcomp* gpuPtr);
