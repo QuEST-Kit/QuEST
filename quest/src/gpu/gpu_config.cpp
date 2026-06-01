@@ -395,7 +395,7 @@ bool gpu_areAnyNodesBoundToSameGpu() {
 #if QUEST_COMPILE_CUDA
     assert_gpuHasBeenBound(hasGpuBeenBound);
 
-    if (!comm_isInit())
+    if (!comm_isActive())
         return false;
 
     // obtain bound GPU's UUID; a unique identifier 16-char identifier

@@ -412,10 +412,6 @@ void initCustomQuESTEnv(int useDistrib, int useGpuAccel, int useMultithread) {
 }
 
 
-void initCustomMpiQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, int useMultithread) {
-    validateAndInitCustomQuESTEnv(useDistrib, userOwnsMpi, useGpuAccel, useMultithread, __func__);
-}
-
 void initQuESTEnv() {
 
     const bool userOwnsMpi = false;
@@ -452,7 +448,7 @@ void finalizeQuESTEnv() {
 
     if (global_envPtr->isDistributed) {
         comm_sync();
-        comm_end(global_envPtr->isMpiUserOwned);
+        comm_end();
     }
 
     // free global env's heap memory and flag it as unallocated
