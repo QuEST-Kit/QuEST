@@ -213,13 +213,10 @@ void printDeploymentInfo() {
 
     print_table(
         "deployment", {
-        {"isMpiEnabled",        globalEnvPtr->isDistributed},
-        {"isMpiUserOwned",      global_envPtr->isMpiUserOwned},
-        {"isMpiGpuAware",       globalEnvPtr->isMpiGpuAware},
-        {"isGpuEnabled",        globalEnvPtr->isGpuAccelerated},
-        {"isOmpEnabled",        globalEnvPtr->isMultithreaded},
-        {"isCuQuantumEnabled",  globalEnvPtr->isCuQuantumEnabled},
-        {"isGpuSharingEnabled", globalEnvPtr->isGpuSharingEnabled},
+        {"isMpiEnabled",        global_envPtr->isDistributed},
+        {"isGpuEnabled",        global_envPtr->isGpuAccelerated},
+        {"isOmpEnabled",        global_envPtr->isMultithreaded},
+        {"isCuQuantumEnabled",  global_envPtr->isCuQuantumEnabled},
     });
 }
 
@@ -276,10 +273,16 @@ void printDistributionInfo() {
 
     using namespace printer_substrings;
 
+    bool comm = global_envPtr->isDistributed;
+    bool gpu = global_envPtr->isGpuAccelerated;
+    bool both = comm && gpu;
+
     print_table(
         "distribution", {
-        {"isMpiGpuAware", comm_isInit()? printer_toStr(global_envPtr->isMpiGpuAware) : na},
-        {"numMpiNodes",   printer_toStr(global_envPtr->numNodes)},
+        {"isMpiUserOwned",      comm? printer_toStr(global_envPtr->isMpiUserOwned) : na},
+        {"isMpiGpuAware",       comm? printer_toStr(global_envPtr->isMpiGpuAware ) : na},
+        {"isGpuSharingEnabled", both? printer_toStr(global_envPtr->isGpuSharingEnabled) : na},
+        {"numMpiNodes",         printer_toStr(global_envPtr->numNodes)},
     });
 }
 
