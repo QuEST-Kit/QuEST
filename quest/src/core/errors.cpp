@@ -670,12 +670,6 @@ void error_gpuDenseMatrixConjugatedAndTransposed() {
     raiseInternalError("The GPU + cuQuantum implementation of anyCtrlAnyTargDenseMatr() assumes that at most one of template arguments ApplyConj and ApplyTransp is true, though this was violated.");
 }
 
-void assert_gpuNumThreadsPerBlockIsWarpDivisible(int numThreadsPerBlock) {
-    int warpSize = gpu_isHipCompiled()? gpu_HIP_WARP_SIZE : gpu_CUDA_WARP_SIZE;
-    if (numThreadsPerBlock > 0 && numThreadsPerBlock % warpSize != 0)
-        raiseInternalError("The number of threads per block was not a positive multiple of the platform warp size (32 for NVIDIA, 64 for AMD).");
-}
-
 void assert_quregIsGpuAccelerated(Qureg qureg) {
 
     if (!qureg.isGpuAccelerated)

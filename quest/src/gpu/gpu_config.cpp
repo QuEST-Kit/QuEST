@@ -351,9 +351,6 @@ int gpu_getNumThreadsPerBlock() {
 
 
 void gpu_setNumThreadsPerBlock(int newNumTPB) {
-#if QUEST_COMPILE_CUDA
-    assert_gpuNumThreadsPerBlockIsWarpDivisible(newNumTPB); // CUDA vs HIP specific
-#endif
 
     global_numThreadsPerBlock = newNumTPB;
 }
