@@ -144,7 +144,7 @@ void applyMultiControlledCompMatr2(Qureg qureg, vector<int> controls, int target
     applyMultiControlledCompMatr2(qureg, controls.data(), controls.size(), target1, target2, matr);
 }
 
-void applyMultiStateControlledCompMatr2(Qureg qureg, vector<int> controls, vector<int> states, int numControls, int target1, int target2, CompMatr2 matr) {
+void applyMultiStateControlledCompMatr2(Qureg qureg, vector<int> controls, vector<int> states, int target1, int target2, CompMatr2 matr) {
     validate_controlsMatchStates(controls.size(), states.size(), __func__);
 
     applyMultiStateControlledCompMatr2(qureg, controls.data(), states.data(), controls.size(), target1, target2, matr);

@@ -573,7 +573,7 @@ void applyMultiControlledCompMatr2(Qureg qureg, std::vector<int> controls, int t
 /// @notyetdoced
 /// @cppvectoroverload
 /// @see applyMultiStateControlledCompMatr2()
-void applyMultiStateControlledCompMatr2(Qureg qureg, std::vector<int> controls, std::vector<int> states, int numControls, int target1, int target2, CompMatr2 matr);
+void applyMultiStateControlledCompMatr2(Qureg qureg, std::vector<int> controls, std::vector<int> states, int target1, int target2, CompMatr2 matr);
 
 
 #endif // __cplusplus
