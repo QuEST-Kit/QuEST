@@ -249,6 +249,10 @@ inline std::string demangleTypeName(const char* mangledName) {
 // type T can be anything in principle, although it's currently only used for qcomp
 template <typename T>
 std::string getTypeName(T _unused) {
+
+    // Shut those obnovioux compilers right up
+    (void) _unused;
+
     // For MSVC, typeid(T).name() typically returns something like "class Foo"
     // or "struct Foo", but it's still not exactly "Foo".
     // For GCC/Clang, you get a raw "mangled" name, e.g. "N3FooE".

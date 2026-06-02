@@ -3825,6 +3825,7 @@ void validate_parsedPauliStrSumLineIsInterpretable(bool isInterpretable, string 
         return;
 
     /// @todo we cannot yet report 'line' because tokenSubs so far only accepts integers :(
+    (void) line;
 
     tokenSubs vars = {{"${LINE_NUMBER}", lineIndex + 1}}; // line numbers begin at 1
     assertThat(isInterpretable, report::PARSED_PAULI_STR_SUM_UNINTERPRETABLE_LINE, vars, caller);
@@ -3836,6 +3837,7 @@ void validate_parsedPauliStrSumLineHasConsistentNumPaulis(int numPaulis, int num
         return;
 
     /// @todo we cannot yet report 'line' because tokenSubs so far only accepts integers :(
+    (void) line;
 
     tokenSubs vars = {
         {"${NUM_PAULIS}",      numPaulis},
@@ -3850,6 +3852,7 @@ void validate_parsedPauliStrSumCoeffWithinQcompRange(bool isCoeffValid, string l
         return;
 
     /// @todo we cannot yet report 'line' because tokenSubs so far only accepts integers :(
+    (void) line;
 
     tokenSubs vars = {{"${LINE_NUMBER}", lineIndex + 1}}; // lines begin at 1
     assertThat(isCoeffValid, report::PARSED_PAULI_STR_SUM_COEFF_EXCEEDS_QCOMP_RANGE, vars, caller);
