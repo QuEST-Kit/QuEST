@@ -79,7 +79,7 @@ TEST_CASE( "setQuESTNumGpuThreadsPerBlock", TEST_CATEGORY ) {
 
             int badNumTPB = GENERATE_COPY( warpSize - 1, warpSize + 1, warpSize + warpSize/2, 3*warpSize + warpSize/2 );
 
-            REQUIRE_THROWS_WITH( setQuESTNumGpuThreadsPerBlock(badNumTPB), ContainsSubstring( "Number does not divide evenly into the warp size" ) );
+            REQUIRE_THROWS_WITH( setQuESTNumGpuThreadsPerBlock(badNumTPB), ContainsSubstring( "does not divide evenly into the warp size" ) );
         }
 
         SECTION( "Exceeds device maximum" ) {
