@@ -4432,7 +4432,7 @@ void validate_mixedAmpsFitInNode(Qureg qureg, int numTargets, const char* caller
  * TROTTERISATION PARAMETERS
  */
 
-void validate_trotterParams(Qureg qureg, int order, int reps, const char* caller) {
+void validate_trotterParams(int order, int reps, const char* caller) {
 
     if (!global_isValidationEnabled)
         return;

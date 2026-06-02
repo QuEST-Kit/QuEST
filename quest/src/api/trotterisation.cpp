@@ -168,7 +168,7 @@ void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, q
     validate_quregFields(qureg, __func__);
     validate_pauliStrSumFields(sum, __func__);
     validate_pauliStrSumTargets(sum, qureg, __func__);
-    validate_trotterParams(qureg, order, reps, __func__);
+    validate_trotterParams(order, reps, __func__);
     // sum is permitted to be non-Hermitian
 
     // |psi> -> U |psi>, rho -> U rho U^dagger
@@ -181,7 +181,7 @@ void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle
     validate_pauliStrSumFields(sum, __func__);
     validate_pauliStrSumTargets(sum, qureg, __func__);
     validate_pauliStrSumIsHermitian(sum, __func__);
-    validate_trotterParams(qureg, order, reps, __func__);
+    validate_trotterParams(order, reps, __func__);
 
     bool onlyLeftApply = false;
     internal_applyAllTrotterRepetitions(qureg, nullptr, nullptr, 0, sum, angle, order, reps, onlyLeftApply, permuteTerms, __func__);
@@ -195,7 +195,7 @@ void applyTrotterizedControlledPauliStrSumGadget(
     validate_pauliStrSumFields(sum, __func__);
     validate_pauliStrSumIsHermitian(sum, __func__);
     validate_controlAndPauliStrSumTargets(qureg, control, sum, __func__);
-    validate_trotterParams(qureg, order, reps, __func__);
+    validate_trotterParams(order, reps, __func__);
     
     bool onlyLeftApply = false;
     internal_applyAllTrotterRepetitions(qureg, &control, nullptr, 1, sum, angle, order, reps, onlyLeftApply, permuteTerms, __func__);
@@ -209,7 +209,7 @@ void applyTrotterizedMultiControlledPauliStrSumGadget(
     validate_pauliStrSumFields(sum, __func__);
     validate_pauliStrSumIsHermitian(sum, __func__);
     validate_controlsAndPauliStrSumTargets(qureg, controls, numControls, sum, __func__);
-    validate_trotterParams(qureg, order, reps, __func__);
+    validate_trotterParams(order, reps, __func__);
 
     bool onlyLeftApply = false;
     internal_applyAllTrotterRepetitions(qureg, controls, nullptr, numControls, sum, angle, order, reps, onlyLeftApply, permuteTerms, __func__);
@@ -224,7 +224,7 @@ void applyTrotterizedMultiStateControlledPauliStrSumGadget(
     validate_pauliStrSumIsHermitian(sum, __func__);
     validate_controlsAndPauliStrSumTargets(qureg, controls, numControls, sum, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
-    validate_trotterParams(qureg, order, reps, __func__);
+    validate_trotterParams(order, reps, __func__);
 
     bool onlyLeftApply = false;
     internal_applyAllTrotterRepetitions(qureg, controls, states, numControls, sum, angle, order, reps, onlyLeftApply, permuteTerms, __func__);
@@ -261,7 +261,7 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
     validate_pauliStrSumFields(hamil, __func__);
     validate_pauliStrSumTargets(hamil, qureg, __func__);
     validate_pauliStrSumIsHermitian(hamil, __func__);
-    validate_trotterParams(qureg, order, reps, __func__);
+    validate_trotterParams(order, reps, __func__);
 
     // exp(-i t H) = exp(x i H) | x=-t
     qcomp angle = - time;
@@ -274,7 +274,7 @@ void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qrea
     validate_pauliStrSumFields(hamil, __func__);
     validate_pauliStrSumTargets(hamil, qureg, __func__);
     validate_pauliStrSumIsHermitian(hamil, __func__);
-    validate_trotterParams(qureg, order, reps, __func__);
+    validate_trotterParams(order, reps, __func__);
 
     // exp(-tau H) = exp(x i H) | x=tau*i
     qcomp angle = qcomp(0, tau);
@@ -301,7 +301,7 @@ void applyTrotterizedNoisyTimeEvolution(
     validate_pauliStrSumFields(hamil, __func__);
     validate_pauliStrSumTargets(hamil, qureg, __func__);
     validate_pauliStrSumIsHermitian(hamil, __func__);
-    validate_trotterParams(qureg, order, reps, __func__);
+    validate_trotterParams(order, reps, __func__);
     validate_lindbladJumpOps(jumps, numJumps, qureg, __func__);
     validate_lindbladDampingRates(damps, numJumps, __func__);
     
