@@ -144,6 +144,9 @@ namespace report {
     string INVALID_NUM_REPORTED_SIG_FIGS =
         "Invalid number of significant figures (${NUM_SIG_FIGS}). Cannot be less than one.";
 
+    string RANDOM_SEEDS_PTR_IS_NULL =
+        "The given seeds list pointer is NULL.";
+
     string INVALID_NUM_RANDOM_SEEDS =
         "Invalid number of random seeds (${NUM_SEEDS}). Must specify one or more. In distributed settings, only the root node needs to pass a valid number of seeds (other node arguments are ignored).";
     
@@ -1609,11 +1612,14 @@ void validate_randomSeeds(unsigned* seeds, int numSeeds, const char* caller) {
     // only the root node's seeds are consulted, so we permit all non-root
     // nodes to have invalid parameters. All nodes however must know/agree
     // when the root node's seeds are invalid, to synchronise validation
-
+    int isNull = (seeds == nullptr);
     int numRootSeeds = numSeeds;
-    if (getQuESTEnv().isDistributed)
+    if (getQuESTEnv().isDistributed) {
+        comm_broadcastIntsFromRoot(&isNull, 1);
         comm_broadcastIntsFromRoot(&numRootSeeds, 1);
+    }
 
+    assertThat(!isNull, report::RANDOM_SEEDS_PTR_IS_NULL, caller);
     assertThat(numRootSeeds > 0, report::INVALID_NUM_RANDOM_SEEDS, {{"${NUM_SEEDS}", numSeeds}}, caller);
 }
 
