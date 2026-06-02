@@ -80,8 +80,8 @@ using std::array;
     array {&f<0>, &f<1>, &f<2>, &f<3>, &f<4>, &f<5>, &f<-1>}
 
 #define GET_FUNC_OPTIMISED_FOR_ONE_PARAM( outvar, funcname, param ) \
-    static constexpr auto (_ARRAY_##funcname) = GET_ONE_PARAM_TEMPLATED_FUNC_ARRAY( funcname ); \
-    const auto outvar = (_ARRAY_##funcname)[GET_TEMPLATE_PARAM( param )];
+    static constexpr auto _ARRAY_##funcname = GET_ONE_PARAM_TEMPLATED_FUNC_ARRAY( funcname ); \
+    const auto outvar = _ARRAY_##funcname[GET_TEMPLATE_PARAM( param )];
 
 #define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( outvar, funcsuffix, qureg, param ) \
     GET_FUNC_OPTIMISED_FOR_ONE_PARAM( _GPU_FUNC, gpu_##funcsuffix, param ) \
@@ -100,8 +100,8 @@ using std::array;
         array {&f<-1,0>, &f<-1,1>, &f<-1,2>, &f<-1,3>, &f<-1,4>, &f<-1,5>, &f<-1,-1>}}
 
 #define GET_FUNC_OPTIMISED_FOR_TWO_PARAMS( outvar, funcname, param1, param2 ) \
-    static constexpr auto (_MATRIX_##funcname) = GET_TWO_PARAM_TEMPLATED_FUNC_MATRIX( funcname ); \
-    const auto outvar = (_MATRIX_##funcname)[GET_TEMPLATE_PARAM( param1 )][GET_TEMPLATE_PARAM( param2 )];
+    static constexpr auto _MATRIX_##funcname = GET_TWO_PARAM_TEMPLATED_FUNC_MATRIX( funcname ); \
+    const auto outvar = _MATRIX_##funcname[GET_TEMPLATE_PARAM( param1 )][GET_TEMPLATE_PARAM( param2 )];
 
 #define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_TWO_PARAMS( outvar, funcsuffix, qureg, param1, param2 ) \
     GET_FUNC_OPTIMISED_FOR_TWO_PARAMS( _GPU_FUNC, gpu_##funcsuffix, param1, param2 ) \
@@ -125,8 +125,8 @@ using std::array;
         array{ GET_TWO_PARAM_TWO_BOOL_SUB_MATRIX( f, 1, 0 ), GET_TWO_PARAM_TWO_BOOL_SUB_MATRIX( f, 1, 1 ) }}
 
 #define GET_FUNC_OPTIMISED_FOR_TWO_PARAMS_TWO_BOOLS( outvar, funcname, param1, param2, bool1, bool2 ) \
-    static constexpr auto (_MATRIX_##funcname) = GET_TWO_PARAM_TWO_BOOL_TEMPLATED_FUNC_MATRIX( funcname ); \
-    const auto outvar = (_MATRIX_##funcname)[bool1][bool2][GET_TEMPLATE_PARAM( param1 )][GET_TEMPLATE_PARAM( param2 )];
+    static constexpr auto _MATRIX_##funcname = GET_TWO_PARAM_TWO_BOOL_TEMPLATED_FUNC_MATRIX( funcname ); \
+    const auto outvar = _MATRIX_##funcname[bool1][bool2][GET_TEMPLATE_PARAM( param1 )][GET_TEMPLATE_PARAM( param2 )];
 
 #define GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_TWO_PARAMS_TWO_BOOLS( outvar, funcsuffix, qureg, param1, param2, bool1, bool2 ) \
     GET_FUNC_OPTIMISED_FOR_TWO_PARAMS_TWO_BOOLS( _GPU_FUNC, gpu_##funcsuffix, param1, param2, bool1, bool2 ) \
