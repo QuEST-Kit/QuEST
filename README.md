@@ -249,6 +249,22 @@ See the [docs](docs/README.md) for enabling acceleration and running the unit te
 
 ---------------------------------
 
+## 🤝  Team
+
+QuEST's current development team, in no particular order, consists of:
+
+- [Dr Oliver Thomson Brown](https://www.epcc.ed.ac.uk/about-us/our-team/dr-oliver-brown)
+- [Dr James Richings](https://www.epcc.ed.ac.uk/about-us/our-team/dr-james-richings)
+- [Dr Tyson Ray Jones](https://www.tysonjones.io/)
+- [Dr Erich Essmann](https://www.research.ed.ac.uk/en/persons/erich-essmann/)
+- [Vasco Ferreira](https://www.linkedin.com/in/vasco-ferreira-b24058259/)
+- [Prof Simon C. Benjamin](https://www.materials.ox.ac.uk/peoplepages/benjamin.html)
+
+See [authors](AUTHORS.txt) for a list of all of QuEST's past and present contributors.
+
+
+---------------------------------
+
 ## ❤  Acknowledgements
 
 In addition to QuEST's [authors](AUTHORS.txt), we sincerely thank the following external contributors to QuEST.
