@@ -254,7 +254,6 @@ See the [docs](docs/README.md) for enabling acceleration and running the unit te
 In addition to QuEST's [authors](AUTHORS.txt), we sincerely thank the following external contributors to QuEST.
 
 External contributors:
-- [Vasco Ferreira](https://github.com/vaferreiQMT) for adding Trotter randomisation, inverse QFT, and `PauliStrSum` reordering in v4.3.
 - [Maurice Jamieson](https://github.com/mcjamieson) for extending the unit test suite in v4.3.
 - [Íñigo Aréjula Aísa](https://github.com/iarejula-bsc) for patching a validation error in the user-owned MPI interface.
 - [Daniel Expósito Patiño](https://github.com/D-Exposito) for patching a signature of the v4 C++ API.

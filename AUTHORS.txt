@@ -22,6 +22,8 @@ Dr Tyson Ray Jones [developer]
 Dr Erich Essmann [developer]
     build
     patches
+Vasco Ferreira [developer]
+    development
 Prof Simon C. Benjamin [consultant]
     user requirements
 
@@ -50,8 +52,6 @@ Dr Ali Rezaei [developer]
     optimisation prototyping
 
 External contributors:
-Vasco Ferreira
-    added Trotter randomisation (#702), inverse QFT (#705), and `PauliStrSum` reordering (#708)
 Maurice Jamieson
     extended the unit test suite (#706)
 Íñigo Aréjula Aísa
