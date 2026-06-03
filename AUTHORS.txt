@@ -3,6 +3,15 @@
 Contact: tyson.jones.input@gmail.com
 
 Current team:
+Dr Oliver Thomson Brown [developer]
+    planning
+    development
+    build
+    testing
+    patches
+Dr James Richings [developer]
+    optimisation
+    patches
 Dr Tyson Ray Jones [developer]
     algorithms
     parallelisation
@@ -10,21 +19,9 @@ Dr Tyson Ray Jones [developer]
     interface
     testing
     documentation
-Dr Oliver Thomson Brown [developer]
-    build
-    patches
 Dr Erich Essmann [developer]
     build
     patches
-Dr Ali Rezaei [developer]
-    optimisation prototyping
-Dr Richard Meister [consultant]
-    design
-    patches
-    previous development
-Dr Balint Koczor [consultant]
-    patches
-    previous development
 Prof Simon C. Benjamin [consultant]
     user requirements
 
@@ -33,6 +30,13 @@ Dr Ania (Anna) Brown [developer]
     HPC
     build
     quantum ops
+Dr Richard Meister [consultant]
+    design
+    patches
+    previous development
+Dr Balint Koczor [consultant]
+    patches
+    previous development
 Dr Fergus Cooper [developer]
     continuous integration
 Mr Jacob Wilkins [developer]
@@ -42,8 +46,14 @@ Dr Mihai Duta [developer]
 Dr Ian Bush [consultant]
     software development
     HPC
+Dr Ali Rezaei [developer]
+    optimisation prototyping
 
 External contributors:
+Vasco Ferreira
+    added Trotter randomisation (#702), inverse QFT (#705), and `PauliStrSum` reordering (#708)
+Maurice Jamieson
+    extended the unit test suite (#706)
 Íñigo Aréjula Aísa
     patched validation error in the experimental user-owned MPI interface (#722)
 Daniel Expósito Patiño
