@@ -1728,7 +1728,42 @@ qreal applyForcedMultiQubitMeasurement(Qureg qureg, vector<int> qubits, vector<i
     return applyForcedMultiQubitMeasurement(qureg, qubits.data(), outcomes.data(), outcomes.size());
 }
 
+std::unordered_map<int, int> sampleQureg(Qureg qureg, int* qubits, int numQubits, int shots) {
 
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, qubits, numQubits, __func__);
+
+    // find the probability of all possible outcomes...
+    qindex numProbs = powerOf2(numQubits);
+
+    // by allocating a temp vector, and validating successful (since exponentially big!)
+    vector<qreal> probs;
+    auto callback = [&]() { validate_tempAllocSucceeded(false, numProbs, sizeof(qreal), __func__); };
+    util_tryAllocVector(probs, numProbs, callback);
+
+    // populate probs
+    calcProbsOfAllMultiQubitOutcomes(probs.data(), qureg, qubits, numQubits); // harmlessly re-validates
+
+    // we cannot meaningfully sample these probs if not normalised
+    validate_measurementProbsAreNormalised(probs, __func__);
+
+    std::unordered_map<int, int> counts;
+
+    for (int i = 0; i < shots; i++) {
+        // randomly choose an outcome
+        qindex outcome = rand_getRandomMultiQubitOutcome(probs);
+
+        // map outcome to individual qubit outcomes
+        auto qubitVec = util_getVector(qubits, numQubits);
+        auto outcomeVec = vector<int>(numQubits);
+        getBitsFromInteger(outcomeVec.data(), outcome, numQubits);
+
+        // increase outcome count
+        counts[outcome]++; 
+    }
+
+    return counts;
+}
 
 /*
  * QFT

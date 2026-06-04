@@ -27,6 +27,7 @@
 
 #ifdef __cplusplus
     #include <vector>
+    #include <unordered_map>
 #endif
 
 
@@ -2342,6 +2343,12 @@ qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, std::vector<int> qubits
 /// @cppvectoroverload
 /// @see applyForcedMultiQubitMeasurement()
 qreal applyForcedMultiQubitMeasurement(Qureg qureg, std::vector<int> qubits, std::vector<int> outcomes);
+
+/// @notyettested
+/// @notyetvalidated
+/// @notyetdoced
+std::unordered_map<int, int> sampleQureg(Qureg qureg, int* qubits, int numQubits, int shots);
+
 
 
 #endif // __cplusplus
