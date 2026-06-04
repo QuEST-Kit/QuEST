@@ -40,6 +40,8 @@
 #include "tests/utils/macros.hpp"
 #include "tests/utils/random.hpp"
 
+#include <cmath>
+#include <limits>
 #include <tuple>
 
 using std::tuple;
@@ -1315,6 +1317,42 @@ TEST_ALL_CTRL_OPERATIONS( PauliGadget, any, pauligad, nullptr );
 TEST_ALL_CTRL_OPERATIONS( CompMatr1, one, compmatr, nullptr );
 TEST_ALL_CTRL_OPERATIONS( CompMatr2, two, compmatr, nullptr );
 TEST_ALL_CTRL_OPERATIONS( CompMatr,  any, compmatr, nullptr );
+
+TEST_CASE( "applyCompMatr uses compensated summation", TEST_CATEGORY_OPS ) {
+
+    int numTargs = 4;
+    int numAmps = getPow2(numTargs);
+    int targets[] = {0,1,2,3};
+
+    Qureg qureg = createQureg(numTargs);
+    CompMatr matrix = createCompMatr(numTargs);
+
+    qvector amps(numAmps, qcomp(1,0));
+    setQuregAmps(qureg, 0, amps.data(), amps.size());
+
+    for (qindex i=0; i<matrix.numRows; i++)
+        for (qindex j=0; j<matrix.numRows; j++)
+            matrix.cpuElems[i][j] = 0;
+
+    qreal large = std::ldexp(qreal(1), std::numeric_limits<qreal>::digits);
+    matrix.cpuElems[0][0] = qcomp( large, 0);
+    for (qindex j=1; j<matrix.numRows-1; j++)
+        matrix.cpuElems[0][j] = qcomp(1, 0);
+    matrix.cpuElems[0][matrix.numRows-1] = qcomp(-large, 0);
+    syncCompMatr(matrix);
+
+    setQuESTValidationEpsilon(0);
+    applyCompMatr(qureg, targets, numTargs, matrix);
+    setQuESTValidationEpsilonToDefault();
+
+    qcomp amp = getQuregAmp(qureg, 0);
+    REQUIRE( std::real(amp) == qreal(numAmps - 2) );
+    REQUIRE( std::imag(amp) == qreal(0) );
+
+    destroyCompMatr(matrix);
+    destroyQureg(qureg);
+}
+
 TEST_ALL_CTRL_OPERATIONS( DiagMatr1, one, diagmatr, nullptr );
 TEST_ALL_CTRL_OPERATIONS( DiagMatr2, two, diagmatr, nullptr );
 TEST_ALL_CTRL_OPERATIONS( DiagMatr,  any, diagmatr, nullptr );
