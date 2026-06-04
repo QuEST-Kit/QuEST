@@ -22,6 +22,7 @@
 #include "quest/src/core/paulilogic.hpp"
 
 #include <vector>
+#include <unordered_map>
 
 using std::vector;
 
