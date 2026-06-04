@@ -14,6 +14,11 @@
   #include <intrin.h>
 #endif
 
+#if defined(__BMI2__) && (defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)) && !defined(__CUDA_ARCH__) && !defined(__HIP_DEVICE_COMPILE__)
+  #include <immintrin.h>
+  #define QUEST_USE_BMI2_INTRINSICS
+#endif
+
 #include "quest/include/types.h"
 
 #include "quest/src/core/inliner.hpp"
@@ -116,6 +121,35 @@ INLINE qindex setBit(qindex number, int bitIndex, int bitValue) {
 }
 
 
+INLINE bool getBitMaskAndCheckIsIncreasing(qindex* maskPtr, const int* bitIndices, int numIndices) {
+
+    // bitIndices can be arbitrarily ordered, though PEXT requires increasing order
+    qindex mask = 0;
+    bool isIncreasing = true;
+
+    for (int i=0; i<numIndices; i++) {
+        mask |= QINDEX_ONE << bitIndices[i];
+
+        if (i > 0)
+            isIncreasing = isIncreasing && bitIndices[i-1] < bitIndices[i];
+    }
+
+    *maskPtr = mask;
+    return isIncreasing;
+}
+
+
+INLINE qindex getBitMaskOfIndices(const int* bitIndices, int numIndices) {
+
+    qindex mask = 0;
+
+    for (int i=0; i<numIndices; i++)
+        mask |= QINDEX_ONE << bitIndices[i];
+
+    return mask;
+}
+
+
 INLINE int getBitMaskParity(qindex mask) {
 
     // Try a builtin if on GCC/Clang and it is available
@@ -164,6 +198,12 @@ INLINE int getBitMaskParity(qindex mask) {
 
 
 INLINE qindex insertBits(qindex number, const int* bitIndices, int numIndices, int bitValue) {
+
+#if defined(QUEST_USE_BMI2_INTRINSICS) && !defined(__CUDA_ARCH__) && !defined(__HIP_DEVICE_COMPILE__)
+    qindex mask = getBitMaskOfIndices(bitIndices, numIndices);
+    qindex result = static_cast<qindex>(_pdep_u64(static_cast<unsigned long long>(number), ~static_cast<unsigned long long>(mask)));
+    return bitValue? result | mask : result;
+#endif
     
     // bitIndices must be strictly increasing
     for (int i=0; i<numIndices; i++)
@@ -190,6 +230,14 @@ INLINE qindex getValueOfBits(qindex number, const int* bitIndices, int numIndice
     // bits are arbitrarily ordered, which affects value
     qindex value = 0;
 
+#if defined(QUEST_USE_BMI2_INTRINSICS) && !defined(__CUDA_ARCH__) && !defined(__HIP_DEVICE_COMPILE__)
+    qindex mask;
+    bool isIncreasing = getBitMaskAndCheckIsIncreasing(&mask, bitIndices, numIndices);
+
+    if (isIncreasing)
+        return static_cast<qindex>(_pext_u64(static_cast<unsigned long long>(number), static_cast<unsigned long long>(mask)));
+#endif
+
     for (int i=0; i<numIndices; i++)
         value |= getBit(number, bitIndices[i]) << i;
 
@@ -208,6 +256,10 @@ INLINE qindex getValueOfBits(qindex number, const int* bitIndices, int numIndice
 INLINE qindex insertBitsWithMaskedValues(qindex number, const int* bitInds, int numBits, qindex mask) {
 
     // bitInds must be sorted (increasing), and mask must be zero everywhere except bitInds
+#if defined(QUEST_USE_BMI2_INTRINSICS) && !defined(__CUDA_ARCH__) && !defined(__HIP_DEVICE_COMPILE__)
+    return mask | static_cast<qindex>(_pdep_u64(static_cast<unsigned long long>(number), ~static_cast<unsigned long long>(mask)));
+#endif
+
     return mask | insertBits(number, bitInds, numBits, 0);
 }
 

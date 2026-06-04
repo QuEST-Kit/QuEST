@@ -2,6 +2,7 @@
 
 target_sources(tests
   PUBLIC
+  bitwise.cpp
   calculations.cpp
   channels.cpp
   debug.cpp
