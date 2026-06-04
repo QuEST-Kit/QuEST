@@ -137,6 +137,10 @@ void validate_quregIsStateVector(Qureg qureg, const char* caller);
 
 void validate_quregIsDensityMatrix(Qureg qureg, const char* caller);
 
+void validate_quregCheckpointingIsCompiled(const char* caller);
+
+void validate_quregFileMatchesPrecision(int fileQrealBytes, const char* caller);
+
 
 
 /*

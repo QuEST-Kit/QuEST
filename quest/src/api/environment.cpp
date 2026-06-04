@@ -204,16 +204,27 @@ void printPrecisionInfo() {
 }
 
 
+// reports whether QuEST was compiled with Qureg checkpointing support (ADIOS2)
+static bool isCheckpointingCompiled() {
+#ifdef ENABLE_CHECKPOINTING
+    return true;
+#else
+    return false;
+#endif
+}
+
+
 void printCompilationInfo() {
 
     print_table(
         "compilation", {
-        {"isOmpCompiled",         cpu_isOpenmpCompiled()},
-        {"isMpiCompiled",         comm_isMpiCompiled()},
-        {"isMpiSubCommCompiled",  comm_isMpiSubCommCompiled()},
-        {"isGpuCompiled",         gpu_isGpuCompiled()},
-        {"isHipCompiled",         gpu_isHipCompiled()},
-        {"isCuQuantumCompiled",   gpu_isCuQuantumCompiled()},
+        {"isOmpCompiled",            cpu_isOpenmpCompiled()},
+        {"isMpiCompiled",            comm_isMpiCompiled()},
+        {"isMpiSubCommCompiled",     comm_isMpiSubCommCompiled()},
+        {"isGpuCompiled",            gpu_isGpuCompiled()},
+        {"isHipCompiled",            gpu_isHipCompiled()},
+        {"isCuQuantumCompiled",      gpu_isCuQuantumCompiled()},
+        {"isCheckpointingCompiled",  isCheckpointingCompiled()},
     });
 }
 

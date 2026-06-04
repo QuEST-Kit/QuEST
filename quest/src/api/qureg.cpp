@@ -25,6 +25,10 @@
 #include <string>
 #include <vector>
 
+#ifdef ENABLE_CHECKPOINTING
+#include <adios2.h>
+#endif
+
 using std::string;
 using std::vector;
 
@@ -559,4 +563,107 @@ vector<vector<qcomp>> getDensityQuregAmps(Qureg qureg, qindex startRow, qindex s
     // modify out through its ptrs
     getDensityQuregAmps(ptrs.data(), qureg, startRow, startCol, numRows, numCols);
     return out;
+}
+
+
+
+/*
+ * CHECKPOINTING
+ *
+ * which is compiled only when ENABLE_CHECKPOINTING=ON (requiring ADIOS2).
+ * The API functions are always defined so that the validation layer can throw
+ * a clear error in non-checkpointing builds, rather than failing to link.
+ */
+
+
+void saveQuregToFile(Qureg qureg, const char* fn) {
+    validate_quregCheckpointingIsCompiled(__func__);
+
+#ifdef ENABLE_CHECKPOINTING
+    validate_quregFields(qureg, __func__);
+
+    // ensure the CPU amplitudes reflect any GPU-resident state before writing
+    syncQuregFromGpu(qureg);
+
+    adios2::ADIOS adios;
+    adios2::IO io = adios.DeclareIO("QuESTQuregSave");
+    adios2::Engine engine = io.Open(fn, adios2::Mode::Write);
+
+    // global single-value metadata; we deliberately record only the dimension
+    // and precision, never incidental deployment fields (the loader chooses its
+    // own deployment) nor derivable fields (like numAmps)
+    adios2::Variable<int> vNumQubits  = io.DefineVariable<int>("numQubits");
+    adios2::Variable<int> vIsDensMatr = io.DefineVariable<int>("isDensityMatrix");
+    adios2::Variable<int> vQrealBytes = io.DefineVariable<int>("qrealBytes");
+
+    // amplitudes are stored as interleaved (real, imag) reals to stay agnostic
+    // to precision and to ADIOS2's complex-type support; each node writes only
+    // its local slice into the global array, avoiding excessive memory use
+    qindex globalReals = 2 * qureg.numAmps;
+    qindex localReals  = 2 * qureg.numAmpsPerNode;
+    qindex startReal   = 2 * ((qindex) qureg.rank) * qureg.numAmpsPerNode;
+    adios2::Variable<qreal> vAmps = io.DefineVariable<qreal>(
+        "amps",
+        { (size_t) globalReals },
+        { (size_t) startReal },
+        { (size_t) localReals });
+
+    int qrealBytes = (int) sizeof(qreal);
+
+    engine.BeginStep();
+    engine.Put(vNumQubits,  qureg.numQubits);
+    engine.Put(vIsDensMatr, qureg.isDensityMatrix);
+    engine.Put(vQrealBytes, qrealBytes);
+    engine.Put(vAmps, reinterpret_cast<qreal*>(qureg.cpuAmps));
+    engine.EndStep();
+    engine.Close();
+#endif
+}
+
+
+Qureg createQuregFromFile(const char* fn) {
+    validate_quregCheckpointingIsCompiled(__func__);
+
+#ifdef ENABLE_CHECKPOINTING
+    adios2::ADIOS adios;
+    adios2::IO io = adios.DeclareIO("QuESTQuregLoad");
+    adios2::Engine engine = io.Open(fn, adios2::Mode::Read);
+
+    engine.BeginStep();
+
+    // read dimension + precision metadata first, so we can size the new Qureg
+    int numQubits = 0;
+    int isDensMatr = 0;
+    int fileQrealBytes = 0;
+    engine.Get(io.InquireVariable<int>("numQubits"),       numQubits);
+    engine.Get(io.InquireVariable<int>("isDensityMatrix"), isDensMatr);
+    engine.Get(io.InquireVariable<int>("qrealBytes"),      fileQrealBytes);
+    engine.PerformGets();
+
+    validate_quregFileMatchesPrecision(fileQrealBytes, __func__);
+
+    // create a matching-dimension Qureg with automatically chosen deployments,
+    // independent of those used when the file was saved
+    Qureg qureg = (isDensMatr)?
+        createDensityQureg(numQubits) :
+        createQureg(numQubits);
+
+    // read only this node's slice of the global amplitude array into its buffer
+    qindex localReals = 2 * qureg.numAmpsPerNode;
+    qindex startReal  = 2 * ((qindex) qureg.rank) * qureg.numAmpsPerNode;
+    adios2::Variable<qreal> vAmps = io.InquireVariable<qreal>("amps");
+    vAmps.SetSelection({ { (size_t) startReal }, { (size_t) localReals } });
+    engine.Get(vAmps, reinterpret_cast<qreal*>(qureg.cpuAmps));
+
+    engine.EndStep();
+    engine.Close();
+
+    // propagate the restored CPU amplitudes to the GPU, if deployed
+    syncQuregToGpu(qureg);
+
+    return qureg;
+#else
+    // unreachable: the validation above always throws in non-checkpointing builds
+    return Qureg{};
+#endif
 }

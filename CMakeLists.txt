@@ -542,6 +542,17 @@ if (QUEST_ENABLE_CUQUANTUM)
 endif()
 
 
+# Checkpointing (ADIOS2)
+option(ENABLE_CHECKPOINTING "Enable Qureg checkpointing (saveQuregToFile / createQuregFromFile) via ADIOS2. Turned OFF by default." OFF)
+if (ENABLE_CHECKPOINTING)
+  find_package(adios2 REQUIRED)
+  target_link_libraries(QuEST PRIVATE adios2::cxx)
+  target_compile_definitions(QuEST PRIVATE ENABLE_CHECKPOINTING=1)
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+  message(STATUS "Qureg checkpointing is turned ON (via ADIOS2).")
+endif()
+
+
 
 # ===============================
 # Set options to save in config.h

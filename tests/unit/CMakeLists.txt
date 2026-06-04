@@ -4,6 +4,7 @@ target_sources(tests
   PUBLIC
   calculations.cpp
   channels.cpp
+  checkpoint.cpp
   debug.cpp
   decoherence.cpp
   environment.cpp

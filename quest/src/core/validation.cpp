@@ -277,6 +277,12 @@ namespace report {
     string QUREG_NOT_STATE_VECTOR =
         "Expected a statevector Qureg but received a density matrix.";
 
+    string QUREG_CHECKPOINTING_NOT_COMPILED =
+        "Qureg checkpointing (saveQuregToFile and createQuregFromFile) requires QuEST to be compiled with checkpointing support. Reconfigure with the CMake option -DENABLE_CHECKPOINTING=ON, which additionally requires the ADIOS2 library.";
+
+    string QUREG_FILE_PRECISION_MISMATCH =
+        "The checkpoint file was written with a qreal precision of ${FILE_BYTES} bytes, but this QuEST build uses ${EXEC_BYTES} bytes. A Qureg can only be restored by a QuEST build using the same floating-point precision (QUEST_FLOAT_PRECISION) as the build which saved it.";
+
 
     /*
      * MUTABLE OBJECT FLAGS
@@ -1988,6 +1994,35 @@ void validate_quregIsDensityMatrix(Qureg qureg, const char* caller) {
         return;
 
     assertThat(qureg.isDensityMatrix, report::QUREG_NOT_DENSITY_MATRIX, caller);
+}
+
+void validate_quregCheckpointingIsCompiled(const char* caller) {
+
+    if (!global_isValidationEnabled)
+        return;
+
+    // this validation must fire regardless of ENABLE_CHECKPOINTING, so the user
+    // receives a clear error (rather than a linker error) when calling the
+    // checkpointing API in a build which did not compile it
+    #ifdef ENABLE_CHECKPOINTING
+    bool isCompiled = true;
+    #else
+    bool isCompiled = false;
+    #endif
+
+    assertThat(isCompiled, report::QUREG_CHECKPOINTING_NOT_COMPILED, caller);
+}
+
+void validate_quregFileMatchesPrecision(int fileQrealBytes, const char* caller) {
+
+    if (!global_isValidationEnabled)
+        return;
+
+    tokenSubs vars = {
+        {"${FILE_BYTES}", fileQrealBytes},
+        {"${EXEC_BYTES}", (int) sizeof(qreal)}};
+
+    assertThat(fileQrealBytes == (int) sizeof(qreal), report::QUREG_FILE_PRECISION_MISMATCH, vars, caller);
 }
 
 
