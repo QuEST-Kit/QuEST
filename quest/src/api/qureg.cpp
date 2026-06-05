@@ -5,6 +5,7 @@
  * @author Tyson Jones
  */
 
+#include "quest/include/config.h"
 #include "quest/include/qureg.h"
 #include "quest/include/modes.h"
 #include "quest/include/environment.h"
@@ -25,7 +26,7 @@
 #include <string>
 #include <vector>
 
-#ifdef ENABLE_CHECKPOINTING
+#if QUEST_COMPILE_CHECKPOINTING
 #include <adios2.h>
 #endif
 
@@ -579,7 +580,7 @@ vector<vector<qcomp>> getDensityQuregAmps(Qureg qureg, qindex startRow, qindex s
 void saveQuregToFile(Qureg qureg, const char* fn) {
     validate_quregCheckpointingIsCompiled(__func__);
 
-#ifdef ENABLE_CHECKPOINTING
+#if QUEST_COMPILE_CHECKPOINTING
     validate_quregFields(qureg, __func__);
 
     // ensure the CPU amplitudes reflect any GPU-resident state before writing
@@ -624,7 +625,7 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
 Qureg createQuregFromFile(const char* fn) {
     validate_quregCheckpointingIsCompiled(__func__);
 
-#ifdef ENABLE_CHECKPOINTING
+#if QUEST_COMPILE_CHECKPOINTING
     adios2::ADIOS adios;
     adios2::IO io = adios.DeclareIO("QuESTQuregLoad");
     adios2::Engine engine = io.Open(fn, adios2::Mode::Read);

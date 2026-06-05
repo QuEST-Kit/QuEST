@@ -12,7 +12,7 @@
 
 #include "quest.h"
 
-#ifdef ENABLE_CHECKPOINTING
+#if QUEST_COMPILE_CHECKPOINTING
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -85,4 +85,4 @@ TEST_CASE( "saveQuregToFile and createQuregFromFile", "[checkpoint]" ) {
     }
 }
 
-#endif // ENABLE_CHECKPOINTING
+#endif // QUEST_COMPILE_CHECKPOINTING

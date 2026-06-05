@@ -5,6 +5,7 @@
  * @author Tyson Jones 
  */
 
+#include "quest/include/config.h"
 #include "quest/include/environment.h"
 #include "quest/include/precision.h"
 #include "quest/include/modes.h"
@@ -206,7 +207,7 @@ void printPrecisionInfo() {
 
 // reports whether QuEST was compiled with Qureg checkpointing support (ADIOS2)
 static bool isCheckpointingCompiled() {
-#ifdef ENABLE_CHECKPOINTING
+#if QUEST_COMPILE_CHECKPOINTING
     return true;
 #else
     return false;

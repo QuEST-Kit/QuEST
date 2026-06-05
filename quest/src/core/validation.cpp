@@ -7,6 +7,7 @@
  * @author Kshitij Chhabra (patched v3 overflow bug)
  */
 
+#include "quest/include/config.h"
 #include "quest/include/modes.h"
 #include "quest/include/types.h"
 #include "quest/include/precision.h"
@@ -2001,10 +2002,10 @@ void validate_quregCheckpointingIsCompiled(const char* caller) {
     if (!global_isValidationEnabled)
         return;
 
-    // this validation must fire regardless of ENABLE_CHECKPOINTING, so the user
-    // receives a clear error (rather than a linker error) when calling the
+    // this validation must fire regardless of QUEST_COMPILE_CHECKPOINTING, so the
+    // user receives a clear error (rather than a linker error) when calling the
     // checkpointing API in a build which did not compile it
-    #ifdef ENABLE_CHECKPOINTING
+    #if QUEST_COMPILE_CHECKPOINTING
     bool isCompiled = true;
     #else
     bool isCompiled = false;
