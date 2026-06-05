@@ -31,7 +31,7 @@ jobs:
   # excluding the v4 integration tests, for free
   serial-unit-test:
     name: >
-      ${{ matrix.os == 'ubuntu-latest' && 'Linux' || matrix.os == 'macos-latest' && 'MacOS' || 'Windows' }}
+      ${{ matrix.os == 'ubuntu-latest' && 'Linux' || startsWith(matrix.os, 'macos') && 'MacOS' || 'Windows' }}
       [${{ matrix.precision }}]
       serial
       unit v${{ matrix.version }}

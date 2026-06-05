@@ -43,7 +43,7 @@ jobs:
   # test only compilation succeeds (no execution)
   build-test:
     name: >
-      ${{ matrix.os == 'ubuntu-latest' && 'Linux' || matrix.os == 'macos-latest' && 'MacOS' || 'Windows' }}
+      ${{ matrix.os == 'ubuntu-latest' && 'Linux' || startsWith(matrix.os, 'macos') && 'MacOS' || 'Windows' }}
       [${{ matrix.precision }}]
       ${{ matrix.omp       == 'ON' && 'OMP'  || '' }}
       ${{ matrix.mpi       == 'ON' && 'MPI'  || '' }}
@@ -82,6 +82,12 @@ jobs:
             compiler: g++
             deprecated: ON
           - os: macos-latest
+            compiler: clang++
+            deprecated: ON
+          - os: macos-15-intel
+            compiler: clang++
+            deprecated: ON
+          - os: macos-26-intel
             compiler: clang++
             deprecated: ON
           - os: windows-latest
