@@ -542,15 +542,56 @@ if (QUEST_ENABLE_CUQUANTUM)
 endif()
 
 
+
+### DRAFT BELOW
+
+
 # Checkpointing (ADIOS2)
 option(ENABLE_CHECKPOINTING "Enable Qureg checkpointing (saveQuregToFile / createQuregFromFile) via ADIOS2. Turned OFF by default." OFF)
 if (ENABLE_CHECKPOINTING)
-  find_package(adios2 REQUIRED)
-  target_link_libraries(QuEST PRIVATE adios2::cxx)
-  target_compile_definitions(QuEST PRIVATE ENABLE_CHECKPOINTING=1)
-  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
-  message(STATUS "Qureg checkpointing is turned ON (via ADIOS2).")
+
+  find_package(adios2 QUIET)
+
+  if(NOT adios2_FOUND)
+    message(STATUS "adios2 not found: fetching ADIOS2 via FetchContent")
+
+    include(FetchContent)
+    FetchContent_Declare(
+      adios2
+      GIT_REPOSITORY https://github.com/ornladios/ADIOS2.git
+      GIT_TAG v2.12.1
+    )
+
+    # Forego MPI and CUDA if QuEST won't use
+    set(ADIOS2_USE_MPI  ${QUEST_ENABLE_MPI}  CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_CUDA ${QUEST_ENABLE_CUDA} CACHE BOOL "" FORCE)
+
+    # Forego unused facilities
+    set(ADIOS2_BUILD_TESTING  OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_SODIUM     OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_Fortran    OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_HDF5       OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_ZeroMQ     OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_SST        OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_BZip2      OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_Blosc      OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_SZ         OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_ZFP        OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_PNG        OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_Profiling  OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_Python     OFF CACHE BOOL "" FORCE)
+
+    FetchContent_MakeAvailable(adios2)
+
+  else()
+    # force failure (see Oliver's Catch2 trick)
+    find_package(adios2 REQUIRED)
+  endif()
 endif()
+
+
+### DRAFT ABOVE
 
 
 
