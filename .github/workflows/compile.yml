@@ -64,7 +64,7 @@ jobs:
 
       # compile QuEST with all combinations of below flags
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest, macos-15-intel, macos-26-intel]
         precision: [2] #[1, 2, 4]
         omp:       [OFF] #[ON, OFF]
         mpi:       [OFF] #[ON, OFF]
