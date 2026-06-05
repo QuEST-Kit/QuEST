@@ -67,6 +67,7 @@ jobs:
         cuda:      [ON, OFF]
         hip:       [ON, OFF]
         cuquantum: [ON, OFF]
+        adios2:    [ON, OFF]
         mpilib:    ['', 'mpich', 'ompi', 'impi', 'msmpi']
 
         # disable deprecated API on MSVC, and assign unique compilers,
@@ -249,6 +250,7 @@ jobs:
           -DQUEST_ENABLE_CUDA=${{ matrix.cuda }}
           -DQUEST_ENABLE_HIP=${{ matrix.hip }}
           -DQUEST_ENABLE_CUQUANTUM=${{ matrix.cuquantum }}
+          -DENABLE_CHECKPOINTING=${{ matrix.adios2 }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}

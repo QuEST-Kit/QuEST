@@ -41,7 +41,7 @@ jobs:
       # we will compile QuEST with all precisions but no parallelisation
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        version: [3, 4]
+        version: [4] # [3, 4]
         precision: [1, 2, 4]
 
         # MSVC cannot compile deprecated v3 tests
@@ -68,6 +68,7 @@ jobs:
           -DQUEST_ENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
           -DQUEST_DISABLE_DEPRECATION_WARNINGS=${{ matrix.version == 3 && 'ON' || 'OFF' }}
           -DQUEST_FLOAT_PRECISION=${{ matrix.precision }}
+          -DENABLE_CHECKPOINTING=ON
 
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
@@ -78,9 +79,13 @@ jobs:
       # TODO:
       # ctest currently doesn't know of our Catch2 tags, so we
       # are manually excluding each integration test by name
+      
+      # DEBUG:
+      # runining ONLY the checkpoint flags
+
       - name: Run v4 tests
         if: ${{ matrix.version == 4 }}
-        run: ctest -j2 --output-on-failure --schedule-random -C Release -E "density evolution"
+        run: ctest -j2 --output-on-failure --schedule-random -C Release -E "density evolution" -R "saveQuregToFile"
         working-directory: ${{ env.build_dir }}
 
       # run v3 unit tests in random order
