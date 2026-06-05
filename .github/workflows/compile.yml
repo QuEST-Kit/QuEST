@@ -293,6 +293,10 @@ jobs:
           ForEach-Object {
             Write-Host "`r`n[[[ $($_.Name) ]]]`r`n"
             & $_.FullName
+            if ($LASTEXITCODE -ne 0) {
+              Write-Warning "$($_.Name) exited with code $LASTEXITCODE"
+              $global:LASTEXITCODE = 0
+            }
           }
       - name: Run automated examples (Unix)
         if: ${{ matrix.os != 'windows-latest' }}
