@@ -1328,6 +1328,36 @@ TEST_ALL_CTRL_OPERATIONS( S,        one, none, FixedMatrices::S );
 TEST_ALL_CTRL_OPERATIONS( Swap,     two, none, FixedMatrices::SWAP );
 TEST_ALL_CTRL_OPERATIONS( SqrtSwap, two, none, FixedMatrices::sqrtSWAP );
 TEST_ALL_CTRL_OPERATIONS( RotateX, one, scalar, ParameterisedMatrices::Rx );
+
+TEST_CASE( "applyCompMatr uses compensated accumulation", TEST_CATEGORY_OPS ) {
+
+    int numQubits = 4;
+    qindex numAmps = getPow2(numQubits);
+
+    Qureg qureg = createQureg(numQubits);
+    qvector amps(numAmps, 1);
+    setQuregAmps(qureg, 0, amps.data(), numAmps);
+
+    qmatrix elems = getZeroMatrix(numAmps);
+    elems[0][0] = 1e16;
+    elems[0][numAmps - 1] = -1e16;
+
+    for (qindex i=1; i<numAmps-1; i++)
+        elems[0][i] = 1;
+
+    CompMatr matr = createInlineCompMatr(numQubits, elems);
+    int targets[] = {0, 1, 2, 3};
+
+    setQuESTValidationEpsilon(0);
+    applyCompMatr(qureg, targets, numQubits, matr);
+    setQuESTValidationEpsilonToDefault();
+
+    REQUIRE( real(getQuregAmp(qureg, 0)) == 14 );
+
+    destroyCompMatr(matr);
+    destroyQureg(qureg);
+}
+
 TEST_ALL_CTRL_OPERATIONS( RotateY, one, scalar, ParameterisedMatrices::Ry );
 TEST_ALL_CTRL_OPERATIONS( RotateZ, one, scalar, ParameterisedMatrices::Rz );
 TEST_ALL_CTRL_OPERATIONS( RotateAroundAxis, one, axisrots, nullptr );
