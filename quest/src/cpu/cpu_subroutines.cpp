@@ -607,7 +607,8 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
 
                 // i = nth local index where ctrls are active and targs form value k
                 qindex i = setBits(i0, targs.data(), numTargBits, k); // loop may be unrolled
-                amps[i] = getCpuQcomp(0, 0);
+                cpu_qcomp sum = getCpuQcomp(0, 0);
+                cpu_qcomp compensation = getCpuQcomp(0, 0);
             
                 // loop may be unrolled
                 for (qindex j=0; j<numTargAmps; j++) {
@@ -624,18 +625,14 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
                     if constexpr (ApplyConj)
                         elem = conj(elem);
 
-                    amps[i] += elem * cache[j];
-
-                    /// @todo
-                    /// qureg.cpuAmps[i] is being serially updated by only this thread,
-                    /// so is a candidate for Kahan summation for improved numerical
-                    /// stability. Explore whether this is time-free and worthwhile!
-                    ///
-                    /// BEWARE that Kahan summation may be incompatible with
-                    /// the commutator tricks used in base_qcomp's (ancestor
-                    /// of cpu_qcomp) arithmetic operator overloads. Check
-                    /// base_qcomp.hpp before implementing compensation.
+                    cpu_qcomp product = elem * cache[j];
+                    cpu_qcomp corrected = product - compensation;
+                    cpu_qcomp next = sum + corrected;
+                    compensation = (next - sum) - corrected;
+                    sum = next;
                 }
+
+                amps[i] = sum;
             }
         }
     }
