@@ -251,6 +251,38 @@ qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, ConstList64 qubitInds, Const
 }
 
 
+void cpu_statevec_packAmpsIntoBufferAtOffset(Qureg qureg, ConstList64 sortedQubits, qindex qubitStateMask, qindex bufferOffset) {
+
+    cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
+    cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
+
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(sortedQubits.size());
+    int numQubitBits = sortedQubits.size();
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitStateMask);
+        buffer[bufferOffset + n] = amps[i];
+    }
+}
+
+
+void cpu_statevec_unpackAmpsFromBufferAtOffset(Qureg qureg, ConstList64 sortedQubits, qindex qubitStateMask, qindex bufferOffset) {
+
+    cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
+    cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
+
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(sortedQubits.size());
+    int numQubitBits = sortedQubits.size();
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitStateMask);
+        amps[i] = buffer[bufferOffset + n];
+    }
+}
+
+
 qindex cpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qubit2, int qubit3, int bit2) {
     
     assert_bufferPackerGivenIncreasingQubits(qubit1, qubit2, qubit3);

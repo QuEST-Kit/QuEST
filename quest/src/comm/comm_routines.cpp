@@ -242,6 +242,56 @@ void exchangeArrays(qcomp* send, qcomp* recv, qindex numElems, int pairRank) {
 }
 
 
+void exchangeSubBufferChunks(Qureg qureg, const vector<int>& pairRanks, const vector<qindex>& recvTagBases, qindex sendTagBase, qindex chunkSize) {
+#if QUEST_COMPILE_MPI
+
+    if (pairRanks.empty())
+        return;
+
+    MPI_Comm mpiComm = comm_getMpiComm();
+
+    qindex sendInd = getSubBufferSendInd(qureg);
+    qindex recvInd = getBufferRecvInd();
+
+    auto [messageSize, numMessages] = dividePow2PayloadIntoMessages(chunkSize);
+    qindex maxTagBase = sendTagBase;
+    for (qindex tagBase : recvTagBases)
+        maxTagBase = std::max(maxTagBase, tagBase);
+
+    qindex numTaggedMessages = numMessages * (maxTagBase + 1);
+    if (numTaggedMessages > getMaxNumMessages())
+        error_commNumMessagesExceedTagMax();
+
+    qindex numRequests = 2 * numMessages * pairRanks.size();
+    vector<MPI_Request> requests(numRequests, MPI_REQUEST_NULL);
+
+    qindex reqInd = 0;
+    for (qindex c=0; c<(qindex) pairRanks.size(); c++) {
+        qindex chunkOffset = c * chunkSize;
+
+        for (qindex m=0; m<numMessages; m++) {
+            int recvTag = static_cast<int>(recvTagBases[c]*numMessages + m);
+            int sendTag = static_cast<int>(sendTagBase*numMessages + m);
+            qindex messageOffset = chunkOffset + m*messageSize;
+
+            MPI_Irecv(
+                &qureg.cpuCommBuffer[recvInd + messageOffset],
+                messageSize, MPI_QCOMP, pairRanks[c], recvTag, mpiComm, &requests[reqInd++]);
+
+            MPI_Isend(
+                &qureg.cpuCommBuffer[sendInd + messageOffset],
+                messageSize, MPI_QCOMP, pairRanks[c], sendTag, mpiComm, &requests[reqInd++]);
+        }
+    }
+
+    MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
+
+#else
+    error_commButEnvNotDistributed();
+#endif
+}
+
+
 
 /*
  * PRIVATE ASYNC SEND AND RECEIVE
@@ -530,6 +580,25 @@ void comm_exchangeSubBuffers(Qureg qureg, qindex numAmps, int pairRank) {
         exchangeGpuSubBuffers(qureg, numAmps, pairRank);
     else 
         exchangeArrays(&qureg.cpuCommBuffer[sendInd], &qureg.cpuCommBuffer[recvInd], numAmps, pairRank);
+}
+
+
+void comm_exchangeSubBufferChunks(Qureg qureg, const vector<int>& pairRanks, const vector<qindex>& recvTagBases, qindex sendTagBase, qindex chunkSize) {
+
+    qindex sendInd = getSubBufferSendInd(qureg);
+    qindex recvInd = getBufferRecvInd();
+    qindex totalSize = chunkSize * pairRanks.size();
+
+    assert_commBoundsAreValid(qureg, sendInd, recvInd, totalSize);
+    assert_bufferSendRecvDoesNotOverlap(sendInd, recvInd, totalSize);
+    assert_commQuregIsDistributed(qureg);
+    if (pairRanks.size() != recvTagBases.size())
+        error_commGivenInconsistentNumSubArraysANodes();
+
+    for (int pairRank : pairRanks)
+        assert_pairRankIsDistinct(qureg, pairRank);
+
+    exchangeSubBufferChunks(qureg, pairRanks, recvTagBases, sendTagBase, chunkSize);
 }
 
 

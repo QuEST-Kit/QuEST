@@ -24,8 +24,10 @@
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/comm/comm_config.hpp"
+#include "quest/src/comm/comm_indices.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
+#include "quest/src/cpu/cpu_subroutines.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
 #include <tuple>
@@ -893,6 +895,85 @@ void localiser_statevec_anyCtrlSwap(Qureg qureg, ConstList64 ctrls, ConstList64 
  */
 
 
+qindex getBitMaskOfQubitsInPattern(ConstList64 qubits, qindex pattern) {
+
+    qindex mask = 0;
+    for (size_t i=0; i<qubits.size(); i++)
+        mask = setBit(mask, qubits[i], getBit(pattern, i));
+
+    return mask;
+}
+
+
+qindex getRankPatternInPrefixInds(int rank, ConstList64 prefixInds) {
+
+    qindex pattern = 0;
+    for (size_t i=0; i<prefixInds.size(); i++)
+        pattern = setBit(pattern, i, getBit(rank, prefixInds[i]));
+
+    return pattern;
+}
+
+
+int getRankWithPrefixIndsInPattern(int rank, ConstList64 prefixInds, qindex pattern) {
+
+    for (size_t i=0; i<prefixInds.size(); i++)
+        rank = setBit(rank, prefixInds[i], getBit(pattern, i));
+
+    return rank;
+}
+
+
+void multiSwapBetweenPrefixAndSuffix(Qureg qureg, ConstList64 suffixTargs, ConstList64 prefixInds) {
+
+    auto sortedSuffixTargs = util_getSorted(suffixTargs);
+    qindex localPrefixPattern = getRankPatternInPrefixInds(qureg.rank, prefixInds);
+    qindex numPatterns = powerOf2(suffixTargs.size());
+
+    vector<qindex> remotePatterns;
+    vector<int> pairRanks;
+
+    for (qindex pattern=0; pattern<numPatterns; pattern++) {
+        if (pattern == localPrefixPattern)
+            continue;
+
+        remotePatterns.push_back(pattern);
+        pairRanks.push_back(getRankWithPrefixIndsInPattern(qureg.rank, prefixInds, pattern));
+    }
+
+    qindex chunkSize = qureg.numAmpsPerNode / numPatterns;
+    qindex maxChunksPerWave = numPatterns / 2;
+    qindex sendBase = getSubBufferSendInd(qureg);
+    qindex recvBase = getBufferRecvInd();
+
+    for (qindex firstChunk=0; firstChunk<(qindex) remotePatterns.size(); firstChunk += maxChunksPerWave) {
+        qindex numChunks = std::min(maxChunksPerWave, (qindex) remotePatterns.size() - firstChunk);
+        vector<int> waveRanks;
+        vector<qindex> recvTagBases;
+
+        for (qindex c=0; c<numChunks; c++) {
+            qindex pattern = remotePatterns[firstChunk + c];
+            qindex mask = getBitMaskOfQubitsInPattern(suffixTargs, pattern);
+            qindex bufferOffset = sendBase + c*chunkSize;
+
+            cpu_statevec_packAmpsIntoBufferAtOffset(qureg, sortedSuffixTargs, mask, bufferOffset);
+            waveRanks.push_back(pairRanks[firstChunk + c]);
+            recvTagBases.push_back(pattern);
+        }
+
+        comm_exchangeSubBufferChunks(qureg, waveRanks, recvTagBases, localPrefixPattern, chunkSize);
+
+        for (qindex c=0; c<numChunks; c++) {
+            qindex pattern = remotePatterns[firstChunk + c];
+            qindex mask = getBitMaskOfQubitsInPattern(suffixTargs, pattern);
+            qindex bufferOffset = recvBase + c*chunkSize;
+
+            cpu_statevec_unpackAmpsFromBufferAtOffset(qureg, sortedSuffixTargs, mask, bufferOffset);
+        }
+    }
+}
+
+
 void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 targsA, ConstList64 targsB) {
 
     // this is an internal function called by the below routines which require
@@ -900,16 +981,15 @@ void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, ConstList64 ctrls, Cons
     // the SWAPs act on unique qubit pairs and so commute.
 
     /// @todo
-    ///   - the sequence of pair-wise full-swaps should be more efficient as a
-    ///     "single" sequence of smaller messages sending amps directly to their
-    ///     final destination node. This could use a new "multiSwap" function.
     ///   - if the user has compiled cuQuantum, and Qureg is GPU-accelerated, the
     ///     multiSwap function should use custatevecSwapIndexBits() if local,
     ///     or custatevecDistIndexBitSwapSchedulerSetIndexBitSwaps() if distributed,
     ///     although the latter requires substantially more work like setting up
     ///     a communicator which may be inelegant alongside our own distribution scheme.
 
-    // perform necessary swaps to move all targets into suffix, each of which invokes communication
+    List64 suffixTargs = lists_getEmptyList64();
+    List64 prefixInds = lists_getEmptyList64();
+
     for (size_t i=0; i<targsA.size(); i++) {
 
         if (targsA[i] == targsB[i])
@@ -917,8 +997,24 @@ void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, ConstList64 ctrls, Cons
 
         int suffixTarg = std::min(targsA[i], targsB[i]);
         int prefixTarg = std::max(targsA[i], targsB[i]);
-        anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, suffixTarg, prefixTarg);
+
+        suffixTargs.push_back(suffixTarg);
+        prefixInds.push_back(util_getPrefixInd(prefixTarg, qureg));
     }
+
+    if (
+        suffixTargs.size() >= 2 &&
+        ctrls.empty() &&
+        qureg.isDistributed &&
+        !qureg.isGpuAccelerated
+    ) {
+        multiSwapBetweenPrefixAndSuffix(qureg, suffixTargs, prefixInds);
+        return;
+    }
+
+    // otherwise, fall back to per-SWAP communication
+    for (size_t i=0; i<suffixTargs.size(); i++)
+        anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, suffixTargs[i], prefixInds[i] + qureg.logNumAmpsPerNode);
 }
 
 
