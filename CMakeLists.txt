@@ -543,17 +543,24 @@ endif()
 
 
 
-### DRAFT BELOW
-
-
 # Checkpointing (ADIOS2)
-option(ENABLE_CHECKPOINTING "Enable Qureg checkpointing (saveQuregToFile / createQuregFromFile) via ADIOS2. Turned OFF by default." OFF)
-if (ENABLE_CHECKPOINTING)
+option(QUEST_ENABLE_CHECKPOINTING "Enable Qureg checkpointing (saveQuregToFile / createQuregFromFile) via ADIOS2. Turned OFF by default." OFF)
+message(STATUS "Checkpointing is turned ${QUEST_ENABLE_CHECKPOINTING}. Set QUEST_ENABLE_CHECKPOINTING to modify.")
+if (QUEST_ENABLE_CHECKPOINTING)
 
   find_package(adios2 QUIET)
 
-  if(NOT adios2_FOUND)
-    message(STATUS "adios2 not found: fetching ADIOS2 via FetchContent")
+  # A distributed QuEST needs an MPI-enabled ADIOS2 (which provides the
+  # adios2::cxx_mpi target). A serial system install lacks it, so in that case we
+  # ignore the found package and fetch an MPI-enabled build instead of failing.
+  set(quest_use_found_adios2 ${adios2_FOUND})
+  if (adios2_FOUND AND QUEST_ENABLE_MPI AND NOT TARGET adios2::cxx_mpi)
+    message(STATUS "Found ADIOS2 lacks MPI support (no adios2::cxx_mpi target); fetching an MPI-enabled build instead")
+    set(quest_use_found_adios2 FALSE)
+  endif()
+
+  if(NOT quest_use_found_adios2)
+    message(STATUS "fetching ADIOS2 via FetchContent")
 
     include(FetchContent)
     FetchContent_Declare(
@@ -589,7 +596,8 @@ if (ENABLE_CHECKPOINTING)
     FetchContent_MakeAvailable(adios2)
 
   else()
-    # force failure (see Oliver's Catch2 trick)
+    # re-run non-QUIET so configuration fails with a clear error if the package
+    # somehow became unavailable between the two calls
     find_package(adios2 REQUIRED)
   endif()
 
@@ -616,7 +624,7 @@ set(QUEST_COMPILE_OMP ${QUEST_ENABLE_OMP})
 set(QUEST_COMPILE_MPI ${QUEST_ENABLE_MPI})
 set(QUEST_COMPILE_SUBCOMM ${QUEST_ENABLE_SUBCOMM})
 set(QUEST_COMPILE_CUQUANTUM ${QUEST_ENABLE_CUQUANTUM})
-set(QUEST_COMPILE_CHECKPOINTING ${ENABLE_CHECKPOINTING})
+set(QUEST_COMPILE_CHECKPOINTING ${QUEST_ENABLE_CHECKPOINTING})
 set(QUEST_INCLUDE_DEPRECATED_FUNCTIONS ${QUEST_ENABLE_DEPRECATED_API})
 
 

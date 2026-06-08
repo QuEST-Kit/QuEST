@@ -33,15 +33,17 @@
 #endif
 #endif
 
+#if QUEST_COMPILE_CHECKPOINTING
 // In distributed builds, ADIOS2 must be given QuEST's communicator so that each
 // node's call collectively writes/reads its own slice of the shared file. Without
 // it, ADIOS2 runs serially per rank and the per-node slices never form one file.
-#if QUEST_COMPILE_CHECKPOINTING
+static adios2::ADIOS makeAdios() {
 #if QUEST_COMPILE_MPI
-#define QUEST_MAKE_ADIOS() adios2::ADIOS(MPI_COMM_WORLD)
+    return adios2::ADIOS(MPI_COMM_WORLD);
 #else
-#define QUEST_MAKE_ADIOS() adios2::ADIOS()
+    return adios2::ADIOS();
 #endif
+}
 #endif
 
 using std::string;
@@ -585,13 +587,17 @@ vector<vector<qcomp>> getDensityQuregAmps(Qureg qureg, qindex startRow, qindex s
 /*
  * CHECKPOINTING
  *
- * which is compiled only when ENABLE_CHECKPOINTING=ON (requiring ADIOS2).
+ * which is compiled only when QUEST_ENABLE_CHECKPOINTING=ON (requiring ADIOS2).
  * The API functions are always defined so that the validation layer can throw
  * a clear error in non-checkpointing builds, rather than failing to link.
+ *
+ * These are defined with C linkage (matching their extern "C" declarations in
+ * qureg.h) so they remain callable from C consumers; the signatures pass no
+ * qcomp by value and so stay C-ABI-safe.
  */
 
 
-void saveQuregToFile(Qureg qureg, const char* fn) {
+extern "C" void saveQuregToFile(Qureg qureg, const char* fn) {
     validate_quregCheckpointingIsCompiled(__func__);
 
 #if QUEST_COMPILE_CHECKPOINTING
@@ -600,7 +606,7 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
     // ensure the CPU amplitudes reflect any GPU-resident state before writing
     syncQuregFromGpu(qureg);
 
-    adios2::ADIOS adios = QUEST_MAKE_ADIOS();
+    adios2::ADIOS adios = makeAdios();
     adios2::IO io = adios.DeclareIO("QuESTQuregSave");
     adios2::Engine engine = io.Open(fn, adios2::Mode::Write);
 
@@ -636,11 +642,11 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
 }
 
 
-Qureg createQuregFromFile(const char* fn) {
+extern "C" Qureg createQuregFromFile(const char* fn) {
     validate_quregCheckpointingIsCompiled(__func__);
 
 #if QUEST_COMPILE_CHECKPOINTING
-    adios2::ADIOS adios = QUEST_MAKE_ADIOS();
+    adios2::ADIOS adios = makeAdios();
     adios2::IO io = adios.DeclareIO("QuESTQuregLoad");
     adios2::Engine engine = io.Open(fn, adios2::Mode::Read);
 

@@ -279,7 +279,7 @@ namespace report {
         "Expected a statevector Qureg but received a density matrix.";
 
     string QUREG_CHECKPOINTING_NOT_COMPILED =
-        "Qureg checkpointing (saveQuregToFile and createQuregFromFile) requires QuEST to be compiled with checkpointing support. Reconfigure with the CMake option -DENABLE_CHECKPOINTING=ON, which additionally requires the ADIOS2 library.";
+        "Qureg checkpointing (saveQuregToFile and createQuregFromFile) requires QuEST to be compiled with checkpointing support. Reconfigure with the CMake option -DQUEST_ENABLE_CHECKPOINTING=ON, which additionally requires the ADIOS2 library.";
 
     string QUREG_FILE_PRECISION_MISMATCH =
         "The checkpoint file was written with a qreal precision of ${FILE_BYTES} bytes, but this QuEST build uses ${EXEC_BYTES} bytes. A Qureg can only be restored by a QuEST build using the same floating-point precision (QUEST_FLOAT_PRECISION) as the build which saved it.";

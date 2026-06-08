@@ -493,7 +493,7 @@ void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex s
  * @defgroup qureg_checkpoint Checkpointing
  * @brief Functions for saving a Qureg to file and restoring it later.
  * @details These functions are only available when QuEST is compiled with
- *          checkpointing support (CMake variable @c ENABLE_CHECKPOINTING=ON),
+ *          checkpointing support (CMake variable @c QUEST_ENABLE_CHECKPOINTING=ON),
  *          which additionally requires the ADIOS2 library. Calling them in a
  *          build without checkpointing support throws a validation error.
  * @{
