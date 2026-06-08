@@ -232,9 +232,24 @@ qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, ConstList64 qubits, ConstL
 
     // note qubits may incidentally be ctrls or targs; it doesn't matter
     GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_packAmpsIntoBuffer, qureg, qubits.size() );
-    
+
     // return the number of packed amps, for caller convenience
     return func(qureg, qubits, qubitStates);
+}
+
+
+void accel_statevec_unpackAmpsFromBuffer(Qureg qureg, ConstList64 qubits, ConstList64 qubitStates) {
+
+    // inverse of packing; scatters received sub-buffer into strided local amps where
+    // the given qubits are in the given states (used by the fused multi-SWAP routine).
+    // only the CPU path is dispatched; the fused routine restricts itself to non-GPU
+    // quregs (issue #595 notes the OpenMP logic alone is sufficient), so no GPU kernel
+    // is needed and the GPU build is left untouched
+    if (qubitStates.empty())
+        error_noCtrlsGivenToBufferPacker();
+
+    GET_FUNC_OPTIMISED_FOR_ONE_PARAM( func, cpu_statevec_unpackAmpsFromBuffer, qubits.size() );
+    func(qureg, qubits, qubitStates);
 }
 
 

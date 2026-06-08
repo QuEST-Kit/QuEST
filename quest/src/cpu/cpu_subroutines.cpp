@@ -284,8 +284,49 @@ qindex cpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qu
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qindex, cpu_statevec_packAmpsIntoBuffer, (Qureg, ConstList64, ConstList64) )
 
 
+template <int NumQubits>
+void cpu_statevec_unpackAmpsFromBuffer(Qureg qureg, ConstList64 qubitInds, ConstList64 qubitStates) {
 
-/* 
+    assert_numQubitsMatchesQubitStatesAndTemplateParam(qubitInds.size(), qubitStates.size(), NumQubits);
+
+    // this is the inverse of cpu_statevec_packAmpsIntoBuffer; it scatters the received
+    // contiguous sub-buffer back into the strided local amplitudes where the given qubits
+    // are in the given states. It generalises anyCtrlSwap_subC to multiple constrained
+    // qubits, as needed by the fused multi-SWAP routine.
+
+    // use cpu_qcomp (in lieu of qcomp) even though no arithmetic happens below - just for consistency!
+    cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
+    cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
+
+    // each constrained qubit halves the number of received amps
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(qubitInds.size());
+
+    // received amplitudes begin at the buffer's receive offset
+    qindex offset = getBufferRecvInd();
+
+    auto sortedQubitInds = util_getSorted(qubitInds);
+    auto qubitStateMask  = util_getBitMask(qubitInds, qubitStates);
+
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubitInds.size());
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = nth local index where qubits are in the specified states
+        qindex i = insertBitsWithMaskedValues(n, sortedQubitInds.data(), numBits, qubitStateMask);
+
+        // scatter the contiguous sub-buffer among the strided local amplitudes
+        amps[i] = buffer[offset + n];
+    }
+}
+
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_statevec_unpackAmpsFromBuffer, (Qureg, ConstList64, ConstList64) )
+
+
+
+/*
  * SWAPS
  */
 

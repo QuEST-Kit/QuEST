@@ -46,6 +46,8 @@ void cpu_fullstatediagmatr_setElemsFromMultiVarFunc(FullStateDiagMatr out, qcomp
 
 template <int NumQubits> qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, ConstList64 qubitInds, ConstList64 qubitStates);
 
+template <int NumQubits> void cpu_statevec_unpackAmpsFromBuffer(Qureg qureg, ConstList64 qubitInds, ConstList64 qubitStates);
+
 qindex cpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qubit2, int qubit3, int bit2);
 
 

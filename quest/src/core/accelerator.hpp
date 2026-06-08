@@ -171,6 +171,8 @@ void accel_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, PauliS
 
 qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, ConstList64 qubits, ConstList64 qubitStates);
 
+void accel_statevec_unpackAmpsFromBuffer(Qureg qureg, ConstList64 qubits, ConstList64 qubitStates);
+
 qindex accel_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qubit2, int qubit3, int bit2);
 
 
