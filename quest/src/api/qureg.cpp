@@ -28,6 +28,20 @@
 
 #if QUEST_COMPILE_CHECKPOINTING
 #include <adios2.h>
+#if QUEST_COMPILE_MPI
+#include <mpi.h>
+#endif
+#endif
+
+// In distributed builds, ADIOS2 must be given QuEST's communicator so that each
+// node's call collectively writes/reads its own slice of the shared file. Without
+// it, ADIOS2 runs serially per rank and the per-node slices never form one file.
+#if QUEST_COMPILE_CHECKPOINTING
+#if QUEST_COMPILE_MPI
+#define QUEST_MAKE_ADIOS() adios2::ADIOS(MPI_COMM_WORLD)
+#else
+#define QUEST_MAKE_ADIOS() adios2::ADIOS()
+#endif
 #endif
 
 using std::string;
@@ -586,7 +600,7 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
     // ensure the CPU amplitudes reflect any GPU-resident state before writing
     syncQuregFromGpu(qureg);
 
-    adios2::ADIOS adios;
+    adios2::ADIOS adios = QUEST_MAKE_ADIOS();
     adios2::IO io = adios.DeclareIO("QuESTQuregSave");
     adios2::Engine engine = io.Open(fn, adios2::Mode::Write);
 
@@ -626,7 +640,7 @@ Qureg createQuregFromFile(const char* fn) {
     validate_quregCheckpointingIsCompiled(__func__);
 
 #if QUEST_COMPILE_CHECKPOINTING
-    adios2::ADIOS adios;
+    adios2::ADIOS adios = QUEST_MAKE_ADIOS();
     adios2::IO io = adios.DeclareIO("QuESTQuregLoad");
     adios2::Engine engine = io.Open(fn, adios2::Mode::Read);
 

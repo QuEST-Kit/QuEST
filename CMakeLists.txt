@@ -562,9 +562,13 @@ if (ENABLE_CHECKPOINTING)
       GIT_TAG v2.12.1
     )
 
-    # Forego MPI and CUDA if QuEST won't use
-    set(ADIOS2_USE_MPI  ${QUEST_ENABLE_MPI}  CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_CUDA ${QUEST_ENABLE_CUDA} CACHE BOOL "" FORCE)
+    # Match ADIOS2's MPI to QuEST's so distributed runs write per-rank slices
+    # into one shared file. ADIOS2's CUDA support is deliberately left OFF:
+    # checkpointing copies amps to host memory (syncQuregFromGpu/syncQuregToGpu)
+    # before any I/O, so ADIOS2 never touches device pointers. Building it with
+    # CUDA is unnecessary and stalls the Windows CUDA CI job.
+    set(ADIOS2_USE_MPI  ${QUEST_ENABLE_MPI} CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_CUDA OFF CACHE BOOL "" FORCE)
 
     # Forego unused facilities
     set(ADIOS2_BUILD_TESTING  OFF CACHE BOOL "" FORCE)
@@ -589,7 +593,14 @@ if (ENABLE_CHECKPOINTING)
     find_package(adios2 REQUIRED)
   endif()
 
-  target_link_libraries(QuEST PRIVATE adios2::cxx)
+  # In distributed builds link ADIOS2's MPI-enabled C++ interface: it defines
+  # ADIOS2_USE_MPI, which exposes the adios2::ADIOS(MPI_Comm) constructor used in
+  # qureg.cpp for collective per-rank I/O. The serial target lacks it.
+  if (QUEST_ENABLE_MPI)
+    target_link_libraries(QuEST PRIVATE adios2::cxx_mpi)
+  else()
+    target_link_libraries(QuEST PRIVATE adios2::cxx)
+  endif()
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 endif()
 

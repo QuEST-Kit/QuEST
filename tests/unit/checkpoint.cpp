@@ -60,7 +60,15 @@ TEST_CASE( "saveQuregToFile and createQuregFromFile", "[checkpoint]" ) {
 
         destroyQureg(q);
         destroyQureg(r);
-        std::filesystem::remove_all(SV_FILE);
+
+        // In distributed runs every node opened the same shared file, so only one
+        // may delete it; a barrier first guarantees all nodes have finished
+        // reading, and a barrier after keeps the next section's collective write
+        // from racing a half-removed directory.
+        syncQuESTEnv();
+        if (getQuESTEnv().rank == 0)
+            std::filesystem::remove_all(SV_FILE);
+        syncQuESTEnv();
     }
 
     SECTION( "density-matrix round-trip preserves dimension and amplitudes" ) {
@@ -81,7 +89,12 @@ TEST_CASE( "saveQuregToFile and createQuregFromFile", "[checkpoint]" ) {
 
         destroyQureg(q);
         destroyQureg(r);
-        std::filesystem::remove_all(DM_FILE);
+
+        // see the statevector section: one node deletes, barriers bracket cleanup
+        syncQuESTEnv();
+        if (getQuESTEnv().rank == 0)
+            std::filesystem::remove_all(DM_FILE);
+        syncQuESTEnv();
     }
 }
 
