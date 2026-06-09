@@ -608,8 +608,16 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
                 // i = nth local index where ctrls are active and targs form value k
                 qindex i = setBits(i0, targs.data(), numTargBits, k); // loop may be unrolled
                 cpu_qcomp sum = getCpuQcomp(0, 0);
+
+                // the inner-product accumulation below uses compensated (Kahan) summation to
+                // reduce catastrophic cancellation when combining the (up to 2^16) cache amps.
+                // The running compensation 'c' tracks the low-order bits lost by 'sum += ...'.
+                // Defining QUEST_DENSE_ACCUM_NAIVE reverts to the original uncompensated sum,
+                // enabling apples-to-apples runtime/accuracy benchmarking of the two variants.
+                #ifndef QUEST_DENSE_ACCUM_NAIVE
                 cpu_qcomp compensation = getCpuQcomp(0, 0);
-            
+                #endif
+
                 // loop may be unrolled
                 for (qindex j=0; j<numTargAmps; j++) {
 
@@ -626,10 +634,18 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
                         elem = conj(elem);
 
                     cpu_qcomp product = elem * cache[j];
+
+                    #ifdef QUEST_DENSE_ACCUM_NAIVE
+                    // original uncompensated accumulation
+                    sum += product;
+                    #else
+                    // compensated (Kahan) accumulation; note base_qcomp's +/- are plain
+                    // componentwise real/imaginary arithmetic, so compensation is well-defined
                     cpu_qcomp corrected = product - compensation;
                     cpu_qcomp next = sum + corrected;
                     compensation = (next - sum) - corrected;
                     sum = next;
+                    #endif
                 }
 
                 amps[i] = sum;

@@ -1,0 +1,1 @@
+host: sizeof(float)=4 sizeof(double)=8 sizeof(long double)=8 ld_mant=53  sizeof(__float128)=16 f128_mant=113
