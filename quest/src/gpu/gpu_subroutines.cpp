@@ -1861,21 +1861,19 @@ template qcomp gpu_densmatr_calcExpecFullStateDiagMatr_sub<false,true >(Qureg, F
  */
 
 
-template <int NumQubits> 
 void gpu_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob) {
 
-    // all qubits are in suffix
-    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
+    // all qubits are in suffix; the bitmask reformulation (see issue #749) needs no
+    // per-numTargs template specialisation, so this function is no longer templated
 
 #if QUEST_COMPILE_CUQUANTUM
 
-    // cuQuantum disregards NumQubits template param
     cuquantum_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, prob);
 
 #elif QUEST_COMPILE_CUDA
 
     qreal renorm = 1 / std::sqrt(prob);
-    thrust_statevec_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, renorm);
+    thrust_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, renorm);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1883,25 +1881,19 @@ void gpu_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Const
 }
 
 
-template <int NumQubits> 
 void gpu_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob) {
 
     // qubits are unconstrained, and can include prefix qubits
-    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
 #if QUEST_COMPILE_CUDA || QUEST_COMPILE_CUQUANTUM
 
     qreal renorm = 1 / prob;
-    thrust_densmatr_multiQubitProjector_sub<NumQubits>(qureg, qubits, outcomes, renorm);
+    thrust_densmatr_multiQubitProjector_sub(qureg, qubits, outcomes, renorm);
 
 #else
     error_gpuSimButGpuNotCompiled();
 #endif
 }
-
-
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_statevec_multiQubitProjector_sub, (Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob) )
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_densmatr_multiQubitProjector_sub, (Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob) )
 
 
 

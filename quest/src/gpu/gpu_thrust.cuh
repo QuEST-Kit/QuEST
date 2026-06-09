@@ -514,7 +514,6 @@ struct functor_getFidelityTerm {
 };
 
 
-template <int NumTargets>
 struct functor_projectStateVec {
 
     // this functor multiplies an amp with zero or a
@@ -547,7 +546,6 @@ struct functor_projectStateVec {
 };
 
 
-template <int NumTargets>
 struct functor_projectDensMatr {
 
     // this functor multiplies an amp with zero or a
@@ -1013,13 +1011,12 @@ gpu_qcomp thrust_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateD
  */
 
 
-template <int NumQubits>
 void thrust_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal renorm) {
 
     // pass primitive bitmasks instead of copying the qubit list to device (see issue #749)
     qindex qubitMask = util_getBitMask(qubits);
     qindex valueMask = util_getBitMask(qubits, outcomes);
-    auto projFunctor = functor_projectStateVec<NumQubits>(
+    auto projFunctor = functor_projectStateVec(
         qubitMask, valueMask, renorm);
 
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
@@ -1030,13 +1027,12 @@ void thrust_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Co
 }
 
 
-template <int NumQubits>
 void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal renorm) {
 
     // pass primitive bitmasks instead of copying the qubit list to device (see issue #749)
     qindex qubitMask = util_getBitMask(qubits);
     qindex valueMask = util_getBitMask(qubits, outcomes);
-    auto projFunctor = functor_projectDensMatr<NumQubits>(
+    auto projFunctor = functor_projectDensMatr(
         qubitMask, valueMask, qureg.rank, qureg.numQubits,
         qureg.logNumAmpsPerNode, renorm);
 

@@ -2562,11 +2562,9 @@ template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<false,true >(Qureg, F
  */
 
 
-template <int NumQubits>
 void cpu_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob) {
 
     // all qubits are in suffix
-    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps  = getCpuQcompPtr(qureg.cpuAmps);
@@ -2574,26 +2572,21 @@ void cpu_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Const
     // visit every amp, setting to zero or multiplying it by renorm
     qindex numIts = qureg.numAmpsPerNode;
 
-    // binary value of targeted qubits in basis states which are to be retained
-    qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
+    // use primitive bitmasks instead of a per-qubit loop (see issue #749); the test
+    // getValueOfBits(n,qubits)==retainValue is exactly (n & qubitMask) == valueMask
+    qindex qubitMask = util_getBitMask(qubits);
+    qindex valueMask = util_getBitMask(qubits, outcomes);
     qreal renorm = 1 / std::sqrt(prob);
-
-    // use template param to compile-time unroll loop in getValueOfBits()
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-        // val = outcomes corresponding to n-th local amp (all qubits are in suffix)
-        qindex val = getValueOfBits(n, qubits.data(), numBits);
-
-        // multiply amp with renorm or zero, if qubit value matches or disagrees
-        amps[n] *= renorm * (val == retainValue);
+        // multiply amp with renorm or zero, depending on whether n's substate matches outcomes
+        amps[n] *= renorm * ((n & qubitMask) == valueMask);
     }
 }
 
 
-template <int NumQubits>
 void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob) {
 
     // this function is merely an optimisation to avoid calling the above
@@ -2601,7 +2594,6 @@ void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Const
     // pre- and post-multiply projector versions DO just call above.
 
     // qubits are unconstrained, and can include prefix qubits
-    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
@@ -2609,12 +2601,11 @@ void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Const
     // visit every amp, setting most to zero and multiplying the remainder by renorm
     qindex numIts = qureg.numAmpsPerNode;
 
-    // binary value of targeted qubits in basis states which are to be retained
-    qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
+    // use primitive bitmasks instead of a per-qubit loop (see issue #749); the original
+    // test (v1==v2)&&(retainValue==v1) is exactly (r & qubitMask)==valueMask && (c & qubitMask)==valueMask
+    qindex qubitMask = util_getBitMask(qubits);
+    qindex valueMask = util_getBitMask(qubits, outcomes);
     qreal renorm = 1 / prob;
-
-    // use template param to compile-time unroll loops in getValueOfBits()
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -2626,17 +2617,10 @@ void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Const
         qindex r = getBitsRightOfIndex(i, qureg.numQubits);
         qindex c = getBitsLeftOfIndex(i, qureg.numQubits-1);
 
-        qindex v1 = getValueOfBits(r, qubits.data(), numBits);
-        qindex v2 = getValueOfBits(c, qubits.data(), numBits);
-
-        // multiply amp with renorm or zero if values disagree with given outcomes
-        amps[n] *= renorm * (v1 == v2) * (retainValue == v1);
+        // multiply amp with renorm or zero if either row/col substate disagrees with outcomes
+        amps[n] *= renorm * ((r & qubitMask) == valueMask) * ((c & qubitMask) == valueMask);
     }
 }
-
-
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_statevec_multiQubitProjector_sub, (Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob) )
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_multiQubitProjector_sub, (Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob) )
 
 
 
