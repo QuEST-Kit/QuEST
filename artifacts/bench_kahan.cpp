@@ -2,11 +2,15 @@
  * Cost/benefit benchmark for compensated (Kahan) vs naive accumulation in the
  * dense-matrix inner-product kernel of cpu_statevec_anyCtrlAnyTargDenseMatr_sub().
  *
- * This harness replicates the EXACT accumulation performed by that QuEST function:
+ * This harness replicates the accumulation performed by that QuEST function:
  * each output amplitude is  sum_j  matr[k][j] * cache[j], where j ranges over the
- * 2^numTargets matrix columns. We reproduce that serial inner loop verbatim, once
- * with naive summation and once with complex Kahan summation, for the three QuEST
- * qcomp precisions:
+ * 2^numTargets matrix columns. We reproduce that serial inner loop once with naive
+ * summation and once with complex Kahan summation. NOTE: the harness uses
+ * std::complex<Real> rather than QuEST's base_qcomp type; the two are arithmetically
+ * identical here (both perform plain componentwise IEEE real/imaginary arithmetic, so
+ * complex Kahan degenerates to two independent real Kahan sums), but this is not
+ * literally QuEST's struct. The real-library accuracy claims (regression test, e2e
+ * driver) exercise the actual base_qcomp type. Precisions:
  *
  *     fp1  ->  std::complex<float>       (24-bit mantissa)
  *     fp2  ->  std::complex<double>      (53-bit mantissa)

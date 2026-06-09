@@ -29,7 +29,7 @@ int main() {
     setQuESTValidationEpsilon(0);
     applyCompMatr(qureg, targets, numTargets, matrix);
     qcomp amp = getQuregAmp(qureg, 0);
-    // expected exact amp[0] = (1e15) + (numRows-2)*1 + (-1e15) = numRows-2
+    // expected exact amp[0] = (1e18) + (numRows-2)*1 + (-1e18) = numRows-2
     printf("amp0.real = %.20g   (exact = %lld)\n", (double)real(amp), (long long)matrix.numRows-2);
 
     destroyCompMatr(matrix);

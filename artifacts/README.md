@@ -70,14 +70,26 @@ single-CPU `applyCompMatr`; lower is better.
 - **Accuracy benefit grows with the number of targets**, exactly as the issue
   anticipated: negligible at 2–4 targets (no cancellation yet), then 1–2 orders of
   magnitude error reduction by 12–14 targets, for both single and double precision.
-- **Cost is roughly constant at ~3.3–4.2x slowdown** at every non-trivial size. The
-  Kahan loop is compute-bound here (4 complex ops per term vs 1), and the inner loop
-  is not memory-bandwidth bound at these matrix sizes, so the overhead does not
-  amortise away. It is *not* "time-free".
-- **End-to-end** the modified function turns a fully cancelled `amp0 = 0` (naive)
-  into the correct `~4096` (Kahan) for a 12-target adversarial `CompMatr`.
+- **Cost is roughly constant at ~3.3–4.2x slowdown** at every non-trivial size *in
+  this in-cache micro-benchmark*. Here the matrix+cache stay resident across `reps`,
+  so the loop is compute-bound (4 complex ops per term vs 1) and the overhead does not
+  amortise — it is *not* "time-free". Caveat: the real per-apply cost at large target
+  counts (e.g. a 16384x16384 fp2 matrix is ~4 GB) is memory-bandwidth bound, so the
+  *relative* Kahan cost in production may be smaller than this micro-benchmark shows;
+  treat 3.3–4.2x as a standalone-kernel upper bound, not a real-library figure.
+- **End-to-end** the modified function turns a fully cancelled `amp0 = 0` (naive) into
+  `amp0 = 4096` (Kahan) for a 12-target adversarial `CompMatr` whose exact answer is
+  `numRows-2 = 4094` — i.e. naive loses the result entirely while Kahan recovers it to
+  within +2 (a residual O(1) error after subtracting 1e18-scale terms).
 
 So Kahan is worthwhile for large or ill-conditioned dense matrices where the
 accuracy matters, but a blanket 3–4x slowdown is too costly for small/well-conditioned
 matrices. A size threshold (e.g. enable Kahan only above ~6–8 targets) is the natural
 compromise; the `QUEST_DENSE_ACCUM_NAIVE` toggle is the simplest hook for that.
+
+Note on scope of the benefit: the 30x/50x error reductions above are for a
+deliberately adversarial, non-unitary matrix (entries spanning 1e-6 .. 1e6 with
+cancelling large pairs). Real `CompMatr` inputs are typically unitary with O(1)
+entries, where cancellation — and hence the benefit — is far milder at any target
+count. The threshold argument is therefore a worst-case bound, not the expected
+benefit on well-conditioned operators.
