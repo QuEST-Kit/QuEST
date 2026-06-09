@@ -988,7 +988,7 @@ void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, ConstList64 ctrls, Cons
     ///     a communicator which may be inelegant alongside our own distribution scheme.
 
     List64 suffixTargs = lists_getEmptyList64();
-    List64 prefixInds = lists_getEmptyList64();
+    List64 prefixTargs = lists_getEmptyList64();
 
     for (size_t i=0; i<targsA.size(); i++) {
 
@@ -999,7 +999,7 @@ void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, ConstList64 ctrls, Cons
         int prefixTarg = std::max(targsA[i], targsB[i]);
 
         suffixTargs.push_back(suffixTarg);
-        prefixInds.push_back(util_getPrefixInd(prefixTarg, qureg));
+        prefixTargs.push_back(prefixTarg);
     }
 
     if (
@@ -1008,13 +1008,17 @@ void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, ConstList64 ctrls, Cons
         qureg.isDistributed &&
         !qureg.isGpuAccelerated
     ) {
+        List64 prefixInds = lists_getEmptyList64();
+        for (int prefixTarg : prefixTargs)
+            prefixInds.push_back(util_getPrefixInd(prefixTarg, qureg));
+
         multiSwapBetweenPrefixAndSuffix(qureg, suffixTargs, prefixInds);
         return;
     }
 
     // otherwise, fall back to per-SWAP communication
     for (size_t i=0; i<suffixTargs.size(); i++)
-        anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, suffixTargs[i], prefixInds[i] + qureg.logNumAmpsPerNode);
+        anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, suffixTargs[i], prefixTargs[i]);
 }
 
 
