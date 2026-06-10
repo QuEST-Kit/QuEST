@@ -144,16 +144,12 @@ qindex gpu_statevec_packAmpsIntoBuffer(Qureg qureg, ConstList64 qubits, ConstLis
     qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
     qindex sendInd = getSubBufferSendInd(qureg);
 
-    vector<int> sortedQubits = util_getSorted(qubits); // change
+    List64 sortedQubits = util_getSorted(qubits);
     qindex qubitStateMask  = util_getBitMask(qubits, qubitStates);
-
-    QubitList_t qubits_dev;
-    std::copy(sortedQubits.begin(), sortedQubits.end(), qubits_dev.indices);
-    qubits_dev.length = sortedQubits.size();
 
     kernel_statevec_packAmpsIntoBuffer <NumQubits> <<<numBlocks, NUM_THREADS_PER_BLOCK>>> (
         getGpuQcompPtr(qureg.gpuAmps), getGpuQcompPtr(qureg.gpuCommBuffer) + sendInd, numThreads, 
-        qubits_dev, qubitStateMask);
+        sortedQubits, qubitStateMask);
 
     // return the number of packed amps
     return numThreads;
