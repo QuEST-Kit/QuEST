@@ -1339,8 +1339,13 @@ TEST_CASE( "applyCompMatr uses compensated accumulation", TEST_CATEGORY_OPS ) {
     setQuregAmps(qureg, 0, amps.data(), numAmps);
 
     qmatrix elems = getZeroMatrix(numAmps);
-    elems[0][0] = 1e16;
-    elems[0][numAmps - 1] = -1e16;
+    qreal largeVal = 1e16;
+    #if (QUEST_FLOAT_PRECISION == 1)
+    largeVal = 2e7;
+    #endif
+
+    elems[0][0] = largeVal;
+    elems[0][numAmps - 1] = -largeVal;
 
     for (qindex i=1; i<numAmps-1; i++)
         elems[0][i] = 1;
