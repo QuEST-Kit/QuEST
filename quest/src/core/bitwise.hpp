@@ -14,6 +14,11 @@
   #include <intrin.h>
 #endif
 
+#if defined(__BMI2__) && (defined(__x86_64__) || defined(_M_X64)) && !defined(__NVCC__) && !defined(__HIP__)
+  #include <immintrin.h>
+  #define QUEST_HAVE_BMI2_INTRINSICS 1
+#endif
+
 #include "quest/include/types.h"
 
 #include "quest/src/core/inliner.hpp"
@@ -166,6 +171,24 @@ INLINE int getBitMaskParity(qindex mask) {
 INLINE qindex insertBits(qindex number, const int* bitIndices, int numIndices, int bitValue) {
     
     // bitIndices must be strictly increasing
+
+#ifdef QUEST_HAVE_BMI2_INTRINSICS
+    // Smaller fixed-size cases are usually unrolled by callers already.
+    if (numIndices > 5) {
+        unsigned long long insertionMask = 0;
+
+        for (int i=0; i<numIndices; i++)
+            insertionMask |= 1ULL << bitIndices[i];
+
+        unsigned long long inserted = _pdep_u64(static_cast<unsigned long long>(number), ~insertionMask);
+
+        if (bitValue)
+            inserted |= insertionMask;
+
+        return static_cast<qindex>(inserted);
+    }
+#endif
+
     for (int i=0; i<numIndices; i++)
         number = insertBit(number, bitIndices[i], bitValue);
         
@@ -188,6 +211,27 @@ INLINE qindex setBits(qindex number, const int* bitIndices, int numIndices, qind
 INLINE qindex getValueOfBits(qindex number, const int* bitIndices, int numIndices) {
 
     // bits are arbitrarily ordered, which affects value
+
+#ifdef QUEST_HAVE_BMI2_INTRINSICS
+    // Smaller fixed-size cases are usually unrolled by callers already.
+    if (numIndices > 5) {
+        unsigned long long extractionMask = 0;
+        bool indicesAreIncreasing = true;
+        int prevInd = -1;
+
+        for (int i=0; i<numIndices; i++) {
+            int bitInd = bitIndices[i];
+            extractionMask |= 1ULL << bitInd;
+            indicesAreIncreasing &= bitInd > prevInd;
+            prevInd = bitInd;
+        }
+
+        // PEXT returns bits in ascending mask order, matching this API only for sorted indices.
+        if (indicesAreIncreasing)
+            return static_cast<qindex>(_pext_u64(static_cast<unsigned long long>(number), extractionMask));
+    }
+#endif
+
     qindex value = 0;
 
     for (int i=0; i<numIndices; i++)
