@@ -20,6 +20,8 @@
 #include "quest/include/channels.h"
 #include "quest/include/environment.h"
 
+#include "quest/src/core/lists.hpp"
+
 #include <type_traits>
 #include <functional>
 #include <utility>
@@ -29,6 +31,7 @@
 
 using std::is_same_v;
 using std::vector;
+using std::array;
 
 
 
@@ -38,36 +41,44 @@ using std::vector;
 
 bool util_isQubitInSuffix(int qubit, Qureg qureg);
 bool util_isBraQubitInSuffix(int ketQubit, Qureg qureg);
-bool util_areAllQubitsInSuffix(vector<int> qubits, Qureg qureg);
+bool util_areAllQubitsInSuffix(ConstList64 qubits, Qureg qureg);
 
 int util_getBraQubit(int ketQubit, Qureg qureg);
 
 int util_getPrefixInd(int qubit, Qureg qureg);
 int util_getPrefixBraInd(int ketQubit, Qureg qureg);
 
-std::array<vector<int>,2> util_getPrefixAndSuffixQubits(vector<int> qubits, Qureg qureg);
+array<List64,2> util_getPrefixAndSuffixQubits(ConstList64 qubits, Qureg qureg);
 
 int util_getRankBitOfQubit(int ketQubit, Qureg qureg);
 int util_getRankBitOfBraQubit(int ketQubit, Qureg qureg);
 
 int util_getRankWithQubitFlipped(int ketQubit, Qureg qureg);
-int util_getRankWithQubitsFlipped(vector<int> prefixQubits, Qureg qureg);
+int util_getRankWithQubitsFlipped(ConstList64 prefixQubits, Qureg qureg);
 
 int util_getRankWithBraQubitFlipped(int ketQubit, Qureg qureg);
-int util_getRankWithBraQubitsFlipped(vector<int> ketQubits, Qureg qureg);
+int util_getRankWithBraQubitsFlipped(ConstList64 ketQubits, Qureg qureg);
 
-vector<int> util_getBraQubits(vector<int> ketQubits, Qureg qureg);
+List64 util_getBraQubits(ConstList64 ketQubits, Qureg qureg);
 
-vector<int> util_getNonTargetedQubits(int* targets, int numTargets, int numQubits);
+List64 util_getNonTargetedQubits(ConstList64, int numQubits);
 
-vector<int> util_getConcatenated(vector<int> list1, vector<int> list2);
+List64 util_getConcatenated(ConstList64 list1, ConstList64 list2);
 
-vector<int> util_getSorted(vector<int> list);
-vector<int> util_getSorted(vector<int> ctrls, vector<int> targs);
+List64 util_getRange(int maxExcl);
 
-qindex util_getBitMask(vector<int> qubits);
-qindex util_getBitMask(vector<int> qubits, vector<int> states);
-qindex util_getBitMask(vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, vector<int> targStates);
+List64 util_getConstantList(int elem, int length);
+
+List64 util_getSorted(ConstList64 list);
+List64 util_getSorted(ConstList64 ctrls, ConstList64 targs);
+List64 util_getSorted(ConstList64 ctrls, std::initializer_list<int> targs);
+
+qindex util_getBitMask(ConstList64 qubits);
+qindex util_getBitMask(ConstList64 qubits, ConstList64 states);
+qindex util_getBitMask(ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 targs, ConstList64 targStates);
+qindex util_getBitMask(ConstList64 ctrls, ConstList64 ctrlStates, std::initializer_list<int> targs, std::initializer_list<int> targStates);
+
+List64 util_getList64OrAllOnes(const int* elemsOrNullptr, size_t length);
 
 
 
@@ -423,7 +434,7 @@ void util_tryAllocVector(vector<unsigned> &vec, qindex size, std::function<void(
 void util_tryAllocVector(vector<PauliStr> &vec, qindex size, std::function<void()> errFunc);
 
 // cuQuantum needs a vector<double> overload, which we additionally define when qreal!=double. Gross!
-#if FLOAT_PRECISION != 2
+#if QUEST_FLOAT_PRECISION != 2
     void util_tryAllocVector(vector<double> &vec, qindex size, std::function<void()> errFunc);
 #endif
 

@@ -14,6 +14,8 @@
 #ifndef ENVIRONMENT_H
 #define ENVIRONMENT_H
 
+#include <stdbool.h>
+
 // enable invocation by both C and C++ binaries
 #ifdef __cplusplus
 extern "C" {
@@ -33,15 +35,17 @@ extern "C" {
 typedef struct {
 
     // deployment modes which can be runtime disabled
-    int isMultithreaded;
-    int isGpuAccelerated;
-    int isDistributed;
+    bool isMultithreaded;
+    bool isGpuAccelerated;
+    bool isDistributed;
+    bool isMpiUserOwned;
 
     // deployment modes which cannot be directly changed after compilation
-    int isCuQuantumEnabled;
+    bool isCuQuantumEnabled;
 
     // deployment configurations which can be changed via environment variables
     int isGpuSharingEnabled;
+    int isMpiGpuAware;
 
     // distributed configuration
     int rank;

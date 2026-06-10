@@ -34,7 +34,7 @@ extern "C" {
  */
 
 
-void setSeeds(unsigned* seeds, int numSeeds) {
+void setQuESTSeeds(unsigned* seeds, int numSeeds) {
     validate_envIsInit(__func__);
     validate_randomSeeds(seeds, numSeeds, __func__);
 
@@ -42,20 +42,20 @@ void setSeeds(unsigned* seeds, int numSeeds) {
     rand_setSeeds(vector<unsigned>(seeds, seeds+numSeeds));
 }
 
-void setSeedsToDefault() {
+void setQuESTSeedsToDefault() {
     validate_envIsInit(__func__);
 
     rand_setSeedsToDefault();
 }
 
 
-int getNumSeeds() {
+int getQuESTNumSeeds() {
     validate_envIsInit(__func__);
 
     return rand_getNumSeeds();
 }
 
-void getSeeds(unsigned* seeds) {
+void getQuESTSeeds(unsigned* seeds) {
     validate_envIsInit(__func__);
 
     auto vec = rand_getSeeds();
@@ -71,19 +71,19 @@ void getSeeds(unsigned* seeds) {
  * VALIDATION
  */
 
-void setInputErrorHandler(void (*callback)(const char*, const char*)) {
+void setQuESTInputErrorHandler(void (*callback)(const char*, const char*)) {
     validate_envIsInit(__func__);
 
     validateconfig_setErrorHandler(callback);
 }
 
-void setValidationOn() {
+void setQuESTValidationOn() {
     validate_envIsInit(__func__);
     
     validateconfig_enable();
 }
 
-void setValidationOff() {
+void setQuESTValidationOff() {
     validate_envIsInit(__func__);
 
     // disables all validation and computation
@@ -97,7 +97,7 @@ void setValidationOff() {
 }
 
 
-void setValidationEpsilon(qreal eps) {
+void setQuESTValidationEpsilon(qreal eps) {
     validate_envIsInit(__func__);
     validate_newEpsilonValue(eps, __func__);
 
@@ -105,14 +105,14 @@ void setValidationEpsilon(qreal eps) {
     util_setEpsilonSensitiveHeapFlagsToUnknown();
 }
 
-void setValidationEpsilonToDefault() {
+void setQuESTValidationEpsilonToDefault() {
     validate_envIsInit(__func__);
 
     validateconfig_setEpsilonToDefault();
     util_setEpsilonSensitiveHeapFlagsToUnknown();
 }
 
-qreal getValidationEpsilon() {
+qreal getQuESTValidationEpsilon() {
     validate_envIsInit(__func__);
 
     return validateconfig_getEpsilon();
@@ -125,7 +125,7 @@ qreal getValidationEpsilon() {
  */
 
 
-void setMaxNumReportedItems(qindex numRows, qindex numCols) {
+void setQuESTMaxNumReportedItems(qindex numRows, qindex numCols) {
     validate_envIsInit(__func__);
     validate_newMaxNumReportedScalars(numRows, numCols, __func__);
 
@@ -139,7 +139,7 @@ void setMaxNumReportedItems(qindex numRows, qindex numCols) {
 }
 
 
-void setMaxNumReportedSigFigs(int numSigFigs) {
+void setQuESTMaxNumReportedSigFigs(int numSigFigs) {
     validate_envIsInit(__func__);
     validate_newMaxNumReportedSigFigs(numSigFigs, __func__);
 
@@ -147,7 +147,7 @@ void setMaxNumReportedSigFigs(int numSigFigs) {
 }
 
 
-void setNumReportedNewlines(int numNewlines) {
+void setQuESTNumReportedNewlines(int numNewlines) {
     validate_envIsInit(__func__);
     validate_newNumReportedNewlines(numNewlines, __func__);
 
@@ -155,7 +155,7 @@ void setNumReportedNewlines(int numNewlines) {
 }
 
 
-void setReportedPauliChars(const char* paulis) {
+void setQuESTReportedPauliChars(const char* paulis) {
     validate_envIsInit(__func__);
     validate_numPauliChars(paulis, __func__);
 
@@ -163,7 +163,7 @@ void setReportedPauliChars(const char* paulis) {
 }
 
 
-void setReportedPauliStrStyle(int flag) {
+void setQuESTReportedPauliStrStyle(int flag) {
     validate_envIsInit(__func__);
     validate_reportedPauliStrStyleFlag(flag, __func__);
 
@@ -177,7 +177,7 @@ void setReportedPauliStrStyle(int flag) {
  */
 
 
-qindex getGpuCacheSize() {
+qindex getQuESTGpuCacheSize() {
     validate_envIsInit(__func__);
 
     if (getQuESTEnv().isGpuAccelerated)
@@ -188,7 +188,7 @@ qindex getGpuCacheSize() {
 }
 
 
-void clearGpuCache() {
+void clearQuESTGpuCache() {
     validate_envIsInit(__func__);
 
     // safely do nothing if not GPU accelerated
@@ -206,19 +206,19 @@ void clearGpuCache() {
  */
 
 
-void setSeeds(vector<unsigned> seeds) {
-    setSeeds(seeds.data(), seeds.size());
+void setQuESTSeeds(vector<unsigned> seeds) {
+    setQuESTSeeds(seeds.data(), seeds.size());
 }
 
-vector<unsigned> getSeeds() {
+vector<unsigned> getQuESTSeeds() {
     validate_envIsInit(__func__);
 
     // allocate temp vector, and pedantically validate successful
     vector<unsigned> out;
-    int numSeeds = getNumSeeds();
+    int numSeeds = rand_getNumSeeds();
     auto callback = [&]() { validate_tempListAllocSucceeded(false, numSeeds, sizeof(unsigned), __func__); };
     util_tryAllocVector(out, numSeeds, callback);
 
-    getSeeds(out.data());
+    getQuESTSeeds(out.data());
     return out;
 }

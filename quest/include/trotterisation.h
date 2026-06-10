@@ -138,7 +138,7 @@ extern "C" {
  *   @f[ 
         \max\limits_{i} |c_i| \le \valeps
  *   @f]
- *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setValidationEpsilon().
+ *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setQuESTValidationEpsilon().
  *   Otherwise, use applyTrotterizedNonUnitaryPauliStrSumGadget() to permit non-Hermitian @p sum
  *   and ergo effect a non-unitary exponential(s). 
  * 
@@ -352,7 +352,7 @@ extern "C" {
  *   @f[ 
         \max\limits_{i} |c_i| \le \valeps
  *   @f]
- *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setValidationEpsilon(). The imaginary components
+ *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setQuESTValidationEpsilon(). The imaginary components
  *   of the Hamiltonian _are_ considered during simulation.
  * 
  * - The @p time parameter is necessarily real to retain unitarity. It can be substituted for a strictly imaginary
@@ -488,7 +488,7 @@ void applyTrotterizedUnitaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal 
  *   @f[ 
         \max\limits_{i} |c_i| \le \valeps
  *   @f]
- *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setValidationEpsilon(). Beware however that 
+ *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setQuESTValidationEpsilon(). Beware however that 
  *   imaginary-time evolution under a non-Hermitian Hamiltonian will _not_ necessarily approach the lowest lying eigenstate
  *   (the eigenvalues may be non-real) so is likely of limited utility.
  * 
@@ -604,8 +604,8 @@ void applyTrotterizedImaginaryTimeEvolution(Qureg qureg, PauliStrSum hamil, qrea
  *   @f[
           \min\limits_{i} \gamma_i \ge - \valeps
  *   @f]
- *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setValidationEpsilon(). Non-trace-preserving,
- *   negative damping rates can be simulated by disabling numerical validation via `setValidationEpsilon(0)`.
+ *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setQuESTValidationEpsilon(). Non-trace-preserving,
+ *   negative damping rates can be simulated by disabling numerical validation via `setQuESTValidationEpsilon(0)`.
  * 
  * - The @p time parameter is necessarily real, and cannot be generalised to imaginary or complex like in other
  *   functions. Generalisation is trivially numerically possible, but has no established physical meaning and so

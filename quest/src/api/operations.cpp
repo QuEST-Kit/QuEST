@@ -42,20 +42,20 @@ void validateAndApplyAnyCtrlAnyTargUnitaryMatrix(Qureg qureg, int* ctrls, int* s
     if (util_isDenseMatrixType<T>())
         validate_mixedAmpsFitInNode(qureg, numTargs, caller);
 
-    auto ctrlVec  = util_getVector(ctrls,  numCtrls);
-    auto stateVec = util_getVector(states, numCtrls);
-    auto targVec  = util_getVector(targs,  numTargs);
+    List64 ctrlList  = lists_getList64(ctrls,  numCtrls);
+    List64 stateList = util_getList64OrAllOnes(states, numCtrls);
+    List64 targList  = lists_getList64(targs,  numTargs);
 
     bool conj = false;
-    localiser_statevec_anyCtrlAnyTargAnyMatr(qureg, ctrlVec, stateVec, targVec, matr, conj);
+    localiser_statevec_anyCtrlAnyTargAnyMatr(qureg, ctrlList, stateList, targList, matr, conj);
 
     if (!qureg.isDensityMatrix)
         return;
 
     conj = true;
-    ctrlVec = util_getBraQubits(ctrlVec, qureg);
-    targVec = util_getBraQubits(targVec, qureg);
-    localiser_statevec_anyCtrlAnyTargAnyMatr(qureg, ctrlVec, stateVec, targVec, matr, conj);
+    ctrlList = util_getBraQubits(ctrlList, qureg);
+    targList = util_getBraQubits(targList, qureg);
+    localiser_statevec_anyCtrlAnyTargAnyMatr(qureg, ctrlList, stateList, targList, matr, conj);
 
     /// @todo
     /// the above logic always performs two in-turn operations upon density matrices, 
@@ -144,7 +144,7 @@ void applyMultiControlledCompMatr2(Qureg qureg, vector<int> controls, int target
     applyMultiControlledCompMatr2(qureg, controls.data(), controls.size(), target1, target2, matr);
 }
 
-void applyMultiStateControlledCompMatr2(Qureg qureg, vector<int> controls, vector<int> states, int numControls, int target1, int target2, CompMatr2 matr) {
+void applyMultiStateControlledCompMatr2(Qureg qureg, vector<int> controls, vector<int> states, int target1, int target2, CompMatr2 matr) {
     validate_controlsMatchStates(controls.size(), states.size(), __func__);
 
     applyMultiStateControlledCompMatr2(qureg, controls.data(), states.data(), controls.size(), target1, target2, matr);
@@ -410,18 +410,18 @@ void applyMultiStateControlledDiagMatrPower(Qureg qureg, int* controls, int* sta
     // when numerical validation is disabled without a separate func.
 
     bool conj = false;
-    auto ctrlVec = util_getVector(controls, numControls);
-    auto stateVec = util_getVector(states,  numControls); // empty if states==nullptr
-    auto targVec = util_getVector(targets,  numTargets);
-    localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, ctrlVec, stateVec, targVec, matrix, exponent, conj);
+    auto ctrlList = lists_getList64(controls, numControls);
+    auto stateList = util_getList64OrAllOnes(states, numControls);
+    auto targList = lists_getList64(targets,  numTargets);
+    localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, ctrlList, stateList, targList, matrix, exponent, conj);
 
     if (!qureg.isDensityMatrix)
         return;
 
     conj = true;
-    ctrlVec = util_getBraQubits(ctrlVec, qureg);
-    targVec = util_getBraQubits(targVec, qureg);
-    localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, ctrlVec, stateVec, targVec, matrix, exponent, conj);
+    ctrlList = util_getBraQubits(ctrlList, qureg);
+    targList = util_getBraQubits(targList, qureg);
+    localiser_statevec_anyCtrlAnyTargDiagMatr(qureg, ctrlList, stateList, targList, matrix, exponent, conj);
 }
 
 } // end de-mangler
@@ -518,7 +518,7 @@ void applyMultiControlledS(Qureg qureg, int* controls, int numControls, int targ
 
 void applyMultiStateControlledS(Qureg qureg, int* controls, int* states, int numControls, int target) {
 
-    DiagMatr1 matr = getDiagMatr1({1, 1_i});
+    static const DiagMatr1 matr = getDiagMatr1({1, 1_i});
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
 }
 
@@ -569,7 +569,7 @@ void applyMultiControlledT(Qureg qureg, int* controls, int numControls, int targ
 
 void applyMultiStateControlledT(Qureg qureg, int* controls, int* states, int numControls, int target) {
 
-    DiagMatr1 matr = getDiagMatr1({1, 1/std::sqrt(2) + 1_i/std::sqrt(2)});
+    static const DiagMatr1 matr = getDiagMatr1({1, (1 + 1_i)/std::sqrt(2)});
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
 }
 
@@ -620,11 +620,11 @@ void applyMultiControlledHadamard(Qureg qureg, int* controls, int numControls, i
 
 void applyMultiStateControlledHadamard(Qureg qureg, int* controls, int* states, int numControls, int target) {
 
-    qcomp a = 1/std::sqrt(2);
-    CompMatr1 matr = getCompMatr1({
-        {a, a}, 
-        {a,-a}});
-
+    static const qcomp a = 1 / std::sqrt(2);
+    static const CompMatr1 matr = getCompMatr1({
+        {a,  a}, 
+        {a, -a}
+    });
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matr, __func__);
 }
 
@@ -678,17 +678,17 @@ void applyMultiStateControlledSwap(Qureg qureg, int* controls, int* states, int 
     validate_controlsAndTwoTargets(qureg, controls, numControls, qubit1, qubit2, __func__);
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
-    auto ctrlVec = util_getVector(controls, numControls);
-    auto stateVec = util_getVector(states, numControls); // empty if states==nullptr
-    localiser_statevec_anyCtrlSwap(qureg, ctrlVec, stateVec, qubit1, qubit2);
+    auto ctrlList = lists_getList64(controls, numControls);
+    auto stateList = util_getList64OrAllOnes(states, numControls);
+    localiser_statevec_anyCtrlSwap(qureg, ctrlList, stateList, qubit1, qubit2);
 
     if (!qureg.isDensityMatrix)
         return;
 
-    ctrlVec = util_getBraQubits(ctrlVec, qureg);
+    ctrlList = util_getBraQubits(ctrlList, qureg);
     qubit1 = util_getBraQubit(qubit1, qureg);
     qubit2 = util_getBraQubit(qubit2, qureg);
-    localiser_statevec_anyCtrlSwap(qureg, ctrlVec, stateVec, qubit1, qubit2);
+    localiser_statevec_anyCtrlSwap(qureg, ctrlList, stateList, qubit1, qubit2);
 }
 
 } // end de-mangler
@@ -749,7 +749,7 @@ void applyMultiStateControlledSqrtSwap(Qureg qureg, int* controls, int* states, 
 
     validate_mixedAmpsFitInNode(qureg, 2, __func__); // to throw SqrtSwap error, not generic CompMatr2 error
 
-    CompMatr2 matr = getCompMatr2({
+    static const CompMatr2 matr = getCompMatr2({
         {1, 0, 0, 0},
         {0, .5+.5_i, .5-.5_i, 0},
         {0, .5-.5_i, .5+.5_i, 0},
@@ -869,7 +869,7 @@ void applyMultiStateControlledPauliX(Qureg qureg, int* controls, int* states, in
     /// since it avoids all superfluous flops; check worthwhile for multi-qubit
 
     // harmlessly re-validates, including hardcoded matrix unitarity
-    CompMatr1 matrix = util_getPauliX();
+    static const CompMatr1 matrix = util_getPauliX();
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matrix, __func__);
 }
 
@@ -879,7 +879,7 @@ void applyMultiStateControlledPauliY(Qureg qureg, int* controls, int* states, in
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
     // harmlessly re-validates, including hardcoded matrix unitarity
-    CompMatr1 matrix = util_getPauliY();
+    static const CompMatr1 matrix = util_getPauliY();
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matrix, __func__);
 }
 
@@ -889,7 +889,7 @@ void applyMultiStateControlledPauliZ(Qureg qureg, int* controls, int* states, in
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
     // harmlessly re-validates, including hardcoded matrix unitarity
-    DiagMatr1 matrix = util_getPauliZ();
+    static const DiagMatr1 matrix = util_getPauliZ();
     validateAndApplyAnyCtrlAnyTargUnitaryMatrix(qureg, controls, states, numControls, &target, 1, matrix, __func__);
 }
 
@@ -966,27 +966,27 @@ void applyMultiStateControlledPauliStr(Qureg qureg, int* controls, int* states, 
     validate_controlStates(states, numControls, __func__); // permits states==nullptr
 
     qcomp factor = 1;
-    auto ctrlVec = util_getVector(controls, numControls);
-    auto stateVec = util_getVector(states, numControls); // empty if states==nullptr
+    auto ctrlList = lists_getList64(controls, numControls);
+    auto stateList = util_getList64OrAllOnes(states, numControls);
 
     // when there are no control qubits, we can merge the density matrix's 
     // operation sinto a single tensor, i.e. +- (shift(str) (x) str), to 
     // avoid superfluous re-enumeration of the state
     if (qureg.isDensityMatrix && numControls == 0) {
         factor = paulis_getSignOfPauliStrConj(str);
-        ctrlVec = util_getConcatenated(ctrlVec, util_getBraQubits(ctrlVec, qureg));
-        stateVec = util_getConcatenated(stateVec, stateVec); 
+        ctrlList = util_getConcatenated(ctrlList, util_getBraQubits(ctrlList, qureg));
+        stateList = util_getConcatenated(stateList, stateList); 
         str = paulis_getKetAndBraPauliStr(str, qureg);
     }
 
-    localiser_statevec_anyCtrlPauliTensor(qureg, ctrlVec, stateVec, str, factor);
+    localiser_statevec_anyCtrlPauliTensor(qureg, ctrlList, stateList, str, factor);
 
     // but density-matrix control qubits require two distinct operations
     if (qureg.isDensityMatrix && numControls > 0) {
         factor = paulis_getSignOfPauliStrConj(str);
-        ctrlVec = util_getBraQubits(ctrlVec, qureg);
+        ctrlList = util_getBraQubits(ctrlList, qureg);
         str = paulis_getShiftedPauliStr(str, qureg.numQubits);
-        localiser_statevec_anyCtrlPauliTensor(qureg, ctrlVec, stateVec, str, factor);
+        localiser_statevec_anyCtrlPauliTensor(qureg, ctrlList, stateList, str, factor);
     }
 }
 
@@ -1250,7 +1250,8 @@ void applyNonUnitaryPauliGadget(Qureg qureg, PauliStr str, qcomp angle) {
     validate_pauliStrTargets(qureg, str, __func__);
 
     qcomp phase = util_getPhaseFromGateAngle(angle);
-    localiser_statevec_anyCtrlPauliGadget(qureg, {}, {}, str, phase);
+    auto none = lists_getEmptyList64();
+    localiser_statevec_anyCtrlPauliGadget(qureg, none, none, str, phase);
 
     if (!qureg.isDensityMatrix)
         return;
@@ -1258,7 +1259,7 @@ void applyNonUnitaryPauliGadget(Qureg qureg, PauliStr str, qcomp angle) {
     // conj(e^i(a)P) = e^(-i s conj(a) P)
     phase = - std::conj(phase) * paulis_getSignOfPauliStrConj(str);
     str = paulis_getShiftedPauliStr(str, qureg.numQubits);
-    localiser_statevec_anyCtrlPauliGadget(qureg, {}, {}, str, phase);
+    localiser_statevec_anyCtrlPauliGadget(qureg, none, none, str, phase);
 }
 
 void applyControlledPauliGadget(Qureg qureg, int control, PauliStr str, qreal angle) {
@@ -1291,18 +1292,18 @@ void applyMultiStateControlledPauliGadget(Qureg qureg, int* controls, int* state
     // which is sufficiently efficient using the existing gadget backend function
 
     qreal phase = util_getPhaseFromGateAngle(angle);
-    auto ctrlVec = util_getVector(controls, numControls);
-    auto stateVec = util_getVector(states, numControls); // empty if states==nullptr
-    localiser_statevec_anyCtrlPauliGadget(qureg, ctrlVec, stateVec, str, phase);
+    auto ctrlList = lists_getList64(controls, numControls);
+    auto stateList = util_getList64OrAllOnes(states, numControls);
+    localiser_statevec_anyCtrlPauliGadget(qureg, ctrlList, stateList, str, phase);
 
     if (!qureg.isDensityMatrix)
         return;
 
     // conj(e^(i a P)) = e^(-i s a P)
     phase *= - paulis_getSignOfPauliStrConj(str);
-    ctrlVec = util_getBraQubits(ctrlVec, qureg);
+    ctrlList = util_getBraQubits(ctrlList, qureg);
     str = paulis_getShiftedPauliStr(str, qureg.numQubits);
-    localiser_statevec_anyCtrlPauliGadget(qureg, ctrlVec, stateVec, str, phase);
+    localiser_statevec_anyCtrlPauliGadget(qureg, ctrlList, stateList, str, phase);
 }
 
 } // end de-mangler
@@ -1356,18 +1357,18 @@ void applyMultiStateControlledPhaseGadget(Qureg qureg, int* controls, int* state
     validate_controlStates(states, numControls, __func__);
 
     qreal phase = util_getPhaseFromGateAngle(angle);
-    auto ctrlVec = util_getVector(controls, numControls);
-    auto targVec = util_getVector(targets,  numTargets);
-    auto stateVec = util_getVector(states,  numControls); // empty if states==nullptr
-    localiser_statevec_anyCtrlPhaseGadget(qureg, ctrlVec, stateVec, targVec, phase);
+    auto ctrlList = lists_getList64(controls, numControls);
+    auto stateList = util_getList64OrAllOnes(states, numControls);
+    auto targList = lists_getList64(targets,  numTargets);
+    localiser_statevec_anyCtrlPhaseGadget(qureg, ctrlList, stateList, targList, phase);
 
     if (!qureg.isDensityMatrix)
         return;
 
     phase *= -1;
-    ctrlVec = util_getBraQubits(ctrlVec, qureg);
-    targVec = util_getBraQubits(targVec, qureg);
-    localiser_statevec_anyCtrlPhaseGadget(qureg, ctrlVec, stateVec, targVec, phase);
+    ctrlList = util_getBraQubits(ctrlList, qureg);
+    targList = util_getBraQubits(targList, qureg);
+    localiser_statevec_anyCtrlPhaseGadget(qureg, ctrlList, stateList, targList, phase);
 }
 
 } // end de-mangler
@@ -1423,7 +1424,8 @@ void applyMultiQubitPhaseShift(Qureg qureg, int* targets, int numTargets, qreal 
     validate_targets(qureg, targets, numTargets, __func__);
 
     // treat as a (numTargets-1)-controlled 1-target diagonal matrix
-    DiagMatr1 matr = getDiagMatr1({1, std::exp(1_i * angle)});
+    static DiagMatr1 matr = getDiagMatr1({1, /*un-init*/ 0});
+    matr.elems[1] = std::exp(1_i * angle); // micro-optimisation
 
     // harmlessly re-validates
     applyMultiStateControlledDiagMatr1(qureg, &targets[1], nullptr, numTargets-1, targets[0], matr);
@@ -1466,7 +1468,7 @@ void applyMultiQubitPhaseFlip(Qureg qureg, int* targets, int numTargets) {
     validate_targets(qureg, targets, numTargets, __func__);
 
     // treat as a (numTargets-1)-controlled 1-target Pauli Z
-    DiagMatr1 matr = getDiagMatr1({1, -1});
+    static const DiagMatr1 matr = getDiagMatr1({1, -1});
 
     // harmlessly re-validates
     applyMultiStateControlledDiagMatr1(qureg, &targets[1], nullptr, numTargets-1, targets[0], matr);
@@ -1561,10 +1563,13 @@ void applyQubitProjector(Qureg qureg, int target, int outcome) {
     
     qreal prob = 1;
 
+    auto targList    = lists_getList64({target});
+    auto outcomeList = lists_getList64({outcome});
+
     // density matrix has an optimised func in lieu of calling the statevector func twice
     (qureg.isDensityMatrix)?
-        localiser_densmatr_multiQubitProjector(qureg, {target}, {outcome}, prob):
-        localiser_statevec_multiQubitProjector(qureg, {target}, {outcome}, prob);
+        localiser_densmatr_multiQubitProjector(qureg, targList, outcomeList, prob):
+        localiser_statevec_multiQubitProjector(qureg, targList, outcomeList, prob);
 }
 
 void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits) {
@@ -1573,13 +1578,13 @@ void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQu
     validate_measurementOutcomesAreValid(outcomes, numQubits, __func__);
 
     qreal prob = 1;
-    auto qubitVec = util_getVector(qubits, numQubits);
-    auto outcomeVec = util_getVector(outcomes, numQubits);
+    auto qubitList = lists_getList64(qubits, numQubits);
+    auto outcomeList = lists_getList64(outcomes, numQubits);
 
     // density matrix has an optimised func in lieu of calling the statevector func twice
     (qureg.isDensityMatrix)?
-        localiser_densmatr_multiQubitProjector(qureg, qubitVec, outcomeVec, prob):
-        localiser_statevec_multiQubitProjector(qureg, qubitVec, outcomeVec, prob);
+        localiser_densmatr_multiQubitProjector(qureg, qubitList, outcomeList, prob):
+        localiser_statevec_multiQubitProjector(qureg, qubitList, outcomeList, prob);
 }
 
 } // end de-mangler
@@ -1623,10 +1628,13 @@ int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability)
     int outcome = rand_getRandomSingleQubitOutcome(probs[0]);
     *probability = probs[outcome];
 
+    auto targList    = lists_getList64({target});
+    auto outcomeList = lists_getList64({outcome});
+
     // collapse to the outcome
     (qureg.isDensityMatrix)?
-        localiser_densmatr_multiQubitProjector(qureg, {target}, {outcome}, *probability):
-        localiser_statevec_multiQubitProjector(qureg, {target}, {outcome}, *probability);
+        localiser_densmatr_multiQubitProjector(qureg, targList, outcomeList, *probability):
+        localiser_statevec_multiQubitProjector(qureg, targList, outcomeList, *probability);
 
     return outcome;
 }
@@ -1642,10 +1650,13 @@ qreal applyForcedQubitMeasurement(Qureg qureg, int target, int outcome) {
     qreal prob = calcProbOfQubitOutcome(qureg, target, outcome); // harmlessly re-validates
     validate_measurementOutcomeProbNotZero(outcome, prob, __func__);
 
+    auto targList    = lists_getList64({target});
+    auto outcomeList = lists_getList64({outcome});
+
     // project to the outcome, renormalising the surviving states
     (qureg.isDensityMatrix)?
-        localiser_densmatr_multiQubitProjector(qureg, {target}, {outcome}, prob):
-        localiser_statevec_multiQubitProjector(qureg, {target}, {outcome}, prob);
+        localiser_densmatr_multiQubitProjector(qureg, targList, outcomeList, prob):
+        localiser_statevec_multiQubitProjector(qureg, targList, outcomeList, prob);
 
     return prob;
 }
@@ -1683,14 +1694,14 @@ qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQub
     *probability = probs[outcome];
 
     // map outcome to individual qubit outcomes
-    auto qubitVec = util_getVector(qubits, numQubits);
-    auto outcomeVec = vector<int>(numQubits);
-    getBitsFromInteger(outcomeVec.data(), outcome, numQubits);
+    auto qubitList = lists_getList64(qubits, numQubits);
+    auto outcomeList = util_getConstantList(-1, numQubits);
+    setToBitsOfInteger(outcomeList.data(), outcome, numQubits);
 
     // project to the outcomes, renormalising the surviving states
     (qureg.isDensityMatrix)?
-        localiser_densmatr_multiQubitProjector(qureg, qubitVec, outcomeVec, *probability):
-        localiser_statevec_multiQubitProjector(qureg, qubitVec, outcomeVec, *probability);
+        localiser_densmatr_multiQubitProjector(qureg, qubitList, outcomeList, *probability):
+        localiser_statevec_multiQubitProjector(qureg, qubitList, outcomeList, *probability);
 
     return outcome;
 }
@@ -1700,8 +1711,8 @@ qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, 
     validate_targets(qureg, qubits, numQubits, __func__);
     validate_measurementOutcomesAreValid(outcomes, numQubits, __func__);
 
-    auto qubitVec = util_getVector(qubits, numQubits);
-    auto outcomeVec = util_getVector(outcomes, numQubits);
+    auto qubitList = lists_getList64(qubits, numQubits);
+    auto outcomeList = lists_getList64(outcomes, numQubits);
 
     // ensure probability of the forced measurement outcome is not negligible
     qreal prob = calcProbOfMultiQubitOutcome(qureg, qubits, outcomes, numQubits); // harmlessly re-validates
@@ -1709,8 +1720,8 @@ qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, 
 
     // project to the outcome, renormalising the surviving states
     (qureg.isDensityMatrix)?
-        localiser_densmatr_multiQubitProjector(qureg, qubitVec, outcomeVec, prob):
-        localiser_statevec_multiQubitProjector(qureg, qubitVec, outcomeVec, prob);
+        localiser_densmatr_multiQubitProjector(qureg, qubitList, outcomeList, prob):
+        localiser_statevec_multiQubitProjector(qureg, qubitList, outcomeList, prob);
 
     return prob;
 }
@@ -1782,11 +1793,7 @@ void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets, boo
 void applyFullQuantumFourierTransform(Qureg qureg, bool inverse) {
     validate_quregFields(qureg, __func__);
 
-    // tiny; no need to validate alloc
-    vector<int> targets(qureg.numQubits);
-    for (size_t i=0; i<targets.size(); i++)
-        targets[i] = i;
-
+    auto targets = util_getRange(qureg.numQubits);
     applyQuantumFourierTransform(qureg, targets.data(), targets.size(), inverse);
 }
 

@@ -43,39 +43,77 @@
      *  - forbid sharing: @p 0, @p '0', @p '', @p , (unspecified)
      *  - permit sharing: @p 1, @p '1'
      * 
+     * @constraints
+     * The function initQuESTEnv() will throw a validation error if any of the below are not satisfied.
+     *   - The specified string does not evaluate to an integer @p 0 or @p 1.
+     * 
      * @author Tyson Jones
      */
-    const int PERMIT_NODES_TO_SHARE_GPU = 0;
+    const int QUEST_PERMIT_NODES_TO_SHARE_GPU = 0;
 
 
     /** @envvardoc
      * 
      * Specifies the default validation epsilon. 
      * 
-     * Specifying `DEFAULT_VALIDATION_EPSILON` to a positive, real number overrides the 
+     * Specifying `QUEST_DEFAULT_VALIDATION_EPSILON` to a positive, real number overrides the 
      * precision-specific default (`1E-5`, `1E-12`, `1E-13` for single, double and quadruple 
      * precision respectively). The specified epsilon is used by QuEST for numerical validation
-     * unless overriden at runtime via setValidationEpsilon(), in which case it can be
-     * restored to that specified by this environment variable using setValidationEpsilonToDefault().
+     * unless overriden at runtime via setQuESTValidationEpsilon(), in which case it can be
+     * restored to that specified by this environment variable using setQuESTValidationEpsilonToDefault().
      * 
      * @envvarvalues
-     *  - setting @p DEFAULT_VALIDATION_EPSILON=0 disables numerical validation, as if the value
+     *  - setting @p QUEST_DEFAULT_VALIDATION_EPSILON=0 disables numerical validation, as if the value
      *    were instead infinity.
-     *  - setting @p DEFAULT_VALIDATION_EPSILON='' is equivalent to _not_ specifying the variable,
+     *  - setting @p QUEST_DEFAULT_VALIDATION_EPSILON='' is equivalent to _not_ specifying the variable,
      *    adopting instead the precision-specific default above.
-     *  - setting @p DEFAULT_VALIDATION_EPSILON=x where `x` is a positive, valid `qreal` in any
+     *  - setting @p QUEST_DEFAULT_VALIDATION_EPSILON=x where `x` is a positive, valid `qreal` in any
      *    format accepted by `C` or `C++` (e.g. `0.01`, `1E-2`, `+1e-2`) will use `x` as the
      *    default validation epsilon.
      * 
      * @constraints
-     * The function initQuESTEnv() will throw a validation error if:
+     * The function initQuESTEnv() will throw a validation error if any of the below are not satisfied.
      *   - The specified epsilon must be `0` or positive.
      *   - The specified epsilon must not exceed that maximum or minimum value which can be stored
      *     in a `qreal`, which is specific to its precision.
      * 
      * @author Tyson Jones
      */
-    const qreal DEFAULT_VALIDATION_EPSILON = 0;
+    const qreal QUEST_DEFAULT_VALIDATION_EPSILON = 0;
+
+
+    /** @envvardoc
+     * 
+     * Specifies the default number of threads per block (or "block dimension") used by GPU acceleration. 
+     * 
+     * The number of dispatched CUDA threads per block controls the parallelisation granularity of
+     * QuEST's GPU backend, affecting performance.
+     * Specifying `QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK` to a valid, positive integer overrides
+     * QuEST's default otherwise set during compilation via a CMake option of the same name. If 
+     * that CMake option was not set, the default is assumed to be @p 128.
+     * 
+     * The number specified by this environment variable will be used as the block dimension by all of
+     * QuEST's GPU backend functions, unless overridden at runtime via setQuESTNumGpuThreadsPerBlock().
+     * The actual number of threads per block used at any time can be queried via 
+     * getQuESTNumGpuThreadsPerBlock(), or reported by reportQuESTEnv().
+     * 
+     * @envvarvalues
+     *  - use internal default of `128`: @p '', @p , (unspecified)
+     *  - use number `x`: @p x, @p 'x', @p '+x'
+     * 
+     * @constraints
+     * The function initQuESTEnv() will throw a validation error if any of the below are not satisfied.
+     *   - The specified number must be a positive integer.
+     *   - The specified number must not exceed the minimum or maximum value which can be stored in an @p int.
+     *   - The specified number must be divisible by the GPU warp size, which is 32 or 64, depending on
+     *     whether deployed to an NVIDIA or AMD GPU. This restriction is imposed even when QuEST is not
+     *     deployed with GPU-acceleration.
+     *   - The specified number exceeds the maximum imposed by the available GPU hardware.
+     * 
+     * @author Oliver Brown
+     * @author Tyson Jones
+     */
+    const qreal QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK = 0;
 
 
 #endif

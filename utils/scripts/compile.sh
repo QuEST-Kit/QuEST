@@ -13,19 +13,19 @@
 # USER SETTINGS
 
 # numerical precision (1, 2, 4)
-FLOAT_PRECISION=2
+QUEST_FLOAT_PRECISION=2
 
 # deployments to compile (0, 1)
-ENABLE_DISTRIBUTION=0       # MPI
-ENABLE_MULTITHREADING=0     # OpenMP
-ENABLE_CUDA=0               # NVIDIA GPU
-ENABLE_HIP=0                # AMD GPU
-ENABLE_CUQUANTUM=0          # NVIDIA cuStateVec
-ENABLE_NUMA=0               # NUMA awareness
+QUEST_ENABLE_MPI=0                # MPI (multiprocess)
+QUEST_ENABLE_OMP=0                # OpenMP (multithreading)
+QUEST_ENABLE_CUDA=0               # NVIDIA GPU
+QUEST_ENABLE_HIP=0                # AMD GPU
+QUEST_ENABLE_CUQUANTUM=0          # NVIDIA cuStateVec
+QUEST_ENABLE_NUMA=0               # NUMA awareness
 
 # other options (0, 1)
-ENABLE_DEPRECATED_API=0
-DISABLE_DEPRECATION_WARNINGS=0
+QUEST_ENABLE_DEPRECATED_API=0
+QUEST_DISABLE_DEPRECATION_WARNINGS=0
 
 # NVIDIA compute capability or AMD arch (e.g. 60 or gfx908)
 GPU_ARCH=90
@@ -43,8 +43,8 @@ LINKER=g++
 
 # whether to compile the below user source files (0),
 # or the unit tests (1), which when paired with above
-# ENABLE_DEPRECATED_API=1, will use the v3 tests (which
-# you should pair with DISABLE_DEPRECATION_WARNINGS=1)
+# QUEST_ENABLE_DEPRECATED_API=1, will use the v3 tests (which
+# you should pair with QUEST_DISABLE_DEPRECATION_WARNINGS=1)
 COMPILE_TESTS=0
 
 # name of the compiled test executable
@@ -72,7 +72,7 @@ USER_CXX_COMP_FLAGS='-std=c++14'
 # user linker flags
 USER_LINK_FLAGS='-lstdc++'
 
-# whether to compile cuQuantum (consulted only when ENABLE_CUQUANTUM=1)
+# whether to compile cuQuantum (consulted only when QUEST_ENABLE_CUQUANTUM=1)
 # in debug mode, which logs to below file with performance tips and errors
 CUQUANTUM_LOG=0
 CUQUANTUM_LOG_FN="./custatevec_log.txt"
@@ -249,7 +249,7 @@ WARNING_FLAGS='-Wall'
 CUDA_COMP_FLAGS="-x cu -arch=sm_${GPU_ARCH} -I${CUDA_LIB_DIR}/include"
 CUDA_LINK_FLAGS="-L${CUDA_LIB_DIR}/lib -L${CUDA_LIB_DIR}/lib64 -lcudart -lcuda"
 
-if [ $ENABLE_CUQUANTUM == 1 ]
+if [ $QUEST_ENABLE_CUQUANTUM == 1 ]
 then
     # extend GPU flags if cuQuantum enabled
     CUDA_COMP_FLAGS+=" -I${CUQUANTUM_LIB_DIR}/include"
@@ -293,7 +293,7 @@ else
     OMP_LINK_FLAGS+=' -fopenmp'
 fi
 
-if [ $ENABLE_NUMA == 1 ]
+if [ $QUEST_ENABLE_NUMA == 1 ]
 then
     OMP_LINK_FLAGS+=' -lnuma'
 fi
@@ -312,11 +312,11 @@ echo "deployment modes:"
 ALL_LINK_FLAGS="${USER_LINK_FLAGS}"
 
 # choose compiler and flags for CPU/OMP files
-if [ $ENABLE_MULTITHREADING == 1 ]
+if [ $QUEST_ENABLE_OMP == 1 ]
 then
     echo "${INDENT}(multithreading enabled)"
     echo "${INDENT}${INDENT}[compiling OpenMP]"
-    if [ $ENABLE_NUMA == 1 ]
+    if [ $QUEST_ENABLE_NUMA == 1 ]
     then
         echo "${INDENT}${INDENT}[compiling NUMA]"
     fi
@@ -329,7 +329,7 @@ else
 fi
 
 # choose compiler and flags for GPU files
-if [ $ENABLE_CUDA == 1 ]
+if [ $QUEST_ENABLE_CUDA == 1 ]
 then
     echo "${INDENT}(GPU-acceleration enabled)"
     echo "${INDENT}${INDENT}[compiling CUDA]"
@@ -337,7 +337,7 @@ then
     GPU_FILES_FLAGS=$CUDA_COMP_FLAGS
     ALL_LINK_FLAGS+=" ${CUDA_LINK_FLAGS}"
     GPU_WARNING_FLAGS="-Xcompiler ${WARNING_FLAGS}"
-elif [ $ENABLE_HIP == 1 ]
+elif [ $QUEST_ENABLE_HIP == 1 ]
 then
     echo "${INDENT}(GPU-acceleration enabled)"
     echo "${INDENT}${INDENT}[compiling HIP]"
@@ -353,7 +353,7 @@ else
 fi
 
 # merely report cuQuantum status
-if [ $ENABLE_CUQUANTUM == 1 ]
+if [ $QUEST_ENABLE_CUQUANTUM == 1 ]
 then
     echo "${INDENT}(cuQuantum enabled)"
     echo "${INDENT}${INDENT}[compiling cuStateVec]"
@@ -362,7 +362,7 @@ else
 fi
 
 # choose compiler and flags for communication files
-if [ $ENABLE_DISTRIBUTION == 1 ]
+if [ $QUEST_ENABLE_MPI == 1 ]
 then
     echo "${INDENT}(distribution enabled)"
     echo "${INDENT}${INDENT}[compiling MPI]"
@@ -390,15 +390,15 @@ then
 fi
 
 # display precision
-if [ $FLOAT_PRECISION == 1 ]; then
+if [ $QUEST_FLOAT_PRECISION == 1 ]; then
     echo "${INDENT}(single precision)"
-elif [ $FLOAT_PRECISION == 2 ]; then
+elif [ $QUEST_FLOAT_PRECISION == 2 ]; then
     echo "${INDENT}(double precision)"
-elif [ $FLOAT_PRECISION == 4 ]; then
+elif [ $QUEST_FLOAT_PRECISION == 4 ]; then
     echo "${INDENT}(quad precision)"
 else
     echo ""
-    echo "INVALID FLOAT_PRECISION (${FLOAT_PRECISION})"
+    echo "INVALID QUEST_FLOAT_PRECISION (${QUEST_FLOAT_PRECISION})"
     echo "Exiting..."
     exit
 fi
@@ -420,14 +420,14 @@ then
 fi
 
 # test compiler
-if (( $COMPILE_TESTS == 1 && ENABLE_DEPRECATED_API == 0 ))
+if (( $COMPILE_TESTS == 1 && QUEST_ENABLE_DEPRECATED_API == 0 ))
 then
     echo "${INDENT}tests compiler and flags:"
     echo "${INDENT}${INDENT}${TESTS_COMPILER} ${TEST_COMP_FLAGS} ${WARNING_FLAGS}"
 fi
 
 # deprecated compiler
-if (( $COMPILE_TESTS == 1 && ENABLE_DEPRECATED_API == 1 ))
+if (( $COMPILE_TESTS == 1 && QUEST_ENABLE_DEPRECATED_API == 1 ))
 then
     echo "${INDENT}deprecated tests compiler and flags:"
     echo "${INDENT}${INDENT}${TESTS_COMPILER} ${TEST_DEPR_COMP_FLAGS} ${WARNING_FLAGS}"
@@ -501,15 +501,15 @@ echo "generating headers:"
 
 # write user-options as macros to config.h (and set version info to -1)
 sed \
-  -e "s|#cmakedefine FLOAT_PRECISION @FLOAT_PRECISION@|#define FLOAT_PRECISION ${FLOAT_PRECISION}|" \
-  -e "s|#cmakedefine01 INCLUDE_DEPRECATED_FUNCTIONS|#define INCLUDE_DEPRECATED_FUNCTIONS ${ENABLE_DEPRECATED_API}|" \
-  -e "s|#cmakedefine01 DISABLE_DEPRECATION_WARNINGS|#define DISABLE_DEPRECATION_WARNINGS ${DISABLE_DEPRECATION_WARNINGS}|" \
-  -e "s|#cmakedefine01 COMPILE_OPENMP|#define COMPILE_OPENMP ${ENABLE_MULTITHREADING}|" \
-  -e "s|#cmakedefine01 COMPILE_MPI|#define COMPILE_MPI ${ENABLE_DISTRIBUTION}|" \
-  -e "s|#cmakedefine01 COMPILE_CUDA|#define COMPILE_CUDA $(( ENABLE_CUDA || ENABLE_HIP ))|" \
-  -e "s|#cmakedefine01 COMPILE_CUQUANTUM|#define COMPILE_CUQUANTUM ${ENABLE_CUQUANTUM}|" \
-  -e "s|#cmakedefine01 COMPILE_HIP|#define COMPILE_HIP ${ENABLE_HIP}|" \
-  -e "s|#cmakedefine01 NUMA_AWARE|#define NUMA_AWARE ${ENABLE_NUMA}|" \
+  -e "s|#cmakedefine QUEST_FLOAT_PRECISION @QUEST_FLOAT_PRECISION@|#define QUEST_FLOAT_PRECISION ${QUEST_FLOAT_PRECISION}|" \
+  -e "s|#cmakedefine01 QUEST_INCLUDE_DEPRECATED_FUNCTIONS|#define QUEST_INCLUDE_DEPRECATED_FUNCTIONS ${QUEST_ENABLE_DEPRECATED_API}|" \
+  -e "s|#cmakedefine01 QUEST_DISABLE_DEPRECATION_WARNINGS|#define QUEST_DISABLE_DEPRECATION_WARNINGS ${QUEST_DISABLE_DEPRECATION_WARNINGS}|" \
+  -e "s|#cmakedefine01 QUEST_COMPILE_OMP|#define QUEST_COMPILE_OMP ${QUEST_ENABLE_OMP}|" \
+  -e "s|#cmakedefine01 QUEST_COMPILE_MPI|#define QUEST_COMPILE_MPI ${QUEST_ENABLE_MPI}|" \
+  -e "s|#cmakedefine01 QUEST_COMPILE_CUDA|#define QUEST_COMPILE_CUDA $(( QUEST_ENABLE_CUDA || QUEST_ENABLE_HIP ))|" \
+  -e "s|#cmakedefine01 QUEST_COMPILE_CUQUANTUM|#define QUEST_COMPILE_CUQUANTUM ${QUEST_ENABLE_CUQUANTUM}|" \
+  -e "s|#cmakedefine01 QUEST_COMPILE_HIP|#define QUEST_COMPILE_HIP ${QUEST_ENABLE_HIP}|" \
+  -e "s|#cmakedefine01 QUEST_ENABLE_NUMA|#define QUEST_ENABLE_NUMA ${QUEST_ENABLE_NUMA}|" \
   -e "s|@PROJECT_VERSION@|unknown (not populated by manual compilation)|" \
   -e "s|@PROJECT_VERSION_MAJOR@|-1|" \
   -e "s|@PROJECT_VERSION_MINOR@|-1|" \
@@ -555,7 +555,7 @@ fi
 
 # COMPILING TESTS
 
-if (( $COMPILE_TESTS == 1 && $ENABLE_DEPRECATED_API == 0 ))
+if (( $COMPILE_TESTS == 1 && $QUEST_ENABLE_DEPRECATED_API == 0 ))
 then
 
     echo "compiling unit test files:"
@@ -591,11 +591,11 @@ fi
 
 # COMPILING DEPRECATED TESTS
 
-if (( $COMPILE_TESTS == 1 && $ENABLE_DEPRECATED_API == 1 ))
+if (( $COMPILE_TESTS == 1 && $QUEST_ENABLE_DEPRECATED_API == 1 ))
 then
     echo "compiling deprecated test files:"
 
-    if (( $DISABLE_DEPRECATION_WARNINGS == 0 ))
+    if (( $QUEST_DISABLE_DEPRECATION_WARNINGS == 0 ))
     then
         echo "${INDENT}(beware deprecation warnings were not disabled)"
     fi
@@ -702,12 +702,12 @@ OBJECTS+=" $(printf " ${QUEST_OBJ_PREF}%s.o" "${MPI_FILES[@]}")"
 if (( $COMPILE_TESTS == 0 ))
 then
     OBJECTS+=" $(printf " ${USER_OBJ_PREF}%s.o" "${USER_FILES[@]}")"
-elif (( $COMPILE_TESTS == 1 && $ENABLE_DEPRECATED_API == 0 ))
+elif (( $COMPILE_TESTS == 1 && $QUEST_ENABLE_DEPRECATED_API == 0 ))
 then
     OBJECTS+=" $(printf " ${TEST_OBJ_PREF}%s.o" "${TEST_MAIN_FILES[@]}")"
     OBJECTS+=" $(printf " ${TEST_OBJ_PREF}%s.o" "${TEST_UTIL_FILES[@]}")"
     OBJECTS+=" $(printf " ${TEST_OBJ_PREF}%s.o" "${TEST_UNIT_FILES[@]}")"
-elif (( $COMPILE_TESTS == 1 && $ENABLE_DEPRECATED_API == 1 ))
+elif (( $COMPILE_TESTS == 1 && $QUEST_ENABLE_DEPRECATED_API == 1 ))
 then
     OBJECTS+=" $(printf " ${TEST_OBJ_PREF}%s.o" "${TEST_DEPR_FILES[@]}")"
     OBJECTS+=" $(printf " ${TEST_OBJ_PREF}%s.o" "${TEST_DEPR_MPI_FILES[@]}")"

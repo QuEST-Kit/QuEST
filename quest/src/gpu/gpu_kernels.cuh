@@ -3,8 +3,8 @@
  * when there is no equivalent utility in Thrust (or cuQuantum, when it is
  * targeted). 
  * 
- * This file is only ever included when COMPILE_CUDA=1 so it can safely invoke 
  * CUDA signatures without guards. Some kernels are templated to compile-time 
+ * This file is only ever included when QUEST_COMPILE_CUDA=1 so it can safely invoke
  * optimise their bitwise and indexing logic depending on the number of qubits.
  * This file is a header since only ever included by gpu_subroutines.cpp.
  * 
@@ -25,7 +25,7 @@
 #include "quest/src/core/fastmath.hpp"
 #include "quest/src/gpu/gpu_qcomp.cuh"
 
-#if ! COMPILE_CUDA
+#if ! QUEST_COMPILE_CUDA
     #error "A file being compiled somehow included gpu_kernels.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 
@@ -42,35 +42,19 @@
  * THREAD MANAGEMENT
  */
 
-
-const int NUM_THREADS_PER_BLOCK =128;
-
-// __device__ __constant__ int ctrl_device[30]; 
-
-
-typedef struct {
-    int ctrl_device[64];
-} ctrl_device_t;
-
-struct QubitList_t {
-    int indices[64];
-    int length;
-};
-
-
 __forceinline__ __device__ qindex getThreadInd() {
     return blockIdx.x*blockDim.x + threadIdx.x;
 }
 
 
-__host__ qindex getNumBlocks(qindex numThreads) {
+__host__ qindex getNumBlocks(qindex numThreads, int numThreadsPerBlock) {
 
     /// @todo
     /// improve this with cudaOccupancyMaxPotentialBlockSize(),
     /// making it function specific
 
     // CUDA ceil
-    return ceil(numThreads / static_cast<qreal>(NUM_THREADS_PER_BLOCK));
+    return ceil(numThreads / static_cast<qreal>(numThreadsPerBlock));
 }
 
 
@@ -314,7 +298,11 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
     // must be strictly through compile-time-known indices, otherwise it will auto-
     // spill to local memory). Hence, this _subA() function is not a subroutine 
     // despite some logic being common to non-compile-time _subB(), and hence
-    // why the loops below are explicitly compile-time unrolled
+    // why the loops below are explicitly compile-time unrolled. Beware that when
+    // numThreadsPerBlock is increased from 128, this kernel will still behave
+    // correctly, but privateCache below will spill over into local memory at a
+    // performance penalty for NumTargs <= 5, with spillage occurring for fewer
+    // NumTargs as numThreadsPerBlock increases.
     REGISTER gpu_qcomp privateCache[1 << NumTargs];
 
     // we know NumTargs <= 5, though NumCtrls is permitted anything (including -1)

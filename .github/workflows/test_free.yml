@@ -63,11 +63,11 @@ jobs:
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
-          -DENABLE_TESTING=ON
-          -DENABLE_MULTITHREADING=OFF
-          -DENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
-          -DDISABLE_DEPRECATION_WARNINGS=${{ matrix.version == 3 && 'ON' || 'OFF' }}
-          -DFLOAT_PRECISION=${{ matrix.precision }}
+          -DQUEST_BUILD_TESTS=ON
+          -DQUEST_ENABLE_OMP=OFF
+          -DQUEST_ENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
+          -DQUEST_DISABLE_DEPRECATION_WARNINGS=${{ matrix.version == 3 && 'ON' || 'OFF' }}
+          -DQUEST_FLOAT_PRECISION=${{ matrix.precision }}
 
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
@@ -80,11 +80,11 @@ jobs:
       # are manually excluding each integration test by name
       - name: Run v4 tests
         if: ${{ matrix.version == 4 }}
-        run: ctest -j2 --output-on-failure --schedule-random -E "density evolution"
+        run: ctest -j2 --output-on-failure --schedule-random -C Release -E "density evolution"
         working-directory: ${{ env.build_dir }}
 
       # run v3 unit tests in random order
       - name: Run v3 tests
         if: ${{ matrix.version == 3 }}
-        run: ctest -j2 --output-on-failure --schedule-random
+        run: ctest -j2 --output-on-failure --schedule-random -C Release
         working-directory: ${{ env.depr_dir }}

@@ -77,6 +77,12 @@ void validate_newEnvNodesEachHaveUniqueGpu(const char* caller);
 
 void validate_gpuIsCuQuantumCompatible(const char* caller);
 
+void validate_mpiInitStatus(bool useDistrib, bool userOwnsMpi, const char* caller);
+
+void validate_mpiSubCommIsNonNull(bool isNonNull, const char* caller);
+
+void validate_mpiSubCommSetSucceeded(bool success, const char* caller);
+
 
 
 /*
@@ -106,6 +112,8 @@ void validate_numReportedNewlinesAboveZero(const char* caller);
 void validate_numPauliChars(const char* paulis, const char* caller);
 
 void validate_reportedPauliStrStyleFlag(int flag, const char* caller);
+
+void validate_numGpuThreadsPerBlock(int numTBP, bool isGpuActive, const char* caller);
 
 
 
@@ -420,7 +428,7 @@ void validate_mixedAmpsFitInNode(Qureg qureg, int numTargets, const char* caller
  * TROTTERISATION PARAMETERS
  */
 
-void validate_trotterParams(Qureg qureg, int order, int reps, const char* caller);
+void validate_trotterParams(int order, int reps, const char* caller);
 
 
 
@@ -547,6 +555,8 @@ void validate_tempListAllocSucceeded(bool succeeded, qindex numElems, qindex num
 void validate_envVarPermitNodesToShareGpu(string varValue, const char* caller);
 
 void validate_envVarDefaultValidationEpsilon(string varValue, const char* caller);
+
+void validate_envVarDefaultNumGpuThreadsPerBlockIsAnInt(string varValue, const char* caller);
 
 
 

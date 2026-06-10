@@ -44,6 +44,8 @@ Dr Ian Bush [consultant]
     HPC
 
 External contributors:
+Íñigo Aréjula Aísa
+    patched validation error in the experimental user-owned MPI interface (#722)
 Daniel Expósito Patiño
     patched the applyMultiStateControlledSqrtSwap C++ signature (#737)
 Diogo Pratas Maia
@@ -70,7 +72,7 @@ SchineCompton
     patched GPU Cmake Release build
 Christopher J. Anders
     patched Cmake build when multhithreading defaults off
-    revsied Cmake min version for GPU build
+    revised Cmake min version for GPU build
 Gleb Struchalin
     patched the cmake standalone build
 Milos Prokop

@@ -7,9 +7,9 @@
  * defined in one central place (right here) rather than being 
  * passed to each source file as compiler flags. It further
  * ensures that when QuEST is installed, critical user-facing
- * macros such as FLOAT_PRECISION cannot ever be changed from
+ * macros such as QUEST_FLOAT_PRECISION cannot ever be changed from
  * their value during source compilation. Finally, it enables
- * users to access macros such as COMPILE_OPENMP at pre-build
+ * users to access macros such as QUEST_COMPILE_OMP at pre-build
  * time of their own source code, which could prove necessary 
  * when interfacing with external libraries.
  * 
@@ -34,15 +34,16 @@
  */
 
 
-#if defined(FLOAT_PRECISION)              || \
-    defined(COMPILE_OPENMP)               || \
-    defined(COMPILE_MPI)                  || \
-    defined(COMPILE_CUDA)                 || \
-    defined(COMPILE_HIP)                  || \
-    defined(COMPILE_CUQUANTUM)            || \
-    defined(NUMA_AWARE)                   || \
-    defined(INCLUDE_DEPRECATED_FUNCTIONS) || \
-    defined(DISABLE_DEPRECATION_WARNINGS)
+#if defined(QUEST_FLOAT_PRECISION)              || \
+    defined(QUEST_COMPILE_OMP)                  || \
+    defined(QUEST_COMPILE_MPI)                  || \
+    defined(QUEST_COMPILE_SUBCOMM)              || \
+    defined(QUEST_COMPILE_CUDA)                 || \
+    defined(QUEST_COMPILE_HIP)                  || \
+    defined(QUEST_COMPILE_CUQUANTUM)            || \
+    defined(QUEST_ENABLE_NUMA)                  || \
+    defined(QUEST_INCLUDE_DEPRECATED_FUNCTIONS) || \
+    defined(QUEST_DISABLE_DEPRECATION_WARNINGS)
 
     #error "Pre-config macros were erroneously passed directly to the source rather than through the CMake config file."
 
@@ -71,24 +72,26 @@
 
 
 // crucial to user source (informs API)
-#cmakedefine FLOAT_PRECISION @FLOAT_PRECISION@
-#cmakedefine01 INCLUDE_DEPRECATED_FUNCTIONS
-#cmakedefine01 DISABLE_DEPRECATION_WARNINGS
+#cmakedefine QUEST_FLOAT_PRECISION @QUEST_FLOAT_PRECISION@
+#cmakedefine01 QUEST_INCLUDE_DEPRECATED_FUNCTIONS
+#cmakedefine01 QUEST_DISABLE_DEPRECATION_WARNINGS
 
 
 // crucial to QuEST source (informs external library usage)
-#cmakedefine01 COMPILE_OPENMP
-#cmakedefine01 COMPILE_MPI
-#cmakedefine01 COMPILE_CUDA
-#cmakedefine01 COMPILE_CUQUANTUM
+#cmakedefine01 QUEST_COMPILE_OMP
+#cmakedefine01 QUEST_COMPILE_MPI
+#cmakedefine01 QUEST_COMPILE_SUBCOMM
+#cmakedefine01 QUEST_COMPILE_CUDA
+#cmakedefine01 QUEST_COMPILE_CUQUANTUM
+#cmakedefine01 QUEST_COMPILE_HIP
 
 
-// not actually a CMake option (user cannot disable) but nonetheless crucial
-#cmakedefine01 NUMA_AWARE
+// crucial to QuEST source (informs optional NUMA usage)
+#cmakedefine01 QUEST_ENABLE_NUMA
 
 
-// not consulted by src (included for book-keeping)
-#cmakedefine01 COMPILE_HIP
+// default parameters which may have been tuned for performance when building the library
+#cmakedefine QUEST_UNSPECIFIED_DEFAULT_NUM_GPU_THREADS_PER_BLOCK @QUEST_UNSPECIFIED_DEFAULT_NUM_GPU_THREADS_PER_BLOCK@
 
 
 
@@ -115,15 +118,16 @@
  */
 
 
-#if ! defined(FLOAT_PRECISION)              || \
-    ! defined(COMPILE_OPENMP)               || \
-    ! defined(COMPILE_MPI)                  || \
-    ! defined(COMPILE_CUDA)                 || \
-    ! defined(COMPILE_HIP)                  || \
-    ! defined(COMPILE_CUQUANTUM)            || \
-    ! defined(NUMA_AWARE)                   || \
-    ! defined(INCLUDE_DEPRECATED_FUNCTIONS) || \
-    ! defined(DISABLE_DEPRECATION_WARNINGS)
+#if ! defined(QUEST_FLOAT_PRECISION)              || \
+    ! defined(QUEST_COMPILE_OMP)                  || \
+    ! defined(QUEST_COMPILE_MPI)                  || \
+    ! defined(QUEST_COMPILE_SUBCOMM)              || \
+    ! defined(QUEST_COMPILE_CUDA)                 || \
+    ! defined(QUEST_COMPILE_HIP)                  || \
+    ! defined(QUEST_COMPILE_CUQUANTUM)            || \
+    ! defined(QUEST_ENABLE_NUMA)                  || \
+    ! defined(QUEST_INCLUDE_DEPRECATED_FUNCTIONS) || \
+    ! defined(QUEST_DISABLE_DEPRECATION_WARNINGS)
 
     #error "Expected macros were not defined by the config.h header, possibly because their corresponding CMake variables were not substituted."
 
@@ -142,14 +146,15 @@
  */
 
 
-#if ! (COMPILE_OPENMP               == 0 || COMPILE_OPENMP               == 1) || \
-    ! (COMPILE_MPI                  == 0 || COMPILE_MPI                  == 1) || \
-    ! (COMPILE_CUDA                 == 0 || COMPILE_CUDA                 == 1) || \
-    ! (COMPILE_HIP                  == 0 || COMPILE_HIP                  == 1) || \
-    ! (COMPILE_CUQUANTUM            == 0 || COMPILE_CUQUANTUM            == 1) || \
-    ! (NUMA_AWARE                   == 0 || NUMA_AWARE                   == 1) || \
-    ! (INCLUDE_DEPRECATED_FUNCTIONS == 0 || INCLUDE_DEPRECATED_FUNCTIONS == 1) || \
-    ! (DISABLE_DEPRECATION_WARNINGS == 0 || DISABLE_DEPRECATION_WARNINGS == 1)
+#if ! (QUEST_COMPILE_OMP                  == 0 || QUEST_COMPILE_OMP                  == 1) || \
+    ! (QUEST_COMPILE_MPI                  == 0 || QUEST_COMPILE_MPI                  == 1) || \
+    ! (QUEST_COMPILE_SUBCOMM              == 0 || QUEST_COMPILE_SUBCOMM              == 1) || \
+    ! (QUEST_COMPILE_CUDA                 == 0 || QUEST_COMPILE_CUDA                 == 1) || \
+    ! (QUEST_COMPILE_HIP                  == 0 || QUEST_COMPILE_HIP                  == 1) || \
+    ! (QUEST_COMPILE_CUQUANTUM            == 0 || QUEST_COMPILE_CUQUANTUM            == 1) || \
+    ! (QUEST_ENABLE_NUMA                  == 0 || QUEST_ENABLE_NUMA                  == 1) || \
+    ! (QUEST_INCLUDE_DEPRECATED_FUNCTIONS == 0 || QUEST_INCLUDE_DEPRECATED_FUNCTIONS == 1) || \
+    ! (QUEST_DISABLE_DEPRECATION_WARNINGS == 0 || QUEST_DISABLE_DEPRECATION_WARNINGS == 1)
 
     #error "A macro defined by the config.h header (as inferred from a CMake variable) had an illegal value."
 

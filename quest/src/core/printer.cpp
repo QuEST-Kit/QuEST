@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <iomanip>
+#include <cstdio>
 #include <sstream>
 #include <memory>
 #include <vector>
@@ -168,6 +169,26 @@ void printer_setPauliStrFormat(int flag) {
 
 
 /*
+ * MULTI-PROCESS MANAGEMENT
+ */
+
+
+void printer_sync() {
+
+    // make all participating processes flush, to improve the chance
+    // that user-printing from non-root processes reaches the screen
+    // before QuEST begins to print from the root process
+    std::cout << std::flush; // C++ buffer
+    fflush(stdout);          // C buffer
+
+    // wait for all process flushes to complete, which defers non-root
+    // processes from printing until after root has finished printing
+    comm_sync();
+}
+
+
+
+/*
  * TYPE NAME STRINGS
  */
 
@@ -228,6 +249,10 @@ inline std::string demangleTypeName(const char* mangledName) {
 // type T can be anything in principle, although it's currently only used for qcomp
 template <typename T>
 std::string getTypeName(T _unused) {
+
+    // Shut those obnovioux compilers right up
+    (void) _unused;
+
     // For MSVC, typeid(T).name() typically returns something like "class Foo"
     // or "struct Foo", but it's still not exactly "Foo".
     // For GCC/Clang, you get a raw "mangled" name, e.g. "N3FooE".
@@ -258,7 +283,7 @@ string printer_getQindexType() {
 
 string printer_getFloatPrecisionFlag() {
 
-    return GET_STR( FLOAT_PRECISION );
+    return GET_STR( QUEST_FLOAT_PRECISION );
 }
 
 

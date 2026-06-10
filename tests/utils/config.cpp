@@ -40,37 +40,52 @@ int getIntEnvVarValueOrDefault(string name, int defaultValue) {
 
 
 /*
- * PUBLIC
- *
- * which each call std::getenv only once
+ * PUBLIC TEST ENV VARS
  */
 
 int getNumQubitsInUnitTestedQuregs() {
 
-    static int value = getIntEnvVarValueOrDefault("TEST_NUM_QUBITS_IN_QUREG", 6);
+    static int value = getIntEnvVarValueOrDefault("QUEST_TEST_NUM_QUBITS_IN_QUREG", 6);
     return value;
 }
 
 int getMaxNumTestedQubitPermutations() {
 
-    static int value = getIntEnvVarValueOrDefault("TEST_MAX_NUM_QUBIT_PERMUTATIONS", 0);
+    static int value = getIntEnvVarValueOrDefault("QUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS", 0);
     return value;
 }
 
 int getMaxNumTestedSuperoperatorTargets() {
 
-    static int value = getIntEnvVarValueOrDefault("TEST_MAX_NUM_SUPEROP_TARGETS", 4);
+    static int value = getIntEnvVarValueOrDefault("QUEST_TEST_MAX_NUM_SUPEROP_TARGETS", 4);
     return value;
 }
 
 int getNumTestedMixedDeploymentRepetitions() {
 
-    static int value = getIntEnvVarValueOrDefault("TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS", 10);
+    static int value = getIntEnvVarValueOrDefault("QUEST_TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS", 10);
     return value;
 }
 
 bool getWhetherToTestAllDeployments() {
 
-    static bool value = getIntEnvVarValueOrDefault("TEST_ALL_DEPLOYMENTS", 1);
+    static bool value = getIntEnvVarValueOrDefault("QUEST_TEST_TRY_ALL_DEPLOYMENTS", 1);
+    return value;
+}
+
+
+
+/*
+ * PUBLIC QUEST ENV VARS
+ */
+
+int getDefaultNumGpuThreadsPerBlock() {
+
+    // when the env-var is not present, we MUST return the default assumed by the QuEST src code,
+    // which at the time of writing, is a fixed 128 (rather than hardware-specific value)
+    const int compileTimeDefaultTPB = 128;
+
+    // when the env-var is present, we consult that, just like QuEST
+    static int value = getIntEnvVarValueOrDefault("QUEST_NUM_GPU_THREADS_PER_BLOCK", compileTimeDefaultTPB);
     return value;
 }

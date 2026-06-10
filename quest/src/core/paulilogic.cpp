@@ -9,6 +9,7 @@
 #include "quest/include/qureg.h"
 
 #include "quest/src/core/paulilogic.hpp"
+#include "quest/src/core/lists.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/errors.hpp"
@@ -113,7 +114,7 @@ int paulis_getSignOfPauliStrConj(PauliStr str) {
 }
 
 
-int paulis_getPrefixZSign(Qureg qureg, vector<int> prefixZ) {
+int paulis_getPrefixZSign(Qureg qureg, ConstList64 prefixZ) {
 
     int sign = 1;
 
@@ -125,7 +126,7 @@ int paulis_getPrefixZSign(Qureg qureg, vector<int> prefixZ) {
 }
 
 
-qcomp paulis_getPrefixPaulisElem(Qureg qureg, vector<int> prefixY, vector<int> prefixZ) {
+qcomp paulis_getPrefixPaulisElem(Qureg qureg, ConstList64 prefixY, ConstList64 prefixZ) {
 
     // each Z contributes +- 1
     qcomp elem = paulis_getPrefixZSign(qureg, prefixZ);
@@ -138,12 +139,10 @@ qcomp paulis_getPrefixPaulisElem(Qureg qureg, vector<int> prefixY, vector<int> p
 }
 
 
-vector<int> paulis_getTargetInds(PauliStr str) {
+List64 paulis_getTargetInds(PauliStr str) {
 
     int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
-
-    vector<int> inds(0);
-    inds.reserve(maxInd+1);
+    auto inds = lists_getEmptyList64();
 
     for (int i=0; i<=maxInd; i++)
         if (paulis_getPauliAt(str, i) != 0) // Id
@@ -170,12 +169,14 @@ qindex paulis_getTargetBitMask(PauliStr str) {
 }
 
 
-std::array<vector<int>,3> paulis_getSeparateInds(PauliStr str) {
+std::array<List64,3> paulis_getSeparateInds(PauliStr str) {
 
-    vector<int> iXYZ = paulis_getTargetInds(str);
-    vector<int> iX, iY, iZ;
+    auto iXYZ = paulis_getTargetInds(str);
+    auto iX = lists_getEmptyList64();
+    auto iY = lists_getEmptyList64();
+    auto iZ = lists_getEmptyList64();
 
-    vector<int>* ptrs[] = {&iX, &iY, &iZ};
+    List64* ptrs[] = {&iX, &iY, &iZ};
 
     for (int i : iXYZ)
         ptrs[paulis_getPauliAt(str, i) - 1]->push_back(i);

@@ -11,7 +11,7 @@
 Version 4 of QuEST includes reworked CMake to support library builds, CMake export, and installation. Here we detail useful variables to configure the compilation of QuEST. If using a Unix-like operating system, any of these variables can be set using the `-D` flag when invoking CMake, for example:
 
 ```
-cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/QuEST -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DENABLE_MULTITHREADING=ON -DENABLE_DISTRIBUTION=OFF ./
+cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/QuEST -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DQUEST_ENABLE_OMP=ON -DQUEST_ENABLE_MPI=OFF ./
 ```
 
 Then, as detailed in [`compile.md`](compile.md), one need only move to the build directory and compile by invoking make:
@@ -32,21 +32,23 @@ make
 
 | Variable | (Default) Values | Notes |
 | -------- | ---------------- | ----- |
-| `LIB_NAME` | (`QuEST`), String | The QuEST library will be named `lib${LIB_NAME}.so`. Can be used to differentiate multiple versions of QuEST which have been compiled. |
-| `VERBOSE_LIB_NAME` | (`OFF`), `ON` | When turned on `LIB_NAME` will be modified according to the other configuration options chosen. For example compiling QuEST with multithreading, distribution, and double precision with `VERBOSE_LIB_NAME` turned on creates `libQuEST-fp2+mt+mpi.so`. |
-| `FLOAT_PRECISION` | (`2`), `1`, `4` | Determines which floating-point precision QuEST will use: double, single, or quad. *Note: Quad precision is not supported when also compiling for GPU.* |
-| `BUILD_EXAMPLES` | (`OFF`), `ON` | Determines whether the example programs will be built alongside QuEST. Note that `min_example` is always built. |
-| `INSTALL_BINARIES` | (`OFF`), `ON` | Determines whether compiled binaries such as the examples will be installed as well as the QuEST library. |
-| `ENABLE_MULTITHREADING` | (`ON`), `OFF` | Determines whether QuEST will be built with support for parallelisation with OpenMP. |
-| `ENABLE_DISTRIBUTION` | (`OFF`), `ON` | Determines whether QuEST will be built with support for parallelisation with MPI. |
-| `ENABLE_CUDA` | (`OFF`), `ON` | Determines whether QuEST will be built with support for NVIDIA GPU acceleration. If turned on, `CMAKE_CUDA_ARCHITECTURES` should probably also be set. |
-| `ENABLE_CUQUANTUM` | (`OFF`), `ON` | Determines whether QuEST will make use of the NVIDIA CuQuantum library. Cannot be turned on if `ENABLE_CUDA` is off. |
-| `ENABLE_HIP` | (`OFF`), `ON` | Determines whether QuEST will be built with support for AMD GPU acceleration. If turned on, `CMAKE_HIP_ARCHITECTURES` should probably also be set. |
-| `ENABLE_DEPRECATED_API` | (`OFF`), `ON` | Determines whether QuEST will be built with support for the deprecated (v3) API. ***Note**: this will generate compiler warnings and is not supported by MSVC.* |
-| `DISABLE_DEPRECATION_WARNINGS` | (`OFF`), `ON` | Whether to disable the compile-time deprecation warnings when using the deprecated (v3) API. |
-| `USER_SOURCE` | (Undefined), String | The source file for a user program which will be compiled alongside QuEST. `OUTPUT_EXE` *must* also be defined. |
-| `OUTPUT_EXE` | (Undefined), String | The name of the executable which will be created from the provided `USER_SOURCE`. `USER_SOURCE` *must* also be defined. |
-
+| `QUEST_OUTPUT_LIB_NAME` | (`QuEST`), String | The QuEST library will be named `lib${QUEST_OUTPUT_LIB_NAME}.so`. Can be used to differentiate multiple versions of QuEST which have been compiled. |
+| `QUEST_APPEND_CONFIG_TO_LIB_NAME` | (`OFF`), `ON` | When turned on `QUEST_OUTPUT_LIB_NAME` will be modified according to the other configuration options chosen. For example compiling QuEST with multithreading, distribution, and double precision with `QUEST_APPEND_CONFIG_TO_LIB_NAME` turned on creates `libQuEST-fp2+mt+mpi.so`. |
+| `QUEST_FLOAT_PRECISION` | (`2`), `1`, `4` | Determines which floating-point precision QuEST will use: double, single, or quad. *Note: Quad precision is not supported when also compiling for GPU.* |
+| `QUEST_BUILD_EXAMPLES` | (`OFF`), `ON` | Determines whether the example programs will be built alongside QuEST. Note that `min_example` is always built. |
+| `QUEST_INSTALL_BINARIES` | (`OFF`), `ON` | Determines whether compiled binaries such as the examples will be installed as well as the QuEST library. |
+| `QUEST_ENABLE_OMP` | (`ON`), `OFF` | Determines whether QuEST will be built with support for parallelisation with OpenMP. |
+| `QUEST_ENABLE_NUMA` | (`ON`), `OFF` | Determines whether QuEST will attempt to build with NUMA awareness when OpenMP is also enabled. |
+| `QUEST_ENABLE_MPI` | (`OFF`), `ON` | Determines whether QuEST will be built with support for parallelisation with MPI. |
+| `QUEST_ENABLE_SUBCOMM` | (`OFF`), `ON` | Determines whether QuEST will be built with support for custom MPI communicators. _**Note**: This has the unfortunate side-effect of requiring the MPI header in the public header for QuEST, meaning MPI will become a dependency of any application or library which includes the QuEST header whether it uses MPI or not._ |
+| `QUEST_ENABLE_CUDA` | (`OFF`), `ON` | Determines whether QuEST will be built with support for NVIDIA GPU acceleration. If turned on, `CMAKE_CUDA_ARCHITECTURES` should probably also be set. |
+| `QUEST_ENABLE_CUQUANTUM` | (`OFF`), `ON` | Determines whether QuEST will make use of the NVIDIA CuQuantum library. Cannot be turned on if `QUEST_ENABLE_CUDA` is off. |
+| `QUEST_ENABLE_HIP` | (`OFF`), `ON` | Determines whether QuEST will be built with support for AMD GPU acceleration. If turned on, `CMAKE_HIP_ARCHITECTURES` should probably also be set. |
+| `QUEST_ENABLE_DEPRECATED_API` | (`OFF`), `ON` | Determines whether QuEST will be built with support for the deprecated (v3) API. ***Note**: this will generate compiler warnings and is not supported by MSVC.* |
+| `QUEST_DISABLE_DEPRECATION_WARNINGS` | (`OFF`), `ON` | Whether to disable the compile-time deprecation warnings when using the deprecated (v3) API. |
+| `USER_SOURCE_NAMES` | (Undefined), String | The source file for a user program which will be compiled alongside QuEST. `USER_OUTPUT_EXE_NAME` *must* also be defined. |
+| `USER_OUTPUT_EXE_NAME` | (Undefined), String | The name of the executable which will be created from the provided `USER_SOURCE_NAMES`. `USER_SOURCE_NAMES` *must* also be defined. |
+| `QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK` | (128), Number | The default number of threads per block QuEST will use when offloading to a GPU. *Must* be a multiple of 32 (on NVIDIA GPUs) or 64 (on AMD GPUs). This CMake variable sets the default if not later overridden. The number can be overridden at process launch time using an [environment variable](https://quest-kit.github.io/QuEST/group__modes.html#gaf1b71f54d270d3353fe072c66827339b) of the same name, or during runtime using [`setQuESTNumGpuThreadsPerBlock()`](https://quest-kit.github.io/QuEST/group__experimental.html#gae35a55c6d9366ce677e6aaaf4c1ff5ef). |
 
 
 
@@ -56,11 +58,11 @@ make
 
 | Variable | (Default) Values | Notes |
 | -------- | ---------------- | ----- |
-| `ENABLE_TESTING` | (`OFF`), `ON` | Determines whether to additionally build QuEST's unit and integration tests. If built, tests can be run from the `build` directory with `make test`, or `ctest`, or manually launched with `./tests/tests` which enables distribution (i.e. `mpirun -np 8 ./tests/tests`) |
-| `ENABLE_DEPRECATED_API` | (`OFF`), `ON` | As described above. When enabled alongside testing, the `v3 deprecated` unit tests will additionally be compiled and can be run from within `build` via `cd tests/deprecated; ctest`, or manually launched with `./tests/deprecated/dep_tests` (enabling distribution, as above).
-| `DOWNLOAD_CATCH2` | (`ON`), `OFF` | QuEST's tests require Catch2. By default, if you don't have Catch2 installed (or CMake doesn't find it) it will be downloaded from Github and built for you. If you don't want that to happen, for example because you _do_ have Catch2 installed, set this to `OFF`. |
+| `QUEST_BUILD_TESTS` | (`OFF`), `ON` | Determines whether to additionally build QuEST's unit and integration tests. If built, tests can be run from the `build` directory with `make test`, or `ctest`, or manually launched with `./tests/tests` which enables distribution (i.e. `mpirun -np 8 ./tests/tests`) |
+| `QUEST_ENABLE_DEPRECATED_API` | (`OFF`), `ON` | As described above. When enabled alongside testing, the `v3 deprecated` unit tests will additionally be compiled and can be run from within `build` via `cd tests/deprecated; ctest`, or manually launched with `./tests/deprecated/dep_tests` (enabling distribution, as above).
+| `QUEST_TESTS_DOWNLOAD_CATCH2` | (`ON`), `OFF` | QuEST's tests require Catch2. By default, if you don't have Catch2 installed (or CMake doesn't find it) it will be downloaded from Github and built for you. If you don't want that to happen, for example because you _do_ have Catch2 installed, set this to `OFF`. |
 
-> As of `v4.2`, macros which configure the unit tests such as `TEST_MAX_NUM_QUBIT_PERMUTATIONS` have become environment variables specified before launch. See [`launch.md`](launch.md)
+> As of `v4.2`, macros which configure the unit tests such as `QUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS` have become environment variables specified before launch. See [`launch.md`](launch.md)
 
 ---------------------------
 
