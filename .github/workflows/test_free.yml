@@ -59,12 +59,6 @@ jobs:
       - name: Get QuEST
         uses: actions/checkout@main
 
-      # free space for big-chungus ADIOS2 installation
-      - name: Free disk space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-
       # compile serial unit tests, optionally include deprecated test
       - name: Configure CMake
         run: >
@@ -76,9 +70,9 @@ jobs:
           -DQUEST_FLOAT_PRECISION=${{ matrix.precision }}
           -DQUEST_ENABLE_CHECKPOINTING=ON
 
-      # force 'Release' build (needed by MSVC to enable optimisations)
+      # force 'Release' build (needed by MSVC to enable optimisations), and force serial (to avoid ADIOS2 OOM)
       - name: Compile
-        run: cmake --build ${{ env.build_dir }} --config Release --parallel
+        run: cmake --build ${{ env.build_dir }} --config Release --parallel 1
 
       # run v4 unit tests in random order, excluding the integration tests,
       # using the default environment variables (e.g. test all permutations)

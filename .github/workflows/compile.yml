@@ -159,9 +159,9 @@ jobs:
     # perform the job
     steps:
 
-      # free space for big-chungus ROCm compiler, and ADIOS2 installation (only times out on Linux)
+      # free space for big-chungus ROCm compiler
       - name: Free disk space
-        if: ${{ (matrix.hip == 'ON' || matrix.adios2 == 'ON') && matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.hip == 'ON' }}
         uses: jlumbroso/free-disk-space@main
         with:
           tool-cache: false
@@ -257,9 +257,10 @@ jobs:
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
           -DCMAKE_CXX_FLAGS=${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' && '-fno-lto' || '' }}
 
-      # force 'Release' build (needed by MSVC to enable optimisations)
+      # force 'Release' build (needed by MSVC to enable optimisations),
+      # temporarily forcing serial compilation to avoid ADIOS2 OOM error
       - name: Compile
-        run: cmake --build ${{ env.build_dir }} --config Release --parallel
+        run: cmake --build ${{ env.build_dir }} --config Release --parallel 1
 
       # run all compiled isolated examples to test for link-time errors,
       # continuing if any fail (since some deliberately fail)
