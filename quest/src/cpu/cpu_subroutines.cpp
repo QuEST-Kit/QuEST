@@ -41,6 +41,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <cmath>
 
 using std::vector;
 
@@ -607,7 +608,8 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
 
                 // i = nth local index where ctrls are active and targs form value k
                 qindex i = setBits(i0, targs.data(), numTargBits, k); // loop may be unrolled
-                amps[i] = getCpuQcomp(0, 0);
+                cpu_qcomp sum = getCpuQcomp(0, 0);
+                cpu_qcomp compensation = getCpuQcomp(0, 0);
             
                 // loop may be unrolled
                 for (qindex j=0; j<numTargAmps; j++) {
@@ -624,18 +626,26 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
                     if constexpr (ApplyConj)
                         elem = conj(elem);
 
-                    amps[i] += elem * cache[j];
+                    cpu_qcomp term = elem * cache[j];
 
-                    /// @todo
-                    /// qureg.cpuAmps[i] is being serially updated by only this thread,
-                    /// so is a candidate for Kahan summation for improved numerical
-                    /// stability. Explore whether this is time-free and worthwhile!
-                    ///
-                    /// BEWARE that Kahan summation may be incompatible with
-                    /// the commutator tricks used in base_qcomp's (ancestor
-                    /// of cpu_qcomp) arithmetic operator overloads. Check
-                    /// base_qcomp.hpp before implementing compensation.
+                    // base_qcomp avoids std::complex in this hot loop, so use
+                    // explicit Neumaier compensation for each component.
+                    qreal tRe = sum.re + term.re;
+                    if (std::abs(sum.re) >= std::abs(term.re))
+                        compensation.re += (sum.re - tRe) + term.re;
+                    else
+                        compensation.re += (term.re - tRe) + sum.re;
+                    sum.re = tRe;
+
+                    qreal tIm = sum.im + term.im;
+                    if (std::abs(sum.im) >= std::abs(term.im))
+                        compensation.im += (sum.im - tIm) + term.im;
+                    else
+                        compensation.im += (term.im - tIm) + sum.im;
+                    sum.im = tIm;
                 }
+
+                amps[i] = sum + compensation;
             }
         }
     }
