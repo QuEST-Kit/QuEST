@@ -93,7 +93,7 @@ __global__ void kernel_statevec_packAmpsIntoBuffer(
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumCtrls, qubits.length);
 
     // i = nth local index where qubits are active
-    qindex i = insertBitsWithMaskedValues(n, qubits.indices, numBits, qubitStateMask);
+    qindex i = insertBitsWithMaskedValues(n, qubits.data(), numBits, qubitStateMask);
 
     // caller offsets buffer by sub-buffer send-index
     buffer[n] = amps[i];
@@ -131,7 +131,7 @@ __global__ void kernel_statevec_anyCtrlSwap_subA(
     int numQubitBits = 2 + numCtrlBits;
 
     // i01 = nth local index where ctrls are active, targ2=0 and targ1=1
-    qindex i01 = insertBitsWithMaskedValues(n, ctrlsAndTargs.indices, numQubitBits, ctrlsAndTargsMask);
+    qindex i01 = insertBitsWithMaskedValues(n, ctrlsAndTargs.data(), numQubitBits, ctrlsAndTargsMask);
     qindex i10 = flipTwoBits(i01, targ2, targ1);
 
     // swap amps
@@ -152,7 +152,7 @@ __global__ void kernel_statevec_anyCtrlSwap_subB(
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.length);
 
     // i = nth local index where ctrls are active
-    qindex i = insertBitsWithMaskedValues(n, ctrls.indices, numCtrlBits, ctrlStateMask);
+    qindex i = insertBitsWithMaskedValues(n, ctrls,.data() numCtrlBits, ctrlStateMask);
 
     // caller offsets buffer if necessary
     amps[i] = buffer[n];
@@ -171,7 +171,7 @@ __global__ void kernel_statevec_anyCtrlSwap_subC(
     int numQubitBits = numCtrlBits + 1;
 
     // i = nth local index where ctrls and targ are in specified states
-    qindex i = insertBitsWithMaskedValues(n, ctrlsAndTarg.indices, numQubitBits, ctrlsAndTargMask);
+    qindex i = insertBitsWithMaskedValues(n, ctrlsAndTarg.data(), numQubitBits, ctrlsAndTargMask);
 
     // caller offsets buffer if necessary
     amps[i] = buffer[n];
@@ -220,7 +220,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.length);
 
     // i = nth local index where ctrl bits are active
-    qindex i = insertBitsWithMaskedValues(n, ctrls.indices, numCtrlBits, ctrlStateMask);
+    qindex i = insertBitsWithMaskedValues(n, ctrls.data(), numCtrlBits, ctrlStateMask);
 
     // caller offsets buffer by receive-index
     amps[i] = fac0*amps[i] + fac1*buffer[n];
@@ -248,7 +248,7 @@ __global__ void kernel_statevec_anyCtrlTwoTargDenseMatr_sub(
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTarg.length);
 
     // i00 = nth local index where ctrls are active and both targs are 0
-    qindex i00 = insertBitsWithMaskedValues(n, ctrlsAndTarg.indices, numCtrlBits + 2, ctrlStateMask);
+    qindex i00 = insertBitsWithMaskedValues(n, ctrlsAndTarg.data(), numCtrlBits + 2, ctrlStateMask);
     qindex i01 = flipBit(i00, targ1);
     qindex i10 = flipBit(i00, targ2);
     qindex i11 = flipBit(i01, targ2);
@@ -310,14 +310,14 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
     constexpr qindex numTargAmps = (1 << NumTargs); // explicit, in lieu of powerOf2
 
     // i0 = nth local index where ctrls are active and targs are all zero
-    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs.indices, numCtrlBits + NumTargs, ctrlsAndTargsMask); // loop may be unrolled
+    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs.data(), numCtrlBits + NumTargs, ctrlsAndTargsMask); // loop may be unrolled
 
     // populate cache (force unroll to ensure compile-time cache indices)
     #pragma unroll  
     for (qindex k=0; k<numTargAmps; k++) {
 
         // i = nth local index where ctrls are active and targs form value k
-        qindex i = setBits(i0, targs.indices, NumTargs, k); // loop will be unrolled
+        qindex i = setBits(i0, targs.data(), NumTargs, k); // loop will be unrolled
 
         // write to thread-private cache at compile-time known index
         privateCache[k] = amps[i];
@@ -327,7 +327,7 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
     for (qindex k=0; k<numTargAmps; k++) {
 
         // i = nth local index where ctrls are active and targs form value k
-        qindex i = setBits(i0, targs.indices, NumTargs, k); // loop will be unrolled
+        qindex i = setBits(i0, targs.data(), NumTargs, k); // loop will be unrolled
         amps[i] = getGpuQcomp(0, 0);
     
         // force unroll to ensure compile-time cache indices
@@ -372,13 +372,13 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
         qindex n = t + b * numThreads;
 
         // i0 = nth local index where ctrls are active and targs are all zero
-        qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs.indices, numCtrlBits + targs.length, ctrlsAndTargsMask);
+        qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs.data(), numCtrlBits + targs.length, ctrlsAndTargsMask);
 
         // collect and cache all to-be-modified amps (loop might be unrolled)        
         for (qindex k=0; k<numTargAmps; k++) {
 
             // i = nth local index where ctrls are active and targs form value k
-            qindex i = setBits(i0, targs.indices, targs.length, k); // loop may be unrolled
+            qindex i = setBits(i0, targs.data(), targs.length, k); // loop may be unrolled
 
             // j = index of k-th element of thread's private cache partition
             qindex j = getThreadsNthGlobalArrInd(k, t, numThreads);
@@ -389,7 +389,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
         for (qindex k=0; k<numTargAmps; k++) {
 
             // i = nth local index where ctrls are active and targs form value k
-            qindex i = setBits(i0, targs.indices, targs.length, k); // loop may be unrolled
+            qindex i = setBits(i0, targs.data(), targs.length, k); // loop may be unrolled
             amps[i] = getGpuQcomp(0, 0);
         
             for (qindex l=0; l<numTargAmps; l++) {
@@ -535,7 +535,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
 
     // t = value of targeted bits, which may be in the prefix substate
-    qindex t = getValueOfBits(i, targs.indices, numTargBits);
+    qindex t = getValueOfBits(i, targs.data(), numTargBits);
 
     gpu_qcomp elem = elems[t];
 
@@ -619,10 +619,10 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
     qindex v = t % numInnerIts;
 
     // i0 = nth local index where ctrls are active and targs are all zero (loop therein may be unrolled)
-    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs.indices, numCtrlBits + numTargBits, ctrlsAndTargsStateMask);
+    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs.data(), numCtrlBits + numTargBits, ctrlsAndTargsStateMask);
 
     // iA = nth local index where targs have value v, iB = (last - nth) such index
-    qindex iA = setBits(i0, targsXY.indices, numTargBits, v); // may be unrolled
+    qindex iA = setBits(i0, targsXY.data(), numTargBits, v); // may be unrolled
     qindex iB = flipBits(iA, maskXY);
 
     // determine whether to multiply amps by +-1 or +-i
@@ -653,7 +653,7 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.length);
 
     // i = nth local index where ctrl bits are in specified states
-    qindex i = insertBitsWithMaskedValues(n, ctrls.indices, numCtrlBits, ctrlStateMask);
+    qindex i = insertBitsWithMaskedValues(n, ctrls.data(), numCtrlBits, ctrlStateMask);
 
     // j = buffer index of amp to be mixed with i
     qindex j = flipBits(n, bufferMaskXY);
@@ -687,7 +687,7 @@ __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.length);
 
     // i = nth local index where ctrl bits are in specified states
-    qindex i = insertBitsWithMaskedValues(n, ctrls.indices, numCtrlBits, ctrlStateMask);
+    qindex i = insertBitsWithMaskedValues(n, ctrls.data(), numCtrlBits, ctrlStateMask);
 
     // apply phase to amp depending on parity of targets in global index 
     int p = cudaGetBitMaskParity(i & targMask);
@@ -1145,7 +1145,7 @@ __global__ void kernel_densmatr_partialTrace_sub(
     /// should change the parallelisation axis in this scenario, or preclude it with validation!
 
     // k = nth local index of inQureg where all targs and pairs are zero
-    qindex k = insertBits(n, allTargs.indices, numAllTargs, 0); // loop may be unrolled
+    qindex k = insertBits(n, allTargs.data(), numAllTargs, 0); // loop may be unrolled
 
     // each outQureg amp results from summing 2^targs inQureg amps
     gpu_qcomp outAmp = getGpuQcomp(0, 0);
@@ -1155,8 +1155,8 @@ __global__ void kernel_densmatr_partialTrace_sub(
 
         // i = nth local index of inQureg where targs=j and pairTargs=j
         qindex i = k;
-        i = setBits(i, ketTargs.indices,  numTargPairs, j); // loops may be unrolled
-        i = setBits(i, pairTargs.indices, numTargPairs, j);
+        i = setBits(i, ketTargs.data(),  numTargPairs, j); // loops may be unrolled
+        i = setBits(i, pairTargs.data(), numTargPairs, j);
 
         outAmp += ampsIn[i];
     }
@@ -1194,7 +1194,7 @@ __global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
     qindex i = concatenateBits(rank, n, logNumAmpsPerNode);
 
     // j = outcome index corresponding to prob
-    qindex j = getValueOfBits(i, qubits.indices, numBits); // loop therein may be unrolled
+    qindex j = getValueOfBits(i, qubits.data(), numBits); // loop therein may be unrolled
 
     atomicAdd(&outProbs[j], prob);
 }
@@ -1220,7 +1220,7 @@ __global__ void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
     qindex j = concatenateBits(rank, i, logNumAmpsPerNode);
 
     // k = outcome index corresponding to 
-    qindex k = getValueOfBits(j, qubits.indices, numBits); // loop therein may be unrolled
+    qindex k = getValueOfBits(j, qubits.data(), numBits); // loop therein may be unrolled
 
     atomicAdd(&outProbs[k], prob);
 }
