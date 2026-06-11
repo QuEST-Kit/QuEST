@@ -193,7 +193,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrl.size());
 
     // i0 = nth local index where ctrls are active and targ is 0
     qindex i0 = insertBitsWithMaskedValues(n, ctrl.data(), numCtrlBits + 1, ctrlStateMask);
@@ -445,7 +445,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
     /// We should verify this!
 
     // use template params to compile-time unroll loops in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrl.size());
 
     // j = nth local index where ctrls are active (in the specified states)
     qindex j = insertBitsWithMaskedValues(n, ctrl.data(), numCtrlBits, ctrlStateMask);
@@ -484,7 +484,7 @@ __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
     /// We should verify this!
 
     // use template params to compile-time unroll loops in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrl.size());
 
     // j = nth local index where ctrls are active (in the specified states)
     qindex j = insertBitsWithMaskedValues(n, ctrl.data(), numCtrlBits, ctrlStateMask);
@@ -525,7 +525,7 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     /// We should verify this!
 
     // use template params to compile-time unroll loops in insertBits() and getValueOfBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrl.size());
     SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, targs.size());
 
     // j = nth local index where ctrls are active (in the specified states)
