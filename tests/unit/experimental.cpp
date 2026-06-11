@@ -84,7 +84,7 @@ TEST_CASE( "setQuESTNumGpuThreadsPerBlock", TEST_CATEGORY ) {
 
         SECTION( "Exceeds device maximum" ) {
 
-            int badNumTPB = 999999; // exceeds expected 1024 max
+            int badNumTPB = 102400; // exceeds expected 1024 max
 
             // Cannot be tested (since validation not imposed) when GPU is not actively used
             if (getQuESTEnv().isGpuAccelerated)
