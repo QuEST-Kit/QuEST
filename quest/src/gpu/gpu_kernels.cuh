@@ -90,7 +90,7 @@ __global__ void kernel_statevec_packAmpsIntoBuffer(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumCtrls, qubits.length);
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumCtrls, qubits.size());
 
     // i = nth local index where qubits are active
     qindex i = insertBitsWithMaskedValues(n, qubits.data(), numBits, qubitStateMask);
@@ -127,7 +127,7 @@ __global__ void kernel_statevec_anyCtrlSwap_subA(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.length);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.size());
     int numQubitBits = 2 + numCtrlBits;
 
     // i01 = nth local index where ctrls are active, targ2=0 and targ1=1
@@ -149,7 +149,7 @@ __global__ void kernel_statevec_anyCtrlSwap_subB(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.length);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
     // i = nth local index where ctrls are active
     qindex i = insertBitsWithMaskedValues(n, ctrls.data(), numCtrlBits, ctrlStateMask);
@@ -217,7 +217,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.length);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
     // i = nth local index where ctrl bits are active
     qindex i = insertBitsWithMaskedValues(n, ctrls.data(), numCtrlBits, ctrlStateMask);
@@ -245,7 +245,7 @@ __global__ void kernel_statevec_anyCtrlTwoTargDenseMatr_sub(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTarg.length);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTarg.size());
 
     // i00 = nth local index where ctrls are active and both targs are 0
     qindex i00 = insertBitsWithMaskedValues(n, ctrlsAndTarg.data(), numCtrlBits + 2, ctrlStateMask);
@@ -306,7 +306,7 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
     REGISTER gpu_qcomp privateCache[1 << NumTargs];
 
     // we know NumTargs <= 5, though NumCtrls is permitted anything (including -1)
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.length);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.size());
     constexpr qindex numTargAmps = (1 << NumTargs); // explicit, in lieu of powerOf2
 
     // i0 = nth local index where ctrls are active and targs are all zero
@@ -363,7 +363,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
     GET_THREAD_IND(t, numThreads);
 
     // NumCtrls might be compile-time known, but numTargBits>5 is always unknown/runtime
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.length);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.size());
 
     // unlike all other kernels, each thread modifies multiple batches of amplitudes
     for (qindex b=0; b<numBatchesPerThread; b++) {
@@ -372,13 +372,13 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
         qindex n = t + b * numThreads;
 
         // i0 = nth local index where ctrls are active and targs are all zero
-        qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs.data(), numCtrlBits + targs.length, ctrlsAndTargsMask);
+        qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs.data(), numCtrlBits + targs.size(), ctrlsAndTargsMask);
 
         // collect and cache all to-be-modified amps (loop might be unrolled)        
         for (qindex k=0; k<numTargAmps; k++) {
 
             // i = nth local index where ctrls are active and targs form value k
-            qindex i = setBits(i0, targs.data(), targs.length, k); // loop may be unrolled
+            qindex i = setBits(i0, targs.data(), targs.size(), k); // loop may be unrolled
 
             // j = index of k-th element of thread's private cache partition
             qindex j = getThreadsNthGlobalArrInd(k, t, numThreads);
@@ -389,7 +389,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
         for (qindex k=0; k<numTargAmps; k++) {
 
             // i = nth local index where ctrls are active and targs form value k
-            qindex i = setBits(i0, targs.data(), targs.length, k); // loop may be unrolled
+            qindex i = setBits(i0, targs.data(), targs.size(), k); // loop may be unrolled
             amps[i] = getGpuQcomp(0, 0);
         
             for (qindex l=0; l<numTargAmps; l++) {
@@ -610,8 +610,8 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
     GET_THREAD_IND(t, numThreads);
 
     // use template params to compile-time unroll loops in insertBits() and setBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.length);
-    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, targsXY.length);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.size());
+    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, targsXY.size());
 
     // n = local index of amp sub-batch with common i0, v = value of target bits
     qindex numInnerIts = powerOf2(numTargBits) / 2;
@@ -650,7 +650,7 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.length);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
     // i = nth local index where ctrl bits are in specified states
     qindex i = insertBitsWithMaskedValues(n, ctrls.data(), numCtrlBits, ctrlStateMask);
@@ -684,7 +684,7 @@ __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.length);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
     // i = nth local index where ctrl bits are in specified states
     qindex i = insertBitsWithMaskedValues(n, ctrls.data(), numCtrlBits, ctrlStateMask);
@@ -1133,7 +1133,7 @@ __global__ void kernel_densmatr_partialTrace_sub(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll below loops
-    SET_VAR_AT_COMPILE_TIME(int, numTargPairs, NumTargs, ketTargs.length);
+    SET_VAR_AT_COMPILE_TIME(int, numTargPairs, NumTargs, ketTargs.size());
 
     // may be inferred at compile-time
     int numAllTargs = 2 * numTargPairs;
@@ -1186,7 +1186,7 @@ __global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
     /// whether this is worthwhile and faster!
 
     // use template param to compile-time unroll below loops
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.length);
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
 
     qreal prob = norm(amps[n]);
 
@@ -1210,7 +1210,7 @@ __global__ void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.length);
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
 
     // i = index of nth local diagonal elem
     qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);
