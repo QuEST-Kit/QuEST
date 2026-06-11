@@ -173,6 +173,13 @@ qindex accel_statevec_packAmpsIntoBuffer(Qureg qureg, ConstList64 qubits, ConstL
 
 qindex accel_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qubit2, int qubit3, int bit2);
 
+qcomp* accel_allocFusedSwapSendBuffer(Qureg qureg, qindex numAmps);
+void accel_deallocFusedSwapSendBuffer(Qureg qureg, qcomp* buffer);
+void accel_clearFusedSwapSendCache();
+
+void accel_statevec_packAmpsForFusedSwap(Qureg qureg, ConstList64 qubits, ConstList64 qubitStates, qcomp* sendBuf, qindex sendOffset);
+void accel_statevec_unpackAmpsForFusedSwap(Qureg qureg, ConstList64 qubits, ConstList64 qubitStates, qindex recvOffset);
+
 
 /*
  * SWAPS

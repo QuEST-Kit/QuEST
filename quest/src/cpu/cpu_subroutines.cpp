@@ -285,7 +285,82 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qindex, cpu_statevec_packAmpsIntoBuffe
 
 
 
-/* 
+/*
+ * FUSED SWAP BUFFER PACKING
+ *
+ * which pack/unpack one destination-pattern block of a fused multi-swap into/from
+ * an explicitly given buffer at an explicit offset. Unlike the routines above which
+ * always use qureg's commBuffer at fixed offsets, these enable many disjoint blocks
+ * (one per subcube partner) to be staged contiguously for a single all-to-all round.
+ */
+
+
+template <int NumQubits>
+void cpu_statevec_packAmpsForFusedSwap(Qureg qureg, ConstList64 qubits, ConstList64 qubitStates, qcomp* sendBuf, qindex sendOffset) {
+
+    assert_numQubitsMatchesQubitStatesAndTemplateParam(qubits.size(), qubitStates.size(), NumQubits);
+
+    // use cpu_qcomp (in lieu of qcomp) even though no arithmetic happens below - just for consistency!
+    cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
+    cpu_qcomp* buffer = getCpuQcompPtr(sendBuf);
+
+    // each constrained qubit (ctrl or swap-target) halves the needed iterations
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(qubits.size());
+
+    auto sortedQubits   = util_getSorted(qubits);
+    auto qubitStateMask = util_getBitMask(qubits, qubitStates);
+
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = nth local index where qubits are in specified states
+        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitStateMask);
+
+        // pack the potentially-strided amplitudes into the contiguous send block
+        buffer[sendOffset + n] = amps[i];
+    }
+}
+
+
+template <int NumQubits>
+void cpu_statevec_unpackAmpsForFusedSwap(Qureg qureg, ConstList64 qubits, ConstList64 qubitStates, qindex recvOffset) {
+
+    assert_numQubitsMatchesQubitStatesAndTemplateParam(qubits.size(), qubitStates.size(), NumQubits);
+
+    // use cpu_qcomp (in lieu of qcomp) even though no arithmetic happens below - just for consistency!
+    cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
+    cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
+
+    // each constrained qubit (ctrl or swap-target) halves the needed iterations
+    qindex numIts = qureg.numAmpsPerNode / powerOf2(qubits.size());
+
+    auto sortedQubits   = util_getSorted(qubits);
+    auto qubitStateMask = util_getBitMask(qubits, qubitStates);
+
+    // use template param to compile-time unroll loop in insertBits()
+    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex n=0; n<numIts; n++) {
+
+        // i = nth local index where qubits are in specified states (same indices that were packed)
+        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitStateMask);
+
+        // overwrite the strided local amplitudes with the received contiguous block
+        amps[i] = buffer[recvOffset + n];
+    }
+}
+
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_statevec_packAmpsForFusedSwap,   (Qureg, ConstList64, ConstList64, qcomp*, qindex) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_statevec_unpackAmpsForFusedSwap, (Qureg, ConstList64, ConstList64, qindex) )
+
+
+
+/*
  * SWAPS
  */
 

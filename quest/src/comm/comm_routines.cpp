@@ -242,6 +242,45 @@ void exchangeArrays(qcomp* send, qcomp* recv, qindex numElems, int pairRank) {
 }
 
 
+void exchangeArraysWithMultiplePartners(
+    qcomp* send, qcomp* recv,
+    const vector<int>& partnerRanks,
+    const vector<qindex>& sendInds, const vector<qindex>& recvInds,
+    qindex numAmpsPerBlock
+) {
+#if QUEST_COMPILE_MPI
+
+    MPI_Comm mpiComm = comm_getMpiComm();
+
+    // each per-partner block is divided into power-of-2 messages; we issue ALL of every
+    // partner's asynchronous send/receives up-front (a personalised all-to-all) and wait
+    // once, so that a fused multi-swap completes in a single communication round
+    auto [messageSize, numMessages] = dividePow2PayloadIntoMessages(numAmpsPerBlock);
+
+    vector<MPI_Request> requests(2 * partnerRanks.size() * numMessages, MPI_REQUEST_NULL);
+    size_t r = 0;
+
+    for (size_t b=0; b<partnerRanks.size(); b++) {
+        int pairRank = partnerRanks[b];
+
+        // messages to/from distinct partners share tags safely (distinguished by rank);
+        // within a partner, unique tags permit out-of-order arrival (UCX adaptive-routing)
+        for (qindex m=0; m<numMessages; m++) {
+            int tag = static_cast<int>(m);
+            MPI_Irecv(&recv[recvInds[b] + m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiComm, &requests[r++]);
+            MPI_Isend(&send[sendInds[b] + m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiComm, &requests[r++]);
+        }
+    }
+
+    // single wait completes the whole round (MPI will automatically free the request memory)
+    MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
+
+#else
+    error_commButEnvNotDistributed();
+#endif
+}
+
+
 
 /*
  * PRIVATE ASYNC SEND AND RECEIVE
@@ -528,8 +567,47 @@ void comm_exchangeSubBuffers(Qureg qureg, qindex numAmps, int pairRank) {
 
     if (qureg.isGpuAccelerated)
         exchangeGpuSubBuffers(qureg, numAmps, pairRank);
-    else 
+    else
         exchangeArrays(&qureg.cpuCommBuffer[sendInd], &qureg.cpuCommBuffer[recvInd], numAmps, pairRank);
+}
+
+
+void comm_exchangeAmpsToBuffersForFusedSwap(
+    Qureg qureg, qcomp* sendBuf,
+    vector<int> partnerRanks, vector<qindex> blockSendInds, vector<qindex> blockRecvInds,
+    qindex numAmpsPerBlock
+) {
+    assert_commQuregIsDistributed(qureg);
+    for (int pairRank : partnerRanks)
+        assert_pairRankIsDistinct(qureg, pairRank);
+
+    // 'sendBuf' is a contiguous staging buffer (in the qureg's memory space) holding one
+    // packed block per subcube partner; received blocks are written into the qureg's
+    // commBuffer. The total staged payload is < numAmpsPerNode (the self-block never moves).
+    qindex sendSpan = 0;
+    qindex recvSpan = 0;
+    for (size_t b=0; b<partnerRanks.size(); b++) {
+        sendSpan = std::max(sendSpan, blockSendInds[b] + numAmpsPerBlock);
+        recvSpan = std::max(recvSpan, blockRecvInds[b] + numAmpsPerBlock);
+    }
+
+    // non-GPU quregs exchange host staging buffer to host commBuffer directly
+    if (!qureg.isGpuAccelerated) {
+        exchangeArraysWithMultiplePartners(sendBuf, qureg.cpuCommBuffer, partnerRanks, blockSendInds, blockRecvInds, numAmpsPerBlock);
+        return;
+    }
+
+    // GPU quregs exchange VRAM directly when supported
+    if (gpu_isDirectGpuCommPossible()) {
+        gpu_sync();
+        exchangeArraysWithMultiplePartners(sendBuf, qureg.gpuCommBuffer, partnerRanks, blockSendInds, blockRecvInds, numAmpsPerBlock);
+        return;
+    }
+
+    // otherwise route VRAM through RAM, reusing cpuAmps (mere host mirror in GPU mode) as send scratch
+    gpu_copyGpuToCpu(qureg, sendBuf, qureg.cpuAmps, sendSpan);
+    exchangeArraysWithMultiplePartners(qureg.cpuAmps, qureg.cpuCommBuffer, partnerRanks, blockSendInds, blockRecvInds, numAmpsPerBlock);
+    gpu_copyCpuToGpu(qureg, qureg.cpuCommBuffer, qureg.gpuCommBuffer, recvSpan);
 }
 
 

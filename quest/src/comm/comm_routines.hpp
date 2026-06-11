@@ -31,6 +31,8 @@ void comm_exchangeAmpsToBuffers(Qureg qureg, int pairRank);
 
 void comm_exchangeSubBuffers(Qureg qureg, qindex numAmpsAndRecvInd, int pairRank);
 
+void comm_exchangeAmpsToBuffersForFusedSwap(Qureg qureg, qcomp* sendBuf, vector<int> partnerRanks, vector<qindex> blockSendInds, vector<qindex> blockRecvInds, qindex numAmpsPerBlock);
+
 void comm_asynchSendSubBuffer(Qureg qureg, qindex numElems, int pairRank);
 
 void comm_receiveArrayToBuffer(Qureg qureg, qindex numElems, int pairRank);
