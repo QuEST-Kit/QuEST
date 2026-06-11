@@ -440,7 +440,7 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
     qindex numBatches = qureg.numAmpsPerNode / powerOf2(ctrls.size() + targs.size());
 
     List64 sortedQubits = util_getSorted(ctrls, targs);
-    qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, targs, vector<int>(targs.size(),0));
+    qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, targs, util_getConstantList(0,targs.size()));
 
     // unpacking args (to better distinguish below signatures)
     auto ampsPtr   = getGpuQcompPtr(qureg.gpuAmps);
@@ -832,7 +832,7 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, ConstList64 ct
     auto maskYZ  = util_getBitMask(util_getConcatenated(y, z));
      
     List64 sortedQubits  = util_getSorted(ctrls, targsXY);
-    qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, targsXY, vector<int>(targsXY.size(),0));
+    qindex qubitStateMask = util_getBitMask(ctrls, ctrlStates, targsXY, util_getConstantList(0,targsXY.size()));
 
     // unlike the analogous cpu routine, this function has only a single parallelisation
     // granularity; where every pair-of-amps is modified by an independent thread, despite
