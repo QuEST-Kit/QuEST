@@ -59,6 +59,12 @@ jobs:
       - name: Get QuEST
         uses: actions/checkout@main
 
+      # free space for big-chungus ADIOS2 installation
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+
       # compile serial unit tests, optionally include deprecated test
       - name: Configure CMake
         run: >

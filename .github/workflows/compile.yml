@@ -159,9 +159,9 @@ jobs:
     # perform the job
     steps:
 
-      # free space for big-chungus ROCm compiler
+      # free space for big-chungus ROCm compiler, and ADIOS2 installation
       - name: Free disk space
-        if: ${{ matrix.hip == 'ON' }}
+        if: ${{ matrix.hip == 'ON' || matrix.adios2 == 'ON' }}
         uses: jlumbroso/free-disk-space@main
         with:
           tool-cache: false
