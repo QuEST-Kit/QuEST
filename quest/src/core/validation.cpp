@@ -132,6 +132,17 @@ namespace report {
 
 
     /*
+     * CHECKPOINTING (issue #747)
+     */
+
+    string CHECKPOINTING_NOT_COMPILED =
+        "This function requires QuEST to be compiled with checkpointing enabled. Please recompile with the CMake flag -DQUEST_ENABLE_CHECKPOINTING=ON, which links the ADIOS2 library.";
+
+    string CHECKPOINT_FILE_PRECISION_MISMATCH =
+        "The checkpoint file stores ${FILEBYTES}-byte amplitudes, incompatible with this build's ${BUILDBYTES}-byte amplitudes. A checkpoint must be loaded by a QuEST build of the same numerical precision (FLOAT_PRECISION).";
+
+
+    /*
      * DEBUG UTILITIES
      */
 
@@ -1596,6 +1607,32 @@ void validate_envIsInit(const char* caller) {
         return;
 
     assertThat(isQuESTEnvInit(), report::QUEST_ENV_NOT_INIT, caller);
+}
+
+
+
+/*
+ * CHECKPOINTING (issue #747)
+ */
+
+void validate_quregCheckpointingIsCompiled(const char* caller) {
+
+    if (!global_isValidationEnabled)
+        return;
+
+    assertThat((bool) QUEST_COMPILE_CHECKPOINTING, report::CHECKPOINTING_NOT_COMPILED, caller);
+}
+
+void validate_checkpointFileMatchesPrecision(int fileAmpBytes, int buildAmpBytes, const char* caller) {
+
+    if (!global_isValidationEnabled)
+        return;
+
+    tokenSubs vars = {
+        {"${FILEBYTES}",  fileAmpBytes},
+        {"${BUILDBYTES}", buildAmpBytes}};
+
+    assertThat(fileAmpBytes == buildAmpBytes, report::CHECKPOINT_FILE_PRECISION_MISMATCH, vars, caller);
 }
 
 

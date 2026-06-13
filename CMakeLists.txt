@@ -223,6 +223,15 @@ if (QUEST_INSTALL_BINARIES)
 endif()
 
 
+# Checkpointing (issue #747): save/load a Qureg to file via ADIOS2
+option(
+  QUEST_ENABLE_CHECKPOINTING
+  "Whether QuEST will be built with Qureg checkpointing (saveQuregToFile / createQuregFromFile) via ADIOS2. Turned OFF by default."
+  OFF
+)
+message(STATUS "Checkpointing is turned ${QUEST_ENABLE_CHECKPOINTING}. Set QUEST_ENABLE_CHECKPOINTING to modify.")
+
+
 
 # ============================
 # Validate options
@@ -486,6 +495,18 @@ if (QUEST_ENABLE_MPI)
 endif()
 
 
+# Checkpointing (issue #747): link ADIOS2 (its MPI-enabled component when distributed)
+if (QUEST_ENABLE_CHECKPOINTING)
+  find_package(ADIOS2 REQUIRED)
+
+  if (QUEST_ENABLE_MPI)
+    target_link_libraries(QuEST PRIVATE adios2::cxx_mpi)
+  else()
+    target_link_libraries(QuEST PRIVATE adios2::cxx)
+  endif()
+endif()
+
+
 # CUDA
 if (QUEST_ENABLE_CUDA)
 
@@ -553,6 +574,7 @@ set(QUEST_COMPILE_OMP ${QUEST_ENABLE_OMP})
 set(QUEST_COMPILE_MPI ${QUEST_ENABLE_MPI})
 set(QUEST_COMPILE_SUBCOMM ${QUEST_ENABLE_SUBCOMM})
 set(QUEST_COMPILE_CUQUANTUM ${QUEST_ENABLE_CUQUANTUM})
+set(QUEST_COMPILE_CHECKPOINTING ${QUEST_ENABLE_CHECKPOINTING})
 set(QUEST_INCLUDE_DEPRECATED_FUNCTIONS ${QUEST_ENABLE_DEPRECATED_API})
 
 

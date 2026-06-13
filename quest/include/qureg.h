@@ -488,6 +488,29 @@ void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex s
 /** @} */
 
 
+
+/**
+ * @defgroup qureg_checkpoint Checkpointing
+ * @brief Functions for saving a Qureg to file and restoring it (issue #747).
+ * @details Available only when QuEST is compiled with -DQUEST_ENABLE_CHECKPOINTING=ON,
+ *          which links ADIOS2. The saved file records the qubit count, statevector/
+ *          density-matrix type and the full amplitudes, but no deployment details, so
+ *          a Qureg can be resumed under a different GPU/distribution configuration.
+ * @{
+ */
+
+
+/// @notyetdoced
+void saveQuregToFile(Qureg qureg, const char* fn);
+
+
+/// @notyetdoced
+Qureg createQuregFromFile(const char* fn);
+
+
+/** @} */
+
+
 // end de-mangler
 #ifdef __cplusplus
 }

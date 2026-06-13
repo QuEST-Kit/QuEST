@@ -25,6 +25,12 @@
 #include <string>
 #include <vector>
 
+// issue #747: optional Qureg checkpointing via ADIOS2, enabled at compile time
+// with -DQUEST_ENABLE_CHECKPOINTING=ON (which sets QUEST_COMPILE_CHECKPOINTING)
+#if QUEST_COMPILE_CHECKPOINTING
+    #include <adios2.h>
+#endif
+
 using std::string;
 using std::vector;
 
@@ -471,6 +477,114 @@ void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex s
     validate_basisStateRowCols(qureg, startRow, startCol, numRows, numCols, __func__);
 
     localiser_densmatr_getAmps(outAmps, qureg, startRow, startCol, numRows, numCols);
+}
+
+
+/*
+ * CHECKPOINTING (issue #747)
+ *
+ * saveQuregToFile() and createQuregFromFile() persist a Qureg to disk and
+ * restore it, via ADIOS2. Only the essential, non-derivable, deployment-
+ * independent state is stored: numQubits, isDensityMatrix, and the global
+ * amplitude array. Deployment (GPU / distribution / threads) is NOT stored -
+ * the restored Qureg auto-deploys, and ADIOS2's global-array model lets a file
+ * written under one distribution be read under another.
+ *
+ * Amplitudes are stored as raw bytes (with sizeof(qcomp) recorded for a
+ * load-time compatibility check), so all three qcomp precisions - including
+ * long double, which ADIOS2 cannot represent as a native type - are supported
+ * uniformly. The only extra memory is one GPU->host copy of the already-
+ * resident local amplitudes.
+ *
+ * Compiled only when QUEST_COMPILE_CHECKPOINTING; otherwise the functions
+ * report a user error (and are no-ops thereafter).
+ */
+
+void saveQuregToFile(Qureg qureg, const char* fn) {
+    validate_quregFields(qureg, __func__);
+    validate_quregCheckpointingIsCompiled(__func__);
+
+#if QUEST_COMPILE_CHECKPOINTING
+    // ensure host amps reflect the (possibly GPU-resident) state
+    syncQuregFromGpu(qureg);
+
+    // this node's contiguous slice of the global amplitude array, in bytes
+    qindex ampBytes    = sizeof(qcomp);
+    qindex localBytes  = qureg.numAmpsPerNode * ampBytes;
+    qindex totalBytes  = qureg.numAmps        * ampBytes;
+    qindex offsetBytes = util_getGlobalIndexOfFirstLocalAmp(qureg) * ampBytes;
+
+    #if QUEST_COMPILE_MPI
+        adios2::ADIOS adios(comm_getMpiComm());
+    #else
+        adios2::ADIOS adios;
+    #endif
+    adios2::IO io = adios.DeclareIO("QuESTCheckpointWrite");
+
+    auto vNumQubits  = io.DefineVariable<int>("numQubits");
+    auto vIsDensMatr = io.DefineVariable<int>("isDensityMatrix");
+    auto vAmpBytes   = io.DefineVariable<int>("ampSizeBytes");
+    auto vAmps = io.DefineVariable<int8_t>("amplitudes",
+        {static_cast<size_t>(totalBytes)},   // global shape
+        {static_cast<size_t>(offsetBytes)},  // this node's start
+        {static_cast<size_t>(localBytes)});  // this node's count
+
+    adios2::Engine engine = io.Open(fn, adios2::Mode::Write);
+    engine.BeginStep();
+
+    // global scalars are written once, by the root node
+    if (qureg.rank == 0) {
+        engine.Put(vNumQubits,  qureg.numQubits);
+        engine.Put(vIsDensMatr, qureg.isDensityMatrix);
+        engine.Put(vAmpBytes,   static_cast<int>(ampBytes));
+    }
+    engine.Put(vAmps, reinterpret_cast<int8_t*>(qureg.cpuAmps));
+
+    engine.EndStep();
+    engine.Close();
+#endif
+}
+
+
+Qureg createQuregFromFile(const char* fn) {
+    validate_envIsInit(__func__);
+    validate_quregCheckpointingIsCompiled(__func__);
+
+#if QUEST_COMPILE_CHECKPOINTING
+    #if QUEST_COMPILE_MPI
+        adios2::ADIOS adios(comm_getMpiComm());
+    #else
+        adios2::ADIOS adios;
+    #endif
+    adios2::IO io = adios.DeclareIO("QuESTCheckpointRead");
+    adios2::Engine engine = io.Open(fn, adios2::Mode::ReadRandomAccess);
+
+    // read the global scalars describing the saved Qureg
+    int numQubits = 0, isDensMatr = 0, fileAmpBytes = 0;
+    engine.Get(io.InquireVariable<int>("numQubits"),       numQubits,    adios2::Mode::Sync);
+    engine.Get(io.InquireVariable<int>("isDensityMatrix"), isDensMatr,   adios2::Mode::Sync);
+    engine.Get(io.InquireVariable<int>("ampSizeBytes"),    fileAmpBytes, adios2::Mode::Sync);
+    validate_checkpointFileMatchesPrecision(fileAmpBytes, static_cast<int>(sizeof(qcomp)), __func__);
+
+    // create a Qureg of the saved dimension, with auto-chosen deployment
+    Qureg qureg = (isDensMatr)?
+        createDensityQureg(numQubits) : createQureg(numQubits);
+
+    // read this node's slice of the global amplitude array into its host buffer
+    qindex localBytes  = qureg.numAmpsPerNode * static_cast<qindex>(sizeof(qcomp));
+    qindex offsetBytes = util_getGlobalIndexOfFirstLocalAmp(qureg) * static_cast<qindex>(sizeof(qcomp));
+    adios2::Variable<int8_t> vAmps = io.InquireVariable<int8_t>("amplitudes");
+    vAmps.SetSelection({{static_cast<size_t>(offsetBytes)}, {static_cast<size_t>(localBytes)}});
+    engine.Get(vAmps, reinterpret_cast<int8_t*>(qureg.cpuAmps), adios2::Mode::Sync);
+    engine.Close();
+
+    // propagate the loaded host amps to the GPU, if accelerated
+    syncQuregToGpu(qureg);
+    return qureg;
+#else
+    // unreachable - the validation above aborts - but required for compilation
+    return Qureg{};
+#endif
 }
 
 

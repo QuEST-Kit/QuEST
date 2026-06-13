@@ -94,6 +94,16 @@ void validate_envIsInit(const char* caller);
 
 
 /*
+ * CHECKPOINTING (issue #747)
+ */
+
+void validate_quregCheckpointingIsCompiled(const char* caller);
+
+void validate_checkpointFileMatchesPrecision(int fileAmpBytes, int buildAmpBytes, const char* caller);
+
+
+
+/*
  * DEBUG UTILITIES
  */
 

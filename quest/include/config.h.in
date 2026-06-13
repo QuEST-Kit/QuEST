@@ -84,6 +84,7 @@
 #cmakedefine01 QUEST_COMPILE_CUDA
 #cmakedefine01 QUEST_COMPILE_CUQUANTUM
 #cmakedefine01 QUEST_COMPILE_HIP
+#cmakedefine01 QUEST_COMPILE_CHECKPOINTING
 
 
 // crucial to QuEST source (informs optional NUMA usage)
