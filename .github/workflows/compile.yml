@@ -23,10 +23,6 @@
 name: compile
 
 
-### DEBUG
-### disabled all but single-CPU
-
-
 on:
   push:
     branches:
@@ -43,7 +39,7 @@ jobs:
   # test only compilation succeeds (no execution)
   build-test:
     name: >
-      ${{ matrix.os == 'ubuntu-latest' && 'Linux' || startsWith(matrix.os, 'macos') && 'MacOS' || 'Windows' }}
+      ${{ matrix.os == 'ubuntu-latest' && 'Linux' || matrix.os == 'macos-latest' && 'MacOS' || 'Windows' }}
       [${{ matrix.precision }}]
       ${{ matrix.omp       == 'ON' && 'OMP'  || '' }}
       ${{ matrix.mpi       == 'ON' && 'MPI'  || '' }}
@@ -64,14 +60,14 @@ jobs:
 
       # compile QuEST with all combinations of below flags
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest, macos-15-intel, macos-26-intel]
-        precision: [2] #[1, 2, 4]
-        omp:       [OFF] #[ON, OFF]
-        mpi:       [OFF] #[ON, OFF]
-        cuda:      [OFF] #[ON, OFF]
-        hip:       [OFF] #[ON, OFF]
-        cuquantum: [OFF] #[ON, OFF]
-        mpilib:    [''] #['', 'mpich', 'ompi', 'impi', 'msmpi']
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        precision: [1, 2, 4]
+        omp:       [ON, OFF]
+        mpi:       [ON, OFF]
+        cuda:      [ON, OFF]
+        hip:       [ON, OFF]
+        cuquantum: [ON, OFF]
+        mpilib:    ['', 'mpich', 'ompi', 'impi', 'msmpi']
 
         # disable deprecated API on MSVC, and assign unique compilers,
         # so that we can concisely consult e.g. matrix.compiler=='cl'
@@ -82,12 +78,6 @@ jobs:
             compiler: g++
             deprecated: ON
           - os: macos-latest
-            compiler: clang++
-            deprecated: ON
-          - os: macos-15-intel
-            compiler: clang++
-            deprecated: ON
-          - os: macos-26-intel
             compiler: clang++
             deprecated: ON
           - os: windows-latest
@@ -250,7 +240,7 @@ jobs:
         run: >
           cmake -B ${{ env.build_dir }}
           -DQUEST_BUILD_EXAMPLES=ON
-          -DQUEST_BUILD_TESTS=OFF
+          -DQUEST_BUILD_TESTS=ON
           -DQUEST_FLOAT_PRECISION=${{ matrix.precision }}
           -DQUEST_ENABLE_DEPRECATED_API=${{ matrix.deprecated }}
           -DQUEST_DISABLE_DEPRECATION_WARNINGS=${{ matrix.deprecated }}
@@ -270,24 +260,24 @@ jobs:
 
       # run all compiled isolated examples to test for link-time errors,
       # continuing if any fail (since some deliberately fail)
-      # - name: Run isolated examples (Windows)
-      #   if: ${{ matrix.os == 'windows-latest' }}
-      #   working-directory: ${{ env.isolated_dir }}/Release/
-      #   shell: pwsh
-      #   run: |
-      #     Get-ChildItem -Filter '*.exe' -File |
-      #     ForEach-Object {
-      #       Write-Host "`r`n[[[ $($_.Name) ]]]`r`n"
-      #       & $_.FullName
-      #     }
-      # - name: Run isolated examples (Unix)
-      #   if: ${{ matrix.os != 'windows-latest' }}
-      #   working-directory: ${{ env.isolated_dir }}
-      #   run: |
-      #     for fn in *_c *_cpp; do
-      #       printf "\n[[[ $fn ]]]\n"
-      #       ./$fn || true
-      #     done
+      - name: Run isolated examples (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        working-directory: ${{ env.isolated_dir }}/Release/
+        shell: pwsh
+        run: |
+          Get-ChildItem -Filter '*.exe' -File |
+          ForEach-Object {
+            Write-Host "`r`n[[[ $($_.Name) ]]]`r`n"
+            & $_.FullName
+          }
+      - name: Run isolated examples (Unix)
+        if: ${{ matrix.os != 'windows-latest' }}
+        working-directory: ${{ env.isolated_dir }}
+        run: |
+          for fn in *_c *_cpp; do
+            printf "\n[[[ $fn ]]]\n"
+            ./$fn || true
+          done
 
       # run all compiled 'automated' examples
       - name: Run automated examples (Windows)
@@ -299,10 +289,6 @@ jobs:
           ForEach-Object {
             Write-Host "`r`n[[[ $($_.Name) ]]]`r`n"
             & $_.FullName
-            if ($LASTEXITCODE -ne 0) {
-              Write-Warning "$($_.Name) exited with code $LASTEXITCODE"
-              $global:LASTEXITCODE = 0
-            }
           }
       - name: Run automated examples (Unix)
         if: ${{ matrix.os != 'windows-latest' }}
