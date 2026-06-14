@@ -10,19 +10,15 @@
 name: audit
 
 
-
-### DEBUG
-### disabled this; no mem-dangerous changes
 on:
-  workflow_dispatch:
-  # push:
-  #   branches:
-  #     - main
-  #     - devel
-  # pull_request:
-  #   branches:
-  #     - main
-  #     - devel
+  push:
+    branches:
+      - main
+      - devel
+  pull_request:
+    branches:
+      - main
+      - devel
 
 
 jobs:
