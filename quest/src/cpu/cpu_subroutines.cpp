@@ -216,7 +216,7 @@ void cpu_fullstatediagmatr_setElemsFromMultiVarFunc(FullStateDiagMatr out, qcomp
 
 
 template <int NumQubits>
-qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, ConstList64 qubitInds, ConstList64 qubitStates) {
+qindex cpu_statevec_packAmpsIntoSubBuffer(Qureg qureg, ConstList64 qubitInds, ConstList64 qubitStates, qindex sendInd) {
 
     assert_numQubitsMatchesQubitStatesAndTemplateParam(qubitInds.size(), qubitStates.size(), NumQubits);
 
@@ -224,15 +224,16 @@ qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, ConstList64 qubitInds, Const
     cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
     cpu_qcomp* buffer = getCpuQcompPtr(qureg.cpuCommBuffer);
 
-    // each control qubit halves the needed iterations
+    // each constrained qubit halves the needed iterations
     qindex numIts = qureg.numAmpsPerNode / powerOf2(qubitInds.size());
 
-    // amplitudes are packed at an offset into the buffer
-    qindex offset = getSubBufferSendInd(qureg);
+    // amplitudes are packed contiguously from the caller's send offset, so that several
+    // disjoint subsets can occupy distinct slices of the buffer and be exchanged in one wave
+    qindex offset = sendInd;
 
     auto sortedQubitInds = util_getSorted(qubitInds);
     auto qubitStateMask  = util_getBitMask(qubitInds, qubitStates);
-    
+
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubitInds.size());
 
@@ -248,6 +249,14 @@ qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, ConstList64 qubitInds, Const
 
     // return the number of packed amps
     return numIts;
+}
+
+
+template <int NumQubits>
+qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, ConstList64 qubitInds, ConstList64 qubitStates) {
+
+    // pack into the buffer's single default send region (which begins at half its capacity)
+    return cpu_statevec_packAmpsIntoSubBuffer<NumQubits>(qureg, qubitInds, qubitStates, getSubBufferSendInd(qureg));
 }
 
 
@@ -282,17 +291,18 @@ qindex cpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qu
 
 
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qindex, cpu_statevec_packAmpsIntoBuffer, (Qureg, ConstList64, ConstList64) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qindex, cpu_statevec_packAmpsIntoSubBuffer, (Qureg, ConstList64, ConstList64, qindex) )
 
 
 template <int NumQubits>
-void cpu_statevec_unpackAmpsFromBuffer(Qureg qureg, ConstList64 qubitInds, ConstList64 qubitStates) {
+void cpu_statevec_unpackAmpsFromSubBuffer(Qureg qureg, ConstList64 qubitInds, ConstList64 qubitStates, qindex recvInd) {
 
     assert_numQubitsMatchesQubitStatesAndTemplateParam(qubitInds.size(), qubitStates.size(), NumQubits);
 
-    // this is the inverse of cpu_statevec_packAmpsIntoBuffer; it scatters the received
-    // contiguous sub-buffer back into the strided local amplitudes where the given qubits
-    // are in the given states. It generalises anyCtrlSwap_subC to multiple constrained
-    // qubits, as needed by the fused multi-SWAP routine.
+    // this is the inverse of cpu_statevec_packAmpsIntoSubBuffer; it scatters a received
+    // contiguous sub-buffer (beginning at the caller's receive offset) back into the strided
+    // local amplitudes where the given qubits are in the given states. It generalises
+    // anyCtrlSwap_subC to multiple constrained qubits, as needed by the fused multi-SWAP routine.
 
     // use cpu_qcomp (in lieu of qcomp) even though no arithmetic happens below - just for consistency!
     cpu_qcomp* amps   = getCpuQcompPtr(qureg.cpuAmps);
@@ -301,8 +311,8 @@ void cpu_statevec_unpackAmpsFromBuffer(Qureg qureg, ConstList64 qubitInds, Const
     // each constrained qubit halves the number of received amps
     qindex numIts = qureg.numAmpsPerNode / powerOf2(qubitInds.size());
 
-    // received amplitudes begin at the buffer's receive offset
-    qindex offset = getBufferRecvInd();
+    // received amplitudes begin at the caller's receive offset
+    qindex offset = recvInd;
 
     auto sortedQubitInds = util_getSorted(qubitInds);
     auto qubitStateMask  = util_getBitMask(qubitInds, qubitStates);
@@ -322,7 +332,16 @@ void cpu_statevec_unpackAmpsFromBuffer(Qureg qureg, ConstList64 qubitInds, Const
 }
 
 
+template <int NumQubits>
+void cpu_statevec_unpackAmpsFromBuffer(Qureg qureg, ConstList64 qubitInds, ConstList64 qubitStates) {
+
+    // unpack from the buffer's single default receive region (which begins at index zero)
+    cpu_statevec_unpackAmpsFromSubBuffer<NumQubits>(qureg, qubitInds, qubitStates, getBufferRecvInd());
+}
+
+
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_statevec_unpackAmpsFromBuffer, (Qureg, ConstList64, ConstList64) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_statevec_unpackAmpsFromSubBuffer, (Qureg, ConstList64, ConstList64, qindex) )
 
 
 

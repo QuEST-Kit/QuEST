@@ -253,6 +253,31 @@ void accel_statevec_unpackAmpsFromBuffer(Qureg qureg, ConstList64 qubits, ConstL
 }
 
 
+qindex accel_statevec_packAmpsIntoSubBuffer(Qureg qureg, ConstList64 qubits, ConstList64 qubitStates, qindex sendInd) {
+
+    // as accel_statevec_packAmpsIntoBuffer, but packs into an explicit send offset so the
+    // fused multi-SWAP can lay several subsets into one buffer and exchange them in a wave.
+    // CPU-only, like the unpacker, since the fused routine restricts itself to non-GPU quregs
+    if (qubitStates.empty())
+        error_noCtrlsGivenToBufferPacker();
+
+    GET_FUNC_OPTIMISED_FOR_ONE_PARAM( func, cpu_statevec_packAmpsIntoSubBuffer, qubits.size() );
+    return func(qureg, qubits, qubitStates, sendInd);
+}
+
+
+void accel_statevec_unpackAmpsFromSubBuffer(Qureg qureg, ConstList64 qubits, ConstList64 qubitStates, qindex recvInd) {
+
+    // inverse of accel_statevec_packAmpsIntoSubBuffer; scatters a sub-buffer received at an
+    // explicit offset back into the strided local amps. CPU-only for the same reason as above
+    if (qubitStates.empty())
+        error_noCtrlsGivenToBufferPacker();
+
+    GET_FUNC_OPTIMISED_FOR_ONE_PARAM( func, cpu_statevec_unpackAmpsFromSubBuffer, qubits.size() );
+    func(qureg, qubits, qubitStates, recvInd);
+}
+
+
 qindex accel_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qubit2, int qubit3, int bit2) {
 
     return (qureg.isGpuAccelerated)?

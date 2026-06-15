@@ -25,6 +25,7 @@
 #include "quest/src/core/accelerator.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
+#include "quest/src/comm/comm_indices.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
@@ -939,7 +940,9 @@ void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, ConstList64 ctrls, Cons
     // partnered suffix bit disagrees with this node's rank bit) and, for each, pack +
     // exchange + unpack only the amplitudes bound there. The move is an involution
     // between paired nodes, so the packed and unpacked amplitudes occupy the same local
-    // slots. See arXiv:quant-ph/0608239 (SWAP fusion) and arXiv:2311.01512 Sec IV.
+    // slots. This composed distributed index-bit swap is that of mpiQulacs (arXiv:2203.16044)
+    // and cuStateVec's custatevecDistIndexBitSwapScheduler; the pairwise amplitude exchange
+    // follows arXiv:2311.01512 Sec IV.
 
     std::vector<int> prefBits(numSwaps);
     std::vector<int> rankBits(numSwaps);
@@ -949,26 +952,64 @@ void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, ConstList64 ctrls, Cons
     }
 
     // subset 0 are the amplitudes that do not move (all suffix bits already match the
-    // rank bits), so we skip it and iterate only the communicating subsets
+    // rank bits), so we skip it and communicate only the other subsets. Every communicating
+    // subset packs the same number of amplitudes (one per local amp whose suffix-target bits
+    // match the subset pattern)
     qindex numSubsets = powerOf2(numSwaps);
-    for (qindex sub=1; sub<numSubsets; sub++) {
+    qindex numPacked  = qureg.numAmpsPerNode / numSubsets;
 
-        // the destination node flips this node's rank bits for the targeted subset, and
-        // the to-be-sent amplitudes are those whose suffix-target bits match the pattern
-        auto states = lists_getEmptyList64();
-        int pairRank = qureg.rank;
-        for (int i=0; i<numSwaps; i++) {
-            int inSubset = getBit(sub, i);
-            states.push_back(inSubset ? !rankBits[i] : rankBits[i]);
-            if (inSubset)
-                pairRank = static_cast<int>(flipBit(pairRank, prefBits[i]));
+    // rather than one blocking exchange per subset (up to 2^numSwaps - 1 sequential syncs), we
+    // pack each subset into a distinct slice of the buffer's send half and exchange a whole wave
+    // of subsets under a single wait. Only half the buffer can send, so a wave holds
+    // (numAmpsPerNode/2)/numPacked = 2^(numSwaps-1) subsets, and the 2^numSwaps - 1 communicating
+    // subsets need at most two waves. The same total amplitudes cross the network, with the
+    // synchronisation count cut from 2^numSwaps - 1 down to at most two.
+    qindex sendBase = getSubBufferSendInd(qureg);
+    qindex recvBase = getBufferRecvInd();
+    qindex perWave  = (qureg.numAmpsPerNode / 2) / numPacked;
+
+    for (qindex first=1; first<numSubsets; first+=perWave) {
+
+        qindex last = std::min(first + perWave, numSubsets); // exclusive
+
+        // pack every subset of this wave into its own buffer slice, remembering the states so the
+        // matching received slice can be scattered back after the exchange
+        std::vector<CommChunk> chunks;
+        std::vector<List64> waveStates;
+        chunks.reserve(last - first);
+        waveStates.reserve(last - first);
+
+        for (qindex sub=first; sub<last; sub++) {
+
+            // the destination node flips this node's rank bits for the targeted subset, and
+            // the to-be-sent amplitudes are those whose suffix-target bits match the pattern
+            auto states = lists_getEmptyList64();
+            int pairRank = qureg.rank;
+            for (int i=0; i<numSwaps; i++) {
+                int inSubset = getBit(sub, i);
+                states.push_back(inSubset ? !rankBits[i] : rankBits[i]);
+                if (inSubset)
+                    pairRank = static_cast<int>(flipBit(pairRank, prefBits[i]));
+            }
+
+            qindex slot    = sub - first;
+            qindex sendInd = sendBase + slot * numPacked;
+            qindex recvInd = recvBase + slot * numPacked;
+
+            accel_statevec_packAmpsIntoSubBuffer(qureg, suffixTargs, states, sendInd);
+            chunks.push_back({sendInd, recvInd, numPacked, pairRank});
+            waveStates.push_back(states);
         }
 
-        // pack the amplitudes bound for pairRank, exchange, and scatter the received
-        // amplitudes back into those same local slots
-        qindex numPacked = accel_statevec_packAmpsIntoBuffer(qureg, suffixTargs, states);
-        comm_exchangeSubBuffers(qureg, numPacked, pairRank);
-        accel_statevec_unpackAmpsFromBuffer(qureg, suffixTargs, states);
+        // exchange the whole wave with a single wait, then scatter each received slice back into
+        // the strided local amplitudes it came from
+        comm_exchangeSubBufferChunks(qureg, chunks);
+
+        for (qindex sub=first; sub<last; sub++) {
+            qindex slot    = sub - first;
+            qindex recvInd = recvBase + slot * numPacked;
+            accel_statevec_unpackAmpsFromSubBuffer(qureg, suffixTargs, waveStates[slot], recvInd);
+        }
     }
 }
 
