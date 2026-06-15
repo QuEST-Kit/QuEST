@@ -14,11 +14,21 @@
   #include <intrin.h>
 #endif
 
+// Optional BMI2 PEXT/PDEP fast paths for the bit gather/scatter helpers below (issue #717).
+// Active only when BMI2 is actually targeted (__BMI2__), i.e. when the build opts in with
+// -DQUEST_ENABLE_BMI2=ON or the user supplies their own -march=native; a default build defines no
+// such flag and compiles the byte-identical scalar fallback, so it stays portable. Restricted to x86
+// host compilation (never CUDA/HIP device code, where INLINE becomes __device__). Define
+// QUEST_BITWISE_FORCE_SCALAR to force the scalar path even on a BMI2-capable host.
+#if defined(__BMI2__) && (defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)) \
+    && !defined(__CUDA_ARCH__) && !defined(__HIP_DEVICE_COMPILE__) && !defined(QUEST_BITWISE_FORCE_SCALAR)
+  #include <immintrin.h>
+  #define QUEST_BITWISE_USE_BMI2
+#endif
+
 #include "quest/include/types.h"
 
 #include "quest/src/core/inliner.hpp"
-
-
 
 /* 
  * PERFORMANCE-CRITICAL FUNCTIONS
@@ -209,6 +219,46 @@ INLINE qindex insertBitsWithMaskedValues(qindex number, const int* bitInds, int 
 
     // bitInds must be sorted (increasing), and mask must be zero everywhere except bitInds
     return mask | insertBits(number, bitInds, numBits, 0);
+}
+
+
+/*
+ * Mask-accepting variants of the bit gather/scatter helpers (issue #717).
+ *
+ * The caller computes the loop-invariant POSITION mask (a bit set at every index in bitInds)
+ * once, before the exponentially-large statevector loop, e.g.
+ *     qindex posMask = getBitMask(sortedInds.data(), numInds);
+ * so each per-amplitude call collapses to a single PDEP/PEXT instruction instead of an
+ * O(numBits) loop. bitInds/numBits are retained so that, when BMI2 is unavailable, the fallback
+ * reuses the original unrolled scalar routines and stays byte-identical.
+ */
+
+INLINE qindex insertBitsWithMaskedValuesAndPosMask(qindex number, qindex valueMask, [[maybe_unused]] qindex posMask, [[maybe_unused]] const int* bitInds, [[maybe_unused]] int numBits) {
+#ifdef QUEST_BITWISE_USE_BMI2
+    return valueMask | (qindex) _pdep_u64((unsigned long long) number, ~ (unsigned long long) posMask);
+#else
+    return valueMask | insertBits(number, bitInds, numBits, 0);
+#endif
+}
+
+INLINE qindex getValueOfBitsFromSortedPosMask(qindex number, [[maybe_unused]] qindex posMask, [[maybe_unused]] const int* bitInds, [[maybe_unused]] int numBits) {
+    // PEXT emits the gathered bits in ascending position order, so this matches getValueOfBits
+    // only when bitInds are strictly increasing. The caller checks that once per gate (see
+    // isStrictlyIncreasing) and supplies posMask = getBitMask(bitInds, numBits).
+#ifdef QUEST_BITWISE_USE_BMI2
+    return (qindex) _pext_u64((unsigned long long) number, (unsigned long long) posMask);
+#else
+    return getValueOfBits(number, bitInds, numBits);
+#endif
+}
+
+// Checked once per gate (loop-invariant), never per amplitude: getValueOfBits is order-sensitive,
+// so the PEXT path above is valid only when bitInds are strictly increasing.
+INLINE bool isStrictlyIncreasing(const int* bitInds, int numBits) {
+    for (int i=1; i<numBits; i++)
+        if (bitInds[i-1] >= bitInds[i])
+            return false;
+    return true;
 }
 
 

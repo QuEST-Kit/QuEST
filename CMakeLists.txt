@@ -145,6 +145,13 @@ option(
 )
 message(STATUS "NUMA awareness is turned ${QUEST_ENABLE_NUMA}. Set QUEST_ENABLE_NUMA to modify.")
 
+option(
+  QUEST_ENABLE_BMI2
+  "Whether QuEST will accelerate CPU bit gather/scatter with x86 BMI2 (PEXT/PDEP) intrinsics (issue #717). Turned OFF by default; when ON, the resulting binary requires a BMI2-capable CPU at runtime."
+  OFF
+)
+message(STATUS "BMI2 bitwise acceleration is turned ${QUEST_ENABLE_BMI2}. Set QUEST_ENABLE_BMI2 to modify.")
+
 
 # Distribution
 option(
@@ -402,11 +409,33 @@ else()
   set(WARNING_FLAG -Wall)
 endif()
 
-target_compile_options(QuEST 
+target_compile_options(QuEST
   PRIVATE
   $<$<COMPILE_LANGUAGE:CXX>:${WARNING_FLAG}>
   $<$<COMPILE_LANGUAGE:C>:${WARNING_FLAG}>
 )
+
+
+# ==================================================
+# CPU bit-manipulation acceleration (BMI2, issue #717)
+# ==================================================
+# The PEXT/PDEP fast paths in quest/src/core/bitwise.hpp are guarded by `#if defined(__BMI2__)`,
+# which the compiler only defines when BMI2 codegen is enabled. We add -mbmi2 ONLY when the user opts
+# in via QUEST_ENABLE_BMI2 (OFF by default), so a default build stays portable and runs on any x86 CPU
+# (it compiles the byte-identical scalar fallback). Without the opt-in, -mbmi2 is never added, so the
+# library is free of BMI2 instructions and cannot SIGILL on a pre-BMI2 CPU. The generator expression
+# scopes the flag to C++ host translation units, so CUDA/HIP device compilation is unaffected (and the
+# intrinsics are additionally #ifdef-guarded against __CUDA_ARCH__/__HIP_DEVICE_COMPILE__). A user who
+# instead supplies their own -march=native still gets the fast path on their own CPU.
+if (QUEST_ENABLE_BMI2)
+  include(CheckCXXCompilerFlag)
+  check_cxx_compiler_flag("-mbmi2" QUEST_COMPILER_SUPPORTS_MBMI2)
+  if (QUEST_COMPILER_SUPPORTS_MBMI2)
+    target_compile_options(QuEST PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-mbmi2>)
+  else()
+    message(WARNING "QUEST_ENABLE_BMI2=ON but the compiler does not accept -mbmi2; building the scalar fallback.")
+  endif()
+endif()
 
 
 
