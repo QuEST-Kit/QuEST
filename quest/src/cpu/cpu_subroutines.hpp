@@ -16,6 +16,7 @@
 #include "quest/src/core/utilities.hpp"
 
 #include <vector>
+#include <map>
 
 using std::vector;
 
@@ -47,6 +48,10 @@ void cpu_fullstatediagmatr_setElemsFromMultiVarFunc(FullStateDiagMatr out, qcomp
 template <int NumQubits> qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, ConstList64 qubitInds, ConstList64 qubitStates);
 
 qindex cpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qubit2, int qubit3, int bit2);
+
+void cpu_statevec_packFusedMultiSwapBuffers(Qureg qureg, const std::map<int, int>& swapMap, int target_m, qcomp* buffer);
+
+void cpu_statevec_unpackFusedMultiSwapBuffers(Qureg qureg, const std::map<int, int>& swapMap, int target_m, qcomp* buffer);
 
 
 /*

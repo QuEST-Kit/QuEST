@@ -284,6 +284,82 @@ qindex cpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qu
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qindex, cpu_statevec_packAmpsIntoBuffer, (Qureg, ConstList64, ConstList64) )
 
 
+// Pack local amplitudes whose suffix bits (at swap positions) match target_m
+// into a contiguous buffer for MPI exchange with the partner node.
+template <int NumQubits>
+void cpu_statevec_packFusedMultiSwapBuffers_sub(Qureg qureg, const std::map<int, int>& swapMap, int target_m, qcomp* buffer) {
+    
+    List64 sortedSufTargs = lists_getEmptyList64();
+    List64 targetStates = lists_getEmptyList64();
+    int bitIndex = 0;
+    
+    for (auto const& [suf, pre] : swapMap) {
+        sortedSufTargs.push_back(suf);
+        targetStates.push_back((target_m >> bitIndex) & 1);
+        bitIndex++;
+    }
+
+    SET_VAR_AT_COMPILE_TIME(int, k, NumQubits, swapMap.size());
+    qindex numIts = qureg.numAmpsPerNode >> k;
+    qindex qubitStateMask = util_getBitMask(sortedSufTargs, targetStates);
+    
+    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+    cpu_qcomp* outBuffer = getCpuQcompPtr(buffer);
+
+    #pragma omp parallel for schedule(static) if(qureg.isMultithreaded)
+    for (qindex n = 0; n < numIts; n++) {
+        qindex i = insertBitsWithMaskedValues(n, sortedSufTargs.data(), k, qubitStateMask);
+        outBuffer[n] = amps[i];
+    }
+}
+
+void cpu_statevec_packFusedMultiSwapBuffers(Qureg qureg, const std::map<int, int>& swapMap, int target_m, qcomp* buffer) {
+    int k = swapMap.size();
+    if (k == 1) cpu_statevec_packFusedMultiSwapBuffers_sub<1>(qureg, swapMap, target_m, buffer);
+    else if (k == 2) cpu_statevec_packFusedMultiSwapBuffers_sub<2>(qureg, swapMap, target_m, buffer);
+    else if (k == 3) cpu_statevec_packFusedMultiSwapBuffers_sub<3>(qureg, swapMap, target_m, buffer);
+    else if (k == 4) cpu_statevec_packFusedMultiSwapBuffers_sub<4>(qureg, swapMap, target_m, buffer);
+    else if (k == 5) cpu_statevec_packFusedMultiSwapBuffers_sub<5>(qureg, swapMap, target_m, buffer);
+    else cpu_statevec_packFusedMultiSwapBuffers_sub<-1>(qureg, swapMap, target_m, buffer);
+}
+
+template <int NumQubits>
+void cpu_statevec_unpackFusedMultiSwapBuffers_sub(Qureg qureg, const std::map<int, int>& swapMap, int target_m, qcomp* buffer) {
+    
+    List64 sortedSufTargs = lists_getEmptyList64();
+    List64 targetStates = lists_getEmptyList64();
+    int bitIndex = 0;
+    
+    for (auto const& [suf, pre] : swapMap) {
+        sortedSufTargs.push_back(suf);
+        targetStates.push_back((target_m >> bitIndex) & 1);
+        bitIndex++;
+    }
+
+    SET_VAR_AT_COMPILE_TIME(int, k, NumQubits, swapMap.size());
+    qindex numIts = qureg.numAmpsPerNode >> k;
+    qindex qubitStateMask = util_getBitMask(sortedSufTargs, targetStates);
+    
+    cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
+    cpu_qcomp* inBuffer = getCpuQcompPtr(buffer);
+
+    #pragma omp parallel for schedule(static) if(qureg.isMultithreaded)
+    for (qindex n = 0; n < numIts; n++) {
+        qindex i = insertBitsWithMaskedValues(n, sortedSufTargs.data(), k, qubitStateMask);
+        amps[i] = inBuffer[n];
+    }
+}
+
+void cpu_statevec_unpackFusedMultiSwapBuffers(Qureg qureg, const std::map<int, int>& swapMap, int target_m, qcomp* buffer) {
+    int k = swapMap.size();
+    if (k == 1) cpu_statevec_unpackFusedMultiSwapBuffers_sub<1>(qureg, swapMap, target_m, buffer);
+    else if (k == 2) cpu_statevec_unpackFusedMultiSwapBuffers_sub<2>(qureg, swapMap, target_m, buffer);
+    else if (k == 3) cpu_statevec_unpackFusedMultiSwapBuffers_sub<3>(qureg, swapMap, target_m, buffer);
+    else if (k == 4) cpu_statevec_unpackFusedMultiSwapBuffers_sub<4>(qureg, swapMap, target_m, buffer);
+    else if (k == 5) cpu_statevec_unpackFusedMultiSwapBuffers_sub<5>(qureg, swapMap, target_m, buffer);
+    else cpu_statevec_unpackFusedMultiSwapBuffers_sub<-1>(qureg, swapMap, target_m, buffer);
+}
+
 
 /* 
  * SWAPS

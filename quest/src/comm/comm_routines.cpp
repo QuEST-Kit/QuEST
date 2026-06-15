@@ -21,6 +21,10 @@
 #include "quest/src/gpu/gpu_config.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_indices.hpp"
+#include "quest/src/cpu/cpu_subroutines.hpp"
+#include "quest/src/core/utilities.hpp"
+#include <map>
+#include <vector>
 
 #if QUEST_COMPILE_MPI
     #include <mpi.h>
@@ -825,5 +829,54 @@ vector<string> comm_gatherStringsToRoot(char* localChars, int maxNumLocalChars) 
 #else
     error_commButEnvNotDistributed();
     return {};
+#endif
+}
+
+void comm_exchangeFusedMultiSwap(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, const std::map<int, int>& swapMap) {
+    assert_commQuregIsDistributed(qureg);
+
+#if QUEST_COMPILE_MPI
+    int k = swapMap.size();
+    if (k == 0) return;
+
+    // GPU fallback: sync GPU amps to CPU, perform fused swap on CPU, sync back
+    if (qureg.isGpuAccelerated)
+        syncQuregFromGpu(qureg);
+
+    qindex chunkSize = qureg.numAmpsPerNode >> k;
+
+    std::vector<int> prefixTargs;
+    for (auto const& [s, p] : swapMap) {
+        prefixTargs.push_back(p);
+    }
+
+    int myPrefixBits = 0;
+    for (int i = 0; i < k; i++) {
+        if (util_getRankBitOfQubit(prefixTargs[i], qureg)) {
+            myPrefixBits |= (1 << i);
+        }
+    }
+
+    qcomp* sendBuffer = qureg.cpuCommBuffer;
+    qcomp* recvBuffer = qureg.cpuCommBuffer + chunkSize;
+
+    for (int s = 1; s < (1 << k); s++) {
+        int target_m = myPrefixBits ^ s;
+        int pairRank = qureg.rank;
+        for (int i = 0; i < k; i++) {
+            if ((s >> i) & 1) {
+                pairRank = flipBit(pairRank, util_getPrefixInd(prefixTargs[i], qureg));
+            }
+        }
+        
+        cpu_statevec_packFusedMultiSwapBuffers(qureg, swapMap, target_m, sendBuffer);
+        exchangeArrays(sendBuffer, recvBuffer, chunkSize, pairRank);
+        cpu_statevec_unpackFusedMultiSwapBuffers(qureg, swapMap, target_m, recvBuffer);
+    }
+
+    if (qureg.isGpuAccelerated)
+        syncQuregToGpu(qureg);
+#else
+    error_commButEnvNotDistributed();
 #endif
 }

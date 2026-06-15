@@ -23,6 +23,8 @@
 #include "quest/src/core/paulilogic.hpp"
 #include "quest/src/core/localiser.hpp"
 #include "quest/src/core/accelerator.hpp"
+
+#include <map>
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
@@ -909,16 +911,17 @@ void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, ConstList64 ctrls, Cons
     ///     although the latter requires substantially more work like setting up
     ///     a communicator which may be inelegant alongside our own distribution scheme.
 
-    // perform necessary swaps to move all targets into suffix, each of which invokes communication
-    for (size_t i=0; i<targsA.size(); i++) {
-
-        if (targsA[i] == targsB[i])
-            continue;
-
-        int suffixTarg = std::min(targsA[i], targsB[i]);
-        int prefixTarg = std::max(targsA[i], targsB[i]);
-        anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, suffixTarg, prefixTarg);
+    // Use bitMap to record the final destination of each qubits
+    std::map<int, int> swapMap;
+    for (size_t i = 0; i < targsA.size(); i++) {
+        if (targsA[i] != targsB[i]) {
+            swapMap[std::min(targsA[i], targsB[i])] = std::max(targsA[i], targsB[i]);
+        }
     }
+    if (swapMap.empty()) {
+        return;
+    }
+    comm_exchangeFusedMultiSwap(qureg, ctrls, ctrlStates, swapMap);
 }
 
 

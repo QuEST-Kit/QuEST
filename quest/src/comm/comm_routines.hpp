@@ -16,6 +16,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 using std::vector;
 
@@ -39,6 +40,7 @@ void comm_combineAmpsIntoBuffer(Qureg receiver, Qureg sender);
 
 void comm_combineElemsIntoBuffer(Qureg receiver, FullStateDiagMatr sender);
 
+void comm_exchangeFusedMultiSwap(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, const std::map<int, int>& swapMap);
 
 
 /*
