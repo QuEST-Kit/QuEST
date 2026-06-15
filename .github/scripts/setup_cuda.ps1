@@ -83,7 +83,15 @@ foreach ($dir in $directories) {
 
 # Add msbuild cuda extensions
 $msBuildExtensions = (Get-ChildItem  "$src\visual_studio_integration\CUDAVisualStudioIntegration\extras\visual_studio_integration\MSBuildExtensions").fullname
-(Get-ChildItem 'C:\Program Files\Microsoft Visual Studio\2022\*\MSBuild\Microsoft\VC\*\BuildCustomizations').FullName | ForEach-Object { 
+
+# Locate Visual Studio with vswhere rather than a hard-coded path, so this keeps
+# working when the windows-latest runner image moves the VS install (the old
+# 'C:\Program Files\Microsoft Visual Studio\2022\*' path no longer exists there).
+$vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+$vsPath = & $vswhere -latest -products '*' -property installationPath
+Write-Output "Visual Studio install path: $vsPath"
+
+(Get-ChildItem "$vsPath\MSBuild\Microsoft\VC\*\BuildCustomizations").FullName | ForEach-Object {
     $destination = $_
     $msBuildExtensions | ForEach-Object {
         $extension = $_
