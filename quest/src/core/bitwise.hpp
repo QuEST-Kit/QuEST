@@ -99,17 +99,11 @@ INLINE qindex concatenateBits(qindex pref, qindex mid, int numMidBits, qindex su
 
 
 INLINE qindex insertBit(qindex number, int bitIndex, int bitValue) {
-
-    // open a one-bit gap at bitIndex and deposit bitValue there. This is the
-    // hot inner-loop primitive of insertBits() (see #717); we compute it with a
-    // single shared low-bit mask and a shift-by-one of the high bits, rather than
-    // the equivalent right-shift/left-shift + nested concatenateBits, to shave a
-    // couple of ops off every unrolled iteration. Behaviour is identical:
-    //   ((number >> bitIndex) << (bitIndex+1)) | (bitValue << bitIndex) | (number & lowMask)
-    qindex lowMask = (QINDEX_ONE << bitIndex) - 1;             // bits right of bitIndex
-    return ((number & ~lowMask) << 1) |                        // high bits, shifted up by the gap
-           (((qindex) bitValue) << bitIndex) |                 // the inserted bit
-           (number & lowMask);                                 // untouched low bits
+    
+    qindex left  = getBitsLeftOfIndex (number, bitIndex-1); // include bit at bitIndex
+    qindex right = getBitsRightOfIndex(number, bitIndex);
+    qindex all = concatenateBits(left, bitValue, 1, right, bitIndex);
+    return all;
 }
 
 
