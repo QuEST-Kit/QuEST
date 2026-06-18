@@ -83,7 +83,7 @@ foreach ($dir in $directories) {
 
 # Add msbuild cuda extensions
 $msBuildExtensions = (Get-ChildItem  "$src\visual_studio_integration\CUDAVisualStudioIntegration\extras\visual_studio_integration\MSBuildExtensions").fullname
-(Get-ChildItem 'C:\Program Files\Microsoft Visual Studio\2026\*\MSBuild\Microsoft\VC\*\BuildCustomizations').FullName | ForEach-Object { 
+(Get-ChildItem 'C:\Program Files\Microsoft Visual Studio\2022\*\MSBuild\Microsoft\VC\*\BuildCustomizations').FullName | ForEach-Object { 
     $destination = $_
     $msBuildExtensions | ForEach-Object {
         $extension = $_
