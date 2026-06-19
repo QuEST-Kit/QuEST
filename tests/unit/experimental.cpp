@@ -174,19 +174,39 @@ namespace {
 
 TEST_CASE( "saveQuregToFile and createQuregFromFile", TEST_CATEGORY ) {
 
+    // TODO / DEBUG / BEWARE!
+    // These tests are insufficient! They only ever test createQuregFromFile()
+    // (and ergo validate saveQuregToFile() worked properly) for non-distributed
+    // Quregs! This is because createQuregFromFile() uses the distribution of the
+    // autodeployer, which for our tiny unit-test Quregs, will always default to
+    // non-distributed. Distributed Qureg restoration is totally untested!
+
     SECTION( LABEL_CORRECTNESS ) {
 
-        // iterate the cached Quregs so the save path is exercised under every
-        // deployment combination (serial, OMP, MPI, GPU and their mixtures);
-        // each restored Qureg chooses its own deployment independently
+        // We will iterate the cached Quregs so the save path is exercised under every
+        // deployment combination (serial, OMP, MPI, GPU and their mixtures). However,
+        // the restored Qureg uses a distribution chosen by the auto-deployer, which is
+        // not permitted to differ from the checkpointed distribution; we skip those!
+        Qureg svDummy = createQureg(getNumCachedQubits());
+        Qureg dmDummy = createDensityQureg(getNumCachedQubits());
+        int legalSvNumNodes = svDummy.numNodes;
+        int legalDmNumNodes = dmDummy.numNodes;
+        destroyQureg(svDummy);
+        destroyQureg(dmDummy);
+
         SECTION( LABEL_STATEVEC ) {
 
             for (auto& [label, q] : getCachedStatevecs()) {
                 DYNAMIC_SECTION( label ) {
 
+                    // always test writing succeeds
                     initRandomPureState(q);
+                    REQUIRE_NOTHROW( saveQuregToFile(q, SV_FILE) );
 
-                    saveQuregToFile(q, SV_FILE);
+                    // skip restoration when new Qureg distribution would disagree with old
+                    if (q.numNodes != legalSvNumNodes)
+                        continue;
+
                     Qureg r = createQuregFromFile(SV_FILE);
 
                     CHECK( r.numQubits       == q.numQubits );
@@ -204,9 +224,14 @@ TEST_CASE( "saveQuregToFile and createQuregFromFile", TEST_CATEGORY ) {
             for (auto& [label, q] : getCachedDensmatrs()) {
                 DYNAMIC_SECTION( label ) {
 
-                    initRandomPureState(q); // works even for density matrices
+                    // always test writing succeeds
+                    initRandomMixedState(q, /*numPureStates=*/10);
+                    REQUIRE_NOTHROW( saveQuregToFile(q, DM_FILE) );
 
-                    saveQuregToFile(q, DM_FILE);
+                    // skip cached quregs with illegal distributions
+                    if (q.numNodes != legalDmNumNodes)
+                        continue;
+
                     Qureg r = createQuregFromFile(DM_FILE);
 
                     CHECK( r.numQubits       == q.numQubits );

@@ -127,6 +127,8 @@ void validate_newQuregAllocs(Qureg qureg, const char* caller);
 
 void validate_newQuregFileMatchesPrecision(size_t fileQrealBytes, const char* caller);
 
+void validate_newQuregNumNodesMatchesSavedFile(int numSavedNodes, int numAutoDeployedNodes, int numAvailableNodes, int numQubits, bool isDensMatr, const char* caller);
+
 
 
 /*

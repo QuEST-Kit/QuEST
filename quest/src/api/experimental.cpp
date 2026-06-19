@@ -5,7 +5,9 @@
  * file against MPI, despite being outside of /comm/, 
  * and so require opt-in macros (QUEST_COMPILE_SUBCOMM)
  * 
- * @author Oliver Brown
+ * @author Oliver Brown (custom QuESTEnv)
+ * @author Ashmit JaiSarita Gupta (checkpointing)
+ * @author Tyson Jones (structure)
  */
 
 #include "quest/include/config.h"
@@ -70,15 +72,16 @@ extern Qureg validateAndCreateCustomQureg(
 
 
 #if QUEST_COMPILE_ADIOS2
-auto createAdios() {
+auto createAdios(bool useMpi) {
 
-    // In distributed builds, ADIOS2 must be given QuEST's communicator so that each
-    // node's call collectively writes/reads its own slice of the shared file. Without
-    // it, ADIOS2 runs serially per rank and the per-node slices never form one file.
+    // When the Qureg is distributed, ADIOS2 must be given QuEST's communicator so that each
+    // node writes/reads its own slice of the shared file
     #if QUEST_COMPILE_MPI
-        return adios2::ADIOS(comm_getMpiComm());
+        return useMpi?
+            adios2::ADIOS(comm_getMpiComm()) :
+            adios2::ADIOS();
     #else
-        return adios2::ADIOS();
+        return adios2::ADIOS(); // implies useMpi=0
     #endif
 }
 #endif
@@ -142,18 +145,17 @@ void setQuESTNumGpuThreadsPerBlock(int numTPB) {
 }
 
 
-
-    // TODO:
-    // - make comment about size_t overflow risk
-    // - fix Qureg{} return warning issue
-    // - check restoration to a DISTRIBUTED qureg is correct
-
-
 void saveQuregToFile(Qureg qureg, const char* fn) {
     validate_adios2IsCompiled(__func__);
     validate_quregFields(qureg, __func__);
 
 #ifdef QUEST_COMPILE_ADIOS2
+
+    // when qureg is duplicated in a distributed QuEST env, only root proceeds,
+    // to avoid ADIOS2 processes racing to file. Note that we cannot prevent the 
+    // race when user's code is distributed but QuEST is not - user must be careful!
+    if (!qureg.isDistributed && comm_getRank() > ROOT_RANK)
+        return;
 
     // Pedantic but safe - don't let ADIOS2 start reading amps prematurely
     if (qureg.isDistributed)
@@ -166,7 +168,7 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
         gpu_copyGpuToCpu(qureg);
 
     // gratuitously re-create ADIOS2 at every call, for simplicity (occluded by IO)
-    adios2::ADIOS adios = createAdios();
+    adios2::ADIOS adios = createAdios(qureg.isDistributed);
     adios2::IO io = adios.DeclareIO("QuESTQuregSave");
 
     // attempt to open the file
@@ -181,6 +183,7 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
     // and precision, never incidental deployment fields (the loader chooses its
     // own deployment) nor derivable fields (like numAmps)
     adios2::Variable<int> vNumQubits  = io.DefineVariable<int>("numQubits");
+    adios2::Variable<int> vNumNodes   = io.DefineVariable<int>("numNodes");
     adios2::Variable<int> vIsDensMatr = io.DefineVariable<int>("isDensityMatrix");
     adios2::Variable<size_t> vQrealBytes = io.DefineVariable<size_t>("qrealBytes"); // also encodes precision
 
@@ -190,7 +193,7 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
     // (these scalars are guaranteed not to overflow by createQureg validation)
     qindex globalReals = 2 * qureg.numAmps;
     qindex localReals  = 2 * qureg.numAmpsPerNode;
-    qindex startReal   = 2 * ((qindex) qureg.rank) * qureg.numAmpsPerNode;
+    qindex startReal   = localReals * qureg.rank;
     adios2::Variable<qreal> vAmpComponents = io.DefineVariable<qreal>(
         "ampComponents",
         { (size_t) globalReals },
@@ -201,6 +204,7 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
     try {
         engine.BeginStep();
         engine.Put(vNumQubits,  qureg.numQubits);
+        engine.Put(vNumNodes,   qureg.numNodes);
         engine.Put(vIsDensMatr, qureg.isDensityMatrix);
         engine.Put(vQrealBytes, sizeof(qreal));
         engine.Put(vAmpComponents, reinterpret_cast<qreal*>(qureg.cpuAmps));
@@ -220,8 +224,13 @@ Qureg createQuregFromFile(const char* fn) {
 
 #ifdef QUEST_COMPILE_ADIOS2
 
+    // make ADIOS2 MPI-aware even when the subsequently-loaded Qureg is
+    // auto-deployed to be non-distributed; every process will safely
+    // parse the file and independently update its Qureg copy
+    bool giveAdiosMpi = comm_isActive();
+
     // gratuitously re-create ADIOS2 at every call, for simplicity (occluded by IO)
-    adios2::ADIOS adios = createAdios();
+    adios2::ADIOS adios = createAdios(giveAdiosMpi);
     adios2::IO io = adios.DeclareIO("QuESTQuregLoad");
 
     // attempt to open the file, and prepare to parse
@@ -235,6 +244,7 @@ Qureg createQuregFromFile(const char* fn) {
 
     // check that the file contains the expected variables
     auto vNumQubits  = io.InquireVariable<int>("numQubits");
+    auto vNumNodes   = io.InquireVariable<int>("numNodes");
     auto vIsDensMatr = io.InquireVariable<int>("isDensityMatrix");
     auto vQrealBytes = io.InquireVariable<size_t>("qrealBytes");
     auto vAmpComponents = io.InquireVariable<qreal>("ampComponents");
@@ -243,10 +253,12 @@ Qureg createQuregFromFile(const char* fn) {
 
     // read dimension + precision metadata first, so we can size the new Qureg
     int numQubits = 0;
+    int numNodes = 0;
     int isDensMatr = 0;
     size_t fileQrealBytes = 0;
     try {
         engine.Get(vNumQubits,  numQubits);
+        engine.Get(vNumNodes,   numNodes);
         engine.Get(vIsDensMatr, isDensMatr);
         engine.Get(vQrealBytes, fileQrealBytes);
         engine.PerformGets();
@@ -260,6 +272,11 @@ Qureg createQuregFromFile(const char* fn) {
     // attempt to create a matching-dimension Qureg with automatically chosen deployments
     Qureg qureg = validateAndCreateCustomQureg(numQubits, isDensMatr, 
         modeflag::USE_AUTO, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
+
+    // auto-distribution MUST match checkpointed distribution (pre-free to avoid leak)
+    if (qureg.numNodes != numNodes)
+        destroyQureg(qureg);
+    validate_newQuregNumNodesMatchesSavedFile(numNodes, qureg.numNodes, comm_getNumNodes(), numQubits, isDensMatr, __func__);
 
     // read only this node's slice of the global amplitude array into its buffer
     // (guaranteed not to overflow by above validateAndCreateCustomQureg validation)

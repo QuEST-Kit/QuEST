@@ -7,6 +7,7 @@
  * 
  * @author Oliver Brown
  * @author Tyson Jones (formatting)
+ * @author Ashmit JaiSarita Gupta (checkpointing)
  * 
  * @defgroup experimental Experimental
  * @ingroup api
@@ -104,18 +105,16 @@ int getQuESTNumGpuThreadsPerBlock();
 void setQuESTNumGpuThreadsPerBlock(int numThreadsPerBlock);
 
 
-
-    // TODO:
-    // - also link/add to the 'qureg' API module? (Then need to mark this as experimental explicitly?!)
-    // - add note about file extension???? 
-
-
 /** Writes the contents of @p qureg to the file (or folder) @p fn, so that it may later be
  * restored with createQuregFromFile(), potentially in another process.
  * 
- * The output records only the @p qureg dimension (number of qubits and whether it is a density matrix),
- * the amplitude precision, and the Qureg's full set of amplitudes. Deployment information (such as whether
- * the Qureg is distributed, or GPU-accelerated) is not recorded.
+ * @notyettested
+ * @notyetvalidated
+ * 
+ * The output records the @p qureg dimension (number of qubits and whether it is a density matrix),
+ * the amplitude precision, the Qureg's distribution, and the Qureg's full set of amplitudes. Other
+ * deployment information, such as whether the Qureg is multithreaded or GPU-accelerated, is not
+ * recorded. 
  * 
  * There is no particular file extension or folder name suffix required, though since saving is
  * performed with ADIOS2, a suffix of @p .bp is conventional.
@@ -140,7 +139,16 @@ void saveQuregToFile(Qureg qureg, const char* fn);
  * with automatically chosen deployments (independent of those used when the
  * file was saved), and populates the Qureg with the saved amplitudes.
  * 
+ * @notyettested
+ * @notyetvalidated
+ * 
  * The chosen deployments are identical to those chosen by createQureg() and createDensityQureg().
+ * 
+ * > [!NOTE]
+ * > The number of distributed nodes chosen by the autodeployer must agree with the
+ * > number of nodes of the originally saved Qureg, else a @validationerror is thrown. Therefore,
+ * > the number of MPI processes calling these functions cannot be changed between saveQuregToFile()
+ * > and createQuregFromFile(), unless the Qureg was non-distributed in both settings.
  * 
  * > [!IMPORTANT]
  * > This function is only callable when QuEST is compiled with CMake option QUEST_ENABLE_ADIOS2=1.
@@ -151,6 +159,7 @@ void saveQuregToFile(Qureg qureg, const char* fn);
  * - if QuEST was not compiled with CMake option QUEST_ENABLE_ADIOS2=1.
  * - if @p fn cannot be read (since, for example, it does not exist).
  * - if the precision of the saved Qureg differs from the current QuEST precision.
+ * - if the number of distributed nodes of the saved Qureg differs from the autodeployer's chosen number.
  * - if the recorded Qureg dimensions would overflow the @c qindex type.
  * - if the recorded toatal Qureg memory would overflow the @c size_t type.
  * - if the system contains insufficient RAM (or VRAM) to store the Qureg in any deployment.

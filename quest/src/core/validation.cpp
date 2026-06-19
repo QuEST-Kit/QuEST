@@ -281,6 +281,9 @@ namespace report {
     string QUREG_FILE_PRECISION_MISMATCH =
         "The checkpoint file was written with a qreal precision of ${FILE_BYTES} bytes, but this QuEST build uses ${EXEC_BYTES} bytes. A Qureg can only be restored by a QuEST build using the same floating-point precision (QUEST_FLOAT_PRECISION) as the build which saved it.";
 
+    string QUREG_FILE_NUM_NODES_MISMATCH =
+        "The autodeployer chose to distribute the ${NUM_QUBITS}-qubit Qureg (isDensityMatrix=${IS_DENS_MATR}) over ${NUM_AUTODEPLOYED_NODES} nodes (of the ${NUM_AVAILABLE_NODES} available to QuEST), but the saved Qureg was distributed over ${NUM_SAVED_NODES} nodes. The distributions must match.";
+
     string ADIOS2_NOT_COMPILED =
         "Qureg checkpointing (saveQuregToFile and createQuregFromFile) requires QuEST to be compiled with ADIOS2. Reconfigure with the CMake option -DQUEST_ENABLE_ADIOS2=ON.";
 
@@ -1964,7 +1967,21 @@ void validate_newQuregFileMatchesPrecision(size_t fileQrealBytes, const char* ca
         {"${FILE_BYTES}", (int) fileQrealBytes},
         {"${EXEC_BYTES}", (int) sizeof(qreal)}};
 
-    assertThat(fileQrealBytes == (int) sizeof(qreal), report::QUREG_FILE_PRECISION_MISMATCH, vars, caller);
+    assertThat(fileQrealBytes == sizeof(qreal), report::QUREG_FILE_PRECISION_MISMATCH, vars, caller);
+}
+
+void validate_newQuregNumNodesMatchesSavedFile(int numSavedNodes, int numAutoDeployedNodes, int numAvailableNodes, int numQubits, bool isDensMatr, const char* caller) {
+
+    if (!global_isValidationEnabled)
+        return;
+
+    tokenSubs vars = {
+        {"${NUM_QUBITS}",   numQubits},
+        {"${IS_DENS_MATR}", isDensMatr},
+        {"${NUM_SAVED_NODES}",        numSavedNodes},
+        {"${NUM_AUTODEPLOYED_NODES}", numAutoDeployedNodes},
+        {"${NUM_AVAILABLE_NODES}",    numAvailableNodes}};
+    assertThat(numSavedNodes == numAutoDeployedNodes, report::QUREG_FILE_NUM_NODES_MISMATCH, vars, caller);
 }
 
 
