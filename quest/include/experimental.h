@@ -57,8 +57,9 @@ void initCustomMpiQuESTEnv(int useDistrib, bool userOwnsMpi, int useGpuAccel, in
  *  The user-provided MPI communicator undergoes the same validation procedure as any that QuEST
  *  would use, and so must contain a power-of-2 number of processes.
  * 
- * This function is only compiled and exposed when macro QUEST_COMPILE_SUBCOMM is 1, as is
- * defined when providing CMake option QUEST_ENABLE_SUBCOMM during building.
+ * > [!IMPORTANT]
+ * > This function is only compiled and exposed when macro QUEST_COMPILE_SUBCOMM is 1, as is
+ * > defined when providing CMake option QUEST_ENABLE_SUBCOMM during building.
  *
  * @author Oliver Brown
  */
@@ -105,37 +106,59 @@ void setQuESTNumGpuThreadsPerBlock(int numThreadsPerBlock);
 
 
     // TODO:
-    // - change 'fn' to 'dir'
-    // - note only enabled when QUEST_ENABLE_ADIOS2=ON
     // - also link/add to the 'qureg' API module? (Then need to mark this as experimental explicitly?!)
+    // - add note about file extension???? 
 
 
-/** Writes the contents of @p qureg to the file @p fn, so that it may later be
- * restored with createQuregFromFile(). The file records only the @p qureg
- * dimension (number of qubits and whether it is a density matrix) and its full
- * set of amplitudes; incidental deployment information (e.g. multithreading,
- * GPU-acceleration, distribution) is not recorded.
+/** Writes the contents of @p qureg to the file (or folder) @p fn, so that it may later be
+ * restored with createQuregFromFile(), potentially in another process.
+ * 
+ * The output records only the @p qureg dimension (number of qubits and whether it is a density matrix),
+ * the amplitude precision, and the Qureg's full set of amplitudes. Deployment information (such as whether
+ * the Qureg is distributed, or GPU-accelerated) is not recorded.
+ * 
+ * There is no particular file extension or folder name suffix required, though since saving is
+ * performed with ADIOS2, a suffix of @p .bp is conventional.
+ * 
+ * > [!IMPORTANT]
+ * > This function is only callable when QuEST is compiled with CMake option QUEST_ENABLE_ADIOS2=1.
  *
  * @param[in] qureg the Qureg to write to disk.
- * @param[in] fn    the output file path.
- * @notyetdoced
- * @notyettested
+ * @param[in] fn    the output file (or folder) path.
+ * @throws @validationerror
+ * - if @p qureg is uninitialised.
+ * - if QuEST was not compiled with CMake option QUEST_ENABLE_ADIOS2=1.
+ * - if opening or writing to @p fn fails.
  * @see
  * - createQuregFromFile() to restore a Qureg saved by this function.
+ * @author Ashmit JaiSarita Gupta
  */
 void saveQuregToFile(Qureg qureg, const char* fn);
 
 
-/** Creates a new Qureg from a file previously written by saveQuregToFile(),
+/** Creates a new Qureg from a file (or folder) previously created by saveQuregToFile(),
  * with automatically chosen deployments (independent of those used when the
- * file was saved), and populates it with the stored amplitudes.
+ * file was saved), and populates the Qureg with the saved amplitudes.
+ * 
+ * The chosen deployments are identical to those chosen by createQureg() and createDensityQureg().
+ * 
+ * > [!IMPORTANT]
+ * > This function is only callable when QuEST is compiled with CMake option QUEST_ENABLE_ADIOS2=1.
  *
- * @param[in] fn the input file path.
+ * @param[in] fn the file (or folder) path previously created by saveQuregToFile().
  * @returns A new Qureg instance matching the saved dimension and amplitudes.
- * @notyetdoced
- * @notyettested
+ * @throws @validationerror
+ * - if QuEST was not compiled with CMake option QUEST_ENABLE_ADIOS2=1.
+ * - if @p fn cannot be read (since, for example, it does not exist).
+ * - if the precision of the saved Qureg differs from the current QuEST precision.
+ * - if the recorded Qureg dimensions would overflow the @c qindex type.
+ * - if the recorded toatal Qureg memory would overflow the @c size_t type.
+ * - if the system contains insufficient RAM (or VRAM) to store the Qureg in any deployment.
+ * - if any Qureg memory allocation unexpectedly fails.
  * @see
  * - saveQuregToFile() to create a file readable by this function.
+ * @author Ashmit JaiSarita Gupta
+ * @author Tyson Jones (validation)
  */
 Qureg createQuregFromFile(const char* fn);
 

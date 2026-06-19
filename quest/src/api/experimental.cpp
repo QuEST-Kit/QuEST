@@ -10,6 +10,8 @@
 
 #include "quest/include/config.h"
 #include "quest/include/environment.h"
+#include "quest/include/qureg.h"
+#include "quest/include/modes.h"
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/comm/comm_config.hpp"
@@ -45,6 +47,10 @@
 
 extern void validateAndInitCustomQuESTEnv(
     int useDistrib, bool userOwnsMpi, int useGpuAccel, int useMultithread, const char* caller);
+
+
+extern Qureg validateAndCreateCustomQureg(
+    int numQubits, int isDensMatr, int useDistrib, int useGpuAccel, int useMultithread, const char* caller);
 
 
 #if QUEST_COMPILE_SUBCOMM // hide MPI_Comm
@@ -138,97 +144,145 @@ void setQuESTNumGpuThreadsPerBlock(int numTPB) {
 
 
     // TODO:
-    // - fix subcomm issue
-    // - make comment about gratuitous re-creation of ADIOS2 (fine for simplicity)
     // - make comment about size_t overflow risk
     // - fix Qureg{} return warning issue
     // - check restoration to a DISTRIBUTED qureg is correct
 
 
 void saveQuregToFile(Qureg qureg, const char* fn) {
-    validate_quregCheckpointingIsCompiled(__func__);
-
-#ifdef QUEST_COMPILE_ADIOS2
+    validate_adios2IsCompiled(__func__);
     validate_quregFields(qureg, __func__);
 
-    // ensure the CPU amplitudes reflect any GPU-resident state before writing
-    syncQuregFromGpu(qureg);
+#ifdef QUEST_COMPILE_ADIOS2
 
+    // Pedantic but safe - don't let ADIOS2 start reading amps prematurely
+    if (qureg.isDistributed)
+        comm_sync();
+    
+    // TODO:
+    // We can optimise in GPU settings by giving ADIOS2 the device memory
+    // pointers; but for now, we simply stage into CPU memory first
+    if (qureg.isGpuAccelerated)
+        gpu_copyGpuToCpu(qureg);
+
+    // gratuitously re-create ADIOS2 at every call, for simplicity (occluded by IO)
     adios2::ADIOS adios = createAdios();
     adios2::IO io = adios.DeclareIO("QuESTQuregSave");
-    adios2::Engine engine = io.Open(fn, adios2::Mode::Write);
+
+    // attempt to open the file
+    adios2::Engine engine; // default ctor
+    try {
+        engine = io.Open(fn, adios2::Mode::Write);
+    } catch (...) {
+        validate_adiosCanOpenFile(false, fn, __func__);
+    }
 
     // global single-value metadata; we deliberately record only the dimension
     // and precision, never incidental deployment fields (the loader chooses its
     // own deployment) nor derivable fields (like numAmps)
     adios2::Variable<int> vNumQubits  = io.DefineVariable<int>("numQubits");
     adios2::Variable<int> vIsDensMatr = io.DefineVariable<int>("isDensityMatrix");
-    adios2::Variable<int> vQrealBytes = io.DefineVariable<int>("qrealBytes");
+    adios2::Variable<size_t> vQrealBytes = io.DefineVariable<size_t>("qrealBytes"); // also encodes precision
 
     // amplitudes are stored as interleaved (real, imag) reals to stay agnostic
     // to precision and to ADIOS2's complex-type support; each node writes only
     // its local slice into the global array, avoiding excessive memory use
+    // (these scalars are guaranteed not to overflow by createQureg validation)
     qindex globalReals = 2 * qureg.numAmps;
     qindex localReals  = 2 * qureg.numAmpsPerNode;
     qindex startReal   = 2 * ((qindex) qureg.rank) * qureg.numAmpsPerNode;
-    adios2::Variable<qreal> vAmps = io.DefineVariable<qreal>(
-        "amps",
+    adios2::Variable<qreal> vAmpComponents = io.DefineVariable<qreal>(
+        "ampComponents",
         { (size_t) globalReals },
         { (size_t) startReal },
         { (size_t) localReals });
 
-    int qrealBytes = (int) sizeof(qreal);
+    // attempt to write to file
+    try {
+        engine.BeginStep();
+        engine.Put(vNumQubits,  qureg.numQubits);
+        engine.Put(vIsDensMatr, qureg.isDensityMatrix);
+        engine.Put(vQrealBytes, sizeof(qreal));
+        engine.Put(vAmpComponents, reinterpret_cast<qreal*>(qureg.cpuAmps));
+        engine.EndStep();
+        engine.Close();
+    } catch (...) {
+        // no need for a finally; RAII frees engine
+        validate_adiosCanWriteToFile(false, fn, __func__);
+    }
 
-    engine.BeginStep();
-    engine.Put(vNumQubits,  qureg.numQubits);
-    engine.Put(vIsDensMatr, qureg.isDensityMatrix);
-    engine.Put(vQrealBytes, qrealBytes);
-    engine.Put(vAmps, reinterpret_cast<qreal*>(qureg.cpuAmps));
-    engine.EndStep();
-    engine.Close();
 #endif
 }
 
 
 Qureg createQuregFromFile(const char* fn) {
-    validate_quregCheckpointingIsCompiled(__func__);
+    validate_adios2IsCompiled(__func__);
 
 #ifdef QUEST_COMPILE_ADIOS2
+
+    // gratuitously re-create ADIOS2 at every call, for simplicity (occluded by IO)
     adios2::ADIOS adios = createAdios();
     adios2::IO io = adios.DeclareIO("QuESTQuregLoad");
-    adios2::Engine engine = io.Open(fn, adios2::Mode::Read);
 
-    engine.BeginStep();
+    // attempt to open the file, and prepare to parse
+    adios2::Engine engine; // default ctor
+    try {
+        engine = io.Open(fn, adios2::Mode::Read);
+        engine.BeginStep();
+    } catch (...) {
+        validate_adiosCanOpenFile(false, fn, __func__);
+    }
+
+    // check that the file contains the expected variables
+    auto vNumQubits  = io.InquireVariable<int>("numQubits");
+    auto vIsDensMatr = io.InquireVariable<int>("isDensityMatrix");
+    auto vQrealBytes = io.InquireVariable<size_t>("qrealBytes");
+    auto vAmpComponents = io.InquireVariable<qreal>("ampComponents");
+    bool areAllVarsPresent = vNumQubits && vIsDensMatr && vQrealBytes && vAmpComponents;
+    validate_adiosFileContainsFields(areAllVarsPresent, __func__);
 
     // read dimension + precision metadata first, so we can size the new Qureg
     int numQubits = 0;
     int isDensMatr = 0;
-    int fileQrealBytes = 0;
-    engine.Get(io.InquireVariable<int>("numQubits"),       numQubits);
-    engine.Get(io.InquireVariable<int>("isDensityMatrix"), isDensMatr);
-    engine.Get(io.InquireVariable<int>("qrealBytes"),      fileQrealBytes);
-    engine.PerformGets();
+    size_t fileQrealBytes = 0;
+    try {
+        engine.Get(vNumQubits,  numQubits);
+        engine.Get(vIsDensMatr, isDensMatr);
+        engine.Get(vQrealBytes, fileQrealBytes);
+        engine.PerformGets();
+    } catch(...) {
+        validate_adiosCanReadFile(false, fn, __func__);
+    }
 
-    validate_quregFileMatchesPrecision(fileQrealBytes, __func__);
+    // check the amps are of the expected precision, and so are parsable
+    validate_newQuregFileMatchesPrecision(fileQrealBytes, __func__);
 
-    // create a matching-dimension Qureg with automatically chosen deployments,
-    // independent of those used when the file was saved
-    Qureg qureg = (isDensMatr)?
-        createDensityQureg(numQubits) :
-        createQureg(numQubits);
+    // attempt to create a matching-dimension Qureg with automatically chosen deployments
+    Qureg qureg = validateAndCreateCustomQureg(numQubits, isDensMatr, 
+        modeflag::USE_AUTO, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
 
     // read only this node's slice of the global amplitude array into its buffer
+    // (guaranteed not to overflow by above validateAndCreateCustomQureg validation)
     qindex localReals = 2 * qureg.numAmpsPerNode;
     qindex startReal  = 2 * ((qindex) qureg.rank) * qureg.numAmpsPerNode;
-    adios2::Variable<qreal> vAmps = io.InquireVariable<qreal>("amps");
-    vAmps.SetSelection({ { (size_t) startReal }, { (size_t) localReals } });
-    engine.Get(vAmps, reinterpret_cast<qreal*>(qureg.cpuAmps));
+    vAmpComponents.SetSelection({ { (size_t) startReal }, { (size_t) localReals } });
+    try {
+        engine.Get(vAmpComponents, reinterpret_cast<qreal*>(qureg.cpuAmps)); // immediate; PerformGets redundant
+    } catch(...) {
+        validate_adiosCanReadFile(false, fn, __func__);
+    }
 
-    engine.EndStep();
-    engine.Close();
+    // complete ADIOS2 work
+    try {
+        engine.EndStep();
+        engine.Close();
+    } catch(...) {
+        validate_adiosCanReadFile(false, fn, __func__);
+    }
 
     // propagate the restored CPU amplitudes to the GPU, if deployed
-    syncQuregToGpu(qureg);
+    if (qureg.isGpuAccelerated)
+        gpu_copyCpuToGpu(qureg);
 
     return qureg;
 #else

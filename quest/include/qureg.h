@@ -135,6 +135,7 @@ typedef struct {
  * - createDensityQureg() to create a density matrix which can additionally undergo decoherence.
  * - createForcedQureg() to create a statevector which is forced to make use of all available deployments.
  * - createCustomQureg() to explicitly set the used deployments.
+ * - createQuregFromFile() to create a Qureg from a checkpoint file.
  * @author Tyson Jones
  */
 Qureg createQureg(int numQubits);

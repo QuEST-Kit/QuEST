@@ -205,16 +205,6 @@ void printPrecisionInfo() {
 }
 
 
-
-// TODO: possibly move this
-
-// reports whether QuEST was compiled with Qureg checkpointing support (ADIOS2)
-static bool isCheckpointingCompiled() {
-    return (bool) QUEST_COMPILE_ADIOS2;
-}
-
-
-
 void printCompilationInfo() {
 
     print_table(
@@ -225,7 +215,7 @@ void printCompilationInfo() {
         {"isGpuCompiled",            gpu_isGpuCompiled()},
         {"isHipCompiled",            gpu_isHipCompiled()},
         {"isCuQuantumCompiled",      gpu_isCuQuantumCompiled()},
-        {"isCheckpointingCompiled",  isCheckpointingCompiled()},
+        {"isCheckpointingCompiled",  QUEST_COMPILE_ADIOS2},
     });
 }
 

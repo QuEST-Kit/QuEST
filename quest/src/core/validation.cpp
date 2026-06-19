@@ -281,14 +281,8 @@ namespace report {
     string QUREG_FILE_PRECISION_MISMATCH =
         "The checkpoint file was written with a qreal precision of ${FILE_BYTES} bytes, but this QuEST build uses ${EXEC_BYTES} bytes. A Qureg can only be restored by a QuEST build using the same floating-point precision (QUEST_FLOAT_PRECISION) as the build which saved it.";
 
-
-
-    // TODO: move this
-
     string ADIOS2_NOT_COMPILED =
         "Qureg checkpointing (saveQuregToFile and createQuregFromFile) requires QuEST to be compiled with ADIOS2. Reconfigure with the CMake option -DQUEST_ENABLE_ADIOS2=ON.";
-
-
 
 
     /*
@@ -1161,6 +1155,18 @@ namespace report {
     string CANNOT_READ_FILE = 
         "Could not load and read the given file. Make sure the file exists and is readable as plaintext.";
 
+    string ADIOS2_CANNOT_OPEN_FILE =
+        "The specified file (or folder) could not be opened by ADIOS2.";
+
+    string ADIOS2_CANNOT_READ_FILE =
+        "The specified file (or folder) was opened by ADIOS2, but the contents could not be read or loaded.";
+
+    string ADIOS2_CANNOT_WRITE_TO_FILE = 
+        "ADIOS2 failed to write to the specified file (or folder).";
+
+    string ADIOS2_FILE_INVALID =
+        "The specified file (or folder) did not contain the expected AIODS2 variables, suggesting it was not created with saveQuregToFile().";
+
 
     /*
      * TEMPORARY ALLOCATIONS
@@ -1949,6 +1955,18 @@ void validate_newQuregAllocs(Qureg qureg, const char* caller) {
         assertAllNodesAgreeThat(mem_isAllocated(qureg.gpuCommBuffer), report::NEW_QUREG_GPU_COMM_BUFFER_ALLOC_FAILED, caller);
 }
 
+void validate_newQuregFileMatchesPrecision(size_t fileQrealBytes, const char* caller) {
+
+    if (!global_isValidationEnabled)
+        return;
+
+    tokenSubs vars = {
+        {"${FILE_BYTES}", (int) fileQrealBytes},
+        {"${EXEC_BYTES}", (int) sizeof(qreal)}};
+
+    assertThat(fileQrealBytes == (int) sizeof(qreal), report::QUREG_FILE_PRECISION_MISMATCH, vars, caller);
+}
+
 
 
 /*
@@ -2003,7 +2021,7 @@ void validate_quregIsDensityMatrix(Qureg qureg, const char* caller) {
     assertThat(qureg.isDensityMatrix, report::QUREG_NOT_DENSITY_MATRIX, caller);
 }
 
-void validate_quregCheckpointingIsCompiled(const char* caller) {
+void validate_adios2IsCompiled(const char* caller) {
 
     if (!global_isValidationEnabled)
         return;
@@ -2018,18 +2036,6 @@ void validate_quregCheckpointingIsCompiled(const char* caller) {
     #endif
 
     assertThat(isCompiled, report::ADIOS2_NOT_COMPILED, caller);
-}
-
-void validate_quregFileMatchesPrecision(int fileQrealBytes, const char* caller) {
-
-    if (!global_isValidationEnabled)
-        return;
-
-    tokenSubs vars = {
-        {"${FILE_BYTES}", fileQrealBytes},
-        {"${EXEC_BYTES}", (int) sizeof(qreal)}};
-
-    assertThat(fileQrealBytes == (int) sizeof(qreal), report::QUREG_FILE_PRECISION_MISMATCH, vars, caller);
 }
 
 
@@ -5080,6 +5086,47 @@ void validate_canReadFile(string fn, const char* caller) {
 
     /// @todo embed filename into error message when tokenSubs is updated to permit strings
     assertThat(parser_canReadFile(fn), report::CANNOT_READ_FILE, caller);
+}
+
+void validate_adiosCanOpenFile(bool canOpen, string fn, const char* caller) {
+
+    if (!global_isValidationEnabled)
+        return;
+
+    /// @todo embed filename into error message when tokenSubs is updated to permit strings
+    (void) fn;
+
+    assertThat(canOpen, report::ADIOS2_CANNOT_OPEN_FILE, caller);
+}
+
+void validate_adiosCanReadFile(bool canRead, string fn, const char* caller) {
+
+    if (!global_isValidationEnabled)
+        return;
+
+    /// @todo embed filename into error message when tokenSubs is updated to permit strings
+    (void) fn;
+
+    assertThat(canRead, report::ADIOS2_CANNOT_READ_FILE, caller);
+}
+
+void validate_adiosCanWriteToFile(bool canWrite, string fn, const char* caller) {
+
+    if (!global_isValidationEnabled)
+        return;
+
+    /// @todo embed filename into error message when tokenSubs is updated to permit strings
+    (void) fn;
+
+    assertThat(canWrite, report::ADIOS2_CANNOT_WRITE_TO_FILE, caller);
+}
+
+void validate_adiosFileContainsFields(bool areAllVarsPresent, const char* caller) {
+
+    if (!global_isValidationEnabled)
+        return;
+
+    assertThat(areAllVarsPresent, report::ADIOS2_FILE_INVALID, caller); 
 }
 
 

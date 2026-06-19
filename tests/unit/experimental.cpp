@@ -124,8 +124,12 @@ TEST_CASE( "getQuESTNumGpuThreadsPerBlock", TEST_CATEGORY ) {
 
     // TODO:
     // - fix this guard! Just runtime skip 
-    // - fix tests
+    // - fix tests; don't use custom comparison, use existing utils
+    // - negative test of when PRECISION CHANGES
+    //   (can we invoke a QuEST subprocess to WRITE to file?!?! Probs not )
     // - extend tests to CHANGE DEPLOYMENT of the Qureg pre and post restoration!
+    // - note we cannot actually make negative test changes of precision!
+    // - separate test into two functions, for each API func
     
 
 #ifdef QUEST_COMPILE_ADIOS2
