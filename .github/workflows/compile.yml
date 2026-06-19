@@ -137,7 +137,7 @@ jobs:
 
           # cannot presently install HIP on Windows CI (times out)
           - hip: ON
-            os: windows-latest
+            os: windows-2022
 
           # cannot presently compile HIP + MPI; the linker fails with
           # "undefined reference to 'vtable for thrust::system::system_error'
