@@ -27,6 +27,9 @@
     #include <mpi.h>
 #endif
 
+#include "quest/include/qureg.h"
+
+
 // enable invocation by both C and C++ binaries
 #ifdef __cplusplus
 extern "C" {
@@ -98,6 +101,43 @@ int getQuESTNumGpuThreadsPerBlock();
  * @author Tyson Jones
  */
 void setQuESTNumGpuThreadsPerBlock(int numThreadsPerBlock);
+
+
+
+    // TODO:
+    // - change 'fn' to 'dir'
+    // - note only enabled when QUEST_ENABLE_ADIOS2=ON
+    // - also link/add to the 'qureg' API module? (Then need to mark this as experimental explicitly?!)
+
+
+/** Writes the contents of @p qureg to the file @p fn, so that it may later be
+ * restored with createQuregFromFile(). The file records only the @p qureg
+ * dimension (number of qubits and whether it is a density matrix) and its full
+ * set of amplitudes; incidental deployment information (e.g. multithreading,
+ * GPU-acceleration, distribution) is not recorded.
+ *
+ * @param[in] qureg the Qureg to write to disk.
+ * @param[in] fn    the output file path.
+ * @notyetdoced
+ * @notyettested
+ * @see
+ * - createQuregFromFile() to restore a Qureg saved by this function.
+ */
+void saveQuregToFile(Qureg qureg, const char* fn);
+
+
+/** Creates a new Qureg from a file previously written by saveQuregToFile(),
+ * with automatically chosen deployments (independent of those used when the
+ * file was saved), and populates it with the stored amplitudes.
+ *
+ * @param[in] fn the input file path.
+ * @returns A new Qureg instance matching the saved dimension and amplitudes.
+ * @notyetdoced
+ * @notyettested
+ * @see
+ * - saveQuregToFile() to create a file readable by this function.
+ */
+Qureg createQuregFromFile(const char* fn);
 
 
 // end de-mangler

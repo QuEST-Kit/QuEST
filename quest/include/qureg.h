@@ -487,58 +487,6 @@ void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex s
 
 /** @} */
 
-
-
-
-
-
-   // TODO
-   // move below to experimental (doc group 'checkpoint' should have been in a separate file anyway)
-
-/**
- * @defgroup qureg_checkpoint Checkpointing
- * @brief Functions for saving a Qureg to file and restoring it later.
- * @details These functions are only available when QuEST is compiled with
- *          checkpointing support (CMake variable @c QUEST_ENABLE_ADIOS2=ON),
- *          which additionally requires the ADIOS2 library. Calling them in a
- *          build without checkpointing support throws a validation error.
- * @{
- */
-
-
-/** Writes the contents of @p qureg to the file @p fn, so that it may later be
- * restored with createQuregFromFile(). The file records only the @p qureg
- * dimension (number of qubits and whether it is a density matrix) and its full
- * set of amplitudes; incidental deployment information (e.g. multithreading,
- * GPU-acceleration, distribution) is not recorded.
- *
- * @param[in] qureg the Qureg to write to disk.
- * @param[in] fn    the output file path.
- * @notyetdoced
- * @notyettested
- * @see
- * - createQuregFromFile() to restore a Qureg saved by this function.
- */
-void saveQuregToFile(Qureg qureg, const char* fn);
-
-
-/** Creates a new Qureg from a file previously written by saveQuregToFile(),
- * with automatically chosen deployments (independent of those used when the
- * file was saved), and populates it with the stored amplitudes.
- *
- * @param[in] fn the input file path.
- * @returns A new Qureg instance matching the saved dimension and amplitudes.
- * @notyetdoced
- * @notyettested
- * @see
- * - saveQuregToFile() to create a file readable by this function.
- */
-Qureg createQuregFromFile(const char* fn);
-
-
-/** @} */
-
-
 // end de-mangler
 #ifdef __cplusplus
 }
