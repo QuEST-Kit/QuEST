@@ -52,31 +52,30 @@ extern void validateAndInitCustomQuESTEnv(
 #endif
 
 
+#if (QUEST_COMPILE_ADIOS2 && QUEST_COMPILE_MPI) // hide MPI_Comm
+    extern MPI_Comm comm_getMpiComm();
+#endif
+
+
 
 /*
  * INTERNAL FUNCTIONS
  */
 
 
-// TODO:
-// below is broken; we must not give COMM_WORLD, but instead the QuEST
-// subcommunicator. Must get this from comm somehow, though this requires
-// exposing an MPI type across QuEST translation units. Hmm!!!
-
-
 #if QUEST_COMPILE_ADIOS2
-// In distributed builds, ADIOS2 must be given QuEST's communicator so that each
-// node's call collectively writes/reads its own slice of the shared file. Without
-// it, ADIOS2 runs serially per rank and the per-node slices never form one file.
-static adios2::ADIOS makeAdios() {
-#if QUEST_COMPILE_MPI
-    return adios2::ADIOS(MPI_COMM_WORLD);
-#else
-    return adios2::ADIOS();
-#endif
+auto createAdios() {
+
+    // In distributed builds, ADIOS2 must be given QuEST's communicator so that each
+    // node's call collectively writes/reads its own slice of the shared file. Without
+    // it, ADIOS2 runs serially per rank and the per-node slices never form one file.
+    #if QUEST_COMPILE_MPI
+        return adios2::ADIOS(comm_getMpiComm());
+    #else
+        return adios2::ADIOS();
+    #endif
 }
 #endif
-
 
 
 
@@ -137,6 +136,15 @@ void setQuESTNumGpuThreadsPerBlock(int numTPB) {
 }
 
 
+
+    // TODO:
+    // - fix subcomm issue
+    // - make comment about gratuitous re-creation of ADIOS2 (fine for simplicity)
+    // - make comment about size_t overflow risk
+    // - fix Qureg{} return warning issue
+    // - check restoration to a DISTRIBUTED qureg is correct
+
+
 void saveQuregToFile(Qureg qureg, const char* fn) {
     validate_quregCheckpointingIsCompiled(__func__);
 
@@ -146,7 +154,7 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
     // ensure the CPU amplitudes reflect any GPU-resident state before writing
     syncQuregFromGpu(qureg);
 
-    adios2::ADIOS adios = makeAdios();
+    adios2::ADIOS adios = createAdios();
     adios2::IO io = adios.DeclareIO("QuESTQuregSave");
     adios2::Engine engine = io.Open(fn, adios2::Mode::Write);
 
@@ -186,7 +194,7 @@ Qureg createQuregFromFile(const char* fn) {
     validate_quregCheckpointingIsCompiled(__func__);
 
 #ifdef QUEST_COMPILE_ADIOS2
-    adios2::ADIOS adios = makeAdios();
+    adios2::ADIOS adios = createAdios();
     adios2::IO io = adios.DeclareIO("QuESTQuregLoad");
     adios2::Engine engine = io.Open(fn, adios2::Mode::Read);
 
@@ -227,8 +235,6 @@ Qureg createQuregFromFile(const char* fn) {
     // unreachable: the validation above always throws in non-checkpointing builds
     return Qureg{};
 #endif
-
-    // TODO: fix above!!! Will warn non-init?
 }
 
 

@@ -124,7 +124,8 @@ TEST_CASE( "getQuESTNumGpuThreadsPerBlock", TEST_CATEGORY ) {
 
     // TODO:
     // - fix this guard! Just runtime skip 
-    // - fix test
+    // - fix tests
+    // - extend tests to CHANGE DEPLOYMENT of the Qureg pre and post restoration!
     
 
 #ifdef QUEST_COMPILE_ADIOS2
