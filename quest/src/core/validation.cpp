@@ -278,11 +278,17 @@ namespace report {
     string QUREG_NOT_STATE_VECTOR =
         "Expected a statevector Qureg but received a density matrix.";
 
-    string QUREG_CHECKPOINTING_NOT_COMPILED =
-        "Qureg checkpointing (saveQuregToFile and createQuregFromFile) requires QuEST to be compiled with checkpointing support. Reconfigure with the CMake option -DQUEST_ENABLE_CHECKPOINTING=ON, which additionally requires the ADIOS2 library.";
-
     string QUREG_FILE_PRECISION_MISMATCH =
         "The checkpoint file was written with a qreal precision of ${FILE_BYTES} bytes, but this QuEST build uses ${EXEC_BYTES} bytes. A Qureg can only be restored by a QuEST build using the same floating-point precision (QUEST_FLOAT_PRECISION) as the build which saved it.";
+
+
+
+    // TODO: move this
+
+    string ADIOS2_NOT_COMPILED =
+        "Qureg checkpointing (saveQuregToFile and createQuregFromFile) requires QuEST to be compiled with ADIOS2. Reconfigure with the CMake option -DQUEST_ENABLE_ADIOS2=ON.";
+
+
 
 
     /*
@@ -2002,16 +2008,16 @@ void validate_quregCheckpointingIsCompiled(const char* caller) {
     if (!global_isValidationEnabled)
         return;
 
-    // this validation must fire regardless of QUEST_COMPILE_CHECKPOINTING, so the
-    // user receives a clear error (rather than a linker error) when calling the
+    // this validation must fire regardless of QUEST_ENABLE_ADIOS2, so the user
+    // receives a clear error (rather than a linker error) when calling the
     // checkpointing API in a build which did not compile it
-    #if QUEST_COMPILE_CHECKPOINTING
+    #ifdef QUEST_COMPILE_ADIOS2
     bool isCompiled = true;
     #else
     bool isCompiled = false;
     #endif
 
-    assertThat(isCompiled, report::QUREG_CHECKPOINTING_NOT_COMPILED, caller);
+    assertThat(isCompiled, report::ADIOS2_NOT_COMPILED, caller);
 }
 
 void validate_quregFileMatchesPrecision(int fileQrealBytes, const char* caller) {

@@ -251,7 +251,7 @@ jobs:
           -DQUEST_ENABLE_CUDA=${{ matrix.cuda }}
           -DQUEST_ENABLE_HIP=${{ matrix.hip }}
           -DQUEST_ENABLE_CUQUANTUM=${{ matrix.cuquantum }}
-          -DQUEST_ENABLE_CHECKPOINTING=${{ matrix.adios2 }}
+          -DQUEST_ENABLE_ADIOS2=${{ matrix.adios2 }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}

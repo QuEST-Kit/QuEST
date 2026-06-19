@@ -68,7 +68,7 @@ jobs:
           -DQUEST_ENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
           -DQUEST_DISABLE_DEPRECATION_WARNINGS=${{ matrix.version == 3 && 'ON' || 'OFF' }}
           -DQUEST_FLOAT_PRECISION=${{ matrix.precision }}
-          -DQUEST_ENABLE_CHECKPOINTING=ON
+          -DQUEST_ENABLE_ADIOS2=ON
 
       # force 'Release' build (needed by MSVC to enable optimisations), and force serial (to avoid ADIOS2 OOM)
       - name: Compile

@@ -26,14 +26,18 @@
 #include <string>
 #include <vector>
 
-#if QUEST_COMPILE_CHECKPOINTING
+
+
+// TODO:
+// move this to experimental
+#ifdef QUEST_COMPILE_ADIOS2
 #include <adios2.h>
 #if QUEST_COMPILE_MPI
 #include <mpi.h>
 #endif
 #endif
 
-#if QUEST_COMPILE_CHECKPOINTING
+#if QUEST_COMPILE_ADIOS2
 // In distributed builds, ADIOS2 must be given QuEST's communicator so that each
 // node's call collectively writes/reads its own slice of the shared file. Without
 // it, ADIOS2 runs serially per rank and the per-node slices never form one file.
@@ -584,10 +588,15 @@ vector<vector<qcomp>> getDensityQuregAmps(Qureg qureg, qindex startRow, qindex s
 
 
 
+
+
+// TODO:
+// move this to experimental
+
 /*
  * CHECKPOINTING
  *
- * which is compiled only when QUEST_ENABLE_CHECKPOINTING=ON (requiring ADIOS2).
+ * which is compiled only when QUEST_COMPILE_ADIOS2=ON (requiring ADIOS2).
  * The API functions are always defined so that the validation layer can throw
  * a clear error in non-checkpointing builds, rather than failing to link.
  *
@@ -600,7 +609,7 @@ vector<vector<qcomp>> getDensityQuregAmps(Qureg qureg, qindex startRow, qindex s
 extern "C" void saveQuregToFile(Qureg qureg, const char* fn) {
     validate_quregCheckpointingIsCompiled(__func__);
 
-#if QUEST_COMPILE_CHECKPOINTING
+#ifdef QUEST_COMPILE_ADIOS2
     validate_quregFields(qureg, __func__);
 
     // ensure the CPU amplitudes reflect any GPU-resident state before writing
@@ -645,7 +654,7 @@ extern "C" void saveQuregToFile(Qureg qureg, const char* fn) {
 extern "C" Qureg createQuregFromFile(const char* fn) {
     validate_quregCheckpointingIsCompiled(__func__);
 
-#if QUEST_COMPILE_CHECKPOINTING
+#ifdef QUEST_COMPILE_ADIOS2
     adios2::ADIOS adios = makeAdios();
     adios2::IO io = adios.DeclareIO("QuESTQuregLoad");
     adios2::Engine engine = io.Open(fn, adios2::Mode::Read);

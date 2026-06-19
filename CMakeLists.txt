@@ -187,7 +187,6 @@ message(STATUS "AMD GPU acceleration is turned ${QUEST_ENABLE_HIP}. Set QUEST_EN
 
 # GPU Performance Tuning
 # (We do not print this value when configuring CMake as it is for advanced users only)
-
 set(quest_tpb_description # (the games we play for multi-line set() strings!)
   "The default number of threads per block QuEST will use when offloading to a GPU. Set to 128 by default. "
   "Must be a multiple of 32 (on NVIDIA GPUs) or 64 (on AMD GPUs). Can be overridden at executable launch "
@@ -197,6 +196,15 @@ set(QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK 128
   CACHE STRING
   "${quest_tpb_description}")
 mark_as_advanced(QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK)
+
+
+# Checkpointing with ADIOS2
+option(
+  QUEST_ENABLE_ADIOS2
+  "Whether QuEST will be built with ADIOS2, enabling checkpointing (via saveQuregToFile / createQuregFromFile). Turned OFF by default."
+  OFF
+)
+message(STATUS "ADIOS2 integration is turned ${QUEST_ENABLE_ADIOS2}. Set QUEST_ENABLE_ADIOS2 to modify.")
 
 
 # Deprecated API
@@ -544,9 +552,7 @@ endif()
 
 
 # Checkpointing (ADIOS2)
-option(QUEST_ENABLE_CHECKPOINTING "Enable Qureg checkpointing (saveQuregToFile / createQuregFromFile) via ADIOS2. Turned OFF by default." OFF)
-message(STATUS "Checkpointing is turned ${QUEST_ENABLE_CHECKPOINTING}. Set QUEST_ENABLE_CHECKPOINTING to modify.")
-if (QUEST_ENABLE_CHECKPOINTING)
+if (QUEST_ENABLE_ADIOS2)
 
   find_package(adios2 QUIET)
 
@@ -630,7 +636,7 @@ set(QUEST_COMPILE_OMP ${QUEST_ENABLE_OMP})
 set(QUEST_COMPILE_MPI ${QUEST_ENABLE_MPI})
 set(QUEST_COMPILE_SUBCOMM ${QUEST_ENABLE_SUBCOMM})
 set(QUEST_COMPILE_CUQUANTUM ${QUEST_ENABLE_CUQUANTUM})
-set(QUEST_COMPILE_CHECKPOINTING ${QUEST_ENABLE_CHECKPOINTING})
+set(QUEST_COMPILE_ADIOS2 ${QUEST_ENABLE_ADIOS2})
 set(QUEST_INCLUDE_DEPRECATED_FUNCTIONS ${QUEST_ENABLE_DEPRECATED_API})
 
 

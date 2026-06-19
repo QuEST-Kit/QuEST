@@ -2,7 +2,7 @@
  * Unit tests of Qureg checkpointing (saveQuregToFile / createQuregFromFile).
  *
  * These tests are only compiled when QuEST is built with the CMake option
- * -DQUEST_ENABLE_CHECKPOINTING=ON (which additionally requires the ADIOS2 library).
+ * -DQUEST_ENABLE_ADIOS2=ON (which additionally requires the ADIOS2 library).
  *
  * @author Ashmit JaiSarita Gupta
  *
@@ -12,7 +12,7 @@
 
 #include "quest.h"
 
-#if QUEST_COMPILE_CHECKPOINTING
+#ifdef QUEST_COMPILE_ADIOS2
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -126,7 +126,7 @@ TEST_CASE( "saveQuregToFile and createQuregFromFile", TEST_CATEGORY ) {
 
         // The only checkpointing-specific validation - calling the API when QuEST
         // was compiled without checkpointing - is unreachable here, since this
-        // file only compiles under QUEST_COMPILE_CHECKPOINTING. ADIOS2's own
+        // file only compiles under QUEST_COMPILE_ADIOS2. ADIOS2's own
         // runtime errors (e.g. a missing file) are not QuEST validation errors.
         SUCCEED( );
     }
@@ -134,4 +134,4 @@ TEST_CASE( "saveQuregToFile and createQuregFromFile", TEST_CATEGORY ) {
 
 /** @} (end defgroup) */
 
-#endif // QUEST_COMPILE_CHECKPOINTING
+#endif // QUEST_COMPILE_ADIOS2

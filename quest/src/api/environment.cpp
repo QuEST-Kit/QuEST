@@ -205,10 +205,14 @@ void printPrecisionInfo() {
 }
 
 
+
+// TODO: possibly move this
+
 // reports whether QuEST was compiled with Qureg checkpointing support (ADIOS2)
 static bool isCheckpointingCompiled() {
-    return (bool) QUEST_COMPILE_CHECKPOINTING;
+    return (bool) QUEST_COMPILE_ADIOS2;
 }
+
 
 
 void printCompilationInfo() {
