@@ -61,7 +61,7 @@ jobs:
 
       # compile QuEST with all combinations of below flags
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [windows-2022, ubuntu-latest, macos-latest]
         precision: [1, 2, 4]
         omp:       [ON, OFF]
         mpi:       [ON, OFF]
@@ -82,7 +82,7 @@ jobs:
           - os: macos-latest
             compiler: clang++
             deprecated: ON
-          - os: windows-latest
+          - os: windows-2022
             compiler: cl
             deprecated: OFF
             
@@ -109,7 +109,7 @@ jobs:
 
           # cannot use cuquantum on Windows or MacOS
           - cuquantum: ON
-            os: windows-latest
+            os: windows-2022
           - cuquantum: ON
             os: macos-latest
 
@@ -132,14 +132,14 @@ jobs:
             mpilib: 'msmpi'    # MacOS:   [MPICH, OpenMPI]
           - os: macos-latest
             mpilib: 'impi'
-          - os: windows-latest
+          - os: windows-2022
             mpilib: 'mpich'    # Windows: [Intel MPI, MS MPI]
-          - os: windows-latest
+          - os: windows-2022
             mpilib: 'ompi'
 
           # cannot presently install HIP on Windows CI (times out)
           - hip: ON
-            os: windows-latest
+            os: windows-2022
 
           # cannot presently compile HIP + MPI; the linker fails with
           # "undefined reference to 'vtable for thrust::system::system_error'
@@ -265,7 +265,7 @@ jobs:
       # run all compiled isolated examples to test for link-time errors,
       # continuing if any fail (since some deliberately fail)
       - name: Run isolated examples (Windows)
-        if: ${{ matrix.os == 'windows-latest' }}
+        if: ${{ matrix.os == 'windows-2022' }}
         working-directory: ${{ env.isolated_dir }}/Release/
         shell: pwsh
         run: |
@@ -275,7 +275,7 @@ jobs:
             & $_.FullName
           }
       - name: Run isolated examples (Unix)
-        if: ${{ matrix.os != 'windows-latest' }}
+        if: ${{ matrix.os != 'windows-2022' }}
         working-directory: ${{ env.isolated_dir }}
         run: |
           for fn in *_c *_cpp; do
@@ -285,7 +285,7 @@ jobs:
 
       # run all compiled 'automated' examples
       - name: Run automated examples (Windows)
-        if: ${{ matrix.os == 'windows-latest' }}
+        if: ${{ matrix.os == 'windows-2022' }}
         working-directory: ${{ env.automated_dir }}/Release/
         shell: pwsh
         run: |
@@ -295,7 +295,7 @@ jobs:
             & $_.FullName
           }
       - name: Run automated examples (Unix)
-        if: ${{ matrix.os != 'windows-latest' }}
+        if: ${{ matrix.os != 'windows-2022' }}
         working-directory: ${{ env.automated_dir }}
         run: |
           for fn in *_c *_cpp; do
