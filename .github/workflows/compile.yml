@@ -197,7 +197,7 @@ jobs:
         shell: pwsh
         run: .github/scripts/setup_cuda.ps1
         env:
-          INPUT_CUDA_VERSION: 12.5.0
+          INPUT_CUDA_VERSION: 12.4.0
 
       # obtain cuQuantum on linux
       - name: Setup cuQuantum
