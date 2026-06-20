@@ -19,6 +19,8 @@
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
 
+#include <string>
+
 #if QUEST_COMPILE_SUBCOMM && ! QUEST_COMPILE_MPI
     #error "Macro QUEST_COMPILE_SUBCOMM was true, but QUEST_COMPILE_MPI was illegally false."
 #endif
@@ -74,6 +76,9 @@ extern Qureg validateAndCreateCustomQureg(
 #if QUEST_COMPILE_ADIOS2
 auto createAdios(bool useMpi) {
 
+    // suppress unused warning when MPI not compiled (implies useMpi=false)
+    (void) useMpi;
+
     // When the Qureg is distributed, ADIOS2 must be given QuEST's communicator so that each
     // node writes/reads its own slice of the shared file
     #if QUEST_COMPILE_MPI
@@ -89,7 +94,7 @@ auto createAdios(bool useMpi) {
 
 
 /*
- * API FUNCTIONS
+ * C API FUNCTIONS
  */
 
 
@@ -332,4 +337,19 @@ Qureg createQuregFromFile(const char* fn) {
 
 
 // end de-mangler
+}
+
+
+/*
+ * C++ API FUNCTIONS
+ */
+
+void saveQuregToFile(Qureg qureg, std::string fn) {
+
+    saveQuregToFile(qureg, fn.c_str());
+}
+
+Qureg createQuregFromFile(std::string fn) {
+
+    return createQuregFromFile(fn.c_str());
 }

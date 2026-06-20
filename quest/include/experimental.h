@@ -30,6 +30,11 @@
 
 #include "quest/include/qureg.h"
 
+// C++ gets string overloads
+#ifdef __cplusplus
+    #include <string>
+#endif
+
 
 // enable invocation by both C and C++ binaries
 #ifdef __cplusplus
@@ -177,9 +182,24 @@ Qureg createQuregFromFile(const char* fn);
 #endif
 
 
+/** 
+ * @notyetdoced
+ * @cpponly
+ * 
+ * @see
+ * - saveQuregToFile()
+ */
+void saveQuregToFile(Qureg qureg, std::string);
 
-// TODO: C++ only (accepts std::string)
 
+/** 
+ * @notyetdoced
+ * @cpponly
+ * 
+ * @see
+ * - createQuregFromFile()
+ */
+Qureg createQuregFromFile(std::string fn);
 
 
 #endif // EXPERIMENTAL_H
