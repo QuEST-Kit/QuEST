@@ -59,7 +59,7 @@ jobs:
       - name: Get QuEST
         uses: actions/checkout@main
 
-      # compile serial unit tests, optionally include deprecated test
+      # compile serial unit tests, optionally include deprecated test, always including ADIOS2
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}

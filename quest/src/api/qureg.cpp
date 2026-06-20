@@ -5,7 +5,6 @@
  * @author Tyson Jones
  */
 
-#include "quest/include/config.h"
 #include "quest/include/qureg.h"
 #include "quest/include/modes.h"
 #include "quest/include/environment.h"

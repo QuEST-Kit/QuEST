@@ -3,6 +3,7 @@
  *
  * @author Oliver Brown
  * @author Tyson Jones
+ * @author Ashmit JaiSarita Gupta (checkpoint test prototype)
  * 
  * @defgroup unitexperi Experimental
  * @ingroup unittests

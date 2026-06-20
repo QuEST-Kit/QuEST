@@ -258,7 +258,7 @@ jobs:
           -DCMAKE_CXX_FLAGS=${{ matrix.mpi == 'ON' && matrix.cuda == 'ON' && '-fno-lto' || '' }}
 
       # force 'Release' build (needed by MSVC to enable optimisations),
-      # temporarily forcing serial compilation to avoid ADIOS2 OOM error
+      # and force serial compilation to avoid ADIOS2 OOM error
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --config Release --parallel 1
 
