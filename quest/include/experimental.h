@@ -177,6 +177,12 @@ Qureg createQuregFromFile(const char* fn);
 }
 #endif
 
+
+
+// TODO: C++ only (accepts std::string)
+
+
+
 #endif // EXPERIMENTAL_H
 
 /** @} */ // (end file-wide doxygen defgroup)

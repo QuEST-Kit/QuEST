@@ -18,6 +18,8 @@
 #include "tests/utils/config.hpp"
 #include "tests/utils/cache.hpp"
 
+#include <filesystem>
+
 using Catch::Matchers::ContainsSubstring;
 
 
@@ -26,8 +28,21 @@ using Catch::Matchers::ContainsSubstring;
  * UTILITIES
  */
 
+
 #define TEST_CATEGORY \
     LABEL_UNIT_TAG "[experimental]"
+
+
+void TEST_ON_CACHED_QUREGS(quregCache quregs, auto testFunc) {
+
+    for (auto& [label, qureg]: quregs) {
+
+        DYNAMIC_SECTION( label ) {
+
+            testFunc(qureg);
+        }
+    }
+}
 
 
 
@@ -118,6 +133,66 @@ TEST_CASE( "getQuESTNumGpuThreadsPerBlock", TEST_CATEGORY ) {
 
         // there is none (except untestable env is init!)
         SUCCEED( );
+    }
+}
+
+
+TEST_CASE( "saveQuregToFile", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {
+        
+        const char* outFn = "test_checkpoint.bp";
+
+        auto testFunc = [&](Qureg qureg) {
+            initRandomPureState(qureg);
+            REQUIRE_NOTHROW( saveQuregToFile(qureg, outFn) );
+
+            // note that we are NOT validating the contents was correct;
+            // that will be performed by the createQuregFromFile() test
+        };
+
+        // skip correctness tests if ADIOS2 not compiled
+        SECTION( LABEL_STATEVEC ) { if (QUEST_COMPILE_ADIOS2) TEST_ON_CACHED_QUREGS(getCachedStatevecs(), testFunc); SUCCEED( ); }
+        SECTION( LABEL_DENSMATR ) { if (QUEST_COMPILE_ADIOS2) TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), testFunc); SUCCEED( ); }
+
+        // single process deletes checkpoint file (assumes a shared filesystem; if not, who cares about the scraps?)
+        syncQuESTEnv();
+        if (getQuESTEnv().rank == 0)
+            std::filesystem::remove_all(outFn);
+    }
+
+    SECTION( LABEL_VALIDATION ) {
+
+        Qureg qureg = getArbitraryCachedStatevec();
+
+        SECTION( "adios2 not compiled" ) {
+
+            if (!QUEST_COMPILE_ADIOS2)
+                REQUIRE_THROWS_WITH( saveQuregToFile(qureg, "dummy.bp"), ContainsSubstring("blah") );
+
+            SUCCEED( );
+        }
+
+        SECTION( "qureg uninitialised" ) {
+
+            if (QUEST_COMPILE_ADIOS2) {
+                Qureg badQureg;
+                badQureg.numQubits = -123;
+                REQUIRE_THROWS_WITH( saveQuregToFile(badQureg, "dummy.bp"), ContainsSubstring("Received an invalid Qureg") );
+            }
+
+            SUCCEED( );
+        }
+
+        SECTION( "bad name" ) {
+
+            if (QUEST_COMPILE_ADIOS2) {
+                auto badFn = GENERATE( "" ); // surprisingly hard to find cross-OS illegal names!
+                REQUIRE_THROWS_WITH( saveQuregToFile(qureg, badFn), ContainsSubstring("could not be opened") );
+            }
+
+            SUCCEED( );
+        }
     }
 }
 
