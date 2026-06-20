@@ -182,24 +182,31 @@ Qureg createQuregFromFile(const char* fn);
 #endif
 
 
-/** 
- * @notyetdoced
- * @cpponly
- * 
- * @see
- * - saveQuregToFile()
- */
-void saveQuregToFile(Qureg qureg, std::string);
+
+#if defined(__cplusplus)
 
 
-/** 
- * @notyetdoced
- * @cpponly
- * 
- * @see
- * - createQuregFromFile()
- */
-Qureg createQuregFromFile(std::string fn);
+    /** 
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - saveQuregToFile()
+     */
+    void saveQuregToFile(Qureg qureg, std::string);
+
+
+    /** 
+     * @notyetdoced
+     * @cpponly
+     * 
+     * @see
+     * - createQuregFromFile()
+     */
+    Qureg createQuregFromFile(std::string fn);
+
+
+#endif // __cplusplus
 
 
 #endif // EXPERIMENTAL_H
