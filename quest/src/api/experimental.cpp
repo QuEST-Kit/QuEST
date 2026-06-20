@@ -87,38 +87,6 @@ auto createAdios(bool useMpi) {
 #endif
 
 
-// Temp workaround ADIOS2 foot-gun
-#include <iostream>
-#include <cstdlib>
-void DEBUG_ungracefullyExitMpiAwareAdios2(const std::exception& e) {
-
-    // TODO:
-    // Surely we can avoid this madness?! (We could prior validate non-distributed? Blegh!)
-
-    // For some ungodly reason, ADIOS2 hangs on non-root processes when throwing an exception
-    // from the root process; see https://github.com/ornladios/ADIOS2/issues/5098
-    // This means that we cannot ever recover from an ADIOS2 error in MPI settings, and must
-    // ungracefully catastrophically abort MPI. Otherwise, the user will see a hang and no error!
-
-    // When QuEST is not distributed, caller will reach safe/graceful validation
-    if (!comm_isActive())
-        return;
-
-    // By here, every non-root process is hung; so root will print...
-    std::cout 
-        << "The below ADIOS2 exception occurred, which currently cannot be gracefully handled by QuEST's input validation; "
-        << "MPI Abort will be called. "
-        << std::endl
-        << e.what()
-        << std::endl;
-    std::cout.flush();
-
-    // and all processes will crash!
-    comm_abort();
-    exit(EXIT_FAILURE);
-}
-
-
 
 /*
  * API FUNCTIONS
@@ -205,13 +173,16 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
     adios2::ADIOS adios = createAdios(qureg.isDistributed);
     adios2::IO io = adios.DeclareIO("QuESTQuregSave");
 
+    // use BP5 specifically to avoid non-root-hangs upon rank exceptions
+    io.SetEngine("BP5");
+
     // attempt to open the file
     adios2::Engine engine; // default ctor
     bool success = false;
     try {
         engine = io.Open(fn, adios2::Mode::Write);
         success = true;
-    } catch (const std::exception& e) { DEBUG_ungracefullyExitMpiAwareAdios2(e); }
+    } catch (...) {}
     validate_adiosCanOpenFileOnAllNodes(success, fn, __func__);
 
     // global single-value metadata; we deliberately record only the dimension
@@ -238,16 +209,14 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
     // attempt to write to file
     success = false;
     try {
-        engine.BeginStep();
         engine.Put(vNumQubits,  qureg.numQubits);
         engine.Put(vNumNodes,   qureg.numNodes);
         engine.Put(vIsDensMatr, qureg.isDensityMatrix);
         engine.Put(vQrealBytes, sizeof(qreal));
         engine.Put(vAmpComponents, reinterpret_cast<qreal*>(qureg.cpuAmps));
-        engine.EndStep();
         engine.Close();
         success = true;
-    } catch (const std::exception& e) { DEBUG_ungracefullyExitMpiAwareAdios2(e); }
+    } catch (...) {}
     validate_adiosCanWriteToFileOnAllNodes(success, fn, __func__);
 
     // prevent any process from continuing until ADIOS2 is fully finished
@@ -276,14 +245,16 @@ Qureg createQuregFromFile(const char* fn) {
     adios2::ADIOS adios = createAdios(giveAdiosMpi);
     adios2::IO io = adios.DeclareIO("QuESTQuregLoad");
 
+    // use BP5 specifically to avoid non-root-hangs upon rank exceptions
+    io.SetEngine("BP5");
+
     // attempt to open the file, and prepare to parse
     adios2::Engine engine; // default ctor
     bool success = false;
     try {
-        engine = io.Open(fn, adios2::Mode::Read);
-        engine.BeginStep();
+        engine = io.Open(fn, adios2::Mode::ReadRandomAccess);
         success = true;
-    } catch (const std::exception& e) { DEBUG_ungracefullyExitMpiAwareAdios2(e); }
+    } catch (...) {}
     validate_adiosCanOpenFileOnAllNodes(success, fn, __func__);
 
     // check that the file contains the expected variables
@@ -292,7 +263,7 @@ Qureg createQuregFromFile(const char* fn) {
     auto vIsDensMatr = io.InquireVariable<int>("isDensityMatrix");
     auto vQrealBytes = io.InquireVariable<size_t>("qrealBytes");
     auto vAmpComponents = io.InquireVariable<qreal>("ampComponents");
-    bool areAllVarsPresent = vNumQubits && vIsDensMatr && vQrealBytes && vAmpComponents;
+    bool areAllVarsPresent = vNumQubits && vNumNodes && vIsDensMatr && vQrealBytes && vAmpComponents;
     validate_adiosFileContainsFieldsOnAllNodes(areAllVarsPresent, __func__);
 
     // read dimension + precision metadata first, so we can size the new Qureg
@@ -308,7 +279,7 @@ Qureg createQuregFromFile(const char* fn) {
         engine.Get(vQrealBytes, fileQrealBytes);
         engine.PerformGets();
         success = true;
-    } catch (const std::exception& e) { DEBUG_ungracefullyExitMpiAwareAdios2(e); }
+    } catch (...) {}
     validate_adiosCanReadFileOnAllNodes(success, fn, __func__);
 
     // check the amps are of the expected precision, and so are parsable
@@ -337,16 +308,15 @@ Qureg createQuregFromFile(const char* fn) {
     try {
         engine.Get(vAmpComponents, reinterpret_cast<qreal*>(qureg.cpuAmps)); // immediate; PerformGets redundant
         success = true;
-    } catch (const std::exception& e) { DEBUG_ungracefullyExitMpiAwareAdios2(e); }
+    } catch (...) {}
     validate_adiosCanReadFileOnAllNodes(success, fn, __func__);
 
     // complete ADIOS2 work
     success = false;
     try {
-        engine.EndStep();
         engine.Close();
         success = true;
-    } catch (const std::exception& e) { DEBUG_ungracefullyExitMpiAwareAdios2(e); }
+    } catch (...) {}
     validate_adiosCanReadFileOnAllNodes(success, fn, __func__);
 
     // propagate the restored CPU amplitudes to the GPU, if deployed

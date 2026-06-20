@@ -190,20 +190,10 @@ TEST_CASE( "saveQuregToFile", TEST_CATEGORY ) {
 
         SECTION( "bad name" ) {
 
-            // TODO:
-            // This negative test currently hangs execution, because it relies
-            // upon an ADIOS2-invoked exception, which causes non-root nodes to
-            // hang! See https://github.com/ornladios/ADIOS2/issues/5098
-
-            // NOTE:
-            // Actually, this particular exception DID NOT cause non-root nodes
-            // to hang! But our hotfix (to ungracefully exit when ADIOS2 errors)
-            // breaks this validation, so it must be skippec
-
-            // if (QUEST_COMPILE_ADIOS2) {
-            //     auto badFn = GENERATE( "" ); // surprisingly hard to find cross-OS illegal names!
-            //     REQUIRE_THROWS_WITH( saveQuregToFile(qureg, badFn), ContainsSubstring("could not be opened") );
-            // }
+            if (QUEST_COMPILE_ADIOS2) {
+                auto badFn = GENERATE( "" ); // surprisingly hard to find cross-OS illegal names!
+                REQUIRE_THROWS_WITH( saveQuregToFile(qureg, badFn), ContainsSubstring("could not be opened") );
+            }
 
             SUCCEED( );
         }
@@ -267,13 +257,8 @@ TEST_CASE( "createQuregFromFile", TEST_CATEGORY ) {
 
         SECTION( "bad name" ) {
 
-            // TODO:
-            // This negative test currently hangs execution, because it relies
-            // upon an ADIOS2-invoked exception, which causes non-root nodes to
-            // hang! See https://github.com/ornladios/ADIOS2/issues/5098
-
-            // if (QUEST_COMPILE_ADIOS2)
-            //     REQUIRE_THROWS_WITH( createQuregFromFile("BAD_FILENAME"), ContainsSubstring("could not be opened") );
+            if (QUEST_COMPILE_ADIOS2)
+                REQUIRE_THROWS_WITH( createQuregFromFile("BAD_FILENAME"), ContainsSubstring("could not be opened") );
 
             SUCCEED( );
         }
@@ -290,7 +275,7 @@ TEST_CASE( "createQuregFromFile", TEST_CATEGORY ) {
                 CAPTURE( quregDistrib.numNodes );
 
                 // Write qureg to file, then deliberately fail to restore it
-                const char* fn = "test_checkpoint.nb";
+                const char* fn = "test_checkpoint.bp";
                 saveQuregToFile(quregDistrib, fn);
                 REQUIRE_THROWS_WITH( createQuregFromFile(fn), ContainsSubstring("distributions must match") );
 
