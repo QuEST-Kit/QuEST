@@ -7,7 +7,7 @@
  * 
  * @author Oliver Brown (custom QuESTEnv)
  * @author Ashmit JaiSarita Gupta (checkpointing)
- * @author Tyson Jones (structure)
+ * @author Tyson Jones (structure, validation)
  */
 
 #include "quest/include/config.h"
@@ -88,6 +88,8 @@ auto createAdios(bool useMpi) {
     #else
         return adios2::ADIOS(); // implies useMpi=0
     #endif
+
+    // caller need not call destructor; ADIOS2 uses RAII
 }
 #endif
 
@@ -158,11 +160,11 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
 
 #if QUEST_COMPILE_ADIOS2
 
-    
-        // TODO: 
-        // need a new way to avoid race when ADIOS2 is saving a duplicated Qureg in a distributed env
-        // (cannot exit early due to validation syncs)
-
+    // When the QuEST env is distributed, but the given Qureg is not (and is instead
+    // duplicated upon every node), we should permit only a single process (the root)
+    // to use ADIOS2 to write to the (assumably, shared) filesystem. Note that non-root
+    // nodes must not exit; they need to participate in validation syncs
+    bool shouldSkipAdios = (! qureg.isDistributed) && (comm_getRank() > ROOT_RANK);
 
     // pedantic but safe - don't let ADIOS2 start reading amps prematurely
     if (qureg.isDistributed)
@@ -185,7 +187,8 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
     adios2::Engine engine; // default ctor
     bool success = false;
     try {
-        engine = io.Open(fn, adios2::Mode::Write);
+        if (!shouldSkipAdios)
+            engine = io.Open(fn, adios2::Mode::Write);
         success = true;
     } catch (...) {}
     validate_adiosCanOpenFileOnAllNodes(success, fn, __func__);
@@ -214,12 +217,14 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
     // attempt to write to file
     success = false;
     try {
-        engine.Put(vNumQubits,  qureg.numQubits);
-        engine.Put(vNumNodes,   qureg.numNodes);
-        engine.Put(vIsDensMatr, qureg.isDensityMatrix);
-        engine.Put(vQrealBytes, sizeof(qreal));
-        engine.Put(vAmpComponents, reinterpret_cast<qreal*>(qureg.cpuAmps));
-        engine.Close();
+        if (!shouldSkipAdios) {
+            engine.Put(vNumQubits,  qureg.numQubits);
+            engine.Put(vNumNodes,   qureg.numNodes);
+            engine.Put(vIsDensMatr, qureg.isDensityMatrix);
+            engine.Put(vQrealBytes, sizeof(qreal));
+            engine.Put(vAmpComponents, reinterpret_cast<qreal*>(qureg.cpuAmps));
+            engine.Close();
+        }
         success = true;
     } catch (...) {}
     validate_adiosCanWriteToFileOnAllNodes(success, fn, __func__);
@@ -293,11 +298,6 @@ Qureg createQuregFromFile(const char* fn) {
     // attempt to create a matching-dimension Qureg with automatically chosen deployments
     Qureg qureg = validateAndCreateCustomQureg(numQubits, isDensMatr, 
         modeflag::USE_AUTO, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
-
-
-        // DEBUG
-        // can manually check this works in distributed by forcing those flags from AUTO above
-
 
     // auto-distribution MUST match checkpointed distribution (pre-free to avoid leak)
     if (qureg.numNodes != numNodes)

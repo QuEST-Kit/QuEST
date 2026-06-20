@@ -206,6 +206,12 @@ option(
 )
 message(STATUS "ADIOS2 integration is turned ${QUEST_ENABLE_ADIOS2}. Set QUEST_ENABLE_ADIOS2 to modify.")
 
+option(
+  QUEST_DOWNLOAD_ADIOS2
+  "Whether ADIOS2 will be downloaded if it is enabled but not found. Turned ON by default."
+  ON
+)
+
 
 # Deprecated API
 option(
@@ -565,7 +571,7 @@ if (QUEST_ENABLE_ADIOS2)
     set(quest_use_found_adios2 FALSE)
   endif()
 
-  if(NOT quest_use_found_adios2)
+  if(NOT quest_use_found_adios2 AND QUEST_DOWNLOAD_ADIOS2)
     message(STATUS "fetching ADIOS2 via FetchContent")
 
     include(FetchContent)
