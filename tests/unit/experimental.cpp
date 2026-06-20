@@ -17,6 +17,7 @@
 #include "tests/utils/macros.hpp"
 #include "tests/utils/config.hpp"
 #include "tests/utils/cache.hpp"
+#include "tests/utils/compare.hpp"
 
 #include <filesystem>
 
@@ -155,10 +156,13 @@ TEST_CASE( "saveQuregToFile", TEST_CATEGORY ) {
         SECTION( LABEL_STATEVEC ) { if (QUEST_COMPILE_ADIOS2) TEST_ON_CACHED_QUREGS(getCachedStatevecs(), testFunc); SUCCEED( ); }
         SECTION( LABEL_DENSMATR ) { if (QUEST_COMPILE_ADIOS2) TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), testFunc); SUCCEED( ); }
 
-        // single process deletes checkpoint file (assumes a shared filesystem; if not, who cares about the scraps?)
+        // Single process deletes checkpoint file (assumes a shared filesystem; if not, who cares about the scraps?)
+        // Note these syncs are ESSENTIAL for correct behaviour, else root can begin deletion while a subsequent node
+        // proceeds to the below validation and re-creates some files within the same direc, causing MPI hangs. Ouch!
         syncQuESTEnv();
         if (getQuESTEnv().rank == 0)
             std::filesystem::remove_all(outFn);
+        syncQuESTEnv();
     }
 
     SECTION( LABEL_VALIDATION ) {
@@ -168,7 +172,7 @@ TEST_CASE( "saveQuregToFile", TEST_CATEGORY ) {
         SECTION( "adios2 not compiled" ) {
 
             if (!QUEST_COMPILE_ADIOS2)
-                REQUIRE_THROWS_WITH( saveQuregToFile(qureg, "dummy.bp"), ContainsSubstring("blah") );
+                REQUIRE_THROWS_WITH( saveQuregToFile(qureg, "dummy.bp"), ContainsSubstring("compiled with ADIOS2") );
 
             SUCCEED( );
         }
@@ -186,10 +190,20 @@ TEST_CASE( "saveQuregToFile", TEST_CATEGORY ) {
 
         SECTION( "bad name" ) {
 
-            if (QUEST_COMPILE_ADIOS2) {
-                auto badFn = GENERATE( "" ); // surprisingly hard to find cross-OS illegal names!
-                REQUIRE_THROWS_WITH( saveQuregToFile(qureg, badFn), ContainsSubstring("could not be opened") );
-            }
+            // TODO:
+            // This negative test currently hangs execution, because it relies
+            // upon an ADIOS2-invoked exception, which causes non-root nodes to
+            // hang! See https://github.com/ornladios/ADIOS2/issues/5098
+
+            // NOTE:
+            // Actually, this particular exception DID NOT cause non-root nodes
+            // to hang! But our hotfix (to ungracefully exit when ADIOS2 errors)
+            // breaks this validation, so it must be skippec
+
+            // if (QUEST_COMPILE_ADIOS2) {
+            //     auto badFn = GENERATE( "" ); // surprisingly hard to find cross-OS illegal names!
+            //     REQUIRE_THROWS_WITH( saveQuregToFile(qureg, badFn), ContainsSubstring("could not be opened") );
+            // }
 
             SUCCEED( );
         }
@@ -197,141 +211,107 @@ TEST_CASE( "saveQuregToFile", TEST_CATEGORY ) {
 }
 
 
-    // TODO:
-    // - fix this guard! Just runtime skip 
-    // - fix tests; don't use custom comparison, use existing utils
-    // - negative test of when PRECISION CHANGES
-    //   (can we invoke a QuEST subprocess to WRITE to file?!?! Probs not )
-    // - extend tests to CHANGE DEPLOYMENT of the Qureg pre and post restoration!
-    // - note we cannot actually make negative test changes of precision!
-    // - separate test into two functions, for each API func
-    
-
-#ifdef QUEST_COMPILE_ADIOS2
-
-#include <algorithm>
-#include <cmath>
-#include <complex>
-#include <filesystem>
-#include <string>
-
-namespace {
-
-    const char* SV_FILE = "test_checkpoint_statevector.bp";
-    const char* DM_FILE = "test_checkpoint_densitymatrix.bp";
-
-    qreal maxStatevectorAmpDiff(Qureg a, Qureg b) {
-        qreal m = 0;
-        for (qindex i = 0; i < a.numAmps; i++)
-            m = std::max(m, std::abs(getQuregAmp(a, i) - getQuregAmp(b, i)));
-        return m;
-    }
-
-    qreal maxDensityMatrixAmpDiff(Qureg a, Qureg b) {
-        qreal m = 0;
-        qindex dim = (qindex) 1 << a.numQubits;
-        for (qindex r = 0; r < dim; r++)
-            for (qindex c = 0; c < dim; c++)
-                m = std::max(m, std::abs(getDensityQuregAmp(a, r, c) - getDensityQuregAmp(b, r, c)));
-        return m;
-    }
-
-    // distributed-safe cleanup: a barrier guarantees every node has finished
-    // reading the shared file, only rank 0 deletes it (concurrent removal races),
-    // and a second barrier stops the next write racing a half-removed directory.
-    void removeCheckpointFile(const char* fn) {
-        syncQuESTEnv();
-        if (getQuESTEnv().rank == 0)
-            std::filesystem::remove_all(fn);
-        syncQuESTEnv();
-    }
-}
-
-TEST_CASE( "saveQuregToFile and createQuregFromFile", TEST_CATEGORY ) {
-
-    // TODO / DEBUG / BEWARE!
-    // These tests are insufficient! They only ever test createQuregFromFile()
-    // (and ergo validate saveQuregToFile() worked properly) for non-distributed
-    // Quregs! This is because createQuregFromFile() uses the distribution of the
-    // autodeployer, which for our tiny unit-test Quregs, will always default to
-    // non-distributed. Distributed Qureg restoration is totally untested!
+TEST_CASE( "createQuregFromFile", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {
+        
+        const char* checkpointFn = "test_checkpoint.bp";
 
         // We will iterate the cached Quregs so the save path is exercised under every
         // deployment combination (serial, OMP, MPI, GPU and their mixtures). However,
         // the restored Qureg uses a distribution chosen by the auto-deployer, which is
-        // not permitted to differ from the checkpointed distribution; we skip those!
-        Qureg svDummy = createQureg(getNumCachedQubits());
-        Qureg dmDummy = createDensityQureg(getNumCachedQubits());
-        int legalSvNumNodes = svDummy.numNodes;
-        int legalDmNumNodes = dmDummy.numNodes;
-        destroyQureg(svDummy);
-        destroyQureg(dmDummy);
+        // not permitted to differ from the checkpointed distribution. We know, given
+        // the unit test Quregs are so small, that distribution is NEVER automatically
+        // enabled; so we will forbid testing with distributed Quregs
+        int legalNumNodes = 1;
 
-        SECTION( LABEL_STATEVEC ) {
+        auto testFunc = [&](Qureg qureg) {
 
-            for (auto& [label, q] : getCachedStatevecs()) {
-                DYNAMIC_SECTION( label ) {
+            initRandomPureState(qureg);
+            REQUIRE_NOTHROW( saveQuregToFile(qureg, checkpointFn) );
 
-                    // always test writing succeeds
-                    initRandomPureState(q);
-                    REQUIRE_NOTHROW( saveQuregToFile(q, SV_FILE) );
+            // skip restoration when new Qureg distribution would disagree with old
+            if (qureg.numNodes != legalNumNodes)
+                return;
 
-                    // skip restoration when new Qureg distribution would disagree with old
-                    if (q.numNodes != legalSvNumNodes)
-                        continue;
+            Qureg newQureg = createQuregFromFile(checkpointFn);
+            REQUIRE_AGREE(qureg, newQureg);
 
-                    Qureg r = createQuregFromFile(SV_FILE);
+            destroyQureg(newQureg);
+        };
 
-                    CHECK( r.numQubits       == q.numQubits );
-                    CHECK( r.isDensityMatrix == q.isDensityMatrix );
-                    CHECK( maxStatevectorAmpDiff(q, r) < 1e-12 );
+        // skip correctness tests if ADIOS2 not compiled
+        SECTION( LABEL_STATEVEC ) { if (QUEST_COMPILE_ADIOS2) TEST_ON_CACHED_QUREGS(getCachedStatevecs(), testFunc); SUCCEED( ); }
+        SECTION( LABEL_DENSMATR ) { if (QUEST_COMPILE_ADIOS2) TEST_ON_CACHED_QUREGS(getCachedDensmatrs(), testFunc); SUCCEED( ); }
 
-                    destroyQureg(r);
-                    removeCheckpointFile(SV_FILE);
-                }
-            }
-        }
+        CAPTURE( checkpointFn );
 
-        SECTION( LABEL_DENSMATR ) {
-
-            for (auto& [label, q] : getCachedDensmatrs()) {
-                DYNAMIC_SECTION( label ) {
-
-                    // always test writing succeeds
-                    initRandomMixedState(q, /*numPureStates=*/10);
-                    REQUIRE_NOTHROW( saveQuregToFile(q, DM_FILE) );
-
-                    // skip cached quregs with illegal distributions
-                    if (q.numNodes != legalDmNumNodes)
-                        continue;
-
-                    Qureg r = createQuregFromFile(DM_FILE);
-
-                    CHECK( r.numQubits       == q.numQubits );
-                    CHECK( r.isDensityMatrix == q.isDensityMatrix );
-                    CHECK( maxDensityMatrixAmpDiff(q, r) < 1e-12 );
-
-                    destroyQureg(r);
-                    removeCheckpointFile(DM_FILE);
-                }
-            }
-        }
+        // Single process deletes checkpoint file (assumes a shared filesystem; if not, who cares about the scraps?).
+        // Note these syncs are ESSENTIAL for correct behaviour, else root can begin deletion while a subsequent node
+        // proceeds to the below validation and re-creates some files within the same direc, causing MPI hangs. Ouch!
+        syncQuESTEnv();
+        if (getQuESTEnv().rank == 0)
+            std::filesystem::remove_all(checkpointFn);
+        syncQuESTEnv();
     }
 
     SECTION( LABEL_VALIDATION ) {
 
-        // The only checkpointing-specific validation - calling the API when QuEST
-        // was compiled without checkpointing - is unreachable here, since this
-        // file only compiles under QUEST_COMPILE_ADIOS2. ADIOS2's own
-        // runtime errors (e.g. a missing file) are not QuEST validation errors.
-        SUCCEED( );
+        SECTION( "adios2 not compiled" ) {
+
+            if (!QUEST_COMPILE_ADIOS2)
+                REQUIRE_THROWS_WITH( createQuregFromFile("dummy.bp"), ContainsSubstring("compiled with ADIOS2") );
+
+            SUCCEED( );
+        }
+
+        SECTION( "bad name" ) {
+
+            // TODO:
+            // This negative test currently hangs execution, because it relies
+            // upon an ADIOS2-invoked exception, which causes non-root nodes to
+            // hang! See https://github.com/ornladios/ADIOS2/issues/5098
+
+            // if (QUEST_COMPILE_ADIOS2)
+            //     REQUIRE_THROWS_WITH( createQuregFromFile("BAD_FILENAME"), ContainsSubstring("could not be opened") );
+
+            SUCCEED( );
+        }
+
+        SECTION( "differing distributions" ) {
+
+            // Distributions can only differ when QuEST is distributed over more than 1 node
+            if (QUEST_COMPILE_ADIOS2 && getQuESTEnv().numNodes > 1) {
+
+                // Create a new distributed qureg; we know createQuregFromFile() will create
+                // non-distributed, since unit-test-size Quregs auto-deploy to non-distributed
+                Qureg quregDistrib = createCustomQureg(getNumCachedQubits(), 0, /*useDistrib=*/1, 0, 0);
+
+                CAPTURE( quregDistrib.numNodes );
+
+                // Write qureg to file, then deliberately fail to restore it
+                const char* fn = "test_checkpoint.nb";
+                saveQuregToFile(quregDistrib, fn);
+                REQUIRE_THROWS_WITH( createQuregFromFile(fn), ContainsSubstring("distributions must match") );
+
+                // cleanup
+                destroyQureg(quregDistrib);
+                syncQuESTEnv();
+                if (getQuESTEnv().rank == 0)
+                    std::filesystem::remove_all(fn);
+                syncQuESTEnv();
+            }
+
+            SUCCEED( );
+        }
+
+        // We do not presently test the below validations, since it will require
+        // externally generating and saving ADIOS2 files; quite a pain!
+        // SECTION( "differing precision" ) { }
+        // SECTION( "overflow" ) { }
+        // SECTION( "insufficient RAM" ) { }
     }
 }
-
-#endif // QUEST_COMPILE_ADIOS2
-
 
 
 /** @} (end defgroup) */
