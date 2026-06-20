@@ -542,13 +542,13 @@ void validate_quregCanBeSetToReducedDensMatr(Qureg out, Qureg in, int numTraceQu
 
 void validate_canReadFile(string fn, const char* caller);
 
-void validate_adiosCanOpenFile(bool canOpen, string fn, const char* caller);
+void validate_adiosCanOpenFileOnAllNodes(bool canOpen, string fn, const char* caller);
 
-void validate_adiosCanReadFile(bool canRead, string fn, const char* caller);
+void validate_adiosCanReadFileOnAllNodes(bool canRead, string fn, const char* caller);
 
-void validate_adiosCanWriteToFile(bool canWrite, string fn, const char* caller);
+void validate_adiosCanWriteToFileOnAllNodes(bool canWrite, string fn, const char* caller);
 
-void validate_adiosFileContainsFields(bool areAllVarsPresent, const char* caller);
+void validate_adiosFileContainsFieldsOnAllNodes(bool areAllVarsPresent, const char* caller);
 
 
 

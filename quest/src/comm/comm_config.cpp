@@ -217,6 +217,13 @@ bool comm_isMpiUserOwned() {
 }
 
 
+void comm_abort() {
+#if QUEST_COMPILE_MPI
+    MPI_Abort(global_mpiComm, 1); // 1 = generic failure
+#endif
+}
+
+
 
 /*
  * QUEST COMMUNICATION MANAGEMENT

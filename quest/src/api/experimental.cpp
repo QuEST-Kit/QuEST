@@ -27,7 +27,7 @@
     #include <mpi.h>
 #endif
 
-#ifdef QUEST_COMPILE_ADIOS2
+#if QUEST_COMPILE_ADIOS2
     #include <adios2.h>
 
     #if QUEST_COMPILE_MPI
@@ -85,6 +85,38 @@ auto createAdios(bool useMpi) {
     #endif
 }
 #endif
+
+
+// Temp workaround ADIOS2 foot-gun
+#include <iostream>
+#include <cstdlib>
+void DEBUG_ungracefullyExitMpiAwareAdios2(const std::exception& e) {
+
+    // TODO:
+    // Surely we can avoid this madness?! (We could prior validate non-distributed? Blegh!)
+
+    // For some ungodly reason, ADIOS2 hangs on non-root processes when throwing an exception
+    // from the root process; see https://github.com/ornladios/ADIOS2/issues/5098
+    // This means that we cannot ever recover from an ADIOS2 error in MPI settings, and must
+    // ungracefully catastrophically abort MPI. Otherwise, the user will see a hang and no error!
+
+    // When QuEST is not distributed, caller will reach safe/graceful validation
+    if (!comm_isActive())
+        return;
+
+    // By here, every non-root process is hung; so root will print...
+    std::cout 
+        << "The below ADIOS2 exception occurred, which currently cannot be gracefully handled by QuEST's input validation; "
+        << "MPI Abort will be called. "
+        << std::endl
+        << e.what()
+        << std::endl;
+    std::cout.flush();
+
+    // and all processes will crash!
+    comm_abort();
+    exit(EXIT_FAILURE);
+}
 
 
 
@@ -148,16 +180,18 @@ void setQuESTNumGpuThreadsPerBlock(int numTPB) {
 void saveQuregToFile(Qureg qureg, const char* fn) {
     validate_adios2IsCompiled(__func__);
     validate_quregFields(qureg, __func__);
+    
+    (void) fn; // suppress unused warning
 
-#ifdef QUEST_COMPILE_ADIOS2
+#if QUEST_COMPILE_ADIOS2
 
-    // when qureg is duplicated in a distributed QuEST env, only root proceeds,
-    // to avoid ADIOS2 processes racing to file. Note that we cannot prevent the 
-    // race when user's code is distributed but QuEST is not - user must be careful!
-    if (!qureg.isDistributed && comm_getRank() > ROOT_RANK)
-        return;
+    
+        // TODO: 
+        // need a new way to avoid race when ADIOS2 is saving a duplicated Qureg in a distributed env
+        // (cannot exit early due to validation syncs)
 
-    // Pedantic but safe - don't let ADIOS2 start reading amps prematurely
+
+    // pedantic but safe - don't let ADIOS2 start reading amps prematurely
     if (qureg.isDistributed)
         comm_sync();
     
@@ -173,11 +207,12 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
 
     // attempt to open the file
     adios2::Engine engine; // default ctor
+    bool success = false;
     try {
         engine = io.Open(fn, adios2::Mode::Write);
-    } catch (...) {
-        validate_adiosCanOpenFile(false, fn, __func__);
-    }
+        success = true;
+    } catch (const std::exception& e) { DEBUG_ungracefullyExitMpiAwareAdios2(e); }
+    validate_adiosCanOpenFileOnAllNodes(success, fn, __func__);
 
     // global single-value metadata; we deliberately record only the dimension
     // and precision, never incidental deployment fields (the loader chooses its
@@ -201,6 +236,7 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
         { (size_t) localReals });
 
     // attempt to write to file
+    success = false;
     try {
         engine.BeginStep();
         engine.Put(vNumQubits,  qureg.numQubits);
@@ -210,10 +246,13 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
         engine.Put(vAmpComponents, reinterpret_cast<qreal*>(qureg.cpuAmps));
         engine.EndStep();
         engine.Close();
-    } catch (...) {
-        // no need for a finally; RAII frees engine
-        validate_adiosCanWriteToFile(false, fn, __func__);
-    }
+        success = true;
+    } catch (const std::exception& e) { DEBUG_ungracefullyExitMpiAwareAdios2(e); }
+    validate_adiosCanWriteToFileOnAllNodes(success, fn, __func__);
+
+    // prevent any process from continuing until ADIOS2 is fully finished
+    if (qureg.isDistributed)
+        comm_sync();
 
 #endif
 }
@@ -222,7 +261,11 @@ void saveQuregToFile(Qureg qureg, const char* fn) {
 Qureg createQuregFromFile(const char* fn) {
     validate_adios2IsCompiled(__func__);
 
-#ifdef QUEST_COMPILE_ADIOS2
+#if QUEST_COMPILE_ADIOS2
+
+    // pedantic but safe - don't let ADIOS2 start reading while other processes are working
+    if (comm_isActive())
+        comm_sync();
 
     // make ADIOS2 MPI-aware even when the subsequently-loaded Qureg is
     // auto-deployed to be non-distributed; every process will safely
@@ -235,12 +278,13 @@ Qureg createQuregFromFile(const char* fn) {
 
     // attempt to open the file, and prepare to parse
     adios2::Engine engine; // default ctor
+    bool success = false;
     try {
         engine = io.Open(fn, adios2::Mode::Read);
         engine.BeginStep();
-    } catch (...) {
-        validate_adiosCanOpenFile(false, fn, __func__);
-    }
+        success = true;
+    } catch (const std::exception& e) { DEBUG_ungracefullyExitMpiAwareAdios2(e); }
+    validate_adiosCanOpenFileOnAllNodes(success, fn, __func__);
 
     // check that the file contains the expected variables
     auto vNumQubits  = io.InquireVariable<int>("numQubits");
@@ -249,22 +293,23 @@ Qureg createQuregFromFile(const char* fn) {
     auto vQrealBytes = io.InquireVariable<size_t>("qrealBytes");
     auto vAmpComponents = io.InquireVariable<qreal>("ampComponents");
     bool areAllVarsPresent = vNumQubits && vIsDensMatr && vQrealBytes && vAmpComponents;
-    validate_adiosFileContainsFields(areAllVarsPresent, __func__);
+    validate_adiosFileContainsFieldsOnAllNodes(areAllVarsPresent, __func__);
 
     // read dimension + precision metadata first, so we can size the new Qureg
     int numQubits = 0;
     int numNodes = 0;
     int isDensMatr = 0;
     size_t fileQrealBytes = 0;
+    success = false;
     try {
         engine.Get(vNumQubits,  numQubits);
         engine.Get(vNumNodes,   numNodes);
         engine.Get(vIsDensMatr, isDensMatr);
         engine.Get(vQrealBytes, fileQrealBytes);
         engine.PerformGets();
-    } catch(...) {
-        validate_adiosCanReadFile(false, fn, __func__);
-    }
+        success = true;
+    } catch (const std::exception& e) { DEBUG_ungracefullyExitMpiAwareAdios2(e); }
+    validate_adiosCanReadFileOnAllNodes(success, fn, __func__);
 
     // check the amps are of the expected precision, and so are parsable
     validate_newQuregFileMatchesPrecision(fileQrealBytes, __func__);
@@ -272,6 +317,11 @@ Qureg createQuregFromFile(const char* fn) {
     // attempt to create a matching-dimension Qureg with automatically chosen deployments
     Qureg qureg = validateAndCreateCustomQureg(numQubits, isDensMatr, 
         modeflag::USE_AUTO, modeflag::USE_AUTO, modeflag::USE_AUTO, __func__);
+
+
+        // DEBUG
+        // can manually check this works in distributed by forcing those flags from AUTO above
+
 
     // auto-distribution MUST match checkpointed distribution (pre-free to avoid leak)
     if (qureg.numNodes != numNodes)
@@ -283,19 +333,21 @@ Qureg createQuregFromFile(const char* fn) {
     qindex localReals = 2 * qureg.numAmpsPerNode;
     qindex startReal  = 2 * ((qindex) qureg.rank) * qureg.numAmpsPerNode;
     vAmpComponents.SetSelection({ { (size_t) startReal }, { (size_t) localReals } });
+    success = false;
     try {
         engine.Get(vAmpComponents, reinterpret_cast<qreal*>(qureg.cpuAmps)); // immediate; PerformGets redundant
-    } catch(...) {
-        validate_adiosCanReadFile(false, fn, __func__);
-    }
+        success = true;
+    } catch (const std::exception& e) { DEBUG_ungracefullyExitMpiAwareAdios2(e); }
+    validate_adiosCanReadFileOnAllNodes(success, fn, __func__);
 
     // complete ADIOS2 work
+    success = false;
     try {
         engine.EndStep();
         engine.Close();
-    } catch(...) {
-        validate_adiosCanReadFile(false, fn, __func__);
-    }
+        success = true;
+    } catch (const std::exception& e) { DEBUG_ungracefullyExitMpiAwareAdios2(e); }
+    validate_adiosCanReadFileOnAllNodes(success, fn, __func__);
 
     // propagate the restored CPU amplitudes to the GPU, if deployed
     if (qureg.isGpuAccelerated)

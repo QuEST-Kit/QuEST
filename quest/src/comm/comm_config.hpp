@@ -19,6 +19,9 @@ bool comm_isMpiGpuAware();
 bool comm_isMpiInit();
 bool comm_isMpiUserOwned();
 
+// control of global MPI env (dangerous!!)
+void comm_abort();
+
 // control of QuEST's (possibly more limited) MPI env
 bool comm_isActive();
 void comm_init(bool userOwnsMpi);

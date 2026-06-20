@@ -2043,16 +2043,7 @@ void validate_adios2IsCompiled(const char* caller) {
     if (!global_isValidationEnabled)
         return;
 
-    // this validation must fire regardless of QUEST_ENABLE_ADIOS2, so the user
-    // receives a clear error (rather than a linker error) when calling the
-    // checkpointing API in a build which did not compile it
-    #ifdef QUEST_COMPILE_ADIOS2
-    bool isCompiled = true;
-    #else
-    bool isCompiled = false;
-    #endif
-
-    assertThat(isCompiled, report::ADIOS2_NOT_COMPILED, caller);
+    assertThat(QUEST_COMPILE_ADIOS2, report::ADIOS2_NOT_COMPILED, caller);
 }
 
 
@@ -5105,7 +5096,7 @@ void validate_canReadFile(string fn, const char* caller) {
     assertThat(parser_canReadFile(fn), report::CANNOT_READ_FILE, caller);
 }
 
-void validate_adiosCanOpenFile(bool canOpen, string fn, const char* caller) {
+void validate_adiosCanOpenFileOnAllNodes(bool canOpenInThisNode, string fn, const char* caller) {
 
     if (!global_isValidationEnabled)
         return;
@@ -5113,10 +5104,10 @@ void validate_adiosCanOpenFile(bool canOpen, string fn, const char* caller) {
     /// @todo embed filename into error message when tokenSubs is updated to permit strings
     (void) fn;
 
-    assertThat(canOpen, report::ADIOS2_CANNOT_OPEN_FILE, caller);
+    assertAllNodesAgreeThat(canOpenInThisNode, report::ADIOS2_CANNOT_OPEN_FILE, caller);
 }
 
-void validate_adiosCanReadFile(bool canRead, string fn, const char* caller) {
+void validate_adiosCanReadFileOnAllNodes(bool canReadInThisNode, string fn, const char* caller) {
 
     if (!global_isValidationEnabled)
         return;
@@ -5124,10 +5115,10 @@ void validate_adiosCanReadFile(bool canRead, string fn, const char* caller) {
     /// @todo embed filename into error message when tokenSubs is updated to permit strings
     (void) fn;
 
-    assertThat(canRead, report::ADIOS2_CANNOT_READ_FILE, caller);
+    assertAllNodesAgreeThat(canReadInThisNode, report::ADIOS2_CANNOT_READ_FILE, caller);
 }
 
-void validate_adiosCanWriteToFile(bool canWrite, string fn, const char* caller) {
+void validate_adiosCanWriteToFileOnAllNodes(bool canWriteInThisNode, string fn, const char* caller) {
 
     if (!global_isValidationEnabled)
         return;
@@ -5135,15 +5126,15 @@ void validate_adiosCanWriteToFile(bool canWrite, string fn, const char* caller) 
     /// @todo embed filename into error message when tokenSubs is updated to permit strings
     (void) fn;
 
-    assertThat(canWrite, report::ADIOS2_CANNOT_WRITE_TO_FILE, caller);
+    assertAllNodesAgreeThat(canWriteInThisNode, report::ADIOS2_CANNOT_WRITE_TO_FILE, caller);
 }
 
-void validate_adiosFileContainsFields(bool areAllVarsPresent, const char* caller) {
+void validate_adiosFileContainsFieldsOnAllNodes(bool areAllVarsPresentInThisNode, const char* caller) {
 
     if (!global_isValidationEnabled)
         return;
 
-    assertThat(areAllVarsPresent, report::ADIOS2_FILE_INVALID, caller); 
+    assertAllNodesAgreeThat(areAllVarsPresentInThisNode, report::ADIOS2_FILE_INVALID, caller); 
 }
 
 

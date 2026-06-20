@@ -144,6 +144,11 @@ void saveQuregToFile(Qureg qureg, const char* fn);
  * 
  * The chosen deployments are identical to those chosen by createQureg() and createDensityQureg().
  * 
+ * > [!CAUTION]
+ * > Specifying @fn equal to an existing directory or file will cause erasure and overwriting of
+ * > its contents. It is especially dangerous to pass @fn equal to a system directory, such as
+ * > @c / on Unix, and may cause system corruption. 
+ * 
  * > [!NOTE]
  * > The number of distributed nodes chosen by the autodeployer must agree with the
  * > number of nodes of the originally saved Qureg, else a @validationerror is thrown. Therefore,
@@ -161,7 +166,7 @@ void saveQuregToFile(Qureg qureg, const char* fn);
  * - if the precision of the saved Qureg differs from the current QuEST precision.
  * - if the number of distributed nodes of the saved Qureg differs from the autodeployer's chosen number.
  * - if the recorded Qureg dimensions would overflow the @c qindex type.
- * - if the recorded toatal Qureg memory would overflow the @c size_t type.
+ * - if the recorded total Qureg memory would overflow the @c size_t type.
  * - if the system contains insufficient RAM (or VRAM) to store the Qureg in any deployment.
  * - if any Qureg memory allocation unexpectedly fails.
  * @see
