@@ -45,6 +45,7 @@ Compiling is configured with variables supplied by the [`-D` flag](https://cmake
 > - <a href="#compile_cuquantum">cuQuantum</a>
 > - <a href="#compile_distribution">Distribution</a>
 > - <a href="#compile_multi-gpu">Multi-GPU</a>
+> - <a href="#compile_checkpointing">Checkpointing</a>
 
 > **See also**:
 > - [`cmake.md`](cmake.md) for the full list of passable compiler variables.
@@ -701,14 +702,9 @@ Note that distributed executables are launched in a distinct way to the other de
 
 ## Checkpointing
 
+QuEST has optional facilities for _checkpointing_ a `Qureg`; writing its state to a file with [`saveQuregToFile()`](https://quest-kit.github.io/QuEST/group__experimental.html#gaf9a1aec34fdfdb3c650dc60e5a8ac9d9), to be later restored into a new `Qureg` with [`createQuregFromFile()`](https://quest-kit.github.io/QuEST/group__experimental.html#gab1ebe89e2ff15470fa340d4c2ced5703). This is useful for long-running jobs which risk timeout or failure - an evolving `Qureg` can be periodically saved and resumed in a subsequent process. 
 
-    TODO:
-    Update below to mention automatic ADIOS2 download and build
-
-
-QuEST can optionally _checkpoint_ a `Qureg` to disk; writing its state to a file with `saveQuregToFile()`, to later be restored into a new `Qureg` with `createQuregFromFile()`. This is useful for long-running jobs which risk timeout or failure - an evolving `Qureg` can be periodically saved and resumed in a subsequent process. The file records only the `Qureg` dimension (the number of qubits, and whether it is a density matrix) and its amplitudes; never the incidental deployment configuration. A `Qureg` saved by one deployment (say, distributed over `8` nodes) can therefore be restored by any other (say, a single GPU-accelerated node).
-
-Checkpointing is built upon [ADIOS2](https://github.com/ornladios/ADIOS2) and is _disabled_ by default. To enable it, install ADIOS2 and specify `QUEST_ENABLE_ADIOS2` at configuration:
+Checkpointing is built upon [ADIOS2](https://github.com/ornladios/ADIOS2) and is _disabled_ by default. To enable it, simply specify `QUEST_ENABLE_ADIOS2` at configuration:
 ```bash
 # configure
 cmake .. -D QUEST_ENABLE_ADIOS2=ON
@@ -717,10 +713,9 @@ cmake .. -D QUEST_ENABLE_ADIOS2=ON
 cmake --build . --parallel
 ```
 
-> [!IMPORTANT]
-> ADIOS2 must be discoverable by CMake. If it was installed to a non-standard location (such as `~/.local`), pass its prefix via `CMAKE_PREFIX_PATH`:
+If a compatible ADIOS2 is not found, it will be automatically downloaded and installed from the ADIOS2 [Github](https://github.com/ornladios/ADIOS2), unless `QUEST_DOWNLOAD_ADIOS2` is overridden to be `OFF`. If an existing ADIOS2 is installed in a non-standard location (such as `~/.local`), pass its prefix via [`CMAKE_PREFIX_PATH`](https://cmake.org/cmake/help/latest/variable/CMAKE_PREFIX_PATH.html):
 > ```bash
 > cmake .. -D QUEST_ENABLE_ADIOS2=ON -D CMAKE_PREFIX_PATH=$HOME/.local
 > ```
 
-Calling `saveQuregToFile()` or `createQuregFromFile()` in a build _without_ checkpointing enabled throws a validation error.
+Calling `saveQuregToFile()` or `createQuregFromFile()` in a build _without_ checkpointing enabled will trigger a runtime validation error.

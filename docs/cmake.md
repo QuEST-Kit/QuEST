@@ -44,6 +44,8 @@ make
 | `QUEST_ENABLE_CUDA` | (`OFF`), `ON` | Determines whether QuEST will be built with support for NVIDIA GPU acceleration. If turned on, `CMAKE_CUDA_ARCHITECTURES` should probably also be set. |
 | `QUEST_ENABLE_CUQUANTUM` | (`OFF`), `ON` | Determines whether QuEST will make use of the NVIDIA CuQuantum library. Cannot be turned on if `QUEST_ENABLE_CUDA` is off. |
 | `QUEST_ENABLE_HIP` | (`OFF`), `ON` | Determines whether QuEST will be built with support for AMD GPU acceleration. If turned on, `CMAKE_HIP_ARCHITECTURES` should probably also be set. |
+| `QUEST_ENABLE_ADIOS2` | (`OFF`), `ON` | Determines whether QuEST will be built with ADIOS2 to enable checkpointing, via functions `saveQuregToFile()` and `createQuregFromFile()`. |
+| `QUEST_DOWNLOAD_ADIOS2` | (`ON`), `OFF` | Determines whether to download ADIOS2 from Github, when ADIOS2 is enabled but not found. |
 | `QUEST_ENABLE_DEPRECATED_API` | (`OFF`), `ON` | Determines whether QuEST will be built with support for the deprecated (v3) API. ***Note**: this will generate compiler warnings and is not supported by MSVC.* |
 | `QUEST_DISABLE_DEPRECATION_WARNINGS` | (`OFF`), `ON` | Whether to disable the compile-time deprecation warnings when using the deprecated (v3) API. |
 | `USER_SOURCE_NAMES` | (Undefined), String | The source file for a user program which will be compiled alongside QuEST. `USER_OUTPUT_EXE_NAME` *must* also be defined. |

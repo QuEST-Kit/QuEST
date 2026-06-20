@@ -108,25 +108,27 @@ void setQuESTNumGpuThreadsPerBlock(int numThreadsPerBlock);
 /** Writes the contents of @p qureg to the file (or folder) @p fn, so that it may later be
  * restored with createQuregFromFile(), potentially in another process.
  * 
- * @notyettested
- * @notyetvalidated
- * 
  * The output records the @p qureg dimension (number of qubits and whether it is a density matrix),
  * the amplitude precision, the Qureg's distribution, and the Qureg's full set of amplitudes. Other
  * deployment information, such as whether the Qureg is multithreaded or GPU-accelerated, is not
  * recorded. 
  * 
  * There is no particular file extension or folder name suffix required, though since saving is
- * performed with ADIOS2, a suffix of @p .bp is conventional.
+ * performed with ADIOS2, a suffix of `.bp` is conventional.
+ * 
+ * > [!CAUTION]
+ * > Specifying @p fn equal to an existing directory or file will cause erasure and overwriting of
+ * > its contents. It is especially dangerous to pass @p fn equal to a system directory, such as
+ * > @c / on Unix, and may cause system corruption. 
  * 
  * > [!IMPORTANT]
- * > This function is only callable when QuEST is compiled with CMake option QUEST_ENABLE_ADIOS2=1.
+ * > This function is only callable when QuEST is compiled with CMake option @c QUEST_ENABLE_ADIOS2=1.
  *
  * @param[in] qureg the Qureg to write to disk.
  * @param[in] fn    the output file (or folder) path.
  * @throws @validationerror
  * - if @p qureg is uninitialised.
- * - if QuEST was not compiled with CMake option QUEST_ENABLE_ADIOS2=1.
+ * - if QuEST was not compiled with CMake option @c QUEST_ENABLE_ADIOS2=1.
  * - if opening or writing to @p fn fails.
  * @see
  * - createQuregFromFile() to restore a Qureg saved by this function.
@@ -139,15 +141,7 @@ void saveQuregToFile(Qureg qureg, const char* fn);
  * with automatically chosen deployments (independent of those used when the
  * file was saved), and populates the Qureg with the saved amplitudes.
  * 
- * @notyettested
- * @notyetvalidated
- * 
  * The chosen deployments are identical to those chosen by createQureg() and createDensityQureg().
- * 
- * > [!CAUTION]
- * > Specifying @fn equal to an existing directory or file will cause erasure and overwriting of
- * > its contents. It is especially dangerous to pass @fn equal to a system directory, such as
- * > @c / on Unix, and may cause system corruption. 
  * 
  * > [!NOTE]
  * > The number of distributed nodes chosen by the autodeployer must agree with the
@@ -156,12 +150,12 @@ void saveQuregToFile(Qureg qureg, const char* fn);
  * > and createQuregFromFile(), unless the Qureg was non-distributed in both settings.
  * 
  * > [!IMPORTANT]
- * > This function is only callable when QuEST is compiled with CMake option QUEST_ENABLE_ADIOS2=1.
+ * > This function is only callable when QuEST is compiled with CMake option @c QUEST_ENABLE_ADIOS2=1.
  *
  * @param[in] fn the file (or folder) path previously created by saveQuregToFile().
  * @returns A new Qureg instance matching the saved dimension and amplitudes.
  * @throws @validationerror
- * - if QuEST was not compiled with CMake option QUEST_ENABLE_ADIOS2=1.
+ * - if QuEST was not compiled with CMake option @c QUEST_ENABLE_ADIOS2=1.
  * - if @p fn cannot be read (since, for example, it does not exist).
  * - if the precision of the saved Qureg differs from the current QuEST precision.
  * - if the number of distributed nodes of the saved Qureg differs from the autodeployer's chosen number.
@@ -172,7 +166,7 @@ void saveQuregToFile(Qureg qureg, const char* fn);
  * @see
  * - saveQuregToFile() to create a file readable by this function.
  * @author Ashmit JaiSarita Gupta
- * @author Tyson Jones (validation)
+ * @author Tyson Jones (input validation)
  */
 Qureg createQuregFromFile(const char* fn);
 
