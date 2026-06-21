@@ -192,7 +192,12 @@ TEST_CASE( "saveQuregToFile", TEST_CATEGORY ) {
         SECTION( "bad name" ) {
 
             if (QUEST_COMPILE_ADIOS2) {
-                auto badFn = GENERATE( "" ); // surprisingly hard to find cross-OS illegal names!
+                // surprisingly hard to find cross-OS illegal names!
+                #if defined(_MSC_VER)
+                    auto badFn = GENERATE( ":", "?", "*" );
+                #else
+                    auto badFn = GENERATE( "", "\0" );
+                #endif
                 REQUIRE_THROWS_WITH( saveQuregToFile(qureg, badFn), ContainsSubstring("could not be opened") );
             }
 
