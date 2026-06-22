@@ -173,8 +173,8 @@ __global__ void kernel_statevec_anyCtrlSwap_subC(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTarg.size());
     int numQubitBits = numCtrlBits + 1;
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTarg.size() - numTargs);
 
     // i = nth local index where ctrls and targ are in specified states
     qindex i = insertBitsWithMaskedValues(n, ctrlsAndTarg.data(), numQubitBits, ctrlsAndTargMask);
