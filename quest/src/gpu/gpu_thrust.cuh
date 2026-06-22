@@ -16,6 +16,7 @@
  * mapped to RocmThrust and HIP symbols by cuda_to_hip.h.
  * 
  * @author Tyson Jones
+ * @author Amon K. (optimised small-qureg multiQubitProjector)
  */
 
 #ifndef GPU_THRUST_HPP

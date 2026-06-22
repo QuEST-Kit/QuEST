@@ -16,6 +16,7 @@
  * @author Oliver Brown (OpenMP 'if' clauses)
  * @author Luc Jaulmes (optimised initUniformState)
  * @author Richard Meister (helped patch on LLVM)
+ * @author Amon K. (optimised small-qureg multiQubitProjector)
  * @author Kshitij Chhabra (patched v3 clauses with gcc9)
  * @author Ania (Anna) Brown (developed QuEST v1 logic)
  */
