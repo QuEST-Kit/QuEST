@@ -16,6 +16,7 @@
  * mapped to RocmThrust and HIP symbols by cuda_to_hip.h.
  * 
  * @author Tyson Jones
+ * @author Amon K. (optimised small-qureg multiQubitProjector)
  */
 
 #ifndef GPU_THRUST_HPP
@@ -448,12 +449,16 @@ struct functor_insertBits {
     // is used to enumerate specific basis-state indices
     // with qubits in the specified bit values
 
-    int* sortedIndsPtr;
+    // we store the sorted qubit indices by-value inside a trivially-copyable
+    // List64 (a fixed-size CUDA-compatible array), rather than as a pointer to
+    // a separately-allocated thrust::device_vector, to eliminate a per-call
+    // cudaMalloc + cudaMemcpy of the qubit list
+    List64 sortedInds;
     qindex valueMask;
     int numBits;
 
-    functor_insertBits(int* ptr, qindex mask, int nBits) :
-        sortedIndsPtr(ptr), valueMask(mask), numBits(nBits)
+    functor_insertBits(List64 sorted, qindex mask, int nBits) :
+        sortedInds(sorted), valueMask(mask), numBits(nBits)
     {
         assert_numTargsMatchesTemplateParam(nBits, NumBits);
     }
@@ -464,7 +469,7 @@ struct functor_insertBits {
         SET_VAR_AT_COMPILE_TIME(int, nbits, NumBits, numBits);
 
         // return ith local index where bits have the specified values at the specified indices
-        return insertBitsWithMaskedValues(i, sortedIndsPtr, nbits, valueMask);
+        return insertBitsWithMaskedValues(i, sortedInds.data(), nbits, valueMask);
     }
 };
 
@@ -508,71 +513,53 @@ struct functor_getFidelityTerm {
 };
 
 
-template <int NumTargets>
 struct functor_projectStateVec {
 
-    // this functor multiplies an amp with zero or a 
-    // renormalisation codfficient, depending on whether
+    // this functor multiplies an amp with zero or a
+    // renormalisation coefficient, depending on whether
     // the basis state of the amp has qubits in a particular
     // configuration. This is used to project statevector
     // qubits into a particular measurement outcome
 
-    int* targetsPtr;
-    int numTargets, rank;
-    qindex retainValue;
+    qindex qubitMask, outcomeMask;
     qreal renorm;
 
     functor_projectStateVec(
-        int* targetsPtr, int numTargets, 
-        qindex retainValue, qreal renorm
+        qindex qubitMask, qindex outcomeMask, qreal renorm
     ) :
-        targetsPtr(targetsPtr), numTargets(numTargets),
-        retainValue(retainValue), renorm(renorm)
-    { 
-        assert_numTargsMatchesTemplateParam(numTargets, NumTargets);
-    }
+        qubitMask(qubitMask), outcomeMask(outcomeMask), renorm(renorm)
+    { }
 
     __host__ __device__ gpu_qcomp operator()(qindex n, gpu_qcomp amp) {
 
-        // use the compile-time value if possible, to auto-unroll the getValueOfBits() loop below
-        SET_VAR_AT_COMPILE_TIME(int, numBits, NumTargets, numTargets);
-
         // return amp scaled by zero or renorm, depending on whether n has projected substate
-        qindex val = getValueOfBits(n, targetsPtr, numBits);
-        qreal fac = renorm * (val == retainValue);
+        qreal fac = renorm * ((n & qubitMask) == outcomeMask);
         return fac * amp;
     }
 };
 
 
-template <int NumTargets>
 struct functor_projectDensMatr {
 
-    // this functor multiplies an amp with zero or a 
+    // this functor multiplies an amp with zero or a
     // renormalisation coefficient, depending on whether
     // the basis state of the amp has qubits in a particular
     // configuration. This is used to project density matrix
     // qubits into a particular measurement outcome
 
-    int* targetsPtr;
-    int numTargets, rank, numQuregQubits;
-    qindex logNumAmpsPerNode, retainValue;
+    int rank, numQuregQubits;
+    qindex logNumAmpsPerNode, qubitMask, valueMask;
     qreal renorm;
 
     functor_projectDensMatr(
-        int* targetsPtr, int numTargets, int rank, int numQuregQubits,
-        qindex logNumAmpsPerNode, qindex retainValue, qreal renorm
+        qindex qubitMask, qindex valueMask, int rank, int numQuregQubits,
+        qindex logNumAmpsPerNode, qreal renorm
     ) :
-        targetsPtr(targetsPtr), numTargets(numTargets), rank(rank), numQuregQubits(numQuregQubits),
-        logNumAmpsPerNode(logNumAmpsPerNode), retainValue(retainValue), renorm(renorm)
-    { 
-        assert_numTargsMatchesTemplateParam(numTargets, NumTargets);
-    }
+        rank(rank), numQuregQubits(numQuregQubits), logNumAmpsPerNode(logNumAmpsPerNode),
+        qubitMask(qubitMask), valueMask(valueMask), renorm(renorm)
+    { }
 
     __host__ __device__ gpu_qcomp operator()(qindex n, gpu_qcomp amp) {
-
-        // use the compile-time value if possible, to auto-unroll the getValueOfBits() loop below
-        SET_VAR_AT_COMPILE_TIME(int, numBits, NumTargets, numTargets);
 
         // i = global index of nth local amp
         qindex i = concatenateBits(rank, n, logNumAmpsPerNode);
@@ -581,11 +568,8 @@ struct functor_projectDensMatr {
         qindex r = getBitsRightOfIndex(i, numQuregQubits);
         qindex c = getBitsLeftOfIndex(i, numQuregQubits-1);
 
-        qindex v1 = getValueOfBits(r, targetsPtr, numBits);
-        qindex v2 = getValueOfBits(c, targetsPtr, numBits);
-
-        // multiply amp with renorm or zero if values disagree with given outcomes
-        qreal fac = renorm * (v1 == v2) * (retainValue == v1);
+        // multiply amp with zero (else renorm) if either row/col substate disagrees with outcomes
+        qreal fac = renorm * ((r & qubitMask) == valueMask) * ((c & qubitMask) == valueMask);
         return fac * amp;
     }
 };
@@ -792,10 +776,11 @@ qreal thrust_densmatr_calcTotalProb_sub(Qureg qureg) {
 template <int NumQubits>
 qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes) {
 
-    devints sortedQubits = getDevInts(util_getSorted(qubits));
+    // pass the sorted qubit list by-value into the functor (avoids device alloc)
+    List64 sortedQubits = util_getSorted(qubits);
     qindex valueMask = util_getBitMask(qubits, outcomes);
 
-    auto indFunctor = functor_insertBits<NumQubits>(getPtr(sortedQubits), valueMask, qubits.size());
+    auto indFunctor = functor_insertBits<NumQubits>(sortedQubits, valueMask, qubits.size());
     auto probFunctor = functor_getAmpNorm();
 
     auto rawIter = thrust::make_counting_iterator(QINDEX_ZERO);
@@ -812,13 +797,11 @@ qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 q
 template <int NumQubits>
 qreal thrust_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes) {
 
-    // cannot move these into functor_insertBits constructor, since the memory
-    // would dangle - and we cannot bind deviceints as an attribute - it's host-only!
-
-    devints sortedQubits = getDevInts(util_getSorted(qubits));
+    // pass the sorted qubit list by-value into the functor (avoids device alloc)
+    List64 sortedQubits = util_getSorted(qubits);
     qindex valueMask = util_getBitMask(qubits, outcomes);
 
-    auto basisIndFunctor = functor_insertBits<NumQubits>(getPtr(sortedQubits), valueMask, qubits.size());
+    auto basisIndFunctor = functor_insertBits<NumQubits>(sortedQubits, valueMask, qubits.size());
     auto diagIndFunctor = functor_getDiagInd(qureg);
     auto probFunctor = functor_getAmpReal();
 
@@ -1016,13 +999,12 @@ gpu_qcomp thrust_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateD
  */
 
 
-template <int NumQubits>
 void thrust_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal renorm) {
 
-    devints devQubits = getDevInts(qubits);
-    qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
-    auto projFunctor = functor_projectStateVec<NumQubits>(
-        getPtr(devQubits), qubits.size(), retainValue, renorm);
+    qindex qubitMask = util_getBitMask(qubits);
+    qindex valueMask = util_getBitMask(qubits, outcomes);
+    auto projFunctor = functor_projectStateVec(
+        qubitMask, valueMask, renorm);
 
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto ampIter = getStartPtr(qureg);
@@ -1032,14 +1014,13 @@ void thrust_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Co
 }
 
 
-template <int NumQubits>
 void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal renorm) {
 
-    devints devQubits = getDevInts(qubits);
-    qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
-    auto projFunctor = functor_projectDensMatr<NumQubits>(
-        getPtr(devQubits), qubits.size(), qureg.rank, qureg.numQubits,
-        qureg.logNumAmpsPerNode, retainValue, renorm);
+    qindex qubitMask = util_getBitMask(qubits);
+    qindex valueMask = util_getBitMask(qubits, outcomes);
+    auto projFunctor = functor_projectDensMatr(
+        qubitMask, valueMask, qureg.rank, qureg.numQubits,
+        qureg.logNumAmpsPerNode, renorm);
 
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto ampIter = getStartPtr(qureg);

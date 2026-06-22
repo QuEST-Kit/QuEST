@@ -16,6 +16,7 @@
  * @author Oliver Brown (OpenMP 'if' clauses)
  * @author Luc Jaulmes (optimised initUniformState)
  * @author Richard Meister (helped patch on LLVM)
+ * @author Amon K. (optimised small-qureg multiQubitProjector)
  * @author Kshitij Chhabra (patched v3 clauses with gcc9)
  * @author Ania (Anna) Brown (developed QuEST v1 logic)
  */
@@ -2562,11 +2563,9 @@ template qcomp cpu_densmatr_calcExpecFullStateDiagMatr_sub<false,true >(Qureg, F
  */
 
 
-template <int NumQubits>
 void cpu_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob) {
 
     // all qubits are in suffix
-    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps  = getCpuQcompPtr(qureg.cpuAmps);
@@ -2574,26 +2573,21 @@ void cpu_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Const
     // visit every amp, setting to zero or multiplying it by renorm
     qindex numIts = qureg.numAmpsPerNode;
 
-    // binary value of targeted qubits in basis states which are to be retained
-    qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
+    // prepare masks for to efficiently check if a local state has qubits in the given outcomes
+    qindex qubitMask   = util_getBitMask(qubits);
+    qindex outcomeMask = util_getBitMask(qubits, outcomes);
     qreal renorm = 1 / std::sqrt(prob);
-
-    // use template param to compile-time unroll loop in getValueOfBits()
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-        // val = outcomes corresponding to n-th local amp (all qubits are in suffix)
-        qindex val = getValueOfBits(n, qubits.data(), numBits);
-
-        // multiply amp with renorm or zero, if qubit value matches or disagrees
-        amps[n] *= renorm * (val == retainValue);
+        // multiply amp with renorm (else zero) if qubit states agree with outcomes
+        bool agree = (n & qubitMask) == outcomeMask;
+        amps[n] *= renorm * agree;
     }
 }
 
 
-template <int NumQubits>
 void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob) {
 
     // this function is merely an optimisation to avoid calling the above
@@ -2601,7 +2595,6 @@ void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Const
     // pre- and post-multiply projector versions DO just call above.
 
     // qubits are unconstrained, and can include prefix qubits
-    assert_numTargsMatchesTemplateParam(qubits.size(), NumQubits);
 
     // use cpu_qcomp arithmetic overloads (avoid qcomp's)
     cpu_qcomp* amps = getCpuQcompPtr(qureg.cpuAmps);
@@ -2609,12 +2602,9 @@ void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Const
     // visit every amp, setting most to zero and multiplying the remainder by renorm
     qindex numIts = qureg.numAmpsPerNode;
 
-    // binary value of targeted qubits in basis states which are to be retained
-    qindex retainValue = getIntegerFromBits(outcomes.data(), outcomes.size());
+    qindex qubitMask   = util_getBitMask(qubits);
+    qindex outcomeMask = util_getBitMask(qubits, outcomes);
     qreal renorm = 1 / prob;
-
-    // use template param to compile-time unroll loops in getValueOfBits()
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -2626,17 +2616,14 @@ void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Const
         qindex r = getBitsRightOfIndex(i, qureg.numQubits);
         qindex c = getBitsLeftOfIndex(i, qureg.numQubits-1);
 
-        qindex v1 = getValueOfBits(r, qubits.data(), numBits);
-        qindex v2 = getValueOfBits(c, qubits.data(), numBits);
+        // check whether row and column indices have qubits in the specified outcomes
+        bool rowAgrees = (r & qubitMask) == outcomeMask;
+        bool colAgrees = (c & qubitMask) == outcomeMask;
 
-        // multiply amp with renorm or zero if values disagree with given outcomes
-        amps[n] *= renorm * (v1 == v2) * (retainValue == v1);
+        // multiply amp with zero (else renorm) if either row/col substate disagrees with outcomes
+        amps[n] *= renorm * (rowAgrees && colAgrees);
     }
 }
-
-
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_statevec_multiQubitProjector_sub, (Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob) )
-INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, cpu_densmatr_multiQubitProjector_sub, (Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob) )
 
 
 
