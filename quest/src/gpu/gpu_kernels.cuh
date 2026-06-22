@@ -29,12 +29,20 @@
     #error "A file being compiled somehow included gpu_kernels.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 
+
+
+/*
+ * OPTIMISATION MACROS
+ */
+
+
 // cuda keyword 'register' is misinterpreted by HIP
 #if defined(__NVCC__)
     #define REGISTER register
 #elif defined(__HIP__)
     #define REGISTER
 #endif
+
 
 // optimise qubit-list passing in CUDA v11.7+ (we round to 12), benefitting CC >= 7.0
 #if defined(__NVCC__) && defined(__CUDACC_VER_MAJOR__) && (__CUDACC_VER_MAJOR__ >= 12)
@@ -44,9 +52,11 @@
 #endif
 
 
+
 /*
  * THREAD MANAGEMENT
  */
+
 
 __forceinline__ __device__ qindex getThreadInd() {
     return blockIdx.x*blockDim.x + threadIdx.x;
@@ -92,8 +102,8 @@ __forceinline__ __device__ int cudaGetBitMaskParity(qindex mask) {
 template <int NumCtrls>
 __global__ void kernel_statevec_packAmpsIntoBuffer(
     gpu_qcomp* amps, gpu_qcomp* buffer, qindex numThreads, 
-    _GRID_CONST_OPT const List64 qubits, qindex qubitStateMask)
-{
+    _GRID_CONST_OPT const List64 qubits, qindex qubitStateMask
+) {
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
@@ -109,8 +119,8 @@ __global__ void kernel_statevec_packAmpsIntoBuffer(
 
 __global__ void kernel_statevec_packPairSummedAmpsIntoBuffer(
     gpu_qcomp* amps, gpu_qcomp* buffer, qindex numThreads, 
-    int qubit1, int qubit2, int qubit3, int bit2)
-{
+    int qubit1, int qubit2, int qubit3, int bit2
+) {
     GET_THREAD_IND(n, numThreads);
 
     // i000 = nth local index where all qubits are 0
@@ -132,8 +142,8 @@ template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlSwap_subA(
     gpu_qcomp* amps, qindex numThreads, 
     _GRID_CONST_OPT const List64 ctrlsAndTargs, qindex ctrlsAndTargsMask, 
-    int targ1, int targ2)
-{
+    int targ1, int targ2
+) {
     GET_THREAD_IND(n, numThreads);
 
     // beware ctrlsAndTargs contains the two targets
