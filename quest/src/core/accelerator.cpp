@@ -1087,8 +1087,6 @@ qcomp accel_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateDiagMa
 
 void accel_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob) {
 
-    // the projector uses a bitmask reformulation (see issue #749) which needs no
-    // numTargs-templated dispatch, so we branch directly between the CPU and GPU backends
     (qureg.isGpuAccelerated)?
         gpu_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, prob) :
         cpu_statevec_multiQubitProjector_sub(qureg, qubits, outcomes, prob);

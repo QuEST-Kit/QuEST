@@ -450,10 +450,8 @@ struct functor_insertBits {
 
     // we store the sorted qubit indices by-value inside a trivially-copyable
     // List64 (a fixed-size CUDA-compatible array), rather than as a pointer to
-    // a separately-allocated thrust::device_vector. This eliminates the per-call
-    // cudaMalloc + cudaMemcpy of the qubit list (see issue #749); the list is
-    // instead passed directly as a kernel argument and loaded from constant/param
-    // memory, which is negligibly cheap even for small Quregs.
+    // a separately-allocated thrust::device_vector, to eliminate a per-call
+    // cudaMalloc + cudaMemcpy of the qubit list
     List64 sortedInds;
     qindex valueMask;
     int numBits;
@@ -517,30 +515,24 @@ struct functor_getFidelityTerm {
 struct functor_projectStateVec {
 
     // this functor multiplies an amp with zero or a
-    // renormalisation codfficient, depending on whether
+    // renormalisation coefficient, depending on whether
     // the basis state of the amp has qubits in a particular
     // configuration. This is used to project statevector
     // qubits into a particular measurement outcome
 
-    // rather than copying the target-qubit list to the device (incurring a
-    // cudaMalloc + cudaMemcpy per call; see issue #749), we pass two primitive
-    // bitmasks which are loaded directly into device registers. The test
-    // getValueOfBits(n,targs)==retainValue is exactly equivalent to
-    // (n & qubitMask) == valueMask, where qubitMask flags the target bit
-    // positions and valueMask holds the desired outcomes at those positions.
-    qindex qubitMask, valueMask;
+    qindex qubitMask, outcomeMask;
     qreal renorm;
 
     functor_projectStateVec(
-        qindex qubitMask, qindex valueMask, qreal renorm
+        qindex qubitMask, qindex outcomeMask, qreal renorm
     ) :
-        qubitMask(qubitMask), valueMask(valueMask), renorm(renorm)
+        qubitMask(qubitMask), outcomeMask(outcomeMask), renorm(renorm)
     { }
 
     __host__ __device__ gpu_qcomp operator()(qindex n, gpu_qcomp amp) {
 
         // return amp scaled by zero or renorm, depending on whether n has projected substate
-        qreal fac = renorm * ((n & qubitMask) == valueMask);
+        qreal fac = renorm * ((n & qubitMask) == outcomeMask);
         return fac * amp;
     }
 };
@@ -554,11 +546,6 @@ struct functor_projectDensMatr {
     // configuration. This is used to project density matrix
     // qubits into a particular measurement outcome
 
-    // as with functor_projectStateVec, we avoid copying the target-qubit list to
-    // the device (see issue #749) by passing primitive bitmasks. The original test
-    // (v1==v2) && (retainValue==v1) keeps an amp iff both the row and column
-    // substates equal the requested outcome, which is exactly
-    // (r & qubitMask)==valueMask && (c & qubitMask)==valueMask.
     int rank, numQuregQubits;
     qindex logNumAmpsPerNode, qubitMask, valueMask;
     qreal renorm;
@@ -580,7 +567,7 @@ struct functor_projectDensMatr {
         qindex r = getBitsRightOfIndex(i, numQuregQubits);
         qindex c = getBitsLeftOfIndex(i, numQuregQubits-1);
 
-        // multiply amp with renorm or zero if either row/col substate disagrees with outcomes
+        // multiply amp with zero (else renorm) if either row/col substate disagrees with outcomes
         qreal fac = renorm * ((r & qubitMask) == valueMask) * ((c & qubitMask) == valueMask);
         return fac * amp;
     }
@@ -788,7 +775,7 @@ qreal thrust_densmatr_calcTotalProb_sub(Qureg qureg) {
 template <int NumQubits>
 qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes) {
 
-    // pass the sorted qubit list by-value into the functor (no device alloc; see issue #749)
+    // pass the sorted qubit list by-value into the functor (avoids device alloc)
     List64 sortedQubits = util_getSorted(qubits);
     qindex valueMask = util_getBitMask(qubits, outcomes);
 
@@ -809,7 +796,7 @@ qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 q
 template <int NumQubits>
 qreal thrust_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes) {
 
-    // pass the sorted qubit list by-value into the functor (no device alloc; see issue #749)
+    // pass the sorted qubit list by-value into the functor (avoids device alloc)
     List64 sortedQubits = util_getSorted(qubits);
     qindex valueMask = util_getBitMask(qubits, outcomes);
 
@@ -1013,7 +1000,6 @@ gpu_qcomp thrust_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateD
 
 void thrust_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal renorm) {
 
-    // pass primitive bitmasks instead of copying the qubit list to device (see issue #749)
     qindex qubitMask = util_getBitMask(qubits);
     qindex valueMask = util_getBitMask(qubits, outcomes);
     auto projFunctor = functor_projectStateVec(
@@ -1029,7 +1015,6 @@ void thrust_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Co
 
 void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal renorm) {
 
-    // pass primitive bitmasks instead of copying the qubit list to device (see issue #749)
     qindex qubitMask = util_getBitMask(qubits);
     qindex valueMask = util_getBitMask(qubits, outcomes);
     auto projFunctor = functor_projectDensMatr(

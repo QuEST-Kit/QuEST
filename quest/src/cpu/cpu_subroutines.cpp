@@ -2572,17 +2572,17 @@ void cpu_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Const
     // visit every amp, setting to zero or multiplying it by renorm
     qindex numIts = qureg.numAmpsPerNode;
 
-    // use primitive bitmasks instead of a per-qubit loop (see issue #749); the test
-    // getValueOfBits(n,qubits)==retainValue is exactly (n & qubitMask) == valueMask
-    qindex qubitMask = util_getBitMask(qubits);
-    qindex valueMask = util_getBitMask(qubits, outcomes);
+    // prepare masks for to efficiently check if a local state has qubits in the given outcomes
+    qindex qubitMask   = util_getBitMask(qubits);
+    qindex outcomeMask = util_getBitMask(qubits, outcomes);
     qreal renorm = 1 / std::sqrt(prob);
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
-        // multiply amp with renorm or zero, depending on whether n's substate matches outcomes
-        amps[n] *= renorm * ((n & qubitMask) == valueMask);
+        // multiply amp with renorm (else zero) if qubit states agree with outcomes
+        bool agree = (n & qubitMask) == outcomeMask;
+        amps[n] *= renorm * agree;
     }
 }
 
@@ -2601,10 +2601,8 @@ void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Const
     // visit every amp, setting most to zero and multiplying the remainder by renorm
     qindex numIts = qureg.numAmpsPerNode;
 
-    // use primitive bitmasks instead of a per-qubit loop (see issue #749); the original
-    // test (v1==v2)&&(retainValue==v1) is exactly (r & qubitMask)==valueMask && (c & qubitMask)==valueMask
-    qindex qubitMask = util_getBitMask(qubits);
-    qindex valueMask = util_getBitMask(qubits, outcomes);
+    qindex qubitMask   = util_getBitMask(qubits);
+    qindex outcomeMask = util_getBitMask(qubits, outcomes);
     qreal renorm = 1 / prob;
 
     #pragma omp parallel for if(qureg.isMultithreaded)
@@ -2617,8 +2615,12 @@ void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Const
         qindex r = getBitsRightOfIndex(i, qureg.numQubits);
         qindex c = getBitsLeftOfIndex(i, qureg.numQubits-1);
 
-        // multiply amp with renorm or zero if either row/col substate disagrees with outcomes
-        amps[n] *= renorm * ((r & qubitMask) == valueMask) * ((c & qubitMask) == valueMask);
+        // check whether row and column indices have qubits in the specified outcomes
+        bool rowAgrees = (r & qubitMask) == outcomeMask;
+        bool colAgrees = (c & qubitMask) == outcomeMask;
+
+        // multiply amp with zero (else renorm) if either row/col substate disagrees with outcomes
+        amps[n] *= renorm * (rowAgrees && colAgrees);
     }
 }
 
