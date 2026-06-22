@@ -92,7 +92,8 @@ __forceinline__ __device__ int cudaGetBitMaskParity(qindex mask) {
 template <int NumCtrls>
 __global__ void kernel_statevec_packAmpsIntoBuffer(
     gpu_qcomp* amps, gpu_qcomp* buffer, qindex numThreads, 
-    _GRID_CONST_OPT const List64 qubits, qindex qubitStateMask) {
+    _GRID_CONST_OPT const List64 qubits, qindex qubitStateMask)
+{
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
@@ -108,7 +109,8 @@ __global__ void kernel_statevec_packAmpsIntoBuffer(
 
 __global__ void kernel_statevec_packPairSummedAmpsIntoBuffer(
     gpu_qcomp* amps, gpu_qcomp* buffer, qindex numThreads, 
-    int qubit1, int qubit2, int qubit3, int bit2) {
+    int qubit1, int qubit2, int qubit3, int bit2)
+{
     GET_THREAD_IND(n, numThreads);
 
     // i000 = nth local index where all qubits are 0
@@ -129,12 +131,17 @@ __global__ void kernel_statevec_packPairSummedAmpsIntoBuffer(
 template <int NumCtrls> 
 __global__ void kernel_statevec_anyCtrlSwap_subA(
     gpu_qcomp* amps, qindex numThreads, 
-    _GRID_CONST_OPT const List64 ctrlsAndTargs, qindex ctrlsAndTargsMask, int targ1, int targ2) {
+    _GRID_CONST_OPT const List64 ctrlsAndTargs, qindex ctrlsAndTargsMask, 
+    int targ1, int targ2)
+{
     GET_THREAD_IND(n, numThreads);
 
+    // beware ctrlsAndTargs contains the two targets
+    constexpr int numTargs = 2;
+
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.size() - 2);
-    int numQubitBits = 2 + numCtrlBits;
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.size() - numTargs);
+    int numQubitBits = numCtrlBits + numTargs;
 
     // i01 = nth local index where ctrls are active, targ2=0 and targ1=1
     qindex i01 = insertBitsWithMaskedValues(n, ctrlsAndTargs.data(), numQubitBits, ctrlsAndTargsMask);
@@ -172,9 +179,12 @@ __global__ void kernel_statevec_anyCtrlSwap_subC(
 ) {
     GET_THREAD_IND(n, numThreads);
 
+    // beware ctrlsAndTarg contains the single target
+    constexpr int numTargs = 1;
+
     // use template param to compile-time unroll loop in insertBits()
-    int numQubitBits = numCtrlBits + 1;
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTarg.size() - numTargs);
+    int numQubitBits = numCtrlBits + numTargs;
 
     // i = nth local index where ctrls and targ are in specified states
     qindex i = insertBitsWithMaskedValues(n, ctrlsAndTarg.data(), numQubitBits, ctrlsAndTargMask);
@@ -192,17 +202,22 @@ __global__ void kernel_statevec_anyCtrlSwap_subC(
 
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
-    gpu_qcomp* amps, qindex numThreads, _GRID_CONST_OPT const List64 ctrlsAndTarg,
+    gpu_qcomp* amps, qindex numThreads, 
+    _GRID_CONST_OPT const List64 ctrlsAndTarg,
     qindex ctrlStateMask, int targ, 
     gpu_qcomp m00, gpu_qcomp m01, gpu_qcomp m10, gpu_qcomp m11
 ) {
     GET_THREAD_IND(n, numThreads);
 
+    // beware ctrlsAndTarg contains the single target
+    constexpr int numTargs = 1;
+
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTarg.size()-1);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTarg.size() - numTargs);
+    int numQubitBits = numCtrlBits + numTargs;
 
     // i0 = nth local index where ctrls are active and targ is 0
-    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTarg.data(), numCtrlBits + 1, ctrlStateMask);
+    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTarg.data(), numQubitBits, ctrlStateMask);
     qindex i1 = flipBit(i0, targ);
 
     // note amps are strided by 2^targ
@@ -242,7 +257,8 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlTwoTargDenseMatr_sub(
     gpu_qcomp* amps, qindex numThreads, 
-    _GRID_CONST_OPT const List64 ctrlsAndTarg, qindex ctrlStateMask, int targ1, int targ2,
+    _GRID_CONST_OPT const List64 ctrlsAndTargs, qindex ctrlStateMask,
+    int targ1, int targ2,
     gpu_qcomp m00, gpu_qcomp m01, gpu_qcomp m02, gpu_qcomp m03,
     gpu_qcomp m10, gpu_qcomp m11, gpu_qcomp m12, gpu_qcomp m13,
     gpu_qcomp m20, gpu_qcomp m21, gpu_qcomp m22, gpu_qcomp m23,
@@ -250,11 +266,15 @@ __global__ void kernel_statevec_anyCtrlTwoTargDenseMatr_sub(
 ) {
     GET_THREAD_IND(n, numThreads);
 
+    // beware ctrlsAndTargs contains the two targets
+    constexpr int numTargs = 2;
+
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTarg.size() - 2);
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.size() - numTargs);
+    int numQubitBits = numCtrlBits + numTargs;
 
     // i00 = nth local index where ctrls are active and both targs are 0
-    qindex i00 = insertBitsWithMaskedValues(n, ctrlsAndTarg.data(), numCtrlBits + 2, ctrlStateMask);
+    qindex i00 = insertBitsWithMaskedValues(n, ctrlsAndTargs.data(), numQubitBits, ctrlStateMask);
     qindex i01 = flipBit(i00, targ1);
     qindex i10 = flipBit(i00, targ2);
     qindex i11 = flipBit(i01, targ2);
@@ -433,7 +453,8 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
 
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
-    gpu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, _GRID_CONST_OPT const List64 ctrl,
+    gpu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, 
+    _GRID_CONST_OPT const List64 ctrls,
     qindex ctrlStateMask, int targ, 
     gpu_qcomp m1, gpu_qcomp m2
 ) {
@@ -451,10 +472,10 @@ __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
     /// We should verify this!
 
     // use template params to compile-time unroll loops in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrl.size());
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
     // j = nth local index where ctrls are active (in the specified states)
-    qindex j = insertBitsWithMaskedValues(n, ctrl.data(), numCtrlBits, ctrlStateMask);
+    qindex j = insertBitsWithMaskedValues(n, ctrls.data(), numCtrlBits, ctrlStateMask);
 
     // i = global index corresponding to j
     qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
@@ -472,8 +493,9 @@ __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
 
 template <int NumCtrls>
 __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
-    gpu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, _GRID_CONST_OPT const List64 ctrl,
-    qindex ctrlStateMask, int targ1, int targ2,
+    gpu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, 
+    _GRID_CONST_OPT const List64 ctrls, qindex ctrlStateMask, 
+    int targ1, int targ2,
     gpu_qcomp m1, gpu_qcomp m2, gpu_qcomp m3, gpu_qcomp m4
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -490,10 +512,10 @@ __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
     /// We should verify this!
 
     // use template params to compile-time unroll loops in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrl.size());
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
     // j = nth local index where ctrls are active (in the specified states)
-    qindex j = insertBitsWithMaskedValues(n, ctrl.data(), numCtrlBits, ctrlStateMask);
+    qindex j = insertBitsWithMaskedValues(n, ctrls.data(), numCtrlBits, ctrlStateMask);
 
     // i = global index corresponding to j
     qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
@@ -513,8 +535,9 @@ __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
 
 template <int NumCtrls, int NumTargs, bool ApplyConj, bool HasPower>
 __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
-    gpu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, _GRID_CONST_OPT const List64 ctrl,
-    qindex ctrlStateMask, _GRID_CONST_OPT const List64 targs,
+    gpu_qcomp* amps, qindex numThreads, int rank, qindex logNumAmpsPerNode, 
+    _GRID_CONST_OPT const List64 ctrls, qindex ctrlStateMask,
+    _GRID_CONST_OPT const List64 targs,
     gpu_qcomp* elems, gpu_qcomp exponent
 ) {
     GET_THREAD_IND(n, numThreads);
@@ -531,11 +554,11 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     /// We should verify this!
 
     // use template params to compile-time unroll loops in insertBits() and getValueOfBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrl.size());
+    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
     SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, targs.size());
 
     // j = nth local index where ctrls are active (in the specified states)
-    qindex j = insertBitsWithMaskedValues(n, ctrl.data(), numCtrlBits, ctrlStateMask);
+    qindex j = insertBitsWithMaskedValues(n, ctrls.data(), numCtrlBits, ctrlStateMask);
 
     // i = global index corresponding to j
     qindex i = concatenateBits(rank, j, logNumAmpsPerNode);
@@ -684,7 +707,8 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
 template <int NumCtrls>
 __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     gpu_qcomp* amps, qindex numThreads,
-    _GRID_CONST_OPT const List64 ctrls, qindex ctrlStateMask, qindex targMask,
+    _GRID_CONST_OPT const List64 ctrls, qindex ctrlStateMask, 
+    qindex targMask,
     gpu_qcomp fac0, gpu_qcomp fac1
 ) {
     GET_THREAD_IND(n, numThreads);
