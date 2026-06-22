@@ -164,22 +164,23 @@ INLINE int getBitMaskParity(qindex mask) {
 
 
 INLINE qindex insertBits(qindex number, const int* bitIndices, int numIndices, int bitValue) {
-
+    
     // bitIndices must be strictly increasing
     for (int i=0; i<numIndices; i++)
         number = insertBit(number, bitIndices[i], bitValue);
-
+        
     return number;
 }
 
-INLINE qindex setBits(qindex number, const int* bitIndices, int numIndices, qindex bitsValue) {
 
+INLINE qindex setBits(qindex number, const int* bitIndices, int numIndices, qindex bitsValue) {
+    
     // bitIndices are arbitrarily ordered, which does not affect number
     for (int i=0; i<numIndices; i++) {
         int bit = getBit(bitsValue, i);
         number = setBit(number, bitIndices[i], bit);
     }
-
+    
     return number;
 }
 
@@ -195,6 +196,8 @@ INLINE qindex getValueOfBits(qindex number, const int* bitIndices, int numIndice
     return value;
 }
 
+
+
 /*
  * PERFORMANCE-CRITICAL CONVENIENCE FUNCTIONS
  *
@@ -207,6 +210,7 @@ INLINE qindex insertBitsWithMaskedValues(qindex number, const int* bitInds, int 
     // bitInds must be sorted (increasing), and mask must be zero everywhere except bitInds
     return mask | insertBits(number, bitInds, numBits, 0);
 }
+
 
 INLINE int getTwoBits(qindex number, int highInd, int lowInd) {
 
