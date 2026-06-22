@@ -36,10 +36,10 @@
     #define REGISTER
 #endif
 
-
-#if defined(__NVCC__)
+// optimise qubit-list passing in CUDA v11.7+ (we round to 12), benefitting CC >= 7.0
+#if defined(__NVCC__) && defined(__CUDACC_VER_MAJOR__) && (__CUDACC_VER_MAJOR__ >= 12)
     #define _GRID_CONST_OPT __grid_constant__
-#elif defined(__HIP__)
+#else
     #define _GRID_CONST_OPT
 #endif
 
