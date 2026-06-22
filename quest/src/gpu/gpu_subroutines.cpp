@@ -30,6 +30,7 @@
  * mapped to HIP symbols by cuda_to_hip.h 
  * 
  * @author Tyson Jones
+ * @author James Richings (optimised away qubit-list allocs)
  */
 
 // obtain preprocessors from config.h prior to validation

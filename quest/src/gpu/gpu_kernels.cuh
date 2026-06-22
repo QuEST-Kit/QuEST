@@ -12,6 +12,7 @@
  * mapped to HIP symbols by cuda_to_hip.h 
  * 
  * @author Tyson Jones
+ * @author James Richings (optimised away qubit-list allocs)
  * @author Ania (Anna) Brown (developed QuEST v1 logic)
  */
 
