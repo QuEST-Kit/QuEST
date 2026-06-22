@@ -66,26 +66,10 @@
  * copy constructor (devicevec d_vec = hostvec). The pointer 
  * to the data (d_vec.data()) can be cast into a raw pointer
  * and passed directly to CUDA kernels (though qcomp must be
- * reinterpreted to gpu_qcomp).
+ * reinterpreted to gpu_qcomp). Note this induces a device
+ * allocation which can dominate costs for small Quregs; such
+ * costs have been eradicated for bounded-size qubit lists.
  */
-
-
-using devints = thrust::device_vector<int>; // remove for performance
-
-devints getDevInts(ConstList64 h_list) {
-
-    // DEBUG: this is a placeholder! James' GPU refactor should make it redundant, 
-    // and we can pass List64 directly to a CUDA kernel, paying no heap allocs,
-    // nor CUDA memcpy costs
-
-    devints d_list = std::vector<int>(h_list.data(), h_list.data() + h_list.size());
-    return d_list;
-}
-
-int* getPtr(devints& qubits) {
-
-    return thrust::raw_pointer_cast(qubits.data());
-}
 
 
 using devreals = thrust::device_vector<qreal>;
