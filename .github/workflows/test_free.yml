@@ -63,7 +63,7 @@ jobs:
       - name: Get QuEST
         uses: actions/checkout@main
 
-      # compile serial unit tests, optionally include deprecated test
+      # compile serial unit tests, optionally include deprecated test, always including ADIOS2
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
@@ -72,16 +72,18 @@ jobs:
           -DQUEST_ENABLE_DEPRECATED_API=${{ matrix.version == 3 && 'ON' || 'OFF' }}
           -DQUEST_DISABLE_DEPRECATION_WARNINGS=${{ matrix.version == 3 && 'ON' || 'OFF' }}
           -DQUEST_FLOAT_PRECISION=${{ matrix.precision }}
+          -DQUEST_ENABLE_ADIOS2=ON
 
-      # force 'Release' build (needed by MSVC to enable optimisations)
+      # force 'Release' build (needed by MSVC to enable optimisations), and force serial (to avoid ADIOS2 OOM)
       - name: Compile
-        run: cmake --build ${{ env.build_dir }} --config Release --parallel
+        run: cmake --build ${{ env.build_dir }} --config Release --parallel 1
 
       # run v4 unit tests in random order, excluding the integration tests,
       # using the default environment variables (e.g. test all permutations)
       # TODO:
       # ctest currently doesn't know of our Catch2 tags, so we
       # are manually excluding each integration test by name
+
       - name: Run v4 tests
         if: ${{ matrix.version == 4 }}
         run: ctest -j2 --output-on-failure --schedule-random -C Release -E "density evolution"

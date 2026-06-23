@@ -125,6 +125,10 @@ void validate_newQuregParams(int numQubits, int isDensMatr, int isDistrib, int i
 
 void validate_newQuregAllocs(Qureg qureg, const char* caller);
 
+void validate_newQuregFileMatchesPrecision(size_t fileQrealBytes, const char* caller);
+
+void validate_newQuregNumNodesMatchesSavedFile(int numSavedNodes, int numAutoDeployedNodes, int numAvailableNodes, int numQubits, bool isDensMatr, const char* caller);
+
 
 
 /*
@@ -136,6 +140,8 @@ void validate_quregFields(Qureg qureg, const char* caller);
 void validate_quregIsStateVector(Qureg qureg, const char* caller);
 
 void validate_quregIsDensityMatrix(Qureg qureg, const char* caller);
+
+void validate_adios2IsCompiled(const char* caller);
 
 
 
@@ -535,6 +541,14 @@ void validate_quregCanBeSetToReducedDensMatr(Qureg out, Qureg in, int numTraceQu
  */
 
 void validate_canReadFile(string fn, const char* caller);
+
+void validate_adiosCanOpenFileOnAllNodes(bool canOpen, string fn, const char* caller);
+
+void validate_adiosCanReadFileOnAllNodes(bool canRead, string fn, const char* caller);
+
+void validate_adiosCanWriteToFileOnAllNodes(bool canWrite, string fn, const char* caller);
+
+void validate_adiosFileContainsFieldsOnAllNodes(bool areAllVarsPresent, const char* caller);
 
 
 

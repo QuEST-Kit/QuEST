@@ -183,8 +183,8 @@ template <bool HasPower, bool UseRealPow> qcomp gpu_densmatr_calcExpecFullStateD
  * PROJECTORS
  */
 
-template <int NumQubits> void gpu_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob);
-template <int NumQubits> void gpu_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob);
+void gpu_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob);
+void gpu_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob);
 
 
 /*

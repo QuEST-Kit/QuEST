@@ -5,6 +5,7 @@
  * @author Tyson Jones 
  */
 
+#include "quest/include/config.h"
 #include "quest/include/environment.h"
 #include "quest/include/precision.h"
 #include "quest/include/modes.h"
@@ -208,12 +209,13 @@ void printCompilationInfo() {
 
     print_table(
         "compilation", {
-        {"isOmpCompiled",         cpu_isOpenmpCompiled()},
-        {"isMpiCompiled",         comm_isMpiCompiled()},
-        {"isMpiSubCommCompiled",  comm_isMpiSubCommCompiled()},
-        {"isGpuCompiled",         gpu_isGpuCompiled()},
-        {"isHipCompiled",         gpu_isHipCompiled()},
-        {"isCuQuantumCompiled",   gpu_isCuQuantumCompiled()},
+        {"isOmpCompiled",            cpu_isOpenmpCompiled()},
+        {"isMpiCompiled",            comm_isMpiCompiled()},
+        {"isMpiSubCommCompiled",     comm_isMpiSubCommCompiled()},
+        {"isGpuCompiled",            gpu_isGpuCompiled()},
+        {"isHipCompiled",            gpu_isHipCompiled()},
+        {"isCuQuantumCompiled",      gpu_isCuQuantumCompiled()},
+        {"isCheckpointingCompiled",  QUEST_COMPILE_ADIOS2},
     });
 }
 
