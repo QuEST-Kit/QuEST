@@ -23,10 +23,6 @@
 name: compile
 
 
-### DEBUG
-### disabled all but single-CPU
-
-
 on:
   push:
     branches:
@@ -43,7 +39,11 @@ jobs:
   # test only compilation succeeds (no execution)
   build-test:
     name: >
-      ${{ matrix.os == 'ubuntu-latest' && 'Linux' || matrix.os == 'macos-latest' && 'MacOS' || 'Windows' }}
+      ${{ startsWith(matrix.os, 'ubuntu' ) && 'Linux'   || 
+          startsWith(matrix.os, 'macos'  ) && 'MacOS'   ||
+          startsWith(matrix.os, 'windows') && 'Windows' ||
+                                              'Unknown' }}
+      ${{ endsWith(matrix.os, 'intel') && '(Intel)' || '' }}
       [${{ matrix.precision }}]
       ${{ matrix.omp       == 'ON' && 'OMP'  || '' }}
       ${{ matrix.mpi       == 'ON' && 'MPI'  || '' }}
@@ -52,6 +52,7 @@ jobs:
       ${{ matrix.hip       == 'ON' && 'HIP'  || '' }}
       ${{ matrix.cuquantum == 'ON' && 'CUQ'  || '' }}
       ${{ matrix.adios2    == 'ON' && 'CKPT' || '' }}
+      ${{ matrix.bmi2      == 'ON' && 'BMI'  || '' }}
 
     runs-on: ${{ matrix.os }}
 
@@ -73,6 +74,7 @@ jobs:
         hip:       [ON, OFF]
         cuquantum: [ON, OFF]
         adios2:    [ON, OFF]
+        bmi2:      [ON, OFF]
         mpilib:    ['', 'mpich', 'ompi', 'impi', 'msmpi']
 
         # disable deprecated API on MSVC, and assign unique compilers,
@@ -84,6 +86,12 @@ jobs:
             compiler: g++
             deprecated: ON
           - os: macos-latest
+            compiler: clang++
+            deprecated: ON
+          - os: macos-15-intel
+            compiler: clang++
+            deprecated: ON
+          - os: macos-26-intel
             compiler: clang++
             deprecated: ON
           - os: windows-2022
@@ -108,13 +116,29 @@ jobs:
           # cannot use GPU on MacOS
           - cuda: ON
             os: macos-latest
+          - cuda: ON
+            os: macos-15-intel
+          - cuda: ON
+            os: macos-26-intel
           - hip: ON
             os: macos-latest
+          - hip: ON
+            os: macos-15-intel
+          - hip: ON
+            os: macos-26-intel
 
           # cannot use cuquantum on Windows or MacOS
           - cuquantum: ON
             os: windows-2022
           - cuquantum: ON
+            os: macos-latest
+          - cuquantum: ON
+            os: macos-15-intel
+          - cuquantum: ON
+            os: macos-26-intel
+
+          # cannot use BMI2 on non-intel MacOS
+          - bmi2: ON
             os: macos-latest
 
           # don't enumerate MPI libraries when not using MPI
@@ -135,6 +159,14 @@ jobs:
           - os: macos-latest
             mpilib: 'msmpi'    # MacOS:   [MPICH, OpenMPI]
           - os: macos-latest
+            mpilib: 'impi'
+          - os: macos-15-intel
+            mpilib: 'msmpi'
+          - os: macos-15-intel
+            mpilib: 'impi'
+          - os: macos-26-intel
+            mpilib: 'msmpi'
+          - os: macos-26-intel
             mpilib: 'impi'
           - os: windows-2022
             mpilib: 'mpich'    # Windows: [Intel MPI, MS MPI]
@@ -246,7 +278,7 @@ jobs:
         run: >
           cmake -B ${{ env.build_dir }}
           -DQUEST_BUILD_EXAMPLES=ON
-          -DQUEST_BUILD_TESTS=OFF
+          -DQUEST_BUILD_TESTS=ON
           -DQUEST_FLOAT_PRECISION=${{ matrix.precision }}
           -DQUEST_ENABLE_DEPRECATED_API=${{ matrix.deprecated }}
           -DQUEST_DISABLE_DEPRECATION_WARNINGS=${{ matrix.deprecated }}
@@ -256,6 +288,7 @@ jobs:
           -DQUEST_ENABLE_HIP=${{ matrix.hip }}
           -DQUEST_ENABLE_CUQUANTUM=${{ matrix.cuquantum }}
           -DQUEST_ENABLE_ADIOS2=${{ matrix.adios2 }}
+          -DQUEST_ENABLE_BMI2=${{ matrix.bmi2 }}
           -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
           -DCMAKE_HIP_ARCHITECTURES=${{ env.hip_arch }}
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
@@ -297,10 +330,6 @@ jobs:
           ForEach-Object {
             Write-Host "`r`n[[[ $($_.Name) ]]]`r`n"
             & $_.FullName
-            if ($LASTEXITCODE -ne 0) {
-              Write-Warning "$($_.Name) exited with code $LASTEXITCODE"
-              $global:LASTEXITCODE = 0
-            }
           }
       - name: Run automated examples (Unix)
         if: ${{ matrix.os != 'windows-2022' }}

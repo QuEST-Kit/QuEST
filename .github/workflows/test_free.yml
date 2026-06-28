@@ -10,10 +10,6 @@
 name: test (free, serial)
 
 
-### DEBUG
-### disabled all but single-CPU
-
-
 on:
   push:
     branches:
@@ -31,9 +27,14 @@ jobs:
   # excluding the v4 integration tests, for free
   serial-unit-test:
     name: >
-      ${{ matrix.os == 'ubuntu-latest' && 'Linux' || startsWith(matrix.os, 'macos') && 'MacOS' || 'Windows' }}
+      ${{ startsWith(matrix.os, 'ubuntu' ) && 'Linux'   || 
+          startsWith(matrix.os, 'macos'  ) && 'MacOS'   ||
+          startsWith(matrix.os, 'windows') && 'Windows' ||
+                                              'Unknown' }}
+      ${{ endsWith(matrix.os, 'intel') && '(Intel)' || '' }}
       [${{ matrix.precision }}]
       serial
+      ${{ matrix.bmi2      == 'ON' && '(BMI)'  || '' }}
       unit v${{ matrix.version }}
 
     runs-on: ${{ matrix.os }}
@@ -42,11 +43,12 @@ jobs:
       # continue other jobs if any fail
       fail-fast: false
 
-      # we will compile QuEST with all precisions but no parallelisation
+      # we will compile QuEST with all precisions but no parallelisation (though with Intel BMI2)
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest,  macos-15-intel, macos-26-intel]
-        version: [4] # [3, 4]
-        precision: [2] # [1, 2, 4]
+        os: [ubuntu-latest, macos-latest, windows-latest, macos-15-intel, macos-26-intel]
+        version:   [3, 4]
+        precision: [1, 2, 4]
+        bmi2:      [ON, OFF]
 
         # MSVC cannot compile deprecated v3 tests
         exclude:
@@ -73,6 +75,7 @@ jobs:
           -DQUEST_DISABLE_DEPRECATION_WARNINGS=${{ matrix.version == 3 && 'ON' || 'OFF' }}
           -DQUEST_FLOAT_PRECISION=${{ matrix.precision }}
           -DQUEST_ENABLE_ADIOS2=ON
+          -DQUEST_ENABLE_BMI2=${{ matrix.bmi2 }}
 
       # force 'Release' build (needed by MSVC to enable optimisations), and force serial (to avoid ADIOS2 OOM)
       - name: Compile
