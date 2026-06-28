@@ -215,29 +215,14 @@ INLINE qindex getValueOfBits(qindex number, const int* bitIndices, int numIndice
 
 INLINE qindex insertBitsWithMaskedValues(qindex number, const int* bitInds, int numBits, qindex mask) {
 
+    // there exists an overload of insertBitsWithMaskedValues() below which 
+    // additionally accepts a (seemingly) superfluous mask encoding bitInds, 
+    // and which will use a CPU intrinsic when available
+
     // bitInds must be sorted (increasing), and mask must be zero everywhere except bitInds
     return mask | insertBits(number, bitInds, numBits, 0);
 }
 
-
-/*
- * Mask-accepting variants of the bit gather/scatter helpers (issue #717).
- *
- * The caller computes the loop-invariant POSITION mask (a bit set at every index in bitInds)
- * once, before the exponentially-large statevector loop, e.g.
- *     qindex posMask = getBitMask(sortedInds.data(), numInds);
- * so each per-amplitude call collapses to a single PDEP/PEXT instruction instead of an
- * O(numBits) loop. bitInds/numBits are retained so that, when BMI2 is unavailable, the fallback
- * reuses the original unrolled scalar routines and stays byte-identical.
- */
-
-INLINE qindex insertBitsWithMaskedValuesAndPosMask(qindex number, qindex valueMask, [[maybe_unused]] qindex posMask, [[maybe_unused]] const int* bitInds, [[maybe_unused]] int numBits) {
-#ifdef QUEST_BITWISE_USE_BMI2
-    return valueMask | (qindex) _pdep_u64((unsigned long long) number, ~ (unsigned long long) posMask);
-#else
-    return valueMask | insertBits(number, bitInds, numBits, 0);
-#endif
-}
 
 INLINE int getTwoBits(qindex number, int highInd, int lowInd) {
 
@@ -321,6 +306,35 @@ INLINE qindex getValueOfPossiblySortedBits(qindex number, const bool isSorted, q
 
 #endif 
 }
+
+
+INLINE qindex insertBitsWithMaskedValues(qindex number, const int* bitInds, int numBits, qindex bitIndsMask, qindex bitValuesMask) {
+
+    // This is an overload of insertBitsWithMaskedValues() above, which accepts the seemingly
+    // gratuitous bitIndsMask (which just compactly encodes bitInds), so that a BMI2 intrinsic
+    // can be used when available, falling back to the existing looped version. Note bitInds 
+    // is always assumed/required to be sorted, regardless of bitIndsMask/instrinsics usage
+
+    // must not expose BMI2 to GPU backend
+#if QUEST_COMPILE_BMI2 && !defined(__NVCC__) && !defined(__HIP__)
+
+    // the BMI2 intrinsic only consults bitIndsMask (suppress unused-var warning) 
+    (void) bitInds;
+    (void) numBits;
+
+    // _pdep_u64 scatters number's bits into set-positions of bitIndsMask, hence "~"
+    return bitValuesMask | _pdep_u64(number, ~bitIndsMask);
+
+#else
+
+    // the platform-agnostic version loops through bitInds (and will unroll when numBits is compile-time known)
+    (void) bitIndsMask;
+
+    return insertBitsWithMaskedValues(number, bitInds, numBits, bitValuesMask);
+
+#endif
+}
+
 
 
 /* 

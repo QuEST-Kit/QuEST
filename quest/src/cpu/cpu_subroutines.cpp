@@ -232,17 +232,17 @@ qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, ConstList64 qubitInds, Const
     qindex offset = getSubBufferSendInd(qureg);
 
     auto sortedQubitInds = util_getSorted(qubitInds);
+    auto qubitIndMask    = util_getBitMask(qubitInds);
     auto qubitStateMask  = util_getBitMask(qubitInds, qubitStates);
     
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubitInds.size());
 
-    qindex qubitsPosMask = getBitMask(sortedQubitInds.data(), numBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = nth local index where qubits are in specified states
-        qindex i = insertBitsWithMaskedValuesAndPosMask(n, qubitStateMask, qubitsPosMask, sortedQubitInds.data(), numBits);
+        qindex i = insertBitsWithMaskedValues(n, sortedQubitInds.data(), numBits, qubitIndMask, qubitStateMask);
 
         // pack the potentially-strided amplitudes into a contiguous sub-buffer
         buffer[offset + n] = amps[i];
@@ -304,18 +304,18 @@ void cpu_statevec_anyCtrlSwap_subA(Qureg qureg, ConstList64 ctrls, ConstList64 c
     qindex numIts = qureg.numAmpsPerNode / powerOf2(2 + ctrls.size());
 
     auto sortedQubits   = util_getSorted(ctrls, {targ2, targ1});
+    auto qubitIndMask   = util_getBitMask(sortedQubits);
     auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ2, targ1}, {0, 1});
     
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
     int numQubitBits = numCtrlBits + 2;
 
-    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i01 = nth local index where ctrls are active, targ2=0 and targ1=1
-        qindex i01 = insertBitsWithMaskedValuesAndPosMask(n, qubitStateMask, qubitsPosMask, sortedQubits.data(), numQubitBits);
+        qindex i01 = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitIndMask, qubitStateMask);
         qindex i10 = flipTwoBits(i01, targ2, targ1);
 
         std::swap(amps[i01], amps[i10]);
@@ -339,17 +339,17 @@ void cpu_statevec_anyCtrlSwap_subB(Qureg qureg, ConstList64 ctrls, ConstList64 c
     qindex offset = getBufferRecvInd();
 
     auto sortedCtrls   = util_getSorted(ctrls);
+    auto ctrlsIndMask  = util_getBitMask(ctrls);
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
     
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
-    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = nth local index where ctrls are in specified states
-        qindex i = insertBitsWithMaskedValuesAndPosMask(n, ctrlStateMask, ctrlsPosMask, sortedCtrls.data(), numCtrlBits);
+        qindex i = insertBitsWithMaskedValues(n, sortedCtrls.data(), numCtrlBits, ctrlsIndMask, ctrlStateMask);
 
         // j = index of nth received amplitude from pair rank in buffer
         qindex j = n + offset;
@@ -376,18 +376,18 @@ void cpu_statevec_anyCtrlSwap_subC(Qureg qureg, ConstList64 ctrls, ConstList64 c
     qindex offset = getBufferRecvInd();
 
     auto sortedQubits   = util_getSorted(ctrls, {targ});
+    auto qubitIndMask   = util_getBitMask(sortedQubits);
     auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ}, {targState});
     
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
     int numQubitBits = numCtrlBits + 1;
 
-    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = nth local index where ctrls and targ are in specified states
-        qindex i = insertBitsWithMaskedValuesAndPosMask(n, qubitStateMask, qubitsPosMask, sortedQubits.data(), numQubitBits);
+        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitIndMask, qubitStateMask);
     
         // j = index of nth received amplitude from pair rank in buffer
         qindex j = n + offset;
@@ -422,19 +422,18 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, ConstList64 ctrls, C
     qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size() + 1);
 
     auto sortedQubits   = util_getSorted(ctrls, {targ});
+    auto qubitIndMask   = util_getBitMask(sortedQubits);
     auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ}, {0});
 
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
     int numQubitBits = numCtrlBits + 1;
 
-    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);
-
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i0 = nth local index where ctrl bits are in specified states and targ is 0
-        qindex i0 = insertBitsWithMaskedValuesAndPosMask(n, qubitStateMask, qubitsPosMask, sortedQubits.data(), numQubitBits);
+        qindex i0 = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitIndMask, qubitStateMask);
         qindex i1 = flipBit(i0, targ);
 
         // note the two amplitudes are likely strided and not adjacent (separated by 2^t)
@@ -465,17 +464,17 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, ConstList64 ctrls, C
     qindex offset = getBufferRecvInd();
 
     auto sortedCtrls   = util_getSorted(ctrls);
+    auto ctrlIndMask   = util_getBitMask(ctrls);
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
-    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = nth local index where ctrl bits are in specified states
-        qindex i = insertBitsWithMaskedValuesAndPosMask(n, ctrlStateMask, ctrlsPosMask, sortedCtrls.data(), numCtrlBits);
+        qindex i = insertBitsWithMaskedValues(n, sortedCtrls.data(), numCtrlBits, ctrlIndMask, ctrlStateMask);
 
         // j = index of nth received amplitude from pair rank in buffer
         qindex j = n + offset;
@@ -508,18 +507,18 @@ void cpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
     qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size() + 2);
 
     auto sortedQubits   = util_getSorted(ctrls, {targ1, targ2});
+    auto qubitIndMask   = util_getBitMask(sortedQubits);
     auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ1, targ2}, {0, 0});
 
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
     int numQubitBits = numCtrlBits + 2;
 
-    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i0 = nth local index where ctrl bits are in specified states and both targs are 0
-        qindex i00 = insertBitsWithMaskedValuesAndPosMask(n, qubitStateMask, qubitsPosMask, sortedQubits.data(), numQubitBits);
+        qindex i00 = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitIndMask, qubitStateMask);
         qindex i01 = flipBit(i00, targ1);
         qindex i10 = flipBit(i00, targ2);
         qindex i11 = flipBit(i01, targ2);
@@ -581,6 +580,7 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
 
     // prepare a mask which yields ctrls in specified state, and targs in all-zero
     auto sortedQubits   = util_getSorted(ctrls, targs);
+    auto qubitIndMask   = util_getBitMask(sortedQubits);
     auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, targs, util_getConstantList(0,targs.size()));
 
     // attempt to use compile-time variables to automatically optimise/unroll dependent loops
@@ -597,12 +597,11 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
         // create a private cache for every thread (might be compile-time sized, and in heap or stack)
         vector<cpu_qcomp> cache(numTargAmps);
 
-        qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);
         #pragma omp for
         for (qindex n=0; n<numIts; n++) {
 
             // i0 = nth local index where ctrls are active and targs are all zero
-            qindex i0 = insertBitsWithMaskedValuesAndPosMask(n, qubitStateMask, qubitsPosMask, sortedQubits.data(), numQubitBits);
+            qindex i0 = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitIndMask, qubitStateMask);
 
             // collect and cache all to-be-modified amps (loop might be unrolled)
             for (qindex j=0; j<numTargAmps; j++) {
@@ -674,17 +673,17 @@ void cpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, Con
     qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
 
     auto sortedCtrls   = util_getSorted(ctrls);
+    auto ctrlIndMask   = util_getBitMask(ctrls);
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
     // use template params to compile-time unroll loops in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
-    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // j = nth local index where ctrls are active (in the specified states)
-        qindex j = insertBitsWithMaskedValuesAndPosMask(n, ctrlStateMask, ctrlsPosMask, sortedCtrls.data(), numCtrlBits);
+        qindex j = insertBitsWithMaskedValues(n, sortedCtrls.data(), numCtrlBits, ctrlIndMask, ctrlStateMask);
 
         // i = global index corresponding to j
         qindex i = concatenateBits(qureg.rank, j, qureg.logNumAmpsPerNode);
@@ -717,17 +716,17 @@ void cpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, Con
     qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
 
     auto sortedCtrls   = util_getSorted(ctrls);
+    auto ctrlIndMask   = util_getBitMask(ctrls);
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
     // use template params to compile-time unroll loops in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
-    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // j = nth local index where ctrls are active (in the specified states)
-        qindex j = insertBitsWithMaskedValuesAndPosMask(n, ctrlStateMask, ctrlsPosMask, sortedCtrls.data(), numCtrlBits);
+        qindex j = insertBitsWithMaskedValues(n, sortedCtrls.data(), numCtrlBits, ctrlIndMask, ctrlStateMask);
 
         // i = global index corresponding to j
         qindex i = concatenateBits(qureg.rank, j, qureg.logNumAmpsPerNode);
@@ -764,28 +763,27 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, Con
     qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
 
     auto sortedCtrls   = util_getSorted(ctrls);
+    auto ctrlIndMask   = util_getBitMask(ctrls);
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
+    auto targIndMask   = util_getBitMask(targs);
+    
+    const bool areTargsSorted = util_isSorted(targs);
 
     // use template params to compile-time unroll loops in insertBits() and getValueOfBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
     SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, targs.size());
 
-    // prepare masks to possibly use bitwise intrinsics
-    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);
-    qindex targsPosMask = getBitMask(targs.data(), numTargBits);
-    const bool areTargsSorted = util_isSorted(targs);
-
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // j = nth local index where ctrls are active (in the specified states)
-        qindex j = insertBitsWithMaskedValuesAndPosMask(n, ctrlStateMask, ctrlsPosMask, sortedCtrls.data(), numCtrlBits);
+        qindex j = insertBitsWithMaskedValues(n, sortedCtrls.data(), numCtrlBits, ctrlIndMask, ctrlStateMask);
 
         // i = global index corresponding to j
         qindex i = concatenateBits(qureg.rank, j, qureg.logNumAmpsPerNode);
 
         // t = value of targeted bits, which may be in the prefix substate
-        qindex t = getValueOfPossiblySortedBits(i, areTargsSorted, targsPosMask, targs.data(), numTargBits);
+        qindex t = getValueOfPossiblySortedBits(i, areTargsSorted, targIndMask, targs.data(), numTargBits);
         cpu_qcomp elem = elems[t];
 
         // decide whether to power and conj at compile-time, to avoid branching in hot-loop.
@@ -997,6 +995,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
 
     // prepare a mask which yields ctrls in specified state, and X-Y targs in all-zero
     auto sortedQubits   = util_getSorted(ctrls, sortedTargsXY);
+    auto qubitIndMask   = util_getBitMask(sortedQubits);
     auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, sortedTargsXY, util_getConstantList(0, sortedTargsXY.size()));
 
     // prepare masks for extracting Pauli parities
@@ -1029,12 +1028,11 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
     if (!qureg.isMultithreaded || numOuterIts >= cpu_getAvailableNumThreads()) {
     
         // parallel
-        qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);
         #pragma omp parallel for if(qureg.isMultithreaded)
         for (qindex n=0; n<numOuterIts; n++) {
 
             // i0 = nth local index where ctrls are active and targs are all zero
-            qindex i0 = insertBitsWithMaskedValuesAndPosMask(n, qubitStateMask, qubitsPosMask, sortedQubits.data(), numQubitBits);
+            qindex i0 = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitIndMask, qubitStateMask);
 
             // serial
             for (qindex v=0; v<numInnerIts; v++)
@@ -1045,11 +1043,10 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
     } else {
 
         // serial
-        qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);
         for (qindex n=0; n<numOuterIts; n++) {
 
             // i0 = nth local index where ctrls are active and targs are all zero
-            qindex i0 = insertBitsWithMaskedValuesAndPosMask(n, qubitStateMask, qubitsPosMask, sortedQubits.data(), numQubitBits);
+            qindex i0 = insertBitsWithMaskedValues(n, sortedQubits.data(), numQubitBits, qubitIndMask, qubitStateMask);
 
             // parallel
             #pragma omp parallel for
@@ -1084,6 +1081,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subB(
     qindex offset = getBufferRecvInd();
 
     auto sortedCtrls   = util_getSorted(ctrls);
+    auto ctrlIndMask   = util_getBitMask(ctrls);
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
     auto maskXY = util_getBitMask(util_getConcatenated(x, y));
     auto maskYZ = util_getBitMask(util_getConcatenated(y, z));
@@ -1091,12 +1089,11 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subB(
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
-    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = nth local index where ctrl bits are in specified states
-        qindex i = insertBitsWithMaskedValuesAndPosMask(n, ctrlStateMask, ctrlsPosMask, sortedCtrls.data(), numCtrlBits);
+        qindex i = insertBitsWithMaskedValues(n, sortedCtrls.data(), numCtrlBits, ctrlIndMask, ctrlStateMask);
 
         // j = buffer index of amp to be mixed with i
         qindex j = flipBits(n, bufferMaskXY) + offset;
@@ -1136,21 +1133,21 @@ void cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     qindex numIts = qureg.numAmpsPerNode / powerOf2(ctrls.size());
 
     auto sortedCtrls   = util_getSorted(ctrls);
+    auto ctrlIndMask   = util_getBitMask(ctrls);
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
-    auto targMask      = util_getBitMask(targs);
+    auto targIndMask   = util_getBitMask(targs);
 
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
-    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = nth local index where ctrl bits are in specified states
-        qindex i = insertBitsWithMaskedValuesAndPosMask(n, ctrlStateMask, ctrlsPosMask, sortedCtrls.data(), numCtrlBits);
+        qindex i = insertBitsWithMaskedValues(n, sortedCtrls.data(), numCtrlBits, ctrlIndMask, ctrlStateMask);
 
         // apply phase to amp depending on parity of targets
-        int p = getBitMaskParity(i & targMask);
+        int p = getBitMaskParity(i & targIndMask);
         amps[i] *= facs[p];
     }
 }
@@ -2024,18 +2021,18 @@ qreal cpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 qubi
     // (>=1 since all qubits are in suffix, so qubits.size() <= suffix size) 
     qindex numIts = qureg.numAmpsPerNode / powerOf2(qubits.size());
 
-    auto sortedQubits = util_getSorted(qubits); // all in suffix
+    auto sortedQubits   = util_getSorted(qubits); // all in suffix
+    auto qubitIndMask   = util_getBitMask(qubits);
     auto qubitStateMask = util_getBitMask(qubits, outcomes);
 
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
 
-    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numBits);
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = nth local index where qubits are in the specified outcome state
-        qindex i = insertBitsWithMaskedValuesAndPosMask(n, qubitStateMask, qubitsPosMask, sortedQubits.data(), numBits);
+        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitIndMask, qubitStateMask);
 
         prob += norm(amps[i]);
     }
@@ -2062,18 +2059,18 @@ qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 qubi
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
     qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
 
-    auto sortedQubits = util_getSorted(qubits); // all in suffix, with corresponding bra's all in suffix
+    auto sortedQubits   = util_getSorted(qubits); // all in suffix, with corresponding bra's all in suffix
+    auto qubitIndMask   = util_getBitMask(qubits);
     auto qubitStateMask = util_getBitMask(qubits, outcomes);
 
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
 
-    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numBits);
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         // i = local statevector index of nth local basis state with a contributing diagonal
-        qindex i = insertBitsWithMaskedValuesAndPosMask(n, qubitStateMask, qubitsPosMask, sortedQubits.data(), numBits);
+        qindex i = insertBitsWithMaskedValues(n, sortedQubits.data(), numBits, qubitIndMask, qubitStateMask);
 
         // j = local, flat, density-matrix index of diagonal amp corresponding to state i
         qindex j = fast_getQuregLocalIndexOfDiagonalAmp(i, firstDiagInd, numAmpsPerCol);
