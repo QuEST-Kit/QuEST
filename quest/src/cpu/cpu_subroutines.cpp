@@ -2096,22 +2096,22 @@ void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     // every amp contributes to a statevector prob
     qindex numIts = qureg.numAmpsPerNode;
 
+    // prepare masks (optionally) used by bitwise functions
+    qindex qubitIndMask = util_getBitMask(qubits);
+    const bool areQubitsSorted = util_isSorted(qubits);
+
     // use template param to compile-time unroll loop in getValueOfBits()
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
     qindex numOutcomes = powerOf2(numBits);
 
     // decide whether to parallelise below amp-clearing, since outProbs ~ dim of a qureg
     bool parallelise = numBits > MIN_NUM_LOCAL_QUBITS_FOR_AUTO_QUREG_MULTITHREADING;
-    (void)parallelise; // suppress unused warning when not-compiling openmp)
+    (void) parallelise; // suppress unused warning when not-compiling openmp
 
     // clear amps (may be compile-time unrolled, or parallelised)
     #pragma omp parallel for if(parallelise)
     for (int i=0; i<numOutcomes; i++)
         outProbs[i] = 0;
-    
-    // prepare masks to possibly use bitwise intrinsics
-    qindex qubitPosMask = getBitMask(qubits.data(), numBits);
-    const bool areQubitsSorted = util_isSorted(qubits);
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -2122,7 +2122,7 @@ void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
         qindex i = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
 
         // j = outcome index corresponding to prob
-        qindex j = getValueOfPossiblySortedBits(i, areQubitsSorted, qubitPosMask, qubits.data(), numBits);
+        qindex j = getValueOfPossiblySortedBits(i, areQubitsSorted, qubitIndMask, qubits.data(), numBits);
 
         #pragma omp atomic
         outProbs[j] += prob;
@@ -2143,22 +2143,22 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
     qindex firstDiagInd = util_getLocalIndexOfFirstDiagonalAmp(qureg);
 
+    // prepare masks (optionally) used by bitwise functions
+    qindex qubitIndMask = util_getBitMask(qubits);
+    const bool areQubitsSorted = util_isSorted(qubits);
+
     // use template param to compile-time unroll loop in getValueOfBits()
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
     qindex numOutcomes = powerOf2(numBits);
 
     // decide whether to parallelise below amp-clearing, since outProbs ~ dim of a qureg
     bool parallelise = numBits > MIN_NUM_LOCAL_QUBITS_FOR_AUTO_QUREG_MULTITHREADING;
-    (void)parallelise; // suppress unused warning when not-compiling openmp)
+    (void) parallelise; // suppress unused warning when not-compiling openmp
     
     // clear amps; be compile-time unrolled, and/or parallelised (independent of qureg)
     #pragma omp parallel for if(parallelise)
     for (int i=0; i<numOutcomes; i++)
         outProbs[i] = 0;
-
-    // prepare masks to possibly use bitwise intrinsics
-    qindex qubitPosMask = getBitMask(qubits.data(), numBits);
-    const bool areQubitsSorted = util_isSorted(qubits);
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -2171,7 +2171,7 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
         qindex j = concatenateBits(qureg.rank, i, qureg.logNumAmpsPerNode);
 
         // k = outcome index corresponding to basis state j
-        qindex k = getValueOfPossiblySortedBits(j, areQubitsSorted, qubitPosMask, qubits.data(), numBits);
+        qindex k = getValueOfPossiblySortedBits(j, areQubitsSorted, qubitIndMask, qubits.data(), numBits);
 
         #pragma omp atomic
         outProbs[k] += prob;
