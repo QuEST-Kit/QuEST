@@ -137,9 +137,21 @@ jobs:
           - cuquantum: ON
             os: macos-26-intel
 
-          # cannot use BMI2 on non-intel MacOS
+          # cannot use BMI2 on non-Intel MacOS
           - bmi2: ON
             os: macos-latest
+
+          # use ONLY BMI2 on Intel MacOS, just to shrink matrix (Github imposes 256 max)
+          - bmi2: OFF
+            os: macos-15-intel
+          - bmi2: OFF
+            os: macos-26-intel
+
+          # do not combine BMI2 with MPI or ADIOS2 (they don't interact), just to shrink matrix
+          - bmi2: ON
+            mpi: ON
+          - bmi2: ON
+            adios2: ON
 
           # don't enumerate MPI libraries when not using MPI
           - mpi: OFF
