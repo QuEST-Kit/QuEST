@@ -338,7 +338,7 @@ if (QUEST_ENABLE_BMI2)
 
   # error if probe failed
   if (NOT _quest_cxx_compiles_bmi2)
-    message(FATAL_ERROR"QUEST_ENABLE_BMI2 was ${QUEST_ENABLE_BMI2} but BMI2 intrinsics were not recognised by the compiler. ")
+    message(FATAL_ERROR "QUEST_ENABLE_BMI2 was ${QUEST_ENABLE_BMI2} but BMI2 intrinsics were not recognised by the compiler. ")
   endif()
 
   # var _quest_cxx_recognises_bmi2 used later during BMI2 management 
