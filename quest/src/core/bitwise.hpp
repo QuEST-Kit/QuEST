@@ -5,6 +5,7 @@
  * @author Tyson Jones
  * @author Erich Essmann (improved OS agnosticism)
  * @author James Richings (patched setBit)
+ * @author PoJen Wang (added BMI2 intrinsics)
  */
 
 #ifndef BITWISE_HPP
