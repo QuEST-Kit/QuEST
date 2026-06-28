@@ -477,7 +477,7 @@ else()
   set(WARNING_FLAG -Wall)
 endif()
 
-target_compile_options(QuEST
+target_compile_options(QuEST 
   PRIVATE
   $<$<COMPILE_LANGUAGE:CXX>:${WARNING_FLAG}>
   $<$<COMPILE_LANGUAGE:C>:${WARNING_FLAG}>
