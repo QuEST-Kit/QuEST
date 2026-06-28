@@ -64,7 +64,8 @@ jobs:
       # (causes CUDA and MPI installation to fail on Windows)
       max-parallel: 8
 
-      # compile QuEST with all combinations of below flags (Intel runners for BMI2 instrinsics)
+      # compile QuEST with all combinations of below flags (Intel runners for BMI2 instrinsics);
+      # incredibly, this (with exclusions below) achieves 256 combos, which is the Github limit!
       matrix:
         os: [windows-2022, ubuntu-latest, macos-latest, macos-15-intel, macos-26-intel]
         precision: [1, 2, 4]

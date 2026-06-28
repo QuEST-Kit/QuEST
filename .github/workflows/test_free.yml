@@ -50,11 +50,15 @@ jobs:
         precision: [1, 2, 4]
         bmi2:      [ON, OFF]
 
-        # MSVC cannot compile deprecated v3 tests
         exclude:
+          # MSVC cannot compile deprecated v3 tests
           - os: windows-latest
             version: 3
-            
+
+          # cannot use BMI2 on non-Intel MacOS
+          - bmi2: ON
+            os: macos-latest
+  
     # constants
     env:
       build_dir: "build"
