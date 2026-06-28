@@ -237,7 +237,7 @@ qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, ConstList64 qubitInds, Const
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubitInds.size());
 
-    qindex qubitsPosMask = getBitMask(sortedQubitInds.data(), numBits);  // loop-invariant: hoisted out of the per-amplitude loop
+    qindex qubitsPosMask = getBitMask(sortedQubitInds.data(), numBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -310,7 +310,7 @@ void cpu_statevec_anyCtrlSwap_subA(Qureg qureg, ConstList64 ctrls, ConstList64 c
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
     int numQubitBits = numCtrlBits + 2;
 
-    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);  // loop-invariant: hoisted out of the per-amplitude loop
+    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -344,7 +344,7 @@ void cpu_statevec_anyCtrlSwap_subB(Qureg qureg, ConstList64 ctrls, ConstList64 c
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
-    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);  // loop-invariant: hoisted out of the per-amplitude loop
+    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -382,7 +382,7 @@ void cpu_statevec_anyCtrlSwap_subC(Qureg qureg, ConstList64 ctrls, ConstList64 c
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
     int numQubitBits = numCtrlBits + 1;
 
-    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);  // loop-invariant: hoisted out of the per-amplitude loop
+    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -428,7 +428,7 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, ConstList64 ctrls, C
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
     int numQubitBits = numCtrlBits + 1;
 
-    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);  // loop-invariant: hoisted out of the per-amplitude loop
+    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -470,7 +470,7 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, ConstList64 ctrls, C
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
-    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);  // loop-invariant: hoisted out of the per-amplitude loop
+    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -514,7 +514,7 @@ void cpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
     int numQubitBits = numCtrlBits + 2;
 
-    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);  // loop-invariant: hoisted out of the per-amplitude loop
+    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -597,7 +597,7 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
         // create a private cache for every thread (might be compile-time sized, and in heap or stack)
         vector<cpu_qcomp> cache(numTargAmps);
 
-        qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);  // loop-invariant: hoisted out of the per-amplitude loop
+        qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);
         #pragma omp for
         for (qindex n=0; n<numIts; n++) {
 
@@ -679,7 +679,7 @@ void cpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, Con
     // use template params to compile-time unroll loops in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
-    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);  // loop-invariant: hoisted out of the per-amplitude loop
+    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -722,7 +722,7 @@ void cpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, Con
     // use template params to compile-time unroll loops in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
-    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);  // loop-invariant: hoisted out of the per-amplitude loop
+    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -770,9 +770,10 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, Con
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
     SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, targs.size());
 
-    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);  // loop-invariant: hoisted out of the per-amplitude loop
-    qindex targsPosMask = getBitMask(targs.data(), numTargBits);  // loop-invariant: hoisted out of the per-amplitude loop
     bool targsSorted = isStrictlyIncreasing(targs.data(), numTargBits);  // likewise loop-invariant (order checked once per gate)
+    // prepare masks to possibly use bitwise intrinsics
+    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);
+    qindex targsPosMask = getBitMask(targs.data(), numTargBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -1027,7 +1028,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
     if (!qureg.isMultithreaded || numOuterIts >= cpu_getAvailableNumThreads()) {
     
         // parallel
-        qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);  // loop-invariant: hoisted out of the per-amplitude loop
+        qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);
         #pragma omp parallel for if(qureg.isMultithreaded)
         for (qindex n=0; n<numOuterIts; n++) {
 
@@ -1043,7 +1044,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
     } else {
 
         // serial
-        qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);  // loop-invariant: hoisted out of the per-amplitude loop
+        qindex qubitsPosMask = getBitMask(sortedQubits.data(), numQubitBits);
         for (qindex n=0; n<numOuterIts; n++) {
 
             // i0 = nth local index where ctrls are active and targs are all zero
@@ -1089,7 +1090,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subB(
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
-    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);  // loop-invariant: hoisted out of the per-amplitude loop
+    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -1140,7 +1141,7 @@ void cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
 
-    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);  // loop-invariant: hoisted out of the per-amplitude loop
+    qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -2028,7 +2029,7 @@ qreal cpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 qubi
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
 
-    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numBits);  // loop-invariant: hoisted out of the per-amplitude loop
+    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numBits);
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -2066,7 +2067,7 @@ qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 qubi
     // use template param to compile-time unroll loop in insertBits()
     SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
 
-    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numBits);  // loop-invariant: hoisted out of the per-amplitude loop
+    qindex qubitsPosMask = getBitMask(sortedQubits.data(), numBits);
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -2107,8 +2108,10 @@ void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     for (int i=0; i<numOutcomes; i++)
         outProbs[i] = 0;
     
-    qindex qubitsPosMask = getBitMask(qubits.data(), numBits);  // loop-invariant: hoisted out of the per-amplitude loop
     bool qubitsSorted = isStrictlyIncreasing(qubits.data(), numBits);  // likewise loop-invariant (order checked once per gate)
+    // prepare masks to possibly use bitwise intrinsics
+    qindex qubitPosMask = getBitMask(qubits.data(), numBits);
+
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -2152,8 +2155,10 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     for (int i=0; i<numOutcomes; i++)
         outProbs[i] = 0;
 
-    qindex qubitsPosMask = getBitMask(qubits.data(), numBits);  // loop-invariant: hoisted out of the per-amplitude loop
-    bool qubitsSorted = isStrictlyIncreasing(qubits.data(), numBits);  // likewise loop-invariant (order checked once per gate)
+    // prepare masks to possibly use bitwise intrinsics
+    qindex qubitPosMask = getBitMask(qubits.data(), numBits);
+    const bool areQubitsSorted = util_isSorted(qubits);
+
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
