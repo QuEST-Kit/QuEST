@@ -785,7 +785,7 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, Con
         qindex i = concatenateBits(qureg.rank, j, qureg.logNumAmpsPerNode);
 
         // t = value of targeted bits, which may be in the prefix substate
-        qindex t = (targsSorted ? getValueOfBitsFromSortedPosMask(i, targsPosMask, targs.data(), numTargBits) : getValueOfBits(i, targs.data(), numTargBits));
+        qindex t = getValueOfPossiblySortedBits(i, areTargsSorted, targsPosMask, targs.data(), numTargBits);
         cpu_qcomp elem = elems[t];
 
         // decide whether to power and conj at compile-time, to avoid branching in hot-loop.
@@ -2122,7 +2122,7 @@ void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
         qindex i = concatenateBits(qureg.rank, n, qureg.logNumAmpsPerNode);
 
         // j = outcome index corresponding to prob
-        qindex j = (qubitsSorted ? getValueOfBitsFromSortedPosMask(i, qubitsPosMask, qubits.data(), numBits) : getValueOfBits(i, qubits.data(), numBits));
+        qindex j = getValueOfPossiblySortedBits(i, areQubitsSorted, qubitPosMask, qubits.data(), numBits);
 
         #pragma omp atomic
         outProbs[j] += prob;
@@ -2171,7 +2171,7 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
         qindex j = concatenateBits(qureg.rank, i, qureg.logNumAmpsPerNode);
 
         // k = outcome index corresponding to basis state j
-        qindex k = (qubitsSorted ? getValueOfBitsFromSortedPosMask(j, qubitsPosMask, qubits.data(), numBits) : getValueOfBits(j, qubits.data(), numBits));
+        qindex k = getValueOfPossiblySortedBits(j, areQubitsSorted, qubitPosMask, qubits.data(), numBits);
 
         #pragma omp atomic
         outProbs[k] += prob;

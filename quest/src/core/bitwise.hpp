@@ -192,7 +192,10 @@ INLINE qindex setBits(qindex number, const int* bitIndices, int numIndices, qind
 
 INLINE qindex getValueOfBits(qindex number, const int* bitIndices, int numIndices) {
 
-    // bits are arbitrarily ordered, which affects value
+    // indices are arbitrarily ordered, which affects value; if the indices are
+    // known to be sorted, callers should instead use getValueOfPossiblySortedBits()
+    // which may (if available) use an optimised intrinsic, eliminating the below
+    // loop (though which will anyway be unrolled when numIndices is compile-time)
     qindex value = 0;
 
     for (int i=0; i<numIndices; i++)
@@ -233,17 +236,6 @@ INLINE qindex insertBitsWithMaskedValuesAndPosMask(qindex number, qindex valueMa
     return valueMask | (qindex) _pdep_u64((unsigned long long) number, ~ (unsigned long long) posMask);
 #else
     return valueMask | insertBits(number, bitInds, numBits, 0);
-#endif
-}
-
-INLINE qindex getValueOfBitsFromSortedPosMask(qindex number, [[maybe_unused]] qindex posMask, [[maybe_unused]] const int* bitInds, [[maybe_unused]] int numBits) {
-    // PEXT emits the gathered bits in ascending position order, so this matches getValueOfBits
-    // only when bitInds are strictly increasing. The caller checks that once per gate (see
-    // isStrictlyIncreasing) and supplies posMask = getBitMask(bitInds, numBits).
-#ifdef QUEST_BITWISE_USE_BMI2
-    return (qindex) _pext_u64((unsigned long long) number, (unsigned long long) posMask);
-#else
-    return getValueOfBits(number, bitInds, numBits);
 #endif
 }
 
@@ -290,6 +282,45 @@ INLINE qindex flipTwoBits(qindex number, int i1, int i0) {
     return number;
 }
 
+
+
+/* 
+ * INTRINSIC-BASED PERFORMANCE-CRITICAL FUNCTIONS
+ *
+ * which are alternatives to the above functions, and which use 
+ * intrinsics for acceleration with specific compilers and on
+ * specific CPUs. When the intrinsic is not available, these
+ * fallback to the above looped functions.
+ */
+
+
+INLINE qindex getValueOfPossiblySortedBits(qindex number, const bool isSorted, qindex sortedIndsMask, const int* unsortedInds, int numInds) {
+
+    // must not expose BMI2 to GPU backend
+#if QUEST_COMPILE_BMI2 && !defined(__NVCC__) && !defined(__HIP__)
+
+    // The BMI2 intrinsic is only usable when inds are sorted (such that the
+    // mask is usable). When isSorted is compile-time known, the below branch
+    // is eliminated. Otherwise, isSorted is fixed across the caller's hot 
+    // loops, and a smart compiler will duplicate the loop and move the branch
+    // outside of it. Otherwise, a sensible CPU's branch prediction will
+    // eliminate the branch during big hot loops. Otherwise, a very stoopid 
+    // compiler and CPU combo will slow small-Qureg simulation via this branch!
+    
+    return (isSorted)?
+        _pext_u64(number, sortedIndsMask):
+        getValueOfBits(number, unsortedInds, numInds);
+
+#else
+
+    // suppress unused-var warning
+    (void) isSorted;
+    (void) sortedIndsMask;
+
+    return getValueOfBits(number, unsortedInds, numInds);
+
+#endif 
+}
 
 
 /* 
