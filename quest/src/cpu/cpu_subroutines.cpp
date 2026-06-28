@@ -770,10 +770,11 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, Con
     SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
     SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, targs.size());
 
-    bool targsSorted = isStrictlyIncreasing(targs.data(), numTargBits);  // likewise loop-invariant (order checked once per gate)
     // prepare masks to possibly use bitwise intrinsics
     qindex ctrlsPosMask = getBitMask(sortedCtrls.data(), numCtrlBits);
     qindex targsPosMask = getBitMask(targs.data(), numTargBits);
+    const bool areTargsSorted = util_isSorted(targs);
+
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -2108,9 +2109,9 @@ void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     for (int i=0; i<numOutcomes; i++)
         outProbs[i] = 0;
     
-    bool qubitsSorted = isStrictlyIncreasing(qubits.data(), numBits);  // likewise loop-invariant (order checked once per gate)
     // prepare masks to possibly use bitwise intrinsics
     qindex qubitPosMask = getBitMask(qubits.data(), numBits);
+    const bool areQubitsSorted = util_isSorted(qubits);
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {

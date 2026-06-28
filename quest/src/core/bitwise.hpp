@@ -252,16 +252,6 @@ INLINE qindex getValueOfBitsFromSortedPosMask(qindex number, [[maybe_unused]] qi
 #endif
 }
 
-// Checked once per gate (loop-invariant), never per amplitude: getValueOfBits is order-sensitive,
-// so the PEXT path above is valid only when bitInds are strictly increasing.
-INLINE bool isStrictlyIncreasing(const int* bitInds, int numBits) {
-    for (int i=1; i<numBits; i++)
-        if (bitInds[i-1] >= bitInds[i])
-            return false;
-    return true;
-}
-
-
 INLINE int getTwoBits(qindex number, int highInd, int lowInd) {
 
     int b1 = getBit(number, lowInd);

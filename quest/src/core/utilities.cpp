@@ -269,6 +269,17 @@ List64 util_getList64OrAllOnes(const int* elemsOrNullptr, size_t length) {
     return out;
 }
 
+bool util_isSorted(ConstList64 list) {
+
+    // permits adjacent duplicates
+
+    for (size_t i=1; i<list.size(); i++)
+        if (list[i-1] > list[i])
+            return false;
+
+    return true;
+}
+
 
 
 /*

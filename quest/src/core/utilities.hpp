@@ -80,6 +80,8 @@ qindex util_getBitMask(ConstList64 ctrls, ConstList64 ctrlStates, std::initializ
 
 List64 util_getList64OrAllOnes(const int* elemsOrNullptr, size_t length);
 
+bool util_isSorted(ConstList64 list);
+
 
 
 /*
