@@ -24,9 +24,34 @@
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 
+#include "quest/src/core/inliner.hpp"
 #include "quest/src/core/lists.hpp"
 
 #include <vector>
+
+
+/*
+ * COMPILE-TIME VARIABLES
+ *
+ * used by cpu_subroutines.cpp and gpu_subroutines to attemptedly set
+ * a variable to a value known at compile-time (like a templated function's
+ * parameter), enabling compile-time optimisations of subsequent code which 
+ * uses the variable such a loop unrolling. If the value is not known at
+ * compile-time (CompileTimeValue==-1 which indicates a templated function has
+ * been called with more qubits than it has been explicitly instantiated and
+ * optimised for), the runtime value is used, precluding optimisations.
+ * 
+ * TODO: this trick is likely not presently working in (stoopid) MSVC compilers!
+ */
+
+template<int CompileTimeValue>
+INLINE constexpr int accel_tryUseCompileTimeValue(int runtimeValue) {
+
+    if constexpr (CompileTimeValue == -1)
+        return runtimeValue;
+    else
+        return CompileTimeValue;
+}
 
 
 /*
@@ -122,27 +147,6 @@
     template returntype funcname <4, numtargs, conj, haspower>  args; \
     template returntype funcname <5, numtargs, conj, haspower>  args; \
     template returntype funcname <-1,numtargs, conj, haspower>  args;
-
-
-
-/*
- * COMPILE-TIME VARIABLE MACROS
- *
- * used by cpu_subroutines.cpp and gpu_subroutines to attemptedly set
- * a variable to a value known at compile-time (like a templated function's
- * parameter), enabling compile-time optimisations of subsequent code which 
- * uses the variable such a loop unrolling. If the value is not known at
- * compile-time (compileval==-1 which indicates a templated function has
- * been called with more qubits than it has been explicitly instantiated and
- * optimised for), the runtime value is used, precluding optimisations.
- */
-
-#define SET_VAR_AT_COMPILE_TIME(type, name, compileval, runtimeval) \
-    type name; \
-    if constexpr (compileval == -1) \
-        name = runtimeval; \
-    else \
-        name = compileval;
 
 
 /*

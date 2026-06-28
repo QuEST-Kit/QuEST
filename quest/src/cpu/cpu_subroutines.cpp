@@ -237,7 +237,7 @@ qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, ConstList64 qubitInds, Const
     auto qubitStateMask  = util_getBitMask(qubitInds, qubitStates);
     
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubitInds.size());
+    int numBits = accel_tryUseCompileTimeValue<NumQubits>(qubitInds.size());
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -309,8 +309,7 @@ void cpu_statevec_anyCtrlSwap_subA(Qureg qureg, ConstList64 ctrls, ConstList64 c
     auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ2, targ1}, {0, 1});
     
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
-    int numQubitBits = numCtrlBits + 2;
+    int numQubitBits = 2 + accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -344,7 +343,7 @@ void cpu_statevec_anyCtrlSwap_subB(Qureg qureg, ConstList64 ctrls, ConstList64 c
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
     
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    int numCtrlBits = accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -381,8 +380,7 @@ void cpu_statevec_anyCtrlSwap_subC(Qureg qureg, ConstList64 ctrls, ConstList64 c
     auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ}, {targState});
     
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
-    int numQubitBits = numCtrlBits + 1;
+    int numQubitBits = 1 + accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -427,8 +425,7 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, ConstList64 ctrls, C
     auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ}, {0});
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
-    int numQubitBits = numCtrlBits + 1;
+    int numQubitBits = 1 + accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -469,7 +466,7 @@ void cpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, ConstList64 ctrls, C
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    int numCtrlBits = accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -512,8 +509,7 @@ void cpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
     auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, {targ1, targ2}, {0, 0});
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
-    int numQubitBits = numCtrlBits + 2;
+    int numQubitBits = 2 + accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -585,12 +581,10 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
     auto qubitStateMask = util_getBitMask(ctrls, ctrlStates, targs, util_getConstantList(0,targs.size()));
 
     // attempt to use compile-time variables to automatically optimise/unroll dependent loops
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
-    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, targs.size());
-
-    // compiler will infer these at compile-time if possible
+    int numCtrlBits  = accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
+    int numTargBits  = accel_tryUseCompileTimeValue<NumTargs>(targs.size());
     int numQubitBits = numCtrlBits + numTargBits;
-    qindex numTargAmps = powerOf2(numTargBits);
+    auto numTargAmps = powerOf2(numTargBits);
 
     // create an explicit parallel region to avoid re-initialisation of vectors every iteration
     #pragma omp parallel if(qureg.isMultithreaded)
@@ -678,7 +672,7 @@ void cpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, Con
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
     // use template params to compile-time unroll loops in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    int numCtrlBits = accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -721,7 +715,7 @@ void cpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, Con
     auto ctrlStateMask = util_getBitMask(ctrls, ctrlStates);
 
     // use template params to compile-time unroll loops in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    int numCtrlBits = accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -771,8 +765,8 @@ void cpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, Con
     const bool areTargsSorted = util_isSorted(targs);
 
     // use template params to compile-time unroll loops in insertBits() and getValueOfBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
-    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, targs.size());
+    int numCtrlBits = accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
+    int numTargBits = accel_tryUseCompileTimeValue<NumTargs>(targs.size());
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -957,7 +951,7 @@ INLINE void applyPauliUponAmpPair(
     // also being compiled (through the tests)... Hours of my life forever lost!
 
     // remind compiler when NumTargs is compile-time to unroll loop in setBits()
-    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, numXY);
+    int numTargBits = accel_tryUseCompileTimeValue<NumTargs>(numXY);
 
     // iA = nth local index where targs have value m, iB = (last - nth) such index
     qindex iA = setBits(i0, indXY, numTargBits, v);
@@ -1004,12 +998,12 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
     auto maskYZ = util_getBitMask(util_getConcatenated(y, z));
 
     // use template params to compile-time unroll loops in insertBits() and inner-loop below
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
-    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, sortedTargsXY.size());
+    int numCtrlBits = accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
+    int numTargBits = accel_tryUseCompileTimeValue<NumTargs>(sortedTargsXY.size());
     int numQubitBits = numCtrlBits + numTargBits;
 
     // each outer iteration handles all assignments of the target qubits, and each ctrl halves the outer iterations
-    qindex numOuterIts = qureg.numAmpsPerNode / powerOf2(numCtrlBits + numTargBits);
+    qindex numOuterIts = qureg.numAmpsPerNode / powerOf2(numQubitBits);
 
     // each inner iteration modifies 2 amplitudes (may be compile-time sized) 
     qindex numInnerIts = powerOf2(numTargBits) / 2; // divides evenly
@@ -1088,7 +1082,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subB(
     auto maskYZ = util_getBitMask(util_getConcatenated(y, z));
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    int numCtrlBits = accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -1139,7 +1133,7 @@ void cpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     auto targIndMask   = util_getBitMask(targs);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    int numCtrlBits = accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
 
     #pragma omp parallel for if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -1173,7 +1167,7 @@ void cpu_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs
     qindex numIts = outQureg.numAmpsPerNode;
 
     // use template param to compile-time unroll inner loop below
-    SET_VAR_AT_COMPILE_TIME(int, numQuregs, NumQuregs, inQuregs.size());
+    int numQuregs = accel_tryUseCompileTimeValue<NumQuregs>(inQuregs.size());
 
     #pragma omp parallel for if(outQureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -1888,10 +1882,10 @@ void cpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, ConstList64 ta
     auto allTargsSorted = util_getSorted(targs, pairTargs);
 
     // use template param to compile-time unroll below loops
-    SET_VAR_AT_COMPILE_TIME(int, numTargPairs, NumTargs, targs.size());
+    int numTargPairs = accel_tryUseCompileTimeValue<NumTargs>(targs.size());
     
     // may be inferred at compile-time
-    int numAllTargs = 2*numTargPairs;
+    int numAllTargs = 2 * numTargPairs;
     qindex numInnerIts = powerOf2(numTargPairs);
 
     /// @todo
@@ -2027,7 +2021,7 @@ qreal cpu_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 qubi
     auto qubitStateMask = util_getBitMask(qubits, outcomes);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
+    int numBits = accel_tryUseCompileTimeValue<NumQubits>(qubits.size());
 
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -2065,7 +2059,7 @@ qreal cpu_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 qubi
     auto qubitStateMask = util_getBitMask(qubits, outcomes);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
+    int numBits = accel_tryUseCompileTimeValue<NumQubits>(qubits.size());
 
     #pragma omp parallel for reduction(+:prob) if(qureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -2099,7 +2093,7 @@ void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     const bool areQubitsSorted = util_isSorted(qubits);
 
     // use template param to compile-time unroll loop in getValueOfBits()
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
+    int numBits = accel_tryUseCompileTimeValue<NumQubits>(qubits.size());
     qindex numOutcomes = powerOf2(numBits);
 
     // decide whether to parallelise below amp-clearing, since outProbs ~ dim of a qureg
@@ -2146,7 +2140,7 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     const bool areQubitsSorted = util_isSorted(qubits);
 
     // use template param to compile-time unroll loop in getValueOfBits()
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
+    int numBits = accel_tryUseCompileTimeValue<NumQubits>(qubits.size());
     qindex numOutcomes = powerOf2(numBits);
 
     // decide whether to parallelise below amp-clearing, since outProbs ~ dim of a qureg

@@ -24,6 +24,7 @@
 
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/fastmath.hpp"
+#include "quest/src/core/accelerator.hpp"
 #include "quest/src/gpu/gpu_qcomp.cuh"
 
 #if ! QUEST_COMPILE_CUDA
@@ -100,7 +101,7 @@ __forceinline__ __device__ int cudaGetBitMaskParity(qindex mask) {
  */
 
 
-template <int NumCtrls>
+template <int NumQubits>
 __global__ void kernel_statevec_packAmpsIntoBuffer(
     gpu_qcomp* amps, gpu_qcomp* buffer, qindex numThreads, 
     _GRID_CONST_OPT const List64 qubits, qindex qubitStateMask
@@ -108,7 +109,7 @@ __global__ void kernel_statevec_packAmpsIntoBuffer(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumCtrls, qubits.size());
+    int numBits = accel_tryUseCompileTimeValue<NumQubits>(qubits.size());
 
     // i = nth local index where qubits are active
     qindex i = insertBitsWithMaskedValues(n, qubits.data(), numBits, qubitStateMask);
@@ -147,12 +148,10 @@ __global__ void kernel_statevec_anyCtrlSwap_subA(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // beware ctrlsAndTargs contains the two targets
-    constexpr int numTargs = 2;
-
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.size() - numTargs);
-    int numQubitBits = numCtrlBits + numTargs;
+    int numTargs = 2;
+    int numCtrls = ctrlsAndTargs.size() - numTargs;
+    int numQubitBits = numTargs + accel_tryUseCompileTimeValue<NumCtrls>(numCtrls);
 
     // i01 = nth local index where ctrls are active, targ2=0 and targ1=1
     qindex i01 = insertBitsWithMaskedValues(n, ctrlsAndTargs.data(), numQubitBits, ctrlsAndTargsMask);
@@ -173,7 +172,7 @@ __global__ void kernel_statevec_anyCtrlSwap_subB(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    int numCtrlBits = accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
 
     // i = nth local index where ctrls are active
     qindex i = insertBitsWithMaskedValues(n, ctrls.data(), numCtrlBits, ctrlStateMask);
@@ -190,12 +189,10 @@ __global__ void kernel_statevec_anyCtrlSwap_subC(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // beware ctrlsAndTarg contains the single target
-    constexpr int numTargs = 1;
-
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTarg.size() - numTargs);
-    int numQubitBits = numCtrlBits + numTargs;
+    int numTargs = 1;
+    int numCtrls = ctrlsAndTarg.size() - numTargs;
+    int numQubitBits = numTargs + accel_tryUseCompileTimeValue<NumCtrls>(numCtrls);
 
     // i = nth local index where ctrls and targ are in specified states
     qindex i = insertBitsWithMaskedValues(n, ctrlsAndTarg.data(), numQubitBits, ctrlsAndTargMask);
@@ -220,12 +217,10 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subA(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // beware ctrlsAndTarg contains the single target
-    constexpr int numTargs = 1;
-
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTarg.size() - numTargs);
-    int numQubitBits = numCtrlBits + numTargs;
+    int numTargs = 1;
+    int numCtrls = ctrlsAndTarg.size() - numTargs;
+    int numQubitBits = numTargs + accel_tryUseCompileTimeValue<NumCtrls>(numCtrls);
 
     // i0 = nth local index where ctrls are active and targ is 0
     qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTarg.data(), numQubitBits, ctrlStateMask);
@@ -249,7 +244,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDenseMatr_subB(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    int numCtrlBits = accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
 
     // i = nth local index where ctrl bits are active
     qindex i = insertBitsWithMaskedValues(n, ctrls.data(), numCtrlBits, ctrlStateMask);
@@ -277,12 +272,10 @@ __global__ void kernel_statevec_anyCtrlTwoTargDenseMatr_sub(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // beware ctrlsAndTargs contains the two targets
-    constexpr int numTargs = 2;
-
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.size() - numTargs);
-    int numQubitBits = numCtrlBits + numTargs;
+    int numTargs = 2;
+    int numCtrls = ctrlsAndTargs.size() - numTargs;
+    int numQubitBits = numTargs + accel_tryUseCompileTimeValue<NumCtrls>(numCtrls);
 
     // i00 = nth local index where ctrls are active and both targs are 0
     qindex i00 = insertBitsWithMaskedValues(n, ctrlsAndTargs.data(), numQubitBits, ctrlStateMask);
@@ -327,31 +320,36 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
 ) {
     GET_THREAD_IND(n, numThreads);
 
-    // it is gauranteed that NumTargs <= 5, such that the thread-private array is
-    // <= 2^5 = 32 amps <= 512 bytes, which aggregated between all threads in the
-    // block (assumed ~128) is 64 KiB, and which should be small enough to fit into
-    // SM registers without spillage into slow local memory. This is despite it
-    // exceeding the maximum per-block shared memory of 48 KiB. Access to this cache
-    // must be strictly through compile-time-known indices, otherwise it will auto-
-    // spill to local memory). Hence, this _subA() function is not a subroutine 
-    // despite some logic being common to non-compile-time _subB(), and hence
+    // it is guaranteed that numTargs <= 5, so we know NumTargAmps <= 32
+    static_assert(NumTargs != -1);
+    static_assert(NumTargs <= 5);
+    constexpr qindex NumTargAmps = 1 << NumTargs; // = powerOf2(NumTargs), which is not constexpr
+
+    // Since NumTargAmps <= 32, the thread-private array below is <= 512 bytes big,
+    // which when aggregated between all threads in the block (assumed ~128) is 64 KiB, 
+    // and which should be small enough to fit into SM registers without spillage into
+    // slow local memory. This is despite it exceeding the maximum per-block shared memory
+    // of 48 KiB. Access to this cache must be strictly through compile-time-known indices,
+    // otherwise it will auto-spill to local memory. Hence, this _subA() function is not a 
+    // subroutine despite some logic being common to non-compile-time _subB(), and hence
     // why the loops below are explicitly compile-time unrolled. Beware that when
     // numThreadsPerBlock is increased from 128, this kernel will still behave
     // correctly, but privateCache below will spill over into local memory at a
     // performance penalty for NumTargs <= 5, with spillage occurring for fewer
     // NumTargs as numThreadsPerBlock increases.
-    REGISTER gpu_qcomp privateCache[1 << NumTargs];
+    REGISTER gpu_qcomp privateCache[NumTargAmps];
 
-    // we know NumTargs <= 5, though NumCtrls is permitted anything (including -1)
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.size() - targs.size());
-    constexpr qindex numTargAmps = (1 << NumTargs); // explicit, in lieu of powerOf2
+    // we know NumTargs <= 5, though NumCtrls is permitted anything (including -1), so
+    // we can only ATTEMPT to compile-time unroll the loop inside insertBits()
+    int numCtrls = ctrlsAndTargs.size() - targs.size();
+    int numQubitBits = NumTargs + accel_tryUseCompileTimeValue<NumCtrls>(numCtrls);    
 
     // i0 = nth local index where ctrls are active and targs are all zero
-    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs.data(), numCtrlBits + NumTargs, ctrlsAndTargsMask); // loop may be unrolled
+    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs.data(), numQubitBits, ctrlsAndTargsMask); // loop may be unrolled
 
     // populate cache (force unroll to ensure compile-time cache indices)
     #pragma unroll  
-    for (qindex k=0; k<numTargAmps; k++) {
+    for (qindex k=0; k<NumTargAmps; k++) {
 
         // i = nth local index where ctrls are active and targs form value k
         qindex i = setBits(i0, targs.data(), NumTargs, k); // loop will be unrolled
@@ -361,7 +359,7 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
     }
 
     // modify each amplitude (let compiler decide whether to unroll, to avoid 2^10 = 1024 expansion)
-    for (qindex k=0; k<numTargAmps; k++) {
+    for (qindex k=0; k<NumTargAmps; k++) {
 
         // i = nth local index where ctrls are active and targs form value k
         qindex i = setBits(i0, targs.data(), NumTargs, k); // loop will be unrolled
@@ -369,14 +367,14 @@ __global__ void kernel_statevec_anyCtrlFewTargDenseMatr(
     
         // force unroll to ensure compile-time cache indices
         #pragma unroll
-        for (qindex l=0; l<numTargAmps; l++) {
+        for (qindex l=0; l<NumTargAmps; l++) {
 
             // h = flat index of matrix's (k,l)-th or (l,k)-th element
             qindex h;
             if constexpr (ApplyTransp)
-                h = fast_getMatrixFlatIndex(l, k, numTargAmps);
+                h = fast_getMatrixFlatIndex(l, k, NumTargAmps);
             else
-                h = fast_getMatrixFlatIndex(k, l, numTargAmps);
+                h = fast_getMatrixFlatIndex(k, l, NumTargAmps);
 
             // optionally conjugate matrix elem
             gpu_qcomp elem = flatMatrElems[h];
@@ -399,8 +397,13 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
     gpu_qcomp* flatMatrElems) {
     GET_THREAD_IND(t, numThreads);
 
-    // NumCtrls might be compile-time known, but numTargBits>5 is always unknown/runtime
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.size() - targs.size());
+    // there is actually NO POINT to attempt to use the compile-time NumCtrls value
+    // here, since NumCtrls will be summed with the always-runtime targs.size()
+    // variable, and this function is the "many-targ" scenario (i.e. numTargs>5);
+    // but we do it anyway just for consistency
+    int numTargs = targs.size();
+    int numCtrls = ctrlsAndTargs.size() - numTargs;
+    int numQubits = numTargs + accel_tryUseCompileTimeValue<NumCtrls>(numCtrls); // always run-time!
 
     // unlike all other kernels, each thread modifies multiple batches of amplitudes
     for (qindex b=0; b<numBatchesPerThread; b++) {
@@ -409,13 +412,13 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
         qindex n = t + b * numThreads;
 
         // i0 = nth local index where ctrls are active and targs are all zero
-        qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs.data(), numCtrlBits + targs.size(), ctrlsAndTargsMask);
+        qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs.data(), numQubits, ctrlsAndTargsMask);
 
         // collect and cache all to-be-modified amps (loop might be unrolled)        
         for (qindex k=0; k<numTargAmps; k++) {
 
             // i = nth local index where ctrls are active and targs form value k
-            qindex i = setBits(i0, targs.data(), targs.size(), k); // loop may be unrolled
+            qindex i = setBits(i0, targs.data(), numTargs, k); // loop may be unrolled
 
             // j = index of k-th element of thread's private cache partition
             qindex j = getThreadsNthGlobalArrInd(k, t, numThreads);
@@ -426,7 +429,7 @@ __global__ void kernel_statevec_anyCtrlManyTargDenseMatr(
         for (qindex k=0; k<numTargAmps; k++) {
 
             // i = nth local index where ctrls are active and targs form value k
-            qindex i = setBits(i0, targs.data(), targs.size(), k); // loop may be unrolled
+            qindex i = setBits(i0, targs.data(), numTargs, k); // loop may be unrolled
             amps[i] = getGpuQcomp(0, 0);
         
             for (qindex l=0; l<numTargAmps; l++) {
@@ -483,7 +486,7 @@ __global__ void kernel_statevec_anyCtrlOneTargDiagMatr_sub(
     /// We should verify this!
 
     // use template params to compile-time unroll loops in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    int numCtrlBits = accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
 
     // j = nth local index where ctrls are active (in the specified states)
     qindex j = insertBitsWithMaskedValues(n, ctrls.data(), numCtrlBits, ctrlStateMask);
@@ -523,7 +526,7 @@ __global__ void kernel_statevec_anyCtrlTwoTargDiagMatr_sub(
     /// We should verify this!
 
     // use template params to compile-time unroll loops in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    int numCtrlBits = accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
 
     // j = nth local index where ctrls are active (in the specified states)
     qindex j = insertBitsWithMaskedValues(n, ctrls.data(), numCtrlBits, ctrlStateMask);
@@ -565,8 +568,8 @@ __global__ void kernel_statevec_anyCtrlAnyTargDiagMatr_sub(
     /// We should verify this!
 
     // use template params to compile-time unroll loops in insertBits() and getValueOfBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
-    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, targs.size());
+    int numCtrlBits = accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
+    int numTargBits = accel_tryUseCompileTimeValue<NumTargs>(targs.size());
 
     // j = nth local index where ctrls are active (in the specified states)
     qindex j = insertBitsWithMaskedValues(n, ctrls.data(), numCtrlBits, ctrlStateMask);
@@ -650,8 +653,9 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
     GET_THREAD_IND(t, numThreads);
 
     // use template params to compile-time unroll loops in insertBits() and setBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrlsAndTargs.size() - targsXY.size());
-    SET_VAR_AT_COMPILE_TIME(int, numTargBits, NumTargs, targsXY.size());
+    int numCtrlBits = accel_tryUseCompileTimeValue<NumCtrls>(ctrlsAndTargs.size() - targsXY.size());
+    int numTargBits = accel_tryUseCompileTimeValue<NumTargs>(targsXY.size());
+    int numBothBits = numCtrlBits + numTargBits;
 
     // n = local index of amp sub-batch with common i0, v = value of target bits
     qindex numInnerIts = powerOf2(numTargBits) / 2;
@@ -659,7 +663,7 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subA(
     qindex v = t % numInnerIts;
 
     // i0 = nth local index where ctrls are active and targs are all zero (loop therein may be unrolled)
-    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs.data(), numCtrlBits + numTargBits, ctrlsAndTargsStateMask);
+    qindex i0 = insertBitsWithMaskedValues(n, ctrlsAndTargs.data(), numBothBits, ctrlsAndTargsStateMask);
 
     // iA = nth local index where targs have value v, iB = (last - nth) such index
     qindex iA = setBits(i0, targsXY.data(), numTargBits, v); // may be unrolled
@@ -690,7 +694,7 @@ __global__ void kernel_statevector_anyCtrlPauliTensorOrGadget_subB(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    int numCtrlBits = accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
 
     // i = nth local index where ctrl bits are in specified states
     qindex i = insertBitsWithMaskedValues(n, ctrls.data(), numCtrlBits, ctrlStateMask);
@@ -725,7 +729,7 @@ __global__ void kernel_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numCtrlBits, NumCtrls, ctrls.size());
+    int numCtrlBits = accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
 
     // i = nth local index where ctrl bits are in specified states
     qindex i = insertBitsWithMaskedValues(n, ctrls.data(), numCtrlBits, ctrlStateMask);
@@ -752,7 +756,7 @@ __global__ void kernel_statevec_setQuregToWeightedSum_sub(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll below loop
-    SET_VAR_AT_COMPILE_TIME(int, numInner, NumQuregs, numQuregs);
+    int numInner = accel_tryUseCompileTimeValue<NumQuregs>(numQuregs);
 
     gpu_qcomp amp = getGpuQcomp(0, 0);
 
@@ -1174,7 +1178,7 @@ __global__ void kernel_densmatr_partialTrace_sub(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll below loops
-    SET_VAR_AT_COMPILE_TIME(int, numTargPairs, NumTargs, ketTargs.size());
+    int numTargPairs = accel_tryUseCompileTimeValue<NumTargs>(ketTargs.size());
 
     // may be inferred at compile-time
     int numAllTargs = 2 * numTargPairs;
@@ -1227,7 +1231,7 @@ __global__ void kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub(
     /// whether this is worthwhile and faster!
 
     // use template param to compile-time unroll below loops
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
+    int numBits = accel_tryUseCompileTimeValue<NumQubits>(qubits.size());
 
     qreal prob = norm(amps[n]);
 
@@ -1251,7 +1255,7 @@ __global__ void kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(
     GET_THREAD_IND(n, numThreads);
 
     // use template param to compile-time unroll loop in insertBits()
-    SET_VAR_AT_COMPILE_TIME(int, numBits, NumQubits, qubits.size());
+    int numBits = accel_tryUseCompileTimeValue<NumQubits>(qubits.size());
 
     // i = index of nth local diagonal elem
     qindex i = fast_getQuregLocalIndexOfDiagonalAmp(n, firstDiagInd, numAmpsPerCol);

@@ -42,6 +42,7 @@
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/randomiser.hpp"
 #include "quest/src/core/fastmath.hpp"
+#include "quest/src/core/accelerator.hpp"
 #include "quest/src/comm/comm_config.hpp"
 
 #include <thrust/random.h>
@@ -450,7 +451,7 @@ struct functor_insertBits {
     __host__ __device__ qindex operator()(qindex i) {
 
         // use the compile-time value if possible, to auto-unroll the insertBits loop
-        SET_VAR_AT_COMPILE_TIME(int, nbits, NumBits, numBits);
+        int nbits = accel_tryUseCompileTimeValue<NumBits>(numBits);
 
         // return ith local index where bits have the specified values at the specified indices
         return insertBitsWithMaskedValues(i, sortedInds.data(), nbits, valueMask);
