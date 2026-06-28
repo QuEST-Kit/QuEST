@@ -42,6 +42,7 @@
     defined(QUEST_COMPILE_HIP)                  || \
     defined(QUEST_COMPILE_CUQUANTUM)            || \
     defined(QUEST_COMPILE_ADIOS2)               || \
+    defined(QUEST_COMPILE_BMI2)                 || \
     defined(QUEST_ENABLE_NUMA)                  || \
     defined(QUEST_INCLUDE_DEPRECATED_FUNCTIONS) || \
     defined(QUEST_DISABLE_DEPRECATION_WARNINGS)
@@ -86,6 +87,7 @@
 #cmakedefine01 QUEST_COMPILE_CUQUANTUM
 #cmakedefine01 QUEST_COMPILE_HIP
 #cmakedefine01 QUEST_COMPILE_ADIOS2
+#cmakedefine01 QUEST_COMPILE_BMI2
 
 
 // crucial to QuEST source (informs optional NUMA usage)
@@ -128,6 +130,7 @@
     ! defined(QUEST_COMPILE_HIP)                  || \
     ! defined(QUEST_COMPILE_CUQUANTUM)            || \
     ! defined(QUEST_COMPILE_ADIOS2)               || \
+    ! defined(QUEST_COMPILE_BMI2)                 || \
     ! defined(QUEST_ENABLE_NUMA)                  || \
     ! defined(QUEST_INCLUDE_DEPRECATED_FUNCTIONS) || \
     ! defined(QUEST_DISABLE_DEPRECATION_WARNINGS)
@@ -156,6 +159,7 @@
     ! (QUEST_COMPILE_HIP                  == 0 || QUEST_COMPILE_HIP                  == 1) || \
     ! (QUEST_COMPILE_CUQUANTUM            == 0 || QUEST_COMPILE_CUQUANTUM            == 1) || \
     ! (QUEST_COMPILE_ADIOS2               == 0 || QUEST_COMPILE_ADIOS2               == 1) || \
+    ! (QUEST_COMPILE_BMI2                 == 0 || QUEST_COMPILE_BMI2                 == 1) || \
     ! (QUEST_ENABLE_NUMA                  == 0 || QUEST_ENABLE_NUMA                  == 1) || \
     ! (QUEST_INCLUDE_DEPRECATED_FUNCTIONS == 0 || QUEST_INCLUDE_DEPRECATED_FUNCTIONS == 1) || \
     ! (QUEST_DISABLE_DEPRECATION_WARNINGS == 0 || QUEST_DISABLE_DEPRECATION_WARNINGS == 1)

@@ -44,6 +44,7 @@ make
 | `QUEST_ENABLE_CUDA` | (`OFF`), `ON` | Determines whether QuEST will be built with support for NVIDIA GPU acceleration. If turned on, `CMAKE_CUDA_ARCHITECTURES` should probably also be set. |
 | `QUEST_ENABLE_CUQUANTUM` | (`OFF`), `ON` | Determines whether QuEST will make use of the NVIDIA CuQuantum library. Cannot be turned on if `QUEST_ENABLE_CUDA` is off. |
 | `QUEST_ENABLE_HIP` | (`OFF`), `ON` | Determines whether QuEST will be built with support for AMD GPU acceleration. If turned on, `CMAKE_HIP_ARCHITECTURES` should probably also be set. |
+| `QUEST_ENABLE_BMI2` | (`OFF`), `ON` | Determines whether QuEST will be built with BMI2 intrinsics to accelerate CPU simulation of few-qubit Quregs. This is not compatible with all compilers and CPUs. |
 | `QUEST_ENABLE_ADIOS2` | (`OFF`), `ON` | Determines whether QuEST will be built with ADIOS2 to enable checkpointing, via functions `saveQuregToFile()` and `createQuregFromFile()`. |
 | `QUEST_DOWNLOAD_ADIOS2` | (`ON`), `OFF` | Determines whether to download ADIOS2 from Github, when ADIOS2 is enabled but not found. |
 | `QUEST_ENABLE_DEPRECATED_API` | (`OFF`), `ON` | Determines whether QuEST will be built with support for the deprecated (v3) API. ***Note**: this will generate compiler warnings and is not supported by MSVC.* |
