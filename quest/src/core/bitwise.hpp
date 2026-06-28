@@ -10,25 +10,20 @@
 #ifndef BITWISE_HPP
 #define BITWISE_HPP
 
+#include "quest/include/config.h"
+#include "quest/include/types.h"
+
+#include "quest/src/core/inliner.hpp"
+
+#if QUEST_COMPILE_BMI2
+    #include <immintrin.h>
+#endif
+
 #ifdef _MSC_VER
   #include <intrin.h>
 #endif
 
-// Optional BMI2 PEXT/PDEP fast paths for the bit gather/scatter helpers below (issue #717).
-// Active only when BMI2 is actually targeted (__BMI2__), i.e. when the build opts in with
-// -DQUEST_ENABLE_BMI2=ON or the user supplies their own -march=native; a default build defines no
-// such flag and compiles the byte-identical scalar fallback, so it stays portable. Restricted to x86
-// host compilation (never CUDA/HIP device code, where INLINE becomes __device__). Define
-// QUEST_BITWISE_FORCE_SCALAR to force the scalar path even on a BMI2-capable host.
-#if defined(__BMI2__) && (defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)) \
-    && !defined(__CUDA_ARCH__) && !defined(__HIP_DEVICE_COMPILE__) && !defined(QUEST_BITWISE_FORCE_SCALAR)
-  #include <immintrin.h>
-  #define QUEST_BITWISE_USE_BMI2
-#endif
 
-#include "quest/include/types.h"
-
-#include "quest/src/core/inliner.hpp"
 
 /* 
  * PERFORMANCE-CRITICAL FUNCTIONS
