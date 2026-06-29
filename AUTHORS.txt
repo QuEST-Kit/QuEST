@@ -52,6 +52,15 @@ Dr Ali Rezaei [developer]
     optimisation prototyping
 
 External contributors:
+
+Amon K.
+    optimised away unnecessary Thrust allocations (#783)
+Ashmit JaiSarita Gupta
+    added ADIOS2-based checkpointing (#780)
+PoJen Wang
+    added BMI2 intrinsics (#796)
+Mukul Kumar
+    investigated compensated summation (#791)
 Maurice Jamieson
     extended the unit test suite (#706)
 Íñigo Aréjula Aísa

@@ -269,7 +269,10 @@ See [authors](AUTHORS.txt) for a list of all of QuEST's past and present contrib
 
 In addition to QuEST's [authors](AUTHORS.txt), we sincerely thank the following external contributors to QuEST.
 
-External contributors:
+- [Amon K.](https://github.com/thedaemon-wizard) for optimising away Thrust allocations in [#783](https://github.com/QuEST-Kit/QuEST/pull/783).
+- [Ashmit JaiSarita Gupta](https://github.com/ashmitjsg) for adding ADIOS2-based checkpointing in [#780](https://github.com/QuEST-Kit/QuEST/pull/780).
+- [PoJen Wang](https://github.com/nez0b) for adding BMI2 intrinsics in [#796](https://github.com/QuEST-Kit/QuEST/pull/796).
+- [Mukul Kumar](https://github.com/mk0dz) for investigating compensated summation in [#791](https://github.com/QuEST-Kit/QuEST/pull/791).
 - [Maurice Jamieson](https://github.com/mcjamieson) for extending the unit test suite in v4.3.
 - [Íñigo Aréjula Aísa](https://github.com/iarejula-bsc) for patching a validation error in the user-owned MPI interface.
 - [Daniel Expósito Patiño](https://github.com/D-Exposito) for patching a signature of the v4 C++ API.
