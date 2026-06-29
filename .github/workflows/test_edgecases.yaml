@@ -21,7 +21,7 @@ on:
 
 jobs:
 
-  # run only some non-parallelised v4 unit tests
+  # run only some non-parallelised v4 unit tests at default (double) precision
   serial-unit-test:
     name: >
       ${{ startsWith(matrix.os, 'ubuntu' ) && 'Linux'   || 
@@ -29,10 +29,9 @@ jobs:
           startsWith(matrix.os, 'windows') && 'Windows' ||
                                               'Unknown' }}
       ${{ endsWith(matrix.os, 'intel') && '(Intel)' || '' }}
-      [${{ matrix.precision }}]
       serial
       ${{ matrix.bmi2      == 'ON' && '(BMI)'  || '' }}
-      unit v${{ matrix.version }}
+      edgecases
 
     runs-on: ${{ matrix.os }}
 
@@ -43,7 +42,6 @@ jobs:
       # we will compile QuEST with all precisions but no parallelisation (though with Intel BMI2)
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest, macos-15-intel, macos-26-intel]
-        precision: [1, 2, 4]
         bmi2:      [ON, OFF]
 
         exclude:
@@ -51,7 +49,7 @@ jobs:
           - bmi2: ON
             os: macos-latest
   
-    # constants
+    # constants; all tests are non-comprehensive for speed
     env:
       build_dir: "build"
       QUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS: 10
@@ -68,35 +66,48 @@ jobs:
           cmake -B ${{ env.build_dir }}
           -DQUEST_BUILD_TESTS=ON
           -DQUEST_ENABLE_OMP=OFF
-          -DQUEST_FLOAT_PRECISION=${{ matrix.precision }}
           -DQUEST_ENABLE_BMI2=${{ matrix.bmi2 }}
 
       # force 'Release' build (needed by MSVC to enable optimisations)
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --config Release
 
+      # test statevector and density-matrix functions which exhibit
+      # optimisations on up to 5 ctrl + 2 target qubits, with 8-qubit
+      # Quregs, in order to test the non-optimised implementation
       - name: 8-qubit edge-cases
         run: ctest -C Release -R "Swap|CompMatr1|CompMatr2"
         working-directory: ${{ env.build_dir }}
         env:
           QUEST_TEST_NUM_QUBITS_IN_QUREG: 8
 
-
-
-      # DEBUG: this will fail on Windows (should be like, tests\Release\tests)
-      # but I want to be sure!
-
-      - name: 12-qubit state-vector edge-cases (Unix)
+      # subsequent tests use only state-vectors, which requires we
+      # trigger only the "state-vector" Catch2 test subsection, which
+      # is not possible through ctest; so we must call the test binary
+      # directly, of which the location differs between Unix and Windows
+      - name: Set test binary path (Unix)
         if: ${{ ! startsWith(matrix.os, 'windows') }}
-        run: ./tests/tests "applyMultiStateControlledPauliStr" -c "correctness" -c "state-vector"
-        working-directory: ${{ env.build_dir }}
-        env:
-          QUEST_TEST_NUM_QUBITS_IN_QUREG: 12
-
-      - name: 12-qubit state-vector edge-cases (Windows)
+        run: echo "TEST_BIN=./tests/tests" >> $GITHUB_ENV
+      - name: Set test binary path (Windows)
         if: ${{ startsWith(matrix.os, 'windows') }}
-        run: ./tests/Release/tests.exe "applyMultiStateControlledPauliStr" -c "correctness" -c "state-vector"
+        run: echo "TEST_BIN=./tests/Release/tests.exe" >> $GITHUB_ENV
+
+      # test statevector functions which exhibit optimisations on up to
+      # 5 ctrl + 5 target qubits, with 12-qubit Quregs, in order to test
+      # the non-optimised implementation. 
+      - name: 12-qubit state-vector edge-cases (Unix)
+        run: |
+          TESTS=(
+            "applyMultiStateControlledCompMatr"
+            "applyMultiStateControlledDiagMatr"
+            "applyMultiStateControlledPauliStr"
+            "applyMultiStateControlledPauliGadget"
+          )
+          for t in "${TESTS[@]}"; do
+            echo "::group::Running $t"
+            $TEST_BIN "$t" -c "correctness" -c "statevector"
+            echo "::endgroup::"
+          done
         working-directory: ${{ env.build_dir }}
         env:
           QUEST_TEST_NUM_QUBITS_IN_QUREG: 12
-
