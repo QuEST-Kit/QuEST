@@ -105,7 +105,7 @@ jobs:
       # test statevector functions which exhibit optimisations on up to
       # 5 ctrl + 5 target qubits, with 12-qubit Quregs, in order to test
       # the non-optimised implementation (6 ctrls + 6 targets). 
-      - name: 12-qubit statevector edge-cases (Unix)
+      - name: 12-qubit statevector edge-cases
         run: |
           TESTS=(
             "applyMultiStateControlledCompMatr"
@@ -118,6 +118,7 @@ jobs:
             $TEST_BIN "$t" -c "correctness" -c "statevector"
             echo "::endgroup::"
           done
+        shell: bash
         working-directory: ${{ env.build_dir }}
         env:
           QUEST_TEST_NUM_QUBITS_IN_QUREG: 12
