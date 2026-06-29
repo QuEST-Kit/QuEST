@@ -98,9 +98,11 @@ jobs:
       - name: Set test binary path (Unix)
         if: ${{ ! startsWith(matrix.os, 'windows') }}
         run: echo "TEST_BIN=./tests/tests" >> $GITHUB_ENV
+        shell: bash
       - name: Set test binary path (Windows)
         if: ${{ startsWith(matrix.os, 'windows') }}
         run: echo "TEST_BIN=./tests/Release/tests.exe" >> $GITHUB_ENV
+        shell: bash
 
       # test statevector functions which exhibit optimisations on up to
       # 5 ctrl + 5 target qubits, with 12-qubit Quregs, in order to test
