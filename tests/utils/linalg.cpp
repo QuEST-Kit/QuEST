@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <limits>
 
 using std::vector;
 
@@ -93,14 +94,15 @@ qindex setBitsAt(qindex num, vector<int> inds, qindex bits) {
 }
 
 
-int getNumPermutations(int n, int k) {
+qindex getNumPermutations(int n, int k) {
     DEMAND( n >= k );
-    DEMAND( n <= 11 ); // else int overflow
+
+    constexpr auto max = std::numeric_limits<qindex>::max();
 
     // P(n, k) = n! / (n-k)!
     qindex p = 1;
     for (int t=n-k+1; t<=n; t++)
-        p *= t;
+        p *= (p < max / t)? t : 0; // set to 0 on overflow
 
     return p;
 }

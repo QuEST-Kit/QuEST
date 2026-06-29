@@ -20,7 +20,6 @@
 #include <vector>
 using std::vector;
 
-int getNumPermutations(int n, int k);
 int getLog2(qindex);
 int getBitAt(qindex num, int ind);
 vector<int> getBits(qindex num, int numBits);
@@ -28,6 +27,7 @@ qindex getBitsAt(qindex num, vector<int> inds);
 qindex setBitAt(qindex num, int ind, int bit);
 qindex setBitsAt(qindex num, vector<int> inds, qindex bits);
 qindex getPow2(int);
+qindex getNumPermutations(int n, int k); // =0 on overflow
 
 qreal getSum(vector<qreal> vec);
 qcomp getSum(qvector);
