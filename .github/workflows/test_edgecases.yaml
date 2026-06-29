@@ -5,7 +5,7 @@
 # 
 # @author Tyson Jones
 
-name: test (free, serial, ad hoc)
+name: test (egde cases)
 
 
 on:
@@ -75,8 +75,8 @@ jobs:
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --config Release
 
-      - name: 10-qubit edge-cases
-        run: ctest -R "Swap|CompMatr1|CompMatr2"
+      - name: 8-qubit edge-cases
+        run: ctest -C Release -R "Swap|CompMatr1|CompMatr2"
         working-directory: ${{ env.build_dir }}
         env:
           QUEST_TEST_NUM_QUBITS_IN_QUREG: 8
@@ -86,9 +86,17 @@ jobs:
       # DEBUG: this will fail on Windows (should be like, tests\Release\tests)
       # but I want to be sure!
 
-      - name: 12-qubit state-vector edge-cases
+      - name: 12-qubit state-vector edge-cases (Unix)
+        if: ${{ ! startsWith(matrix.os, 'windows') }}
         run: ./tests/tests "applyMultiStateControlledPauliStr" -c "correctness" -c "state-vector"
         working-directory: ${{ env.build_dir }}
         env:
-          QUEST_TEST_NUM_QUBITS_IN_QUREG: 10
+          QUEST_TEST_NUM_QUBITS_IN_QUREG: 12
+
+      - name: 12-qubit state-vector edge-cases (Windows)
+        if: ${{ startsWith(matrix.os, 'windows') }}
+        run: ./tests/Release/tests.exe "applyMultiStateControlledPauliStr" -c "correctness" -c "state-vector"
+        working-directory: ${{ env.build_dir }}
+        env:
+          QUEST_TEST_NUM_QUBITS_IN_QUREG: 12
 
