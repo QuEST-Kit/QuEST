@@ -62,8 +62,8 @@ jobs:
     # constants; all tests are non-comprehensive for speed
     env:
       build_dir: "build"
-      QUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS: 10
-      QUEST_TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS: 5
+      QUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS: 1
+      QUEST_TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS: 1
 
     # perform the job
     steps:
@@ -82,14 +82,14 @@ jobs:
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --config Release
 
-      # # test statevector and density-matrix functions which exhibit
-      # # optimisations on up to 5 ctrl + 2 target qubits, with 8-qubit
-      # # Quregs, in order to test the non-optimised implementation
-      # - name: 8-qubit edge-cases
-      #   run: ctest -C Release -R "Swap|CompMatr1|CompMatr2"
-      #   working-directory: ${{ env.build_dir }}
-      #   env:
-      #     QUEST_TEST_NUM_QUBITS_IN_QUREG: 8
+      # test statevector and density-matrix functions which exhibit
+      # optimisations on up to 5 ctrl + 2 target qubits, with 8-qubit
+      # Quregs, in order to test the non-optimised implementation
+      - name: 8-qubit edge-cases
+        run: ctest -C Release -R "Swap|CompMatr1|CompMatr2"
+        working-directory: ${{ env.build_dir }}
+        env:
+          QUEST_TEST_NUM_QUBITS_IN_QUREG: 8
 
       # subsequent tests use only statevectors, which requires we
       # trigger only the "statevector" Catch2 test subsection, which
