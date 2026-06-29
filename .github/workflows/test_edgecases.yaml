@@ -28,7 +28,7 @@ jobs:
           startsWith(matrix.os, 'macos'  ) && 'MacOS'   ||
           startsWith(matrix.os, 'windows') && 'Windows' ||
                                               'Unknown' }}
-      ${{ endsWith(matrix.os, 'intel') && '(Intel)' || '' }}
+      ${{ endsWith(matrix.os, '26-intel') && '(Intel 2026)' || '' }}
       serial
       ${{ matrix.bmi2      == 'ON' && '(BMI)'  || '' }}
       edgecases
@@ -41,7 +41,7 @@ jobs:
 
       # we will compile QuEST with all precisions but no parallelisation (though with Intel BMI2)
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest, macos-15-intel, macos-26-intel]
+        os: [ubuntu-latest, macos-latest, windows-latest, macos-26-intel]
         bmi2:      [ON, OFF]
 
         exclude:

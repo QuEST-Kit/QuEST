@@ -31,7 +31,8 @@ jobs:
           startsWith(matrix.os, 'macos'  ) && 'MacOS'   ||
           startsWith(matrix.os, 'windows') && 'Windows' ||
                                               'Unknown' }}
-      ${{ endsWith(matrix.os, 'intel') && '(Intel)' || '' }}
+      ${{ endsWith(matrix.os, '15-intel') && '(Intel 2015)' || '' }}
+      ${{ endsWith(matrix.os, '26-intel') && '(Intel 2026)' || '' }}
       [${{ matrix.precision }}]
       serial
       ${{ matrix.bmi2      == 'ON' && '(BMI)'  || '' }}
