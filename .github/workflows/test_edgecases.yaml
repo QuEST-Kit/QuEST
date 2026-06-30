@@ -3,19 +3,26 @@
 # These are intended as a stop gap in the interim to
 # an improved test harness.
 #
-# So far, we test only CPU functions which have
+# We here test only CPU functions which have
 # template parameters (like NumCtrls or NumTargs)
-# which inform an optimised definition for more than
-# 6 involved qubits (e.g. 7-10). The tests run by
-# both test_free.yml and test_paid.yml do not cover
-# such settings, since they use 6-qubit Quregs. So,
-# we trigger them here with larger Quregs (8 and 12
-# qubits), which requires turning lots of other things
-# off to save time and sanity!
+# which inform an optimised definition for MORE than
+# 5 involved qubits. For example, multiControlledSWAP
+# has optimised treatment of up to 5 control qubits,
+# while needing 2 target qubits; so requires a Qureg
+# of at least 8 qubits to trigger its unoptimised
+# version (receiving 6 control qubits and 2 targets).
+# 
+# We alas do NOT here test the fully-unoptimised
+# versions of multi-ctrl multi-targ functions (such
+# as applyMultiControlledCompMatr), because that
+# requires reaching 6 ctrls + 6 targs, and ergo a
+# Qureg of at least 12 qubits. So large a Hilbert
+# space is alas too slow for the reference maths of
+# our unit tests. Curse ye, exponential!
 # 
 # @author Tyson Jones
 
-name: test (egde cases)
+name: test (edge cases)
 
 
 on:
@@ -62,6 +69,9 @@ jobs:
     # constants; all tests are non-comprehensive for speed
     env:
       build_dir: "build"
+      full_tests_regex: "Swap|CompMatr1|CompMatr2"
+      partial_tests_regex: "^applyMultiStateControlled(CompMatr|DiagMatr|PauliStr|PauliGadget)$"
+      QUEST_TEST_NUM_QUBITS_IN_QUREG: 8
       QUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS: 1
       QUEST_TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS: 1
 
@@ -85,42 +95,17 @@ jobs:
       # test statevector and density-matrix functions which exhibit
       # optimisations on up to 5 ctrl + 2 target qubits, with 8-qubit
       # Quregs, in order to test the non-optimised implementation
-      - name: 8-qubit edge-cases
-        run: ctest -C Release -R "Swap|CompMatr1|CompMatr2"
+      - name: 8-qubit edge-cases (full coverage)
+        run: ctest -C Release -R ${{ env.full_tests_regex }}
         working-directory: ${{ env.build_dir }}
-        env:
-          QUEST_TEST_NUM_QUBITS_IN_QUREG: 8
 
-      # subsequent tests use only statevectors, which requires we
-      # trigger only the "statevector" Catch2 test subsection, which
-      # is not possible through ctest; so we must call the test binary
-      # directly, of which the location differs between Unix and Windows
-      - name: Set test binary path (Unix)
-        if: ${{ ! startsWith(matrix.os, 'windows') }}
-        run: echo "TEST_BIN=./tests/tests" >> $GITHUB_ENV
-        shell: bash
-      - name: Set test binary path (Windows)
-        if: ${{ startsWith(matrix.os, 'windows') }}
-        run: echo "TEST_BIN=./tests/Release/tests.exe" >> $GITHUB_ENV
-        shell: bash
-
-      # test statevector functions which exhibit optimisations on up to
-      # 5 ctrl + 5 target qubits, with 12-qubit Quregs, in order to test
-      # the non-optimised implementation (6 ctrls + 6 targets). 
-      - name: 12-qubit statevector edge-cases
-        run: |
-          TESTS=(
-            "applyMultiStateControlledCompMatr"
-            "applyMultiStateControlledDiagMatr"
-            "applyMultiStateControlledPauliStr"
-            "applyMultiStateControlledPauliGadget"
-          )
-          for t in "${TESTS[@]}"; do
-            echo "::group::Running $t"
-            $TEST_BIN "$t" -c "correctness" -c "statevector"
-            echo "::endgroup::"
-          done
-        shell: bash
+      # it is our desire to test the "partial_tests" functions with
+      # 12-qubit Quregs, so that NumCtrls=6 while NumTargs=6 could be
+      # achieved, testing the fully unoptimised versions - but alas
+      # it's intractable for our slow reference maths! So we instead
+      # at least test the NumCtrls=6 and NumTargs=6 cases independently,
+      # requiring only 7-qubit Quregs, but we use 8 for consistency
+      # with above
+      - name: 8-qubit edge-cases (partial coverage)
+        run: ctest -C Release -R ${{ env.partial_tests_regex }}
         working-directory: ${{ env.build_dir }}
-        env:
-          QUEST_TEST_NUM_QUBITS_IN_QUREG: 12
