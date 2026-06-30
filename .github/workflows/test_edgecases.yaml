@@ -96,7 +96,7 @@ jobs:
       # optimisations on up to 5 ctrl + 2 target qubits, with 8-qubit
       # Quregs, in order to test the non-optimised implementation
       - name: 8-qubit edge-cases (full coverage)
-        run: ctest -C Release -R ${{ env.full_tests_regex }}
+        run: ctest -C Release -R "${{ env.full_tests_regex }}"
         working-directory: ${{ env.build_dir }}
 
       # it is our desire to test the "partial_tests" functions with
@@ -107,5 +107,5 @@ jobs:
       # requiring only 7-qubit Quregs, but we use 8 for consistency
       # with above
       - name: 8-qubit edge-cases (partial coverage)
-        run: ctest -C Release -R ${{ env.partial_tests_regex }}
+        run: ctest -C Release -R "${{ env.partial_tests_regex }}"
         working-directory: ${{ env.build_dir }}
