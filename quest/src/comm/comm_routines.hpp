@@ -31,6 +31,16 @@ void comm_exchangeAmpsToBuffers(Qureg qureg, int pairRank);
 
 void comm_exchangeSubBuffers(Qureg qureg, qindex numAmpsAndRecvInd, int pairRank);
 
+// one disjoint sub-buffer chunk to exchange with a single pair rank, used by comm_exchangeSubBufferChunks
+struct CommChunk {
+    qindex sendInd; // buffer index where this chunk's amps to send begin
+    qindex recvInd; // buffer index where this chunk's received amps are written
+    qindex numAmps; // number of amps exchanged (a power of two)
+    int pairRank;   // the partner rank for this chunk (distinct from this node)
+};
+
+void comm_exchangeSubBufferChunks(Qureg qureg, const vector<CommChunk>& chunks);
+
 void comm_asynchSendSubBuffer(Qureg qureg, qindex numElems, int pairRank);
 
 void comm_receiveArrayToBuffer(Qureg qureg, qindex numElems, int pairRank);

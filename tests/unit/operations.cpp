@@ -3020,4 +3020,57 @@ TEST_CASE( "rightapplyPauliStrSum", TEST_CATEGORY_MULT LABEL_MIXED_DEPLOY_TAG ) 
 }
 
 
+/*
+ * FUSED DISTRIBUTED MULTI-SWAP
+ *
+ * A focused check of the fused prefix-suffix multi-SWAP (localiser.cpp), which moves several
+ * prefix-qubit targets into the suffix in one batched exchange. Applying a random multi-qubit
+ * unitary on a target set whose upper qubits land in the prefix substate routes through that
+ * routine, exercising 2, 3 or 4 prefix targets at np = 4, 8, 16 (and the two-wave async batching
+ * those k force). Every cached deployment is compared against the same reference linear algebra:
+ * the distributed quregs run the fused exchange while the serial and multithreaded quregs run it
+ * communication-free, so agreement pins the fused, batched exchange to a swap-free reference. The
+ * generic dense-matrix tests already touch this path incidentally; this names and isolates it.
+ */
+
+TEST_CASE( "fused distributed multiSwap", TEST_CATEGORY_OPS ) {
+
+    int numQubits = getNumCachedQubits();
+    auto quregs = getCachedStatevecs();
+
+    for (int numTargs=2; numTargs<=5; numTargs++) {
+
+        if (numTargs > numQubits)
+            continue;
+
+        // the top numTargs qubits are prefix when the qureg spans at least 2^numTargs nodes; at
+        // fewer nodes only some are prefix and the routine simply fuses fewer swaps, still correct
+        vector<int> targs(numTargs);
+        for (int i=0; i<numTargs; i++)
+            targs[i] = numQubits - numTargs + i;
+
+        for (auto& [label, qureg]: quregs) {
+
+            DYNAMIC_SECTION( "numTargs=" + std::to_string(numTargs) + LABEL_DELIMITER + label ) {
+
+                qmatrix refMatr = getRandomUnitary(numTargs);
+                CompMatr apiMatr = createCompMatr(numTargs);
+                setCompMatr(apiMatr, refMatr);
+
+                qvector ref = getZeroVector(getPow2(numQubits));
+                initDebugState(qureg);
+                setToDebugState(ref);
+
+                applyCompMatr(qureg, targs, apiMatr);
+                applyReferenceOperator(ref, {}, targs, refMatr);
+
+                REQUIRE_AGREE( qureg, ref );
+
+                destroyCompMatr(apiMatr);
+            }
+        }
+    }
+}
+
+
 /** @} (end defgroup) */
