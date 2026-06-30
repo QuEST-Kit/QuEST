@@ -264,7 +264,7 @@ listpair GENERATE_CTRLS_AND_TARGS(int numQubits, int numCtrls, int numTargs) {
     DEMAND( numQubits >= numCtrls + numTargs );
 
     // impose a limit on the number of {ctrls,targs} to generate (max-int if none set)
-    int numPerms = getNumPermutations(numQubits, numCtrls + numTargs);
+    auto numPerms = getNumPermutations(numQubits, numCtrls + numTargs); // 0 when overflowed
     int maxPerms = getMaxNumTestedQubitPermutations();
     if (maxPerms == 0)
         maxPerms = std::numeric_limits<int>::max();
@@ -272,7 +272,7 @@ listpair GENERATE_CTRLS_AND_TARGS(int numQubits, int numCtrls, int numTargs) {
     // if all permutations are permitted, determinstically generate each in turn.
     // note this wastefully generates all orderings of ctrl qubits, despite that
     // this has no effect on all API operations, but we carefully check anyway!
-    if (numPerms < maxPerms)
+    if (numPerms != 0 && numPerms < maxPerms)
         return GENERATE_COPY( disjointsublists(range(0,numQubits), numCtrls, numTargs) );
 
     // otherwise generate as many random {ctrls,targs} as permitted

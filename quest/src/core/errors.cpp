@@ -41,6 +41,8 @@ using std::string;
 
 void raiseInternalError(string errorMsg) {
 
+    printer_sync();
+
     print(string("")
         + "\n\n"
         + "A fatal internal QuEST error occurred. "
@@ -48,6 +50,8 @@ void raiseInternalError(string errorMsg) {
         + "Please report this to the QuEST developers. QuEST will now exit..."
         + "\n"
     );
+
+    printer_sync();
 
     exit(EXIT_FAILURE);
 }
@@ -181,6 +185,26 @@ void error_commNumMessagesExceedTagMax() {
     raiseInternalError("A function attempted to communicate via more messages than permitted (since there would be more uniquely-tagged messages than the tag upperbound).");
 }
 
+void error_commAlreadyHasSetMpiComm() {
+  
+    raiseInternalError("An attempt was made to set the QuEST MPI communicator after it had already been set (and changed from MPI_COMM_NULL).");
+}
+
+void error_commMpiCommIsNull() {
+
+    raiseInternalError("The MPI communicator was queried but was unexpectedly MPI_COMM_NULL.");
+}
+
+void error_commNewMpiCommIsNull() {
+
+    raiseInternalError("The MPI communicator was attemptedly set to MPI_COMM_NULL, which validation should have prior caught.");
+}
+
+void error_commActiveButMpiNotInit() {
+
+    raiseInternalError("QuEST believed communication was active, but MPI_Init reported MPI was not initialised.");
+}
+
 void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps) {
 
     bool valid = (
@@ -243,11 +267,6 @@ void assert_receiverCanFitSendersEntireElems(Qureg receiver, FullStateDiagMatr s
  * LOCALISER ERRORS
  */
 
-void error_localiserNumCtrlStatesInconsistentWithNumCtrls() {
-
-    raiseInternalError("An inconsistent number of ctrls and ctrlStates were passed to a function in localiser.cpp.");
-}
-
 void error_localiserGivenPauliTensorOrGadgetWithoutXOrY() {
 
     raiseInternalError("The localiser was asked to simulate a Pauli tensor or gadget which contained no X or Y Paulis, which is a special case reserved for phase gadgets.");
@@ -276,6 +295,11 @@ void error_localiserGivenPauliStrWithoutXorY() {
 void error_localiserGivenNonUnityGlobalFactorToZTensor() {
 
     raiseInternalError("A localiser function to apply a PauliStr (as a tensor, not a gadget) was given a PauliStr containing only Z and I, along with a non-unity global factor. This is an illegal combination.");
+}
+
+void error_calcFidStateVecDistribWhileDensMatrLocal() {
+
+    raiseInternalError("A localiser function attempted to compute the fidelity between a local density matrix and a distributed statevector, which is an illegal combination.");
 }
 
 void assert_localiserSuccessfullyAllocatedTempMemory(qcomp* ptr, bool isGpu) {
@@ -314,9 +338,10 @@ void assert_localiserPartialTraceGivenCompatibleQuregs(Qureg inQureg, Qureg outQ
         raiseInternalError("Inconsistent Qureg sizes and number of traced qubits given to localiser's partial trace function.");
 }
 
-void error_calcFidStateVecDistribWhileDensMatrLocal() {
+void assert_localiserListLengthsAgree(size_t length1, size_t length2) {
 
-    raiseInternalError("A localiser function attempted to compute the fidelity between a local density matrix and a distributed statevector, which is an illegal combination.");
+    if (length1 != length2)
+        raiseInternalError("Two corresponding lists (such as ctrls & ctrlStates, or qubits & outcomes) passed to localiser.cpp differed in length.");
 }
 
 void assert_localiserDistribQuregSpooferGivenValidQuregs(Qureg local, Qureg distrib) {
@@ -625,6 +650,11 @@ void error_gpuUnexpectedlyInaccessible() {
     raiseInternalError("A function internally assumed (as a precondition) that QuEST was compiled with GPU-acceleration enabled, and that one was physically accessible, though this was untrue.");
 }
 
+void error_gpuNumThreadsPerBlockNotSet() {
+
+    raiseInternalError("A function queried the GPU numThreadsPerBlock before it had been set (intendedly by QuESTEnv initialisation).");
+}
+
 void error_gpuMemSyncQueriedButEnvNotGpuAccelerated() {
 
     raiseInternalError("A function checked whether persistent GPU memory (such as in a CompMatr) had been synchronised, but the QuEST environment is not GPU accelerated.");  
@@ -754,6 +784,37 @@ void error_pauliStrSumConjHasIncorrectNumTerms() {
 
 
 /*
+ * LIST ERRORS 
+ */
+
+void error_smallListLengthExceededMax() {
+
+    raiseInternalError("A List64 was attemptedly allocated or grown to an illegally large size.");
+}
+
+void error_smallListIndexWasNegative() {
+
+    raiseInternalError("A List64 index was negative.");
+}
+
+void error_smallListIndexExceededLength() {
+
+    raiseInternalError("A List64 index equalled or exceeded the list length.");
+}
+
+void error_smallListWasEmpty() {
+
+    raiseInternalError("A List64 was unexpectedly empty.");
+}
+
+void error_smallListNullPtrWithPositiveLength() {
+
+    raiseInternalError("The List64 constructor was given a nullptr yet a non-zero length.");
+}
+
+
+
+/*
  * UTILITY ERRORS 
  */
 
@@ -826,6 +887,16 @@ void error_attemptedToParseComplexFromInvalidString() {
 void error_attemptedToParseRealFromInvalidString() {
 
     raiseInternalError("A function attempted to parse a string to a qreal but the string was not validly formatted. This should have been caught by prior user validation.");
+}
+
+void error_attemptedToParseIntegerFromInvalidString() {
+
+    raiseInternalError("A function attempted to parse a string to an int but the string was not validly formatted. This should have been caught by prior user validation.");
+}
+
+void error_attemptedToParseOutOfRangeInteger() {
+
+    raiseInternalError("A function attempted to parse a string to an integer but the numerical value of the string literal exceeded the range of the integer. This should have been caught by prior validation.");
 }
 
 void error_attemptedToParseOutOfRangeReal() {

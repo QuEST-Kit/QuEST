@@ -40,8 +40,6 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 
 # GNUInstallDirs to provide sensible default install directory names
-cmake_path(SET ORG_INSTALL_PATH NORMALIZE "${CMAKE_INSTALL_PREFIX}")
-cmake_path(APPEND CMAKE_INSTALL_PREFIX "quest")
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
@@ -62,10 +60,10 @@ endif()
 # Default to "Release"
 # Using recipe from Kitware Blog post
 # https://www.kitware.com/cmake-and-the-default-build-type/
-set(default_build_type "Release")
+set(quest_default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
-  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
+  message(STATUS "Setting build type to '${quest_default_build_type}' as none was specified.")
+  set(CMAKE_BUILD_TYPE "${quest_default_build_type}" CACHE
       STRING "Choose the type of build." FORCE)
   # Set the possible values of build type for cmake-gui
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
@@ -74,56 +72,57 @@ endif()
 
 
 # Library type
-# Shared library by default
-option(BUILD_SHARED_LIBS "Build shared library. Turned ON by default." ON)
-message(STATUS "Shared library is turned ${BUILD_SHARED_LIBS}. Set BUILD_SHARED_LIBS to modify.")
-
+# Shared library by default when we are the top level cmake project
+if(PROJECT_IS_TOP_LEVEL)
+  option(BUILD_SHARED_LIBS "Build shared library. Turned ON by default." ON)
+  message(STATUS "Shared library is turned ${BUILD_SHARED_LIBS}. Set BUILD_SHARED_LIBS to modify.")
+endif ()
 
 # Library naming
-set(LIB_NAME QuEST 
-  CACHE 
+set(QUEST_OUTPUT_LIB_NAME QuEST
+  CACHE
   STRING
-  "Change library name. LIB_NAME is QuEST by default."
+  "Change library name. QUEST_OUTPUT_LIB_NAME is QuEST by default."
 )
-message(STATUS "Library will be named lib${LIB_NAME}. Set LIB_NAME to modify.")
+message(STATUS "Library will be named lib${QUEST_OUTPUT_LIB_NAME}. Set QUEST_OUTPUT_LIB_NAME to modify.")
 
-option(VERBOSE_LIB_NAME "Modify library name based on compilation configuration. Turned OFF by default." OFF)
-message(STATUS "Verbose library naming is turned ${VERBOSE_LIB_NAME}. Set VERBOSE_LIB_NAME to modify.")
+option(QUEST_APPEND_CONFIG_TO_LIB_NAME "Modify library name based on compilation configuration. Turned OFF by default." OFF)
+message(STATUS "Verbose library naming is turned ${QUEST_APPEND_CONFIG_TO_LIB_NAME}. Set QUEST_APPEND_CONFIG_TO_LIB_NAME to modify.")
 
 
 # Precision
-set(FLOAT_PRECISION 2 
-  CACHE 
-  STRING 
+set(QUEST_FLOAT_PRECISION 2
+  CACHE
+  STRING
   "Whether to use single, double, or quad floating point precision in the state vector. {1,2,4}"
 )
-set_property(CACHE FLOAT_PRECISION PROPERTY STRINGS
+set_property(CACHE QUEST_FLOAT_PRECISION PROPERTY STRINGS
   1
   2
   4
 )
-message(STATUS "Precision set to ${FLOAT_PRECISION}. Set FLOAT_PRECISION to modify.")
+message(STATUS "Precision set to ${QUEST_FLOAT_PRECISION}. Set QUEST_FLOAT_PRECISION to modify.")
 
 
 # Examples
 option(
-  BUILD_EXAMPLES
+  QUEST_BUILD_EXAMPLES
   "Whether the example programs will be built alongside the QuEST library. Turned OFF by default."
   OFF
 )
-message(STATUS "Examples are turned ${BUILD_EXAMPLES}. Set BUILD_EXAMPLES to modify.")
+message(STATUS "Examples are turned ${QUEST_BUILD_EXAMPLES}. Set QUEST_BUILD_EXAMPLES to modify.")
 
 
 # Testing
 option(
-  ENABLE_TESTING
+  QUEST_BUILD_TESTS
   "Whether the test suite will be built alongside the QuEST library. Turned ON by default."
   OFF
 )
-message(STATUS "Testing is turned ${ENABLE_TESTING}. Set ENABLE_TESTING to modify.")
+message(STATUS "Testing is turned ${QUEST_BUILD_TESTS}. Set QUEST_BUILD_TESTS to modify.")
 
 option(
-  DOWNLOAD_CATCH2
+  QUEST_TESTS_DOWNLOAD_CATCH2
   "Whether Catch2 v3 will be downloaded if it is not found. Turned ON by default."
   ON
 )
@@ -131,59 +130,120 @@ option(
 
 # Multithreading
 option(
-  ENABLE_MULTITHREADING 
-  "Whether QuEST will be built with shared-memory parallelism support using OpenMP. Turned ON by default." 
+  QUEST_ENABLE_OMP
+  "Whether QuEST will be built with shared-memory parallelism support using OpenMP. Turned ON by default."
   ON
 )
-message(STATUS "Multithreading is turned ${ENABLE_MULTITHREADING}. Set ENABLE_MULTITHREADING to modify.")
+message(STATUS "Multithreading is turned ${QUEST_ENABLE_OMP}. Set QUEST_ENABLE_OMP to modify.")
+
+
+# NUMA
+option(
+  QUEST_ENABLE_NUMA
+  "Whether QuEST will be built with NUMA awareness, when also using OpenMP. Turned ON by default."
+  ON
+)
+message(STATUS "NUMA awareness is turned ${QUEST_ENABLE_NUMA}. Set QUEST_ENABLE_NUMA to modify.")
+
+
+# BMI2
+option(
+  QUEST_ENABLE_BMI2
+  "Whether QuEST will accelerate CPU bit gather/scatter with x86 BMI2 (PEXT/PDEP) intrinsics."
+  OFF
+)
+message(STATUS "BMI2 bitwise acceleration is turned ${QUEST_ENABLE_BMI2}. Set QUEST_ENABLE_BMI2 to modify.")
 
 
 # Distribution
 option(
-  ENABLE_DISTRIBUTION 
-  "Whether QuEST will be built with distributed parallelism support using MPI. Turned OFF by default." 
+  QUEST_ENABLE_MPI
+  "Whether QuEST will be built with distributed parallelism support using MPI. Turned OFF by default."
   OFF
 )
-message(STATUS "Distribution is turned ${ENABLE_DISTRIBUTION}. Set ENABLE_DISTRIBUTION to modify.")
+message(STATUS "Distribution is turned ${QUEST_ENABLE_MPI}. Set QUEST_ENABLE_MPI to modify.")
+
+option(
+  QUEST_ENABLE_SUBCOMM
+  "Whether QuEST will be built with support for restricting it to a user-defined MPI communicator. Turned OFF by default."
+  OFF
+)
+message(STATUS "Custom communicator support is turned ${QUEST_ENABLE_SUBCOMM}. Set QUEST_ENABLE_SUBCOMM to modify.")
 
 
 # GPU Acceleration
 option(
-  ENABLE_CUDA
+  QUEST_ENABLE_CUDA
   "Whether QuEST will be built with support for NVIDIA GPU acceleration. Turned OFF by default."
   OFF
 )
-message(STATUS "NVIDIA GPU acceleration is turned ${ENABLE_CUDA}. Set ENABLE_CUDA to modify.")
+message(STATUS "NVIDIA GPU acceleration is turned ${QUEST_ENABLE_CUDA}. Set QUEST_ENABLE_CUDA to modify.")
 
 option(
-  ENABLE_CUQUANTUM
+  QUEST_ENABLE_CUQUANTUM
   "Whether QuEST will be built with support for NVIDIA cuQuantum. Turned OFF by default."
   OFF
 )
-message(STATUS "CuQuantum support is turned ${ENABLE_CUQUANTUM}. Set ENABLE_CUQUANTUM to modify.")
+message(STATUS "CuQuantum support is turned ${QUEST_ENABLE_CUQUANTUM}. Set QUEST_ENABLE_CUQUANTUM to modify.")
 
 option(
-  ENABLE_HIP
+  QUEST_ENABLE_HIP
   "Whether QuEST will be built with support for AMD GPU acceleration. Turned OFF by default."
   OFF
 )
-message(STATUS "AMD GPU acceleration is turned ${ENABLE_HIP}. Set ENABLE_HIP to modify.")
+message(STATUS "AMD GPU acceleration is turned ${QUEST_ENABLE_HIP}. Set QUEST_ENABLE_HIP to modify.")
+
+
+# GPU Performance Tuning
+# (We do not print this value when configuring CMake as it is for advanced users only)
+set(quest_tpb_description # (the games we play for multi-line set() strings!)
+  "The default number of threads per block QuEST will use when offloading to a GPU. Set to 128 by default. "
+  "Must be a multiple of 32 (on NVIDIA GPUs) or 64 (on AMD GPUs). Can be overridden at executable launch "
+  "via an environment variable of the same name, or during runtime via a corresponding API setter function."
+)
+set(QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK 128 
+  CACHE STRING
+  "${quest_tpb_description}")
+mark_as_advanced(QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK)
+
+
+# Checkpointing with ADIOS2
+option(
+  QUEST_ENABLE_ADIOS2
+  "Whether QuEST will be built with ADIOS2, enabling checkpointing (via saveQuregToFile / createQuregFromFile). Turned OFF by default."
+  OFF
+)
+message(STATUS "ADIOS2 integration is turned ${QUEST_ENABLE_ADIOS2}. Set QUEST_ENABLE_ADIOS2 to modify.")
+
+option(
+  QUEST_DOWNLOAD_ADIOS2
+  "Whether ADIOS2 will be downloaded if it is enabled but not found. Turned ON by default."
+  ON
+)
 
 
 # Deprecated API
 option(
-  ENABLE_DEPRECATED_API
+  QUEST_ENABLE_DEPRECATED_API
   "Whether QuEST will be built with deprecated API support. Turned OFF by default."
   OFF
 )
-message(STATUS "Deprecated API support is turned ${ENABLE_DEPRECATED_API}. Set ENABLE_DEPRECATED_API to modify.")
+message(STATUS "Deprecated API support is turned ${QUEST_ENABLE_DEPRECATED_API}. Set QUEST_ENABLE_DEPRECATED_API to modify.")
 
 option(
-  DISABLE_DEPRECATION_WARNINGS
+  QUEST_DISABLE_DEPRECATION_WARNINGS
   "Whether to disable compile-time warnings ordinarily triggered by use of the deprecated API. Turned OFF by default."
   OFF
 )
-message(STATUS "Disabling of deprecated API warnings is turned ${DISABLE_DEPRECATION_WARNINGS}. Set DISABLE_DEPRECATION_WARNINGS to modify.")
+message(STATUS 
+  "Disabling of deprecated API warnings is turned ${QUEST_DISABLE_DEPRECATION_WARNINGS}. "
+  "Set QUEST_DISABLE_DEPRECATION_WARNINGS to modify."
+)
+
+option(QUEST_INSTALL_BINARIES "Whether to include example and user binaries in the install." OFF)
+if (QUEST_INSTALL_BINARIES)
+  message(STATUS "Including example and user binaries in the install (if built).")
+endif()
 
 
 
@@ -192,18 +252,23 @@ message(STATUS "Disabling of deprecated API warnings is turned ${DISABLE_DEPRECA
 # ============================
 
 
-if (ENABLE_CUDA AND ENABLE_HIP)
+if (QUEST_ENABLE_CUDA AND QUEST_ENABLE_HIP)
   message(FATAL_ERROR "QuEST cannot support CUDA and HIP simultaneously.")
 endif()
 
 
-if ((ENABLE_CUDA OR ENABLE_HIP) AND FLOAT_PRECISION STREQUAL 4)
+if ((QUEST_ENABLE_CUDA OR QUEST_ENABLE_HIP) AND QUEST_FLOAT_PRECISION STREQUAL 4)
   message(FATAL_ERROR "Quad precision is not supported on GPU. Please disable GPU acceleration or lower precision.")
 endif()
 
 
-if (ENABLE_CUQUANTUM AND NOT ENABLE_CUDA)
+if (QUEST_ENABLE_CUQUANTUM AND NOT QUEST_ENABLE_CUDA)
   message(FATAL_ERROR "Use of cuQuantum requires CUDA.")
+endif()
+
+
+if (QUEST_ENABLE_SUBCOMM AND NOT QUEST_ENABLE_MPI)
+  message(FATAL_ERROR "Distribution must be enabled to make use of a user-defined communicator for QuEST.")
 endif()
 
 
@@ -212,15 +277,106 @@ if(WIN32)
   # Force MSVC to export all symbols in a shared library, like GCC and clang
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-  if (ENABLE_TESTING AND BUILD_SHARED_LIBS)
+  if (QUEST_BUILD_TESTS AND BUILD_SHARED_LIBS)
     message(WARNING "Compiling the tests on Windows requires BUILD_SHARED_LIBS=OFF which we now force.")
     set(BUILD_SHARED_LIBS OFF)
   endif()
 
-  if (ENABLE_DEPRECATED_API)
+  if (QUEST_ENABLE_DEPRECATED_API)
     message(FATAL_ERROR "The deprecated API is not compatible with MSVC.")
   endif()
 
+endif()
+
+
+# validate numTPB even when GPU not compiled
+if (QUEST_ENABLE_HIP)
+  set(quest_warp_size 64)
+  set(quest_gpu_model "AMD GPUs (via HIP)")
+else()
+  set(quest_warp_size 32)
+  set(quest_gpu_model "NVIDIA GPUs (via CUDA), or when not targeting GPUs")
+endif()
+math(EXPR quest_tpb_remainder "${QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK} % ${quest_warp_size}")
+if ((NOT (quest_tpb_remainder EQUAL 0)) OR NOT (QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK GREATER 0))
+  message(FATAL_ERROR
+    "QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK was set to ${QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK}, "
+    "but it must be a positive multiple of ${quest_warp_size} when compiling for ${quest_gpu_model}."
+  )
+endif()
+
+
+# probe whether BMI2 intrinsics are recognised by compiler
+if (QUEST_ENABLE_BMI2)
+
+  # save current CMAKE_REQUIRED_FLAGS for later restoration
+  set(_quest_saved_req_flags "${CMAKE_REQUIRED_FLAGS}")
+
+  # give probe compilation the bmi flag if exists (does not exist on MSVC)
+  include(CheckCXXCompilerFlag)
+  check_cxx_compiler_flag("-mbmi2" _quest_cxx_recognises_bmi2)
+  if (_quest_cxx_recognises_bmi2)
+    string(APPEND CMAKE_REQUIRED_FLAGS " -mbmi2")
+  endif()
+
+  # probe whether intrinsics compile
+  include(CheckCXXSourceCompiles)
+  check_cxx_source_compiles(
+    "
+    #include <immintrin.h>
+    int main() {
+        _pext_u64(0ULL, 0ULL);
+        _pdep_u64(0ULL, 0ULL);
+        return 0;
+    }
+    "
+    _quest_cxx_compiles_bmi2)
+
+  # restore CMAKE_REQUIRED_FLAS
+  set(CMAKE_REQUIRED_FLAGS "${_quest_saved_req_flags}")
+  unset(_quest_saved_req_flags)
+
+  # error if probe failed
+  if (NOT _quest_cxx_compiles_bmi2)
+    message(FATAL_ERROR "QUEST_ENABLE_BMI2 was ${QUEST_ENABLE_BMI2} but BMI2 intrinsics were not recognised by the compiler. ")
+  endif()
+
+  # var _quest_cxx_recognises_bmi2 used later during BMI2 management 
+
+endif()
+
+
+# warn when numTPB will be later overridden by the current environment variable
+if(
+  DEFINED ENV{QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK} 
+  AND NOT "$ENV{QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK}" STREQUAL ""
+  AND NOT "$ENV{QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK}" STREQUAL "${QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK}"
+)
+  message(WARNING 
+    "The CMake option QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK=${QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK} "
+    "differs from the current environment variable (of the same name) value of $ENV{QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK}. "
+    "If not cleared before QuEST is launched, the latter will override the former."
+  )
+endif()
+
+
+# Encourage high-performance Release build
+
+# Taken from Kitware's exmaple of problematic code at
+# https://cmake.org/cmake/help/latest/manual/cmake-buildsystem.7.html#build-configurations
+# We have to use it here as we want to message the user! We are handling multiconfig
+# separately anyway.
+string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type)
+
+if(CMAKE_CONFIGURATION_TYPES)
+  message(WARNING
+    "You are using a multi-config generator, so make sure to subsequently "
+    "build with '--config Release' for best performance.")
+elseif(NOT (build_type STREQUAL "release" OR build_type STREQUAL "relwithdebinfo"))
+  message(WARNING
+    "Using a non-release build (CMAKE_BUILD_TYPE='${CMAKE_BUILD_TYPE}') "
+    "can significantly degrade performance. "
+    "Consider using -DCMAKE_BUILD_TYPE=Release.")
 endif()
 
 
@@ -230,32 +386,44 @@ endif()
 # ============================
 
 
-if (VERBOSE_LIB_NAME)
+if (QUEST_APPEND_CONFIG_TO_LIB_NAME)
 
-  string(CONCAT LIB_NAME ${LIB_NAME} "-fp${FLOAT_PRECISION}")
+  string(CONCAT QUEST_OUTPUT_LIB_NAME ${QUEST_OUTPUT_LIB_NAME} "-fp${QUEST_FLOAT_PRECISION}")
 
-  if (ENABLE_MULTITHREADING)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+mt")
+  if (QUEST_ENABLE_OMP)
+    string(CONCAT QUEST_OUTPUT_LIB_NAME ${QUEST_OUTPUT_LIB_NAME} "+omp")
   endif()
 
-  if (ENABLE_DISTRIBUTION)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+mpi")
+  if (QUEST_ENABLE_MPI)
+    string(CONCAT QUEST_OUTPUT_LIB_NAME ${QUEST_OUTPUT_LIB_NAME} "+mpi")
   endif()
 
-  if (ENABLE_CUDA)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+cuda")
+  if (QUEST_ENABLE_CUDA)
+    string(CONCAT QUEST_OUTPUT_LIB_NAME ${QUEST_OUTPUT_LIB_NAME} "+cuda")
   endif()
 
-  if (ENABLE_HIP)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+hip")
+  if (QUEST_ENABLE_HIP)
+    string(CONCAT QUEST_OUTPUT_LIB_NAME ${QUEST_OUTPUT_LIB_NAME} "+hip")
   endif()
 
-  if (ENABLE_CUQUANTUM)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+cuquantum")
+  if (QUEST_ENABLE_CUQUANTUM)
+    string(CONCAT QUEST_OUTPUT_LIB_NAME ${QUEST_OUTPUT_LIB_NAME} "+cuquantum")
   endif()
 
-  if (ENABLE_DEPRECATED_API)
-    string(CONCAT LIB_NAME ${LIB_NAME} "+depr")
+  if (QUEST_ENABLE_DEPRECATED_API)
+    string(CONCAT QUEST_OUTPUT_LIB_NAME ${QUEST_OUTPUT_LIB_NAME} "+depr")
+  endif()
+
+  if (QUEST_ENABLE_BMI2)
+    string(CONCAT QUEST_OUTPUT_LIB_NAME ${QUEST_OUTPUT_LIB_NAME} "+bmi2")
+  endif()
+
+  if (QUEST_ENABLE_ADIOS2)
+    string(CONCAT QUEST_OUTPUT_LIB_NAME ${QUEST_OUTPUT_LIB_NAME} "+adios2")
+  endif()
+
+  if (QUEST_ENABLE_SUBCOMM)
+    string(CONCAT QUEST_OUTPUT_LIB_NAME ${QUEST_OUTPUT_LIB_NAME} "+subcomm")
   endif()
 
 endif()
@@ -292,7 +460,7 @@ set_target_properties(QuEST PROPERTIES
 # while the source code is entirely C++ and requires C++17,
 # and the tests further require C++20 (handled in tests/).
 # Yet, we here specify C++17 for the source, and C11 as only
-# applies to the C interface when users specify USER_SOURCE,
+# applies to the C interface when users specify USER_SOURCE_NAMES,
 # to attemptedly minimise user confusion. Users wishing to
 # link QuEST with C++14 should separate compilation.
 target_compile_features(QuEST
@@ -323,7 +491,7 @@ target_compile_options(QuEST
 
 
 # OpenMP
-if (ENABLE_MULTITHREADING)
+if (QUEST_ENABLE_OMP)
 
   # find OpenMP, but fail gracefully...
   find_package(OpenMP QUIET)
@@ -354,35 +522,38 @@ endif()
 
 
 # NUMA (only relevant when multithreading)
-if (ENABLE_MULTITHREADING)
+if (QUEST_ENABLE_OMP AND QUEST_ENABLE_NUMA)
 
   # Find NUMA - location of NUMA headers
   if (WIN32)
-    set(NUMA_AWARE 0)
+    set(QUEST_ENABLE_NUMA 0)
     message(WARNING "Building on Windows, QuEST will not be aware of numa locality")
   else()
     include(FindPkgConfig)
     pkg_search_module(NUMA numa IMPORTED_TARGET GLOBAL)
     if (${NUMA_FOUND})
-      set(NUMA_AWARE ${NUMA_FOUND})
+      set(QUEST_ENABLE_NUMA ${NUMA_FOUND})
       target_link_libraries(QuEST PRIVATE PkgConfig::NUMA)
       message(STATUS "NUMA awareness is enabled.")
     else()
-      set(NUMA_AWARE 0)
+      set(QUEST_ENABLE_NUMA 0)
       message(WARNING "libnuma not found, QuEST will not be aware of numa locality")
     endif()
   endif()
 
 else()
-  set(NUMA_AWARE 0)
+  set(QUEST_ENABLE_NUMA 0)
 endif()
 
 
 # MPI
-if (ENABLE_DISTRIBUTION)
+if (QUEST_ENABLE_MPI)
   find_package(MPI REQUIRED
+    # Component CXX is the C api usable from C++
+    # NOT the deprecated C++ API
     COMPONENTS CXX
   )
+
   target_link_libraries(QuEST
     PRIVATE
     MPI::MPI_CXX
@@ -391,7 +562,7 @@ endif()
 
 
 # CUDA
-if (ENABLE_CUDA)
+if (QUEST_ENABLE_CUDA)
 
   # make nvcc use user cxx-compiler as default host (before cuda-host is set below)
   if (NOT DEFINED CMAKE_CUDA_HOST_COMPILER)
@@ -403,11 +574,20 @@ if (ENABLE_CUDA)
   set(CUDA_PROPAGATE_HOST_FLAGS OFF)
   
   set_property(TARGET QuEST PROPERTY CUDA_STANDARD 20)
+
+  # force MSVC to use the modern preprocessor
+  if (MSVC)
+    target_compile_options(QuEST PRIVATE
+      $<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor>
+      $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/Zc:preprocessor>
+    )
+  endif()
+
 endif()
 
 
 # HIP
-if (ENABLE_HIP)
+if (QUEST_ENABLE_HIP)
 
   # if generation fails (hip::amdhip64 not found), users can try setting
   # CMAKE_MODULE_PATH to '/opt/rocm/cmake' or '/opt/rocm/hip/lib/cmake/hip'
@@ -430,10 +610,91 @@ endif()
 
 
 # cuQuantum
-if (ENABLE_CUQUANTUM)
+if (QUEST_ENABLE_CUQUANTUM)
   find_package(CUQUANTUM REQUIRED)
   target_link_libraries(QuEST PRIVATE CUQUANTUM::cuStateVec)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+endif()
+
+
+# Checkpointing (ADIOS2)
+if (QUEST_ENABLE_ADIOS2)
+
+  find_package(adios2 QUIET)
+
+  # A distributed QuEST needs an MPI-enabled ADIOS2 (which provides the
+  # adios2::cxx_mpi target). A serial system install lacks it, so in that case we
+  # ignore the found package and fetch an MPI-enabled build instead of failing.
+  set(quest_use_found_adios2 ${adios2_FOUND})
+  if (adios2_FOUND AND QUEST_ENABLE_MPI AND NOT TARGET adios2::cxx_mpi)
+    message(STATUS "Found ADIOS2 lacks MPI support (no adios2::cxx_mpi target); fetching an MPI-enabled build instead")
+    set(quest_use_found_adios2 FALSE)
+  endif()
+
+  if(NOT quest_use_found_adios2 AND QUEST_DOWNLOAD_ADIOS2)
+    message(STATUS "fetching ADIOS2 via FetchContent")
+
+    include(FetchContent)
+    FetchContent_Declare(
+      adios2
+      GIT_REPOSITORY https://github.com/ornladios/ADIOS2.git
+      GIT_TAG v2.12.1
+    )
+
+    # Match ADIOS2's MPI to QuEST's so distributed runs write per-rank slices
+    # into one shared file. ADIOS2's CUDA support is deliberately left OFF:
+    # checkpointing copies amps to host memory (syncQuregFromGpu/syncQuregToGpu)
+    # before any I/O, so ADIOS2 never touches device pointers. Building it with
+    # CUDA is unnecessary and stalls the Windows CUDA CI job.
+    set(ADIOS2_USE_MPI  ${QUEST_ENABLE_MPI} CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_CUDA OFF CACHE BOOL "" FORCE)
+
+    # Forego unused facilities
+    set(ADIOS2_BUILD_TESTING  OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_SODIUM     OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_Fortran    OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_HDF5       OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_ZeroMQ     OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_SST        OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_DataMan    OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_SSC        OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_MHS        OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_DAOS       OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_MGARD      OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_BZip2      OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_Blosc      OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_Blosc2     OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_SZ         OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_ZFP        OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_PNG        OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_Profiling  OFF CACHE BOOL "" FORCE)
+    set(ADIOS2_USE_Python     OFF CACHE BOOL "" FORCE)
+
+    FetchContent_MakeAvailable(adios2)
+
+  else()
+    # re-run non-QUIET so configuration fails with a clear error if the package
+    # somehow became unavailable between the two calls
+    find_package(adios2 REQUIRED)
+  endif()
+
+  # In distributed builds link ADIOS2's MPI-enabled C++ interface: it defines
+  # ADIOS2_USE_MPI, which exposes the adios2::ADIOS(MPI_Comm) constructor used in
+  # qureg.cpp for collective per-rank I/O. The serial target lacks it.
+  if (QUEST_ENABLE_MPI)
+    target_link_libraries(QuEST PRIVATE adios2::cxx_mpi)
+  else()
+    target_link_libraries(QuEST PRIVATE adios2::cxx)
+  endif()
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+endif()
+
+
+# BMI2 (flag not necessary when unrecognised)
+if (QUEST_ENABLE_BMI2 AND _quest_cxx_recognises_bmi2)
+  target_compile_options(QuEST PRIVATE
+    $<$<COMPILE_LANGUAGE:CXX>:-mbmi2>)
 endif()
 
 
@@ -444,93 +705,32 @@ endif()
 
 
 # set vars which will be written to config.h.in (auto-converted to 0 or 1)
-set(COMPILE_OPENMP ${ENABLE_MULTITHREADING})
-set(COMPILE_MPI ${ENABLE_DISTRIBUTION})
-set(COMPILE_CUQUANTUM ${ENABLE_CUQUANTUM})
-set(INCLUDE_DEPRECATED_FUNCTIONS ${ENABLE_DEPRECATED_API})
+set(QUEST_COMPILE_OMP ${QUEST_ENABLE_OMP})
+set(QUEST_COMPILE_MPI ${QUEST_ENABLE_MPI})
+set(QUEST_COMPILE_SUBCOMM ${QUEST_ENABLE_SUBCOMM})
+set(QUEST_COMPILE_CUQUANTUM ${QUEST_ENABLE_CUQUANTUM})
+set(QUEST_COMPILE_ADIOS2 ${QUEST_ENABLE_ADIOS2})
+set(QUEST_COMPILE_BMI2 ${QUEST_ENABLE_BMI2})
+set(QUEST_INCLUDE_DEPRECATED_FUNCTIONS ${QUEST_ENABLE_DEPRECATED_API})
 
 
 # (for the love of God cmake, create a concise syntax for this)
-if (ENABLE_CUDA OR ENABLE_HIP)
-  set(COMPILE_CUDA 1)
+if (QUEST_ENABLE_CUDA OR QUEST_ENABLE_HIP)
+  set(QUEST_COMPILE_CUDA 1)
 else()
-  set(COMPILE_CUDA 0)
+  set(QUEST_COMPILE_CUDA 0)
 endif()
+set(QUEST_COMPILE_HIP ${QUEST_ENABLE_HIP})
 
 
-# these vars are already set, but repeated here for clarity
-set(FLOAT_PRECISION ${FLOAT_PRECISION})
-set(NUMA_AWARE ${NUMA_AWARE})
-set(DISABLE_DEPRECATION_WARNINGS ${DISABLE_DEPRECATION_WARNINGS})
+# non-binary set vars which will be written to config.h.in (with a differing name) 
+set(QUEST_UNSPECIFIED_DEFAULT_NUM_GPU_THREADS_PER_BLOCK ${QUEST_DEFAULT_NUM_GPU_THREADS_PER_BLOCK})
 
 
-# these do not appear in src but are saved for record-keeping in config.h.in
-set(COMPILE_HIP ${ENABLE_HIP})
-
-
-
-# ============================
-# Patch CPU performance
-# ============================
-
-
-# Patch performance of CPU std::complex arithmetic operator overloads.
-# The cpu_subroutines.cpp file makes extensive use of std::complex operator
-# overloads, and alas these are significantly slower than hand-rolled 
-# arithmetic, due to their NaN and inf checks, and interference with SIMD.
-# It is crucial to pass additional optimisation flags to this file to restore
-# hand-rolled performance (else QuEST v3 is faster than v4 eep). In theory,
-# we can achieve this with specific, relatively 'safe' flags such as LLVM's:
-#     -ffinite-math-only -fno-signed-zeros -ffp-contract=fast
-# However, it is a nuisance to find equivalent flags for different compilers
-# and monitor their performance vs accuracy trade-offs. So instead, we use the
-# much more aggressive and ubiquitous -Ofast flag to guarantee performance. 
-# This introduces many potentially dangerous optimisations, such as asserting
-# associativity of flops, which would break techniques like Kahan summation.
-# The cpu_subroutines.cpp must ergo be very conscious of these optimisations.
-# We here also explicitly inform the file cpu_subroutines.cpp whether or not
-# we are passing the flags, so it can detect/error when flags are forgotten.
-
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
-
-  # Release build will pass -Ofast when known for the given compiler, and
-  # fallback to giving a performance warning and proceeding with compilation
-
-  if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang|Cray|CrayClang|GNU|HP|Intel|IntelLLVM|NVHPC|NVIDIA|XL|XLClang")
-    set(patch_flags "-Ofast")
-    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=1")
-  elseif (CMAKE_CXX_COMPILER_ID MATCHES "HP")
-    set(patch_flags "+Ofast")
-    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=1")
-  elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    set(patch_flags "/fp:fast")
-    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=1")
-  else()
-    message(WARNING 
-      "The compiler (${CMAKE_CXX_COMPILER_ID}) is unrecognised and so crucial optimisation flags have not been "
-      "passed to the CPU backend. These flags are necessary for full performance when performing complex algebra, "
-      "otherwise a slowdown of 3-50x may be observed. Please edit the root CMakeLists.txt to include flags which are "
-      "equivalent to GNU's -Ofast flag for your compiler (search this warning), or contact the QuEST developers for help."
-    )
-    set(patch_flags "")
-    set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=0")
-  endif()
-  
-else()
-
-  # Non-release builds (e.g. Debug) will pass no optimisation flags, and will
-  # communicate to cpu_subroutines.cpp that this is intentional via a macro
-
-  set(patch_flags "")
-  set(patch_macro "-DCOMPLEX_OVERLOADS_PATCHED=0")
-
-endif()
-
-set_source_files_properties(
-  quest/src/cpu/cpu_subroutines.cpp
-  PROPERTIES
-  COMPILE_FLAGS "${patch_flags} ${patch_macro}"
-)
+# these vars are already set (cmake name matches the macro name), but repeated here for clarity
+set(QUEST_FLOAT_PRECISION ${QUEST_FLOAT_PRECISION})
+set(QUEST_ENABLE_NUMA ${QUEST_ENABLE_NUMA})
+set(QUEST_DISABLE_DEPRECATION_WARNINGS ${QUEST_DISABLE_DEPRECATION_WARNINGS})
 
 
 
@@ -546,7 +746,7 @@ endif()
 
 
 # Set output name
-set_target_properties(QuEST PROPERTIES OUTPUT_NAME ${LIB_NAME})
+set_target_properties(QuEST PROPERTIES OUTPUT_NAME ${QUEST_OUTPUT_LIB_NAME})
 
 
 # Add source files
@@ -565,19 +765,25 @@ add_executable(min_example
 )
 target_link_libraries(min_example PRIVATE QuEST::QuEST)
 
-install(TARGETS min_example
-  RUNTIME
-  DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+if (QUEST_ENABLE_MPI AND QUEST_ENABLE_SUBCOMM)
+  target_link_libraries(min_example PRIVATE MPI::MPI_CXX)
+endif()
+
+if (QUEST_INSTALL_BINARIES)
+  install(TARGETS min_example
+    RUNTIME
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+  )
+endif ()
 
 
 # all examples optionally built
-if (BUILD_EXAMPLES)
+if (QUEST_BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
 
-## RATH
+## RPATH
 set(BUILD_RPATH_USE_ORIGIN ON)
 if(APPLE)
   set(_RPATH_ORIGIN "@loader_path")
@@ -609,22 +815,26 @@ setup_quest_rpath(min_example)
 
 
 # validate
-if (USER_SOURCE AND NOT OUTPUT_EXE)
-    message(SEND_ERROR "USER_SOURCE specified, but not OUTPUT_EXE.")
+if (USER_SOURCE_NAMES AND NOT USER_OUTPUT_EXE_NAME)
+    message(SEND_ERROR "USER_SOURCE_NAMES specified, but not USER_OUTPUT_EXE_NAME.")
 endif()
-if (OUTPUT_EXE AND NOT USER_SOURCE)
-    message(SEND_ERROR "OUTPUT_EXE specified, but not USER_SOURCE.")
+if (USER_OUTPUT_EXE_NAME AND NOT USER_SOURCE_NAMES)
+    message(SEND_ERROR "USER_OUTPUT_EXE_NAME specified, but not USER_SOURCE_NAMES.")
 endif()
 
 
 # compile user source
-if (USER_SOURCE AND OUTPUT_EXE)
-  message(STATUS "Compiling ${USER_SOURCE} to executable ${OUTPUT_EXE}.")
+if (USER_SOURCE_NAMES AND USER_OUTPUT_EXE_NAME)
+  message(STATUS "Compiling ${USER_SOURCE_NAMES} to executable ${USER_OUTPUT_EXE_NAME}.")
 
-  add_executable(${OUTPUT_EXE} ${USER_SOURCE})
-  target_link_libraries(${OUTPUT_EXE} PUBLIC QuEST)
-  install(TARGETS ${OUTPUT_EXE} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-  setup_quest_rpath(${OUTPUT_EXE})
+  add_executable(${USER_OUTPUT_EXE_NAME} ${USER_SOURCE_NAMES})
+  target_link_libraries(${USER_OUTPUT_EXE_NAME} PUBLIC QuEST)
+   
+  if (QUEST_INSTALL_BINARIES)
+    install(TARGETS ${USER_OUTPUT_EXE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+  endif()
+  
+  setup_quest_rpath(${USER_OUTPUT_EXE_NAME})
 endif()
 
 
@@ -634,14 +844,14 @@ endif()
 # ============================
 
 
-if (ENABLE_TESTING)
+if (QUEST_BUILD_TESTS)
 
   # try find Catch2
   set(CatchVersion 3.8.0)
   find_package(Catch2 ${CatchVersion} QUIET)
 
   # else try download Catch2
-  if (NOT TARGET Catch2::Catch2 AND DOWNLOAD_CATCH2)
+  if (NOT TARGET Catch2::Catch2 AND QUEST_TESTS_DOWNLOAD_CATCH2)
     message(STATUS "Catch2 not found, it will be downloaded and built in the build directory.")
     Include(FetchContent)
 
@@ -683,12 +893,12 @@ install(TARGETS QuEST
 
 
 # Write CMake version file for QuEST
-set(QuEST_INSTALL_CONFIGDIR "${CMAKE_INSTALL_LIBDIR}/cmake/QuEST")
+set(quest_install_config_dir "${CMAKE_INSTALL_LIBDIR}/cmake/QuEST")
 
 
 # Write QuESTConfigVersion.cmake
 write_basic_package_version_file(
-  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}ConfigVersion.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/${QUEST_OUTPUT_LIB_NAME}ConfigVersion.cmake"
   VERSION ${PROJECT_VERSION}
   COMPATIBILITY AnyNewerVersion
 )
@@ -697,16 +907,16 @@ write_basic_package_version_file(
 # Configure QuESTConfig.cmake (from template)
 configure_package_config_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QuESTConfig.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
-  INSTALL_DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
+  "${CMAKE_CURRENT_BINARY_DIR}/${QUEST_OUTPUT_LIB_NAME}Config.cmake"
+  INSTALL_DESTINATION "${quest_install_config_dir}"
 )
 
 
 # Install them
 install(FILES
-  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
-  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}ConfigVersion.cmake"
-  DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
+  "${CMAKE_CURRENT_BINARY_DIR}/${QUEST_OUTPUT_LIB_NAME}Config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/${QUEST_OUTPUT_LIB_NAME}ConfigVersion.cmake"
+  DESTINATION "${quest_install_config_dir}"
 )
 
 install(FILES 
@@ -728,7 +938,12 @@ install(
 
 install(
   EXPORT QuESTTargets
-  FILE "${LIB_NAME}Targets.cmake"
+  FILE "${QUEST_OUTPUT_LIB_NAME}Targets.cmake"
   NAMESPACE QuEST::
-  DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
+  DESTINATION "${quest_install_config_dir}"
 )
+
+if(PROJECT_IS_TOP_LEVEL)
+  include(CPack)
+endif ()
+

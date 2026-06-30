@@ -20,12 +20,16 @@ using std::string;
  * PARSING NUMBERS
  */
 
+bool parser_isAnySizedInteger(string str);
+bool parser_isValidInteger(string str);
+
 bool parser_isAnySizedReal(string str);
 bool parser_isAnySizedComplex(string str);
 
 bool parser_isValidReal(string str);
 bool parser_isValidComplex(string str);
 
+int parser_parseInteger(string str);
 qreal parser_parseReal(string str);
 qcomp parser_parseComplex(string str);
 

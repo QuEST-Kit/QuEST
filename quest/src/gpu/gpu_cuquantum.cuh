@@ -2,7 +2,7 @@
  * Subroutines which invoke cuStateVec, which are alternatives to the
  * kernels defined in gpu_kernels.cuh, as invoked by gpu_subroutines.cpp
  * 
- * This file is only ever included when COMPILE_CUQUANTUM=1 and COMPILE_CUDA=1
+ * This file is only ever included when QUEST_COMPILE_CUQUANTUM=1 and QUEST_COMPILE_CUDA=1
  * so it can safely invoke CUDA signatures without guards. Note that many of 
  * the statevector functions herein will be re-leveraged by QuEST's density
  * matrix simulation, so it important we do not pass Qureg.numQubits to the 
@@ -29,11 +29,11 @@
 // compile errors (though we must still obtain the preprocessors from config.h)
 #include "quest/include/config.h"
 
-#if ! COMPILE_CUQUANTUM
+#if ! QUEST_COMPILE_CUQUANTUM
     #error "A file being compiled somehow included gpu_cuquantum.hpp despite QuEST not being compiled in cuQuantum mode."
 #endif
 
-#if ! COMPILE_CUDA
+#if ! QUEST_COMPILE_CUDA
     #error "A file being compiled somehow included gpu_cuquantum.hpp despite QuEST not being compiled in GPU-accelerated mode."
 #endif
 
@@ -44,9 +44,10 @@
 
 #include "quest/include/precision.h"
 
+#include "quest/src/core/lists.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
-#include "quest/src/gpu/gpu_types.cuh"
+#include "quest/src/gpu/gpu_qcomp.cuh"
 
 #include <custatevec.h>
 #include <vector>
@@ -63,10 +64,10 @@ using std::vector;
  * because QuEST uses only a single qcomp type for both in the API.
  */
 
-#if (FLOAT_PRECISION == 1)
+#if (QUEST_FLOAT_PRECISION == 1)
     #define CUQUANTUM_QCOMP CUDA_C_32F
 
-#elif (FLOAT_PRECISION == 2)
+#elif (QUEST_FLOAT_PRECISION == 2)
     #define CUQUANTUM_QCOMP CUDA_C_64F
 
 #else
@@ -174,7 +175,7 @@ void gpu_finalizeCuQuantum() {
  */
 
 
-void cuquantum_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2) {
+void cuquantum_statevec_anyCtrlSwap_subA(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ1, int targ2) {
 
     // our SWAP targets are bundled into pairs
     int2 targPairs[] = {{targ1, targ2}};;
@@ -182,7 +183,7 @@ void cuquantum_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<
 
     CUDA_CHECK( custatevecSwapIndexBits(
         config.handle,
-        toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
+        getGpuQcompPtr(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         targPairs, numTargPairs,
 
         // swap mask params seem to be in the reverse order to the remainder of the cuStateVec API
@@ -199,7 +200,7 @@ void cuquantum_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<
  */
 
 
-void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, cu_qcomp* flatMatrElems, bool applyAdj) {
+void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 targs, gpu_qcomp* flatMatrElems, bool applyAdj) {
 
     // this funciton is called 'subA' instead of just 'sub', because it is also called in 
     // the one-target case whereby it is strictly the embarrassingly parallel _subA scenario
@@ -210,7 +211,7 @@ void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> 
 
     CUDA_CHECK( custatevecApplyMatrix(
         config.handle, 
-        toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode, 
+        getGpuQcompPtr(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode, 
         flatMatrElems, CUQUANTUM_QCOMP, CUSTATEVEC_MATRIX_LAYOUT_ROW, applyAdj, 
         targs.data(), targs.size(),
         ctrls.data(), ctrlStates.data(), ctrls.size(), 
@@ -222,7 +223,7 @@ void cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subA(Qureg qureg, vector<int> 
 // there is no bespoke cuquantum_statevec_anyCtrlAnyTargDenseMatrix_subB()
 
 
-void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, cu_qcomp* flatMatrElems, bool conj) {
+void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 targs, gpu_qcomp* flatMatrElems, bool conj) {
 
     // beware that despite diagonal matrices being embarrassingly parallel,
     // the target qubits must still all be suffix-only to avoid a cuStateVec error
@@ -239,7 +240,7 @@ void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrl
 
     CUDA_CHECK( custatevecApplyGeneralizedPermutationMatrix(
         config.handle,
-        toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
+        getGpuQcompPtr(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         perm, flatMatrElems, CUQUANTUM_QCOMP, adj, 
         targs.data(), targs.size(), 
         ctrls.data(), ctrlStates.data(), ctrls.size(),
@@ -259,13 +260,14 @@ void cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, vector<int> ctrl
 void cuquantum_densmatr_oneQubitDephasing_subA(Qureg qureg, int qubit, qreal prob) {
 
     // effect the superoperator as a two-qubit diagonal upon a statevector suffix state
-    cu_qcomp a = {1,        0};
-    cu_qcomp b = {1-2*prob, 0};
-    cu_qcomp elems[] = {a, b, b, a};
-    vector<int> targs {qubit, util_getBraQubit(qubit,qureg)};
+    gpu_qcomp a = {1,        0};
+    gpu_qcomp b = {1-2*prob, 0};
+    gpu_qcomp elems[] = {a, b, b, a};
+    auto targs = lists_getList64({qubit, util_getBraQubit(qubit,qureg)});
 
     bool conj = false;
-    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {}, {}, targs, elems, conj);
+    auto empty = lists_getEmptyList64();
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, empty, empty, targs, elems, conj);
 }
 
 
@@ -275,15 +277,18 @@ void cuquantum_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal 
     // equivalent to a state-controlled global phase upon a statevector, which is 
     // itself a same-element one-qubit diagonal applied to any target
     int braBit = getBit(qureg.rank, ketQubit - qureg.logNumColsPerNode);
-    cu_qcomp fac = {1 - 2*prob, 0};
-    cu_qcomp elems[] = {fac, fac};
+    gpu_qcomp fac = {1 - 2*prob, 0};
+    gpu_qcomp elems[] = {fac, fac};
 
     // we choose to target the largest possible qubit, expecting best cuStateVec performance;
     // note it must still be a suffix qubit since cuQuantum does not know qureg is distributed
     int targ = qureg.logNumAmpsPerNode - 1; // leftmost suffix bra qubit
 
     bool conj = false;
-    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {ketQubit}, {!braBit}, {targ}, elems, conj);
+    auto ctrls  = lists_getList64({ketQubit});
+    auto states = lists_getList64({!braBit});
+    auto targs  = lists_getList64({targ});
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, ctrls, states, targs, elems, conj);
 }
 
 
@@ -296,13 +301,14 @@ void cuquantum_densmatr_twoQubitDephasing_subA(Qureg qureg, int qubitA, int qubi
     /// are the same, i.e. we skip |00><00|, |01><01|, |10><10|, |11><11|
 
     // effect the superoperator as a four-qubit diagonal upon a statevector suffix state
-    cu_qcomp a = {1,          0};
-    cu_qcomp b = {1-4*prob/3, 0};
-    cu_qcomp elems[] = {a,b,b,b, b,a,b,b, b,b,a,b, b,b,b,a};
-    vector<int> targs {qubitA, qubitB, util_getBraQubit(qubitA,qureg), util_getBraQubit(qubitB,qureg)};
+    gpu_qcomp a = {1,          0};
+    gpu_qcomp b = {1-4*prob/3, 0};
+    gpu_qcomp elems[] = {a,b,b,b, b,a,b,b, b,b,a,b, b,b,b,a};
+    auto targs = lists_getList64({qubitA, qubitB, util_getBraQubit(qubitA,qureg), util_getBraQubit(qubitB,qureg)});
 
     bool conj = false;
-    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, {}, {}, targs, elems, conj);
+    auto empty = lists_getEmptyList64();
+    cuquantum_statevec_anyCtrlAnyTargDiagMatr_sub(qureg, empty, empty, targs, elems, conj);
 }
 
 
@@ -331,7 +337,7 @@ qreal cuquantum_statevec_calcTotalProb_sub(Qureg qureg) {
 
     CUDA_CHECK( custatevecAbs2SumOnZBasis(
         config.handle,
-        toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
+        getGpuQcompPtr(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         &prob0, &prob1, &qubit, numQubits ) );
 
     qreal total = prob0 + prob1;
@@ -339,25 +345,25 @@ qreal cuquantum_statevec_calcTotalProb_sub(Qureg qureg) {
 }
 
 
-qreal cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes) {
+qreal cuquantum_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes) {
 
     // cuQuantum probabilities are always double
     double prob;
 
     CUDA_CHECK( custatevecAbs2SumArray(
         config.handle,
-        toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
+        getGpuQcompPtr(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         &prob, nullptr, 0, outcomes.data(), qubits.data(), qubits.size()) );
 
     return static_cast<qreal>(prob);
 }
 
 
-void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, vector<int> qubits) {
+void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qureg, ConstList64 qubits) {
 
     // cuQuantum can accept a host-pointer (like outProbs), but only
     // double precision; if qreal != double, we use temporary memory
-    #if (FLOAT_PRECISION == 2)
+    #if (QUEST_FLOAT_PRECISION == 2)
         double* outPtr = outProbs;
     #else
         vector<double> tmpProbs;
@@ -367,11 +373,11 @@ void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qu
 
     CUDA_CHECK( custatevecAbs2SumArray(
         config.handle,
-        toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
+        getGpuQcompPtr(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         outPtr, qubits.data(), qubits.size(), nullptr, nullptr, 0) );
 
     // serially cast and copy output probabilities, if necessary
-    #if (FLOAT_PRECISION != 2)
+    #if (QUEST_FLOAT_PRECISION != 2)
         for (size_t i=0; i<tmpProbs.size(); i++)
             outProbs[i] = static_cast<qreal>(tmpProbs[i]);
     #endif
@@ -384,12 +390,12 @@ void cuquantum_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qu
  */
 
 
-qreal cuquantum_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vector<int> y, vector<int> z) {
+qreal cuquantum_statevec_calcExpecPauliStr_subA(Qureg qureg, ConstList64 x, ConstList64 y, ConstList64 z) {
 
     // prepare term (XX...YY...ZZ...)
     size_t numPaulis = x.size() + y.size() + z.size();
     vector<custatevecPauli_t> paulis; 
-    vector<int32_t> targs; 
+    vector<int32_t> targs; // forego List64 for symmetry
     
     paulis.reserve(numPaulis);
     targs.reserve(numPaulis);
@@ -409,16 +415,17 @@ qreal cuquantum_statevec_calcExpecPauliStr_subA(Qureg qureg, vector<int> x, vect
 
     CUDA_CHECK( custatevecComputeExpectationsOnPauliBasis(
         config.handle,
-        toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
+        getGpuQcompPtr(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         &value, termPaulis, numTerms, termTargets, numPaulisPerTerm) );
 
     return static_cast<qreal>(value);
 }
 
 
-qreal cuquantum_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
+qreal cuquantum_statevec_calcExpecAnyTargZ_sub(Qureg qureg, ConstList64 targs) {
 
-    return cuquantum_statevec_calcExpecPauliStr_subA(qureg, {}, {}, targs);
+    auto empty = lists_getEmptyList64();
+    return cuquantum_statevec_calcExpecPauliStr_subA(qureg, empty, empty, targs);
 }
 
 
@@ -428,11 +435,11 @@ qreal cuquantum_statevec_calcExpecAnyTargZ_sub(Qureg qureg, vector<int> targs) {
  */
 
 
-void cuquantum_statevec_multiQubitProjector_sub(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob) {
+void cuquantum_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob) {
 
     CUDA_CHECK( custatevecCollapseByBitString(
         config.handle,
-        toCuQcomps(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
+        getGpuQcompPtr(qureg.gpuAmps), CUQUANTUM_QCOMP, qureg.logNumAmpsPerNode,
         outcomes.data(), qubits.data(), qubits.size(), prob) );
 }
 

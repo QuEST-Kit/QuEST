@@ -13,6 +13,7 @@
 
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/localiser.hpp"
+#include "quest/src/core/lists.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
@@ -220,7 +221,7 @@ void setQuregToPartialTrace(Qureg out, Qureg in, int* traceOutQubits, int numTra
     validate_targets(in, traceOutQubits, numTraceQubits, __func__);
     validate_quregCanBeSetToReducedDensMatr(out, in, numTraceQubits, __func__);
 
-    auto targets = util_getVector(traceOutQubits, numTraceQubits);
+    auto targets = lists_getList64(traceOutQubits, numTraceQubits);
     localiser_densmatr_partialTrace(in, out, targets);
 }
 
@@ -233,7 +234,7 @@ void setQuregToReducedDensityMatrix(Qureg out, Qureg in, int* retainQubits, int 
     validate_targets(in, retainQubits, numRetainQubits, __func__);
     validate_quregCanBeSetToReducedDensMatr(out, in, in.numQubits - numRetainQubits, __func__);
 
-    auto traceQubits = util_getNonTargetedQubits(retainQubits, numRetainQubits, in.numQubits);
+    auto traceQubits = util_getNonTargetedQubits(lists_getList64(retainQubits, numRetainQubits), in.numQubits);
     localiser_densmatr_partialTrace(in, out, traceQubits);
 }
 
@@ -284,7 +285,7 @@ void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, vector<v
     // of pointers of amps. We defensively check the temp vector allocates fine
     vector<qcomp*> ptrs;
     size_t len = amps.size();
-    auto callback = [&]() { validate_tempAllocSucceeded(false, len, sizeof(qcomp*), __func__); };
+    auto callback = [&]() { validate_tempListAllocSucceeded(false, len, sizeof(qcomp*), __func__); };
     util_tryAllocVector(ptrs, len, callback);
 
     // then set the pointers

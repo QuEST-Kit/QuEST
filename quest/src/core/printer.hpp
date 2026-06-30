@@ -49,6 +49,14 @@ void printer_setPauliStrFormat(int flag);
 
 
 /*
+ * MULTI-PROCESS MANAGEMENT
+ */
+
+void printer_sync();
+
+
+
+/*
  * TYPE NAME STRINGS
  */
 

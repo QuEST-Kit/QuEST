@@ -25,6 +25,8 @@
 #include "quest/include/matrices.h"
 #include "quest/include/channels.h"
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
     #include <vector>
 #endif
@@ -93,7 +95,7 @@ digraph {
  *   @f[ 
         \max\limits_{ij} \Big|\left(\hat{U} \hat{U}^\dagger - \id\right)_{ij}\Big|^2 \le \valeps
  *   @f]
- *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setValidationEpsilon().
+ *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setQuESTValidationEpsilon().
  * 
  * @myexample
  * ```
@@ -192,7 +194,7 @@ digraph {
  *   @f[ 
         \max\limits_{ij} \Big|\left(\hat{U} \hat{U}^\dagger - \id\right)_{ij}\Big|^2 \le \valeps
  *   @f]
- *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setValidationEpsilon().
+ *   where the validation epsilon @f$ \valeps @f$ can be adjusted with setQuESTValidationEpsilon().
  *
  * @equivalences
  * 
@@ -571,7 +573,7 @@ void applyMultiControlledCompMatr2(Qureg qureg, std::vector<int> controls, int t
 /// @notyetdoced
 /// @cppvectoroverload
 /// @see applyMultiStateControlledCompMatr2()
-void applyMultiStateControlledCompMatr2(Qureg qureg, std::vector<int> controls, std::vector<int> states, int numControls, int target1, int target2, CompMatr2 matr);
+void applyMultiStateControlledCompMatr2(Qureg qureg, std::vector<int> controls, std::vector<int> states, int target1, int target2, CompMatr2 matr);
 
 
 #endif // __cplusplus
@@ -1217,7 +1219,7 @@ void applyMultiControlledSqrtSwap(Qureg qureg, std::vector<int> controls, int qu
 /// @notyetdoced
 /// @cppvectoroverload
 /// @see applyMultiStateControlledSqrtSwap()
-void applyMultiStateControlledSqrtSwap(Qureg qureg, std::vector<int> controls, std::vector<int> states, int numControls, int qubit1, int qubit2);
+void applyMultiStateControlledSqrtSwap(Qureg qureg, std::vector<int> controls, std::vector<int> states, int qubit1, int qubit2);
 
 
 #endif // __cplusplus
@@ -2291,32 +2293,26 @@ extern "C" {
 
 
 /// @notyetdoced
-/// @notyetvalidated
 int applyQubitMeasurement(Qureg qureg, int target);
 
 
 /// @notyetdoced
-/// @notyetvalidated
 int applyQubitMeasurementAndGetProb(Qureg qureg, int target, qreal* probability);
 
 
 /// @notyetdoced
-/// @notyetvalidated
 qreal applyForcedQubitMeasurement(Qureg qureg, int target, int outcome);
 
 
 /// @notyetdoced
-/// @notyetvalidated
 qindex applyMultiQubitMeasurement(Qureg qureg, int* qubits, int numQubits);
 
 
 /// @notyetdoced
-/// @notyetvalidated
 qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, int* qubits, int numQubits, qreal* probability);
 
 
 /// @notyetdoced
-/// @notyetvalidated
 qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, int numQubits);
 
 
@@ -2328,16 +2324,18 @@ qreal applyForcedMultiQubitMeasurement(Qureg qureg, int* qubits, int* outcomes, 
 #ifdef __cplusplus
 
 
-/// @notyettested
-/// @notyetvalidated
+/// @notyetdoced
+/// @cppvectoroverload
+/// @see applyMultiQubitMeasurement()
+qindex applyMultiQubitMeasurement(Qureg qureg, std::vector<int> qubits);
+
+
 /// @notyetdoced
 /// @cppvectoroverload
 /// @see applyMultiQubitMeasurementAndGetProb()
 qindex applyMultiQubitMeasurementAndGetProb(Qureg qureg, std::vector<int> qubits, qreal* probability);
 
 
-/// @notyettested
-/// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
 /// @see applyForcedMultiQubitMeasurement()
@@ -2363,12 +2361,10 @@ extern "C" {
 
 
 /// @notyetdoced
-/// @notyetvalidated
 void applyQubitProjector(Qureg qureg, int target, int outcome);
 
 
 /// @notyetdoced
-/// @notyetvalidated
 void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQubits);
 
 
@@ -2380,8 +2376,6 @@ void applyMultiQubitProjector(Qureg qureg, int* qubits, int* outcomes, int numQu
 #ifdef __cplusplus
 
 
-/// @notyettested
-/// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
 /// @see applyMultiQubitProjector()
@@ -2406,14 +2400,67 @@ extern "C" {
 #endif
 
 
-/// @notyetdoced
-/// @notyetvalidated
-void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets);
+/** 
+ * Applies the Quantum Fourier Transform upon the specified @p targets of @p qureg.
+ * Alternatively, applies the Inverse Quantum Fourier Transform according to @p inverse.
+ * 
+ * @formulae
+ * 
+ * Letting @f$ N @f$ = @p numTargets, the @f$ N @f$ qubit Quantum Fourier Transform maps each
+ * computational basis state of the targeted qubits, @f$ \ket{j} @f$, according to
+ * @f[ 
+        \ket{j} \rightarrow \frac{1}{\sqrt{2^N}} \sum_{k=0}^{2^N-1} e^{2 \pi i j k / 2^N} \ket{k}.
+ * @f]
+ * Similarly the Inverse Quantum Fourier Transform maps each basis state like
+ * @f[ 
+        \ket{j} \rightarrow \frac{1}{\sqrt{2^N}} \sum_{k=0}^{2^N-1} e^{-2 \pi i j k / 2^N} \ket{k}.
+ * @f]
+ *
+ * @param[in,out] qureg      the state to modify.
+ * @param[in]     targets    the indices of the target qubits.
+ * @param[in]     numTargets the length of list @p targets
+ * @param[in]     inverse    whether to apply the inverse QFT or forward QFT
+ * @throws @validationerror
+ * - if @p qureg is uninitialised.
+*  - if @p targets are invalid qubit indices.
+*  - if @p targets are not unique.
+ * - if @p numTargets < 1.
+ * @see
+ * - applyFullQuantumFourierTransform()
+ * @author Vasco Ferreira
+ */
+void applyQuantumFourierTransform(Qureg qureg, int* targets, int numTargets, bool inverse);
 
 
-/// @notyetdoced
-/// @notyetvalidated
-void applyFullQuantumFourierTransform(Qureg qureg);
+/** 
+ * Applies the Quantum Fourier Transform upon all qubits in @p qureg. Alternatively,
+ * applies the Inverse Quantum Fourier Transform according to @p inverse.
+ * 
+ * @formulae
+ * 
+ * The Quantum Fourier Transform maps each computational basis state @f$ \ket{j} @f$
+ * in an @f$ N @f$ qubit @p qureg according to
+ * @f[ 
+        \ket{j} \rightarrow \frac{1}{\sqrt{2^N}} \sum_{k=0}^{2^N-1} e^{2 \pi i j k / 2^N} \ket{k}.
+ * @f]
+ * Similarly the Inverse Quantum Fourier Transform maps each basis state like
+ * @f[ 
+        \ket{j} \rightarrow \frac{1}{\sqrt{2^N}} \sum_{k=0}^{2^N-1} e^{-2 \pi i j k / 2^N} \ket{k}.
+ * @f]
+ *
+ * @equivalences
+ *
+ * - This function wraps applyQuantumFourierTransform(), passing all qubits in the @p qureg as targets.
+ *
+ * @param[in,out] qureg      the state to modify.
+ * @param[in]     inverse    whether to apply the inverse QFT or forward QFT
+ * @throws @validationerror
+ * - if @p qureg is uninitialised.
+ * @see
+ * - applyQuantumFourierTransform()
+ * @author Vasco Ferreira
+ */
+void applyFullQuantumFourierTransform(Qureg qureg, bool inverse);
 
 
 // end de-mangler
@@ -2424,12 +2471,10 @@ void applyFullQuantumFourierTransform(Qureg qureg);
 #ifdef __cplusplus
 
 
-/// @notyettested
-/// @notyetvalidated
 /// @notyetdoced
 /// @cppvectoroverload
 /// @see applyQuantumFourierTransform()
-void applyQuantumFourierTransform(Qureg qureg, std::vector<int> targets);
+void applyQuantumFourierTransform(Qureg qureg, std::vector<int> targets, bool inverse);
 
 
 #endif // __cplusplus

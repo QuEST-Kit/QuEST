@@ -94,7 +94,7 @@ initRandomPureState(qureg);
 
 applyHadamard(qureg, 0);
 applyControlledRotateX(qureg, 0, 1, angle);
-applyFullQuantumFourierTransform(qureg);
+applyFullQuantumFourierTransform(qureg, inverse);
 
 reportQureg(qureg);
 
@@ -249,10 +249,33 @@ See the [docs](docs/README.md) for enabling acceleration and running the unit te
 
 ---------------------------------
 
+## 🤝  Team
+
+QuEST's current development team, in no particular order, consists of:
+
+- [Dr Oliver Thomson Brown](https://www.epcc.ed.ac.uk/about-us/our-team/dr-oliver-brown)
+- [Dr James Richings](https://www.epcc.ed.ac.uk/about-us/our-team/dr-james-richings)
+- [Dr Tyson Ray Jones](https://www.tysonjones.io/)
+- [Dr Erich Essmann](https://www.research.ed.ac.uk/en/persons/erich-essmann/)
+- [Vasco Ferreira](https://www.linkedin.com/in/vasco-ferreira-b24058259/)
+- [Prof Simon C. Benjamin](https://www.materials.ox.ac.uk/peoplepages/benjamin.html)
+
+See [authors](AUTHORS.txt) for a list of all of QuEST's past and present contributors.
+
+
+---------------------------------
+
 ## ❤  Acknowledgements
 
 In addition to QuEST's [authors](AUTHORS.txt), we sincerely thank the following external contributors to QuEST.
 
+- [Amon K.](https://github.com/thedaemon-wizard) for optimising away Thrust allocations in [#783](https://github.com/QuEST-Kit/QuEST/pull/783).
+- [Ashmit JaiSarita Gupta](https://github.com/ashmitjsg) for adding ADIOS2-based checkpointing in [#780](https://github.com/QuEST-Kit/QuEST/pull/780).
+- [PoJen Wang](https://github.com/nez0b) for adding BMI2 intrinsics in [#796](https://github.com/QuEST-Kit/QuEST/pull/796).
+- [Mukul Kumar](https://github.com/mk0dz) for investigating compensated summation in [#791](https://github.com/QuEST-Kit/QuEST/pull/791).
+- [Maurice Jamieson](https://github.com/mcjamieson) for extending the unit test suite in v4.3.
+- [Íñigo Aréjula Aísa](https://github.com/iarejula-bsc) for patching a validation error in the user-owned MPI interface.
+- [Daniel Expósito Patiño](https://github.com/D-Exposito) for patching a signature of the v4 C++ API.
 - [Diogo Pratas Maia](https://github.com/diogomaia00) for implementing non-unitary Pauli gadgets (unitaryHACK 2025 [#594](https://github.com/QuEST-Kit/QuEST/issues/594)).
 - [Mai Đức Khang](https://github.com/Roll249) for implementing a RAM probe (unitaryHACK 2025 [#600](https://github.com/QuEST-Kit/QuEST/issues/600)). 
 - [James Richings](https://github.com/JPRichings) for patching a v4 overflow bug.
