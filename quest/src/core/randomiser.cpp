@@ -5,6 +5,7 @@
  * 
  * @author Tyson Jones
  * @author Balint Koczor (patched v3 MSVC seeding)
+ * @author Vasco Ferreira (PauliStrSum permutation)
  */
 
 #include "quest/include/types.h"
@@ -21,6 +22,7 @@
 #include <random>
 #include <limits>
 #include <vector>
+#include <algorithm>
 
 using std::vector;
 
@@ -64,14 +66,14 @@ void rand_setSeeds(vector<unsigned> seeds) {
 
     // all nodes learn root node's #seeds
     unsigned numRootSeeds = seeds.size();
-    if (comm_isInit())
+    if (comm_isActive())
         comm_broadcastUnsignedsFromRoot(&numRootSeeds, 1);
 
     // all nodes ensure they have space to receive root node's seeds
     seeds.resize(numRootSeeds);
     
     // all nodes receive root seeds
-    if (comm_isInit())
+    if (comm_isActive())
         comm_broadcastUnsignedsFromRoot(seeds.data(), seeds.size());
 
     // all nodes remember seeds (in case user wishes to later recall them)
@@ -265,4 +267,15 @@ qcomp rand_getThreadPrivateRandomAmp(std::mt19937_64 &gen, std::normal_distribut
     // https://sumeetkhatri.com/wp-content/uploads/2020/05/random_pure_states.pdf
     qcomp amp = std::sqrt(prob) * std::exp(phase * 1_i);
     return amp;
+}
+
+
+
+/*
+ * LIST SHUFFLING
+ */
+
+void rand_setListToShuffled(vector<qindex>& list) {
+
+    std::shuffle(list.begin(), list.end(), mainGenerator);
 }

@@ -66,8 +66,8 @@ typedef struct {
 
     qindex numTerms;
 
-    // arbitrarily-sized collection of Pauli strings and their
-    // coefficients are stored in heap memory.
+    // numTerms-sized collection of Pauli strings and their
+    // coefficients, stored in heap memory.
     PauliStr* strings;
     qcomp* coeffs;
 
@@ -99,6 +99,9 @@ typedef struct {
  * 
  * @defgroup paulis_reporters Reporters
  * @brief Functions for printing Pauli data structures.
+ *
+ * @defgroup paulis_setters Setters
+ * @brief Functions for modifying existing Pauli data structures.
  */
 
 
@@ -411,6 +414,89 @@ extern "C" {
      *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/reporting_paulis.cpp) examples
      */
     void reportPauliStrSum(PauliStrSum str);
+
+
+// end de-mangler
+#ifdef __cplusplus
+}
+#endif
+
+
+
+/*
+ * SETTERS
+ */
+
+// enable invocation by both C and C++ binaries
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+    /** @ingroup paulis_setters
+     *
+     * Reorders the terms within a @p sum of weighted Pauli strings
+     * so that the Pauli strings are ordered lexicographically.
+     *
+     * @formulae
+     * 
+     * Let @f$ H = @f$ @p sum, satisfying
+     * @f[
+          H = \sum\limits_j c_j \, \hat{\sigma}_j
+     * @f]
+     * where @f$ c_j @f$ is the coefficient of the @f$ j @f$-th PauliStr @f$ \hat{\sigma}_j @f$.
+     *
+     * This function applies the permutation @f$ \pi @f$ to @f$ H @f$, whereby
+     * @f[
+          H = \sum\limits_j c_{\pi(j)} \, \hat{\sigma}_{\pi(j)}
+     * @f]
+     * such that
+     * @f[
+     *   \hat{\sigma}_{\pi(i)} <_{lex} \hat{\sigma}_{\pi(j)} \  \forall \  \pi(i) < \pi(j).
+     * @f]
+     *
+     *
+     * @param[in,out] sum  a weighted sum of Pauli strings to reorder.
+     *
+     * @throws @validationerror
+     * - if @p sum is not initialised.
+     *
+     * @see
+     * - sortPauliStrSumMagnitude()
+     * @author Vasco Ferreira
+     */
+    void sortPauliStrSumLexicographic(PauliStrSum sum);
+
+
+    /** @ingroup paulis_setters
+     *
+     * Reorders the terms within a @p sum of weighted Pauli strings such that
+     * coefficients are ordered with decreasing magnitude.
+     *
+     * @formulae
+     *
+     * Let @f$ H = @f$ @p sum, satisfying
+     * @f[
+          H = \sum\limits_j c_j \, \hat{\sigma}_j
+     * @f]
+     * where @f$ c_j @f$ is the coefficient of the @f$ j @f$-th PauliStr @f$ \hat{\sigma}_j @f$.
+     *
+     * This function applies the permutation @f$ \pi @f$ to @f$ H @f$ such that
+     * @f[
+     *    |c_{\pi(i)}| > |c_{\pi(j)}| \, \forall \,  \pi(i) < \pi(j).
+     * @f]
+     *
+     * @param[in,out] sum  a weighted sum of Pauli strings to reorder.
+     *
+     * @throws @validationerror
+     * - if @p sum is not initialised.
+     *
+     * @see
+     * - sortPauliStrSumLexicographic()
+     *
+     * @author Vasco Ferreira
+     */
+    void sortPauliStrSumMagnitude(PauliStrSum sum);
 
 
 // end de-mangler

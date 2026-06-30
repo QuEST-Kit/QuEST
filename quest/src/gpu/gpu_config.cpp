@@ -26,18 +26,18 @@
 #include <algorithm>
 
 
-#if COMPILE_CUDA && ! (defined(__NVCC__) || defined(__HIP__))
+#if QUEST_COMPILE_CUDA && ! (defined(__NVCC__) || defined(__HIP__))
     #error \
         "Attempted to compile gpu_config.cpp in GPU-accelerated mode with a non-GPU compiler. "\
         "Please compile this file with a CUDA (nvcc) or ROCm (hipcc) compiler."
 #endif
 
 
-#if COMPILE_CUDA && defined(__NVCC__)
+#if QUEST_COMPILE_CUDA && defined(__NVCC__)
     #include <cuda.h>
     #include <cuda_runtime.h>
 #endif
-#if COMPILE_CUDA && defined(__HIP__)
+#if QUEST_COMPILE_CUDA && defined(__HIP__)
     #include "quest/src/gpu/cuda_to_hip.hpp"
 #endif
 
@@ -50,7 +50,7 @@
  * when encountering issues through use of the CUDA API
  */
 
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
 
 void assertCudaCallSucceeded(int result, const char* call, const char* caller, const char* file, int line) {
 
@@ -99,14 +99,14 @@ void clearPossibleCudaError() {
  * CUQUANTUM MANAGEMENT
  *
  * these functions are defined in gpu_cuquantum.hpp when
- * COMPILE_CUQUANTUM is 1, but are otherwise defaulted to
+ * QUEST_COMPILE_CUQUANTUM is 1, but are otherwise defaulted to
  * the internal errors below. This slight inelegance
  * enables us to keep gpu_cuquantum.hpp as a single header
  * file, without exposing it to code beyond gpu/
  */
 
 
-#if ! COMPILE_CUQUANTUM
+#if ! QUEST_COMPILE_CUQUANTUM
 
 void gpu_initCuQuantum() {
     error_cuQuantumInitOrFinalizedButNotCompiled();
@@ -135,7 +135,7 @@ bool hasGpuBeenBound = false;
 
 
 int getBoundGpuId() {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
     assert_gpuHasBeenBound(hasGpuBeenBound);
 
     int id;
@@ -150,7 +150,7 @@ int getBoundGpuId() {
 
 
 int gpu_getComputeCapability() {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
     assert_gpuHasBeenBound(hasGpuBeenBound);
 
     cudaDeviceProp props;
@@ -165,17 +165,22 @@ int gpu_getComputeCapability() {
 
 
 bool gpu_isGpuCompiled() {
-    return (bool) COMPILE_CUDA;
+    return (bool) QUEST_COMPILE_CUDA;
 }
 
 
 bool gpu_isCuQuantumCompiled() {
-    return (bool) COMPILE_CUQUANTUM;
+    return (bool) QUEST_COMPILE_CUQUANTUM;
+}
+
+
+bool gpu_isHipCompiled() {
+    return (bool) (QUEST_COMPILE_CUDA && QUEST_COMPILE_HIP);
 }
 
 
 int gpu_getNumberOfLocalGpus() {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
 
     // HIP throws an error when a CUDA API function
     // is called but no devices exist, which we handle
@@ -197,7 +202,7 @@ int gpu_getNumberOfLocalGpus() {
 
 
 bool gpu_isGpuAvailable() {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
 
     int numDevices = gpu_getNumberOfLocalGpus();
     if (numDevices == 0)
@@ -234,7 +239,7 @@ bool gpu_isGpuAvailable() {
 
 
 bool gpu_isDirectGpuCommPossible() {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
 
     if (!comm_isMpiGpuAware())
         return false;
@@ -256,7 +261,7 @@ bool gpu_isDirectGpuCommPossible() {
 
 
 size_t gpu_getCurrentAvailableMemoryInBytes() {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
     assert_gpuHasBeenBound(hasGpuBeenBound);
 
     // note that in distributed settings, all GPUs
@@ -275,7 +280,7 @@ size_t gpu_getCurrentAvailableMemoryInBytes() {
 
 
 size_t gpu_getTotalMemoryInBytes() {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
     assert_gpuHasBeenBound(hasGpuBeenBound);
 
     size_t free, total;
@@ -290,7 +295,7 @@ size_t gpu_getTotalMemoryInBytes() {
 
 
 bool gpu_doesGpuSupportMemPools() {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
     assert_gpuHasBeenBound(hasGpuBeenBound);
 
     int supports;
@@ -305,7 +310,7 @@ bool gpu_doesGpuSupportMemPools() {
 
 
 qindex gpu_getMaxNumConcurrentThreads() {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
     assert_gpuHasBeenBound(hasGpuBeenBound);
 
     int deviceId = getBoundGpuId();
@@ -331,8 +336,42 @@ qindex gpu_getMaxNumConcurrentThreads() {
  */
 
 
+// the default numTPB is not known until runtime since the initial value
+// (provided either by the CMake var, or the environment variable) must
+// be validated during QuEST initialisation.
+static int global_numThreadsPerBlock = -1;
+
+
+int gpu_getNumThreadsPerBlock() {
+    if (global_numThreadsPerBlock == -1)
+        error_gpuNumThreadsPerBlockNotSet();
+
+    return global_numThreadsPerBlock;
+}
+
+
+void gpu_setNumThreadsPerBlock(int newNumTPB) {
+
+    global_numThreadsPerBlock = newNumTPB;
+}
+
+
+int gpu_getMaxNumThreadsPerBlock() {
+#if QUEST_COMPILE_CUDA
+
+    cudaDeviceProp prop;
+    cudaGetDeviceProperties(&prop, getBoundGpuId());
+    return prop.maxThreadsPerBlock; // HIP compatible
+
+#else
+    error_gpuQueriedButGpuNotCompiled();
+    return -1;
+#endif
+}
+
+
 std::array<char,17> getBoundGpuUuid() {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
     assert_gpuHasBeenBound(hasGpuBeenBound);
 
     constexpr int numUuidChars = 16;
@@ -368,7 +407,7 @@ std::array<char,17> getBoundGpuUuid() {
 
 
 void gpu_bindLocalGPUsToNodes() {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
 
     // distribute local MPI processes across local GPUs;
     int numLocalGpus = gpu_getNumberOfLocalGpus();
@@ -392,10 +431,10 @@ void gpu_bindLocalGPUsToNodes() {
 
 
 bool gpu_areAnyNodesBoundToSameGpu() {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
     assert_gpuHasBeenBound(hasGpuBeenBound);
 
-    if (!comm_isInit())
+    if (!comm_isActive())
         return false;
 
     // obtain bound GPU's UUID; a unique identifier 16-char identifier
@@ -418,7 +457,7 @@ bool gpu_areAnyNodesBoundToSameGpu() {
 
 
 void gpu_sync() {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
 
     CUDA_CHECK( cudaDeviceSynchronize() );
 
@@ -435,7 +474,7 @@ void gpu_sync() {
 
 
 qcomp* gpu_allocArray(qindex length) {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
 
     size_t numBytes = mem_getLocalQuregMemoryRequired(length);
 
@@ -467,7 +506,7 @@ qcomp* gpu_allocArray(qindex length) {
 
 
 void gpu_deallocArray(qcomp* amps) {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
 
     // cudaFree on nullptr is fine
     CUDA_CHECK( cudaFree(amps) );
@@ -492,7 +531,7 @@ enum CopyDirection {
 
 
 void copyArrayIfGpuCompiled(qcomp* cpuArr, qcomp* gpuArr, qindex numElems, enum CopyDirection direction) {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
 
     // must ensure gpu amps are up to date
     gpu_sync();
@@ -515,7 +554,7 @@ void copyArrayIfGpuCompiled(qcomp* cpuArr, qcomp* gpuArr, qindex numElems, enum 
 
 
 void copyMatrixIfGpuCompiled(qcomp** cpuMatr, qcomp* gpuArr, qindex matrDim, enum CopyDirection direction) {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
 
     // NOTE:
     // this function copies a 2D CPU matrix into a 1D row-major GPU array,
@@ -564,7 +603,7 @@ void assertHeapObjectGpuMemIsAllocated(T obj) {
 
 
 void gpu_copyArray(qcomp* dest, qcomp* src, qindex dim) {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
 
     // ensure src and dest aren't being modified
     gpu_sync();
@@ -682,7 +721,7 @@ qindex gpuCacheLen = 0;
 
 
 qcomp* gpu_getCacheOfSize(qindex numElemsPerThread, qindex numThreads) {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
 
     // do not interfere with existing kernels using the cache
     gpu_sync();
@@ -708,7 +747,7 @@ qcomp* gpu_getCacheOfSize(qindex numElemsPerThread, qindex numThreads) {
 
 
 void gpu_clearCache() {
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
 
     // do not interfere with existing kernels using the cache
     gpu_sync();

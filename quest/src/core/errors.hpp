@@ -4,6 +4,12 @@
  * hardware accelerators are behaving as expected, and that runtime
  * deployment is consistent with the compiled deployment modes.
  * 
+ * Some error() functions are explicitly marked as [[noreturn]] so that
+ * the compiler knows code after their invocation is never executed,
+ * avoiding warnings about (e.g.) invalid static array indexing. In
+ * theory, all error() functions can be [[noreturn]], but we only
+ * bother with the ones that make a compile-time difference.
+ * 
  * @author Tyson Jones
  * @author Luc Jaulmes (NUMA & pagesize errors)
  */
@@ -85,6 +91,14 @@ void error_commGivenInconsistentNumSubArraysANodes();
 
 void error_commNumMessagesExceedTagMax();
 
+void error_commAlreadyHasSetMpiComm();
+
+void error_commMpiCommIsNull();
+
+void error_commNewMpiCommIsNull();
+
+void error_commActiveButMpiNotInit();
+
 void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps);
 
 void assert_commPayloadIsPowerOf2(qindex numAmps);
@@ -107,8 +121,6 @@ void assert_receiverCanFitSendersEntireElems(Qureg receiver, FullStateDiagMatr s
  * LOCALISER ERRORS
  */
 
-void error_localiserNumCtrlStatesInconsistentWithNumCtrls();
-
 void error_localiserGivenPauliTensorOrGadgetWithoutXOrY();
 
 void error_localiserPassedStateVecToChannelComCheck();
@@ -121,6 +133,8 @@ void error_localiserGivenPauliStrWithoutXorY();
 
 void error_localiserGivenNonUnityGlobalFactorToZTensor();
 
+void error_calcFidStateVecDistribWhileDensMatrLocal();
+
 void assert_localiserSuccessfullyAllocatedTempMemory(qcomp* ptr, bool isGpu);
 
 void assert_localiserGivenStateVec(Qureg qureg);
@@ -129,7 +143,7 @@ void assert_localiserGivenDensMatr(Qureg qureg);
 
 void assert_localiserPartialTraceGivenCompatibleQuregs(Qureg inQureg, Qureg outQureg, int numTargs);
 
-void error_calcFidStateVecDistribWhileDensMatrLocal();
+void assert_localiserListLengthsAgree(size_t length1, size_t length2);
 
 void assert_localiserDistribQuregSpooferGivenValidQuregs(Qureg local, Qureg distrib);
 
@@ -235,11 +249,15 @@ void error_gpuCopyButMatrixNotGpuAccelerated();
 
 void error_gpuMemSyncQueriedButEnvNotGpuAccelerated();
 
+void error_gpuNumThreadsPerBlockNotSet();
+
 void error_gpuUnexpectedlyInaccessible();
 
 void error_gpuDeadCopyMatrixFunctionCalled();
 
 void error_gpuDenseMatrixConjugatedAndTransposed();
+
+void error_gpuBadNumThreadsPerBlock();
 
 void assert_gpuIsAccessible();
 
@@ -302,6 +320,22 @@ void error_pauliStrSumConjHasIncorrectNumTerms();
 
 
 /*
+ * LIST ERRORS 
+ */
+
+[[noreturn]] void error_smallListLengthExceededMax();
+
+[[noreturn]] void error_smallListIndexWasNegative();
+
+[[noreturn]] void error_smallListIndexExceededLength();
+
+[[noreturn]] void error_smallListWasEmpty();
+
+[[noreturn]] void error_smallListNullPtrWithPositiveLength();
+
+
+
+/*
  * UTILITY ERRORS 
  */
 
@@ -334,6 +368,10 @@ void assert_utilsGivenNonZeroEpsilon(qreal eps);
 void error_attemptedToParseComplexFromInvalidString();
 
 void error_attemptedToParseRealFromInvalidString();
+
+void error_attemptedToParseIntegerFromInvalidString();
+
+void error_attemptedToParseOutOfRangeInteger();
 
 void error_attemptedToParseOutOfRangeReal();
 

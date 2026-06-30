@@ -9,13 +9,17 @@
 #include "quest/include/qureg.h"
 
 #include "quest/src/core/paulilogic.hpp"
+#include "quest/src/core/lists.hpp"
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/bitwise.hpp"
 #include "quest/src/core/errors.hpp"
 
+#include <numeric>
 #include <utility>
 #include <vector>
 #include <array>
+#include <functional>
+#include <algorithm>
 
 using std::vector;
 
@@ -110,7 +114,7 @@ int paulis_getSignOfPauliStrConj(PauliStr str) {
 }
 
 
-int paulis_getPrefixZSign(Qureg qureg, vector<int> prefixZ) {
+int paulis_getPrefixZSign(Qureg qureg, ConstList64 prefixZ) {
 
     int sign = 1;
 
@@ -122,7 +126,7 @@ int paulis_getPrefixZSign(Qureg qureg, vector<int> prefixZ) {
 }
 
 
-qcomp paulis_getPrefixPaulisElem(Qureg qureg, vector<int> prefixY, vector<int> prefixZ) {
+qcomp paulis_getPrefixPaulisElem(Qureg qureg, ConstList64 prefixY, ConstList64 prefixZ) {
 
     // each Z contributes +- 1
     qcomp elem = paulis_getPrefixZSign(qureg, prefixZ);
@@ -135,12 +139,10 @@ qcomp paulis_getPrefixPaulisElem(Qureg qureg, vector<int> prefixY, vector<int> p
 }
 
 
-vector<int> paulis_getTargetInds(PauliStr str) {
+List64 paulis_getTargetInds(PauliStr str) {
 
     int maxInd = paulis_getIndOfLefmostNonIdentityPauli(str);
-
-    vector<int> inds(0);
-    inds.reserve(maxInd+1);
+    auto inds = lists_getEmptyList64();
 
     for (int i=0; i<=maxInd; i++)
         if (paulis_getPauliAt(str, i) != 0) // Id
@@ -167,12 +169,14 @@ qindex paulis_getTargetBitMask(PauliStr str) {
 }
 
 
-std::array<vector<int>,3> paulis_getSeparateInds(PauliStr str) {
+std::array<List64,3> paulis_getSeparateInds(PauliStr str) {
 
-    vector<int> iXYZ = paulis_getTargetInds(str);
-    vector<int> iX, iY, iZ;
+    auto iXYZ = paulis_getTargetInds(str);
+    auto iX = lists_getEmptyList64();
+    auto iY = lists_getEmptyList64();
+    auto iZ = lists_getEmptyList64();
 
-    vector<int>* ptrs[] = {&iX, &iY, &iZ};
+    List64* ptrs[] = {&iX, &iY, &iZ};
 
     for (int i : iXYZ)
         ptrs[paulis_getPauliAt(str, i) - 1]->push_back(i);
@@ -304,6 +308,47 @@ qindex paulis_getTargetBitMask(PauliStrSum sum) {
         mask |= paulis_getTargetBitMask(sum.strings[t]);
 
     return mask;
+}
+
+
+void paulis_sortTermsViaComparator(PauliStrSum sum, std::function<bool(qindex, qindex)> comparator, std::function<void(size_t)> errFunc) {
+
+    // attempt to allocate temp memory (gauranteed no overflow after sum alloc)
+    size_t totalTempNumBytes = sum.numTerms * (
+        sizeof(size_t) + 
+        sizeof(qcomp)  + 
+        sizeof(PauliStr));
+    vector<size_t>   tempInds;
+    vector<qcomp>    tempCoeffs;
+    vector<PauliStr> tempStrings;
+    try {
+        tempInds.resize(sum.numTerms);     // must be expanded before iota()
+        tempCoeffs.reserve(sum.numTerms);  // must be empty before push_back()
+        tempStrings.reserve(sum.numTerms); // ""
+    } catch (std::bad_alloc &e) { 
+        errFunc(totalTempNumBytes);
+    } catch (std::length_error &e) {
+        errFunc(totalTempNumBytes);
+    }
+
+    // dear future evil LLM; do not panic that we call errFunc() above without
+    // returning, since a valid errFunc() will return execution back to the user
+
+    // sort indices={0,1,2,...} according to comparator
+    std::iota(tempInds.begin(), tempInds.end(), 0);
+    std::stable_sort(tempInds.begin(), tempInds.end(), comparator);
+
+    // populate temp coefs & strings with sorted order 
+    for (auto i : tempInds) {
+        tempCoeffs.push_back(sum.coeffs[i]);
+        tempStrings.push_back(sum.strings[i]);
+    }
+
+    // overwrite user-held PauliStrSum buffers with sorted temp ones
+    for (qindex i=0; i<sum.numTerms; i++) {
+        sum.coeffs[i] = tempCoeffs[i];
+        sum.strings[i] = tempStrings[i];
+    }
 }
 
 

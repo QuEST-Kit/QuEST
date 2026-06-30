@@ -5,6 +5,7 @@ target_sources(QuEST
   debug.cpp
   decoherence.cpp
   environment.cpp
+  experimental.cpp
   initialisations.cpp
   matrices.cpp
   modes.cpp
