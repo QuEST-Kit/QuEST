@@ -1197,6 +1197,13 @@ void applyMultiStateControlledSqrtSwap(Qureg qureg, int* controls, int* states, 
 /// @see applyMultiControlledSwap()
 void applyMultiControlledSwap(Qureg qureg, std::vector<int> controls, int qubit1, int qubit2);
 
+/// @notyettested
+/// @notyetvalidated
+/// @notyetdoced
+/// Applies a sequence of non-overlapping SWAP gates in a single fused pass
+/// over the state vector, where targetsA[i] is swapped with targetsB[i].
+/// All indices across targetsA and targetsB must be unique (non-overlapping).
+void applyMultiSwap(Qureg qureg, std::vector<int> targetsA, std::vector<int> targetsB);
 
 /// @notyettested
 /// @notyetvalidated

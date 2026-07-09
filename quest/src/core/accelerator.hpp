@@ -185,7 +185,7 @@ qindex accel_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int 
 void accel_statevec_anyCtrlSwap_subA(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ1, int targ2);
 void accel_statevec_anyCtrlSwap_subB(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates);
 void accel_statevec_anyCtrlSwap_subC(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ, int targState);
-
+void accel_statevec_multiSwap_fused_sub(Qureg qureg, vector<int> targsA, vector<int> targsB);
 
 /*
  * DENSE MATRICES
