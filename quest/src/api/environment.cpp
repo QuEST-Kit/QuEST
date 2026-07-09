@@ -18,6 +18,7 @@
 #include "quest/src/core/autodeployer.hpp"
 #include "quest/src/core/validation.hpp"
 #include "quest/src/core/randomiser.hpp"
+#include "quest/src/core/accelerator.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
 #include "quest/src/gpu/gpu_config.hpp"
@@ -460,6 +461,9 @@ void finalizeQuESTEnv() {
     // NOTE:
     // calling this will not automatically
     // free the memory of existing Quregs
+
+    // free the persistent fused-multi-swap staging workspace (host or device), if any
+    accel_clearFusedSwapSendCache();
 
     if (global_envPtr->isGpuAccelerated)
         gpu_clearCache(); // syncs first
