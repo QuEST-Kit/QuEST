@@ -59,6 +59,8 @@
 #include <thrust/iterator/transform_iterator.h>
 #include <thrust/system/system_error.h>
 
+#include <algorithm>
+
 
 
 /*
@@ -641,6 +643,123 @@ struct functor_setRandomStateVecAmp : public thrust::unary_function<qindex,cu_qc
 };
 
 
+struct functor_compmatr_isUnitaryTerm : public thrust::unary_function<qindex,bool>{
+
+    cu_qcomp* matr;
+    qreal eps;
+    qindex dim;
+
+    functor_compmatr_isUnitaryTerm(cu_qcomp* matr, qreal eps, qindex dim) :
+        matr(matr), eps(eps), dim(dim)
+    {}
+
+    __host__ __device__ bool operator()(qindex i) {
+
+        qindex r = i / dim;
+        qindex c = i % dim;
+
+        cu_qcomp elem = getCuQcomp(0, 0);
+        for (qindex k=0; k<dim; k++)
+            elem = elem + (matr[r * dim + k] * getCompConj(matr[c * dim + k]));
+
+        cu_qcomp target = getCuQcomp(r == c, 0);
+        return getCompNorm(elem - target) <= eps;
+    }
+};
+
+struct functor_diagmatr_isUnitaryTerm : public thrust::unary_function<qindex,bool>{
+
+    cu_qcomp* diags;
+    qreal eps;
+
+    functor_diagmatr_isUnitaryTerm(cu_qcomp* diags, qreal eps) :
+        diags(diags), eps(eps)
+    {}
+
+    __host__ __device__ bool operator()(qindex i) {
+
+        // We want |sqrt(norm) - 1| <= eps;
+        // equivalent to (1-eps)^2 <= norm <= (1+eps)^2
+        // eps^2 is small, so approximate bound as
+        // [1-2eps, 1+2eps], or |norm - 1| <= 2*eps
+
+        qreal norm = getCompNorm(diags[i]);
+        return fabs(norm - 1) <= 2 * eps;
+    }
+};
+
+struct functor_compmatr_isHermitianTerm : public thrust::unary_function<qindex,bool>{
+
+    // check adjoint(elems) == elems
+
+    cu_qcomp* matr;
+    qreal eps;
+    qindex dim;
+
+    functor_compmatr_isHermitianTerm(cu_qcomp* matr, qreal eps, qindex dim) :
+        matr(matr), eps(eps), dim(dim)
+    {}
+
+    __host__ __device__ bool operator()(qindex i) {
+
+        qindex row = i / dim;
+        qindex col = i % dim;
+
+        
+        if (col >= row)
+            return true;
+
+        cu_qcomp elem = matr[row * dim + col];
+        cu_qcomp conjOfMirror = getCompConj(matr[col * dim + row]);
+
+        return getCompNorm(elem - conjOfMirror) <= eps;
+    }
+};
+
+struct functor_diagmatr_isHermitianTerm : public thrust::unary_function<qindex,bool>{
+
+    cu_qcomp* diags;
+    qreal eps;
+
+    functor_diagmatr_isHermitianTerm(cu_qcomp* diags, qreal eps) :
+       diags(diags), eps(eps)
+    {}
+
+    __host__ __device__ bool operator()(qindex i) {
+        qreal imag = diags[i].y;
+        return fabs(imag) <= eps;
+    }
+};
+
+struct functor_krausmap_isCPTPTerm : public thrust::unary_function<qindex,bool>{
+    
+    cu_qcomp* matr;
+    qreal eps;
+    qindex dim;
+    qindex numMatrices;
+
+    functor_krausmap_isCPTPTerm(cu_qcomp* matr, qreal eps, qindex dim, qindex numMatrices) :
+        matr(matr), eps(eps), dim(dim), numMatrices(numMatrices)
+    {}
+
+    __host__ __device__ bool operator()(qindex i) {
+
+        qindex row = i / dim;
+        qindex col = i % dim;
+
+        cu_qcomp elem = getCuQcomp(0, 0);
+        for (qindex n=0; n<numMatrices; n++)
+            for (qindex k=0; k<dim; k++) {
+                qindex base = n * dim * dim + k * dim;
+                elem = elem + (getCompConj(matr[base + row]) * matr[base + col]);
+            }
+
+        cu_qcomp target = getCuQcomp(row == col, 0);
+        return getCompNorm(elem - target) <= eps;
+    }
+};
+
+
 
 /*
  * MATRIX INITIALISATION
@@ -1079,6 +1198,106 @@ void thrust_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qure
 
     qindex numIts = qureg.numAmpsPerNode;
     thrust::transform(indIter, indIter + numIts, ampIter, functor); // 3rd arg gets modified
+}
+
+
+
+/*
+ * MATRIX PROPERTIES
+ */
+
+
+bool thrust_compmatr_isUnitary_sub(CompMatr matr, qreal eps) {
+
+    qindex dim = matr.numRows;
+
+    //functor accepts an index and returns a boolean
+    auto functor = functor_compmatr_isUnitaryTerm(toCuQcomps(matr.gpuElemsFlat), eps, dim);
+
+    auto indIter = thrust::make_counting_iterator(0);
+    qindex numIts = dim * dim;
+
+    return thrust::transform_reduce(
+        indIter, indIter + numIts,
+        functor, true, thrust::logical_and<bool>()
+    );
+}
+
+bool thrust_diagmatr_isUnitary_sub(DiagMatr matr, qreal eps){
+
+    qindex dim = matr.numElems;
+
+    //functor accepts an index and returns a boolean
+    auto functor = functor_diagmatr_isUnitaryTerm(toCuQcomps(matr.gpuElems), eps);
+
+    auto indIter = thrust::make_counting_iterator(0);
+    qindex numIts = dim;
+
+    return thrust::transform_reduce(
+        indIter, indIter + numIts,
+        functor, true, thrust::logical_and<bool>()
+    );
+}
+
+bool thrust_compmatr_isHermitian_sub(CompMatr matr, qreal eps){
+
+    qindex dim = matr.numRows;
+
+    //functor accepts an index and returns a boolean
+    auto functor = functor_compmatr_isHermitianTerm(toCuQcomps(matr.gpuElemsFlat), eps, dim);
+
+    auto indIter = thrust::make_counting_iterator(0);
+    qindex numIts = dim * dim;
+
+    return thrust::transform_reduce(
+        indIter, indIter + numIts,
+        functor, true, thrust::logical_and<bool>()
+    );
+}
+
+bool thrust_diagmatr_isHermitian_sub(DiagMatr matr, qreal eps){
+    
+    qindex dim = matr.numElems;
+
+    //functor accepts an index and returns a boolean
+    auto functor = functor_diagmatr_isHermitianTerm(toCuQcomps(matr.gpuElems), eps);
+
+    auto indIter = thrust::make_counting_iterator(0);
+    qindex numIts = dim;
+
+    return thrust::transform_reduce(
+        indIter, indIter + numIts,
+        functor, true, thrust::logical_and<bool>()
+    );
+}
+
+bool thrust_krausmap_isCPTP_sub(KrausMap map, qreal eps){
+
+    qindex dim = map.numRows;
+    int numMatrices = map.numMatrices;
+
+    //map.matrices is CPU-only
+    //flatten to copy over to GPU, but matrices and rows are non-contigious
+    vector<qcomp> hostMatrices(numMatrices * dim * dim);
+    for (int n=0; n<numMatrices; n++){
+        for (qindex k=0; k<dim; k++){
+            std::copy(map.matrices[n][k], map.matrices[n][k] + dim, hostMatrices.begin() + (n*dim*dim + k*dim));
+        }
+    }
+    
+    thrust::device_vector<qcomp> devMatrices(hostMatrices);
+    cu_qcomp* devMatricesPtr = toCuQcomps(thrust::raw_pointer_cast(devMatrices.data()));
+
+    //functor accepts an index and returns a boolean
+    auto functor = functor_krausmap_isCPTPTerm(devMatricesPtr, eps, dim, numMatrices);
+
+    auto indIter = thrust::make_counting_iterator(0);
+    qindex numIts = dim * dim;
+
+    return thrust::transform_reduce(
+        indIter, indIter + numIts,
+        functor, true, thrust::logical_and<bool>()
+    );
 }
 
 

@@ -22,6 +22,7 @@
 #include "quest/src/core/utilities.hpp"
 #include "quest/src/core/validation.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
+#include "quest/src/gpu/gpu_subroutines.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_routines.hpp"
 
@@ -482,11 +483,9 @@ template <typename T>
 bool getUnitarity(T elems, qindex dim, qreal eps) {
     assert_utilsGivenNonZeroEpsilon(eps);
 
-    /// @todo
-    /// consider multithreading or GPU-accelerating this
-    /// when caller is big and e.g. has GPU memory
-
     // check m * dagger(m) == identity
+    bool unitary = true;
+    #pragma omp parallel for reduction(&&:unitary) if(dim >= MIN_DIM_FOR_UTIL_DENSE_UNITARITY_MULTITHREADING && getQuESTEnv().isMultithreaded)
     for (qindex r=0; r<dim; r++) {
         for (qindex c=0; c<dim; c++) {
 
@@ -497,27 +496,25 @@ bool getUnitarity(T elems, qindex dim, qreal eps) {
 
             // check if further than epsilon from identity[r,c]
             if (!isApprox(elem, qcomp(r==c,0), eps))
-                return false;
+                unitary = false;
         }
     }
 
-    return true;
+    return unitary;
 }
 
 // diagonal version doesn't need templating because array decays to pointer, yay!
 bool getUnitarity(qcomp* diags, qindex dim, qreal eps) {
     assert_utilsGivenNonZeroEpsilon(eps);
 
-    /// @todo
-    /// consider multithreading or GPU-accelerating this
-    /// when caller is big and e.g. has GPU memory
-
     // check every element has unit magnitude
+    bool unitary = true;
+    #pragma omp parallel for reduction(&&:unitary) if(dim >= MIN_DIM_FOR_UTIL_DIAG_UNITARITY_MULTITHREADING && getQuESTEnv().isMultithreaded)
     for (qindex i=0; i<dim; i++)
         if (!isApprox(std::abs(diags[i]), 1, eps))
-            return false;
+            unitary = false;
 
-    return true;
+    return unitary;
 }
 
 // unitarity of fixed-size matrices is always computed afresh
@@ -530,8 +527,15 @@ bool util_isUnitary(DiagMatr2 m, qreal eps) { return getUnitarity(m.elems, m.num
 bool util_isUnitary(CompMatr m, qreal eps) {
 
     // compute and record unitarity if not already known
-    if (*(m.isApproxUnitary) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        *(m.isApproxUnitary) = getUnitarity(m.cpuElems, m.numRows, eps);
+    if (*(m.isApproxUnitary) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG) {
+
+        if (util_isGpuAcceleratedMatrix(m) && m.numRows >= MIN_DIM_FOR_UTIL_DENSE_UNITARITY_GPU) {
+            *(m.isApproxUnitary) = gpu_compmatr_isUnitary_sub(m, eps);
+        }
+        else {
+            *(m.isApproxUnitary) = getUnitarity(m.cpuElems, m.numRows, eps);
+        }
+    }
 
     // eps may have been ignored
     return *(m.isApproxUnitary);
@@ -539,8 +543,15 @@ bool util_isUnitary(CompMatr m, qreal eps) {
 bool util_isUnitary(DiagMatr m, qreal eps) {
 
     // compute and record unitarity if not already known
-    if (*(m.isApproxUnitary) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        *(m.isApproxUnitary) = getUnitarity(m.cpuElems, m.numElems, eps);
+    if (*(m.isApproxUnitary) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG) {
+
+        if (util_isGpuAcceleratedMatrix(m) && m.numElems >= MIN_DIM_FOR_UTIL_DIAG_UNITARITY_GPU) {
+            *(m.isApproxUnitary) = gpu_diagmatr_isUnitary_sub(m, eps);
+        }
+        else {
+            *(m.isApproxUnitary) = getUnitarity(m.cpuElems, m.numElems, eps);
+        }
+    }
 
     // eps may have been ignored
     return *(m.isApproxUnitary);
@@ -570,33 +581,29 @@ template <typename T>
 bool getHermiticity(T elems, qindex dim, qreal eps) {
     assert_utilsGivenNonZeroEpsilon(eps);
 
-    /// @todo
-    /// consider multithreading or GPU-accelerating this
-    /// when caller is big and e.g. has GPU memory
-
     // check adjoint(elems) == elems
+    bool hermitian = true;
+    #pragma omp parallel for reduction(&&:hermitian) if(dim >= MIN_DIM_FOR_UTIL_DENSE_HERMITICITY_MULTITHREADING && getQuESTEnv().isMultithreaded)
     for (qindex r=0; r<dim; r++)
         for (qindex c=0; c<r; c++)
             if (!isApprox(elems[r][c], std::conj(elems[c][r]), eps))
-                return false;
+                hermitian = false;
 
-    return true;
+    return hermitian;
 }
 
 // diagonal version doesn't need templating because array decays to pointer, yay!
 bool getHermiticity(qcomp* diags, qindex dim, qreal eps) {
     assert_utilsGivenNonZeroEpsilon(eps);
 
-    /// @todo
-    /// consider multithreading or GPU-accelerating this
-    /// when caller is big and e.g. has GPU memory
-
     // check every element has a zero (or <eps) imaginary component
+    bool hermitian = true;
+    #pragma omp parallel for reduction(&&:hermitian) if(dim >= MIN_DIM_FOR_UTIL_DIAG_HERMITICITY_MULTITHREADING && getQuESTEnv().isMultithreaded)
     for (qindex i=0; i<dim; i++)
         if (!isApprox(std::imag(diags[i]), 0, eps))
-            return false;
+            hermitian = false;
 
-    return true;
+    return hermitian;
 }
 
 // hermiticity of fixed-size matrices is always computed afresh
@@ -609,8 +616,15 @@ bool util_isHermitian(DiagMatr2 m, qreal eps) { return getHermiticity(m.elems, m
 bool util_isHermitian(CompMatr m, qreal eps) {
 
     // compute and record hermiticity if not already known
-    if (*(m.isApproxHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        *(m.isApproxHermitian) = getHermiticity(m.cpuElems, m.numRows, eps);
+    if (*(m.isApproxHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG) {
+
+        if (util_isGpuAcceleratedMatrix(m) && m.numRows >= MIN_DIM_FOR_UTIL_DENSE_HERMITICITY_GPU) {
+            *(m.isApproxHermitian) = gpu_compmatr_isHermitian_sub(m, eps);
+        }
+        else {
+            *(m.isApproxHermitian) = getHermiticity(m.cpuElems, m.numRows, eps);
+        }
+    }
 
     // eps may have been ignored
     return *(m.isApproxHermitian);
@@ -618,8 +632,15 @@ bool util_isHermitian(CompMatr m, qreal eps) {
 bool util_isHermitian(DiagMatr m, qreal eps) {
 
     // compute and record hermiticity if not already known
-    if (*(m.isApproxHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
-        *(m.isApproxHermitian) = getHermiticity(m.cpuElems, m.numElems, eps);
+    if (*(m.isApproxHermitian) == validate_STRUCT_PROPERTY_UNKNOWN_FLAG) {
+
+        if (util_isGpuAcceleratedMatrix(m) && m.numElems >= MIN_DIM_FOR_UTIL_DIAG_HERMITICITY_GPU) {
+            *(m.isApproxHermitian) = gpu_diagmatr_isHermitian_sub(m, eps);
+        }
+        else {
+            *(m.isApproxHermitian) = getHermiticity(m.cpuElems, m.numElems, eps);
+        }
+    }
 
     // eps may have been ignored
     return *(m.isApproxHermitian);
@@ -646,10 +667,6 @@ bool util_isHermitian(FullStateDiagMatr m, qreal eps) {
 
 bool getWhetherNonZero(qcomp* diags, qindex dim, qreal eps) {
     assert_utilsGivenNonZeroEpsilon(eps);
-
-    /// @todo
-    /// consider multithreading or GPU-accelerating this
-    /// when caller is big and e.g. has GPU memory
 
     for (qindex i=0; i<dim; i++) {
 
@@ -789,15 +806,14 @@ bool util_isCPTP(KrausMap map, qreal eps) {
     if (*(map.isApproxCPTP) != validate_STRUCT_PROPERTY_UNKNOWN_FLAG)
         return *(map.isApproxCPTP);
 
-    /// @todo
-    /// if KrausMap is GPU-accelerated, we should maybe
-    /// instead perform this calculation using the GPU.
-    /// otherwise, if matrix is large, we should potentially
-    /// use a multithreaded routine
-
-    *(map.isApproxCPTP) = 1;
+    if (util_isGpuAcceleratedMatrix(map) && map.numRows >= MIN_DIM_FOR_UTIL_CPTP_GPU) {
+        *(map.isApproxCPTP) = gpu_krausmap_isCPTP_sub(map, eps);
+        return *(map.isApproxCPTP);
+    }
 
     // check whether each element satisfies Identity = sum dagger(m)*m
+    bool cptp = true;
+    #pragma omp parallel for reduction(&&:cptp) if(map.numRows >= MIN_DIM_FOR_UTIL_CPTP_MULTITHREADING && getQuESTEnv().isMultithreaded)
     for (qindex r=0; r<map.numRows; r++) {
         for (qindex c=0; c<map.numRows; c++) {
 
@@ -811,14 +827,13 @@ bool util_isCPTP(KrausMap map, qreal eps) {
             qreal distSquared = std::norm(elem - (r==c));
             if (distSquared > eps) {
 
-                // by recording the result and returning immediately
-                *(map.isApproxCPTP) = 0;
-                return *(map.isApproxCPTP);
+                // by recording the result (not returning immediately with many threads)
+                cptp = false;
             }
         }
     }
 
-    // always true by this point
+    *(map.isApproxCPTP) = cptp;
     return *(map.isApproxCPTP);
 }
 

@@ -196,4 +196,19 @@ void gpu_statevec_initDebugState_sub(Qureg qureg);
 void gpu_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg);
 
 
+/*
+ * MATRIX PROPERTIES
+ */
+
+bool gpu_compmatr_isUnitary_sub(CompMatr matr, qreal eps);
+
+bool gpu_diagmatr_isUnitary_sub(DiagMatr matr, qreal eps);
+
+bool gpu_compmatr_isHermitian_sub(CompMatr matr, qreal eps);
+
+bool gpu_diagmatr_isHermitian_sub(DiagMatr matr, qreal eps);
+
+bool gpu_krausmap_isCPTP_sub(KrausMap map, qreal eps);
+
+
 #endif // GPU_SUBROUTINES_HPP

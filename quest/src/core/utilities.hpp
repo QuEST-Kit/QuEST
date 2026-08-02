@@ -271,6 +271,31 @@ CompMatr2 util_getTranspose(CompMatr2 matrix);
 
 
 /*
+ * OPENMP MULTITHREADING THRESHOLDS
+ */
+
+#define MIN_DIM_FOR_UTIL_DENSE_UNITARITY_MULTITHREADING 16     // In testing, only multithreading w/ >= 4 qubits gives performance improvement
+#define MIN_DIM_FOR_UTIL_DIAG_UNITARITY_MULTITHREADING 1024    // >= 10 qubits
+
+#define MIN_DIM_FOR_UTIL_DENSE_HERMITICITY_MULTITHREADING 128  // >= 7 qubits
+#define MIN_DIM_FOR_UTIL_DIAG_HERMITICITY_MULTITHREADING 2048 // >= 11 qubits
+
+#define MIN_DIM_FOR_UTIL_CPTP_MULTITHREADING 16 // >= 4 qubits
+
+/*
+ * GPU MULTITHREADING THRESHOLDS
+ */
+
+#define MIN_DIM_FOR_UTIL_DENSE_UNITARITY_GPU 128     // In testing, only gpu acceleration w/ >= 7 qubits gives performance improvement
+#define MIN_DIM_FOR_UTIL_DIAG_UNITARITY_GPU 4096    // >= 12 qubits
+
+#define MIN_DIM_FOR_UTIL_DENSE_HERMITICITY_GPU 1024  // >= 10 qubits
+#define MIN_DIM_FOR_UTIL_DIAG_HERMITICITY_GPU 16384 // >= 14 qubits
+
+#define MIN_DIM_FOR_UTIL_CPTP_GPU 128 // >= 7 qubits
+
+
+/*
  * MATRIX PROPERTIES
  */
 
