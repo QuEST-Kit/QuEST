@@ -1895,3 +1895,70 @@ void gpu_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qureg) 
     error_gpuSimButGpuNotCompiled();
 #endif
 }
+
+
+
+/*
+ * MATRIX PROPERTIES
+ */
+
+
+bool gpu_compmatr_isUnitary_sub(CompMatr matr, qreal eps) {
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    return thrust_compmatr_isUnitary_sub(matr, eps);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+    return false;
+#endif
+}
+
+bool gpu_diagmatr_isUnitary_sub(DiagMatr matr, qreal eps){
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    return thrust_diagmatr_isUnitary_sub(matr, eps);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+    return false;
+#endif
+}
+
+bool gpu_compmatr_isHermitian_sub(CompMatr matr, qreal eps){
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    return thrust_compmatr_isHermitian_sub(matr, eps);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+    return false;
+#endif
+}
+
+bool gpu_diagmatr_isHermitian_sub(DiagMatr matr, qreal eps){
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    return thrust_diagmatr_isHermitian_sub(matr, eps);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+    return false;
+#endif
+}
+
+bool gpu_krausmap_isCPTP_sub(KrausMap map, qreal eps){
+
+#if COMPILE_CUDA || COMPILE_CUQUANTUM
+
+    return thrust_krausmap_isCPTP_sub(map, eps);
+
+#else
+    error_gpuSimButGpuNotCompiled();
+    return false;
+#endif
+}
