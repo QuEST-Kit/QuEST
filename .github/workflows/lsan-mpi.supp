@@ -1,0 +1,12 @@
+# known OpenMPI/PMIx startup leaks, not QuEST bugs
+leak:avx_component_op_query
+leak:ompi_op_base_op_select
+leak:ompi_comm_init_mpi3
+leak:make_copy
+leak:pmix_ptl_base_get_cmd_line
+leak:register_variable
+leak:opal_common_ucx_mca_var_register
+leak:get_data
+leak:PMIx_Value_create
+leak:pmix_bfrops_base_value_load
+leak:vasprintf

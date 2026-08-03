@@ -88,8 +88,8 @@ jobs:
       num_qubit_perms: 5
       test_all_deploys: 0
 
-      # LeakSanitizer flags OpenMPI's own startup leaks as noise; not a QuEST bug
-      asan_options: detect_leaks=0
+      # suppresses known OpenMPI/PMIx startup leaks, not QuEST bugs
+      lsan_supp: .github/workflows/lsan-mpi.supp
 
     # perform the job
     steps:
@@ -110,11 +110,11 @@ jobs:
         run: minidmr install libasan
 
       # minidmr bind-mounts the checkout into every container at the same
-      # path, so no copying is needed. ASAN_OPTIONS must be set here too,
-      # else ctest's test-discovery step hits the benign leak above
+      # path, so no copying is needed. LSAN_OPTIONS must be set here too,
+      # since Catch2's CMake test-discovery runs the binary at build time
       - name: Configure and compile QuEST with sanitiser (inside minidmr controller)
         run: |
-          minidmr exec -e ASAN_OPTIONS=${{ env.asan_options }} -- bash -lc " \
+          minidmr exec -e LSAN_OPTIONS="suppressions=$GITHUB_WORKSPACE/${{ env.lsan_supp }}" -- bash -lc " \
             cd '$GITHUB_WORKSPACE' && \
             cmake -B ${{ env.build_dir }} \
               -DENABLE_TESTING=ON \
@@ -135,13 +135,13 @@ jobs:
           minidmr srun \
             -e TEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }} \
             -e TEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }} \
-            -e ASAN_OPTIONS=${{ env.asan_options }} \
+            -e LSAN_OPTIONS="suppressions=$GITHUB_WORKSPACE/${{ env.lsan_supp }}" \
             -e GITHUB_WORKSPACE=$GITHUB_WORKSPACE \
             -- -N ${{ env.minidmr_nodes }} -n ${{ env.minidmr_nodes }} bash -c ' \
               if [ "$SLURM_PROCID" -eq 0 ]; then \
                 NODELIST_WITH_COUNTS=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | awk "{print \$1\":1\"}" | paste -sd, -); \
                 mpirun --prtemca ras ^slurm --prtemca plm ^slurm \
-                  -x TEST_ALL_DEPLOYMENTS -x TEST_MAX_NUM_QUBIT_PERMUTATIONS -x ASAN_OPTIONS \
+                  -x TEST_ALL_DEPLOYMENTS -x TEST_MAX_NUM_QUBIT_PERMUTATIONS -x LSAN_OPTIONS \
                   --host "$NODELIST_WITH_COUNTS" -np ${{ env.minidmr_nodes }} \
                   "$GITHUB_WORKSPACE/${{ env.build_dir }}/${{ env.test_exec }}"; \
                 exit $?; \
