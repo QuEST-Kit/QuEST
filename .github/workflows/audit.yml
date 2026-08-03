@@ -6,6 +6,8 @@
 #
 # @author Tyson Jones
 # @author Fergus Cooper (v3 CI)
+# @author Íñigo Aréjula Aísa
+# Credits: AccelCom @ Barcelona Supercomputing Center
 
 name: audit
 
@@ -67,7 +69,92 @@ jobs:
         run: ctest -j2 --output-on-failure --schedule-random -E "density evolution"
         working-directory: ${{ env.build_dir }}
 
-  
+
+  # run address sanitiser over the distributed (comm/*) code, using
+  # minidmr for a free multi-node MPI environment
+  sanitisation-test-mpi:
+    name: address sanitisation (MPI, minidmr, 4 nodes)
+    runs-on: ubuntu-latest
+
+    # constants
+    env:
+      build_dir: "build"
+      minidmr_nodes: 4
+      test_exec: tests/tests
+      sanitiser_flags: -g -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize=address -fsanitize-address-use-after-scope
+
+      # tests will be non-comprehensive/faster, since minidmr's 4 simulated
+      # nodes share the runner's 2 real vCPUs
+      num_qubit_perms: 5
+      test_all_deploys: 0
+
+      # LeakSanitizer flags OpenMPI's own startup leaks as noise; not a QuEST bug
+      asan_options: detect_leaks=0
+
+    # perform the job
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@main
+
+      - name: Install minidmr
+        run: |
+          curl -fsSL https://gitlab.bsc.es/accelcom/releases/dmr/tools/minidmr/-/raw/master/scripts/install.sh | bash -s -- --install-dir "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      # Docker is preinstalled and running on GitHub-hosted ubuntu-latest runners
+      - name: Start minidmr cluster
+        run: minidmr start --nodes ${{ env.minidmr_nodes }}
+
+      # the image's GCC doesn't ship libasan by default
+      - name: Install libasan in cluster
+        run: minidmr install libasan
+
+      # minidmr bind-mounts the checkout into every container at the same
+      # path, so no copying is needed. ASAN_OPTIONS must be set here too,
+      # else ctest's test-discovery step hits the benign leak above
+      - name: Configure and compile QuEST with sanitiser (inside minidmr controller)
+        run: |
+          minidmr exec -e ASAN_OPTIONS=${{ env.asan_options }} -- bash -lc " \
+            cd '$GITHUB_WORKSPACE' && \
+            cmake -B ${{ env.build_dir }} \
+              -DENABLE_TESTING=ON \
+              -DFLOAT_PRECISION=2 \
+              -DENABLE_MULTITHREADING=OFF \
+              -DENABLE_DISTRIBUTION=ON \
+              -DTEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }} \
+              -DTEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }} \
+              -DCMAKE_CXX_FLAGS='${{ env.sanitiser_flags }}' \
+              -DCMAKE_EXE_LINKER_FLAGS='${{ env.sanitiser_flags }}' && \
+            cmake --build ${{ env.build_dir }} --target tests --parallel \
+          "
+
+      # env vars must be forwarded with -x or remote ranks silently use
+      # different test configuration
+      - name: Run distributed v4 tests with active sanitiser (minidmr, 4 simulated nodes)
+        run: |
+          minidmr srun \
+            -e TEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }} \
+            -e TEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }} \
+            -e ASAN_OPTIONS=${{ env.asan_options }} \
+            -e GITHUB_WORKSPACE=$GITHUB_WORKSPACE \
+            -- -N ${{ env.minidmr_nodes }} -n ${{ env.minidmr_nodes }} bash -c ' \
+              if [ "$SLURM_PROCID" -eq 0 ]; then \
+                NODELIST_WITH_COUNTS=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | awk "{print \$1\":1\"}" | paste -sd, -); \
+                mpirun --prtemca ras ^slurm --prtemca plm ^slurm \
+                  -x TEST_ALL_DEPLOYMENTS -x TEST_MAX_NUM_QUBIT_PERMUTATIONS -x ASAN_OPTIONS \
+                  --host "$NODELIST_WITH_COUNTS" -np ${{ env.minidmr_nodes }} \
+                  "$GITHUB_WORKSPACE/${{ env.build_dir }}/${{ env.test_exec }}"; \
+                exit $?; \
+              else \
+                exit 0; \
+              fi \
+            '
+
+      - name: Stop minidmr cluster
+        if: always()
+        run: minidmr stop
+
+
   # run valgrind
   memory-leak-test:
     name: memory checks [${{ matrix.precision }}]
