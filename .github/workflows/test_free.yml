@@ -6,6 +6,8 @@
 # and as such use the slower, rigorous tests.
 # 
 # @author Tyson Jones
+# @author Íñigo Aréjula Aísa
+# Credits: AccelCom @ Barcelona Supercomputing Center
 
 name: test (free, serial)
 
@@ -88,3 +90,77 @@ jobs:
         if: ${{ matrix.version == 3 }}
         run: ctest -j2 --output-on-failure --schedule-random
         working-directory: ${{ env.depr_dir }}
+
+
+  # run the v4 unit tests distributed over MPI, for free, using minidmr
+  # to simulate a multi-node Slurm cluster on the single free runner
+  distributed-minidmr-test:
+    name: Linux [2] MPI (minidmr, 4 nodes) unit v4
+
+    runs-on: ubuntu-latest
+
+    # constants
+    env:
+      build_dir: "build"
+      minidmr_nodes: 4
+      test_exec: tests/tests
+
+      # tests will be non-comprehensive/faster, since minidmr's 4 simulated
+      # nodes share the runner's 2 real vCPUs
+      num_qubit_perms: 5
+      test_all_deploys: 0
+
+    # perform the job
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@main
+
+      - name: Install minidmr
+        run: |
+          curl -fsSL https://gitlab.bsc.es/accelcom/releases/dmr/tools/minidmr/-/raw/master/scripts/install.sh | bash -s -- --install-dir "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      # Docker is preinstalled and running on GitHub-hosted ubuntu-latest runners
+      - name: Start minidmr cluster
+        run: minidmr start --nodes ${{ env.minidmr_nodes }}
+
+      # minidmr bind-mounts the checkout (the current working directory)
+      # into every container at the same path, so no copying is needed
+      - name: Configure and compile QuEST (inside minidmr controller)
+        run: |
+          minidmr exec -- bash -lc " \
+            cd '$GITHUB_WORKSPACE' && \
+            cmake -B ${{ env.build_dir }} \
+              -DENABLE_TESTING=ON \
+              -DFLOAT_PRECISION=2 \
+              -DENABLE_MULTITHREADING=OFF \
+              -DENABLE_DISTRIBUTION=ON \
+              -DTEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }} \
+              -DTEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }} && \
+            cmake --build ${{ env.build_dir }} --target tests --parallel \
+          "
+
+      # env vars must be forwarded with -x or remote ranks silently use
+      # different test configuration
+      - name: Run distributed v4 tests (minidmr, 4 simulated nodes)
+        run: |
+          minidmr srun \
+            -e TEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }} \
+            -e TEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }} \
+            -e GITHUB_WORKSPACE=$GITHUB_WORKSPACE \
+            -- -N ${{ env.minidmr_nodes }} -n ${{ env.minidmr_nodes }} bash -c ' \
+              if [ "$SLURM_PROCID" -eq 0 ]; then \
+                NODELIST_WITH_COUNTS=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | awk "{print \$1\":1\"}" | paste -sd, -); \
+                mpirun --prtemca ras ^slurm --prtemca plm ^slurm \
+                  -x TEST_ALL_DEPLOYMENTS -x TEST_MAX_NUM_QUBIT_PERMUTATIONS \
+                  --host "$NODELIST_WITH_COUNTS" -np ${{ env.minidmr_nodes }} \
+                  "$GITHUB_WORKSPACE/${{ env.build_dir }}/${{ env.test_exec }}"; \
+                exit $?; \
+              else \
+                exit 0; \
+              fi \
+            '
+
+      - name: Stop minidmr cluster
+        if: always()
+        run: minidmr stop
