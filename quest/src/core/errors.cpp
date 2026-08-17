@@ -694,11 +694,13 @@ void assert_gpuHasBeenBound(bool isBound) {
  * CUDA ERRORS
  */
 
-void error_cudaCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line) {
+void internal_cudaLibCallFailed(const char* libname, const char* msg, const char* func, const char* caller, const char* file, int line) {
 
     // using operator overloads to cast const char[] literals to std::string, to concat with const char*.
     string err = "";
-    err += "A CUDA (or cuQuantum) API function (\"";
+    err += "A ";
+    err += libname;
+    err += " API function (\"";
     err += func;
     err += "\", called by \"";
     err += caller;
@@ -712,12 +714,17 @@ void error_cudaCallFailed(const char* msg, const char* func, const char* caller,
     raiseInternalError(err);
 }
 
+void error_cudaCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line) {
+
+    internal_cudaLibCallFailed("CUDA", msg, func, caller, file, line);
+}
+
 void error_cudaEncounteredIrrecoverableError() {
 
     raiseInternalError("The CUDA API encountered an irrecoverable \"sticky\" error which was attemptedly cleared as if it were non-sticky.");
 }
 
-void error_kernelLaunchFailed(const char* caller, const char* cudaErrMsg) {
+void error_cudaKernelLaunchFailed(const char* caller, const char* cudaErrMsg) {
 
     string err = "";
     err += "A CUDA kernel invoked within '";
@@ -737,27 +744,9 @@ void error_kernelLaunchFailed(const char* caller, const char* cudaErrMsg) {
  * THRUST ERRORS
  */
 
+void error_thrustCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line) {
 
-void error_thrustTempGpuAllocFailed() {
-
-    raiseInternalError("Thrust failed to allocate temporary GPU memory.");
-}
-
-void error_thrustCallFailed(const char* msg, const char* call, const char* caller, const char* file, int line) {
-
-    string err = "";
-    err += "A Thrust operation (\"";
-    err += call;
-    err += "\", called by \"";
-    err += caller;
-    err += "()\" at line ";
-    err += std::to_string(line);
-    err += " of file ";
-    err += file;
-    err += ") unexpectedly failed with error message: \"";
-    err += msg;
-    err += "\". ";
-    raiseInternalError(err);
+    internal_cudaLibCallFailed("Thrust", msg, func, caller, file, line);
 }
 
 
@@ -765,6 +754,11 @@ void error_thrustCallFailed(const char* msg, const char* call, const char* calle
 /*
  * CUQUANTUM ERRORS
  */
+
+void error_cuQuantumCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line) {
+
+    internal_cudaLibCallFailed("cuQuantum (specifically cuStateVec)", msg, func, caller, file, line);
+}
 
 void error_cuQuantumInitOrFinalizedButNotCompiled() {
 

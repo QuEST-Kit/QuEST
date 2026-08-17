@@ -99,7 +99,7 @@ void assert_lastKernelLaunchSucceeded(const char* caller) {
 
     cudaError_t status = cudaGetLastError();
     if (status != cudaSuccess)
-        error_kernelLaunchFailed(caller, cudaGetErrorString(status));
+        error_cudaKernelLaunchFailed(caller, cudaGetErrorString(status));
 }
 
 #endif
