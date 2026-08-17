@@ -717,6 +717,20 @@ void error_cudaEncounteredIrrecoverableError() {
     raiseInternalError("The CUDA API encountered an irrecoverable \"sticky\" error which was attemptedly cleared as if it were non-sticky.");
 }
 
+void error_kernelLaunchFailed(const char* caller, const char* cudaErrMsg) {
+
+    string err = "";
+    err += "A CUDA kernel invoked within '";
+    err += caller;
+    err += "' failed to launch - or a prior kernel called from elsewhere asynchronously failed -";
+    err += " with CUDA error message: \"";
+    err += cudaErrMsg;
+    err += "\". ";
+    raiseInternalError(err);
+}
+
+// Looking for assert_lastKernelLaunchSucceeded(const char*)? It's in gpu_config :^)
+
 
 
 /*
@@ -727,6 +741,23 @@ void error_cudaEncounteredIrrecoverableError() {
 void error_thrustTempGpuAllocFailed() {
 
     raiseInternalError("Thrust failed to allocate temporary GPU memory.");
+}
+
+void error_thrustCallFailed(const char* msg, const char* call, const char* caller, const char* file, int line) {
+
+    string err = "";
+    err += "A Thrust operation (\"";
+    err += call;
+    err += "\", called by \"";
+    err += caller;
+    err += "()\" at line ";
+    err += std::to_string(line);
+    err += " of file ";
+    err += file;
+    err += ") unexpectedly failed with error message: \"";
+    err += msg;
+    err += "\". ";
+    raiseInternalError(err);
 }
 
 

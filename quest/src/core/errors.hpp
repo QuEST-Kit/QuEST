@@ -281,6 +281,10 @@ void error_cudaCallFailed(const char* msg, const char* func, const char* caller,
 
 void error_cudaEncounteredIrrecoverableError();
 
+void error_kernelLaunchFailed(const char* caller, const char* cudaErrMsg);
+
+// Looking for assert_lastKernelLaunchSucceeded(const char*)? It's in gpu_config :^)
+
 
 
 /*
@@ -288,6 +292,8 @@ void error_cudaEncounteredIrrecoverableError();
  */
 
 void error_thrustTempGpuAllocFailed();
+
+void error_thrustCallFailed(const char* msg, const char* call, const char* caller, const char* file, int line);
 
 
 

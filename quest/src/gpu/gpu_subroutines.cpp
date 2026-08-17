@@ -152,6 +152,7 @@ qindex gpu_statevec_packAmpsIntoBuffer(Qureg qureg, ConstList64 qubits, ConstLis
         getGpuQcompPtr(qureg.gpuAmps), getGpuQcompPtr(qureg.gpuCommBuffer) + sendInd, numThreads, 
         sortedQubits, qubitStateMask
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
     // return the number of packed amps
     return numThreads;
@@ -178,6 +179,7 @@ qindex gpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qu
         getGpuQcompPtr(qureg.gpuAmps), getGpuQcompPtr(qureg.gpuCommBuffer) + sendInd, numThreads, 
         qubit1, qubit2, qubit3, bit2
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
     // return the number of packed amps
     return numThreads;
@@ -220,6 +222,7 @@ void gpu_statevec_anyCtrlSwap_subA(Qureg qureg, ConstList64 ctrls, ConstList64 c
         getGpuQcompPtr(qureg.gpuAmps), numThreads, 
         sortedQubits, qubitStateMask, targ1, targ2
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -246,6 +249,7 @@ void gpu_statevec_anyCtrlSwap_subB(Qureg qureg, ConstList64 ctrls, ConstList64 c
         getGpuQcompPtr(qureg.gpuAmps), getGpuQcompPtr(qureg.gpuCommBuffer) + recvInd, numThreads, 
         sortedCtrls, ctrlStateMask
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -272,6 +276,7 @@ void gpu_statevec_anyCtrlSwap_subC(Qureg qureg, ConstList64 ctrls, ConstList64 c
         getGpuQcompPtr(qureg.gpuAmps), getGpuQcompPtr(qureg.gpuCommBuffer) + recvInd, numThreads, 
         sortedQubits, qubitStateMask
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -318,6 +323,7 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subA(Qureg qureg, ConstList64 ctrls, C
         qubitStateMask, targ, 
         m00, m01, m10, m11
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -345,6 +351,7 @@ void gpu_statevec_anyCtrlOneTargDenseMatr_subB(Qureg qureg, ConstList64 ctrls, C
         sortedCtrls, ctrlStateMask, 
         getGpuQcomp(fac0), getGpuQcomp(fac1)
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -392,6 +399,7 @@ void gpu_statevec_anyCtrlTwoTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
         m[0], m[1], m[2],  m[3],  m[4],  m[5],  m[6],  m[7],
         m[8], m[9], m[10], m[11], m[12], m[13], m[14], m[15]
     );
+    assert_lastKernelLaunchSucceeded(__func__);
  
 #else
     error_gpuSimButGpuNotCompiled();
@@ -482,6 +490,7 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
                 sortedQubits, qubitStateMask, 
                 targs, matrPtr
         );
+        assert_lastKernelLaunchSucceeded(__func__);
 
     } else {
 
@@ -522,6 +531,7 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
                 sortedQubits, qubitStateMask, 
                 targs, powerOf2(targs.size()), matrPtr
         );
+        assert_lastKernelLaunchSucceeded(__func__);
     }
 
 #else
@@ -589,6 +599,7 @@ void gpu_statevec_anyCtrlOneTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, Con
         getGpuQcompPtr(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode, sortedCtrls,
        	ctrlStateMask, targ, elems[0], elems[1]
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
     // explicitly return to avoid runtime error below
     return;
@@ -661,6 +672,7 @@ void gpu_statevec_anyCtrlTwoTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, Con
         ctrlStateMask, targ1, targ2,
         elems[0], elems[1], elems[2], elems[3]
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
     // explicitly return to avoid runtime error below
     return;
@@ -729,6 +741,7 @@ void gpu_statevec_anyCtrlAnyTargDiagMatr_sub(Qureg qureg, ConstList64 ctrls, Con
         ctrlStateMask, targs, 
         getGpuQcompPtr(util_getGpuMemPtr(matr)), getGpuQcomp(exponent)
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
     // must return to avoid runtime error below
     return;
@@ -784,6 +797,7 @@ void gpu_densmatr_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
             getGpuQcompPtr(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode,
             getGpuQcompPtr(util_getGpuMemPtr(matr)), matr.numElems, getGpuQcomp(exponent)
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -846,6 +860,7 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subA(Qureg qureg, ConstList64 ct
         targsXY, maskXY, maskYZ,
        	getGpuQcomp(powI), getGpuQcomp(ampFac), getGpuQcomp(pairAmpFac)
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -878,6 +893,7 @@ void gpu_statevector_anyCtrlPauliTensorOrGadget_subB(Qureg qureg, ConstList64 ct
         maskXY, maskYZ, bufferMaskXY,
         getGpuQcomp(powI), getGpuQcomp(ampFac), getGpuQcomp(pairAmpFac)
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -915,6 +931,7 @@ void gpu_statevector_anyCtrlAnyTargZOrPhaseGadget_sub(Qureg qureg, ConstList64 c
         sortedCtrls, ctrlStateMask, targMask,
         getGpuQcomp(fac0), getGpuQcomp(fac1)
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -955,6 +972,7 @@ void gpu_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs
         getGpuQcompPtr(outQureg.gpuAmps), numThreads,
         getPtr(devCoeffs), getPtr(devQuregAmps), inQuregs.size()
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -986,6 +1004,7 @@ void gpu_densmatr_mixQureg_subB(qreal outProb, Qureg outQureg, qreal inProb, Qur
         outProb, getGpuQcompPtr(outQureg.gpuAmps), inProb, getGpuQcompPtr(inQureg.gpuAmps),
         numThreads, inQureg.numAmps
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1005,6 +1024,7 @@ void gpu_densmatr_mixQureg_subC(qreal outProb, Qureg outQureg, qreal inProb) {
         outProb, getGpuQcompPtr(outQureg.gpuAmps), inProb, getGpuQcompPtr(outQureg.gpuCommBuffer),
         numThreads, outQureg.rank, powerOf2(outQureg.numQubits), outQureg.logNumAmpsPerNode        
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1040,6 +1060,7 @@ void gpu_densmatr_oneQubitDephasing_subA(Qureg qureg, int ketQubit, qreal prob) 
     kernel_densmatr_oneQubitDephasing_subA <<<numBlocks, numThreadsPerBlock>>> (
         getGpuQcompPtr(qureg.gpuAmps), numThreads, ketQubit, braQubit, fac
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1067,6 +1088,7 @@ void gpu_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal prob) 
     kernel_densmatr_oneQubitDephasing_subB <<<numBlocks, numThreadsPerBlock>>> (
         getGpuQcompPtr(qureg.gpuAmps), numThreads, ketQubit, braBit, fac
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1115,6 +1137,7 @@ void gpu_densmatr_twoQubitDephasing_subB(Qureg qureg, int ketQubitA, int ketQubi
         getGpuQcompPtr(qureg.gpuAmps), numThreads, qureg.rank, qureg.logNumAmpsPerNode, // numAmps, not numCols
         ketQubitA, ketQubitB, braQubitA, braQubitB, term
     );
+    assert_lastKernelLaunchSucceeded(__func__);
     
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1142,6 +1165,7 @@ void gpu_densmatr_oneQubitDepolarising_subA(Qureg qureg, int ketQubit, qreal pro
     kernel_densmatr_oneQubitDepolarising_subA <<<numBlocks, numThreadsPerBlock>>> (
         getGpuQcompPtr(qureg.gpuAmps), numThreads, ketQubit, braQubit, factors.c1, factors.c2, factors.c3
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1165,6 +1189,7 @@ void gpu_densmatr_oneQubitDepolarising_subB(Qureg qureg, int ketQubit, qreal pro
         getGpuQcompPtr(qureg.gpuAmps), getGpuQcompPtr(qureg.gpuCommBuffer) + recvInd, numThreads, 
         ketQubit, braBit, factors.c1, factors.c2, factors.c3
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1194,6 +1219,7 @@ void gpu_densmatr_twoQubitDepolarising_subA(Qureg qureg, int ketQb1, int ketQb2,
         getGpuQcompPtr(qureg.gpuAmps), numThreads,
         ketQb1, ketQb2, braQb1, braQb2, c3
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1220,6 +1246,7 @@ void gpu_densmatr_twoQubitDepolarising_subB(Qureg qureg, int ketQb1, int ketQb2,
         getGpuQcompPtr(qureg.gpuAmps), numThreads,
         ketQb1, ketQb2, braQb1, braQb2, altc1, factors.c2
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1243,6 +1270,7 @@ void gpu_densmatr_twoQubitDepolarising_subC(Qureg qureg, int ketQb1, int ketQb2,
         getGpuQcompPtr(qureg.gpuAmps), numThreads,
         ketQb1, ketQb2, braQb1, braBit2, c3
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1267,6 +1295,7 @@ void gpu_densmatr_twoQubitDepolarising_subD(Qureg qureg, int ketQb1, int ketQb2,
         getGpuQcompPtr(qureg.gpuAmps), getGpuQcompPtr(qureg.gpuCommBuffer) + offset, numThreads,
         ketQb1, ketQb2, braQb1, braBit2, factors.c1, factors.c2
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1293,6 +1322,7 @@ void gpu_densmatr_twoQubitDepolarising_subE(Qureg qureg, int ketQb1, int ketQb2,
         getGpuQcompPtr(qureg.gpuAmps), numThreads,
         ketQb1, ketQb2, braBit1, braBit2, fac0, fac1
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1317,6 +1347,7 @@ void gpu_densmatr_twoQubitDepolarising_subF(Qureg qureg, int ketQb1, int ketQb2,
         getGpuQcompPtr(qureg.gpuAmps), getGpuQcompPtr(qureg.gpuCommBuffer) + offset, numThreads,
         ketQb1, ketQb2, braBit1, braBit2, c2
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1345,6 +1376,7 @@ void gpu_densmatr_oneQubitPauliChannel_subA(Qureg qureg, int ketQubit, qreal pI,
         getGpuQcompPtr(qureg.gpuAmps), numThreads, ketQubit, braQubit, 
         factors.c1, factors.c2, factors.c3, factors.c4
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1368,6 +1400,7 @@ void gpu_densmatr_oneQubitPauliChannel_subB(Qureg qureg, int ketQubit, qreal pI,
         getGpuQcompPtr(qureg.gpuAmps), getGpuQcompPtr(qureg.gpuCommBuffer) + recvInd, numThreads, 
         ketQubit, braBit, factors.c1, factors.c2, factors.c3, factors.c4
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1396,6 +1429,7 @@ void gpu_densmatr_oneQubitDamping_subA(Qureg qureg, int ketQubit, qreal prob) {
         getGpuQcompPtr(qureg.gpuAmps), numThreads,
         ketQubit, braQubit, prob, factors.c1, factors.c2
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1416,6 +1450,7 @@ void gpu_densmatr_oneQubitDamping_subB(Qureg qureg, int qubit, qreal prob) {
     kernel_densmatr_oneQubitDamping_subB <<<numBlocks, numThreadsPerBlock>>> (
         getGpuQcompPtr(qureg.gpuAmps), numThreads, qubit, c2
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1437,6 +1472,7 @@ void gpu_densmatr_oneQubitDamping_subC(Qureg qureg, int ketQubit, qreal prob) {
     kernel_densmatr_oneQubitDamping_subC <<<numBlocks, numThreadsPerBlock>>> (
         getGpuQcompPtr(qureg.gpuAmps), numThreads, ketQubit, braBit, c1
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1457,6 +1493,7 @@ void gpu_densmatr_oneQubitDamping_subD(Qureg qureg, int qubit, qreal prob) {
         getGpuQcompPtr(qureg.gpuAmps), getGpuQcompPtr(qureg.gpuCommBuffer) + recvInd, numThreads, 
         qubit, prob
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1487,6 +1524,7 @@ void gpu_densmatr_partialTrace_sub(Qureg inQureg, Qureg outQureg, ConstList64 ta
         getGpuQcompPtr(inQureg.gpuAmps), getGpuQcompPtr(outQureg.gpuAmps), numThreads,
         targs, pairTargs, allTargs
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
 #else
     error_gpuSimButGpuNotCompiled();
@@ -1607,6 +1645,7 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
        getPtr(devProbs), getGpuQcompPtr(qureg.gpuAmps), numThreads, 
         qureg.rank, qureg.logNumAmpsPerNode, qubits
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
     // overwrite outProbs with GPU memory
     copyFromDeviceVec(devProbs, outProbs);
@@ -1646,6 +1685,7 @@ void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
         qureg.rank, qureg.logNumAmpsPerNode, 
         qubits
     );
+    assert_lastKernelLaunchSucceeded(__func__);
 
     // overwrite outProbs with GPU memory
     copyFromDeviceVec(devProbs, outProbs);
