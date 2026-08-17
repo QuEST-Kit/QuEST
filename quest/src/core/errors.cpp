@@ -694,11 +694,13 @@ void assert_gpuHasBeenBound(bool isBound) {
  * CUDA ERRORS
  */
 
-void error_cudaCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line) {
+void internal_cudaLibCallFailed(const char* libname, const char* msg, const char* func, const char* caller, const char* file, int line) {
 
     // using operator overloads to cast const char[] literals to std::string, to concat with const char*.
     string err = "";
-    err += "A CUDA (or cuQuantum) API function (\"";
+    err += "A ";
+    err += libname;
+    err += " API function (\"";
     err += func;
     err += "\", called by \"";
     err += caller;
@@ -712,10 +714,29 @@ void error_cudaCallFailed(const char* msg, const char* func, const char* caller,
     raiseInternalError(err);
 }
 
+void error_cudaCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line) {
+
+    internal_cudaLibCallFailed("CUDA", msg, func, caller, file, line);
+}
+
 void error_cudaEncounteredIrrecoverableError() {
 
     raiseInternalError("The CUDA API encountered an irrecoverable \"sticky\" error which was attemptedly cleared as if it were non-sticky.");
 }
+
+void error_cudaKernelLaunchFailed(const char* caller, const char* cudaErrMsg) {
+
+    string err = "";
+    err += "A CUDA kernel invoked within '";
+    err += caller;
+    err += "' failed to launch - or a prior kernel called from elsewhere asynchronously failed -";
+    err += " with CUDA error message: \"";
+    err += cudaErrMsg;
+    err += "\". ";
+    raiseInternalError(err);
+}
+
+// Looking for assert_lastKernelLaunchSucceeded(const char*)? It's in gpu_config :^)
 
 
 
@@ -723,10 +744,9 @@ void error_cudaEncounteredIrrecoverableError() {
  * THRUST ERRORS
  */
 
+void error_thrustCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line) {
 
-void error_thrustTempGpuAllocFailed() {
-
-    raiseInternalError("Thrust failed to allocate temporary GPU memory.");
+    internal_cudaLibCallFailed("Thrust", msg, func, caller, file, line);
 }
 
 
@@ -734,6 +754,11 @@ void error_thrustTempGpuAllocFailed() {
 /*
  * CUQUANTUM ERRORS
  */
+
+void error_cuQuantumCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line) {
+
+    internal_cudaLibCallFailed("cuQuantum (specifically cuStateVec)", msg, func, caller, file, line);
+}
 
 void error_cuQuantumInitOrFinalizedButNotCompiled() {
 

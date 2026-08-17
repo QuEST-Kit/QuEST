@@ -281,19 +281,25 @@ void error_cudaCallFailed(const char* msg, const char* func, const char* caller,
 
 void error_cudaEncounteredIrrecoverableError();
 
+void error_cudaKernelLaunchFailed(const char* caller, const char* cudaErrMsg);
+
+// Looking for assert_lastKernelLaunchSucceeded(const char*)? It's in gpu_config :^)
+
 
 
 /*
  * THRUST ERRORS
  */
 
-void error_thrustTempGpuAllocFailed();
+void error_thrustCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line);
 
 
 
 /*
  * CUQUANTUM ERRORS
  */
+
+void error_cuQuantumCallFailed(const char* msg, const char* func, const char* caller, const char* file, int line);
 
 void error_cuQuantumInitOrFinalizedButNotCompiled();
 
