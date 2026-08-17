@@ -28,6 +28,14 @@ using std::string;
 
 
 /*
+ * TEMPORARY / DEBUG ERRORS
+ */
+
+void error_quregTooLargeForHipGpuAccel();
+
+
+
+/*
  * VALIDATION ERRORS
  */
 

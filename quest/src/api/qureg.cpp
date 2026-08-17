@@ -168,6 +168,12 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
     freeAllMemoryIfAnyAllocsFailed(qureg);
     validate_newQuregAllocs(qureg, __func__);
 
+    // TODO / DEBUG:
+    // TEMPORARILY FORBID HIP GPU ACCELERATION OF > 2^32 AMPS PER NODE,
+    // SINCE THIS WILL LEAD TO LATER KERNEL LAUNCH FAILURES; see issue #815
+    if (useGpuAccel && gpu_isHipCompiled() && qureg.numAmpsPerNode >= (1LL << 32))
+        error_quregTooLargeForHipGpuAccel();
+
     // initialise state to |0> or |0><0|
     initZeroState(qureg); 
 
