@@ -965,8 +965,10 @@ void gpu_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs
     
     // copy coeff and qureg lists into GPU memory, allocating new device memory
     // which will be a visible overhead when the Qureg are small. But eh!
-    devgpuqcompptrs devQuregAmps = ptrs;
-    devcomps devCoeffs = coeffs;
+    devgpuqcompptrs devQuregAmps;
+    devcomps devCoeffs;
+    THRUST_CHECK( devQuregAmps.assign(ptrs.begin(), ptrs.end()) );
+    THRUST_CHECK( devCoeffs.assign(coeffs.begin(), coeffs.end()) );
 
     kernel_statevec_setQuregToWeightedSum_sub <NumQuregs> <<<numBlocks, numThreadsPerBlock>>> (
         getGpuQcompPtr(outQureg.gpuAmps), numThreads,
@@ -1639,7 +1641,7 @@ void gpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
 
     // allocate exponentially-big temporary memory (error if failed)
-    devreals devProbs = getDeviceRealsVec(powerOf2(qubits.size())); // throws
+    devreals devProbs = getDeviceRealsVec(powerOf2(qubits.size()));
 
     kernel_statevec_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, numThreadsPerBlock>>> (
        getPtr(devProbs), getGpuQcompPtr(qureg.gpuAmps), numThreads, 
@@ -1677,7 +1679,7 @@ void gpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     qindex numAmpsPerCol = powerOf2(qureg.numQubits);
 
     // allocate exponentially-big temporary memory (error if failed)
-    devreals devProbs = getDeviceRealsVec(powerOf2(qubits.size())); // throws
+    devreals devProbs = getDeviceRealsVec(powerOf2(qubits.size()));
 
     kernel_densmatr_calcProbsOfAllMultiQubitOutcomes_sub<NumQubits> <<<numBlocks, numThreadsPerBlock>>> (
         getPtr(devProbs), getGpuQcompPtr(qureg.gpuAmps), 
