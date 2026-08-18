@@ -17,6 +17,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 using std::vector;
 using std::string;
@@ -28,6 +29,19 @@ using std::string;
  */
 
 const int validate_STRUCT_PROPERTY_UNKNOWN_FLAG = -1;
+
+
+
+/*
+ * REPORTING
+ */
+
+// map like "${X}" -> 5, with max-size signed int values to prevent overflows.
+// in C++11, these can be initialised with {{"${X}", 5}, ...}
+using tokenSubs = std::map<string, long long int>;
+
+// exposed beyond validation.cpp so the autodeployer can raise its own errors
+void assertAllNodesAgreeThat(bool valid, string msg, tokenSubs vars, const char* func);
 
 
 

@@ -12,6 +12,7 @@
 #include "quest/include/environment.h"
 
 #include "quest/src/core/memory.hpp"
+#include "quest/src/core/validation.hpp"
 #include "quest/src/core/autodeployer.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/cpu/cpu_config.hpp"
@@ -87,6 +88,44 @@ void chooseWhetherToDistributeQureg(int numQubits, int isDensMatr, int &useDistr
 }
 
 
+void assertAutoDeploymentIsDistributed(int numQubits, int isDensMatr, int numEnvNodes, int useDistrib, const char* caller) {
+
+    bool dividesEvenly = (numQubits >= mem_getMinNumQubitsForDistribution(numEnvNodes));
+
+    static const string indivisibleMsg =
+        "Automatic deployment cannot distribute this ${NUM_QUBITS} qubit state between the "
+        "environment's ${NUM_NODES} nodes, because it cannot be divided evenly between them; that "
+        "requires at least ${MIN_NODE_QUBITS} qubits. Every node would instead redundantly simulate "
+        "the entire state. Specify the deployment explicitly in order to deliberately forgo "
+        "distribution, or launch the environment with fewer nodes.";
+
+    static const string undersizedMsg =
+        "Automatic deployment cannot distribute this ${NUM_QUBITS} qubit state between the "
+        "environment's ${NUM_NODES} nodes, because each node would then store only 2^${LOCAL_QUBITS} "
+        "amplitudes, fewer than the 2^${MIN_QUBITS} below which distribution is not automatically "
+        "chosen. Every node would instead redundantly simulate the entire state. Specify the "
+        "deployment explicitly in order to deliberately forgo distribution, or launch the "
+        "environment with fewer nodes.";
+
+    const string& msg = (dividesEvenly)? undersizedMsg : indivisibleMsg;
+
+    tokenSubs vars = (dividesEvenly)?
+        tokenSubs{
+            {"${NUM_QUBITS}",   numQubits},
+            {"${NUM_NODES}",    numEnvNodes},
+            {"${LOCAL_QUBITS}", mem_getEffectiveNumStateVecQubitsPerNode(numQubits, isDensMatr, numEnvNodes)},
+            {"${MIN_QUBITS}",   MIN_NUM_LOCAL_QUBITS_FOR_AUTO_QUREG_DISTRIBUTION}} :
+        tokenSubs{
+            {"${NUM_QUBITS}",      numQubits},
+            {"${NUM_NODES}",       numEnvNodes},
+            {"${MIN_NODE_QUBITS}", mem_getMinNumQubitsForDistribution(numEnvNodes)}};
+
+    // nodes can disagree since deployment consulted their own RAM and VRAM; a lone
+    // failing node would hang the others inside the error handler's synchronisation
+    assertAllNodesAgreeThat(useDistrib == 1, msg, vars, caller);
+}
+
+
 void chooseWhetherToGpuAccelQureg(int numQubits, int isDensMatr, int &useGpuAccel, int numQuregNodes) {
 
     // if the flag is already set, don't change it
@@ -121,11 +160,14 @@ void chooseWhetherToMultithreadQureg(int numQubits, int isDensMatr, int &useMult
 }
 
 
-void autodep_chooseQuregDeployment(int numQubits, int isDensMatr, int &useDistrib, int &useGpuAccel, int &useMultithread, QuESTEnv env) {
+void autodep_chooseQuregDeployment(int numQubits, int isDensMatr, int &useDistrib, int &useGpuAccel, int &useMultithread, QuESTEnv env, bool mustUtiliseAllNodes, const char* caller) {
 
     // preconditions:
     //  - the given configuration is compatible with env (assured by prior validation)
     //  - this means no deployment is forced (=1) which is incompatible with env
+
+    // record whether the user deferred distribution to us, since explicit replication is deliberate
+    bool wasAutoDistrib = (useDistrib == modeflag::USE_AUTO);
 
     // disable any automatic deployments not permitted by env (it's gauranteed we never overwrite =1 to =0)
     if (!env.isDistributed)
@@ -142,6 +184,13 @@ void autodep_chooseQuregDeployment(int numQubits, int isDensMatr, int &useDistri
 
     // overwrite useDistrib
     chooseWhetherToDistributeQureg(numQubits, isDensMatr, useDistrib, useGpuAccel, env.numNodes);
+
+    // an automatic Qureg deployment must make use of every node, else each would redundantly
+    // simulate the entire state; only an explicit deployment may forgo distribution. note every
+    // node reaches this call, so that the assertion within can seek consensus over useDistrib
+    if (mustUtiliseAllNodes && wasAutoDistrib && env.numNodes > 1)
+        assertAutoDeploymentIsDistributed(numQubits, isDensMatr, env.numNodes, useDistrib, caller);
+
     int numQuregNodes = (useDistrib)? env.numNodes : 1;
     
     // overwrite useGpuAccel
@@ -170,5 +219,9 @@ void autodep_chooseFullStateDiagMatrDeployment(int numQubits, int &useDistrib, i
     // the FullStateDiagMatr is a statevector Qureg.
     int isDensMatr = 0;
 
-    autodep_chooseQuregDeployment(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread, env);
+    // unlike a Qureg, a replicated matrix wastes no nodes; it is merely a local copy of the
+    // diagonal which every node consults while distributedly modifying its own Qureg partition
+    bool mustUtiliseAllNodes = false;
+
+    autodep_chooseQuregDeployment(numQubits, isDensMatr, useDistrib, useGpuAccel, useMultithread, env, mustUtiliseAllNodes, __func__);
 }
