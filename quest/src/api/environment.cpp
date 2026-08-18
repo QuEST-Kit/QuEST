@@ -340,6 +340,9 @@ void printQuregAutoDeployments(bool isDensMatr) {
     prevGpuAccel = 0;
     prevMulti    = 0;
 
+    // assume 1 qubit is deployable, so that an undeployable first row is still reported
+    bool prevCanDeploy = true;
+
     // test to theoretically max #qubits, surpassing max that can fit in RAM and GPUs, because
     // auto-deploy will still try to deploy there to (then subsequent validation will fail)
     int maxQubits = mem_getMaxNumQuregQubitsBeforeGlobalMemSizeofOverflow(isDensMatr, globalEnvPtr->numNodes);
@@ -350,22 +353,34 @@ void printQuregAutoDeployments(bool isDensMatr) {
         useDistrib  = modeflag::USE_AUTO;
         useGpuAccel = modeflag::USE_AUTO;
         useMulti    = modeflag::USE_AUTO;;
-        autodep_chooseQuregDeployment(numQubits, isDensMatr, useDistrib, useGpuAccel, useMulti, *globalEnvPtr);
+        // mustUtiliseAllNodes=false: this merely queries sizes, so must never abort upon
+        // those which createQureg() would reject; we report them as undeployable below
+        autodep_chooseQuregDeployment(numQubits, isDensMatr, useDistrib, useGpuAccel, useMulti, *globalEnvPtr, false, __func__);
 
-        // skip if deployments are unchanged
-        if (useDistrib  == prevDistrib  &&
+        // createQureg() rejects auto-deployments which would replicate the Qureg between nodes
+        bool canDeploy = (globalEnvPtr->numNodes == 1) || useDistrib;
+
+        // skip if deployments are unchanged, or remain unavailable (the other deployments
+        // still vary while unavailable, but are not reported, so must not open a new row)
+        if (!canDeploy && !prevCanDeploy)
+            continue;
+        if (canDeploy == prevCanDeploy &&
+            useDistrib  == prevDistrib  &&
             useGpuAccel == prevGpuAccel &&
             useMulti    == prevMulti)
             continue; 
 
         // else prepare string summarising the new deployments (trailing space is fine)
-        string value = "";
-        if (useMulti)
-            value += "[omp] "; // ordered by #qubits to attempt consistent printed columns
-        if (useGpuAccel)
-            value += "[gpu] ";
-        if (useDistrib)
-            value += "[mpi] ";
+        string value = "(no automatic deployment available)";
+        if (canDeploy) {
+            value = "";
+            if (useMulti)
+                value += "[omp] "; // ordered by #qubits to attempt consistent printed columns
+            if (useGpuAccel)
+                value += "[gpu] ";
+            if (useDistrib)
+                value += "[mpi] ";
+        }
 
         // log the #qubits of the deployment change
         rows.push_back({printer_toStr(numQubits) + " qubits", value});
@@ -374,6 +389,7 @@ void printQuregAutoDeployments(bool isDensMatr) {
         prevDistrib  = useDistrib;
         prevGpuAccel = useGpuAccel;
         prevMulti    = useMulti;
+        prevCanDeploy = canDeploy;
     }
 
     // tailor table title to type of Qureg

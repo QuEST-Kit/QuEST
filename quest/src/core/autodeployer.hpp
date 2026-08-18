@@ -24,7 +24,10 @@
 
 void autodep_chooseQuESTEnvDeployment(int &useDistrib, int &useGpuAccel, int &useMultithread);
 
-void autodep_chooseQuregDeployment(int numQubits, int isDensMatr, int &useDistrib, int &useGpuAccel, int &useMultithread, QuESTEnv env);
+// mustUtiliseAllNodes=true forbids automatically replicating the Qureg between the environment's
+// nodes, which would leave each redundantly simulating the same state. it is false for
+// reportQuESTEnv()'s enumeration, which merely queries every size rather than deploying them
+void autodep_chooseQuregDeployment(int numQubits, int isDensMatr, int &useDistrib, int &useGpuAccel, int &useMultithread, QuESTEnv env, bool mustUtiliseAllNodes, const char* caller);
 
 void autodep_chooseFullStateDiagMatrDeployment(int numQubits, int &useDistrib, int &useGpuAccel, int &useMultithread, QuESTEnv env);
 
