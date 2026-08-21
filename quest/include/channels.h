@@ -70,49 +70,234 @@
  */
 
 
-/// @notyetdoced
+/** A superoperator which acts upon both the ket and bra space of a
+ * linearised density matrix, which can represent more transformations
+ * than a KrausMap.
+ * 
+ * An @f$n@f$-qubit superoperator is instantiated as a @f$2^{2n}\times 2^{2n}@f$
+ * complex matrix, and can only be applied upon density matrices of @f$n@f$ or
+ * more density matrices.
+ * 
+ * Like all QuEST structs, a SuperOp is safe to copy, and ergo to pass to
+ * functions by-value, or be returned from them. However, its destructor
+ * must only ever be called upon one such copy.
+ * 
+ * @myexample
+ * 
+ * See [C](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_superoperators.c) and 
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_superoperators.cpp) 
+ * examples of initialising SuperOp.
+ * 
+ * @see
+ * - createSuperOp()
+ * - [createInlineSuperOp()](https://quest-kit.github.io/QuEST/group__channels__create.html#ga0ee76da0f63c68a2bf26c6dda973436d)
+ * - setSuperOp()
+ * - syncSuperOp()
+ * - reportSuperOp()
+ * - mixSuperOp()
+ * - destroySuperOp()
+ */
 typedef struct {
 
+    /** The number of qubits of the superoperator. 
+     * 
+     * This is _half_ the number of qubit substates of the linearised density
+     * matrix upon which the superoperator acts, but is consistent with the space
+     * acted upon by an equivalent a channel or unitary.
+     * 
+     * The total memory costs of the superoperator scale exponentially with the
+     * number of qubits; an @f$n@f$-qubit superoperator contains @f$16^n@f$
+     * complex elements.
+     */
     int numQubits;
+
+    /** The dimension of the superoperator, which is a square matrix, and so
+     * equals both the number of rows and columns.
+     * 
+     * Letting @f$n=@f$ #numQubits, then #numRows @f$=4^n@f$.
+     */
     qindex numRows;
     
-    // 2D CPU memory, which users can manually overwrite like cpuElems[i][j],
-    // but which actually merely aliases the 1D cpuElemsFlat below
+    /** The 2D matrix elements of the operator, stored in CPU host memory.
+     * 
+     * It is safest to modify this matrix through setSuperOp(), but direct modification
+     * is possible; the matrix element of the `r`-th row and `c`-th colum is stored
+     * at `cpuElems[r][c]`.
+     * 
+     * > [!IMPORTANT]
+     * > It is _critical_ to call syncSuperOp() after direct modification of
+     * > #cpuElems in order to update persistent superoperator properties,
+     * > such as its data in GPU device memory (even when not running in
+     * > GPU-accelerated mode).
+     * 
+     * The field #cpuElems merely aliases the 1D #cpuElemsFlat field, such that
+     * modifications of #cpuElems also updates #cpuElemsFlat.
+     * 
+     * @see
+     * - syncSuperOp()
+     */
     qcomp** cpuElems;
 
-    // row-major flattened elements of cpuElems, always allocated
+    /** A 1D row-major form of #cpuElems.
+     * 
+     * Modification of the superoperator matrix should be done through #cpuElems
+     * for mathematical clarity, though this 1D contiguous form may be convenient
+     * when performing copying.
+     * 
+     * > [!IMPORTANT]
+     * > It is _critical_ to call syncSuperOp() after direct modification of
+     * > #cpuElemsFlat in order to update persistent superoperator properties,
+     * > such as its data in GPU device memory (even when not running in
+     * > GPU-accelerated mode).
+     * 
+     * @see
+     * - syncSuperOp()
+     */
     qcomp* cpuElemsFlat;
 
-    // row-major flattened elems in GPU memory, allocated 
-    // only and always in GPU-enabled QuEST environments
+    /** The elements of the superoperator matrix, stored in GPU device memory,
+     * in a 1D row-major form.
+     * 
+     * This is a copy of #cpuElemsFlat consulted by QuEST's GPU backend and should
+     * _never_ be modified directly. Instead, it is updated by calling syncSuperOp()
+     * after modifying #cpuElems or #cpuElemsFlat, which is performed automatically by
+     * API functions like setSuperOp(). In this way, #gpuElemsFlat and #cpuElemsFlat
+     * should never be out of sync with one another.
+     * 
+     * Within a GPU-enabled QuEST environment, every SuperOp allocates #gpuElemsFlat
+     * in GPU memory, even if never ultimately consulted from the GPU backend.
+     */
     qcomp* gpuElemsFlat;
 
-    // whether the user has ever synchronised memory to the GPU, which is performed automatically
-    // when calling functions like setCompMatr(), but which requires manual invocation with
-    // syncCompMatr() after manual modification of the cpuElem. Note this can only indicate whether
-    // the matrix has EVER been synced; it cannot be used to detect whether manual modifications
-    // made after an initial sync have been re-synched. This is a heap pointer to remain mutable.
+    /** Whether the superoperator matrix elements were ever synchronised.
+     * 
+     * This is a heap pointer to a persistent flag which is initially @c 0 at SuperOp creation,
+     * but which is permanently overwritten to @c 1 when synchronisation is performed, such as
+     * via syncSuperOp() or setSuperOp(). The flag indicates whether the superoperator matrix
+     * elements have been initialised (and when QuEST is GPU-accelerated, whether they have been
+     * copied to GPU device memory), and ergo whether it is valid to pass the SuperOp to a
+     * simulation function like mixSuperOp().
+     * 
+     * Note this flag can only indicate whether the matrix has _ever_ been synced; it cannot be
+     * used to detect whether manual modification of #cpuElems made after an initial sync have been
+     * re-synced, as required for correct behaviour in GPU mode.
+     * 
+     * @see
+     * - syncSuperOp()
+     */
     int* wasGpuSynced;
 
 } SuperOp;
 
 
-/// @notyetdoced
+/** A Kraus map which can act upon density matrices, and can describe any
+ * physical operation or channel.
+ * 
+ * A @f$t@f$-operator @f$n@f$-qubit KrausMap is described by @f$t@f$ complex matrices,
+ * each of dimension @f$2^n\times 2^n@f$; the equivalent size of an @f$n@f$-qubit unitary.
+ * A KrausMap can be applied upon density matrices of @f$n@f$ or more qubits.
+ * 
+ * Due to its internal representation as a SuperOp with matrix dimension
+ * @f$2^{2n}\times 2^{2n}@f$, the total memory costs of a KrausMap scale exponentially 
+ * with the number of qubits as @f$16^n@f$.
+ * 
+ * Like all QuEST structs, a KrausMap is safe to copy, and ergo to pass to
+ * functions by-value, or be returned from them. However, its destructor
+ * must only ever be called upon one such copy.
+ * 
+ * @myexample
+ * 
+ * See [C](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_krausmaps.c) and 
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_krausmaps.cpp) 
+ * examples of initialising KrausMap.
+ * 
+ * @see
+ * - createKrausMap()
+ * - [createInlineKrausMap()](https://quest-kit.github.io/QuEST/group__channels__create.html#gae9c49a6443896ef590ff1e4cfaa4912b)
+ * - setKrausMap()
+ * - syncKrausMap()
+ * - reportKrausMap()
+ * - mixKrausMap()
+ * - destroyKrausMap()
+ */
 typedef struct {
 
+    /** The number of qubits of the Kraus map. 
+     * 
+     * Letting @f$n=@f$ #numQubits, each Kraus operator in the map is a @f$2^n\times 2^n@f$
+     * complex matrix, and the full map is described by a @f$2^{2n}\times 2^{2n}@f$ 
+     * superoperator; a total of @f$16^n@f$ complex elements.
+     */
     int numQubits;
 
-    // representation of the map as a collection of Kraus operators, kept exclusively 
-    // in CPU memory, and used only for CPTP validation and reporting the map
+    /** The number of Kraus operators in the map.
+     * 
+     * For example, a KrausMap form of an amplitude damping channel would contain
+     * @c numMatrices=2, and a two-qubit depolarising channel would contain
+     * @c numMatrices=16.
+     */
     int numMatrices;
+
+    /** The dimension of each Kraus operator, which is a square matrix, and so
+     * equivalent to the number of rows and columns.
+     * 
+     * Letting @f$n=@f$ #numQubits, then #numRows @f$=2^n@f$.
+     */
     qindex numRows;
+
+    /** A list of each Kraus oeprator's 2D matrix, stored in CPU host memory.
+     * 
+     * It is safest to modify this matrix through setKrausMap(), but direct modification
+     * is possible; the matrix element of the `r`-th row and `c`-th colum of the `i`-th
+     * operator is stored at `matrices[i][r][c]`.
+     * 
+     * > [!IMPORTANT]
+     * > It is _critical_ to call syncKrausMap() after direct modification of
+     * > #matrices in order to update persistent KrausMap properties,
+     * > such as its SuperOp data in GPU device memory (even when not running in
+     * > GPU-accelerated mode).
+     * 
+     * Unlike other data structures (such as CompMatr), KrausMap has no GPU device memory
+     * copy of #matrices, since only the superoperator (stored within #superop) is
+     * needed on the device. In fact, #matrices is only used for convenient
+     * initialisation of a KrausMap, for validation of CPTP, and for printing by
+     * reportKrausMap().
+     */
     qcomp*** matrices;
 
-    // representation of the map as a single superoperator, used for simulation
+    /** A superoperator representation of the KrausMap.
+     * 
+     * This is computed from #matrices during syncKrausMap() (as automatically invoked
+     * by setKrausMap()), and is used by QuEST's simulation backend to effect the Kraus
+     * map upon a density matrix.
+     * 
+     * Since this is the only field of KrausMap needing synchronisation, KrausMap
+     * itself lacks an explicit @c wasGpuSynced field, and instead uses that attached
+     * to #superop.
+     */
     SuperOp superop;
 
-    // CPTP-ness is determined at validation; 0 or 1, or -1 to indicate unknown. The flag is 
-    // stored in heap so even copies of structs are mutable, but pointer itself is immutable.
+    /** Whether the Kraus map is known to be (within validation epsilon tolerance) 
+     * completely positive and trace preserving (@c =1), or known to be non-CPTP (@c =0),
+     * or whether it is unknown (@c =-1).
+     * 
+     * This is a heap pointer to a persistent flag which is initially @c =-1 at KrausMap
+     * creation, and is only ever consulted and/or updated by input validation within 
+     * mixKrausMap(), when such validation is enabled. Calling setKrausMap() or syncKrausMap()
+     * restores #isApproxCPTP to @c =-1.
+     * 
+     * The property of being CPTP is measured approximately, with reference to the validation
+     * epsilon as modified with setQuESTValidationEpsilon(). The flag will never be updated from
+     * @c =-1 when validation is disabled. Like all epsilon-dependent fields, it is restored
+     * to @c =-1 automatically whenever setValidationEpsilon() or setValidationEpsilonToDefault()
+     * are called.
+     * 
+     * To skip CPTP validation in mixKrausMap(), users can directly mutate this field to
+     * @c =1, although it is not advised.
+     * 
+     * @see
+     * - setQuESTValidationEpsilon()
+     */
     int* isApproxCPTP;
 
 } KrausMap;
@@ -177,44 +362,129 @@ extern "C" {
 
 
     /** @ingroup channels_create
-     * @notyetdoced
      * 
+     * Creates an uninitialised Kraus map.
+     *
+     * The returned KrausMap contains @p numOperators Kraus operators, each of which
+     * spans @p numQubits many qubits. Before being passed to functions like
+     * reportKrausMap() and mixKrausMap(), its elements must be populated with
+     * setKrausMap() or setInlineKrausMap(), or directly modified through KrausMap::matrices,
+     * though any direct modification must be followed by a call to syncKrausMap().
+     *
+     * The returned KrausMap should be later destroyed with destroyKrausMap().
+     * 
+     * > See [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.c)
+     * > or [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.cpp) 
+     * > examples of initialising a KrausMap.
+     *
+     * @param[in] numQubits     the number of qubits acted upon by the Kraus map.
+     * @param[in] numOperators  the number of Kraus operators in the map.
+     * @returns A new KrausMap instance.
+     * @throws @validationerror
+     * - if the QuEST environment is not initialised.
+     * - if @p numQubits or @p numOperators are invalid.
+     * - if the dimensions or memory requirements overflow.
+     * - if any memory allocation fails.
      * @see
-     * - createInlineKrausMap
+     * - [createInlineKrausMap()](https://quest-kit.github.io/QuEST/group__channels__create.html#gae9c49a6443896ef590ff1e4cfaa4912b)
      * - createSuperOp()
      * - setKrausMap()
-     * - setInlineKrausMap
+     * - [setInlineKrausMap()](https://quest-kit.github.io/QuEST/group__channels__setters.html#ga3c60440fa9503c235e46d964bc58d3ec)
      * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.c) or 
      *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.cpp) examples
+     * @author Tyson Jones
      */
     KrausMap createKrausMap(int numQubits, int numOperators);
 
 
     /** @ingroup channels_sync
-     * @notyetdoced
      * 
+     * Updates the internal state of @p map, necessary after manually modifying KrausMap::matrices.
+     *
+     * @param[in,out] map  the KrausMap to synchronise.
+     * @throws @validationerror
+     * - if @p map is uninitialised.
      * @see
      * - setKrausMap()
      * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.c) or 
      *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.cpp) examples
+     * @author Tyson Jones
      */
     void syncKrausMap(KrausMap map);
 
 
-    /// @ingroup channels_destroy
-    /// @notyetdoced
+    /** @ingroup channels_destroy
+     * Destroys a KrausMap, freeing its Kraus operators and internal SuperOp.
+     *
+     * Since @p map is passed by value, this function cannot nullify the caller's
+     * copy of the KrausMap fields. The caller must not use @p map after destruction.
+     *
+     * @param[in] map  the KrausMap to destroy.
+     * @throws @validationerror
+     * - if @p map is uninitialised.
+     * @author Tyson Jones
+     */
     void destroyKrausMap(KrausMap map);
 
 
-    /// @ingroup channels_reporters
-    /// @notyetdoced
-    /// @notyettested
+    /** @ingroup channels_reporters
+     * Prints a KrausMap.
+     * 
+     * @myexample
+     * 
+     * ```cpp
+        KrausMap map = createInlineKrausMap(1, 3, {
+            {{1,2},{3,4}},
+            {{5,5},{6,6}},
+            {{1i,2i},{-3i,-4i}}
+        });
+        reportKrausMap(map);
+     * ```
+     * ```text
+        KrausMap (1 qubit, 3 2x2 matrices, 1 4x4 superoperator, 528 bytes):
+            [matrix 0]
+                1  2  
+                3  4  
+            [matrix 1]
+                5  5  
+                6  6  
+            [matrix 2]
+                i    2i   
+                -3i  -4i  
+     * ```
+     *
+     * @param[in] map  the KrausMap to print.
+     * @throws @validationerror
+     * - if @p map is uninitialised.
+     * @author Tyson Jones
+     */
     void reportKrausMap(KrausMap map);
 
 
     /** @ingroup channels_create
-     * @notyetdoced
      * 
+     * Creates an uninitialised superoperator.
+     *
+     * The returned SuperOp represents an arbitrary linear map on vectorised density
+     * matrices, spanning @p numQubits many ket-qubits and an equal number of bra-qubits.
+     * Before being passed to functions
+     * like reportSuperOp() and mixSuperOp(), its elements must be populated with
+     * setSuperOp() or setInlineSuperOp(), or directly modified through SuperOp::cpuElems,
+     * though direct modification must be followed by a call to syncSuperOp().
+     *
+     * The returned SuperOp should be later destroyed with destroySuperOp().
+     * 
+     * > See [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.c)
+     * > or [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.cpp) 
+     * > examples of initialising a SuperOp.
+     *
+     * @param[in] numQubits  the number of qubits acted upon by the superoperator.
+     * @returns A new SuperOp instance.
+     * @throws @validationerror
+     * - if the QuEST environment is not initialised.
+     * - if @p numQubits is invalid.
+     * - if the dimensions or memory requirements overflow.
+     * - if any memory allocation fails.
      * @see
      * - createInlineSuperOp()
      * - createKrausMap()
@@ -222,29 +492,69 @@ extern "C" {
      * - setInlineSuperOp()
      * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.c) or 
      *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.cpp) examples
+     * @author Tyson Jones
      */
     SuperOp createSuperOp(int numQubits);
 
 
     /** @ingroup channels_sync
-     * @notyetdoced
      * 
+     * Updates the internal state of @p op, necessary after manually modifying SuperOp::cpuElems
+     * or SuperOp::cpuElemsFlat.
+     *
+     * @param[in,out] op  the SuperOp to synchronise.
+     * @throws @validationerror
+     * - if @p op is uninitialised.
      * @see
      * - setSuperOp()
      * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.c) or 
      *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.cpp) examples
+     * @author Tyson Jones
      */
     void syncSuperOp(SuperOp op);
 
 
-    /// @ingroup channels_destroy
-    /// @notyetdoced
+    /** @ingroup channels_destroy
+     * Destroys a SuperOp, freeing all its CPU and GPU memory.
+     *
+     * Since @p op is passed by value, this function cannot nullify the caller's
+     * copy of the SuperOp fields. The caller must not use @p op after destruction.
+     *
+     * @param[in] op  the SuperOp to destroy.
+     * @throws @validationerror
+     * - if @p op is uninitialised.
+     * @author Tyson Jones
+     */
     void destroySuperOp(SuperOp op);
 
 
-    /// @ingroup channels_reporters
-    /// @notyetdoced
-    /// @notyettested
+    /** @ingroup channels_reporters
+     * Prints a SuperOp.
+     * 
+     * @myexample
+     * 
+     * ```cpp
+        SuperOp op = createInlineSuperOp(1, {
+            {1,2,3,4},
+            {5,-(10E-2)*3.14i,7,8},
+            {9,10,11,12},
+            {13,14,15,16+1.23i}
+        });
+        reportSuperOp(op);
+     * ```
+     * ```text
+        SuperOp (1 qubit, 4x4 qcomps, 304 bytes):
+            1   2        3   4         
+            5   -0.314i  7   8         
+            9   10       11  12        
+            13  14       15  16+1.23i 
+     * ```
+     *
+     * @param[in] op  the SuperOp to print.
+     * @throws @validationerror
+     * - if @p op is uninitialised.
+     * @author Tyson Jones
+     */
     void reportSuperOp(SuperOp op);
 
 
@@ -271,25 +581,48 @@ extern "C" {
 
 
     /** @ingroup channels_setters
-     * @notyetdoced
      * 
+     * Overwrites the Kraus operators of @p map.
+     * 
+     * Argument @p matrices must be a list of KrausMap::numMatrices matrices, each of 
+     * dimension KrausMap::numRows by KrausMap::numRows.
+     * 
+     * This updates KrausMap::matrices and other internal properties. 
+     *
+     * @param[in,out] map       the KrausMap to overwrite.
+     * @param[in]     matrices  a 3D nested list of the above dimensions.
+     * @throws @validationerror
+     * - if @p map is uninitialised.
+     * @throws seg-fault
+     * - if @p matrices is not of the expected dimensions.
      * @see
-     * - setInlineKrausMap()
+     * - [setInlineKrausMap()](https://quest-kit.github.io/QuEST/group__channels__setters.html#ga3c60440fa9503c235e46d964bc58d3ec)
      * - syncKrausMap()
      * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.c) or 
      *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.cpp) examples
+     * @author Tyson Jones
      */
     void setKrausMap(KrausMap map, qcomp*** matrices);
 
 
     /** @ingroup channels_setters
-     * @notyetdoced
      * 
+     * Overwrites the elements of @p op.
+     *
+     * This copies @p matrix into SuperOp::cpuElems and synchronises @p op to GPU memory
+     * when relevant.
+     *
+     * @param[in,out] op      the SuperOp to overwrite.
+     * @param[in]     matrix  a SuperOp::numRows by SuperOp::numRows matrix of new elements.
+     * @throws @validationerror
+     * - if @p op is uninitialised.
+     * - if @p matrix is a null or invalid pointer.
      * @see
      * - setInlineSuperOp()
      * - syncSuperOp()
      * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.c) or 
      *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.cpp) examples
+     * @author Tyson Jones
      */
     void setSuperOp(SuperOp op, qcomp** matrix);
 
@@ -327,7 +660,7 @@ extern "C" {
      * @cpponly
      * 
      * @see
-     * - setInlineKrausMap()
+     * - [setInlineKrausMap()](https://quest-kit.github.io/QuEST/group__channels__setters.html#ga3c60440fa9503c235e46d964bc58d3ec)
      * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.cpp) examples
      */
     void setKrausMap(KrausMap map, std::vector<std::vector<std::vector<qcomp>>> matrices);
@@ -415,25 +748,77 @@ extern "C" {
 
 
         /** @ingroup channels_setters
-         * @notyetdoced
-         * @conly
+         * 
+         * Overwrites the Kraus operators of @p map from a @c C array.
+         * 
          * @macrodoc
          * 
+         * @conly
+         *
+         * This is a @c C convenience macro equivalent to setKrausMap().
+         * 
+         * @myexample
+         * 
+         * ```c
+            qcomp arr[2][4][4] = {
+                {
+                    {1,2,3,4},
+                    {5,6,7,8},
+                    {9,8,7,6},
+                    {5,4,3,2},
+                }, {
+                    {1i,2i,3i},
+                    {5i}
+                }
+            };
+            KrausMap map = createKrausMap(2, 2);
+            setKrausMap(map, arr);
+         * ```
+         *
+         * @param[in,out] map       the KrausMap to overwrite.
+         * @param[in]     matrices  a 3D array.
+         * @throws @validationerror
+         * - if @p map is uninitialised.
          * @see
-         * - setInlineKrausMap()
+         * - [setInlineKrausMap()](https://quest-kit.github.io/QuEST/group__channels__setters.html#ga3c60440fa9503c235e46d964bc58d3ec)
          * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.c) examples
+         * @author Tyson Jones
          */
         void setKrausMap(KrausMap map, qcomp matrices[map.numMatrices][map.numRows][map.numRows]);
 
 
         /** @ingroup channels_setters
-         * @notyetdoced
-         * @conly
+         * 
+         * Overwrites the elements of @p op from a @c C array.
+         * 
          * @macrodoc
          * 
+         * @conly
+         *
+         * This is a @c C convenience macro equivalent to setSuperOp().
+         * 
+         * @myexample
+         * 
+         * ```c
+            qcomp arr[4][4] = {
+                {1,2,3,4},
+                {5,6,7,8},
+                {9,8,7,6},
+                {5,4,3,2}
+            };
+            SuperOp a = createSuperOp(1);
+            setSuperOp(a, arr);
+         * ```
+         *
+         * @param[in,out] op      the SuperOp to overwrite.
+         * @param[in]     matrix  a SuperOp::numRows by SuperOp::numRows array.
+         * @throws @validationerror
+         * - if @p op is uninitialised.
          * @see
+         * - setSuperOp()
          * - setInlineSuperOp()
          * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.c) examples
+         * @author Tyson Jones
          */
         void setSuperOp(SuperOp op, qcomp matrix[op.numRows][op.numRows]);
 
@@ -539,25 +924,77 @@ extern "C" {
 
 
         /** @ingroup channels_setters
-         * @notyetdoced
-         * @macrodoc
          * 
+         * Overwrites the Kraus operators of @p map from an inline literal.
+         * 
+         * The @c {{{matrices}}} argument is a 3D array literal, of dimensions
+         * @c numOps by @c 1<<numQb by @c 1<<numQb.
+         * 
+         * - In @c C, this is a macro, where @p numQb and @p numOps must be 
+         *   compile-time literals, and turn @c {{{matrices}}} into a compound literal.
+         * - In @c C++, this is a function which accepts @c {{{matrices}}} as a nested @c std::vector literal.
+         *
+         * @myexample
+         * 
+         * ```c
+            KrausMap map = createKrausMap(1, 3);
+            setInlineKrausMap(map, 1, 3, {
+                {{1,2},{3,4}},
+                {{5,5},{6,6}},
+                {{1i,2i},{-3i,-4i}}
+            });
+         * ```
+         * 
+         * @param[in,out] map     the KrausMap to overwrite.
+         * @param[in]     numQb   the number of qubits of the literal @c {{{matrices}}}.
+         * @param[in]     numOps  the number of Kraus operators of the literal @c {{{matrices}}}.
+         * @throws @validationerror
+         * - if @p map is uninitialised.
+         * - if @p numQb differs from the number of qubits in @p map.
+         * - if @p numOps differs from the number of operators in @p map.
          * @see
          * - setKrausMap()
          * - syncKrausMap()
-         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.c) examples
+         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.c) and
+         *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.cpp) examples
+         * @author Tyson Jones
          */
         void setInlineKrausMap(KrausMap map, int numQb, int numOps, {{{ matrices }}});
 
 
         /** @ingroup channels_setters
-         * @notyetdoced
-         * @macrodoc
          * 
+         * Overwrites the elements of @p op from an inline literal.
+         * 
+         * The @c {{matrix}} argument is a 2D array literal, of dimensions
+         * `1<<(2*numQb)` by `1<<(2*numQb)`.
+         * 
+         * - In @c C, this is a macro, where @p numQb must be a compile-time literal, 
+         *   amd turns @c {{matrix}} into a compound literal.
+         * - In @c C++, this is a function which accepts @c {{matrix}} as a nested @c std::vector literal.
+         * 
+         * @myexample
+         * 
+         * ```c
+            SuperOp a = createSuperOp(1);
+            setInlineSuperOp(a, 1, {
+                {1,2,3,4},
+                {5,3.14i,7,8},
+                {9,10,11,12},
+                {13,14,15,16+1.23i}
+            });
+         * ```
+         *
+         * @param[in,out] op     the SuperOp to overwrite.
+         * @param[in]     numQb  the number of qubits of the @c {{matrix}} literal.
+         * @throws @validationerror
+         * - if @p op is uninitialised.
+         * - if @p numQb does not match the number of qubits in @p op.
          * @see
          * - setSuperOp()
          * - syncSuperOp()
          * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.c) examples
+         * @author Tyson Jones
          */
         void setInlineSuperOp(SuperOp op, int numQb, {{ matrix }});
 
@@ -659,27 +1096,89 @@ extern "C" {
 
 
         /** @ingroup channels_create
-         * @notyetdoced
-         * @macrodoc
          * 
+         * Creates and initialises a KrausMap from an inline literal.
+         * 
+         * This is a convenience macro which combines createKausMap() and setInlineKrausMap().
+         * 
+         * The @c {{{matrices}}} argument is a 3D array literal, of dimensions
+         * @c numOps by @c 1<<numQb by @c 1<<numQb.
+         * 
+         * - In @c C, this is a macro, where @p numQb and @p numOps must be 
+         *   compile-time literals, and turn @c {{{matrices}}} into a compound literal.
+         * - In @c C++, this is a function which accepts @c {{{matrices}}} as a nested @c std::vector literal.
+         *
+         * The returned KrausMap should be later destroyed with destroyKrausMap().
+         * 
+         * @myexample
+         * 
+         * ```cpp
+            KrausMap map = createInlineKrausMap(1, 3, {
+                {{1,2},{3,4}},
+                {{5,5},{6,6}},
+                {{1i,2i},{-3i,-4i}}
+            });
+         * ```
+         *
+         * @param[in] numQb   the number of qubits acted upon by the Kraus map.
+         * @param[in] numOps  the number of Kraus operators.
+         * @returns A new KrausMap initialised with @p matrices.
+         * @throws @validationerror
+         * - if the QuEST environment is not initialised.
+         * - if @p numQb or @p numOps are invalid.
+         * - if dimensions or memory requirements overflow.
+         * - if any memory allocation fails.
          * @see
          * - createKrausMap()
          * - setKrausMap()
          * - syncKrausMap()
-         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.c) examples
+         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.c) and
+         *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_krausmaps.cpp) examples
+         * @author Tyson Jones
          */
         KrausMap createInlineKrausMap(int numQb, int numOps, {{{ matrices }}});
 
 
         /** @ingroup channels_create
-         * @notyetdoced
-         * @macrodoc
          * 
+         * Creates and initialises a SuperOp from an inline literal.
+         * 
+         * This is a convenience macro which combines createSuperOp() and setInlineSuperOp().
+         * 
+         * The @c {{matrix}} argument is a 2D array literal, of dimensions
+         * `1<<(2*numQb)` by `1<<(2*numQb)`.
+         * 
+         * - In @c C, this is a macro, where @p numQb must be a compile-time literal, 
+         *   amd turns @c {{matrix}} into a compound literal.
+         * - In @c C++, this is a function which accepts @c {{matrix}} as a nested @c std::vector literal.
+         *
+         * The returned SuperOp should be later destroyed with destroySuperOp().
+         * 
+         * @myexample
+         * 
+         * ```cpp
+            SuperOp op = createInlineSuperOp(1, {
+                {1,2,3,4},
+                {5,6*3.14i,7,8},
+                {9,10,11,12},
+                {13,14,15,16+1.23i}
+            });
+         * ```
+         *
+         * @param[in] numQb  the number of qubits acted upon by the superoperator.
+         * @returns A new SuperOp initialised with @p matrix.
+         * @throws @validationerror
+         * - if the QuEST environment is not initialised.
+         * - if @p numQb is invalid.
+         * - if dimensions or memory requirements overflow.
+         * - if any memory allocation fails.
          * @see
          * - createSuperOp()
          * - setSuperOp()
          * - syncSuperOp()
-         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.c) examples
+         * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.c) and
+         *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_superoperators.cpp) examples
+         * @author Tyson Jones
          */
         SuperOp createInlineSuperOp(int numQb, {{ matrix }});
 

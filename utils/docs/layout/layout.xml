@@ -5,7 +5,7 @@
   <navindex>
     <tab type="mainpage" visible="yes" title=""/>
     <tab type="pages" visible="yes" title="" intro=""/>
-    <tab type="topics" visible="yes" title="" intro=""/>
+    <tab type="topics" visible="no" title="" intro=""/>
 
     <!-- below pages are not presently generated... -->
     <tab type="modules" visible="yes" title="" intro="">

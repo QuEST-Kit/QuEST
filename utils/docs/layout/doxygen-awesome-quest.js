@@ -1,3 +1,26 @@
+/*
+ * custom javascript to override Doxygen Awesome's
+ * default links / behaviour.
+ * @author Tyson Jones
+ */
+
+
+/* redirects the top-level API and Tests links in the left column of the doc
+ * page (originally apilink.html and testlink.html) to the Doxygen groups of 
+ * the same name (which are themselves seemingly impossible to get into the
+ * top-level directly! They're always beneath a "Topics" collapsible section,
+ * which we make invisible in layout.xml)
+ */
+(function() {
+    let fn = window.location.pathname.split("/").pop();
+    if (fn === "apilink.html") {
+        window.location.replace(window.location.pathname.replace('apilink.html', 'group__api.html'));
+    }
+    if (fn === "testlink.html") {
+        window.location.replace(window.location.pathname.replace('testlink.html', 'group__tests.html'));
+    }
+})();
+
 
 window.addEventListener('DOMContentLoaded', (event) => {
 

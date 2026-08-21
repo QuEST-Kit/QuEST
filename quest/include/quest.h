@@ -9,20 +9,17 @@
  * @defgroup api 📋 API
  */
 
-/**
- * @page apilink 📋 API
- * The API documentation can be viewed at @ref api.
- * 
- * We're working hard to move that page up one level. 😎
- */
+
+// Create empty 'apilink' and 'testlink' top-level pages which
+// will appear as links in the left-hand navigation column of
+// the rendered doc pages. We will redirect the links to the
+// API and Test doc groups within doxygen-awesome-quest.js
 
 /**
+ * @page apilink 📋 API
  * @page testlink 🧪 Tests
- * 
- * The unit and integration tests can be viewed at @ref tests.
- * 
- * We're working hard to move that page up one level. 😎
  */
+
 
 #ifndef QUEST_H
 #define QUEST_H
@@ -49,11 +46,8 @@
 #include "quest/include/matrices.h"
 #include "quest/include/wrappers.h"
 
-
 #if QUEST_INCLUDE_DEPRECATED_FUNCTIONS
     #include "quest/include/deprecated.h"
 #endif
-
-
 
 #endif // QUEST_H
