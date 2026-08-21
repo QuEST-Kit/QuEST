@@ -450,8 +450,19 @@ void initRandomMixedState(Qureg qureg, qindex numPureStates);
             \sum\limits_{j=0}^{n-1} \beta_j \ket{j + s} +
             \sum\limits_{i=s+n}^{2^N-1} \alpha_i \ket{i}
  * @f]
- * where amplitudes at global indices in @f$[s,s+n)@f$ have been modified.
- * 
+ * where amplitudes at global indices in @f$[s,s+n)@f$ have been modified. Expressed as a row-vector,
+ * @f[
+        \svpsi = \begin{pmatrix} \alpha_0 & \alpha_1 &  \dots & \alpha_{2^N-1} \end{pmatrix}
+ * @f]
+ * is modified to become
+ * @f[
+        \svpsi \rightarrow \begin{pmatrix} 
+            \alpha_0 & \alpha_1 & \dots & \alpha_{s-1} & 
+            \beta_0 & \beta_1 & \dots & \beta_{n-1} &
+            \alpha_{s + n} & \dots & \alpha_{2^N-1}
+        \end{pmatrix}.
+ * @f]
+ *
  * @constraints
  * 
  * - Argument @p qureg must be a statevector, and ergo compatible with a 1D range.
@@ -506,6 +517,7 @@ void initRandomMixedState(Qureg qureg, qindex numPureStates);
  * - When @p numAmps is sufficiently small such that the array @p amps can
  *   fit onto every distributed node, this function can be used in a manner
  *   totally agnostic to distribution and/or @p qureg deployments.
+ * 
  *   ```cpp
      Qureg qureg = createQureg(35);
      initBlankState(qureg);
@@ -558,13 +570,233 @@ void initRandomMixedState(Qureg qureg, qindex numPureStates);
 void setQuregAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps);
 
 
-/// @notyetdoced
-/// @notyetvalidated
+/** Overwrites a rectangular block of density-matrix amplitudes.
+ *
+ * - Amplitudes outside the given block are unchanged.
+ * - There is no validation nor requirement that the new amplitudes,
+ *   together with the remaining original amplitudes, produce a validly
+ *   normalised density matrix. Normalization can be re-established with a
+ *   subsequent call to setQuregToRenormalized().
+ * - When @p qureg is distributed, @p startRow, @p startCol, @p numRows and
+ *   @p numCols are treated _globally_ and use of this function is ergo
+ *   agnostic to distribution. Therefore, every process should contain
+ *   identical @p amps.
+ * - When @p qureg is GPU-accelerated, only its GPU amplitudes are updated.
+ *
+ * The equivalent function for a statevector is setQuregAmps().
+ *
+ * @formulae
+ *
+ * Let @f$\dmrho=@f$ @p qureg with @f$N@f$ qubits, and with @f$(r,c)@f$-th global amplitude
+ * @f$\alpha_{r,c}@f$. Let @f$s_r=@f$ @p startRow, @f$s_c=@f$ @p startCol, @f$n_r=@f$
+ * @p numRows and @f$n_c=@f$ @p numCols, and let @f$\beta_{j,k}@f$ be the @f$(j,k)@f$-th
+ * element of @p amps, i.e. `amps[j][k]`.
+ *
+ * This function overwrites @p qureg from
+ * @f[
+        \dmrho = \sum\limits_{r=0}^{2^N-1} \sum\limits_{c=0}^{2^N-1}
+            \alpha_{r,c} \ket{r}\bra{c}
+ * @f]
+ * by modifying only the global rows @f$[s_r,s_r+n_r)@f$ and columns @f$[s_c,s_c+n_c)@f$,
+ * such that
+ * @f[
+        \alpha_{s_r+j,\,s_c+k} \rightarrow \beta_{j,k}
+        \quad\quad
+        \forall \; j \in [0,n_r), \; k \in [0,n_c).
+ * @f]
+ * Expressed as a matrix,
+ * @f[
+        \dmrho = 
+        \begin{pmatrix}
+            \alpha_{0,0} & \alpha_{0,1} & \dots & \alpha_{0,2^N-1} \\
+            \alpha_{1,0} & \alpha_{1,1} &  \\
+            \vdots & & \ddots \\
+            \alpha_{2^N-1,0} & & & \alpha_{2^N-1,2^N-1}
+        \end{pmatrix},
+ * @f]
+ * the state is modified to contain the sub-matrix below. Grey dots indicate @f$\alpha_{ij}@f$ above.
+ * @f[
+        \def\x{{\color{gray}\circ}}
+        \dmrho \rightarrow
+        \begin{array}{c@{\;}c}
+            & \hspace{0.5em}
+              \overset{\scriptstyle [s_c,\,s_c+n_c)}{\overline{\hspace{10.5em}}}
+              \hspace{-0.5em} \\[1ex]
+            \lower1.0em\hbox{$
+                \scriptstyle [s_r,\,s_r+n_r) \quad
+                \left\{\vphantom{\begin{matrix}
+                    \beta_{0,0} \\
+                    \beta_{1,0} \\
+                    \vdots \\
+                    \beta_{n_r-1,0}
+                \end{matrix}}\right.
+            $}
+            &
+            \begin{pmatrix}
+                \x & \x & \x & \x & \x & \x & \x \\
+                \x & \x & \x & \x & \x & \x & \x \\
+                \x & \x & \beta_{0,0} & \beta_{0,1} & \cdots & \beta_{0,n_c-1} & \x \\
+                \x & \x & \beta_{1,0} & \beta_{1,1} & \cdots & \beta_{1,n_c-1} & \x \\
+                \x & \x & \vdots & \vdots & \ddots & \vdots & \x \\
+                \x & \x & \beta_{n_r-1,0} & \beta_{n_r-1,1} & \cdots & \beta_{n_r-1,n_c-1} & \x \\
+                \x & \x & \x & \x & \x & \x & \x
+            \end{pmatrix}
+        \end{array}
+ * @f]
+ *
+ * @constraints
+ *
+ * - Argument @p qureg must be a density matrix, and ergo compatible with a 2D range.
+ *   Statevectors can be overwritten at a 1D range with setQuregAmps(). Density
+ *   matrices can also be overwritten with a 1D contiguous range when flattening
+ *   the density matrix column-major with setDensityQuregFlatAmps().
+ *
+ * @equivalences
+ *
+ * - When @p qureg is **_not_** distributed, this function is equivalent to manual
+ *   modification of the CPU elements, followed by copies to GPU (_except_ that this
+ *   function does not modify Qureg::cpuAmps when @p qureg is not GPU-accelerated).
+ *   ```cpp
+     for (qindex c=0; c<numCols; c++) {
+         qindex flatInd = (startCol + c) * (1LL << qureg.numQubits) + startRow;
+         for (qindex r=0; r<numRows; r++)
+             qureg.cpuAmps[flatInd + r] = amps[r][c];
+         syncSubQuregToGpu(qureg, flatInd, numRows);
+     }
+     // beware, syncQuregToGpu() would copy over stale, unmodified CPU amps
+
+     // restore qureg.cpuAmps when !qureg.isGpuAccelerated
+ *   ```
+ * - When @p qureg _is_ distributed, the logic is complicated by each specified
+ *   global column range overlapping some, none or all of a node's partition.
+ *   It follows the same pattern as demonstrated in setQuregAmps(), through
+ *   column-wise linearisation of the density matrix.
+ * - When @p amps are within a single column (`numCols==1`), or span multiple
+ *   _full_ columns (`numRows==(1<<qureg.numQubits)`), this function becomes
+ *   equivalent to calling setDensityQuregFlatAmps(), passing @p amps as a
+ *   column-flattened 1D array.
+ *
+ * @myexample
+ * 
+ * - When @p numRows and @p numCols are sufficiently small such that the matrix
+ *   @p amps can fit onto every distributed node, this function can be used in a
+ *   manner totally agnostic to distribution and/or @p qureg deployments.
+ *   In C++, an overload accepts @p amps as nested `std::vector<qcomp>`:
+ *   ```cpp
+     Qureg qureg = createDensityQureg(35);
+
+     std::vector<std::vector<qcomp>> amps = {
+         {1, 2, 3},
+         {4, 5, 6}};
+
+     setDensityQuregAmps(qureg, startRow, startCol, amps, 2, 3);
+ *   ```
+ *
+ *   In C, @p amps must be a double pointer (and alas not an array):
+ *   ```cpp
+     Qureg qureg = createDensityQureg(35);
+     initBlankState(qureg);
+
+     qcomp ampsArr[2][3] = {
+         {1, 2, 3},
+         {4, 5, 6}};
+     qcomp* ampsPtr[] = {ampsArr[0], ampsArr[1]};
+
+     setDensityQuregAmps(qureg, startRow, startCol, ampsPtr, 2, 3);
+ *   ```
+ * - When @p numRows or @p numCols is large, one can avoid the superfluous storing
+ *   of all @p amps simultaneously, by repeatedly calling setDensityQuregAmps(),
+ *   each time passing a tractable sub-block, regardless of how @p qureg is
+ *   distributed.
+ *   ```cpp
+     Qureg qureg = createDensityQureg(35);
+     initBlankState(qureg);
+
+     // global block
+     const qindex startRow = 1234567;
+     const qindex startCol = 7654321;
+     const qindex totalNumRows = 1000000; // divides evenly into batches below
+     const qindex totalNumCols = 1000000;
+
+     // local memory budget
+     const qindex batchNumRows = 100;
+     const qindex batchNumCols = 200;
+
+     // memory for a single batch
+     qcomp** ampsBatch = ... // 2D malloc of size (batchNumRows, batchNumCols)
+
+     for (qindex row=0; row<totalNumRows; row+=batchNumRows) {
+         for (qindex col=0; col<totalNumCols; col+=batchNumCols) {
+
+             // populate this two-dimensional batch
+             for (qindex r=0; r<batchNumRows; r++)
+                 for (qindex c=0; c<batchNumCols; c++)
+                     amps[r][c] = ... 
+
+             setDensityQuregAmps(
+                 qureg, startRow + row, startCol + col,
+                 ampsBatch, batchNumRows, batchNumCols);
+         }
+     }
+ *   ```
+ *
+ * @param[in,out] qureg     the density matrix to modify.
+ * @param[in]     startRow  the first global density-matrix row index to overwrite.
+ * @param[in]     startCol  the first global density-matrix column index to overwrite.
+ * @param[in]     amps      a @p numRows by @p numCols matrix of amplitudes, as row-major nested pointers.
+ * @param[in]     numRows   the total number of rows to overwrite.
+ * @param[in]     numCols   the total number of columns to overwrite.
+ * @throws @validationerror
+ * - if @p qureg is uninitialised.
+ * - if @p qureg is not a density matrix.
+ * - if @p startRow, @p startCol, @p numRows and @p numCols describe a block outside @p qureg.
+ * @see
+ * - setQuregAmps()
+ * - setDensityQuregFlatAmps()
+ * - setQuregToWeightedSum()
+ * - setQuregToRenormalized()
+ * @notyetvalidated
+ * @author Tyson Jones
+ */
 void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qcomp** amps, qindex numRows, qindex numCols);
 
 
-/// @notyetdoced
-/// @notyetvalidated
+/** Overwrites a contiguous range of density-matrix amplitudes, indexing @p qureg
+ * as a column-linearised form.
+ *
+ * @formulae
+ * 
+ * Let @f$ \dmrho = @f$ @p qureg contain @f$N@f$ qubits, with amplitudes @f$ \alpha_{ij} @f$.
+ * @f[
+        \dmrho = \sum\limits_i^{2^N} \sum\limits_j^{2^N} \alpha_{ij} \ket{i}\bra{j}.
+ * @f] 
+ * Internally, this matrix of dimension @f$ 2^N \times 2^N @f$ is stored in a vectorised
+ * form @f$ \ket{\rho} @f$ of dimension @f$ 2^{2N} \times 1 @f$, which concatenates the columns
+ * of @f$ \dmrho @f$.
+ * @f[  
+        \begin{aligned}
+        \ket{\rho} &= \sum\limits_i^{2^N} \sum\limits_j^{2^N} \alpha_{ij} \ket{j} \ket{i} \\
+                   &= \sum\limits_k^{2^{2N}} \beta_k \ket{k}
+        \end{aligned}
+ * @f]
+ * Let @f$s = @f$ @p startInd, @f$n = @f$ @p numAmps, and @f$\gamma_i = @f$ `amps[i]`.
+ * This function overwrites amplitudes @f$\beta_k : s \le k < s + n @f$ with @f$\gamma_k@f$.
+ * 
+ * @equivalences
+ * 
+ * - This is equivalent to calling setQuregAmps() upon @p qureg, with identical parameters,
+ *   when treating the column-wise linearised @p qureg as a statevector.
+ * 
+ * @param[in,out] qureg     the density matrix to modify.
+ * @param[in]     startInd  the first flattened, global index to overwrite.
+ * @param[in]     amps      an array of @p numAmps amplitudes.
+ * @param[in]     numAmps   the number of flattened amplitudes to overwrite.
+ * @throws @validationerror
+ * - if @p qureg is uninitialised or is not a density matrix.
+ * - if @p startInd or @p numAmps describes a range outside the flattened matrix.
+ * @notyetvalidated
+ * @author Tyson Jones
+ */
 void setDensityQuregFlatAmps(Qureg qureg, qindex startInd, qcomp* amps, qindex numAmps);
 
 
