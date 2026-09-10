@@ -28,13 +28,10 @@ on:
     branches:
       - main
       - devel
-      - v4.3-release
   pull_request:
     branches:
       - main
       - devel
-      - v4.3-release
-
 
 jobs:
 
