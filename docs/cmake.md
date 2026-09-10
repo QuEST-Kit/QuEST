@@ -89,6 +89,10 @@ cmake --install build --config Release
 | `CMAKE_CUDA_ARCHITECTURES` | Used to set the value of `arch` when compiling for NVIDIA GPU. This is also known as the target GPU's "compute capability" and can be discovered [here](https://developer.nvidia.com/cuda-gpus). | [CMAKE_CUDA_ARCHITECTURES](https://cmake.org/cmake/help/latest/variable/CMAKE_CUDA_ARCHITECTURES.html) |
 | `CMAKE_HIP_ARCHITECTURES` | Used to set the HIP platform which QuEST is compiled for when compiling for AMD GPU. | [CMAKE_HIP_ARCHITECTURES](https://cmake.org/cmake/help/latest/variable/CMAKE_HIP_ARCHITECTURES.html) |
 | `CMAKE_RUNTIME_OUTPUT_DIRECTORY` | The output directory to which to save compiled executables, overriding the default `build` folder | [`CMAKE_RUNTIME_OUTPUT_DIRECTORY`](https://cmake.org/cmake/help/latest/variable/CMAKE_RUNTIME_OUTPUT_DIRECTORY.html). |
+| `CMAKE_INSTALL_RPATH` | Additional runtime library search directories for installed targets. QuEST preserves these entries and adds its relative path to the installed QuEST library. | [CMAKE_INSTALL_RPATH](https://cmake.org/cmake/help/latest/variable/CMAKE_INSTALL_RPATH.html) |
+| `CMAKE_INSTALL_RPATH_USE_LINK_PATH` | When `ON`, CMake appends linker search directories outside the project to the install RPATH. Leave this unset or `OFF` for portable archives; enable it deliberately for a native install tied to external SDK locations. | [CMAKE_INSTALL_RPATH_USE_LINK_PATH](https://cmake.org/cmake/help/latest/variable/CMAKE_INSTALL_RPATH_USE_LINK_PATH.html) |
+| `CMAKE_BUILD_RPATH_USE_ORIGIN` | Initialises the target property controlling relative build-tree RPATHs on supported platforms. QuEST defaults the property to `ON` when unset and honours an explicit `OFF`. | [CMAKE_BUILD_RPATH_USE_ORIGIN](https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_RPATH_USE_ORIGIN.html) |
+| `CMAKE_INSTALL_REMOVE_ENVIRONMENT_RPATH` | Initialises the target property controlling removal of toolchain-added RPATH entries during installation. QuEST defaults the property to `ON` when unset and honours an explicit `OFF`. | [CMAKE_INSTALL_REMOVE_ENVIRONMENT_RPATH](https://cmake.org/cmake/help/latest/variable/CMAKE_INSTALL_REMOVE_ENVIRONMENT_RPATH.html) |
 
 
 ---------------------------
@@ -130,6 +134,21 @@ find_package(CUQUANTUM MODULE REQUIRED COMPONENTS cuStateVec)
 Consumers still call only `find_package(QuEST CONFIG REQUIRED)`. The static package records the producer's cuStateVec component version and requires an equal or newer version with the same major ABI. A shared QuEST package retains its cuQuantum runtime requirement without resolving private SDK development files during consumer configuration.
 
 The available cuQuantum imported targets are `CUQUANTUM::cuStateVec`, `CUQUANTUM::cuTensorNet`, and `CUQUANTUM::cuDensityMat`. Calling the finder without components requests all three. Each component's header and shared library are resolved independently; the finder does not substitute the SDK's `_static` archives. Set `CUQUANTUM_ROOT` or its environment variable to the SDK prefix and `CUDAToolkit_ROOT` to CUDA. cuTensorNet and cuDensityMat also require cuTENSOR and accept `CUTENSOR_ROOT`. An explicitly set `CUQUANTUM_DIR` remains a legacy prefix hint with precedence over these general roots. Component versions are reported separately as `CUQUANTUM_<component>_VERSION`; they are not the overall SDK release version.
+
+On Linux and macOS, installed QuEST targets use a relative runtime search path (`$ORIGIN` or `@loader_path`) to locate the QuEST library within the install prefix. Explicit `CMAKE_INSTALL_RPATH` entries are preserved. QuEST supplies defaults for the target properties `BUILD_RPATH_USE_ORIGIN` and `INSTALL_REMOVE_ENVIRONMENT_RPATH` only when those properties have not already been set, including through their corresponding `CMAKE_*` variables. An explicit `OFF` remains in effect. Standard CMake RPATH skip controls also remain available.
+
+For a native installation whose external SDKs remain in fixed locations, opt in to CMake's link-directory handling:
+
+```bash
+cmake -S . -B build-native -DBUILD_SHARED_LIBS=ON \
+  -DQUEST_ENABLE_CUDA=ON -DQUEST_ENABLE_CUQUANTUM=ON \
+  -DCUDAToolkit_ROOT=/opt/cuda -DCUQUANTUM_ROOT=/opt/cuquantum \
+  -DCMAKE_INSTALL_PREFIX=/opt/QuEST -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON
+cmake --build build-native
+cmake --install build-native
+```
+
+This intentionally records absolute external runtime directories in the installed shared library, allowing the loader to locate those dependencies without `LD_LIBRARY_PATH`. It does not bundle CUDA, cuQuantum, or other dependencies; those runtimes must remain installed at the recorded locations, and CUDA driver stub directories must never be used as runtime search paths. Use `CMAKE_INSTALL_RPATH` when you need to specify runtime directories explicitly. The default archive configuration keeps relative QuEST paths and does not enable `CMAKE_INSTALL_RPATH_USE_LINK_PATH`; an archive made from the opt-in native build retains its absolute SDK paths and therefore requires that deployment layout.
 
 
 ---------------------------

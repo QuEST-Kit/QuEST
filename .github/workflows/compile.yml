@@ -335,6 +335,44 @@ jobs:
         if: ${{ matrix.adios2 == 'OFF' }}
         run: ctest --test-dir ${{ env.build_dir }} -C Release -L packaging --output-on-failure
 
+      # Keep the static real-SDK case above, and separately exercise the opt-in
+      # native shared install with actual CUDA/cuQuantum runtime dependencies.
+      - name: Install and consume native shared CUDA and cuQuantum
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.precision == 2 && matrix.omp == 'OFF' && matrix.mpi == 'OFF' && matrix.cuquantum == 'ON' && matrix.adios2 == 'OFF' && matrix.bmi2 == 'OFF' }}
+        shell: bash
+        run: |
+          for variable in ${!LD_@} ${!DYLD_@} LIBPATH SHLIB_PATH; do
+            unset "$variable"
+          done
+          native_root="$RUNNER_TEMP/quest-cuquantum-native"
+          # USE_LINK_PATH excludes SDK directories inside the producer source tree.
+          mkdir -p "$native_root"
+          cp -a --reflink=auto "$CUQUANTUM_ROOT" "$native_root/cuquantum"
+          cmake -S . -B "$native_root/build" \
+            -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON \
+            -DQUEST_ENABLE_INSTALL=ON -DQUEST_ENABLE_PACKAGING=OFF \
+            -DQUEST_BUILD_MIN_EXAMPLE=OFF -DQUEST_BUILD_EXAMPLES=OFF \
+            -DQUEST_BUILD_TESTS=OFF -DQUEST_BUILD_PACKAGING_TESTS=OFF \
+            -DQUEST_ENABLE_OMP=OFF -DQUEST_ENABLE_MPI=OFF \
+            -DQUEST_ENABLE_CUDA=ON -DQUEST_ENABLE_CUQUANTUM=ON \
+            -DCMAKE_CUDA_RUNTIME_LIBRARY=Shared \
+            -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} \
+            -DCUDAToolkit_ROOT="$CUDA_PATH" -DCUQUANTUM_ROOT="$native_root/cuquantum" \
+            -DCMAKE_INSTALL_PREFIX="$native_root/prefix" -DCMAKE_INSTALL_LIBDIR=lib \
+            -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON
+          cmake --build "$native_root/build" --config Release --parallel 1
+          cmake --install "$native_root/build" --config Release
+          cmake -S tests/packaging/consumer -B "$native_root/consumer" \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$native_root/prefix" \
+            -DCMAKE_FIND_USE_PACKAGE_REGISTRY=OFF -DCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY=OFF
+          cmake --build "$native_root/consumer" --config Release --parallel 1
+          python3 tests/packaging/check_native_runtime.py \
+            --build-dir "$native_root/build" --library "$native_root/prefix/lib/libQuEST.so" \
+            --require-shared-cudart \
+            --consumer "$native_root/consumer/consumer_c" \
+            --consumer "$native_root/consumer/consumer_cpp"
+
       # run all compiled isolated examples to test for link-time errors,
       # continuing if any fail (since some deliberately fail)
       - name: Run isolated examples (Windows)

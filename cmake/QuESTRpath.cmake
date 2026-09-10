@@ -11,9 +11,12 @@ function(setup_quest_rpath target destination)
   set(_libdir "${CMAKE_INSTALL_LIBDIR}")
   cmake_path(ABSOLUTE_PATH _libdir BASE_DIRECTORY "${CMAKE_INSTALL_PREFIX}" OUTPUT_VARIABLE _to)
   file(RELATIVE_PATH _relative "${_from}" "${_to}")
-  set_target_properties(${target} PROPERTIES
-    BUILD_RPATH_USE_ORIGIN TRUE
-    INSTALL_REMOVE_ENVIRONMENT_RPATH TRUE
-    INSTALL_RPATH "${_origin}/${_relative}"
-    INSTALL_RPATH_USE_LINK_PATH FALSE)
+  set_property(TARGET ${target} APPEND PROPERTY INSTALL_RPATH "${_origin}/${_relative}")
+  # Preserve values initialized by standard CMake variables or set on the target.
+  foreach(_property IN ITEMS BUILD_RPATH_USE_ORIGIN INSTALL_REMOVE_ENVIRONMENT_RPATH)
+    get_property(_is_set TARGET ${target} PROPERTY ${_property} SET)
+    if(NOT _is_set)
+      set_property(TARGET ${target} PROPERTY ${_property} TRUE)
+    endif()
+  endforeach()
 endfunction()
