@@ -20,12 +20,16 @@
 # ============================
 
 
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.28)
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
+  message(FATAL_ERROR "QuEST requires an out-of-source build. Use cmake -S . -B build.")
+endif()
 
 
 project(QuEST
   VERSION 4.3.0
   DESCRIPTION "Quantum Exact Simulation Toolkit"
+  HOMEPAGE_URL "https://quest.qtechtheory.org"
   LANGUAGES CXX C
 )
 
@@ -44,9 +48,16 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
 
-# Maths
-if (NOT WIN32)
-  find_library(MATH_LIBRARY m REQUIRED)
+option(QUEST_ENABLE_INSTALL "Generate QuEST installation rules" ${PROJECT_IS_TOP_LEVEL})
+set(_quest_packaging_default OFF)
+if(PROJECT_IS_TOP_LEVEL AND QUEST_ENABLE_INSTALL)
+  set(_quest_packaging_default ON)
+endif()
+option(QUEST_ENABLE_PACKAGING "Generate QuEST CPack packages" ${_quest_packaging_default})
+option(QUEST_BUILD_MIN_EXAMPLE "Build the minimal example" ${PROJECT_IS_TOP_LEVEL})
+option(QUEST_BUILD_PACKAGING_TESTS "Test installed packages independently of Catch2" OFF)
+if(QUEST_ENABLE_PACKAGING AND NOT QUEST_ENABLE_INSTALL)
+  message(FATAL_ERROR "QUEST_ENABLE_PACKAGING requires QUEST_ENABLE_INSTALL")
 endif()
 
 
@@ -61,7 +72,7 @@ endif()
 # Using recipe from Kitware Blog post
 # https://www.kitware.com/cmake-and-the-default-build-type/
 set(quest_default_build_type "Release")
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+if(PROJECT_IS_TOP_LEVEL AND NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to '${quest_default_build_type}' as none was specified.")
   set(CMAKE_BUILD_TYPE "${quest_default_build_type}" CACHE
       STRING "Choose the type of build." FORCE)
@@ -116,7 +127,7 @@ message(STATUS "Examples are turned ${QUEST_BUILD_EXAMPLES}. Set QUEST_BUILD_EXA
 # Testing
 option(
   QUEST_BUILD_TESTS
-  "Whether the test suite will be built alongside the QuEST library. Turned ON by default."
+  "Whether the test suite will be built alongside the QuEST library. Turned OFF by default."
   OFF
 )
 message(STATUS "Testing is turned ${QUEST_BUILD_TESTS}. Set QUEST_BUILD_TESTS to modify.")
@@ -275,7 +286,7 @@ endif()
 if(WIN32)
   
   # Force MSVC to export all symbols in a shared library, like GCC and clang
-  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+  # Applied to the QuEST target below, without changing parent targets.
 
   if (QUEST_BUILD_TESTS AND BUILD_SHARED_LIBS)
     message(WARNING "Compiling the tests on Windows requires BUILD_SHARED_LIBS=OFF which we now force.")
@@ -455,20 +466,14 @@ set_target_properties(QuEST PROPERTIES
 )
 
 
-# Add required C and C++ standards.
-# Note the QuEST interface(s) require only C11 and C++14, 
-# while the source code is entirely C++ and requires C++17,
-# and the tests further require C++20 (handled in tests/).
-# Yet, we here specify C++17 for the source, and C11 as only
-# applies to the C interface when users specify USER_SOURCE_NAMES,
-# to attemptedly minimise user confusion. Users wishing to
-# link QuEST with C++14 should separate compilation.
-target_compile_features(QuEST
-  PUBLIC
-  c_std_11
-  cxx_std_17
-)
-
+# Headers support C11/C++14; the implementation needs C++17.
+target_compile_features(QuEST PUBLIC c_std_11 cxx_std_14 PRIVATE cxx_std_17)
+set_target_properties(QuEST PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+get_target_property(_quest_library_type QuEST TYPE)
+set(QUEST_BUILT_SHARED OFF)
+if(_quest_library_type STREQUAL "SHARED_LIBRARY")
+  set(QUEST_BUILT_SHARED ON)
+endif()
 
 # Turn on all compiler warnings
 if (MSVC)
@@ -490,206 +495,7 @@ target_compile_options(QuEST
 # ============================
 
 
-# OpenMP
-if (QUEST_ENABLE_OMP)
-
-  # find OpenMP, but fail gracefully...
-  find_package(OpenMP QUIET)
-
-  # so that we can customise the error message on MacOS
-  if (NOT OpenMP_FOUND)
-    set(ErrorMsg "Could not find OpenMP, necessary for enabling multithreading.")
-    if (APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-      string(APPEND ErrorMsg " Try first calling \n\tbrew install libomp\nthen\n\texport OpenMP_ROOT=$(brew --prefix)/opt/libomp")
-    endif()
-    message(FATAL_ERROR ${ErrorMsg})
-  endif()
-
-  target_link_libraries(QuEST
-    PRIVATE
-    OpenMP::OpenMP_CXX
-    OpenMP::OpenMP_C
-  )
-
-else()
-
-  # suppress GCC "unknown pragma" warning when OpenMP disabled
-  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(QuEST PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-Wno-unknown-pragmas>)
-  endif()
-  
-endif()
-
-
-# NUMA (only relevant when multithreading)
-if (QUEST_ENABLE_OMP AND QUEST_ENABLE_NUMA)
-
-  # Find NUMA - location of NUMA headers
-  if (WIN32)
-    set(QUEST_ENABLE_NUMA 0)
-    message(WARNING "Building on Windows, QuEST will not be aware of numa locality")
-  else()
-    include(FindPkgConfig)
-    pkg_search_module(NUMA numa IMPORTED_TARGET GLOBAL)
-    if (${NUMA_FOUND})
-      set(QUEST_ENABLE_NUMA ${NUMA_FOUND})
-      target_link_libraries(QuEST PRIVATE PkgConfig::NUMA)
-      message(STATUS "NUMA awareness is enabled.")
-    else()
-      set(QUEST_ENABLE_NUMA 0)
-      message(WARNING "libnuma not found, QuEST will not be aware of numa locality")
-    endif()
-  endif()
-
-else()
-  set(QUEST_ENABLE_NUMA 0)
-endif()
-
-
-# MPI
-if (QUEST_ENABLE_MPI)
-  find_package(MPI REQUIRED
-    # Component CXX is the C api usable from C++
-    # NOT the deprecated C++ API
-    COMPONENTS CXX
-  )
-
-  target_link_libraries(QuEST
-    PRIVATE
-    MPI::MPI_CXX
-  )
-endif()
-
-
-# CUDA
-if (QUEST_ENABLE_CUDA)
-
-  # make nvcc use user cxx-compiler as default host (before cuda-host is set below)
-  if (NOT DEFINED CMAKE_CUDA_HOST_COMPILER)
-    set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
-  endif()
-
-  enable_language(CUDA)
-  set(CMAKE_CUDA_STANDARD_REQUIRED ON)
-  set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-  
-  set_property(TARGET QuEST PROPERTY CUDA_STANDARD 20)
-
-  # force MSVC to use the modern preprocessor
-  if (MSVC)
-    target_compile_options(QuEST PRIVATE
-      $<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor>
-      $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/Zc:preprocessor>
-    )
-  endif()
-
-endif()
-
-
-# HIP
-if (QUEST_ENABLE_HIP)
-
-  # if generation fails (hip::amdhip64 not found), users can try setting
-  # CMAKE_MODULE_PATH to '/opt/rocm/cmake' or '/opt/rocm/hip/lib/cmake/hip'
-  # (suitable when shared library libamdhip64.so is located in /opt/rocm/lib/
-  #  or /opt/rocm/hip/lib/ respectively). We avoid setting CMAKE_MODULE_PATH
-  # pre-emptively since it made successful generation less likely in our tests!
-  # example: list(APPEND CMAKE_MODULE_PATH "/opt/rocm/cmake"). Users should
-  # also add '/opt/rocm/bin' or '/opt/rocm/hip/bin' to their $PATH env-var.
-
-  enable_language(HIP)
-  set(CMAKE_HIP_STANDARD_REQUIRED ON)
-  set_property(TARGET QuEST PROPERTY HIP_STANDARD 20)
-
-  find_package(HIP REQUIRED)
-  message(STATUS "Found HIP: " ${HIP_VERSION})
-
-  target_link_libraries(QuEST PRIVATE hip::host)
-
-endif()
-
-
-# cuQuantum
-if (QUEST_ENABLE_CUQUANTUM)
-  find_package(CUQUANTUM REQUIRED)
-  target_link_libraries(QuEST PRIVATE CUQUANTUM::cuStateVec)
-  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
-endif()
-
-
-# Checkpointing (ADIOS2)
-if (QUEST_ENABLE_ADIOS2)
-
-  find_package(adios2 QUIET)
-
-  # A distributed QuEST needs an MPI-enabled ADIOS2 (which provides the
-  # adios2::cxx_mpi target). A serial system install lacks it, so in that case we
-  # ignore the found package and fetch an MPI-enabled build instead of failing.
-  set(quest_use_found_adios2 ${adios2_FOUND})
-  if (adios2_FOUND AND QUEST_ENABLE_MPI AND NOT TARGET adios2::cxx_mpi)
-    message(STATUS "Found ADIOS2 lacks MPI support (no adios2::cxx_mpi target); fetching an MPI-enabled build instead")
-    set(quest_use_found_adios2 FALSE)
-  endif()
-
-  if(NOT quest_use_found_adios2 AND QUEST_DOWNLOAD_ADIOS2)
-    message(STATUS "fetching ADIOS2 via FetchContent")
-
-    include(FetchContent)
-    FetchContent_Declare(
-      adios2
-      GIT_REPOSITORY https://github.com/ornladios/ADIOS2.git
-      GIT_TAG v2.12.1
-    )
-
-    # Match ADIOS2's MPI to QuEST's so distributed runs write per-rank slices
-    # into one shared file. ADIOS2's CUDA support is deliberately left OFF:
-    # checkpointing copies amps to host memory (syncQuregFromGpu/syncQuregToGpu)
-    # before any I/O, so ADIOS2 never touches device pointers. Building it with
-    # CUDA is unnecessary and stalls the Windows CUDA CI job.
-    set(ADIOS2_USE_MPI  ${QUEST_ENABLE_MPI} CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_CUDA OFF CACHE BOOL "" FORCE)
-
-    # Forego unused facilities
-    set(ADIOS2_BUILD_TESTING  OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_SODIUM     OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_Fortran    OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_HDF5       OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_ZeroMQ     OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_SST        OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_DataMan    OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_SSC        OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_MHS        OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_DAOS       OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_MGARD      OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_BZip2      OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_Blosc      OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_Blosc2     OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_SZ         OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_ZFP        OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_PNG        OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_Profiling  OFF CACHE BOOL "" FORCE)
-    set(ADIOS2_USE_Python     OFF CACHE BOOL "" FORCE)
-
-    FetchContent_MakeAvailable(adios2)
-
-  else()
-    # re-run non-QUIET so configuration fails with a clear error if the package
-    # somehow became unavailable between the two calls
-    find_package(adios2 REQUIRED)
-  endif()
-
-  # In distributed builds link ADIOS2's MPI-enabled C++ interface: it defines
-  # ADIOS2_USE_MPI, which exposes the adios2::ADIOS(MPI_Comm) constructor used in
-  # qureg.cpp for collective per-rank I/O. The serial target lacks it.
-  if (QUEST_ENABLE_MPI)
-    target_link_libraries(QuEST PRIVATE adios2::cxx_mpi)
-  else()
-    target_link_libraries(QuEST PRIVATE adios2::cxx)
-  endif()
-  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
-endif()
-
+include(cmake/QuESTDependencies.cmake)
 
 # BMI2 (flag not necessary when unrecognised)
 if (QUEST_ENABLE_BMI2 AND _quest_cxx_recognises_bmi2)
@@ -741,7 +547,7 @@ set(QUEST_DISABLE_DEPRECATION_WARNINGS ${QUEST_DISABLE_DEPRECATION_WARNINGS})
 
 # add math library
 if (NOT MSVC)
-  target_link_libraries(QuEST PRIVATE ${MATH_LIBRARY})
+  target_link_libraries(QuEST PRIVATE m)
 endif()
 
 
@@ -759,55 +565,26 @@ add_subdirectory(quest)
 # ============================
 
 
-# min example is always built
-add_executable(min_example
-  examples/tutorials/min_example.c
-)
-target_link_libraries(min_example PRIVATE QuEST::QuEST)
+include(cmake/QuESTRpath.cmake)
+setup_quest_rpath(QuEST "${CMAKE_INSTALL_LIBDIR}")
+set(QUEST_HAVE_INSTALLABLE_EXAMPLES OFF)
 
-if (QUEST_ENABLE_MPI AND QUEST_ENABLE_SUBCOMM)
-  target_link_libraries(min_example PRIVATE MPI::MPI_CXX)
+if(QUEST_BUILD_MIN_EXAMPLE)
+  add_executable(min_example examples/tutorials/min_example.c)
+  target_link_libraries(min_example PRIVATE QuEST::QuEST)
+  setup_quest_rpath(min_example "${CMAKE_INSTALL_BINDIR}")
+  if(QUEST_ENABLE_INSTALL AND QUEST_INSTALL_BINARIES)
+    install(TARGETS min_example RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT Examples)
+    set(QUEST_HAVE_INSTALLABLE_EXAMPLES ON)
+  endif()
 endif()
 
-if (QUEST_INSTALL_BINARIES)
-  install(TARGETS min_example
-    RUNTIME
-    DESTINATION ${CMAKE_INSTALL_BINDIR}
-  )
-endif ()
-
-
-# all examples optionally built
-if (QUEST_BUILD_EXAMPLES)
+if(QUEST_BUILD_EXAMPLES)
   add_subdirectory(examples)
+  if(QUEST_ENABLE_INSTALL AND QUEST_INSTALL_BINARIES)
+    set(QUEST_HAVE_INSTALLABLE_EXAMPLES ON)
+  endif()
 endif()
-
-
-## RPATH
-set(BUILD_RPATH_USE_ORIGIN ON)
-if(APPLE)
-  set(_RPATH_ORIGIN "@loader_path")
-else()
-  set(_RPATH_ORIGIN "$ORIGIN")
-endif()
-
-set(_INSTALL_RPATH  "${_RPATH_ORIGIN}/../${CMAKE_INSTALL_LIBDIR}")
-set(_BUILD_RPATH    "${_RPATH_ORIGIN};$<TARGET_FILE_DIR:QuEST>")
-
-# A tiny helper function so you can call it for every target
-function(setup_quest_rpath tgt)
-  set_target_properties(${tgt} PROPERTIES
-          BUILD_RPATH   "${_BUILD_RPATH}"
-          INSTALL_RPATH "${_INSTALL_RPATH}"
-          # keeps RPATH from being stripped when installing
-          INSTALL_RPATH_USE_LINK_PATH TRUE
-  )
-endfunction()
-
-setup_quest_rpath(QuEST)
-setup_quest_rpath(min_example)
-
-
 
 # ============================
 # User source
@@ -830,11 +607,12 @@ if (USER_SOURCE_NAMES AND USER_OUTPUT_EXE_NAME)
   add_executable(${USER_OUTPUT_EXE_NAME} ${USER_SOURCE_NAMES})
   target_link_libraries(${USER_OUTPUT_EXE_NAME} PUBLIC QuEST)
    
-  if (QUEST_INSTALL_BINARIES)
-    install(TARGETS ${USER_OUTPUT_EXE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+  if (QUEST_ENABLE_INSTALL AND QUEST_INSTALL_BINARIES)
+    set(QUEST_HAVE_INSTALLABLE_EXAMPLES ON)
+    install(TARGETS ${USER_OUTPUT_EXE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Examples)
   endif()
   
-  setup_quest_rpath(${USER_OUTPUT_EXE_NAME})
+  setup_quest_rpath(${USER_OUTPUT_EXE_NAME} "${CMAKE_INSTALL_BINDIR}")
 endif()
 
 
@@ -884,66 +662,13 @@ endif()
 # ============================
 
 
-install(TARGETS QuEST
-  EXPORT QuESTTargets
-  LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
-
-# Write CMake version file for QuEST
-set(quest_install_config_dir "${CMAKE_INSTALL_LIBDIR}/cmake/QuEST")
-
-
-# Write QuESTConfigVersion.cmake
-write_basic_package_version_file(
-  "${CMAKE_CURRENT_BINARY_DIR}/${QUEST_OUTPUT_LIB_NAME}ConfigVersion.cmake"
-  VERSION ${PROJECT_VERSION}
-  COMPATIBILITY AnyNewerVersion
-)
-
-
-# Configure QuESTConfig.cmake (from template)
-configure_package_config_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QuESTConfig.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/${QUEST_OUTPUT_LIB_NAME}Config.cmake"
-  INSTALL_DESTINATION "${quest_install_config_dir}"
-)
-
-
-# Install them
-install(FILES
-  "${CMAKE_CURRENT_BINARY_DIR}/${QUEST_OUTPUT_LIB_NAME}Config.cmake"
-  "${CMAKE_CURRENT_BINARY_DIR}/${QUEST_OUTPUT_LIB_NAME}ConfigVersion.cmake"
-  DESTINATION "${quest_install_config_dir}"
-)
-
-install(FILES 
-  "${CMAKE_CURRENT_SOURCE_DIR}/quest/include/quest.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-)
-
-install(FILES
-  "${CMAKE_CURRENT_BINARY_DIR}/quest/include/config.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/quest/include"
-)
-
-install(
-  DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/quest/include"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/quest"
-  FILES_MATCHING PATTERN "*.h"
-  PATTERN "quest.h" EXCLUDE
-)
-
-install(
-  EXPORT QuESTTargets
-  FILE "${QUEST_OUTPUT_LIB_NAME}Targets.cmake"
-  NAMESPACE QuEST::
-  DESTINATION "${quest_install_config_dir}"
-)
-
-if(PROJECT_IS_TOP_LEVEL)
-  include(CPack)
-endif ()
-
+if(QUEST_ENABLE_INSTALL)
+  include(cmake/QuESTInstall.cmake)
+endif()
+if(QUEST_ENABLE_PACKAGING)
+  include(cmake/QuESTPackaging.cmake)
+endif()
+if(QUEST_BUILD_PACKAGING_TESTS)
+  enable_testing()
+  add_subdirectory(tests/packaging)
+endif()

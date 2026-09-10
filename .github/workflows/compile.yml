@@ -28,10 +28,12 @@ on:
     branches:
       - main
       - devel
+      - v4.3-release
   pull_request:
     branches:
       - main
       - devel
+      - v4.3-release
 
 
 jobs:
@@ -257,7 +259,19 @@ jobs:
         run: >
           wget https://developer.download.nvidia.com/compute/cuquantum/redist/cuquantum/linux-x86_64/cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
           tar -xvf cuquantum-linux-x86_64-24.08.0.5_cuda12-archive.tar.xz;
-          echo "CUQUANTUM_ROOT=cuquantum-linux-x86_64-24.08.0.5_cuda12-archive" >> $GITHUB_ENV
+          echo "CUQUANTUM_ROOT=$PWD/cuquantum-linux-x86_64-24.08.0.5_cuda12-archive" >> $GITHUB_ENV;
+          echo "LD_LIBRARY_PATH=$PWD/cuquantum-linux-x86_64-24.08.0.5_cuda12-archive/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+
+      # One controlled Linux case checks the finder against actual SDK symbols.
+      # custatevecGetVersion() does not execute a GPU operation.
+      - name: Link and run the real cuQuantum SDK fixture
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.precision == 2 && matrix.omp == 'OFF' && matrix.mpi == 'OFF' && matrix.cuquantum == 'ON' && matrix.adios2 == 'OFF' && matrix.bmi2 == 'OFF' }}
+        run: |
+          cmake -S tests/packaging/cuquantum/real-sdk -B build-cuquantum-real \
+            -DCUQUANTUM_ROOT="$CUQUANTUM_ROOT" \
+            -DCUDAToolkit_ROOT="$CUDA_PATH"
+          cmake --build build-cuquantum-real --parallel 1
+          ctest --test-dir build-cuquantum-real --output-on-failure
 
       # obtain ROCm for HIP acceleration on Linux
       - name: Install ROCm
@@ -291,6 +305,11 @@ jobs:
       - name: Configure CMake
         run: >
           cmake -B ${{ env.build_dir }}
+          -DBUILD_SHARED_LIBS=${{ matrix.os == 'ubuntu-latest' && matrix.precision == 2 && matrix.omp == 'OFF' && matrix.mpi == 'OFF' && matrix.cuquantum == 'ON' && matrix.adios2 == 'OFF' && matrix.bmi2 == 'OFF' && 'OFF' || 'ON' }}
+          -DQUEST_ENABLE_INSTALL=${{ matrix.adios2 == 'ON' && 'OFF' || 'ON' }}
+          -DQUEST_ENABLE_PACKAGING=OFF
+          -DQUEST_BUILD_PACKAGING_TESTS=${{ matrix.adios2 == 'ON' && 'OFF' || 'ON' }}
+          -DQUEST_TEST_ARCHIVES=OFF
           -DQUEST_BUILD_EXAMPLES=ON
           -DQUEST_BUILD_TESTS=ON
           -DQUEST_FLOAT_PRECISION=${{ matrix.precision }}
@@ -312,6 +331,12 @@ jobs:
       # and force serial compilation to avoid ADIOS2 OOM error
       - name: Compile
         run: cmake --build ${{ env.build_dir }} --config Release --parallel 1
+
+      # downloaded ADIOS2 is deliberately restricted to non-installable developer
+      # builds; every other backend validates the installed exported target
+      - name: Stage, relocate, and consume installed QuEST
+        if: ${{ matrix.adios2 == 'OFF' }}
+        run: ctest --test-dir ${{ env.build_dir }} -C Release -L packaging --output-on-failure
 
       # run all compiled isolated examples to test for link-time errors,
       # continuing if any fail (since some deliberately fail)

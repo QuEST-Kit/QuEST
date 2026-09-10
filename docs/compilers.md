@@ -12,6 +12,8 @@ QuEST separates compilation of the _frontend_, _backend_ and the _tests_, which 
 This page details the specialised compilers necessary to enable specific features hardware accelerators, and lists such compilers which are
 known to be compatible with QuEST.
 
+Configuring QuEST itself and its installed consumers requires CMake 3.28 or newer.
+
 
 <!-- 
     we are using explicit <a>, rather than markdown links,
@@ -68,8 +70,9 @@ User code can be written in either `C11` or `C++14`, and has so far been tested 
 ## Backend
 
 [![Languages](https://img.shields.io/badge/C++-17-ff69b4.svg)](https://en.cppreference.com/w/cpp/17)
+[![GPU languages](https://img.shields.io/badge/GPU_C++-20-ff69b4.svg)](https://en.cppreference.com/w/cpp/20)
 
-The backend is divided into subdirectories [`api/`](/quest/src/api), [`core/`](/quest/src/core), [`comm/`](/quest/src/comm),  [`cpu/`](/quest/src/cpu) and [`gpu/`](/quest/src/gpu). All can be compiled with a generic `C++17` compiler, but enabling distribution, multithreading and GPU-acceleration requires using specialised compilers for the latter three. Each can be toggled and compiled independently. Note however that tightly-coupled multi-GPU simulations (`comm` + `gpu`) can be accelerated using bespoke compilers, and use of [cuQuantum](https://developer.nvidia.com/cuquantum-sdk) requires modern compilers (`gpu + cuquantum`), detailed below.
+The backend is divided into subdirectories [`api/`](/quest/src/api), [`core/`](/quest/src/core), [`comm/`](/quest/src/comm),  [`cpu/`](/quest/src/cpu) and [`gpu/`](/quest/src/gpu). The host implementation requires a `C++17` compiler. GPU compilation requires a CUDA or HIP compiler with C++20 support. Enabling distribution, multithreading, and GPU acceleration also requires the specialised toolchains described below. These implementation standards remain private: applications which link the installed `QuEST::QuEST` target require only C11 or C++14.
 
 
 <!-- permit doxygen to reference section -->
