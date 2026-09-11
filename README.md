@@ -229,23 +229,17 @@ To rocket right in, download QuEST with [git](https://git-scm.com/) at the termi
 git clone https://github.com/quest-kit/QuEST.git
 cd QuEST
 ```
-We recommend working in a `build` directory:
+Compile the [minimum example](/examples/tutorials/min_example.c) in a separate build directory using [CMake 3.28 or newer](https://cmake.org/):
 ```bash
-mkdir build
-cd build
-```
-
-Compile the [minimum example](/examples/tutorials/min_example.c) using [cmake](https://cmake.org/):
-```bash
-cmake .. 
-make
+cmake -S . -B build
+cmake --build build
 ```
 then run it with
 ```bash
-./min_example
+./build/min_example
 ```
 
-See the [docs](docs/README.md) for enabling acceleration and running the unit tests.
+Installable builds export the canonical CMake target `QuEST::QuEST`. Downstream projects use `find_package(QuEST CONFIG REQUIRED)` and link that target; see the [CMake guide](docs/cmake.md) for installation, dependency, and packaging details. See the [docs](docs/README.md) for enabling acceleration and running the unit tests.
 
 ---------------------------------
 
