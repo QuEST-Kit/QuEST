@@ -59,6 +59,17 @@ void raiseInternalError(string errorMsg) {
 
 
 /*
+ * TEMPORARY / DEBUG ERRORS
+ */
+
+void error_quregTooLargeForHipGpuAccel() {
+
+    raiseInternalError("The created Qureg contains more than 2^32 amplitudes per GPU, which would later trigger a current bug/limitation in QuEST's execution on AMD GPUs. See Github issue #815.");
+}
+
+
+
+/*
  * VALIDATION ERRORS
  */
 
