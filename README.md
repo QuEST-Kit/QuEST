@@ -310,4 +310,6 @@ In addition to QuEST's [authors](AUTHORS.txt), we sincerely thank the following 
   a Rust interface to QuEST, developed by [HQS Quantum Simulations](https://quantumsimulations.de/).
    
 - [PyQuEST-cffi](https://github.com/HQSquantumsimulations/PyQuEST-cffi)   <br>
-  a python interface to QuEST developed by [HQS Quantum Simulations](https://quantumsimulations.de/). 
+  a python interface to QuEST developed by [HQS Quantum Simulations](https://quantumsimulations.de/).
+- [QASC](https://github.com/stfc/QASC) <br>
+  a source-to-source compiler which tranbslates QASM3 to QuEST, developed by [Meller](https://github.com/m-meller) and [Szeremi](github.com/vszeremi) at [STFC](https://www.ukri.org/councils/stfc/).

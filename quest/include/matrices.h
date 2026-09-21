@@ -64,62 +64,232 @@
  */
 
 
-/// @notyetdoced
+/** A one-qubit, @f$2\times 2@f$, dense complex matrix.
+ * 
+ * > [!TIP]
+ * > This matrix is stored in stack memory, and so never needs explicit destruction,
+ * > and like all QuEST types, is safe to pass and return to/from functions by-value.
+ * 
+ * @myexample
+ * 
+ * See [C](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_matrices.c) and 
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_matrices.cpp) 
+ * examples of initialising CompMatr1.
+ * 
+ * @see
+ * - getCompMatr1()
+ * - getInlineCompMatr1()
+ * - reportCompMatr1()
+ * - applyCompMatr1()
+ */
 typedef struct {
 
+    /** The number of qubits upon which the matrix can act, which is always @c =1.
+     */
     int numQubits;
+
+    /** The matrix dimension, which is always @c =2.
+     */
     qindex numRows;
 
+    /** The 2D matrix elements. These are safe to update at any time.
+     */
     qcomp elems[2][2];
 
 } CompMatr1;
 
 
-/// @notyetdoced
+/** A two-qubit, @f$4\times 4@f$, dense complex matrix.
+ * 
+ * > [!TIP]
+ * > This matrix is stored in stack memory, and so never needs explicit destruction,
+ * > and like all QuEST types, is safe to pass and return to/from functions by-value.
+ * 
+ * @myexample
+ * 
+ * See [C](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_matrices.c) and 
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_matrices.cpp) 
+ * examples of initialising CompMatr2.
+ * 
+ * @see
+ * - getCompMatr2()
+ * - getInlineCompMatr2()
+ * - reportCompMatr2()
+ * - applyCompMatr2()
+ */
 typedef struct {
 
+    /** The number of qubits upon which the matrix can act, which is always @c =2.
+     */
     int numQubits;
+
+    /** The matrix dimension, which is always @c =4.
+     */
     qindex numRows;
 
+    /** The 2D matrix elements. These are safe to update at any time.
+     */
     qcomp elems[4][4];
 
 } CompMatr2;
 
 
-/// @notyetdoced
+/** A variable-size, @f$n@f$-qubit, @f$2^n \times 2^n@f$, dense complex matrix.
+ * 
+ * Unlike CompMatr1 and CompMatr2, the elements of this matrix are stored in
+ * heap memory. But like all QuEST structs, it is safe to copy, and ergo to pass
+ * to functions by-value, or be returned from them. However, its destructor
+ * must only ever be called upon one such copy.
+ * 
+ * @myexample
+ * 
+ * See [C](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_matrices.c) and 
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_matrices.cpp) 
+ * examples of initialising CompMatr.
+ * 
+ * @see
+ * - createCompMatr()
+ * - [createInlineCompMatr()](https://quest-kit.github.io/QuEST/group__matrices__create.html#gad0ac51cb08a5d0b4e0878a5fde7ca893)
+ * - [setInlineCompMatr()](https://quest-kit.github.io/QuEST/group__matrices__setters.html#ga00993b6b571985fd04697e487a561517)
+ * - setCompMatr()
+ * - syncCompMatr()
+ * - reportCompMatr()
+ * - applyCompMatr()
+ * - destroyCompMatr()
+ */
 typedef struct {
 
     // beware that CompMatr instances are sometimes 'spoofed' inside localiser.cpp,
     // which will set the fields from other object instances (like a SuperOp). As
-    // such, additional fields to this struct may require updating these spoofers.
+    // such, adding new fields to this struct may require updating these spoofers.
 
+    /** The number of qubits upon which the matrix can act.
+     * 
+     * The total memory costs of the matrix scale exponentially with the
+     * number of qubits; an @f$n@f$-qubit matrix contains @f$4^n@f$
+     * complex elements.
+     */
     int numQubits;
+
+    /** The dimension of the matrix, which is a square matrix, and so
+     * equals both the number of rows and columns.
+     * 
+     * Letting @f$n=@f$ #numQubits, then #numRows @f$=2^n@f$.
+     */
     qindex numRows;
 
-    // properties of the matrix (0, 1, or -1 to indicate unknown) which are lazily evaluated,
-    // deferred until a function actually validates them, at which point they are computed
-    // and the flags fixed until the user modifies the matrix (through sync() or setAmps() etc).
-    // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
-    // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
+    /** Whether the matrix is (within validation epsilon tolerance) unitary (@c =1), or known to be
+     * non-unitary (@c =0), or whether it is unknown (@c =-1).
+     * 
+     * This is a heap pointer to a persistent flag which is initially @c =-1 at matrix creation, and
+     * is only ever consulted and/or updated by input validation within functions like applyCompMatr(),
+     * when such validation is enabled. Calling setCompMatr() or syncCompMatr() restores #isApproxUnitary 
+     * to @c -1.
+     * 
+     * Unitarity is measured approximately, with reference to the validation
+     * epsilon as modified with setQuESTValidationEpsilon(). This flag will never be updated from
+     * @c =-1 when validation is disabled. Like all epsilon-dependent fields, it is restored
+     * to @c =-1 automatically whenever setQuESTValidationEpsilon() or setQuESTValidationEpsilonToDefault()
+     * are called.
+     * 
+     * @see
+     * - setQuESTValidationEpsilon()
+     */
     int* isApproxUnitary;
-    int* isApproxHermitian; /// @todo currently unused (relevant to not-yet-implemented calc-expec-val)
 
-    // whether the user has ever synchronised memory to the GPU, which is performed automatically
-    // when calling functions like setCompMatr(), but which requires manual invocation with
-    // syncCompMatr() after manual modification of the cpuElem. Note this can only indicate whether
-    // the matrix has EVER been synced; it cannot be used to detect whether manual modifications
-    // made after an initial sync have been re-synched. This is a heap pointer, as above.
+    /** Whether the matrix is (within validation epsilon tolerance) Hermitian (@c =1), or known to
+     * be non-Hermitian (@c =0), or whether it is unknown (@c =-1).
+     * 
+     * This is a heap pointer to a persistent flag which is initially @c =-1 at matrix creation, and
+     * is only ever consulted and/or updated by input validation within functions which expect
+     * Hermiticity. Calling setCompMatr() or syncCompMatr() restores 
+     * #isApproxHermitian to @c -1.
+     * 
+     * > [!NOTE]
+     * > There are presently _no_ QuEST functions which expect Hermiticity of a CompMatr, 
+     * > and so this field is presently never modified from its initial value of @c =-1.
+     * 
+     * Hermiticity is measured approximately, with reference to the validation
+     * epsilon as modified with setQuESTValidationEpsilon(). This flag will never be updated from
+     * @c =-1 when validation is disabled. Like all epsilon-dependent fields, it is restored
+     * to @c =-1 automatically whenever setQuESTValidationEpsilon() or setQuESTValidationEpsilonToDefault()
+     * are called.
+     * 
+     * @see
+     * - setQuESTValidationEpsilon()
+     */
+    int* isApproxHermitian; // @todo currently unused (relevant to not-yet-implemented calc-expec-val)
+
+    /** Whether the matrix elements were ever synchronised.
+     * 
+     * This is a heap pointer to a persistent flag which is initially @c 0 at matrix creation,
+     * but which is permanently overwritten to @c 1 when synchronisation is performed, such as
+     * via syncCompMatr() or setCompMatr(). The flag indicates whether the matrix
+     * elements have been initialised (and when QuEST is GPU-accelerated, whether they have been
+     * copied to GPU device memory), and ergo whether it is valid to pass the matrix to a
+     * simulation function like applyCompMatr().
+     * 
+     * Note this flag can only indicate whether the matrix has _ever_ been synced; it cannot be
+     * used to detect whether manual modification of #cpuElems made after an initial sync have been
+     * re-synced, as required for correct behaviour in GPU mode.
+     * 
+     * @see
+     * - syncCompMatr()
+     */
     int* wasGpuSynced;
 
-    // 2D CPU memory, which users can manually overwrite like cpuElems[i][j],
-    // but which actually merely aliases the 1D cpuElemsFlat below
+    /** The 2D matrix elements, stored in CPU host memory.
+     * 
+     * It is safest to modify this matrix through setCompMatr(), but direct modification
+     * is possible; the matrix element of the `r`-th row and `c`-th column is stored
+     * at `cpuElems[r][c]`.
+     * 
+     * > [!IMPORTANT]
+     * > It is _critical_ to call syncCompMatr() after direct modification of
+     * > #cpuElems in order to update persistent matrix properties,
+     * > such as its data in GPU device memory (even when not running in
+     * > GPU-accelerated mode).
+     * 
+     * The field #cpuElems merely aliases the 1D #cpuElemsFlat field, such that
+     * modifications of #cpuElems also updates #cpuElemsFlat.
+     * 
+     * @see
+     * - setCompMatr()
+     * - [setInlineCompMatr()](https://quest-kit.github.io/QuEST/group__matrices__setters.html#ga00993b6b571985fd04697e487a561517)
+     * - syncCompMatr()
+     */
     qcomp** cpuElems;
 
-    // row-major flattened elements of cpuElems, always allocated 
+    /** A 1D row-major form of #cpuElems.
+     * 
+     * Modification of the matrix elements should be done through #cpuElems
+     * for mathematical clarity, though this 1D contiguous form may be convenient
+     * when performing copying.
+     * 
+     * > [!IMPORTANT]
+     * > It is _critical_ to call syncCompMatr() after direct modification of
+     * > #cpuElemsFlat in order to update persistent matrix properties,
+     * > such as its data in GPU device memory (even when not running in
+     * > GPU-accelerated mode).
+     * 
+     * @see
+     * - setCompMatr()
+     * - [setInlineCompMatr()](https://quest-kit.github.io/QuEST/group__matrices__setters.html#ga00993b6b571985fd04697e487a561517)
+     * - syncCompMatr()
+     */
     qcomp* cpuElemsFlat;
 
-    // row-major flattened elems in GPU memory, allocated 
-    // only and always in GPU-enabled QuEST environments
+    /** The matrix elements, stored in GPU device memory, in a 1D row-major form.
+     * 
+     * This is a copy of #cpuElemsFlat consulted by QuEST's GPU backend and should
+     * _never_ be modified directly. Instead, it is updated by calling syncCompMatr()
+     * after modifying #cpuElems or #cpuElemsFlat, which is performed automatically by
+     * API functions like setCompMatr(). In this way, #gpuElemsFlat and #cpuElemsFlat
+     * should never be out of sync with one another.
+     * 
+     * Within a GPU-enabled QuEST environment, every CompMatr allocates #gpuElemsFlat
+     * in GPU memory, even if never ultimately consulted from the GPU backend.
+     */
     qcomp* gpuElemsFlat;
 
 } CompMatr;
@@ -132,55 +302,220 @@ typedef struct {
  */
 
 
-/// @notyetdoced
+/** A one-qubit, @f$2\times 2@f$, diagonal complex matrix, stored as a length-2 array.
+ * 
+ * > [!TIP]
+ * > This matrix is stored in stack memory, and so never needs explicit destruction,
+ * > and like all QuEST types, is safe to pass and return to/from functions by-value.
+ * 
+ * @myexample
+ * 
+ * See [C](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_matrices.c) and 
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_matrices.cpp) 
+ * examples of initialising DiagMatr1.
+ * 
+ * @see
+ * - getDiagMatr1()
+ * - getInlineDiagMatr1()
+ * - reportDiagMatr1()
+ * - applyDiagMatr1()
+ */
 typedef struct {
 
+    /** The number of qubits upon which the matrix can act, which is always @c =1.
+     */
     int numQubits;
+
+    /** The matrix dimension, equal to the number of contained diagonal elements, which is always @c =2.
+     */
     qindex numElems;
 
+    /** The diagonal elements of the matrix, stored as a flat array, in CPU stack memory.
+     * These are safe to directly modify at any time, to update the matrix.
+     */
     qcomp elems[2];
 
 } DiagMatr1;
 
 
-/// @notyetdoced
+/** A two-qubit, @f$4\times 4@f$, diagonal complex matrix, stored as a length-4 array.
+ * 
+ * > [!TIP]
+ * > This matrix is stored in stack memory, and so never needs explicit destruction,
+ * > and like all QuEST types, is safe to pass and return to/from functions by-value.
+ * 
+ * @myexample
+ * 
+ * See [C](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_matrices.c) and 
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_matrices.cpp) 
+ * examples of initialising DiagMatr2.
+ * 
+ * @see
+ * - getDiagMatr2()
+ * - getInlineDiagMatr2()
+ * - reportDiagMatr2()
+ * - applyDiagMatr2()
+ */
 typedef struct {
 
+    /** The number of qubits upon which the matrix can act, which is always @c =2.
+     */
     int numQubits;
+
+    /** The matrix dimension, equal to the number of contained diagonal elements, which is always @c =4.
+     */
     qindex numElems;
 
+    /** The diagonal elements of the matrix, stored as a flat array, in CPU stack memory.
+     * These are safe to directly modify at any time, to update the matrix.
+     */
     qcomp elems[4];
 
 } DiagMatr2;
 
 
-/// @notyetdoced
+/** A variable-size, @f$n@f$-qubit, @f$2^n \times 2^n@f$, diagonal complex matrix,
+ * stored as a length-@f$2^n@f$ array.
+ * 
+ * This is intended for _local_ diagonal matrices, smaller than the Qureg upon
+ * which they operate. For a full-state diagonal matrix, see FullStateDiagMatr.
+ * 
+ * Unlike DiagMatr1 and DiagMatr2, the diagonal elements of this matrix are stored in
+ * heap memory. But like all QuEST structs, it is safe to copy, and ergo to pass
+ * to functions by-value, or be returned from them. However, its destructor
+ * must only ever be called upon one such copy.
+ * 
+ * @myexample
+ * 
+ * See [C](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_matrices.c) and 
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_matrices.cpp) 
+ * examples of initialising DiagMatr.
+ * 
+ * @see
+ * - createDiagMatr()
+ * - [createInlineDiagMatr()](https://quest-kit.github.io/QuEST/group__matrices__create.html#gad0ac51cb08a5d0b4e0878a5fde7ca893)
+ * - [setInlineDiagMatr()](https://quest-kit.github.io/QuEST/group__matrices__setters.html#ga7b2c2e134546df6101c6001727bc6d69)
+ * - setDiagMatr()
+ * - syncDiagMatr()
+ * - reportDiagMatr()
+ * - applyDiagMatr()
+ * - destroyDiagMatr()
+ */
 typedef struct {
 
+    /** The number of qubits upon which the matrix can act.
+     * 
+     * The total memory costs of the matrix scale exponentially with the
+     * number of qubits; an @f$n@f$-qubit diagonal matrix contains @f$2^n@f$
+     * complex elements.
+     */
     int numQubits;
+
+   /** The dimension of the matrix, which is a square matrix, and so
+     * equals both the number of rows and columns, and the number of diagonal terms.
+     * 
+     * Letting @f$n=@f$ #numQubits, then #numElems @f$=2^n@f$.
+     */
     qindex numElems;
 
-    // properties of the matrix (0, 1, or -1 to indicate unknown) which are lazily evaluated,
-    // deferred until a function actually validates them, at which point they are computed
-    // and the flags fixed until the user modifies the matrix (through sync() or setAmps() etc).
-    // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
-    // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
+    /** Whether the matrix is (within validation epsilon tolerance) unitary (@c =1), or known to be
+     * non-unitary (@c =0), or whether it is unknown (@c =-1).
+     * 
+     * This is a heap pointer to a persistent flag which is initially @c =-1 at matrix creation, and
+     * is only ever consulted and/or updated by input validation within functions like applyDiagMatr(),
+     * when such validation is enabled. Calling setDiagMatr() or syncDiagMatr() restores #isApproxUnitary 
+     * to @c -1.
+     * 
+     * Unitarity is measured approximately, with reference to the validation
+     * epsilon as modified with setQuESTValidationEpsilon(). This flag will never be updated from
+     * @c =-1 when validation is disabled. Like all epsilon-dependent fields, it is restored
+     * to @c =-1 automatically whenever setQuESTValidationEpsilon() or setQuESTValidationEpsilonToDefault()
+     * are called.
+     * 
+     * @see
+     * - setQuESTValidationEpsilon()
+     */
     int* isApproxUnitary;
-    int* isApproxHermitian;     /// @todo currently unused (relevant to not-yet-implemented calc-expec-val)
-    int* isApproxNonZero;       /// @todo currently unused (relevant to not-yet-implemented calc-expec-val)
-    int* isStrictlyNonNegative; /// @todo currently unused (relevant to not-yet-implemented calc-expec-val)
+
+    /** Whether the matrix is (within validation epsilon tolerance) Hermitian (@c =1), or known to be
+     * non-Hermitian (@c =0), or whether it is unknown (@c =-1).
+     * 
+     * > [!NOTE]
+     * > There are presently _no_ QuEST functions which expect Hermiticity of a DiagMatr, 
+     * > and so this field is presently never modified from its initial value of @c =-1.
+     * 
+     * This field has all the same nuances and mechanisms as #isApproxUnitary.
+     */
+    int* isApproxHermitian;  // @todo currently unused (relevant to not-yet-implemented calc-expec-val)
+
+    /** Whether all diagonal elements of the matrix are "approximately" non-zero (have a magnitude
+     * exceeding the validation epsilon) in which case this field @c =1, or whether the matrix is
+     * known to contain an approximate zero (@c =0), or whether the property is unknown (@c =-1).
+     * 
+     * This property is relevant when attempting to raise the DiagMatr to a negative power,
+     * such as through applyDiagMatrPower().
+     * 
+     * This field has all the same nuances and mechanisms as #isApproxUnitary.
+     */
+    int* isApproxNonZero;
+
+    /** Whether all diagonal elements of the matrix are strictly zero or positive (@c =1), or
+     * whether one or more elements are known to be negative (@c =0), or whether the property is
+     * unknown (@c =-1).
+     * 
+     * This property is relevant when attempting to raise the DiagMatr to non-integer power,
+     * such as through applyDiagMatrPower().
+     * 
+     * This field has similar nuances and mechanics as #isApproxUnitary, but is _not_ dependent
+     * upon the validation epsilon (as controlled with setQuESTValidationEpsilon()).
+     */
+    int* isStrictlyNonNegative;
     
-    // whether the user has ever synchronised memory to the GPU, which is performed automatically
-    // when calling functions like setCompMatr(), but which requires manual invocation with
-    // syncCompMatr() after manual modification of the cpuElem. Note this can only indicate whether
-    // the matrix has EVER been synced; it cannot be used to detect whether manual modifications
-    // made after an initial sync have been re-synched. This is a heap pointer, as above.
+    /** Whether the matrix elements were ever synchronised.
+     * 
+     * This is a heap pointer to a persistent flag which is initially @c 0 at matrix creation,
+     * but which is permanently overwritten to @c 1 when synchronisation is performed, such as
+     * via syncDiagMatr() or setDiagMatr(). The flag indicates whether the matrix
+     * elements have been initialised (and when QuEST is GPU-accelerated, whether they have been
+     * copied to GPU device memory), and ergo whether it is valid to pass the matrix to a
+     * simulation function like applyDiagMatr().
+     * 
+     * Note this flag can only indicate whether the matrix has _ever_ been synced; it cannot be
+     * used to detect whether manual modification of #cpuElems made after an initial sync have been
+     * re-synced, as required for correct behaviour in GPU mode.
+     * 
+     * @see
+     * - syncDiagMatr()
+     */
     int* wasGpuSynced;
 
-    // CPU memory; not const, so users can overwrite addresses (e.g. with nullptr)
+    /** The matrix diagonal elements, stored in CPU host memory.
+     * 
+     * It is safest to modify this matrix through setDiagMatr(), but direct modification
+     * is possible.
+     * 
+     * > [!IMPORTANT]
+     * > It is _critical_ to call syncDiagMatr() after direct modification of
+     * > #cpuElems in order to update persistent matrix properties,
+     * > such as its data in GPU device memory (even when not running in
+     * > GPU-accelerated mode).
+     * 
+     * @see
+     * - syncDiagMatr()
+     */
     qcomp* cpuElems;
 
-    // GPU memory, allocated only and always in GPU-enabled QuEST environments
+    /** The matrix diagonal elements, stored in GPU device memory.
+     * 
+     * This is a copy of #cpuElems consulted by QuEST's GPU backend and should
+     * _never_ be modified directly. Instead, it is updated by calling syncDiagMatr()
+     * after modifying #cpuElems, which is performed automatically by
+     * API functions like setDiagMatr(). In this way, #gpuElems and #cpuElems
+     * should never be out of sync with one another.
+     * 
+     * Within a GPU-enabled QuEST environment, every DiagMatr allocates #gpuElems
+     * in GPU memory, even if never ultimately consulted from the GPU backend.
+     */
     qcomp* gpuElems;
 
 } DiagMatr;
@@ -191,40 +526,191 @@ typedef struct {
  */
 
 
-/// @notyetdoced
+/** A variable-size but full-state diagonal complex matrix, which can only act upon a
+ * Qureg of the same dimension.
+ * 
+ * Unlike DiagMatr, a FullStateDiagMatr is intendedly non-local and can be distributed,
+ * just like a Qureg of the same dimension.
+ * 
+ * @myexample
+ * 
+ * See [C](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_matrices.c) and 
+ *   [C++](https://github.com/QuEST-Kit/QuEST/blob/main/examples/isolated/initialising_matrices.cpp) 
+ * examples of initialising FullStateDiagMatr.
+ * 
+ * @see
+ * - createFullStateDiagMatr()
+ * - [setInlineFullStateDiagMatr()](fhttps://quest-kit.github.io/QuEST/group__matrices__setters.html#gaa27aaa1a001a41f36a60847a19d824d4)
+ * - setFullStateDiagMatr()
+ * - setFullStateDiagMatrFromMultiVarFunc()
+ * - setFullStateDiagMatrFromMultiDimLists()
+ * - setFullStateDiagMatrFromPauliStrSum()
+ * - syncFullStateDiagMatr()
+ * - reportFullStateDiagMatr()
+ * - applyFullStateDiagMatr()
+ * - calcExpecFullStateDiagMatr()
+ * - destroyFullStateDiagMatr()
+ */
 typedef struct {
 
+    /** The number of qubits in the Qureg upon which the matrix can act.
+     * 
+     * The total memory costs of the matrix scale exponentially with the
+     * number of qubits; an @f$n@f$-qubit full-state diagonal matrix contains @f$2^n@f$
+     * complex elements, which may be distributed across MPI nodes.
+     */
     int numQubits;
+
+   /** The total dimension of the matrix, which is a square matrix, and so
+     * equals both the number of rows and columns, and the number of diagonal terms.
+     * 
+     * Letting @f$n=@f$ #numQubits, then #numElems @f$=2^n@f$. This is the total number
+     * of elements across all nodes, and so is independent of whether the matrix is
+     * distributed.
+     */
     qindex numElems;
 
-    // unlike other heap-matrices, GPU memory is not always allocated when the QuEST
-    // env is GPU-accelerated; instead, it can be disabled by auto-deployer, or the user
+    /** Whether the matrix has allocated GPU memory, and so can be used by QuEST's
+     * GPU-accelerated backend. 
+     * 
+     * Unlike CompMatr and DiagMatr, a FullStateDiagMatr can opt _not_ to allocate GPU memory when
+     * QuEST is running in GPU-accelerated mode.
+     */
     int isGpuAccelerated;
+
+    /** Whether multithreading will be employed when initialising or simulating the matrix.
+     * 
+     * When a QuEST function receives both a Qureg and a FullStateDiagMatr, multithreading
+     * is performed when _either_ or _both_ structs have multithreading enabled.
+     */
     int isMultithreaded;
+
+    /** Whether the matrix elements are distributed, informing the size of #cpuElems on
+     * every node.
+     * 
+     * When distributed, each node contains only a subset of the full matrix's diagonal
+     * elements, in an identical fashion to how statevector Qureg are distributed.
+     * Unlike a Qureg however, a FullStateDiagMatr has no attached communication buffer,
+     * so have _half_ the total memory costs of a same-size distributed statevector Qureg.
+     * 
+     * When not distributed, every node contains a duplicate copy of all elements in the matrix.
+     */
     int isDistributed;
+
+    /** The number of diagonal matrix elements stored on each distributed node, and the
+     * length of #cpuElems and #gpuElems.
+     * 
+     * This differs from #numElems only when the matrix is distributed, in which case it
+     * equals #numElems divided by the number of nodes.
+     */
     qindex numElemsPerNode;
 
-    // properties of the matrix (0, 1, or -1 to indicate unknown) which are lazily evaluated,
-    // deferred until a function actually validates them, at which point they are computed
-    // and the flags fixed until the user modifies the matrix (through sync() or setAmps() etc).
-    // flag is stored in heap so even copies of structs are mutable, but pointer is immutable.
-    // otherwise, the field of a user's struct could never be modified because of pass-by-copy.
+    /** Whether the matrix is (within validation epsilon tolerance) unitary (@c =1), or known to be
+     * non-unitary (@c =0), or whether it is unknown (@c =-1).
+     *
+     * This is a heap pointer to a persistent flag which is initially @c =-1 at matrix creation, and
+     * is only ever consulted and/or updated by input validation within functions like
+     * applyFullStateDiagMatr(), when such validation is enabled. Calling functions like
+     * setFullStateDiagMatr() or syncFullStateDiagMatr() restores #isApproxUnitary to @c -1.
+     * 
+     * Unitarity is measured approximately, with reference to the validation
+     * epsilon as modified with setQuESTValidationEpsilon(). This flag will never be updated from
+     * @c =-1 when validation is disabled. Like all epsilon-dependent fields, it is restored
+     * to @c =-1 automatically whenever setQuESTValidationEpsilon() or setQuESTValidationEpsilonToDefault()
+     * are called.
+     * 
+     * When distributed, this property reflects the _global_ state of the entire matrix across
+     * all nodes, and so should always be identical across nodes.
+     * 
+     * @see
+     * - setQuESTValidationEpsilon()
+     */
     int* isApproxUnitary;
+
+    /** Whether the matrix is (within validation epsilon tolerance) Hermitian (@c =1), or known to be
+     * non-Hermitian (@c =0), or whether it is unknown (@c =-1).
+     *
+     * This field is relevant to functions like calcExpecFullStateDiagMatr(), and
+     * otherwise has all the same nuances and mechanisms as #isApproxUnitary.
+     */
     int* isApproxHermitian;
+
+    /** Whether all diagonal elements of the matrix are "approximately" non-zero (have a magnitude
+     * exceeding the validation epsilon) in which case this field @c =1, or whether the matrix is
+     * known to contain an approximate zero (@c =0), or whether the property is unknown (@c =-1).
+     * 
+     * This property is relevant when attempting to raise the matrix to a negative power,
+     * such as through applyFullStateDiagMatrPower().
+     * 
+     * This field has all the same nuances and mechanisms as #isApproxUnitary.
+     */
     int* isApproxNonZero;
+
+    /** Whether all diagonal elements of the matrix are strictly zero or positive (@c =1), or
+     * whether one or more elements are known to be negative (@c =0), or whether the property is
+     * unknown (@c =-1).
+     * 
+     * This property is relevant when attempting to raise the matrix to non-integer power,
+     * such as through applyFullStateDiagMatrPower().
+     * 
+     * This field has similar nuances and mechanics as #isApproxUnitary, but is _not_ dependent
+     * upon the validation epsilon (as controlled with setQuESTValidationEpsilon()).
+     */
     int* isStrictlyNonNegative;
 
-    // whether the user has ever synchronised memory to the GPU, which is performed automatically
-    // when calling functions like setCompMatr(), but which requires manual invocation with
-    // syncCompMatr() after manual modification of the cpuElem. Note this can only indicate whether
-    // the matrix has EVER been synced; it cannot be used to detect whether manual modifications
-    // made after an initial sync have been re-synched. This is a heap pointer, as above.
+    /** Whether the matrix elements were ever synchronised.
+     * 
+     * This is a heap pointer to a persistent flag which is initially @c 0 at matrix creation,
+     * but which is permanently overwritten to @c 1 when synchronisation is performed, such as
+     * via syncFullStateDiagMatr() or setFullStateDiagMatr(). The flag indicates whether the matrix
+     * elements have been initialised (and when QuEST is GPU-accelerated, whether they have been
+     * copied to GPU device memory), and ergo whether it is valid to pass the matrix to a
+     * simulation function like applyFullStateDiagMatr().
+     * 
+     * Note this flag can only indicate whether the matrix has _ever_ been synced; it cannot be
+     * used to detect whether manual modification of #cpuElems made after an initial sync have been
+     * re-synced, as required for correct behaviour in GPU mode.
+     * 
+     * @see
+     * - syncFullStateDiagMatr()
+     */
     int* wasGpuSynced;
 
-    // CPU memory; not const, so users can overwrite addresses (e.g. with nullptr)
+    /** This node's matrix diagonal elements, stored in CPU host memory.
+     * 
+     * This is an array of length #numElemsPerNode, containing the diagonal elements of
+     * the matrix. It is safest to modify these elements through functions like 
+     * setFullStateDiagMatr(). Direct modification is possible, but in distributed
+     * simulation, must be done with care. The @f$i@f$-th local element on the node
+     * with rank @f$r@f$ corresponds to the full matrix element @f$(m r + i, m r + i)@f$,
+     * where @f$m=@f$ #numElemsPerNode.
+     * 
+     * > [!IMPORTANT]
+     * > It is _critical_ to call syncFullStateDiagMatr() after direct modification of
+     * > #cpuElems on any node, in order to update persistent matrix properties,
+     * > such as its data in GPU device memory (even when not running in
+     * > GPU-accelerated mode).
+     * 
+     * @see
+     * - setFullStateDiagMatr()
+     * - setFullStateDiagMatrFromMultiVarFunc()
+     * - setFullStateDiagMatrFromMultiDimLists()
+     * - setFullStateDiagMatrFromPauliStrSum()
+     * - syncFullStateDiagMatr()
+     */
     qcomp* cpuElems;
 
-    // GPU memory, allocated only and always in GPU-enabled QuEST environments
+    /** The matrix diagonal elements, stored in GPU device memory.
+     * 
+     * This is a copy of #cpuElems consulted by QuEST's GPU backend and should
+     * _never_ be modified directly. Instead, it is updated by calling
+     * syncFullStateDiagMatr()
+     * after modifying #cpuElems, which is performed automatically by
+     * API functions like setFullStateDiagMatr(). In this way, #gpuElems and #cpuElems
+     * should never be out of sync with one another.
+     * 
+     * The #gpuElems memory is only allocated when #isGpuAccelerated @c =1.
+     */
     qcomp* gpuElems;
 
 } FullStateDiagMatr;
@@ -852,7 +1338,7 @@ extern "C" {
      * @notyettested
      * 
      * @see
-     * - setInlineFullStateDiagMatr()
+     * - [setInlineFullStateDiagMatr()](fhttps://quest-kit.github.io/QuEST/group__matrices__setters.html#gaa27aaa1a001a41f36a60847a19d824d4)
      * - reportFullStateDiagMatr()
      * - [C](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.c) and
      *   [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
@@ -916,7 +1402,7 @@ extern "C" {
      * @cpponly
      * 
      * @see
-     * - setInlineFullStateDiagMatr()
+     * - [setInlineFullStateDiagMatr()](fhttps://quest-kit.github.io/QuEST/group__matrices__setters.html#gaa27aaa1a001a41f36a60847a19d824d4)
      * - reportFullStateDiagMatr()
      * - [C++](https://github.com/QuEST-Kit/QuEST/blob/devel/examples/isolated/initialising_matrices.cpp) examples
      */

@@ -305,6 +305,10 @@ qreal calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matr);
  *   Hermiticity validation is relaxed and/or @p qureg is an unnormalised density matrix. 
  *   The full complex value can be obtained using calcExpecNonHermitianFullStateDiagMatrPower().
  * 
+ * @equivalences
+ *
+ * - When @p exponent is @c 1, this function is equivalent to calcExpecFullStateDiagMatr().
+ *
  * @myexample
  * ```
     Qureg qureg = createQureg(5);
