@@ -1,0 +1,8 @@
+# CMake 3.28's DEB scanner does not derive sibling component paths from RPATH.
+# This hook runs after all components are staged, when CPack provides the actual
+# staging directory. QuEST's own library is private to this temporary search;
+# final package dependencies still come from native scanning and exact metadata.
+if(CPACK_GENERATOR STREQUAL "DEB" AND CPACK_QUEST_BUILT_SHARED)
+  list(APPEND CPACK_DEBIAN_PACKAGE_SHLIBDEPS_PRIVATE_DIRS
+    "${CPACK_TEMPORARY_DIRECTORY}/Runtime${CPACK_PACKAGING_INSTALL_PREFIX}/${CPACK_QUEST_INSTALL_LIBDIR}")
+endif()

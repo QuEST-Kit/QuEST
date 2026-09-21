@@ -20,23 +20,22 @@ function(add_example direc in_fn)
   add_executable(${target} ${in_fn})
   target_link_libraries(${target} PUBLIC QuEST)
 
-  if (QUEST_ENABLE_MPI AND QUEST_ENABLE_SUBCOMM)
-    target_link_libraries(${target} PRIVATE MPI::MPI_CXX)
-  endif()
 
-  if (QUEST_INSTALL_BINARIES)
+  if (QUEST_ENABLE_INSTALL AND QUEST_INSTALL_BINARIES)
     install(
       TARGETS ${target}
       RUNTIME
       DESTINATION ${out_dir}
+      COMPONENT Examples
     )
   endif ()
 
   set_target_properties(${target} 
     PROPERTIES 
-      INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
       OUTPUT_NAME "${out_fn}"
   )
+
+  setup_quest_rpath(${target} "${out_dir}")
 
 endfunction()
 

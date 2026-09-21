@@ -1,0 +1,10 @@
+# Some CPackRPM versions return success after only a subset of rpmbuild calls
+# succeed. Refuse an incomplete component set before publishing the artifacts.
+if(CPACK_GENERATOR MATCHES "^(DEB|RPM)$")
+  list(LENGTH CPACK_QUEST_COMPONENTS _quest_expected_packages)
+  list(LENGTH CPACK_PACKAGE_FILES _quest_actual_packages)
+  if(_quest_actual_packages LESS _quest_expected_packages)
+    message(FATAL_ERROR
+      "QuEST native packaging produced ${_quest_actual_packages} files for ${_quest_expected_packages} components. Inspect the native packaging logs for failed components.")
+  endif()
+endif()

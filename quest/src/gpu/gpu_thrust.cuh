@@ -516,7 +516,7 @@ struct functor_projectStateVec {
     { }
 
     __host__ __device__ gpu_qcomp operator()(qindex n, gpu_qcomp amp) {
-
+        
         // return amp scaled by zero or renorm, depending on whether n has projected substate
         qreal fac = renorm * ((n & qubitMask) == outcomeMask);
         return fac * amp;

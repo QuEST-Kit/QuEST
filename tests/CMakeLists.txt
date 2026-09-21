@@ -7,9 +7,6 @@ add_executable(tests
 target_link_libraries(tests PRIVATE QuEST::QuEST Catch2::Catch2)
 target_compile_features(tests PUBLIC cxx_std_20)
 
-if (QUEST_ENABLE_MPI AND QUEST_ENABLE_SUBCOMM)
-  target_link_libraries(tests PRIVATE MPI::MPI_CXX)
-endif()
 
 # extend the MSVC max object size
 if (MSVC)

@@ -30,7 +30,6 @@ using Catch::Matchers::ContainsSubstring;
  * UTILITIES
  */
 
-
 #define TEST_CATEGORY \
     LABEL_UNIT_TAG "[experimental]"
 
