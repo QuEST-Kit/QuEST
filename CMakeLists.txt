@@ -24,7 +24,7 @@ cmake_minimum_required(VERSION 3.21)
 
 
 project(QuEST
-  VERSION 4.2.0
+  VERSION 4.3.0
   DESCRIPTION "Quantum Exact Simulation Toolkit"
   LANGUAGES CXX C
 )
