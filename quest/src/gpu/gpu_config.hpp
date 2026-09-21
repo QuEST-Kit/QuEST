@@ -40,6 +40,8 @@ constexpr int gpu_HIP_WARP_SIZE = 64;
 
 void assertCudaCallSucceeded(int code, const char* call, const char* caller, const char* file, int line);
 
+void assert_lastKernelLaunchSucceeded(const char* caller);
+
 #endif 
 
 

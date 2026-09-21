@@ -58,6 +58,25 @@
 #include <thrust/iterator/transform_iterator.h>
 #include <thrust/system/system_error.h>
 
+#include <exception>
+
+
+
+/*
+ * THRUST ERROR HANDLING
+ */
+
+#define THRUST_CHECK(cmd)                                                                                       \
+    do {                                                                                                        \
+        try {                                                                                                   \
+            cmd;                                                                                                \
+        } catch (const std::exception& err) {                                                                   \
+            error_thrustCallFailed(err.what(), #cmd, __func__, __FILE__, __LINE__);                             \
+        } catch (...) {                                                                                         \
+            error_thrustCallFailed("Unknown non-standard exception", #cmd, __func__, __FILE__, __LINE__);       \
+        }                                                                                                       \
+    } while (0)
+
 
 
 /*
@@ -82,20 +101,15 @@ qreal* getPtr(devreals& reals) {
 
 void copyFromDeviceVec(devreals& reals, qreal* out) {
 
-    thrust::copy(reals.begin(), reals.end(), out);
+    THRUST_CHECK( thrust::copy(reals.begin(), reals.end(), out) );
 }
 
 devreals getDeviceRealsVec(qindex dim) {
 
     devreals out;
 
-    try  {
-        out.resize(dim);
-        thrust::fill(out.begin(), out.end(), 0.);
-
-    } catch (thrust::system_error &e) {
-        error_thrustTempGpuAllocFailed();
-    }
+    THRUST_CHECK( out.resize(dim) );
+    THRUST_CHECK( thrust::fill(out.begin(), out.end(), 0.) );
 
     return out;
 }
@@ -626,8 +640,10 @@ void thrust_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, Pauli
 
     // copy 'in' lists into GPU memory, which is not a big deal even when 'in'
     // is very large, because we only do this during FullStateDiagMatr initialisation
-    thrust::device_vector<qcomp> devCoeffs(in.coeffs, in.coeffs + in.numTerms);
-    thrust::device_vector<PauliStr> devStrings(in.strings, in.strings + in.numTerms);
+    thrust::device_vector<qcomp> devCoeffs;
+    thrust::device_vector<PauliStr> devStrings;
+    THRUST_CHECK( devCoeffs.assign(in.coeffs, in.coeffs + in.numTerms) );
+    THRUST_CHECK( devStrings.assign(in.strings, in.strings + in.numTerms) );
     
     // obtain raw pointers which can be passed to fastmath.hpp routines
     gpu_qcomp* devCoeffsPtr = getGpuQcompPtr(thrust::raw_pointer_cast(devCoeffs.data()));
@@ -643,7 +659,7 @@ void thrust_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, Pauli
 
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + out.numElemsPerNode;
-    thrust::for_each(indIter, endIter, functor);
+    THRUST_CHECK( thrust::for_each(indIter, endIter, functor) );
 }
 
 
@@ -656,7 +672,7 @@ void thrust_fullstatediagmatr_setElemsToPauliStrSum(FullStateDiagMatr out, Pauli
 void thrust_setElemsToConjugate(gpu_qcomp* matrElemsPtr, qindex matrElemsLen) {
 
     auto ptr = getStartPtr(matrElemsPtr);
-    thrust::transform(ptr, ptr + matrElemsLen, ptr, functor_getAmpConj());
+    THRUST_CHECK( thrust::transform(ptr, ptr + matrElemsLen, ptr, functor_getAmpConj()) );
 }
 
 
@@ -672,8 +688,10 @@ void thrust_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
 
     // copy sum lists into GPU memory, which is not a big deal even when sum
     // is very large, because we only do this during Qureg initialisation (infrequent)
-    thrust::device_vector<qcomp> devCoeffs(sum.coeffs, sum.coeffs + sum.numTerms);
-    thrust::device_vector<PauliStr> devStrings(sum.strings, sum.strings + sum.numTerms);
+    thrust::device_vector<qcomp> devCoeffs;
+    thrust::device_vector<PauliStr> devStrings;
+    THRUST_CHECK( devCoeffs.assign(sum.coeffs, sum.coeffs + sum.numTerms) );
+    THRUST_CHECK( devStrings.assign(sum.strings, sum.strings + sum.numTerms) );
     
     // obtain raw pointers which can be passed to fastmath.hpp routines
     gpu_qcomp* devCoeffsPtr = getGpuQcompPtr(thrust::raw_pointer_cast(devCoeffs.data()));
@@ -686,26 +704,26 @@ void thrust_densmatr_setAmpsToPauliStrSum_sub(Qureg qureg, PauliStrSum sum) {
 
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + qureg.numAmpsPerNode;
-    thrust::for_each(indIter, endIter, functor);
+    THRUST_CHECK( thrust::for_each(indIter, endIter, functor) );
 }
 
 
 void thrust_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, Qureg inQureg) {
 
-    thrust::transform(
+    THRUST_CHECK( thrust::transform(
         getStartPtr(outQureg), getEndPtr(outQureg), 
         getStartPtr(inQureg),  getStartPtr(outQureg), // 4th arg is output pointer
-        functor_mixAmps(outProb, inProb));
+        functor_mixAmps(outProb, inProb)) );
 }
 
 
 template <bool HasPower>
 void thrust_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, gpu_qcomp exponent) {
 
-    thrust::transform(
+    THRUST_CHECK( thrust::transform(
         getStartPtr(qureg), getEndPtr(qureg), 
         getStartPtr(matr),  getStartPtr(qureg), // 4th arg is output pointer
-        functor_multiplyElemPowerWithAmpOrNorm<HasPower,false,false>(exponent));
+        functor_multiplyElemPowerWithAmpOrNorm<HasPower,false,false>(exponent)) );
 }
 
 
@@ -729,9 +747,10 @@ qreal thrust_statevec_calcTotalProb_sub(Qureg qureg) {
     // literal causes a silent Thrust error. Grr...
     qreal init = 0.0;
 
-    qreal prob = thrust::transform_reduce(
+    qreal prob = 0;
+    THRUST_CHECK( prob = thrust::transform_reduce(
         getStartPtr(qureg), getEndPtr(qureg), 
-        functor_getAmpNorm(), init, thrust::plus<qreal>());
+        functor_getAmpNorm(), init, thrust::plus<qreal>()) );
 
     return prob;
 }
@@ -753,7 +772,8 @@ qreal thrust_densmatr_calcTotalProb_sub(Qureg qureg) {
     auto probIter= thrust::make_transform_iterator(ampIter, functor_getAmpReal());
 
     qindex numIts = powerOf2(qureg.logNumColsPerNode);
-    qreal prob = thrust::reduce(probIter, probIter + numIts);
+    qreal prob = 0;
+    THRUST_CHECK( prob = thrust::reduce(probIter, probIter + numIts) );
     return prob;
 }
 
@@ -774,7 +794,8 @@ qreal thrust_statevec_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 q
     auto probIter = thrust::make_transform_iterator(ampIter, probFunctor);
 
     qindex numIts = qureg.numAmpsPerNode / powerOf2(qubits.size());
-    qreal prob = thrust::reduce(probIter, probIter + numIts);
+    qreal prob = 0;
+    THRUST_CHECK( prob = thrust::reduce(probIter, probIter + numIts) );
     return prob;
 }
 
@@ -797,7 +818,8 @@ qreal thrust_densmatr_calcProbOfMultiQubitOutcome_sub(Qureg qureg, ConstList64 q
     auto probIter= thrust::make_transform_iterator(ampIter, probFunctor);
 
     qindex numIts = powerOf2(qureg.logNumColsPerNode - qubits.size());
-    qreal prob = thrust::reduce(probIter, probIter + numIts);
+    qreal prob = 0;
+    THRUST_CHECK( prob = thrust::reduce(probIter, probIter + numIts) );
     return prob;
 }
 
@@ -812,9 +834,10 @@ gpu_qcomp thrust_statevec_calcInnerProduct_sub(Qureg quregA, Qureg quregB) {
 
     gpu_qcomp init = getGpuQcomp(0, 0);
 
-    gpu_qcomp prod = thrust::inner_product(
+    gpu_qcomp prod = getGpuQcomp(0, 0);
+    THRUST_CHECK( prod = thrust::inner_product(
         getStartPtr(quregA), getEndPtr(quregA), getStartPtr(quregB), 
-        init, thrust::plus<gpu_qcomp>(), functor_getAmpConjProd());
+        init, thrust::plus<gpu_qcomp>(), functor_getAmpConjProd()) );
 
     return prod;
 }
@@ -824,9 +847,10 @@ qreal thrust_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB)
 
     qreal init = 0;
 
-    qreal dist = thrust::inner_product(
+    qreal dist = 0;
+    THRUST_CHECK( dist = thrust::inner_product(
         getStartPtr(quregA), getEndPtr(quregA), getStartPtr(quregB), 
-        init, thrust::plus<qreal>(), functor_getNormOfAmpDif());
+        init, thrust::plus<qreal>(), functor_getNormOfAmpDif()) );
 
     return dist;
 }
@@ -844,9 +868,10 @@ gpu_qcomp thrust_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
     qindex numIts = rho.numAmpsPerNode;
 
     gpu_qcomp init = getGpuQcomp(0, 0);
-    gpu_qcomp fid = thrust::transform_reduce(
+    gpu_qcomp fid = getGpuQcomp(0, 0);
+    THRUST_CHECK( fid = thrust::transform_reduce(
         indIter, indIter + numIts, 
-        functor, init, thrust::plus<gpu_qcomp>());
+        functor, init, thrust::plus<gpu_qcomp>()) );
 
     return fid;
 }
@@ -867,9 +892,11 @@ qreal thrust_statevec_calcExpecAnyTargZ_sub(Qureg qureg, ConstList64 targs) {
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + qureg.numAmpsPerNode;
 
-    return thrust::inner_product(
+    qreal value = 0;
+    THRUST_CHECK( value = thrust::inner_product(
         indIter, endIter, getStartPtr(qureg), 
-        init, thrust::plus<qreal>(), functor);
+        init, thrust::plus<qreal>(), functor) );
+    return value;
 }
 
 
@@ -884,7 +911,9 @@ gpu_qcomp thrust_densmatr_calcExpecAnyTargZ_sub(Qureg qureg, ConstList64 targs) 
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + powerOf2(qureg.logNumColsPerNode);
 
-    return thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<gpu_qcomp>());
+    gpu_qcomp value = getGpuQcomp(0, 0);
+    THRUST_CHECK( value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<gpu_qcomp>()) );
+    return value;
 }
 
 
@@ -899,7 +928,8 @@ gpu_qcomp thrust_statevec_calcExpecPauliStr_subA(Qureg qureg, ConstList64 x, Con
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + qureg.numAmpsPerNode;
 
-    gpu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<gpu_qcomp>());
+    gpu_qcomp value = getGpuQcomp(0, 0);
+    THRUST_CHECK( value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<gpu_qcomp>()) );
 
     return value * getGpuQcomp(util_getPowerOfI(y.size()));
 }
@@ -917,7 +947,8 @@ gpu_qcomp thrust_statevec_calcExpecPauliStr_subB(Qureg qureg, ConstList64 x, Con
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + qureg.numAmpsPerNode;
 
-    gpu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<gpu_qcomp>());
+    gpu_qcomp value = getGpuQcomp(0, 0);
+    THRUST_CHECK( value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<gpu_qcomp>()) );
 
     return value * getGpuQcomp(util_getPowerOfI(y.size()));
 }
@@ -935,7 +966,8 @@ gpu_qcomp thrust_densmatr_calcExpecPauliStr_sub(Qureg qureg, ConstList64 x, Cons
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + powerOf2(qureg.logNumColsPerNode);
 
-    gpu_qcomp value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<gpu_qcomp>());
+    gpu_qcomp value = getGpuQcomp(0, 0);
+    THRUST_CHECK( value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<gpu_qcomp>()) );
 
     return value * getGpuQcomp(util_getPowerOfI(y.size()));
 }
@@ -953,9 +985,10 @@ gpu_qcomp thrust_statevec_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateD
     gpu_qcomp init = getGpuQcomp(0, 0);
     auto functor = functor_multiplyElemPowerWithAmpOrNorm<HasPower,UseRealPow,true>(expo);
 
-    gpu_qcomp value = thrust::inner_product(
+    gpu_qcomp value = getGpuQcomp(0, 0);
+    THRUST_CHECK( value = thrust::inner_product(
         getStartPtr(qureg), getEndPtr(qureg), getStartPtr(matr), 
-        init, thrust::plus<gpu_qcomp>(), functor);
+        init, thrust::plus<gpu_qcomp>(), functor) );
 
     return value;
 }
@@ -974,7 +1007,9 @@ gpu_qcomp thrust_densmatr_calcExpecFullStateDiagMatr_sub(Qureg qureg, FullStateD
     auto indIter = thrust::make_counting_iterator(QINDEX_ZERO);
     auto endIter = indIter + powerOf2(qureg.logNumColsPerNode);
 
-    return thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<gpu_qcomp>());
+    gpu_qcomp value = getGpuQcomp(0, 0);
+    THRUST_CHECK( value = thrust::transform_reduce(indIter, endIter, functor, init, thrust::plus<gpu_qcomp>()) );
+    return value;
 }
 
 
@@ -995,7 +1030,7 @@ void thrust_statevec_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Co
     auto ampIter = getStartPtr(qureg);
 
     qindex numIts = qureg.numAmpsPerNode;
-    thrust::transform(indIter, indIter + numIts, ampIter, ampIter, projFunctor); // 4th arg gets modified
+    THRUST_CHECK( thrust::transform(indIter, indIter + numIts, ampIter, ampIter, projFunctor) ); // 4th arg gets modified
 }
 
 
@@ -1011,7 +1046,7 @@ void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Co
     auto ampIter = getStartPtr(qureg);
 
     qindex numIts = qureg.numAmpsPerNode;
-    thrust::transform(indIter, indIter + numIts, ampIter, ampIter, projFunctor); // 4th arg gets modified
+    THRUST_CHECK( thrust::transform(indIter, indIter + numIts, ampIter, ampIter, projFunctor) ); // 4th arg gets modified
 }
 
 
@@ -1023,7 +1058,7 @@ void thrust_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Co
 
 void thrust_statevec_initUniformState(Qureg qureg, gpu_qcomp amp) {
 
-    thrust::fill(getStartPtr(qureg), getEndPtr(qureg), amp);
+    THRUST_CHECK( thrust::fill(getStartPtr(qureg), getEndPtr(qureg), amp) );
 }
 
 
@@ -1037,7 +1072,7 @@ void thrust_statevec_initDebugState_sub(Qureg qureg) {
     qindex n = util_getGlobalIndexOfFirstLocalAmp(qureg);
     gpu_qcomp init = getGpuQcomp(2*n/10., (2*n+1)/10.);
 
-    thrust::sequence(getStartPtr(qureg), getEndPtr(qureg), init, step);
+    THRUST_CHECK( thrust::sequence(getStartPtr(qureg), getEndPtr(qureg), init, step) );
 }
 
 
@@ -1051,7 +1086,7 @@ void thrust_statevec_initUnnormalisedUniformlyRandomPureStateAmps_sub(Qureg qure
     auto ampIter = getStartPtr(qureg);
 
     qindex numIts = qureg.numAmpsPerNode;
-    thrust::transform(indIter, indIter + numIts, ampIter, functor); // 3rd arg gets modified
+    THRUST_CHECK( thrust::transform(indIter, indIter + numIts, ampIter, functor) ); // 3rd arg gets modified
 }
 
 

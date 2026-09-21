@@ -91,6 +91,17 @@ void clearPossibleCudaError() {
         error_cudaEncounteredIrrecoverableError();
 }
 
+void assert_lastKernelLaunchSucceeded(const char* caller) {
+
+    // note that we are only checking the kernel LAUNCH succeeded; it remains
+    // possible for the kernel to subsequently fail, which would only be detected
+    // at a subsequent cudaGetLastError(), or a cudaDeviceSynchronize().
+
+    cudaError_t status = cudaGetLastError();
+    if (status != cudaSuccess)
+        error_cudaKernelLaunchFailed(caller, cudaGetErrorString(status));
+}
+
 #endif
 
 
@@ -360,7 +371,7 @@ int gpu_getMaxNumThreadsPerBlock() {
 #if QUEST_COMPILE_CUDA
 
     cudaDeviceProp prop;
-    cudaGetDeviceProperties(&prop, getBoundGpuId());
+    CUDA_CHECK( cudaGetDeviceProperties(&prop, getBoundGpuId()) );
     return prop.maxThreadsPerBlock; // HIP compatible
 
 #else
