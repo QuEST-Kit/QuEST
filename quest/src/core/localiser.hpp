@@ -81,7 +81,7 @@ void localiser_densmatr_initMixtureOfUniformlyRandomPureStates(Qureg qureg, qind
  */
 
 void localiser_statevec_anyCtrlSwap(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ1, int targ2);
-
+void localiser_statevec_multiSwap(Qureg qureg, vector<int> targsA, vector<int> targsB);
 
 /*
  * DENSE MATRICES

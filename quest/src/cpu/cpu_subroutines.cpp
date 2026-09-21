@@ -292,6 +292,15 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qindex, cpu_statevec_packAmpsIntoBuffe
  * SWAPS
  */
 
+/*
+ * SWAPS
+ */
+
+template <int NumCtrls> void cpu_statevec_anyCtrlSwap_subA(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2);
+template <int NumCtrls> void cpu_statevec_anyCtrlSwap_subB(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates);
+template <int NumCtrls> void cpu_statevec_anyCtrlSwap_subC(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, int targState);
+void cpu_statevec_multiSwap_fused_sub(Qureg qureg, vector<int> targsA, vector<int> targsB);
+
 
 template <int NumCtrls>
 void cpu_statevec_anyCtrlSwap_subA(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ1, int targ2) {
@@ -401,6 +410,31 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlSwap_subA, (
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlSwap_subB, (Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates) )
 INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_CTRLS( void, cpu_statevec_anyCtrlSwap_subC, (Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ, int targState) )
 
+// quest/src/cpu/cpu_subroutines.cpp — new function
+
+void cpu_statevec_multiSwap_fused_sub(Qureg qureg, vector<int> targsA, vector<int> targsB) {
+
+    qindex numAmps = qureg.numAmpsPerNode;
+    int numPairs = (int) targsA.size();
+
+    #pragma omp parallel for if(qureg.isMultithreaded)
+    for (qindex i=0; i<numAmps; i++) {
+
+        // O(k) index mapping: apply each disjoint transposition's bit-swap to i.
+        // Branchless: mask is zero when bits agree, flips both bits when they differ.
+        qindex j = i;
+        for (int p=0; p<numPairs; p++) {
+            qindex bitA = (j >> targsA[p]) & 1ULL;
+            qindex bitB = (j >> targsB[p]) & 1ULL;
+            qindex diff = bitA ^ bitB;
+            j ^= (diff << targsA[p]) | (diff << targsB[p]);
+        }
+
+        // Involution guard: each 2-cycle processed exactly once, fixed points untouched.
+        if (j > i)
+            std::swap(qureg.cpuAmps[i], qureg.cpuAmps[j]);
+    }
+}
 
 
 /*
@@ -612,7 +646,6 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
                 // i = nth local index where ctrls are active and targs form value k
                 qindex i = setBits(i0, targs.data(), numTargBits, k); // loop may be unrolled
                 amps[i] = getCpuQcomp(0, 0);
-            
                 // loop may be unrolled
                 for (qindex j=0; j<numTargAmps; j++) {
 
@@ -639,6 +672,7 @@ void cpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
                     /// the commutator tricks used in base_qcomp's (ancestor
                     /// of cpu_qcomp) arithmetic operator overloads. Check
                     /// base_qcomp.hpp before implementing compensation.
+                
                 }
             }
         }

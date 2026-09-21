@@ -885,6 +885,20 @@ void localiser_statevec_anyCtrlSwap(Qureg qureg, ConstList64 ctrls, ConstList64 
     if (!comm2 && !comm1)
         accel_statevec_anyCtrlSwap_subA(qureg, suffixCtrls, suffixCtrlStates, targ1, targ2);
 }
+void localiser_statevec_multiSwap(Qureg qureg, vector<int> targsA, vector<int> targsB) {
+
+    // Scope: fused single-pass SWAP requires the full statevector to be local
+    // and CPU-resident. Distributed/GPU quregs fall back to sequential SWAPs,
+    // each of which already correctly handles cross-node communication and
+    // GPU dispatch via the existing localiser_statevec_anyCtrlSwap path.
+    if (qureg.isDistributed || qureg.isGpuAccelerated) {
+        for (size_t i=0; i<targsA.size(); i++)
+            localiser_statevec_anyCtrlSwap(qureg, {}, {}, targsA[i], targsB[i]);
+        return;
+    }
+
+    accel_statevec_multiSwap_fused_sub(qureg, targsA, targsB);
+}
 
 
 
