@@ -246,6 +246,71 @@ qindex accel_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int 
 }
 
 
+// persistent, lazily-grown staging workspace reused across fused multi-swaps, so we
+// avoid a large (de)allocation (host malloc or cudaMalloc) on every call. This mirrors
+// QuEST's existing 'gpuCache' for the dense-matrix kernel, and the persistent workspaces
+// of cuStateVec / mpiQulacs. It is freed by accel_clearFusedSwapSendCache(), invoked at
+// environment teardown (finalizeQuESTEnv).
+static qcomp* fusedSwapSendCache    = nullptr;
+static qindex fusedSwapSendCacheLen = 0;
+static bool   fusedSwapSendCacheIsGpu = false;
+
+
+qcomp* accel_allocFusedSwapSendBuffer(Qureg qureg, qindex numAmps) {
+
+    // discard a stale cache if the memory space (RAM vs VRAM) has changed
+    if (fusedSwapSendCache != nullptr && fusedSwapSendCacheIsGpu != qureg.isGpuAccelerated)
+        accel_clearFusedSwapSendCache();
+
+    // reuse the existing workspace when already large enough
+    if (numAmps <= fusedSwapSendCacheLen)
+        return fusedSwapSendCache;
+
+    // otherwise grow it (freeing the old, smaller buffer first)
+    if (fusedSwapSendCache != nullptr)
+        (fusedSwapSendCacheIsGpu)? gpu_deallocArray(fusedSwapSendCache) : cpu_deallocArray(fusedSwapSendCache);
+
+    fusedSwapSendCacheIsGpu = qureg.isGpuAccelerated;
+    fusedSwapSendCache = (fusedSwapSendCacheIsGpu)? gpu_allocArray(numAmps) : cpu_allocArray(numAmps);
+    fusedSwapSendCacheLen = numAmps;
+    return fusedSwapSendCache;
+}
+
+
+void accel_deallocFusedSwapSendBuffer(Qureg qureg, qcomp* buffer) {
+
+    // no-op: the staging workspace persists and is reused by subsequent fused
+    // multi-swaps; it is released at environment teardown. Kept for call-site symmetry.
+    (void) qureg;
+    (void) buffer;
+}
+
+
+void accel_clearFusedSwapSendCache() {
+
+    if (fusedSwapSendCache == nullptr)
+        return;
+
+    (fusedSwapSendCacheIsGpu)? gpu_deallocArray(fusedSwapSendCache) : cpu_deallocArray(fusedSwapSendCache);
+    fusedSwapSendCache = nullptr;
+    fusedSwapSendCacheLen = 0;
+}
+
+
+void accel_statevec_packAmpsForFusedSwap(Qureg qureg, ConstList64 qubits, ConstList64 qubitStates, qcomp* sendBuf, qindex sendOffset) {
+
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_packAmpsForFusedSwap, qureg, qubits.size() );
+    func(qureg, qubits, qubitStates, sendBuf, sendOffset);
+}
+
+
+void accel_statevec_unpackAmpsForFusedSwap(Qureg qureg, ConstList64 qubits, ConstList64 qubitStates, qindex recvOffset) {
+
+    GET_CPU_OR_GPU_FUNC_OPTIMISED_FOR_ONE_PARAM( func, statevec_unpackAmpsForFusedSwap, qureg, qubits.size() );
+    func(qureg, qubits, qubitStates, recvOffset);
+}
+
+
 
 /*
  * SWAPS

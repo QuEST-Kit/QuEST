@@ -194,6 +194,71 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( qindex, gpu_statevec_packAmpsIntoBuffe
 
 
 /*
+ * FUSED SWAP BUFFER PACKING
+ *
+ * which reuse the existing packAmpsIntoBuffer and anyCtrlSwap_subB kernels (both
+ * already parameterised by an arbitrary buffer pointer offset), but direct them at
+ * an explicit staging buffer / receive offset to enable a single all-to-all round.
+ */
+
+
+template <int NumQubits>
+void gpu_statevec_packAmpsForFusedSwap(Qureg qureg, ConstList64 qubits, ConstList64 qubitStates, qcomp* sendBuf, qindex sendOffset) {
+
+    assert_numQubitsMatchesQubitStatesAndTemplateParam(qubits.size(), qubitStates.size(), NumQubits);
+
+#if QUEST_COMPILE_CUDA || QUEST_COMPILE_CUQUANTUM
+
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(qubits.size());
+    int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
+
+    devints sortedQubits = getDevInts(util_getSorted(qubits));
+    qindex qubitStateMask = util_getBitMask(qubits, qubitStates);
+
+    kernel_statevec_packAmpsIntoBuffer <NumQubits> <<<numBlocks, numThreadsPerBlock>>> (
+        getGpuQcompPtr(qureg.gpuAmps), getGpuQcompPtr(sendBuf) + sendOffset, numThreads,
+        getPtr(sortedQubits), qubits.size(), qubitStateMask
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+template <int NumQubits>
+void gpu_statevec_unpackAmpsForFusedSwap(Qureg qureg, ConstList64 qubits, ConstList64 qubitStates, qindex recvOffset) {
+
+    assert_numQubitsMatchesQubitStatesAndTemplateParam(qubits.size(), qubitStates.size(), NumQubits);
+
+#if QUEST_COMPILE_CUDA || QUEST_COMPILE_CUQUANTUM
+
+    qindex numThreads = qureg.numAmpsPerNode / powerOf2(qubits.size());
+    int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
+    qindex numBlocks = getNumBlocks(numThreads, numThreadsPerBlock);
+
+    devints sortedQubits = getDevInts(util_getSorted(qubits));
+    qindex qubitStateMask = util_getBitMask(qubits, qubitStates);
+
+    // reuse subB kernel which performs amps[i] = buffer[n]; caller offsets the buffer
+    kernel_statevec_anyCtrlSwap_subB <NumQubits> <<<numBlocks, numThreadsPerBlock>>> (
+        getGpuQcompPtr(qureg.gpuAmps), getGpuQcompPtr(qureg.gpuCommBuffer) + recvOffset, numThreads,
+        getPtr(sortedQubits), qubits.size(), qubitStateMask
+    );
+
+#else
+    error_gpuSimButGpuNotCompiled();
+#endif
+}
+
+
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_statevec_packAmpsForFusedSwap,   (Qureg, ConstList64, ConstList64, qcomp*, qindex) )
+INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_statevec_unpackAmpsForFusedSwap, (Qureg, ConstList64, ConstList64, qindex) )
+
+
+
+/*
  * SWAPS
  */
 
