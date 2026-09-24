@@ -48,7 +48,7 @@ void myErrorHandlerB(const char* errFunc, const char* errMsg) {
 int main() {
     initQuESTEnv();
 
-    setInputErrorHandler(myErrorHandlerA);
+    setQuESTInputErrorHandler(myErrorHandlerA);
 
     try {
         Qureg qureg = createQureg(-123);
@@ -59,7 +59,7 @@ int main() {
             << std::endl;
     }
 
-    setInputErrorHandler(myErrorHandlerB);
+    setQuESTInputErrorHandler(myErrorHandlerB);
     initQuESTEnv(); // illegal to recall
     
     std::cout << "this will never be reached, because myErrorHandlerB exits!" << std::endl;

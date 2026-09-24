@@ -41,7 +41,7 @@ extern "C" void validationErrorHandler(const char* errFunc, const char* errMsg) 
 int main(int argc, char* argv[]) {
 
   initQuESTEnv();
-  setInputErrorHandler(validationErrorHandler);
+  setQuESTInputErrorHandler(validationErrorHandler);
   setRandomTestStateSeeds();
 
   int result = Catch::Session().run( argc, argv );

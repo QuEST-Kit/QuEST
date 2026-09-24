@@ -31,13 +31,13 @@
     QMatrix refMatr = toQMatrix(quregMatr); \
     assertQuregAndRefInDebugState(quregVec, refVec); \
     assertQuregAndRefInDebugState(quregMatr, refMatr); \
-    setValidationEpsilon(REAL_EPS);
+    setQuESTValidationEpsilon(REAL_EPS);
 
 /** Destroys the data structures made by PREPARE_TEST */
 #define CLEANUP_TEST(quregVec, quregMatr) \
     destroyQureg(quregVec); \
     destroyQureg(quregMatr); \
-    setValidationEpsilon(REAL_EPS);
+    setQuESTValidationEpsilon(REAL_EPS);
 
 /* allows concise use of ContainsSubstring in catch's REQUIRE_THROWS_WITH */
 using Catch::Matchers::ContainsSubstring;

@@ -19,7 +19,7 @@ void myErrorHandler(const char* errFunc, const char* errMsg) {
 
 int main() {
     initQuESTEnv();
-    setInputErrorHandler(myErrorHandler);
+    setQuESTInputErrorHandler(myErrorHandler);
 
     Qureg qureg = createQureg(-123);
 

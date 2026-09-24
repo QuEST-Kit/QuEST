@@ -17,15 +17,15 @@
 #include <algorithm>
 #include <bitset>
 
-#if COMPILE_MPI 
+#if QUEST_COMPILE_MPI
 
     #include <mpi.h>
 
-    #if (FLOAT_PRECISION == 1)
+    #if (QUEST_FLOAT_PRECISION == 1)
         #define MPI_QCOMP MPI_CXX_FLOAT_COMPLEX
-    #elif (FLOAT_PRECISION == 2)
+    #elif (QUEST_FLOAT_PRECISION == 2)
         #define MPI_QCOMP MPI_CXX_DOUBLE_COMPLEX
-    #elif (FLOAT_PRECISION == 4) && defined(MPI_CXX_LONG_DOUBLE_COMPLEX)
+    #elif (QUEST_FLOAT_PRECISION == 4) && defined(MPI_CXX_LONG_DOUBLE_COMPLEX)
         #define MPI_QCOMP MPI_CXX_LONG_DOUBLE_COMPLEX
     #else
         #define MPI_QCOMP MPI_C_LONG_DOUBLE_COMPLEX
@@ -203,7 +203,7 @@ void setRandomTestStateSeeds() {
     unsigned seed = cspnrg();
     
     // broadcast to ensure node consensus
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
     int sendRank = 0;
     MPI_Bcast(&seed, 1, MPI_UNSIGNED, sendRank, MPI_COMM_WORLD);
 #endif
@@ -1020,7 +1020,7 @@ bool areEqual(Qureg qureg1, Qureg qureg2, qreal precision) {
             
     // if one node's partition wasn't equal, all-nodes must report not-equal
     int allAmpsAgree = ampsAgree;
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
     MPI_Allreduce(&ampsAgree, &allAmpsAgree, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
 #endif
 
@@ -1064,7 +1064,7 @@ bool areEqual(Qureg qureg, QVector vec, qreal precision) {
             
     // if one node's partition wasn't equal, all-nodes must report not-equal
     int allAmpsAgree = ampsAgree;
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
     MPI_Allreduce(&ampsAgree, &allAmpsAgree, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
 #endif
     
@@ -1127,7 +1127,7 @@ bool areEqual(Qureg qureg, QMatrix matr, qreal precision) {
     
     // if one node's partition wasn't equal, all-nodes must report not-equal
     int allAmpsAgree = ampsAgree;
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
     MPI_Allreduce(&ampsAgree, &allAmpsAgree, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
 #endif
         
@@ -1214,7 +1214,7 @@ QMatrix toQMatrix(CompMatr src) {
 
 QMatrix toQMatrix(Qureg qureg) {
     DEMAND( qureg.isDensityMatrix );
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
     DEMAND( qureg.numAmps < MPI_MAX_AMPS_IN_MSG );
 #endif
     
@@ -1226,7 +1226,7 @@ QMatrix toQMatrix(Qureg qureg) {
     qcomp* allAmps = qureg.cpuAmps;
     
     // in distributed mode, give every node the full state vector
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
     if (qureg.isDistributed) {
         allAmps = (qcomp*) malloc(qureg.numAmps * sizeof *allAmps);
         MPI_Allgather(
@@ -1249,7 +1249,7 @@ QMatrix toQMatrix(Qureg qureg) {
 
 QVector toQVector(Qureg qureg) {
     DEMAND( !qureg.isDensityMatrix );
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
     DEMAND( qureg.numAmps < MPI_MAX_AMPS_IN_MSG );
 #endif
     
@@ -1260,7 +1260,7 @@ QVector toQVector(Qureg qureg) {
     qcomp* allAmps = qureg.cpuAmps;
     
     // in distributed mode, give every node the full state vector
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
     if (qureg.isDistributed) {
         allAmps = (qcomp*) malloc(qureg.numAmps * sizeof *allAmps);
 
@@ -1289,7 +1289,7 @@ QVector toQVector(DiagMatr matr) {
 
 QVector toQVector(FullStateDiagMatr matr) {
 
-#if COMPILE_MPI
+#if QUEST_COMPILE_MPI
     DEMAND( matr.numElems < MPI_MAX_AMPS_IN_MSG );
 #endif
 
@@ -1297,7 +1297,7 @@ QVector toQVector(FullStateDiagMatr matr) {
 
     // in distributed mode, give every node the full diagonal operator
     if (matr.isDistributed) {
-        #if COMPILE_MPI
+        #if QUEST_COMPILE_MPI
             MPI_Allgather(
                 matr.cpuElems, matr.numElemsPerNode, MPI_QCOMP,
                 vec.data(),    matr.numElemsPerNode, MPI_QCOMP, MPI_COMM_WORLD);

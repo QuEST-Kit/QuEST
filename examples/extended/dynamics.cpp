@@ -100,16 +100,16 @@ PauliStrSum createMyObservable(int numQubits) {
 
 void reportMyStructs(Qureg qureg, PauliStrSum hamil, PauliStrSum observ) {
 
-    setMaxNumReportedSigFigs(6);   // sig-figs in scalars
-    setNumReportedNewlines(2);     // spacing between reports
-    setReportedPauliChars(".XYZ"); // print I as .
-    setReportedPauliStrStyle(0);   // print XYZ (0) or Z3 Y2 X1 (1)
-    setMaxNumReportedItems(8, 8);  // show max 8 qureg amplitudes
+    setQuESTMaxNumReportedSigFigs(6);   // sig-figs in scalars
+    setQuESTNumReportedNewlines(2);     // spacing between reports
+    setQuESTReportedPauliChars(".XYZ"); // print I as .
+    setQuESTReportedPauliStrStyle(0);   // print XYZ (0) or Z3 Y2 X1 (1)
+    setQuESTMaxNumReportedItems(8, 8);  // show max 8 qureg amplitudes
 
     reportStr("[Initial state]");
     reportQureg(qureg);
 
-    setMaxNumReportedItems(0, 0); // show 0=all Pauli operators
+    setQuESTMaxNumReportedItems(0, 0); // show 0=all Pauli operators
 
     reportStr("[Hamiltonian]");
     reportPauliStrSum(hamil);
@@ -141,8 +141,8 @@ int main() {
     reportMyStructs(qureg, hamil, observ);
 
     // tidy reporting of below expectation values
-    setMaxNumReportedSigFigs(3);
-    setNumReportedNewlines(1);
+    setQuESTMaxNumReportedSigFigs(3);
+    setQuESTNumReportedNewlines(1);
 
     // evolve by repeatedly (each is a "step") Trotterising
     // exp(-i dt H) with the specified order and repetitions.
@@ -150,11 +150,12 @@ int main() {
     int order = 4;
     int reps  = 5;
     int steps = 20;
+    bool randomise = true;
 
     for (int i=0; i<steps; i++) {
 
         // evolve qureg under (approx) exp(-i dt H)
-        applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt, order, reps);
+        applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt, order, reps, randomise);
 
         // calculate and report <O>
         qreal time = dt * (i+1);
@@ -165,8 +166,8 @@ int main() {
     reportStr("");
     
     // preview the final state...
-    setNumReportedNewlines(2);
-    setMaxNumReportedItems(25, 25);
+    setQuESTNumReportedNewlines(2);
+    setQuESTMaxNumReportedItems(25, 25);
     reportStr("[Final state]");
     reportQureg(qureg);
 
@@ -181,7 +182,7 @@ int main() {
 
     // verify results by uninterrupted higher-order simulation to target time
     initPlusState(qureg);
-    applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt*steps, order+2, reps*steps);
+    applyTrotterizedUnitaryTimeEvolution(qureg, hamil, dt*steps, order+2, reps*steps, randomise);
     reportScalar("final <O>", calcExpecPauliStrSum(qureg, observ));
 
     // clean up

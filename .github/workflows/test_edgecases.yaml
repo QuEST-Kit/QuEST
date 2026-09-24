@@ -1,0 +1,111 @@
+# Some free, ad hoc tests which test only specific
+# functions in specific regimes, covering edge cases.
+# These are intended as a stop gap in the interim to
+# an improved test harness.
+#
+# We here test only CPU functions which have
+# template parameters (like NumCtrls or NumTargs)
+# which inform an optimised definition for MORE than
+# 5 involved qubits. For example, multiControlledSWAP
+# has optimised treatment of up to 5 control qubits,
+# while needing 2 target qubits; so requires a Qureg
+# of at least 8 qubits to trigger its unoptimised
+# version (receiving 6 control qubits and 2 targets).
+# 
+# We alas do NOT here test the fully-unoptimised
+# versions of multi-ctrl multi-targ functions (such
+# as applyMultiControlledCompMatr), because that
+# requires reaching 6 ctrls + 6 targs, and ergo a
+# Qureg of at least 12 qubits. So large a Hilbert
+# space is alas too slow for the reference maths of
+# our unit tests. Curse ye, exponential!
+# 
+# @author Tyson Jones
+
+name: test (edge cases)
+
+
+on:
+  push:
+    branches:
+      - main
+      - devel
+  pull_request:
+    branches:
+      - main
+      - devel
+
+
+jobs:
+
+  # run only some non-parallelised v4 unit tests at default (double) precision
+  serial-unit-test:
+    name: >
+      ${{ startsWith(matrix.os, 'ubuntu' ) && 'Linux'   || 
+          startsWith(matrix.os, 'macos'  ) && 'MacOS'   ||
+          startsWith(matrix.os, 'windows') && 'Windows' ||
+                                              'Unknown' }}
+      ${{ endsWith(matrix.os, '26-intel') && '(Intel 2026)' || '' }}
+      serial
+      ${{ matrix.bmi2      == 'ON' && '(BMI)'  || '' }}
+      edgecases
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # continue other jobs if any fail
+      fail-fast: false
+
+      # we will compile QuEST with all precisions but no parallelisation (though with Intel BMI2)
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest, macos-26-intel]
+        bmi2:      [ON, OFF]
+
+        exclude:
+          # cannot use BMI2 on non-Intel MacOS
+          - bmi2: ON
+            os: macos-latest
+  
+    # constants; all tests are non-comprehensive for speed
+    env:
+      build_dir: "build"
+      full_tests_regex: "Swap|CompMatr1|CompMatr2"
+      partial_tests_regex: "^applyMultiStateControlled(CompMatr|DiagMatr|PauliStr|PauliGadget)$"
+      QUEST_TEST_NUM_QUBITS_IN_QUREG: 8
+      QUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS: 1
+      QUEST_TEST_NUM_MIXED_DEPLOYMENT_REPETITIONS: 1
+
+    # perform the job
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@main
+
+      # compile serial unit tests
+      - name: Configure CMake
+        run: >
+          cmake -B ${{ env.build_dir }}
+          -DQUEST_BUILD_TESTS=ON
+          -DQUEST_ENABLE_OMP=OFF
+          -DQUEST_ENABLE_BMI2=${{ matrix.bmi2 }}
+
+      # force 'Release' build (needed by MSVC to enable optimisations)
+      - name: Compile
+        run: cmake --build ${{ env.build_dir }} --config Release
+
+      # test statevector and density-matrix functions which exhibit
+      # optimisations on up to 5 ctrl + 2 target qubits, with 8-qubit
+      # Quregs, in order to test the non-optimised implementation
+      - name: 8-qubit edge-cases (full coverage)
+        run: ctest -C Release -R "${{ env.full_tests_regex }}"
+        working-directory: ${{ env.build_dir }}
+
+      # it is our desire to test the "partial_tests" functions with
+      # 12-qubit Quregs, so that NumCtrls=6 while NumTargs=6 could be
+      # achieved, testing the fully unoptimised versions - but alas
+      # it's intractable for our slow reference maths! So we instead
+      # at least test the NumCtrls=6 and NumTargs=6 cases independently,
+      # requiring only 7-qubit Quregs, but we use 8 for consistency
+      # with above
+      - name: 8-qubit edge-cases (partial coverage)
+        run: ctest -C Release -R "${{ env.partial_tests_regex }}"
+        working-directory: ${{ env.build_dir }}

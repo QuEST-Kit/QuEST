@@ -116,7 +116,7 @@ bool didAnyLocalAllocsFail(Qureg qureg) {
 bool didAnyAllocsFailOnAnyNode(Qureg qureg) {
 
     bool anyFail = didAnyLocalAllocsFail(qureg);
-    if (comm_isInit())
+    if (comm_isActive())
         anyFail = comm_isTrueOnAllNodes(anyFail);
 
     return anyFail;
@@ -167,6 +167,12 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
     // if any of the above mallocs failed, below validation will memory leak; so free first (but don't set to nullptr)
     freeAllMemoryIfAnyAllocsFailed(qureg);
     validate_newQuregAllocs(qureg, __func__);
+
+    // TODO / DEBUG:
+    // TEMPORARILY FORBID HIP GPU ACCELERATION OF > 2^32 AMPS PER NODE,
+    // SINCE THIS WILL LEAD TO LATER KERNEL LAUNCH FAILURES; see issue #815
+    if (useGpuAccel && gpu_isHipCompiled() && qureg.numAmpsPerNode >= (1LL << 32))
+        error_quregTooLargeForHipGpuAccel();
 
     // initialise state to |0> or |0><0|
     initZeroState(qureg); 
@@ -360,7 +366,8 @@ void reportQuregParams(Qureg qureg) {
 
     /// @todo add function to write this output to file (useful for HPC debugging)
 
-    // printer routines will consult env rank to avoid duplicate printing
+    printer_sync();
+
     print_label("Qureg");
     printDeploymentInfo(qureg);
     printDimensionInfo(qureg);
@@ -369,6 +376,8 @@ void reportQuregParams(Qureg qureg) {
 
     // exclude mandatory newline above
     print_oneFewerNewlines();
+
+    printer_sync();
 }
 
 
@@ -385,11 +394,15 @@ void reportQureg(Qureg qureg) {
     // include struct size (expected negligibly tiny)
     localMem += sizeof(qureg);
 
+    printer_sync();
+
     print_header(qureg, localMem);
     print_elems(qureg);
 
     // exclude mandatory newline above
     print_oneFewerNewlines();
+
+    printer_sync();
 }
 
 
@@ -523,7 +536,7 @@ vector<qcomp> getQuregAmps(Qureg qureg, qindex startInd, qindex numAmps) {
 
     // allocate the output vector, and validate successful
     vector<qcomp> out;
-    auto callback = [&]() { validate_tempAllocSucceeded(false, numAmps, sizeof(qcomp), __func__); };
+    auto callback = [&]() { validate_tempListAllocSucceeded(false, numAmps, sizeof(qcomp), __func__); };
     util_tryAllocVector(out, numAmps, callback);
 
     // performs main validation
@@ -537,12 +550,12 @@ vector<vector<qcomp>> getDensityQuregAmps(Qureg qureg, qindex startRow, qindex s
     // allocate the output matrix, and validate successful
     vector<vector<qcomp>> out;
     qindex numElems = numRows * numCols; // never overflows (else Qureg alloc would fail)
-    auto callback1 = [&]() { validate_tempAllocSucceeded(false, numElems, sizeof(qcomp), __func__); };
+    auto callback1 = [&]() { validate_tempListAllocSucceeded(false, numElems, sizeof(qcomp), __func__); };
     util_tryAllocMatrix(out, numRows, numCols, callback1);
 
     // we must pass nested pointers to core C function, requiring another temp array, also validated
     vector<qcomp*> ptrs;
-    auto callback2 = [&]() { validate_tempAllocSucceeded(false, numRows, sizeof(qcomp*), __func__); };
+    auto callback2 = [&]() { validate_tempListAllocSucceeded(false, numRows, sizeof(qcomp*), __func__); };
     util_tryAllocVector(ptrs, numRows, callback2);
 
     // embed out pointers

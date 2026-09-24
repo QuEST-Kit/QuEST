@@ -4,6 +4,7 @@
  * quantum measurements and randomly initialising Quregs.
  * 
  * @author Tyson Jones
+ * @author Vasco Ferreira (PauliStrSum permutation)
  */
 
 #ifndef RANDOMISER_HPP
@@ -22,7 +23,6 @@ using std::vector;
  * SEEDING
  */
 
-
 void rand_setSeeds(vector<unsigned> seeds);
 
 void rand_setSeedsToDefault();
@@ -36,7 +36,6 @@ vector<unsigned> rand_getSeeds();
 /*
  * SAMPLING
  */
-
 
 int rand_getRandomSingleQubitOutcome(qreal probOfZero);
 
@@ -58,6 +57,14 @@ std::normal_distribution<qreal> rand_getThreadPrivateAmpAbsDistribution();
 std::uniform_real_distribution<qreal> rand_getThreadPrivateAmpPhaseDistribution();
 
 qcomp rand_getThreadPrivateRandomAmp(std::mt19937_64 &gen, std::normal_distribution<qreal> &normDist, std::uniform_real_distribution<qreal> &phaseDist);
+
+
+
+/*
+ * LIST SHUFFLING
+ */
+
+void rand_setListToShuffled(vector<qindex>& list);
 
 
 

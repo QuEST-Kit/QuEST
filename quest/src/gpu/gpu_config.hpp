@@ -21,10 +21,19 @@
 
 
 /*
+ * CONSTANTS
+ */
+
+constexpr int gpu_CUDA_WARP_SIZE = 32;
+constexpr int gpu_HIP_WARP_SIZE = 64;
+
+
+
+/*
  * CUDA ERROR HANDLING
  */
 
-#if COMPILE_CUDA
+#if QUEST_COMPILE_CUDA
 
 #define CUDA_CHECK(cmd) \
     assertCudaCallSucceeded((int) (cmd), #cmd, __func__, __FILE__, __LINE__)
@@ -42,6 +51,8 @@ void assertCudaCallSucceeded(int code, const char* call, const char* caller, con
 bool gpu_isGpuCompiled();
 
 bool gpu_isCuQuantumCompiled();
+
+bool gpu_isHipCompiled();
 
 bool gpu_isGpuAvailable();
 
@@ -65,6 +76,12 @@ qindex gpu_getMaxNumConcurrentThreads();
  * ENVIRONMENT MANAGEMENT
  */
 
+int gpu_getNumThreadsPerBlock();
+
+void gpu_setNumThreadsPerBlock(int newThreadsPerBlock);
+
+int gpu_getMaxNumThreadsPerBlock();
+
 void gpu_bindLocalGPUsToNodes();
 
 bool gpu_areAnyNodesBoundToSameGpu();
@@ -74,7 +91,6 @@ void gpu_sync();
 void gpu_initCuQuantum();
 
 void gpu_finalizeCuQuantum();
-
 
 
 /*

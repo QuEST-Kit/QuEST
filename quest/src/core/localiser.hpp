@@ -18,6 +18,8 @@
 #include "quest/include/matrices.h"
 #include "quest/include/channels.h"
 
+#include "quest/src/core/lists.hpp"
+
 #include <vector>
 
 using std::vector;
@@ -78,29 +80,29 @@ void localiser_densmatr_initMixtureOfUniformlyRandomPureStates(Qureg qureg, qind
  * SWAP
  */
 
-void localiser_statevec_anyCtrlSwap(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2);
+void localiser_statevec_anyCtrlSwap(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ1, int targ2);
 
 
 /*
  * DENSE MATRICES
  */
 
-void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, CompMatr1 matr, bool conj, bool transp);
+void localiser_statevec_anyCtrlOneTargDenseMatr(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ, CompMatr1 matr, bool conj, bool transp);
 
-void localiser_statevec_anyCtrlTwoTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, CompMatr2 matr, bool conj, bool transp);
+void localiser_statevec_anyCtrlTwoTargDenseMatr(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ1, int targ2, CompMatr2 matr, bool conj, bool transp);
 
-void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, CompMatr matr, bool conj, bool transp);
+void localiser_statevec_anyCtrlAnyTargDenseMatr(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 targs, CompMatr matr, bool conj, bool transp);
 
 
 /*
  * DIAGONAL MATRICES
  */
 
-void localiser_statevec_anyCtrlOneTargDiagMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ, DiagMatr1 matr, bool conj);
+void localiser_statevec_anyCtrlOneTargDiagMatr(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ, DiagMatr1 matr, bool conj);
 
-void localiser_statevec_anyCtrlTwoTargDiagMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, int targ1, int targ2, DiagMatr2 matr, bool conj);
+void localiser_statevec_anyCtrlTwoTargDiagMatr(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ1, int targ2, DiagMatr2 matr, bool conj);
 
-void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, DiagMatr matr, qcomp exponent, bool conj);
+void localiser_statevec_anyCtrlAnyTargDiagMatr(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 targs, DiagMatr matr, qcomp exponent, bool conj);
 
 void localiser_statevec_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent);
 void localiser_densmatr_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qcomp exponent, bool applyLeft, bool applyRight, bool conjRight);
@@ -111,18 +113,18 @@ void localiser_densmatr_allTargDiagMatr(Qureg qureg, FullStateDiagMatr matr, qco
  */
 
 template <class T>
-void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, T matr, bool conj);
+void localiser_statevec_anyCtrlAnyTargAnyMatr(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 targs, T matr, bool conj);
 
 
 /*
  * PAULI TENSORS AND GADGETS
  */
 
-void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qcomp globalFactor=1);
+void localiser_statevec_anyCtrlPauliTensor(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, PauliStr str, qcomp globalFactor=1);
 
-void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, PauliStr str, qcomp phase);
+void localiser_statevec_anyCtrlPauliGadget(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, PauliStr str, qcomp phase);
 
-void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, vector<int> ctrls, vector<int> ctrlStates, vector<int> targs, qcomp phase);
+void localiser_statevec_anyCtrlPhaseGadget(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 targs, qcomp phase);
 
 
 /*
@@ -150,16 +152,16 @@ void localiser_densmatr_oneQubitPauliChannel(Qureg qureg, int qubit, qreal pX, q
 
 void localiser_densmatr_oneQubitDamping(Qureg qureg, int qubit, qreal prob);
 
-void localiser_densmatr_superoperator(Qureg qureg, SuperOp op, vector<int> ketTargs);
+void localiser_densmatr_superoperator(Qureg qureg, SuperOp op, ConstList64 ketTargs);
 
-void localiser_densmatr_krausMap(Qureg qureg, KrausMap map, vector<int> qubits);
+void localiser_densmatr_krausMap(Qureg qureg, KrausMap map, ConstList64 qubits);
 
 
 /*
  * PARTIAL TRACE
  */
 
-void localiser_densmatr_partialTrace(Qureg inQureg, Qureg outQureg, vector<int> targs);
+void localiser_densmatr_partialTrace(Qureg inQureg, Qureg outQureg, ConstList64 targs);
 
 
 /*
@@ -169,11 +171,11 @@ void localiser_densmatr_partialTrace(Qureg inQureg, Qureg outQureg, vector<int> 
 qreal localiser_statevec_calcTotalProb(Qureg qureg);
 qreal localiser_densmatr_calcTotalProb(Qureg qureg);
 
-qreal localiser_statevec_calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qubits, vector<int> outcomes);
-qreal localiser_densmatr_calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qubits, vector<int> outcomes);
+qreal localiser_statevec_calcProbOfMultiQubitOutcome(Qureg qureg, ConstList64 qubits, ConstList64 outcomes);
+qreal localiser_densmatr_calcProbOfMultiQubitOutcome(Qureg qureg, ConstList64 qubits, ConstList64 outcomes);
 
-void localiser_statevec_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg qureg, vector<int> qubits);
-void localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg qureg, vector<int> qubits);
+void localiser_statevec_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg qureg, ConstList64 qubits);
+void localiser_densmatr_calcProbsOfAllMultiQubitOutcomes(qreal* outProbs, Qureg qureg, ConstList64 qubits);
 
 
 /*
@@ -205,8 +207,8 @@ qcomp localiser_densmatr_calcExpecFullStateDiagMatr(Qureg qureg, FullStateDiagMa
  * PROJECTORS 
  */
 
-void localiser_statevec_multiQubitProjector(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob);
-void localiser_densmatr_multiQubitProjector(Qureg qureg, vector<int> qubits, vector<int> outcomes, qreal prob);
+void localiser_statevec_multiQubitProjector(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob);
+void localiser_densmatr_multiQubitProjector(Qureg qureg, ConstList64 qubits, ConstList64 outcomes, qreal prob);
 
 
 #endif // LOCALISER_HPP

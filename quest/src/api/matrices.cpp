@@ -165,7 +165,7 @@ void freeAllMemoryIfAnyAllocsFailed(T matr) {
 
     // ascertain whether any allocs failed on any node
     bool anyFail = didAnyLocalAllocsFail(matr);
-    if (comm_isInit())
+    if (comm_isActive())
         anyFail = comm_isTrueOnAllNodes(anyFail);
 
     // if so, free all heap fields
@@ -763,11 +763,16 @@ void validateAndPrintMatrix(T matr, const char* caller) {
         structMem -= elemMem;
 
     size_t numBytesPerNode = elemMem + structMem;
+
+    printer_sync();
+    
     print_header(matr, numBytesPerNode);
     print_elems(matr);
 
     // exclude mandatory newline above
     print_oneFewerNewlines();
+    
+    printer_sync();
 }
 
 

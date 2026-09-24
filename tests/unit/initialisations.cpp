@@ -249,8 +249,15 @@ TEST_CASE( "setQuregAmps", TEST_CATEGORY ) {
     SECTION( LABEL_CORRECTNESS ) {
 
         int numTotalAmps = getPow2(getNumCachedQubits());
-        int numSetAmps = GENERATE_COPY( range(0,numTotalAmps+1) ); 
-        int startInd = GENERATE_COPY( range(0,numTotalAmps-numSetAmps) );
+        int numSetAmps = GENERATE_COPY( range(0,numTotalAmps+1) );
+
+        // Bounds-checking causes GENERATE_COPY( range(0,0) ) to fail
+        // when tests are compiled in Debug 
+        int startInd = 0;
+        if (numTotalAmps - numSetAmps > 0) {
+            startInd = GENERATE_COPY( range(0,numTotalAmps-numSetAmps) );
+        }
+        
         qvector amps = getRandomVector(numSetAmps);
 
         auto testFunc = [&](Qureg qureg) {
@@ -486,8 +493,7 @@ TEST_CASE( "setQuregToWeightedSum", TEST_CATEGORY ) {
 
     SECTION( LABEL_VALIDATION ) {
 
-        // arbitrary existing qureg
-        Qureg qureg = getCachedStatevecs().begin()->second;
+        Qureg qureg = getArbitraryCachedStatevec();
 
         SECTION( "out qureg uninitialised" ) {
 
@@ -702,7 +708,7 @@ TEST_CASE( "setQuregToMixture", TEST_CATEGORY ) {
 
         SECTION( "out qureg is statevector" ) {
 
-            Qureg badQureg = getCachedStatevecs().begin()->second;
+            Qureg badQureg = getArbitraryCachedStatevec();
 
             REQUIRE_THROWS_WITH( 
                 setQuregToMixture(badQureg, nullptr, nullptr, 1), 
@@ -717,7 +723,7 @@ TEST_CASE( "setQuregToMixture", TEST_CATEGORY ) {
 
             // hide a statevector among them
             int badInd = GENERATE_COPY( range(0,numIn) );
-            inQuregs[badInd] = getCachedStatevecs().begin()->second;;
+            inQuregs[badInd] = getArbitraryCachedStatevec();
 
             REQUIRE_THROWS_WITH( 
                 setQuregToMixture(qureg, nullptr, inQuregs.data(), numIn), 

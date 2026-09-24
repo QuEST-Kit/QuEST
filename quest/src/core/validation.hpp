@@ -77,6 +77,12 @@ void validate_newEnvNodesEachHaveUniqueGpu(const char* caller);
 
 void validate_gpuIsCuQuantumCompatible(const char* caller);
 
+void validate_mpiInitStatus(bool useDistrib, bool userOwnsMpi, const char* caller);
+
+void validate_mpiSubCommIsNonNull(bool isNonNull, const char* caller);
+
+void validate_mpiSubCommSetSucceeded(bool success, const char* caller);
+
 
 
 /*
@@ -107,6 +113,8 @@ void validate_numPauliChars(const char* paulis, const char* caller);
 
 void validate_reportedPauliStrStyleFlag(int flag, const char* caller);
 
+void validate_numGpuThreadsPerBlock(int numTBP, bool isGpuActive, const char* caller);
+
 
 
 /*
@@ -116,6 +124,10 @@ void validate_reportedPauliStrStyleFlag(int flag, const char* caller);
 void validate_newQuregParams(int numQubits, int isDensMatr, int isDistrib, int isGpuAccel, int numCpuThreads, QuESTEnv env, const char* caller);
 
 void validate_newQuregAllocs(Qureg qureg, const char* caller);
+
+void validate_newQuregFileMatchesPrecision(size_t fileQrealBytes, const char* caller);
+
+void validate_newQuregNumNodesMatchesSavedFile(int numSavedNodes, int numAutoDeployedNodes, int numAvailableNodes, int numQubits, bool isDensMatr, const char* caller);
 
 
 
@@ -128,6 +140,8 @@ void validate_quregFields(Qureg qureg, const char* caller);
 void validate_quregIsStateVector(Qureg qureg, const char* caller);
 
 void validate_quregIsDensityMatrix(Qureg qureg, const char* caller);
+
+void validate_adios2IsCompiled(const char* caller);
 
 
 
@@ -420,7 +434,7 @@ void validate_mixedAmpsFitInNode(Qureg qureg, int numTargets, const char* caller
  * TROTTERISATION PARAMETERS
  */
 
-void validate_trotterParams(Qureg qureg, int order, int reps, const char* caller);
+void validate_trotterParams(int order, int reps, const char* caller);
 
 
 
@@ -528,13 +542,23 @@ void validate_quregCanBeSetToReducedDensMatr(Qureg out, Qureg in, int numTraceQu
 
 void validate_canReadFile(string fn, const char* caller);
 
+void validate_adiosCanOpenFileOnAllNodes(bool canOpen, string fn, const char* caller);
+
+void validate_adiosCanReadFileOnAllNodes(bool canRead, string fn, const char* caller);
+
+void validate_adiosCanWriteToFileOnAllNodes(bool canWrite, string fn, const char* caller);
+
+void validate_adiosFileContainsFieldsOnAllNodes(bool areAllVarsPresent, const char* caller);
+
 
 
 /*
  * TEMPORARY ALLOCATIONS
  */
 
-void validate_tempAllocSucceeded(bool succeeded, qindex numElems, qindex numBytesPerElem, const char* caller);
+void validate_tempAllocSucceeded(bool succeeded, size_t numBytes, const char* caller);
+
+void validate_tempListAllocSucceeded(bool succeeded, qindex numElems, qindex numBytesPerElem, const char* caller);
 
 
 
@@ -545,6 +569,8 @@ void validate_tempAllocSucceeded(bool succeeded, qindex numElems, qindex numByte
 void validate_envVarPermitNodesToShareGpu(string varValue, const char* caller);
 
 void validate_envVarDefaultValidationEpsilon(string varValue, const char* caller);
+
+void validate_envVarDefaultNumGpuThreadsPerBlockIsAnInt(string varValue, const char* caller);
 
 
 

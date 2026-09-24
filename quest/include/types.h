@@ -53,13 +53,13 @@ typedef INDEX_TYPE qindex;
     // which is either MSVC's custom C complex...
     #ifdef _MSC_VER
 
-        #if (FLOAT_PRECISION == 1)
+        #if (QUEST_FLOAT_PRECISION == 1)
             typedef _Fcomplex qcomp;
 
-        #elif (FLOAT_PRECISION == 2)
+        #elif (QUEST_FLOAT_PRECISION == 2)
             typedef _Dcomplex qcomp;
 
-        #elif (FLOAT_PRECISION == 4)
+        #elif (QUEST_FLOAT_PRECISION == 4)
             typedef _Lcomplex qcomp;
 
         #endif
@@ -158,9 +158,10 @@ static inline qcomp getQcomp(qreal re, qreal im) {
     // not the same precision as qcomp, so compilation will fail depending
     // on the setting of PRECISION. To avoid this, we'll define overloads
     // between all type/precision permutations, always returning qcomp. These
-    // overloads are also used by the QuEST source code. Via the unholy macros 
-    // below, we create 312 overloads; no doubt this is going to break something
-    // in the future, for which I am already sorry :'(
+    // overloads are also used by the QuEST source code (though incidentally,
+    // not the high performance backend which uses custom complex overloads).
+    // Via the unholy macros below, we create 312 overloads; no doubt this is 
+    // going to break something in the future, for which I am already sorry :'(
 
     /// @cond EXCLUDE_FROM_DOXYGEN
 

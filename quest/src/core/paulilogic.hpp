@@ -12,9 +12,12 @@
 #include "quest/include/paulis.h"
 #include "quest/include/qureg.h"
 
+#include "quest/src/core/lists.hpp"
+
 #include <utility>
 #include <vector>
 #include <array>
+#include <functional>
 
 using std::vector;
 
@@ -42,13 +45,13 @@ int paulis_getIndOfLefmostNonIdentityPauli(PauliStr* strings, qindex numStrings)
 
 int paulis_getSignOfPauliStrConj(PauliStr str);
 
-int paulis_getPrefixZSign(Qureg qureg, vector<int> prefixZ);
+int paulis_getPrefixZSign(Qureg qureg, ConstList64 prefixZ);
 
-qcomp paulis_getPrefixPaulisElem(Qureg qureg, vector<int> prefixY, vector<int> prefixZ);
+qcomp paulis_getPrefixPaulisElem(Qureg qureg, ConstList64 prefixY, ConstList64 prefixZ);
 
-vector<int> paulis_getTargetInds(PauliStr str);
+List64 paulis_getTargetInds(PauliStr str);
 
-std::array<vector<int>,3> paulis_getSeparateInds(PauliStr str);
+std::array<List64,3> paulis_getSeparateInds(PauliStr str);
 
 qindex paulis_getTargetBitMask(PauliStr str);
 
@@ -75,6 +78,10 @@ bool paulis_containsXOrY(PauliStrSum sum);
 int paulis_getIndOfLefmostNonIdentityPauli(PauliStrSum sum);
 
 qindex paulis_getTargetBitMask(PauliStrSum sum);
+
+void paulis_applyPermutationToTerms(PauliStrSum sum, vector<qindex> permutation);
+
+void paulis_sortTermsViaComparator(PauliStrSum sum, std::function<bool(qindex, qindex)> comparator, std::function<void(size_t)> errFunc);
 
 
 // below are used exclusively by Trotterisation

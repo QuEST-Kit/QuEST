@@ -386,9 +386,9 @@ TEST_CASE( "calcExpecPauliProd", "[calculations]" ) {
             // (get real, since we start in a non-Hermitian state, hence diagonal isn't real)
 
             // disable validation during call, because result is non-real and will upset post-check
-            setValidationOff();
+            setQuESTValidationOff();
             qreal res = calcExpecPauliProd(mat, targs, paulis.data(), numTargs, matWork);
-            setValidationOn();
+            setQuESTValidationOn();
 
             REQUIRE( res == Approx(tr).margin(10*REAL_EPS) );
         }

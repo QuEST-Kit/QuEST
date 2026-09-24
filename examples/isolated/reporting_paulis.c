@@ -93,7 +93,7 @@ void demo_PauliStrSum() {
         qindex num = numReportElems[i];
         rootPrint(num);
 
-        setMaxNumReportedItems(num, num);
+        setQuESTMaxNumReportedItems(num, num);
         reportPauliStrSum(sum);
     }
 

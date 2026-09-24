@@ -7,6 +7,7 @@ target_sources(tests
   debug.cpp
   decoherence.cpp
   environment.cpp
+  experimental.cpp
   initialisations.cpp
   matrices.cpp
   multiplication.cpp

@@ -38,7 +38,7 @@ bool didAnyAllocsFailOnAnyNode(PauliStrSum sum) {
         ! mem_isAllocated(sum.coeffs)  || 
         ! mem_isAllocated(sum.isApproxHermitian) );
     
-    if (comm_isInit())
+    if (comm_isActive())
         anyFail = comm_isTrueOnAllNodes(anyFail);
 
     return anyFail;
@@ -263,12 +263,16 @@ extern "C" void destroyPauliStrSum(PauliStrSum sum) {
 
 extern "C" void reportPauliStr(PauliStr str) {
 
+    printer_sync();
+
     // no header, so no indentation
     string indent = "";
     print_elemsWithoutNewline(str, indent);
 
     // print all user-set newlines (including none)
     print_newlines();
+
+    printer_sync();
 }
 
 
@@ -285,9 +289,45 @@ extern "C" void reportPauliStrSum(PauliStrSum sum) {
     // linearly with user input parameters, unlike Qureg and matrices.
     qindex numTotalBytes = numStrBytes + numCoeffBytes + numStrucBytes;
 
+    printer_sync();
+
     print_header(sum, numTotalBytes);
     print_elems(sum);
     
     // exclude mandatory newline above
     print_oneFewerNewlines();
+
+    printer_sync();
+}
+
+
+
+/*
+ * SORTING
+ */
+
+
+extern "C" void sortPauliStrSumLexicographic(PauliStrSum sum) {
+    validate_pauliStrSumFields(sum, __func__);
+
+    auto lexSort = [&](qindex i, qindex j) {
+        PauliStr strI = sum.strings[i];
+        PauliStr strJ = sum.strings[j];
+        return std::tie(strI.highPaulis, strI.lowPaulis) < std::tie(strJ.highPaulis, strJ.lowPaulis);
+    };
+
+    auto errFunc = [&](size_t numBytes) { validate_tempAllocSucceeded(false, numBytes, __func__); };
+    paulis_sortTermsViaComparator(sum, lexSort, errFunc);
+}
+
+
+extern "C" void sortPauliStrSumMagnitude(PauliStrSum sum) {
+    validate_pauliStrSumFields(sum, __func__);
+
+    auto magSort = [&](qindex i, qindex j) {
+        return std::norm(sum.coeffs[i]) > std::norm(sum.coeffs[j]);
+    };
+
+    auto errFunc = [&](size_t numBytes) { validate_tempAllocSucceeded(false, numBytes, __func__); };
+    paulis_sortTermsViaComparator(sum, magSort, errFunc);
 }

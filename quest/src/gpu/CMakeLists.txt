@@ -6,7 +6,7 @@ target_sources(QuEST
   gpu_subroutines.cpp
 )
 
-if (ENABLE_CUDA)
+if (QUEST_ENABLE_CUDA)
   set_source_files_properties(
     gpu_config.cpp
     gpu_subroutines.cpp
@@ -16,7 +16,7 @@ if (ENABLE_CUDA)
   )
 endif()
 
-if (ENABLE_HIP)
+if (QUEST_ENABLE_HIP)
   set_source_files_properties(
     gpu_config.cpp
     gpu_subroutines.cpp

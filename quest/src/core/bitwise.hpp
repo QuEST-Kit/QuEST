@@ -5,18 +5,24 @@
  * @author Tyson Jones
  * @author Erich Essmann (improved OS agnosticism)
  * @author James Richings (patched setBit)
+ * @author PoJen Wang (added BMI2 intrinsics)
  */
 
 #ifndef BITWISE_HPP
 #define BITWISE_HPP
 
-#ifdef _MSC_VER
-  #include <intrin.h>
-#endif
-
+#include "quest/include/config.h"
 #include "quest/include/types.h"
 
 #include "quest/src/core/inliner.hpp"
+
+#if QUEST_COMPILE_BMI2
+    #include <immintrin.h>
+#endif
+
+#ifdef _MSC_VER
+  #include <intrin.h>
+#endif
 
 
 
@@ -28,7 +34,9 @@
  */
 
 
-#define QINDEX_ONE 1ULL
+// alternatives to type-unsafe literals 
+constexpr qindex QINDEX_ZERO = 0; // used by gpu_thrust.cuh
+constexpr qindex QINDEX_ONE  = 1; // used only here
 
 
 INLINE qindex powerOf2(int exponent) {
@@ -161,7 +169,7 @@ INLINE int getBitMaskParity(qindex mask) {
  */
 
 
-INLINE qindex insertBits(qindex number, int* bitIndices, int numIndices, int bitValue) {
+INLINE qindex insertBits(qindex number, const int* bitIndices, int numIndices, int bitValue) {
     
     // bitIndices must be strictly increasing
     for (int i=0; i<numIndices; i++)
@@ -171,7 +179,7 @@ INLINE qindex insertBits(qindex number, int* bitIndices, int numIndices, int bit
 }
 
 
-INLINE qindex setBits(qindex number, int* bitIndices, int numIndices, qindex bitsValue) {
+INLINE qindex setBits(qindex number, const int* bitIndices, int numIndices, qindex bitsValue) {
     
     // bitIndices are arbitrarily ordered, which does not affect number
     for (int i=0; i<numIndices; i++) {
@@ -183,9 +191,12 @@ INLINE qindex setBits(qindex number, int* bitIndices, int numIndices, qindex bit
 }
 
 
-INLINE qindex getValueOfBits(qindex number, int* bitIndices, int numIndices) {
+INLINE qindex getValueOfBits(qindex number, const int* bitIndices, int numIndices) {
 
-    // bits are arbitrarily ordered, which affects value
+    // indices are arbitrarily ordered, which affects value; if the indices are
+    // known to be sorted, callers should instead use getValueOfPossiblySortedBits()
+    // which may (if available) use an optimised intrinsic, eliminating the below
+    // loop (though which will anyway be unrolled when numIndices is compile-time)
     qindex value = 0;
 
     for (int i=0; i<numIndices; i++)
@@ -203,8 +214,11 @@ INLINE qindex getValueOfBits(qindex number, int* bitIndices, int numIndices) {
  */
 
 
-INLINE qindex insertBitsWithMaskedValues(qindex number, int* bitInds, int numBits, qindex mask) {
+INLINE qindex insertBitsWithMaskedValues(qindex number, const int* bitInds, int numBits, qindex mask) {
 
+    // there exists an overload of insertBitsWithMaskedValues() below which 
+    // additionally accepts a (seemingly) superfluous mask encoding bitInds, 
+    // and which will use a CPU intrinsic when available
     // bitInds must be sorted (increasing), and mask must be zero everywhere except bitInds
     return mask | insertBits(number, bitInds, numBits, 0);
 }
@@ -256,6 +270,74 @@ INLINE qindex flipTwoBits(qindex number, int i1, int i0) {
 
 
 /* 
+ * INTRINSIC-BASED PERFORMANCE-CRITICAL FUNCTIONS
+ *
+ * which are alternatives to the above functions, and which use 
+ * intrinsics for acceleration with specific compilers and on
+ * specific CPUs. When the intrinsic is not available, these
+ * fallback to the above looped functions.
+ */
+
+
+INLINE qindex getValueOfPossiblySortedBits(qindex number, const bool isSorted, qindex sortedIndsMask, const int* unsortedInds, int numInds) {
+
+    // must not expose BMI2 to GPU backend
+#if QUEST_COMPILE_BMI2 && !defined(__NVCC__) && !defined(__HIP__)
+
+    // The BMI2 intrinsic is only usable when inds are sorted (such that the
+    // mask is usable). When isSorted is compile-time known, the below branch
+    // is eliminated. Otherwise, isSorted is fixed across the caller's hot 
+    // loops, and a smart compiler will duplicate the loop and move the branch
+    // outside of it. Otherwise, a sensible CPU's branch prediction will
+    // eliminate the branch during big hot loops. Otherwise, a very stoopid 
+    // compiler and CPU combo will slow small-Qureg simulation via this branch!
+    
+    return (isSorted)?
+        _pext_u64(number, sortedIndsMask):
+        getValueOfBits(number, unsortedInds, numInds);
+
+#else
+
+    // suppress unused-var warning
+    (void) isSorted;
+    (void) sortedIndsMask;
+
+    return getValueOfBits(number, unsortedInds, numInds);
+
+#endif 
+}
+
+
+INLINE qindex insertBitsWithMaskedValues(qindex number, const int* bitInds, int numBits, qindex bitIndsMask, qindex bitValuesMask) {
+
+    // This is an overload of insertBitsWithMaskedValues() above, which accepts the seemingly
+    // gratuitous bitIndsMask (which just compactly encodes bitInds), so that a BMI2 intrinsic
+    // can be used when available, falling back to the existing looped version. Note bitInds 
+    // is always assumed/required to be sorted, regardless of bitIndsMask/instrinsics usage
+
+    // must not expose BMI2 to GPU backend
+#if QUEST_COMPILE_BMI2 && !defined(__NVCC__) && !defined(__HIP__)
+
+    // the BMI2 intrinsic only consults bitIndsMask (suppress unused-var warning) 
+    (void) bitInds;
+    (void) numBits;
+
+    // _pdep_u64 scatters number's bits into set-positions of bitIndsMask, hence "~"
+    return bitValuesMask | _pdep_u64(number, ~bitIndsMask);
+
+#else
+
+    // the platform-agnostic version loops through bitInds (and will unroll when numBits is compile-time known)
+    (void) bitIndsMask;
+
+    return insertBitsWithMaskedValues(number, bitInds, numBits, bitValuesMask);
+
+#endif
+}
+
+
+
+/* 
  * SLOW FUNCTIONS
  *
  * which should never be called in hot loops, but which are
@@ -266,7 +348,7 @@ INLINE qindex flipTwoBits(qindex number, int i1, int i0) {
  */
 
 
-INLINE qindex flipBits(qindex number, int* bitIndices, int numIndices) {
+INLINE qindex flipBits(qindex number, const int* bitIndices, int numIndices) {
 
     for (int i=0; i<numIndices; i++)
         number = flipBit(number, bitIndices[i]);
@@ -295,7 +377,7 @@ INLINE int getIndOfNextRightmostZeroBit(qindex mask, int bitInd) {
 }
 
 
-INLINE bool allBitsAreOne(qindex number, int* bitIndices, int numIndices) {
+INLINE bool allBitsAreOne(qindex number, const int* bitIndices, int numIndices) {
     
     for (int i=0; i<numIndices; i++)
         if (!getBit(number, bitIndices[i]))
@@ -305,7 +387,7 @@ INLINE bool allBitsAreOne(qindex number, int* bitIndices, int numIndices) {
 }
 
 
-INLINE qindex getBitMask(int* bitIndices, int* bitValues, int numIndices) {
+INLINE qindex getBitMask(const int* bitIndices, const int* bitValues, int numIndices) {
 
     qindex mask = 0;
     for (int i=0; i<numIndices; i++)
@@ -315,7 +397,7 @@ INLINE qindex getBitMask(int* bitIndices, int* bitValues, int numIndices) {
 }
 
 
-INLINE qindex getBitMask(int* bitIndices, int numIndices) {
+INLINE qindex getBitMask(const int* bitIndices, int numIndices) {
     
     qindex mask = 0;
     for (int i=0; i<numIndices; i++)
@@ -325,7 +407,7 @@ INLINE qindex getBitMask(int* bitIndices, int numIndices) {
 }
 
 
-INLINE qindex removeBits(qindex number, int* bitInds, int numInds) {
+INLINE qindex removeBits(qindex number, const int* bitInds, int numInds) {
 
     // assumes bitIndices are strictly increasing without duplicates
     int numRemoved = 0;
@@ -357,7 +439,7 @@ INLINE int logBase2(qindex powerOf2) {
 }
 
 
-INLINE qindex getIntegerFromBits(int* bits, int numBits) {
+INLINE qindex getIntegerFromBits(const int* bits, int numBits) {
 
     // first bit is treated as least significant
     qindex value = 0;
@@ -369,7 +451,7 @@ INLINE qindex getIntegerFromBits(int* bits, int numBits) {
 }
 
 
-INLINE void getBitsFromInteger(int* bits, qindex number, int numBits) {
+INLINE void setToBitsOfInteger(int* bits, qindex number, int numBits) {
 
     for (int i=0; i<numBits; i++)
         bits[i] = getBit(number, i);

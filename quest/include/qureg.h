@@ -135,6 +135,7 @@ typedef struct {
  * - createDensityQureg() to create a density matrix which can additionally undergo decoherence.
  * - createForcedQureg() to create a statevector which is forced to make use of all available deployments.
  * - createCustomQureg() to explicitly set the used deployments.
+ * - createQuregFromFile() to create a Qureg from a checkpoint file.
  * @author Tyson Jones
  */
 Qureg createQureg(int numQubits);
@@ -281,10 +282,10 @@ Qureg createForcedDensityQureg(int numQubits);
  * @par Memory
  * The total allocated memory depends on all parameters (_except_ 
  * @p useMultithread), and the size of the variable-precision @c qcomp used to represent each
- * amplitude. This is determined by preprocessor @c FLOAT_PRECISION via
  * 
+ * amplitude. This is determined by preprocessor @c QUEST_FLOAT_PRECISION via
  * <center>
- * | @c FLOAT_PRECISION | @c qcomp size (bytes) | 
+ * | @c QUEST_FLOAT_PRECISION | @c qcomp size (bytes) |
  * | --- | --- |
  * | 1   | 8   |
  * | 2   | 16  | 
@@ -310,7 +311,7 @@ Qureg createForcedDensityQureg(int numQubits);
  * | 1 | 1 | @f$ 2 \, B \, D \, / \, W @f$ | @f$ 2 \, B \, D @f$ | @f$ 2 \, B \, D \, / \, W @f$ | @f$ 2 \, B \, D @f$ | @f$ 4 \, B \, D @f$ |
  * </center>
  *
- * For illustration, using the default @c FLOAT_PRECISION=2 whereby @f$ B = 16 @f$ bytes, the <b>RAM _per node_</b>
+ * For illustration, using the default @c QUEST_FLOAT_PRECISION=2 whereby @f$ B = 16 @f$ bytes, the <b>RAM _per node_</b>
  * over varying distributions is:
  * 
  * <center>
@@ -486,7 +487,6 @@ void getDensityQuregAmps(qcomp** outAmps, Qureg qureg, qindex startRow, qindex s
 
 
 /** @} */
-
 
 // end de-mangler
 #ifdef __cplusplus

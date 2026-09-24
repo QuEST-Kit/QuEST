@@ -38,7 +38,8 @@ using std::vector;
  */
 
 
-#define TEST_CATEGORY "[unit][decoherence]"
+#define TEST_CATEGORY \
+    LABEL_UNIT_TAG "[decoherence]"
 
 
 void TEST_ON_CACHED_QUREGS(auto apiFunc, vector<int> targs, vector<qmatrix> kraus) {
