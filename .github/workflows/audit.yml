@@ -6,6 +6,8 @@
 #
 # @author Tyson Jones
 # @author Fergus Cooper (v3 CI)
+# @author Íñigo Aréjula Aísa
+# Credits: AccelCom @ Barcelona Supercomputing Center
 
 name: audit
 
@@ -67,7 +69,92 @@ jobs:
         run: ctest -j2 --output-on-failure --schedule-random -E "density evolution"
         working-directory: ${{ env.build_dir }}
 
-  
+
+  # run address sanitiser over the distributed (comm/*) code, using
+  # minidmr for a free multi-node MPI environment
+  sanitisation-test-mpi:
+    name: address sanitisation (MPI, minidmr, 4 nodes)
+    runs-on: ubuntu-latest
+
+    # constants
+    env:
+      build_dir: "build"
+      minidmr_nodes: 4
+      test_exec: tests/tests
+      sanitiser_flags: -g -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize=address -fsanitize-address-use-after-scope
+
+      # tests will be non-comprehensive/faster, since minidmr's 4 simulated
+      # nodes share the runner's 2 real vCPUs
+      num_qubit_perms: 5
+      test_all_deploys: 0
+
+      # suppresses known OpenMPI/PMIx startup leaks, not QuEST bugs
+      lsan_supp: .github/workflows/lsan-mpi.supp
+
+    # perform the job
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@main
+
+      - name: Install minidmr
+        run: |
+          curl -fsSL https://gitlab.bsc.es/accelcom/releases/dmr/tools/minidmr/-/raw/master/scripts/install.sh | bash -s -- --install-dir "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      # Docker is preinstalled and running on GitHub-hosted ubuntu-latest runners
+      - name: Start minidmr cluster
+        run: minidmr start --nodes ${{ env.minidmr_nodes }}
+
+      # the image's GCC doesn't ship libasan by default
+      - name: Install libasan in cluster
+        run: minidmr install libasan
+
+      # minidmr bind-mounts the checkout into every container at the same
+      # path, so no copying is needed. LSAN_OPTIONS must be set here too,
+      # since Catch2's CMake test-discovery runs the binary at build time
+      - name: Configure and compile QuEST with sanitiser (inside minidmr controller)
+        run: |
+          minidmr exec -e LSAN_OPTIONS="suppressions=$GITHUB_WORKSPACE/${{ env.lsan_supp }}" -- bash -lc " \
+            cd '$GITHUB_WORKSPACE' && \
+            cmake -B ${{ env.build_dir }} \
+              -DENABLE_TESTING=ON \
+              -DFLOAT_PRECISION=2 \
+              -DENABLE_MULTITHREADING=OFF \
+              -DENABLE_DISTRIBUTION=ON \
+              -DTEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }} \
+              -DTEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }} \
+              -DCMAKE_CXX_FLAGS='${{ env.sanitiser_flags }}' \
+              -DCMAKE_EXE_LINKER_FLAGS='${{ env.sanitiser_flags }}' && \
+            cmake --build ${{ env.build_dir }} --target tests --parallel \
+          "
+
+      # env vars must be forwarded with -x or remote ranks silently use
+      # different test configuration
+      - name: Run distributed v4 tests with active sanitiser (minidmr, 4 simulated nodes)
+        run: |
+          minidmr srun \
+            -e TEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }} \
+            -e TEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }} \
+            -e LSAN_OPTIONS="suppressions=$GITHUB_WORKSPACE/${{ env.lsan_supp }}" \
+            -e GITHUB_WORKSPACE=$GITHUB_WORKSPACE \
+            -- -N ${{ env.minidmr_nodes }} -n ${{ env.minidmr_nodes }} bash -c ' \
+              if [ "$SLURM_PROCID" -eq 0 ]; then \
+                NODELIST_WITH_COUNTS=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | awk "{print \$1\":1\"}" | paste -sd, -); \
+                mpirun --prtemca ras ^slurm --prtemca plm ^slurm \
+                  -x TEST_ALL_DEPLOYMENTS -x TEST_MAX_NUM_QUBIT_PERMUTATIONS -x LSAN_OPTIONS \
+                  --host "$NODELIST_WITH_COUNTS" -np ${{ env.minidmr_nodes }} \
+                  "$GITHUB_WORKSPACE/${{ env.build_dir }}/${{ env.test_exec }}"; \
+                exit $?; \
+              else \
+                exit 0; \
+              fi \
+            '
+
+      - name: Stop minidmr cluster
+        if: always()
+        run: minidmr stop
+
+
   # run valgrind
   memory-leak-test:
     name: memory checks [${{ matrix.precision }}]
@@ -186,6 +273,127 @@ jobs:
           artifact-name: code-coverage-report
           update-comment: true
           coverage-files: ./${{ env.tracefile }}
+          minimum-coverage: ${{ env.min_coverage }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+        # temporarily DISABLING above reporting of LCOV results in
+        # PR since they're not yet representative and will only
+        # confuse incoming unitaryHACK contributors
+        if: false
+
+
+  # run lcov over the distributed (comm/*) code, using minidmr for a free
+  # multi-node MPI environment
+  coverage-test-mpi:
+    name: code coverage (MPI, minidmr, 2 nodes)
+    runs-on: ubuntu-latest
+
+    # constants
+    env:
+      build_dir: "build"
+      minidmr_nodes: 2
+      test_exec: tests/tests
+      num_qubit_perms: 5
+      test_all_deploys: 0
+      min_coverage: 1 # %
+      tracefile: "coverage-mpi.info"
+
+    # perform the job
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@main
+
+      - name: Install minidmr
+        run: |
+          curl -fsSL https://gitlab.bsc.es/accelcom/releases/dmr/tools/minidmr/-/raw/master/scripts/install.sh | bash -s -- --install-dir "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      # Docker is preinstalled and running on GitHub-hosted ubuntu-latest runners
+      - name: Start minidmr cluster
+        run: minidmr start --nodes ${{ env.minidmr_nodes }}
+
+      # minidmr bind-mounts the checkout (the current working directory)
+      # into every container at the same path, so no copying is needed.
+      # Release mode is required: coverage without optimisation is slow
+      # enough to time out the runner
+      - name: Configure and compile QuEST with coverage (inside minidmr controller)
+        run: |
+          minidmr exec -- bash -lc " \
+            cd '$GITHUB_WORKSPACE' && \
+            cmake -B ${{ env.build_dir }} \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DENABLE_TESTING=ON \
+              -DFLOAT_PRECISION=2 \
+              -DENABLE_MULTITHREADING=OFF \
+              -DENABLE_DISTRIBUTION=ON \
+              -DTEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }} \
+              -DTEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }} \
+              -DCMAKE_CXX_FLAGS='--coverage' \
+              -DCMAKE_EXE_LINKER_FLAGS='--coverage' && \
+            cmake --build ${{ env.build_dir }} --target tests --parallel \
+          "
+
+      # env vars must be forwarded with -x or remote ranks silently use
+      # different test configuration
+      - name: Run distributed v4 tests with coverage (minidmr, 2 simulated nodes)
+        run: |
+          minidmr srun \
+            -e TEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }} \
+            -e TEST_ALL_DEPLOYMENTS=${{ env.test_all_deploys }} \
+            -e GITHUB_WORKSPACE=$GITHUB_WORKSPACE \
+            -- -N ${{ env.minidmr_nodes }} -n ${{ env.minidmr_nodes }} bash -c ' \
+              if [ "$SLURM_PROCID" -eq 0 ]; then \
+                NODELIST_WITH_COUNTS=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | awk "{print \$1\":1\"}" | paste -sd, -); \
+                mpirun --prtemca ras ^slurm --prtemca plm ^slurm \
+                  -x TEST_ALL_DEPLOYMENTS -x TEST_MAX_NUM_QUBIT_PERMUTATIONS \
+                  --host "$NODELIST_WITH_COUNTS" -np ${{ env.minidmr_nodes }} \
+                  "$GITHUB_WORKSPACE/${{ env.build_dir }}/${{ env.test_exec }}"; \
+                exit $?; \
+              else \
+                exit 0; \
+              fi \
+            '
+
+      - name: Install lcov in cluster
+        run: minidmr install --controller-only lcov
+
+      # the controller's gcov (matching the compiler that built the
+      # binaries) must read the .gcda files, so lcov runs inside minidmr
+      # rather than on the runner, which has a different GCC version
+      - name: Run LCOV (inside minidmr controller)
+        run: |
+          minidmr exec -- bash -lc " \
+            cd '$GITHUB_WORKSPACE/${{ env.build_dir }}' && \
+            lcov --directory . --capture --output-file ${{ env.tracefile }} --ignore-errors source \
+          "
+
+      # comm/* is deliberately kept (the point of this job); gpu/* is
+      # removed since no GPU hardware is available here
+      - name: Filter LCOV results (inside minidmr controller)
+        run: |
+          minidmr exec -- bash -lc " \
+            cd '$GITHUB_WORKSPACE/${{ env.build_dir }}' && \
+            lcov --remove ${{ env.tracefile }} '/usr/*' '*/tests/*' '*/_deps/*' '*/gpu/*' --output-file ${{ env.tracefile }} \
+          "
+
+      - name: Preview LCOV results
+        run: |
+          minidmr exec -- bash -lc " \
+            cd '$GITHUB_WORKSPACE/${{ env.build_dir }}' && \
+            lcov --list ${{ env.tracefile }} \
+          "
+
+      - name: Stop minidmr cluster
+        if: always()
+        run: minidmr stop
+
+      # report coverage of remaining files in the triggering PR
+      - name: Report code coverage
+        uses: zgosalvez/github-actions-report-lcov@v4
+        with:
+          artifact-name: code-coverage-report-mpi
+          update-comment: true
+          coverage-files: ./${{ env.build_dir }}/${{ env.tracefile }}
           minimum-coverage: ${{ env.min_coverage }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
