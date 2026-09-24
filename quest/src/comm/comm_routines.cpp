@@ -21,6 +21,7 @@
 #include "quest/src/gpu/gpu_config.hpp"
 #include "quest/src/comm/comm_config.hpp"
 #include "quest/src/comm/comm_indices.hpp"
+#include "quest/src/comm/comm_routines.hpp"
 
 #if QUEST_COMPILE_MPI
     #include <mpi.h>
@@ -528,8 +529,53 @@ void comm_exchangeSubBuffers(Qureg qureg, qindex numAmps, int pairRank) {
 
     if (qureg.isGpuAccelerated)
         exchangeGpuSubBuffers(qureg, numAmps, pairRank);
-    else 
+    else
         exchangeArrays(&qureg.cpuCommBuffer[sendInd], &qureg.cpuCommBuffer[recvInd], numAmps, pairRank);
+}
+
+
+void comm_exchangeSubBufferChunks(Qureg qureg, const vector<CommChunk>& chunks) {
+#if QUEST_COMPILE_MPI
+
+    assert_commQuregIsDistributed(qureg);
+
+    // exchange several disjoint sub-buffer chunks, each with its own pair rank, under a single
+    // wait. This collapses the up-to (2^k - 1) blocking exchanges of the fused multi-SWAP into one
+    // asynchronous wave (the caller bounds a wave's chunks to fit the send and receive buffer halves).
+    // Each chunk targets a DISTINCT pair rank, so (source rank, tag) already identifies every message
+    // and no per-partner tag offset is needed; we reuse the per-message tag = m exactly as
+    // exchangeArrays does. Async-with-final-wait as per arxiv.org/abs/2308.07402. The fused routine is
+    // CPU-only (it restricts itself to non-GPU quregs), so only the CPU buffer is exchanged here.
+
+    MPI_Comm mpiComm = comm_getMpiComm();
+
+    // validate every chunk and total the messages, to size the request list up-front
+    qindex numRequests = 0;
+    for (const CommChunk& chunk : chunks) {
+        assert_commBoundsAreValid(qureg, chunk.sendInd, chunk.recvInd, chunk.numAmps);
+        assert_bufferSendRecvDoesNotOverlap(chunk.sendInd, chunk.recvInd, chunk.numAmps);
+        assert_pairRankIsDistinct(qureg, chunk.pairRank);
+        numRequests += 2 * dividePow2PayloadIntoMessages(chunk.numAmps)[1];
+    }
+
+    vector<MPI_Request> requests(numRequests, MPI_REQUEST_NULL);
+
+    // post every chunk's receives and sends, then wait once for the whole wave
+    qindex r = 0;
+    for (const CommChunk& chunk : chunks) {
+        auto [messageSize, numMessages] = dividePow2PayloadIntoMessages(chunk.numAmps);
+        for (qindex m=0; m<numMessages; m++) {
+            int tag = static_cast<int>(m); // gauranteed int, but m*messageSize needs qindex
+            MPI_Irecv(&qureg.cpuCommBuffer[chunk.recvInd + m*messageSize], messageSize, MPI_QCOMP, chunk.pairRank, tag, mpiComm, &requests[r++]);
+            MPI_Isend(&qureg.cpuCommBuffer[chunk.sendInd + m*messageSize], messageSize, MPI_QCOMP, chunk.pairRank, tag, mpiComm, &requests[r++]);
+        }
+    }
+
+    MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
+
+#else
+    error_commButEnvNotDistributed();
+#endif
 }
 
 
