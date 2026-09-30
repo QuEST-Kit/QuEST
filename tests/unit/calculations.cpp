@@ -597,7 +597,20 @@ TEST_CASE( "calcExpecNonHermitianFullStateDiagMatr", TEST_CATEGORY LABEL_MIXED_D
         }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+
+        Qureg qureg = getArbitraryCachedStatevec();
+        FullStateDiagMatr matr = createFullStateDiagMatr(qureg.numQubits);
+
+        SECTION( "matrix unsynced" ) {
+
+            REQUIRE_THROWS_WITH(
+                calcExpecNonHermitianFullStateDiagMatr(qureg, matr),
+                ContainsSubstring("not been synchronised") );
+        }
+
+        destroyFullStateDiagMatr(matr);
+    }
 }
 
 
@@ -700,7 +713,20 @@ TEST_CASE( "calcExpecNonHermitianFullStateDiagMatrPower", TEST_CATEGORY LABEL_MI
         }
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+
+        Qureg qureg = getArbitraryCachedStatevec();
+        FullStateDiagMatr matr = createFullStateDiagMatr(qureg.numQubits);
+
+        SECTION( "matrix unsynced" ) {
+
+            REQUIRE_THROWS_WITH(
+                calcExpecNonHermitianFullStateDiagMatrPower(qureg, matr, 1),
+                ContainsSubstring("not been synchronised") );
+        }
+
+        destroyFullStateDiagMatr(matr);
+    }
 }
 
 

@@ -298,7 +298,18 @@ TEST_CASE( "mixKrausMap", TEST_CATEGORY ) {
         destroyKrausMap(map);
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+
+        Qureg qureg = getArbitraryCachedDensmatr();
+        int targ = 0;
+
+        SECTION( "map unsynced" ) {
+
+            KrausMap map = createKrausMap(1, 1);
+            REQUIRE_THROWS_WITH( mixKrausMap(qureg, &targ, 1, map), ContainsSubstring("sync") );
+            destroyKrausMap(map);
+        }
+    }
 }
 
 
@@ -325,7 +336,18 @@ TEST_CASE( "mixSuperOp", TEST_CATEGORY ) {
         destroySuperOp(superOp);
     }
 
-    /// @todo input validation
+    SECTION( LABEL_VALIDATION ) {
+
+        Qureg qureg = getArbitraryCachedDensmatr();
+        int targ = 0;
+
+        SECTION( "superoperator unsynced" ) {
+
+            SuperOp op = createSuperOp(1);
+            REQUIRE_THROWS_WITH( mixSuperOp(qureg, &targ, 1, op), ContainsSubstring("sync") );
+            destroySuperOp(op);
+        }
+    }
 }
 
 

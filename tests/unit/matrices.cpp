@@ -1287,6 +1287,22 @@ TEST_CASE( "createInlineDiagMatr", TEST_CATEGORY ) {
 }
 
 
+TEST_CASE( "reportCompMatr", TEST_CATEGORY ) {
+
+    SECTION( LABEL_VALIDATION ) {
+
+        CompMatr matr = createCompMatr(1);
+
+        SECTION( "not synced" ) {
+
+            REQUIRE_THROWS_WITH( reportCompMatr(matr), ContainsSubstring("not been synchronised") );
+        }
+
+        destroyCompMatr(matr);
+    }
+}
+
+
 /** @} (end defgroup) */
 
 

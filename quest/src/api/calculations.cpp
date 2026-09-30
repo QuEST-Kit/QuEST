@@ -86,6 +86,7 @@ extern "C" void _wrap_calcExpecNonHermitianPauliStrSum(qcomp* out, Qureg qureg, 
 qcomp calcExpecNonHermitianFullStateDiagMatr(Qureg qureg, FullStateDiagMatr matrix) {
     validate_quregFields(qureg, __func__);
     validate_matrixFields(matrix, __func__);
+    validate_matrixIsSynced(matrix, __func__);
     validate_matrixAndQuregAreCompatible(matrix, qureg, true, __func__);
 
     return calcExpecNonHermitianFullStateDiagMatrPower(qureg, matrix, 1); // harmlessly re-validates
@@ -99,6 +100,7 @@ extern "C" void _wrap_calcExpecNonHermitianFullStateDiagMatr(qcomp* out, Qureg q
 qcomp calcExpecNonHermitianFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr matrix, qcomp exponent) {
     validate_quregFields(qureg, __func__);
     validate_matrixFields(matrix, __func__);
+    validate_matrixIsSynced(matrix, __func__);
     validate_matrixAndQuregAreCompatible(matrix, qureg, true, __func__);
 
     // this function never uses the qreal-pow overload (because we make
