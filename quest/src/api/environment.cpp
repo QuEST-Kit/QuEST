@@ -375,7 +375,7 @@ void printQuregAutoDeployments(bool isDensMatr) {
     // auto-deploy will still try to deploy there to (then subsequent validation will fail)
     int maxQubits = mem_getMaxNumQuregQubitsBeforeGlobalMemSizeofOverflow(isDensMatr, global_envPtr->numNodes);
 
-    for (int numQubits=1; numQubits<maxQubits; numQubits++) {
+    for (int numQubits=1; numQubits<=maxQubits; numQubits++) {
 
         // re-choose auto deployment
         useDistrib  = modeflag::USE_AUTO;
