@@ -130,7 +130,7 @@ void freeAllMemoryIfAnyAllocsFailed(Qureg qureg) {
         return;
 
     // otherwise, free everything that was successfully allocated (freeing nullptr is legal)
-    cpu_deallocArray(qureg.cpuAmps);
+    cpu_deallocNumaArray(qureg.cpuAmps, qureg.numAmpsPerNode);
     cpu_deallocArray(qureg.cpuCommBuffer);
 
     // although we avoid calling GPU deallocation in non-GPU mode
