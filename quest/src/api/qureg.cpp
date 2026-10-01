@@ -166,7 +166,7 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
 
     // if any of the above mallocs failed, below validation will memory leak; so free first (but don't set to nullptr)
     freeAllMemoryIfAnyAllocsFailed(qureg);
-    validate_newQuregAllocs(qureg, __func__);
+    validate_newQuregAllocs(qureg, caller);
 
     // TODO / DEBUG:
     // TEMPORARILY FORBID HIP GPU ACCELERATION OF > 2^32 AMPS PER NODE,
