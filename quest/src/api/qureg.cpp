@@ -534,6 +534,11 @@ extern "C" void _wrap_getDensityQuregAmp(qcomp* out, Qureg qureg, qindex row, qi
 
 vector<qcomp> getQuregAmps(Qureg qureg, qindex startInd, qindex numAmps) {
 
+    // validate before interpreting numAmps as an allocation size
+    validate_quregFields(qureg, __func__);
+    validate_quregIsStateVector(qureg, __func__);
+    validate_basisStateIndices(qureg, startInd, numAmps, __func__);
+
     // allocate the output vector, and validate successful
     vector<qcomp> out;
     auto callback = [&]() { validate_tempListAllocSucceeded(false, numAmps, sizeof(qcomp), __func__); };
@@ -547,9 +552,14 @@ vector<qcomp> getQuregAmps(Qureg qureg, qindex startInd, qindex numAmps) {
 
 vector<vector<qcomp>> getDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
 
+    // validate before multiplying dimensions or interpreting them as allocation sizes
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_basisStateRowCols(qureg, startRow, startCol, numRows, numCols, __func__);
+
     // allocate the output matrix, and validate successful
     vector<vector<qcomp>> out;
-    qindex numElems = numRows * numCols; // never overflows (else Qureg alloc would fail)
+    qindex numElems = numRows * numCols;
     auto callback1 = [&]() { validate_tempListAllocSucceeded(false, numElems, sizeof(qcomp), __func__); };
     util_tryAllocMatrix(out, numRows, numCols, callback1);
 

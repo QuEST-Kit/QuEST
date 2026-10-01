@@ -143,6 +143,7 @@ void mixQureg(Qureg outQureg, Qureg inQureg, qreal inProb) {
 
 void mixSuperOp(Qureg qureg, int* targets, int numTargets, SuperOp superop) {
     validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
     validate_targets(qureg, targets, numTargets, __func__);
     validate_superOpFields(superop, __func__);
     validate_superOpIsSynced(superop, __func__);
