@@ -829,7 +829,7 @@ void cpu_statevec_allTargDiagMatr_sub(Qureg qureg, FullStateDiagMatr matr, qcomp
     // every iteration modifies one amp, using one element
     qindex numIts = qureg.numAmpsPerNode;
 
-    #pragma omp parallel for if(qureg.isMultithreaded||qureg.isMultithreaded)
+    #pragma omp parallel for if(qureg.isMultithreaded||matr.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
         cpu_qcomp elem = elems[n];
@@ -1169,6 +1169,9 @@ void cpu_statevec_setQuregToWeightedSum_sub(Qureg outQureg, vector<qcomp> coeffs
     // use template param to compile-time unroll inner loop below
     int numQuregs = accel_tryUseCompileTimeValue<NumQuregs>(inQuregs.size());
 
+    // below, we choose to multithread only if outQureg is multithreaded,
+    // regardless of whether any of the inQuregs are multithreaded
+
     #pragma omp parallel for if(outQureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
 
@@ -1192,7 +1195,7 @@ void cpu_densmatr_mixQureg_subA(qreal outProb, Qureg outQureg, qreal inProb, Qur
     
     qindex numIts = outQureg.numAmpsPerNode;
 
-    #pragma omp parallel for if(outQureg.isMultithreaded)
+    #pragma omp parallel for if(outQureg.isMultithreaded||inDensMatr.isMultithreaded)
     for (qindex n=0; n<numIts; n++)
         outAmps[n] = (outProb * outAmps[n]) + (inProb * inAmps[n]);
 }
@@ -1206,6 +1209,9 @@ void cpu_densmatr_mixQureg_subB(qreal outProb, Qureg outQureg, qreal inProb, Qur
     
     qindex numIts = outQureg.numAmpsPerNode;
     qindex dim = inStateVec.numAmps;
+
+    // only multithread if the larger density matrix outQureg is multithreaded;
+    // disregard whether inStateVec is multithreaded 
 
     #pragma omp parallel for if(outQureg.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
@@ -2219,7 +2225,7 @@ qreal cpu_densmatr_calcHilbertSchmidtDistance_sub(Qureg quregA, Qureg quregB) {
     // every local amp contributes to the reduction
     qindex numIts = quregA.numAmpsPerNode;
 
-    #pragma omp parallel for reduction(+:dist) if(quregA.isMultithreaded||quregA.isMultithreaded)
+    #pragma omp parallel for reduction(+:dist) if(quregA.isMultithreaded||quregB.isMultithreaded)
     for (qindex n=0; n<numIts; n++)
         dist += norm(ampsA[n] - ampsB[n]); // |A-B|^2
 
@@ -2240,6 +2246,9 @@ qcomp cpu_densmatr_calcFidelityWithPureState_sub(Qureg rho, Qureg psi) {
 
     // every local density matrix amp contributes to the reduction
     qindex numIts = rho.numAmpsPerNode;
+
+    // below, we parallelise only if rho is multithreaded; we disregard
+    // whether the smaller statevector psi is multithreaded
 
     #pragma omp parallel for reduction(+:fidRe,fidIm) if(rho.isMultithreaded)
     for (qindex n=0; n<numIts; n++) {
