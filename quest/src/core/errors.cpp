@@ -419,7 +419,7 @@ void assert_exponentMatchesTemplateParam(qcomp exponent, bool hasPower, bool use
     assert_exponentMatchesTemplateParam(exponent, hasPower);
 
     if (!hasPower && useRealPow)
-        raiseInternalError("A CPU or GPU subroutine received an invalid combination of HasPower=false and UseRealPow=false template parameters");
+        raiseInternalError("A CPU or GPU subroutine received an invalid combination of HasPower=false and UseRealPow=true template parameters");
 }
 
 
