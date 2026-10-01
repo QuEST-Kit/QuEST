@@ -777,6 +777,22 @@ bool comm_isTrueOnAllNodes(bool val) {
 }
 
 
+bool comm_isTrueOnAnyNode(bool val) {
+#if QUEST_COMPILE_MPI
+
+    // perform global OR and broadcast result back to all nodes
+    int local = (int) val;
+    int global;
+    MPI_Allreduce(&local, &global, 1, MPI_INT, MPI_LOR, comm_getMpiComm());
+    return (bool) global;
+
+#else
+    error_commButEnvNotDistributed();
+    return false;
+#endif
+}
+
+
 bool comm_isTrueOnRootNode(bool val) {
     #if QUEST_COMPILE_MPI
 

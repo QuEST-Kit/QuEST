@@ -117,7 +117,7 @@ bool didAnyAllocsFailOnAnyNode(Qureg qureg) {
 
     bool anyFail = didAnyLocalAllocsFail(qureg);
     if (comm_isActive())
-        anyFail = comm_isTrueOnAllNodes(anyFail);
+        anyFail = comm_isTrueOnAnyNode(anyFail);
 
     return anyFail;
 }
