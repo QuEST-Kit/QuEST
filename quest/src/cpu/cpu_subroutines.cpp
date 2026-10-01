@@ -2108,7 +2108,7 @@ void cpu_statevec_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
 
     // clear amps (may be compile-time unrolled, or parallelised)
     #pragma omp parallel for if(parallelise)
-    for (int i=0; i<numOutcomes; i++)
+    for (qindex i=0; i<numOutcomes; i++)
         outProbs[i] = 0;
 
     #pragma omp parallel for if(qureg.isMultithreaded)
@@ -2155,7 +2155,7 @@ void cpu_densmatr_calcProbsOfAllMultiQubitOutcomes_sub(qreal* outProbs, Qureg qu
     
     // clear amps; be compile-time unrolled, and/or parallelised (independent of qureg)
     #pragma omp parallel for if(parallelise)
-    for (int i=0; i<numOutcomes; i++)
+    for (qindex i=0; i<numOutcomes; i++)
         outProbs[i] = 0;
 
     #pragma omp parallel for if(qureg.isMultithreaded)

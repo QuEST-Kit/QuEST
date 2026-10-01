@@ -200,7 +200,7 @@ INLINE qindex getValueOfBits(qindex number, const int* bitIndices, int numIndice
     qindex value = 0;
 
     for (int i=0; i<numIndices; i++)
-        value |= getBit(number, bitIndices[i]) << i;
+        value |= ((qindex) getBit(number, bitIndices[i])) << i;
 
     return value;
 }
@@ -446,7 +446,7 @@ INLINE qindex getIntegerFromBits(const int* bits, int numBits) {
     qindex value = 0;
 
     for (int i=0; i<numBits; i++)
-        value |= bits[i] << i;
+        value |= ((qindex) bits[i]) << i;
 
     return value;
 }

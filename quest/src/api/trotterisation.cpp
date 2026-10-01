@@ -36,7 +36,7 @@ void internal_applyFirstOrderTrotterRepetition(
 ) {
     // apply each sum term as a gadget, in forward or reverse order
     for (qindex i=0; i<sum.numTerms; i++) {
-        int j = reverse? sum.numTerms - i - 1 : i;
+        qindex j = reverse? sum.numTerms - i - 1 : i;
         qindex k = (sumOrdering.empty())? j : sumOrdering[j];
         qcomp coeff = sum.coeffs[k];
         PauliStr str = sum.strings[k];

@@ -451,7 +451,7 @@ void cpu_copyMatrix(qcomp** dest, vector<vector<qcomp>> src, qindex dim) {
 void cpu_copyPauliStrSum(PauliStrSum out, PauliStr* strings, qcomp* coeffs) {
 
     // serially copy data over to new heap memory
-    for (int i=0; i<out.numTerms; i++) {
+    for (qindex i=0; i<out.numTerms; i++) {
         out.strings[i] = strings[i];
         out.coeffs[i] = coeffs[i];
     }

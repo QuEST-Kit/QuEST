@@ -2079,7 +2079,7 @@ qcomp localiser_statevec_calcExpecPauliStrSum(Qureg qureg, PauliStrSum sum) {
     std::unordered_map<Key, vector<Term>> groups;
 
     // group sum's terms into those with identical communication patterns
-    for (int i=0; i<sum.numTerms; i++) {
+    for (qindex i=0; i<sum.numTerms; i++) {
         Term term = tuple{sum.strings[i], sum.coeffs[i]};
         Key totalKey = paulis_getKeyOfSameMixedAmpsGroup(sum.strings[i]);
         Key prefixKey = getBitsLeftOfIndex(totalKey, qureg.logNumAmpsPerNode - 1); // 0 if !qureg.isDistributed

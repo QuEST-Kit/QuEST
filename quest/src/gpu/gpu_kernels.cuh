@@ -61,7 +61,7 @@
 
 
 __forceinline__ __device__ qindex getThreadInd() {
-    return blockIdx.x*blockDim.x + threadIdx.x;
+    return static_cast<qindex>(blockIdx.x) * blockDim.x + threadIdx.x;
 }
 
 
@@ -71,8 +71,8 @@ __host__ qindex getNumBlocks(qindex numThreads, int numThreadsPerBlock) {
     /// improve this with cudaOccupancyMaxPotentialBlockSize(),
     /// making it function specific
 
-    // CUDA ceil
-    return ceil(numThreads / static_cast<qreal>(numThreadsPerBlock));
+    // exact integer ceiling, without losing precision for large launches
+    return numThreads / numThreadsPerBlock + (numThreads % numThreadsPerBlock != 0);
 }
 
 
