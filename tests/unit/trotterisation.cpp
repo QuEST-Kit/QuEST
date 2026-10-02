@@ -2,7 +2,7 @@
  * Unit tests of the trotterisation module.
  *
  * @author Tyson Jones
- * @author Vasco Ferreira (initial Pauli permutation tests)
+ * @author Vasco Ferreira (initial Pauli permutation and validation tests)
  * @author Maurice Jamieson (real and imaginary time evolution tests)
  * @author Oliver Thomson Brown (real and imaginary time evolution tests)
  * 
@@ -255,6 +255,7 @@ TEST_CASE( "randomisedTrotter", TEST_CATEGORY ) {
     }
 }
 
+
 /*
 * Time evolution tests
 * @todo Add Pauli permutation variants
@@ -365,12 +366,7 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
 
         SECTION( "hamiltonian not hermitian" ) {
 
-            vector<PauliStr> strings;
-            vector<qcomp> coeffs;
-            strings.push_back(getPauliStr("X", {0}));
-            coeffs.push_back(getQcomp(1.0, 1.0));  
-            PauliStrSum nonHermitian = createPauliStrSum(strings, coeffs);
-
+            PauliStrSum nonHermitian = createInlinePauliStrSum("1+1i X");
             REQUIRE_THROWS_WITH(
                 applyTrotterizedUnitaryTimeEvolution(qureg, nonHermitian, 0.1, 4, 5, permuteTerms),
                 ContainsSubstring("Hermitian")
@@ -388,42 +384,20 @@ TEST_CASE( "applyTrotterizedUnitaryTimeEvolution", TEST_CATEGORY ) {
             destroyPauliStrSum(largeHamil);
         }
 
-        SECTION( "invalid trotter order (zero)" ) {
+        SECTION( "invalid trotter order" ) {
 
+            int order = GENERATE(-2, 0, 3);
             REQUIRE_THROWS_WITH(
-                applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, 0, 5, permuteTerms),
+                applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, order, 5, permuteTerms),
                 ContainsSubstring("order")
             );
         }
 
-        SECTION( "invalid trotter order (negative)" ) {
+        SECTION( "invalid trotter reps" ) {
 
+            int reps = GENERATE(-3, 0);
             REQUIRE_THROWS_WITH(
-                applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, -2, 5, permuteTerms),
-                ContainsSubstring("order")
-            );
-        }
-
-        SECTION( "invalid trotter order (odd, not 1)" ) {
-
-            REQUIRE_THROWS_WITH(
-                applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, 3, 5, permuteTerms),
-                ContainsSubstring("order")
-            );
-        }
-
-        SECTION( "invalid trotter reps (zero)" ) {
-
-            REQUIRE_THROWS_WITH(
-                applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, 4, 0, permuteTerms),
-                ContainsSubstring("repetitions")
-            );
-        }
-
-        SECTION( "invalid trotter reps (negative)" ) {
-
-            REQUIRE_THROWS_WITH(
-                applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, 4, -3, permuteTerms),
+                applyTrotterizedUnitaryTimeEvolution(qureg, hamil, 0.1, 4, reps, permuteTerms),
                 ContainsSubstring("repetitions")
             );
         }
@@ -561,7 +535,7 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
     SECTION( LABEL_VALIDATION ) {
 
         Qureg qureg = getArbitraryCachedStatevec();
-        PauliStrSum ising = createIsingHamiltonian(qureg.numQubits, 1.0, 1.0, 0.0);
+        PauliStrSum sum = createIsingHamiltonian(qureg.numQubits, 1.0, 1.0, 0.0);
         bool permuteTerms = false;
 
         SECTION( "qureg uninitialised" ) {
@@ -569,39 +543,34 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
             Qureg badQureg = qureg;
             badQureg.numQubits = -1;
             REQUIRE_THROWS_WITH(
-                applyTrotterizedImaginaryTimeEvolution(badQureg, ising, 0.1, 4, 5, permuteTerms),
+                applyTrotterizedImaginaryTimeEvolution(badQureg, sum, 0.1, 4, 5, permuteTerms),
                 ContainsSubstring("invalid Qureg")
             );
         }
 
         SECTION( "pauli sum uninitialized" ) {
 
-            PauliStrSum badIsing = ising;
-            badIsing.numTerms = 0;
+            PauliStrSum badSum = sum;
+            badSum.numTerms = 0;
             REQUIRE_THROWS_WITH(
-                applyTrotterizedImaginaryTimeEvolution(qureg, badIsing, 0.1, 4, 5, permuteTerms),
+                applyTrotterizedImaginaryTimeEvolution(qureg, badSum, 0.1, 4, 5, permuteTerms),
                 ContainsSubstring("Pauli")
             );
         }
 
         SECTION( "pauli sum exceeds qureg qubits" ) {
 
-            PauliStrSum largeIsing = createIsingHamiltonian(qureg.numQubits+1, 1.0, 1.0, 0.0);
+            PauliStrSum largeSum = createIsingHamiltonian(qureg.numQubits+1, 1.0, 1.0, 0.0);
             REQUIRE_THROWS_WITH(
-                applyTrotterizedImaginaryTimeEvolution(qureg, largeIsing, 0.1, 4, 5, permuteTerms),
+                applyTrotterizedImaginaryTimeEvolution(qureg, largeSum, 0.1, 4, 5, permuteTerms),
                 ContainsSubstring("only compatible")
             );
-            destroyPauliStrSum(largeIsing);
+            destroyPauliStrSum(largeSum);
         }
 
         SECTION( "hamiltonian not hermitian" ) {
 
-            vector<PauliStr> strings;
-            vector<qcomp> coeffs;
-            strings.push_back(getPauliStr("X", {0}));
-            coeffs.push_back(getQcomp(1.0, 1.0));  
-            PauliStrSum nonHermitian = createPauliStrSum(strings, coeffs);
-
+            PauliStrSum nonHermitian = createInlinePauliStrSum("1+1i X");
             REQUIRE_THROWS_WITH(
                 applyTrotterizedImaginaryTimeEvolution(qureg, nonHermitian, 0.1, 4, 5, permuteTerms),
                 ContainsSubstring("Hermitian")
@@ -609,42 +578,20 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
             destroyPauliStrSum(nonHermitian);
         }
 
-        SECTION( "invalid trotter order (zero)" ) {
+        SECTION( "invalid trotter order" ) {
 
+            int order = GENERATE(-2, 0, 3);
             REQUIRE_THROWS_WITH(
-                applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, 0, 5, permuteTerms),
+                applyTrotterizedImaginaryTimeEvolution(qureg, sum, 0.1, order, 5, permuteTerms),
                 ContainsSubstring("order")
             );
         }
 
-        SECTION( "invalid trotter order (negative)" ) {
+        SECTION( "invalid trotter reps" ) {
 
+            int reps = GENERATE(-3, 0);
             REQUIRE_THROWS_WITH(
-                applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, -2, 5, permuteTerms),
-                ContainsSubstring("order")
-            );
-        }
-
-        SECTION( "invalid trotter order (odd, not 1)" ) {
-
-            REQUIRE_THROWS_WITH(
-                applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, 3, 5, permuteTerms),
-                ContainsSubstring("order")
-            );
-        }
-
-        SECTION( "invalid trotter reps (zero)" ) {
-
-            REQUIRE_THROWS_WITH(
-                applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, 4, 0, permuteTerms),
-                ContainsSubstring("repetitions")
-            );
-        }
-
-        SECTION( "invalid trotter reps (negative)" ) {
-
-            REQUIRE_THROWS_WITH(
-                applyTrotterizedImaginaryTimeEvolution(qureg, ising, 0.1, 4, -3, permuteTerms),
+                applyTrotterizedImaginaryTimeEvolution(qureg, sum, 0.1, 4, reps, permuteTerms),
                 ContainsSubstring("repetitions")
             );
         }
@@ -655,24 +602,652 @@ TEST_CASE( "applyTrotterizedImaginaryTimeEvolution", TEST_CATEGORY ) {
             SUCCEED( );
         }
 
-        destroyPauliStrSum(ising);
+        destroyPauliStrSum(sum);
     }
 }
-
 
 /**
  * @todo
  * UNTESTED FUNCTIONS (NOT YET VALIDATED BY REFERENCE TESTS)
  */
 
-void applyTrotterizedNonUnitaryPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qcomp angle, int order, int reps, bool permuteTerms);
+TEST_CASE( "applyTrotterizedPauliStrSumGadget", TEST_CATEGORY ) {
 
-void applyTrotterizedPauliStrSumGadget(Qureg qureg, PauliStrSum sum, qreal angle, int order, int reps, bool permuteTerms);
+    SECTION( LABEL_CORRECTNESS ) {}
 
-void applyTrotterizedControlledPauliStrSumGadget(Qureg qureg, int control, PauliStrSum sum, qreal angle, int order, int reps, bool permuteTerms);
+    SECTION( LABEL_VALIDATION ) {
 
-void applyTrotterizedMultiControlledPauliStrSumGadget(Qureg qureg, int* controls, int numControls, PauliStrSum sum, qreal angle, int order, int reps, bool permuteTerms);
+        Qureg qureg = GENERATE(getArbitraryCachedStatevec(), getArbitraryCachedDensmatr());
+        PauliStrSum sum = createHeisenbergHamiltonian(qureg.numQubits);
+        bool permuteTerms = false;
 
-void applyTrotterizedMultiStateControlledPauliStrSumGadget(Qureg qureg, int* controls, int* states, int numControls, PauliStrSum sum, qreal angle, int order, int reps, bool permuteTerms);
+        SECTION( "qureg uninitialised" ) {
 
-void applyTrotterizedNoisyTimeEvolution(Qureg qureg, PauliStrSum hamil, qreal* damps, PauliStr* jumps, int numJumps, qreal time, int order, int reps, bool permuteTerms);
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedPauliStrSumGadget(badQureg, sum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "pauli sum uninitialized" ) {
+
+            PauliStrSum badSum = sum;
+            badSum.numTerms = 0;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedPauliStrSumGadget(qureg, badSum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("Pauli")
+            );
+        }
+
+        SECTION( "pauli sum exceeds qureg qubits" ) {
+
+            PauliStrSum largeSum = createHeisenbergHamiltonian(qureg.numQubits + 1);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedPauliStrSumGadget(qureg, largeSum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("only compatible")
+            );
+            destroyPauliStrSum(largeSum);
+        }
+
+        SECTION( "hamiltonian not hermitian" ) {
+
+            PauliStrSum nonHermitian = createInlinePauliStrSum("1+1i X");
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedPauliStrSumGadget(qureg, nonHermitian, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("Hermitian")
+            );
+            destroyPauliStrSum(nonHermitian);
+        }
+
+        SECTION( "invalid trotter order" ) {
+
+            int order = GENERATE(-2, 0, 3);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedPauliStrSumGadget(qureg, sum, 0.1, order, 5, permuteTerms),
+                ContainsSubstring("order")
+            );
+        }
+
+        SECTION( "invalid trotter reps" ) {
+
+            int reps = GENERATE(-3, 0);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedPauliStrSumGadget(qureg, sum, 0.1, 4, reps, permuteTerms),
+                ContainsSubstring("repetitions")
+            );
+        }
+
+        SECTION( "sum ordering allocation failure" ) {
+
+            // there is no reliable way to force the allocs to fail
+            SUCCEED( );
+        }
+
+        destroyPauliStrSum(sum);
+    }
+}
+
+
+TEST_CASE( "applyTrotterizedControlledPauliStrSumGadget", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {}
+
+    SECTION( LABEL_VALIDATION ) {
+
+        Qureg qureg = GENERATE(getArbitraryCachedStatevec(), getArbitraryCachedDensmatr());
+        PauliStrSum sum = createInlinePauliStrSum("1 XYI \n 2 ZZI");
+        int ctrl = 0;
+        bool permuteTerms = false;
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedControlledPauliStrSumGadget(badQureg, ctrl, sum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "pauli sum uninitialized" ) {
+
+            PauliStrSum badSum = sum;
+            badSum.numTerms = 0;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedControlledPauliStrSumGadget(qureg, ctrl, badSum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("Pauli")
+            );
+        }
+
+        SECTION( "pauli sum exceeds qureg qubits" ) {
+
+            PauliStrSum largeSum = createHeisenbergHamiltonian(qureg.numQubits + 1);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedControlledPauliStrSumGadget(qureg, ctrl, largeSum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("only compatible")
+            );
+            destroyPauliStrSum(largeSum);
+        }
+
+        SECTION( "hamiltonian not hermitian" ) {
+
+            PauliStrSum nonHermitian = createInlinePauliStrSum("1+1i X");
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedControlledPauliStrSumGadget(qureg, ctrl, nonHermitian, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("Hermitian")
+            );
+            destroyPauliStrSum(nonHermitian);
+        }
+
+        SECTION( "invalid trotter order" ) {
+
+            int order = GENERATE(-2, 0, 3);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedControlledPauliStrSumGadget(qureg, ctrl, sum, 0.1, order, 5, permuteTerms),
+                ContainsSubstring("order")
+            );
+        }
+
+        SECTION( "invalid trotter reps" ) {
+
+            int reps = GENERATE(-3, 0);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedControlledPauliStrSumGadget(qureg, ctrl, sum, 0.1, 4, reps, permuteTerms),
+                ContainsSubstring("repetitions")
+            );
+        }
+
+        SECTION( "invalid control" ) {
+
+            int badCtrl = GENERATE_COPY(-1, qureg.numQubits);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedControlledPauliStrSumGadget(qureg, badCtrl, sum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("Invalid control")
+            );
+        }
+
+        SECTION( "control and target collision" ) {
+
+            int badCtrl = 1;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedControlledPauliStrSumGadget(qureg, badCtrl, sum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("control qubit overlaps")
+            );
+        }
+
+        SECTION( "sum ordering allocation failure" ) {
+
+            // there is no reliable way to force the allocs to fail
+            SUCCEED( );
+        }
+
+        destroyPauliStrSum(sum);
+    }
+}
+
+
+TEST_CASE( "applyTrotterizedMultiControlledPauliStrSumGadget", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {}
+
+    SECTION( LABEL_VALIDATION ) {
+
+        Qureg qureg = GENERATE(getArbitraryCachedStatevec(), getArbitraryCachedDensmatr());
+        PauliStrSum sum = createInlinePauliStrSum("1 XYII \n 2 ZZII");
+        vector<int> ctrls = {0, 1};
+        bool permuteTerms = false;
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiControlledPauliStrSumGadget(badQureg, ctrls, sum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "pauli sum uninitialized" ) {
+
+            PauliStrSum badSum = sum;
+            badSum.numTerms = 0;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiControlledPauliStrSumGadget(qureg, ctrls, badSum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("Pauli")
+            );
+        }
+
+        SECTION( "pauli sum exceeds qureg qubits" ) {
+
+            PauliStrSum largeSum = createHeisenbergHamiltonian(qureg.numQubits + 1);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiControlledPauliStrSumGadget(qureg, ctrls, largeSum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("only compatible")
+            );
+            destroyPauliStrSum(largeSum);
+        }
+
+        SECTION( "hamiltonian not hermitian" ) {
+
+            PauliStrSum nonHermitian = createInlinePauliStrSum("1+1i X");
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiControlledPauliStrSumGadget(qureg, ctrls, nonHermitian, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("Hermitian")
+            );
+            destroyPauliStrSum(nonHermitian);
+        }
+
+        SECTION( "invalid trotter order" ) {
+
+            int order = GENERATE(-2, 0, 3);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiControlledPauliStrSumGadget(qureg, ctrls, sum, 0.1, order, 5, permuteTerms),
+                ContainsSubstring("order")
+            );
+        }
+
+        SECTION( "invalid trotter reps" ) {
+
+            int reps = GENERATE(-3, 0);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiControlledPauliStrSumGadget(qureg, ctrls, sum, 0.1, 4, reps, permuteTerms),
+                ContainsSubstring("repetitions")
+            );
+        }
+
+        SECTION( "invalid control" ) {
+
+            vector<int> badCtrls = ctrls;
+            badCtrls[0] = GENERATE_COPY(-1, qureg.numQubits);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiControlledPauliStrSumGadget(qureg, badCtrls, sum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("Invalid control")
+            );
+        }
+
+        SECTION( "control and target collision" ) {
+
+            vector<int> badCtrls = ctrls;
+            badCtrls[0] = 2;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiControlledPauliStrSumGadget(qureg, badCtrls, sum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("control qubit overlaps")
+            );
+        }
+
+        SECTION( "repetition in controls" ) {
+
+            vector<int> badCtrls = ctrls;
+            badCtrls[0] = badCtrls[1];
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiControlledPauliStrSumGadget(qureg, badCtrls, sum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("control qubits contained duplicates")
+            );
+        }
+
+        SECTION( "number of controls" ) {
+
+            int badNumCtrls = GENERATE_COPY( -1, qureg.numQubits + 1 );
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiControlledPauliStrSumGadget(qureg, ctrls.data(), badNumCtrls, sum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("number of control qubits")
+            );
+        }
+
+        SECTION( "sum ordering allocation failure" ) {
+
+            // there is no reliable way to force the allocs to fail
+            SUCCEED( );
+        }
+
+        destroyPauliStrSum(sum);
+    }
+}
+
+
+TEST_CASE( "applyTrotterizedMultiStateControlledPauliStrSumGadget", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {}
+
+    SECTION( LABEL_VALIDATION ) {
+
+        Qureg qureg = GENERATE(getArbitraryCachedStatevec(), getArbitraryCachedDensmatr());
+        PauliStrSum sum = createInlinePauliStrSum("1 XYII \n 2 ZZII");
+        vector<int> ctrls = {0, 1};
+        vector<int> states = {1, 0};
+        bool permuteTerms = false;
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiStateControlledPauliStrSumGadget(badQureg, ctrls, states, sum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "pauli sum uninitialized" ) {
+
+            PauliStrSum badSum = sum;
+            badSum.numTerms = 0;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiStateControlledPauliStrSumGadget(qureg, ctrls, states, badSum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("Pauli")
+            );
+        }
+
+        SECTION( "pauli sum exceeds qureg qubits" ) {
+
+            PauliStrSum largeSum = createHeisenbergHamiltonian(qureg.numQubits + 1);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiStateControlledPauliStrSumGadget(qureg, ctrls, states, largeSum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("only compatible")
+            );
+            destroyPauliStrSum(largeSum);
+        }
+
+        SECTION( "hamiltonian not hermitian" ) {
+
+            PauliStrSum nonHermitian = createInlinePauliStrSum("1+1i X");
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiStateControlledPauliStrSumGadget(qureg, ctrls, states, nonHermitian, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("Hermitian")
+            );
+            destroyPauliStrSum(nonHermitian);
+        }
+
+        SECTION( "invalid trotter order" ) {
+
+            int order = GENERATE(-2, 0, 3);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiStateControlledPauliStrSumGadget(qureg, ctrls, states, sum, 0.1, order, 5, permuteTerms),
+                ContainsSubstring("order")
+            );
+        }
+
+        SECTION( "invalid trotter reps" ) {
+
+            int reps = GENERATE(-3, 0);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiStateControlledPauliStrSumGadget(qureg, ctrls, states, sum, 0.1, 4, reps, permuteTerms),
+                ContainsSubstring("repetitions")
+            );
+        }
+
+        SECTION( "invalid control" ) {
+
+            vector<int> badCtrls = ctrls;
+            badCtrls[0] = GENERATE_COPY(-1, qureg.numQubits);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiStateControlledPauliStrSumGadget(qureg, badCtrls, states, sum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("Invalid control")
+            );
+        }
+
+        SECTION( "invalid control states" ) {
+
+            vector<int> badStates = states;
+            badStates[0] = GENERATE(-1, 3);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiStateControlledPauliStrSumGadget(qureg, ctrls, badStates, sum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("invalid control-state")
+            );
+        }
+
+        SECTION( "control and target collision" ) {
+
+            vector<int> badCtrls = ctrls;
+            badCtrls[0] = 2;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiStateControlledPauliStrSumGadget(qureg, badCtrls, states, sum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("control qubit overlaps")
+            );
+        }
+
+        SECTION( "repetition in controls" ) {
+
+            vector<int> badCtrls = ctrls;
+            badCtrls[0] = badCtrls[1];
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiStateControlledPauliStrSumGadget(qureg, badCtrls, states, sum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("control qubits contained duplicates")
+            );
+        }
+
+        SECTION( "number of controls" ) {
+
+            int badNumCtrls = GENERATE_COPY( -1, qureg.numQubits + 1 );
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiStateControlledPauliStrSumGadget(qureg, ctrls.data(), states.data(), badNumCtrls, sum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("number of control qubits")
+            );
+        }
+
+        SECTION( "number of controls and states" ) {
+
+            vector<int> badStates = states;
+            badStates.push_back(0);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedMultiStateControlledPauliStrSumGadget(qureg, ctrls, badStates, sum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("number of control qubits")
+            );
+        }
+
+        SECTION( "sum ordering allocation failure" ) {
+
+            // there is no reliable way to force the allocs to fail
+            SUCCEED( );
+        }
+
+        destroyPauliStrSum(sum);
+    }
+}
+
+
+TEST_CASE( "applyTrotterizedNonUnitaryPauliStrSumGadget", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {}
+
+    SECTION( LABEL_VALIDATION ) {
+
+        Qureg qureg = GENERATE(getArbitraryCachedStatevec(), getArbitraryCachedDensmatr());
+        PauliStrSum sum = createInlinePauliStrSum("1+1i X");
+        bool permuteTerms = false;
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedNonUnitaryPauliStrSumGadget(badQureg, sum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "pauli sum uninitialized" ) {
+
+            PauliStrSum badSum = sum;
+            badSum.numTerms = 0;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedNonUnitaryPauliStrSumGadget(qureg, badSum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("Pauli")
+            );
+        }
+
+        SECTION( "pauli sum exceeds qureg qubits" ) {
+
+            PauliStrSum largeSum = createHeisenbergHamiltonian(qureg.numQubits + 1);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedNonUnitaryPauliStrSumGadget(qureg, largeSum, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("only compatible")
+            );
+            destroyPauliStrSum(largeSum);
+        }
+
+        SECTION( "invalid trotter order" ) {
+
+            int order = GENERATE(-2, 0, 3);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedNonUnitaryPauliStrSumGadget(qureg, sum, 0.1, order, 5, permuteTerms),
+                ContainsSubstring("order")
+            );
+        }
+
+        SECTION( "invalid trotter reps" ) {
+
+            int reps = GENERATE(-3, 0);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedNonUnitaryPauliStrSumGadget(qureg, sum, 0.1, 4, reps, permuteTerms),
+                ContainsSubstring("repetitions")
+            );
+        }
+
+        SECTION( "sum ordering allocation failure" ) {
+
+            // there is no reliable way to force the allocs to fail
+            SUCCEED( );
+        }
+
+        destroyPauliStrSum(sum);
+    }
+}
+
+
+TEST_CASE( "applyTrotterizedNoisyTimeEvolution", TEST_CATEGORY ) {
+
+    SECTION( LABEL_CORRECTNESS ) {}
+
+    SECTION( LABEL_VALIDATION ) {
+
+        Qureg qureg = getArbitraryCachedDensmatr();
+        PauliStrSum hamil = createHeisenbergHamiltonian(qureg.numQubits);
+        PauliStrSum jump  = createInlinePauliStrSum("0.5 X");
+        qreal damp = 0.1;
+        int numJumps = 1;
+        bool permuteTerms = false;
+
+        SECTION( "qureg uninitialised" ) {
+
+            Qureg badQureg = qureg;
+            badQureg.numQubits = -1;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedNoisyTimeEvolution(badQureg, hamil, &damp, &jump, numJumps, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("invalid Qureg")
+            );
+        }
+
+        SECTION( "qureg is not density matrix" ) {
+
+            Qureg badQureg = getArbitraryCachedStatevec();
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedNoisyTimeEvolution(badQureg, hamil, &damp, &jump, numJumps, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("received a statevector")
+            );
+        }
+
+        SECTION( "hamiltonian uninitialized" ) {
+
+            PauliStrSum badHamil = hamil;
+            badHamil.numTerms = 0;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedNoisyTimeEvolution(qureg, badHamil, &damp, &jump, numJumps, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("Pauli")
+            );
+        }
+
+        SECTION( "jump operator uninitialized" ) {
+
+            PauliStrSum badJump = jump;
+            badJump.numTerms = 0;
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedNoisyTimeEvolution(qureg, hamil, &damp, &badJump, numJumps, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("Pauli")
+            );
+        }
+
+        SECTION( "hamiltonian exceeds qureg qubits" ) {
+
+            PauliStrSum largeHamil = createHeisenbergHamiltonian(qureg.numQubits + 1);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedNoisyTimeEvolution(qureg, largeHamil, &damp, &jump, numJumps, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("only compatible")
+            );
+            destroyPauliStrSum(largeHamil);
+        }
+
+        SECTION( "jump operator exceeds qureg qubits" ) {
+
+            PauliStrSum largeJump = createHeisenbergHamiltonian(qureg.numQubits + 1);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedNoisyTimeEvolution(qureg, hamil, &damp, &largeJump, numJumps, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("only compatible")
+            );
+            destroyPauliStrSum(largeJump);
+        }
+
+        SECTION( "hamiltonian not hermitian" ) {
+
+            PauliStrSum nonHermitian = createInlinePauliStrSum("1+1i X");
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedNoisyTimeEvolution(qureg, nonHermitian, &damp, &jump, numJumps, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("Hermitian")
+            );
+            destroyPauliStrSum(nonHermitian);
+        }
+
+        SECTION( "invalid trotter order" ) {
+
+            int order = GENERATE(-2, 0, 3);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedNoisyTimeEvolution(qureg, hamil, &damp, &jump, numJumps, 0.1, order, 5, permuteTerms),
+                ContainsSubstring("order")
+            );
+        }
+
+        SECTION( "invalid trotter reps" ) {
+
+            int reps = GENERATE(-3, 0);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedNoisyTimeEvolution(qureg, hamil, &damp, &jump, numJumps, 0.1, 4, reps, permuteTerms),
+                ContainsSubstring("repetitions")
+            );
+        }
+
+        SECTION( "invalid number of jumps" ) {
+
+            int badNumJumps = GENERATE(-1, -3);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedNoisyTimeEvolution(qureg, hamil, &damp, &jump, badNumJumps, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("number of jump")
+            );
+        }
+
+        SECTION( "negative damping rate" ) {
+
+            qreal badDamp = GENERATE(-1., -3.);
+            REQUIRE_THROWS_WITH(
+                applyTrotterizedNoisyTimeEvolution(qureg, hamil, &badDamp, &jump, numJumps, 0.1, 4, 5, permuteTerms),
+                ContainsSubstring("damping rates were negative")
+            );
+        }
+
+        SECTION( "sum ordering allocation failure" ) {
+
+            // there is no reliable way to force the allocs to fail
+            SUCCEED( );
+        }
+
+        SECTION( "super-propagator allocation failure" ) {
+
+            // there is no reliable way to force the allocs to fail
+            SUCCEED( );
+        }
+
+        destroyPauliStrSum(hamil);
+        destroyPauliStrSum(jump);
+    }
+
+}
