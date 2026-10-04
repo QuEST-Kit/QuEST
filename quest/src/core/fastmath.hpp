@@ -96,7 +96,7 @@ INLINE void fast_getSubQuregValues(qindex basisStateIndex, int* numQubitsPerSubQ
     if (areSigned)
         for (int v=0; v<numSubQuregs; v++)
             if (getBit(outValues[v], numQubitsPerSubQureg[v]-1))
-                outValues[v] -= powerOf2(numQubitsPerSubQureg[v] - 1);
+                outValues[v] -= powerOf2(numQubitsPerSubQureg[v]);
 }
 
 
