@@ -1642,7 +1642,7 @@ void validate_randomSeeds(unsigned* seeds, int numSeeds, const char* caller) {
     }
 
     assertThat(!isNull, report::RANDOM_SEEDS_PTR_IS_NULL, caller);
-    assertThat(numRootSeeds > 0, report::INVALID_NUM_RANDOM_SEEDS, {{"${NUM_SEEDS}", numSeeds}}, caller);
+    assertThat(numRootSeeds > 0, report::INVALID_NUM_RANDOM_SEEDS, {{"${NUM_SEEDS}", numRootSeeds}}, caller);
 }
 
 void validate_newEpsilonValue(qreal eps, const char* caller) {
