@@ -857,6 +857,7 @@ bool util_isCPTP(KrausMap map, qreal eps) {
     /// use a multithreaded routine
 
     *(map.isApproxCPTP) = 1;
+    qreal epsSquared = eps * eps;
 
     // check whether each element satisfies Identity = sum dagger(m)*m
     for (qindex r=0; r<map.numRows; r++) {
@@ -870,7 +871,7 @@ bool util_isCPTP(KrausMap map, qreal eps) {
 
             // fail if too distant from Identity element...
             qreal distSquared = std::norm(elem - (r==c));
-            if (distSquared > eps) {
+            if (distSquared > epsSquared) {
 
                 // by recording the result and returning immediately
                 *(map.isApproxCPTP) = 0;
