@@ -135,7 +135,7 @@ int rand_getRandomSingleQubitOutcome(qreal probOfZero) {
     qreal sample = distrib(mainGenerator);
 
     // produces 0 with probOfZero probability
-    return sample > probOfZero;
+    return sample >= probOfZero;
 }
 
 
