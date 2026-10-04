@@ -398,6 +398,11 @@ bool util_willProdOverflow(vector<qindex> terms) {
     qindex max = std::numeric_limits<qindex>::max();
     qindex prod = 1;
 
+    // any zero factor makes the full product zero and cannot overflow
+    for (auto x : terms)
+        if (x == 0)
+            return false;
+
     for (auto x : terms) {
 
         // division floors, so prod strictly exceed
@@ -417,7 +422,7 @@ bool util_willSumOverflow(vector<qindex> terms) {
 
     for (auto x : terms) {
 
-        if (sum >= max - x)
+        if (sum > max - x)
             return true;
         
         sum += x;
