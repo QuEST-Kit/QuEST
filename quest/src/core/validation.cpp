@@ -2585,21 +2585,19 @@ void validate_matrixRowsAllSameSize(vector<vector<qcomp>> matrix, const char* ca
 
     size_t dim = matrix[0].size();
 
-    size_t row=0;
-    bool allSame = true;
-    for (row=0; row<matrix.size() && allSame; row++)
-        allSame = (matrix[row].size() == dim);
+    size_t outlierInd = 0;
+    while (outlierInd < matrix.size() && matrix[outlierInd].size() == dim)
+        outlierInd++;
 
-    // extremely lazily avoiding seg-fault from premature matrix[row==end])
-    if (allSame)
+    if (outlierInd == matrix.size())
         return;
 
     tokenSubs vars = {
-        {"{FIRST_LEN}",    dim},
-        {"${OUTLIER_IND}", row},
-        {"${OUTLIER_LEN}", matrix[row].size()}};
+        {"${FIRST_LEN}",    dim},
+        {"${OUTLIER_IND}", outlierInd},
+        {"${OUTLIER_LEN}", matrix[outlierInd].size()}};
 
-    assertThat(allSame, report::NESTED_VECTOR_MATRIX_HAS_INCONSISTENT_NUM_COLUMNS, vars, caller);
+    assertThat(false, report::NESTED_VECTOR_MATRIX_HAS_INCONSISTENT_NUM_COLUMNS, vars, caller);
 }
 
 
