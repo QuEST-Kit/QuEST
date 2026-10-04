@@ -79,7 +79,7 @@ bool comm_isTrueOnRootNode(bool val);
  * GATHER METHODS
  */
 
-vector<std::string> comm_gatherStringsToRoot(char* localChars, int maxNumLocalChars);
+vector<std::string> comm_gatherStringsToRoot(const char* localChars, int numLocalChars);
 
 
 

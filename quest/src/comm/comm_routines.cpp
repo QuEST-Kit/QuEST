@@ -816,25 +816,25 @@ bool comm_isTrueOnRootNode(bool val) {
  */
 
 
-vector<string> comm_gatherStringsToRoot(char* localChars, int maxNumLocalChars) {
+vector<string> comm_gatherStringsToRoot(const char* localChars, int numLocalChars) {
 #if QUEST_COMPILE_MPI
 
     // no need to validate array sizes and memory alloc successes;
-    // these are trivial O(#nodes)-size arrays containing <20 chars
+    // these are trivial O(#nodes)-size arrays containing few bytes
     int numNodes = comm_getNumNodes();
 
-    // root makes one big contiguous array to receive all chars contiguously
-    vector<char> allChars(maxNumLocalChars * numNodes);
+    // root makes one big contiguous array to receive all bytes contiguously
+    vector<char> allChars(numLocalChars * numNodes);
 
-    // all nodes send root all their local chars
+    // all nodes send root their fixed-width byte sequence
     int recvRank = ROOT_RANK;
-    MPI_Gather(localChars, maxNumLocalChars, MPI_CHAR, allChars.data(),
-        maxNumLocalChars, MPI_CHAR, recvRank, comm_getMpiComm());
+    MPI_Gather(localChars, numLocalChars, MPI_CHAR, allChars.data(),
+        numLocalChars, MPI_CHAR, recvRank, comm_getMpiComm());
 
-    // divide allChars into stings, delimited by each node's terminal char
+    // preserve every byte, including embedded nulls, in fixed-width strings
     vector<string> out(numNodes);
     for (int r=0; r<numNodes; r++)
-        out[r] = std::string(&allChars[r*maxNumLocalChars]);
+        out[r] = std::string(&allChars[r*numLocalChars], numLocalChars);
 
     return out;
 
