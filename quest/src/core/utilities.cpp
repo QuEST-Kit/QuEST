@@ -635,9 +635,9 @@ bool getHermiticity(T elems, qindex dim, qreal eps) {
     /// consider multithreading or GPU-accelerating this
     /// when caller is big and e.g. has GPU memory
 
-    // check adjoint(elems) == elems
+    // check adjoint(elems) == elems, including that each diagonal is real
     for (qindex r=0; r<dim; r++)
-        for (qindex c=0; c<r; c++)
+        for (qindex c=0; c<=r; c++)
             if (!isApprox(elems[r][c], std::conj(elems[c][r]), eps))
                 return false;
 
