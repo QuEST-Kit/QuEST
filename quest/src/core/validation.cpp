@@ -3404,7 +3404,7 @@ void validate_superOpDimMatchesTargs(SuperOp op, int numTargets, const char* cal
     if (!global_isValidationEnabled)
         return;
 
-    tokenSubs vars = {{"${OP_QUBITS}", op.numQubits}, {"{NUM_TARGS}", numTargets}};
+    tokenSubs vars = {{"${OP_QUBITS}", op.numQubits}, {"${NUM_TARGS}", numTargets}};
     assertThat(op.numQubits == numTargets, report::SUPER_OP_SIZE_MISMATCHES_NUM_TARGETS, vars, caller);
 }
 
@@ -4405,7 +4405,7 @@ void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const c
     size_t memNeeded = sizeof(qreal) * numOutcomes;
 
     tokenSubs vars = {
-        {"{NUM_QUBITS}",    numQubits}, 
+        {"${NUM_QUBITS}",   numQubits},
         {"${NUM_OUTCOMES}", numOutcomes}, 
         {"${MEM_NEEDED}",   memNeeded}, 
         {"${MEM_AVAIL}",    memAvail}
