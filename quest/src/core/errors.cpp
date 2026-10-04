@@ -756,6 +756,11 @@ void error_cuQuantumTempCpuAllocFailed() {
     raiseInternalError("Attempted allocation of temporary host-memory for a cuQuantum routine failed.");
 }
 
+void error_cuQuantumIncompatibleWithMaximallyDistributedDephasing() {
+
+    raiseInternalError("The current extreme distribution scheme (a single density matrix column per node) is incompatible with our optimised implementation of one-qubit dephasing using cuQuantum.");
+}
+
 
 
 /*

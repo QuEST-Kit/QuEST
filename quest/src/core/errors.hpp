@@ -307,6 +307,8 @@ void error_cuQuantumInitOrFinalizedButNotCompiled();
 
 void error_cuQuantumTempCpuAllocFailed();
 
+void error_cuQuantumIncompatibleWithMaximallyDistributedDephasing();
+
 
 
 /*

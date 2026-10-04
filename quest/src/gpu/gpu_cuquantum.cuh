@@ -284,6 +284,11 @@ void cuquantum_densmatr_oneQubitDephasing_subB(Qureg qureg, int ketQubit, qreal 
     // note it must still be a suffix qubit since cuQuantum does not know qureg is distributed
     int targ = qureg.logNumAmpsPerNode - 1; // leftmost suffix bra qubit
 
+    // only an extreme distribution (one density-matrix column per node) makes
+    // the chosen target equal the control, which cuStateVec forbids
+    if (targ == ketQubit)
+        error_cuQuantumIncompatibleWithMaximallyDistributedDephasing();
+
     bool conj = false;
     auto ctrls  = lists_getList64({ketQubit});
     auto states = lists_getList64({!braBit});
