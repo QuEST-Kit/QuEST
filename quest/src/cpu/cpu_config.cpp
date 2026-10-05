@@ -136,7 +136,7 @@ int cpu_getCurrentNumThreads() {
 qindex getNumPagesToContainArray(long pageLen, qindex arrLen) {
 
     // round up to the nearest page
-    return static_cast<qindex>(std::ceil(arrLen / (qreal) pageLen));
+    return arrLen / pageLen + (arrLen % pageLen != 0);
 }
 
 
@@ -223,6 +223,11 @@ qcomp* cpu_allocNumaArray(qindex length) {
     // use integer type for safe address arithmetic below
     uintptr_t offsetAddr = reinterpret_cast<uintptr_t>(rawAddr);
 
+    // mbind() accepts a bit array, which must span every configured NUMA node
+    size_t bitsPerMaskWord = 8 * sizeof(unsigned long);
+    size_t numMaskWords = (numNodes + bitsPerMaskWord - 1) / bitsPerMaskWord;
+    vector<unsigned long> nodeMask(numMaskWords, 0);
+
     for (int node=0, shift=numNodes; node < numNodes; ++node) {
 
         // decide number of pages to bind to NUMA node
@@ -230,16 +235,24 @@ qcomp* cpu_allocNumaArray(qindex length) {
         qindex numPagesInNode = baseNumPagesPerNode + (shift <= 0);
         qindex numBytesInNode = numPagesInNode * pageSize; // validation prevents overflow
 
-        // bind those pages from the offset address to the node (identified by mask)
-        unsigned long nodeMask = 1UL << node;
-        unsigned long numBitsInMask = 8 * sizeof(nodeMask);
-        void* nodeAddr = reinterpret_cast<void*>(offsetAddr);
-        long success = mbind(nodeAddr, numBytesInNode, MPOL_BIND, &nodeMask, numBitsInMask, 0);
+        // skip nodes assigned no pages (which occurs when there are fewer pages than nodes)
+        if (numPagesInNode > 0) {
+            
+            // bind those pages from the offset address to the node (identified by mask)
+            size_t maskWord = node / bitsPerMaskWord;
+            unsigned long maskBit = 1UL << (node % bitsPerMaskWord);
+            nodeMask[maskWord] = maskBit;
 
-        // treat bind failure as internal error (even though it can result from insufficient kernel mem),
-        // rather than permitting silent fallback to non-NUMA awareness which might be astonishingly slow
-        if (success == -1)
-            error_numaBindingFailed();
+            void* nodeAddr = reinterpret_cast<void*>(offsetAddr);
+            long success = mbind(nodeAddr, numBytesInNode, MPOL_BIND, nodeMask.data(), numMaskWords * bitsPerMaskWord, 0);
+
+            nodeMask[maskWord] = 0;
+
+            // treat bind failure as internal error (even though it can result from insufficient kernel mem),
+            // rather than permitting silent fallback to non-NUMA awareness which might be astonishingly slow
+            if (success == -1)
+                error_numaBindingFailed();
+        }
 
         // prepare next node's address
         offsetAddr += numPagesInNode * pageSize;
