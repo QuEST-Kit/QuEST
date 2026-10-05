@@ -473,18 +473,22 @@ void print_oneFewerNewlines() {
 string printer_getMemoryWithUnitStr(size_t numBytes) {
 
     // retain "bytes" instead of "B" since more recognisable
-    vector<string> units = {"bytes", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
+    vector<string> units = {"bytes", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"};
 
-    // unit sizes (in bytes) may overflow; but then so too will numBytes
+    // unit sizes in bytes
     vector<size_t> sizes(units.size());
     for (size_t i=0; i<units.size(); i++)
         sizes[i] = powerOf2(10 * i); // = 1024^i
 
-    // find the biggest unit for which numBytes/sizes[ind] > 1
-    int ind = 1;
-    while (numBytes > sizes[ind])
+    // find the biggest unit no larger than numBytes
+    size_t ind = 0;
+    while (ind + 1 < sizes.size() && numBytes >= sizes[ind + 1])
         ind++;
-    ind--;
+
+    // at four significant figures, values at least halfway from 1023 to 1024
+    // round to 1024 of the current unit, which is more cleanly shown as 1 of the next
+    if (ind + 1 < sizes.size() && numBytes >= sizes[ind + 1] - sizes[ind] / 2)
+        return "1 " + units[ind + 1];
 
     // express numBytes in terms of new unit, forcefully rounding to 4 sig-figs max
     qreal frac = numBytes / static_cast<qreal>(sizes[ind]);
@@ -974,7 +978,7 @@ void populateManyColumnQcompmatr(qcompmatr &matr, qindex startRow, qindex startC
     // note this achieves node consensus; every node populates their matr, which is much more
     // demanding than only the root note, however we expect this is not a big deal; live printing
     // in distributed settings is exceptionally rare and will print small, tractable subsets
-    localiser_densmatr_getAmps(ptrs.data(), qureg, startRow, startCol, matr.size(), matr[0].capacity());
+    localiser_densmatr_getAmps(ptrs.data(), qureg, startRow, startCol, matr.size(), matr[0].size());
 }
 
 
