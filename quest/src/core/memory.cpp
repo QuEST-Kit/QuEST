@@ -48,17 +48,23 @@
     if (hasBuffer && numNodes > 1)
         maxLocalNumAmps /= 2; // floors
 
+    // avoid log2(0) when even one amplitude cannot fit
+    if (maxLocalNumAmps == 0)
+        return -1;
+
+    // distribution increases the global amplitude exponent before converting it to logical
+    // qubits; this order matters for density matrices, whose amplitude exponent is doubled
+    int maxGlobalAmpQubits = std::floor(std::log2(maxLocalNumAmps)) + logBase2(numNodes);
+
     // density matrices require square more memory, so halve (flooring) the number of qubits
-    int maxLocalNumQubits = std::floor(std::log2(maxLocalNumAmps));
+    int maxGlobalNumQubits = maxGlobalAmpQubits;
     if (isDensMatr)
-        maxLocalNumQubits /= 2; // floors
+        maxGlobalNumQubits /= 2; // floors
 
     // superoperators require square more memory still, so halve (flooring) the number of qubits
     if (isSuperOp)
-        maxLocalNumQubits /= 2; // floors
+        maxGlobalNumQubits /= 2; // floors
 
-    // doubling nodes permits 1 additional qubit
-    int maxGlobalNumQubits = maxLocalNumQubits + logBase2(numNodes);
     return maxGlobalNumQubits;
 }
 
