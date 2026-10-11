@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <string>
+#include <limits>
 
 using std::string;
 
@@ -234,6 +235,12 @@ void assert_commPayloadIsPowerOf2(qindex numAmps) {
 
     if (!isPowerOf2(numAmps))
         raiseInternalError("A communication function was given a payload which was unexpectedly not a power of 2, as implied by preconditions.");
+}
+
+void assert_commMessageParamFitsIntoMpiInt(qindex value) {
+
+    if (value > std::numeric_limits<int>::max())
+        raiseInternalError("A function attempted to communicate with a message parameter which exceeded the maximum int accepted by MPI.");
 }
 
 void assert_commQuregIsDistributed(Qureg qureg) {

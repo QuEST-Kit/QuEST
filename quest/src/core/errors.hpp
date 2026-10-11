@@ -21,6 +21,7 @@
 #include "quest/include/qureg.h"
 #include "quest/include/matrices.h"
 
+#include <cstddef>
 #include <string>
 
 using std::string;
@@ -110,6 +111,8 @@ void error_commActiveButMpiNotInit();
 void assert_commBoundsAreValid(Qureg qureg, qindex sendInd, qindex recvInd, qindex numAmps);
 
 void assert_commPayloadIsPowerOf2(qindex numAmps);
+
+void assert_commMessageParamFitsIntoMpiInt(qindex value);
 
 void assert_commQuregIsDistributed(Qureg qureg);
 

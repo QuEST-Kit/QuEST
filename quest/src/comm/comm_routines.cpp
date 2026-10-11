@@ -172,18 +172,23 @@ std::array<qindex,2> dividePow2PayloadIntoMessages(qindex numAmps) {
     assert_commPayloadIsPowerOf2(numAmps);
 
     // use single message if possible
-    if (numAmps < MAX_MESSAGE_LENGTH)
+    if (numAmps < MAX_MESSAGE_LENGTH) {
+        assert_commMessageParamFitsIntoMpiInt(numAmps);
         return {numAmps, 1};
+    }
     
-    // else, payload divides evenly between max-size messages (always fits in int)
+    // else, payload divides evenly between max-size messages
     qindex numMessages = numAmps / MAX_MESSAGE_LENGTH;
 
     // which we must be able to uniquely tag
     if (numMessages > getMaxNumMessages())
         error_commNumMessagesExceedTagMax();
 
-    // outputs always fit in 'int' but we force them to be 'qindex' since 
-    // caller will multiply them with ints and could easily overflow
+    // ensure all outputs can safely narrow at the MPI boundary
+    // (they're kept qindex to avoid overflows in algebra)
+    assert_commMessageParamFitsIntoMpiInt(MAX_MESSAGE_LENGTH);
+    assert_commMessageParamFitsIntoMpiInt(numMessages);
+
     return {MAX_MESSAGE_LENGTH, numMessages};
 }
 
@@ -191,19 +196,26 @@ std::array<qindex,2> dividePow2PayloadIntoMessages(qindex numAmps) {
 std::array<qindex,3> dividePayloadIntoMessages(qindex numAmps) {
 
     // use single message if possible
-    if (numAmps < MAX_MESSAGE_LENGTH)
+    if (numAmps < MAX_MESSAGE_LENGTH) {
+        assert_commMessageParamFitsIntoMpiInt(numAmps);
         return {numAmps, 1, 0};
+    }
 
     // else, use as many max-size messages as possible, and one smaller msg
     qindex numMaxSizeMsgs   = numAmps / MAX_MESSAGE_LENGTH; // floors
     qindex remainingMsgSize = numAmps - numMaxSizeMsgs * MAX_MESSAGE_LENGTH;
 
     // all of which we must be able to uniquely tag
-    if (numMaxSizeMsgs + 1 > getMaxNumMessages())
+    qindex numMessages = numMaxSizeMsgs + (remainingMsgSize > 0);
+    if (numMessages > getMaxNumMessages())
         error_commNumMessagesExceedTagMax();
 
-    // outputs always fit in 'int' but we force them to be 'qindex' since 
-    // caller will multiply them with ints and could easily overflow
+    // ensure all outputs can safely narrow at the MPI boundary
+    // (they're kept qindex to avoid overflows in algebra)
+    assert_commMessageParamFitsIntoMpiInt(MAX_MESSAGE_LENGTH);
+    assert_commMessageParamFitsIntoMpiInt(numMaxSizeMsgs);
+    assert_commMessageParamFitsIntoMpiInt(remainingMsgSize);
+
     return {MAX_MESSAGE_LENGTH, numMaxSizeMsgs, remainingMsgSize};
 }
 
@@ -221,20 +233,21 @@ void exchangeArrays(qcomp* send, qcomp* recv, qindex numElems, int pairRank) {
 
     // each message is asynchronously dispatched with a final wait, as per arxiv.org/abs/2308.07402
 
-    // we will send payload in multiple asynch messages (create two requests per msg for subsequent synch)
+    // we will send payload in multiple asynch messages
     auto [messageSize, numMessages] = dividePow2PayloadIntoMessages(numElems);
-    vector<MPI_Request> requests(2*numMessages, MPI_REQUEST_NULL);
+    vector<MPI_Request> recvRequests(numMessages, MPI_REQUEST_NULL);
+    vector<MPI_Request> sendRequests(numMessages, MPI_REQUEST_NULL);
 
     // asynchronously exchange the messages (effecting MPI_Isendrecv), using unique tags 
     // so that messages are permitted to arrive out-of-order (supporting UCX adaptive-routing)
     for (qindex m=0; m<numMessages; m++) {
-        int tag = static_cast<int>(m); // gauranteed int, but m*messageSize needs qindex
-        MPI_Irecv(&recv[m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiComm, &requests[2*m]);
-        MPI_Isend(&send[m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiComm, &requests[2*m+1]);
+        MPI_Irecv(&recv[m * messageSize], messageSize, MPI_QCOMP, pairRank, /*tag=*/m, mpiComm, &recvRequests[m]);
+        MPI_Isend(&send[m * messageSize], messageSize, MPI_QCOMP, pairRank, /*tag=*/m, mpiComm, &sendRequests[m]);
     }
 
     // wait for all exchanges to complete (MPI will automatically free the request memory)
-    MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
+    MPI_Waitall(numMessages, recvRequests.data(), MPI_STATUSES_IGNORE);
+    MPI_Waitall(numMessages, sendRequests.data(), MPI_STATUSES_IGNORE);
 
 #else
     error_commButEnvNotDistributed();
@@ -253,16 +266,17 @@ void asynchSendArray(qcomp* send, qindex numElems, int pairRank) {
 
     MPI_Comm mpiComm = comm_getMpiComm();
 
-    // we will not track nor wait for the asynch send; instead, the caller will later comm_sync()
-    MPI_Request nullReq = MPI_REQUEST_NULL;
+    // we will not track nor wait for the asynch sends; the receiver completes every
+    // matching receive before the caller's later comm_sync(), so req begins NULL
+    MPI_Request detachedReq = MPI_REQUEST_NULL;
 
     // divide the data into multiple messages
     auto [messageSize, numMessages] = dividePow2PayloadIntoMessages(numElems);
 
-    // asynchronously send the uniquely-tagged messages
+    // asynchronously send the uniquely-tagged messages, detaching requests so MPI can later release
     for (qindex m=0; m<numMessages; m++) {
-        int tag = static_cast<int>(m); // gauranteed int, but m*messageSize needs qindex
-        MPI_Isend(&send[m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiComm, &nullReq);
+        MPI_Isend(&send[m*messageSize], messageSize, MPI_QCOMP, pairRank, /*tag=*/m, mpiComm, &detachedReq);
+        MPI_Request_free(&detachedReq);
     }
 
 #else
@@ -283,13 +297,11 @@ void receiveArray(qcomp* dest, qindex numElems, int pairRank) {
     vector<MPI_Request> requests(numMessages, MPI_REQUEST_NULL);
 
     // listen to receive each uniquely-tagged message asynchronously (as per arxiv.org/abs/2308.07402)
-    for (qindex m=0; m<numMessages; m++) {
-        int tag = static_cast<int>(m); // gauranteed int, but m*messageSize needs qindex
-        MPI_Irecv(&dest[m*messageSize], messageSize, MPI_QCOMP, pairRank, tag, mpiComm, &requests[m]);
-    }
+    for (qindex m=0; m<numMessages; m++)
+        MPI_Irecv(&dest[m*messageSize], messageSize, MPI_QCOMP, pairRank, /*tag=*/m, mpiComm, &requests[m]);
 
     // receivers wait for all messages to be received (while sender asynch proceeds)
-    MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
+    MPI_Waitall(numMessages, requests.data(), MPI_STATUSES_IGNORE);
 
 #else
     error_commButEnvNotDistributed();
@@ -332,6 +344,7 @@ void globallyCombineNonUniformSubArrays(
     // but unlikely in other routines, their payloads can differ significantly in size,
     // so we do not know the total number of requests needed in advance
     vector<MPI_Request> requests;
+    qindex numRequests = 0;
 
     // each node broadcasts their partition (in-turn, but each is asynch)...
     for (int sendRank=0; sendRank<numNodes; sendRank++) {
@@ -340,8 +353,12 @@ void globallyCombineNonUniformSubArrays(
         // (they almost definitely send only one, but we divide for defensive design)
         auto [bigMsgSize, numBigMsgs, remMsgSize] = dividePayloadIntoMessages(numSendPerRank[sendRank]);
 
+        // ensure the accumulating request count remains representable by MPI_Waitall()
+        numRequests += numBigMsgs + (remMsgSize > 0);
+        assert_commMessageParamFitsIntoMpiInt(numRequests);
+
         // these involve big asynch messages (could be 'numSend', or the max message size)
-        for (int m=0; m<numBigMsgs; m++) {
+        for (qindex m=0; m<numBigMsgs; m++) {
             qindex recvInd = globalRecvIndPerRank[sendRank] + (m * bigMsgSize);
             requests.push_back(MPI_REQUEST_NULL);
             MPI_Ibcast(&recv[recvInd], bigMsgSize, MPI_QCOMP, sendRank, mpiComm, &requests.back());
@@ -356,7 +373,7 @@ void globallyCombineNonUniformSubArrays(
     }
 
     // wait for all broadcasts to complete (MPI will automatically free the request memory)
-    MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
+    MPI_Waitall(numRequests, requests.data(), MPI_STATUSES_IGNORE);
 
 #else
     error_commButEnvNotDistributed();
@@ -672,15 +689,13 @@ void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps)
 
     // asynchronously copy 'send' in sendRank over to 'recv' in recvRank, using 
     // uniquely-tagged messages such that they may arrive out-of-order, enabling AR
-    for (qindex m=0; m<numMessages; m++) {
-        int tag = static_cast<int>(m);
+    for (qindex m=0; m<numMessages; m++)
         (myRank == sendRank)?
-            MPI_Isend(&send[m*messageSize], messageSize, MPI_QCOMP, recvRank, tag, mpiComm, &requests[m]): // sender
-            MPI_Irecv(&recv[m*messageSize], messageSize, MPI_QCOMP, sendRank, tag, mpiComm, &requests[m]); // root
-    }
+            MPI_Isend(&send[m*messageSize], messageSize, MPI_QCOMP, recvRank, /*tag=*/m, mpiComm, &requests[m]): // sender
+            MPI_Irecv(&recv[m*messageSize], messageSize, MPI_QCOMP, sendRank, /*tag=*/m, mpiComm, &requests[m]); // root
 
     // wait for all exchanges to complete (MPI will automatically free the request memory)
-    MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
+    MPI_Waitall(numMessages, requests.data(), MPI_STATUSES_IGNORE);
 
 #else
     error_commButEnvNotDistributed();
