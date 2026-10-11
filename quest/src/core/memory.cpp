@@ -126,7 +126,7 @@ int mem_getMaxNumSuperOpQubitsBeforeIndexOverflow() {
 
 qindex mem_getMaxNumKrausMapMatricesBeforeIndexOverflow(int numQubits) {
 
-    qindex numElemPerMatrix = powerOf2(2 * numQubits);
+    qindex numElemPerMatrix = powerOf2(2 * numQubits); // caller prior validates no overflow
     qindex maxNumTotalElems = std::numeric_limits<qindex>::max();
     qindex maxNumMatrices = maxNumTotalElems / numElemPerMatrix; // floors
     return maxNumMatrices;
@@ -202,9 +202,10 @@ int mem_getMaxNumSuperOpQubitsBeforeGlobalMemSizeofOverflow() {
 
 qindex mem_getMaxNumKrausMapMatricesBeforeLocalMemSizeofOverflow(int numQubits) {
 
-    qindex numMatrWithMaxTotalElems = mem_getMaxNumKrausMapMatricesBeforeIndexOverflow(numQubits);
-    qindex numMatrWithMaxTotalMem = numMatrWithMaxTotalElems / sizeof(qcomp); // floors
-    return numMatrWithMaxTotalMem;
+    qindex numElemsPerMatrix = powerOf2(2 * numQubits); // caller prior validates no overflow
+    size_t maxNumElems = std::numeric_limits<size_t>::max() / sizeof(qcomp); // floors
+    size_t maxNumMatrices = maxNumElems / static_cast<size_t>(numElemsPerMatrix); // floors
+    return static_cast<qindex>(maxNumMatrices);
 }
 
 
@@ -374,6 +375,11 @@ bool mem_canMatrixFitInMemory(int numQubits, bool isDense, int numNodes, qindex 
 
     // work out the maximum "local" qubits that can fit in memory
     qindex maxLocalNumElems = memBytesPerNode / sizeof(qcomp); // floors
+
+    // max distribution (useful for tests) has 1 amp per node, = 0 local qubits!
+    if (maxLocalNumElems == 0)
+        return false;
+
     int maxLocalNumQubits  = std::floor(std::log2(maxLocalNumElems));
 
     // dense matrices (as opposed to diagonals) require square more memory
