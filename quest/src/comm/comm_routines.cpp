@@ -168,17 +168,17 @@ int getMaxNumMessages() {
 }
 
 
-std::array<qindex,2> dividePow2PayloadIntoMessages(qindex numAmps) {
-    assert_commPayloadIsPowerOf2(numAmps);
+std::array<qindex,2> dividePow2PayloadIntoMessages(qindex messageLength) {
+    assert_commPayloadIsPowerOf2(messageLength);
 
     // use single message if possible
-    if (numAmps < MAX_MESSAGE_LENGTH) {
-        assert_commMessageParamFitsIntoMpiInt(numAmps);
-        return {numAmps, 1};
+    if (messageLength < MAX_MESSAGE_LENGTH) {
+        assert_commMessageParamFitsIntoMpiInt(messageLength);
+        return {messageLength, 1};
     }
     
     // else, payload divides evenly between max-size messages
-    qindex numMessages = numAmps / MAX_MESSAGE_LENGTH;
+    qindex numMessages = messageLength / MAX_MESSAGE_LENGTH;
 
     // which we must be able to uniquely tag
     if (numMessages > getMaxNumMessages())
@@ -193,17 +193,17 @@ std::array<qindex,2> dividePow2PayloadIntoMessages(qindex numAmps) {
 }
 
 
-std::array<qindex,3> dividePayloadIntoMessages(qindex numAmps) {
+std::array<qindex,3> dividePayloadIntoMessages(qindex messageLength) {
 
     // use single message if possible
-    if (numAmps < MAX_MESSAGE_LENGTH) {
-        assert_commMessageParamFitsIntoMpiInt(numAmps);
-        return {numAmps, 1, 0};
+    if (messageLength < MAX_MESSAGE_LENGTH) {
+        assert_commMessageParamFitsIntoMpiInt(messageLength);
+        return {messageLength, 1, 0};
     }
 
     // else, use as many max-size messages as possible, and one smaller msg
-    qindex numMaxSizeMsgs   = numAmps / MAX_MESSAGE_LENGTH; // floors
-    qindex remainingMsgSize = numAmps - numMaxSizeMsgs * MAX_MESSAGE_LENGTH;
+    qindex numMaxSizeMsgs   = messageLength / MAX_MESSAGE_LENGTH; // floors
+    qindex remainingMsgSize = messageLength - numMaxSizeMsgs * MAX_MESSAGE_LENGTH;
 
     // all of which we must be able to uniquely tag
     qindex numMessages = numMaxSizeMsgs + (remainingMsgSize > 0);
@@ -676,12 +676,22 @@ void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps)
 #if QUEST_COMPILE_MPI
 
     MPI_Comm mpiComm = comm_getMpiComm();
-
-    // only the sender and root nodes need to continue
-    int recvRank = ROOT_RANK;
     int myRank = comm_getRank();
+    int recvRank = ROOT_RANK;
+
+    // only the two sender and recv nodes need to continue
     if (myRank != sendRank && myRank != recvRank)
         return;
+
+    // avoid issuing an unmatched self-send when root already owns the payload
+    if (sendRank == recvRank) {
+
+        // ensure recvRank has its 'send' overwritten with 'recv'
+        if (myRank == recvRank && send != recv)
+            cpu_copyArray(recv, send, numAmps);
+
+        return;
+    }
 
     // create an MPI_Request for every asynch MPI call
     auto [messageSize, numMessages] = dividePow2PayloadIntoMessages(numAmps);
@@ -706,6 +716,9 @@ void comm_sendAmpsToRoot(int sendRank, qcomp* send, qcomp* recv, qindex numAmps)
 void comm_broadcastIntsFromRoot(int* arr, qindex length) {
 #if QUEST_COMPILE_MPI
 
+    // Bcast can only handle up to int-max; we presently only ever pass length=1
+    assert_commMessageParamFitsIntoMpiInt(length);
+
     int sendRank = ROOT_RANK;
     MPI_Bcast(arr, length, MPI_INT, sendRank, comm_getMpiComm());
 
@@ -717,6 +730,9 @@ void comm_broadcastIntsFromRoot(int* arr, qindex length) {
 
 void comm_broadcastUnsignedsFromRoot(unsigned* arr, qindex length) {
 #if QUEST_COMPILE_MPI
+
+    // Bcast can only handle up to int-max; we presently only ever pass length=1
+    assert_commMessageParamFitsIntoMpiInt(length);
 
     int sendRank = ROOT_RANK;
     MPI_Bcast(arr, length, MPI_UNSIGNED, sendRank, comm_getMpiComm());
@@ -768,7 +784,16 @@ void comm_reduceReal(qreal* localReal) {
 void comm_reduceReals(qreal* localReals, qindex numLocalReals) {
 #if QUEST_COMPILE_MPI
 
-    MPI_Allreduce(MPI_IN_PLACE, localReals, numLocalReals, MPI_QREAL, MPI_SUM, comm_getMpiComm());
+    // since numLocalReals can exceed max-int, we must divide into max-length messages
+    auto [bigMsgSize, numBigMsgs, remMsgSize] = dividePayloadIntoMessages(numLocalReals);
+    
+    // send max-length messages
+    for (qindex m=0; m<numBigMsgs; m++)
+        MPI_Allreduce(MPI_IN_PLACE, &localReals[m*bigMsgSize], bigMsgSize, MPI_QREAL, MPI_SUM, comm_getMpiComm());
+
+    // send remainder message
+    if (remMsgSize > 0)
+        MPI_Allreduce(MPI_IN_PLACE, &localReals[numBigMsgs*bigMsgSize], remMsgSize, MPI_QREAL, MPI_SUM, comm_getMpiComm());
 
 #else
     error_commButEnvNotDistributed();
