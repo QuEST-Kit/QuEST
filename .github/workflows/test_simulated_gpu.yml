@@ -1,0 +1,155 @@
+# Tests the CUDA backend on free runners by running the
+# v4 unit tests on a simulated Tesla T4 (the GPU of the
+# paid runner), so that GPU regressions are caught in
+# every PR without incurring the costs of test_paid.yml.
+#
+# The simulator (PantheonSim) executes the compiled
+# kernels on the CPU, so this is much slower than a real
+# GPU, and says nothing about performance. Like the paid
+# tests, it excludes the Trotter functions, and like the
+# free tests, it excludes the larger integration tests.
+# Setup, compile and run take approximately 6m, 3m, 8m.
+
+name: test (free, simulated GPU)
+
+
+on:
+  push:
+    branches:
+      - main
+      - devel
+  pull_request:
+    branches:
+      - main
+      - devel
+
+
+jobs:
+
+  simulated-gpu-unit-test:
+    name: Linux [2] CUDA (simulated T4) unit v4
+    runs-on: ubuntu-24.04
+
+    env:
+      build_dir: "build"
+      cuda_arch: 75
+      num_qubit_perms: 10
+      test_all_deploys: 0
+
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@main
+
+      # installs nvcc and puts the simulated GPU's CUDA
+      # runtime on LD_LIBRARY_PATH, so ctest runs as usual
+      - name: Setup simulated GPU
+        uses: pantheongpu/setup-pantheonsim@v0
+        with:
+          gpu: nvidia/t4
+          cuda-toolkit: '12.6'
+
+      # the CUDA runtime must be linked dynamically (the
+      # default is static) so the simulator's is loaded
+      - name: Configure CMake
+        run: >
+          cmake -B ${{ env.build_dir }}
+          -DCMAKE_BUILD_TYPE=Release
+          -DQUEST_BUILD_TESTS=ON
+          -DQUEST_FLOAT_PRECISION=2
+          -DQUEST_ENABLE_DEPRECATED_API=OFF
+          -DQUEST_ENABLE_OMP=OFF
+          -DQUEST_ENABLE_MPI=OFF
+          -DQUEST_ENABLE_CUDA=ON
+          -DQUEST_ENABLE_CUQUANTUM=OFF
+          -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
+          -DCMAKE_CUDA_RUNTIME_LIBRARY=Shared
+          -DQUEST_TEST_TRY_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}
+          -DQUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}
+
+      - name: Compile
+        run: cmake --build ${{ env.build_dir }} --parallel
+
+      - name: Configure tests with environment variables
+        run: |
+          echo "QUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}" >> $GITHUB_ENV
+          echo "QUEST_TEST_TRY_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}" >> $GITHUB_ENV
+
+      # ctest hides the output of passing tests, so show
+      # once that the tests see the GPU (GPU-accelerated: 1)
+      - name: Report QuEST environment
+        run: ./tests/tests "complex arithmetic"
+        working-directory: ${{ env.build_dir }}
+
+      - name: Run GPU v4 unit tests
+        run: ctest -j4 --output-on-failure -E "Trotter|density evolution"
+        working-directory: ${{ env.build_dir }}
+
+  # The same tests with the cuQuantum backend (cuStateVec) switched on.
+  # NVIDIA's libcustatevec carries its own CUDA runtime and cannot run on a
+  # simulated driver, so `vgpu run` swaps in PantheonSim's cuStateVec, written
+  # from the documented API. This therefore tests QuEST's calls into
+  # cuStateVec (arguments, layouts, results), not NVIDIA's kernels.
+  simulated-gpu-cuquantum-unit-test:
+    name: Linux [2] CUDA+cuQuantum (simulated T4) unit v4
+    runs-on: ubuntu-24.04
+
+    env:
+      build_dir: "build"
+      cuda_arch: 75
+      num_qubit_perms: 10
+      test_all_deploys: 0
+
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@main
+
+      # library-path is off because QuEST links NVIDIA's libcustatevec,
+      # which is run through `vgpu run` below instead
+      - name: Setup simulated GPU
+        uses: pantheongpu/setup-pantheonsim@06648b8c0cb091584196678593215db2e16bd7eb # v0.1.2
+        with:
+          gpu: nvidia/t4
+          cuda-toolkit: '12.6'
+          library-path: false
+
+      # the headers and library for linking come from NVIDIA's PyPI wheel
+      - name: Get cuStateVec
+        run: |
+          python3 -m pip download --no-deps -q -d /tmp/cuq custatevec-cu12
+          cd /tmp/cuq && python3 -m zipfile -e custatevec_cu12-*.whl x
+          ln -s libcustatevec.so.1 /tmp/cuq/x/cuquantum/lib/libcustatevec.so
+          echo "CUQUANTUM_ROOT=/tmp/cuq/x/cuquantum" >> $GITHUB_ENV
+
+      - name: Configure CMake
+        run: >
+          cmake -B ${{ env.build_dir }}
+          -DCMAKE_BUILD_TYPE=Release
+          -DQUEST_BUILD_TESTS=ON
+          -DQUEST_FLOAT_PRECISION=2
+          -DQUEST_ENABLE_DEPRECATED_API=OFF
+          -DQUEST_ENABLE_OMP=OFF
+          -DQUEST_ENABLE_MPI=OFF
+          -DQUEST_ENABLE_CUDA=ON
+          -DQUEST_ENABLE_CUQUANTUM=ON
+          -DCMAKE_CUDA_ARCHITECTURES=${{ env.cuda_arch }}
+          -DCMAKE_CUDA_RUNTIME_LIBRARY=Shared
+          -DQUEST_TEST_TRY_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}
+          -DQUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}
+
+      - name: Compile
+        run: cmake --build ${{ env.build_dir }} --parallel
+
+      - name: Configure tests with environment variables
+        run: |
+          echo "QUEST_TEST_MAX_NUM_QUBIT_PERMUTATIONS=${{ env.num_qubit_perms }}" >> $GITHUB_ENV
+          echo "QUEST_TEST_TRY_ALL_DEPLOYMENTS=${{ env.test_all_deploys }}" >> $GITHUB_ENV
+
+      # shows once that the tests see the GPU and cuQuantum
+      # (GPU-accelerated: 1, cuQuantum: 1)
+      - name: Report QuEST environment
+        run: vgpu run ./tests/tests "complex arithmetic"
+        working-directory: ${{ env.build_dir }}
+
+      - name: Run GPU v4 unit tests
+        run: vgpu run ctest -j4 --output-on-failure -E "Trotter|density evolution"
+        working-directory: ${{ env.build_dir }}
