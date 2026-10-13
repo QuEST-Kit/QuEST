@@ -763,6 +763,38 @@ TEST_CASE( "createInlineSuperOp", TEST_CATEGORY ) {
 }
 
 
+TEST_CASE( "reportKrausMap", TEST_CATEGORY ) {
+
+    SECTION( LABEL_VALIDATION ) {
+
+        KrausMap map = createKrausMap(1, 1);
+
+        SECTION( "not synced" ) {
+
+            REQUIRE_THROWS_WITH( reportKrausMap(map), ContainsSubstring("not been synchronised") );
+        }
+
+        destroyKrausMap(map);
+    }
+}
+
+
+TEST_CASE( "reportSuperOp", TEST_CATEGORY ) {
+
+    SECTION( LABEL_VALIDATION ) {
+
+        SuperOp op = createSuperOp(1);
+
+        SECTION( "not synced" ) {
+
+            REQUIRE_THROWS_WITH( reportSuperOp(op), ContainsSubstring("not been synchronised") );
+        }
+
+        destroySuperOp(op);
+    }
+}
+
+
 /** @} (end defgroup) */
 
 

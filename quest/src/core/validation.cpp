@@ -470,13 +470,13 @@ namespace report {
 
 
     string COMP_MATR_NOT_SYNCED_TO_GPU = 
-        "The CompMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncCompMatr() after manually modifying elements, or overwrite all elements with setCompMatr() which automatically synchronises.";
+        "The CompMatr has yet not been synchronised, so potential changes to its elements may be ignored. Please call syncCompMatr() after manually modifying elements, or overwrite all elements with setCompMatr() which automatically synchronises.";
 
     string DIAG_MATR_NOT_SYNCED_TO_GPU = 
-        "The DiagMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncDiagMatr() after manually modifying elements, or overwrite all elements with setDiagMatr() which automatically synchronises.";
+        "The DiagMatr has yet not been synchronised, so potential changes to its elements may be ignored. Please call syncDiagMatr() after manually modifying elements, or overwrite all elements with setDiagMatr() which automatically synchronises.";
 
     string FULL_STATE_DIAG_MATR_NOT_SYNCED_TO_GPU = 
-        "The FullStateDiagMatr has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncFullStateDiagMatr() after manually modifying elements, or overwrite elements in batch with setFullStateDiagMatr() which automatically synchronises.";
+        "The FullStateDiagMatr has yet not been synchronised, so potential changes to its elements may be ignored. Please call syncFullStateDiagMatr() after manually modifying elements, or overwrite elements in batch with setFullStateDiagMatr() which automatically synchronises.";
 
 
     string MATRIX_SIZE_MISMATCHES_NUM_TARGETS =
@@ -580,7 +580,7 @@ namespace report {
         "The given SuperOp's pointer to its GPU memory was NULL. This may imply the superoperator was already destroyed and had its memory pointers manually overwritten by the user.";
 
     string SUPER_OP_NOT_SYNCED_TO_GPU =
-        "The SuperOp has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncSuperOp() after manually modifying the superoperator elements, or overwrite all elements with setSuperOp() which will automatically syncrhonise.";
+        "The SuperOp has yet not been synchronised, so potential changes to its elements may be ignored. Please call syncSuperOp() after manually modifying the superoperator elements, or overwrite all elements with setSuperOp() which will automatically synchronise.";
 
 
     string SUPER_OP_SIZE_MISMATCHES_NUM_TARGETS =
@@ -688,7 +688,7 @@ namespace report {
 
 
     string KRAUS_MAP_NOT_SYNCED_TO_GPU =
-        "The KrausMap has yet not been synchronised with its persistent GPU memory, so potential changes to its elements are being ignored. Please call syncKrausMap() after manually modifying the superoperator elements, or overwrite all elements with setKrausMap() which will automatically syncrhonise.";
+        "The KrausMap has yet not been synchronised, so potential changes to its elements may be ignored. Please call syncKrausMap() after manually modifying the Kraus operator elements, or overwrite all elements with setKrausMap() which will automatically synchronise.";
 
     string KRAUS_MAP_NOT_CPTP =
         "The KrausMap was not (approximately) completely positive and trace preserving (CPTP).";
@@ -2758,13 +2758,9 @@ void validate_matrixFields(FullStateDiagMatr m, const char* caller) {
 template <class T>
 void assertMatrixIsSynced(T matr, string errMsg, const char* caller) {
 
-    // we don't need to perform any sync check in CPU-only mode
-    if (!mem_isAllocated(util_getGpuMemPtr(matr)))
-        return;
-
-    // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though.
-    // note we check this whenever the matrix has GPU memory, even if it is being applied upon a Qureg which is
-    // NOT GPU-accelerated and ergo the GPU memory is not consulted. It's best to build the habit in the user!
+    // Check if sync was EVER performed; we sadly cannot check the LATEST changes were pushed though.
+    // We intentionally enforce this even in CPU-only mode because sync also marks the matrix as
+    // intentionally initialised after direct user modification.
     assertThat(*(matr.wasGpuSynced) == 1, errMsg, caller);
 }
 void validate_matrixIsSynced(CompMatr matr, const char* caller) {
@@ -3393,11 +3389,9 @@ void validate_superOpIsSynced(SuperOp op, const char* caller) {
     if (!global_isValidationEnabled)
         return;
 
-    // we don't need to perform any sync check in CPU-only mode
-    if (!mem_isAllocated(util_getGpuMemPtr(op)))
-        return;
-
-    // check if GPU amps have EVER been overwritten; we sadly cannot check the LATEST changes were pushed though
+    // Check if sync was EVER performed; we sadly cannot check the LATEST changes were pushed though.
+    // We intentionally enforce this even in CPU-only mode because sync also marks the superoperator
+    // as intentionally initialised after direct user modification.
     assertThat(*(op.wasGpuSynced), report::SUPER_OP_NOT_SYNCED_TO_GPU, caller);
 }
 
@@ -3616,11 +3610,7 @@ void validate_krausMapIsSynced(KrausMap map, const char* caller) {
     if (!global_isValidationEnabled)
         return;
 
-    // we don't need to perform any sync check in CPU-only mode
-    if (!mem_isAllocated(util_getGpuMemPtr(map.superop)))
-        return;
-
-    // assert the map's superoperator has been synced
+    // Assert the derived superoperator has been computed by syncKrausMap(), even in CPU-only mode.
     assertThat(*(map.superop.wasGpuSynced), report::KRAUS_MAP_NOT_SYNCED_TO_GPU, caller);
 }
 

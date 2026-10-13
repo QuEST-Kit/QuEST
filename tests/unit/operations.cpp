@@ -1029,9 +1029,6 @@ void testOperationValidation(auto operation) {
 
     SECTION( "matrix unsynced" ) {
 
-        if (!getQuESTEnv().isGpuAccelerated)
-            return;
-
         // only relevant to variable-size matrix functions
         if constexpr (Targs == any && (Args == compmatr || Args == diagmatr || Args == diagpower))
             *(std::get<0>(furtherArgs).wasGpuSynced) = 0;
