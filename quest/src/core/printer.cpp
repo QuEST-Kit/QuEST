@@ -721,6 +721,10 @@ void printContiguousRowsInTwoQuadrants(
         printRowInTwoQuadrants(left[r], leftColWidths, rightRow, rightColWidths,
                                isHorizontallyTruncated);
 
+        // a trailing ellipsis has no spacer when there is no right portion
+        if (isHorizontallyTruncated && rightRow.empty() && !rowLabels.empty() && !rowLabels[r].empty())
+            cout << string(MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS, MATRIX_SPACE_CHAR);
+
         // print optional row label, using trailing space left by above row print
         cout << (rowLabels.empty()? "" : rowLabels[r]);
         cout << endl;
@@ -795,7 +799,7 @@ void printMatrixInFourQuadrants(
         upperRowLabels,
         baseIndent, indentPerRow, 0, isHorizontallyTruncated);
 
-    // finish immediately if there are no lower rows and no data was omitted
+    // finish immediately if there are no lower rows and no rows were omitted
     if (lowerLeftStrings.empty() && !isVerticallyTruncated)
         return;
 

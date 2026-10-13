@@ -92,8 +92,10 @@ TEST_CASE( "setQuESTMaxNumReportedSigFigs", TEST_CATEGORY ) {
 
             std::string ref = refs[numSigFigs-1];
 
-            CAPTURE( numSigFigs, ref );
-            REQUIRE( out == ref );
+            if (getQuESTEnv().rank == 0) {
+                CAPTURE( numSigFigs, ref );
+                REQUIRE( out == ref );
+            }
         }
     }
 
@@ -114,35 +116,60 @@ TEST_CASE( "setQuESTMaxNumReportedSigFigs", TEST_CATEGORY ) {
 
 TEST_CASE( "setQuESTMaxNumReportedItems", TEST_CATEGORY ) {
 
-    // Reproduce issue #810: a 2x2 matrix limited to one row and column must
-    // show that both the row and column were truncated.
-    CompMatr1 matr = getInlineCompMatr1({{1,2},{3,4}});
-    setQuESTNumReportedNewlines(1);
+    SECTION( LABEL_CORRECTNESS ) {
 
-    auto reportWithLimits = [&](qindex maxRows, qindex maxCols) {
-        setQuESTMaxNumReportedItems(maxRows, maxCols);
+        // restore stdout and the reporting defaults even if a reporter throws
+        struct ScopedReportCapture {
+            std::stringstream buffer;
+            std::streambuf* old = std::cout.rdbuf(buffer.rdbuf());
 
-        std::stringstream buffer;
-        std::streambuf * old = std::cout.rdbuf(buffer.rdbuf());
-        reportCompMatr1(matr);
-        std::cout.rdbuf(old);
-        return buffer.str();
-    };
+            ~ScopedReportCapture() {
+                std::cout.rdbuf(old);
+                setQuESTMaxNumReportedItems(32, 4);
+                setQuESTNumReportedNewlines(2);
+            }
+        };
 
-    std::string truncated = reportWithLimits(1, 1);
-    std::string unlimited = reportWithLimits(0, 0);
-    std::string complete = reportWithLimits(2, 2);
+        auto reportWithLimits = [&](qindex rows, qindex cols, auto report) {
+            ScopedReportCapture capture;
+            setQuESTMaxNumReportedItems(rows, cols);
+            setQuESTNumReportedNewlines(1);
+            report();
+            return capture.buffer.str();
+        };
 
-    // restore the defaults in printer.cpp for subsequent tests
-    setQuESTMaxNumReportedItems(32, 4);
-    setQuESTNumReportedNewlines(2);
+        CompMatr1 matr = getInlineCompMatr1({{1,2},{3,4}});
+        auto reportMatrix = [&] { reportCompMatr1(matr); };
+        DiagMatr2 diag = getInlineDiagMatr2({1,2,3,4});
 
-    REQUIRE( truncated.find("…") != std::string::npos );
-    REQUIRE( truncated.find("⋮") != std::string::npos );
-    REQUIRE( unlimited.find("…") == std::string::npos );
-    REQUIRE( unlimited.find("⋮") == std::string::npos );
-    REQUIRE( complete.find("…") == std::string::npos );
-    REQUIRE( complete.find("⋮") == std::string::npos );
+        // finish all reporter calls and cleanup on every rank before asserting
+        vector<std::string> outputs = {
+            reportWithLimits(1, 1, reportMatrix),
+            reportWithLimits(1, 2, reportMatrix),
+            reportWithLimits(2, 1, reportMatrix),
+            reportWithLimits(0, 0, reportMatrix),
+            reportWithLimits(2, 2, reportMatrix),
+            reportWithLimits(1, 1, [&] { reportDiagMatr2(diag); })
+        };
+        vector<std::string> refs = {
+            "    1  …\n    ⋮\n",
+            "    1  2  \n    ⋮\n",
+            "    1  …\n    3  …\n",
+            "    1  2  \n    3  4  \n",
+            "    1  2  \n    3  4  \n",
+            "    1  \n      ⋱\n"
+        };
+
+        if (getQuESTEnv().rank == 0) {
+            for (size_t i=0; i<outputs.size(); i++) {
+                CAPTURE( i );
+                // omit the header, whose byte counts depend on precision
+                auto headerEnd = outputs[i].find('\n');
+                REQUIRE( headerEnd != std::string::npos );
+                REQUIRE( outputs[i].substr(headerEnd + 1) == refs[i] );
+            }
+        }
+    }
 }
 
 
@@ -163,8 +190,10 @@ TEST_CASE( "setQuESTNumReportedNewlines", TEST_CATEGORY ) {
 
             std::string ref = "x" + std::string(numNewlines, '\n');
             
-            CAPTURE( numNewlines, ref );
-            REQUIRE( out == ref );
+            if (getQuESTEnv().rank == 0) {
+                CAPTURE( numNewlines, ref );
+                REQUIRE( out == ref );
+            }
         }
     }
 
