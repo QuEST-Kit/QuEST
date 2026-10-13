@@ -112,6 +112,40 @@ TEST_CASE( "setQuESTMaxNumReportedSigFigs", TEST_CATEGORY ) {
 }
 
 
+TEST_CASE( "setQuESTMaxNumReportedItems", TEST_CATEGORY ) {
+
+    // Reproduce issue #810: a 2x2 matrix limited to one row and column must
+    // show that both the row and column were truncated.
+    CompMatr1 matr = getInlineCompMatr1({{1,2},{3,4}});
+    setQuESTNumReportedNewlines(1);
+
+    auto reportWithLimits = [&](qindex maxRows, qindex maxCols) {
+        setQuESTMaxNumReportedItems(maxRows, maxCols);
+
+        std::stringstream buffer;
+        std::streambuf * old = std::cout.rdbuf(buffer.rdbuf());
+        reportCompMatr1(matr);
+        std::cout.rdbuf(old);
+        return buffer.str();
+    };
+
+    std::string truncated = reportWithLimits(1, 1);
+    std::string unlimited = reportWithLimits(0, 0);
+    std::string complete = reportWithLimits(2, 2);
+
+    // restore the defaults in printer.cpp for subsequent tests
+    setQuESTMaxNumReportedItems(32, 4);
+    setQuESTNumReportedNewlines(2);
+
+    REQUIRE( truncated.find("…") != std::string::npos );
+    REQUIRE( truncated.find("⋮") != std::string::npos );
+    REQUIRE( unlimited.find("…") == std::string::npos );
+    REQUIRE( unlimited.find("⋮") == std::string::npos );
+    REQUIRE( complete.find("…") == std::string::npos );
+    REQUIRE( complete.find("⋮") == std::string::npos );
+}
+
+
 TEST_CASE( "setQuESTNumReportedNewlines", TEST_CATEGORY ) {
 
     SECTION( LABEL_CORRECTNESS ) {

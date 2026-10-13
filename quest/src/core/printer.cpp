@@ -679,7 +679,8 @@ void printPerRowIndent(string baseIndent, size_t row, string indentPerRow) {
 
 void printRowInTwoQuadrants(
     vector<string> leftRow, vector<size_t> leftColWidths,
-    vector<string> rightRow, vector<size_t> rightColWidths
+    vector<string> rightRow, vector<size_t> rightColWidths,
+    bool isHorizontallyTruncated
 ) {
     // print left portion of row
     for (size_t c=0; c<leftRow.size(); c++)
@@ -687,8 +688,11 @@ void printRowInTwoQuadrants(
              << leftRow[c];
 
     // finish without printing trailing newline if there is no right portion
-    if (rightRow.empty())
+    if (rightRow.empty()) {
+        if (isHorizontallyTruncated)
+            cout << HDOTS_CHAR;
         return;
+    }
 
     // draw ellipsis; left-spacer already applied by previous amp
     string spacer = string(MIN_SPACE_BETWEEN_DENSE_MATRIX_COLS, MATRIX_SPACE_CHAR);
@@ -707,13 +711,15 @@ void printContiguousRowsInTwoQuadrants(
     stringmatr left, vector<size_t> leftColWidths, 
     stringmatr right, vector<size_t> rightColWidths, 
     vector<string> rowLabels,
-    string indent, string indentPerRow, size_t rowOffsetForIndent
+    string indent, string indentPerRow, size_t rowOffsetForIndent,
+    bool isHorizontallyTruncated
 ) {
     for (size_t r=0; r<left.size(); r++) {
         printPerRowIndent(indent, r + rowOffsetForIndent, indentPerRow);
 
         auto rightRow = (right.empty())? vector<string>{} : right[r];
-        printRowInTwoQuadrants(left[r], leftColWidths, rightRow, rightColWidths);
+        printRowInTwoQuadrants(left[r], leftColWidths, rightRow, rightColWidths,
+                               isHorizontallyTruncated);
 
         // print optional row label, using trailing space left by above row print
         cout << (rowLabels.empty()? "" : rowLabels[r]);
@@ -727,7 +733,8 @@ void printMatrixInFourQuadrants(
     qcompmatr lowerLeft, qcompmatr lowerRight, 
     vector<string> leftColLabels,  vector<string> rightColLabels, // shown above the first row
     vector<string> upperRowLabels, vector<string> lowerRowLabels, // shown right of the last column
-    string baseIndent, string indentPerRow, string verticalEllipsis
+    string baseIndent, string indentPerRow, string verticalEllipsis,
+    bool isVerticallyTruncated, bool isHorizontallyTruncated
 ) {
     // this function prints a matrix which has been prior divided into one, two or four
     // quadrants, resulting from reporter truncation of the original matrix. It can be
@@ -735,12 +742,12 @@ void printMatrixInFourQuadrants(
     // vertical vectors, diagonal matrices, and lists of scalars (e.g. Pauli coefficients)
 
     // the below preconditions are assumed but not enforced:
-    // - it is valid for lowerLeft to be empty, implying upperLeft contains entire columns;
-    //   in that scenario, lowerRight must also be empty
-    // - it is valid for upperRight to be empty, implying upperLeft contains entire rows;
-    //   in that scenario, lowerRight must also be empty
-    // - it is valid for upperRight=lowerLeft=lowerRight to be empty, implying upperLeft
-    //   contains the entire matrix
+    // - it is valid for lowerLeft to be empty; omitted rows are indicated by
+    //   isVerticallyTruncated, and in that scenario lowerRight must also be empty
+    // - it is valid for upperRight to be empty; omitted columns are indicated by
+    //   isHorizontallyTruncated, and in that scenario lowerRight must also be empty
+    // - it is valid for upperRight=lowerLeft=lowerRight to be empty; upperLeft contains
+    //   the entire matrix only when neither truncation flag is set
     // - it is valid for qcompmatr={} (empty), but it is INVALID to be {{}} (reported non-empty)
     // - it is INVALID for any qcompmatr to have an inconsistent number of columns across its rows
     // - it is INVALID for upperLeft and lowerLeft to differ in #columns, though #rows can vary;
@@ -776,7 +783,8 @@ void printMatrixInFourQuadrants(
     // optionally print all column labels
     if (!leftColLabels.empty()) {
         cout << baseIndent;
-        printRowInTwoQuadrants(leftColLabels, leftColWidths, rightColLabels, rightColWidths);
+        printRowInTwoQuadrants(leftColLabels, leftColWidths, rightColLabels, rightColWidths,
+                               isHorizontallyTruncated);
         cout << endl;
     }
 
@@ -785,22 +793,25 @@ void printMatrixInFourQuadrants(
         upperLeftStrings, leftColWidths, 
         upperRightStrings, rightColWidths, 
         upperRowLabels,
-        baseIndent, indentPerRow, 0);
+        baseIndent, indentPerRow, 0, isHorizontallyTruncated);
 
-    // finish immediately if there are no lower rows (matrix wasn't vertically truncated)
-    if (lowerLeftStrings.empty())
+    // finish immediately if there are no lower rows and no data was omitted
+    if (lowerLeftStrings.empty() && !isVerticallyTruncated)
         return;
 
     // otherwise, draw ellipsis, aligned (approx) in the midpoint of leftmost column (which may be indented)
     printPerRowIndent(baseIndent, upperLeft.size(), indentPerRow);
     cout << string(leftColWidths[0]/2, MATRIX_SPACE_CHAR) << verticalEllipsis << endl;
 
+    if (lowerLeftStrings.empty())
+        return;
+
     // print the lower rows (continuing indentation from upper)
     printContiguousRowsInTwoQuadrants(
         lowerLeftStrings, leftColWidths, 
         lowerRightStrings, rightColWidths, 
         lowerRowLabels,
-        baseIndent, indentPerRow, upperLeft.size() + 1); // +1 for ellipsis
+        baseIndent, indentPerRow, upperLeft.size() + 1, isHorizontallyTruncated); // +1 for ellipsis
 }
 
 
@@ -826,6 +837,8 @@ struct MatrixQuadrantInds {
 
     qindex rightStartCol=0;
     qindex lowerStartRow=0;
+    bool isVerticallyTruncated=false;
+    bool isHorizontallyTruncated=false;
 
     // these are always fixed at 0, but included for clarity
     qindex leftStartCol = 0;
@@ -878,6 +891,8 @@ MatrixQuadrantInds getTruncatedMatrixQuadrantInds(qindex numRows, qindex numCols
         inds.numLowerRightRows = maxNumLowerRows;  inds.numLowerRightCols = maxNumRightCols;
     }
 
+    inds.isVerticallyTruncated = numRows > global_maxNumPrintedRows;
+    inds.isHorizontallyTruncated = numCols > global_maxNumPrintedCols;
     return inds;
 }
 
@@ -1126,7 +1141,8 @@ void printDenseSquareMatrix(T obj, string indent) {
     printMatrixInFourQuadrants(
         ul, ur, ll, lr,
         leftColLabels, rightColLabels, rowLabels, rowLabels, 
-        indent, indentPerRow, VDOTS_CHAR);
+        indent, indentPerRow, VDOTS_CHAR,
+        inds.isVerticallyTruncated, inds.isHorizontallyTruncated);
 }
 
 
@@ -1257,7 +1273,8 @@ void printVector(T obj, string indent) {
     printMatrixInFourQuadrants(
         ul, ur, ll, lr,
         colLabels, colLabels, upperRowLabels, lowerRowLabels, 
-        indent, indentPerRow, ellipsisChar);
+        indent, indentPerRow, ellipsisChar,
+        inds.isVerticallyTruncated, inds.isHorizontallyTruncated);
 }
 
 
@@ -1399,7 +1416,8 @@ void print_elems(PauliStrSum sum, string indent) {
     printMatrixInFourQuadrants(
         ul, ur, ll, lr,
         colLabels, colLabels, upperLabels, lowerLabels, 
-        indent, "", VDOTS_CHAR);
+        indent, "", VDOTS_CHAR,
+        inds.isVerticallyTruncated, inds.isHorizontallyTruncated);
 }
 
 
