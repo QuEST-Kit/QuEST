@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <string>
+#include <limits>
 
 using std::string;
 
@@ -236,6 +237,12 @@ void assert_commPayloadIsPowerOf2(qindex numAmps) {
         raiseInternalError("A communication function was given a payload which was unexpectedly not a power of 2, as implied by preconditions.");
 }
 
+void assert_commMessageParamFitsIntoMpiInt(qindex value) {
+
+    if (value > std::numeric_limits<int>::max())
+        raiseInternalError("A function attempted to communicate with a message parameter which exceeded the maximum int accepted by MPI.");
+}
+
 void assert_commQuregIsDistributed(Qureg qureg) {
 
     if (!qureg.isDistributed)
@@ -419,7 +426,7 @@ void assert_exponentMatchesTemplateParam(qcomp exponent, bool hasPower, bool use
     assert_exponentMatchesTemplateParam(exponent, hasPower);
 
     if (!hasPower && useRealPow)
-        raiseInternalError("A CPU or GPU subroutine received an invalid combination of HasPower=false and UseRealPow=false template parameters");
+        raiseInternalError("A CPU or GPU subroutine received an invalid combination of HasPower=false and UseRealPow=true template parameters");
 }
 
 
@@ -779,6 +786,11 @@ void error_cuQuantumInitOrFinalizedButNotCompiled() {
 void error_cuQuantumTempCpuAllocFailed() {
 
     raiseInternalError("Attempted allocation of temporary host-memory for a cuQuantum routine failed.");
+}
+
+void error_cuQuantumIncompatibleWithMaximallyDistributedDephasing() {
+
+    raiseInternalError("The current extreme distribution scheme (a single density matrix column per node) is incompatible with our optimised implementation of one-qubit dephasing using cuQuantum.");
 }
 
 

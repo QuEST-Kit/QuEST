@@ -1642,7 +1642,7 @@ void validate_randomSeeds(unsigned* seeds, int numSeeds, const char* caller) {
     }
 
     assertThat(!isNull, report::RANDOM_SEEDS_PTR_IS_NULL, caller);
-    assertThat(numRootSeeds > 0, report::INVALID_NUM_RANDOM_SEEDS, {{"${NUM_SEEDS}", numSeeds}}, caller);
+    assertThat(numRootSeeds > 0, report::INVALID_NUM_RANDOM_SEEDS, {{"${NUM_SEEDS}", numRootSeeds}}, caller);
 }
 
 void validate_newEpsilonValue(qreal eps, const char* caller) {
@@ -2585,21 +2585,19 @@ void validate_matrixRowsAllSameSize(vector<vector<qcomp>> matrix, const char* ca
 
     size_t dim = matrix[0].size();
 
-    size_t row=0;
-    bool allSame = true;
-    for (row=0; row<matrix.size() && allSame; row++)
-        allSame = (matrix[row].size() == dim);
+    size_t outlierInd = 0;
+    while (outlierInd < matrix.size() && matrix[outlierInd].size() == dim)
+        outlierInd++;
 
-    // extremely lazily avoiding seg-fault from premature matrix[row==end])
-    if (allSame)
+    if (outlierInd == matrix.size())
         return;
 
     tokenSubs vars = {
-        {"{FIRST_LEN}",    dim},
-        {"${OUTLIER_IND}", row},
-        {"${OUTLIER_LEN}", matrix[row].size()}};
+        {"${FIRST_LEN}",    dim},
+        {"${OUTLIER_IND}", outlierInd},
+        {"${OUTLIER_LEN}", matrix[outlierInd].size()}};
 
-    assertThat(allSame, report::NESTED_VECTOR_MATRIX_HAS_INCONSISTENT_NUM_COLUMNS, vars, caller);
+    assertThat(false, report::NESTED_VECTOR_MATRIX_HAS_INCONSISTENT_NUM_COLUMNS, vars, caller);
 }
 
 
@@ -3406,7 +3404,7 @@ void validate_superOpDimMatchesTargs(SuperOp op, int numTargets, const char* cal
     if (!global_isValidationEnabled)
         return;
 
-    tokenSubs vars = {{"${OP_QUBITS}", op.numQubits}, {"{NUM_TARGS}", numTargets}};
+    tokenSubs vars = {{"${OP_QUBITS}", op.numQubits}, {"${NUM_TARGS}", numTargets}};
     assertThat(op.numQubits == numTargets, report::SUPER_OP_SIZE_MISMATCHES_NUM_TARGETS, vars, caller);
 }
 
@@ -3815,7 +3813,7 @@ void validate_newPauliStrSumParams(qindex numTerms, const char* caller) {
     size_t memPerTerm = sizeof(qcomp) + sizeof(PauliStr);
     size_t maxNumTerms = std::numeric_limits<size_t>::max() / memPerTerm;
     tokenSubs vars = {{"${NUM_TERMS}", numTerms}, {"${NUM_BYTES_PER_TERM}", memPerTerm}, {"${MAX_NUM_TERMS}", maxNumTerms}};
-    assertThat(numTerms < (qindex) maxNumTerms, report::NEW_PAULI_STR_SUM_MEM_WOULD_OVERFLOW, vars, caller);
+    assertThat(numTerms <= (qindex) maxNumTerms, report::NEW_PAULI_STR_SUM_MEM_WOULD_OVERFLOW, vars, caller);
 
     // attempt to fetch RAM, and simply return if we fail; if we unknowingly
     // didn't have enough RAM, then alloc validation will trigger later
@@ -4407,7 +4405,7 @@ void validate_measurementOutcomesFitInGpuMem(Qureg qureg, int numQubits, const c
     size_t memNeeded = sizeof(qreal) * numOutcomes;
 
     tokenSubs vars = {
-        {"{NUM_QUBITS}",    numQubits}, 
+        {"${NUM_QUBITS}",   numQubits},
         {"${NUM_OUTCOMES}", numOutcomes}, 
         {"${MEM_NEEDED}",   memNeeded}, 
         {"${MEM_AVAIL}",    memAvail}

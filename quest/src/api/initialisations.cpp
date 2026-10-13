@@ -293,7 +293,8 @@ void setDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, vector<v
         ptrs[i] = amps[i].data();
 
     // C function performs main validation
-    setDensityQuregAmps(qureg, startRow, startCol, ptrs.data(), len, (len>0)? len : 0); // avoid seg-fault
+    size_t numCols = (len > 0)? amps[0].size() : 0; // avoid seg-fault
+    setDensityQuregAmps(qureg, startRow, startCol, ptrs.data(), len, numCols);
 }
 
 void setQuregAmps(Qureg qureg, qindex startInd, vector<qcomp> amps) {

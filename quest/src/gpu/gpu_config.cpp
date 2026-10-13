@@ -381,14 +381,11 @@ int gpu_getMaxNumThreadsPerBlock() {
 }
 
 
-std::array<char,17> getBoundGpuUuid() {
+std::array<char,16> getBoundGpuUuid() {
 #if QUEST_COMPILE_CUDA
     assert_gpuHasBeenBound(hasGpuBeenBound);
 
-    constexpr int numUuidChars = 16;
-    constexpr int numOutChars = numUuidChars + 1; // terminal char
-
-    std::array<char,numOutChars> out;
+    constexpr int numUuidBytes = 16;
     cudaUUID_t uuid;
 
     // ROCm v5's cudaDeviceProp doesn't have a uuid field
@@ -402,12 +399,8 @@ std::array<char,17> getBoundGpuUuid() {
         uuid = prop.uuid;
     #endif
 
-    // copy char[16] to out[17] (not human readable)
-    std::copy_n(uuid.bytes, numUuidChars, out.begin());
-
-    // include terminal char so that subsequent to-string
-    // operations will succeed without knowing string length
-    out[numOutChars-1] = '\0';
+    std::array<char,numUuidBytes> out;
+    std::copy_n(uuid.bytes, numUuidBytes, out.begin());
     return out;
 
 #else
@@ -448,11 +441,11 @@ bool gpu_areAnyNodesBoundToSameGpu() {
     if (!comm_isActive())
         return false;
 
-    // obtain bound GPU's UUID; a unique identifier 16-char identifier
-    auto uuidStr = getBoundGpuUuid();
+    // obtain the bound GPU's fixed-width binary UUID
+    auto uuid = getBoundGpuUuid();
 
-    // we can repurpose string-to-root sending to collect all uuids
-    auto allUuids = comm_gatherStringsToRoot(uuidStr.data(), uuidStr.size());
+    // gather every byte, including embedded nulls, and compare the identifiers
+    auto allUuids = comm_gatherStringsToRoot(uuid.data(), static_cast<int>(uuid.size()));
     auto uniqueUuids = std::set<std::string>(allUuids.begin(), allUuids.end());
 
     // and assess whether they're all unique (non-root's bools are overwritten)

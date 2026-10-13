@@ -69,6 +69,8 @@ void comm_reduceReals(qreal* localReals, qindex numLocalReals);
 
 bool comm_isTrueOnAllNodes(bool val);
 
+bool comm_isTrueOnAnyNode(bool val);
+
 bool comm_isTrueOnRootNode(bool val);
 
 
@@ -77,7 +79,7 @@ bool comm_isTrueOnRootNode(bool val);
  * GATHER METHODS
  */
 
-vector<std::string> comm_gatherStringsToRoot(char* localChars, int maxNumLocalChars);
+vector<std::string> comm_gatherStringsToRoot(const char* localChars, int numLocalChars);
 
 
 

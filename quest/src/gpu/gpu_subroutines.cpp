@@ -507,9 +507,10 @@ void gpu_statevec_anyCtrlAnyTargDenseMatr_sub(Qureg qureg, ConstList64 ctrls, Co
         qindex numThreads = gpu_getMaxNumConcurrentThreads();
         int numThreadsPerBlock = gpu_getNumThreadsPerBlock();
         
-        // use strictly 2^# threads to maintain precondition of all kernels
+        // use at most a power-of-two number of concurrent threads to maintain
+        // the kernels' divisibility precondition without exceeding the hardware bound
         if (!isPowerOf2(numThreads))
-            numThreads = util_getNextPowerOf2(numThreads);
+            numThreads = util_getNextPowerOf2(numThreads) / 2;
 
         // no point in dispatching more threads than batches
         if (numThreads > numBatches)
@@ -1546,7 +1547,11 @@ INSTANTIATE_FUNC_OPTIMISED_FOR_NUM_TARGS( void, gpu_densmatr_partialTrace_sub, (
 qreal gpu_statevec_calcTotalProb_sub(Qureg qureg) {
 
 #if QUEST_COMPILE_CUQUANTUM
-    return cuquantum_statevec_calcTotalProb_sub(qureg);
+    // cuStateVec's Z-basis routine requires a target qubit, which does not exist
+    // when a maximally distributed statevector stores one amplitude per node
+    return (qureg.logNumAmpsPerNode > 0)?
+        cuquantum_statevec_calcTotalProb_sub(qureg):
+        thrust_statevec_calcTotalProb_sub(qureg);
 
 #elif QUEST_COMPILE_CUDA
     return thrust_statevec_calcTotalProb_sub(qureg);

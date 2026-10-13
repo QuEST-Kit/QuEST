@@ -118,7 +118,7 @@ namespace regexes {
 bool isWhiteSpace(char ch) {
 
     // matches patterns:space and more (additionally; newlines)
-    return isspace(ch); 
+    return std::isspace(static_cast<unsigned char>(ch));
 }
 
 bool isNotWhiteSpace(char ch) {

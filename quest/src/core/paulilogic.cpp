@@ -244,7 +244,7 @@ PAULI_MASK_TYPE paulis_getKeyOfSameMixedAmpsGroup(PauliStr str) {
     for (int i=0; i<=maxInd; i++) {
         int pauli = paulis_getPauliAt(str, i);
         int isXY = (pauli == 1 || pauli == 2);
-        key |= (isXY << i);
+        key |= ((PAULI_MASK_TYPE) isXY) << i;
     }
 
     return key;
@@ -304,7 +304,7 @@ qindex paulis_getTargetBitMask(PauliStrSum sum) {
     qindex mask = 0;
 
     // mask has 1 where any str has a != Id
-    for (int t=0; t<sum.numTerms; t++)
+    for (qindex t=0; t<sum.numTerms; t++)
         mask |= paulis_getTargetBitMask(sum.strings[t]);
 
     return mask;
@@ -379,7 +379,7 @@ qindex paulis_getNumTermsInPauliStrSumProdOfAdjointWithSelf(PauliStrSum in) {
     // adj(in).in has fewer terms than the numTerms^2 bound, since 
     // a.a = I (causing -n and +1 below) and a.b ~ b.a (causing /2);
     // we do not however consider any cancellations of coefficients
-    int n = in.numTerms;
+    qindex n = in.numTerms;
     return 1 + (n*n - n)/2;
 }
 

@@ -39,7 +39,7 @@ bool didAnyAllocsFailOnAnyNode(PauliStrSum sum) {
         ! mem_isAllocated(sum.isApproxHermitian) );
     
     if (comm_isActive())
-        anyFail = comm_isTrueOnAllNodes(anyFail);
+        anyFail = comm_isTrueOnAnyNode(anyFail);
 
     return anyFail;
 }

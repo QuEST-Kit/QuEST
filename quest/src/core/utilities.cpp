@@ -398,6 +398,11 @@ bool util_willProdOverflow(vector<qindex> terms) {
     qindex max = std::numeric_limits<qindex>::max();
     qindex prod = 1;
 
+    // any zero factor makes the full product zero and cannot overflow
+    for (auto x : terms)
+        if (x == 0)
+            return false;
+
     for (auto x : terms) {
 
         // division floors, so prod strictly exceed
@@ -417,7 +422,7 @@ bool util_willSumOverflow(vector<qindex> terms) {
 
     for (auto x : terms) {
 
-        if (sum >= max - x)
+        if (sum > max - x)
             return true;
         
         sum += x;
@@ -635,9 +640,9 @@ bool getHermiticity(T elems, qindex dim, qreal eps) {
     /// consider multithreading or GPU-accelerating this
     /// when caller is big and e.g. has GPU memory
 
-    // check adjoint(elems) == elems
+    // check adjoint(elems) == elems, including that each diagonal is real
     for (qindex r=0; r<dim; r++)
-        for (qindex c=0; c<r; c++)
+        for (qindex c=0; c<=r; c++)
             if (!isApprox(elems[r][c], std::conj(elems[c][r]), eps))
                 return false;
 
@@ -857,6 +862,7 @@ bool util_isCPTP(KrausMap map, qreal eps) {
     /// use a multithreaded routine
 
     *(map.isApproxCPTP) = 1;
+    qreal epsSquared = eps * eps;
 
     // check whether each element satisfies Identity = sum dagger(m)*m
     for (qindex r=0; r<map.numRows; r++) {
@@ -870,7 +876,7 @@ bool util_isCPTP(KrausMap map, qreal eps) {
 
             // fail if too distant from Identity element...
             qreal distSquared = std::norm(elem - (r==c));
-            if (distSquared > eps) {
+            if (distSquared > epsSquared) {
 
                 // by recording the result and returning immediately
                 *(map.isApproxCPTP) = 0;

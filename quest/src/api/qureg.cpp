@@ -117,7 +117,7 @@ bool didAnyAllocsFailOnAnyNode(Qureg qureg) {
 
     bool anyFail = didAnyLocalAllocsFail(qureg);
     if (comm_isActive())
-        anyFail = comm_isTrueOnAllNodes(anyFail);
+        anyFail = comm_isTrueOnAnyNode(anyFail);
 
     return anyFail;
 }
@@ -130,7 +130,7 @@ void freeAllMemoryIfAnyAllocsFailed(Qureg qureg) {
         return;
 
     // otherwise, free everything that was successfully allocated (freeing nullptr is legal)
-    cpu_deallocArray(qureg.cpuAmps);
+    cpu_deallocNumaArray(qureg.cpuAmps, qureg.numAmpsPerNode);
     cpu_deallocArray(qureg.cpuCommBuffer);
 
     // although we avoid calling GPU deallocation in non-GPU mode
@@ -166,7 +166,7 @@ Qureg validateAndCreateCustomQureg(int numQubits, int isDensMatr, int useDistrib
 
     // if any of the above mallocs failed, below validation will memory leak; so free first (but don't set to nullptr)
     freeAllMemoryIfAnyAllocsFailed(qureg);
-    validate_newQuregAllocs(qureg, __func__);
+    validate_newQuregAllocs(qureg, caller);
 
     // TODO / DEBUG:
     // TEMPORARILY FORBID HIP GPU ACCELERATION OF > 2^32 AMPS PER NODE,
@@ -534,6 +534,11 @@ extern "C" void _wrap_getDensityQuregAmp(qcomp* out, Qureg qureg, qindex row, qi
 
 vector<qcomp> getQuregAmps(Qureg qureg, qindex startInd, qindex numAmps) {
 
+    // validate before interpreting numAmps as an allocation size
+    validate_quregFields(qureg, __func__);
+    validate_quregIsStateVector(qureg, __func__);
+    validate_basisStateIndices(qureg, startInd, numAmps, __func__);
+
     // allocate the output vector, and validate successful
     vector<qcomp> out;
     auto callback = [&]() { validate_tempListAllocSucceeded(false, numAmps, sizeof(qcomp), __func__); };
@@ -547,9 +552,14 @@ vector<qcomp> getQuregAmps(Qureg qureg, qindex startInd, qindex numAmps) {
 
 vector<vector<qcomp>> getDensityQuregAmps(Qureg qureg, qindex startRow, qindex startCol, qindex numRows, qindex numCols) {
 
+    // validate before multiplying dimensions or interpreting them as allocation sizes
+    validate_quregFields(qureg, __func__);
+    validate_quregIsDensityMatrix(qureg, __func__);
+    validate_basisStateRowCols(qureg, startRow, startCol, numRows, numCols, __func__);
+
     // allocate the output matrix, and validate successful
     vector<vector<qcomp>> out;
-    qindex numElems = numRows * numCols; // never overflows (else Qureg alloc would fail)
+    qindex numElems = numRows * numCols;
     auto callback1 = [&]() { validate_tempListAllocSucceeded(false, numElems, sizeof(qcomp), __func__); };
     util_tryAllocMatrix(out, numRows, numCols, callback1);
 

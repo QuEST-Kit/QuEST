@@ -428,6 +428,11 @@ qreal calcProbOfMultiQubitOutcome(Qureg qureg, vector<int> qubits, vector<int> o
 
 vector<qreal> calcProbsOfAllMultiQubitOutcomes(Qureg qureg, vector<int> qubits) {
 
+    // validate before exponentiating the caller-controlled vector size
+    validate_quregFields(qureg, __func__);
+    validate_targets(qureg, qubits.data(), qubits.size(), __func__);
+    validate_measurementOutcomesFitInGpuMem(qureg, qubits.size(), __func__);
+
     // allocate temp vector, and validate successful (since it's exponentially large!)
     vector<qreal> out;
     qindex numOut = powerOf2(qubits.size());

@@ -166,7 +166,7 @@ void freeAllMemoryIfAnyAllocsFailed(T matr) {
     // ascertain whether any allocs failed on any node
     bool anyFail = didAnyLocalAllocsFail(matr);
     if (comm_isActive())
-        anyFail = comm_isTrueOnAllNodes(anyFail);
+        anyFail = comm_isTrueOnAnyNode(anyFail);
 
     // if so, free all heap fields
     if (anyFail)
@@ -310,7 +310,7 @@ FullStateDiagMatr validateAndCreateCustomFullStateDiagMatr(int numQubits, int us
     out.cpuElems = cpu_allocArray(numElemsPerNode);
     out.gpuElems = (useGpuAccel)? gpu_allocArray(numElemsPerNode) : nullptr;
 
-    validateMatrixAllocs(out, __func__);
+    validateMatrixAllocs(out, caller);
     setInitialHeapFlags(out);
     return out;
 }
@@ -743,7 +743,7 @@ extern "C" void setFullStateDiagMatrFromMultiDimLists(FullStateDiagMatr out, voi
 template<class T> 
 void validateAndPrintMatrix(T matr, const char* caller) {
     validate_matrixFields(matr, caller);
-    validate_numReportedNewlinesAboveZero(__func__); // because trailing newline mandatory
+    validate_numReportedNewlinesAboveZero(caller); // because trailing newline mandatory
 
     // syncable matrices must be synced before reporting (though only CPU elems are printed)
     if constexpr (util_isHeapMatrixType<T>())
