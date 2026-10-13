@@ -2648,7 +2648,6 @@ void cpu_densmatr_multiQubitProjector_sub(Qureg qureg, ConstList64 qubits, Const
 }
 
 
-
 /*
  * STATE INITIALISATION
  */

@@ -1,0 +1,360 @@
+# Builds, relocates, and consumes QuEST's install tree and generated packages.
+# GPU functional builds remain in compile.yml; this workflow checks portable
+# CPU archives, externally provided ADIOS2 exports, and native package profiles.
+
+name: packaging
+
+on:
+  push:
+    branches:
+      - main
+      - devel
+      - v4.3-release
+  pull_request:
+    branches:
+      - main
+      - devel
+      - v4.3-release
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  binary-archives:
+    name: ${{ matrix.os }} ${{ matrix.shared == 'ON' && 'shared' || 'static' }} CMake ${{ matrix.cmake }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15, windows-2022]
+        shared: [ON, OFF]
+        cmake: ['3.28.x', latest]
+
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      - name: Set up CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: ${{ matrix.cmake }}
+
+      - name: Configure install and packaging tests
+        run: >
+          cmake -S . -B build
+          -DBUILD_SHARED_LIBS=${{ matrix.shared }}
+          -DCMAKE_BUILD_TYPE=Release
+          -DQUEST_ENABLE_INSTALL=ON
+          -DQUEST_ENABLE_PACKAGING=ON
+          -DQUEST_BUILD_PACKAGING_TESTS=ON
+          -DQUEST_BUILD_MIN_EXAMPLE=ON
+          -DQUEST_INSTALL_BINARIES=ON
+          -DQUEST_ENABLE_OMP=OFF
+          -DQUEST_ENABLE_NUMA=OFF
+          -DQUEST_ENABLE_MPI=OFF
+
+      - name: Build QuEST
+        run: cmake --build build --config Release --parallel 2
+
+      - name: Stage, relocate, and consume the install
+        run: ctest --test-dir build -C Release -L packaging --output-on-failure
+
+      - name: Create TGZ and ZIP binary archives
+        run: |
+          cpack --config build/CPackConfig.cmake -C Release -G TGZ -B binary-packages
+          cpack --config build/CPackConfig.cmake -C Release -G ZIP -B binary-packages
+
+      - name: Upload binary archives
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.os }}-${{ matrix.shared }}-cmake-${{ matrix.cmake }}
+          path: |
+            binary-packages/*.tar.gz
+            binary-packages/*.zip
+          if-no-files-found: error
+
+  source-archives:
+    name: Source TGZ and ZIP without Git
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      - name: Configure source packaging
+        run: >
+          cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=Release
+          -DQUEST_ENABLE_INSTALL=ON
+          -DQUEST_ENABLE_PACKAGING=ON
+          -DQUEST_BUILD_MIN_EXAMPLE=ON
+          -DQUEST_ENABLE_OMP=OFF
+          -DQUEST_ENABLE_NUMA=OFF
+
+      - name: Create source archives
+        run: |
+          cpack --config build/CPackSourceConfig.cmake -G TGZ -B source-packages
+          cpack --config build/CPackSourceConfig.cmake -G ZIP -B source-packages
+
+      - name: Rebuild the TGZ outside Git
+        shell: bash
+        run: |
+          archive=$(find source-packages -maxdepth 1 -name '*.tar.gz' -print -quit)
+          test -n "$archive"
+          mkdir source-extract
+          tar -xf "$archive" -C source-extract
+          source_dir=$(find source-extract -mindepth 1 -maxdepth 1 -type d -print -quit)
+          test -n "$source_dir"
+          test ! -e "$source_dir/.git"
+          cmake -S "$source_dir" -B source-rebuild -DQUEST_ENABLE_OMP=OFF -DQUEST_ENABLE_NUMA=OFF
+          cmake --build source-rebuild --config Release --parallel 2
+
+      - name: Upload source archives
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-archives
+          path: |
+            source-packages/*.tar.gz
+            source-packages/*.zip
+          if-no-files-found: error
+
+  linux-variants:
+    name: Linux ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: custom static fp1 lib64 without NUMA
+            generator: Ninja
+            config: Release
+            shared: OFF
+            precision: 1
+            omp: ON
+            disable_numa: TRUE
+            output_name: CustomQuEST
+            append_name: ON
+            prefix: /opt/quest-ci
+            libdir: lib64
+            bindir: tools/bin
+            includedir: share/quest-headers
+          - name: fp4 Ninja Multi-Config Debug
+            generator: Ninja Multi-Config
+            config: Debug
+            shared: ON
+            precision: 4
+            omp: OFF
+            disable_numa: FALSE
+            output_name: QuEST
+            append_name: OFF
+            prefix: /srv/quest-ci
+            libdir: lib
+            bindir: bin
+            includedir: include
+
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      - name: Configure variant
+        run: >
+          cmake -S . -B build-variant -G "${{ matrix.generator }}"
+          -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+          -DCMAKE_INSTALL_PREFIX=${{ matrix.prefix }}
+          -DCMAKE_INSTALL_LIBDIR=${{ matrix.libdir }}
+          -DCMAKE_INSTALL_BINDIR=${{ matrix.bindir }}
+          -DCMAKE_INSTALL_INCLUDEDIR=${{ matrix.includedir }}
+          -DCMAKE_DISABLE_FIND_PACKAGE_NUMA=${{ matrix.disable_numa }}
+          -DBUILD_SHARED_LIBS=${{ matrix.shared }}
+          -DQUEST_OUTPUT_LIB_NAME=${{ matrix.output_name }}
+          -DQUEST_APPEND_CONFIG_TO_LIB_NAME=${{ matrix.append_name }}
+          -DQUEST_FLOAT_PRECISION=${{ matrix.precision }}
+          -DQUEST_ENABLE_OMP=${{ matrix.omp }}
+          -DQUEST_ENABLE_NUMA=ON
+          -DQUEST_ENABLE_MPI=OFF
+          -DQUEST_ENABLE_INSTALL=ON
+          -DQUEST_ENABLE_PACKAGING=ON
+          -DQUEST_BUILD_PACKAGING_TESTS=ON
+          -DQUEST_BUILD_MIN_EXAMPLE=ON
+          -DQUEST_INSTALL_BINARIES=ON
+
+      - name: Build QuEST
+        run: cmake --build build-variant --config ${{ matrix.config }} --parallel 2
+
+      - name: Test variant install and archives
+        run: ctest --test-dir build-variant -C ${{ matrix.config }} -L packaging --output-on-failure
+
+  adios2-exports:
+    name: ADIOS2 ${{ matrix.adios2 }} ${{ matrix.shared == 'ON' && 'shared' || 'static' }} export
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        adios2: [serial, mpi]
+        shared: [ON, OFF]
+
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      - name: Install external ADIOS2
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libadios2-${{ matrix.adios2 }}-c++11-dev ${{ matrix.adios2 == 'mpi' && 'libopenmpi-dev openmpi-bin' || '' }}
+
+      - name: Configure install and packaging tests
+        run: >
+          cmake -S . -B build-adios2
+          -DCMAKE_BUILD_TYPE=Release
+          -DBUILD_SHARED_LIBS=${{ matrix.shared }}
+          -DQUEST_ENABLE_INSTALL=ON
+          -DQUEST_ENABLE_PACKAGING=OFF
+          -DQUEST_BUILD_PACKAGING_TESTS=ON
+          -DQUEST_TEST_ARCHIVES=OFF
+          -DQUEST_BUILD_MIN_EXAMPLE=OFF
+          -DQUEST_ENABLE_OMP=OFF
+          -DQUEST_ENABLE_NUMA=OFF
+          -DQUEST_ENABLE_MPI=${{ matrix.adios2 == 'mpi' && 'ON' || 'OFF' }}
+          -DQUEST_ENABLE_ADIOS2=ON
+          -DQUEST_DOWNLOAD_ADIOS2=OFF
+          -Dadios2_DIR=/usr/lib/x86_64-linux-gnu/cmake/adios2/${{ matrix.adios2 }}
+
+      - name: Build QuEST
+        run: cmake --build build-adios2 --parallel 2
+
+      - name: Stage, relocate, and consume installed QuEST
+        run: ctest --test-dir build-adios2 -L packaging --output-on-failure
+
+  ubuntu-deb:
+    name: Ubuntu 24.04 ${{ matrix.shared == 'ON' && 'shared' || 'static' }} DEB install and consumers
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        shared: [ON, OFF]
+
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      - name: Build stock native packages
+        shell: bash
+        run: |
+          docker run --rm -v "$PWD:/src" -w /src ubuntu:24.04 bash -euxo pipefail -c '
+            export DEBIAN_FRONTEND=noninteractive
+            export OMPI_ALLOW_RUN_AS_ROOT=1
+            export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+            apt-get update
+            apt-get install -y build-essential cmake ninja-build python3 dpkg-dev fakeroot file libnuma-dev libopenmpi-dev openmpi-bin
+            cmake -S . -B build-deb -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_INSTALL_PREFIX=/usr \
+              -DBUILD_SHARED_LIBS=${{ matrix.shared }} \
+              -DQUEST_ENABLE_INSTALL=ON \
+              -DQUEST_ENABLE_PACKAGING=ON \
+              -DQUEST_BUILD_PACKAGING_TESTS=ON \
+              -DQUEST_NATIVE_PACKAGE_PROFILE=ubuntu24.04 \
+              -DQUEST_BUILD_MIN_EXAMPLE=ON \
+              -DQUEST_INSTALL_BINARIES=ON \
+              -DQUEST_ENABLE_OMP=ON \
+              -DQUEST_ENABLE_NUMA=ON \
+              -DQUEST_ENABLE_MPI=ON \
+              -DQUEST_ENABLE_SUBCOMM=ON
+            cmake --build build-deb --parallel 2
+            ctest --test-dir build-deb -L packaging --output-on-failure
+            cpack --config build-deb/CPackConfig.cmake -G DEB -B packages-deb
+            package_count=$(find packages-deb -maxdepth 1 -name "*.deb" -print | wc -l)
+            if [ "${{ matrix.shared }}" = ON ]; then test "$package_count" -eq 3; else test "$package_count" -eq 2; fi
+          '
+
+      - name: Install packages in a clean container and build consumers
+        shell: bash
+        run: |
+          docker run --rm -v "$PWD:/src:ro" -w /src ubuntu:24.04 bash -euxo pipefail -c '
+            export DEBIAN_FRONTEND=noninteractive
+            export OMPI_ALLOW_RUN_AS_ROOT=1
+            export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+            apt-get update
+            apt-get install -y build-essential cmake
+            apt-get install -y /src/packages-deb/*.deb
+            cmake -S /src/tests/packaging/consumer -B /tmp/quest-consumer
+            cmake --build /tmp/quest-consumer --parallel 2
+            ctest --test-dir /tmp/quest-consumer --output-on-failure
+            min_example
+          '
+
+      - name: Upload DEB packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-24.04-${{ matrix.shared }}-deb
+          path: packages-deb/*.deb
+          if-no-files-found: error
+
+  fedora-rpm:
+    name: Fedora 44 ${{ matrix.shared == 'ON' && 'shared' || 'static' }} RPM install and consumers
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        shared: [ON, OFF]
+
+    steps:
+      - name: Get QuEST
+        uses: actions/checkout@v4
+
+      - name: Build stock native packages
+        shell: bash
+        run: |
+          docker run --rm -v "$PWD:/src" -w /src fedora:44 bash -euxo pipefail -c '
+            dnf install -y gcc gcc-c++ cmake ninja-build python3 rpm-build file numactl-devel openmpi-devel environment-modules
+            set +u
+            source /etc/profile.d/modules.sh
+            module load mpi/openmpi-x86_64
+            set -u
+            export OMPI_ALLOW_RUN_AS_ROOT=1
+            export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+            cmake -S . -B build-rpm -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_INSTALL_PREFIX=/usr \
+              -DBUILD_SHARED_LIBS=${{ matrix.shared }} \
+              -DQUEST_ENABLE_INSTALL=ON \
+              -DQUEST_ENABLE_PACKAGING=ON \
+              -DQUEST_BUILD_PACKAGING_TESTS=ON \
+              -DQUEST_NATIVE_PACKAGE_PROFILE=fedora44 \
+              -DQUEST_BUILD_MIN_EXAMPLE=ON \
+              -DQUEST_INSTALL_BINARIES=ON \
+              -DQUEST_ENABLE_OMP=ON \
+              -DQUEST_ENABLE_NUMA=ON \
+              -DQUEST_ENABLE_MPI=ON \
+              -DQUEST_ENABLE_SUBCOMM=ON
+            cmake --build build-rpm --parallel 2
+            ctest --test-dir build-rpm -L packaging --output-on-failure
+            cpack --config build-rpm/CPackConfig.cmake -G RPM -B packages-rpm
+            package_count=$(find packages-rpm -maxdepth 1 -name "*.rpm" -print | wc -l)
+            if [ "${{ matrix.shared }}" = ON ]; then test "$package_count" -eq 3; else test "$package_count" -eq 2; fi
+          '
+
+      - name: Install packages in a clean container and build consumers
+        shell: bash
+        run: |
+          docker run --rm -v "$PWD:/src:ro" -w /src fedora:44 bash -euxo pipefail -c '
+            dnf install -y gcc gcc-c++ cmake environment-modules /src/packages-rpm/*.rpm
+            set +u
+            source /etc/profile.d/modules.sh
+            module load mpi/openmpi-x86_64
+            set -u
+            export OMPI_ALLOW_RUN_AS_ROOT=1
+            export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+            cmake -S /src/tests/packaging/consumer -B /tmp/quest-consumer
+            cmake --build /tmp/quest-consumer --parallel 2
+            ctest --test-dir /tmp/quest-consumer --output-on-failure
+            min_example
+          '
+
+      - name: Upload RPM packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: fedora-44-${{ matrix.shared }}-rpm
+          path: packages-rpm/*.rpm
+          if-no-files-found: error

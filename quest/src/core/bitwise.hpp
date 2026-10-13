@@ -219,7 +219,6 @@ INLINE qindex insertBitsWithMaskedValues(qindex number, const int* bitInds, int 
     // there exists an overload of insertBitsWithMaskedValues() below which 
     // additionally accepts a (seemingly) superfluous mask encoding bitInds, 
     // and which will use a CPU intrinsic when available
-
     // bitInds must be sorted (increasing), and mask must be zero everywhere except bitInds
     return mask | insertBits(number, bitInds, numBits, 0);
 }

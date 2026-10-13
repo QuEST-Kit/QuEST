@@ -1,0 +1,21 @@
+# Find libnuma without requiring pkg-config on the consuming machine.
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+  pkg_check_modules(PC_NUMA QUIET numa)
+endif()
+find_path(NUMA_INCLUDE_DIR NAMES numa.h HINTS ${PC_NUMA_INCLUDE_DIRS})
+find_library(NUMA_LIBRARY NAMES numa HINTS ${PC_NUMA_LIBRARY_DIRS})
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(NUMA REQUIRED_VARS NUMA_INCLUDE_DIR NUMA_LIBRARY)
+mark_as_advanced(NUMA_INCLUDE_DIR NUMA_LIBRARY)
+if(NUMA_FOUND AND NOT TARGET NUMA::NUMA)
+  add_library(NUMA::NUMA UNKNOWN IMPORTED)
+  set_target_properties(NUMA::NUMA PROPERTIES
+    IMPORTED_LOCATION "${NUMA_LIBRARY}"
+    INTERFACE_INCLUDE_DIRECTORIES "${NUMA_INCLUDE_DIR}")
+  if(NUMA_LIBRARY MATCHES "\\.a$")
+    set(_numa_dependencies ${PC_NUMA_STATIC_LIBRARIES})
+    list(REMOVE_ITEM _numa_dependencies numa)
+    set_property(TARGET NUMA::NUMA PROPERTY INTERFACE_LINK_LIBRARIES "${_numa_dependencies}")
+  endif()
+endif()
