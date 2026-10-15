@@ -101,10 +101,11 @@ qcomp calcExpecNonHermitianFullStateDiagMatrPower(Qureg qureg, FullStateDiagMatr
     validate_matrixFields(matrix, __func__);
     validate_matrixAndQuregAreCompatible(matrix, qureg, true, __func__);
 
-    // this function never uses the qreal-pow overload (because we make
-    // no assumption matrix is Hermitian i.e. real), and instead always
-    // uses the relatively numerically inaccurate qcomp overload
-    const bool useRealPow = false;
+    // real pow(0,0) returns 1, whereas complex pow(0,0) can return NaN.
+    // For exponent zero, every element becomes 1 even when complex,
+    // so we can safely discard imaginary components and use real pow.
+    // Otherwise, we make no assumption matrix is Hermitian and use complex pow.
+    const bool useRealPow = exponent == qcomp(0,0);
 
     return (qureg.isDensityMatrix)?
         localiser_densmatr_calcExpecFullStateDiagMatr(qureg, matrix, exponent, useRealPow):
