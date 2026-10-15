@@ -700,6 +700,35 @@ TEST_CASE( "calcExpecNonHermitianFullStateDiagMatrPower", TEST_CATEGORY LABEL_MI
         }
     }
 
+    SECTION( "zeroth power of singular matrix" ) {
+
+        qcomp elem = GENERATE( qcomp(1,0), qcomp(-1,0), qcomp(0,1) );
+        qmatrix refMatr = getDiagonalMatrix(getConstantVector(getPow2(getNumCachedQubits()), elem));
+        refMatr[0][0] = 0;
+
+        auto apiFunc = [](Qureg qureg, FullStateDiagMatr matr) {
+            return calcExpecNonHermitianFullStateDiagMatrPower(qureg, matr, 0);
+        };
+
+        SECTION( LABEL_STATEVEC ) {
+
+            auto refFunc = [](qvector state, qmatrix) {
+                return getInnerProduct(state, state);
+            };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedStatevecs(), getCachedFullStateDiagMatrs(), apiFunc, getRefStatevec(), refMatr, refFunc);
+        }
+
+        SECTION( LABEL_DENSMATR ) {
+
+            auto refFunc = [](qmatrix state, qmatrix) {
+                return getTrace(state);
+            };
+
+            TEST_ON_CACHED_QUREG_AND_MATRIX( getCachedDensmatrs(), getCachedFullStateDiagMatrs(), apiFunc, getRefDensmatr(), refMatr, refFunc);
+        }
+    }
+
     /// @todo input validation
 }
 
