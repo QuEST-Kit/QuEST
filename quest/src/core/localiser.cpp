@@ -34,6 +34,7 @@
 #include <complex>
 #include <algorithm>
 #include <unordered_map>
+#include <cstdlib>
 
 using std::vector;
 using std::tuple;
@@ -893,6 +894,107 @@ void localiser_statevec_anyCtrlSwap(Qureg qureg, ConstList64 ctrls, ConstList64 
  */
 
 
+void fusedMultiSwapBetweenPrefixAndSuffix(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 prefixTargs, ConstList64 suffixTargs) {
+
+    // we fuse 'numPairs' (>= 2) disjoint prefix<->suffix SWAPs into a single communication
+    // round. The 2^numPairs ranks differing from ours only in the swapped prefix qubits'
+    // rank-bits form a subcube; identifying a rank by the 'numPairs'-bit address of those
+    // rank-bits, the multi-swap relocates a local amp with suffix-target bit-pattern 'v' on
+    // rank-address 'a' to rank-address 'v' with new pattern 'a'. Hence the block with v==a
+    // stays put, and for each of the 2^numPairs - 1 partners we swap the block whose suffix
+    // pattern equals the partner's address. These index sets are disjoint, so all partner
+    // exchanges proceed concurrently. See arXiv:2311.01512, arXiv:quant-ph/0608239.
+
+    int numPairs = prefixTargs.size();
+
+    // rank-bit positions of the prefix (global) targets, and our rank's bit values there
+    vector<int> rankBitInds(numPairs);
+    vector<int> myAddrBits(numPairs);
+    for (int i=0; i<numPairs; i++) {
+        rankBitInds[i] = util_getPrefixInd(prefixTargs[i], qureg);
+        myAddrBits[i]  = util_getRankBitOfQubit(prefixTargs[i], qureg);
+    }
+
+    // each control and each swap-target halves the per-partner block of swapped local amps
+    qindex numAmpsPerBlock = qureg.numAmpsPerNode / powerOf2(numPairs + ctrls.size());
+
+    // packing constrains the swap-targets (to a partner-specific pattern) and the controls
+    List64 packQubits = ctrls;
+    for (int i=0; i<numPairs; i++)
+        packQubits.push_back(suffixTargs[i]);
+
+    // there are 2^numPairs - 1 partners (non-empty subsets of flipped rank-bits)
+    int numPartners = powerOf2(numPairs) - 1;
+    vector<int>    partnerRanks(numPartners);
+    vector<qindex> blockInds(numPartners);
+
+    // stage all partners' send-blocks contiguously in a temporary buffer (< one node's state)
+    qcomp* sendBuf = accel_allocFusedSwapSendBuffer(qureg, numPartners * numAmpsPerBlock);
+
+    // pack each partner's block, identified by subset 'sub' of flipped rank-bits
+    for (int sub=1; sub<=numPartners; sub++) {
+
+        int partner = sub - 1;
+        blockInds[partner] = partner * numAmpsPerBlock;
+
+        int pairRank = qureg.rank;
+        List64 packStates = ctrlStates;
+
+        for (int i=0; i<numPairs; i++) {
+            int flip = (sub >> i) & 1;
+            if (flip)
+                pairRank = flipBit(pairRank, rankBitInds[i]);
+
+            // partner's block holds local amps whose suffix-target[i] == partner's address bit i
+            packStates.push_back(myAddrBits[i] ^ flip);
+        }
+
+        partnerRanks[partner] = pairRank;
+        accel_statevec_packAmpsForFusedSwap(qureg, packQubits, packStates, sendBuf, blockInds[partner]);
+    }
+
+    // single all-to-all round: send each block to its partner, receive theirs into commBuffer
+    comm_exchangeAmpsToBuffersForFusedSwap(qureg, sendBuf, partnerRanks, blockInds, blockInds, numAmpsPerBlock);
+
+    // scatter each received block back into the same local indices it was packed from
+    for (int sub=1; sub<=numPartners; sub++) {
+
+        int partner = sub - 1;
+        List64 packStates = ctrlStates;
+        for (int i=0; i<numPairs; i++)
+            packStates.push_back(myAddrBits[i] ^ ((sub >> i) & 1));
+
+        accel_statevec_unpackAmpsForFusedSwap(qureg, packQubits, packStates, blockInds[partner]);
+    }
+
+    accel_deallocFusedSwapSendBuffer(qureg, sendBuf);
+}
+
+
+void multiSwapSequentially(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 prefixTargs, ConstList64 suffixTargs) {
+
+    // reference (pre-fusion) behaviour: perform each disjoint prefix<->suffix SWAP one-at-a-time,
+    // wastefully relocating amplitudes once per swap. Retained for correctness comparison and
+    // benchmarking against the fused single-round path; never the default at runtime.
+    for (size_t i=0; i<prefixTargs.size(); i++)
+        anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, suffixTargs[i], prefixTargs[i]);
+}
+
+
+bool localiser_isFusedSwapDisabled() {
+
+    // honour an optional environment toggle (QUEST_DISABLE_SWAP_FUSION=1) so benchmarks can
+    // compare the fused single-round path against the legacy sequential path without recompiling.
+    // read once and cached; default (unset) keeps fusion enabled.
+    static int cached = -1;
+    if (cached == -1) {
+        const char* env = std::getenv("QUEST_DISABLE_SWAP_FUSION");
+        cached = (env != nullptr && env[0] == '1') ? 1 : 0;
+    }
+    return cached == 1;
+}
+
+
 void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, ConstList64 targsA, ConstList64 targsB) {
 
     // this is an internal function called by the below routines which require
@@ -900,25 +1002,41 @@ void anyCtrlMultiSwapBetweenPrefixAndSuffix(Qureg qureg, ConstList64 ctrls, Cons
     // the SWAPs act on unique qubit pairs and so commute.
 
     /// @todo
-    ///   - the sequence of pair-wise full-swaps should be more efficient as a
-    ///     "single" sequence of smaller messages sending amps directly to their
-    ///     final destination node. This could use a new "multiSwap" function.
     ///   - if the user has compiled cuQuantum, and Qureg is GPU-accelerated, the
-    ///     multiSwap function should use custatevecSwapIndexBits() if local,
-    ///     or custatevecDistIndexBitSwapSchedulerSetIndexBitSwaps() if distributed,
+    ///     multiSwap could instead use custatevecSwapIndexBits() if local, or
+    ///     custatevecDistIndexBitSwapSchedulerSetIndexBitSwaps() if distributed,
     ///     although the latter requires substantially more work like setting up
     ///     a communicator which may be inelegant alongside our own distribution scheme.
 
-    // perform necessary swaps to move all targets into suffix, each of which invokes communication
-    for (size_t i=0; i<targsA.size(); i++) {
+    // collect the disjoint pairs needing communication; for each, the suffix (local)
+    // qubit is the smaller index and the prefix (global) qubit is the larger
+    List64 prefixTargs = lists_getEmptyList64();
+    List64 suffixTargs = lists_getEmptyList64();
 
+    for (size_t i=0; i<targsA.size(); i++) {
         if (targsA[i] == targsB[i])
             continue;
-
-        int suffixTarg = std::min(targsA[i], targsB[i]);
-        int prefixTarg = std::max(targsA[i], targsB[i]);
-        anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, suffixTarg, prefixTarg);
+        suffixTargs.push_back(std::min(targsA[i], targsB[i]));
+        prefixTargs.push_back(std::max(targsA[i], targsB[i]));
     }
+
+    int numPairs = prefixTargs.size();
+
+    // nothing to do, or a single swap reduces to the existing routine (needs no staging buffer)
+    if (numPairs == 0)
+        return;
+    if (numPairs == 1) {
+        anyCtrlSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, suffixTargs[0], prefixTargs[0]);
+        return;
+    }
+
+    // multiple swaps are fused, sending each amplitude directly to its final node in a single
+    // round, rather than wastefully relocating it once per sequential swap. The benchmark toggle
+    // permits comparing against the legacy sequential behaviour.
+    if (localiser_isFusedSwapDisabled())
+        multiSwapSequentially(qureg, ctrls, ctrlStates, prefixTargs, suffixTargs);
+    else
+        fusedMultiSwapBetweenPrefixAndSuffix(qureg, ctrls, ctrlStates, prefixTargs, suffixTargs);
 }
 
 

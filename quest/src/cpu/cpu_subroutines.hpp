@@ -48,6 +48,9 @@ template <int NumQubits> qindex cpu_statevec_packAmpsIntoBuffer(Qureg qureg, Con
 
 qindex cpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qubit2, int qubit3, int bit2);
 
+template <int NumQubits> void cpu_statevec_packAmpsForFusedSwap(Qureg qureg, ConstList64 qubits, ConstList64 qubitStates, qcomp* sendBuf, qindex sendOffset);
+template <int NumQubits> void cpu_statevec_unpackAmpsForFusedSwap(Qureg qureg, ConstList64 qubits, ConstList64 qubitStates, qindex recvOffset);
+
 
 /*
  * SWAPS
