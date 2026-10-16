@@ -14,7 +14,6 @@
 #include "quest/include/matrices.h"
 
 #include "quest/src/core/utilities.hpp"
-
 #include <vector>
 
 using std::vector;
@@ -56,7 +55,7 @@ qindex cpu_statevec_packPairSummedAmpsIntoBuffer(Qureg qureg, int qubit1, int qu
 template <int NumCtrls> void cpu_statevec_anyCtrlSwap_subA(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ1, int targ2);
 template <int NumCtrls> void cpu_statevec_anyCtrlSwap_subB(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates);
 template <int NumCtrls> void cpu_statevec_anyCtrlSwap_subC(Qureg qureg, ConstList64 ctrls, ConstList64 ctrlStates, int targ, int targState);
-
+void cpu_statevec_multiSwap_fused_sub(Qureg qureg, vector<int> targsA, vector<int> targsB);
 
 /*
  * DENSE MATRIX

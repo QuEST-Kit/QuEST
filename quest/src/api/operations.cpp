@@ -665,6 +665,7 @@ void applyControlledSwap(Qureg qureg, int control, int qubit1, int qubit2) {
     applyMultiStateControlledSwap(qureg, &control, nullptr, 1, qubit1, qubit2);
 }
 
+
 void applyMultiControlledSwap(Qureg qureg, int* controls, int numControls, int qubit1, int qubit2) {
     validate_quregFields(qureg, __func__);
     validate_controlsAndTwoTargets(qureg, controls, numControls, qubit1, qubit2, __func__);
@@ -1527,10 +1528,22 @@ void applyMultiStateControlledMultiQubitNot(Qureg qureg, int* controls, int* sta
 
 } // end de-mangler
 
-void applyMultiQubitNot(Qureg qureg, vector<int> targets) {
+void applyMultiSwap(Qureg qureg, std::vector<int> targetsA, std::vector<int> targetsB) {
+    validate_quregFields(qureg, __func__);
 
-    applyMultiQubitNot(qureg, targets.data(), targets.size());
+    if (targetsA.size() != targetsB.size())
+        throw std::invalid_argument(
+            "applyMultiSwap: targetsA and targetsB must have the same length, "
+            "since each pair (targetsA[i], targetsB[i]) specifies one SWAP.");
+
+    std::vector<int> allTargets;
+    allTargets.insert(allTargets.end(), targetsA.begin(), targetsA.end());
+    allTargets.insert(allTargets.end(), targetsB.begin(), targetsB.end());
+    validate_targets(qureg, allTargets.data(), (int) allTargets.size(), __func__);
+
+    localiser_statevec_multiSwap(qureg, targetsA, targetsB);
 }
+
 
 void applyControlledMultiQubitNot(Qureg qureg, int control, vector<int> targets) {
 
