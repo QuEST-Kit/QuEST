@@ -940,7 +940,7 @@ template void cpu_densmatr_allTargDiagMatr_sub<true,  false, true,  false> (Qure
 template <int NumTargs>
 INLINE void applyPauliUponAmpPair(
     cpu_qcomp* amps, qindex& v, qindex& i0, int* indXY, int& numXY, 
-    qindex& maskXY, qindex& maskYZ, cpu_qcomp& ampFac, cpu_qcomp& pairAmpFac
+    qindex& maskXY, qindex& maskYZ, int& pairSign, cpu_qcomp& ampFac, cpu_qcomp& pairAmpFac
 ) {
     // This is a subroutine of cpu_statevector_anyCtrlPauliTensorOrGadget_subA() below
     // called in a hot-loop (hence it is here inlined) which exists because the caller
@@ -959,7 +959,7 @@ INLINE void applyPauliUponAmpPair(
 
     // sign of amps due to Y and Z (excludes Y's i factor which is inside pairAmpFac)
     int signA = fast_getPlusOrMinusMaskedBitParity(iA, maskYZ);
-    int signB = fast_getPlusOrMinusMaskedBitParity(iB, maskYZ);
+    int signB = signA * pairSign;
 
     // mix or swap scaled amp pair (where pairAmpFac includes Y's i factor)
     cpu_qcomp ampA = amps[iA];
@@ -996,6 +996,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
     // prepare masks for extracting Pauli parities
     auto maskXY = util_getBitMask(sortedTargsXY);
     auto maskYZ = util_getBitMask(util_getConcatenated(y, z));
+    int pairSign = fast_getPlusOrMinusMaskedBitParity(maskXY, maskYZ);
 
     // use template params to compile-time unroll loops in insertBits() and inner-loop below
     int numCtrlBits = accel_tryUseCompileTimeValue<NumCtrls>(ctrls.size());
@@ -1032,7 +1033,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
             // serial
             for (qindex v=0; v<numInnerIts; v++)
                 applyPauliUponAmpPair<NumTargs>(
-                    amps, v, i0, sortedTargsXY.data(), numTargBits, maskXY, maskYZ, f0, f1);
+                    amps, v, i0, sortedTargsXY.data(), numTargBits, maskXY, maskYZ, pairSign, f0, f1);
         }
 
     } else {
@@ -1047,7 +1048,7 @@ void cpu_statevector_anyCtrlPauliTensorOrGadget_subA(
             #pragma omp parallel for
             for (qindex v=0; v<numInnerIts; v++)
                 applyPauliUponAmpPair<NumTargs>(
-                    amps, v, i0, sortedTargsXY.data(), numTargBits, maskXY, maskYZ, f0, f1);
+                    amps, v, i0, sortedTargsXY.data(), numTargBits, maskXY, maskYZ, pairSign, f0, f1);
         }
     }
 }
